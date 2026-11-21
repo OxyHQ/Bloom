@@ -15,7 +15,13 @@ import type {
 import type { BottomBarProps } from '@oxy.so/bloom/bottom-bar';
 import type { PageHeaderProps } from '@oxy.so/bloom/page-header';
 import type { AppShellProps } from '@oxy.so/bloom/app-shell';
-import type { SidebarAccount, SidebarLogo } from '@oxy.so/bloom/sidebar';
+import type {
+  SidebarAccount,
+  SidebarLogo,
+  SidebarOnboardingStep,
+  SidebarPlan,
+  SidebarTeam,
+} from '@oxy.so/bloom/sidebar';
 import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
@@ -140,6 +146,8 @@ import {
   type ScrollbarSize,
   type ScrollSurfaceStyle,
   type ResizeHandleStyle,
+  type ModePresentation,
+  type TeamPlacement,
   type KeyboardTaps,
   type DragIndicator,
   type SheetMaterial,
@@ -191,6 +199,8 @@ export type {
   ScrollbarSize,
   ScrollSurfaceStyle,
   ResizeHandleStyle,
+  ModePresentation,
+  TeamPlacement,
   NavigationScope,
   ColorPreset,
   ScreenKind,
@@ -395,6 +405,18 @@ export interface ValueModifiers {
   onResizeStart: () => void;
   onResizeEnd: () => void;
   onNudge: (distance: number) => void;
+  mode: string;
+  onModeChange: (key: string) => void;
+  modePresentation: ModePresentation;
+  modesLabel: string;
+  team: SidebarTeam;
+  teamPlacement: TeamPlacement;
+  plan: SidebarPlan;
+  onboarding: SidebarOnboarding;
+  onDrop: (drop: TreeDrop) => void;
+  draggable: boolean;
+  droppable: boolean;
+  dropBeside: boolean;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -890,6 +912,7 @@ export type NodeKind =
   | 'destination'
   | 'toolbarView'
   | 'stickySection'
+  | 'sidebarMode'
   | 'scrollArea'
   | 'scrollSurface'
   | 'autoHideBar'
@@ -1636,6 +1659,42 @@ export class Node {
   }
   onNudge(value: (distance: number) => void): Node {
     return this.set('onNudge', value);
+  }
+  mode(value: string): Node {
+    return this.set('mode', value);
+  }
+  onModeChange(value: (key: string) => void): Node {
+    return this.set('onModeChange', value);
+  }
+  modePresentation(value: ModePresentation): Node {
+    return this.set('modePresentation', value);
+  }
+  modesLabel(value: string): Node {
+    return this.set('modesLabel', value);
+  }
+  team(value: SidebarTeam): Node {
+    return this.set('team', value);
+  }
+  teamPlacement(value: TeamPlacement): Node {
+    return this.set('teamPlacement', value);
+  }
+  plan(value: SidebarPlan): Node {
+    return this.set('plan', value);
+  }
+  onboarding(value: SidebarOnboarding): Node {
+    return this.set('onboarding', value);
+  }
+  onDrop(value: (drop: TreeDrop) => void): Node {
+    return this.set('onDrop', value);
+  }
+  draggable(value = true): Node {
+    return this.set('draggable', value);
+  }
+  droppable(value = true): Node {
+    return this.set('droppable', value);
+  }
+  dropBeside(value = true): Node {
+    return this.set('dropBeside', value);
   }
   primaryAction(icon: IconComponent, label: string, destination: string): Node {
     return this.with({ kind: 'primaryAction', key: 'primaryAction', icon, label, destination });
@@ -2782,6 +2841,65 @@ export interface SidebarView extends ViewNode {
   /** Its accessible name. */
   label(value: string | undefined): SidebarView;
   testID(value: string): SidebarView;
+  /** The key of the selected `SidebarMode` (its switcher under the header). */
+  mode(value: string): SidebarView;
+  /** Told the key of the mode chosen (by a press or its shortcut). */
+  onModeChange(value: (key: string) => void): SidebarView;
+  /** `segmented` (default), the labelled control; `toggle`, a compact switch for two modes. */
+  modePresentation(value: ModePresentation): SidebarView;
+  /** The modes' accessible name. */
+  modesLabel(value: string): SidebarView;
+  /** The team: its card at the foot and the menu it opens (Bloom's `SidebarTeam`). */
+  team(value: SidebarTeam): SidebarView;
+  /** `header`: the team is the switcher at the top and the account the card at the foot; `footer` by default. */
+  teamPlacement(value: TeamPlacement): SidebarView;
+  /** The plan card at the foot, in place of the team card (Bloom's `SidebarPlan`). */
+  plan(value: SidebarPlan): SidebarView;
+  /** The getting-started card under the destinations. */
+  onboarding(value: SidebarOnboarding): SidebarView;
+  /** Its quick search's text, and what to tell when it changes (the app filters its own content with it). */
+  query(value: string, onChange: (query: string) => void): SidebarView;
+  /** A `draggable` tree row was dropped: where it landed, by id; the app moves it. */
+  onDrop(value: (drop: TreeDrop) => void): SidebarView;
+}
+/**
+ * A mode of a `Sidebar`'s switcher (Search / Computer): its label and glyph.
+ * The sidebar's `.mode()` is the selected one.
+ */
+export interface SidebarModeView extends ViewNode {
+  /** Its key: what `.mode()` speaks; its label by default. */
+  id(value: string): SidebarModeView;
+  /** Its keyboard shortcut on the web, shown on hover and bound by the sidebar (`⌥⌃1`). */
+  shortcut(value: string): SidebarModeView;
+}
+/**
+ * Where a dragged tree row landed (Bloom's `SidebarTreeDrop`, by id): `before`
+ * or `after` the row `target`, or `inside` it as its last row; with no target,
+ * inside the section, after its last row.
+ */
+export interface TreeDrop {
+  /** The dragged row. */
+  readonly id: string;
+  /** The section it came from. */
+  readonly from: string;
+  readonly target?: string;
+  readonly position: 'before' | 'inside' | 'after';
+  /** The section it landed in. */
+  readonly section: string;
+}
+/** A sidebar's getting-started card (Bloom's `onboarding`): its steps are the app's tasks. */
+export interface SidebarOnboarding {
+  title: string;
+  /** The product's mark or an avatar, in a 20px slot. */
+  leading?: Child;
+  steps: ReadonlyArray<SidebarOnboardingStep>;
+  /** How many incomplete steps show, in order (2 by default). */
+  visibleCount?: number;
+  /** Opens the welcome flow from its header. */
+  onPress?: () => void;
+  /** Opens the full guide; without it the card has no footer action. */
+  onSeeAll?: () => void;
+  seeAllLabel?: string;
 }
 /** A destination in a `Sidebar`. */
 export interface NavItemView extends ViewNode {
@@ -2813,6 +2931,8 @@ export interface TreeSectionView extends ViewNode {
   error(value: string | undefined): TreeSectionView;
   /** What it says when it has no rows. */
   emptyLabel(value: string): TreeSectionView;
+  /** `false`: nothing can be dropped into it. */
+  droppable(value?: boolean): TreeSectionView;
 }
 /** A folder of a tree section: rows under a disclosure. */
 export interface TreeFolderView extends ViewNode {
@@ -2838,6 +2958,12 @@ export interface TreeItemView extends ViewNode {
   emptyLabel(value: string): TreeItemView;
   onPress(value: Press | undefined): TreeItemView;
   onLongPress(value: (() => void) | undefined): TreeItemView;
+  /** It can be dragged (the sidebar's `.onDrop` takes it): a long press lifts it on touch. */
+  draggable(value?: boolean): TreeItemView;
+  /** `false`: nothing lands inside it. */
+  droppable(value?: boolean): TreeItemView;
+  /** `false`: nothing lands before or after it (a container among containers); a drop goes inside. */
+  dropBeside(value?: boolean): TreeItemView;
 }
 /** Bloom `Rail`: a narrow column of destinations, each a `RailItem`. */
 export interface RailView extends ViewNode {

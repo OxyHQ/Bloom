@@ -36,6 +36,7 @@ import {
   type SettingsItemView,
   type SettingsModalView,
   type NavItemView,
+  type SidebarModeView,
   type PageFooterView,
   type RailItemView,
   type RailView,
@@ -321,9 +322,10 @@ export function BottomSheet(...children: Child[]): BottomSheetView {
   return new Node('bottomSheet', null, children);
 }
 
-/** A sidebar row: a `NavItem`, a `TreeSection`, or a list of them. */
+/** A sidebar row: a `NavItem`, a `SidebarMode`, a `TreeSection`, or a list of them. */
 export type SidebarRow =
   | NavItemView
+  | SidebarModeView
   | TreeSectionView
   | false
   | null
@@ -351,6 +353,11 @@ export function Sidebar(...rows: SidebarRow[]): SidebarView {
 /** A sidebar destination: its label and glyph. */
 export function NavItem(label: string, icon: IconComponent): NavItemView {
   return new Node('navItem', { label, icon }, NO_CHILDREN);
+}
+
+/** A mode of the sidebar's switcher under its header: its label and glyph. */
+export function SidebarMode(label: string, icon: IconComponent): SidebarModeView {
+  return new Node('sidebarMode', { label, icon }, NO_CHILDREN);
 }
 
 /** A section of the sidebar's tree, under its heading. */

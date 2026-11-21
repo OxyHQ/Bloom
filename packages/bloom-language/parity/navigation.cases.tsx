@@ -1,4 +1,5 @@
 import {
+  RiComputerLine,
   RiFileLine,
   RiFolderLine,
   RiHome5Fill,
@@ -18,8 +19,161 @@ import { type ParityCase, Themed } from './support/cases';
 
 const noop = () => {};
 const select = (_id: string) => {};
+const typed = (_query: string) => {};
+const dropped = () => {};
+
+const TEAM = {
+  name: 'Acme',
+  email: 'team@acme.dev',
+  avatar: { initials: 'A', shape: 'squircle' as const },
+  footer: { label: 'Oxy', version: '1.0' },
+};
+const PLAN = { name: 'Ana Lima', plan: 'Pro Plan', actionLabel: 'Upgrade', onAction: noop };
+const STEPS = [
+  { key: 'invite', label: 'Invite your team' },
+  { key: 'import', label: 'Import your notes', completed: true },
+  { key: 'connect', label: 'Connect a calendar' },
+];
 
 const sidebars: ParityCase[] = [
+  ...ENUMS.modePresentation.map((presentation) => ({
+    name: `modes, ${presentation}, one selected`,
+    language: () =>
+      toElement(
+        L.Sidebar(
+          L.SidebarMode('Search', RiSearchLine).id('search').shortcut('⌥⌃1'),
+          L.SidebarMode('Computer', RiComputerLine).id('computer'),
+          L.NavItem('Home', RiHome5Line).id('home'),
+        )
+          .mode('computer')
+          .onModeChange(select)
+          .modePresentation(presentation)
+          .modesLabel('Mode'),
+      ),
+    bloom: () => (
+      <Sidebar
+        items={[{ key: 'home', label: 'Home', icon: RiHome5Line }]}
+        modes={[
+          { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: '⌥⌃1' },
+          { key: 'computer', label: 'Computer', icon: RiComputerLine },
+        ]}
+        mode="computer"
+        onModeChange={select}
+        modesPresentation={presentation}
+        modesLabel="Mode"
+      />
+    ),
+  })),
+  ...ENUMS.teamPlacement.map((placement) => ({
+    name: `a team, placed in the ${placement}`,
+    language: () =>
+      toElement(L.Sidebar(L.NavItem('Home', RiHome5Line)).team(TEAM).teamPlacement(placement)),
+    bloom: () => (
+      <Sidebar
+        items={[{ key: 'Home', label: 'Home', icon: RiHome5Line }]}
+        team={TEAM}
+        teamPlacement={placement}
+      />
+    ),
+  })),
+  {
+    name: 'a plan card at the foot',
+    language: () => toElement(L.Sidebar(L.NavItem('Home', RiHome5Line)).plan(PLAN)),
+    bloom: () => (
+      <Sidebar items={[{ key: 'Home', label: 'Home', icon: RiHome5Line }]} plan={PLAN} />
+    ),
+  },
+  {
+    name: 'a getting-started card with its leading mark',
+    language: () =>
+      toElement(
+        L.Sidebar(L.NavItem('Home', RiHome5Line)).onboarding({
+          title: 'Get started',
+          leading: L.Text('O'),
+          steps: STEPS,
+          visibleCount: 2,
+          onPress: noop,
+          onSeeAll: noop,
+          seeAllLabel: 'See every step',
+        }),
+      ),
+    bloom: () => (
+      <Sidebar
+        items={[{ key: 'Home', label: 'Home', icon: RiHome5Line }]}
+        onboarding={{
+          title: 'Get started',
+          leading: <Text>O</Text>,
+          steps: STEPS,
+          visibleCount: 2,
+          onPress: noop,
+          onSeeAll: noop,
+          seeAllLabel: 'See every step',
+        }}
+      />
+    ),
+  },
+  {
+    name: 'a quick search held by the app',
+    language: () =>
+      toElement(
+        L.Sidebar(L.NavItem('Home', RiHome5Line), L.NavItem('Search', RiSearchLine)).query(
+          'ho',
+          typed,
+        ),
+      ),
+    bloom: () => (
+      <Sidebar
+        items={[
+          { key: 'Home', label: 'Home', icon: RiHome5Line },
+          { key: 'Search', label: 'Search', icon: RiSearchLine },
+        ]}
+        searchQuery="ho"
+        onSearchQueryChange={typed}
+      />
+    ),
+  },
+  {
+    name: 'a tree that takes drops: draggable rows and their rules',
+    language: () =>
+      toElement(
+        L.Sidebar(
+          L.TreeSection(
+            'Private',
+            L.TreeItem('Roadmap', L.TreeItem('Q1').id('q1').draggable()).id('roadmap').draggable(),
+            L.TreeItem('Team').id('team').draggable().dropBeside(false),
+            L.TreeItem('Notes').id('notes').draggable().droppable(false),
+          ).id('private'),
+          L.TreeSection('Shared', L.TreeItem('Theirs').id('theirs')).id('shared').droppable(false),
+        ).onDrop(dropped),
+      ),
+    bloom: () => (
+      <Sidebar
+        tree={[
+          {
+            key: 'private',
+            label: 'Private',
+            items: [
+              {
+                key: 'roadmap',
+                label: 'Roadmap',
+                draggable: true,
+                items: [{ key: 'q1', label: 'Q1', draggable: true }],
+              },
+              { key: 'team', label: 'Team', draggable: true, dropBeside: false },
+              { key: 'notes', label: 'Notes', draggable: true, droppable: false },
+            ],
+          },
+          {
+            key: 'shared',
+            label: 'Shared',
+            droppable: false,
+            items: [{ key: 'theirs', label: 'Theirs' }],
+          },
+        ]}
+        onTreeItemDrop={dropped}
+      />
+    ),
+  },
   {
     name: 'destinations, one secondary, one selected',
     language: () =>

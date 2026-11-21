@@ -17,6 +17,7 @@ import {
   SettingsItem,
   SettingsModal,
   Sidebar,
+  SidebarMode,
   StickySection,
   Text,
   Toolbar,
@@ -33,6 +34,98 @@ import { toElement } from '../render';
 quietRenderer();
 
 describe('Sidebar is Bloom’s Sidebar', () => {
+  it('its modes, team, plan, onboarding card and query are Bloom’s', () => {
+    const choose = jest.fn();
+    const typed = jest.fn();
+    const team = { name: 'Acme', email: 'team@acme.dev' };
+    const plan = { name: 'Ana', plan: 'Pro Plan', actionLabel: 'Upgrade' };
+    const r = mount(
+      toElement(
+        Sidebar(
+          SidebarMode('Search', Glyph).id('search').shortcut('⌥⌃1'),
+          SidebarMode('Computer', OtherGlyph),
+          NavItem('Home', Glyph),
+        )
+          .mode('search')
+          .onModeChange(choose)
+          .modePresentation('toggle')
+          .modesLabel('Mode')
+          .team(team)
+          .teamPlacement('header')
+          .plan(plan)
+          .onboarding({
+            title: 'Get started',
+            leading: Text('O'),
+            steps: [{ key: 'invite', label: 'Invite your team' }],
+            visibleCount: 1,
+          })
+          .query('road', typed),
+      ),
+    );
+    const props = only(r, 'Sidebar').props;
+    expect(props).toMatchObject({
+      modes: [
+        { key: 'search', label: 'Search', icon: Glyph, shortcut: '⌥⌃1' },
+        { key: 'Computer', label: 'Computer', icon: OtherGlyph },
+      ],
+      mode: 'search',
+      onModeChange: choose,
+      modesPresentation: 'toggle',
+      modesLabel: 'Mode',
+      team,
+      teamPlacement: 'header',
+      plan,
+      searchQuery: 'road',
+      onSearchQueryChange: typed,
+    });
+    expect(props.items).toHaveLength(1);
+    expect(props.onboarding).toMatchObject({
+      title: 'Get started',
+      steps: [{ key: 'invite', label: 'Invite your team' }],
+      visibleCount: 1,
+    });
+    expect(props.onboarding.leading).toBeTruthy();
+  });
+
+  it('a draggable tree row’s drop is told by id; its drop rules are Bloom’s', () => {
+    const dropped = jest.fn();
+    const r = mount(
+      toElement(
+        Sidebar(
+          TreeSection(
+            'Private',
+            TreeItem('Roadmap').id('roadmap').draggable().droppable(false).dropBeside(false),
+          ).id('private'),
+          TreeSection('Shared').droppable(false),
+        ).onDrop(dropped),
+      ),
+    );
+    const props = only(r, 'Sidebar').props;
+    expect(props.tree[0].items[0]).toMatchObject({
+      key: 'roadmap',
+      draggable: true,
+      droppable: false,
+      dropBeside: false,
+    });
+    expect(props.tree[1]).toMatchObject({ label: 'Shared', droppable: false });
+    const roadmap = props.tree[0].items[0];
+    props.onTreeItemDrop({
+      item: roadmap,
+      from: props.tree[0],
+      target: roadmap,
+      position: 'after',
+      section: props.tree[1],
+    });
+    expect(dropped).toHaveBeenCalledWith({
+      id: 'roadmap',
+      from: 'private',
+      target: 'roadmap',
+      position: 'after',
+      section: 'Shared',
+    });
+    expect('onTreeItemDrop' in only(mount(toElement(Sidebar())), 'Sidebar').props).toBe(false);
+  });
+
   it('destinations are its items, secondary ones its foot; a tree section is its tree', () => {
     const r = mount(
       toElement(

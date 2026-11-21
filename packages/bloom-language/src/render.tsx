@@ -2015,6 +2015,7 @@ function renderHost(
     case 'bottomSheet':
     // A sidebar's and a rail's rows are read by the column that holds them.
     case 'navItem':
+    case 'sidebarMode':
     case 'treeSection':
     case 'treeFolder':
     case 'treeItem':
