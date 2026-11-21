@@ -494,7 +494,7 @@ export function addVariantToLayers(
   target.key += `;?${condition ?? ''}${modifier.key}`;
 }
 
-function paddingStyle(style: Resolved, edge: Edge, value: number): void {
+export function paddingStyle(style: Resolved, edge: Edge, value: number): void {
   // Negative padding pulls the box outward: a margin, as SwiftUI draws it.
   const prefix = value < 0 ? 'margin' : 'padding';
   // Longhands only: react-native-web ranks the shorthands above them (AGENTS.rules.md, Style).

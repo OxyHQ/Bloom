@@ -323,6 +323,9 @@ export type { CollapsibleView } from './controls/collapsible';
 // Drop zones (controls/drop-zone.tsx)
 export { DropZone } from './controls/drop-zone';
 export type { DropZoneView } from './controls/drop-zone';
+// Choice lists (controls/choice-list.tsx)
+export { ChoiceList } from './controls/choice-list';
+export type { ChoiceListView, ChoiceOptionBox } from './controls/choice-list';
 
 // Photo grids (controls/sortable-media.tsx)
 export { SortablePhotoGrid } from './controls/sortable-media';

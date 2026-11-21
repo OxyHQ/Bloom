@@ -1485,6 +1485,22 @@ Bloom's `AnimatedCheck`: a ring and a check that draw themselves as the view
 appears, and again whenever its trigger (`AnimatedCheck(trigger)`) changes, as
 an app plays it through its ref. It takes `.size(space)` (`2xl` by default) and
 `.tint(colour)` (`success` by default); its box is a view around it.
+### Choice lists
+
+```ts
+ChoiceList('Accounts', [chosen, choose], accounts, (account, { selected }) =>
+  VStack(Avatar(account.label), Text(account.label).weight(selected ? 'semibold' : 'regular')),
+).spacing('28').optionBox({ padding: { horizontal: '6', vertical: 'xs' }, corner: 'md' })
+```
+
+Bloom's `ChoiceList`: a few choices, one chosen, one keyboard stop (the
+arrows move, a press or Space chooses). `ChoiceList(label, binding, options,
+content)`: the label names the whole, each option (Bloom's `{ value, label,
+disabled?, testID? }`) is named by its label, and `content(option, { selected,
+disabled })` draws it, decoratively. It takes `.axis('horizontal' |
+'vertical')`, `.spacing()` (`lg` by default), `.optionBox({ padding, corner,
+align })` (each option's padding by edge, as `.padding(edge, token)` names
+them, its corner and how it aligns its content) and `.disabled()`.
 
 ### Context menus
 
@@ -1983,6 +1999,9 @@ and `@oxy.so/bloom-data` beside it.
   media inset borders,
   image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`),
   fact strips, photo grids.
+  fact strips.
+  image aspect ratios (Bloom's cache, through `.aspectRatio()` and `.onLoad()`),
+  choice lists.
 
 **Not built**
 
