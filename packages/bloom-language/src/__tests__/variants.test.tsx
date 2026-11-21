@@ -7,7 +7,8 @@ import TestRenderer, {
 
 import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { windowTier } from './support/bloom-hooks';
-import { Avatar, HStack, Text, VStack } from '../primitives';
+import { Avatar, HStack, Icon, Text, VStack } from '../primitives';
+import { both } from '../variants';
 import { toElement } from '../render';
 import type { Child } from '../node';
 
@@ -39,6 +40,9 @@ function remount(renderer: ReactTestRenderer, node: Child, colors = LIGHT): void
     renderer.update(createElement(PaintContext.Provider, { value: colors }, toElement(node))),
   );
 }
+
+const Glyph = (props: { width?: number; height?: number; fill?: string }) =>
+  createElement('Glyph', props);
 
 const ofType = (renderer: ReactTestRenderer, type: string): ReactTestInstance[] =>
   renderer.root.findAll((instance) => (instance.type as unknown) === type);
@@ -141,6 +145,56 @@ describe('when(): a variant overrides what the chain set before it', () => {
     );
     expect(stack?.props.accessibilityLabel).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('.label() inside when()'));
+    warn.mockRestore();
+  });
+
+  it('a variant inside a variant holds while both do: a breakpoint and a state', () => {
+    expect(both('hovered', 'md')).toBe('md+hovered');
+    expect(both(null, 'dark')).toBe('dark');
+    const node = () =>
+      HStack(Text('a'))
+        .onPress(() => {})
+        .padding('sm')
+        .when('md', (v) => v.when('pressed', (p) => p.padding('lg')));
+    const r = mount(node());
+    const press = (): ReactTestInstance => ofType(r, 'Pressable')[0] as ReactTestInstance;
+    act(() => press().props.onPressIn());
+    expect(press().props.style).toMatchObject({ paddingTop: 8 });
+    windowTier.current = 'md';
+    remount(r, node());
+    expect(press().props.style).toMatchObject({ paddingTop: 16 });
+    act(() => press().props.onPressOut());
+    expect(press().props.style).toMatchObject({ paddingTop: 8 });
+  });
+
+  it('an icon’s ink varies with the foreground: its fill is painted from the environment', () => {
+    const r = mount(
+      HStack(Icon(Glyph))
+        .onPress(() => {})
+        .foreground('muted')
+        .when('hovered', (v) => v.foreground('primary')),
+    );
+    const glyph = (): ReactTestInstance => ofType(r, 'Glyph')[0] as ReactTestInstance;
+    expect(glyph().props.fill).toBe(LIGHT.textSecondary);
+    expect(glyph().props.style).toBeUndefined();
+    act(() => (ofType(r, 'Pressable')[0] as ReactTestInstance).props.onHoverIn());
+    expect(glyph().props.fill).toBe(LIGHT.primary);
+  });
+
+  it('a glass varies its padding on a view inside it; its other variants are left out', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    windowTier.current = 'md';
+    const r = mount(
+      VStack(Text('a'))
+        .padding('sm')
+        .glass()
+        .when('md', (v) => v.padding('lg').background('primary')),
+    );
+    const [surface] = ofType(r, 'Surface');
+    expect(surface?.props.style).toBeUndefined();
+    const inside = surface?.findAll((i) => (i.type as unknown) === 'View')[0];
+    expect(inside?.props.style).toMatchObject({ paddingTop: 16, paddingEnd: 16 });
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('varies only its padding'));
     warn.mockRestore();
   });
 });

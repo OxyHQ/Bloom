@@ -15,14 +15,21 @@ import type { Condition, Modifier } from './node';
  * breakpoint, the theme, the press host's state).
  */
 
-/** A condition that changes while the view is on screen. */
-export type LiveCondition = Exclude<Condition, 'disabled' | 'web' | 'native' | 'ios' | 'android'>;
+/** One condition that changes while the view is on screen. */
+export type LiveTerm = Exclude<Condition, 'disabled' | 'web' | 'native' | 'ios' | 'android'>;
+
+/**
+ * A live condition: one term, or several that must all hold (a variant inside
+ * a variant, `when('md', (v) => v.when('hovered', …))`), joined by `+` in
+ * `LIVE_ORDER` (`md+hovered`).
+ */
+export type LiveCondition = LiveTerm | `${LiveTerm}+${string}`;
 
 /** A variant as planned: its live condition, or `null` when it holds. */
 export type Planned = LiveCondition | null;
 
 /** The order live conditions apply in: a wider breakpoint over a narrower, a state over the scheme, a press over a hover. */
-export const LIVE_ORDER: readonly LiveCondition[] = [
+export const LIVE_ORDER: readonly LiveTerm[] = [
   'sm',
   'md',
   'lg',
@@ -39,7 +46,37 @@ export const TIERS = ['base', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
 export type Tier = (typeof TIERS)[number];
 
 /** The states a view's outermost box tracks. */
-export const STATES: ReadonlySet<LiveCondition> = new Set(['hovered', 'focused', 'pressed']);
+export const STATES: ReadonlySet<LiveTerm> = new Set(['hovered', 'focused', 'pressed']);
+
+/** The terms a live condition joins. */
+export function termsOf(condition: LiveCondition): LiveTerm[] {
+  return condition.split('+') as LiveTerm[];
+}
+
+/** A variant inside a variant: both conditions at once (one that holds adds nothing). */
+export function both(outer: Planned, inner: Planned): Planned {
+  if (outer === null) return inner;
+  if (inner === null) return outer;
+  const terms = new Set([...termsOf(outer), ...termsOf(inner)]);
+  return LIVE_ORDER.filter((term) => terms.has(term)).join('+') as LiveCondition;
+}
+
+/**
+ * The order live variants apply in: each term in `LIVE_ORDER`, then the
+ * conditions that join several, after the terms they join (fewer terms first,
+ * then by their last term). On the web their sheets come in the same order, and
+ * a joined selector is at least as specific as each of its terms'.
+ */
+export function compareLive(a: LiveCondition, b: LiveCondition): number {
+  const rank = (condition: LiveCondition) => {
+    const terms = termsOf(condition);
+    return (
+      (terms.length - 1) * LIVE_ORDER.length +
+      LIVE_ORDER.indexOf(terms[terms.length - 1] as LiveTerm)
+    );
+  };
+  return rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0);
+}
 
 const VARIES: ReadonlySet<string> = new Set(VARIANT_MODIFIERS);
 
