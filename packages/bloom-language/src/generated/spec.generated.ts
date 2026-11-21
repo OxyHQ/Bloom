@@ -3161,6 +3161,12 @@ export const MODIFIERS = {
   ],
   "onDragLeave": [
     "value"
+  ],
+  "opaque": [
+    "value?"
+  ],
+  "mediaCorner": [
+    "corner"
   ]
 } as const;
 
@@ -12776,6 +12782,87 @@ export const NODE_MODIFIERS = {
     "onDragEnter",
     "onDragOver",
     "onDragLeave"
+  ],
+  "mediaInsetBorder": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "opaque",
+    "mediaCorner"
   ]
 } as const;
 
@@ -12947,5 +13034,6 @@ export const CONSTRUCTORS = {
   "AnimatedCheck": "animatedCheck",
   "ContextMenu": "contextMenu",
   "Collapsible": "collapsible",
-  "DropZone": "dropZone"
+  "DropZone": "dropZone",
+  "MediaInsetBorder": "mediaInsetBorder"
 } as const;
