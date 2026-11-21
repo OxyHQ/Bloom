@@ -1936,6 +1936,19 @@ box is the well), `CodeLines` and `CodeBlock`. Each but `Code` takes
 `.copyable(false)`, `.onCopy()`, `.headerContent(view)` and `.labels({ copy,
 copied })`.
 
+### Steppers
+
+```ts
+Stepper([guests, setGuests]).bounds(1, 16).label('Guests')
+StepperRow([children, setChildren], 'Children').supporting('Ages 2 to 12').dividers()
+```
+
+Bloom's `Stepper` and `StepperRow`: the binding's count, `.bounds(min,
+max)`, `.step()`, `.disabled()`, `.size('sm' | 'md')`, `.style('separate' |
+'outline')`, `.valueFormat(fn)`, `.onRemove(fn)` (at the lowest count, − becomes
+remove) and `.labels({ decrement, increment, remove })`. A row's title is a
+string or a view; it takes `.supporting()` and `.dividers()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2364,7 +2377,7 @@ and `@oxy.so/bloom-data` beside it.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
   tables, rows and lists, carousels, markdown, sliders,
-  accordions, code.
+  accordions, code, steppers.
 
 **Not built**
 

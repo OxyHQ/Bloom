@@ -36,3 +36,5 @@ export const Code = 'Code';
 export const CodeBlock = 'CodeBlock';
 export const CodeLines = 'CodeLines';
 export const Pre = 'Pre';
+export const Stepper = 'Stepper';
+export const StepperRow = 'StepperRow';

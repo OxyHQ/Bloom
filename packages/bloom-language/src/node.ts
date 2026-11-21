@@ -26,6 +26,7 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { StepperKind } from './controls/stepper';
 import type { CodeKind } from './controls/code';
 import type { AccordionKind } from './controls/accordion';
 import type { AccordionTransition } from '@oxy.so/bloom/accordion';
@@ -136,6 +137,7 @@ import {
   type ArrowsVisibility,
   type DotsShape,
   type DotsStyle,
+  type StepperStyle,
   type RatingStyle,
   type Presence,
   type ShapeName,
@@ -706,6 +708,9 @@ export interface ValueModifiers {
   diff: readonly [additions: number, deletions: number];
   copyable: boolean;
   onCopy: (code: string) => void | Promise<void>;
+
+  // Steppers (controls/stepper.tsx)
+  onRemove: () => void;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -872,7 +877,8 @@ export type Modifier =
         | ScrollSurfaceStyle
         | ResizeHandleStyle
         | RatingStyle
-        | DotsStyle;
+        | DotsStyle
+        | StepperStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1087,7 +1093,8 @@ export type NodeKind =
   | MarkdownKind
   | SliderKind
   | AccordionKind
-  | CodeKind;
+  | CodeKind
+  | StepperKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1414,7 +1421,8 @@ export class Node {
       | ScrollSurfaceStyle
       | ResizeHandleStyle
       | RatingStyle
-      | DotsStyle,
+      | DotsStyle
+      | StepperStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -2638,6 +2646,11 @@ export class Node {
   }
   onCopy(value: (code: string) => void | Promise<void>): Node {
     return this.set('onCopy', value);
+  }
+
+  // Steppers (controls/stepper.tsx)
+  onRemove(value: () => void): Node {
+    return this.set('onRemove', value);
   }
 }
 
