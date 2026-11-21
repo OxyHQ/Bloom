@@ -1982,11 +1982,14 @@ press, `.active(true)` (the current page), `.disabled()` and `.hoverMenu()`.
 
 ```ts
 ActivityHeatmap(days).days(182).weekStart(1).onPressDay(showDay)
+ActivityHeatmap(days).levels([2, 5]).colorScale(['success/20', 'success/half', 'success'])
 ```
 
 Bloom's `ActivityHeatmap`: `.days(n)`, `.endDate()`, `.levels([...])`,
 `.emptyTint(role)`, `.cellSize()`, `.spacing()`, `.weekStart(0 | 1)`,
-`.labels({ months, weekdays })` and `.onPressDay()`. Its steps are the accent's.
+`.labels({ months, weekdays })` and `.onPressDay()`. Its steps are the accent's
+unless `.colorScale([...roles])` names them, faintest to strongest
+(`.levels()` + 1 of them; a role at an opacity included).
 
 ### Tag fields
 

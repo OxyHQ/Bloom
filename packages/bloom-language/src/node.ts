@@ -808,6 +808,9 @@ export interface ValueModifiers {
   // Video playback (controls/video-playback.tsx)
   autoplay: boolean;
 
+  // Activity heatmaps (controls/activity-heatmap.tsx)
+  colorScale: readonly ColorToken[];
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -2940,6 +2943,11 @@ export class Node {
   // Video playback (controls/video-playback.tsx)
   autoplay(value: boolean): Node {
     return this.set('autoplay', value);
+  }
+
+  // Activity heatmaps (controls/activity-heatmap.tsx)
+  colorScale(value: readonly ColorToken[]): Node {
+    return this.set('colorScale', value);
   }
 
   // Context menus (controls/context-menu.tsx)

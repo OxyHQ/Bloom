@@ -21,6 +21,12 @@ import type { ColorName } from './tokens';
 import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './variants';
 
 /**
+ * A prop painted from a colour role, at an opacity or not; with an index, the
+ * element of a list prop it paints (a scale of colours).
+ */
+export type PropRole = readonly [prop: string, role: ColorName, opacity?: number, index?: number];
+
+/**
  * What a `Painted` leaf fills from the theme: style properties painted from
  * colour roles (native; the web paints style roles with CSS variables), and
  * props painted from roles, optionally at an opacity (an icon's `fill`, a
@@ -29,7 +35,7 @@ import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './
 export interface Paint {
   readonly style: object | undefined;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
-  readonly propRoles: readonly (readonly [string, ColorName, number?])[];
+  readonly propRoles: readonly PropRole[];
   /** Native: what live variants override, in the order they apply (a `Conditioned` leaf draws them). */
   readonly variants?: readonly PaintVariant[];
 }
@@ -43,7 +49,7 @@ export interface PaintVariant {
   readonly condition: LiveCondition;
   readonly style: object;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
-  readonly propRoles?: readonly (readonly [string, ColorName, number?])[];
+  readonly propRoles?: readonly PropRole[];
   readonly props?: Readonly<Record<string, unknown>>;
 }
 
@@ -60,6 +66,22 @@ function atOpacity(color: string, opacity: number): string {
   return !IS_WEB || parseRgb(color) !== null
     ? withAlpha(color, opacity)
     : `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
+}
+
+/** Sets a painted prop: the prop itself, or one element of its list (a new list each time). */
+function setProp(
+  props: Record<string, unknown>,
+  key: string,
+  color: string,
+  index: number | undefined,
+): void {
+  if (index === undefined) {
+    props[key] = color;
+    return;
+  }
+  const list = [...((props[key] as readonly string[] | undefined) ?? [])];
+  list[index] = color;
+  props[key] = list;
 }
 
 /** The props a paint resolves to under one palette, built once per palette and reused. */
@@ -82,9 +104,9 @@ function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> 
     } else if (paint.style !== undefined) {
       props.style = paint.style;
     }
-    for (const [key, role, opacity] of paint.propRoles) {
+    for (const [key, role, opacity, index] of paint.propRoles) {
       const color = colors[COLORS[role].paint];
-      props[key] = opacity === undefined ? color : atOpacity(color, opacity);
+      setProp(props, key, opacity === undefined ? color : atOpacity(color, opacity), index);
     }
     Object.freeze(props);
     byPaint.set(paint, props);
@@ -182,8 +204,8 @@ function conditionedProps(
       Object.assign(style, variant.style);
       Object.assign(next, variant.props);
       for (const [key, role, opacity] of variant.styleRoles) style[key] = paintColor(role, opacity);
-      for (const [key, role, opacity] of variant.propRoles ?? [])
-        next[key] = paintColor(role, opacity);
+      for (const [key, role, opacity, index] of variant.propRoles ?? [])
+        setProp(next, key, paintColor(role, opacity), index);
     });
     // A paint of props alone (an icon's fill) gains no style.
     if (base.style !== undefined || Object.keys(style).length > 0)
