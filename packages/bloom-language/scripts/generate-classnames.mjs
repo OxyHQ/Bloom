@@ -78,7 +78,7 @@ const roleByVariable = Object.fromEntries(
   Object.entries(colors).map(([role, [, css]]) => [css, role]),
 );
 /** Tailwind's own colours that a fixed role paints exactly. */
-const TW_FIXED = { white: '#ffffff', black: '#000000' };
+const TW_FIXED = { white: '#ffffff', black: '#000000', transparent: 'transparent' };
 
 const rung = (table, value) =>
   Object.entries(table).find(([, v]) => typeof v === 'number' && Math.abs(v - value) < 1e-9)?.[0];
