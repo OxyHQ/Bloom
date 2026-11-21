@@ -1772,6 +1772,15 @@ new value). A bar is the width of its parent unless framed, and takes
 `.tint()`, `.trackTint()` and `.thickness()`; `SplitBar(label, percent, left,
 right)` is its split.
 
+### Stickers
+
+`Lottie(url)` is Bloom's `Sticker` (see [Animations](#animations)): it plays
+once unless `.loop()`, `.paused(bool)` holds its frame, `.fallback(Image(still,
+label))` is the still it shows while loading, where it cannot play and under
+reduced motion (its label names the sticker), a frame's width alone is its
+edge, and `.decorative()` hides it from assistive technology when its container
+names it. A sticker with no animation is its still: an `Image`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1823,7 +1832,7 @@ gives Bloom `MotionSpec`s. Curves are named too (`ease`, `inOutQuad`,
 | `.pressScale()` | Press feedback (`PressableScale`): eases to `pressed` while a finger holds the view. Off for a mouse on the web and under reduced motion. |
 | `.drag(value, { axis?, min?, max?, onEnd? })` | `DragGesture`: the finger moves `value` along `axis` (default `y`) from where it was, within the bounds. Bind the value to see it; `onEnd` (once per touch: the value and the finger's velocity) decides where it goes, with `animate()`. |
 | `.swipe(direction, onSwipe)` | The view follows a swipe toward `direction` (`left` `right` `up` `down`) and, released past a quarter of the window across (or a tap's slop up or down), flies out and calls `onSwipe`; short of it, it comes back. |
-| `Lottie(url)` | A node: `.loop()`, `.paused(bool)`, `.fallback(Image(still, label))`, `.frame({ width })`. Bloom's `Sticker` draws it (lottie-react-native on native, dotLottie on the web, both lazy), paused while its screen is not in front (`useScreenVisible`). |
+| `Lottie(url)` | A node: `.loop()`, `.paused(bool)`, `.fallback(Image(still, label))`, `.frame({ width })` (its square edge: Sticker's `size`, no box around it), `.decorative()` (its container names it). Bloom's `Sticker` draws it (lottie-react-native on native, dotLottie on the web, both lazy), paused while its screen is not in front (`useScreenVisible`). |
 
 Keyframes are frames, as CSS writes them:
 
@@ -2198,7 +2207,7 @@ and `@oxy.so/bloom-data` beside it.
   `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
   does the node.
 - Generic components (see [Generic components](#generic-components)), drawn as
-  Bloom's own: the date and time pickers, ratings, meters and progress bars.
+  Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers.
 
 **Not built**
 

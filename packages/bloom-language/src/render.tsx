@@ -2235,18 +2235,29 @@ function renderHost(
         | undefined;
       const width = frame?.value.width;
       const edge = width === undefined ? undefined : resolveLength(width);
+      // A frame that only sets the square's edge is the sticker's size, not a box around it.
+      const sized =
+        layer !== undefined &&
+        layer.variants.length === 0 &&
+        flex === '' &&
+        p.states.length === 0 &&
+        layer.modifiers.every((modifier) => modifier === frame) &&
+        Object.keys(frame?.value ?? {}).every((side) => side === 'width');
+      const boxedSticker = boxed && !sized;
       const sticker = draw(LottieHost, {
-        key: boxed || behaviour ? undefined : key,
+        key: boxedSticker || behaviour ? undefined : key,
         animation: typeof source === 'string' ? source : undefined,
         fallback: still?.source,
         accessibilityLabel: still?.alt,
         size: typeof edge === 'number' ? edge : undefined,
         loop: ownValue(p, 'loop') !== undefined,
         paused: ownValue(p, 'paused')?.value ?? false,
+        decorative: ownValue(p, 'decorative') === undefined ? undefined : true,
       });
-      if (!boxed && !behaviour) return sticker;
+      if (!boxedSticker && !behaviour) return sticker;
       const host = behaviour ? hostFor(p) : View;
-      return drawOutermost(box, host, boxOf('host', 'L'), hostProps(behaviour, key), sticker);
+      const out = sized ? NO_STYLE_OUT : boxOf('host', 'L');
+      return drawOutermost(box, host, out, hostProps(behaviour, key), sticker);
     }
     case 'view': {
       if (!boxed && !behaviour) return viewElement(node, ctx, key);
@@ -2773,6 +2784,7 @@ interface LottieHostProps {
   size: number | undefined;
   loop: boolean;
   paused: boolean;
+  decorative: true | undefined;
 }
 
 /**
