@@ -22,17 +22,26 @@ export function animatedHost(host: unknown): unknown {
 
 export const MotionWrapper = View as unknown as ComponentType<Record<string, unknown>>;
 
-const transitions = new WeakMap<Timing, object>();
+const transitions = [new WeakMap<Timing, object>(), new WeakMap<Timing, object>()] as const;
 
-export function transitionStyle(timing: Timing): object {
-  let style = transitions.get(timing);
+/**
+ * A box's changes of transform and opacity, played by `timing`; with
+ * `colors`, of its fill, border, outline and text colour too (a glyph paints
+ * `currentColor`, so it follows the colour).
+ */
+export function transitionStyle(timing: Timing, colors = false): object {
+  const cache = transitions[colors ? 1 : 0];
+  let style = cache.get(timing);
   if (style === undefined) {
     style = {
-      transitionProperty: 'transform, opacity',
+      transitionProperty: colors
+        ? 'transform, opacity, color, background-color, border-color, outline-color'
+        : 'transform, opacity',
       transitionDuration: `${timing.duration}ms`,
       transitionTimingFunction: cssCurve(timing.curve),
+      ...(timing.delay === undefined ? null : { transitionDelay: `${timing.delay}ms` }),
     };
-    transitions.set(timing, style);
+    cache.set(timing, style);
   }
   return style;
 }
@@ -107,6 +116,8 @@ export function usePlay(
     const curve = cssCurve(play.timing.curve);
     const { box: boxFrames, moved, fade } = framesOf(play.keyframes, curve);
     const options: KeyframeAnimationOptions = { duration: play.timing.duration, fill: play.fill };
+    if (play.timing.delay !== undefined) options.delay = play.timing.delay;
+    if (play.repeat) options.iterations = Number.POSITIVE_INFINITY;
     const material = play.material && play.keyframes.fades ? materialHostSelector() : '';
     const hosts = material
       ? [box, ...Array.from(box.querySelectorAll(material))].filter((e) => e.matches(material))
@@ -131,7 +142,7 @@ export function usePlay(
     return () => {
       first.onfinish = null;
       // A removal holds its last frame until its Presence drops the box; anything else lets go.
-      if (play.fill === 'none') for (const animation of animations) animation.cancel();
+      if (play.fill !== 'forwards') for (const animation of animations) animation.cancel();
     };
   }, [id]);
   return { style: undefined, props: undefined };

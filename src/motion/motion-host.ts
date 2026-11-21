@@ -53,18 +53,37 @@ function nativeCurve(curve: Curve): unknown {
   return out;
 }
 
-const transitions = new WeakMap<Timing, object>();
+const GEOMETRY = ['transform', 'opacity'];
+/** With the box's colours: its fill, border (each side), outline and text colour. */
+const WITH_COLORS = [
+  ...GEOMETRY,
+  'backgroundColor',
+  'borderColor',
+  'borderTopColor',
+  'borderBottomColor',
+  'borderStartColor',
+  'borderEndColor',
+  'outlineColor',
+  'color',
+];
 
-/** A box's changes of transform and opacity, played by `timing`. */
-export function transitionStyle(timing: Timing): object {
-  let style = transitions.get(timing);
+const transitions = [new WeakMap<Timing, object>(), new WeakMap<Timing, object>()] as const;
+
+/**
+ * A box's changes of transform and opacity, played by `timing`; with
+ * `colors`, of its fill, border, outline and text colour too.
+ */
+export function transitionStyle(timing: Timing, colors = false): object {
+  const cache = transitions[colors ? 1 : 0];
+  let style = cache.get(timing);
   if (style === undefined) {
     style = {
-      transitionProperty: ['transform', 'opacity'],
+      transitionProperty: colors ? WITH_COLORS : GEOMETRY,
       transitionDuration: timing.duration,
       transitionTimingFunction: nativeCurve(timing.curve),
+      ...(timing.delay === undefined ? null : { transitionDelay: timing.delay }),
     };
-    transitions.set(timing, style);
+    cache.set(timing, style);
   }
   return style;
 }
@@ -98,10 +117,11 @@ function rulesOf(keyframes: KeyframesValue): readonly [CSSKeyframesRule, CSSKeyf
  * prop. Native fades a material host itself (there is no backdrop filter
  * to flatten), so `material` changes nothing here.
  *
- * A playing that ended holding no last frame (`fill: 'none'`) leaves the box,
- * so the box carries no finished animation into what comes later: a layout
- * animation of an ancestor's removal (a toast's exit) snapshotting a subtree
- * with a CSS animation still attached cost a slow UI frame on every exit.
+ * A playing that ended holding no last frame (`fill: 'none'` or `'backwards'`)
+ * leaves the box, so the box carries no finished animation into what comes
+ * later: a layout animation of an ancestor's removal (a toast's exit)
+ * snapshotting a subtree with a CSS animation still attached cost a slow UI
+ * frame on every exit. A loop (`repeat`) never ends.
  */
 export function usePlay(
   _ref: RefObject<unknown>,
@@ -110,13 +130,13 @@ export function usePlay(
   const [ended, setEnded] = useState<{ keyframes: KeyframesValue; id: number } | undefined>();
   if (
     play === undefined ||
-    (play.fill === 'none' && ended?.id === play.id && ended.keyframes === play.keyframes)
+    (play.fill !== 'forwards' && ended?.id === play.id && ended.keyframes === play.keyframes)
   ) {
     return { style: undefined, props: undefined };
   }
   const { id, keyframes, onEnd } = play;
   const end =
-    play.fill === 'none'
+    play.fill !== 'forwards'
       ? () => {
           setEnded({ keyframes, id });
           onEnd?.();
@@ -128,6 +148,8 @@ export function usePlay(
       animationDuration: play.timing.duration,
       animationTimingFunction: nativeCurve(play.timing.curve),
       animationFillMode: play.fill,
+      ...(play.timing.delay === undefined ? null : { animationDelay: play.timing.delay }),
+      ...(play.repeat ? { animationIterationCount: 'infinite' } : null),
     },
     props: end ? { onCSSAnimationEnd: end } : undefined,
   };
@@ -196,7 +218,8 @@ export function exitingOf(keyframes: KeyframesValue, timing: Timing): unknown {
       if (before !== undefined) block.easing = easing(before.curve ?? timing.curve);
       definitions[Math.round(frame.at * 100)] = block;
     });
-    exiting = new Keyframe(definitions as never).duration(timing.duration);
+    const keyframe = new Keyframe(definitions as never).duration(timing.duration);
+    exiting = timing.delay === undefined ? keyframe : keyframe.delay(timing.delay);
     byTiming.set(timing, exiting);
   }
   return exiting;

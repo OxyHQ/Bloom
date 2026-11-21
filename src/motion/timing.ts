@@ -10,6 +10,8 @@ import { EASING, type EasingName } from './tokens';
 export interface Timing {
   readonly duration: number;
   readonly curve: Curve;
+  /** Milliseconds before it starts (a CSS `transition-delay` / `animation-delay`); none when absent. */
+  readonly delay?: number;
 }
 export type Curve =
   | { readonly kind: 'bezier'; readonly points: readonly [number, number, number, number] }
@@ -39,6 +41,24 @@ export function timingOf(spec: MotionSpec): Timing {
   }
   timings.set(spec, timing);
   return timing;
+}
+
+const delayed = new WeakMap<Timing, Map<number, Timing>>();
+
+/** The same motion, started `delay` ms later: one object per timing and delay. */
+export function withDelay(timing: Timing, delay: number): Timing {
+  if (delay <= 0) return timing;
+  let byDelay = delayed.get(timing);
+  if (byDelay === undefined) {
+    byDelay = new Map();
+    delayed.set(timing, byDelay);
+  }
+  let out = byDelay.get(delay);
+  if (out === undefined) {
+    out = { duration: timing.duration, curve: timing.curve, delay };
+    byDelay.set(delay, out);
+  }
+  return out;
 }
 
 const named = new Map<EasingName, Curve>();
