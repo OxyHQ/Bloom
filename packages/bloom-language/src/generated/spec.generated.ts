@@ -3574,7 +3574,8 @@ export const NODE_MODIFIERS = {
     "swipe",
     "loop",
     "paused",
-    "fallback"
+    "fallback",
+    "decorative"
   ],
   "embed": [
     "padding",
