@@ -195,6 +195,16 @@ function elementAtPathInPage(testid, path) {
   return { x: box.x, y: box.y };
 }
 
+/**
+ * What a side draws, read with its page in front: Chrome throttles a page in
+ * the background (its frames and its input), which an isolated case's own
+ * pages would otherwise make of the table's.
+ */
+async function describeSide({ page, testid }) {
+  await page.bringToFront();
+  return page.evaluate(describeInPage, testid);
+}
+
 /** Waits for what a page draws: its first cell, its fonts, then the transitions it starts. */
 async function settle(page, testid) {
   await page.waitForSelector(`[data-testid="${testid}"]`, { timeout: 60000 });
@@ -210,11 +220,13 @@ async function settle(page, testid) {
  */
 async function compareHeldStates(sides, name) {
   const differences = [];
+  await sides[1].page.bringToFront();
   const hosts = await sides[1].page.evaluate(pressHostsInPage, sides[1].testid);
   for (const { path, point } of hosts) {
     for (const state of ['hovered', 'pressed']) {
       const drawn = [];
       for (const { page, testid } of sides) {
+        await page.bringToFront();
         const origin = await page.evaluate(elementAtPathInPage, testid, path);
         if (!origin) {
           differences.push(`${name} ${state} ${path}: no ${testid} element`);
@@ -261,10 +273,13 @@ try {
   }
   for (const id of ids) {
     for (const theme of ['light', 'dark']) {
+      await page.bringToFront();
       await page.goto(`${BASE}/iframe.html?id=${id}&viewMode=story&globals=theme:${theme}`);
       await settle(page, 'language-0');
       const rows = await page.evaluate(rowsInPage);
       const differences = [];
+      const held = [];
+      // Every case at rest first, then each one's press hosts held.
       for (const { index, name, frame, empty } of rows) {
         const label = `[${name}]`;
         let sides = [
@@ -275,6 +290,7 @@ try {
           sides = [];
           for (const [at, side] of ['bloom', 'language'].entries()) {
             const framePage = framePages[at];
+            await framePage.bringToFront();
             await framePage.goto(
               `${BASE}/iframe.html?id=language-parity-frame--one-side&viewMode=story&args=${frame};side:${side}&globals=theme:${theme}`,
             );
@@ -282,15 +298,18 @@ try {
             sides.push({ page: framePage, testid: 'parity-frame' });
           }
         }
-        const [left, right] = await Promise.all(
-          sides.map(({ page: at, testid }) => at.evaluate(describeInPage, testid)),
-        );
+        const left = await describeSide(sides[0]);
+        const right = await describeSide(sides[1]);
         // Two empty cells are equal and prove nothing, unless that is the case's claim.
         if ((left.length === 0) !== empty)
           differences.push(`${label}: ${empty ? 'draws something' : 'draws nothing'}`);
         differences.push(...compareTrees(left, right, label));
-        differences.push(...(await compareHeldStates(sides, label)));
+        // An isolated case's pages are its own until the next one loads them.
+        if (frame) differences.push(...(await compareHeldStates(sides, label)));
+        else held.push({ sides, label });
       }
+      for (const { sides, label } of held)
+        differences.push(...(await compareHeldStates(sides, label)));
       if (differences.length > 0) failed += 1;
       console.log(`${differences.length ? 'FAIL' : 'ok  '} ${id} ${theme}: ${rows.length} pairs`);
       for (const difference of differences.slice(0, 40)) console.log(`     ${difference}`);
