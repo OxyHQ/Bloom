@@ -26,6 +26,7 @@ import type { VideoViewKind } from './controls/video-view';
 import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
+import type { FactStripKind } from './controls/fact-strip';
 import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
@@ -484,6 +485,10 @@ export interface ValueModifiers {
   onDragOver: (event: DropTargetDragEvent) => void;
   onDragLeave: () => void;
 
+  // Fact strips (controls/fact-strip.tsx)
+  caption: string | Child;
+  minItemWidth: SpaceToken;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -849,7 +854,8 @@ export type NodeKind =
   | InputKind
   | OverlayKind
   | ContainerKind
-  | AnimatedCheckKind;
+  | AnimatedCheckKind
+  | FactStripKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1953,6 +1959,14 @@ export class Node {
   }
   mediaCorner(value: Exclude<CornerName, 'concentric'>): Node {
     return this.set('mediaCorner', value);
+  }
+
+  // Fact strips (controls/fact-strip.tsx)
+  caption(value: string | Child): Node {
+    return this.set('caption', value);
+  }
+  minItemWidth(value: SpaceToken): Node {
+    return this.set('minItemWidth', value);
   }
 
   // Inputs (controls/inputs.tsx)

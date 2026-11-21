@@ -11,6 +11,7 @@ import { FILE_UPLOADS } from './file-upload';
 import type { ControlRenderer } from './draw';
 import { DROP_ZONES } from './drop-zone';
 import { COLLAPSIBLES } from './collapsible';
+import { FACT_STRIPS } from './fact-strip';
 import { ANIMATED_CHECKS } from './animated-check';
 import { INPUTS } from './inputs';
 import { LISTS } from './list';
@@ -61,4 +62,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...COLLAPSIBLES,
   ...DROP_ZONES,
   ...MEDIA_INSET_BORDERS,
+  ...FACT_STRIPS,
 };
