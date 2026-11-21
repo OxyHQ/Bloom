@@ -1488,6 +1488,27 @@ export const ENUMS = {
   "settingsView": [
     "navigation",
     "page"
+  ],
+  "shellLayout": [
+    "workspace",
+    "collection-detail",
+    "feed",
+    "deck",
+    "catalog",
+    "map-browser"
+  ],
+  "shellPresentation": [
+    "continuous",
+    "framed",
+    "floating"
+  ],
+  "panelRole": [
+    "main",
+    "collection",
+    "detail",
+    "inspector",
+    "context",
+    "canvas"
   ]
 } as const;
 
@@ -2194,7 +2215,7 @@ export const MODIFIERS = {
   "showCount": [],
   "tabs": [],
   "collapsible": [
-    "searchCollapse?"
+    "value?"
   ],
   "presented": [
     "value"
@@ -2215,7 +2236,7 @@ export const MODIFIERS = {
     "value"
   ],
   "page": [
-    "value"
+    "value?"
   ],
   "sideOffset": [
     "space"
@@ -2360,13 +2381,7 @@ export const MODIFIERS = {
   "onExpandedChange": [
     "value"
   ],
-  "collapsible": [
-    "value?"
-  ],
   "emptyLabel": [
-    "value"
-  ],
-  "error": [
     "value"
   ],
   "meta": [
@@ -2402,13 +2417,7 @@ export const MODIFIERS = {
   "ignoresSafeArea": [
     "value?"
   ],
-  "presented": [
-    "value"
-  ],
   "onPresentedChange": [
-    "value"
-  ],
-  "placeholder": [
     "value"
   ],
   "query": [
@@ -2429,6 +2438,45 @@ export const MODIFIERS = {
   ],
   "initialView": [
     "settingsView"
+  ],
+  "shellLayout": [
+    "shellLayout"
+  ],
+  "shellPresentation": [
+    "shellPresentation"
+  ],
+  "panels": [
+    "children"
+  ],
+  "destinations": [
+    "children"
+  ],
+  "panelRole": [
+    "panelRole"
+  ],
+  "minWidth": [
+    "space"
+  ],
+  "maxWidth": [
+    "space"
+  ],
+  "resizable": [
+    "value?"
+  ],
+  "keepMounted": [
+    "value?"
+  ],
+  "preload": [
+    "value?"
+  ],
+  "bar": [
+    "value?"
+  ],
+  "sidebar": [
+    "value?"
+  ],
+  "sidebarAfter": [
+    "value"
   ]
 } as const;
 
@@ -5552,7 +5600,12 @@ export const NODE_MODIFIERS = {
     "primaryAction",
     "bottomBar",
     "shell",
-    "testID"
+    "testID",
+    "shellLayout",
+    "shellPresentation",
+    "panels",
+    "destinations",
+    "onReselect"
   ],
   "navStack": [],
   "route": [],
@@ -6913,6 +6966,32 @@ export const NODE_MODIFIERS = {
     "disabled",
     "onPress"
   ],
+  "panel": [
+    "panelRole",
+    "label",
+    "width",
+    "minWidth",
+    "maxWidth",
+    "resizable",
+    "hidden",
+    "keepMounted",
+    "presented",
+    "onPresentedChange",
+    "testID"
+  ],
+  "destination": [
+    "label",
+    "icon",
+    "activeIcon",
+    "badge",
+    "page",
+    "preload",
+    "bar",
+    "sidebar",
+    "sidebarAfter",
+    "onPress",
+    "onLongPress"
+  ],
   "pageFooter": [
     "toolbar",
     "pinning",
@@ -7017,5 +7096,7 @@ export const CONSTRUCTORS = {
   "SettingsModal": "settings",
   "SettingsGroup": "settingsGroup",
   "SettingsItem": "settingsItem",
+  "Panel": "panel",
+  "Destination": "destination",
   "PageFooter": "pageFooter"
 } as const;
