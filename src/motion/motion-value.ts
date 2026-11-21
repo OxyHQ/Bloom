@@ -1,19 +1,15 @@
 import { useMemo, useState } from 'react';
 import {
-  Easing,
-  runOnJS,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 
 import type { MotionLike } from './keyframes';
-import { animateWithSpec, type MotionSpec } from './spec';
 import { useSameItems } from './same-items';
-import type { Curve, Timing } from './timing';
-import { MOTION } from './tokens';
+import { animateShared } from './shared-motion';
+import type { Timing } from './timing';
 
 /**
  * A number a gesture drives and a view's geometry follows (`useMotionStyle`):
@@ -41,6 +37,18 @@ export function isMotionValue(value: unknown): value is MotionValue {
 export function useMotionValue(initial: number): MotionValue {
   const shared = useSharedValue(initial);
   return useState<MotionValue>(() => ({ kind: 'motion-value', shared }))[0];
+}
+
+/**
+ * A motion value over a Reanimated shared value that something else also
+ * writes or reads in its frames: a keyboard tracker's height, a sheet's
+ * position that its backdrop and its owner's progress follow. Native: the
+ * shared value is the motion value's own. Web: it moves in Reanimated's
+ * frames, not by a CSS transition, so every reader of the shared value sees
+ * each frame's number and the views bound to it are written with it.
+ */
+export function useMotionValueOf(shared: SharedValue<number>): MotionValue {
+  return useMemo<MotionValue>(() => ({ kind: 'motion-value', shared }), [shared]);
 }
 
 /**
@@ -80,25 +88,11 @@ function readAll(shared: readonly SharedValue<number>[]): number[] {
   return values;
 }
 
-function easingOf(curve: Curve) {
-  'worklet';
-  if (curve.kind === 'bezier') {
-    return Easing.bezier(curve.points[0], curve.points[1], curve.points[2], curve.points[3]);
-  }
-  const points = curve.points;
-  return (fraction: number) => {
-    'worklet';
-    const at = Math.min(Math.max(fraction, 0), 1) * (points.length - 1);
-    const index = Math.min(Math.floor(at), points.length - 2);
-    const from = points[index] as number;
-    return from + ((points[index + 1] as number) - from) * (at - index);
-  };
-}
-
 /**
  * Eases the value to `target`, from where it is. A spec's spring keeps its
- * physics; a timing plays its curve. Reduced motion lands at once. `onEnd`
- * runs on the JS thread when it lands. Callable from a gesture's callbacks.
+ * physics and starts at `velocity` (units per second: a released finger's); a
+ * timing plays its curve. Reduced motion lands at once. `onEnd` runs on the JS
+ * thread when it lands. Callable from a gesture's callbacks.
  */
 export function animateMotionValue(
   value: MotionValue,
@@ -106,29 +100,10 @@ export function animateMotionValue(
   motion: MotionTarget,
   reducedMotion = false,
   onEnd?: () => void,
+  velocity = 0,
 ): void {
   'worklet';
-  const settled = onEnd
-    ? (finished: boolean | undefined) => {
-        'worklet';
-        if (finished) runOnJS(onEnd)();
-      }
-    : undefined;
-  if (typeof motion === 'object' && 'curve' in motion) {
-    if (reducedMotion) {
-      value.shared.value = target;
-      if (settled) settled(true);
-      return;
-    }
-    value.shared.value = withTiming(
-      target,
-      { duration: motion.duration, easing: easingOf(motion.curve) },
-      settled,
-    );
-    return;
-  }
-  const spec: MotionSpec = typeof motion === 'string' ? MOTION[motion] : motion;
-  animateWithSpec(value.shared, target, spec, reducedMotion, settled);
+  animateShared(value.shared, target, motion, reducedMotion, onEnd, velocity);
 }
 
 /** A style property bound to motion values: their sum (`[base, drag]`), constants included. */

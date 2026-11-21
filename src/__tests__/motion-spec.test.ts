@@ -15,6 +15,7 @@ import {
   springPhysics,
   springProgressAt,
   springSettleMs,
+  springSpecOf,
   type SpringSpec,
 } from '../motion/spec';
 
@@ -179,5 +180,28 @@ describe('animateWithSpec', () => {
     expect(value.value).toBe(1);
     expect(settled).toHaveBeenCalledWith(true);
     expect(withSpring).not.toHaveBeenCalled();
+  });
+
+  it('starts a spring at a velocity, and a spec from physics is the same oscillator', () => {
+    const value = shared(0);
+    // The bottom sheet's spring was written as physics: mass 0.8, stiffness 300, damping 25.
+    const sheet = springSpecOf({ mass: 0.8, stiffness: 300, damping: 25 });
+    animateWithSpec(value, 0, sheet, false, undefined, 1200);
+    const config = (withSpring as jest.Mock).mock.lastCall?.[1];
+    // Per unit of mass: the same stiffness (375) and damping (31.25), so the
+    // same motion and the same rest (an energy ratio).
+    expect(config.mass).toBe(1);
+    expect(config.stiffness).toBeCloseTo(300 / 0.8, 9);
+    expect(config.damping).toBeCloseTo(25 / 0.8, 9);
+    expect(config.velocity).toBe(1200);
+    for (const t of [0.05, 0.1, 0.2, 0.4]) {
+      const omega = Math.sqrt(375);
+      const zeta = 25 / (2 * Math.sqrt(300 * 0.8));
+      const wd = omega * Math.sqrt(1 - zeta * zeta);
+      const expected =
+        1 -
+        Math.exp(-zeta * omega * t) * (Math.cos(wd * t) + ((zeta * omega) / wd) * Math.sin(wd * t));
+      expect(springProgressAt(sheet, t)).toBeCloseTo(expected, 12);
+    }
   });
 });
