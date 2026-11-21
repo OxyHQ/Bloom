@@ -473,6 +473,12 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("draggable", &["value?"]),
     ("droppable", &["value?"]),
     ("dropBeside", &["value?"]),
+    ("muted", &["value?"]),
+    ("compact", &["value?"]),
+    ("savedToast", &["value?"]),
+    ("minDate", &["value"]),
+    ("maxDate", &["value"]),
+    ("dateFormat", &["value"]),
 ];
 
 pub const NODES: &[NodeSpec] = &[
@@ -579,6 +585,11 @@ pub const NODES: &[NodeSpec] = &[
     NodeSpec { kind: "autoHideBar", constructors: &["AutoHideBar"], modifiers: &["summary", "collapsed", "onReveal", "peek", "barHeight", "collapsedHeight", "label", "testID"], size: None, tint: None, style: None, shape: None },
     NodeSpec { kind: "resizeHandle", constructors: &["ResizeHandle"], modifiers: &["axis", "style", "thickness", "onResizeStart", "onResizeEnd", "onNudge", "label", "testID"], size: None, tint: None, style: Some("resizeHandleStyle"), shape: None },
     NodeSpec { kind: "sidebarMode", constructors: &["SidebarMode"], modifiers: &["id", "shortcut"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsSection", constructors: &["SettingsSection"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "description", "trailing", "inset"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsValue", constructors: &["SettingsValue"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "icon", "muted"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsSelect", constructors: &["SettingsSelect"], modifiers: &["padding", "frame", "grow", "shrink", "alignSelf", "position", "offset", "zIndex", "hidden", "basis", "scale", "allowsHitTesting", "accessibilityOnly", "background", "overlay", "border", "ring", "corner", "cornerCurve", "opacity", "shadow", "glass", "blur", "foreground", "font", "weight", "leading", "tracking", "onPress", "onLongPress", "onHover", "hoverGroup", "pressScale", "label", "hint", "role", "hitSlop", "testID", "badge", "id", "title", "titleDisplay", "subtitle", "header", "toolbar", "toolbarLeading", "onBack", "backLabel", "headingLevel", "footer", "sheet", "alert", "dialog", "popover", "onReselect", "when", "rotation", "animation", "transition", "keyframes", "matchedGeometry", "drag", "swipe", "screenKind", "screenScroll", "documentScroll", "headerPlacement", "scrollEdge", "underlay", "floatingAction", "contentClearance", "navigationScope", "colorPreset", "seed", "screenActive", "initialHeaderHeight", "initialFooterHeight", "compact", "size", "disabled", "width"], size: Some("controlSize"), tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsTextField", constructors: &["SettingsTextField"], modifiers: &["icon", "placeholder", "keyboard", "contentType", "disabled", "savedToast", "testID"], size: None, tint: None, style: None, shape: None },
+    NodeSpec { kind: "settingsDateField", constructors: &["SettingsDateField"], modifiers: &["minDate", "maxDate", "dateFormat", "savedToast", "testID"], size: None, tint: None, style: None, shape: None },
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
