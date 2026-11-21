@@ -5,19 +5,26 @@ export const SPACE = {
   "none": 0,
   "2xs": 2,
   "xs": 4,
+  "xs-sm": 6,
   "sm": 8,
+  "sm-md": 10,
   "md": 12,
+  "md-lg": 14,
   "lg": 16,
   "xl": 20,
   "2xl": 24,
   "3xl": 32,
+  "3xl-4xl": 36,
   "4xl": 40,
-  "5xl": 60
+  "4xl-5xl": 48,
+  "5xl": 60,
+  "6xl": 64
 } as const;
 export const CORNER = {
   "none": 0,
   "2xs": 2,
   "xs": 4,
+  "xs-sm": 6,
   "sm": 8,
   "md": 12,
   "lg": 16,
@@ -28,10 +35,13 @@ export const CORNER = {
 } as const;
 export const FONT_SIZE = {
   "2xs": 10,
+  "2xs-xs": 11,
   "xs": 12,
   "sm": 13,
   "md": 15,
+  "md-lg": 16,
   "lg": 17,
+  "lg-xl": 18,
   "xl": 20,
   "2xl": 22,
   "3xl": 26,
@@ -44,6 +54,7 @@ export const LEADING = {
   "snug": 1.3,
   "easy": 1.375,
   "normal": 1.5,
+  "open": 1.5555555555555556,
   "relaxed": 1.625
 } as const;
 export const WEIGHT = {
