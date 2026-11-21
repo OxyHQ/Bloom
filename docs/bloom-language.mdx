@@ -1722,6 +1722,20 @@ locale). A picker adds `.placeholder()`, `.disabled()` and
 that form, `.step(minutes)`, `.hourFormat('12h' | '24h')` (what is drawn; the
 value stays 24h), `.size('sm' | 'md')`, `.placeholder()` and `.disabled()`.
 
+```ts
+MeetingScheduler([booking, setBooking], host, meeting, 'Amsterdam')
+  .timeSlots(['09:00', '09:30', '10:00']).bounds(today, null).hourFormat('12h')
+```
+
+Bloom's `MeetingScheduler`: a trigger that opens the host's card, a month and
+the chosen day's time slots. `MeetingScheduler(booking, host, meeting,
+timezone)`: the binding holds the booking (a day and a 24h time, or `null`),
+set by its "Send meeting"; `host` and `meeting` are Bloom's card data. It
+takes the calendars' `.bounds()`, `.unavailable()`, `.weekStart()`,
+`.locale()` and `.labels()`, and `.timeSlots([...])`, `.hourFormat()` (how its
+times are drawn at first; the reader can switch), `.onTimezonePress()`,
+`.triggerTitle()`, `.disabled()` and `.presented([open, setOpen])`.
+
 ### Ratings
 
 ```ts
