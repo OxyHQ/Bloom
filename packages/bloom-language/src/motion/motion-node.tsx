@@ -7,7 +7,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { GestureDetector, useCompetingGestures } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { mergeRefs, usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 import {
   SCALE,
@@ -413,7 +413,10 @@ export function GestureMotionNode(props: MotionNodeProps): ReactNode {
     enabled: motion.swipe !== undefined,
     reducedMotion: reduced,
   });
-  const gesture = useCompetingGestures(dragGesture, swipe.gesture);
+  const gesture = useMemo(
+    () => Gesture.Race(dragGesture, swipe.gesture),
+    [dragGesture, swipe.gesture],
+  );
 
   const bound = motion.bound ?? { translateX: 0, translateY: 0, rotate: 0, scale: 1 };
   const across = motion.swipe?.direction === 'left' || motion.swipe?.direction === 'right';

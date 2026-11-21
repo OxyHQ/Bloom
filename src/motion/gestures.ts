@@ -1,14 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useWindowDimensions } from 'react-native';
-import {
-  GestureStateManager,
-  useCompetingGestures,
-  useNativeGesture,
-  usePanGesture,
-  useTapGesture,
-  type GestureTouchEvent,
-  type PanGestureConfig,
-} from 'react-native-gesture-handler';
+import { Gesture, type GestureType } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
 import {
@@ -21,17 +13,23 @@ import {
 } from './motion-value';
 
 /**
- * Bloom's gestures: Gesture Handler 3's hooks, writing motion values from
- * their own callbacks. Native: the callbacks are worklets on the UI thread, so
- * a drag or a swipe runs no JS per frame; JS runs once, when the touch ends.
+ * Bloom's gestures: Gesture Handler's builder (`Gesture.Pan()`, `Gesture.Tap()`,
+ * `Gesture.Native()`, `Gesture.Race()`), writing motion values from its own
+ * callbacks. Native: the callbacks are worklets on the UI thread, so a drag or
+ * a swipe runs no JS per move; JS runs when the touch lands and when it ends.
  * Web: Gesture Handler web, and the values restyle their views directly.
  *
- * A gesture's config is one object for as long as what it reads is the same:
- * Gesture Handler 3 rebuilds a gesture for every new config object (it sends
- * the config to the native handler again and shares its worklets with the UI
- * runtime again), so a config made in render rebuilt a toast's swipe on every
- * render of its row. The caller's JS callbacks are reached through
- * `useStableCallback`, so a new callback never makes a new config.
+ * The builder, not Gesture Handler 3's hooks: on Android a hook gesture's
+ * every move event also reaches the JS thread (Reanimated 4.7 handles it on
+ * the UI thread and lets it through, and the hook detector's Reanimated host
+ * holds a listener for it), so a swipe or a drag cost the JS thread a dispatch
+ * per move. A builder gesture's events stay on the UI thread.
+ *
+ * A gesture is one object for as long as what it reads is the same: a new
+ * gesture is attached to its native handler again and its worklets shared
+ * with the UI runtime again, so a gesture made in render rebuilt a toast's
+ * swipe on every render of its row. The caller's JS callbacks are reached
+ * through `useStableCallback`, so a new callback never makes a new gesture.
  */
 
 /**
@@ -57,7 +55,7 @@ export function useStableCallback<Args extends unknown[]>(
 export type Axis = 'x' | 'y';
 
 /** A gesture another one holds the same touch with (`simultaneousWith`). */
-export type GestureRelation = NonNullable<PanGestureConfig['simultaneousWith']>;
+export type GestureRelation = GestureType;
 
 /** What a manually activated drag does with a touch so far: take it, give it up, or wait. */
 export type DragActivation = 'activate' | 'fail' | 'wait';
@@ -81,7 +79,7 @@ export interface DragOptions {
   failOffset?: number;
   enabled?: boolean;
   /**
-   * Gestures that hold the same touch alongside the drag: a scroll view's
+   * A gesture that holds the same touch alongside the drag: a scroll view's
    * (`useScrollGesture`), another drag. Gesture Handler makes it mutual.
    */
   simultaneousWith?: GestureRelation;
@@ -166,7 +164,7 @@ export function useDrag(value: MotionValue, options: DragOptions) {
   // Whether this touch drags the value (`takes`), and where it landed along the axis (`activation`).
   const taken = useMotionValue(1);
   const landed = useMotionValue(0);
-  const config = useMemo(() => {
+  return useMemo(() => {
     const active: [number, number] | undefined =
       activeOffset === null || activation ? undefined : [-activeOffset, activeOffset];
     const fail: [number, number] | undefined =
@@ -176,54 +174,16 @@ export function useDrag(value: MotionValue, options: DragOptions) {
       setMotionValue(start, getMotionValue(value));
       setMotionValue(taken, takes === undefined || takes() ? 1 : 0);
     };
-    return {
-      enabled,
-      manualActivation: activation !== undefined,
-      simultaneousWith,
-      activeOffsetX: axis === 'x' ? active : undefined,
-      activeOffsetY: axis === 'y' ? active : undefined,
-      failOffsetX: axis === 'y' ? fail : undefined,
-      failOffsetY: axis === 'x' ? fail : undefined,
-      onBegin: () => {
+    const pan = Gesture.Pan()
+      .enabled(enabled)
+      .manualActivation(activation !== undefined)
+      .onBegin(() => {
         'worklet';
         if (startOn === 'touch') startDrag();
         setMotionValue(velocity, 0);
         if (onBegin) runOnJS(onBegin)();
-      },
-      onActivate:
-        startOn === 'activation'
-          ? () => {
-              'worklet';
-              startDrag();
-            }
-          : undefined,
-      // A finger that lands measures the travel the activation reads afresh,
-      // and the drag starts again from where the value is.
-      onTouchesDown: activation
-        ? (event: GestureTouchEvent) => {
-            'worklet';
-            const touch = event.changedTouches[0];
-            if (touch) setMotionValue(landed, axis === 'x' ? touch.absoluteX : touch.absoluteY);
-            if (startOn === 'touch') startDrag();
-          }
-        : undefined,
-      onTouchesMove: activation
-        ? (event: GestureTouchEvent) => {
-            'worklet';
-            const touch = event.changedTouches[0];
-            if (!touch) return;
-            const at = axis === 'x' ? touch.absoluteX : touch.absoluteY;
-            const decision = activation(at - getMotionValue(landed));
-            if (decision === 'activate') GestureStateManager.activate(event.handlerTag);
-            else if (decision === 'fail') GestureStateManager.fail(event.handlerTag);
-          }
-        : undefined,
-      onUpdate: (event: {
-        translationX: number;
-        translationY: number;
-        velocityX: number;
-        velocityY: number;
-      }) => {
+      })
+      .onUpdate((event) => {
         'worklet';
         const travel = axis === 'x' ? event.translationX : event.translationY;
         setMotionValue(velocity, axis === 'x' ? event.velocityX : event.velocityY);
@@ -231,23 +191,58 @@ export function useDrag(value: MotionValue, options: DragOptions) {
         const next = getMotionValue(start) + travel;
         if (follows && !follows(travel, next)) return;
         setMotionValue(value, bounded(next, min, max, overdrag));
-      },
-      onDeactivate: onRelease
-        ? (event: { velocityX: number; velocityY: number }) => {
-            'worklet';
-            if (getMotionValue(taken) === 0) return;
-            onRelease({
-              value: getMotionValue(value),
-              velocity: axis === 'x' ? event.velocityX : event.velocityY,
-            });
-          }
-        : undefined,
-      onFinalize: () => {
+      })
+      .onFinalize(() => {
         'worklet';
         if (onEnd)
           runOnJS(onEnd)({ value: getMotionValue(value), velocity: getMotionValue(velocity) });
-      },
-    };
+      });
+    if (simultaneousWith) pan.simultaneousWithExternalGesture(simultaneousWith);
+    if (active) {
+      if (axis === 'x') pan.activeOffsetX(active);
+      else pan.activeOffsetY(active);
+    }
+    if (fail) {
+      if (axis === 'x') pan.failOffsetY(fail);
+      else pan.failOffsetX(fail);
+    }
+    if (startOn === 'activation') {
+      pan.onStart(() => {
+        'worklet';
+        startDrag();
+      });
+    }
+    if (activation) {
+      // A finger that lands measures the travel the activation reads afresh,
+      // and the drag starts again from where the value is.
+      pan
+        .onTouchesDown((event) => {
+          'worklet';
+          const touch = event.changedTouches[0];
+          if (touch) setMotionValue(landed, axis === 'x' ? touch.absoluteX : touch.absoluteY);
+          if (startOn === 'touch') startDrag();
+        })
+        .onTouchesMove((event, manager) => {
+          'worklet';
+          const touch = event.changedTouches[0];
+          if (!touch) return;
+          const at = axis === 'x' ? touch.absoluteX : touch.absoluteY;
+          const decision = activation(at - getMotionValue(landed));
+          if (decision === 'activate') manager.activate();
+          else if (decision === 'fail') manager.fail();
+        });
+    }
+    if (onRelease) {
+      pan.onEnd((event) => {
+        'worklet';
+        if (getMotionValue(taken) === 0) return;
+        onRelease({
+          value: getMotionValue(value),
+          velocity: axis === 'x' ? event.velocityX : event.velocityY,
+        });
+      });
+    }
+    return pan;
   }, [
     value,
     axis,
@@ -270,18 +265,14 @@ export function useDrag(value: MotionValue, options: DragOptions) {
     taken,
     landed,
   ]);
-  return usePanGesture(config);
 }
-
-/** No options: one object for the gesture's life. */
-const SCROLL_GESTURE = {};
 
 /**
  * A scroll view's own gesture, for a drag to share its touches with
  * (`simultaneousWith`): wrap the scroll view in a `GestureDetector` with it.
  */
 export function useScrollGesture() {
-  return useNativeGesture(SCROLL_GESTURE);
+  return useMemo(() => Gesture.Native(), []);
 }
 
 export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
@@ -360,28 +351,28 @@ export function useSwipe(
   const value = useMotionValue(0);
   // Travel in the direction is positive.
   const sign = direction === 'left' || direction === 'up' ? -1 : 1;
-  const panConfig = useMemo(
-    () => ({
-      enabled,
-      onBegin: () => {
-        'worklet';
-        if (begin) runOnJS(begin)();
-      },
-      onUpdate: (event: { translationX: number; translationY: number }) => {
-        'worklet';
-        const travel = (axis === 'x' ? event.translationX : event.translationY) * sign;
-        if (travel >= 0) setMotionValue(value, travel * sign);
-        else setMotionValue(value, resist === 'elastic' ? -elasticResistance(-travel) * sign : 0);
-      },
-      onFinalize: () => {
-        'worklet';
-        const travel = getMotionValue(value) * sign;
-        if (travel < 0) animateMotionValue(value, 0, backAgainst, reducedMotion);
-        else if (travel < threshold) animateMotionValue(value, 0, back, reducedMotion);
-        else animateMotionValue(value, distance * sign, away, reducedMotion, swiped);
-        if (finalize) runOnJS(finalize)();
-      },
-    }),
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(enabled)
+        .onBegin(() => {
+          'worklet';
+          if (begin) runOnJS(begin)();
+        })
+        .onUpdate((event) => {
+          'worklet';
+          const travel = (axis === 'x' ? event.translationX : event.translationY) * sign;
+          if (travel >= 0) setMotionValue(value, travel * sign);
+          else setMotionValue(value, resist === 'elastic' ? -elasticResistance(-travel) * sign : 0);
+        })
+        .onFinalize(() => {
+          'worklet';
+          const travel = getMotionValue(value) * sign;
+          if (travel < 0) animateMotionValue(value, 0, backAgainst, reducedMotion);
+          else if (travel < threshold) animateMotionValue(value, 0, back, reducedMotion);
+          else animateMotionValue(value, distance * sign, away, reducedMotion, swiped);
+          if (finalize) runOnJS(finalize)();
+        }),
     [
       enabled,
       begin,
@@ -399,18 +390,16 @@ export function useSwipe(
       reducedMotion,
     ],
   );
-  const pan = usePanGesture(panConfig);
-  const tapConfig = useMemo(
-    () => ({
-      enabled: tapped !== undefined,
-      onDeactivate: (event: { x: number; y: number; canceled: boolean }) => {
-        'worklet';
-        if (tapped && !event.canceled) runOnJS(tapped)({ x: event.x, y: event.y });
-      },
-    }),
+  const tap = useMemo(
+    () =>
+      Gesture.Tap()
+        .enabled(tapped !== undefined)
+        .onEnd((event, success) => {
+          'worklet';
+          if (tapped && success) runOnJS(tapped)({ x: event.x, y: event.y });
+        }),
     [tapped],
   );
-  const tap = useTapGesture(tapConfig);
-  const gesture = useCompetingGestures(tap, pan);
+  const gesture = useMemo(() => Gesture.Race(tap, pan), [tap, pan]);
   return { gesture, value };
 }

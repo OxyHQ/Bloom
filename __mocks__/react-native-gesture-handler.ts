@@ -10,7 +10,8 @@
 // to test a policy that lives inside a gesture callback — e.g. which region of a
 // toast row a tap landed in, which is measured against the row's CAPPED width.
 //
-// `enabled` and the activation offsets land on `__config` as they are set.
+// `enabled`, `manualActivation`, the activation offsets and the external
+// gestures a gesture is simultaneous with land on `__config` as they are set.
 //
 // The detector's web-only props (`touchAction`, `userSelect`,
 // `enableContextMenu`) are copied onto `__config` of every gesture it is given,
@@ -41,9 +42,12 @@ const gestureBuilder = (): MockGesture => {
     blocksExternalGesture: config('blocksExternalGesture'),
     disallowInterruption: config('disallowInterruption'),
     shouldActivateOnStart: config('shouldActivateOnStart'),
-    simultaneousWithExternalGesture: () => builder,
+    simultaneousWithExternalGesture: (...gestures: unknown[]) => {
+      builder.__config.simultaneousWithExternalGesture = gestures;
+      return builder;
+    },
     withRef: () => builder,
-    manualActivation: () => builder,
+    manualActivation: config('manualActivation'),
     activeOffsetY: config('activeOffsetY'),
     activeOffsetX: config('activeOffsetX'),
     failOffsetY: config('failOffsetY'),
@@ -135,49 +139,3 @@ export const GestureHandlerRootView = ({ children }: { children: React.ReactNode
 
 // Type alias used by withRef<GestureType>() — value not needed at runtime.
 export type GestureType = unknown;
-
-// Gesture Handler 3 hooks. A hook gesture records its config's callbacks on
-// `__handlers` and the rest on `__config`, in the same shape as a builder, so a
-// suite fires `onUpdate` / `onDeactivate` with a real payload the same way.
-const CALLBACKS = new Set([
-  'onBegin',
-  'onActivate',
-  'onUpdate',
-  'onDeactivate',
-  'onFinalize',
-  'onTouchesDown',
-  'onTouchesMove',
-  'onTouchesUp',
-  'onTouchesCancel',
-]);
-const hookGesture = (config: Record<string, unknown>): MockGesture => {
-  const gesture = gestureBuilder();
-  for (const [key, value] of Object.entries(config)) {
-    if (CALLBACKS.has(key)) gesture.__handlers[key] = value as (event: never) => void;
-    else gesture.__config[key] = value;
-  }
-  return gesture;
-};
-export const usePanGesture = hookGesture;
-export const useTapGesture = hookGesture;
-export const useLongPressGesture = hookGesture;
-export const usePinchGesture = hookGesture;
-export const useNativeGesture = hookGesture;
-// Manual activation: what a gesture's own callbacks decided, by handler tag, in
-// order, so a suite asserts which touches a manually activated drag took.
-export const GestureStateManager = {
-  __calls: [] as Array<{ action: 'activate' | 'fail' | 'deactivate'; handlerTag: number }>,
-  activate(handlerTag: number) {
-    GestureStateManager.__calls.push({ action: 'activate', handlerTag });
-  },
-  fail(handlerTag: number) {
-    GestureStateManager.__calls.push({ action: 'fail', handlerTag });
-  },
-  deactivate(handlerTag: number) {
-    GestureStateManager.__calls.push({ action: 'deactivate', handlerTag });
-  },
-};
-const composeHook = (...gestures: unknown[]): MockGesture => compose()(...gestures);
-export const useCompetingGestures = composeHook;
-export const useExclusiveGestures = composeHook;
-export const useSimultaneousGestures = composeHook;
