@@ -516,7 +516,9 @@
     "dotsShape": ["pill", "dot"],
     "dotsStyle": ["default", "onMedia"],
     "markdownSize": ["sm", "md", "lg"],
-    "codeLinesSize": ["sm", "md"]
+    "codeLinesSize": ["sm", "md"],
+    "stepperSize": ["sm", "md"],
+    "stepperStyle": ["separate", "outline"]
   },
   "glass": {
     "$comment": [
@@ -895,7 +897,8 @@
     "filename": ["value"],
     "diff": ["value", "value"],
     "copyable": ["value"],
-    "onCopy": ["value"]
+    "onCopy": ["value"],
+    "onRemove": ["value"]
   },
   "universal": [
     "padding",
@@ -1522,6 +1525,38 @@
         "headerContent",
         "labels"
       ]
+    },
+    "stepper": {
+      "constructors": ["Stepper"],
+      "modifiers": [
+        "bounds",
+        "step",
+        "disabled",
+        "size",
+        "style",
+        "valueFormat",
+        "onRemove",
+        "labels"
+      ],
+      "size": "stepperSize",
+      "style": "stepperStyle"
+    },
+    "stepperRow": {
+      "constructors": ["StepperRow"],
+      "modifiers": [
+        "bounds",
+        "step",
+        "disabled",
+        "size",
+        "style",
+        "valueFormat",
+        "onRemove",
+        "labels",
+        "supporting",
+        "dividers"
+      ],
+      "size": "stepperSize",
+      "style": "stepperStyle"
     }
   },
   "sfSymbols": {
