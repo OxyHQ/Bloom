@@ -26,6 +26,7 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { SliderKind } from './controls/slider';
 import type { MarkdownKind } from './controls/markdown';
 import type { CarouselKind } from './controls/carousel';
 import type { ListKind, VirtualListTuning } from './controls/list';
@@ -580,7 +581,10 @@ export interface ValueModifiers {
   dateFormat: (date: Date) => string;
 
   // Date and time pickers (controls/date-picker.tsx)
-  bounds: readonly [min: Date | string | null, max: Date | string | null | undefined];
+  bounds: readonly [
+    min: Date | string | number | null,
+    max: Date | string | number | null | undefined,
+  ];
   unavailable: (date: Date) => boolean;
   weekStart: WeekStart;
   locale: string;
@@ -676,6 +680,14 @@ export interface ValueModifiers {
   streaming: boolean;
   onLinkPress: (url: string) => void;
   codeBlock: (code: string, language: string | undefined) => Child;
+
+  // Sliders (controls/slider.tsx)
+  keyboardStep: number;
+  thumbSize: SpaceToken;
+  fillTint: ColorToken;
+  thumbTint: ColorToken;
+  onCommit: (value: never) => void;
+  valueFormat: (value: number, index: number) => string;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1054,7 +1066,8 @@ export type NodeKind =
   | TableKind
   | ListKind
   | CarouselKind
-  | MarkdownKind;
+  | MarkdownKind
+  | SliderKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2285,7 +2298,7 @@ export class Node {
   }
 
   // Date and time pickers (controls/date-picker.tsx)
-  bounds(min: Date | string | null, max?: Date | string | null): Node {
+  bounds(min: Date | string | number | null, max?: Date | string | number | null): Node {
     return this.set('bounds', [min, max]);
   }
   unavailable(value: (date: Date) => boolean): Node {
@@ -2548,6 +2561,26 @@ export class Node {
   }
   codeBlock(value: (code: string, language: string | undefined) => Child): Node {
     return this.set('codeBlock', value);
+  }
+
+  // Sliders (controls/slider.tsx)
+  keyboardStep(value: number): Node {
+    return this.set('keyboardStep', value);
+  }
+  thumbSize(value: SpaceToken): Node {
+    return this.set('thumbSize', value);
+  }
+  fillTint(value: ColorToken): Node {
+    return this.set('fillTint', value);
+  }
+  thumbTint(value: ColorToken): Node {
+    return this.set('thumbTint', value);
+  }
+  onCommit(value: (value: never) => void): Node {
+    return this.set('onCommit', value);
+  }
+  valueFormat(value: (value: number, index: number) => string): Node {
+    return this.set('valueFormat', value);
   }
 }
 

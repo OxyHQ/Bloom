@@ -1884,6 +1884,23 @@ sets its ramp, `.onLinkPress(fn)` replaces opening a link, and
 `.codeBlock((code, language) => view)` draws a code block of your own. Inline
 markdown inside a line is written as nested `Text` spans (see [Text](#text)).
 
+### Sliders
+
+```ts
+Slider([volume, setVolume], 'Volume').onCommit(save)
+Slider([radius, setRadius]).bounds(1, 50).step(1).valueFormat((km) => `${km} km`).label('Radius')
+RangeSlider([price, setPrice], 'Price').bounds(0, 500).step(10).labels({ lower: 'From', upper: 'To' })
+```
+
+Bloom's `Slider` and `RangeSlider`. The binding is the value as it slides
+(`onValueChange`); `.onCommit(fn)` is called once where the thumb comes to
+rest (`onSlidingComplete`). A title is its visible label and name; without one,
+name it with `.label()`. Both take `.size()`, `.tint(tone)`, `.bounds(min,
+max)`, `.step()`, `.keyboardStep()`, `.disabled()`, `.thickness()` (the
+track), `.thumbSize()`, `.fillTint()`, `.trackTint()` and `.thumbTint()`
+(roles), `.showsValue(false)` (no bubble) and `.valueFormat(fn)`; a range
+slider names its thumbs with `.labels({ lower, upper })`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2311,7 +2328,7 @@ and `@oxy.so/bloom-data` beside it.
   does the node.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
-  tables, rows and lists, carousels, markdown.
+  tables, rows and lists, carousels, markdown, sliders.
 
 **Not built**
 

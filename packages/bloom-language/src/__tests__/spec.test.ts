@@ -133,6 +133,7 @@ import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar
 } from '../controls/list';
 import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
 import type { MarkdownView } from '../controls/markdown';
+import type { SliderView, RangeSliderView } from '../controls/slider';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -401,7 +402,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CarouselItemView>, Of<'carouselItem'>>,
       Same<MethodsOf<CarouselDotsView>, Of<'carouselDots'>>,
       Same<MethodsOf<MarkdownView>, Of<'markdown'>>,
+      Same<MethodsOf<SliderView>, Of<'slider'>>,
+      Same<MethodsOf<RangeSliderView>, Of<'rangeSlider'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,
