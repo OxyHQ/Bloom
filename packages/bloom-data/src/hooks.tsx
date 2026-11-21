@@ -138,7 +138,7 @@ export interface ListView<E> extends SourceState {
 const NO_IDS: readonly string[] = Object.freeze([]);
 
 /**
- * Passed as the arguments of `useList`, observes nothing: the
+ * Passed as the arguments of `useList` or `useRecord`, observes nothing: the
  * hook returns an idle, empty view and reads nothing (a read that must wait
  * for something, such as the signed-in account).
  */
@@ -280,32 +280,77 @@ export interface RecordView<T> extends SourceState {
   readonly refresh: () => Promise<void>;
 }
 
-/** Observes a record source for `args` and reads its record with field-level subscriptions. */
+/**
+ * The id a record source's key names: the key itself, or (a source with an
+ * `index`) the id the index holds for it, re-read when the index moves.
+ */
+function useRecordId<A extends unknown[], T>(
+  store: Store,
+  source: RecordSource<A, T>,
+  args: A | [Skip],
+): string | undefined {
+  const skipped = args[0] === skip;
+  const key = skipped ? undefined : source.key(...(args as A));
+  const index = source.index;
+  const subscribe = useCallback(
+    (listener: Listener) =>
+      index !== undefined && key !== undefined
+        ? store.listen(store.indexSlot(source.entity.definition, index, key), listener)
+        : () => undefined,
+    [store, source, index, key],
+  );
+  const getSnapshot = () =>
+    key === undefined
+      ? undefined
+      : index === undefined
+        ? key
+        : store.lookup(source.entity.definition, index, key);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+}
+
+/**
+ * Observes a record source for `args` (or nothing, with `skip`): reads it
+ * when it has no data or stale data, and returns the record with its state.
+ * The record is read with field-level subscriptions, like `useEntity`.
+ */
 export function useRecord<A extends unknown[], T>(
   source: RecordSource<A, T>,
-  ...args: A
+  ...args: A | [Skip]
 ): RecordView<T> {
   const store = useStore();
-  const key = source.key(...args);
-  const stableArgs = useArgs(key, args) as A;
-  const value = useEntity(source.entity, key);
+  const skipped = args[0] === skip;
+  const key = skipped ? SKIP_KEY : source.key(...(args as A));
+  const stableArgs = useArgs(key, args);
+  const value = useEntity(source.entity, useRecordId(store, source, stableArgs));
   const subscribe = useCallback(
-    (listener: Listener) => source.listenState(store, stableArgs, listener),
+    (listener: Listener) =>
+      stableArgs[0] === skip
+        ? () => undefined
+        : source.listenState(store, stableArgs as A, listener),
     [source, store, stableArgs],
   );
-  const getSnapshot = () => source.stateIn(store, stableArgs);
+  const getSnapshot = () =>
+    stableArgs[0] === skip ? IDLE_STATE : source.stateIn(store, stableArgs as A);
   const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  useEffect(() => source.observe(store, stableArgs), [source, store, stableArgs]);
+  useEffect(
+    () => (stableArgs[0] === skip ? undefined : source.observe(store, stableArgs as A)),
+    [source, store, stableArgs],
+  );
   const refresh = useCallback(
-    () => withStore(store, () => source.refresh(...stableArgs)),
+    () =>
+      stableArgs[0] === skip
+        ? Promise.resolve()
+        : withStore(store, () => source.refresh(...(stableArgs as A))),
     [source, store, stableArgs],
   );
   return {
     ...state,
     value,
-    isLoading: value === undefined && (state.status === 'idle' || state.status === 'loading'),
+    isLoading:
+      !skipped && value === undefined && (state.status === 'idle' || state.status === 'loading'),
     isFetching:
-      state.fetchStatus === 'fetching' || (value === undefined && state.status === 'idle'),
+      state.fetchStatus === 'fetching' ||
+      (!skipped && value === undefined && state.status === 'idle'),
     refresh,
   };
 }
