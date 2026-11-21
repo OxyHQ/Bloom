@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useRef } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useCompetingGestures, usePanGesture, useTapGesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
@@ -16,7 +17,28 @@ import {
  * their own callbacks. Native: the callbacks are worklets on the UI thread, so
  * a drag or a swipe runs no JS per frame; JS runs once, when the touch ends.
  * Web: Gesture Handler web, and the values restyle their views directly.
+ *
+ * A gesture's config is one object for as long as what it reads is the same:
+ * Gesture Handler 3 rebuilds a gesture for every new config object (it sends
+ * the config to the native handler again and shares its worklets with the UI
+ * runtime again), so a config made in render rebuilt a toast's swipe on every
+ * render of its row. The caller's JS callbacks are reached through
+ * `useStableCallback`, so a new callback never makes a new config.
  */
+
+/**
+ * The caller's JS callback behind one function for the hook's life, which
+ * calls the latest one; `undefined` while there is none, so a worklet calls
+ * nothing on the JS thread then.
+ */
+function useStableCallback<Args extends unknown[]>(
+  callback: ((...args: Args) => void) | undefined,
+): ((...args: Args) => void) | undefined {
+  const latest = useRef(callback);
+  latest.current = callback;
+  const stable = useCallback((...args: Args) => latest.current?.(...args), []);
+  return callback === undefined ? undefined : stable;
+}
 
 export type Axis = 'x' | 'y';
 
@@ -52,38 +74,46 @@ function clamp(value: number, min: number | undefined, max: number | undefined):
  * value was when the touch landed. Hand the gesture to a `GestureDetector`.
  */
 export function useDrag(value: MotionValue, options: DragOptions) {
-  const { axis, min, max, activeOffset = 10, failOffset, enabled = true, onBegin, onEnd } = options;
+  const { axis, min, max, activeOffset = 10, failOffset, enabled = true } = options;
+  const onBegin = useStableCallback(options.onBegin);
+  const onEnd = useStableCallback(options.onEnd);
   const start = useMotionValue(0);
   const velocity = useMotionValue(0);
-  const active: [number, number] = [-activeOffset, activeOffset];
-  const fail: [number, number] | undefined =
-    failOffset === undefined ? undefined : [-failOffset, failOffset];
-  // One literal config: the worklets plugin workletizes a hook's config object
-  // and takes no spread in it.
-  return usePanGesture({
-    enabled,
-    activeOffsetX: axis === 'x' ? active : undefined,
-    activeOffsetY: axis === 'y' ? active : undefined,
-    failOffsetX: axis === 'y' ? fail : undefined,
-    failOffsetY: axis === 'x' ? fail : undefined,
-    onBegin: () => {
-      'worklet';
-      setMotionValue(start, getMotionValue(value));
-      setMotionValue(velocity, 0);
-      if (onBegin) runOnJS(onBegin)();
-    },
-    onUpdate: (event) => {
-      'worklet';
-      const travel = axis === 'x' ? event.translationX : event.translationY;
-      setMotionValue(velocity, axis === 'x' ? event.velocityX : event.velocityY);
-      setMotionValue(value, clamp(getMotionValue(start) + travel, min, max));
-    },
-    onFinalize: () => {
-      'worklet';
-      if (onEnd)
-        runOnJS(onEnd)({ value: getMotionValue(value), velocity: getMotionValue(velocity) });
-    },
-  });
+  const config = useMemo(() => {
+    const active: [number, number] = [-activeOffset, activeOffset];
+    const fail: [number, number] | undefined =
+      failOffset === undefined ? undefined : [-failOffset, failOffset];
+    return {
+      enabled,
+      activeOffsetX: axis === 'x' ? active : undefined,
+      activeOffsetY: axis === 'y' ? active : undefined,
+      failOffsetX: axis === 'y' ? fail : undefined,
+      failOffsetY: axis === 'x' ? fail : undefined,
+      onBegin: () => {
+        'worklet';
+        setMotionValue(start, getMotionValue(value));
+        setMotionValue(velocity, 0);
+        if (onBegin) runOnJS(onBegin)();
+      },
+      onUpdate: (event: {
+        translationX: number;
+        translationY: number;
+        velocityX: number;
+        velocityY: number;
+      }) => {
+        'worklet';
+        const travel = axis === 'x' ? event.translationX : event.translationY;
+        setMotionValue(velocity, axis === 'x' ? event.velocityX : event.velocityY);
+        setMotionValue(value, clamp(getMotionValue(start) + travel, min, max));
+      },
+      onFinalize: () => {
+        'worklet';
+        if (onEnd)
+          runOnJS(onEnd)({ value: getMotionValue(value), velocity: getMotionValue(velocity) });
+      },
+    };
+  }, [value, axis, min, max, activeOffset, failOffset, enabled, onBegin, onEnd, start, velocity]);
+  return usePanGesture(config);
 }
 
 export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
@@ -155,37 +185,64 @@ export function useSwipe(
     onFinalize,
     onTap,
   } = options;
+  const begin = useStableCallback(onBegin);
+  const finalize = useStableCallback(onFinalize);
+  const tapped = useStableCallback(onTap);
+  const swiped = useStableCallback(onSwipe);
   const value = useMotionValue(0);
   // Travel in the direction is positive.
   const sign = direction === 'left' || direction === 'up' ? -1 : 1;
-  const pan = usePanGesture({
-    enabled,
-    onBegin: () => {
-      'worklet';
-      if (onBegin) runOnJS(onBegin)();
-    },
-    onUpdate: (event) => {
-      'worklet';
-      const travel = (axis === 'x' ? event.translationX : event.translationY) * sign;
-      if (travel >= 0) setMotionValue(value, travel * sign);
-      else setMotionValue(value, resist === 'elastic' ? -elasticResistance(-travel) * sign : 0);
-    },
-    onFinalize: () => {
-      'worklet';
-      const travel = getMotionValue(value) * sign;
-      if (travel < 0) animateMotionValue(value, 0, backAgainst, reducedMotion);
-      else if (travel < threshold) animateMotionValue(value, 0, back, reducedMotion);
-      else animateMotionValue(value, distance * sign, away, reducedMotion, onSwipe);
-      if (onFinalize) runOnJS(onFinalize)();
-    },
-  });
-  const tap = useTapGesture({
-    enabled: onTap !== undefined,
-    onDeactivate: (event) => {
-      'worklet';
-      if (onTap && !event.canceled) runOnJS(onTap)({ x: event.x, y: event.y });
-    },
-  });
+  const panConfig = useMemo(
+    () => ({
+      enabled,
+      onBegin: () => {
+        'worklet';
+        if (begin) runOnJS(begin)();
+      },
+      onUpdate: (event: { translationX: number; translationY: number }) => {
+        'worklet';
+        const travel = (axis === 'x' ? event.translationX : event.translationY) * sign;
+        if (travel >= 0) setMotionValue(value, travel * sign);
+        else setMotionValue(value, resist === 'elastic' ? -elasticResistance(-travel) * sign : 0);
+      },
+      onFinalize: () => {
+        'worklet';
+        const travel = getMotionValue(value) * sign;
+        if (travel < 0) animateMotionValue(value, 0, backAgainst, reducedMotion);
+        else if (travel < threshold) animateMotionValue(value, 0, back, reducedMotion);
+        else animateMotionValue(value, distance * sign, away, reducedMotion, swiped);
+        if (finalize) runOnJS(finalize)();
+      },
+    }),
+    [
+      enabled,
+      begin,
+      finalize,
+      swiped,
+      axis,
+      sign,
+      value,
+      resist,
+      threshold,
+      distance,
+      away,
+      back,
+      backAgainst,
+      reducedMotion,
+    ],
+  );
+  const pan = usePanGesture(panConfig);
+  const tapConfig = useMemo(
+    () => ({
+      enabled: tapped !== undefined,
+      onDeactivate: (event: { x: number; y: number; canceled: boolean }) => {
+        'worklet';
+        if (tapped && !event.canceled) runOnJS(tapped)({ x: event.x, y: event.y });
+      },
+    }),
+    [tapped],
+  );
+  const tap = useTapGesture(tapConfig);
   const gesture = useCompetingGestures(tap, pan);
   return { gesture, value };
 }
