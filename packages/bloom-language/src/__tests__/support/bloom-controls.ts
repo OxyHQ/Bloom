@@ -22,3 +22,6 @@ export const List = 'List';
 export const ListItem = 'ListItem';
 export const ListSelectionBar = 'ListSelectionBar';
 export const VirtualList = 'VirtualList';
+export const Carousel = 'Carousel';
+export const CarouselDots = 'CarouselDots';
+export const CarouselItem = 'CarouselItem';

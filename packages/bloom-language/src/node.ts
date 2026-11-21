@@ -18,6 +18,7 @@ import type { AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { CarouselKind } from './controls/carousel';
 import type { ListKind, VirtualListTuning } from './controls/list';
 import type { ListAction, ListProps } from '@oxy.so/bloom/list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
@@ -74,6 +75,10 @@ import {
   type ColumnWidthToken,
   type TableSort,
   type ListSeparator,
+  type ArrowsPlacement,
+  type ArrowsVisibility,
+  type DotsShape,
+  type DotsStyle,
   type RatingStyle,
   type Presence,
   type ShapeName,
@@ -340,6 +345,16 @@ export interface ValueModifiers {
   tuning: VirtualListTuning;
   onSelectAll: (checked: boolean) => void;
   onClear: () => void;
+
+  // Carousels (controls/carousel.tsx)
+  groupSize: number;
+  arrows: ArrowsPlacement | false;
+  arrowsVisibility: ArrowsVisibility;
+  arrowsInset: SpaceToken;
+  hidesUnavailableArrows: true;
+  dots: boolean;
+  contentInset: SpaceToken;
+  page: Binding<number>;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -489,9 +504,13 @@ export type Modifier =
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle;
+      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle | DotsStyle;
     }
-  | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
+  | {
+      readonly kind: 'shape';
+      readonly key: string;
+      readonly value: ButtonShape | ShapeName | DotsShape;
+    }
   | {
       readonly kind: 'tint';
       readonly key: string;
@@ -636,7 +655,8 @@ export type NodeKind =
   | RatingKind
   | StatBarKind
   | TableKind
-  | ListKind;
+  | ListKind
+  | CarouselKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -943,10 +963,10 @@ export class Node {
   size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle): Node {
+  style(value: BloomAppearance | BadgeStyle | LoadingStyle | RatingStyle | DotsStyle): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
-  shape(value: ButtonShape | ShapeName): Node {
+  shape(value: ButtonShape | ShapeName | DotsShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
   tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
@@ -1499,6 +1519,32 @@ export class Node {
   }
   onClear(value: () => void): Node {
     return this.set('onClear', value);
+  }
+
+  // Carousels (controls/carousel.tsx)
+  groupSize(value: number): Node {
+    return this.set('groupSize', value);
+  }
+  arrows(value: ArrowsPlacement | false): Node {
+    return this.set('arrows', value);
+  }
+  arrowsVisibility(value: ArrowsVisibility): Node {
+    return this.set('arrowsVisibility', value);
+  }
+  arrowsInset(value: SpaceToken): Node {
+    return this.set('arrowsInset', value);
+  }
+  hidesUnavailableArrows(): Node {
+    return this.set('hidesUnavailableArrows', true);
+  }
+  dots(value = true): Node {
+    return this.set('dots', value);
+  }
+  contentInset(value: SpaceToken): Node {
+    return this.set('contentInset', value);
+  }
+  page(value: Binding<number>): Node {
+    return this.set('page', value);
   }
 }
 

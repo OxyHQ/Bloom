@@ -1227,6 +1227,26 @@ so the engine re-renders a row only when its item changes, as with JSX. It takes
 takes `.selecting()`, `.onSelectAll()`, `.onClear()`, `.rowActions()` and
 `.labels()`.
 
+### Carousels
+
+```ts
+Carousel(...photos.map((photo) => CarouselItem(Image(photo.url, photo.alt)).id(photo.id)))
+  .arrows('header').headerContent(Text('Photos').font('headline')).dots().label('Photos')
+Carousel(...cards).align('center').loop().groupSize(2).page([index, setIndex]).label('Plans')
+CarouselDots(count, [index, setIndex]).style('onMedia').max(5)
+```
+
+Bloom's `Carousel`, `CarouselItem` and `CarouselDots`. A carousel is named
+with `.label()`; it takes `.headerContent()` and `.footerContent()`, `.loop()`,
+`.groupSize(n)` (slides an arrow moves), `.arrows('header' | 'overlay' |
+'footer' | false)`, `.arrowsVisibility('always' | 'hover')`, `.arrowsInset()`,
+`.hidesUnavailableArrows()`, `.dots()`, `.align('start' | 'center')`,
+`.spacing()` (between slides), `.contentInset()`, `.page([index, set])` and
+`.labels({ previous, next, dot })`. A slide is the carousel's width unless it
+sets `.width(space)`. `CarouselDots(count, [index, set])` takes
+`.shape('pill' | 'dot')`, `.style('default' | 'onMedia')`, `.max(n)` and
+`.labels({ dot })`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -1603,7 +1623,7 @@ and `@oxy.so/bloom-data` beside it.
   each utility the apps use becomes.
 - Generic components (see [Generic components](#generic-components)), drawn as
   Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
-  tables, rows and lists.
+  tables, rows and lists, carousels.
 
 **Not built**
 

@@ -109,6 +109,7 @@ import type {
   VirtualListView,
   ListSelectionBarView,
 } from '../controls/list';
+import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -329,7 +330,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ListView>, Of<'list'>>,
       Same<MethodsOf<VirtualListView>, Of<'virtualList'>>,
       Same<MethodsOf<ListSelectionBarView>, Of<'listSelectionBar'>>,
+      Same<MethodsOf<CarouselView>, Of<'carousel'>>,
+      Same<MethodsOf<CarouselItemView>, Of<'carouselItem'>>,
+      Same<MethodsOf<CarouselDotsView>, Of<'carouselDots'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

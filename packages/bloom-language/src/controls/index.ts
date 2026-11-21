@@ -1,4 +1,5 @@
 import type { NodeKind } from '../node';
+import { CAROUSELS } from './carousel';
 import { DATE_PICKERS } from './date-picker';
 import type { ControlRenderer } from './draw';
 import { LISTS } from './list';
@@ -16,4 +17,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...STAT_BARS,
   ...TABLES,
   ...LISTS,
+  ...CAROUSELS,
 };

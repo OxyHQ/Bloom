@@ -171,6 +171,11 @@ export type TableSize = (typeof ENUMS.tableSize)[number];
 export type TableAlign = (typeof ENUMS.tableAlign)[number];
 export type TableSort = (typeof ENUMS.tableSort)[number];
 export type ListSeparator = (typeof ENUMS.listSeparator)[number];
+export type ArrowsPlacement = (typeof ENUMS.arrowsPlacement)[number];
+export type ArrowsVisibility = (typeof ENUMS.arrowsVisibility)[number];
+export type CarouselAlign = (typeof ENUMS.carouselAlign)[number];
+export type DotsShape = (typeof ENUMS.dotsShape)[number];
+export type DotsStyle = (typeof ENUMS.dotsStyle)[number];
 /** A table column's width: a space rung, or `fit` to hug its content. */
 export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
 

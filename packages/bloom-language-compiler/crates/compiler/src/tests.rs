@@ -640,3 +640,27 @@ fn rows_and_lists_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn carousels_are_checked() {
+    let imports = "import { Carousel, CarouselItem, CarouselDots, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (page, dot) => [Carousel(CarouselItem(Text('a')).width('256')).headerContent(Text('h')).footerContent(Text('f')).loop().groupSize(2).arrows('header').arrowsVisibility('hover').arrowsInset('sm').hidesUnavailableArrows().dots().align('center').spacing('md').contentInset('lg').page(page).labels({ dot }), CarouselDots(5, page).shape('dot').style('onMedia').max(5)];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        (
+            "Carousel().arrowsVisibility('never')",
+            "Unknown arrowsVisibility token 'never' for .arrowsVisibility()",
+        ),
+        ("CarouselDots(1, p).shape('square')", "Unknown dotsShape token 'square' for .shape()"),
+        ("CarouselDots(1, p).style('solid')", "Unknown dotsStyle token 'solid' for .style()"),
+        ("Carousel().contentInset('wide')", "Unknown space token 'wide' for .contentInset()"),
+        ("CarouselItem().loop()", "CarouselItem has no modifier .loop()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (p) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
