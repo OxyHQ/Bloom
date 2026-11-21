@@ -126,6 +126,7 @@ import type { ActivityHeatmapView } from '../controls/activity-heatmap';
 import type { TagFieldView } from '../controls/tag-field';
 import type { FileUploadView } from '../controls/file-upload';
 import type { VideoView } from '../controls/video-view';
+import type { CompositionBarView } from '../controls/composition-bar';
 import type { ExpandableTextView } from '../controls/expandable-text';
 import type { CategoryBarView } from '../controls/category-bar';
 import type { FactStripView, FactView } from '../controls/fact-strip';
@@ -407,7 +408,9 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ExpandableTextView>, Of<'expandableText'>>,
       Same<MethodsOf<MenubarView>, Of<'menubar'>>,
       Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
+      Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -25,6 +25,7 @@ import type { MenubarKind } from './controls/menubar';
 import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
+import type { CompositionBarKind } from './controls/composition-bar';
 import type { CategoryBarKind } from './controls/category-bar';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
@@ -512,6 +513,9 @@ export interface ValueModifiers {
   // Activity heatmaps (controls/activity-heatmap.tsx)
   colorScale: readonly ColorToken[];
 
+  // Composition bars (controls/composition-bar.tsx)
+  readoutFormat: (amount: number, percent: number) => string;
+
   // Inputs (controls/inputs.tsx)
   required: boolean;
   floatingLabel: true;
@@ -894,7 +898,8 @@ export type NodeKind =
   | ContainerKind
   | AnimatedCheckKind
   | FactStripKind
-  | ExpandableTextKind;
+  | ExpandableTextKind
+  | CompositionBarKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2036,6 +2041,11 @@ export class Node {
   // Activity heatmaps (controls/activity-heatmap.tsx)
   colorScale(value: readonly ColorToken[]): Node {
     return this.set('colorScale', value);
+  }
+
+  // Composition bars (controls/composition-bar.tsx)
+  readoutFormat(value: (amount: number, percent: number) => string): Node {
+    return this.set('readoutFormat', value);
   }
 
   // Inputs (controls/inputs.tsx)

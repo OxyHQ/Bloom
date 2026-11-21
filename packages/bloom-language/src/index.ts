@@ -417,3 +417,6 @@ export type {
 // Menubars (controls/menubar.tsx)
 export { Menubar, MenubarMenu } from './controls/menubar';
 export type { MenubarMenuView, MenubarView } from './controls/menubar';
+// Composition bars (controls/composition-bar.tsx)
+export { CompositionBar } from './controls/composition-bar';
+export type { CompositionBarView, CompositionSegment } from './controls/composition-bar';

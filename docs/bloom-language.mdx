@@ -1692,6 +1692,26 @@ title and runs the row from it, open or closed (the other menus draw no
 shortcut). An item's platform action (Undo, Copy…, Settings) and alternates
 are not in the vocabulary yet.
 
+### Composition bars
+
+```ts
+CompositionBar(
+  [
+    { key: 'content', name: 'Content', amount: 320, tint: 'success' },
+    { key: 'social', name: 'Social', amount: 180, tint: 'info' },
+  ],
+  [chosen, setChosen],
+  'Tap a segment to see its share',
+).readoutFormat((points, percent) => `${points} pts · ${percent}%`)
+```
+
+Bloom's `CompositionBar`: what a total is made of, a segment each, its width
+its share. `CompositionBar(segments, selection, hint)`: each segment is Bloom's
+category with its colour a role (`tint`, a role at an opacity included,
+painted from the theme); the binding holds the chosen segment's key (a press
+sets it to the pressed one); the hint shows while none is chosen.
+`.readoutFormat((amount, percent) => text)` words the readout.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2089,6 +2109,7 @@ and `@oxy.so/bloom-data` beside it.
   hover cards,
   expandable text,
   menubars.
+  composition bars.
 
 **Not built**
 

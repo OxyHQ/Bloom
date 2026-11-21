@@ -87,3 +87,4 @@ export const MenubarSeparator = 'MenubarSeparator';
 export const MenubarSub = 'MenubarSub';
 export const MenubarSubTrigger = 'MenubarSubTrigger';
 export const MenubarSubContent = 'MenubarSubContent';
+export const CompositionBar = 'CompositionBar';
