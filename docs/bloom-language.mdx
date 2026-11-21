@@ -864,12 +864,20 @@ const PostMenu = menu(function PostMenu({ post }: { post: Post }) {
 Menu(MORE, PostMenu({ post }))
 ```
 
-- *Android:* a closed menu is only its trigger. A press mounts the lens view
-  around it with the menu open (`openOnMount`), the rows as data and their
-  glyphs as views in the engine's icon slots; the view stays until the engine
-  says the menu has closed. A trigger on glass gives the menu its glass: the
-  menu draws it and morphs out of it. The panel's tint and ink are Bloom's menu
-  palette (the first surface level). Without the engine, Bloom's menu.
+- *Android:* the lens view is the trigger, as in the engine's own demo. It is
+  mounted with the trigger and stays: it draws the trigger (on glass, its glass
+  too: one view, which the menu morphs out of), sees the press first (the glass
+  springs under the finger) and opens natively from where it is, with no
+  remount. Rows given as they are (tagged, or with handlers) are data the view
+  holds before it opens, their glyphs views in the engine's icon slots, so a
+  press is one call to the engine. A `menu()` content is built on the press:
+  the view opens itself as its rows arrive (`openWithItems`) and lets them go
+  once the engine says the menu has closed. The view takes what the demo gives
+  it: the rows in Bloom's Inter (`fontFamily`), the rows' own width, `alignment`
+  `auto` (the panel hangs from the side of the screen the trigger is on), and
+  the morph out of the trigger's shape (`morph`, its `.corner()` as
+  `cornerRadius`, a capsule without one). The panel's tint and ink are Bloom's
+  menu palette (the first surface level). Without the engine, Bloom's menu.
 - *iOS:* the system menu takes its rows before it opens and opens itself, so
   a `menu()` content (built only while open) is Bloom's menu there; rows given
   as they are (tagged, or with handlers) are the system's. Each row, submenu
