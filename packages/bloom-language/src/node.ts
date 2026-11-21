@@ -20,6 +20,7 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ChartCardKind } from './controls/chart-cards';
 import type { ChatComposerKind } from './controls/chat-composer';
 import type { ContainerKind } from './controls/containers';
 import type { InputKind } from './controls/inputs';
@@ -65,6 +66,10 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type SparklineTone,
+  type RadarVariant,
+  type ChartShape,
+  type AreaVariant,
   type ReactionPickerSize,
   type ComposerButtonTone,
   type AttachmentLayout,
@@ -265,6 +270,9 @@ export interface ValueModifiers {
   // Chat composer (controls/chat-composer.tsx)
   iconSize: IconSizeToken;
   surface: boolean;
+
+  // Chart cards (controls/chart-cards.tsx)
+  activeTint: ColorToken;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -420,9 +428,19 @@ export type Modifier =
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | AttachmentLayout;
+      readonly value:
+        | BloomAppearance
+        | BadgeStyle
+        | LoadingStyle
+        | AttachmentLayout
+        | AreaVariant
+        | RadarVariant;
     }
-  | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
+  | {
+      readonly kind: 'shape';
+      readonly key: string;
+      readonly value: ButtonShape | ShapeName | ChartShape;
+    }
   | {
       readonly kind: 'tint';
       readonly key: string;
@@ -432,7 +450,8 @@ export type Modifier =
         | ColorName
         | AvatarColor
         | ColorToken
-        | ComposerButtonTone;
+        | ComposerButtonTone
+        | SparklineTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -569,7 +588,8 @@ export type NodeKind =
   | OverlayKind
   | ContainerKind
   | AgentAvatarKind
-  | ChatComposerKind;
+  | ChatComposerKind
+  | ChartCardKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -884,14 +904,29 @@ export class Node {
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle | AttachmentLayout): Node {
+  style(
+    value:
+      | BloomAppearance
+      | BadgeStyle
+      | LoadingStyle
+      | AttachmentLayout
+      | AreaVariant
+      | RadarVariant,
+  ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
-  shape(value: ButtonShape | ShapeName): Node {
+  shape(value: ButtonShape | ShapeName | ChartShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
   tint(
-    value: EngagementTone | BloomTone | ColorName | AvatarColor | ColorToken | ComposerButtonTone,
+    value:
+      | EngagementTone
+      | BloomTone
+      | ColorName
+      | AvatarColor
+      | ColorToken
+      | ComposerButtonTone
+      | SparklineTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
@@ -1238,6 +1273,11 @@ export class Node {
   }
   surface(value = true): Node {
     return this.set('surface', value);
+  }
+
+  // Chart cards (controls/chart-cards.tsx)
+  activeTint(value: ColorToken): Node {
+    return this.set('activeTint', value);
   }
 }
 

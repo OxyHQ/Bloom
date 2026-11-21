@@ -1122,13 +1122,39 @@ a suggestion's `leading`. `.disabled()` disables either.
   `emoji`; `.size()` a control size, `.loading()`; its `maxHeight` a space token.
 - `VoiceRecorder(state, seconds, options?)`: `recording`, `locked` or `preview`.
 - `AttachmentMenu(trigger, options?)`: the trigger is a child (a `Button`);
-  `.style('grid' | 'list')`, `.columns(n)`. An item's own colour is not taken
-  (it would be a hex): items are tinted with the accent.
+  `.style('grid' | 'list')`, `.columns(n)`.
 - `EmojiPicker(groups, options?)`: `.size()` a control size; a tab's `content`
   is a child, its `height` a space token.
 - `ReactionPicker(emojis?, options?)`: `.size('sm' | 'md')`, `.surface(false)`.
 - `MessageContextMenu(message, items, options?)`: the message is the child it
   opens on.
+
+### Chart cards
+
+```ts
+LineChartCard({ title: 'Revenue', data, ranges, onRangeChange }).shape('sharp').tint('primary')
+BarListCard({ title: 'Sources', items, stats }).tint('success')
+ChartCardSurface({}, ChartHeadline('Revenue', { value, delta }), Sparkline(points).tint('positive')).spacing('sm')
+```
+
+Bloom's `chart-cards` family. A card takes its data as options, as Bloom's
+does (its title, points, series, ranges, stats and their handlers); data a
+card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
+`StepsCard(points)`, `TokensChartCard(points)`, `Sparkline(values)`,
+`ChartHeadline(label)`, `ChartStatTiles(tiles)`).
+
+- `AreaChartCard`: `.style('stacked' | 'overlap' | 'percent')`,
+  `.shape('curved' | 'sharp')`. `LineChartCard`: `.shape()`.
+  `RadarChartCard`: `.style('filled' | 'dots' | 'lines' | 'score')`.
+- A card's own colour is `.tint(role)`, its active point's `.activeTint(role)`
+  (`BarListCard` and `ContributionsCard` take a tint; `HeatmapChartCard`,
+  `LineChartCard`, `StepsCard` and `TokensChartCard` both). A series' or a
+  stage's colour is its data's, as Bloom takes it.
+- `Sparkline(values, options?)`: `.tint('accent' | 'positive' | 'negative' |
+  'neutral')`; its `width` and `height` are space tokens, as are a sleep
+  card's `height` and a tokens card's `plotHeight`.
+- `ChartCardSurface(options, ...children)`: the card the others are drawn on;
+  `.spacing()` its gap, its `height` a space token or `auto`.
 
 ## Interop
 
@@ -1508,7 +1534,10 @@ and `@oxy.so/bloom-data` beside it.
   web and Chrome: `AgentAvatar`; the chat composer family (`ChatComposer`,
   `CompactComposer`, `ComposerBanner`, `ComposerIconButton`, `SuggestionList`,
   `VoiceRecorder`, `AttachmentMenu`, `EmojiPicker`, `ReactionPicker`,
-  `MessageContextMenu`).
+  `MessageContextMenu`); the chart cards (`AreaChartCard`, `BarListCard`,
+  `ContributionsCard`, `HeatmapChartCard`, `LineChartCard`, `RadarChartCard`,
+  `SleepScoreCard`, `StageBarsCard`, `StepsCard`, `TokensChartCard`,
+  `ChartCardSurface`, `ChartHeadline`, `ChartStatTiles`, `Sparkline`).
 
 **Not built**
 

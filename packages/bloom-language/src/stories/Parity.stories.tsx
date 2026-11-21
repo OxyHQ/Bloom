@@ -4,6 +4,7 @@ import { Text } from '@oxy.so/bloom/typography';
 
 import type { ParityCase } from '../../parity/support/cases';
 import { AGENT_AVATAR_CASES } from '../../parity/agent-avatar.cases';
+import { CHART_CARD_CASES } from '../../parity/chart-cards.cases';
 import { CHAT_COMPOSER_CASES } from '../../parity/chat-composer.cases';
 import { AVATAR_CASES } from '../../parity/avatar.cases';
 import { BUTTON_CASES } from '../../parity/button.cases';
@@ -69,3 +70,4 @@ export const Layout: Story = { args: { cases: LAYOUT_CASES } };
 export const Variants: Story = { args: { cases: VARIANT_CASES } };
 export const AgentAvatars: Story = { args: { cases: AGENT_AVATAR_CASES } };
 export const ChatComposers: Story = { args: { cases: CHAT_COMPOSER_CASES } };
+export const ChartCards: Story = { args: { cases: CHART_CARD_CASES } };
