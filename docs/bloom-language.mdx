@@ -1378,7 +1378,8 @@ and `@oxy.so/bloom-data` beside it.
   `.offset()`, `.rotation()`) as tokens or bound to a `MotionValue`, `.drag()`
   and `.swipe()` on Gesture Handler 3. Resting geometry that nothing plays is
   the box's own style. Bloom's pop, roll, toast and press feedback play on the
-  same engine.
+  same engine; the bottom sheet's drags are the same gesture layer's
+  (docs/motion.mdx, Motion values and gestures).
 - The className table (`docs/bloom-language-classnames.mdx`), which says what
   each utility the apps use becomes.
 
@@ -1394,10 +1395,10 @@ and `@oxy.so/bloom-data` beside it.
   read the nearest press host and are right).
 - Motion: `transition-colors` (the engine plays geometry and opacity, not
   colour), loops (`animate-spin`, `animate-pulse`), a `delay`, a transform
-  `origin`; `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`, the bottom
-  sheet's drag, `.contentTransition('numeric')`, matched geometry across
-  screens. An `.animation()` scope reaches its own body, not the bodies of
-  `view()`s inside it; a removal plays only for a keyed list's child.
+  `origin`; `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`,
+  `.contentTransition('numeric')`, matched geometry across screens. An
+  `.animation()` scope reaches its own body, not the bodies of `view()`s
+  inside it; a removal plays only for a keyed list's child.
 - Renderers: everything renders through React Native and react-native-web;
   no SwiftUI, native-view or CSS renderer yet. iOS is typechecked and tested
   against stand-ins, not run on a device. The web stylesheet is not in
