@@ -3185,6 +3185,9 @@ export const MODIFIERS = {
   ],
   "optionBox": [
     "value"
+  ],
+  "autoplay": [
+    "value"
   ]
 } as const;
 
@@ -13105,7 +13108,12 @@ export const NODE_MODIFIERS = {
     "spacing",
     "optionBox",
     "disabled"
-  ]
+  ],
+  "videoPlayback": [
+    "autoplay"
+  ],
+  "videoViewability": [],
+  "videoViewabilityScope": []
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -13281,5 +13289,8 @@ export const CONSTRUCTORS = {
   "FactStrip": "factStrip",
   "Fact": "fact",
   "SortablePhotoGrid": "sortablePhotoGrid",
-  "ChoiceList": "choiceList"
+  "ChoiceList": "choiceList",
+  "VideoPlayback": "videoPlayback",
+  "VideoViewability": "videoViewability",
+  "VideoViewabilityScope": "videoViewabilityScope"
 } as const;
