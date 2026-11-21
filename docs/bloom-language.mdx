@@ -1199,11 +1199,27 @@ its actions, `.disabled`, `.expanded` and `.onExpandedChange` its open state,
 | `.collapsed()`, `.onCollapsedChange(fn)` | `collapsed`, `onCollapsedChange` |
 | `.searchable(false)`, `.themeToggle(false)` | `showSearch`, `showThemeToggle` |
 | `.logo(logo)`, `.account(account)`, `.label(text)` | `logo`, `account`, `accessibilityLabel` |
+| `.mode(key)`, `.onModeChange(fn)`, `.modePresentation('segmented' \| 'toggle')`, `.modesLabel(text)` | `mode`, `onModeChange`, `modesPresentation`, `modesLabel`: the switcher of its `SidebarMode` rows |
+| `.team(team)`, `.teamPlacement('header' \| 'footer')`, `.plan(plan)` | `team`, `teamPlacement`, `plan` (Bloom's `SidebarTeam` and `SidebarPlan` data) |
+| `.onboarding({ title, leading, steps, … })` | `onboarding`: the getting-started card, its `leading` a view |
+| `.query(text, onChange)` | `searchQuery`, `onSearchQueryChange`: the quick search held by the app, which filters its own content with it |
+| `.onDrop(drop => …)` | `onTreeItemDrop`, told by id: `{ id, from, target?, position, section }` |
 
-A row's `navigate()` press goes through the navigator of the `layout()` or
-`screen()` it is drawn under. What a chain leaves out is not in the data at
-all, so Bloom's defaults hold. Not in the language yet: the sidebar's modes,
-team, plan, onboarding card, its search query, and tree drag and drop.
+A `SidebarMode(label, icon)` row is a mode of the switcher under the header
+(`.id` its key, the label by default; `.shortcut`, bound by the sidebar on the
+web). A tree row takes `.draggable()`, `.droppable(false)` and
+`.dropBeside(false)`, a section `.droppable(false)`: Bloom's drop rules. A
+draggable row is an HTML drag source on the web; on touch a long press lifts it
+on Bloom's gesture layer (`useDrag` on the row's lift, as the bottom sheet's
+drags), and it follows the finger; the moves are accessibility actions too.
+The sidebar reports where a row landed; the app moves it.
+
+`.onSelect` is the one selection for destinations and tree rows: Bloom's
+`onTreeItemPress` and its `onNavigate`, which, given, takes over a linking
+destination's own push (on the web the browser's navigation is prevented, so
+the app's router opens it). A row's `navigate()` press goes through the
+navigator of the `layout()` or `screen()` it is drawn under. What a chain
+leaves out is not in the data at all, so Bloom's defaults hold.
 
 `Rail(...items)` is Bloom's `Rail`: each `RailItem(label, glyph)` an item
 whose glyph is a view the app draws in its own ink

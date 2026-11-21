@@ -10,17 +10,36 @@ import {
   Sidebar,
   type SidebarAccount,
   type SidebarLogo,
+  type SidebarMode,
   type SidebarNavItem,
+  type SidebarOnboardingCardProps,
+  type SidebarPlan,
   type SidebarProps,
+  type SidebarTeam,
   type SidebarTree,
+  type SidebarTreeDrop,
   type SidebarTreeFolder,
   type SidebarTreeItem,
 } from '@oxy.so/bloom/sidebar';
 
-import type { Child, IconComponent, Node, Press } from '../node';
+import type {
+  Child,
+  IconComponent,
+  Modifier,
+  Node,
+  Press,
+  SidebarOnboarding,
+  TreeDrop,
+} from '../node';
 import { nodesOf, valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
-import type { SidebarSize, SidebarSurface, SidebarVariant } from '../tokens';
+import type {
+  ModePresentation,
+  SidebarSize,
+  SidebarSurface,
+  SidebarVariant,
+  TeamPlacement,
+} from '../tokens';
 import { defined } from './defined';
 
 type Draw = NodeHostProps['render'];
@@ -71,6 +90,42 @@ function treeItemOf(node: Node, render: Draw, press: PressOf): SidebarTreeItem {
     onPress: press(values.onPress as Press | undefined),
     onLongPress: values.onLongPress as (() => void) | undefined,
     items: nested.length > 0 ? nested.map((item) => treeItemOf(item, render, press)) : undefined,
+    draggable: values.draggable as boolean | undefined,
+    droppable: values.droppable as boolean | undefined,
+    dropBeside: values.dropBeside as boolean | undefined,
+  });
+}
+
+function modeOf(node: Node): SidebarMode {
+  const values = valuesOf(node);
+  const { label, icon } = node.props as { label: string; icon: IconComponent };
+  return defined({
+    key: (values.id as string | undefined) ?? label,
+    label,
+    icon,
+    shortcut: values.shortcut as string | undefined,
+  });
+}
+
+/** Bloom's onboarding card from the language's: its leading view drawn. */
+function onboardingOf(card: SidebarOnboarding, render: Draw): SidebarOnboardingCardProps {
+  const { leading, ...rest } = card;
+  return defined({ ...rest, leading: leading ? render(leading) : undefined });
+}
+
+/** A section's identity, as Bloom keys it: its key, else its label. */
+function sectionId(section: SidebarTree): string {
+  return section.key ?? section.label;
+}
+
+/** Bloom's drop, by id: what the language's `.onDrop` is told. */
+function dropOf(drop: SidebarTreeDrop): TreeDrop {
+  return defined({
+    id: drop.item.key,
+    from: sectionId(drop.from),
+    target: drop.target?.key,
+    position: drop.position,
+    section: sectionId(drop.section),
   });
 }
 
@@ -107,6 +162,7 @@ function sectionOf(node: Node, render: Draw, press: PressOf): SidebarTree {
     loading: values.loading as boolean | undefined,
     error: values.error as string | undefined,
     emptyLabel: values.emptyLabel as string | undefined,
+    droppable: values.droppable as boolean | undefined,
   });
 }
 
@@ -118,6 +174,11 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
   const primary = nav.filter((row) => valuesOf(row).secondary !== true);
   const secondary = nav.filter((row) => valuesOf(row).secondary === true);
   const sections = rows.filter((row) => row.kind === 'treeSection');
+  const modes = rows.filter((row) => row.kind === 'sidebarMode');
+  const onboarding = values.onboarding as SidebarOnboarding | undefined;
+  const onDrop = values.onDrop as ((drop: TreeDrop) => void) | undefined;
+  let query: Extract<Modifier, { kind: 'query' }> | undefined;
+  for (const modifier of node.modifiers) if (modifier.kind === 'query') query = modifier;
   const selection = values.selection as string | undefined;
   const onSelect = values.onSelect as ((id: string) => void) | undefined;
   const header = values.header as Node | false | undefined;
@@ -150,6 +211,18 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
     account: values.account as SidebarAccount | undefined,
     accessibilityLabel: values.label as string | undefined,
     testID: values.testID as string | undefined,
+    modes: modes.length > 0 ? modes.map(modeOf) : undefined,
+    mode: values.mode as string | undefined,
+    onModeChange: values.onModeChange as ((key: string) => void) | undefined,
+    modesPresentation: values.modePresentation as ModePresentation | undefined,
+    modesLabel: values.modesLabel as string | undefined,
+    team: values.team as SidebarTeam | undefined,
+    teamPlacement: values.teamPlacement as TeamPlacement | undefined,
+    plan: values.plan as SidebarPlan | undefined,
+    onboarding: onboarding ? onboardingOf(onboarding, render) : undefined,
+    searchQuery: query?.value,
+    onSearchQueryChange: query?.onChange,
+    onTreeItemDrop: onDrop ? (drop: SidebarTreeDrop) => onDrop(dropOf(drop)) : undefined,
   });
 }
 
