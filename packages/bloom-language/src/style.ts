@@ -7,7 +7,9 @@ import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography
 
 import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated/spec.generated';
 import { WEB_CLASS } from './generated/web-sheet.generated';
-import type { Paint } from './paint';
+import type { Paint, PaintVariant } from './paint';
+import { LIVE_ORDER, warnNoClass, type LiveCondition, type Planned } from './variants';
+import { adoptLanguageVariants } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
@@ -94,9 +96,26 @@ export type StyleValue = number | string | RoleRef | object;
 /** A style as resolved: style properties to numbers, strings, roles or structured values. */
 export type Resolved = Record<string, StyleValue>;
 
+/** A style's live variants, in the order they apply (`LIVE_ORDER`): what each condition overrides. */
+export type VariantStyles = readonly (readonly [LiveCondition, Resolved])[];
+
+/** Variant styles gathered from several sources (a layer, the placement…), in the order they apply. */
+export function joinVariants(...lists: (VariantStyles | undefined)[]): VariantStyles {
+  const byCondition = new Map<LiveCondition, Resolved>();
+  for (const list of lists) {
+    for (const [condition, style] of list ?? []) {
+      byCondition.set(condition, Object.assign(byCondition.get(condition) ?? {}, style));
+    }
+  }
+  return LIVE_ORDER.filter((condition) => byCondition.has(condition)).map(
+    (condition) => [condition, byCondition.get(condition) as Resolved] as const,
+  );
+}
+
 /**
  * What a host is handed. `style` is final; `paint`, when present, names the
- * properties a `Painted` leaf must fill from the theme before drawing.
+ * properties a `Painted` leaf must fill from the theme before drawing (and,
+ * with variants, what a `Conditioned` leaf picks from the environment).
  */
 export interface StyleOut {
   readonly style: unknown;
@@ -116,12 +135,20 @@ export type Target = 'host' | 'component' | 'material';
 const NO_STYLE: StyleOut = Object.freeze({ style: undefined, paint: undefined });
 const cache = new Map<string, StyleOut>();
 
-/** The style for `key`, built once and handed back by lookup on every later render. */
-export function cachedStyle(target: Target, key: string, build: () => Resolved): StyleOut {
+/**
+ * The style for `key`, built once and handed back by lookup on every later
+ * render. `variants` are its live variants (the key names them too).
+ */
+export function cachedStyle(
+  target: Target,
+  key: string,
+  build: () => Resolved,
+  variants?: () => VariantStyles,
+): StyleOut {
   const id = `${target}|${key}`;
   let out = cache.get(id);
   if (out === undefined) {
-    out = serialize(build(), target);
+    out = serialize(build(), target, variants?.() ?? []);
     cache.set(id, out);
   }
   return out;
@@ -131,14 +158,14 @@ function isRole(value: StyleValue): value is RoleRef {
   return typeof value === 'object' && (value as Partial<RoleRef>).role !== undefined;
 }
 
-function serialize(resolved: Resolved, target: Target): StyleOut {
-  const keys = Object.keys(resolved);
-  if (keys.length === 0) return NO_STYLE;
-  if (IS_WEB && target !== 'material')
-    return { style: webStyle(resolved, keys, target), paint: undefined };
+/** A resolved style as a native host takes it: its values, and the properties painted from roles. */
+function split(resolved: Resolved): {
+  style: object;
+  styleRoles: (readonly [string, ColorName, number?])[];
+} {
   const values: Record<string, StyleValue> = {};
   const roles: (readonly [string, ColorName, number?])[] = [];
-  for (const key of keys) {
+  for (const key of Object.keys(resolved)) {
     const value = resolved[key] as StyleValue;
     if (isRole(value))
       roles.push(
@@ -146,9 +173,35 @@ function serialize(resolved: Resolved, target: Target): StyleOut {
       );
     else values[key] = value;
   }
-  const style = Object.freeze(values);
-  if (roles.length === 0) return { style, paint: undefined };
-  return { style: undefined, paint: { style, styleRoles: roles, propRoles: [] } };
+  return { style: Object.freeze(values), styleRoles: roles };
+}
+
+function serialize(resolved: Resolved, target: Target, variants: VariantStyles): StyleOut {
+  const keys = Object.keys(resolved);
+  if (keys.length === 0 && variants.length === 0) return NO_STYLE;
+  if (target !== 'host' && variants.length > 0) {
+    // A Bloom component takes its style as an object, so nothing can vary it
+    // on the web; the renderer puts a varied layer on a view of its own.
+    variants = [];
+  }
+  if (IS_WEB && target !== 'material') {
+    if (keys.length === 0 && variants.length === 0) return NO_STYLE;
+    return { style: webStyle(resolved, keys, target, variants), paint: undefined };
+  }
+  const { style, styleRoles } = split(resolved);
+  if (variants.length > 0) {
+    const varied: PaintVariant[] = variants.map(([condition, styled]) => ({
+      condition,
+      ...split(styled),
+    }));
+    const base = keys.length > 0 ? style : undefined;
+    return {
+      style: undefined,
+      paint: { style: base, styleRoles, propRoles: [], variants: varied },
+    };
+  }
+  if (styleRoles.length === 0) return { style, paint: undefined };
+  return { style: undefined, paint: { style, styleRoles, propRoles: [] } };
 }
 
 /**
@@ -157,21 +210,40 @@ function serialize(resolved: Resolved, target: Target): StyleOut {
  * app token's own number). A Bloom component reads its style as an object,
  * so it gets the inline form, roles as their CSS variables.
  */
-function webStyle(resolved: Resolved, keys: string[], target: 'host' | 'component'): unknown {
+const classOf = (key: string, value: StyleValue): string | undefined =>
+  WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${String(value)}`];
+
+function webStyle(
+  resolved: Resolved,
+  keys: string[],
+  target: 'host' | 'component',
+  variants: VariantStyles,
+): unknown {
   let classes: Record<string, string | boolean> | undefined;
   let inline: Record<string, StyleValue> | undefined;
   for (const key of keys) {
     const value = resolved[key] as StyleValue;
-    const name =
-      target === 'host'
-        ? WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${value}`]
-        : undefined;
+    const name = target === 'host' ? classOf(key, value) : undefined;
     if (name !== undefined) {
       classes ??= { $$css: true };
       classes[key] = name;
     } else {
       inline ??= {};
       inline[key] = isRole(value) ? webInk(value) : value;
+    }
+  }
+  // A variant is the same class under its condition's CSS (web-sheet.ts), keyed
+  // apart from the base so styleq keeps both.
+  if (variants.length > 0) adoptLanguageVariants();
+  for (const [condition, styled] of variants) {
+    for (const key of Object.keys(styled)) {
+      const name = classOf(key, styled[key] as StyleValue);
+      if (name === undefined) {
+        warnNoClass(key);
+        continue;
+      }
+      classes ??= { $$css: true };
+      classes[`${key}@${condition}`] = `${name}-${condition}`;
     }
   }
   const parts = [classes, inline].filter((part) => part !== undefined).map(Object.freeze);
@@ -193,6 +265,8 @@ export type LayerModifier = Extract<Modifier, { kind: keyof typeof LAYER_RANK }>
 
 export interface Layer {
   readonly modifiers: LayerModifier[];
+  /** What variants change in this view: each over the values the chain set before it. */
+  readonly variants: [Planned, LayerModifier][];
   key: string;
   rank: number;
   edges: number;
@@ -251,6 +325,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   if (current === undefined || rank < current.rank || sameKind || clip !== undefined) {
     layers.push({
       modifiers: [modifier],
+      variants: [],
       key: clip ? `${modifier.key}@${clip.key}` : modifier.key,
       rank,
       edges,
@@ -274,6 +349,51 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   if (overlay) current.overlays.push(overlay);
 }
 
+/** Whether two box modifiers set the same thing (a padding the same edge, a border the same side). */
+function sameSlot(a: LayerModifier, b: LayerModifier): boolean {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'padding' && b.kind === 'padding')
+    return (EDGE_BITS[a.edge] & EDGE_BITS[b.edge]) !== 0;
+  if (a.kind === 'border' && b.kind === 'border') return a.edge === b.edge;
+  return true;
+}
+
+/**
+ * A variant's box modifier goes to the view that set the same thing last
+ * before the variant (it overrides that value), else to the outermost view so
+ * far, else to a view of its own.
+ */
+export function addVariantToLayers(
+  layers: Layer[],
+  condition: Planned,
+  modifier: LayerModifier,
+): void {
+  let target: Layer | undefined;
+  for (let i = layers.length - 1; i >= 0 && target === undefined; i--) {
+    const layer = layers[i] as Layer;
+    if (layer.modifiers.some((existing) => sameSlot(existing, modifier))) target = layer;
+  }
+  target ??= layers[layers.length - 1];
+  if (target === undefined) {
+    target = {
+      modifiers: [],
+      variants: [],
+      key: '',
+      rank: -1,
+      edges: 0,
+      glass: undefined,
+      concentric: false,
+      curve: undefined,
+      blur: false,
+      overlays: [],
+      follows: undefined,
+    };
+    layers.push(target);
+  }
+  target.variants.push([condition, modifier]);
+  target.key += `;?${condition ?? ''}${modifier.key}`;
+}
+
 function paddingStyle(style: Resolved, edge: Edge, value: number): void {
   // Negative padding pulls the box outward: a margin, as SwiftUI draws it.
   const prefix = value < 0 ? 'margin' : 'padding';
@@ -293,11 +413,32 @@ const BORDER_EDGE_KEY: Record<BorderEdge, string> = {
   trailing: 'borderEnd',
 };
 
-/** One layer's view style. Glass's fill is the Surface's prop, not a style; a blur draws its own material. */
+/** One layer's view style, the variants that hold included. Glass's fill is the Surface's prop, not a style; a blur draws its own material. */
 export function layerStyle(layer: Layer | undefined): Resolved {
+  if (layer === undefined) return {};
+  const style = modifiersStyle(layer, layer.modifiers);
+  for (const [condition, modifier] of layer.variants) {
+    if (condition === null) Object.assign(style, modifiersStyle(layer, [modifier]));
+  }
+  return style;
+}
+
+/** One layer's live variants: what each condition overrides. */
+export function layerVariants(layer: Layer | undefined): VariantStyles {
+  if (layer === undefined || layer.variants.length === 0) return [];
+  return joinVariants(
+    layer.variants
+      .filter(([condition]) => condition !== null)
+      .map(([condition, modifier]) => [
+        condition as LiveCondition,
+        modifiersStyle(layer, [modifier]),
+      ]),
+  );
+}
+
+function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Resolved {
   const style: Resolved = {};
-  if (layer === undefined) return style;
-  for (const modifier of layer.modifiers) {
+  for (const modifier of modifiers) {
     switch (modifier.kind) {
       case 'padding':
         paddingStyle(style, modifier.edge, resolveSpace(modifier.value));
@@ -395,8 +536,52 @@ export interface Placement {
   offset: OffsetSpec | undefined;
   zIndex: ZIndexName | undefined;
   hidden: boolean | undefined;
+  /** What variants change in the view's place. */
+  variants: [Planned, PlaceModifier][];
   /** The cache key of everything above, '' when nothing places the view. */
   key: string;
+}
+
+/** The modifiers that place a view in its parent. */
+export type PlaceModifier = Extract<
+  Modifier,
+  { kind: 'grow' | 'shrink' | 'alignSelf' | 'position' | 'offset' | 'zIndex' | 'hidden' }
+>;
+export const PLACE_KINDS: ReadonlySet<string> = new Set([
+  'grow',
+  'shrink',
+  'alignSelf',
+  'position',
+  'offset',
+  'zIndex',
+  'hidden',
+]);
+
+/** Sets what `modifier` says about the view's place. */
+export function applyPlacement(place: Placement, modifier: PlaceModifier): void {
+  if (modifier.kind === 'grow') place.grow = true;
+  else (place as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
+  place.key += `;${modifier.key}`;
+}
+
+/** A placement of these modifiers alone: what a variant's place modifiers write. */
+function placementOf(modifiers: readonly PlaceModifier[]): Placement {
+  const place = emptyPlacement();
+  for (const modifier of modifiers) applyPlacement(place, modifier);
+  return place;
+}
+
+/** The live variants of a view's place. */
+export function placeVariants(place: Placement): VariantStyles {
+  if (place.variants.length === 0) return [];
+  return joinVariants(
+    place.variants
+      .filter(([condition]) => condition !== null)
+      .map(([condition, modifier]) => [
+        condition as LiveCondition,
+        placeStyle(placementOf([modifier])),
+      ]),
+  );
 }
 
 export function emptyPlacement(): Placement {
@@ -408,6 +593,7 @@ export function emptyPlacement(): Placement {
     offset: undefined,
     zIndex: undefined,
     hidden: undefined,
+    variants: [],
     key: '',
   };
 }
@@ -446,6 +632,9 @@ export function placeStyle(place: Placement): Resolved {
   }
   if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
+  for (const [condition, modifier] of place.variants) {
+    if (condition === null) Object.assign(style, placeStyle(placementOf([modifier])));
+  }
   return style;
 }
 
@@ -470,20 +659,54 @@ const JUSTIFY: Record<Justify, string> = {
   evenly: 'space-evenly',
 };
 
-export function stackStyle(
-  axis: 'horizontal' | 'vertical' | 'depth',
-  layout: StackLayout,
-): Resolved {
+/** The stack modifiers. */
+export type StackModifier = Extract<
+  Modifier,
+  { kind: 'spacing' | 'align' | 'justify' | 'wrap' | 'axis' }
+>;
+export const STACK_KINDS: ReadonlySet<string> = new Set([
+  'spacing',
+  'align',
+  'justify',
+  'wrap',
+  'axis',
+]);
+
+/** A stack layout of these modifiers, the last of each kind winning. */
+export function layoutOf(modifiers: readonly StackModifier[]): StackLayout {
+  const layout: StackLayout = {
+    spacing: undefined,
+    align: undefined,
+    justify: undefined,
+    wrap: undefined,
+    axis: undefined,
+  };
+  for (const modifier of modifiers) {
+    (layout as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
+  }
+  return layout;
+}
+
+/** What a layout sets, and nothing else (a variant writes only what it changes). */
+export function layoutStyle(layout: StackLayout): Resolved {
   const style: Resolved = {};
   if (layout.axis !== undefined)
     style.flexDirection = layout.axis === 'horizontal' ? 'row' : 'column';
-  else if (axis === 'horizontal') style.flexDirection = 'row';
-  if (axis === 'depth') style.position = 'relative';
   if (layout.justify !== undefined) style.justifyContent = JUSTIFY[layout.justify];
   if (layout.spacing !== undefined) style.gap = resolveSpace(layout.spacing);
   if (layout.align !== undefined) style.alignItems = ALIGNMENT[layout.align];
   if (layout.wrap !== undefined) style.flexWrap = layout.wrap ? 'wrap' : 'nowrap';
   return style;
+}
+
+export function stackStyle(
+  axis: 'horizontal' | 'vertical' | 'depth',
+  layout: StackLayout,
+): Resolved {
+  const style: Resolved = {};
+  if (axis === 'horizontal') style.flexDirection = 'row';
+  if (axis === 'depth') style.position = 'relative';
+  return Object.assign(style, layoutStyle(layout));
 }
 
 // ── Text ─────────────────────────────────────────────────────────
@@ -497,6 +720,33 @@ export interface TextTraits {
   weight: WeightName | undefined;
   leading: LeadingToken | undefined;
   tracking: TrackingName | undefined;
+  /** The traits live variants set above (`when()`), each over the traits it is in. */
+  variants?: readonly (readonly [LiveCondition, Partial<TextTraits>])[];
+}
+
+const PLAIN_LOOK: TextLook = {
+  noWrap: false,
+  align: undefined,
+  italic: false,
+  underline: false,
+  strikethrough: false,
+  textCase: undefined,
+  link: false,
+};
+
+/** A text's live variants: what each sets of the traits it changes (a colour, a whole font). */
+export function textVariants(traits: TextTraits): VariantStyles {
+  if (traits.variants === undefined || traits.variants.length === 0) return [];
+  return joinVariants(
+    traits.variants.map(([condition, changed]) => [
+      condition,
+      textStyle(
+        { ...traits, ...changed, variants: undefined },
+        PLAIN_LOOK,
+        new Set(Object.keys(changed) as (keyof TextTraits)[]),
+      ),
+    ]),
+  );
 }
 
 /** Each family's face, as Bloom's `Text` sets it for `font-mono`. */

@@ -51,7 +51,9 @@ function Placed() {
     .overlay(Text('badge'), 'top-trailing')
     .corner('lg')
     .shadow('m')
-    .ring('border');
+    .ring('border')
+    .when('md', (v) => v.padding('lg').justify('center'))
+    .when('dark', (v) => v.ring('primary'));
 }
 
 export const cases = {

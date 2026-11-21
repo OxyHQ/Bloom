@@ -255,6 +255,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`; out of the layout |
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
 | `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`; a colour role (or a role at an opacity, or `none`) as an outline |
+| `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android` (see [Variants](#variants)) |
 | `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'11'` `'14'` `'16'` `'18'` `'24'` `'30'` `'36'`), or `mono` (Bloom's monospaced face, beside the size) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
 | `tracking(t)` | `tight` `wide` `wider` `widest` (em of the size); or an exact em (`'-0.02em'` `'-0.01em'` `'0.04em'`) or px (`'-0.5px'` … `'2px'`) |
@@ -343,6 +344,60 @@ VStack(...).background('surface').corner('xl').shadow('m')
 
 Not verified on a device: a ring (React Native's `outline*`, 0.77+) and a
 shadow beside a clip on iOS and Android.
+
+## Variants
+
+```ts
+VStack(...).padding('sm').when('md', (v) => v.padding('lg'))
+HStack(...).axis('vertical').when('md', (v) => v.axis('horizontal').justify('between'))
+VStack(...).hidden().when('lg', (v) => v.hidden(false))
+Card().background('surface').when('dark', (v) => v.background('popover'))
+HStack(...).onPress(open).when('pressed', (v) => v.opacity('70')).when('hovered', (v) => v.foreground('foreground'))
+VStack(...).when('web', (v) => v.padding('lg'))   // a platform: settled when it renders
+```
+
+`.when(condition, build)` is SwiftUI's environment-driven variant as a
+modifier: `build` chains style modifiers onto the view, and while the
+condition holds they **override the values the chain set before the call**
+(Tailwind's `p-2 md:p-4`, not a second padding). Each goes where it
+overrides: a box modifier into the view that set the same thing last (a
+padding of the same edge, a border of the same side), else the outermost
+view so far; a text trait into the environment, so it reaches the text
+inside; a stack's layout to its host; a placement to its outermost box.
+
+| Condition | Holds | Web | Native |
+| --- | --- | --- | --- |
+| `sm` `md` `lg` `xl` `2xl` | the window at that tier of Bloom's `BREAKPOINTS` or wider | `@media (min-width: …)` | the leaf reads `useWindowBreakpoint()`, which re-renders it only across a breakpoint |
+| `dark` | the dark scheme | `.dark &` (Bloom puts `dark` on the root) | the leaf reads the theme it already paints from |
+| `hovered` `focused` `pressed` | the view's own state (`focused` is a keyboard's focus, `:focus-visible`) | `.blsg:hover &`: the view's outermost box carries the anchor class | the outermost box (`StateHost`) tracks the states its variants answer and hands them to the view's leaves |
+| `disabled` | the view's own `.disabled()` (Button, FAB, a pressable stack) | settled when it renders | settled when it renders |
+| `web` `native` `ios` `android` | the platform | settled | settled |
+
+- **No view body runs.** A live condition is answered below the view: by CSS
+  on the web, by the leaf that draws each host on native (`Conditioned`, a
+  `Painted` leaf that also reads the breakpoint, the scheme and the state),
+  which builds its props once per palette and set of holding variants.
+- **The variant sheet** is every class of the generated sheet again under
+  each live condition (`<class>-md`, `<class>-hovered`…), composed once per
+  document from the generated sheet the first time a variant renders, and
+  adopted after it. A breakpoint's rule has the base's specificity and comes
+  after it (a wider breakpoint after a narrower); the scheme's selector is one
+  class stronger and a state's two, so a state beats the scheme and a press
+  beats a hover. A value with no class (an app token, an offset) cannot vary
+  on the web: it is left out, said once in development.
+- **What varies** is the spec's `variants.modifiers`: box, text and stack
+  style, placement, elevation and rings. Anything else inside `when()` is left
+  out and said once in development; the compiler rejects it (`A variant cannot
+  change .onPress()`), and checks the condition and every value.
+- **A Bloom component** (Avatar, Button, Image…) takes its style as an
+  object, so a varied box, place or state of one is a view of its own around
+  it, which takes the variant.
+- **States are the view's**, as SwiftUI's: the anchor is the view's outermost
+  box. On the web a state selector reaches what is inside the anchor, so a
+  view with state variants inside another one answers the outer one's state
+  too; on native each leaf reads the nearest box's.
+- Icons keep their base ink under a variant (their fill is a prop, not CSS),
+  a glass or concentric layer cannot vary, and variants do not nest.
 
 ## Text
 

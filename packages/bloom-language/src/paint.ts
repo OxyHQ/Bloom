@@ -1,9 +1,18 @@
-import { createElement, type ComponentType, type ReactElement, type ReactNode } from 'react';
+import {
+  createContext,
+  createElement,
+  useContext,
+  type ComponentType,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { Platform } from 'react-native';
-import { useThemePaint, withAlpha, type ThemeColors } from '@oxy.so/bloom/theme';
+import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
+import { useTheme, useThemePaint, withAlpha, type ThemeColors } from '@oxy.so/bloom/theme';
 
 import { COLORS } from './generated/spec.generated';
 import type { ColorName } from './tokens';
+import { TIERS, type LiveCondition, type Tier } from './variants';
 
 /**
  * What a `Painted` leaf fills from the theme: style properties painted from
@@ -15,6 +24,15 @@ export interface Paint {
   readonly style: object | undefined;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
   readonly propRoles: readonly (readonly [string, ColorName, number?])[];
+  /** Native: what live variants override, in the order they apply (a `Conditioned` leaf draws them). */
+  readonly variants?: readonly PaintVariant[];
+}
+
+/** One live variant of a native style: its values, and the properties painted from roles. */
+export interface PaintVariant {
+  readonly condition: LiveCondition;
+  readonly style: object;
+  readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
 }
 
 const IS_WEB = Platform.OS === 'web';
@@ -78,3 +96,88 @@ export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
   return createElement(host, { ...props, ...painted });
 }
 Painted.displayName = 'BloomPaint';
+
+// ── Live variants on native ──────────────────────────────────────
+
+/** The state of the view a host belongs to: what its outermost box (a `StateHost`) tracks. */
+export interface Interaction {
+  readonly hovered: boolean;
+  readonly focused: boolean;
+  readonly pressed: boolean;
+}
+export const IDLE: Interaction = Object.freeze({ hovered: false, focused: false, pressed: false });
+export const InteractionContext = createContext<Interaction>(IDLE);
+InteractionContext.displayName = 'BloomInteraction';
+
+/** Whether a live condition holds: the window's tier from the variant's up, the scheme, a state. */
+function holds(condition: LiveCondition, tier: Tier, dark: boolean, state: Interaction): boolean {
+  switch (condition) {
+    case 'dark':
+      return dark;
+    case 'hovered':
+    case 'focused':
+    case 'pressed':
+      return state[condition];
+    default:
+      return TIERS.indexOf(tier) >= TIERS.indexOf(condition);
+  }
+}
+
+const conditioned = new WeakMap<
+  ThemeColors,
+  WeakMap<Paint, Map<number, Record<string, unknown>>>
+>();
+
+/** The props a paint resolves to under one palette with these variants holding (a bit each), built once and reused. */
+function conditionedProps(
+  colors: ThemeColors,
+  paint: Paint,
+  holding: number,
+): Record<string, unknown> {
+  let byPaint = conditioned.get(colors);
+  if (byPaint === undefined) {
+    byPaint = new WeakMap();
+    conditioned.set(colors, byPaint);
+  }
+  let byHolding = byPaint.get(paint);
+  if (byHolding === undefined) {
+    byHolding = new Map();
+    byPaint.set(paint, byHolding);
+  }
+  const base = paintProps(colors, paint);
+  if (holding === 0) return base;
+  let props = byHolding.get(holding);
+  if (props === undefined) {
+    const style: Record<string, unknown> = { ...(base.style as object | undefined) };
+    (paint.variants ?? []).forEach((variant, index) => {
+      if ((holding & (1 << index)) === 0) return;
+      Object.assign(style, variant.style);
+      for (const [key, role, opacity] of variant.styleRoles) {
+        const color = colors[COLORS[role].paint];
+        style[key] = opacity === undefined ? color : atOpacity(color, opacity);
+      }
+    });
+    props = Object.freeze({ ...base, style: Object.freeze(style) });
+    byHolding.set(holding, props);
+  }
+  return props;
+}
+
+/**
+ * A `Painted` leaf whose style has live variants (native): it reads what they
+ * hold on (the window's breakpoint tier, the scheme, the state of the view it
+ * belongs to) and draws the props built once for that set. A resize re-renders
+ * it only across a breakpoint, a press only the leaves of the pressed view.
+ */
+export function Conditioned({ host, paint, ...props }: PaintedProps): ReactElement {
+  const colors = useThemePaint();
+  const { isDark } = useTheme();
+  const tier = useWindowBreakpoint();
+  const state = useContext(InteractionContext);
+  let holding = 0;
+  (paint.variants ?? []).forEach((variant, index) => {
+    if (holds(variant.condition, tier, isDark, state)) holding |= 1 << index;
+  });
+  return createElement(host, { ...props, ...conditionedProps(colors, paint, holding) });
+}
+Conditioned.displayName = 'BloomConditioned';
