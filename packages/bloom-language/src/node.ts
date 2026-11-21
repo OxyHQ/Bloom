@@ -32,6 +32,7 @@ import type { ContextMenuAnchor } from '@oxy.so/bloom/context-menu';
 import type { FileUploadKind } from './controls/file-upload';
 import type { VideoViewKind } from './controls/video-view';
 import type { SortableMediaKind } from './controls/sortable-media';
+import type { VideoPlaybackKind } from './controls/video-playback';
 import type { DropZoneKind } from './controls/drop-zone';
 import type { DragAction, DropTargetDragEvent } from '@oxy.so/bloom/drop-zone';
 import type { CollapsibleKind } from './controls/collapsible';
@@ -800,6 +801,9 @@ export interface ValueModifiers {
   addHint: string;
   imageVariant: string;
 
+  // Video playback (controls/video-playback.tsx)
+  autoplay: boolean;
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -1194,6 +1198,7 @@ export type NodeKind =
   | FileUploadKind
   | VideoViewKind
   | ChoiceListKind
+  | VideoPlaybackKind
   | InputOtpKind
   | ColorSwatchPickerKind
   | ContextMenuKind
@@ -2917,6 +2922,11 @@ export class Node {
   // Choice lists (controls/choice-list.tsx)
   optionBox(value: ChoiceOptionBox): Node {
     return this.set('optionBox', value);
+  }
+
+  // Video playback (controls/video-playback.tsx)
+  autoplay(value: boolean): Node {
+    return this.set('autoplay', value);
   }
 
   // Context menus (controls/context-menu.tsx)

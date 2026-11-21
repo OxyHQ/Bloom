@@ -22,6 +22,7 @@ import { TAG_FIELDS } from './tag-field';
 import { FILE_UPLOADS } from './file-upload';
 import { VIDEOS } from './video-view';
 import { CHOICE_LISTS } from './choice-list';
+import { VIDEO_PLAYBACK } from './video-playback';
 import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
 import { INPUT_OTPS } from './input-otp';
 import { ANIMATED_CHECKS } from './animated-check';
@@ -60,6 +61,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...FILE_UPLOADS,
   ...VIDEOS,
   ...CHOICE_LISTS,
+  ...VIDEO_PLAYBACK,
   ...COLOR_SWATCH_PICKERS,
   ...INPUT_OTPS,
   ...ANIMATED_CHECKS,

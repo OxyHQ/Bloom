@@ -568,3 +568,11 @@ export type { MediaInsetBorderView } from './controls/media-inset-border';
 // Fact strips (controls/fact-strip.tsx)
 export { Fact, FactStrip } from './controls/fact-strip';
 export type { FactStripView, FactText, FactView } from './controls/fact-strip';
+
+// Video playback (controls/video-playback.tsx)
+export { VideoPlayback, VideoViewability, VideoViewabilityScope } from './controls/video-playback';
+export type {
+  VideoPlaybackView,
+  VideoViewabilityScopeView,
+  VideoViewabilityView,
+} from './controls/video-playback';

@@ -46,6 +46,7 @@ import { IMAGE_ASPECT_RATIO_CASES } from '../../parity/image-aspect-ratio-cache.
 import { FACT_STRIP_CASES } from '../../parity/fact-strip.cases';
 import { SORTABLE_MEDIA_CASES } from '../../parity/sortable-media.cases';
 import { CHOICE_LIST_CASES } from '../../parity/choice-list.cases';
+import { VIDEO_PLAYBACK_CASES } from '../../parity/video-playback.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -97,6 +98,7 @@ export const FAMILIES = {
   factStrip: FACT_STRIP_CASES,
   sortableMedia: SORTABLE_MEDIA_CASES,
   choiceList: CHOICE_LIST_CASES,
+  videoPlayback: VIDEO_PLAYBACK_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

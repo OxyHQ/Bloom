@@ -67,3 +67,6 @@ export const MediaInsetBorder = 'MediaInsetBorder';
 export const FactStrip = 'FactStrip';
 export const SortablePhotoGrid = 'SortablePhotoGrid';
 export const ChoiceList = 'ChoiceList';
+export const VideoPlaybackProvider = 'VideoPlaybackProvider';
+export const VideoViewabilityProvider = 'VideoViewabilityProvider';
+export const VideoViewabilityScope = 'VideoViewabilityScope';

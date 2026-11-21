@@ -1168,3 +1168,22 @@ fn choice_lists_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn video_playback_is_checked() {
+    let imports = "import { VideoPlayback, VideoViewability, VideoViewabilityScope, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (keys) => VideoPlayback(VideoViewability(keys, VideoViewabilityScope('a', Text('Post')))).autoplay(false);\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("VideoPlayback(t).padding('md')", "VideoPlayback has no modifier .padding()"),
+        ("VideoPlayback(t).autoplay()", ".autoplay() takes 1 argument(s), not 0"),
+        ("VideoViewabilityScope('a', t).autoplay(true)", "VideoViewabilityScope has no modifier .autoplay()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
