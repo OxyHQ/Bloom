@@ -1,5 +1,7 @@
 import type { NodeKind } from '../node';
 import { AGENT_AVATARS } from './agent-avatar';
+import { MEDIA } from './media';
+import { LISTINGS } from './listings';
 import { CHATS } from './chat';
 import { AGENTS } from './agents';
 import { MEDIA_CONTROLS } from './media-controls';
@@ -30,4 +32,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA_CONTROLS,
   ...AGENTS,
   ...CHATS,
+  ...LISTINGS,
+  ...MEDIA,
 };

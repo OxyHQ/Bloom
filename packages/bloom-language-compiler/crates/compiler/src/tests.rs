@@ -692,3 +692,25 @@ fn the_chat_families_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn listings_and_media_are_checked() {
+    let imports = "import { FollowButton, ListingHeader, ListingPhotoGrid, MapPriceMarker, ReviewCard, Shelf, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (b, p) => VStack(FollowButton(b).style('outline').tint('neutral').size('lg').loading(), ListingHeader('a').size('medium'), ListingPhotoGrid(p).style('carousel'), MapPriceMarker('€1').style('visited').size('compact'), ReviewCard('a', 'b').lines(3), Shelf('a', p).style('paged').spacing('md'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("FollowButton(b).size('xl')", "Unknown followButtonSize token 'xl' for .size()"),
+        ("ListingHeader('a').size('small')", "Unknown listingHeaderSize token 'small' for .size()"),
+        ("ListingPhotoGrid(b).style('mosaic')", "Unknown listingPhotoLayout token 'mosaic' for .style()"),
+        ("MapPriceMarker('a').style('selected')", "Unknown mapMarkerState token 'selected' for .style()"),
+        ("MapPriceMarker('a').size('large')", "Unknown mapPriceMarkerSize token 'large' for .size()"),
+        ("Shelf('a', b).style('list')", "Unknown shelfLayout token 'list' for .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
