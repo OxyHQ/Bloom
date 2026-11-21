@@ -138,12 +138,15 @@ function scrimStops(falloff: 'smooth' | 'linear', opaqueFraction: number) {
 /**
  * The ramp as a CSS gradient, for Android's own `experimental_backgroundImage`.
  *
- * On Android `react-native-svg` laid the ramp out ~1.55 times taller than its
- * box, so the box cut it off with half the page colour still showing: a hard
- * line across the content at the header's foot, with the content above it only
- * half covered (Commons and Allo, Pixel 8a). A view's own background gradient
- * spans exactly that view. Alpha travels in the colour here, which a CSS
- * gradient honours (the `stopOpacity` reason above is react-native-svg's).
+ * A view's own background gradient spans exactly that view. Alpha travels in
+ * the colour here, which a CSS gradient honours (the `stopOpacity` reason above
+ * is react-native-svg's).
+ *
+ * The hard line once seen at the header's foot on Android (Commons, Allo,
+ * Mention Videos; Pixel 8a), the ramp stopping at alpha ~0.35, was not this
+ * gradient: the scrim box is 1 + `SCRIM_TAIL_RATIO` times the header and was
+ * clipped to the header's own box by the native parent Fabric hoisted the
+ * header slot into. `Screen` keeps its root a native parent for that reason.
  */
 export function edgeScrimGradient(
   color: string,
