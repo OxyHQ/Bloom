@@ -1987,6 +1987,31 @@ describe('AppShell native safe-area frame', () => {
     });
   });
 
+  it('reveal navigation clears the device edges the frame leaves it', () => {
+    // Without `safeArea` the pages own their edges (their headers reach behind
+    // the status bar), so the full-height reveal drawer clears its own: on the
+    // frame's gutter alone it ran under the status bar (Mention, Android).
+    const view = withInsets(
+      <AppShell
+        variant="feed"
+        scroll="fixed"
+        drawer="reveal"
+        drawerOpen
+        sidebar={{ items: NAV }}
+        header={null}
+        bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
+        testID="bare"
+      >
+        <ReactNative.Text>Page</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(view.queryByTestId('bare-safe-area')).toBeNull();
+    expect(resolvedStyle(view.getByTestId('bare-navigation-drawer').props.style)).toMatchObject({
+      paddingTop: 59,
+      paddingBottom: 46,
+    });
+  });
+
   it('safeArea is opt-in and has no effect on the web frame', () => {
     const off = withInsets(<AppShell scroll="fixed" testID="safe" />);
     expect(off.queryByTestId('safe-safe-area')).toBeNull();

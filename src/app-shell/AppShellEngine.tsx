@@ -633,6 +633,7 @@ export function createAppShellEngine() {
     // Preserve the real device insets for fullscreen dialogs and portals. Only
     // the bounded shell consumes these edges; bottom chrome keeps its own inset.
     const bottomChrome = showBottomBar || showFloatingAction;
+    const frameTopInset = ownsSafeArea ? insets.top : 0;
     const frameBottomInset = ownsSafeArea && !bottomChrome ? insets.bottom : 0;
     const navigationBottomInset = ownsSafeArea && bottomChrome ? insets.bottom : 0;
     const inheritedSafeArea = useContext(SafeAreaConsumedContext);
@@ -652,7 +653,7 @@ export function createAppShellEngine() {
             flex: 1,
             minHeight: 0,
             minWidth: 0,
-            paddingTop: insets.top,
+            paddingTop: frameTopInset,
             paddingInlineStart: rtl ? insets.right : insets.left,
             paddingInlineEnd: rtl ? insets.left : insets.right,
             paddingBottom: frameBottomInset,
@@ -1939,8 +1940,12 @@ export function createAppShellEngine() {
                     bottom: 0,
                     insetInlineStart: 0,
                     width: revealOffset,
-                    paddingTop: revealGutter,
-                    paddingBottom: revealGutter + navigationBottomInset,
+                    // Full height, so the device's top and bottom edges are its
+                    // own to clear wherever the frame leaves them, exactly as the
+                    // portaled overlay drawer does. Without `safeArea` the pages
+                    // own their edges, and the drawer ran under the status bar.
+                    paddingTop: revealGutter + insets.top - frameTopInset,
+                    paddingBottom: revealGutter + insets.bottom - frameBottomInset,
                     paddingInlineStart: revealGutter / 2,
                   }}
                 >

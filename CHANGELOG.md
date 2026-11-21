@@ -8,6 +8,10 @@
 - `adoptStyleSheet(id, css)` is exported from `@oxy.so/bloom/styles`: the CSP-safe way to put CSS on a web page as a constructed stylesheet, the mechanism Bloom's web forks use.
 - `useScreenActionClaimed()` is exported from `@oxy.so/bloom/app-shell/hooks`: whether the screen in front shows a primary action of its own (`Screen primaryAction`). A floating action the app draws for the shell (a bottom bar's FAB) steps aside while it is `true`, as the shell's own does, so a route with its own action never shows two.
 
+### Fixed
+
+- The native `reveal` navigation drawer clears the device's top and bottom edges the shell frame leaves it. Without `safeArea` it ran under the status bar; with it, geometry is unchanged.
+
 ## 22.1.10
 
 ### Fixed
