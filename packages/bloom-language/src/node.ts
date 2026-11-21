@@ -26,6 +26,9 @@ import type { CommandItem as BloomCommandItem } from '@oxy.so/bloom/command';
 import type { AccentTone } from '@oxy.so/bloom/theme';
 import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/bloom/avatar';
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
+import type { DatePickerKind } from './controls/date-picker';
+import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
+import type { Binding } from './binding';
 
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
@@ -556,6 +559,20 @@ export interface ValueModifiers {
   minDate: Date;
   maxDate: Date;
   dateFormat: (date: Date) => string;
+
+  // Date and time pickers (controls/date-picker.tsx)
+  bounds: readonly [min: Date | string | null, max: Date | string | null | undefined];
+  unavailable: (date: Date) => boolean;
+  weekStart: WeekStart;
+  locale: string;
+  placeholder: string;
+  presented: Binding<boolean>;
+  labels: Readonly<Record<string, unknown>>;
+  quickSelect: boolean;
+  initialMonth: Date;
+  months: 1 | 2;
+  step: number;
+  hourFormat: HourFormat;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -917,7 +934,8 @@ export type NodeKind =
   | 'scrollSurface'
   | 'autoHideBar'
   | 'resizeHandle'
-  | SettingsKind;
+  | SettingsKind
+  | DatePickerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2143,6 +2161,44 @@ export class Node {
   }
   dateFormat(value: (date: Date) => string): Node {
     return this.set('dateFormat', value);
+  }
+
+  // Date and time pickers (controls/date-picker.tsx)
+  bounds(min: Date | string | null, max?: Date | string | null): Node {
+    return this.set('bounds', [min, max]);
+  }
+  unavailable(value: (date: Date) => boolean): Node {
+    return this.set('unavailable', value);
+  }
+  weekStart(value: WeekStart): Node {
+    return this.set('weekStart', value);
+  }
+  locale(value: string): Node {
+    return this.set('locale', value);
+  }
+  placeholder(value: string): Node {
+    return this.set('placeholder', value);
+  }
+  presented(value: Binding<boolean>): Node {
+    return this.set('presented', value);
+  }
+  labels(value: object): Node {
+    return this.set('labels', value as Readonly<Record<string, unknown>>);
+  }
+  quickSelect(value: boolean): Node {
+    return this.set('quickSelect', value);
+  }
+  initialMonth(value: Date): Node {
+    return this.set('initialMonth', value);
+  }
+  months(value: 1 | 2): Node {
+    return this.set('months', value);
+  }
+  step(value: number): Node {
+    return this.set('step', value);
+  }
+  hourFormat(value: HourFormat): Node {
+    return this.set('hourFormat', value);
   }
 }
 

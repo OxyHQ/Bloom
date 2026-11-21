@@ -7,7 +7,7 @@ import {
 } from 'react';
 
 import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
-import type { Role } from '../tokens';
+import type { ColorToken, Role } from '../tokens';
 
 /**
  * What a control's renderer is handed (see `controls/index.ts`): its node, its
@@ -35,6 +35,17 @@ export interface ControlDraw {
   props(): Record<string, unknown>;
   /** Draws a Bloom component with the view's innermost box as its `style`, when it has one. */
   component(host: unknown, props: Record<string, unknown>, ...children: ReactNode[]): ReactElement;
+  /**
+   * Draws a Bloom component as `component` does, with the props `colors` names
+   * painted from their colour roles (a role at an opacity included), read from
+   * the theme in the leaf that draws it.
+   */
+  painted(
+    host: unknown,
+    props: Record<string, unknown>,
+    colors: Readonly<Record<string, ColorToken | undefined>>,
+    ...children: ReactNode[]
+  ): ReactElement;
   /**
    * `element` in a view of its own that takes the view's box, when it has
    * one: for a component whose `style` is not its outer box.
