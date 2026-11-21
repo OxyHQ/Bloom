@@ -11,6 +11,7 @@ export * from '../../../../../src/motion/leaving';
 export * from '../../../../../src/motion/motion-value';
 export * from '../../../../../src/motion/gestures';
 export * from '../../../../../src/motion/presence';
+export * from '../../../../../src/motion/theme-switch';
 export * from '../../../../../src/motion/motion-host';
 export {
   animateWithSpec,

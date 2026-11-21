@@ -172,15 +172,27 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     });
   });
 
-  it('.animation() is an inline CSS transition on the host: geometry, opacity and colours', () => {
+  it('.animation() is an inline CSS transition on the host: geometry and opacity', () => {
     const r = mount(VStack().scale('dip').animation('slide'));
-    expect(flat(all(r, 'View')[0]?.props.style)).toMatchObject({
+    const [box] = all(r, 'View');
+    expect(flat(box?.props.style)).toMatchObject({
       transform: [{ scale: 0.7 }],
-      transitionProperty:
-        'transform, opacity, color, background-color, border-color, outline-color',
+      transitionProperty: 'transform, opacity',
       transitionDuration: '200ms',
       transitionTimingFunction: 'cubic-bezier(0.25,0.1,0.25,1)',
     });
+    expect(box?.props.dataSet).toBeUndefined();
+  });
+
+  it('.animatesColors() adds the colours, and marks the host for a theme switch', () => {
+    const r = mount(VStack().scale('dip').animation('slide').animatesColors());
+    const [box] = all(r, 'View');
+    expect(flat(box?.props.style)).toMatchObject({
+      transitionProperty:
+        'transform, opacity, color, background-color, border-color, outline-color',
+    });
+    // While the provider applies a switch, the mark holds this host to its transform and opacity.
+    expect(box?.props.dataSet).toEqual({ bloomColorTransition: '' });
   });
 
   it('a loop is element.animate() that repeats forever, on its own motion', () => {

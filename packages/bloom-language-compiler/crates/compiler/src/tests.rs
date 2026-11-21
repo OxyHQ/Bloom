@@ -533,6 +533,21 @@ fn geometry_varies_by_token_never_by_a_motion_value() {
 }
 
 #[test]
+fn colours_animate_only_by_name() {
+    let output =
+        motion("export const x = () => Text('t').foreground('accent').animation('fade').animatesColors();\n");
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    // One way to say it: the modifier takes nothing, and .animation() takes no colour switch.
+    let output = motion("export const x = () => Text('t').animation('fade').animatesColors(true);\n");
+    assert_eq!(output.diagnostics[0].message, ".animatesColors() takes 0 argument(s), not 1");
+    let output = motion("export const x = () => Text('t').animation('fade', 1, true);\n");
+    assert_eq!(output.diagnostics[0].message, ".animation() takes 1 to 2 argument(s), not 3");
+    // It is the view's own, never a variant's.
+    let output = motion("export const x = () => Text('t').when('hovered', (v) => v.animatesColors());\n");
+    assert_eq!(output.diagnostics[0].message, "A variant cannot change .animatesColors()");
+}
+
+#[test]
 fn loops_delays_and_anchors_are_tokens() {
     let output = motion(
         "export const x = () => Text('t').repeatForever('spin').delay('fast').anchor('top-leading');\n",

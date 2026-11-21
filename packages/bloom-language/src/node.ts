@@ -461,6 +461,7 @@ export type Modifier =
       readonly value: unknown;
       readonly gated: boolean;
     }
+  | { readonly kind: 'animatesColors'; readonly key: string }
   | { readonly kind: 'transition'; readonly key: string; readonly value: TransitionValue }
   | {
       readonly kind: 'keyframes';
@@ -1143,6 +1144,9 @@ export class Node {
       gated: value.length > 0,
     });
   }
+  animatesColors(): Node {
+    return this.with({ kind: 'animatesColors', key: 'animatesColors' });
+  }
   transition(value: TransitionValue): Node {
     return this.with({ kind: 'transition', key: 'transition', value });
   }
@@ -1341,8 +1345,16 @@ export interface ViewModifiers<Self> extends ViewNode {
    * rotation and opacity, and to what animates inside it (a matched geometry, a
    * content transition, keyframes and transitions without their own motion),
    * play with `motion`. With a value, they animate only when that value changes.
+   * Its colours change at once unless it says `.animatesColors()`.
    */
   animation(motion: MotionToken, value?: unknown): Self;
+  /**
+   * The view's colour changes (the fill, border, outline and text colour of its
+   * moving box) play with the `.animation()` in scope, its own or one above it
+   * (Tailwind's `transition-colors`). A plain `.animation()` changes colours at
+   * once, and a theme switch changes them at once here too.
+   */
+  animatesColors(): Self;
   /** How the view arrives and leaves (see `TransitionValue`). */
   transition(value: TransitionValue): Self;
   /** Plays `keyframes` each time `trigger` changes to a truthy value. */
