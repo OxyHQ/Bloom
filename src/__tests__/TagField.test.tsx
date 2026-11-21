@@ -278,6 +278,14 @@ describe('the chips are Bloom chosen-thing pills', () => {
     const paint = resolveAccentColors(THEME.colors, 'primary', 'subtle');
     expect(rgb(materialFill(byTestId('tags-chip-tide')))).toEqual(rgb(paint.background));
   });
+
+  // `secondary` and `tertiary` are accent tones the field's type takes; the chip's tone
+  // mapping once had no Bloom tone for either, so mounting one threw.
+  it.each(['secondary', 'tertiary'] as const)('takes the %s tone', (tone) => {
+    mount(<Harness initial={['tide']} tone={tone} label="Tags" />);
+    const paint = resolveAccentColors(THEME.colors, tone, 'subtle');
+    expect(rgb(materialFill(byTestId('tags-chip-tide')))).toEqual(rgb(paint.background));
+  });
 });
 
 describe('the suggestion list speaks the menu vocabulary', () => {

@@ -1,4 +1,4 @@
-import { resolveBloomColors } from '../appearance/colors';
+import { bloomToneOf, resolveBloomColors } from '../appearance/colors';
 import type { BloomAppearance, BloomTone } from '../appearance';
 import { resolveButtonRamps } from '../button/shared';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
@@ -157,18 +157,8 @@ export function resolveBadgePaint(
   }
   const pair = resolveBloomColors(
     theme.colors,
-    normalizeTagTone(tone),
+    bloomToneOf(tone),
     variant === 'outlined' ? 'outline' : variant,
   );
   return { ...pair, shadow: null };
-}
-
-export function normalizeTagTone(tone: AccentTone | BloomTone): BloomTone {
-  return tone === 'primary'
-    ? 'accent'
-    : tone === 'error'
-      ? 'danger'
-      : tone === 'default'
-        ? 'neutral'
-        : (tone as BloomTone);
 }
