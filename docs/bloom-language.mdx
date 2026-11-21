@@ -1119,6 +1119,90 @@ Image(post.cover, 'Cover')
   with `onPress`, `onHover` or `hoverGroup` is drawn inside its pressable host,
   which also takes `grow` and `shrink`.
 
+## Containers
+
+Bloom's cards, rows, grouped sections, chips and notices, each the Bloom
+component an app writes today (`src/controls/containers.tsx`). A selection is a
+binding (`[value, setValue]`, what `useState` returns).
+
+```ts
+Card(
+  CardHeader(CardTitle('Storage'), CardDescription('3 of 5 GB used')),
+  CardBody(StorageBar({ used })),
+  CardFooter(Button(Text('Manage')).onPress(manage)),
+).style('outline').radius('radius-16')
+
+GroupedSection(
+  GroupedSectionItem('Wi-Fi').value(network).chevron().onPress(openWifi),
+  GroupedSectionItem('Notifications').trailing(Toggle(notify)),
+).title('Network').caption('Changes apply at once.')
+
+Row('Ana Lima').subtitle('Online').leadingView(Avatar(ana.avatar)).onPress(open)
+Chip(Icon(RiFilter3Line), Text('Unread')).toggle(unread)
+Tabs(useState('posts'), TabItem('posts', 'Posts'), TabItem('replies', 'Replies').count(3))
+EmptyState('No messages').icon(RiInbox2Line).action(Button(Text('Compose')).onPress(compose))
+Admonition(Text('Sync is paused.'), Button(Text('Resume')).onPress(resume)).style('warning')
+Kbd('⌘K')
+ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
+```
+
+| Node | Draws |
+| --- | --- |
+| `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts |
+| `Row(title?)` | Bloom `Item` (the list row; `Item` is the menu's row) |
+| `GroupedSection(...rows)`, `GroupedSectionItem(title)` | Bloom `GroupedSection`, `GroupedSectionItem` |
+| `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs |
+| `EmptyState(title?)` | Bloom `EmptyState` |
+| `Admonition(...content)` | Bloom's `AdmonitionRoot`, row, icon and content: a `Text` is `AdmonitionText`, a `Button` an action |
+| `Tabs(selection, ...TabItem(value, label))` | Bloom `Tabs` and its `TabsTrigger`s (the strip; the page under it is the screen's) |
+| `Kbd(keys)` | Bloom `Kbd` |
+| `ErrorBoundary(...content)` | Bloom `ErrorBoundary` |
+
+- **Card.** `.style()` and `.tint()` are its appearance and tone, `.radius()`
+  Bloom's card radius (`radius-0` … `radius-max`, `panel`, `concentric`),
+  `.elevation('none' | 's' | 'm' | 'floating')`, `.outline('none' |
+  'hairline' | 'thin' | 'medium')` its own stroke, `.clipped()` clips the
+  content to the corner. `.onPress` is the card's own press (`.disabled()`,
+  `.label()`, `.role('link')`). `CardTitle` and `CardDescription` take
+  `.lines(n)`. The box modifiers (padding, frame, background) are the card's
+  `style`, as an app writes them.
+- **Row.** `.subtitle()`, `.leadingView(...)` and `.trailing(...)` (its slots,
+  as views), `.size()`, `.lines(n)` (the title's), `.disabled()`,
+  `.destructive()`, `.selected()`, `.active()`, `.highlighted()`, and its own
+  press, hover and name.
+- **Grouped sections.** `.title()`, `.caption()` (Bloom's `footer`: the name
+  `footer` is the screen's), `.style('filled' | 'plain')`, `.separator('space'
+  | 'line' | 'none')`, `.radius()`. A row takes `.leadingView()` (its icon),
+  `.description()`, `.value()`, `.trailing()` (a control), `.chevron()`,
+  `.lines(n)`, `.destructive()`, `.disabled()` and its own press and name; it
+  has no box of its own (Bloom's row takes no style).
+- **Chip.** `.style()`, `.tint()`, `.size('xs'…'2xl')`, `.hue()`,
+  `.toggle(binding)` (a filter chip: checked through its binding),
+  `.selected()`, `.onClose(remove, label?)`, `.disabled()`, `.onPress()`.
+- **EmptyState.** `.icon()`, `.description()`, `.media('glyph' | 'circle')`,
+  `.style('comfortable' | 'compact')`; `.action(Button(...))` and
+  `.secondaryAction(Button(...))` are its buttons, read from the `Button` node:
+  its label, leading glyph, handler (a function; a `navigate()` belongs on a
+  view), `.disabled()`, `.loading()`, `.label()` and `.testID()`.
+- **Admonition.** `.style('info' | 'tip' | 'warning' | 'error' |
+  'apology')`, `.size()`. One `Text` draws what Bloom's `<Admonition>` draws.
+- **Tabs.** `.style('underline' | 'pill' | 'filled')`, `.fullWidth()`,
+  `.label()` (the strip's name); a `TabItem` takes `.icon()`, `.count()`,
+  `.disabled()` and `.testID()`. What each tab shows is a conditional in the
+  screen (`tab === 'posts' ? Posts() : Replies()`).
+- **Kbd** takes `.size('sm' | 'md')`. **ErrorBoundary** takes `.title()`,
+  `.message()`, `.retryLabel()`, `.resetKey()`, `.onError()` and
+  `.fallback(view)`, and no box (Bloom's boundary draws none).
+
+Not in the language yet: a chip's `role` (`checkbox`, `radio`, `tab`) and its
+`variant`/`color`, `ChipRow` and `CappedChipRow`, a row's `density` and
+`contentDensity`, a grouped section's `density`, `GroupedSectionIcon`,
+`GroupedSectionDivider` and `GroupedSectionCollapse`, an empty state's
+`suggestions`, `illustration`, `footer`, children and `minHeight`, a tab's
+reordering, drag and `iconOnly`, `TabsContent`, `SelectionCard`, a card's
+`cornerCurve`, and an error boundary's fallback as a function of the error.
+Each is an `Embed` of the Bloom component until it is.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

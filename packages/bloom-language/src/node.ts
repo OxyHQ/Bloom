@@ -22,7 +22,18 @@ import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
 import type { Binding } from './binding';
-import type { ContainerKind } from './controls/containers';
+import type {
+  BoundaryErrorHandler,
+  CardBorder,
+  CardElevation,
+  CardRadius,
+  ChipHue,
+  ContainerKind,
+  ContainerSize,
+  ContainerStyle,
+  EmptyStateMedia,
+  GroupedSeparator,
+} from './controls/containers';
 import type {
   Autocapitalize,
   ContentType,
@@ -290,6 +301,26 @@ export interface ValueModifiers {
   // Overlays and feedback (controls/overlays.tsx)
 
   // Containers (controls/containers.tsx)
+  radius: CardRadius;
+  elevation: CardElevation;
+  outline: CardBorder;
+  clipped: true;
+  leadingView: readonly Child[];
+  selected: boolean;
+  highlighted: boolean;
+  caption: string;
+  separator: GroupedSeparator;
+  value: string;
+  chevron: boolean;
+  toggle: Binding<boolean>;
+  onClose: { readonly action: () => void; readonly label: string | undefined };
+  hue: ChipHue;
+  media: EmptyStateMedia;
+  secondaryAction: ViewNode;
+  message: string;
+  retryLabel: string;
+  resetKey: string | number | undefined;
+  fullWidth: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -429,17 +460,29 @@ export type Modifier =
   | {
       readonly kind: 'onError';
       readonly key: string;
-      readonly value: ImageErrorHandler | undefined;
+      readonly value: ImageErrorHandler | BoundaryErrorHandler | undefined;
     }
   | {
       readonly kind: 'size';
       readonly key: string;
-      readonly value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken;
+      readonly value:
+        | IconSizeToken
+        | AvatarSizeToken
+        | BloomSize
+        | BadgeSize
+        | SpaceToken
+        | ContainerSize;
     }
   | {
       readonly kind: 'style';
       readonly key: string;
-      readonly value: BloomAppearance | BadgeStyle | LoadingStyle | RadioStyle | SegmentedStyle;
+      readonly value:
+        | BloomAppearance
+        | BadgeStyle
+        | LoadingStyle
+        | RadioStyle
+        | SegmentedStyle
+        | ContainerStyle;
     }
   | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
   | {
@@ -881,13 +924,23 @@ export class Node {
   onLoad(value: ImageLoadHandler | undefined): Node {
     return this.with({ kind: 'onLoad', key: 'onLoad', value });
   }
-  onError(value: ImageErrorHandler | undefined): Node {
+  onError(value: ImageErrorHandler | BoundaryErrorHandler | undefined): Node {
     return this.with({ kind: 'onError', key: 'onError', value });
   }
-  size(value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken): Node {
+  size(
+    value: IconSizeToken | AvatarSizeToken | BloomSize | BadgeSize | SpaceToken | ContainerSize,
+  ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
-  style(value: BloomAppearance | BadgeStyle | LoadingStyle | RadioStyle | SegmentedStyle): Node {
+  style(
+    value:
+      | BloomAppearance
+      | BadgeStyle
+      | LoadingStyle
+      | RadioStyle
+      | SegmentedStyle
+      | ContainerStyle,
+  ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
   shape(value: ButtonShape | ShapeName): Node {
@@ -1302,6 +1355,66 @@ export class Node {
   // Overlays and feedback (controls/overlays.tsx)
 
   // Containers (controls/containers.tsx)
+  radius(value: CardRadius): Node {
+    return this.set('radius', value);
+  }
+  elevation(value: CardElevation): Node {
+    return this.set('elevation', value);
+  }
+  outline(value: CardBorder): Node {
+    return this.set('outline', value);
+  }
+  clipped(): Node {
+    return this.set('clipped', true);
+  }
+  leadingView(...value: Child[]): Node {
+    return this.set('leadingView', value);
+  }
+  selected(value = true): Node {
+    return this.set('selected', value);
+  }
+  highlighted(value = true): Node {
+    return this.set('highlighted', value);
+  }
+  caption(value: string): Node {
+    return this.set('caption', value);
+  }
+  separator(value: GroupedSeparator): Node {
+    return this.set('separator', value);
+  }
+  value(value: string): Node {
+    return this.set('value', value);
+  }
+  chevron(value = true): Node {
+    return this.set('chevron', value);
+  }
+  toggle(value: Binding<boolean>): Node {
+    return this.set('toggle', value);
+  }
+  onClose(action: () => void, label?: string): Node {
+    return this.set('onClose', { action, label });
+  }
+  hue(value: ChipHue): Node {
+    return this.set('hue', value);
+  }
+  media(value: EmptyStateMedia): Node {
+    return this.set('media', value);
+  }
+  secondaryAction(value: ViewNode): Node {
+    return this.set('secondaryAction', value);
+  }
+  message(value: string): Node {
+    return this.set('message', value);
+  }
+  retryLabel(value: string): Node {
+    return this.set('retryLabel', value);
+  }
+  resetKey(value: string | number | undefined): Node {
+    return this.set('resetKey', value);
+  }
+  fullWidth(value = true): Node {
+    return this.set('fullWidth', value);
+  }
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
