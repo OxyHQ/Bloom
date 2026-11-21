@@ -10,6 +10,7 @@ import { isValidElement, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import TestRenderer, { act, type ReactTestRendererJSON } from 'react-test-renderer';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
+import { PortalOutlet, PortalProvider } from '@oxy.so/bloom/portal';
 
 import type { ParityCase, Scheme } from './cases';
 
@@ -76,13 +77,20 @@ function normalize(node: ReactTestRendererJSON | string): HostTree | string {
   };
 }
 
-/** What `element` commits, under Bloom's provider in `scheme`. */
+/**
+ * What `element` commits, under Bloom's provider in `scheme`, with the portal
+ * host an app root mounts on native: what a modal portals is drawn after the
+ * element, as the app's outlet draws it.
+ */
 export function nativeTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
   let renderer!: TestRenderer.ReactTestRenderer;
   act(() => {
     renderer = TestRenderer.create(
       <BloomThemeProvider fonts={false} mode={scheme}>
-        {element}
+        <PortalProvider>
+          {element}
+          <PortalOutlet />
+        </PortalProvider>
       </BloomThemeProvider>,
     );
   });
@@ -106,7 +114,11 @@ export function describeNativeParity(title: string, cases: readonly ParityCase[]
     for (const scheme of ['light', 'dark'] as const) {
       describe(scheme, () => {
         it.each(cases.map((c) => [c.name, c] as const))('%s', (_name, c) => {
-          expect(nativeTree(c.language(), scheme)).toEqual(nativeTree(c.bloom(), scheme));
+          const bloom = nativeTree(c.bloom(), scheme);
+          // Two empty trees are equal and prove nothing, unless that is the claim.
+          if (c.drawsNothing?.includes('native')) expect(bloom).toEqual([]);
+          else expect(bloom).not.toEqual([]);
+          expect(nativeTree(c.language(), scheme)).toEqual(bloom);
         });
       });
     }

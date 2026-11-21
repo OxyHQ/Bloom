@@ -59,6 +59,7 @@ const commands: ParityCase[] = [
   },
   {
     name: 'a closed palette',
+    drawsNothing: ['web'],
     language: () => toElement(L.Command(L.CommandItem('New post'))),
     bloom: () => (
       <Command
