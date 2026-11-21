@@ -92,10 +92,21 @@ describe('geometry and .animation()', () => {
     });
   });
 
-  it('.animation(motion) transitions transform and opacity with the token’s curve', () => {
+  it('.animation(motion) transitions transform, opacity and colours with the token’s curve', () => {
     const r = mount(VStack().scale('dip').animation('slide'));
     expect(flat(all(r, 'Animated.View')[0]?.props.style)).toMatchObject({
-      transitionProperty: ['transform', 'opacity'],
+      transitionProperty: [
+        'transform',
+        'opacity',
+        'backgroundColor',
+        'borderColor',
+        'borderTopColor',
+        'borderBottomColor',
+        'borderStartColor',
+        'borderEndColor',
+        'outlineColor',
+        'color',
+      ],
       transitionDuration: 200,
       transitionTimingFunction: { cubicBezier: [0.25, 0.1, 0.25, 1] },
     });
@@ -120,6 +131,91 @@ describe('geometry and .animation()', () => {
     runtime.reducedMotion = true;
     const r = mount(VStack().scale('dip').animation('slide'));
     expect(flat(all(r, 'Animated.View')[0]?.props.style).transitionDuration).toBeUndefined();
+  });
+});
+
+describe('colours, loops, a delay and an anchor', () => {
+  it('under .animation() a varied fill is the animated box’s, and its change transitions', () => {
+    const r = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .background('surface')
+        .when('pressed', (v) => v.background('popover'))
+        .animation('fade'),
+    );
+    const press = () => all(r, 'Animated.Pressable')[0];
+    expect(flat(press()?.props.style)).toMatchObject({
+      backgroundColor: LIGHT.backgroundSecondary,
+      transitionProperty: expect.arrayContaining(['backgroundColor', 'color']),
+      transitionDuration: 160,
+    });
+    act(() => press()?.props.onPressIn());
+    expect(flat(press()?.props.style).backgroundColor).toBe(LIGHT.backgroundTertiary);
+  });
+
+  it('a loop is a CSS animation that repeats forever, on its own motion; reduced motion stops it', () => {
+    const r = mount(VStack(Text('a')).repeatForever('spin'));
+    expect(flat(all(r, 'Animated.View')[0]?.props.style)).toMatchObject({
+      animationName: {
+        keyframes: {
+          '0%': { transform: [{ rotate: '0deg' }] },
+          '100%': { transform: [{ rotate: '360deg' }] },
+        },
+      },
+      animationDuration: 1000,
+      animationTimingFunction: { cubicBezier: [0, 0, 1, 1] },
+      animationIterationCount: 'infinite',
+    });
+    runtime.reducedMotion = true;
+    expect(all(mount(VStack(Text('a')).repeatForever('pulse')), 'Animated.View')).toHaveLength(0);
+  });
+
+  it('a loop starts once the insertion ends', () => {
+    const r = mount(
+      VStack([Text('a').transition(opacity.animation('fade')).repeatForever('pulse').id('a')]),
+    );
+    const box = () => all(r, 'Animated.View')[0];
+    expect(flat(box()?.props.style).animationIterationCount).toBeUndefined();
+    act(() => box()?.props.onCSSAnimationEnd());
+    expect(flat(box()?.props.style)).toMatchObject({
+      animationDuration: 2000,
+      animationTimingFunction: { cubicBezier: [0.4, 0, 0.6, 1] },
+      animationIterationCount: 'infinite',
+    });
+  });
+
+  it('a delay holds what the view plays: its transition, its keyframes and its removal', () => {
+    const r = mount(VStack().scale('dip').animation('slide').delay('fast'));
+    expect(flat(all(r, 'Animated.View')[0]?.props.style)).toMatchObject({
+      transitionDuration: 200,
+      transitionDelay: 150,
+    });
+    const pop = defineKeyframes(
+      [
+        { at: 0, scale: 1 },
+        { at: 1, scale: 1.2 },
+      ],
+      'pop',
+    );
+    const k = mount(VStack().keyframes(pop, 0).delay('1000'));
+    update(k, VStack().keyframes(pop, 1).delay('1000'));
+    expect(flat(all(k, 'Animated.View')[0]?.props.style)).toMatchObject({
+      animationDelay: 1000,
+      animationFillMode: 'backwards',
+    });
+    const leave = mount(
+      VStack([Text('a').transition(opacity.animation('exit')).delay('75').id('a')]),
+    );
+    const exiting = all(leave, 'Animated.View')[0]?.props.exiting as { delayV?: number };
+    expect(exiting.delayV).toBe(75);
+  });
+
+  it('an anchor rests on the box with its geometry: Tailwind’s origin, physical left and right', () => {
+    const [box] = all(mount(VStack(Text('a')).scale('105').anchor('top-trailing')), 'View');
+    expect(flat(box?.props.style)).toEqual({
+      transform: [{ scale: 1.05 }],
+      transformOrigin: 'top right',
+    });
   });
 });
 

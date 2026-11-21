@@ -172,13 +172,59 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     });
   });
 
-  it('.animation() is an inline CSS transition on the host', () => {
+  it('.animation() is an inline CSS transition on the host: geometry, opacity and colours', () => {
     const r = mount(VStack().scale('dip').animation('slide'));
     expect(flat(all(r, 'View')[0]?.props.style)).toMatchObject({
       transform: [{ scale: 0.7 }],
-      transitionProperty: 'transform, opacity',
+      transitionProperty:
+        'transform, opacity, color, background-color, border-color, outline-color',
       transitionDuration: '200ms',
       transitionTimingFunction: 'cubic-bezier(0.25,0.1,0.25,1)',
+    });
+  });
+
+  it('a loop is element.animate() that repeats forever, on its own motion', () => {
+    mount(VStack(Text('a')).testID('spinner').repeatForever('spin'));
+    expect(played).toEqual([
+      expect.objectContaining({
+        target: 'spinner',
+        frames: [
+          { offset: 0, easing: 'cubic-bezier(0,0,1,1)', transform: 'rotate(0deg)' },
+          { offset: 1, easing: 'cubic-bezier(0,0,1,1)', transform: 'rotate(360deg)' },
+        ],
+        options: { duration: 1000, fill: 'none', iterations: Number.POSITIVE_INFINITY },
+      }),
+    ]);
+  });
+
+  it('a pulse is Tailwind’s: half opacity at the midpoint, two seconds on its curve', () => {
+    mount(VStack(Text('a')).testID('pulse').repeatForever('pulse'));
+    const curve = 'cubic-bezier(0.4,0,0.6,1)';
+    expect(played[0]).toMatchObject({
+      frames: [
+        { offset: 0, easing: curve, opacity: 1 },
+        { offset: 0.5, easing: curve, opacity: 0.5 },
+        { offset: 1, easing: curve, opacity: 1 },
+      ],
+      options: { duration: 2000, iterations: Number.POSITIVE_INFINITY },
+    });
+  });
+
+  it('a delay waits before what the view plays; a delayed insertion holds its first frame', () => {
+    mount(VStack([Text('a').testID('a').transition(rise).delay('normal').id('a')]));
+    expect(played[0]?.options).toEqual({ duration: 300, fill: 'backwards', delay: 200 });
+    const r = mount(VStack().scale('dip').animation('slide').delay('75'));
+    expect(flat(all(r, 'View')[0]?.props.style)).toMatchObject({
+      transitionDuration: '200ms',
+      transitionDelay: '75ms',
+    });
+  });
+
+  it('an anchor is the moving box’s transform-origin', () => {
+    const r = mount(VStack().scale('dip').anchor('bottom-trailing').animation('slide'));
+    expect(flat(all(r, 'View')[0]?.props.style)).toMatchObject({
+      transform: [{ scale: 0.7 }],
+      transformOrigin: 'bottom right',
     });
   });
 
