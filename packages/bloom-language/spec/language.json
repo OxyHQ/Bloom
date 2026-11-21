@@ -531,7 +531,40 @@
       "warning",
       "error",
       "info"
-    ]
+    ],
+    "keyboard": [
+      "default",
+      "email-address",
+      "numeric",
+      "number-pad",
+      "decimal-pad",
+      "phone-pad",
+      "url",
+      "web-search"
+    ],
+    "autocapitalize": ["none", "sentences", "words", "characters"],
+    "contentType": [
+      "off",
+      "email",
+      "username",
+      "password",
+      "new-password",
+      "current-password",
+      "one-time-code",
+      "name",
+      "given-name",
+      "family-name",
+      "tel",
+      "postal-code",
+      "street-address",
+      "url"
+    ],
+    "submitLabel": ["done", "go", "next", "search", "send"],
+    "textareaResize": ["none", "vertical"],
+    "labelSize": ["xs", "sm", "md"],
+    "radioStyle": ["default", "card", "chip"],
+    "segmentedStyle": ["solid", "plain"],
+    "searchCollapse": ["auto"]
   },
   "glass": {
     "$comment": [
@@ -938,7 +971,29 @@
     "maxBytes": ["value"],
     "fileIcon": ["value"],
     "nativeControls": ["value"],
-    "allowsPictureInPicture": ["value"]
+    "allowsPictureInPicture": ["value"],
+    "required": ["value?"],
+    "floatingLabel": [],
+    "revealable": [],
+    "suffix": ["value"],
+    "keyboard": ["keyboard"],
+    "autocapitalize": ["autocapitalize"],
+    "autocorrect": ["value"],
+    "contentType": ["contentType"],
+    "submitLabel": ["submitLabel"],
+    "onSubmit": ["value"],
+    "autoFocus": [],
+    "maxLength": ["value"],
+    "description": ["value"],
+    "error": ["value"],
+    "readOnly": [],
+    "rows": ["value"],
+    "autoResize": ["value?"],
+    "resize": ["textareaResize"],
+    "showCount": [],
+    "tabs": [],
+    "collapsible": ["searchCollapse?"],
+    "tokens": ["value"]
   },
   "universal": [
     "padding",
@@ -1665,6 +1720,112 @@
     "video": {
       "constructors": ["Video"],
       "modifiers": ["contentFit", "nativeControls", "allowsPictureInPicture"]
+    },
+    "textField": {
+      "constructors": ["TextField", "SecureField"],
+      "modifiers": [
+        "placeholder",
+        "size",
+        "disabled",
+        "invalid",
+        "floatingLabel",
+        "revealable",
+        "icon",
+        "prefix",
+        "suffix",
+        "keyboard",
+        "autocapitalize",
+        "autocorrect",
+        "contentType",
+        "submitLabel",
+        "onSubmit",
+        "autoFocus",
+        "maxLength"
+      ],
+      "size": "controlSize"
+    },
+    "textEditor": {
+      "constructors": ["TextEditor"],
+      "modifiers": [
+        "placeholder",
+        "description",
+        "size",
+        "disabled",
+        "invalid",
+        "required",
+        "rows",
+        "autoResize",
+        "resize",
+        "maxLength",
+        "showCount",
+        "keyboard",
+        "autocapitalize",
+        "autocorrect",
+        "autoFocus"
+      ],
+      "size": "controlSize"
+    },
+    "field": {
+      "constructors": ["Field"],
+      "modifiers": ["description", "error", "required", "disabled"]
+    },
+    "label": {
+      "constructors": ["Label"],
+      "modifiers": ["size", "required", "disabled"],
+      "size": "labelSize"
+    },
+    "toggle": {
+      "constructors": ["Toggle"],
+      "modifiers": ["size", "tint", "disabled"],
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "checkbox": {
+      "constructors": ["Checkbox"],
+      "modifiers": ["description", "size", "tint", "disabled", "readOnly", "indeterminate"],
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "radioGroup": {
+      "constructors": ["RadioGroup"],
+      "modifiers": ["style", "size", "tint", "disabled"],
+      "style": "radioStyle",
+      "size": "controlSize",
+      "tint": "tone"
+    },
+    "segmented": {
+      "constructors": ["Segmented"],
+      "modifiers": ["style", "size", "disabled", "tabs"],
+      "style": "segmentedStyle",
+      "size": "controlSize"
+    },
+    "picker": {
+      "constructors": ["Picker"],
+      "modifiers": ["placeholder", "size", "disabled"],
+      "size": "controlSize"
+    },
+    "option": {
+      "constructors": ["Option"],
+      "universal": false,
+      "modifiers": ["description", "disabled", "testID"]
+    },
+    "search": {
+      "constructors": ["Search"],
+      "modifiers": [
+        "placeholder",
+        "size",
+        "disabled",
+        "collapsible",
+        "presented",
+        "tokens",
+        "keyboard",
+        "autocapitalize",
+        "autocorrect",
+        "submitLabel",
+        "onSubmit",
+        "autoFocus"
+      ],
+      "size": "controlSize"
     }
   },
   "sfSymbols": {
