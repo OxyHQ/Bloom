@@ -1280,6 +1280,10 @@ export const ENUMS = {
     "document",
     "inline",
     "sticky"
+  ],
+  "settingsView": [
+    "navigation",
+    "page"
   ]
 } as const;
 
@@ -1929,6 +1933,34 @@ export const MODIFIERS = {
   ],
   "ignoresSafeArea": [
     "value?"
+  ],
+  "presented": [
+    "value"
+  ],
+  "onPresentedChange": [
+    "value"
+  ],
+  "placeholder": [
+    "value"
+  ],
+  "query": [
+    "value",
+    "value"
+  ],
+  "filter": [
+    "value"
+  ],
+  "keywords": [
+    "children"
+  ],
+  "content": [
+    "value"
+  ],
+  "fullBleed": [
+    "value?"
+  ],
+  "initialView": [
+    "settingsView"
   ]
 } as const;
 
@@ -4172,6 +4204,45 @@ export const NODE_MODIFIERS = {
     "id",
     "activeIcon"
   ],
+  "command": [
+    "presented",
+    "onPresentedChange",
+    "placeholder",
+    "emptyLabel",
+    "query",
+    "filter",
+    "testID"
+  ],
+  "commandItem": [
+    "id",
+    "icon",
+    "subtitle",
+    "keywords",
+    "shortcut",
+    "disabled",
+    "onPress"
+  ],
+  "commandGroup": [],
+  "settings": [
+    "presented",
+    "onPresentedChange",
+    "selection",
+    "onSelect",
+    "initialView",
+    "presentation",
+    "testID"
+  ],
+  "settingsGroup": [
+    "id"
+  ],
+  "settingsItem": [
+    "id",
+    "content",
+    "title",
+    "fullBleed",
+    "disabled",
+    "onPress"
+  ],
   "pageFooter": [
     "toolbar",
     "pinning",
@@ -4230,5 +4301,11 @@ export const CONSTRUCTORS = {
   "TreeItem": "treeItem",
   "Rail": "rail",
   "RailItem": "railItem",
+  "Command": "command",
+  "CommandItem": "commandItem",
+  "CommandGroup": "commandGroup",
+  "SettingsModal": "settings",
+  "SettingsGroup": "settingsGroup",
+  "SettingsItem": "settingsItem",
   "PageFooter": "pageFooter"
 } as const;
