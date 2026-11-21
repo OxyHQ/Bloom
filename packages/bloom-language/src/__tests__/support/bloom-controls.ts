@@ -74,3 +74,4 @@ export const HoverCard = 'HoverCard';
 export const HoverCardTrigger = 'HoverCardTrigger';
 export const HoverCardContent = 'HoverCardContent';
 export const ExpandableText = 'ExpandableText';
+export const CategoryBar = 'CategoryBar';
