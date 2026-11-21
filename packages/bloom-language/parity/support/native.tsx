@@ -22,7 +22,7 @@ export interface HostTree {
 }
 
 /** React's `useId` counts across roots; an id is compared by its order in the tree, not its count. */
-const REACT_ID = /(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
 let ids: Map<string, string> = new Map();
 
 function value(input: unknown): unknown {
