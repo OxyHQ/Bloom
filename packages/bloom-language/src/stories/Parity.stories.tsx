@@ -105,3 +105,4 @@ export const ActivityHeatmaps: Story = { args: { family: 'activityHeatmap' } };
 export const TagFields: Story = { args: { family: 'tagField' } };
 export const FileUploads: Story = { args: { family: 'fileUpload' } };
 export const Videos: Story = { args: { family: 'video' } };
+export const OneTimeCodes: Story = { args: { family: 'inputOtp' } };

@@ -47,3 +47,4 @@ export const ActivityHeatmap = 'ActivityHeatmap';
 export const TagField = 'TagField';
 export const FileUpload = 'FileUpload';
 export const VideoView = 'VideoView';
+export const InputOtp = 'InputOtp';
