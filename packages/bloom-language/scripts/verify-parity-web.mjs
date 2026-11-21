@@ -48,23 +48,39 @@ const STORIES = process.argv.filter((arg) => arg.startsWith('language-parity--')
 function compareInPage() {
   const SKIP = new Set(['class', 'style', 'data-testid', 'id']);
   const differences = [];
-  const describe = (element) => {
+  // React's useId counts across the page; an id is compared by its order in its case.
+  const REACT_ID = /(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+  let maps = [new Map(), new Map()];
+  const ids = (side, text) =>
+    text.replace(REACT_ID, (id) => {
+      const map = maps[side];
+      if (!map.has(id)) map.set(id, `id${map.size}`);
+      return map.get(id);
+    });
+  const describe = (element, side) => {
     const attributes = {};
     for (const { name, value } of [...element.attributes].sort((a, b) =>
       a.name < b.name ? -1 : 1,
     ))
-      if (!SKIP.has(name)) attributes[name] = value;
+      if (!SKIP.has(name)) attributes[name] = ids(side, value);
     const style = getComputedStyle(element);
+    // A running animation (a skeleton's shimmer) is sampled when it is read and
+    // synced to when it mounted: what it animates is compared by its animation.
+    const animated = element.getAnimations().length > 0;
+    const MOVING = new Set(['opacity', 'transform', 'animation-delay']);
     const css = {};
     // Custom properties are inputs, named per instance (React ids); what they set is compared.
     for (let i = 0; i < style.length; i++)
-      if (!style[i].startsWith('--')) css[style[i]] = style.getPropertyValue(style[i]);
+      if (!style[i].startsWith('--') && !(animated && MOVING.has(style[i])))
+        css[style[i]] = ids(side, style.getPropertyValue(style[i]));
+    // Layout rounds a fraction of a pixel differently at different places on the page.
     const box = element.getBoundingClientRect();
-    return { tag: element.tagName, attributes, css, size: `${box.width}x${box.height}` };
+    const px = (n) => Math.round(n * 100) / 100;
+    return { tag: element.tagName, attributes, css, size: `${px(box.width)}x${px(box.height)}` };
   };
   const walk = (a, b, path, name) => {
-    const left = describe(a);
-    const right = describe(b);
+    const left = describe(a, 0);
+    const right = describe(b, 1);
     const at = `${name} ${path}`;
     if (left.tag !== right.tag) differences.push(`${at}: <${left.tag}> vs <${right.tag}>`);
     if (JSON.stringify(left.attributes) !== JSON.stringify(right.attributes))
@@ -95,6 +111,7 @@ function compareInPage() {
     const index = bloom.dataset.testid.slice('bloom-'.length);
     const language = document.querySelector(`[data-testid="language-${index}"]`);
     const name = bloom.previousElementSibling?.textContent ?? index;
+    maps = [new Map(), new Map()];
     // The two cells are the table's; what each case draws is inside them.
     const left = [...bloom.children];
     const right = [...language.children];

@@ -23,3 +23,16 @@ export const ConcentricView = 'ConcentricView';
 export const Divider = 'Divider';
 export const Fill = 'Fill';
 export const ResponsiveGrid = 'ResponsiveGrid';
+export const AvatarGroup = 'AvatarGroup';
+export const Badge = 'Badge';
+export const AvatarPresence = 'AvatarPresence';
+export const IconCircle = 'IconCircle';
+export const Loading = 'Loading';
+export const PressableScale = 'PressableScale';
+export const SubtleHover = 'SubtleHover';
+// Bloom's skeleton shapes (`@oxy.so/bloom/skeleton`).
+export const Region = 'SkeletonRegion';
+export const Text = 'SkeletonText';
+export const Circle = 'SkeletonCircle';
+export const Pill = 'SkeletonPill';
+export const Box = 'SkeletonBox';

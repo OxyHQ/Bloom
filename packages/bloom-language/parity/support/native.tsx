@@ -21,8 +21,21 @@ export interface HostTree {
   children: (HostTree | string)[];
 }
 
+/** React's `useId` counts across roots; an id is compared by its order in the tree, not its count. */
+const REACT_ID = /(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
+let ids: Map<string, string> = new Map();
+
 function value(input: unknown): unknown {
   if (typeof input === 'function') return '[function]';
+  if (typeof input === 'string')
+    return input.replace(REACT_ID, (id) => {
+      let seen = ids.get(id);
+      if (seen === undefined) {
+        seen = `id${ids.size}`;
+        ids.set(id, seen);
+      }
+      return seen;
+    });
   if (Array.isArray(input)) return input.map(value);
   if (input !== null && typeof input === 'object') {
     const out: Record<string, unknown> = {};
@@ -63,6 +76,7 @@ export function nativeTree(element: ReactNode, scheme: Scheme = 'light'): unknow
     );
   });
   const json = renderer.toJSON();
+  ids = new Map();
   act(() => renderer.unmount());
   const roots = json === null ? [] : Array.isArray(json) ? json : [json];
   return roots.map(normalize);

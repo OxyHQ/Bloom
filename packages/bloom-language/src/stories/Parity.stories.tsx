@@ -3,7 +3,9 @@ import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
 
 import type { ParityCase } from '../../parity/support/cases';
+import { AVATAR_CASES } from '../../parity/avatar.cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
+import { PIECES_CASES } from '../../parity/pieces.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 
@@ -55,3 +57,5 @@ export const TextAndTypography: Story = { args: { cases: TEXT_CASES } };
 export const Icons: Story = { args: { cases: ICON_CASES } };
 export const EveryIcon: Story = { args: { cases: ICON_CASES_EVERY } };
 export const Material: Story = { args: { cases: MATERIAL_CASES } };
+export const AvatarsAndGroups: Story = { args: { cases: AVATAR_CASES } };
+export const SmallPieces: Story = { args: { cases: PIECES_CASES } };
