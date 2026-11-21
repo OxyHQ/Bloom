@@ -18,6 +18,7 @@ export {
 } from './color-contrast';
 export { adoptStyleSheet } from './adopt-style-sheet';
 export { webDataSet } from './web-data';
+export { PRESS_HOST_CLASS, PRESS_HOST_STYLE } from './press-host';
 export { svgA11yProps } from './svg-a11y';
 export type { SvgA11yProps } from './svg-a11y';
 export { clamp, clamp01 } from './clamp';
