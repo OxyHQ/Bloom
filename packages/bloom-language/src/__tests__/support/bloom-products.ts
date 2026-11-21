@@ -151,3 +151,7 @@ export const MailMessage = 'MailMessage';
 export const MailThread = 'MailThread';
 export const MailQuoteToggle = 'MailQuoteToggle';
 export const NoteEditorToolbar = 'NoteEditorToolbar';
+export const TripCard = 'TripCard';
+export const BookingCard = 'BookingCard';
+export const BookingBar = 'BookingBar';
+export const PriceBreakdown = 'PriceBreakdown';

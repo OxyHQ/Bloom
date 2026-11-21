@@ -1589,6 +1589,25 @@ options?)` (a quote folded anywhere else) and `NoteEditorToolbar(label,
 actions, options?)`, named as Bloom requires (`.size('md' | 'sm')`,
 `.disabled()`).
 
+### Booking
+
+```ts
+BookingCard(stay.price, guests, { priceUnit: 'night', checkIn, checkOut, onPressDates, onReserve,
+  breakdown: { rows, total } }).loading(reserving)
+BookingBar(stay.price, { dates, onPressDates, onReserve, bottomInset: 'lg' }).disabled(!stay.range)
+TripCard(trip.title, { image, dates, status: trip.status, actions: Button(Text('Message host')) }).style('auto').onPress(open)
+PriceBreakdown(rows, { total: '$915' })
+```
+
+Bloom's `booking`: `BookingCard(price, guests, options?)` and `BookingBar(price,
+options?)` take the stay's words and handlers as Bloom does; `.loading()` spins
+the reserve button and `.disabled()` disables it. A card's `guestPicker`,
+`note` (`null` hides it) and `footer` are language children; a bar's
+`bottomInset` is a space token. `TripCard(title, options?)`: `.style('auto' |
+'horizontal' | 'vertical')` is its orientation, `.onPress()` makes the whole
+card its button, and its `actions` are a child. `PriceBreakdown(rows,
+options?)` takes Bloom's rows.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

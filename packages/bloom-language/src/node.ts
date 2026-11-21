@@ -32,6 +32,7 @@ import type { MessageBubbleKind } from './controls/message-bubble';
 import type { MapChromeKind } from './controls/map-chrome';
 import type { PlaceKind } from './controls/places';
 import type { MailKind } from './controls/mail';
+import type { BookingKind } from './controls/booking';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -106,6 +107,7 @@ import {
   type DirectionsDensity,
   type MailComposeStyle,
   type NoteToolbarSize,
+  type TripCardOrientation,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -541,7 +543,9 @@ export type Modifier =
         | MapAttributionStyle
         | LocationPuckMode
         | PlaceCardStyle
-        | MailComposeStyle;
+        | MailComposeStyle
+        | ShelfLayout
+        | TripCardOrientation;
     }
   | {
       readonly kind: 'shape';
@@ -722,7 +726,9 @@ export type NodeKind =
   | MessageBubbleKind
   | MapChromeKind
   | PlaceKind
-  | MailKind;
+  | MailKind
+  | CheckoutSheetKind
+  | BookingKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1074,7 +1080,8 @@ export class Node {
       | MapAttributionStyle
       | LocationPuckMode
       | PlaceCardStyle
-      | MailComposeStyle,
+      | MailComposeStyle
+      | TripCardOrientation,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

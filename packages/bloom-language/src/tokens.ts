@@ -184,6 +184,7 @@ export type PlaceCardStyle = (typeof ENUMS.placeCardStyle)[number];
 export type DirectionsDensity = (typeof ENUMS.directionsDensity)[number];
 export type MailComposeStyle = (typeof ENUMS.mailComposeStyle)[number];
 export type NoteToolbarSize = (typeof ENUMS.noteToolbarSize)[number];
+export type TripCardOrientation = (typeof ENUMS.tripCardOrientation)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];

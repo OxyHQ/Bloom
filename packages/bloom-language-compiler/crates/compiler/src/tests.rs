@@ -917,3 +917,22 @@ fn mail_and_the_note_toolbar_are_checked() {
     let output = check("export const x = (r) => MailRecipientField(r).size('sm');\n");
     assert_eq!(output.diagnostics[0].message, "MailRecipientField has no modifier .size()");
 }
+
+#[test]
+fn the_booking_family_is_checked() {
+    let imports = "import { BookingBar, BookingCard, PriceBreakdown, TripCard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (r) => VStack(TripCard('Cabin').style('vertical'), BookingCard('$1', '2').loading().disabled(), BookingBar('$1').loading(), PriceBreakdown(r));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("TripCard('a').style('wide')", "Unknown tripCardOrientation token 'wide' for .style()"),
+        ("BookingBar('a').size('sm')", "BookingBar has no modifier .size()"),
+        ("PriceBreakdown(r).loading()", "PriceBreakdown has no modifier .loading()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (r) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

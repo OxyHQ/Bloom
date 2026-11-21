@@ -738,3 +738,16 @@ export type {
   NoteEditorToolbarOptions,
   NoteEditorToolbarView,
 } from './controls/mail';
+
+// Booking (controls/booking.tsx)
+export { BookingBar, BookingCard, PriceBreakdown, TripCard } from './controls/booking';
+export type {
+  BookingBarOptions,
+  BookingBarView,
+  BookingCardOptions,
+  BookingCardView,
+  PriceBreakdownOptions,
+  PriceBreakdownView,
+  TripCardOptions,
+  TripCardView,
+} from './controls/booking';
