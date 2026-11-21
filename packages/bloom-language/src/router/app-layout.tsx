@@ -5,6 +5,14 @@
  * the bottom bar is each platform's (`bar.*.tsx`). The shell's own options
  * (layout mode, panels, error boundaries) stay the app's: `.shell(navigator =>
  * options)` places the navigator in the panel it names.
+ *
+ * The app runs edge to edge on a device: the shell draws no safe-area frame,
+ * because the pages own the device's edges. Each screen's `PageHeader` (or the
+ * system navigation bar) keeps its controls below the status bar while its
+ * paint and the scrolling content reach behind it; the bottom bar, the FAB and
+ * the reveal drawer clear their own insets. A semantic `layout` would otherwise
+ * frame the top and paint a band behind the status bar. An app that wants the
+ * frame says so: `.shell(() => ({ safeArea: true }))`.
  */
 import { AppShell } from '@oxy.so/bloom/app-shell';
 import { useTabPager } from '@oxy.so/bloom/tab-pager';
@@ -35,6 +43,7 @@ export function AppLayoutHost({ node }: { node: Node }) {
     <PrimaryDestinationContext.Provider value={primary}>
       <AppShell
         {...shell}
+        safeArea={shell?.safeArea ?? false}
         testID={(values.testID as string | undefined) ?? shell?.testID}
         primaryAction={primary ? primaryAction(primary, pager.selectDestination) : undefined}
         bottomBar={destinationBar(values.bottomBar !== false, primary)}

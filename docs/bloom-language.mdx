@@ -1003,6 +1003,17 @@ this route. The shell's own options (layout mode, panels, error boundaries)
 stay the app's: `.shell(navigator => options)` places the navigator in the
 panel it names.
 
+On a device the app runs edge to edge: `AppLayout` gives the shell no
+safe-area frame (`safeArea: false`), whatever `layout` the app's options name.
+The pages own the device's edges, as Bloom's `Screen` and `PageHeader` do: each
+screen's header keeps its controls below the status bar and the camera while
+its paint and the scrolling content reach behind them (on iOS the system
+navigation bar does the same). The bottom bar, the FAB and the reveal drawer
+clear their own insets. A semantic `layout` (`feed`, `deck`) on a bare
+`AppShell` frames the top instead and paints a band behind the status bar; an
+app that wants that frame asks for it with `.shell(() => ({ safeArea: true }))`.
+The web has no frame either way.
+
 **`Stack(...routes)`, `Sheet(name)`.** Each name is a route of the layout's
 directory, pushed over the ones before it; with none, the directory's routes as
 expo-router finds them. A tab page that should have the system navigation bar
