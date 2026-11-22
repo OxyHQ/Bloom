@@ -6,7 +6,7 @@ import {
 
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { TooltipSide, TooltipSize } from '../tokens';
+import { type DurationName, resolveDuration, type TooltipSide, type TooltipSize } from '../tokens';
 import type { ControlRenderer } from './draw';
 
 /** A hint about an already-labelled control, controlled (Bloom `tooltip`). */
@@ -22,8 +22,8 @@ export interface TooltipView extends ViewModifiers<TooltipView> {
   presented(value: Binding<boolean>): TooltipView;
   /** The side of its trigger: `bottom` (default) or `top`. */
   side(value: TooltipSide): TooltipView;
-  /** How long the pointer rests before it shows, in ms (a desktop's own wait by default). */
-  openDelay(value: number): TooltipView;
+  /** How long the pointer rests before it shows: a duration token (a desktop's own wait, `'1000'`, by default). */
+  openDelay(value: DurationName): TooltipView;
   /** `sm` or `md`; the nearest Bloom scope's by default. */
   size(value: TooltipSize): TooltipView;
 }
@@ -49,7 +49,7 @@ export const TOOLTIPS: Record<TooltipKind, ControlRenderer> = {
         visible={presented[0]}
         onVisibleChange={presented[1]}
         position={d.own('side')?.value.side as TooltipSide | undefined}
-        delay={d.own('openDelay')?.value}
+        delay={resolveDuration(d.own('openDelay')?.value)}
       >
         <BloomTooltipTrigger>{d.render(trigger)}</BloomTooltipTrigger>
         <BloomTooltipContent

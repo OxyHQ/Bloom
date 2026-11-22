@@ -31,7 +31,7 @@ export const TOOLTIP_CASES: readonly ParityCase[] = [
       name: `a ${size} tooltip shown on the ${side}`,
       language: () =>
         toElement(
-          L.Tooltip(trigger(), 'About').presented([true, set]).side(side).size(size).openDelay(0),
+          L.Tooltip(trigger(), 'About').presented([true, set]).side(side).size(size).openDelay('0'),
         ),
       bloom: () => (
         <Tooltip visible onVisibleChange={set} position={side} delay={0}>

@@ -164,8 +164,8 @@ describe('feedback', () => {
           .offlineMessage('No network')
           .reconnectingMessage('Trying again')
           .restoredMessage('Back')
-          .reconnectingDelay(1000)
-          .restoredDuration(4000),
+          .reconnectingDelay('1000')
+          .restoredDuration('4000'),
       ),
     );
     expect(only(worded, 'ConnectionStatusToasts').props).toEqual({

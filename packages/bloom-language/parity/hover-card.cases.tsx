@@ -62,8 +62,8 @@ export const HOVER_CARD_CASES: readonly ParityCase[] = [
       toElement(
         L.HoverCard(trigger(), card())
           .presented([false, set])
-          .openDelay(0)
-          .closeDelay(300)
+          .openDelay('0')
+          .closeDelay('slow')
           .testID('author')
           .padding('xs'),
       ),

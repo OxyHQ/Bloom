@@ -6,6 +6,7 @@ import {
 
 import type { ENUMS } from '../generated/spec.generated';
 import { Node, type Child, type IconComponent, type ViewModifiers } from '../node';
+import { type DurationName, resolveDuration } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** The notification card: a status disc or an avatar, the message, actions and dismiss (Bloom `notification`). */
@@ -38,10 +39,10 @@ export interface NotificationView extends ViewModifiers<NotificationView> {
   dismissible(value: boolean): NotificationView;
   /** What dismissing it does, once its exit has played. */
   onDismiss(value: () => void): NotificationView;
-  /** It dismisses itself after this many ms, a countdown bar along its foot. */
-  autoDismiss(value: number): NotificationView;
-  /** It plays its entrance, after this many seconds. */
-  introDelay(value: number): NotificationView;
+  /** It dismisses itself after a duration token's wait, a countdown bar along its foot. */
+  autoDismiss(value: DurationName): NotificationView;
+  /** It plays its entrance, after a duration token's wait (`'0'`: at once). */
+  introDelay(value: DurationName): NotificationView;
   liveRole(value: LiveRole): NotificationView;
   labels(value: NotificationLabels): NotificationView;
 }
@@ -49,6 +50,12 @@ export interface NotificationView extends ViewModifiers<NotificationView> {
 /** Bloom `Notification`: its title, a string or a view. */
 export function Notification(title: string | Child): NotificationView {
   return new Node('notification', { title }, []);
+}
+
+/** Bloom's entrance wait is in seconds: a duration token's milliseconds, divided exactly. */
+function seconds(token: DurationName | undefined): number | undefined {
+  const ms = resolveDuration(token);
+  return ms === undefined ? undefined : ms / 1000;
 }
 
 const text = (d: ControlDraw, value: string | Child) =>
@@ -68,8 +75,8 @@ export const NOTIFICATIONS: Record<NotificationKind, ControlRenderer> = {
       actions: buttons === undefined ? undefined : [...buttons],
       dismissible: d.own('dismissible')?.value,
       onDismiss: d.own('onDismiss')?.value,
-      autoDismissDuration: d.own('autoDismiss')?.value,
-      introDelay: d.own('introDelay')?.value,
+      autoDismissDuration: resolveDuration(d.own('autoDismiss')?.value),
+      introDelay: seconds(d.own('introDelay')?.value),
       role: d.own('liveRole')?.value,
       closeLabel: (d.own('labels')?.value as NotificationLabels | undefined)?.close,
       testID: d.testID,
