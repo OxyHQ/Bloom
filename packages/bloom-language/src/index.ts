@@ -145,6 +145,7 @@ export type {
   Role,
   ScrollEdge,
   ScreenFooter,
+  ScrollContentView,
   ScrollViewNode,
   BottomSheetView,
   SidebarView,

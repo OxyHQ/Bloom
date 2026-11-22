@@ -13,7 +13,9 @@ use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
 use crate::module::{Binding, Module};
-use crate::spec::{MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS};
+use crate::spec::{
+    CONTENT_VIEW_MODIFIERS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS,
+};
 
 pub struct Problem {
     pub span: Span,
@@ -262,6 +264,7 @@ fn check_value(
     match param {
         "value" | "children" | "namespace" => Ok(()),
         "variant" => check_variant(value, spec, module, scoping),
+        "contentView" => check_content_view(value, module, scoping),
         "scale" | "rotation" if motion_value => Ok(()),
         "transition" | "keyframes" => match value.without_parentheses() {
             Expression::StringLiteral(literal) => Err(Problem {
@@ -363,6 +366,46 @@ fn check_variant(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
+    let varies: Vec<&str> =
+        VARIANT_MODIFIERS.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
+    check_built(
+        value,
+        &varies,
+        spec,
+        module,
+        scoping,
+        |modifier| format!("A variant cannot change .{modifier}()"),
+        "a variant changes",
+    )
+}
+
+/// A scroll view's content view (`contentView((v) => v.padding('lg'))`): the
+/// chain the arrow returns takes only the content view's modifiers (the layout
+/// of one view), each checked as a stack's.
+fn check_content_view(value: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    check_built(
+        value,
+        CONTENT_VIEW_MODIFIERS,
+        node("stack"),
+        module,
+        scoping,
+        |modifier| format!("A content view cannot take .{modifier}()"),
+        "a content view takes",
+    )
+}
+
+/// The chain a build function (`(v) => v…`) returns on its parameter: each
+/// modifier one of `allowed`, with valid arguments for `spec`. A function
+/// written any other way (declared elsewhere) is the runtime's.
+fn check_built(
+    value: &Expression,
+    allowed: &[&str],
+    spec: &NodeSpec,
+    module: &Module,
+    scoping: &Scoping,
+    refused: impl Fn(&str) -> String,
+    takes: &str,
+) -> Result<(), Problem> {
     let Expression::ArrowFunctionExpression(arrow) = value.without_parentheses() else { return Ok(()) };
     let [param] = arrow.params.items.as_slice() else { return Ok(()) };
     let BindingPattern::BindingIdentifier(param) = &param.pattern else { return Ok(()) };
@@ -396,15 +439,13 @@ fn check_variant(
         return Ok(());
     }
     for (modifier, span, arguments, call_span) in modifiers.into_iter().rev() {
-        if !VARIANT_MODIFIERS.contains(&modifier) || !spec.modifiers.contains(&modifier) {
-            let varies: Vec<&str> =
-                VARIANT_MODIFIERS.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
+        if !allowed.contains(&modifier) || !spec.modifiers.contains(&modifier) {
             return Err(Problem {
                 span,
-                message: format!("A variant cannot change .{modifier}()"),
+                message: refused(modifier),
                 help: Some(with_suggestion(
-                    suggest(modifier, &varies),
-                    format!("a variant changes: {}", varies.join(", ")),
+                    suggest(modifier, allowed),
+                    format!("{takes}: {}", allowed.join(", ")),
                 )),
             });
         }

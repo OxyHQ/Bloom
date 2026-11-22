@@ -351,6 +351,22 @@ export const VARIANT_SELECTORS = {
   "pressed": "&:is(.blsg:active:where(:not(:has(.blsp:active))), .blsg:active:where(:not(:has(.blsp:active))) *):where(:not(.blsg:active:where(:not(:has(.blsp:active))) .blsg, .blsg:active:where(:not(:has(.blsp:active))) .blsg *))"
 } as const;
 
+/** What a scroll view's content view (`.contentView(v => v…)`) sets: the layout of one view. */
+export const CONTENT_VIEW_MODIFIERS = [
+  "padding",
+  "spacing",
+  "align",
+  "justify",
+  "wrap",
+  "axis",
+  "frame",
+  "flex",
+  "grow",
+  "shrink",
+  "basis",
+  "alignSelf"
+] as const;
+
 /** Cubic-bezier curves by name. */
 export const EASING = {
   "linear": [
@@ -3731,6 +3747,9 @@ export const MODIFIERS = {
   ],
   "screen": [
     "value?"
+  ],
+  "contentView": [
+    "contentView"
   ],
   "onSelectAll": [
     "value"
@@ -9231,7 +9250,8 @@ export const NODE_MODIFIERS = {
     "onEndReached",
     "scrollIndicators",
     "scrollDismissesKeyboard",
-    "keyboardTaps"
+    "keyboardTaps",
+    "contentView"
   ],
   "bottomSheet": [
     "detached",

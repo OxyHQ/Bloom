@@ -5,7 +5,7 @@
  * focused input above it. Its modifiers are the scroll view's own props.
  */
 import type { ComponentType, ReactNode } from 'react';
-import { RefreshControl, type ViewStyle } from 'react-native';
+import { RefreshControl, type StyleProp, type ViewStyle } from 'react-native';
 import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 
 import { refreshing } from '../binding';
@@ -135,12 +135,27 @@ function TintedScrollView({
 /** `TintedScrollView` as a `Painted` host (which types its host's props loosely). */
 const TINTED_HOST = TintedScrollView as unknown as ComponentType<Record<string, unknown>>;
 
-export function ScrollViewHost({ node, children }: NodeHostProps & { children?: ReactNode }) {
+interface ScrollViewHostProps extends NodeHostProps {
+  children?: ReactNode;
+  /** The content is laid out in a view of its own (`.contentView()`), whose style is `style`. */
+  contentView?: boolean;
+  /** The content view's style, as a stack of its modifiers is drawn (`drawScrollContent`). */
+  style?: StyleProp<ViewStyle>;
+}
+
+export function ScrollViewHost({ node, children, contentView, style }: ScrollViewHostProps) {
   const values = valuesOf(node);
   // Only what the chain sets: an explicit undefined would replace the scroll view's own defaults.
   const props: { -readonly [K in keyof ScreenScrollViewProps]: ScreenScrollViewProps[K] } = {};
   const container = containerStyle(node, values.spacing as SpaceToken | undefined);
-  if (container) props.contentContainerStyle = container;
+  if (contentView) {
+    // Bloom lays a content class out in a view of its own inside the content
+    // container, styled by the class and then by `contentContainerStyle`. The
+    // empty class asks for that view; the content view's style is its class's
+    // part, the margins and spacing its `contentContainerStyle`.
+    props.contentContainerClassName = '';
+    props.contentContainerStyle = container ? [style, container] : style;
+  } else if (container) props.contentContainerStyle = container;
   const dismiss = values.scrollDismissesKeyboard as KeyboardDismiss | undefined;
   if (dismiss) props.keyboardDismissMode = DISMISS_MODE[dismiss];
   if (values.keyboardTaps) props.keyboardShouldPersistTaps = values.keyboardTaps as KeyboardTaps;

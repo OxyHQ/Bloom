@@ -30,6 +30,7 @@ import {
   LEADING,
   LEADING_PX,
   MOTION,
+  type CONTENT_VIEW_MODIFIERS,
   type NODE_MODIFIERS,
   OPACITY,
   ROTATION,
@@ -73,6 +74,7 @@ import type {
   NavItemView,
   SidebarView,
   BottomSheetView,
+  ScrollContentView,
   ScrollViewNode,
   ActionGroupView,
   ActionView,
@@ -1253,7 +1255,10 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SelectionBarView>, Of<'selectionBar'>>,
       Same<MethodsOf<EpisodeRowView>, Of<'episodeRow'>>,
       Same<MethodsOf<EpisodeListView>, Of<'episodeList'>>,
+      // A scroll view's content view takes exactly the spec's `contentView.modifiers`.
+      Same<MethodsOf<ScrollContentView>, (typeof CONTENT_VIEW_MODIFIERS)[number]>,
     ] = [
+      true,
       true,
       true,
       true,

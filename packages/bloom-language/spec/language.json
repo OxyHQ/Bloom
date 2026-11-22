@@ -1150,6 +1150,26 @@
       "pressed": "&:is(.blsg:active:where(:not(:has(.blsp:active))), .blsg:active:where(:not(:has(.blsp:active))) *):where(:not(.blsg:active:where(:not(:has(.blsp:active))) .blsg, .blsg:active:where(:not(:has(.blsp:active))) .blsg *))"
     }
   },
+  "contentView": {
+    "$comment": [
+      "A scroll view's .contentView(v => v…): Bloom's own view inside the content container, holding the content (ScreenScrollView's contentContainerClassName view).",
+      "modifiers: what its build function sets, the layout of one view: the language draws them as that view's style."
+    ],
+    "modifiers": [
+      "padding",
+      "spacing",
+      "align",
+      "justify",
+      "wrap",
+      "axis",
+      "frame",
+      "flex",
+      "grow",
+      "shrink",
+      "basis",
+      "alignSelf"
+    ]
+  },
   "easing": {
     "$comment": "Bloom's curves (EASING in @oxy.so/bloom/motion), cubic-beziers by name; spec.test.ts holds them equal.",
     "linear": [0, 0, 1, 1],
@@ -1590,6 +1610,7 @@
     "restorationKey": ["value"],
     "tuning": ["value"],
     "screen": ["value?"],
+    "contentView": ["contentView"],
     "onSelectAll": ["value"],
     "onClear": ["value"],
     "groupSize": ["value"],
@@ -2575,7 +2596,8 @@
         "onEndReached",
         "scrollIndicators",
         "scrollDismissesKeyboard",
-        "keyboardTaps"
+        "keyboardTaps",
+        "contentView"
       ]
     },
     "bottomSheet": {
