@@ -684,3 +684,33 @@ export type {
   NavigationBannerOptions,
   NavigationBannerView,
 } from './controls/map-chrome';
+
+// Places (controls/places.tsx)
+export {
+  DirectionsSteps,
+  PlaceCard,
+  PlaceHours,
+  PlaceInfoList,
+  PlaceList,
+  PlaceListCard,
+  PlacePicker,
+  PlaceTransit,
+} from './controls/places';
+export type {
+  DirectionsStepsOptions,
+  DirectionsStepsView,
+  PlaceCardOptions,
+  PlaceCardView,
+  PlaceHoursOptions,
+  PlaceHoursView,
+  PlaceInfoListOptions,
+  PlaceInfoListView,
+  PlaceListCardOptions,
+  PlaceListCardView,
+  PlaceListOptions,
+  PlaceListView,
+  PlacePickerOptions,
+  PlacePickerView,
+  PlaceTransitOptions,
+  PlaceTransitView,
+} from './controls/places';

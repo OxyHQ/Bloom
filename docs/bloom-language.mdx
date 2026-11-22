@@ -1543,6 +1543,29 @@ speed limit, are language children).
 - A locating puck pulses on the UI thread: its cases are compared by Jest as
   it mounts, not in Chrome.
 
+### Places
+
+```ts
+PlaceCard(place.name, { category, rating, openState, actions, badge: 'New' }).style('detail').onPress(open)
+PlaceHours(days, { state: 'open', summary: 'Open until 20:00' })
+PlaceListCard(list.name, { count, visibility: 'shared', empty: Text('No places yet') }).tint('primary').onPress(openList)
+DirectionsSteps(route.legs, { currentStepId, onPressStep: pan }).size('compact')
+PlacePicker('Address', [place, setPlace], [query, setQuery], { results, status }).size('sm')
+```
+
+A place and what a map app shows of it, each Bloom's own: `PlaceCard(name,
+options?)` (`.style('row' | 'detail')`, `.loading()` its skeleton; its `badge`
+a word Bloom draws or a language child), the details (`PlaceHours(days,
+options?)`, `PlaceInfoList(items, options?)`, `PlaceTransit(stops, options?)`,
+its `footer` a child), a saved list (`PlaceListCard(name, options?)`,
+`.tint(role)` the list's own colour; `PlaceList(places, options?)`,
+`.disabled()`; their `empty` a child), `DirectionsSteps(legs, options?)`
+(`.size('comfortable' | 'compact')`) and `PlacePicker(label, place, query,
+options)`, which holds the chosen place and the text it searches in two
+bindings (`.size()` a control size, `.disabled()`). The card and the list card
+take `.onPress()` themselves. A transit line's colour is the operator's, so it
+stays the line's data.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

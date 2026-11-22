@@ -24,6 +24,7 @@ import { CONTAINERS } from './containers';
 import type { ControlRenderer } from './draw';
 import { INPUTS } from './inputs';
 import { OVERLAYS } from './overlays';
+import { PLACES } from './places';
 import { MAP_CHROME } from './map-chrome';
 
 /**
@@ -56,4 +57,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CHAT_PEOPLE,
   ...MESSAGE_BUBBLES,
   ...MAP_CHROME,
+  ...PLACES,
 };

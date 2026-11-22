@@ -881,3 +881,22 @@ fn the_map_chrome_is_checked() {
     let output = check("export const x = (o) => LocationPuck(o).size('sm');\n");
     assert_eq!(output.diagnostics[0].message, "LocationPuck has no modifier .size()");
 }
+
+#[test]
+fn the_places_are_checked() {
+    let imports =
+        "import { PlaceCard, PlaceListCard, DirectionsSteps, PlacePicker } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (l, p, q, o) => [PlaceCard('Forner').style('detail').loading(), \
+         PlaceListCard('Saved').tint('primary'), DirectionsSteps(l).size('compact'), \
+         PlacePicker('Address', p, q, o).size('sm').disabled()];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = () => PlaceCard('Forner').style('compact');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown placeCardStyle token 'compact' for .style()");
+    let output = check("export const x = (l) => DirectionsSteps(l).size('md');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown directionsDensity token 'md' for .size()");
+    let output = check("export const x = (p, q, o) => PlacePicker('Address', p, q, o).style('plain');\n");
+    assert_eq!(output.diagnostics[0].message, "PlacePicker has no modifier .style()");
+}
