@@ -66,6 +66,9 @@ function compareInPage() {
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
   const BLOOM_ID =
     /\bbloom-(?:alerts-fade|heading-cone|stat-tile|story-ring-|call-stage-|call-scrim-|story-scrim-)\d+\b/g;
+  // Reanimated names the keyframes of a web layout animation per mount, counted
+  // across the page (REA-LAYOUT-8): its animation-name is compared by its order too.
+  const LAYOUT_ID = /\bREA-LAYOUT-\d+\b/g;
   let maps = [new Map(), new Map()];
   const ids = (side, text) => {
     const map = maps[side];
@@ -73,7 +76,7 @@ function compareInPage() {
       if (!map.has(id)) map.set(id, `id${map.size}`);
       return map.get(id);
     };
-    return text.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
+    return text.replace(BLOOM_ID, byOrder).replace(LAYOUT_ID, byOrder).replace(REACT_ID, byOrder);
   };
   const describe = (element, side) => {
     const attributes = {};
@@ -160,12 +163,14 @@ function describeCellInPage(testid) {
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
   const BLOOM_ID =
     /\bbloom-(?:alerts-fade|heading-cone|stat-tile|story-ring-|call-stage-|call-scrim-|story-scrim-)\d+\b/g;
+  const LAYOUT_ID = /\bREA-LAYOUT-\d+\b/g;
   const map = new Map();
   const byOrder = (id) => {
     if (!map.has(id)) map.set(id, `id${map.size}`);
     return map.get(id);
   };
-  const ids = (text) => text.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
+  const ids = (text) =>
+    text.replace(BLOOM_ID, byOrder).replace(LAYOUT_ID, byOrder).replace(REACT_ID, byOrder);
   const walk = (element, path) => {
     const style = getComputedStyle(element);
     const css = {};
