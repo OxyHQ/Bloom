@@ -2,13 +2,14 @@ import { RefreshControl } from 'react-native';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 import { tokens } from '@oxy.so/bloom/styles';
+import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { ScreenHost } from '../src/router/screen-host';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const { space } = tokens;
 const noop = () => {};
@@ -124,6 +125,29 @@ const scrollViews: ParityCase[] = inScreen([
     ),
   },
   {
+    name: 'vertical scroll indicator hidden',
+    language: () => toElement(L.ScrollView(L.Text('a')).scrollIndicators('hidden', 'vertical')),
+    bloom: () => (
+      <ScreenScrollView showsVerticalScrollIndicator={false}>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
+  {
+    name: 'horizontal scroll indicator visible, vertical hidden',
+    language: () =>
+      toElement(
+        L.ScrollView(L.Text('a'))
+          .scrollIndicators('hidden')
+          .scrollIndicators('visible', 'horizontal'),
+      ),
+    bloom: () => (
+      <ScreenScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
+  {
     name: 'pull to refresh',
     language: () => toElement(L.ScrollView(L.Text('a')).refreshable([false, noop])),
     bloom: () => (
@@ -132,6 +156,26 @@ const scrollViews: ParityCase[] = inScreen([
       </ScreenScrollView>
     ),
   },
+  ...(['primary', 'muted/70'] as const).map((tint) => ({
+    name: `pull to refresh tinted ${tint}`,
+    language: () => toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], tint)),
+    bloom: () => (
+      <Themed>
+        {(c) => {
+          const color = tint === 'primary' ? c.primary : withAlpha(c.textSecondary, 0.7);
+          return (
+            <ScreenScrollView
+              refreshControl={
+                <RefreshControl refreshing onRefresh={noop} tintColor={color} colors={[color]} />
+              }
+            >
+              <Text>a</Text>
+            </ScreenScrollView>
+          );
+        }}
+      </Themed>
+    ),
+  })),
 ]);
 
 const screens: ParityCase[] = [

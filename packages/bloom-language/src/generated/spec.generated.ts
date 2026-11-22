@@ -3096,14 +3096,16 @@ export const MODIFIERS = {
     "space"
   ],
   "refreshable": [
-    "value"
+    "value",
+    "color?"
   ],
   "onEndReached": [
     "value",
     "value?"
   ],
   "scrollIndicators": [
-    "scrollIndicators"
+    "scrollIndicators",
+    "axis?"
   ],
   "scrollDismissesKeyboard": [
     "keyboardDismiss"
