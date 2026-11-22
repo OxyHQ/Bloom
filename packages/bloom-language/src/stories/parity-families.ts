@@ -83,6 +83,7 @@ import { CALL_UI_CASES } from '../../parity/call-ui.cases';
 import { CHAT_PEOPLE_CASES } from '../../parity/chat-people.cases';
 import { MESSAGE_BUBBLE_CASES } from '../../parity/message-bubble.cases';
 import { MAP_CHROME_CASES } from '../../parity/map-chrome.cases';
+import { PLACE_CASES } from '../../parity/places.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -171,6 +172,7 @@ export const FAMILIES = {
   chatPeople: CHAT_PEOPLE_CASES,
   messageBubble: MESSAGE_BUBBLE_CASES,
   mapChrome: MAP_CHROME_CASES,
+  place: PLACE_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
