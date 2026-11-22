@@ -1667,6 +1667,7 @@
     "stickyIndices": ["value"],
     "restorationKey": ["value"],
     "tuning": ["value"],
+    "screen": ["value?"],
     "onSelectAll": ["value"],
     "onClear": ["value"],
     "groupSize": ["value"],
@@ -3208,6 +3209,10 @@
         "footerContent",
         "emptyState",
         "tuning",
+        "screen",
+        "scrollbar",
+        "scrollDismissesKeyboard",
+        "keyboardTaps",
         "safeAreaInset",
         "safeAreaBar"
       ]

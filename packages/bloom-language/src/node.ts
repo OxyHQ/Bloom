@@ -98,7 +98,7 @@ import type { AccordionKind } from './controls/accordion';
 import type { SliderKind } from './controls/slider';
 import type { MarkdownKind } from './controls/markdown';
 import type { CarouselKind } from './controls/carousel';
-import type { ListKind, VirtualListTuning } from './controls/list';
+import type { ListKind, VirtualListScreen, VirtualListTuning } from './controls/list';
 import type { ListAction, ListProps } from '@oxy.so/bloom/list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 import type { TableKind } from './controls/table';
@@ -920,6 +920,7 @@ export interface ValueModifiers {
   stickyIndices: readonly number[];
   restorationKey: string;
   tuning: VirtualListTuning;
+  screen: VirtualListScreen;
   onSelectAll: (checked: boolean) => void;
   onClear: () => void;
 
@@ -3715,6 +3716,9 @@ export class Node {
   }
   tuning(value: VirtualListTuning): Node {
     return this.set('tuning', value);
+  }
+  screen(value: VirtualListScreen = {}): Node {
+    return this.set('screen', value);
   }
   onSelectAll(value: (checked: boolean) => void): Node {
     return this.set('onSelectAll', value);

@@ -4089,6 +4089,9 @@ export const MODIFIERS = {
   "tuning": [
     "value"
   ],
+  "screen": [
+    "value?"
+  ],
   "onSelectAll": [
     "value"
   ],
@@ -13727,8 +13730,15 @@ export const NODE_MODIFIERS = {
     "footerContent",
     "emptyState",
     "tuning",
+<<<<<<< HEAD
     "safeAreaInset",
     "safeAreaBar"
+=======
+    "screen",
+    "scrollbar",
+    "scrollDismissesKeyboard",
+    "keyboardTaps"
+>>>>>>> f93ce2911 (feat(language): a VirtualList bound to its screen, its scrollbar and keyboard, and its row handed FlashList's argument)
   ],
   "listSelectionBar": [
     "padding",

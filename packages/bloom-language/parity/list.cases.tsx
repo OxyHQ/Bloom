@@ -1,6 +1,7 @@
 import { Avatar } from '@oxy.so/bloom/avatar';
 import { RiArchiveLine, RiArrowRightSLine, RiStarLine } from '@oxy.so/bloom/icons';
 import { List, ListItem, ListSelectionBar, VirtualList } from '@oxy.so/bloom/list';
+import { Screen } from '@oxy.so/bloom/screen';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
@@ -17,8 +18,14 @@ const ENTRIES = [
 ];
 const SECTIONS = [{ id: 'team', title: 'Team', items: ENTRIES }];
 const NAMES = ['Ana', 'Rui', 'Mia'];
-const nameRow = (name: string) => L.ListItem(name);
+const nameRow = ({ item }: { item: string }) => L.ListItem(item);
 const keyOf = (name: string) => name;
+/** React Native's `keyboardDismissMode` for each of the language's. */
+const DISMISS_MODE = {
+  never: 'none',
+  immediately: 'on-drag',
+  interactively: 'interactive',
+} as const;
 
 const rows: ParityCase[] = [
   {
@@ -344,6 +351,103 @@ const virtual: ParityCase[] = [
         ListFooterComponent={<Text>End</Text>}
         drawDistance={500}
         testID="names"
+      />
+    ),
+  },
+  {
+    name: 'a virtual list whose row reads its index',
+    language: () =>
+      toElement(L.VirtualList(NAMES, ({ item, index }) => L.ListItem(`${index}. ${item}`))),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        renderItem={({ item, index }) => <ListItem title={`${index}. ${item}`} />}
+      />
+    ),
+  },
+  {
+    name: 'a virtual list that is its screen’s scroller',
+    language: () => <Screen>{toElement(L.VirtualList(NAMES, nameRow).screen())}</Screen>,
+    bloom: () => (
+      <Screen>
+        <VirtualList
+          data={NAMES}
+          renderItem={({ item }) => <ListItem title={item} />}
+          screen={{}}
+        />
+      </Screen>
+    ),
+  },
+  {
+    name: 'a virtual list bound to its screen, inactive',
+    language: () => (
+      <Screen>{toElement(L.VirtualList(NAMES, nameRow).screen({ active: false }))}</Screen>
+    ),
+    bloom: () => (
+      <Screen>
+        <VirtualList
+          data={NAMES}
+          renderItem={({ item }) => <ListItem title={item} />}
+          screen={{ active: false }}
+        />
+      </Screen>
+    ),
+  },
+  ...ENUMS.scrollbarVisibility.map((scrollbar) => ({
+    name: `a virtual list's scrollbar ${scrollbar}`,
+    language: () => toElement(L.VirtualList(NAMES, nameRow).scrollbar(scrollbar)),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        renderItem={({ item }) => <ListItem title={item} />}
+        scrollbar={scrollbar}
+      />
+    ),
+  })),
+  ...ENUMS.keyboardDismiss.map((dismiss) => ({
+    name: `a virtual list's keyboard: taps handled, dismissed ${dismiss}`,
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow).keyboardTaps('handled').scrollDismissesKeyboard(dismiss),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        renderItem={({ item }) => <ListItem title={item} />}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={DISMISS_MODE[dismiss]}
+      />
+    ),
+  })),
+  {
+    name: 'a virtual list’s engine tuning',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow).tuning({
+          overscan: 4,
+          removeClippedSubviews: false,
+          maxToRenderPerBatch: 10,
+          windowSize: 10,
+          initialNumToRender: 10,
+          recycleItems: true,
+          maintainVisibleContentPosition: true,
+          drawDistance: 400,
+          maxItemsInRecyclePool: 24,
+        }),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        renderItem={({ item }) => <ListItem title={item} />}
+        overscan={4}
+        removeClippedSubviews={false}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={10}
+        recycleItems
+        maintainVisibleContentPosition
+        drawDistance={400}
+        maxItemsInRecyclePool={24}
       />
     ),
   },
