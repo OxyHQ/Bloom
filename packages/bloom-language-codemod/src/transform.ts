@@ -407,10 +407,21 @@ export function transformSource(source: string, options: TransformOptions): File
       .filter(([, s]) => s.module === '@oxy.so/bloom/theme' && s.imported === 'useTheme')
       .map(([local]) => local),
   );
+  /**
+   * The scope that declares `name` where `path` reads it. ast-types cannot scan
+   * every pattern Babel parses (an array pattern's hole, `const [, b] = …`):
+   * a scope it cannot scan is no known binding.
+   */
+  const scopeOf = (path: AnyNode, name: string): AnyNode => {
+    try {
+      return path.scope?.lookup(name);
+    } catch {
+      return undefined;
+    }
+  };
   /** What `name` is bound to where `path` reads it: Bloom's theme, its colours, or neither. */
   const boundTo = (path: AnyNode, name: string): 'theme' | 'colors' | undefined => {
-    const scope = path.scope?.lookup(name);
-    const bindings = scope?.getBindings()[name];
+    const bindings = scopeOf(path, name)?.getBindings()[name];
     if (bindings?.length !== 1) return undefined;
     // `const theme = useTheme()`, or `const { colors } = useTheme()` (the property's value is the binding).
     let at = bindings[0];
@@ -449,7 +460,7 @@ export function transformSource(source: string, options: TransformOptions): File
         if (
           n.Identifier.check(object) &&
           styleSheets.has(object.name) &&
-          path.scope?.lookup(object.name)?.isGlobal
+          scopeOf(path, object.name)?.isGlobal
         )
           moduleStyleReads.add(path.node);
         if (!computed && n.Identifier.check(property)) {
