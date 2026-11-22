@@ -23,3 +23,7 @@ It orders the chips only. The caller keeps the data: `onReorder` receives the ne
 order of `key`s, and the caller writes it. `trailing` is drawn after the chips and
 is not part of the order. `onDragStateChange` tells a parent a drag began or ended,
 so it can hold its own scrolling. `disabled` makes the row inert.
+
+The drag is a Gesture Handler 3 pan on each chip (`usePanGesture`, run on the JS
+thread, since the order and the dragged chip's offset are React state), so the app
+needs Gesture Handler's root view, as Bloom's sheets and toasts do.

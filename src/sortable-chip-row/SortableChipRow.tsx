@@ -1,13 +1,11 @@
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
-  PanResponder,
   View,
   type AccessibilityActionEvent,
-  type GestureResponderEvent,
   type KeyDownEvent,
   type LayoutChangeEvent,
-  type PanResponderGestureState,
 } from 'react-native';
+import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import { moveItem } from '../hooks/list-reorder';
 import { useMessages } from '../locale/messages';
 import { SORTABLE_CHIP_ROW_MESSAGES } from './messages';
@@ -138,25 +136,28 @@ interface ChipSlotProps {
 }
 
 /**
- * One chip's slot. The pan handlers read the latest callbacks through a ref,
- * so the responder made once never goes stale as the order changes.
+ * One chip's slot. Its drag is a Gesture Handler pan on the JS thread (the
+ * order and the slot's offset are React state); the callbacks read the latest
+ * props through a ref, so the gesture's config stays one object as the order
+ * changes.
  */
 const ChipSlot = memo(function ChipSlot(props: ChipSlotProps) {
   const latest = useRef(props);
   latest.current = props;
 
-  const responder = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponderCapture: (_event: GestureResponderEvent, gesture) =>
-          !latest.current.disabled && Math.abs(gesture.dx) + Math.abs(gesture.dy) > DRAG_THRESHOLD,
-        onPanResponderGrant: () => latest.current.onDragStart(),
-        onPanResponderMove: (_event, gesture: PanResponderGestureState) =>
-          latest.current.onDragMove(gesture.dx, gesture.dy),
-        onPanResponderRelease: () => latest.current.onDragEnd(),
-        onPanResponderTerminate: () => latest.current.onDragEnd(),
+  const pan = usePanGesture(
+    useMemo(
+      () => ({
+        runOnJS: true,
+        enabled: !props.disabled,
+        minDistance: DRAG_THRESHOLD,
+        onActivate: () => latest.current.onDragStart(),
+        onUpdate: (event: { translationX: number; translationY: number }) =>
+          latest.current.onDragMove(event.translationX, event.translationY),
+        onDeactivate: () => latest.current.onDragEnd(),
       }),
-    [],
+      [props.disabled],
+    ),
   );
 
   const { item, disabled, isDragging, dx, dy, moveEarlierLabel, moveLaterLabel } = props;
@@ -180,28 +181,29 @@ const ChipSlot = memo(function ChipSlot(props: ChipSlotProps) {
   };
 
   return (
-    <View
-      {...responder.panHandlers}
-      testID={`sortable-chip-${item.key}`}
-      onLayout={handleLayout}
-      onKeyDown={handleKeyDown}
-      focusable={!disabled}
-      accessibilityActions={
-        disabled
-          ? []
-          : [
-              { name: 'moveEarlier', label: moveEarlierLabel },
-              { name: 'moveLater', label: moveLaterLabel },
-            ]
-      }
-      onAccessibilityAction={handleAccessibilityAction}
-      style={{
-        opacity: isDragging ? 0.85 : 1,
-        transform: [{ translateX: dx }, { translateY: dy }],
-        zIndex: isDragging ? 10 : 0,
-      }}
-    >
-      {item.node}
-    </View>
+    <GestureDetector gesture={pan}>
+      <View
+        testID={`sortable-chip-${item.key}`}
+        onLayout={handleLayout}
+        onKeyDown={handleKeyDown}
+        focusable={!disabled}
+        accessibilityActions={
+          disabled
+            ? []
+            : [
+                { name: 'moveEarlier', label: moveEarlierLabel },
+                { name: 'moveLater', label: moveLaterLabel },
+              ]
+        }
+        onAccessibilityAction={handleAccessibilityAction}
+        style={{
+          opacity: isDragging ? 0.85 : 1,
+          transform: [{ translateX: dx }, { translateY: dy }],
+          zIndex: isDragging ? 10 : 0,
+        }}
+      >
+        {item.node}
+      </View>
+    </GestureDetector>
   );
 });
