@@ -50,6 +50,7 @@ import {
   type ButtonView,
   type Child,
   type EmbedView,
+  type GroupView,
   type FabView,
   type HeaderView,
   type MenuChild,
@@ -212,6 +213,16 @@ export function Embed(
   content: ReactNode | ((render: (child: Child) => ReactNode) => ReactNode),
 ): EmbedView {
   return new Node('embed', { content }, NO_CHILDREN);
+}
+
+/**
+ * Several views as one, with no view of its own: React's fragment, SwiftUI's
+ * `Group`. Each child is drawn where the group is, as if it were there. As a
+ * `screen()` body's root it holds the screen's views, its screen modifiers the
+ * screen's chrome.
+ */
+export function Group(...children: Child[]): GroupView {
+  return new Node('group', null, children);
 }
 
 /**

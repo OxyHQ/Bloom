@@ -712,6 +712,21 @@ fn a_presented_dialog_is_checked_against_the_spec() {
     assert_eq!(first_message(&box_), Some("Dialog has no modifier .background()"));
 }
 
+#[test]
+fn a_group_takes_the_screen_s_chrome_and_no_box() {
+    let imports = "import { Group, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "group.tsx");
+    let fine = check(
+        "export const G = (reply) => Group(Text('a'), Text('b')).title('Home').header(false).footer(reply, { placement: 'overlay' }).screenScroll('content').testID('home').id('g');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    // A group draws no view of its own, so nothing boxes it.
+    let padded = check("export const G = () => Group(Text('a')).padding('lg');\n");
+    assert_eq!(first_message(&padded), Some("Group has no modifier .padding()"));
+    let scroll = check("export const G = () => Group(Text('a')).screenScroll('page');\n");
+    assert_eq!(first_message(&scroll), Some("Unknown screenScroll token 'page' for .screenScroll()"));
+}
+
 /// The app chrome's constructors, imported as a screen file imports them.
 const CHROME: &str = "import { SettingsSection, SettingsValue, SettingsSelect, SettingsTextField, SettingsDateField, SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 
