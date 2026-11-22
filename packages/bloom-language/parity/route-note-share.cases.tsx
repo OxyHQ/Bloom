@@ -156,11 +156,12 @@ const shares: ParityCase[] = [
       toElement(
         L.ShareSheet({
           title: 'Send to',
-          search: SEARCH,
           people: PEOPLE,
           onPersonPress: pick,
           targets: TARGETS,
-        }).size(size),
+        })
+          .search(['an', pick], { placeholder: 'Search' })
+          .size(size),
       ),
     bloom: () => (
       <ShareSheet

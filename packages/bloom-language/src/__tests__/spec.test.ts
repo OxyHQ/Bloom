@@ -494,6 +494,7 @@ import type {
 } from '../controls/table';
 import type {
   ListItemView,
+  MailRowView,
   ListView,
   VirtualListView,
   ListSelectionBarView,
@@ -864,6 +865,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TableRowView>, Of<'tableRow'>>,
       Same<MethodsOf<TableCellView>, Of<'tableCell'>>,
       Same<MethodsOf<ListItemView>, Of<'listItem'>>,
+      Same<MethodsOf<MailRowView>, Of<'mailRow'>>,
       Same<MethodsOf<ListView>, Of<'list'>>,
       Same<MethodsOf<VirtualListView>, Of<'virtualList'>>,
       Same<MethodsOf<ListSelectionBarView>, Of<'listSelectionBar'>>,
