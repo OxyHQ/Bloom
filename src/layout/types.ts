@@ -25,6 +25,11 @@ export interface ScrollAreaProps extends ScrollViewProps {
   viewportOverlay?: ReactNode;
   /** Reanimated scroll handler, composed on the UI thread with Bloom metrics. onScroll remains a plain JS observer. */
   animatedHandler?: ScrollHandlerProcessed<Record<string, unknown>>;
+  /**
+   * The scrolling viewport itself. On the web `style` sizes the outer area and
+   * this the scroller inside it; on native they are one node.
+   */
+  viewportStyle?: StyleProp<ViewStyle>;
   /** When the scrollbar shows. Default `'scroll'`. */
   scrollbar?: ScrollAreaScrollbar;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px, each growing 2px under the pointer. */
