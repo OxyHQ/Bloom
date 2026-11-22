@@ -350,6 +350,22 @@ export const D = () => <AvatarGroup items={members} size={56} />;
     expect(result.fixtures[0]?.after).toContain("['⟨1⟩', () => {}], ITEMS)");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['AvatarGroup:size']);
   });
+  it('draws a virtual list’s renderItem as its row, reading only its item and index', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+export const A = () => (
+  <VirtualList data={posts} renderItem={({ item: post }) => <Post post={post} />} ListFooterComponent={<Footer />} />
+);
+export const B = () => <VirtualList data={posts} renderItem={renderPost} />;
+export const C = () => <VirtualList data={posts} renderItem={({ item }) => <Post post={item} />} ListHeaderComponent={Header} />;
+`);
+    expect(flat(result.code)).toContain(
+      'toElement(LVirtualList(posts, (post) => Embed(<Post post={post} />)).footerContent(Embed(<Footer />)))',
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'VirtualList:renderItem',
+      'VirtualList:ListHeaderComponent',
+    ]);
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');

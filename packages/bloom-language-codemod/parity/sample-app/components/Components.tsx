@@ -21,7 +21,7 @@ import { RiSmartphoneLine } from '@oxy.so/bloom/icons/RiSmartphoneLine';
 import { RiStarLine } from '@oxy.so/bloom/icons/RiStarLine';
 import { IconCircle } from '@oxy.so/bloom/icon-circle';
 import { Item } from '@oxy.so/bloom/item';
-import { List, type ListEntry } from '@oxy.so/bloom/list';
+import { List, type ListEntry, VirtualList } from '@oxy.so/bloom/list';
 import { Loading, SpinnerIcon } from '@oxy.so/bloom/loading';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
@@ -40,7 +40,7 @@ import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-fie
 import { Textarea } from '@oxy.so/bloom/textarea';
 import { useTheme } from '@oxy.so/bloom/theme';
 import { Muted } from '@oxy.so/bloom/typography';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 declare const t: (key: string) => string;
 
@@ -475,5 +475,31 @@ export function Contacts({ rows, loading }: { rows: ListEntry[]; loading: boolea
       />
       <List items={rows} loading={loading} loadingCount={2} />
     </View>
+  );
+}
+
+export function Feed({
+  posts,
+  more,
+  open,
+}: {
+  posts: { id: string; title: string }[];
+  more: () => void;
+  open: (id: string) => void;
+}) {
+  return (
+    <VirtualList
+      data={posts}
+      keyExtractor={(post) => post.id}
+      renderItem={({ item, index }) => (
+        <Pressable onPress={() => open(item.id)} className="px-4 py-3">
+          <Muted numberOfLines={index === 0 ? 2 : 1}>{item.title}</Muted>
+        </Pressable>
+      )}
+      estimatedItemSize={56}
+      onEndReached={more}
+      onEndReachedThreshold={0.5}
+      ListEmptyComponent={<Muted>{t('feed.empty')}</Muted>}
+    />
   );
 }

@@ -1243,6 +1243,75 @@
   "screen": false
  },
  {
+  "name": "components/Components.tsx:491",
+  "before": "<VirtualList\n      data={ITEMS}\n      keyExtractor={() => {}}\n      renderItem={({ item, index }) => (\n        <Pressable onPress={() => {}} className=\"px-4 py-3\">\n          <Muted numberOfLines={2}>{'⟨1⟩'}</Muted>\n        </Pressable>\n      )}\n      estimatedItemSize={56}\n      onEndReached={() => {}}\n      onEndReachedThreshold={0.5}\n      ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}\n    />",
+  "after": "toElement(LVirtualList(ITEMS, (item, index) => VStack(Text('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(Text('⟨6⟩').textStyle('muted')))",
+  "bindings": {
+   "VirtualList": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "VirtualList"
+   },
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [
+   "px-4",
+   "py-3"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
   "name": "components/Rows.tsx:19",
   "before": "<Pressable onPress={() => {}} className=\"flex-row items-center gap-3 px-4 py-3 active:opacity-70\">\n      <RiHeart3Line size=\"sm\" />\n      <View className=\"gap-1\">\n        <Text variant=\"body-semibold\" numberOfLines={1}>\n          {'⟨0⟩'}\n        </Text>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨1⟩'} likes</Text>\n      </View>\n    </Pressable>",
   "after": "toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))",

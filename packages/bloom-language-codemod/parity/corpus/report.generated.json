@@ -2,9 +2,9 @@
   "app": "parity/sample-app",
   "files": 3,
   "changedFiles": 3,
-  "candidates": 96,
-  "converted": 96,
-  "regions": 32,
+  "candidates": 100,
+  "converted": 100,
+  "regions": 33,
   "rate": 100,
   "overridden": [],
   "bloomComponents": {
