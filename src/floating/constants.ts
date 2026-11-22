@@ -1,50 +1,21 @@
 /**
- * The menu VISUAL SPEC as Tailwind class strings, plus the handful of values
- * that have to stay numbers, plus the one mapping from the target's colour
- * ROLES onto Bloom's tokens.
+ * The menu VISUAL SPEC as React Native styles of plain numbers, plus the
+ * values JS consumes, plus the one mapping from the target's colour ROLES onto
+ * Bloom's tokens.
  *
- * ── WHY CLASSES AND NOT RESOLVED NUMBERS ─────────────────────────────────────
- *
- * The originals — react-native-reusables' menus, and the refined Radix menu this
- * spec is taken from — are built out of utility classes and carry no inline
- * geometry at all (measured: 33 classes / 0 inline styles on RNR's dropdown, 31
- * / 0 on its select). Bloom's port had it exactly the other way round (0 / 1 and
- * 0 / 11), which meant a consumer could not restyle a menu with a utility: an
- * inline `style` wins over a class on web whatever the array order, so every
- * class a caller passed was silently outranked.
- *
- * So the geometry lives here as class strings and is applied through Bloom's own
- * `styled()` primitives. What a caller passes is APPENDED to these, never
- * substituted for them, so a layout class cannot strip the chrome.
- *
- * CONSEQUENCE, stated because it is a real cost: a web consumer that has not
- * wired the Tailwind/NativeWind pipeline and `@source`-scanned
- * `@oxy.so/bloom/lib` now gets an unstyled menu rather than a merely
- * unlaid-out one, because the colours moved out of inline style too. That
- * wiring is already mandatory (Bloom AGENTS.md, "Consumer web CSS pipeline");
- * this makes skipping it visible instead of subtle.
- *
- * ── WHERE EACH NUMBER COMES FROM ─────────────────────────────────────────────
- *
- * `--spacing` is Tailwind's stock 0.25rem, so `py-1.5` is 6px and `min-w-40` is
- * 160px; `p-space-4`, `gap-space-8`, `rounded-radius-16`, `shadow-m` and the
- * colour utilities come from Bloom's own `@theme` block
- * (`design-tokens/theme.css`). Bloom's spacing grid has no 6 rung and its type
- * ramp has no 14, which is why `py-1.5` and `text-sm` are spelled in Tailwind's
- * vocabulary rather than rounded onto a Bloom rung — rounding is exactly the
- * substitution that stops a port looking like its original.
+ * Every number is what the menus have always drawn: Bloom's spacing grid where
+ * it has the rung, and the target's own 6px, 10px and 14px where it does not
+ * (rounding onto a Bloom rung is exactly the substitution that stops a port
+ * looking like its original). Logical keys (`paddingInline`, `insetBlock`,
+ * `marginInlineStart`) stay logical, so a right-to-left menu mirrors.
  *
  * ── COLOUR ──────────────────────────────────────────────────────────────────
  *
  * No colour lives here. Every anchored surface — the three menus, the select
- * and the popover — paints `bg-background-primary-default
- * border-border-button-default shadow-dropdown`, resolved from the theme ramps
- * by `menu-palette.ts` and applied INLINE, because those stops exist as no CSS
- * variable a class could name. (The retired shadcn popover chrome —
- * `bg-popover`, `shadow-m`, `w-72 p-4` — is gone; its geometry now lives in
- * `popover/surface.ts`, also inline.)
+ * and the popover — paints `background-primary-default`, `border-button-default`
+ * and `shadow-dropdown`, resolved from the theme ramps by `menu-palette.ts` and
+ * applied inline. (The popover's geometry lives in `popover/surface.ts`.)
  */
-
 /* -------------------------------------------------------------------------- */
 /*  Values that stay NUMBERS, because JS consumes them                        */
 /* -------------------------------------------------------------------------- */
@@ -145,204 +116,136 @@ export const MENU_MORPH_MOTION = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The menu panel chrome: `rounded-2xl border
- * max-w-[calc(100vw-32px)]`. Density supplies padding and row spacing. Colour — `bg-background-primary-default`,
- * `border-border-button-default`, `shadow-dropdown` — is NOT a class here: it is
- * resolved from the theme by `menu-palette.ts` and applied inline by
- * `FloatingPanel`, because the ramp stops it uses exist as no CSS variable.
+ * A menu's 266px FLOOR: a menu of short rows is exactly that wide, and a longer
+ * label grows the panel rather than being cut. A menubar menu and a sub panel
+ * take the same floor — one menu width throughout; `minWidth` / `maxWidth`
+ * narrow the range per panel.
  */
-export const MENU_PANEL_CLASS =
-  'overflow-hidden web:overflow-clip web:[overflow-clip-margin:1px] rounded-radius-16 border max-w-[calc(100vw-32px)]';
-
-/**
- * The select's listbox panel: the same surface, `p-2` rather than `p-2.5`
- * ("listbox rows already space themselves 4px apart, so the surface sits a touch
- * tighter than the action-menu Dropdown").
- */
-export const LISTBOX_PANEL_CLASS =
-  'overflow-hidden web:overflow-clip web:[overflow-clip-margin:1px] rounded-radius-16 border max-w-[calc(100vw-32px)]';
-
-/**
- * `w-[266px]`, as a FLOOR: a menu of short rows is exactly that
- * width, and a longer label grows the panel rather than being cut.
- */
-export const MENU_MIN_WIDTH_CLASS = 'min-w-[266px]';
-
-/** The same 266px as a number, for a surface whose floor is an inline `minWidth`. */
 export const MENU_WIDTH = 266;
-
-/** A menubar menu takes the same 266px floor — one menu width throughout. */
-export const MENUBAR_MENU_MIN_WIDTH_CLASS = 'min-w-[266px]';
-
-/**
- * A sub panel takes the root menu's 266px FLOOR and sizes to its rows above
- * it, like the root panel. It was a fixed 266px so a column of flyouts would
- * not step in and out, but that cut off a long label with a shortcut and a
- * check gutter; `minWidth` / `maxWidth` narrow the range per panel.
- */
-export const MENU_SUB_PANEL_CLASS = 'min-w-[266px]';
 
 /* -------------------------------------------------------------------------- */
 /*  The menu row vocabulary                                                   */
 /* -------------------------------------------------------------------------- */
 
 /**
- * The menu item recipe: `flex w-full items-center gap-2 rounded-2lg p-2
- * text-left` — 8px on every side and a 10px corner, so a one-line row is
- * 20px of line box + 16px = 36px tall.
- *
- * `min-w-0` is on the row as well as the label, because a flex item's default
- * `min-width: auto` is what stops a long label from ever shrinking.
+ * The menu item recipe: a row, centred, a 10px corner; the density adds its
+ * inset, height and gap (`use-menu-density.ts`). `minWidth: 0` is on the row as
+ * well as the label, because a flex item's default `min-width: auto` is what
+ * stops a long label from ever shrinking.
  */
-export const ROW_CLASS = 'relative flex-row items-center select-none min-w-0 rounded-[10px]';
+export const ROW_STYLE = {
+  position: 'relative',
+  flexDirection: 'row',
+  alignItems: 'center',
+  userSelect: 'none',
+  minWidth: 0,
+  borderRadius: 10,
+} as const;
+
+/** A disabled row with NO string label has no label to recolour, so its whole content dims. */
+export const ROW_DISABLED_DIM_STYLE = { opacity: 0.5 } as const;
+
+/** The 32px checkbox/radio gutter, and what `inset` lines a plain row up with. */
+export const ROW_INSET_STYLE = { paddingLeft: 32 } as const;
+
+/** The two rows that carry an out-of-flow indicator, at the leading edge. */
+export const ROW_GUTTER_STYLE = { paddingLeft: 32, paddingRight: 8 } as const;
+
+/** The same, when the indicator sits on the trailing edge. */
+export const ROW_GUTTER_END_STYLE = { paddingLeft: 8, paddingRight: 32 } as const;
 
 /**
- * `cursor-pointer`, applied only while the row is ENABLED.
- *
- * Not part of {@link ROW_CLASS}, and the reason is the one real cost of a
- * class-first vocabulary: two utilities for one property are resolved by
- * Tailwind's own emission order, not by the order they appear in the attribute.
- * `cursor-pointer` is emitted after `cursor-not-allowed`, so a disabled row
- * carrying both drew a pointer — measured. Making the two mutually exclusive
- * removes the contest rather than betting on the order.
+ * The row's own label: it takes the row's remaining width and may shrink to
+ * nothing, truncating through `numberOfLines={1}`. Its type is applied by
+ * `menu-type.ts` (`TYPE_SCALE` + Inter).
  */
-export const ROW_ENABLED_CLASS = 'cursor-pointer';
+export const ROW_TEXT_STYLE = { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%' } as const;
+
+/** The leading slot never shrinks; its glyph's colour is the caller's. */
+export const ROW_LEADING_STYLE = { flexShrink: 0 } as const;
 
 /**
- * `cursor-default`: an enabled row on a desktop platform. A desktop's pointer
- * stays the arrow over a menu, as over a button; the hand is a link's alone.
- * Native has no `default`, so the row also sets `cursor: 'auto'` inline there.
- */
-export const ROW_DESKTOP_ENABLED_CLASS = 'cursor-default';
-
-/**
- * `cursor-not-allowed`. The dimming itself is the label's `text-disabled`
- * colour, set inline by the row.
- */
-export const ROW_DISABLED_CLASS = 'cursor-not-allowed';
-
-/**
- * A disabled row with NO string label has no label to recolour, so its whole
- * content dims instead.
- */
-export const ROW_DISABLED_DIM_CLASS = 'opacity-50';
-
-/** `pl-8` — the checkbox/radio gutter, and what `inset` lines a plain row up with. */
-export const ROW_INSET_CLASS = 'pl-space-32';
-
-/** `pl-8 pr-2` on the two rows that carry an out-of-flow indicator. */
-export const ROW_GUTTER_CLASS = 'pl-space-32 pr-space-8';
-
-/** `pl-2 pr-8` when that out-of-flow indicator sits on the trailing edge. */
-export const ROW_GUTTER_END_CLASS = 'pl-space-8 pr-space-32';
-
-/**
- * The row's own label's LAYOUT. Its type is `text-body-medium`, applied
- * inline by `menu-type.ts` (`TYPE_SCALE` + Inter) — the class-only spelling this
- * used to carry rendered in the system font stack, never Inter.
- *
- * `flex-1 min-w-0` is the target's `<span class="min-w-0 truncate">` — except
- * that the truncation itself is `numberOfLines={1}`, a PROP both platforms
- * implement, rather than the `truncate` class, which compiles to three CSS
- * properties React Native's `Text` does not have.
- *
- * NO `leading-*`: `text-sm` alone computes 14px/20px, the target's line box.
- */
-export const ROW_TEXT_CLASS = 'flex-1 min-w-0';
-
-/**
- * The leading slot dims nothing here — row icons are `size-4
- * text-text-secondary` glyphs, and the colour belongs to the icon the caller
- * passes (`MenuPalette.textSecondary` is the matching fill).
- */
-export const ROW_LEADING_CLASS = 'shrink-0';
-
-/**
- * `absolute left-2 inset-y-0 size-3.5 items-center justify-center`, stretched
- * top-to-bottom so it centres against whatever the row's height turns out to be.
+ * The 14px indicator box 8px from the row's leading edge, stretched top to
+ * bottom so it centres against whatever the row's height turns out to be.
  *
  * OUT OF FLOW on purpose: a checkbox row's text starts at a fixed 32px whether
  * or not a check is drawn, so a menu's rows line up with each other and with an
  * `inset` plain row.
  */
-export const ROW_INDICATOR_CLASS =
-  'absolute left-space-8 inset-y-0 w-3.5 items-center justify-center';
+export const ROW_INDICATOR_STYLE = {
+  position: 'absolute',
+  insetBlock: 0,
+  left: 8,
+  width: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
 
 /** The same box on a select option, where the tick sits on the RIGHT. */
-export const ROW_INDICATOR_END_CLASS =
-  'absolute right-space-8 inset-y-0 w-3.5 items-center justify-center';
+export const ROW_INDICATOR_END_STYLE = {
+  position: 'absolute',
+  insetBlock: 0,
+  right: 8,
+  width: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
 
-/** `bg-foreground h-2 w-2 rounded-full` — a filled dot with no ring. */
-export const ROW_RADIO_DOT_CLASS = 'w-space-8 h-space-8 rounded-full bg-foreground';
-
-/** `pl-8` on a label asking to line up with an indicator row. */
-export const ROW_LABEL_INSET_CLASS = 'pl-space-32';
-
-/** `ms-auto text-xs tracking-widest`, in `MenuPalette.textSecondary`. */
-export const ROW_SHORTCUT_CLASS = 'shrink-0 ms-auto';
+/** A label asking to line up with an indicator row. */
+export const ROW_LABEL_INSET_STYLE = { paddingLeft: 32 } as const;
 
 /**
- * `size-4 shrink-0 ms-auto` — the sub-trigger's chevron slot. Its colour is the
- * SVG's `fill` prop rather than a `text-*` class: `react-native-svg` paints from
- * `fill`, not from an inherited CSS colour, so a class here would resolve and
- * change nothing.
+ * The shortcut and the sub-trigger's chevron: pushed to the trailing edge,
+ * never shrinking. The chevron's colour is the SVG's `fill` prop.
  */
-export const ROW_CHEVRON_CLASS = 'shrink-0 ms-auto';
+export const ROW_TRAILING_STYLE = { marginInlineStart: 'auto', flexShrink: 0 } as const;
 
 /* -------------------------------------------------------------------------- */
 /*  The menu bar itself                                                       */
 /* -------------------------------------------------------------------------- */
 
-/** The bar's corner, as its `rounded-[10px]` class spells it. */
+/** The bar's corner. */
 export const MENUBAR_RADIUS = 10;
 
 /**
- * The bar: `flex h-10 items-center gap-1 p-1 border`, `rounded-2lg`
- * (10px, concentric with the 6px triggers inside its 4px padding). Its colours —
- * the select trigger's white field, `border-button-default` and `shadow-xs` —
- * are inline from `MenuPalette.trigger`, as every other menu surface's.
+ * The bar: a 40px row, 4px padding and gap, a 1px border, a 10px corner
+ * (concentric with the 6px triggers inside its 4px padding). Its colours — the
+ * select trigger's white field, `border-button-default` and `shadow-xs` — are
+ * inline from `MenuPalette.trigger`, as every other menu surface's.
  */
-export const MENUBAR_CLASS =
-  'flex-row items-center self-start h-10 gap-space-4 p-space-4 border rounded-[10px]';
+export const MENUBAR_STYLE = {
+  height: 40,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 4,
+  alignSelf: 'flex-start',
+  borderRadius: MENUBAR_RADIUS,
+  borderStyle: 'solid',
+  borderWidth: 1,
+  padding: 4,
+} as const;
 
-/** The trigger: `flex items-center rounded-md px-2 py-1.5`. */
-export const MENUBAR_TRIGGER_CLASS = 'items-center justify-center px-space-8 py-1.5 rounded-[6px]';
-
-/**
- * Retired: the open trigger's wash is `MenuPalette.rowHighlight`, inline. Kept
- * (empty) so the export does not disappear from under a consumer.
- */
-export const MENUBAR_TRIGGER_OPEN_CLASS = '';
-
-export const MENUBAR_TRIGGER_TEXT_CLASS = '';
+/** The trigger: centred, 8px across and 6px down, a 6px corner. */
+export const MENUBAR_TRIGGER_STYLE = {
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 6,
+  paddingInline: 8,
+  paddingBlock: 6,
+} as const;
 
 /* -------------------------------------------------------------------------- */
 /*  The select                                                                */
 /* -------------------------------------------------------------------------- */
 
 /**
- * The select trigger: `flex items-center justify-between border
- * shadow-xs`, `md` → `gap-1.5 px-2.5 py-2 text-body-medium` (38px tall with its
- * border), `sm` → `gap-1 px-[7px] py-1 text-body-2-medium` (28px). The corner is
+ * The select trigger: a row, its value and chevron apart, a 1px border, and per
+ * size its gap, inset and minimum height (`md` 36px, `sm` 32px). The corner is
  * Bloom's full pill (inline `borderRadius.full`), and the colours come from
- * `MenuPalette.trigger`. The trigger IS the field.
- */
-export const SELECT_TRIGGER_CLASS = 'flex-row items-center justify-between border';
-export const SELECT_TRIGGER_SIZE_CLASS = {
-  xs: 'gap-space-4 px-space-8 py-[5px] min-h-[28px]',
-  sm: 'gap-1.5 px-[10px] py-[6px] min-h-[32px]',
-  md: 'gap-space-8 px-space-12 py-[7px] min-h-[36px]',
-  lg: 'gap-space-8 px-space-16 py-[10px] min-h-[44px]',
-} as const;
-
-/**
- * The same field geometry as RESOLVED inline style, the default when the
- * caller passes no `className` (a caller's className replaces the defaults, so
- * its utilities must not be defeated by these). The classes alone left the
- * native trigger's inner padding to the className pipeline: in Allo's Android
- * build (15.50.0) "Raspberry + Antique Gold + Cobalt" sat flush against both
- * ends of the pill. Padding is spelled in longhands — react-native-web ranks
- * the `padding-inline` a `paddingHorizontal` becomes above `padding-left`.
+ * `MenuPalette.trigger`. The trigger IS the field. Padding is spelled in
+ * longhands — react-native-web ranks the `padding-inline` a
+ * `paddingHorizontal` becomes above `padding-left`, and a caller's
+ * `fieldStyle` overrides one side.
  */
 export const SELECT_TRIGGER_FIELD_STYLE = {
   flexDirection: 'row',
@@ -364,32 +267,20 @@ export const SELECT_TRIGGER_SIZE_STYLE = {
   },
 } as const;
 
-/**
- * `text-body-medium` / `text-body-2-medium` — the value and the placeholder.
- * The 18px line of `sm` rides the size utility's own `/[18px]` modifier, never a
- * `leading-*` class (see {@link ROW_TEXT_CLASS} for why that one is a trap).
- */
-export const SELECT_VALUE_CLASS = {
-  xs: 'shrink min-w-0',
-  sm: 'shrink min-w-0',
-  md: 'shrink min-w-0',
-  lg: 'shrink min-w-0',
-} as const;
-
 /** The chevron: `size-4` (`md`) / `size-3.5` (`sm`). */
 export const SELECT_CHEVRON_SIZE = { xs: 14, sm: 16, md: 18, lg: 20 } as const;
 
 /**
- * A select option — the same menu item recipe (`p-2 gap-2 rounded-2lg`), with a
+ * A select option — the same menu item recipe as a menu row, full width, with a
  * 32px gutter on the RIGHT because that is the side `SelectItemIndicator`'s
- * tick sits on. `sm` rows are `px-2 py-1.5 text-body-2-medium`.
+ * tick sits on. The density adds its inset, height and gap.
  */
-export const SELECT_ITEM_CLASS =
-  'relative flex-row items-center w-full min-w-0 select-none ' + 'rounded-[10px]';
-/** The option's label; colour inline (`text-primary` / `text-disabled`). */
-export const SELECT_ITEM_TEXT_CLASS = {
-  xs: 'flex-1 min-w-0',
-  sm: 'flex-1 min-w-0',
-  md: 'flex-1 min-w-0',
-  lg: 'flex-1 min-w-0',
+export const SELECT_ITEM_STYLE = {
+  position: 'relative',
+  flexDirection: 'row',
+  alignItems: 'center',
+  width: '100%',
+  minWidth: 0,
+  userSelect: 'none',
+  borderRadius: 10,
 } as const;

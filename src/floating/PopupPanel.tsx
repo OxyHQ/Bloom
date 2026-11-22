@@ -17,14 +17,7 @@
 import type React from 'react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ComponentRef, ComponentType, RefObject } from 'react';
-import {
-  type PointerEvent,
-  StyleSheet,
-  type View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import { StyledView } from '../styles/styled-primitives';
+import { type PointerEvent, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import type { PopupDismissReason, PopupSurfaceProps } from '../platform-surface/types';
 import { DEFAULT_ALIGN_OFFSET, DEFAULT_SIDE_OFFSET } from './constants';
@@ -73,7 +66,6 @@ export function PopupPanelScope({
  * on every scale's pixel grid).
  */
 export function PopupPanelSurface({
-  className,
   style,
   panelRef,
   edge = POPUP_PANEL_BORDER,
@@ -81,7 +73,6 @@ export function PopupPanelSurface({
   onPointerLeave,
   children,
 }: {
-  className?: string;
   style?: StyleProp<ViewStyle>;
   panelRef?: React.Ref<ComponentRef<typeof View>>;
   edge?: number;
@@ -94,9 +85,8 @@ export function PopupPanelSurface({
   // `rounded-radius-16`, or a desktop platform's 10px (`DESKTOP_MENU_GEOMETRY`).
   const radius = useMenuDensity().panelRadius;
   return (
-    <StyledView
+    <View
       ref={panelRef}
-      className={className}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       style={[
@@ -108,7 +98,7 @@ export function PopupPanelSurface({
     >
       <SurfacePaint fill={palette.surface} radius={radius} outset={edge} floating />
       {children}
-    </StyledView>
+    </View>
   );
 }
 
@@ -119,7 +109,7 @@ export function PopupPanelSurface({
  */
 export function PopupPanelRows({ children }: { children?: React.ReactNode }) {
   const density = useMenuDensity();
-  return <StyledView style={[styles.rows, { gap: density.gap }]}>{children}</StyledView>;
+  return <View style={[styles.rows, { gap: density.gap }]}>{children}</View>;
 }
 
 /**
@@ -130,7 +120,6 @@ export function PopupPanelChrome({
   minWidth,
   maxWidth,
   maxHeight,
-  className,
   style,
   panelRef,
   onPointerEnter,
@@ -140,7 +129,6 @@ export function PopupPanelChrome({
   minWidth?: number;
   maxWidth?: number;
   maxHeight?: number;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   panelRef?: React.Ref<ComponentRef<typeof View>>;
   onPointerEnter?: (event: PointerEvent) => void;
@@ -153,7 +141,6 @@ export function PopupPanelChrome({
       panelRef={panelRef}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      className={className}
       style={[
         // `MENU_WIDTH`, or a desktop's floor: there a menu is as wide as its widest row.
         {
@@ -198,7 +185,6 @@ export interface PopupPanelProps extends FloatingPositionProps {
   minWidth?: number;
   maxWidth?: number;
   maxHeight?: number;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children?: React.ReactNode;
@@ -225,7 +211,6 @@ export function PopupPanel({
   minWidth,
   maxWidth,
   maxHeight,
-  className,
   style,
   testID,
   children,
@@ -284,7 +269,6 @@ export function PopupPanel({
         minWidth={minWidth}
         maxWidth={maxWidth}
         maxHeight={maxHeight}
-        className={className}
         style={style}
       >
         <PopupPanelScope PopupSurface={PopupSurface}>

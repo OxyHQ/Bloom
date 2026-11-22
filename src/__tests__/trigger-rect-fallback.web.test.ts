@@ -42,7 +42,7 @@ it('anchors to the out-of-flow control when the wrapper is 0×0, and warns once'
   expect(triggerRectOf(detached())).toEqual({ left: 600, top: 40, right: 632, bottom: 72 });
   triggerRectOf(detached());
   expect(warn).toHaveBeenCalledTimes(1);
-  expect(String(warn.mock.calls[0][0])).toMatch(/TRIGGER's `style` \/ `className`/);
+  expect(String(warn.mock.calls[0][0])).toMatch(/TRIGGER's `style` \(the wrapper/);
 });
 
 it('keeps an empty wrapper when the control is empty too (a hidden trigger)', () => {
