@@ -24,6 +24,7 @@ import { Item } from '@oxy.so/bloom/item';
 import { List, type ListEntry, VirtualList } from '@oxy.so/bloom/list';
 import { Loading, SpinnerIcon } from '@oxy.so/bloom/loading';
 import { PageHeader } from '@oxy.so/bloom/page-header';
+import { PressableScale } from '@oxy.so/bloom/pressable-scale';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
 import { Slider } from '@oxy.so/bloom/slider';
 import { Search } from '@oxy.so/bloom/search';
@@ -505,5 +506,17 @@ export function Feed({
       onEndReachedThreshold={0.5}
       ListEmptyComponent={<Muted>{t('feed.empty')}</Muted>}
     />
+  );
+}
+
+export function Compose({ compose }: { compose: () => void }) {
+  return (
+    <PressableScale
+      onPress={compose}
+      accessibilityLabel={t('compose.open')}
+      className="flex-row items-center gap-3 rounded-xl border border-border bg-surface p-4"
+    >
+      <Muted>{t('compose.prompt')}</Muted>
+    </PressableScale>
   );
 }

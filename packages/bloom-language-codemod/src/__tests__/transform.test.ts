@@ -311,6 +311,19 @@ export function A() {
       color: { LIKE: '#FF3040', hexfff: '#fff' },
     });
   });
+  it('draws a PressableScale as a pressable stack that scales', () => {
+    const result = run(`import { PressableScale } from '@oxy.so/bloom/pressable-scale';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = ({ go }) => (
+  <PressableScale onPress={go} className="flex-row gap-3"><Text>Open</Text></PressableScale>
+);
+export const B = ({ go }) => <PressableScale onPress={go} targetScale={0.9} />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(HStack(LText('Open')).spacing('md').onPress(go).pressScale())",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:targetScale']);
+  });
   it('carries a JSX comment into the chain where it is', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View className="gap-2">{/* head */}<View className="p-2" />{/* end */}</View>;
