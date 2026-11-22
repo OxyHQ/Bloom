@@ -1,47 +1,30 @@
-import {
-  type ComponentRef,
-  type ComponentType,
-  type ReactNode,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  Platform,
-  TextInput,
-  type StyleProp,
-  type TextInputProps,
-  type TextStyle,
-  type View,
-} from 'react-native';
-import { styled } from 'react-native-css';
+import { type ComponentRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform, StyleSheet, TextInput, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { cubicBezier } from 'react-native-reanimated';
 import Svg, { ClipPath, Defs, G, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { normalizeAvatarSkinColor } from '../agent-avatar/skin-color';
 import { useFieldMembership } from '../field/membership';
-import { StyledView } from '../styles/styled-primitives';
+import { ROUNDED_FULL } from '../styles/rounded-full';
 import { useSvgIdPrefix } from '../styles/svg-id';
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
 import { GlossArt } from './GlossArt';
 import { hexToHsv, hsvToHex, type Hsv } from './shared';
 import { useTrackEvents } from './use-track-events';
+import { AGENT_CREATOR_HOOKS, twShadow, useAgentCreatorWebCss } from './web-css';
 import { svgA11yProps } from '../styles/svg-a11y';
 
-// `styled()` is told only about `style`: a dot-path union over React Native
-// 0.88's whole `TextInputProps` overflows the checker (TS2590). The annotation
-// is the real contract — `styles/styled-primitives.ts` does the same.
-const StyledTextInput: ComponentType<TextInputProps> = styled(
-  TextInput as (props: { style?: StyleProp<TextStyle> }) => ReactNode,
-  { className: 'style' },
-);
+// Native eases the hex field's fill as it takes and loses focus (150ms, Tailwind's default
+// curve); the web transitions it from the editor's sheet.
+const HexInput = Platform.OS === 'web' ? TextInput : Animated.createAnimatedComponent(TextInput);
+const HEX_MOTION = {
+  transitionProperty: ['backgroundColor', 'boxShadow'],
+  transitionDuration: [150],
+  transitionTimingFunction: cubicBezier(0.4, 0, 0.2, 1),
+};
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-const THUMB =
-  'pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-white/0 ' +
-  'shadow-[0_2px_4px_rgb(0_0_0/0.18),inset_0_0_0_1px_rgb(0_0_0/0.06)]';
 
 const SkinColorField = memo(function SkinColorField({ hue, id }: { hue: number; id: string }) {
   // Hue changes rebuild this small vector field. Saturation/value dragging only
@@ -96,17 +79,17 @@ export function CustomColorPicker({
   onChange,
   onInteractionStart,
   onInteractionEnd,
-  className,
 }: {
   value: string;
   onChange: (hex: string) => void;
   onInteractionStart?: () => void;
   onInteractionEnd?: () => void;
-  className?: string;
 }) {
+  useAgentCreatorWebCss();
   const messages = useAgentCreatorMessages();
   const membership = useFieldMembership({ label: messages.hexColor });
   const { colors } = useTheme();
+  const tokens = useColorTokens();
   const id = useSvgIdPrefix('bloom-color-picker');
   const fieldRef = useRef<ComponentRef<typeof View>>(null);
   const railRef = useRef<ComponentRef<typeof View>>(null);
@@ -268,11 +251,10 @@ export function CustomColorPicker({
     boxShadow: '0 2px 4px rgba(0,0,0,.18), inset 0 0 0 1px rgba(0,0,0,.06)',
   };
   return (
-    <StyledView
-      className={className ? `flex flex-col gap-2.5 ${className}` : 'flex flex-col gap-2.5'}
-    >
+    <View style={styles.picker}>
       <GestureDetector gesture={field}>
-        <StyledView
+        <View
+          {...AGENT_CREATOR_HOOKS.colorField}
           ref={fieldRef}
           onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
           role="slider"
@@ -289,7 +271,7 @@ export function CustomColorPicker({
             Math.round(hsv.s * 100),
             Math.round(hsv.v * 100),
           )}
-          className="relative aspect-[3/2] w-full cursor-crosshair touch-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+          style={styles.field}
           accessibilityActions={[
             { name: 'increment', label: messages.increaseBrightness },
             { name: 'decrement', label: messages.decreaseBrightness },
@@ -305,16 +287,12 @@ export function CustomColorPicker({
           }
         >
           <SkinColorField hue={hsv.h} id={id} />
-          <StyledView
+          <View pointerEvents="none" aria-hidden style={styles.fieldEdge} />
+          <View
             pointerEvents="none"
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-2xl shadow-[inset_0_0_0_1px_rgb(0_0_0/0.06),inset_0_1px_0_rgb(255_255_255/0.12)]"
-          />
-          <StyledView
-            pointerEvents="none"
-            aria-hidden
-            className={THUMB}
             style={[
+              styles.thumb,
               thumb,
               {
                 position: 'absolute',
@@ -324,10 +302,11 @@ export function CustomColorPicker({
               },
             ]}
           />
-        </StyledView>
+        </View>
       </GestureDetector>
       <GestureDetector gesture={rail}>
-        <StyledView
+        <View
+          {...AGENT_CREATOR_HOOKS.hueRail}
           ref={railRef}
           role="slider"
           tabIndex={membership.disabled ? -1 : 0}
@@ -339,7 +318,7 @@ export function CustomColorPicker({
           aria-valuemin={0}
           aria-valuemax={360}
           aria-valuenow={Math.round(hsv.h)}
-          className="relative h-3 w-full cursor-pointer touch-none rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+          style={styles.rail}
           accessibilityActions={[
             { name: 'increment', label: messages.increaseHue },
             { name: 'decrement', label: messages.decreaseHue },
@@ -375,16 +354,13 @@ export function CustomColorPicker({
             </Defs>
             <Rect rx={6} width="100%" height={12} fill={`url(#${id}hue)`} />
           </Svg>
-          <StyledView
+          <View pointerEvents="none" aria-hidden style={styles.railEdge} />
+          <View
             pointerEvents="none"
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.06)]"
-          />
-          <StyledView
-            pointerEvents="none"
-            aria-hidden
-            className={`${THUMB} top-1/2`}
             style={[
+              styles.thumb,
+              styles.railThumb,
               thumb,
               {
                 position: 'absolute',
@@ -394,16 +370,15 @@ export function CustomColorPicker({
               },
             ]}
           />
-        </StyledView>
+        </View>
       </GestureDetector>
-      <StyledView className="flex items-center gap-2 flex-row">
-        <StyledView
-          aria-hidden
-          className="relative size-8 shrink-0 overflow-hidden rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.06)]"
-        >
+      <View style={styles.hexRow}>
+        <View aria-hidden style={styles.preview}>
           <GlossArt center={current} edge={current} size={32} />
-        </StyledView>
-        <StyledTextInput
+        </View>
+        <HexInput
+          {...AGENT_CREATOR_HOOKS.hex}
+          {...(Platform.OS === 'web' ? null : { placeholderTextColor: tokens.mutedForeground })}
           value={hexDraft}
           onChangeText={setHexDraft}
           autoCorrect={false}
@@ -421,12 +396,13 @@ export function CustomColorPicker({
             commitHexDraft();
           }}
           onSubmitEditing={commitHexDraft}
-          className="h-8 w-full min-w-0 rounded-2lg bg-background-tertiary-default px-2.5 font-mono text-[13px] text-text-primary uppercase outline-none ring-2 ring-transparent ring-inset transition-[background-color,box-shadow] duration-150 ease placeholder:text-text-placeholder focus:bg-background-primary-default focus:ring-border-focus-ring"
           style={[
             { flex: 1, direction: 'ltr' },
             Platform.OS === 'web'
               ? undefined
               : {
+                  ...styles.hexNative,
+                  ...HEX_MOTION,
                   height: 32,
                   borderRadius: 10,
                   paddingHorizontal: 10,
@@ -437,7 +413,103 @@ export function CustomColorPicker({
                 },
           ]}
         />
-      </StyledView>
-    </StyledView>
+      </View>
+    </View>
   );
 }
+
+/** The web draws the inset edges in Tailwind's computed shadow form. */
+const edge = (native: object, web: string) =>
+  Platform.OS === 'web' ? { boxShadow: twShadow(web) } : native;
+const styles = StyleSheet.create({
+  picker: { flexDirection: 'column', gap: 10 },
+  field: { position: 'relative', aspectRatio: '3/2', width: '100%', borderRadius: 16 },
+  fieldEdge: {
+    pointerEvents: 'none',
+    position: 'absolute',
+    inset: 0,
+    borderRadius: 16,
+    ...edge(
+      {
+        boxShadow: [
+          {
+            inset: true,
+            offsetX: 0,
+            offsetY: 0,
+            blurRadius: 0,
+            spreadDistance: 1,
+            color: '#0000000f',
+          },
+          { inset: true, offsetX: 0, offsetY: 1, blurRadius: 0, color: '#ffffff1f' },
+        ],
+      },
+      'inset 0 0 0 1px rgb(0 0 0/0.06), inset 0 1px 0 rgb(255 255 255/0.12)',
+    ),
+  },
+  thumb: {
+    pointerEvents: 'none',
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderRadius: ROUNDED_FULL,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#fff',
+    // `-translate-x-1/2 -translate-y-1/2`: the web centres with `translate`; native with its transform.
+    ...(Platform.OS === 'web' ? ({ translate: '-50% -50%' } as object) : null),
+  },
+  railThumb: { top: '50%' },
+  rail: { position: 'relative', height: 12, width: '100%', borderRadius: ROUNDED_FULL },
+  railEdge: {
+    pointerEvents: 'none',
+    position: 'absolute',
+    inset: 0,
+    borderRadius: ROUNDED_FULL,
+    ...edge(
+      {
+        boxShadow: [
+          {
+            inset: true,
+            offsetX: 0,
+            offsetY: 0,
+            blurRadius: 0,
+            spreadDistance: 1,
+            color: '#0000000f',
+          },
+        ],
+      },
+      'inset 0 0 0 1px rgb(0 0 0/0.06)',
+    ),
+  },
+  hexRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  preview: {
+    position: 'relative',
+    width: 32,
+    height: 32,
+    flexShrink: 0,
+    overflow: 'hidden',
+    borderRadius: ROUNDED_FULL,
+    ...edge(
+      {
+        boxShadow: [
+          {
+            inset: true,
+            offsetX: 0,
+            offsetY: 0,
+            blurRadius: 0,
+            spreadDistance: 1,
+            color: '#0000000f',
+          },
+        ],
+      },
+      'inset 0 0 0 1px rgb(0 0 0/0.06)',
+    ),
+  },
+  hexNative: {
+    width: '100%',
+    minWidth: 0,
+    paddingInline: 10,
+    textTransform: 'uppercase',
+    boxShadow: [],
+  },
+});

@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import Svg, {
   Circle,
   ClipPath,
@@ -12,7 +12,9 @@ import Svg, {
   Rect,
   Stop,
 } from 'react-native-svg';
-import { StyledImage, StyledView } from '../styles/styled-primitives';
+import { BloomImage } from '../image';
+import { ROUNDED_FULL } from '../styles/rounded-full';
+import { twShadow } from './web-css';
 import { useSvgIdPrefix } from '../styles/svg-id';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -37,54 +39,34 @@ export function GlossArt({
   const { isDark } = useTheme();
   if (rainbow)
     return (
-      <StyledView
+      <View
         aria-hidden
         pointerEvents="none"
-        className="absolute inset-0 overflow-hidden rounded-full"
-        style={{ width: size, height: size }}
+        style={[styles.rainbow, { width: size, height: size }]}
       >
-        <StyledImage
+        <BloomImage
           source={{ uri: isDark ? RAINBOW_DARK : RAINBOW_LIGHT }}
-          className="object-cover"
           contentFit="cover"
-          style={{ width: size, height: size }}
+          style={[styles.cover, { width: size, height: size }]}
         />
-      </StyledView>
+      </View>
     );
   if (Platform.OS === 'web') {
     const fill: WebCssStyle = {
       backgroundImage: `radial-gradient(closest-side circle at 50% 50%, ${center} 0%, ${edge} 100%)`,
     };
     return (
-      <StyledView
+      <View
         pointerEvents="none"
         aria-hidden
-        className="relative overflow-hidden rounded-full"
-        style={[{ width: size, height: size }, fill]}
+        style={[styles.sphere, { width: size, height: size }, fill]}
       >
-        <StyledView
-          aria-hidden
-          className="absolute inset-0 bg-linear-to-b from-[#ffffff00] to-[#ffffff4d]"
-        />
-        <StyledView
-          aria-hidden
-          className="absolute top-0 left-[7.7%] h-[38.5%] w-[84.6%] rounded-[50%] bg-linear-to-b from-[#ffffff80] to-[#ffffff00] blur-[0.5px]"
-        />
-        <StyledView
-          aria-hidden
-          className="absolute top-0 left-[34.6%] h-[11.5%] w-[30.8%] rounded-[50%] bg-linear-to-b from-[#ffffff80] to-[#ffffff00] blur-[1px]"
-        />
-        <StyledView
-          aria-hidden
-          className="absolute top-[73.1%] left-[-23.1%] h-[53.8%] w-[138.5%] rounded-[50%] bg-linear-to-b from-[#ffffff00] to-[#ffffff80] blur-[0.5px]"
-        />
-        {active && (
-          <StyledView
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_0_0_0_2px_rgb(0_0_0/0.30)]"
-          />
-        )}
-      </StyledView>
+        <View aria-hidden style={[styles.layer, WEB_GLOSS.sheen]} />
+        <View aria-hidden style={[styles.reflection, WEB_GLOSS.reflection]} />
+        <View aria-hidden style={[styles.hotspot, WEB_GLOSS.hotspot]} />
+        <View aria-hidden style={[styles.bounce, WEB_GLOSS.bounce]} />
+        {active && <View aria-hidden style={[styles.activeRing, WEB_GLOSS.activeRing]} />}
+      </View>
     );
   }
   return (
@@ -158,3 +140,47 @@ export function GlossArt({
     </Svg>
   );
 }
+
+const styles = StyleSheet.create({
+  // `object-cover` on the image's own box: the web's only.
+  cover: Platform.OS === 'web' ? { objectFit: 'cover' } : {},
+  rainbow: { position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: ROUNDED_FULL },
+  sphere: { position: 'relative', overflow: 'hidden', borderRadius: ROUNDED_FULL },
+  layer: { position: 'absolute', inset: 0 },
+  reflection: {
+    position: 'absolute',
+    top: 0,
+    left: '7.7%',
+    height: '38.5%',
+    width: '84.6%',
+    borderRadius: '50%',
+  },
+  hotspot: {
+    position: 'absolute',
+    top: 0,
+    left: '34.6%',
+    height: '11.5%',
+    width: '30.8%',
+    borderRadius: '50%',
+  },
+  bounce: {
+    position: 'absolute',
+    top: '73.1%',
+    left: '-23.1%',
+    height: '53.8%',
+    width: '138.5%',
+    borderRadius: '50%',
+  },
+  activeRing: { pointerEvents: 'none', position: 'absolute', inset: 0, borderRadius: ROUNDED_FULL },
+});
+
+/** The web sphere's paint: gradients interpolated in oklab, soft blurs, the active inset ring. */
+const gradient = (from: string, to: string) =>
+  `linear-gradient(to bottom in oklab, ${from} 0%, ${to} 100%)`;
+const WEB_GLOSS: Record<string, WebCssStyle> = {
+  sheen: { backgroundImage: gradient('#ffffff00', '#ffffff4d') },
+  reflection: { backgroundImage: gradient('#ffffff80', '#ffffff00'), filter: 'blur(0.5px)' },
+  hotspot: { backgroundImage: gradient('#ffffff80', '#ffffff00'), filter: 'blur(1px)' },
+  bounce: { backgroundImage: gradient('#ffffff00', '#ffffff80'), filter: 'blur(0.5px)' },
+  activeRing: { boxShadow: twShadow('inset 0 0 0 2px rgb(0 0 0/0.30)') },
+};

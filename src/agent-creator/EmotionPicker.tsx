@@ -1,7 +1,8 @@
 import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, type View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  cubicBezier,
   useAnimatedStyle,
   useDerivedValue,
   useFrameCallback,
@@ -13,15 +14,28 @@ import type { AvatarCharacter } from '../agent-avatar';
 import { CharacterAvatar } from '../agent-avatar/CharacterAvatar';
 import { updateAvatarCharacter } from '../agent-avatar/character';
 import { pointerEventsStyles } from '../styles/pointer-events';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { ROUNDED_FULL } from '../styles/rounded-full';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
+import { AGENT_CREATOR_HOOKS, useAgentCreatorWebCss } from './web-css';
 import { useTrackEvents } from './use-track-events';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useAppForeground } from '../hooks/use-app-state';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
+// Native eases a chip's border into and out of the selection (150ms, Tailwind's default curve);
+// the web transitions it from the editor's sheet.
+const Chip = Platform.OS === 'web' ? Pressable : Animated.createAnimatedComponent(Pressable);
+const CHIP_MOTION = (
+  Platform.OS === 'web'
+    ? null
+    : {
+        transitionProperty: ['borderColor', 'boxShadow'],
+        transitionDuration: 150,
+        transitionTimingFunction: cubicBezier(0.4, 0, 0.2, 1),
+      }
+) as ViewStyle | null;
 export type EmotionChoice = {
   id: string;
   label: string;
@@ -63,8 +77,7 @@ function Emotion({
     [rotation, angle],
   );
   return (
-    <StyledView
-      className="absolute left-1/2 top-1/2 -ml-[17px] -mt-[17px] size-[34px]"
+    <View
       style={{
         position: 'absolute',
         left: '50%',
@@ -77,7 +90,8 @@ function Emotion({
       }}
     >
       <AnimatedView style={counterRotation}>
-        <StyledPressable
+        <Chip
+          {...AGENT_CREATOR_HOOKS.emotion}
           accessibilityRole="button"
           accessibilityLabel={choice.label}
           aria-pressed={active}
@@ -88,11 +102,11 @@ function Emotion({
             if (!choice.disabled) onChange(choice.id);
           }}
           pointerEvents="auto"
-          className={`pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring ${active ? 'border-foreground-icon-secondary' : 'border-transparent'}`}
-          style={{
-            backgroundColor,
-            borderColor: active ? colors.icon : 'transparent',
-          }}
+          style={[
+            styles.chip,
+            CHIP_MOTION,
+            { backgroundColor, borderColor: active ? colors.icon : 'transparent' },
+          ]}
         >
           <CharacterAvatar
             renderer="svg"
@@ -104,9 +118,9 @@ function Emotion({
             size={34}
             style={eyeStyle}
           />
-        </StyledPressable>
+        </Chip>
       </AnimatedView>
-    </StyledView>
+    </View>
   );
 }
 
@@ -126,6 +140,7 @@ export function EmotionPicker({
   const messages = useAgentCreatorMessages();
   const emit = onSelect;
   const ref = useRef<ComponentRef<typeof View>>(null);
+  useAgentCreatorWebCss();
   const visible = useSharedValue(true);
   const target = useSharedValue(0);
   const reduced = usePrefersReducedMotion();
@@ -183,19 +198,18 @@ export function EmotionPicker({
   );
   return (
     <GestureDetector gesture={drag}>
-      <StyledView
+      <View
         collapsable={false}
         ref={ref}
         role="group"
         accessibilityLabel={messages.emotion}
-        style={pointerEventsStyles['box-none']}
-        className="relative size-[268px] touch-none rounded-full"
+        style={[styles.orbit, pointerEventsStyles['box-none']]}
         onPointerEnter={onHoverIn}
         onPointerLeave={onHoverOut}
       >
         <AnimatedView
-          className="absolute inset-0"
           style={[
+            styles.fill,
             // Reanimated flattens styles: CSS cannot express box-none on this animated node.
             // Web chips opt back into auto; native retains box-none child hit testing.
             Platform.OS === 'web' ? pointerEventsStyles.none : pointerEventsStyles['box-none'],
@@ -218,7 +232,29 @@ export function EmotionPicker({
             />
           ))}
         </AnimatedView>
-      </StyledView>
+      </View>
     </GestureDetector>
   );
 }
+
+const styles = StyleSheet.create({
+  chip: {
+    pointerEvents: 'auto',
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: ROUNDED_FULL,
+    borderStyle: 'solid',
+    borderWidth: 2,
+  },
+  orbit: {
+    position: 'relative',
+    width: 268,
+    height: 268,
+    borderRadius: ROUNDED_FULL,
+    ...(Platform.OS === 'web' ? { touchAction: 'none' } : null),
+  },
+  fill: { position: 'absolute', inset: 0 },
+});
