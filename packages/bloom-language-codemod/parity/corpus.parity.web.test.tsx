@@ -19,9 +19,24 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  if (process.env.CODEMOD_CORPUS)
-    writeFileSync(join(CORPUS, 'parity-web.json'), `${JSON.stringify(results, null, 1)}\n`);
+  if (!process.env.CODEMOD_CORPUS) return;
+  writeFileSync(join(CORPUS, 'parity-web.json'), `${JSON.stringify(results, null, 1)}\n`);
+  // The language's colours at an opacity as it declared them (web-sheet.ts, adoptInk),
+  // for the Chrome check: jsdom drops the percentage of a color-mix(), Chrome computes it.
+  writeFileSync(join(CORPUS, 'language-ink.css'), `${languageInk()}\n`);
 });
+
+function languageInk(): string {
+  const sheets: CSSStyleSheet[] = [...Array.from(document.styleSheets)];
+  const adopted = (document as Document & { adoptedStyleSheets?: CSSStyleSheet[] })
+    .adoptedStyleSheets;
+  if (adopted) sheets.push(...adopted);
+  return sheets
+    .flatMap((sheet) => Array.from(sheet.cssRules))
+    .filter((rule) => rule.cssText.includes('--bl-'))
+    .map((rule) => rule.cssText)
+    .join('\n');
+}
 
 describe.each(['light', 'dark'] as const)('%s', (scheme) => {
   it.each(cases.map((c) => [c.name, c] as const))('%s', (name, c) => {

@@ -51,6 +51,17 @@ describe('resolveClassName', () => {
       { name: 'border', args: ['border', 'thin', 'bottom'] },
     ]);
   });
+  it('maps a colour at an opacity, a fixed one too, but not under a live condition', () => {
+    expect(codes('bg-primary/10 border-border/60 border')).toEqual([]);
+    expect(codes('text-white/70', 'text')).toEqual([]);
+    expect(codes('web:bg-primary/10')).toEqual([]);
+    expect(codes('dark:bg-primary/10')).toEqual(['measured-difference']);
+    expect(codes('hover:bg-primary/10', 'pressable')).toEqual(['measured-difference']);
+  });
+  it('maps a leading from a ratio of a size the text sets, and keeps one of no size', () => {
+    expect(codes('text-sm leading-snug', 'text')).toEqual([]);
+    expect(codes('leading-snug', 'text')).toEqual(['unsized-ratio']);
+  });
   it('turns variants into when() conditions', () => {
     const result = resolveClassName('p-2 md:p-4 dark:bg-card', 'view', table);
     expect(result.ok && result.value.variants.map((v) => v.conditions)).toEqual([['md'], ['dark']]);
