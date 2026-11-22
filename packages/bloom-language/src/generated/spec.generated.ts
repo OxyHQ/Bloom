@@ -1118,7 +1118,9 @@ export const ENUMS = {
     "start",
     "center",
     "end",
-    "justify"
+    "justify",
+    "left",
+    "right"
   ],
   "textCase": [
     "uppercase",

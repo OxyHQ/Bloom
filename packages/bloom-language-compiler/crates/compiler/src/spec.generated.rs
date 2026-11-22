@@ -68,7 +68,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("scrollEdge", &["auto", "always", "none"]),
     ("textStyle", &["title", "subtitle", "h1", "h2", "h3", "h4", "h5", "h6", "paragraph", "lead", "large", "small", "muted", "blockquote"]),
     ("truncation", &["head", "middle", "tail", "clip"]),
-    ("textAlign", &["start", "center", "end", "justify"]),
+    ("textAlign", &["start", "center", "end", "justify", "left", "right"]),
     ("textCase", &["uppercase", "lowercase", "capitalize"]),
     ("wordBreak", &["all", "words"]),
     ("listMarker", &["disc", "decimal"]),

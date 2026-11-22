@@ -571,8 +571,10 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   (a page of another site opens beside the app) and opened outside the app on
   native. Its own `.foreground()` replaces the ink, its own `.onPress()` the
   opening.
-- **Lines and marks.** `.textAlign('start' | 'center' | 'end' | 'justify')`
-  (`start` and `end` follow the reading direction), `.italic()`,
+- **Lines and marks.** `.textAlign('start' | 'center' | 'end' | 'justify' |
+  'left' | 'right')` (`start` and `end` follow the reading direction; `left`
+  and `right` are Tailwind's `text-left` and `text-right` as NativeWind writes
+  them, React Native's own `left` and `right` and the web's CSS ones), `.italic()`,
   `.underline()`, `.strikethrough()`, `.textCase('uppercase' | 'lowercase' |
   'capitalize')`. On the web the alignment stays inline: react-native-web
   writes it per direction, which one class cannot.

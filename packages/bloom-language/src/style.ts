@@ -1039,6 +1039,9 @@ const TEXT_ALIGN: Record<TextAlignment, string> = {
   center: 'center',
   end: 'right',
   justify: 'justify',
+  // Tailwind's text-left and text-right, as NativeWind writes them on each platform.
+  left: 'left',
+  right: 'right',
 };
 
 /** The colour of a link with no ink of its own: Bloom's inline link (`markdown/InlineMarkdown`). */

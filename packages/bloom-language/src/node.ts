@@ -4240,7 +4240,11 @@ export interface TextView extends ViewModifiers<TextView> {
    * native. Its own `.foreground()` replaces the ink; `.onPress()` replaces the opening.
    */
   link(href: string): TextView;
-  /** How its lines align: `start` and `end` follow the reading direction. */
+  /**
+   * How its lines align: `start` and `end` follow the reading direction;
+   * `left` and `right` are Tailwind's `text-left` and `text-right` as NativeWind
+   * writes them (React Native's own `left` and `right`, the web's CSS ones).
+   */
   textAlign(value: TextAlignment): TextView;
   italic(): TextView;
   underline(): TextView;

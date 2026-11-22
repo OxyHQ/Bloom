@@ -1431,7 +1431,7 @@
    "count": 24,
    "apps": 8,
    "status": "mapped",
-   "language": ".textAlign('end')"
+   "language": ".textAlign('right')"
   },
   "p-space-12": {
    "count": 23,
@@ -1799,7 +1799,7 @@
    "count": 17,
    "apps": 8,
    "status": "mapped",
-   "language": ".textAlign('start')"
+   "language": ".textAlign('left')"
   },
   "w-14": {
    "count": 17,
