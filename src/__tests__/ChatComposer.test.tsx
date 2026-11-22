@@ -1058,9 +1058,9 @@ describe('EmojiPicker', () => {
   it.each(['light', 'dark'] as const)('uses the enclosing material in embedded %s mode', (mode) => {
     mount(<EmojiPicker groups={groups} embedded scrollable={false} testID="e" />, mode);
     expect(byTestId('e').style.paddingLeft).toBe('0px');
-    expect(byTestId('e').classList.contains('bloom-surface')).toBe(false);
+    expect(byTestId('e').hasAttribute('data-bloom-surface')).toBe(false);
     mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />, mode);
-    expect(byTestId('e').classList.contains('bloom-surface')).toBe(true);
+    expect(byTestId('e').hasAttribute('data-bloom-surface')).toBe(true);
     expect(byTestId('e-search').getAttribute('aria-label')).toBe('Search emoji');
   });
 
