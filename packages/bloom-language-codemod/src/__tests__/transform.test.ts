@@ -92,12 +92,12 @@ export const B = () => <ChatEmptyState title="None" illustration={<Art />} />;
   it('keeps a prop it cannot map, and a kept component, with their reasons', () => {
     const result = run(`import { GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
 import { Screen } from '@oxy.so/bloom/screen';
-export const A = () => <Screen><GroupedSectionItem title="B" wrapControl /></Screen>;
+export const A = () => <Screen><GroupedSectionItem title="B" leftInset={8} /></Screen>;
 `);
     expect(result.changed).toBe(false);
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
       'kept:Screen',
-      'GroupedSectionItem:wrapControl',
+      'GroupedSectionItem:leftInset',
     ]);
   });
   it('keeps an input that reads an enclosing shell’s context', () => {
@@ -116,14 +116,14 @@ import { RiMailLine } from '@oxy.so/bloom/icons';
 export const A = () => (
   <TextField size="sm"><TextFieldIcon icon={RiMailLine} /><TextFieldInput label="A" value={a} onChangeText={setA} /></TextField>
 );
-export const B = () => <TextField disabled><TextFieldInput label="B" value={b} onChangeText={setB} /></TextField>;
+export const B = () => <TextField style={s}><TextFieldInput label="B" value={b} onChangeText={setB} /></TextField>;
 `);
     expect(flat(result.code)).toContain(
       'toElement(LTextField([a, setA], "A").size("sm").icon(RiMailLine))',
     );
     expect(result.converted).toBe(2);
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'TextField:disabled',
+      'TextField:style',
       'TextField:inside-TextField',
     ]);
   });
