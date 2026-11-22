@@ -64,7 +64,7 @@
        }
 --- a/GlassMenuAndroidView.kt
 +++ b/GlassMenuAndroidView.kt
-@@ -3,10 +3,13 @@
+@@ -3,15 +3,19 @@
  import android.content.Context
  import android.content.res.Configuration
  import android.graphics.Canvas
@@ -78,21 +78,32 @@
  import android.view.MotionEvent
  import android.view.View
  import android.view.ViewGroup
-@@ -23,11 +26,13 @@
+ import androidx.annotation.RequiresApi
+ import com.facebook.react.R
++import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
+ import so.oxy.bloom.glassmenu.motion.GlassJelly
+ import so.oxy.bloom.glassmenu.overlay.GlassDevGuard
+ import so.oxy.bloom.glassmenu.overlay.GlassMenuOverlay
+@@ -20,14 +24,17 @@
+ import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
+ import so.oxy.bloom.glassmenu.render.GlassRenderer
+ import so.oxy.bloom.glassmenu.render.GlassSurfaceState
++import so.oxy.bloom.glassmenu.render.SharedStills
  import expo.modules.kotlin.AppContext
  import expo.modules.kotlin.viewevent.EventDispatcher
  import expo.modules.kotlin.views.ExpoView
 +import kotlin.math.abs
  import kotlin.math.min
  
- class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+-class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
++class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext), GlassBackdrop.OffPage {
    private val onItemSelect by EventDispatcher<Map<String, Any?>>()
    private val onMenuOpenChange by EventDispatcher<Map<String, Any?>>()
 +  private val onMenuClosed by EventDispatcher<Map<String, Any?>>()
  
    private var overlay: GlassMenuOverlay? = null
    private var glassRenderer: Any? = null
-@@ -56,7 +61,18 @@
+@@ -56,7 +63,18 @@
      set(value) {
        field = value
        overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
@@ -111,13 +122,14 @@
    internal var glass = true
      set(value) {
        field = value
-@@ -81,6 +97,31 @@
+@@ -81,6 +99,34 @@
        field = value
        overlay?.invalidate()
      }
 +  // The colour the trigger sits on. Set, the view draws its own lens at rest, in its place in the view hierarchy (so
-+  // a trigger in a scroll is clipped and stacked as the content it belongs to, under the bars), against that colour,
-+  // and keeps it in a compositing layer (no lens is redrawn while the page scrolls). The window overlay draws the
++  // a trigger in a scroll is clipped and stacked as the content it belongs to, under the bars), against that colour:
++  // at rest the shared still of its look (SharedStills: one texture for every trigger that looks the same, no layer
++  // of its own), and while pressed its live lens in a compositing layer. The window overlay draws the
 +  // lens only while the menu is open: the session starts from the same base. A live lens inside the hierarchy cannot
 +  // sample the window backdrop (the backdrop records the page, which would hold the lens: a RenderNode cycle).
 +  internal var restBackdrop: Int? = null
@@ -131,6 +143,8 @@
 +  private var restNode: Any? = null
 +  private var restBackdropNode: Any? = null
 +  private var restRecorded = false
++  // The look of the resting lens, the key of its shared still.
++  private var restLook: RestLook? = null
 +  private val restRect = RectF()
 +  private val restLimits = Rect()
 +  // A tap on the view opens its menu right there, on the UI thread, with no round trip to JS: the menu is the view's
@@ -143,19 +157,22 @@
    internal var menuWidth: Float? = null
    internal var fontFamily: String? = null
    internal var alignment = "auto"
-@@ -89,7 +130,10 @@
+@@ -89,7 +135,13 @@
  
    internal val drawsGlass get() = glass && supportsGlass
  
 -  private val overlayDrawsChildren get() = supportsGlass && overlay != null && (glass || menuActive)
 +  private val overlayDrawsChildren get() = supportsGlass && overlay != null && ((glass && !inPlace) || menuActive)
 +
++  // Drawn by the overlay, the view's lens and content are not part of the page the glass samples.
++  override val offPage get() = overlayDrawsChildren
++
 +  // The lens this view draws in its own place: at rest, when it sits in the hierarchy (restBackdrop).
 +  private val drawsRestInPlace get() = inPlace && drawsGlass && !menuActive
  
    init {
      setWillNotDraw(false)
-@@ -99,8 +143,22 @@
+@@ -99,8 +151,22 @@
      super.onAttachedToWindow()
      val root = rootView as? ViewGroup ?: return
      overlay = GlassMenuOverlay.obtain(root).also { it.register(this) }
@@ -179,7 +196,7 @@
    }
  
    override fun onDetachedFromWindow() {
-@@ -115,20 +173,104 @@
+@@ -115,20 +181,157 @@
    private fun releaseGraphics() {
      (glassRenderer as? GlassRenderer)?.release()
      glassRenderer = null
@@ -189,6 +206,8 @@
 +    restNode = null
 +    (restBackdropNode as? RenderNode)?.discardDisplayList()
 +    restBackdropNode = null
++    restLook?.let { SharedStills.release(it) }
++    restLook = null
 +    restRecorded = false
      (contentNode as? RenderNode)?.discardDisplayList()
      contentNode = null
@@ -213,55 +232,106 @@
 +  }
 +
 +  // The resting lens, as the overlay draws a resting trigger (drawRestingAnchor), in this view's coordinates and
-+  // against the colour it sits on. Recorded into a compositing layer, again only when its shape, colour or press changes.
++  // against the colour it sits on. At rest the shared still of its look; pressed, recorded into a compositing layer,
++  // again only when its shape, colour or press changes.
 +  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 +  private fun drawRestInPlace(canvas: Canvas) {
 +    if (width == 0 || height == 0) return
++    val renderer = restRenderer as? GlassRenderer ?: newRenderer(density).also { restRenderer = it }
++    if (jelly.isSettled && drawRestStill(canvas, renderer)) return
 +    val node = restNode as? RenderNode ?: RenderNode("GlassMenu.restInPlace").also {
 +      it.setUseCompositingLayer(true, null)
 +      restNode = it
 +    }
 +    if (!restRecorded) {
-+      val pad = (RestCaptureMargin + RestGuard) * density
-+      restLimits.set(-pad.toInt(), -pad.toInt(), width + pad.toInt(), height + pad.toInt())
-+      val backdrop = restBackdropNode as? RenderNode ?: RenderNode("GlassMenu.restBackdrop").also { restBackdropNode = it }
-+      backdrop.setPosition(restLimits)
-+      val fill = backdrop.beginRecording(restLimits.width(), restLimits.height())
-+      fill.drawColor(restBackdrop ?: 0)
-+      backdrop.endRecording()
-+
-+      val state = surfaceState
-+      restRect.set(0f, 0f, width.toFloat(), height.toFloat())
-+      state.incoming.set(restRect)
-+      state.captureBounds.set(restRect)
-+      state.captureBounds.inset(-RestCaptureMargin * density, -RestCaptureMargin * density)
-+      state.lockedFieldStep = 0f
-+      jelly.deformControl(state.incoming, density, triggerConfig.jelly)
-+      val radius = cornerRadiusPx(state.incoming)
-+      state.radiusX = radius
-+      state.radiusY = radius
-+      state.hasSource = false
-+      state.smoothing = 0f
-+      state.lensHeight = 0f
-+      state.lensAmount = 0f
-+      state.materialProgress = 0f
-+      state.surfaceOpacity = 1f
-+      state.dark = isDark()
-+      state.config = config
-+      state.trigger = triggerConfig
-+      applyLight(state, restRect, 1f)
-+      val renderer = restRenderer as? GlassRenderer ?: newRenderer(density).also { restRenderer = it }
++      val backdrop = prepareRest()
 +      node.setPosition(restLimits)
 +      val recording = node.beginRecording(restLimits.width(), restLimits.height())
 +      recording.translate(-restLimits.left.toFloat(), -restLimits.top.toFloat())
-+      renderer.prepare(state)
-+      renderer.drawGlass(recording, backdrop, state, restLimits)
++      renderer.prepare(surfaceState)
++      renderer.drawGlass(recording, backdrop, surfaceState, restLimits)
 +      node.endRecording()
 +      restRecorded = !renderer.warmPipelines(canvas)
 +      if (!restRecorded) postInvalidateOnAnimation()
 +    }
 +    canvas.drawRenderNode(node)
 +  }
++
++  // The settled lens: the still of its look, shared with every trigger that looks the same. False until it has
++  // arrived (the view is invalidated then); the live lens is drawn meanwhile.
++  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
++  private fun drawRestStill(canvas: Canvas, renderer: GlassRenderer): Boolean {
++    val backdrop = prepareRest()
++    val state = surfaceState
++    val look = RestLook(
++      restLimits.width(), restLimits.height(), state.radiusX, restBackdrop ?: 0, state.dark, density,
++      config.blur, config.tintColor?.toArgb(), config.tintOpacity, config.saturation, config.refraction, config.rim,
++      triggerConfig.blur, triggerConfig.tintColor?.toArgb(), triggerConfig.tintOpacity, triggerConfig.saturation,
++      triggerConfig.refraction, triggerConfig.rim,
++    )
++    if (look != restLook) {
++      restLook?.let { SharedStills.release(it) }
++      restLook = look
++      val limits = Rect(restLimits)
++      SharedStills.acquire(look, limits.width(), limits.height()) { recording ->
++        recording.translate(-limits.left.toFloat(), -limits.top.toFloat())
++        renderer.prepare(state)
++        renderer.drawGlass(recording, backdrop, state, limits)
++      }
++    }
++    val still = SharedStills.bitmap(look, this) ?: return false
++    if (restNode != null) {
++      (restNode as RenderNode).discardDisplayList()
++      restNode = null
++      restRecorded = false
++    }
++    canvas.drawBitmap(still, restLimits.left.toFloat(), restLimits.top.toFloat(), null)
++    if (renderer.warmPipelines(canvas)) postInvalidateOnAnimation()
++    return true
++  }
++
++  // The resting lens's limits and state, in this view's coordinates, and the fill it samples.
++  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
++  private fun prepareRest(): RenderNode {
++    val pad = (RestCaptureMargin + RestGuard) * density
++    restLimits.set(-pad.toInt(), -pad.toInt(), width + pad.toInt(), height + pad.toInt())
++    val backdrop = restBackdropNode as? RenderNode ?: RenderNode("GlassMenu.restBackdrop").also { restBackdropNode = it }
++    backdrop.setPosition(restLimits)
++    val fill = backdrop.beginRecording(restLimits.width(), restLimits.height())
++    fill.drawColor(restBackdrop ?: 0)
++    backdrop.endRecording()
++
++    val state = surfaceState
++    restRect.set(0f, 0f, width.toFloat(), height.toFloat())
++    state.incoming.set(restRect)
++    state.captureBounds.set(restRect)
++    state.captureBounds.inset(-RestCaptureMargin * density, -RestCaptureMargin * density)
++    state.lockedFieldStep = 0f
++    jelly.deformControl(state.incoming, density, triggerConfig.jelly)
++    val radius = cornerRadiusPx(state.incoming)
++    state.radiusX = radius
++    state.radiusY = radius
++    state.hasSource = false
++    state.smoothing = 0f
++    state.lensHeight = 0f
++    state.lensAmount = 0f
++    state.materialProgress = 0f
++    state.surfaceOpacity = 1f
++    state.dark = isDark()
++    state.config = config
++    state.trigger = triggerConfig
++    applyLight(state, restRect, 1f)
++    return backdrop
++  }
++
++  // What the resting lens drawn in place looks like: its size, shape, fill, scheme and material. Triggers that agree
++  // on all of it draw the same pixels, so they share one still.
++  private data class RestLook(
++    val width: Int, val height: Int, val radius: Float, val fill: Int, val dark: Boolean, val density: Float,
++    val blur: Float, val tint: Int?, val tintOpacity: Float?, val saturation: Float, val refraction: Float, val rim: Float,
++    val triggerBlur: Float, val triggerTint: Int?, val triggerTintOpacity: Float?, val triggerSaturation: Float,
++    val triggerRefraction: Float, val triggerRim: Float,
++  )
 +
    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
 -    if (event.actionMasked == MotionEvent.ACTION_DOWN) {
@@ -288,7 +358,7 @@
      }
      if (drawsGlass) {
        when (event.actionMasked) {
-@@ -182,7 +324,17 @@
+@@ -182,7 +385,28 @@
  
    override fun dispatchDraw(canvas: Canvas) {
      if (overlayDrawsChildren) return
@@ -303,10 +373,21 @@
 +    canvas.scale(shape.width() / width, shape.height() / height)
      super.dispatchDraw(canvas)
 +    canvas.restoreToCount(save)
++  }
++
++  // The content again, into the node the overlay already draws, with the node's placement kept: content that redrew
++  // (a trigger drawn by the overlay keeps it out of the page, dispatchDraw) reaches the screen without the overlay
++  // recording anything else.
++  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
++  internal fun refreshContent() {
++    val node = contentNode as? RenderNode ?: return
++    val recording = node.beginRecording(width, height)
++    super.dispatchDraw(recording)
++    node.endRecording()
    }
  
    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@@ -236,6 +388,16 @@
+@@ -236,6 +460,16 @@
      val target = overlay ?: return
      if (items.isEmpty() || this.width == 0 || this.height == 0) return
      if (menuActive && target.menuSession?.expanded == true) return
@@ -323,7 +404,7 @@
      val pressed = if (followsPress) pressedRect(target) else null
      val through = pressed ?: if (x != null && y != null && width != null && height != null) {
        RectF(
-@@ -275,11 +437,12 @@
+@@ -275,11 +509,12 @@
    internal fun onSessionFinished() {
      menuActive = false
      invalidate()
@@ -337,7 +418,7 @@
      const val PressMemory = 1000L
      const val MorphFromPress = "press"
      const val PressRadius = 22f
-@@ -287,5 +450,8 @@
+@@ -287,5 +522,8 @@
      const val LightLift = .055f
      const val LightPool = .07f
      const val LightRimLift = .3f
@@ -358,7 +439,7 @@
  
    init {
      setWillNotDraw(false)
-@@ -91,26 +94,31 @@
+@@ -91,26 +94,33 @@
      viewTreeObserver.removeOnPreDrawListener(this)
      Choreographer.getInstance().removeFrameCallback(this)
      framePending = false
@@ -368,12 +449,18 @@
    }
  
 +  // The page behind the glass reaches it through the backdrop's node (GlassBackdrop): what is drawn here is recorded
-+  // again only for a trigger that moved, faded or redrew its content, and from here, into the node onDraw draws, unless
-+  // the overlay is already invalidated for this frame. An invalidation from a pre-draw would schedule another frame.
++  // again only for a trigger that moved or faded, and from here, into the node onDraw draws, unless the overlay is
++  // already invalidated for this frame. An invalidation from a pre-draw would schedule another frame. A trigger whose
++  // content redrew records only that content, into the node this overlay already draws (an animated avatar in a
++  // header trigger records no glass).
    override fun onPreDraw(): Boolean {
 -    if (backdropChanged() or anchorsMoved()) invalidate()
-+    val changed = anchorsMoved() or anchorsRedrawn()
-+    if (changed && !isDirty && supportsGlass && isHardwareAccelerated) recordGlass()
++    if (!supportsGlass || !isHardwareAccelerated) return true
++    if (anchorsMoved()) {
++      if (!isDirty) recordGlass()
++    } else if (!isDirty) {
++      for (anchor in anchors) if (drawnHere(anchor) && anchor.isDirty) anchor.refreshContent()
++    }
      return true
    }
  
@@ -386,10 +473,6 @@
 -  }
 +  private fun drawnHere(anchor: GlassMenuAndroidView): Boolean =
 +    (anchor.drawsGlass && !anchor.inPlace) || session?.anchor === anchor
-+
-+  // A trigger drawn here keeps its content out of the page (GlassMenuAndroidView.dispatchDraw), so content that redrew
-+  // reaches the screen only when this overlay records it again. Its trigger is then dirty.
-+  private fun anchorsRedrawn(): Boolean = anchors.any { drawnHere(it) && it.isDirty }
  
    private fun anchorsMoved(): Boolean {
      var moved = false
@@ -399,7 +482,7 @@
        anchorRect(anchor, probe)
        val alpha = if (anchor.isShown) anchor.effectiveAlpha() else 0f
        if (probe != anchor.placement || alpha != anchor.placementAlpha) {
-@@ -123,21 +131,35 @@
+@@ -123,27 +133,41 @@
    }
  
    override fun onDraw(canvas: Canvas) {
@@ -430,17 +513,35 @@
  
    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
    private fun drawGlass(canvas: Canvas, active: GlassMenuSession?) {
-     val node = backdropProvider?.node ?: return
+-    val node = backdropProvider?.node ?: return
++    val page = backdropProvider ?: return
 +    limits.set(0, 0, width, height)
  
      for (anchor in anchors) {
 -      if (anchor !== active?.anchor && anchor.drawsGlass) drawRestingAnchor(canvas, node, anchor)
 +      // A trigger that draws its lens in place (restBackdrop) is drawn here only while its menu is open.
-+      if (anchor !== active?.anchor && anchor.drawsGlass && !anchor.inPlace) drawRestingAnchor(canvas, node, anchor)
++      if (anchor !== active?.anchor && anchor.drawsGlass && !anchor.inPlace) drawRestingAnchor(canvas, page, anchor)
      }
-     active?.draw(canvas, node, limits)
+-    active?.draw(canvas, node, limits)
++    active?.draw(canvas, page, limits)
    }
-@@ -265,8 +287,10 @@
+ 
+   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+-  private fun drawRestingAnchor(canvas: Canvas, node: RenderNode, anchor: GlassMenuAndroidView) {
++  private fun drawRestingAnchor(canvas: Canvas, page: GlassBackdrop, anchor: GlassMenuAndroidView) {
+     if (!anchor.isShown || anchor.width == 0 || anchor.height == 0) return
+     val opacity = anchor.effectiveAlpha()
+     if (opacity <= 0f) return
+@@ -169,7 +193,7 @@
+     anchor.applyLight(state, restRect, 1f)
+     val renderer = anchor.renderer(density)
+     renderer.prepare(state)
+-    renderer.drawGlass(canvas, node, state, limits)
++    renderer.drawGlass(canvas, page, state, limits)
+     if (renderer.warmPipelines(canvas)) post { invalidate() }
+     val content = anchor.recordContent()
+     content.alpha = opacity
+@@ -265,8 +289,10 @@
      lastFrameNanos = frameTimeNanos
      var running = false
      for (anchor in anchors) {
@@ -453,7 +554,15 @@
      if (active != null) {
 --- a/overlay/GlassMenuSession.kt
 +++ b/overlay/GlassMenuSession.kt
-@@ -99,6 +99,7 @@
+@@ -7,6 +7,7 @@
+ import android.graphics.RectF
+ import android.graphics.RenderEffect
+ import android.graphics.RenderNode
++import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
+ import android.graphics.Shader
+ import android.os.Build
+ import android.view.MotionEvent
+@@ -99,6 +100,7 @@
      val margin = 16f * density
      availableWidth = windowWidth - margin * 2f
      content.dark = anchor.isDark()
@@ -461,7 +570,23 @@
      levelItems = null
      nav.reset(1f)
      parentDim.reset(0f)
-@@ -557,6 +558,7 @@
+@@ -292,13 +294,13 @@
+     jelly.deformMenu(out, if (opensFromRight) -1f else 1f, if (opensAbove) -1f else 1f, density, anchor.config.jelly)
+   }
+ 
+-  fun draw(canvas: Canvas, backdrop: RenderNode, limits: Rect) {
++  fun draw(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
+     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+     drawRoot(canvas, backdrop, limits)
+     child?.draw(canvas, backdrop, limits)
+   }
+ 
+-  private fun drawRoot(canvas: Canvas, backdrop: RenderNode, limits: Rect) {
++  private fun drawRoot(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
+     val frame = motion.frame
+     liveBounds(shown)
+     // While a stacked submenu is open the root recedes: the glass shrinks and the rows dim.
+@@ -557,6 +559,7 @@
        anchor, density,
        GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
          it.dark = content.dark
@@ -485,19 +610,28 @@
    @Field val rim: Float = 1f
 --- a/render/GlassRenderer.kt
 +++ b/render/GlassRenderer.kt
-@@ -12,6 +12,7 @@
+@@ -12,6 +12,9 @@
  import android.graphics.Shader
  import android.os.Build
  import androidx.annotation.RequiresApi
 +import java.util.concurrent.atomic.AtomicBoolean
++import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
++import so.oxy.bloom.glassmenu.backdrop.GlassLens
  import so.oxy.bloom.glassmenu.field.GlassFieldTexture
  import so.oxy.bloom.glassmenu.field.GlassGaussianField
  import kotlin.math.ceil
-@@ -35,10 +36,11 @@
+@@ -35,10 +38,18 @@
    private val texture = GlassFieldTexture()
    private val nodeRect = Rect()
    private val union = RectF()
 -  private var warmed = false
++  // This surface's view of the window page (GlassLens): the page while the region behind it changes, else its still.
++  private var lens: GlassLens? = null
++  private val signature = FloatArray(SignatureSize)
++  private val recorded = FloatArray(SignatureSize)
++  private var recordedSource: RenderNode? = null
++  private var recordedConfig: Any? = null
++  private var recordedTrigger: Any? = null
  
    init {
 -    warmField()
@@ -507,7 +641,7 @@
    }
  
    private fun warmField() {
-@@ -59,8 +61,7 @@
+@@ -59,8 +70,7 @@
    }
  
    fun warmPipelines(canvas: Canvas): Boolean {
@@ -517,18 +651,118 @@
      texture.preallocate()
      texture.bindPrepared(material)
      texture.bindPrepared(portal)
-@@ -241,6 +242,8 @@
+@@ -115,7 +125,11 @@
+     texture.bind(shader)
+   }
+ 
+-  fun drawGlass(canvas: Canvas, backdrop: RenderNode, state: GlassSurfaceState, limits: Rect) {
++  // The glass over the window page, sampled through this renderer's lens.
++  fun drawGlass(canvas: Canvas, page: GlassBackdrop, state: GlassSurfaceState, limits: Rect) =
++    drawGlass(canvas, page.node, state, limits, page)
++
++  fun drawGlass(canvas: Canvas, backdrop: RenderNode, state: GlassSurfaceState, limits: Rect, page: GlassBackdrop? = null) {
+     union.set(state.incoming)
+     if (state.hasSource) union.union(state.source)
+     val t = state.materialProgress.coerceIn(0f, 1f)
+@@ -138,6 +152,13 @@
+     if (nodeRect.isEmpty) return
+     val width = nodeRect.width()
+     val height = nodeRect.height()
++    // A surface drawn again as it was keeps its recording: its layer is not rendered again (a resting lens while a
++    // menu opens beside it). What it samples may still change behind it, through the source node.
++    val source = if (page != null) lensOn(page).sample(nodeRect) else backdrop
++    if (sameAsRecorded(state, source)) {
++      canvas.drawRenderNode(glassNode)
++      return
++    }
+ 
+     val control = if (state.dark) GlassRecipe.ControlDark else GlassRecipe.ControlLight
+     val menu = if (state.dark) GlassRecipe.MenuDark else GlassRecipe.MenuLight
+@@ -194,11 +215,39 @@
+     glassNode.setPosition(nodeRect)
+     val recording = glassNode.beginRecording(width, height)
+     recording.translate(-nodeRect.left.toFloat(), -nodeRect.top.toFloat())
+-    recording.drawRenderNode(backdrop)
++    recording.drawRenderNode(source)
+     glassNode.endRecording()
+     canvas.drawRenderNode(glassNode)
+   }
+ 
++  // Every value the glass is recorded from, against the last recording; the field texture follows the same state.
++  private fun sameAsRecorded(state: GlassSurfaceState, source: RenderNode): Boolean {
++    val values = signature
++    var index = 0
++    fun put(value: Float) {
++      values[index++] = value
++    }
++    fun put(rect: RectF) {
++      put(rect.left); put(rect.top); put(rect.right); put(rect.bottom)
++    }
++    put(state.incoming); put(state.source); put(state.captureBounds)
++    put(nodeRect.left.toFloat()); put(nodeRect.top.toFloat()); put(nodeRect.right.toFloat()); put(nodeRect.bottom.toFloat())
++    put(if (state.hasSource) 1f else 0f); put(if (state.dark) 1f else 0f)
++    put(state.radiusX); put(state.radiusY); put(state.sourceRadius); put(state.smoothing); put(state.lockedFieldStep)
++    put(state.lensHeight); put(state.lensAmount); put(state.lensBand); put(state.materialProgress)
++    put(state.surfaceOpacity); put(state.refractionScale); put(state.magnify)
++    put(state.pressX); put(state.pressY); put(state.pressRadius); put(state.poolGain); put(state.pressLift); put(state.rimLift)
++    val same = recordedSource === source && recordedConfig === state.config && recordedTrigger === state.trigger &&
++      values.contentEquals(recorded)
++    if (!same) {
++      values.copyInto(recorded)
++      recordedSource = source
++      recordedConfig = state.config
++      recordedTrigger = state.trigger
++    }
++    return same
++  }
++
+   fun drawForeground(
+     canvas: Canvas, state: GlassSurfaceState, warp: Boolean, portalBlur: Float,
+     record: (RecordingCanvas) -> Unit,
+@@ -235,13 +284,25 @@
+     )
+   }
+ 
++  private fun lensOn(page: GlassBackdrop): GlassLens =
++    lens?.takeIf { it.page === page } ?: page.lens().also {
++      lens?.release()
++      lens = it
++    }
++
+   fun release() {
++    lens?.release()
++    lens = null
++    recordedSource = null
+     glassNode.discardDisplayList()
+     foregroundNode.discardDisplayList()
    }
  
    private companion object {
 +    val fieldWarmed = AtomicBoolean(false)
 +    val pipelinesWarmed = AtomicBoolean(false)
      const val MorphBlur = 1.2f
++    const val SignatureSize = 36
      const val BlurReach = 2f
      const val PortalReach = 28f
+     const val WarmRounds = 40
 --- a/backdrop/GlassBackdrop.kt
 +++ b/backdrop/GlassBackdrop.kt
-@@ -13,13 +13,21 @@
+@@ -1,9 +1,14 @@
+ package so.oxy.bloom.glassmenu.backdrop
+ 
++import android.graphics.Rect
++import android.graphics.RectF
+ import android.graphics.RenderNode
++import android.os.Build
++import android.os.SystemClock
+ import android.view.View
+ import android.view.ViewGroup
+ import android.view.ViewTreeObserver
++import androidx.annotation.RequiresApi
+ import java.util.WeakHashMap
+ 
+ // The window backdrop: the page behind every glass surface of the window (menus, tab bar, search, create circle).
+@@ -13,13 +18,30 @@
  // Consumers call register(view, baseColor) and unregister(view). A registered view that is a direct child of the root
  // (the menu overlay) is left out of the recording. Surfaces that live inside the page skip their own drawing while
  // `recording` is true (dispatchDraw / onDraw check it), so they are not recorded into the backdrop.
@@ -539,6 +773,9 @@
 +// those nodes, and no surface records again for it. The recording itself changes only with the window's layout (its
 +// size and children), the registered surfaces and the base colour. Recorded again for any redraw in the page, it would
 +// make every surface record again too, at the page's frame rate, for an animation nowhere near the glass.
++//
++// A surface samples the page through a lens of its own (GlassLens), which holds the page only while the region behind
++// the surface changes. Before each frame the backdrop finds what changed, in window rects, and tells every lens.
 +internal class GlassBackdrop private constructor(private val root: ViewGroup) :
 +  ViewTreeObserver.OnPreDrawListener, ViewTreeObserver.OnGlobalLayoutListener {
    val node = RenderNode("GlassBackdrop")
@@ -549,10 +786,16 @@
 -  private var recorded = false
 +  private var stale = true
 +  private var recordedColor = 0
++  private val lenses = ArrayList<GlassLens>()
++  private val dirt = ArrayList<Rect>()
++  private val dirtRect = RectF()
++  // The place, transform, scroll, alpha and visibility of each view seen on a dirty path, as of the last frame.
++  private val seen = WeakHashMap<View, FloatArray>()
++  private val shape = FloatArray(ShapeSize)
  
    // Bumped each time the page is recorded: consumers that cache the backdrop regenerate when it changes.
    var version: Int = 0
-@@ -29,30 +37,37 @@
+@@ -29,30 +51,117 @@
      excluded.add(view)
      baseColor = color
      users += 1
@@ -579,20 +822,98 @@
      }
    }
  
--  override fun onPreDraw(): Boolean {
--    if (!recorded || anyChildDirty()) record()
--    return true
 +  override fun onGlobalLayout() {
 +    stale = true
++  }
++
++  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
++  fun lens(): GlassLens = GlassLens(this).also { lenses.add(it) }
++
++  fun drop(lens: GlassLens) {
++    lenses.remove(lens)
++  }
++
+   override fun onPreDraw(): Boolean {
+-    if (!recorded || anyChildDirty()) record()
++    val color = baseColor()
++    val whole = stale || color != recordedColor
++    if (whole) record(color)
++    if (lenses.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
++      dirt.clear()
++      if (!whole && root.isDirty) collectDirt(root)
++      val now = SystemClock.uptimeMillis()
++      for (lens in lenses) lens.frame(if (whole) null else dirt, now)
++    }
+     return true
    }
  
 -  private fun anyChildDirty(): Boolean {
 -    for (index in 0 until root.childCount) if (root.getChildAt(index).isDirty) return true
 -    return false
-+  override fun onPreDraw(): Boolean {
-+    val color = baseColor()
-+    if (stale || color != recordedColor) record(color)
++  // What redraws in this frame, from the dirty flags Android keeps under hardware rendering (it keeps no dirty rects):
++  // each dirty view none of whose children is dirty, and each child of a dirty view whose place, transform, scroll,
++  // alpha or visibility changed (a change of those marks only its parent), with that parent, which holds where it was.
++  // Left out: the glass surfaces, views drawn off the page (OffPage), and views that show nothing (hidden or clear).
++  private fun collectDirt(group: ViewGroup) {
++    var dirtyChild = false
++    for (index in 0 until group.childCount) {
++      val child = group.getChildAt(index)
++      if (child in excluded || (child as? OffPage)?.offPage == true) {
++        dirtyChild = dirtyChild || child.isDirty
++        continue
++      }
++      if (moved(child)) {
++        addDirt(group)
++        addDirt(child)
++      }
++      if (!child.isDirty) continue
++      dirtyChild = true
++      if (child.visibility != View.VISIBLE || child.alpha == 0f) continue
++      if (child is ViewGroup) collectDirt(child) else addDirt(child)
++    }
++    if (!dirtyChild) addDirt(group)
++  }
++
++  // A view in the page whose drawing is not part of it while [offPage] (a trigger whose lens and content the menu
++  // overlay draws): what redraws in it does not change what the glass samples.
++  interface OffPage {
++    val offPage: Boolean
++  }
++
++  private fun moved(view: View): Boolean {
++    shape[0] = view.left.toFloat()
++    shape[1] = view.top.toFloat()
++    shape[2] = view.right.toFloat()
++    shape[3] = view.bottom.toFloat()
++    shape[4] = view.scrollX.toFloat()
++    shape[5] = view.scrollY.toFloat()
++    shape[6] = view.translationX
++    shape[7] = view.translationY
++    shape[8] = view.scaleX
++    shape[9] = view.scaleY
++    shape[10] = view.rotation
++    shape[11] = view.alpha
++    shape[12] = view.visibility.toFloat()
++    val last = seen[view]
++    if (last != null && last.contentEquals(shape)) return false
++    if (last == null) seen[view] = shape.copyOf() else shape.copyInto(last)
 +    return true
++  }
++
++  // The view's bounds in the root's coordinates (the backdrop's), through every transform and scroll above it.
++  private fun addDirt(view: View) {
++    dirtRect.set(0f, 0f, view.width.toFloat(), view.height.toFloat())
++    var current = view
++    while (current !== root) {
++      if (!current.matrix.isIdentity) current.matrix.mapRect(dirtRect)
++      dirtRect.offset(current.left.toFloat(), current.top.toFloat())
++      val parent = current.parent as? View ?: return
++      dirtRect.offset(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
++      current = parent
++    }
++    val rect = Rect()
++    dirtRect.roundOut(rect)
++    dirt.add(rect)
    }
  
 -  private fun record() {
@@ -600,7 +921,7 @@
      val width = root.width
      val height = root.height
      if (width <= 0 || height <= 0) return
-@@ -70,7 +85,7 @@
+@@ -70,7 +179,7 @@
      recording = true
      try {
        val canvas = node.beginRecording(width, height)
@@ -609,7 +930,7 @@
        root.background?.draw(canvas)
        for (index in 0 until root.childCount) {
          val child = root.getChildAt(index)
-@@ -83,7 +98,8 @@
+@@ -83,12 +192,14 @@
        recording = false
        for (view in hidden) view.visibility = View.VISIBLE
      }
@@ -619,3 +940,280 @@
      version += 1
    }
  
+   companion object {
+     private val byRoot = WeakHashMap<ViewGroup, GlassBackdrop>()
++    private const val ShapeSize = 13
+ 
+     // True while a backdrop is being recorded. Surfaces inside the page must not draw then.
+     @Volatile
+--- a/backdrop/GlassLens.kt
++++ b/backdrop/GlassLens.kt
+@@ -0,0 +1,103 @@
++package so.oxy.bloom.glassmenu.backdrop
++
++import android.graphics.Bitmap
++import android.graphics.Rect
++import android.graphics.RenderNode
++import android.os.Build
++import android.os.SystemClock
++import androidx.annotation.RequiresApi
++import so.oxy.bloom.glassmenu.render.GlassStill
++
++// What one glass surface samples of the page: the page itself, by reference, while anything behind the surface
++// changes, and a still of the region behind it once that region has been quiet for a moment (StillAfterMs).
++//
++// Android draws a RenderNode reached from a second parent in the same frame as fully damaged: every glass that holds
++// the page re-renders on every frame the window draws, for an animation anywhere on screen, and the page's tree is
++// prepared once more for each of them. A lens that shows its still does not hold the page: its glass is not drawn
++// again, and the page is prepared once. The still is the same pixels: the region of the same nodes (GlassStill).
++//
++// The backdrop tells each lens, before every frame, which window rects change in it (GlassBackdrop.onPreDraw); a lens
++// whose region is touched shows the page again in that same frame. The region is the one the glass samples.
++@RequiresApi(Build.VERSION_CODES.TIRAMISU)
++internal class GlassLens(val page: GlassBackdrop) {
++  val node = RenderNode("GlassLens")
++  private val region = Rect()
++  private var showsStill = false
++  private var recorded = false
++  private var quietSince = 0L
++  // Bumped whenever the page is shown again: a still asked before then is dropped when it arrives.
++  private var generation = 0
++  private var askedGeneration = -1
++  private var still: GlassStill? = null
++
++  // The node the glass draws for [area] (window px): the region's still, or the page.
++  fun sample(area: Rect): RenderNode {
++    if (area != region || !recorded) {
++      region.set(area)
++      showPage(SystemClock.uptimeMillis())
++    }
++    return node
++  }
++
++  // Before a frame: [dirt] are the window rects that change in it (null: the whole page changed).
++  fun frame(dirt: List<Rect>?, now: Long) {
++    if (!recorded || region.isEmpty) return
++    if (dirt == null || dirt.any { Rect.intersects(it, region) }) {
++      showPage(now)
++    } else if (!showsStill && still == null && now - quietSince >= StillAfterMs) {
++      askStill()
++    }
++  }
++
++  // The page again, and the still let go: a lens holds a still only while it shows it (a menu's large region, a
++  // region that changes now and then, would otherwise keep buffers it does not draw).
++  private fun showPage(now: Long) {
++    quietSince = now
++    generation += 1
++    still?.release()
++    still = null
++    if (!showsStill && recorded && node.left == region.left && node.top == region.top &&
++      node.width == region.width() && node.height == region.height()) return
++    node.setPosition(region)
++    val canvas = node.beginRecording(region.width(), region.height())
++    canvas.translate(-region.left.toFloat(), -region.top.toFloat())
++    canvas.drawRenderNode(page.node)
++    node.endRecording()
++    showsStill = false
++    recorded = true
++  }
++
++  private fun askStill() {
++    val target = GlassStill(region.width(), region.height(), ::showStill).also { still = it }
++    askedGeneration = generation
++    val left = region.left.toFloat()
++    val top = region.top.toFloat()
++    target.render { canvas ->
++      canvas.translate(-left, -top)
++      canvas.drawRenderNode(page.node)
++    }
++  }
++
++  private fun showStill(bitmap: Bitmap) {
++    if (askedGeneration != generation || bitmap.width != region.width() || bitmap.height != region.height()) return
++    node.setPosition(region)
++    val canvas = node.beginRecording(region.width(), region.height())
++    canvas.drawBitmap(bitmap, 0f, 0f, null)
++    node.endRecording()
++    showsStill = true
++  }
++
++  fun release() {
++    page.drop(this)
++    still?.release()
++    still = null
++    node.discardDisplayList()
++    recorded = false
++    showsStill = false
++  }
++
++  private companion object {
++    // Longer than the gap between two frames of a video and than a press: a region that changes keeps the page.
++    const val StillAfterMs = 500L
++  }
++}
+--- a/chrome/GlassChromeView.kt
++++ b/chrome/GlassChromeView.kt
+@@ -273,12 +273,12 @@
+   ) {
+     val barState = glassState(tabs, search, ChromeGeometry.layerFor("bar", rest), ox, oy)
+     barRenderer.prepare(barState)
+-    barRenderer.drawGlass(canvas, provider.node, barState, limits)
++    barRenderer.drawGlass(canvas, provider, barState, limits)
+     // The create circle shrinks to nothing as the search opens: skip it when it has no area left.
+     if (fab.x1 - fab.x0 >= 1f) {
+       val fabState = glassState(fab, null, ChromeGeometry.layerFor("fab", rest), ox, oy)
+       fabRenderer.prepare(fabState)
+-      fabRenderer.drawGlass(canvas, provider.node, fabState, limits)
++      fabRenderer.drawGlass(canvas, provider, fabState, limits)
+     }
+   }
+ 
+--- a/chrome/SurfaceNodesView.kt
++++ b/chrome/SurfaceNodesView.kt
+@@ -265,7 +265,7 @@
+         if (rect.width() < 1f || rect.height() < 1f) continue
+         val state = glassStateFor(track, rect, ox, oy)
+         track.renderer.prepare(state)
+-        track.renderer.drawGlass(canvas, provider.node, state, limits)
++        track.renderer.drawGlass(canvas, provider, state, limits)
+       }
+       canvas.restore()
+     }
+--- a/overlay/GlassSubmenuLayer.kt
++++ b/overlay/GlassSubmenuLayer.kt
+@@ -4,6 +4,7 @@
+ import android.graphics.Rect
+ import android.graphics.RectF
+ import android.graphics.RenderNode
++import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
+ import so.oxy.bloom.glassmenu.GlassMenuAndroidView
+ import so.oxy.bloom.glassmenu.content.GlassMenuContent
+ import so.oxy.bloom.glassmenu.content.GlassRow
+@@ -116,7 +117,7 @@
+     return closing && progress.value <= CloseDone
+   }
+ 
+-  fun draw(canvas: Canvas, backdrop: RenderNode, limits: Rect) {
++  fun draw(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
+     val p = progress.value.coerceIn(0f, 1f)
+     lerp(row, target, p, shown)
+     val rowRadius = min(row.width(), row.height()) / 2f
+--- a/render/GlassStill.kt
++++ b/render/GlassStill.kt
+@@ -0,0 +1,115 @@
++package so.oxy.bloom.glassmenu.render
++
++import android.graphics.Bitmap
++import android.graphics.ColorSpace
++import android.graphics.HardwareRenderer
++import android.graphics.PixelFormat
++import android.graphics.RecordingCanvas
++import android.graphics.RenderNode
++import android.hardware.HardwareBuffer
++import android.media.Image
++import android.media.ImageReader
++import android.os.Handler
++import android.os.Looper
++
++// Glass drawn once into a hardware buffer, by a renderer of its own, and drawn from then on as a bitmap: no layer is
++// kept for it in the window, and nothing in it is rendered again while what it shows stays the same. The same pixels
++// as a live drawing: the same nodes, on the same RenderThread, at whole pixels. The bitmap arrives on the main thread,
++// after the render, in [ready]; until then the caller draws live.
++internal class GlassStill(val width: Int, val height: Int, private val ready: (Bitmap) -> Unit) :
++  ImageReader.OnImageAvailableListener {
++  private val reader = ImageReader.newInstance(
++    width, height, PixelFormat.RGBA_8888, 2,
++    HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE or HardwareBuffer.USAGE_GPU_COLOR_OUTPUT,
++  )
++  private val root = RenderNode("GlassStill")
++  private val renderer = HardwareRenderer()
++  private var image: Image? = null
++  private var bitmap: Bitmap? = null
++
++  init {
++    reader.setOnImageAvailableListener(this, Handler(Looper.getMainLooper()))
++    root.setPosition(0, 0, width, height)
++    renderer.setSurface(reader.surface)
++    renderer.setContentRoot(root)
++    renderer.isOpaque = false
++  }
++
++  // Renders what [record] draws, in the still's pixels.
++  fun render(record: (RecordingCanvas) -> Unit) {
++    val canvas = root.beginRecording(width, height)
++    try {
++      record(canvas)
++    } finally {
++      root.endRecording()
++    }
++    renderer.createRenderRequest().syncAndDraw()
++  }
++
++  override fun onImageAvailable(source: ImageReader) {
++    val next = try { source.acquireNextImage() } catch (_: IllegalStateException) { null } ?: return
++    val buffer = next.hardwareBuffer
++    val bitmap = buffer?.let { Bitmap.wrapHardwareBuffer(it, ColorSpace.get(ColorSpace.Named.SRGB)) }
++    buffer?.close()
++    if (bitmap == null) {
++      next.close()
++      return
++    }
++    // The previous image is closed only now: its bitmap is not drawn once the next one is handed over.
++    this.bitmap?.recycle()
++    image?.close()
++    image = next
++    this.bitmap = bitmap
++    ready(bitmap)
++  }
++
++  // Released once nothing records the bitmap any more: its buffer is freed now, not when the bitmap is collected (a
++  // frame already recorded holds its own image of it).
++  fun release() {
++    renderer.destroy()
++    bitmap?.recycle()
++    bitmap = null
++    reader.close()
++    image = null
++    root.discardDisplayList()
++  }
++}
++
++// Stills shared by what they show: every trigger that rests with the same look (a feed's ⋯ on every row) draws the one
++// bitmap of that look, so the glass at rest costs one texture per look, not a layer per trigger.
++internal object SharedStills {
++  private class Entry(width: Int, height: Int, record: (RecordingCanvas) -> Unit) {
++    var bitmap: Bitmap? = null
++    var users = 0
++    val waiting = ArrayList<java.lang.ref.WeakReference<android.view.View>>()
++    val still = GlassStill(width, height) { arrived ->
++      bitmap = arrived
++      for (view in waiting) view.get()?.invalidate()
++      waiting.clear()
++    }.also { it.render(record) }
++  }
++
++  private val entries = HashMap<Any, Entry>()
++
++  // One more user of [look]; the first one renders it with [record], at [width] x [height] px.
++  fun acquire(look: Any, width: Int, height: Int, record: (RecordingCanvas) -> Unit) {
++    entries.getOrPut(look) { Entry(width, height, record) }.users += 1
++  }
++
++  fun release(look: Any) {
++    val entry = entries[look] ?: return
++    entry.users -= 1
++    if (entry.users <= 0) {
++      entries.remove(look)
++      entry.still.release()
++    }
++  }
++
++  // The bitmap of [look], or null until it has arrived (then [view] is invalidated).
++  fun bitmap(look: Any, view: android.view.View): Bitmap? {
++    val entry = entries[look] ?: return null
++    entry.bitmap?.let { return it }
++    entry.waiting.add(java.lang.ref.WeakReference(view))
++    return null
++  }
++}

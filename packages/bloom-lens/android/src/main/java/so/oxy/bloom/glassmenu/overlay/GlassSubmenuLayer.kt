@@ -4,6 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RenderNode
+import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
 import so.oxy.bloom.glassmenu.GlassMenuAndroidView
 import so.oxy.bloom.glassmenu.content.GlassMenuContent
 import so.oxy.bloom.glassmenu.content.GlassRow
@@ -116,7 +117,7 @@ internal class GlassSubmenuLayer(
     return closing && progress.value <= CloseDone
   }
 
-  fun draw(canvas: Canvas, backdrop: RenderNode, limits: Rect) {
+  fun draw(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
     val p = progress.value.coerceIn(0f, 1f)
     lerp(row, target, p, shown)
     val rowRadius = min(row.width(), row.height()) / 2f
