@@ -31,7 +31,7 @@ import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-fie
 import { Textarea } from '@oxy.so/bloom/textarea';
 import { useTheme } from '@oxy.so/bloom/theme';
 import { Muted } from '@oxy.so/bloom/typography';
-import { StyleSheet, View } from 'react-native';
+import { RefreshControl, StyleSheet, View } from 'react-native';
 
 declare const t: (key: string) => string;
 
@@ -312,4 +312,32 @@ export function Header({ back }: { back: () => void }) {
 
 export function TopHeader() {
   return <PageHeader title={t('home.title')} onBack={null} presentation="floating" />;
+}
+
+export function Inbox({
+  refreshing,
+  refresh,
+  children,
+}: {
+  refreshing: boolean;
+  refresh: () => void;
+  children: React.ReactNode;
+}) {
+  const theme = useTheme();
+  return (
+    <ScreenScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refresh}
+          tintColor={theme.colors.primary}
+          colors={[theme.colors.primary]}
+        />
+      }
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}
+    >
+      {children}
+    </ScreenScrollView>
+  );
 }
