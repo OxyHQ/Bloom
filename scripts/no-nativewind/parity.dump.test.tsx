@@ -76,12 +76,12 @@ function tree(element: ReactElement, mode: 'light' | 'dark'): unknown {
 }
 
 const OUT = process.env.PARITY_OUT as string;
-const ONLY = process.env.PARITY_FAMILIES?.split(',');
+const ONLY = process.env.PARITY_FAMILIES?.split(',').filter(Boolean);
 const CASES_DIR = join(__dirname, 'cases');
 const families = readdirSync(CASES_DIR)
   .filter((file) => file.endsWith('.cases.tsx'))
   .map((file) => file.replace('.cases.tsx', ''))
-  .filter((family) => !ONLY || ONLY.includes(family));
+  .filter((family) => !ONLY?.length || ONLY.includes(family));
 
 beforeAll(() => {
   mkdirSync(OUT, { recursive: true });
