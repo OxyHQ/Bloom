@@ -33,8 +33,12 @@ const root = resolve(import.meta.dirname, '..');
 const stage = mkdtempSync(join(tmpdir(), 'bloom-language-compiler-'));
 mkdirSync(out, { recursive: true });
 
-// The compiler as published: its own files, no addon of a local build.
+// The compiler as published: its own files, no addon of a local build. A
+// development pack (`npm pack` after `bun run build`) carries that addon
+// (`files` names it), so a local install loads it; a release never does.
+const LOCAL_ADDON = 'bloom-language-compiler.node';
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+manifest.files = manifest.files.filter((entry) => entry !== LOCAL_ADDON);
 for (const entry of manifest.files)
   cpSync(join(root, entry), join(stage, entry), { recursive: true });
 writeFileSync(join(stage, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`);

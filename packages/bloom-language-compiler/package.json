@@ -18,6 +18,7 @@
   },
   "files": [
     "js",
+    "bloom-language-compiler.node",
     "LICENSE"
   ],
   "scripts": {
