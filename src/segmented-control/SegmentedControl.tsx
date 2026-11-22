@@ -45,7 +45,6 @@ import {
 import type { WebCssStyle } from '../styles/web-view-style';
 
 import { useFieldMembership } from '../field/membership';
-import { StyledView, StyledPressable } from '../styles/styled-primitives';
 import { handleRovingKeyDown, useRovingTabIndex } from '../hooks/roving-focus';
 import { useNativeRovingGroup, type NativeRovingItemProps } from '../hooks/use-native-roving-group';
 import { mergeRefs } from '../hooks/merge-refs';
@@ -202,7 +201,6 @@ export function SegmentedControl<T extends string>({
   onChange,
   children,
   style,
-  className,
   disabled = false,
   accessibilityHint,
   nativeID,
@@ -223,7 +221,6 @@ export function SegmentedControl<T extends string>({
   onValueChange?: (value: T) => void;
   onChange?: (value: T) => void;
   children: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   /**
    * Disables every segment.
@@ -451,9 +448,8 @@ export function SegmentedControl<T extends string>({
 
   return (
     <GestureDetector gesture={gesture} touchAction="pan-y">
-      <StyledView
+      <View
         collapsable={false}
-        className={className}
         ref={groupRef}
         {...webDataSet({ bloomSegmentedGroup: '' })}
         testID={testID}
@@ -488,7 +484,7 @@ export function SegmentedControl<T extends string>({
           <SegmentedThumb x={thumbX} width={thumbWidth} palette={palette} />
         )}
         <InternalContext.Provider value={contextValue}>{children}</InternalContext.Provider>
-      </StyledView>
+      </View>
     </GestureDetector>
   );
 }
@@ -501,7 +497,6 @@ const InternalItemContext = createContext<{
 export function SegmentedControlItem({
   value,
   style,
-  className,
   children,
   onPress: onPressProp,
   accessibilityLabel,
@@ -511,7 +506,6 @@ export function SegmentedControlItem({
 }: {
   value: string;
   children: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   accessibilityLabel?: string;
@@ -635,10 +629,9 @@ export function SegmentedControlItem({
   const roving = ctx.rovingItem(value, isDisabled);
 
   return (
-    <StyledPressable
+    <Pressable
       {...roving}
       ref={roving.ref ? mergeRefs([itemRef, roving.ref]) : itemRef}
-      className={className}
       onLayout={(evt) => {
         const measuredPosition = {
           x: evt.nativeEvent.layout.x,
@@ -669,7 +662,7 @@ export function SegmentedControlItem({
       style={[itemStyle, style]}
     >
       <InternalItemContext.Provider value={itemContext}>{children}</InternalItemContext.Provider>
-    </StyledPressable>
+    </Pressable>
   );
 }
 
