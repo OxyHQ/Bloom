@@ -399,6 +399,9 @@ import {
   type ButtonStyle,
   type WeightName,
   type HeaderPresentation,
+  type HeaderTone,
+  type ScrimFalloff,
+  type TitleReveal,
   type ScrollEdge,
   type ScreenKind,
   type ScreenScroll,
@@ -447,13 +450,16 @@ export type {
   ContentFit,
   Edge,
   HeaderPresentation,
+  HeaderTone,
   Role,
+  ScrimFalloff,
   ScrollEdge,
   ShrinkPriority,
   TextAlignment,
   TextCase,
   TextStyleName,
   TitleDisplay,
+  TitleReveal,
   Truncation,
 };
 export type {
@@ -594,6 +600,12 @@ export interface ValueModifiers {
   header: ScreenHeader | DialogHeaderConfig;
   headingLevel: HeadingLevel;
   backLabel: string | undefined;
+  inPage: boolean;
+  safeArea: boolean;
+  tone: HeaderTone;
+  scrimColor: ColorToken;
+  scrimFalloff: ScrimFalloff;
+  titleReveal: TitleReveal;
   /** A screen's (no argument) or an app layout's (the reselected destination's name). */
   onReselect: ((name: string) => void) | undefined;
   screenKind: ScreenKind;
@@ -2637,6 +2649,24 @@ export class Node {
   }
   backLabel(value: string | undefined): Node {
     return this.set('backLabel', value);
+  }
+  inPage(value = true): Node {
+    return this.set('inPage', value);
+  }
+  safeArea(value = true): Node {
+    return this.set('safeArea', value);
+  }
+  tone(value: HeaderTone): Node {
+    return this.set('tone', value);
+  }
+  scrimColor(value: ColorToken): Node {
+    return this.set('scrimColor', value);
+  }
+  scrimFalloff(value: ScrimFalloff): Node {
+    return this.set('scrimFalloff', value);
+  }
+  titleReveal(value: TitleReveal): Node {
+    return this.set('titleReveal', value);
   }
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Node {
     return this.with({ kind: 'sheet', key: 'sheet', open, content, options });
@@ -4959,6 +4989,21 @@ export interface HeaderView extends ViewNode {
   /** `floating` (default) islands, a `bar`, or the compact `navigation` bar. */
   presentation(value: HeaderPresentation): HeaderView;
   testID(value: string): HeaderView;
+  /** Bloom's `PageHeader` on iOS too, even in a native stack (no system bar). */
+  inPage(value?: boolean): HeaderView;
+  /** Pads its top by the safe-area inset (Bloom's default: on native, not on the web). */
+  safeArea(value?: boolean): HeaderView;
+  /** The title after the back button (`start`, the default) or centred on the bar. */
+  titleAlign(value: TitleAlign): HeaderView;
+  /** Full-width chrome under the title row (tabs, a toolbar). */
+  accessory(value: Child): HeaderView;
+  /** `onImage`: light title and text over media. */
+  tone(value: HeaderTone): HeaderView;
+  /** The opaque colour its scrim fades from, painted from a role (the page's background by default). */
+  scrimColor(value: ColorToken): HeaderView;
+  scrimFalloff(value: ScrimFalloff): HeaderView;
+  /** When the title shows: `auto` (default), `always`, `onScroll`, `onDock`. */
+  titleReveal(value: TitleReveal): HeaderView;
 }
 /** The bottom bar: its tabs, the selected one, and its action (a `FAB`). */
 export interface BottomBarView extends ViewNode {

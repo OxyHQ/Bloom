@@ -171,6 +171,16 @@ describe('the header is the navigation bar', () => {
     expect(hosts(r, 'BloomButton')).toHaveLength(1);
     expect(hosts(r, 'PageHeader')).toHaveLength(0);
   });
+
+  it('in the page, stays Bloom’s PageHeader in a native stack: no system bar', () => {
+    const r = mount(toElement(Header('Home').inPage().titleAlign('center').safeArea(false)));
+    expect(hosts(r, 'StackScreen')).toHaveLength(0);
+    expect(only(r, 'PageHeader').props).toMatchObject({
+      title: 'Home',
+      titleAlign: 'center',
+      safeArea: false,
+    });
+  });
 });
 
 describe('glass groups and glass styles on iOS', () => {

@@ -179,6 +179,59 @@ const scrollViews: ParityCase[] = inScreen([
   })),
 ]);
 
+/** A `Header` as Bloom's `PageHeader`, each prop an app gives it that the header maps. */
+const pageHeaders: ParityCase[] = [
+  {
+    name: 'a header',
+    language: () => toElement(L.Header('Home')),
+    bloom: () => <PageHeader title="Home" />,
+  },
+  {
+    name: 'a header in the page',
+    language: () => toElement(L.Header('Home').inPage()),
+    bloom: () => <PageHeader title="Home" />,
+  },
+  ...[true, false].map((safeArea) => ({
+    name: `a header's safe area ${safeArea}`,
+    language: () => toElement(L.Header('Home').safeArea(safeArea)),
+    bloom: () => <PageHeader title="Home" safeArea={safeArea} />,
+  })),
+  ...ENUMS.titleAlign.map((align) => ({
+    name: `a header's title aligned ${align}`,
+    language: () => toElement(L.Header('Home').titleAlign(align)),
+    bloom: () => <PageHeader title="Home" titleAlign={align} />,
+  })),
+  {
+    name: 'a header with an accessory',
+    language: () => toElement(L.Header('Home').accessory(L.Text('Tabs'))),
+    bloom: () => <PageHeader title="Home" accessory={<Text>Tabs</Text>} />,
+  },
+  ...ENUMS.headerTone.map((tone) => ({
+    name: `a header's tone ${tone}`,
+    language: () => toElement(L.Header('Home').tone(tone)),
+    bloom: () => <PageHeader title="Home" tone={tone} />,
+  })),
+  {
+    name: 'a header’s scrim colour',
+    language: () => toElement(L.Header('Home').scrollEdge('always').scrimColor('surface')),
+    bloom: () => (
+      <Themed>
+        {(c) => <PageHeader title="Home" scrim="always" scrimColor={c.backgroundSecondary} />}
+      </Themed>
+    ),
+  },
+  ...ENUMS.scrimFalloff.map((falloff) => ({
+    name: `a header's scrim falloff ${falloff}`,
+    language: () => toElement(L.Header('Home').scrollEdge('always').scrimFalloff(falloff)),
+    bloom: () => <PageHeader title="Home" scrim="always" scrimFalloff={falloff} />,
+  })),
+  ...ENUMS.titleReveal.map((reveal) => ({
+    name: `a header's title reveal ${reveal}`,
+    language: () => toElement(L.Header('Home').titleReveal(reveal)),
+    bloom: () => <PageHeader title="Home" titleReveal={reveal} />,
+  })),
+];
+
 const screens: ParityCase[] = [
   {
     name: 'a screen without a header',
@@ -439,4 +492,4 @@ const insets: ParityCase[] = inScreen([
   },
 ]);
 
-export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...insets, ...screens];
+export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...insets, ...pageHeaders, ...screens];
