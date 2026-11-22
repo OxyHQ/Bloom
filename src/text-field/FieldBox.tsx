@@ -1,12 +1,11 @@
 import { pointerEventsStyle } from '../styles/pointer-events';
 import type React from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
-import { styled } from 'react-native-css';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 
 // The field owns two distinct boxes: layout and a non-layout inset ring. Keep
-// their defaults below caller classes without moving the ring into box sizing.
+// their defaults below the caller's style without moving the ring into box sizing.
 //
 // Horizontal padding is declared ONCE, as the logical pair. A rule that also
 // declares `padding-left`/`padding-right` lets whichever comes later win for
@@ -63,7 +62,6 @@ export function horizontalPadding(
 export const FIELD_BOX_CSS = `@layer base { [data-bloom-field-box] { display:flex; box-sizing:border-box; border-style:solid; border-width:0; min-width:0; ${properties.map((name) => `${cssName(name)}:var(--bloom-field-${cssName(name)},${fallbacks[name] ?? 'initial'});`).join('')} } }`;
 interface FieldBoxProps {
   children?: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   baseStyle?: StyleProp<ViewStyle>;
   stateStyle?: StyleProp<ViewStyle>;
@@ -78,7 +76,6 @@ interface FieldBoxProps {
 }
 function FieldBoxComponent({
   children,
-  className,
   style,
   baseStyle,
   stateStyle,
@@ -122,7 +119,6 @@ function FieldBoxComponent({
     <div
       data-bloom-field-box=""
       data-testid={testID}
-      className={className}
       dir={dir ?? 'ltr'}
       onClick={onClick}
       onFocusCapture={onFocusCapture}
@@ -144,5 +140,4 @@ function FieldBoxComponent({
     </div>
   );
 }
-const NativeFieldBox = styled(FieldBoxComponent, { className: 'style' });
-export const FieldBox = Platform.OS === 'web' ? FieldBoxComponent : NativeFieldBox;
+export const FieldBox = FieldBoxComponent;
