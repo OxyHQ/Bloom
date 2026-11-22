@@ -1389,6 +1389,33 @@ line's tone. Bloom's `payment-status`: `PaymentStatusBar(state, options?)`
 `actions` and `illustration` children; `illustration: null` draws no glyph
 tile), each `.style('surface' | 'plain')`.
 
+### Cart, menu items and vendor card
+
+```ts
+CartPanel(vendor.name, basket.lines, { summary, tip, promo, onCheckout }).density('compact')
+CartPromoField([code, setCode], { onApply: apply, applied: basket.promo })
+CartTipPicker([tip, setTip], TIPS, { label: 'Tip' })
+MenuItemRow(dish.name, { price: dish.price, diets: dish.diets, onAdd: add }).onPress(open)
+VendorCard(shop.name, { cuisines, rating, deliveryTime }).density('compact').onPress(open)
+```
+
+Bloom's `cart-panel`: `CartLine(name, options)` (its price, quantity and
+handlers), `CartPanel(vendorName, lines, options?)` (the vendor, the line
+handlers, the minimum order, tip, promo and summary as Bloom's data; its
+`empty` a child), `CartPromoField(code, options)` (its binding the code
+typed) and `CartTipPicker(tip, choices, options?)` (its binding the chosen
+tip, the choices Bloom's `options`). Bloom's `menu-item`: `MenuItemRow(name,
+options)` (its price, photo, diets, heat, quantity and handlers) and
+`MenuItemOptions(groups, options)` (the choices made, `value` and
+`onValueChange`, are data as Bloom takes them; its `header` a child).
+Bloom's `vendor-card`: `VendorCard(name, options?)`.
+
+- `.density('default' | 'compact')` on a cart line, the cart, a menu row and
+  a vendor card; `.disabled()` on the promo field, the tip picker and the
+  options; a vendor card's `.loading()` its placeholder.
+- A menu row and a vendor card take `.onPress()` themselves. A vendor card's
+  promo tone keeps Bloom's name (`promoTone`) in its options.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

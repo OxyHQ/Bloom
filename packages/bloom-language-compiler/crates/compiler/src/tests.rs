@@ -848,3 +848,22 @@ fn the_dashboard_cards_are_checked() {
     let output = check("export const x = (a) => ImportantAlertsCard(a, 2).style('rose');\n");
     assert_eq!(output.diagnostics[0].message, "ImportantAlertsCard has no modifier .style()");
 }
+
+#[test]
+fn the_cart_menu_items_and_vendor_card_are_checked() {
+    let imports = "import { CartLine, CartPanel, CartPromoField, CartTipPicker, MenuItemOptions, MenuItemRow, VendorCard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (o, l, b, t, g) => VStack(CartLine('a', o).density('compact'), CartPanel('a', l).density('default'), CartPromoField(b, o).disabled(), CartTipPicker(b, t).disabled(), MenuItemRow('a', o).density('compact'), MenuItemOptions(g, o).disabled(), VendorCard('a').density('compact').loading());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("CartLine('a', o).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("CartPanel('a', o).disabled()", "CartPanel has no modifier .disabled()"),
+        ("VendorCard('a').tint('success')", "VendorCard has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (o) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

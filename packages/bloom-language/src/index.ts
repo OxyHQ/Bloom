@@ -631,3 +631,31 @@ export type {
   RecentHiresCardOptions,
   RecentHiresCardView,
 } from './controls/dashboard-cards';
+// Cart (controls/cart-panel.tsx)
+export { CartLine, CartPanel, CartPromoField, CartTipPicker } from './controls/cart-panel';
+export type {
+  CartLineOptions,
+  CartLineView,
+  CartPanelOptions,
+  CartPanelView,
+  CartPromoFieldOptions,
+  CartPromoFieldView,
+  CartTipPickerOptions,
+  CartTipPickerView,
+} from './controls/cart-panel';
+
+// Menu items (controls/menu-item.tsx)
+export { MenuItemRow, MenuItemOptions } from './controls/menu-item';
+export type {
+  MenuItemOptionsOptions,
+  MenuItemOptionsView,
+  MenuItemRowOptions,
+  MenuItemRowView,
+} from './controls/menu-item';
+
+// Vendor card (controls/vendor-card.tsx)
+export { VendorCard } from './controls/vendor-card';
+export type {
+  VendorCardOptions,
+  VendorCardView,
+} from './controls/vendor-card';

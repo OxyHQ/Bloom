@@ -225,6 +225,14 @@ import type {
   PatientInfoCardView,
   RecentHiresCardView,
 } from '../controls/dashboard-cards';
+import type {
+  CartLineView,
+  CartPanelView,
+  CartPromoFieldView,
+  CartTipPickerView,
+} from '../controls/cart-panel';
+import type { MenuItemRowView, MenuItemOptionsView } from '../controls/menu-item';
+import type { VendorCardView } from '../controls/vendor-card';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -547,7 +555,21 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ImportantAlertsCardView>, Of<'importantAlertsCard'>>,
       Same<MethodsOf<PatientInfoCardView>, Of<'patientInfoCard'>>,
       Same<MethodsOf<RecentHiresCardView>, Of<'recentHiresCard'>>,
+      Same<MethodsOf<CartLineView>, Of<'cartLine'>>,
+      Same<MethodsOf<CartPanelView>, Of<'cartPanel'>>,
+      Same<MethodsOf<CartPromoFieldView>, Of<'cartPromoField'>>,
+      Same<MethodsOf<CartTipPickerView>, Of<'cartTipPicker'>>,
+      Same<MethodsOf<MenuItemRowView>, Of<'menuItemRow'>>,
+      Same<MethodsOf<MenuItemOptionsView>, Of<'menuItemOptions'>>,
+      Same<MethodsOf<VendorCardView>, Of<'vendorCard'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

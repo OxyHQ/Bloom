@@ -5,6 +5,9 @@ import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { PAYMENT_METHODS } from './payment-method';
 import { ADDRESSES } from './address';
+import { VENDOR_CARDS } from './vendor-card';
+import { MENU_ITEMS } from './menu-item';
+import { CARTS } from './cart-panel';
 import { PAYMENT_STATUSES } from './payment-status';
 import { PRICE_BREAKDOWNS } from './price-breakdown';
 import { CARD_FORMS } from './card-form';
@@ -58,4 +61,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...PAYMENT_STATUSES,
   ...CRM,
   ...DASHBOARD_CARDS,
+  ...CARTS,
+  ...MENU_ITEMS,
+  ...VENDOR_CARDS,
 };
