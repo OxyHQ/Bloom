@@ -506,6 +506,7 @@
     "listMarker": ["disc", "decimal"],
     "fontFamily": ["mono"],
     "cornerExtra": ["concentric", "infinite"],
+    "zIndexExtra": ["auto"],
     "cornerCurve": ["round", "smooth"],
     "cornerSide": [
       "all",

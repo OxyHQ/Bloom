@@ -947,7 +947,10 @@ export function placeStyle(place: Placement): Resolved {
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
   if (place.geometry !== undefined) Object.assign(style, place.geometry);
   if (place.anchor !== undefined) style.transformOrigin = place.anchor;
-  if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
+  // `auto` is Tailwind's z-auto: the web's z-index: auto; NativeWind writes nothing on native.
+  if (place.zIndex === 'auto') {
+    if (IS_WEB) style.zIndex = 'auto';
+  } else if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)
     style.pointerEvents = place.allowsHitTesting ? 'auto' : 'none';
@@ -1116,6 +1119,12 @@ export interface TextLook {
   readonly tabular: boolean;
   /** Web: where a line may break inside a word. */
   readonly wordBreak: WordBreak | undefined;
+  /**
+   * `.truncation('tail')` with no line limit: on the web an ellipsis where the
+   * text is cut (`text-overflow`; Tailwind's `truncate` is it with `.noWrap()`
+   * and `.clipped()`); React Native draws one only at a line limit.
+   */
+  readonly ellipsis?: boolean;
 }
 
 /** React Native's alignment: `start` and `end` are its `left` and `right`, which it flips right to left. */
@@ -1195,5 +1204,6 @@ export function textStyle(
   // React Native has no word breaking of its own to set; the web's is CSS.
   if (look.wordBreak === 'all' && IS_WEB) style.wordBreak = 'break-all';
   if (look.wordBreak === 'words' && IS_WEB) style.overflowWrap = 'break-word';
+  if (look.ellipsis && IS_WEB) style.textOverflow = 'ellipsis';
   return style;
 }
