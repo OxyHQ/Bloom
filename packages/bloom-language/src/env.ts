@@ -5,6 +5,9 @@ import type { TextTraits } from './style';
 import { isFontFamily } from './tokens';
 import type { LiveCondition, Planned } from './variants';
 
+/** What an environment value may be: a token or a plain value, never a raw style. */
+export type EnvironmentValue = string | number | boolean | null | undefined;
+
 /**
  * The environment a view hands its descendants: the text and icon traits
  * (`foreground`, `font`, `weight`, `leading`, `tracking`) set above it, as SwiftUI's
@@ -22,6 +25,13 @@ import type { LiveCondition, Planned } from './variants';
 export interface Env {
   readonly key: string;
   readonly text: TextTraits;
+  /**
+   * The environment values set above the view, by name: the built-in ones
+   * (`disabled`, `controlSize`, `buttonStyle`) and an app's (`defineEnvironment`).
+   */
+  readonly values: ReadonlyMap<string, EnvironmentValue>;
+  /** The modifiers each node kind takes from `values` (see `inheritedModifiers`), by kind. */
+  readonly inherited: Map<string, readonly Modifier[]>;
   readonly derived: Map<string, Env>;
   /**
    * Where a `navigate()` press goes: the navigator of the router `layout()` or
@@ -52,13 +62,15 @@ export const ROOT_ENV: Env = {
     leading: undefined,
     tracking: undefined,
   },
+  values: new Map(),
+  inherited: new Map(),
   derived: new Map(),
   navigate: undefined,
 };
 
 /** The root environment of a navigator: the same traits as the root, presses that go through `navigate`. */
 export function navigatorEnv(navigate: Navigate): Env {
-  return { ...ROOT_ENV, derived: new Map(), navigate };
+  return { ...ROOT_ENV, inherited: new Map(), derived: new Map(), navigate };
 }
 
 export const EnvContext = createContext<Env>(ROOT_ENV);
@@ -66,7 +78,7 @@ EnvContext.displayName = 'BloomEnvironment';
 
 type EnvModifier = Extract<
   Modifier,
-  { kind: 'foreground' | 'font' | 'weight' | 'leading' | 'tracking' }
+  { kind: 'foreground' | 'font' | 'weight' | 'leading' | 'tracking' | 'environment' | 'disabled' }
 >;
 
 function applyTrait(text: Partial<TextTraits>, modifier: EnvModifier): void {
@@ -108,7 +120,16 @@ export function deriveEnv(
   if (env) return env;
   const text: TextTraits = { ...parent.text };
   const own: Partial<TextTraits> = {};
-  for (const modifier of modifiers as readonly EnvModifier[]) applyTrait(own, modifier);
+  let values = parent.values;
+  for (const modifier of modifiers as readonly EnvModifier[]) {
+    if (modifier.kind === 'environment' || modifier.kind === 'disabled') {
+      if (values === parent.values) values = new Map(values);
+      (values as Map<string, EnvironmentValue>).set(
+        modifier.kind === 'disabled' ? 'disabled' : modifier.name,
+        modifier.value,
+      );
+    } else applyTrait(own, modifier);
+  }
   Object.assign(text, own);
   // A trait set here is the view's own: what a variant above said of it no longer reaches in.
   const live: (readonly [LiveCondition, Partial<TextTraits>])[] = [];
@@ -129,6 +150,8 @@ export function deriveEnv(
   env = {
     key: `${parent.key}${key}`,
     text: Object.freeze(text) as TextTraits,
+    values,
+    inherited: values === parent.values ? parent.inherited : new Map(),
     derived: new Map(),
     navigate: parent.navigate,
     ...(parent.island ? { island: true } : null),
@@ -146,6 +169,8 @@ export function materialEnv(parent: Env, on: boolean): Env {
   env = {
     key: `${parent.key}${key}`,
     text: parent.text,
+    values: parent.values,
+    inherited: parent.inherited,
     derived: new Map(),
     navigate: parent.navigate,
     ...(on ? { island: true } : null),

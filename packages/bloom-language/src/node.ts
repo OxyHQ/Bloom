@@ -217,6 +217,8 @@ import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import { loopKeyframes, type KeyframesValue } from './motion/keyframes';
 import type { Namespace } from './motion/namespace';
+import { environmentValues, type EnvironmentKey, type EnvironmentValue } from './environment';
+import type { AnyView, ViewModifier } from './modifier';
 import type {
   AnchorName,
   LoopName,
@@ -380,6 +382,8 @@ import {
   type OpacityName,
   type PaddingToken,
   type SpaceToken,
+  type ControlSize,
+  type ButtonStyle,
   type WeightName,
   type HeaderPresentation,
   type ScrollEdge,
@@ -1375,7 +1379,7 @@ export type Modifier =
       readonly kind: 'style';
       readonly key: string;
       readonly value:
-        | BloomAppearance
+        | ButtonStyle
         | ExpandableTextStyle
         | SocialButtonStyle
         | BadgeStyle
@@ -1572,6 +1576,13 @@ export type Modifier =
       readonly key: string;
       readonly id: string;
       readonly namespace: Namespace;
+    }
+  | {
+      readonly kind: 'environment';
+      readonly key: string;
+      /** The value's name: a built-in one (`controlSize`, `buttonStyle`) or an app's (`defineEnvironment`). */
+      readonly name: string;
+      readonly value: EnvironmentValue;
     }
   | {
       readonly kind: 'glassID' | 'glassUnion';
@@ -2124,7 +2135,7 @@ export class Node {
   }
   style(
     value:
-      | BloomAppearance
+      | ButtonStyle
       | ExpandableTextStyle
       | SocialButtonStyle
       | BadgeStyle
@@ -3032,6 +3043,23 @@ export class Node {
   }
   inContent(): Node {
     return this.set('inContent', true);
+  }
+  environment<T extends EnvironmentValue>(key: EnvironmentKey<T>, value: T): Node {
+    return this.with({
+      kind: 'environment',
+      key: `env:${key.name}=${String(value)}`,
+      name: key.name,
+      value,
+    });
+  }
+  controlSize(value: ControlSize): Node {
+    return this.environment(environmentValues.controlSize, value);
+  }
+  modifier<A extends readonly unknown[]>(value: ViewModifier<A>, ...args: A): Node {
+    return value.apply(this as unknown as AnyView, ...args) as unknown as Node;
+  }
+  buttonStyle(value: ButtonStyle): Node {
+    return this.environment(environmentValues.buttonStyle, value);
   }
   drag(value: MotionValue, options: DragSpec = {}): Node {
     return this.with({ kind: 'drag', key: 'drag', value, options });
@@ -4347,6 +4375,20 @@ export interface ViewModifiers<Self> extends ViewNode {
    */
   inContent(): Self;
   /**
+   * Disables the view and every control inside it (SwiftUI's `disabled`): a
+   * control that says nothing of its own takes it, and `when('disabled', …)`
+   * answers it.
+   */
+  disabled(value?: boolean): Self;
+  /** Sets an environment value on everything inside (`defineEnvironment`; read with `useEnvironment`). */
+  environment<T extends EnvironmentValue>(key: EnvironmentKey<T>, value: T): Self;
+  /** The size every control inside takes when it names none (Bloom's control rungs). */
+  controlSize(value: ControlSize): Self;
+  /** Applies a named recipe of modifiers (`defineModifier`), with its arguments. */
+  modifier<A extends readonly unknown[]>(value: ViewModifier<A>, ...args: A): Self;
+  /** The style every `Button` inside takes when it names none (`glass` and `glassProminent` included). */
+  buttonStyle(value: ButtonStyle): Self;
+  /**
    * The finger moves `value` along `options.axis` (default `y`), from where it
    * was, within `min`/`max`. Bind the value to see it (`.offset({ y })`);
    * `options.onEnd` decides where it goes on release (`animate()`). Native: the
@@ -4559,7 +4601,12 @@ export interface ImageView extends ViewModifiers<ImageView> {
   onError(value: ImageErrorHandler | undefined): ImageView;
 }
 export interface ButtonView extends ViewModifiers<ButtonView> {
-  style(value: BloomAppearance): ButtonView;
+  /**
+   * Bloom's appearance, or a glass style: `glass` (the button on glass, its
+   * ink the neutral tone's) and `glassProminent` (on glass tinted with its
+   * tone's fill, the accent by default: one per bar, for the key action).
+   */
+  style(value: ButtonStyle): ButtonView;
   shape(value: ButtonShape): ButtonView;
   size(value: BloomSize): ButtonView;
   tint(value: BloomTone): ButtonView;

@@ -46,6 +46,10 @@ export type NegativeSpaceName = `-${SpaceName}`;
 export type CornerName = keyof typeof CORNER | (typeof ENUMS.cornerExtra)[number];
 /** A corner's curve, as Bloom's shapes draw it: `smooth` is the platform's continuous corner. */
 export type CornerCurve = (typeof ENUMS.cornerCurve)[number];
+/** A control's size: Bloom's control rungs. */
+export type ControlSize = (typeof ENUMS.controlSize)[number];
+/** A Button's style: Bloom's appearances, and the glass styles (`glass`, `glassProminent`). */
+export type ButtonStyle = (typeof ENUMS.buttonStyle)[number];
 /** Bloom `Divider`'s treatments: one hairline, two framing hairlines, a soft strip. */
 export type DividerStyle = (typeof ENUMS.dividerStyle)[number];
 /** How a grid places its cells once it has more than one column (Bloom `ResponsiveGrid`'s `flow`). */

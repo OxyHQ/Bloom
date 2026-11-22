@@ -62,6 +62,14 @@ export {
 export type { SidebarRow, TreeRow } from './primitives';
 export { view } from './view';
 export { clear, identity, regular, GlassValue } from './glass';
+export {
+  defineEnvironment,
+  EnvironmentKey,
+  environmentValues,
+  useEnvironment,
+} from './environment';
+export type { EnvironmentValue } from './environment';
+export { defineModifier, ViewModifier } from './modifier';
 export type { GlassMaterial, GlassTransition } from './glass';
 export { LanguageStyles, toElement } from './render';
 export { defineKeyframes } from './motion/keyframes';

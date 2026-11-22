@@ -66,6 +66,7 @@ import { GALLERY_CASES } from '../../parity/zoomable-media-gallery.cases';
 import { DATA_TABLE_CASES } from '../../parity/data-table.cases';
 import { SORTABLE_CHIP_ROW_CASES } from '../../parity/sortable-chip-row.cases';
 import { VIEWPORT_CASES } from '../../parity/viewport.cases';
+import { ENVIRONMENT_CASES } from '../../parity/environment.cases';
 import { AGENT_AVATAR_CASES } from '../../parity/agent-avatar.cases';
 import { CHAT_COMPOSER_CASES } from '../../parity/chat-composer.cases';
 import { CHART_CARD_CASES } from '../../parity/chart-cards.cases';
@@ -194,6 +195,7 @@ export const FAMILIES = {
   dataTable: DATA_TABLE_CASES,
   sortableChipRow: SORTABLE_CHIP_ROW_CASES,
   viewport: VIEWPORT_CASES,
+  environment: ENVIRONMENT_CASES,
   agentAvatar: AGENT_AVATAR_CASES,
   chatComposer: CHAT_COMPOSER_CASES,
   chartCard: CHART_CARD_CASES,

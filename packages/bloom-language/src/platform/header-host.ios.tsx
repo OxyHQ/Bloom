@@ -154,6 +154,8 @@ function barItem(node: Node, index: number, bar: BarContext): ReactNode {
           key={index}
           icon={face.symbol}
           accessibilityLabel={label}
+          // The bar's key action: its glass tinted with the accent (`.style('glassProminent')`).
+          variant={values.style === 'glassProminent' ? 'prominent' : undefined}
           disabled={values.disabled === true || values.loading === true}
           onPress={bar.press(values.onPress as never)}
         >
