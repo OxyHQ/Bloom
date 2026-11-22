@@ -428,6 +428,7 @@
     "buttonStyle": ["solid", "subtle", "outline", "plain", "glass", "glassProminent"],
     "titleVisibility": ["automatic", "visible", "hidden"],
     "insetEdge": ["top", "bottom"],
+    "toolbarSpacer": ["fixed", "flexible"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
@@ -3405,6 +3406,8 @@
     "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
     "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] },
     "glassGroup": { "constructors": ["GlassGroup"], "modifiers": ["blend"], "blend": "space" },
+    "toolbarGroup": { "constructors": ["ToolbarGroup"], "universal": false, "modifiers": [] },
+    "toolbarSpacer": { "constructors": ["ToolbarSpacer"], "universal": false, "modifiers": [] },
     "confirmationDialog": {
       "constructors": ["ConfirmationDialog"],
       "universal": false,
