@@ -2,7 +2,9 @@ import { View } from 'react-native';
 import { Text } from '../typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { useColorTokens } from '../theme/color-tokens';
 import { PressableScale } from './index';
+import type { PressableScaleProps } from './types';
 
 const meta: Meta<typeof PressableScale> = {
   id: 'base-pressable-scale',
@@ -53,20 +55,33 @@ export const StrongScale: Story = {
 };
 
 /**
- * Layout classes apply to the SAME node that scales — the whole row (avatar +
+ * Layout styles apply to the SAME node that scales — the whole row (avatar +
  * label) springs as one.
  */
-export const InlineRow: Story = {
-  render: (args) => (
+function InlineRowDemo(args: PressableScaleProps) {
+  const t = useColorTokens();
+  return (
     <PressableScale
       {...args}
       accessibilityLabel="Open profile"
-      className="flex-row items-center gap-space-12 px-space-16 py-space-12 rounded-radius-12 bg-muted"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingInline: 16,
+        paddingBlock: 12,
+        borderRadius: 12,
+        backgroundColor: t.muted,
+      }}
     >
       <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#4f46e5' }} />
       <Text style={{ fontWeight: '600' }}>Row that scales as one node</Text>
     </PressableScale>
-  ),
+  );
+}
+
+export const InlineRow: Story = {
+  render: (args) => <InlineRowDemo {...args} />,
 };
 
 export const Card: Story = {
