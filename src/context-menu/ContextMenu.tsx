@@ -258,7 +258,7 @@ export function ContextMenuTrigger({
   );
   if (!lens || !getNativeLens()) return trigger;
   return (
-    <LensTrigger lens={lens} triggerLens={false} tone="neutral">
+    <LensTrigger lens={lens} opensOnTap={false} triggerLens={false} tone="neutral">
       {trigger}
     </LensTrigger>
   );

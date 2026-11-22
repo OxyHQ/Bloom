@@ -9,7 +9,8 @@
  * the trigger is a base of its own: a trigger on `.glass()` (the fixed layer) is drawn by the
  * window, with the glass's tint and frost; any other (a feed row's ⋯) draws its lens in its own
  * place in the page, against the fill of the surface it sits on (`restBackdrop`), so it scrolls,
- * clips and stacks with the page. The trigger's press opens the menu natively. Rows given as they
+ * clips and stacks with the page. A tap on a menu's own base opens it on the UI thread, with no
+ * round trip to JS (`openOnTap`); the trigger's press opens it too, from inside a group. Rows given as they
  * are (tagged, or with handlers) are held by the base before it opens; a `menu()` content is built
  * by the press, and the base opens with its rows as they arrive.
  */
@@ -32,9 +33,10 @@ import {
   type MenuRowData,
 } from './menu-rows';
 import type { MenuHostProps } from './host.types';
+import { valuesOf } from './values';
 import { getLens, type Lens, type LensMenuConfig, type LensRow } from './lens';
 import { Icon } from '../primitives';
-import type { Child, IconComponent } from '../node';
+import { isNode, type Child, type IconComponent } from '../node';
 
 export function MenuHost(props: MenuHostProps) {
   const lens = getLens();
@@ -91,6 +93,7 @@ function LensMenuHost({
           cornerRadius={triggerCorner(given)}
           config={triggerConfig}
           restBackdrop={glass ? undefined : surfaceFill}
+          openOnTap={!(isNode(given) && valuesOf(given).disabled === true)}
           style={TRIGGER_STYLE}
         >
           {opener}

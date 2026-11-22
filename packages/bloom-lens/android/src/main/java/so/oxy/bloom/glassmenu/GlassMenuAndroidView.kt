@@ -8,6 +8,8 @@ import android.graphics.RectF
 import android.graphics.RenderNode
 import android.os.Build
 import android.os.SystemClock
+import android.os.Trace
+import android.view.ViewConfiguration
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +26,7 @@ import so.oxy.bloom.glassmenu.render.GlassSurfaceState
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
+import kotlin.math.abs
 import kotlin.math.min
 
 class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
@@ -112,6 +115,13 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   private var restRecorded = false
   private val restRect = RectF()
   private val restLimits = Rect()
+  // A tap on the view opens its menu right there, on the UI thread, with no round trip to JS: the menu is the view's
+  // own (not one of several in a group, which their own presses open). Only with rows: a menu whose rows are built
+  // by its press is opened by its owner as they arrive (openWithItems). The owner's own press handler may still
+  // call `open`, which finds the menu open and does nothing.
+  internal var openOnTap = false
+  private var tapping = false
+  private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
   internal var menuWidth: Float? = null
   internal var fontFamily: String? = null
   internal var alignment = "auto"
@@ -244,10 +254,23 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   }
 
   override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-    if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-      pressX = event.x
-      pressY = event.y
-      pressTime = SystemClock.uptimeMillis()
+    when (event.actionMasked) {
+      MotionEvent.ACTION_DOWN -> {
+        pressX = event.x
+        pressY = event.y
+        pressTime = SystemClock.uptimeMillis()
+        tapping = openOnTap && items.isNotEmpty()
+      }
+      MotionEvent.ACTION_MOVE ->
+        if (abs(event.x - pressX) > touchSlop || abs(event.y - pressY) > touchSlop) tapping = false
+      MotionEvent.ACTION_CANCEL -> tapping = false
+      MotionEvent.ACTION_UP -> if (tapping) {
+        tapping = false
+        val inside = event.x >= 0f && event.y >= 0f && event.x <= width && event.y <= height
+        if (inside && SystemClock.uptimeMillis() - pressTime < ViewConfiguration.getLongPressTimeout()) {
+          open(null, null, null, null)
+        }
+      }
     }
     if (drawsGlass) {
       when (event.actionMasked) {
@@ -365,6 +388,16 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     val target = overlay ?: return
     if (items.isEmpty() || this.width == 0 || this.height == 0) return
     if (menuActive && target.menuSession?.expanded == true) return
+    // Marks the open in a system trace (atrace `view`), for tap-to-first-frame measurements.
+    Trace.beginSection("BloomLens.open")
+    try {
+      openNow(x, y, width, height, target)
+    } finally {
+      Trace.endSection()
+    }
+  }
+
+  private fun openNow(x: Double?, y: Double?, width: Double?, height: Double?, target: GlassMenuOverlay) {
     val pressed = if (followsPress) pressedRect(target) else null
     val through = pressed ?: if (x != null && y != null && width != null && height != null) {
       RectF(

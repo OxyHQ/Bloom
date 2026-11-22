@@ -270,7 +270,7 @@ export function SelectTrigger({
     <SelectTriggerStateContext.Provider value={triggerState}>
       <SelectDisplayContext.Provider value={setDisplay}>
         {lens && getNativeLens() ? (
-          <LensTrigger lens={lens} triggerLens={false} tone="neutral">
+          <LensTrigger lens={lens} opensOnTap={!isDisabled} triggerLens={false} tone="neutral">
             {slot}
           </LensTrigger>
         ) : (

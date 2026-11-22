@@ -232,6 +232,8 @@ export function useLensOriginReporter(): ((origin: LensOrigin | null) => void) |
 
 interface LensTriggerProps {
   lens: MenuLens;
+  /** A tap on the trigger opens the menu (natively, with no round trip to JS); not for a long press's menu. */
+  opensOnTap: boolean;
   /** Draw the trigger itself as lens (a fixed-layer control), not only the menu. */
   triggerLens: boolean;
   tone: 'neutral' | 'primary';
@@ -244,7 +246,14 @@ interface LensTriggerProps {
  * menu is that base's and grows out of it; anywhere else the trigger is a base of its own. It
  * reads the theme, so it is a component of its own: only a menu the lens presents mounts it.
  */
-export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTriggerProps) {
+export function LensTrigger({
+  lens,
+  opensOnTap,
+  triggerLens,
+  tone,
+  tint,
+  children,
+}: LensTriggerProps) {
   const native = getNativeLens();
   const inBase = useInLensBase();
   const dark = useTheme().isDark;
@@ -267,6 +276,7 @@ export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTri
       colorScheme={dark ? 'dark' : 'light'}
       cornerRadius={origin?.radius}
       config={triggerConfig}
+      openOnTap={opensOnTap}
       style={TRIGGER_STYLE}
     >
       <LensOriginContext.Provider value={setOrigin}>{opener}</LensOriginContext.Provider>

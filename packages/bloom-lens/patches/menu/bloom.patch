@@ -10,12 +10,13 @@ diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/inter
    morph?: boolean;
    cornerRadius?: number;
    colorScheme?: TMenuScheme;
-@@ -27,6 +27,9 @@
+@@ -27,6 +27,10 @@
    alignment?: TMenuAlignment;
    config?: TMenuConfig;
    triggerConfig?: TMenuTriggerConfig;
 +  openWithItems?: boolean;
 +  restBackdrop?: string;
++  openOnTap?: boolean;
 +  onMenuClosed?: () => void;
    style?: StyleProp<ViewStyle>;
    children?: ReactNode;
@@ -23,7 +24,7 @@ diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/inter
 diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-trigger/menu-trigger.android.tsx
 --- a/components/menu-trigger/menu-trigger.android.tsx
 +++ b/components/menu-trigger/menu-trigger.android.tsx
-@@ -8,11 +8,14 @@
+@@ -8,11 +8,15 @@
  import { NativeMenu } from "./native-menu.android";
  
  const MenuTriggerBase: FC<IMenuTrigger> = ({
@@ -36,10 +37,11 @@ diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-t
 +  openWithItems,
 +  onMenuClosed,
 +  restBackdrop,
++  openOnTap,
    accessibilityLabel,
    style,
    children,
-@@ -30,10 +33,13 @@
+@@ -30,10 +34,14 @@
        fontFamily={menu?.content.fontFamily}
        alignment={menu?.content.alignment}
        config={menu?.content.config}
@@ -51,6 +53,7 @@ diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-t
 +      openWithItems={openWithItems}
 +      onMenuClosed={onMenuClosed}
 +      restBackdrop={restBackdrop}
++      openOnTap={openOnTap}
        style={style}
        onItemSelect={(event: { nativeEvent: TMenuSelectEvent }): void =>
          menu?.select(event.nativeEvent)
@@ -82,7 +85,7 @@ diff -ruN a/interface.ts b/interface.ts
    saturation?: number;
    refraction?: number;
    rim?: number;
-@@ -112,13 +117,20 @@
+@@ -112,13 +117,22 @@
  }
  
  interface IMenuTrigger {
@@ -102,6 +105,8 @@ diff -ruN a/interface.ts b/interface.ts
 +  // Bloom: the colour the trigger sits on. Set, the trigger draws its glass at rest in its place in the view hierarchy
 +  // (a trigger in a scroll, under the bars) against that colour; the overlay draws it only while the menu is open.
 +  restBackdrop?: string;
++  // Bloom: a tap on the trigger opens the menu natively, with no round trip to JS.
++  openOnTap?: boolean;
    accessibilityLabel?: string;
    style?: StyleProp<ViewStyle>;
    children?: ReactNode;

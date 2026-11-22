@@ -176,6 +176,8 @@ describe('the menu is the lens menu', () => {
       openWithItems: false,
       // In a scroll: drawn in its place, against the surface's fill, not over the window.
       restBackdrop: LIGHT.background,
+      // The menu's own base: a tap opens it natively, with no round trip to JS.
+      openOnTap: true,
       // The upstream app's glass trigger config.
       triggerConfig: { absorb: { duration: 0.48 } },
     });
@@ -253,6 +255,11 @@ describe('the menu is the lens menu', () => {
     expect(only(r, 'BloomLensMenu').props.items).toEqual([
       { id: 'r0', title: 'Quiet', subtitle: 'No sound for an hour' },
     ]);
+  });
+
+  it('a disabled trigger leaves the tap to its own press, which does nothing', () => {
+    const r = mount(toElement(Menu(Button(Icon(Glyph)).disabled(), Item('a'))));
+    expect(only(r, 'BloomLensMenu').props.openOnTap).toBe(false);
   });
 
   it('a trigger with a name of its own keeps it', () => {
