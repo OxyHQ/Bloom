@@ -128,7 +128,7 @@ export const CAMPAIGNS: Campaign[] = (() => {
   });
 })();
 
-/** `<span className="text-body-medium text-text-tertiary">$0</span>`. */
+/** `$0` in body-medium, the tertiary text colour. */
 function ZeroSpend() {
   const theme = useTheme();
   return (
