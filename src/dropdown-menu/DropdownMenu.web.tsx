@@ -10,7 +10,7 @@ import { BloomScope } from '../appearance';
 import React, { useCallback, useMemo, useRef, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
-import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
+import { MENU_TRIGGER_POPUP, MENU_WIDTH } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { FloatingPanel } from '../floating/FloatingPanel';
@@ -23,7 +23,6 @@ import {
 } from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
-import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -114,7 +113,6 @@ export function DropdownMenuTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
   pressTrigger,
@@ -145,7 +143,6 @@ export function DropdownMenuTrigger({
       onPrimaryOpenChange={menu.onPrimaryOpenChange}
       anchorRef={menu.anchorRef}
       restoreFocus={restoreFocus}
-      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -180,7 +177,6 @@ export function DropdownMenuContent({
   dismissible,
   minWidth,
   maxWidth,
-  className,
   style,
   testID,
 }: DropdownMenuContentProps) {
@@ -233,10 +229,8 @@ export function DropdownMenuContent({
         minWidth={minWidth}
         maxWidth={maxWidth}
         onDismiss={close}
-        // `min-w-40` — 160px, as a CLASS rather than an inline `minWidth`, so a
-        // caller's own `min-w-*` can reach it. The placement resolver reads the
-        // laid-out box, which the class is already part of.
-        className={cx(MENU_MIN_WIDTH_CLASS, className)}
+        // The menu's 266px floor, under `minWidth` and the caller's `style`.
+        defaultMinWidth={MENU_WIDTH}
         style={style}
         testID={testID}
       >

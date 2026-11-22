@@ -289,8 +289,12 @@ export const SubmenuLayoutShiftDoesNotOpen: Story = {
             </DropdownMenuItem>
             <div
               aria-hidden="true"
-              className="transition-[height] duration-700 ease-linear"
-              style={{ height: shifted ? SUBMENU_LAYOUT_SHIFT_PX : 0 }}
+              style={{
+                height: shifted ? SUBMENU_LAYOUT_SHIFT_PX : 0,
+                transitionProperty: 'height',
+                transitionDuration: '700ms',
+                transitionTimingFunction: 'linear',
+              }}
             />
             <DropdownMenuSub open={submenuOpen} onOpenChange={setSubmenuOpen}>
               <DropdownMenuSubTrigger testID="layout-submenu-trigger">
