@@ -3,13 +3,13 @@ import { SwipeRowScrollContext } from '../swipe-row/context';
 import { webDataSet } from '../styles/web-data';
 import { ScrollMetricsContext, useScrollMetricsValue } from './scroll-metrics';
 import Animated from 'react-native-reanimated';
-import { StyledScrollView } from '../styles/styled-primitives';
+import { ScrollView } from 'react-native';
 import type { ScrollAreaProps } from './types';
 import { useHorizontalFocusVisibility } from './use-horizontal-focus-visibility';
 import { useScrollAreaEvents } from './use-scroll-area-events';
 import { useAnimatedScrollMetricsBinding } from './use-animated-scroll-metrics-binding';
 
-const AnimatedViewport = Animated.createAnimatedComponent(StyledScrollView);
+const AnimatedViewport = Animated.createAnimatedComponent(ScrollView);
 
 /**
  * Taps on a control inside a scroller reach it while the keyboard is open.
@@ -68,7 +68,7 @@ function PlainViewport({
     onContentSizeChange,
     scrollEventThrottle,
   });
-  return <StyledScrollView keyboardShouldPersistTaps={PERSIST_TAPS} {...props} {...events} />;
+  return <ScrollView keyboardShouldPersistTaps={PERSIST_TAPS} {...props} {...events} />;
 }
 
 function AnimatedScrollViewport({
