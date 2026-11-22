@@ -144,3 +144,26 @@ export function adoptVariantClasses(condition: LiveCondition, names: readonly st
   for (const [joined, { css }] of drawn)
     if (joined.includes('+')) adoptStyleSheet(`bloom-language-${variantSuffix(joined)}`, css);
 }
+
+/** The colours at an opacity drawn so far: each custom property and the mix it holds. */
+const inks = new Map<string, string>();
+
+/**
+ * Declares the custom property `name` as `value` (a role's colour at an
+ * opacity, `webInk`): one sheet holding exactly the inks that have rendered,
+ * a property added the first time a style naming it is resolved.
+ *
+ * The rule is on every element (`*`), not the root: a custom property's
+ * `var()` is substituted where it is declared, so one declared at the root
+ * would keep the root's colours inside a colour scope (Bloom's `ColorScope`
+ * declares its palette on its own element). Declared on each element, it
+ * mixes the palette that element sees, so a scheme, a preset or a scope
+ * repaints it with no JavaScript.
+ */
+export function adoptInk(name: string, value: string): void {
+  if (Platform.OS !== 'web' || inks.get(name) === value) return;
+  inks.set(name, value);
+  let declarations = '';
+  for (const [ink, mix] of inks) declarations += `${ink}:${mix};`;
+  adoptStyleSheet('bloom-language-ink', `*{${declarations}}`);
+}

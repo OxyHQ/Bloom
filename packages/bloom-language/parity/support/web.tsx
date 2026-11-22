@@ -139,7 +139,24 @@ function resolve(text: string, scope: Record<string, string>): string {
     const replacement = scope[found[1] as string] ?? found[2] ?? '';
     out = `${out.slice(0, found.index)}${replacement}${out.slice(found.index + found[0].length)}`;
   }
-  return out.replace(/\s+/g, ' ').trim();
+  return mixedWithTransparent(out.replace(/\s+/g, ' ').trim());
+}
+
+/**
+ * A colour mixed with transparent is that colour at the mix's alpha, in any
+ * space (the browser interpolates premultiplied), written so jsdom reads it:
+ * its parser keeps a `color-mix()` but drops its percentage.
+ */
+function mixedWithTransparent(text: string): string {
+  return text.replace(
+    /color-mix\(in \w+, (?:rgb\((\d+)[ ,]+(\d+)[ ,]+(\d+)\)|#([0-9a-f]{6})) ([\d.]+)%, transparent\)/gi,
+    (_, r, g, b, hex: string | undefined, percent) => {
+      const [red, green, blue] = hex
+        ? [0, 2, 4].map((at) => Number.parseInt(hex.slice(at, at + 2), 16))
+        : [r, g, b];
+      return `rgba(${red}, ${green}, ${blue}, ${Number(percent) / 100})`;
+    },
+  );
 }
 
 /**
