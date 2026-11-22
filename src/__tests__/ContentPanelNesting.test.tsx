@@ -64,7 +64,7 @@ describe('ContentPanel nesting guard', () => {
 // native surface draws its hairline once the window is at least that wide. The
 // test window is 375 wide.
 describe('ContentPanel framedFrom breakpoint', () => {
-  const panel = (props: React.ComponentProps<typeof ContentPanel>) =>
+  const panel = (props: Omit<React.ComponentProps<typeof ContentPanel>, 'children'>) =>
     surfaceStyle(
       render(
         <ContentPanel {...props}>
