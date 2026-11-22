@@ -210,8 +210,7 @@ const EMPTY_ANSWER: QuestionnaireAnswer = { values: [] };
 
 // ---------------------------------------------------------------------------
 //  Web CSS: focus rings, colour transitions, the check draw-in. Every hook is a
-//  `dataSet` attribute — react-native-web drops unknown props, and a class never
-//  reaches the DOM through react-native-css.
+//  `dataSet` attribute — react-native-web drops unknown props, a class among them.
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-questionnaire-web-css';
