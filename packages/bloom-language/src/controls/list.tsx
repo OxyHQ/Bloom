@@ -1,4 +1,6 @@
 import { createElement, useCallback, useRef, type ReactElement, type ReactNode } from 'react';
+import type { ViewStyle } from 'react-native';
+import { withRoom } from '../chrome/safe-area-inset';
 import {
   List as BloomList,
   ListItem as BloomListItem,
@@ -17,8 +19,14 @@ import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
 import { type Binding, refreshing } from '../binding';
-import { Node, type Child, type ViewModifiers } from '../node';
-import { resolveSpace, type Density, type ListSeparator, type SpaceToken } from '../tokens';
+import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
+import {
+  resolveSpace,
+  type Density,
+  type InsetEdge,
+  type ListSeparator,
+  type SpaceToken,
+} from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
@@ -132,6 +140,10 @@ export interface ListView extends ViewModifiers<ListView> {
 }
 /** Bloom `VirtualList`: FlashList (or FlatList) on native, the virtualizer on the web. */
 export interface VirtualListView extends ViewModifiers<VirtualListView> {
+  /** A view pinned at the list's top or bottom, the content padded by its height (SwiftUI's `safeAreaInset`). */
+  safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): VirtualListView;
+  /** A `safeAreaInset` that is a bar, with Bloom's scroll edge scrim under it (SwiftUI's `safeAreaBar`). */
+  safeAreaBar(edge: InsetEdge, view: ViewNode): VirtualListView;
   /** Each item's key (its index by default). */
   itemKey(value: (item: never, index: number) => string): VirtualListView;
   /** Each item's recycling type (FlashList's `getItemType`). */
@@ -336,6 +348,12 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       props.onEndReachedThreshold = end.threshold;
     }
     if (refresh !== undefined) Object.assign(props, refreshing(refresh));
+    // Views pinned at its edges: its content makes room for them.
+    if (d.room !== undefined)
+      props.contentContainerStyle = withRoom(
+        props.contentContainerStyle as ViewStyle | undefined,
+        d.room,
+      );
     props.row = row;
     props.render = d.render;
     return d.component(LanguageVirtualList, props);

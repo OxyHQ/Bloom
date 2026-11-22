@@ -9,6 +9,7 @@ import {
 import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
 import type { TextTraits } from '../style';
 import type { ColorToken, InkToken, Role } from '../tokens';
+import type { InsetRoom } from '../chrome/safe-area-inset';
 
 /** What a product component's colour prop is painted from: a role, or a list of colours. */
 export type ProductColor = ColorToken | readonly InkToken[];
@@ -67,6 +68,12 @@ export interface ControlDraw {
    * the view is pressable (for a component that takes no press of its own).
    */
   pressAround(drawn: (props: Record<string, unknown>) => ReactElement): ReactElement;
+  /**
+   * The room a scrolling control's content makes for views pinned at its
+   * edges (`.safeAreaInset()`, `.safeAreaBar()`): its content container's
+   * padding adds it. Absent when nothing is pinned.
+   */
+  readonly room?: InsetRoom;
   /** A language child, drawn where the control is. */
   render(child: Child): ReactNode;
   /** Children, one slot each, as a stack draws them. */
