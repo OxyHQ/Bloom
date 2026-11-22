@@ -52,6 +52,8 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     imports.set(key, local);
     return local;
   };
+  /** Each region's app colour table, declared once at module scope as the app declares it. */
+  const tables: string[] = [];
   const cases = fixtures.map((fixture) => {
     const bindings = Object.entries(fixture.bindings)
       .map(([local, source]) => `const ${local} = ${alias(source)};`)
@@ -71,12 +73,20 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     const before = fixture.themed
       ? `function Before() { const parityTheme = useParityTheme(); ${bindings} return (${fixture.before}); } return (${open}<Before />${close});`
       : `${bindings} return (${open}${fixture.before}${close});`;
+    let colors = '';
+    if (fixture.appColors) {
+      const local = `T${tables.length}`;
+      tables.push(
+        `const ${local} = L.defineTokens({ color: ${JSON.stringify(fixture.appColors.color)} });`,
+      );
+      colors = `const ${fixture.appColors.table} = ${local};`;
+    }
     // A route's Screen is drawn as `screen()` draws its body's root.
     const after = fixture.screen ? `<ScreenHost root={${fixture.after}} />` : fixture.after;
     return `  {
     name: ${JSON.stringify(fixture.name)},
     before: () => { ${before} },
-    after: () => { ${bindings} ${language} return (${open}${after}${close}); },
+    after: () => { ${bindings} ${language} ${colors} return (${open}${after}${close}); },
   },`;
   });
   const lines = [
@@ -91,6 +101,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
       return `import { ${name} as ${local} } from '${module}';`;
     }),
     '',
+    ...(tables.length ? [...tables, ''] : []),
     'function Hole({ n }: { n: string }) {',
     "  return <RN.View testID={'hole-' + n} />;",
     '}',
