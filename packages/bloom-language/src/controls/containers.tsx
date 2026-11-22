@@ -210,6 +210,10 @@ export interface GroupedSectionItemView extends ViewNode, BoxModifiers<GroupedSe
   chevron(value?: boolean): GroupedSectionItemView;
   /** The title's lines. */
   lines(value: number): GroupedSectionItemView;
+  /** A wide trailing control wraps below the title, keeping at least 140 points for the text. */
+  wrapControl(value?: boolean): GroupedSectionItemView;
+  /** The description's lines: 2 by default, `0` never truncates. */
+  descriptionLines(value: number): GroupedSectionItemView;
   destructive(): GroupedSectionItemView;
   disabled(value?: boolean): GroupedSectionItemView;
   onPress(value: Press | undefined): GroupedSectionItemView;
@@ -638,6 +642,8 @@ function groupedSectionItem(d: ControlDraw): ReactElement {
     rightElement: slot(d, d.own('trailing')?.value),
     showChevron: d.own('chevron')?.value,
     titleNumberOfLines: d.own('lines')?.value,
+    wrapControl: d.own('wrapControl')?.value,
+    descriptionLines: d.own('descriptionLines')?.value,
     destructive: d.own('destructive')?.value,
     disabled: d.own('disabled')?.value,
   });

@@ -325,6 +325,30 @@ const grouped: ParityCase[] = [
     ),
   },
   {
+    name: 'GroupedSectionItem wrapControl',
+    language: () =>
+      toElement(C.GroupedSectionItem('Theme').trailing(L.Badge('System')).wrapControl()),
+    bloom: () => (
+      <GroupedSectionItem title="Theme" rightElement={<Badge content="System" />} wrapControl />
+    ),
+  },
+  {
+    name: 'GroupedSectionItem descriptionLines',
+    language: () =>
+      toElement(C.GroupedSectionItem('Policy').description('Read it whole.').descriptionLines(0)),
+    bloom: () => (
+      <GroupedSectionItem title="Policy" description="Read it whole." descriptionLines={0} />
+    ),
+  },
+  {
+    name: 'GroupedSectionItem three description lines',
+    language: () =>
+      toElement(C.GroupedSectionItem('Help').description('Three lines.').descriptionLines(3)),
+    bloom: () => (
+      <GroupedSectionItem title="Help" description="Three lines." descriptionLines={3} />
+    ),
+  },
+  {
     name: 'GroupedSectionItem destructive',
     language: () => toElement(C.GroupedSectionItem('Sign out').destructive().onPress(onPress)),
     bloom: () => <GroupedSectionItem title="Sign out" destructive onPress={onPress} />,
