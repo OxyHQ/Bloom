@@ -9,7 +9,7 @@ import { COLORS, ENVIRONMENT_DEFAULTS, FONT_SIZE, LAYER_RANK } from './generated
 import { WEB_CLASS } from './generated/web-sheet.generated';
 import type { Paint, PaintVariant } from './paint';
 import { compareLive, warnNoClass, type LiveCondition, type Planned } from './variants';
-import { adoptInk, adoptVariantClasses, variantSuffix } from './web-sheet';
+import { adoptInk, adoptVariantClasses, inkClass, variantSuffix } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
@@ -269,12 +269,20 @@ function paintOut(resolved: Resolved, variants: VariantStyles): StyleOut {
 
 /**
  * The web form: react-native-web `$$css` class objects for every value the
- * generated sheet has a class for, and an inline object for the rest (an
- * app token's own number). A Bloom component's style is an object
+ * generated sheet has a class for (a role at an opacity: the role's class
+ * painting its ink, `inkClass`), and an inline object for the rest (an app
+ * token's own number). A Bloom component's style is an object
  * (`serialize`).
  */
-const classOf = (key: string, value: StyleValue): string | undefined =>
-  WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${String(value)}`];
+function classOf(key: string, value: StyleValue): string | undefined {
+  if (!isRole(value)) return WEB_CLASS[`${key}:${String(value)}`];
+  if (value.opacity === undefined) return WEB_CLASS[`${key}:@${value.token}`];
+  // A role at an opacity: the role's class, painting its ink (web-sheet.ts).
+  const base = WEB_CLASS[`${key}:@${value.role}`];
+  return base === undefined
+    ? undefined
+    : inkClass(base, value.token, COLORS[value.role].web, webInk(value));
+}
 
 function webStyle(resolved: Resolved, keys: string[], variants: VariantStyles): unknown {
   let classes: Record<string, string | boolean> | undefined;
