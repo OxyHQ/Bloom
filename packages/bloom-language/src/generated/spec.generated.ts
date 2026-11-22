@@ -2365,7 +2365,6 @@ export const MODIFIERS = {
     "edge?",
     "padding"
   ],
-  "clipped": [],
   "scale": [
     "scale"
   ],
@@ -2739,6 +2738,7 @@ export const MODIFIERS = {
   "outline": [
     "cardBorder"
   ],
+  "clipped": [],
   "leadingView": [
     "children"
   ],
