@@ -1,5 +1,5 @@
 import type React from 'react';
-import { type ComponentRef, type ComponentType, memo, type ReactNode, type Ref } from 'react';
+import { memo } from 'react';
 import {
   Text as RNText,
   type TextProps as RNTextProps,
@@ -9,7 +9,6 @@ import {
   type TextStyle,
   View,
 } from 'react-native';
-import { styled } from 'react-native-css';
 import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { useThemePaint } from '../theme/use-theme-paint';
@@ -17,10 +16,8 @@ import { DISPLAY_FACE_FAMILIES, withDisplayFaceCut } from '../fonts/display-face
 import { fontFamilies } from '../fonts/tokens';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { space } from '../styles/tokens';
-import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
 import { TYPE_SCALE } from './scale';
 import { DESKTOP_TYPE_SCALE, desktopTracking } from './desktop-scale';
-import { StyledText } from '../styles/styled-primitives';
 import { useTypographyScope } from './TypographyScope';
 import { DescriptionSource } from './DescriptionSource';
 import { IS_WEB } from '../styles/platform';
@@ -50,7 +47,6 @@ export function fontFamilyStyle(kind: 'display' | 'sans' | 'mono'): { fontFamily
 
 const SANS_FONT_FAMILY = fontFamilyStyle('sans');
 const DISPLAY_FONT_FAMILY = fontFamilyStyle('display');
-const MONO_FONT_FAMILY = fontFamilyStyle('mono');
 
 /**
  * The titles of the scale — `large-title` and `display-1` … `display-4`, 32px and up — are
@@ -63,81 +59,25 @@ const isDisplayVariant = (variant: string): boolean =>
   /^title-[123]-/.test(variant);
 
 /**
- * The same by className, for a title sized with utilities instead of a variant: an explicit
- * `font-display`, or a size from `text-3xl` (30px) up, at any breakpoint or state
- * (`md:text-5xl`, `dark:font-display`).
+ * The family a `Text` is set in: BlomusModernus for the big titles, Inter for
+ * the rest. A caller's `fontFamily` (the mono face, `fontFamilyStyle('mono')`)
+ * comes after it and wins.
  */
-const DISPLAY_CLASS =
-  /(?:^|\s)(?:[\w-]+:)*(?:font-display|text-[3-9]xl|text-title-[123]-(?:regular|medium|semibold|bold))(?=\s|$)/;
-
-/**
- * An explicit `font-mono`, at any breakpoint or state (`md:font-mono`). The
- * family is set inline, and an inline style beats a utility, so without this a
- * caller asking for mono by class got Inter. Bloom defines no serif family
- * (`fonts/tokens.ts`), so there is no `font-serif` counterpart.
- */
-const MONO_CLASS = /(?:^|\s)(?:[\w-]+:)*font-mono(?=\s|$)/;
-
-/**
- * The family a `Text` is set in: JetBrains Mono when the className asks for
- * `font-mono` (an explicit family beats one implied by size), BlomusModernus
- * for the big titles, Inter for the rest.
- */
-function textFamily(
-  variant: string | undefined,
-  className: string | undefined,
-  desktop: boolean = false,
-) {
-  if (className !== undefined && MONO_CLASS.test(className)) return MONO_FONT_FAMILY;
+function textFamily(variant: string | undefined, desktop: boolean = false) {
   const display =
-    (variant !== undefined &&
-      isDisplayVariant(variant) &&
-      // A desktop's chrome takes no display face for its titles (`desktop-scale.ts`);
-      // the hero steps (`large-title`, `display-*`) keep it.
-      !(desktop && /^title-[123]-/.test(variant))) ||
-    (className !== undefined && DISPLAY_CLASS.test(className));
+    variant !== undefined &&
+    isDisplayVariant(variant) &&
+    // A desktop's chrome takes no display face for its titles (`desktop-scale.ts`);
+    // the hero steps (`large-title`, `display-*`) keep it.
+    !(desktop && /^title-[123]-/.test(variant));
   return display ? DISPLAY_FONT_FAMILY : SANS_FONT_FAMILY;
 }
 
-type TextHostProps = RNTextProps & {
-  className?: string;
-  ref?: Ref<ComponentRef<typeof RNText>>;
-};
-
 /**
- * NATIVE ONLY: the text node, drawing the display face in the cut its weight
- * selects (`fonts/display-face.ts`).
- *
- * It sits UNDER `styled()`, so the style it reads is the one `react-native-css`
- * resolved from the className, followed by Bloom's inline defaults and the
- * caller's style: a variant's weight, a heading's, a `font-bold` utility at any
- * breakpoint or state, and an inline `fontWeight` all reach it. Text reading it
- * above `styled()` would see the className as a string and miss every utility.
+ * NATIVE: the text draws the display face in the cut its final weight selects
+ * (`fonts/display-face.ts`): a variant's, a heading's or the caller's.
  */
-function DisplayFaceText({ style, ...rest }: TextHostProps) {
-  return <RNText {...rest} style={withDisplayFaceCut(style)} />;
-}
-
-/**
- * The host for a text WITH a className: `react-native-css` resolves the utilities
- * into `style`. The web keeps `StyledText`: one `BlomusModernus` family with a
- * 400 and a 700 `@font-face`, matched by the browser.
- */
-const ClassNameTextHost: ComponentType<TextHostProps> =
-  Platform.OS === 'web'
-    ? StyledText
-    : styled(DisplayFaceText as (props: { style?: StyleProp<TextStyle> }) => ReactNode, {
-        className: 'style',
-      });
-
-/**
- * A text WITHOUT a className has nothing for `react-native-css` to resolve: its
- * interop would hand the style through unchanged, after a component, two hook
- * slots and two context reads of its own. So it renders the react-native text
- * directly, with the display cut chosen from the style it already holds, as
- * `DisplayFaceText` would choose it under `styled()`.
- */
-const plainTextStyle: (style: StyleProp<TextStyle>) => StyleProp<TextStyle> =
+const textStyle: (style: StyleProp<TextStyle>) => StyleProp<TextStyle> =
   Platform.OS === 'web' ? (style) => style : withDisplayFaceCut;
 
 const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
@@ -153,16 +93,13 @@ const DESKTOP_DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
 /**
  * Base text component with theme-aware default color and the Bloom sans
  * font family applied (the display family for the `large-title` and `display-*`
- * variants). NativeWind `className` utilities (text-*, font-*,
- * leading-*, text-foreground, …) override defaults when provided.
+ * variants). A caller's `style` overrides the defaults.
  */
-const TextComponent = function Text({ children, style, className, variant, ...rest }: TextProps) {
+const TextComponent = function Text({ children, style, variant, ...rest }: TextProps) {
   const colors = useThemePaint();
   const { systemFamily, desktop } = useTypographyScope();
-  const trimmedClassName = className?.trim() ? className : undefined;
 
-  const merged = mergeTypographyStyle(
-    trimmedClassName,
+  const merged: StyleProp<TextStyle> = [
     {
       ...(variant
         ? (desktop ? DESKTOP_TYPE_SCALE : TYPE_SCALE)[variant]
@@ -173,16 +110,12 @@ const TextComponent = function Text({ children, style, className, variant, ...re
     },
     (rest.accessibilityRole === 'header' || rest.role === 'heading') && !desktop
       ? DISPLAY_FONT_FAMILY
-      : textFamily(variant, trimmedClassName, desktop),
+      : textFamily(variant, desktop),
     [style, systemFamily],
-  );
+  ];
 
-  const host = trimmedClassName ? (
-    <ClassNameTextHost {...rest} className={trimmedClassName} style={merged}>
-      {children}
-    </ClassNameTextHost>
-  ) : (
-    <RNText {...rest} style={plainTextStyle(merged)}>
+  const host = (
+    <RNText {...rest} style={textStyle(merged)}>
       {children}
     </RNText>
   );
@@ -233,24 +166,19 @@ const H1_ALIGNMENT: TextStyle = { textAlign: 'center' };
 const H2_RULE: TextStyle = { borderBottomWidth: 1, paddingBottom: 8 };
 
 function createHeadingElement({ level }: { level: number }): React.FC<TextProps> {
-  return function HeadingElement({ style, className, ...rest }: TextProps) {
+  return function HeadingElement({ style, ...rest }: TextProps) {
     const colors = useThemePaint();
     const extraProps: Record<string, unknown> =
       Platform.OS === 'web' ? { role: 'heading', 'aria-level': level } : {};
 
-    // Only the FAMILY survives a caller's `className`: react-native-css merges
-    // utilities into `style` first, so keeping `fontSize`/`fontWeight` here
-    // would silently beat a caller's `text-2xl`.
-    const headingBase = className?.trim()
-      ? DISPLAY_FONT_FAMILY
-      : {
-          ...DISPLAY_FONT_FAMILY,
-          ...HEADING_SCALE[level],
-          ...(level === 1 ? H1_ALIGNMENT : null),
-          ...(level === 2 ? { ...H2_RULE, borderBottomColor: colors.border } : null),
-        };
+    const headingBase = {
+      ...DISPLAY_FONT_FAMILY,
+      ...HEADING_SCALE[level],
+      ...(level === 1 ? H1_ALIGNMENT : null),
+      ...(level === 2 ? { ...H2_RULE, borderBottomColor: colors.border } : null),
+    };
 
-    return <Text {...extraProps} {...rest} className={className} style={[headingBase, style]} />;
+    return <Text {...extraProps} {...rest} style={[headingBase, style]} />;
   };
 }
 
@@ -276,16 +204,14 @@ const DEFAULT_PARAGRAPH_TYPOGRAPHY: TextStyle = {
   lineHeight: 28,
 };
 
-export function P({ style, className, ...rest }: TextProps) {
+export function P({ style, ...rest }: TextProps) {
   const width = useWindowWidthClass(SM_WIDTH);
   const extraProps: Record<string, unknown> = Platform.OS === 'web' ? { role: 'paragraph' } : {};
-  const paragraphDefaults = typographyDefaultsWhenNoClassName(className, {
+  const paragraphDefaults = {
     ...DEFAULT_PARAGRAPH_TYPOGRAPHY,
     marginTop: width >= BREAKPOINTS.sm ? space._2xl : space.md,
-  });
-  return (
-    <Text {...extraProps} {...rest} className={className} style={[paragraphDefaults, style]} />
-  );
+  };
+  return <Text {...extraProps} {...rest} style={[paragraphDefaults, style]} />;
 }
 P.displayName = 'P';
 
@@ -319,11 +245,7 @@ export { Text as Span };
 //  `code/` family already owns that, and a second spelling is the ambiguity
 //  Bloom removes rather than adds.
 //
-//  Every one of these applies its defaults through
-//  `typographyDefaultsWhenNoClassName`, for the reason that helper exists:
-//  react-native-css merges utilities into `style` FIRST, so an inline default
-//  repeating `fontSize`/`color` would silently beat the caller's `text-lg` or
-//  `text-primary`.
+//  Each applies its defaults under the caller's `style`, which wins.
 // ---------------------------------------------------------------------------
 
 /** `text-muted-foreground text-xl` — 20/28. */
@@ -333,13 +255,13 @@ const LEAD_TYPOGRAPHY: TextStyle = {
 };
 
 /** An intro paragraph — larger than body text and set in the secondary colour. */
-export function Lead({ style, className, ...rest }: TextProps) {
+export function Lead({ style, ...rest }: TextProps) {
   const colors = useThemePaint();
-  const defaults = typographyDefaultsWhenNoClassName(className, {
+  const defaults = {
     ...LEAD_TYPOGRAPHY,
     color: colors.textSecondary,
-  });
-  return <Text {...rest} className={className} style={[defaults, style]} />;
+  };
+  return <Text {...rest} style={[defaults, style]} />;
 }
 Lead.displayName = 'Lead';
 
@@ -351,9 +273,8 @@ const LARGE_TYPOGRAPHY: TextStyle = {
 };
 
 /** Emphasised body text — a form section's opening line, a callout's first row. */
-export function Large({ style, className, ...rest }: TextProps) {
-  const defaults = typographyDefaultsWhenNoClassName(className, LARGE_TYPOGRAPHY);
-  return <Text {...rest} className={className} style={[defaults, style]} />;
+export function Large({ style, ...rest }: TextProps) {
+  return <Text {...rest} style={[LARGE_TYPOGRAPHY, style]} />;
 }
 Large.displayName = 'Large';
 
@@ -365,9 +286,8 @@ const SMALL_TYPOGRAPHY: TextStyle = {
 };
 
 /** A dense label — form hints, table headers, metadata rows. */
-export function Small({ style, className, ...rest }: TextProps) {
-  const defaults = typographyDefaultsWhenNoClassName(className, SMALL_TYPOGRAPHY);
-  return <Text {...rest} className={className} style={[defaults, style]} />;
+export function Small({ style, ...rest }: TextProps) {
+  return <Text {...rest} style={[SMALL_TYPOGRAPHY, style]} />;
 }
 Small.displayName = 'Small';
 
@@ -378,28 +298,23 @@ const MUTED_TYPOGRAPHY: TextStyle = {
 };
 
 /** De-emphasised supporting text. */
-export function Muted({ style, className, ...rest }: TextProps) {
+export function Muted({ style, ...rest }: TextProps) {
   const colors = useThemePaint();
-  const defaults = typographyDefaultsWhenNoClassName(className, {
+  const defaults = {
     ...MUTED_TYPOGRAPHY,
     color: colors.textSecondary,
-  });
-  return <Text {...rest} className={className} style={[defaults, style]} />;
+  };
+  return <Text {...rest} style={[defaults, style]} />;
 }
 Muted.displayName = 'Muted';
 
 /**
  * A quotation, with the rule down its left edge.
  *
- * The one variant that is NOT a bare `Text`, and the one that takes no
- * `className`. React Native ignores border styles on `Text` (Android renders a
- * TextView, iOS an NSAttributedString — neither draws a left rule), so the rule
- * has to be a `View`. That makes the node the parent lays out a `View` while the
- * utilities a caller would write (`text-lg`, `text-primary`) belong on the
- * `Text` inside it — the exact split that makes `className` land on the wrong
- * node and fail silently. So it is not offered: `style` addresses the container,
- * `textStyle` the quotation, and a caller who wants utilities composes a `View`
- * and a `Text` directly.
+ * The one variant that is NOT a bare `Text`. React Native ignores border
+ * styles on `Text` (Android renders a TextView, iOS an NSAttributedString —
+ * neither draws a left rule), so the rule has to be a `View`: `style` addresses
+ * the container, `textStyle` the quotation.
  */
 export function Blockquote({ children, style, textStyle, testID }: BlockquoteProps) {
   const colors = useThemePaint();

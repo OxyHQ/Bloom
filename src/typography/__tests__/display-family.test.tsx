@@ -28,7 +28,7 @@ const face = (node: React.ReactElement) => {
   return { family: style.fontFamily, weight: style.fontWeight };
 };
 
-const family = (props: { variant?: TypeScaleVariant; className?: string; style?: TextStyle }) =>
+const family = (props: { variant?: TypeScaleVariant; style?: TextStyle }) =>
   face(<Text {...props}>Title</Text>).family;
 
 /** The family CSS matching picks from BlomusModernus' 400 and 700 faces. */
@@ -55,41 +55,6 @@ describe('the big titles are set in BlomusModernus', () => {
     for (const variant of ['headline-medium', 'body-regular', 'caption-1-regular'] as const)
       expect(family({ variant })).toBe('Inter');
     expect(family({})).toBe('Inter');
-  });
-
-  it('follows a title sized by className: text-3xl and up, or an explicit font-display', () => {
-    // Jest's react-native-css runtime forwards the class without resolving it,
-    // so no weight arrives and these draw the Regular cut. The resolved
-    // utilities are exercised in `display-face-native-css.test.tsx`.
-    expect(family({ className: 'text-4xl text-center' })).toBe('BlomusModernus');
-    expect(family({ className: 'text-center md:text-5xl' })).toBe('BlomusModernus');
-    expect(family({ className: 'font-display' })).toBe('BlomusModernus');
-    expect(family({ className: 'text-3xl' })).toBe('BlomusModernus');
-  });
-
-  it('leaves text sized below that in Inter, and does not read a longer class as a size', () => {
-    expect(family({ className: 'text-2xl' })).toBe('Inter');
-    expect(family({ className: 'text-xl font-medium' })).toBe('Inter');
-    expect(family({ className: 'text-4xl-custom' })).toBe('Inter');
-    expect(family({ className: 'my-text-4xl' })).toBe('Inter');
-  });
-});
-
-describe('an explicit font-mono className sets JetBrains Mono', () => {
-  it('beats the inline family, at any breakpoint or state', () => {
-    expect(family({ className: 'font-mono' })).toBe('JetBrains Mono');
-    expect(family({ className: 'text-xs font-mono text-muted-foreground' })).toBe('JetBrains Mono');
-    expect(family({ className: 'md:font-mono' })).toBe('JetBrains Mono');
-  });
-
-  it('beats a family implied by size or variant: an explicit family is the request', () => {
-    expect(family({ className: 'text-4xl font-mono' })).toBe('JetBrains Mono');
-    expect(family({ variant: 'display-1-bold', className: 'font-mono' })).toBe('JetBrains Mono');
-  });
-
-  it('does not read a longer class as font-mono', () => {
-    expect(family({ className: 'font-monospace-x' })).toBe('Inter');
-    expect(family({ className: 'my-font-mono' })).toBe('Inter');
   });
 });
 
@@ -125,9 +90,7 @@ describe('native draws the display cut the web’s font matching picks', () => {
     }
   });
 
-  it('follows a heading’s weight when its scale gives way to a className or a style', () => {
-    // A className drops the scale; with no resolved utility the weight is unset.
-    expect(face(<H1 className="text-2xl">Title</H1>).family).toBe('BlomusModernus');
+  it('follows a heading’s weight when a style gives its scale another', () => {
     expect(face(<H2 style={{ fontWeight: '400' }}>Title</H2>).family).toBe('BlomusModernus');
   });
 
@@ -143,12 +106,6 @@ describe('native draws the display cut the web’s font matching picks', () => {
       'BlomusModernus',
     );
     expect(family({ variant: 'display-1-regular', style: { fontWeight: '600' } })).toBe(
-      'BlomusModernus-Bold',
-    );
-    expect(family({ className: 'text-4xl', style: { fontWeight: 'bold' } })).toBe(
-      'BlomusModernus-Bold',
-    );
-    expect(family({ className: 'font-display', style: { fontWeight: 700 } })).toBe(
       'BlomusModernus-Bold',
     );
   });
@@ -173,7 +130,7 @@ describe('native draws the display cut the web’s font matching picks', () => {
     });
     expect(
       face(
-        <Text className="font-mono" style={{ fontWeight: '700' }}>
+        <Text style={{ fontFamily: 'JetBrains Mono', fontWeight: '700' }}>
           Title
         </Text>,
       ).family,
