@@ -1,88 +1,28 @@
 /**
- * The react-native primitives wired for `className`, built ONCE at module scope.
- *
- * `className` is not a prop react-native understands. Under NativeWind v5 a
- * consumer's babel/css-interop rewrites the `style` prop of JSX elements it sees
- * in the CONSUMER's own source — which is why passing `className` as a bare prop
- * (`{...({ className } as Record<string, string>)}`, the cast this module
- * replaces) appeared to work: it works only under NW5, only for a primitive
- * Bloom did not wrap, and it drops silently the moment either changes. Nothing
- * errors; the class simply never resolves to a style.
- *
- * `styled()` from Bloom's own `react-native-css` dependency makes the mapping
- * explicit and independent of the consumer's interop. Same reasoning, and the
- * same silent failure if skipped, as `button/Button.tsx` and `Typography`.
- *
- * Built at module scope, not per render: an element type constructed during
- * render is a new type every time, so React unmounts and remounts the whole
- * subtree on each render.
- *
- * A component that also needs an animated value wraps ITS OWN
- * `Animated.createAnimatedComponent(...)` around one of these — the shared
- * versions stay unanimated so an element type is not created twice for the same
- * primitive. `button/Button.tsx` is the reference.
+ * React Native's primitives typed with the web props react-native-web forwards
+ * (a `listbox` role, `aria-*` on a pressable), for Bloom's own hosts. They are
+ * React Native's components themselves: Bloom styles through `style` alone
+ * (`docs/no-nativewind.mdx`).
  */
-import type { ComponentRef, ComponentType, ReactNode, Ref } from 'react';
+import type { ComponentRef, ComponentType, Ref } from 'react';
 import {
   Pressable,
   ScrollView,
   Text,
   View,
-  type ImageStyle,
   type PressableProps,
   type ScrollViewProps,
   type StyleProp,
   type TextProps,
-  type TextStyle,
   type ViewProps,
   type ViewStyle,
 } from 'react-native';
-import { styled } from 'react-native-css';
 import { BloomImage, type BloomImageProps } from '../image';
 
-/**
- * What `styled()` is TOLD each primitive accepts: `style`, and nothing else.
- *
- * `styled()` derives its mapping type from a dot-path union over the wrapped
- * component's ENTIRE prop type. Under React Native 0.88's strict TypeScript API
- * that union overflows the checker for `View` and `Pressable` alike
- * (`TS2590: union type that is too complex to represent`), and the mapping only
- * ever names `style` (and `contentContainerStyle`). The full prop type each
- * wrapper publishes is the annotation on its export below — a component that
- * takes `{ style }` is assignable to one that takes more.
- */
-type StyleTarget<S, Required = unknown> = (props: Required & { style?: StyleProp<S> }) => ReactNode;
-
-/**
- * `styled()` derives its mapping type from a dot-path union over the wrapped
- * component's ENTIRE prop type, and the one over `PressableProps` overflows the
- * checker (`TS2590: union type that is too complex to represent`). Narrowing is
- * also honest: the function form of `style` is deliberately excluded, since
- * NativeWind's css-interop swallows it and Bloom never uses it.
- */
 type StyledPressableBase = Omit<PressableProps, 'style'> & {
   style?: StyleProp<ViewStyle>;
 };
 
-/**
- * The ARIA PROPERTIES react-native-web forwards to the DOM and React Native does
- * not type at all.
- *
- * React Native types exactly five boolean `aria-*` STATES plus the four
- * `aria-value*`, and folds them back into `accessibilityState`
- * (`ViewAccessibility.d.ts` calls them "alias for accessibilityState"). A
- * PROPERTY like `aria-haspopup` has no state to fold into and no native
- * counterpart, so it is absent from RN's types — while react-native-web lists it
- * in `forwardedProps` and `createDOMProps` writes it straight onto the element.
- *
- * Declared here rather than cast at the call site for the reason
- * `styles/web-view-style.ts` spells out for its own RN/RNW gap: `as` only
- * requires the two types to be COMPARABLE, so a cast accepts a typo'd attribute
- * name and ships it as a prop nothing reads. An annotation keeps the key checked.
- *
- * Native ignores it — an unrecognised prop never reaches a native view config —
- * so this needs no `Platform.OS` branch.
- */
 export interface WebAriaProps {
   /**
    * What kind of surface this control opens. `menu` is the only value Bloom
@@ -127,45 +67,21 @@ export type StyledPressableProps = Omit<StyledPressableBase, 'role'> &
  * measured node (a flyout's scroll box, a select option) a compile error while
  * the runtime forwarded it fine.
  */
-export const StyledView: ComponentType<
+export const StyledView = View as ComponentType<
   Omit<ViewProps, 'role'> & {
     /** Web-only listbox semantics; RN's Role type does not include this role. */
     role?: ViewProps['role'] | 'listbox';
     ref?: Ref<ComponentRef<typeof View>>;
   }
-> = styled(View as StyleTarget<ViewStyle>, { className: 'style' });
+>;
 
-export const StyledText: ComponentType<TextProps & { ref?: Ref<ComponentRef<typeof Text>> }> =
-  styled(Text as StyleTarget<TextStyle>, { className: 'style' });
+export const StyledText: ComponentType<TextProps & { ref?: Ref<ComponentRef<typeof Text>> }> = Text;
 
-/**
- * `className` for {@link BloomImage} — Bloom's one raster renderer (expo-image
- * on a device), never react-native's `Image` directly.
- */
-export const StyledImage: ComponentType<BloomImageProps> = styled(
-  BloomImage as StyleTarget<ImageStyle, Pick<BloomImageProps, 'source'>>,
-  { className: 'style' },
-);
+/** Bloom's one raster renderer (expo-image on a device), never react-native's `Image`. */
+export const StyledImage: ComponentType<BloomImageProps> = BloomImage;
 
-export const StyledPressable: ComponentType<StyledPressableProps> = styled(
-  Pressable as StyleTarget<ViewStyle>,
-  { className: 'style' },
-);
+export const StyledPressable = Pressable as ComponentType<StyledPressableProps>;
 
-/** `className` and `contentContainerClassName` for a ScrollView; `ref` as on the others. */
 export const StyledScrollView: ComponentType<
-  ScrollViewProps & {
-    className?: string;
-    contentContainerClassName?: string;
-    ref?: Ref<ComponentRef<typeof ScrollView>>;
-  }
-> = styled(
-  ScrollView as (props: {
-    style?: StyleProp<ViewStyle>;
-    contentContainerStyle?: StyleProp<ViewStyle>;
-  }) => ReactNode,
-  {
-    className: 'style',
-    contentContainerClassName: 'contentContainerStyle',
-  },
-);
+  ScrollViewProps & { ref?: Ref<ComponentRef<typeof ScrollView>> }
+> = ScrollView;

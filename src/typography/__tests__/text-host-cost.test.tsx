@@ -1,11 +1,10 @@
 /**
  * What one `Text` costs on native, where a feed row draws dozens of them.
  *
- * Without a className there is nothing for `react-native-css` to resolve, so the
- * text is the react-native node itself: one component, no hook slot, and two
- * context reads (the theme and the typography scope). Native resolves
+ * The text is the react-native node itself: one component, no hook slot, and
+ * two context reads (the theme and the typography scope). Native resolves
  * `use-paint-colors.native.ts`, emulated here, so the web-only prepaint context
- * is not read. With a className the interop host is still there to resolve it.
+ * is not read.
  */
 import TestRenderer, { act } from 'react-test-renderer';
 import { Text as RNText } from 'react-native';
@@ -68,18 +67,8 @@ function textCost(element: React.ReactElement) {
   return rows;
 }
 
-it('draws a text without a className as the react-native node, reading theme and scope only', () => {
+it('draws a text as the react-native node, reading theme and scope only', () => {
   expect(textCost(<Text testID="probe">Hello</Text>)).toEqual([
     { name: 'Text', hooks: 0, contexts: 2 },
   ]);
-});
-
-it('keeps the interop host for a className', () => {
-  expect(
-    textCost(
-      <Text testID="probe" className="font-bold">
-        Hello
-      </Text>,
-    ).map((row) => row.name),
-  ).toEqual(['Text', 'CssInterop.DisplayFaceText', 'DisplayFaceText']);
 });
