@@ -37,7 +37,12 @@ const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8')) as {
 const exportsMap = pkg.exports;
 
 /** Non-component entries: static assets and the Node-only Expo config plugin. */
-const STRING_ENTRIES = ['./design-tokens/tokens.json', './package.json', './app.plugin.js'];
+const STRING_ENTRIES = [
+  './design-tokens/theme.css',
+  './design-tokens/tokens.json',
+  './package.json',
+  './app.plugin.js',
+];
 
 /**
  * Vacuity floor, deliberately NOT the current count: a number written here goes

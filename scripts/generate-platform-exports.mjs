@@ -77,6 +77,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./color-engine', 'theme/color-engine/index.ts'],
   ['./preset-vars', 'theme/preset-vars.ts'],
   ['./design-tokens', 'design-tokens/index.ts'],
+  ['./tailwind-preset', 'design-tokens/tailwind-preset.ts'],
   ['./portal', 'portal/index.ts'],
   // Connection loss as a toast; web-forked (navigator.onLine vs NetInfo).
   ['./connection-status', 'connection-status/index.ts'],
@@ -726,6 +727,13 @@ function buildExportsField() {
 
     out[name] = entry;
   }
+
+  // Static CSS artifact for apps still using `className` (Tailwind v4 /
+  // NativeWind CSS-first); removed once the fleet has migrated.
+  // Generated from bloomThemeCss() by scripts/generate-theme-css.ts and
+  // verified in src/__tests__/design-tokens.test.ts. Shipped from `src/`
+  // (included in the package `files` list) so no build copy is needed.
+  out['./design-tokens/theme.css'] = './src/design-tokens/theme.css';
 
   // The same tokens resolved, for a consumer that is not a browser (Astro
   // codegens C++ SkColor tables from it). Generated from the colour engine by

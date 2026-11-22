@@ -1,0 +1,174 @@
+import {
+  COMPONENT_CONTAINERS,
+  COMPONENT_COLOR_ROLES,
+  COMPONENT_RADIUS,
+  COMPONENT_SHADOWS,
+} from './component-roles';
+import { TYPE_SCALE } from '../typography/scale';
+/**
+ * Tailwind v4 `@theme` block generator for the Oxy Unified Design Language.
+ *
+ * FOR APPS STILL USING `className`; removed once the fleet has migrated. Bloom
+ * itself styles without Tailwind (`docs/no-nativewind.mdx`); this is a token
+ * output, generated from the same scales and roles Bloom's styles read.
+ *
+ * Tailwind v4 web apps (auth, console, website) configure their design tokens in
+ * CSS via `@theme { --color-X: var(--X); … }` rather than a JS preset. This
+ * module produces the exact `@theme` body that mirrors `bloomTailwindPreset`, so
+ * a v4 app gets the SAME semantic utilities (`bg-fill`, `text-text-tertiary`,
+ * `p-space-8`, `rounded-radius-20`, `text-body`, `font-body`, `shadow-s`) as the
+ * NativeWind/Tailwind-v3 apps that consume the JS preset.
+ *
+ * Each color role is emitted as a `--color-<role>: var(--canonical)` alias.
+ * Per Bloom's web CSS-var contract, the canonical `--x` token already resolves
+ * to a full `rgb(...)` color at runtime, so the alias is a direct `var(--x)`
+ * reference — NEVER `hsl(var(--x))`.
+ *
+ * Usage: `@import "@oxy.so/bloom/design-tokens/theme.css"`, or write
+ * `bloomThemeBlock()` into a generated stylesheet. `bloomThemeCss()` is only the
+ * `@theme` body; the spacing unit lives in the inline block beside it.
+ */
+
+import { ACCENT_TEXT_ROLES, BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
+import { CANONICAL_TOKENS } from '../theme/token-registry';
+import {
+  BORDER_WIDTH,
+  FONT_FAMILY_VARS,
+  RADIUS,
+  SPACING,
+  TYPOGRAPHY,
+  type TypeRoleName,
+} from './scales';
+import { SHADOW_BOX } from './shadows';
+
+/**
+ * A px line-height as the unitless ratio of its font-size, spelled the way
+ * Tailwind spells its own type scale: `lineHeightRatio(22, 15)` → `calc(22 / 15)`.
+ * Exact on both platforms (no rounded decimal), and the only form
+ * react-native-css resolves correctly through `var()` — it multiplies any
+ * number by the font-size.
+ */
+export function lineHeightRatio(lineHeightPx: number, fontSizePx: number): string {
+  return `calc(${lineHeightPx} / ${fontSizePx})`;
+}
+
+/**
+ * Produce the BODY of a Tailwind v4 `@theme` block (no surrounding braces) that
+ * registers the full Bloom semantic vocabulary.
+ *
+ * - Colors → `--color-<role>: var(--canonical);`
+ * - Spacing → `--spacing-<key>: <px>;`
+ * - Radius  → `--radius-<key>: <px>;`
+ * - Type    → `--text-<role>: <size>; --text-<role>--line-height: calc(<lh> / <size>);`
+ *             `--font-<role>: var(--bloom-font-*);` (+ weight via utility doc)
+ * - Shadow  → `--shadow-<s|m>: <box-shadow>;`
+ */
+export function bloomThemeCss(): string {
+  const lines: string[] = [];
+
+  // Bloom's namespaced semantic color roles (bg-fill, text-text-*, border-*).
+  for (const [role, value] of Object.entries({
+    ...COMPONENT_COLOR_ROLES,
+    ...FILL_ROLES,
+    ...TEXT_ROLES,
+    ...ACCENT_TEXT_ROLES,
+    ...BORDER_ROLES,
+  })) {
+    lines.push(`  --color-${role}: ${value};`);
+  }
+
+  // shadcn-canonical color utilities (bg-card, bg-primary, bg-background,
+  // text-muted-foreground, …). Emitted here — the SINGLE source of truth — for
+  // every runtime token, so consumer apps get these utilities by importing
+  // `@oxy.so/bloom/design-tokens/theme.css` and NEVER re-declare a per-app
+  // `@theme { --color-*: var(--*) }` block (that per-app duplication is what let
+  // `--color-card` drift to `var(--surface)`). Mirrors the `--color-<token>`
+  // aliases `buildScopeVars` emits at runtime, so the static and runtime maps
+  // agree. Each `--x` token already resolves to a full `rgb(...)` color, so the
+  // alias is a direct `var(--x)` — never `hsl(var(--x))`.
+  for (const token of CANONICAL_TOKENS) {
+    lines.push(`  --color-${token}: var(--${token});`);
+  }
+  // `destructive` carries no themed foreground token; its text is always the
+  // fixed light-on-error colour.
+  lines.push('  --color-destructive-foreground: #ffffff;');
+  // `divider` is a semantic alias of the border token (M3 outlineVariant) so
+  // `bg-divider` / `border-divider` read intentionally in list/section UIs.
+  lines.push('  --color-divider: var(--border);');
+
+  for (const [name, width] of Object.entries(COMPONENT_CONTAINERS))
+    lines.push(`  --container-${name}: ${width};`);
+
+  // Spacing.
+  for (const [key, value] of Object.entries(SPACING)) {
+    lines.push(`  --spacing-${key}: ${value}px;`);
+  }
+
+  // Radius.
+  for (const [key, value] of Object.entries(RADIUS)) {
+    lines.push(`  --radius-${key}: ${value}px;`);
+  }
+
+  // Hairline border width.
+  for (const [key, value] of Object.entries(BORDER_WIDTH)) {
+    lines.push(`  --border-width-${key}: ${value}px;`);
+  }
+
+  // Typography: size + line-height + family per role.
+  //
+  // The line-height is a UNITLESS ratio (`calc(22 / 15)`), the form Tailwind's
+  // own `--text-sm--line-height: calc(1.25 / 0.875)` takes — never px. On the
+  // web the two are identical (a unitless line-height is a multiple of the
+  // font-size: 15px × 22/15 = 22px). On native they are not: Tailwind v4 emits
+  // `line-height: var(--tw-leading, var(--text-body--line-height))`,
+  // react-native-css compiles that to `lineHeight(var(…, 22))`, and its runtime
+  // `lineHeight` resolver treats EVERY number as an em multiplier — so a px
+  // token rendered `text-body` at 22 × 15 = 330dp line-height on Android and
+  // iOS. See `lineHeightRatio` and `docs/typography.mdx`.
+  for (const name of Object.keys(TYPOGRAPHY) as TypeRoleName[]) {
+    const role = TYPOGRAPHY[name];
+    lines.push(`  --text-${name}: ${role.size}px;`);
+    lines.push(`  --text-${name}--line-height: ${lineHeightRatio(role.lineHeight, role.size)};`);
+    lines.push(`  --text-${name}--font-weight: ${role.weight};`);
+    lines.push(`  --font-${name}: ${FONT_FAMILY_VARS[role.family]};`);
+  }
+
+  // The detailed component typography vocabulary shares Typography's exact ramp.
+  for (const [name, role] of Object.entries(TYPE_SCALE)) {
+    lines.push(`  --text-${name}: ${role.fontSize}px;`);
+    lines.push(
+      `  --text-${name}--line-height: ${lineHeightRatio(role.lineHeight, role.fontSize)};`,
+    );
+    lines.push(`  --text-${name}--font-weight: ${role.fontWeight};`);
+    lines.push(`  --text-${name}--letter-spacing: ${role.letterSpacing}px;`);
+  }
+  for (const [name, radius] of Object.entries(COMPONENT_RADIUS))
+    lines.push(`  --radius-${name}: ${radius};`);
+  for (const [name, shadow] of Object.entries(COMPONENT_SHADOWS))
+    lines.push(`  --shadow-${name}: ${shadow};`);
+
+  // Bloom raw families.
+  lines.push(`  --font-bloom-sans: ${FONT_FAMILY_VARS.sans};`);
+  lines.push(`  --font-bloom-display: ${FONT_FAMILY_VARS.display};`);
+  lines.push(`  --font-bloom-mono: ${FONT_FAMILY_VARS.mono};`);
+
+  // Shadows.
+  lines.push(`  --shadow-s: ${SHADOW_BOX.s};`);
+  lines.push(`  --shadow-m: ${SHADOW_BOX.m};`);
+
+  return lines.join('\n');
+}
+
+/**
+ * The spacing unit, inlined. A rem is 14px in the native CSS compiler, so the
+ * grid is spelled in px; and inlining it makes `p-3`, `min-h-14` or `leading-5`
+ * compile to literal pixels. Through `var(--spacing)`, react-native-css resolves
+ * a `line-height` at runtime and multiplies it by the font size: `leading-5`
+ * rendered a 320px line box on Android.
+ */
+const SPACING_BLOCK = '@theme inline {\n  --spacing: 4px;\n}';
+
+/** Everything a v4 stylesheet needs: the inlined spacing unit, then the `@theme` block. */
+export function bloomThemeBlock(): string {
+  return `${SPACING_BLOCK}\n\n@theme {\n${bloomThemeCss()}\n}`;
+}

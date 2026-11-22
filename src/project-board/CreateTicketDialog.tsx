@@ -1,13 +1,7 @@
 import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useRef, useState, type ReactNode } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  type TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, type TextInput, useWindowDimensions, View } from 'react-native';
 import { Avatar } from '../avatar';
 import { Chip } from '../chip';
 import { cssLength, WEB_DISPLAY_GRID } from '../styles/web-view-style';

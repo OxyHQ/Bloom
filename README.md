@@ -169,7 +169,7 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 
 | Group | Exports |
 |---|---|
-| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `styles`, `appearance`, `hooks` |
+| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset` (apps still using `className`), `styles`, `appearance`, `hooks` |
 | App shell and navigation | `app-shell`, `panel-routing`, `screen`, `page-header`, `page-footer`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover`, `engagement-bar`, `share-sheet` |
