@@ -829,7 +829,9 @@
     "noteCardLayout": ["grid", "row"],
     "shareSheetSize": ["sm", "md", "lg"],
     "outlineNavStyle": ["full", "compact"],
-    "choiceListStyle": ["list", "picker"]
+    "choiceListStyle": ["list", "picker"],
+    "priceLineTone": ["default", "discount", "muted"],
+    "paymentStatusStyle": ["surface", "plain"]
   },
   "glass": {
     "$comment": [
@@ -3814,6 +3816,22 @@
       "constructors": ["PaymentMethodList"],
       "modifiers": ["style", "density", "disabled", "loading"],
       "style": "choiceListStyle"
+    },
+    "priceSummary": { "constructors": ["PriceSummary"], "modifiers": [] },
+    "priceSummaryLine": {
+      "constructors": ["PriceSummaryLine"],
+      "modifiers": ["tint"],
+      "tint": "priceLineTone"
+    },
+    "paymentStatusBar": {
+      "constructors": ["PaymentStatusBar"],
+      "modifiers": ["style"],
+      "style": "paymentStatusStyle"
+    },
+    "paymentStatusBlock": {
+      "constructors": ["PaymentStatusBlock"],
+      "modifiers": ["style"],
+      "style": "paymentStatusStyle"
     }
   },
   "sfSymbols": {
