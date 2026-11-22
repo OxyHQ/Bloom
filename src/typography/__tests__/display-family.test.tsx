@@ -129,11 +129,7 @@ describe('native draws the display cut the web’s font matching picks', () => {
       weight: '700',
     });
     expect(
-      face(
-        <Text style={{ fontFamily: 'JetBrains Mono', fontWeight: '700' }}>
-          Title
-        </Text>,
-      ).family,
+      face(<Text style={{ fontFamily: 'JetBrains Mono', fontWeight: '700' }}>Title</Text>).family,
     ).toBe('JetBrains Mono');
     expect(
       face(
