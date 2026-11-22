@@ -86,6 +86,7 @@ export function createScreenScrollView(
     handler,
     restoration,
     contentContainerStyle,
+    contentView,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     onLayout,
@@ -143,7 +144,9 @@ export function createScreenScrollView(
         // not its natural content extent. Keep that case explicitly unknown.
         if (publishIntrinsic) {
           const flat = StyleSheet.flatten(contentContainerStyle);
-          publishIntrinsic(flat?.flexGrow || flat?.flex || flat?.minHeight ? -1 : height);
+          publishIntrinsic(
+            contentView || flat?.flexGrow || flat?.flex || flat?.minHeight ? -1 : height,
+          );
         }
         onContentSizeChange?.(width, height);
       },
@@ -154,17 +157,26 @@ export function createScreenScrollView(
         viewport,
         publishIntrinsic,
         contentContainerStyle,
+        contentView,
       ],
     );
-    // The chrome footprint adds to the content's own top and bottom padding.
-    const contentStyle = StyleSheet.flatten(contentContainerStyle);
-    const insetStyle: StyleProp<ViewStyle> = [
-      contentContainerStyle,
-      {
-        paddingTop: scroll.contentInsets.top + paddingEdge(contentStyle, 'paddingTop'),
-        paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
-      },
-    ];
+    // The chrome footprint adds to the content's own top and bottom padding; a
+    // content view's padding is its own, so the footprint pads the container
+    // around it.
+    const contentStyle = contentView ? undefined : StyleSheet.flatten(contentContainerStyle);
+    const insetStyle: StyleProp<ViewStyle> = contentView
+      ? {
+          flexGrow: 1,
+          paddingTop: scroll.contentInsets.top,
+          paddingBottom: scroll.contentInsets.bottom,
+        }
+      : [
+          contentContainerStyle,
+          {
+            paddingTop: scroll.contentInsets.top + paddingEdge(contentStyle, 'paddingTop'),
+            paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
+          },
+        ];
     const ScrollContainer =
       screen.keyboardFollow && getKeyboardComponents
         ? KeyboardFollowScrollView
@@ -202,7 +214,7 @@ export function createScreenScrollView(
         automaticallyAdjustContentInsets={false}
         contentContainerStyle={insetStyle}
       >
-        {children}
+        {contentView ? <View style={contentContainerStyle}>{children}</View> : children}
       </ScrollContainer>
     );
     return Platform.OS === 'web' ? (
@@ -325,6 +337,8 @@ export function createScreenScrollView(
     handler: _handler,
     restoration,
     contentContainerStyle,
+    // The document's content is one view already: `contentContainerStyle` styles it.
+    contentView: _contentView,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     onLayout,

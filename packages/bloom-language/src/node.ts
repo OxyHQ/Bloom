@@ -5133,7 +5133,7 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   keyboardTaps(value: KeyboardTaps): ScrollViewNode;
   /**
    * The content laid out in a view of its own inside the content container,
-   * as Bloom's `contentContainerClassName` lays it out: `build` sets that
+   * as Bloom's `ScreenScrollView contentView` lays it out: `build` sets that
    * view's layout (`.contentView((v) => v.padding('horizontal', 'lg').spacing('md'))`).
    * The content container then grows to the viewport and pads only the
    * screen's chrome; the content margins and spacing go on the view, after its own.

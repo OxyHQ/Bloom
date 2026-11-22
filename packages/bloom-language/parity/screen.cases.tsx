@@ -181,10 +181,10 @@ const scrollViews: ParityCase[] = inScreen([
 ]);
 
 /**
- * A content view is Bloom's view of a content class (`contentContainerClassName`):
- * the class laid out inside the content container, styled by the class and then
- * by `contentContainerStyle`. Here the class is empty and the style is the
- * view's (the codemod's corpus draws Tailwind's classes against it).
+ * A content view is Bloom's `ScreenScrollView contentView`: the content laid
+ * out in a view of its own inside the content container, styled by
+ * `contentContainerStyle` (the codemod's corpus draws an app's content class,
+ * as NativeWind drew it, against it).
  */
 const contentViews: ParityCase[] = (
   [
@@ -261,7 +261,7 @@ const contentViews: ParityCase[] = (
     language: () => <Screen documentScroll={documentScroll}>{toElement(language)}</Screen>,
     bloom: () => (
       <Screen documentScroll={documentScroll}>
-        <ScreenScrollView contentContainerClassName="" {...bloom}>
+        <ScreenScrollView contentView {...bloom}>
           <Text>a</Text>
           <Text>b</Text>
         </ScreenScrollView>
