@@ -3256,6 +3256,12 @@
       "size": "space",
       "tint": "color"
     },
+    "spinnerIcon": {
+      "constructors": ["SpinnerIcon"],
+      "modifiers": ["size", "tint"],
+      "size": "iconSize",
+      "tint": "color"
+    },
     "contextMenu": {
       "constructors": ["ContextMenu"],
       "modifiers": ["actions", "presentedAt", "disabled"]

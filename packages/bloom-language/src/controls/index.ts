@@ -32,6 +32,7 @@ import { VIDEO_PLAYBACK } from './video-playback';
 import { COLOR_SWATCH_PICKERS } from './color-swatch-picker';
 import { INPUT_OTPS } from './input-otp';
 import { ANIMATED_CHECKS } from './animated-check';
+import { SPINNER_ICONS } from './spinner-icon';
 import { CONTEXT_MENUS } from './context-menu';
 import { COLLAPSIBLES } from './collapsible';
 import { DROP_ZONES } from './drop-zone';
@@ -159,6 +160,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...COLOR_SWATCH_PICKERS,
   ...INPUT_OTPS,
   ...ANIMATED_CHECKS,
+  ...SPINNER_ICONS,
   ...CONTEXT_MENUS,
   ...COLLAPSIBLES,
   ...DROP_ZONES,

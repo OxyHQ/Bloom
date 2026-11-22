@@ -543,6 +543,7 @@ import type {
 import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
 import type { InputOtpView } from '../controls/input-otp';
 import type { AnimatedCheckView } from '../controls/animated-check';
+import type { SpinnerIconView } from '../controls/spinner-icon';
 import type { ContextMenuView } from '../controls/context-menu';
 import type { CollapsibleView } from '../controls/collapsible';
 import type { DropZoneView } from '../controls/drop-zone';
@@ -919,6 +920,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ColorSwatchPickerView>, Of<'colorSwatchPicker'>>,
       Same<MethodsOf<InputOtpView>, Of<'inputOtp'>>,
       Same<MethodsOf<AnimatedCheckView>, Of<'animatedCheck'>>,
+      Same<MethodsOf<SpinnerIconView>, Of<'spinnerIcon'>>,
       Same<MethodsOf<ContextMenuView>, Of<'contextMenu'>>,
       Same<MethodsOf<CollapsibleView>, Of<'collapsible'>>,
       Same<MethodsOf<DropZoneView>, Of<'dropZone'>>,
@@ -1263,6 +1265,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<EpisodeRowView>, Of<'episodeRow'>>,
       Same<MethodsOf<EpisodeListView>, Of<'episodeList'>>,
     ] = [
+      true,
       true,
       true,
       true,
