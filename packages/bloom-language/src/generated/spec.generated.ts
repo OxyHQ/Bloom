@@ -2068,6 +2068,21 @@ export const ENUMS = {
     "color",
     "luminosity",
     "plus-lighter"
+  ],
+  "buttonMaterial": [
+    "surface",
+    "flat",
+    "shared",
+    "lens"
+  ],
+  "radarLegend": [
+    "bottom",
+    "top",
+    "overlay"
+  ],
+  "methodTitleAlign": [
+    "left",
+    "center"
   ]
 } as const;
 
@@ -2843,7 +2858,9 @@ export const MODIFIERS = {
   "reorderable": [
     "value?"
   ],
-  "iconOnly": [],
+  "iconOnly": [
+    "value?"
+  ],
   "dragTranslation": [
     "motionValue"
   ],
@@ -2921,7 +2938,7 @@ export const MODIFIERS = {
     "dragIndicator"
   ],
   "material": [
-    "sheetMaterial"
+    "buttonMaterial"
   ],
   "sizing": [
     "sheetSizing"
@@ -3755,6 +3772,36 @@ export const MODIFIERS = {
   ],
   "bloomOnly": [
     "value?"
+  ],
+  "round": [
+    "value?"
+  ],
+  "eyebrow": [
+    "value?"
+  ],
+  "sidebarScrollbarSide": [
+    "scrollbarSide"
+  ],
+  "floatingChrome": [
+    "value?"
+  ],
+  "legend": [
+    "radarLegend"
+  ],
+  "filled": [
+    "value?"
+  ],
+  "mono": [
+    "value?"
+  ],
+  "frosted": [
+    "value?"
+  ],
+  "methodTitleAlign": [
+    "methodTitleAlign"
+  ],
+  "methodTitleVariant": [
+    "typeRamp"
   ]
 } as const;
 
@@ -16867,7 +16914,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "tint"
+    "tint",
+    "mono"
   ],
   "chartCardSurface": [
     "padding",
@@ -17435,7 +17483,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "style"
+    "style",
+    "legend"
   ],
   "sleepScoreCard": [
     "padding",
@@ -17596,7 +17645,9 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "tint"
+    "tint",
+    "shape",
+    "filled"
   ],
   "stageBarsCard": [
     "padding",
@@ -17676,7 +17727,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "mono"
   ],
   "stepsCard": [
     "padding",
@@ -18003,7 +18055,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "disabled",
-    "surface"
+    "surface",
+    "frosted"
   ],
   "composerPanelStatusTab": [
     "padding",
@@ -18163,7 +18216,10 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "sidebarSurface",
+    "sidebarScrollbarSide",
+    "surface"
   ],
   "aiChatContainer": [
     "padding",
@@ -18243,7 +18299,9 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "surface",
+    "floatingChrome"
   ],
   "aiChatThread": [
     "padding",
@@ -22566,7 +22624,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "iconOnly"
   ],
   "listingPhotoGrid": [
     "padding",
@@ -23056,7 +23115,9 @@ export const NODE_MODIFIERS = {
     "style",
     "tint",
     "size",
-    "loading"
+    "loading",
+    "material",
+    "iconOnly"
   ],
   "shelf": [
     "padding",
@@ -23220,7 +23281,9 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "spacing"
+    "spacing",
+    "round",
+    "eyebrow"
   ],
   "subscriptionPlans": [
     "padding",
@@ -23864,7 +23927,9 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "methodTitleAlign",
+    "methodTitleVariant"
   ],
   "filterSection": [
     "padding",
