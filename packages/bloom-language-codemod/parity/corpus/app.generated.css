@@ -259,6 +259,14 @@
 .bg-surface {
   background-color: var(--color-surface);
 }
+.p-2 {
+  --bloom-cx-padding-top: calc(4px * 2);
+  --bloom-cx-padding-right: calc(4px * 2);
+  --bloom-cx-rpadding-right: calc(4px * 2);
+  --bloom-cx-padding-bottom: calc(4px * 2);
+  --bloom-cx-padding-left: calc(4px * 2);
+  --bloom-cx-rpadding-left: calc(4px * 2);
+}
 .p-4 {
   --bloom-cx-padding-top: calc(4px * 4);
   --bloom-cx-padding-right: calc(4px * 4);
@@ -266,6 +274,11 @@
   --bloom-cx-padding-bottom: calc(4px * 4);
   --bloom-cx-padding-left: calc(4px * 4);
   --bloom-cx-rpadding-left: calc(4px * 4);
+}
+.p-2 {
+  padding: calc(4px * 2);
+}
+.p-4 {
   padding: calc(4px * 4);
 }
 .px-3 {

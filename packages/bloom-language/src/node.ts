@@ -412,6 +412,7 @@ import {
   type ActionPlacement,
   type ScrollIndicators,
   type KeyboardDismiss,
+  type HitTesting,
   type ScrollbarVisibility,
   type ScrollbarSide,
   type ScrollbarSize,
@@ -466,6 +467,7 @@ export type {
 export type {
   ActionPlacement,
   ChromePlacement,
+  HitTesting,
   KeyboardDismiss,
   KeyboardTaps,
   ScrollbarVisibility,
@@ -1313,7 +1315,7 @@ export type Modifier =
   | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'basis'; readonly key: string; readonly value: LengthToken }
   | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName | MotionValue }
-  | { readonly kind: 'allowsHitTesting'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'allowsHitTesting'; readonly key: string; readonly value: HitTesting }
   | { readonly kind: 'accessibilityOnly'; readonly key: string }
   | {
       readonly kind: 'overlay';
@@ -2077,7 +2079,7 @@ export class Node {
   scale(value: ScaleName | MotionValue): Node {
     return this.with({ kind: 'scale', key: `scale:${geometryKey(value)}`, value });
   }
-  allowsHitTesting(value: boolean): Node {
+  allowsHitTesting(value: HitTesting): Node {
     return this.with({ kind: 'allowsHitTesting', key: `hit:${value}`, value });
   }
   accessibilityOnly(): Node {
@@ -4330,8 +4332,13 @@ export interface ViewModifiers<Self> extends ViewNode {
   basis(value: LengthToken): Self;
   /** Drawn scaled about its centre, where it is laid out; its siblings keep their places. */
   scale(value: ScaleName | MotionValue): Self;
-  /** `false`: touches and the pointer pass through the view and everything inside it, to what is under it. */
-  allowsHitTesting(value: boolean): Self;
+  /**
+   * `false`: touches and the pointer pass through the view and everything
+   * inside it, to what is under it. `'children'`: through the view, not what
+   * is inside it (React Native's `box-none`); `'self'`: the view takes them,
+   * what is inside it does not (`box-only`).
+   */
+  allowsHitTesting(value: HitTesting): Self;
   /**
    * Read by assistive technology and not drawn: a 1pt clipped box out of the
    * layout (Tailwind's `sr-only`). A screen reader still announces it.

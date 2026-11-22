@@ -347,6 +347,43 @@ const small: ParityCase[] = [
         </RN.View>
       ),
   },
+  ...(
+    [
+      ['children', 'box-none'],
+      ['self', 'box-only'],
+    ] as const
+  ).map(([value, pointerEvents]) => ({
+    name: `hit testing of ${value === 'children' ? 'what is inside only' : 'the view only'}, a padding, a fill`,
+    language: () =>
+      toElement(L.VStack(L.Text('a')).padding('sm').background('surface').allowsHitTesting(value)),
+    bloom: () => (
+      <Themed>
+        {(c) =>
+          RN.Platform.OS === 'web' ? (
+            <RN.View
+              pointerEvents={pointerEvents}
+              style={{ padding: 8, backgroundColor: 'var(--surface)' }}
+            >
+              <Text>a</Text>
+            </RN.View>
+          ) : (
+            <RN.View
+              style={{
+                paddingTop: 8,
+                paddingBottom: 8,
+                paddingStart: 8,
+                paddingEnd: 8,
+                backgroundColor: c.backgroundSecondary,
+                pointerEvents,
+              }}
+            >
+              <Text>a</Text>
+            </RN.View>
+          )
+        }
+      </Themed>
+    ),
+  })),
   {
     name: 'a frame as wide as its content',
     language: () => toElement(L.HStack(L.Text('chip')).frame({ width: 'fit' })),

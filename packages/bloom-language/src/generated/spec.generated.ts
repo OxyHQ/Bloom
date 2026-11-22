@@ -1648,6 +1648,10 @@ export const ENUMS = {
     "immediately",
     "interactively"
   ],
+  "hitTesting": [
+    "children",
+    "self"
+  ],
   "dragIndicator": [
     "visible",
     "hidden"
@@ -2710,7 +2714,7 @@ export const MODIFIERS = {
     "scale"
   ],
   "allowsHitTesting": [
-    "value"
+    "hitTesting"
   ],
   "accessibilityOnly": [],
   "alignSelf": [

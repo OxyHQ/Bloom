@@ -100,3 +100,12 @@ export function Tab({
 export function Scrim() {
   return <View pointerEvents="none" className="h-10 w-full rounded-lg bg-muted" />;
 }
+
+export function PassThrough({ children }: { children: React.ReactNode }) {
+  return (
+    <View pointerEvents="box-none" className="p-2">
+      <View pointerEvents="box-only" className="h-10 w-full rounded-lg bg-muted" />
+      {children}
+    </View>
+  );
+}
