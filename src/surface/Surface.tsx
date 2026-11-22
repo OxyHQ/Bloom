@@ -102,9 +102,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
           />
         ) : null}
         <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>
-          <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
-            {children}
-          </ConcentricProvider>
+          <ConcentricProvider value={concentric.context}>{children}</ConcentricProvider>
         </SurfaceLevelProvider>
       </StyledView>
     );

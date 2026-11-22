@@ -1,4 +1,5 @@
-import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import type React from 'react';
+import { Children, cloneElement, isValidElement } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext } from '../BloomThemeProvider';
@@ -6,21 +7,6 @@ import { ThemeScopeContext } from './context';
 import { useScope } from './use-scope';
 import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
-import {
-  buildNativePresetStyle,
-  buildScopeVars,
-  getVariableContextProvider,
-} from './style-builder';
-
-/**
- * The variables a scope publishes when it carries no preset of its own.
- *
- * Empty and shared at module scope, both deliberately: react-native-css's
- * `VariableContextProvider` MERGES its value over the inherited one, so an empty
- * record leaves the parent scope's variables exactly as they were, and one
- * shared identity keeps that provider's `useMemo` from recomputing every render.
- */
-const NO_VARS: Record<string, string> = Object.freeze({});
 
 export interface BloomColorScopeProps {
   /**
@@ -41,7 +27,7 @@ export interface BloomColorScopeProps {
   tokens?: BloomColorScopeTokens;
   /**
    * When `true`, do not render a wrapping `<View>`. The single child is cloned
-   * with the scope's CSS vars merged into its `style` prop (Radix-style).
+   * with the scope's `style` merged into its own (Radix-style).
    */
   asChild?: boolean;
   /** Additional style applied to the wrapping `<View>` (or merged into the cloned child with `asChild`). */
@@ -91,8 +77,7 @@ export function BloomColorScope({
   style,
   children,
 }: BloomColorScopeProps) {
-  const { context, state, vars: nativeVars } = useScope(colorPreset, mode, tokens, seed);
-  const VariableProvider = getVariableContextProvider();
+  const { context, state } = useScope(colorPreset, mode, tokens, seed);
 
   let content: React.ReactNode;
   if (asChild) {
@@ -111,43 +96,9 @@ export function BloomColorScope({
     content = <View style={[{ flex: 1 }, style]}>{children}</View>;
   }
 
-  // Wrap the subtree in the variable provider when NativeWind is available;
-  // otherwise render as-is so we never crash on web/non-NativeWind hosts.
-  const scoped = VariableProvider ? (
-    <VariableProvider value={nativeVars ?? NO_VARS}>{content}</VariableProvider>
-  ) : (
-    content
-  );
-
   return (
     <BloomThemeContext.Provider value={context}>
-      <ThemeScopeContext.Provider value={state}>{scoped}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={state}>{content}</ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
-}
-
-/**
- * Escape hatch for advanced cases where the wrapping element is owned by the
- * caller. Returns a stable native style object carrying the preset's CSS vars
- * via NativeWind's `vars()`. Returns `undefined` on web or when `nativewind`
- * is not installed.
- *
- * NOTE: subject to the react-native-css@3 limitation — the returned style only
- * propagates vars to descendants when applied to an interop className component
- * (the runtime gates propagation on matched className style rules). It is a
- * no-op on a plain `<View>` with no `className`. For the common case prefer
- * `<BloomColorScope>`, which wraps children in `VariableContextProvider`.
- */
-export function useColorScopeStyle(colorPreset: AppColorName): StyleProp<ViewStyle> {
-  // Hooks first, unconditionally; throw only after they have all run.
-  const parent = useContext(BloomThemeContext);
-  const resolvedMode = parent?.theme.mode ?? 'light';
-  const scopeStyle = useMemo(
-    () => buildNativePresetStyle(colorPreset, resolvedMode),
-    [colorPreset, resolvedMode],
-  );
-  if (!parent) {
-    throw new Error('useColorScopeStyle must be used within a <BloomThemeProvider>');
-  }
-  return scopeStyle;
 }

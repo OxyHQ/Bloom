@@ -8,7 +8,7 @@ export type {
   BloomThemeProviderProps,
   BloomThemeContextValue,
 } from './BloomThemeProvider';
-export { BloomColorScope, useColorScopeStyle } from './color-scope/index.web';
+export { BloomColorScope } from './color-scope/index.web';
 export type { BloomColorScopeProps, BloomColorScopeTokens } from './color-scope/index.web';
 export { BloomSeedScope } from './seed-scope/index.web';
 export type { BloomSeedScopeProps } from './seed-scope/index.web';
@@ -99,7 +99,6 @@ export { applyPresetVarsToDocument } from './token-registry';
 // owns them.
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
-export { initCssInteropDarkMode } from './init-css-interop';
 export type {
   BloomThemeStorage,
   BloomThemeStorageConfig,
@@ -108,6 +107,8 @@ export type {
 export { createBloomThemeStorage, webLocalStorage } from './persistence';
 
 export { useThemePaint } from './use-theme-paint';
+export { createTokenStyles, tokenAlpha, useColorTokens } from './color-tokens';
+export type { ColorToken, ColorTokens } from './color-tokens';
 export { BloomThemeHead } from './ThemeBootstrap';
 export { getThemeBootstrap } from './prepaint';
 export type { BloomThemeBootstrapConfig } from './prepaint';

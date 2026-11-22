@@ -3,7 +3,6 @@ import type { ViewStyle } from 'react-native';
 import type { SurfaceStyle } from '../shapes/corner-types';
 import { IS_WEB } from '../styles/platform';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { getNativeVariableHook } from '../theme/color-scope/style-builder';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { ConcentricContext } from './context';
 import {
@@ -42,9 +41,7 @@ export function useConcentricGeometry({
   const base = parent ?? EMPTY_GEOMETRY;
   const id = `bloom-cx-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const rtl = useIsRtl();
-  const useNativeVariable = getNativeVariableHook();
-  // One compiled marker combines four independent corner utilities. It is not a class parser.
-  const marker = Number(useNativeVariable(`--bloom-cx-${rtl ? 'r' : ''}auto-mask`)) || 0;
+  const marker = 0;
   const autoCorners = {
     topLeft: Boolean(marker & 1),
     topRight: Boolean(marker & 2),
