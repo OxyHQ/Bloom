@@ -1647,6 +1647,30 @@ options?)` (`activeId`, `onSelect`, `progress`, `hideProgress`, `title`,
 placed and sized by the view's own modifiers. Each is named with `.label()`
 where Bloom takes a name.
 
+### Row actions, swipe row and theme toggle
+
+```ts
+RowActions(file.name, { actions: [{ icon: DeleteIcon, label: 'Delete', onPress: remove }], menu }).style('outline')
+RowActionButton(EditIcon, 'Edit').active(menuOpen).onPress(openMenu)
+SwipeRow(MailRow(mail), { right: [{ key: 'delete', label: 'Delete', icon: DeleteIcon, tone: 'negative' }] }, { onAction }).tint('card')
+ThemeToggle().style('segmented')
+```
+
+`RowActions(name, options?)` (`actions`, `menu`, `menuLabel`; its
+`menuWidth` a space token): `.style('plain' | 'outline')` is its menu
+button's look. `RowActionButton(icon, label, options?)` (`tooltip` and the
+Button props it passes on): `.style()`, `.active()` while a menu it opened
+shows, `.disabled()`; `.onPress()` is its own and `.label()` a fuller name
+than its tooltip. `SwipeRow(content, actions, options?)` is Bloom's, its
+drag on Gesture Handler as Bloom's is: the row is its content, `actions`
+Bloom's panes per side (`onAction`, `onOpenChange`, `actionPresentation`,
+`fullSwipeAction`, `closeLabel`; `height` and `actionWidth` space tokens,
+`radius` a corner rung); `.tint()` is the fill the row travels on, a colour
+role. Its `paint` stays Bloom's six colours (a set of roles has no prop to
+paint). `ThemeToggle(options?)` (`transitionDuration`): `.style('sidebar' |
+'segmented' | 'sidebar-segmented' | 'bare-segmented')`, `.collapsed()` for
+a collapsed rail.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

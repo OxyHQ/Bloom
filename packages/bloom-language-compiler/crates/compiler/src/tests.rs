@@ -982,3 +982,23 @@ fn the_logistics_families_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn row_actions_the_swipe_row_and_the_theme_toggle_are_checked() {
+    let imports = "import { RowActionButton, RowActions, SwipeRow, Text, ThemeToggle, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (i, a) => VStack(RowActions('a').style('outline'), RowActionButton(i, 'Edit').style('outline').active(true).disabled(), SwipeRow(Text('a'), a).tint('card'), ThemeToggle().style('bare-segmented').collapsed());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("RowActions('a').style('solid')", "Unknown rowActionStyle token 'solid' for .style()"),
+        ("RowActionButton(b, 'a').size('sm')", "RowActionButton has no modifier .size()"),
+        ("SwipeRow(Text('a'), b).tint('rose')", "Unknown color token 'rose' for .tint()"),
+        ("ThemeToggle().style('switch')", "Unknown themeToggleStyle token 'switch' for .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

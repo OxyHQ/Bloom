@@ -98,6 +98,8 @@ import {
   type LoadingStyle,
   type AgentMood,
   type OutlineNavStyle,
+  type RowActionStyle,
+  type ThemeToggleStyle,
   type NoteCardLayout,
   type ShareSheetSize,
   type ShelfLayout,
@@ -533,7 +535,9 @@ export type Modifier =
         | PipelineLayout
         | MediaCardLayout
         | ReleaseCardLayout
-        | TransportStyle;
+        | TransportStyle
+        | RowActionStyle
+        | ThemeToggleStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1076,7 +1080,9 @@ export class Node {
       | PipelineLayout
       | MediaCardLayout
       | ReleaseCardLayout
-      | TransportStyle,
+      | TransportStyle
+      | RowActionStyle
+      | ThemeToggleStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

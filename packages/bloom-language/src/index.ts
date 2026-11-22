@@ -551,7 +551,16 @@ export type {
 } from './controls/share-sheet';
 
 // Generic components (controls/generic.tsx)
-export { ConnectionDots, OutlineNav, Pagination, ProgressiveBlur } from './controls/generic';
+export {
+  ConnectionDots,
+  OutlineNav,
+  Pagination,
+  ProgressiveBlur,
+  RowActionButton,
+  RowActions,
+  SwipeRow,
+  ThemeToggle,
+} from './controls/generic';
 export type {
   ConnectionDotsOptions,
   ConnectionDotsView,
@@ -561,6 +570,14 @@ export type {
   PaginationView,
   ProgressiveBlurOptions,
   ProgressiveBlurView,
+  RowActionButtonOptions,
+  RowActionButtonView,
+  RowActionsOptions,
+  RowActionsView,
+  SwipeRowOptions,
+  SwipeRowView,
+  ThemeToggleOptions,
+  ThemeToggleView,
 } from './controls/generic';
 // Addresses (controls/address.tsx)
 export { AddressRow, AddressList } from './controls/address';

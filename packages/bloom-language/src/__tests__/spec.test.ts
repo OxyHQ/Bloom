@@ -204,6 +204,10 @@ import type {
   OutlineNavView,
   PaginationView,
   ProgressiveBlurView,
+  RowActionsView,
+  RowActionButtonView,
+  SwipeRowView,
+  ThemeToggleView,
 } from '../controls/generic';
 import type { AddressRowView, AddressListView } from '../controls/address';
 import type {
@@ -695,7 +699,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ShipmentLoadPickerView>, Of<'shipmentLoadPicker'>>,
       Same<MethodsOf<ShipmentOptionsListView>, Of<'shipmentOptionsList'>>,
       Same<MethodsOf<ShipmentRequestFormView>, Of<'shipmentRequestForm'>>,
+      Same<MethodsOf<RowActionsView>, Of<'rowActions'>>,
+      Same<MethodsOf<RowActionButtonView>, Of<'rowActionButton'>>,
+      Same<MethodsOf<SwipeRowView>, Of<'swipeRow'>>,
+      Same<MethodsOf<ThemeToggleView>, Of<'themeToggle'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
