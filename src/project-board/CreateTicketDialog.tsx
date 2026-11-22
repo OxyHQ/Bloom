@@ -6,6 +6,8 @@ import { useDialogControl } from '../dialog/context';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
 import { Textarea } from '../textarea';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
+import { useColorTokens } from '../theme/color-tokens';
 import { DEFAULT_PROJECT, PRIORITIES } from './constants';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
@@ -72,6 +74,8 @@ export function CreateTicketDialog({
   onCreate: (ticket: NewProjectTicket) => void;
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
+  const tokens = useColorTokens();
+  const phone = useWindowBreakpoint() === 'base';
   const { Button, Dialog, TicketGenieSurface } = useProjectBoardPlatform();
   const control = useDialogControl();
   const [title, setTitle] = useState('');
@@ -170,7 +174,6 @@ export function CreateTicketDialog({
                 </View>
                 <View className="flex flex-col gap-1.5">
                   <Textarea
-                    className="relative grid text-headline-medium text-text-primary"
                     inputRef={titleRef}
                     accessibilityLabel={m.ticketTitle}
                     value={title}
@@ -182,12 +185,21 @@ export function CreateTicketDialog({
                     autoResize
                     maxRows={8}
                     placeholder={m.enterTitle}
-                    fieldClassName="relative border-0 bg-transparent p-0"
-                    inputClassName="size-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-text-secondary text-headline-medium text-text-primary"
-                    inputStyle={{ minHeight: 22 }}
+                    bare
+                    inputStyle={{
+                      height: '100%',
+                      overflow: 'hidden',
+                      paddingLeft: 0,
+                      paddingRight: 0,
+                      fontSize: 16,
+                      lineHeight: 22,
+                      fontWeight: '500',
+                      color: tokens.foreground,
+                      minHeight: 22,
+                    }}
                   />
                   <Textarea
-                    className="relative grid max-h-[200px] text-body-medium text-text-secondary max-sm:text-[16px]"
+                    style={{ maxHeight: 200 }}
                     accessibilityLabel={m.description}
                     value={description}
                     onValueChange={setDescription}
@@ -196,8 +208,16 @@ export function CreateTicketDialog({
                     autoResize
                     maxRows={10}
                     placeholder={m.descriptionArea}
-                    fieldClassName="relative border-0 bg-transparent p-0"
-                    inputClassName="size-full resize-none border-0 bg-transparent p-0 outline-none placeholder:text-text-tertiary text-body-medium text-text-secondary max-sm:text-[16px]"
+                    bare
+                    inputStyle={{
+                      height: '100%',
+                      paddingLeft: 0,
+                      paddingRight: 0,
+                      fontSize: phone ? 16 : 14,
+                      lineHeight: phone ? 22.86 : 20,
+                      fontWeight: '500',
+                      color: tokens.mutedForeground,
+                    }}
                   />
                 </View>
               </View>

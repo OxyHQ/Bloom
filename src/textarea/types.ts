@@ -47,10 +47,11 @@ export type TextareaProps = Omit<
     tooltip?: boolean;
     /** Style for the `TextInput` itself (the outer `style` is the whole field). */
     inputStyle?: TextStyleProp['style'];
-    /** Opt-in recipes for borderless/autogrowing composed fields. */
-    className?: string;
-    fieldClassName?: string;
-    inputClassName?: string;
+    /**
+     * Draw no shell: no fill, no ring and no padding, for a borderless field
+     * composed into its own surface. `fieldStyle` then styles the box.
+     */
+    bare?: boolean;
     fieldStyle?: StyleProp<ViewStyle>;
     inputRef?:
       | React.RefObject<ComponentRef<typeof TextInput> | null>
