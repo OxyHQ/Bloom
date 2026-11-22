@@ -36,7 +36,6 @@ it('composes the actual Button root with numeric size, icon size and caller layo
         size={40}
         icon={Icon}
         accessibilityLabel="Save"
-        className="caller"
         style={[{ marginTop: 8 }, { borderRadius: 12 }]}
       />,
     ),
@@ -44,7 +43,6 @@ it('composes the actual Button root with numeric size, icon size and caller layo
   const button = container.querySelector('button')!;
   expect(container.children).toHaveLength(1);
   expect(button.className).toContain('bloom-btn--surface');
-  expect(button.className).toContain('caller');
   expect(button.getAttribute('aria-label')).toBe('Save');
   expect(button.style.getPropertyValue('--bloom-btn-width')).toBe('40px');
   expect(button.style.getPropertyValue('--bloom-btn-height')).toBe('40px');

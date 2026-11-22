@@ -74,7 +74,6 @@ export const Targets: Story = {
             </Button>
             <Button
               testID={`${direction}-long`}
-              className="whitespace-normal"
               style={{ height: 'auto', maxWidth: 190 }}
               onPress={() => setLast(`${direction}-long`)}
             >
