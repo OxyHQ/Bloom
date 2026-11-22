@@ -122,7 +122,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
         : radius && radius !== 'concentric'
           ? RADIUS[radius]
           : undefined;
-    const callerStyle = StyleSheet.flatten(style) as ViewStyle | undefined;
+    const callerStyle: ViewStyle | undefined = StyleSheet.flatten(style) ?? undefined;
     const baseGeometry = resolveSurfaceGeometry(
       explicitRadius,
       callerStyle,

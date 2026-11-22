@@ -1,5 +1,5 @@
 import { BloomScope } from '../appearance';
-import type { ViewStyle } from 'react-native';
+import type { WebCssStyle } from '../styles/web-view-style';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header/PageHeader';
 import { useDirectionProps } from '../hooks/use-is-rtl';
@@ -31,11 +31,11 @@ type CanvasProps<Item> = Omit<ControlledProjectBoardProps<Item>, 'variant'> & {
 
 /** The original ProjectBoard column/card renderer, with slots for product-owned records. */
 /** The column's fill eases as a card is dragged over it (web). */
-const COLUMN_TRANSITION = {
+const COLUMN_TRANSITION: WebCssStyle = {
   transitionProperty: 'box-shadow, background-color',
   transitionDuration: '150ms',
   transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
-} as unknown as ViewStyle;
+};
 
 export function ProjectBoardCanvas<Item>({
   engine,
