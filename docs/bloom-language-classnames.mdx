@@ -24,14 +24,14 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1038 | 46963 | 87.4% |
+| Maps to a modifier and a token | 1039 | 46966 | 87.4% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
 | Redundant in the language | 32 | 513 | 1.0% |
 | Needs a named token (raw value) | 278 | 671 | 1.2% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
 | Needs a modifier the language lacks | 26 | 63 | 0.1% |
-| An app’s own class | 450 | 1753 | 3.3% |
+| An app’s own class | 449 | 1750 | 3.3% |
 
 53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
 over the utility they prefix; 1739 of their 2061 uses (84.4%) have a
@@ -75,10 +75,10 @@ when the fill is a role's colour.
 | --- | --- | ---: | ---: |
 | `text-muted-foreground` | .foreground('muted') | 3045 | 22 |
 | `items-center` | .align('center') | 2876 | 27 |
-| `text-sm` | .font('body') | 1955 | 21 |
-| `flex-1` | .grow() | 1914 | 27 |
+| `text-sm` | .font('14').leading('20px') | 1955 | 21 |
+| `flex-1` | .flex('1') | 1914 | 27 |
 | `text-foreground` | .foreground('foreground') | 1777 | 23 |
-| `text-xs` | .font('caption-1') | 1489 | 23 |
+| `text-xs` | .font('xs').leading('16px') | 1489 | 23 |
 | `gap-2` | .spacing('sm') | 1279 | 26 |
 | `gap-3` | .spacing('md') | 1021 | 25 |
 | `font-semibold` | .weight('semibold') | 996 | 22 |
@@ -110,16 +110,16 @@ when the fill is a role's colour.
 | `min-w-0` | .frame({ minWidth: 'none' }) | 265 | 18 |
 | `bg-card` | .background('card') | 264 | 17 |
 | `text-[13px]` | .font('sm') | 258 | 10 |
-| `overflow-hidden` | .corner(…) clips; alone it needs a clip modifier | 245 | 23 |
+| `overflow-hidden` | .clipped() | 245 | 23 |
 | `py-3` | .padding('vertical', 'md') | 244 | 19 |
 | `text-destructive` | .foreground('destructive') | 239 | 15 |
 | `gap-space-8` | .spacing('sm') | 224 | 3 |
 | `text-text` | .foreground('foreground') | 220 | 2 |
 | `rounded-lg` | .corner('sm') | 217 | 17 |
-| `mt-1` | .padding('top', 'xs') (outside the fill) | 215 | 19 |
+| `mt-1` | .margin('top', 'xs') | 215 | 19 |
 | `text-primary` | .foreground('primary') | 214 | 16 |
 | `gap-1.5` | .spacing('6') | 209 | 17 |
-| `mt-2` | .padding('top', 'sm') (outside the fill) | 207 | 19 |
+| `mt-2` | .margin('top', 'sm') | 207 | 19 |
 | `border-b` | .border(role, 'thin', 'bottom') | 201 | 18 |
 | `rounded-md` | .corner('6') | 194 | 13 |
 | `text-[15px]` | .font('md') | 194 | 12 |
@@ -127,33 +127,33 @@ when the fill is a role's colour.
 | `items-start` | .align('start') | 177 | 22 |
 | `p-3` | .padding('all', 'md') | 177 | 20 |
 | `opacity-70` | .opacity('70') | 167 | 13 |
-| `mb-3` | .padding('bottom', 'md') (outside the fill) | 162 | 15 |
+| `mb-3` | .margin('bottom', 'md') | 162 | 15 |
 | `text-text-tertiary` | .foreground('muted') | 161 | 4 |
 | `px-5` | .padding('horizontal', 'xl') | 156 | 14 |
 | `text-lg` | .font('18').leading('28px') | 151 | 18 |
 | `uppercase` | .textCase('uppercase') | 151 | 15 |
 | `px-6` | .padding('horizontal', '2xl') | 144 | 18 |
 | `py-1` | .padding('vertical', 'xs') | 143 | 19 |
-| `mt-3` | .padding('top', 'md') (outside the fill) | 142 | 15 |
-| `mt-0.5` | .padding('top', '2xs') (outside the fill) | 139 | 14 |
+| `mt-3` | .margin('top', 'md') | 142 | 15 |
+| `mt-0.5` | .margin('top', '2xs') | 139 | 14 |
 | `py-4` | .padding('vertical', 'lg') | 137 | 18 |
-| `mt-4` | .padding('top', 'lg') (outside the fill) | 136 | 16 |
+| `mt-4` | .margin('top', 'lg') | 136 | 16 |
 | `px-2` | .padding('horizontal', 'sm') | 135 | 22 |
-| `mb-2` | .padding('bottom', 'sm') (outside the fill) | 133 | 15 |
+| `mb-2` | .margin('bottom', 'sm') | 133 | 15 |
 | `gap-0.5` | .spacing('2xs') | 124 | 16 |
 | `bg-primary` | .background('primary') | 121 | 14 |
 | `gap-space-4` | .spacing('xs') | 121 | 3 |
 | `self-start` | .alignSelf('start') | 120 | 16 |
 | `justify-end` | .justify('end') | 116 | 18 |
 | `text-[11px]` | .font('11') | 114 | 15 |
-| `mb-4` | .padding('bottom', 'lg') (outside the fill) | 110 | 14 |
+| `mb-4` | .margin('bottom', 'lg') | 110 | 14 |
 | `text-primary-text` | .foreground('primaryText') | 106 | 3 |
-| `mb-1` | .padding('bottom', 'xs') (outside the fill) | 103 | 13 |
+| `mb-1` | .margin('bottom', 'xs') | 103 | 13 |
 | `px-8` | .padding('horizontal', '3xl') | 103 | 11 |
 | `gap-space-12` | .spacing('md') | 98 | 3 |
 | `rounded-radius-max` | .corner('full') | 97 | 3 |
 | `items-end` | .align('end') | 96 | 19 |
-| `mb-6` | .padding('bottom', '2xl') (outside the fill) | 96 | 12 |
+| `mb-6` | .margin('bottom', '2xl') | 96 | 12 |
 | `bg-primary/10` | .background('primary/10') | 95 | 12 |
 | `mx-auto` | .alignSelf('center') (in a column) | 95 | 13 |
 | `text-caption` | .font('11').leading('14px') | 94 | 2 |
@@ -201,8 +201,8 @@ when the fill is a role's colour.
 | `py-6` | .padding('vertical', '2xl') | 54 | 11 |
 | `gap-2.5` | .spacing('10') | 53 | 13 |
 | `p-space-16` | .padding('all', 'lg') | 53 | 3 |
-| `mt-6` | .padding('top', '2xl') (outside the fill) | 52 | 8 |
-| `text-bodySmall` | .font('body-2') | 51 | 2 |
+| `mt-6` | .margin('top', '2xl') | 52 | 8 |
+| `text-bodySmall` | .font('sm').leading('18px') | 51 | 2 |
 | `text-primary-foreground` | .foreground('onPrimary') | 51 | 13 |
 | `tracking-wide` | .tracking('wide') | 50 | 8 |
 | `w-9` | .frame({ width: '36' }) | 50 | 10 |
@@ -211,13 +211,13 @@ when the fill is a role's colour.
 | `w-12` | .frame({ width: '48' }) | 47 | 12 |
 | `rounded` | .corner('xs') | 46 | 11 |
 | `bg-white` | .background('white') | 44 | 8 |
-| `mb-8` | .padding('bottom', '3xl') (outside the fill) | 44 | 6 |
-| `mr-3` | .padding('trailing', 'md') (outside the fill) | 43 | 6 |
+| `mb-8` | .margin('bottom', '3xl') | 44 | 6 |
+| `mr-3` | .margin('right', 'md') | 43 | 6 |
 | `px-screen-margin` | .padding('horizontal', 'xl') | 43 | 2 |
 | `py-10` | .padding('vertical', '4xl') | 43 | 8 |
-| `left-0` | .position({ leading: 'none' }) | 42 | 13 |
-| `mt-8` | .padding('top', '3xl') (outside the fill) | 42 | 11 |
-| `right-0` | .position({ trailing: 'none' }) | 42 | 14 |
+| `left-0` | .position({ left: 'none' }) | 42 | 13 |
+| `mt-8` | .margin('top', '3xl') | 42 | 11 |
+| `right-0` | .position({ right: 'none' }) | 42 | 14 |
 | `space-y-2` | .spacing('sm') | 42 | 4 |
 | `border-primary` | .border('primary') | 41 | 9 |
 | `outline-none` | .ring('none') | 41 | 7 |
@@ -236,7 +236,7 @@ when the fill is a role's colour.
 | `h-[1px]` | .frame({ height: '1' }) | 36 | 3 |
 | `h-px` | .frame({ height: '1' }) | 36 | 8 |
 | `text-surface-foreground` | .foreground('onSurface') | 36 | 2 |
-| `mx-4` | .padding('horizontal', 'lg') (outside the fill) | 35 | 7 |
+| `mx-4` | .margin('horizontal', 'lg') | 35 | 7 |
 | `rounded-3xl` | .corner('2xl') | 35 | 9 |
 | `underline` | .underline() | 35 | 11 |
 | `h-14` | .frame({ height: '56' }) | 34 | 10 |
@@ -244,20 +244,20 @@ when the fill is a role's colour.
 | `pb-6` | .padding('bottom', '2xl') | 34 | 13 |
 | `bg-accent` | .background('accent') | 33 | 8 |
 | `bottom-0` | .position({ bottom: 'none' }) | 33 | 13 |
-| `mb-0.5` | .padding('bottom', '2xs') (outside the fill) | 33 | 5 |
+| `mb-0.5` | .margin('bottom', '2xs') | 33 | 5 |
 | `pointer-events-none` | .allowsHitTesting(false) | 33 | 6 |
 | `rounded-radius-16` | .corner('lg') | 33 | 2 |
 | `bg-destructive/10` | .background('destructive/10') | 32 | 8 |
-| `mb-1.5` | .padding('bottom', '6') (outside the fill) | 32 | 8 |
-| `ml-2` | .padding('leading', 'sm') (outside the fill) | 32 | 9 |
-| `mt-1.5` | .padding('top', '6') (outside the fill) | 32 | 10 |
-| `mt-5` | .padding('top', 'xl') (outside the fill) | 32 | 9 |
+| `mb-1.5` | .margin('bottom', '6') | 32 | 8 |
+| `ml-2` | .margin('left', 'sm') | 32 | 9 |
+| `mt-1.5` | .margin('top', '6') | 32 | 10 |
+| `mt-5` | .margin('top', 'xl') | 32 | 9 |
 | `p-0` | .padding('all', 'none') | 31 | 6 |
 | `py-space-8` | .padding('vertical', 'sm') | 31 | 2 |
 | `top-0` | .position({ top: 'none' }) | 31 | 15 |
 | `z-10` | .zIndex('floating') | 31 | 10 |
 | `border-border/60` | .border('border/60') | 30 | 2 |
-| `ml-3` | .padding('leading', 'md') (outside the fill) | 30 | 8 |
+| `ml-3` | .margin('left', 'md') | 30 | 8 |
 | `opacity-60` | .opacity('60') | 30 | 9 |
 | `w-8` | .frame({ width: '3xl' }) | 30 | 13 |
 | `max-w-[1200px]` | .frame({ maxWidth: '1200' }) | 29 | 4 |
@@ -266,11 +266,11 @@ when the fill is a role's colour.
 | `bg-muted/40` | .background('mutedFill/40') | 28 | 5 |
 | `leading-[18px]` | .leading('18px') | 28 | 7 |
 | `py-12` | .padding('vertical', '48') | 28 | 13 |
-| `mb-5` | .padding('bottom', 'xl') (outside the fill) | 27 | 9 |
+| `mb-5` | .margin('bottom', 'xl') | 27 | 9 |
 | `space-y-3` | .spacing('md') | 27 | 2 |
 | `w-16` | .frame({ width: '64' }) | 27 | 10 |
 | `w-11` | .frame({ width: '44' }) | 26 | 7 |
-| `mr-2` | .padding('trailing', 'sm') (outside the fill) | 25 | 5 |
+| `mr-2` | .margin('right', 'sm') | 25 | 5 |
 | `pt-6` | .padding('top', '2xl') | 25 | 7 |
 | `rounded-[24px]` | .corner('2xl') | 25 | 6 |
 | `rounded-radius-12` | .corner('md') | 25 | 3 |
@@ -287,7 +287,7 @@ when the fill is a role's colour.
 | `text-body` | .font('md').leading('22px') | 23 | 2 |
 | `h-16` | .frame({ height: '64' }) | 22 | 10 |
 | `max-w-sm` | .frame({ maxWidth: '384' }) | 22 | 12 |
-| `mt-space-4` | .padding('top', 'xs') (outside the fill) | 22 | 2 |
+| `mt-space-4` | .margin('top', 'xs') | 22 | 2 |
 | `pb-8` | .padding('bottom', '3xl') | 22 | 6 |
 | `ring-2` | .ring(role, 'thick') | 22 | 4 |
 | `rounded-[4px]` | .corner('xs') | 22 | 3 |
@@ -300,10 +300,10 @@ when the fill is a role's colour.
 | `size-4` | .frame({ width: 'lg', height: 'lg' }) | 21 | 4 |
 | `border-2` | .border(role, 'thick') | 20 | 12 |
 | `border-input` | .border('input') | 20 | 7 |
-| `my-1` | .padding('vertical', 'xs') (outside the fill) | 20 | 5 |
-| `my-2` | .padding('vertical', 'sm') (outside the fill) | 20 | 4 |
+| `my-1` | .margin('vertical', 'xs') | 20 | 5 |
+| `my-2` | .margin('vertical', 'sm') | 20 | 4 |
 | `p-3.5` | .padding('all', '14') | 20 | 3 |
-| `pr-3` | .padding('trailing', 'md') | 20 | 6 |
+| `pr-3` | .padding('right', 'md') | 20 | 6 |
 | `shadow-sm` | .shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)') | 20 | 5 |
 | `bg-muted/50` | .background('mutedFill/half') | 19 | 5 |
 | `min-w-40` | .frame({ minWidth: '160' }) | 19 | 2 |
@@ -322,7 +322,7 @@ when the fill is a role's colour.
 | `italic` | .italic() | 17 | 6 |
 | `max-w-2xl` | .frame({ maxWidth: '672' }) | 17 | 8 |
 | `max-w-md` | .frame({ maxWidth: '448' }) | 17 | 9 |
-| `mt-2.5` | .padding('top', '10') (outside the fill) | 17 | 5 |
+| `mt-2.5` | .margin('top', '10') | 17 | 5 |
 | `pt-0.5` | .padding('top', '2xs') | 17 | 8 |
 | `pt-5` | .padding('top', 'xl') | 17 | 8 |
 | `rounded-[20px]` | .corner('xl') | 17 | 6 |
@@ -342,7 +342,7 @@ when the fill is a role's colour.
 | `font-normal` | .weight('regular') | 15 | 9 |
 | `gap-8` | .spacing('3xl') | 15 | 9 |
 | `h-5` | .frame({ height: 'xl' }) | 15 | 9 |
-| `right-2` | .position({ trailing: 'sm' }) | 15 | 7 |
+| `right-2` | .position({ right: 'sm' }) | 15 | 7 |
 | `w-2` | .frame({ width: 'sm' }) | 15 | 7 |
 | `w-2.5` | .frame({ width: '10' }) | 15 | 11 |
 | `w-7` | .frame({ width: '28' }) | 15 | 9 |
@@ -371,10 +371,10 @@ when the fill is a role's colour.
 | `w-5` | .frame({ width: 'xl' }) | 13 | 9 |
 | `w-6` | .frame({ width: '2xl' }) | 13 | 8 |
 | `border-border-image` | .border('border') | 12 | 2 |
-| `border-r` | .border(role, 'thin', 'trailing') | 12 | 4 |
+| `border-r` | .border(role, 'thin', 'right') | 12 | 4 |
 | `leading-[20px]` | .leading('20px') | 12 | 4 |
-| `ml-1` | .padding('leading', 'xs') (outside the fill) | 12 | 7 |
-| `mt-space-8` | .padding('top', 'sm') (outside the fill) | 12 | 3 |
+| `ml-1` | .margin('left', 'xs') | 12 | 7 |
+| `mt-space-8` | .margin('top', 'sm') | 12 | 3 |
 | `opacity-0` | .opacity('transparent') | 12 | 5 |
 | `pt-space-8` | .padding('top', 'sm') | 12 | 3 |
 | `rounded-[14px]` | .corner('14') | 12 | 4 |
@@ -383,21 +383,21 @@ when the fill is a role's colour.
 | `text-text-primary` | .foreground('foreground') | 12 | 2 |
 | `w-40` | .frame({ width: '160' }) | 12 | 7 |
 | `border-border/50` | .border('border/half') | 11 | 2 |
-| `border-l` | .border(role, 'thin', 'leading') | 11 | 6 |
+| `border-l` | .border(role, 'thin', 'left') | 11 | 6 |
 | `h-40` | .frame({ height: '160' }) | 11 | 3 |
 | `leading-relaxed` | .leading('relaxed') | 11 | 5 |
 | `max-w-[640px]` | .frame({ maxWidth: '640' }) | 11 | 7 |
 | `max-w-xs` | .frame({ maxWidth: '320' }) | 11 | 6 |
-| `mb-10` | .padding('bottom', '4xl') (outside the fill) | 11 | 4 |
-| `mb-space-32` | .padding('bottom', '3xl') (outside the fill) | 11 | 2 |
+| `mb-10` | .margin('bottom', '4xl') | 11 | 4 |
+| `mb-space-32` | .margin('bottom', '3xl') | 11 | 2 |
 | `min-h-[44px]` | .frame({ minHeight: '44' }) | 11 | 4 |
-| `ml-1.5` | .padding('leading', '6') (outside the fill) | 11 | 3 |
-| `ml-4` | .padding('leading', 'lg') (outside the fill) | 11 | 7 |
+| `ml-1.5` | .margin('left', '6') | 11 | 3 |
+| `ml-4` | .margin('left', 'lg') | 11 | 7 |
 | `pb-5` | .padding('bottom', 'xl') | 11 | 5 |
-| `pl-4` | .padding('leading', 'lg') | 11 | 5 |
-| `pr-4` | .padding('trailing', 'lg') | 11 | 3 |
+| `pl-4` | .padding('left', 'lg') | 11 | 5 |
+| `pr-4` | .padding('right', 'lg') | 11 | 3 |
 | `px-0` | .padding('horizontal', 'none') | 11 | 2 |
-| `right-3` | .position({ trailing: 'md' }) | 11 | 6 |
+| `right-3` | .position({ right: 'md' }) | 11 | 6 |
 | `rounded-radius-20` | .corner('xl') | 11 | 2 |
 | `sr-only` | .accessibilityOnly() | 11 | 4 |
 | `w-1/2` | .frame({ width: '1/2' }) | 11 | 2 |
@@ -411,7 +411,7 @@ when the fill is a role's colour.
 | `ring-1` | .ring(role, 'thin') | 10 | 4 |
 | `rounded-[8px]` | .corner('sm') | 10 | 4 |
 | `space-y-6` | .spacing('2xl') | 10 | 2 |
-| `text-sectionTitle` | .font('title-2') | 10 | 2 |
+| `text-sectionTitle` | .font('xl').leading('snug') | 10 | 2 |
 | `top-3` | .position({ top: 'md' }) | 10 | 6 |
 | `w-18` | .frame({ width: '72' }) | 10 | 2 |
 | `w-20` | .frame({ width: '80' }) | 10 | 5 |
@@ -419,17 +419,17 @@ when the fill is a role's colour.
 | `w-fit` | .frame({ width: 'fit' }) | 10 | 3 |
 | `bg-input/30` | .background('input/30') | 9 | 3 |
 | `border-border/40` | .border('border/40') | 9 | 2 |
-| `grow` | .grow() | 9 | 5 |
+| `grow` | .flex('grow') | 9 | 5 |
 | `h-0.5` | .frame({ height: '2xs' }) | 9 | 6 |
 | `h-1` | .frame({ height: 'xs' }) | 9 | 4 |
 | `list-disc` | .listMarker('disc') (a stack) | 9 | 2 |
 | `max-w-[720px]` | .frame({ maxWidth: '720' }) | 9 | 3 |
-| `mb-2.5` | .padding('bottom', '10') (outside the fill) | 9 | 2 |
-| `mb-space-24` | .padding('bottom', '2xl') (outside the fill) | 9 | 2 |
+| `mb-2.5` | .margin('bottom', '10') | 9 | 2 |
+| `mb-space-24` | .margin('bottom', '2xl') | 9 | 2 |
 | `min-w-64` | .frame({ minWidth: '256' }) | 9 | 2 |
-| `mt-10` | .padding('top', '4xl') (outside the fill) | 9 | 5 |
-| `mt-space-12` | .padding('top', 'md') (outside the fill) | 9 | 2 |
-| `mx-5` | .padding('horizontal', 'xl') (outside the fill) | 9 | 3 |
+| `mt-10` | .margin('top', '4xl') | 9 | 5 |
+| `mt-space-12` | .margin('top', 'md') | 9 | 2 |
+| `mx-5` | .margin('horizontal', 'xl') | 9 | 3 |
 | `p-space-8` | .padding('all', 'sm') | 9 | 2 |
 | `pb-space-32` | .padding('bottom', '3xl') | 9 | 2 |
 | `rounded-[10px]` | .corner('10') | 9 | 4 |
@@ -444,17 +444,17 @@ when the fill is a role's colour.
 | `bg-black` | .background('black') | 8 | 8 |
 | `border-destructive/40` | .border('destructive/40') | 8 | 3 |
 | `items-stretch` | .align('stretch') | 8 | 4 |
-| `left-3` | .position({ leading: 'md' }) | 8 | 5 |
+| `left-3` | .position({ left: 'md' }) | 8 | 5 |
 | `max-w-[320px]` | .frame({ maxWidth: '320' }) | 8 | 2 |
-| `mr-1.5` | .padding('trailing', '6') (outside the fill) | 8 | 2 |
-| `mt-16` | .padding('top', '64') (outside the fill) | 8 | 2 |
+| `mr-1.5` | .margin('right', '6') | 8 | 2 |
+| `mt-16` | .margin('top', '64') | 8 | 2 |
 | `opacity-100` | .opacity('opaque') | 8 | 4 |
 | `opacity-40` | .opacity('40') | 8 | 5 |
 | `p-space-20` | .padding('all', 'xl') | 8 | 2 |
 | `pb-space-8` | .padding('bottom', 'sm') | 8 | 3 |
 | `pt-space-16` | .padding('top', 'lg') | 8 | 2 |
 | `px-space-4` | .padding('horizontal', 'xs') | 8 | 2 |
-| `right-4` | .position({ trailing: 'lg' }) | 8 | 4 |
+| `right-4` | .position({ right: 'lg' }) | 8 | 4 |
 | `ring-foreground/10` | .ring('foreground/10') | 8 | 2 |
 | `shadow-lg` | .shadow('0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)') | 8 | 6 |
 | `text-[18px]` | .font('18') | 8 | 4 |
@@ -466,15 +466,15 @@ when the fill is a role's colour.
 | `z-20` | .zIndex('20') | 8 | 5 |
 | `bg-background/80` | .background('background/80') | 7 | 5 |
 | `bg-black/50` | .background('black/half') | 7 | 7 |
-| `border-l-2` | .border(role, 'thick', 'leading') | 7 | 5 |
+| `border-l-2` | .border(role, 'thick', 'left') | 7 | 5 |
 | `gap-space-20` | .spacing('xl') | 7 | 3 |
 | `h-[30px]` | .frame({ height: '30' }) | 7 | 3 |
 | `justify-start` | .justify('start') | 7 | 5 |
 | `line-through` | .strikethrough() | 7 | 3 |
 | `max-h-96` | .frame({ maxHeight: '384' }) | 7 | 5 |
 | `max-w-[360px]` | .frame({ maxWidth: '360' }) | 7 | 4 |
-| `mb-space-16` | .padding('bottom', 'lg') (outside the fill) | 7 | 2 |
-| `pl-3` | .padding('leading', 'md') | 7 | 4 |
+| `mb-space-16` | .margin('bottom', 'lg') | 7 | 2 |
+| `pl-3` | .padding('left', 'md') | 7 | 4 |
 | `px-space-24` | .padding('horizontal', '2xl') | 7 | 2 |
 | `py-space-2` | .padding('vertical', '2xs') | 7 | 3 |
 | `ring-destructive/20` | .ring('destructive/20') | 7 | 3 |
@@ -489,23 +489,23 @@ when the fill is a role's colour.
 | `font-extrabold` | .weight('extrabold') | 6 | 3 |
 | `gap-[2px]` | .spacing('2xs') | 6 | 2 |
 | `leading-[14px]` | .leading('14px') | 6 | 3 |
-| `left-4` | .position({ leading: 'lg' }) | 6 | 2 |
+| `left-4` | .position({ left: 'lg' }) | 6 | 2 |
 | `max-h-72` | .frame({ maxHeight: '288' }) | 6 | 2 |
 | `max-w-[420px]` | .frame({ maxWidth: '420' }) | 6 | 4 |
-| `mb-space-8` | .padding('bottom', 'sm') (outside the fill) | 6 | 2 |
+| `mb-space-8` | .margin('bottom', 'sm') | 6 | 2 |
 | `min-h-12` | .frame({ minHeight: '48' }) | 6 | 2 |
 | `min-h-14` | .frame({ minHeight: '56' }) | 6 | 3 |
 | `min-h-8` | .frame({ minHeight: '3xl' }) | 6 | 3 |
 | `min-w-[260px]` | .frame({ minWidth: '260' }) | 6 | 2 |
-| `my-7` | .padding('vertical', '28') (outside the fill) | 6 | 2 |
+| `my-7` | .margin('vertical', '28') | 6 | 2 |
 | `p-0.5` | .padding('all', '2xs') | 6 | 4 |
 | `p-2.5` | .padding('all', '10') | 6 | 3 |
 | `pb-space-16` | .padding('bottom', 'lg') | 6 | 2 |
-| `pl-1.5` | .padding('leading', '6') | 6 | 3 |
-| `pr-2` | .padding('trailing', 'sm') | 6 | 5 |
-| `pr-2.5` | .padding('trailing', '10') | 6 | 3 |
+| `pl-1.5` | .padding('left', '6') | 6 | 3 |
+| `pr-2` | .padding('right', 'sm') | 6 | 5 |
+| `pr-2.5` | .padding('right', '10') | 6 | 3 |
 | `pt-16` | .padding('top', '64') | 6 | 4 |
-| `right-1` | .position({ trailing: 'xs' }) | 6 | 4 |
+| `right-1` | .position({ right: 'xs' }) | 6 | 4 |
 | `rounded-none` | .corner('none') | 6 | 4 |
 | `size-2.5` | .frame({ width: '10', height: '10' }) | 6 | 3 |
 | `size-8` | .frame({ width: '3xl', height: '3xl' }) | 6 | 2 |
@@ -513,7 +513,7 @@ when the fill is a role's colour.
 | `text-black` | .foreground('black') | 6 | 2 |
 | `text-foreground/80` | .foreground('foreground/80') | 6 | 3 |
 | `w-4` | .frame({ width: 'lg' }) | 6 | 6 |
-| `-mt-3` | .padding('top', '-md') (outside the fill) | 5 | 3 |
+| `-mt-3` | .margin('top', '-md') | 5 | 3 |
 | `bg-fill-secondary` | .background('mutedFill') | 5 | 2 |
 | `bg-foreground/10` | .background('foreground/10') | 5 | 3 |
 | `bg-muted/60` | .background('mutedFill/60') | 5 | 3 |
@@ -529,11 +529,11 @@ when the fill is a role's colour.
 | `min-h-[140px]` | .frame({ minHeight: '140' }) | 5 | 3 |
 | `min-w-32` | .frame({ minWidth: '128' }) | 5 | 4 |
 | `min-w-[140px]` | .frame({ minWidth: '140' }) | 5 | 2 |
-| `mr-2.5` | .padding('trailing', '10') (outside the fill) | 5 | 2 |
+| `mr-2.5` | .margin('right', '10') | 5 | 2 |
 | `pb-10` | .padding('bottom', '4xl') | 5 | 4 |
-| `pl-0` | .padding('leading', 'none') | 5 | 2 |
+| `pl-0` | .padding('left', 'none') | 5 | 2 |
 | `place-items-center` | .align('center') | 5 | 2 |
-| `pr-8` | .padding('trailing', '3xl') | 5 | 2 |
+| `pr-8` | .padding('right', '3xl') | 5 | 2 |
 | `pt-space-12` | .padding('top', 'md') | 5 | 2 |
 | `pt-space-4` | .padding('top', 'xs') | 5 | 3 |
 | `py-20` | .padding('vertical', '80') | 5 | 2 |
@@ -550,28 +550,28 @@ when the fill is a role's colour.
 | `w-px` | .frame({ width: '1' }) | 5 | 4 |
 | `z-40` | .zIndex('dropdown') | 5 | 2 |
 | `-inset-2` | .position({ top: '-sm', bottom: '-sm', leading: '-sm', trailing: '-sm' }) | 4 | 2 |
-| `-mt-1` | .padding('top', '-xs') (outside the fill) | 4 | 4 |
-| `-mt-2` | .padding('top', '-sm') (outside the fill) | 4 | 3 |
-| `-mx-1` | .padding('horizontal', '-xs') (outside the fill) | 4 | 2 |
+| `-mt-1` | .margin('top', '-xs') | 4 | 4 |
+| `-mt-2` | .margin('top', '-sm') | 4 | 3 |
+| `-mx-1` | .margin('horizontal', '-xs') | 4 | 2 |
 | `bg-black/30` | .background('black/30') | 4 | 3 |
 | `bg-white/20` | .background('white/20') | 4 | 2 |
 | `border-surface` | .border('surface') | 4 | 3 |
 | `bottom-2` | .position({ bottom: 'sm' }) | 4 | 3 |
 | `font-light` | .weight('light') | 4 | 4 |
 | `gap-3.5` | .spacing('14') | 4 | 4 |
-| `left-2` | .position({ leading: 'sm' }) | 4 | 3 |
+| `left-2` | .position({ left: 'sm' }) | 4 | 3 |
 | `max-h-40` | .frame({ maxHeight: '160' }) | 4 | 3 |
 | `max-h-80` | .frame({ maxHeight: '320' }) | 4 | 3 |
 | `max-w-[380px]` | .frame({ maxWidth: '380' }) | 4 | 2 |
 | `max-w-lg` | .frame({ maxWidth: '512' }) | 4 | 3 |
 | `min-h-6` | .frame({ minHeight: '2xl' }) | 4 | 2 |
 | `min-w-24` | .frame({ minWidth: '96' }) | 4 | 3 |
-| `mt-7` | .padding('top', '28') (outside the fill) | 4 | 2 |
-| `mx-2` | .padding('horizontal', 'sm') (outside the fill) | 4 | 4 |
+| `mt-7` | .margin('top', '28') | 4 | 2 |
+| `mx-2` | .margin('horizontal', 'sm') | 4 | 4 |
 | `p-10` | .padding('all', '4xl') | 4 | 2 |
 | `pe-3` | .padding('trailing', 'md') | 4 | 2 |
-| `pl-2` | .padding('leading', 'sm') | 4 | 4 |
-| `pr-1` | .padding('trailing', 'xs') | 4 | 3 |
+| `pl-2` | .padding('left', 'sm') | 4 | 4 |
+| `pr-1` | .padding('right', 'xs') | 4 | 3 |
 | `pt-1.5` | .padding('top', '6') | 4 | 2 |
 | `px-12` | .padding('horizontal', '48') | 4 | 2 |
 | `py-space-32` | .padding('vertical', '3xl') | 4 | 2 |
@@ -584,9 +584,9 @@ when the fill is a role's colour.
 | `w-[260px]` | .frame({ width: '260' }) | 4 | 4 |
 | `w-[2px]` | .frame({ width: '2xs' }) | 4 | 4 |
 | `z-[60]` | .zIndex('60') | 4 | 2 |
-| `-ml-1` | .padding('leading', '-xs') (outside the fill) | 3 | 2 |
-| `-ml-3` | .padding('leading', '-md') (outside the fill) | 3 | 2 |
-| `-mx-4` | .padding('horizontal', '-lg') (outside the fill) | 3 | 2 |
+| `-ml-1` | .margin('left', '-xs') | 3 | 2 |
+| `-ml-3` | .margin('left', '-md') | 3 | 2 |
+| `-mx-4` | .margin('horizontal', '-lg') | 3 | 2 |
 | `basis-0` | .basis('none') | 3 | 2 |
 | `bg-background/90` | .background('background/90') | 3 | 3 |
 | `bg-card/60` | .background('card/60') | 3 | 2 |
@@ -595,6 +595,7 @@ when the fill is a role's colour.
 | `bg-muted/20` | .background('mutedFill/20') | 3 | 2 |
 | `bg-primary-foreground` | .background('onPrimary') | 3 | 2 |
 | `bottom-3` | .position({ bottom: 'md' }) | 3 | 2 |
+| `flex-none` | .flex('none') | 3 | 2 |
 | `h-3.5` | .frame({ height: '14' }) | 3 | 3 |
 | `h-32` | .frame({ height: '128' }) | 3 | 2 |
 | `leading-[40px]` | .leading('40px') | 3 | 2 |
@@ -604,14 +605,14 @@ when the fill is a role's colour.
 | `max-w-[140px]` | .frame({ maxWidth: '140' }) | 3 | 2 |
 | `max-w-[480px]` | .frame({ maxWidth: '480' }) | 3 | 3 |
 | `max-w-[560px]` | .frame({ maxWidth: '560' }) | 3 | 2 |
-| `mb-7` | .padding('bottom', '28') (outside the fill) | 3 | 3 |
+| `mb-7` | .margin('bottom', '28') | 3 | 3 |
 | `min-h-11` | .frame({ minHeight: '44' }) | 3 | 3 |
 | `min-h-7` | .frame({ minHeight: '28' }) | 3 | 2 |
 | `min-h-[480px]` | .frame({ minHeight: '480' }) | 3 | 2 |
 | `min-h-[96px]` | .frame({ minHeight: '96' }) | 3 | 3 |
 | `min-w-5` | .frame({ minWidth: 'xl' }) | 3 | 3 |
 | `min-w-[120px]` | .frame({ minWidth: '120' }) | 3 | 2 |
-| `mt-px` | .padding('top', '1') (outside the fill) | 3 | 2 |
+| `mt-px` | .margin('top', '1') | 3 | 2 |
 | `outline-1` | .ring(role, 'thin') | 3 | 2 |
 | `outline-2` | .ring(role, 'thick') | 3 | 3 |
 | `outline-primary` | .ring('primary') | 3 | 3 |
@@ -620,7 +621,7 @@ when the fill is a role's colour.
 | `pb-0.5` | .padding('bottom', '2xs') | 3 | 2 |
 | `pb-1.5` | .padding('bottom', '6') | 3 | 3 |
 | `pb-space-12` | .padding('bottom', 'md') | 3 | 2 |
-| `pl-1` | .padding('leading', 'xs') | 3 | 3 |
+| `pl-1` | .padding('left', 'xs') | 3 | 3 |
 | `ps-space-16` | .padding('leading', 'lg') | 3 | 2 |
 | `pt-0` | .padding('top', 'none') | 3 | 2 |
 | `pt-14` | .padding('top', '56') | 3 | 2 |
@@ -651,7 +652,7 @@ when the fill is a role's colour.
 | `h-[200px]` | .frame({ height: '200' }) | 2 | 2 |
 | `h-[60px]` | .frame({ height: '5xl' }) | 2 | 2 |
 | `leading-normal` | .leading('normal') | 2 | 2 |
-| `left-6` | .position({ leading: '2xl' }) | 2 | 2 |
+| `left-6` | .position({ left: '2xl' }) | 2 | 2 |
 | `max-h-[200px]` | .frame({ maxHeight: '200' }) | 2 | 2 |
 | `max-w-64` | .frame({ maxWidth: '256' }) | 2 | 2 |
 | `max-w-[260px]` | .frame({ maxWidth: '260' }) | 2 | 2 |
@@ -663,30 +664,30 @@ when the fill is a role's colour.
 | `min-h-[80px]` | .frame({ minHeight: '80' }) | 2 | 2 |
 | `min-w-6` | .frame({ minWidth: '2xl' }) | 2 | 2 |
 | `min-w-[80px]` | .frame({ minWidth: '80' }) | 2 | 2 |
-| `ml-0.5` | .padding('leading', '2xs') (outside the fill) | 2 | 2 |
-| `ml-[1px]` | .padding('leading', '1') (outside the fill) | 2 | 2 |
-| `mr-3.5` | .padding('trailing', '14') (outside the fill) | 2 | 2 |
-| `mr-4` | .padding('trailing', 'lg') (outside the fill) | 2 | 2 |
-| `mr-[10px]` | .padding('trailing', '10') (outside the fill) | 2 | 2 |
-| `mt-0` | .padding('top', 'none') (outside the fill) | 2 | 2 |
-| `mt-3.5` | .padding('top', '14') (outside the fill) | 2 | 2 |
-| `mt-space-20` | .padding('top', 'xl') (outside the fill) | 2 | 2 |
-| `mx-0` | .padding('horizontal', 'none') (outside the fill) | 2 | 2 |
-| `mx-3` | .padding('horizontal', 'md') (outside the fill) | 2 | 2 |
-| `mx-3.5` | .padding('horizontal', '14') (outside the fill) | 2 | 2 |
-| `my-3` | .padding('vertical', 'md') (outside the fill) | 2 | 2 |
-| `my-6` | .padding('vertical', '2xl') (outside the fill) | 2 | 2 |
-| `my-8` | .padding('vertical', '3xl') (outside the fill) | 2 | 2 |
+| `ml-0.5` | .margin('left', '2xs') | 2 | 2 |
+| `ml-[1px]` | .margin('left', '1') | 2 | 2 |
+| `mr-3.5` | .margin('right', '14') | 2 | 2 |
+| `mr-4` | .margin('right', 'lg') | 2 | 2 |
+| `mr-[10px]` | .margin('right', '10') | 2 | 2 |
+| `mt-0` | .margin('top', 'none') | 2 | 2 |
+| `mt-3.5` | .margin('top', '14') | 2 | 2 |
+| `mt-space-20` | .margin('top', 'xl') | 2 | 2 |
+| `mx-0` | .margin('horizontal', 'none') | 2 | 2 |
+| `mx-3` | .margin('horizontal', 'md') | 2 | 2 |
+| `mx-3.5` | .margin('horizontal', '14') | 2 | 2 |
+| `my-3` | .margin('vertical', 'md') | 2 | 2 |
+| `my-6` | .margin('vertical', '2xl') | 2 | 2 |
+| `my-8` | .margin('vertical', '3xl') | 2 | 2 |
 | `opacity-45` | .opacity('45') | 2 | 2 |
 | `opacity-75` | .opacity('75') | 2 | 2 |
 | `outline` | .ring(role, 'thin') | 2 | 2 |
-| `pr-6` | .padding('trailing', '2xl') | 2 | 2 |
+| `pr-6` | .padding('right', '2xl') | 2 | 2 |
 | `pt-10` | .padding('top', '4xl') | 2 | 2 |
 | `pt-12` | .padding('top', '48') | 2 | 2 |
 | `pt-7` | .padding('top', '28') | 2 | 2 |
 | `px-7` | .padding('horizontal', '28') | 2 | 2 |
 | `px-[14px]` | .padding('horizontal', '14') | 2 | 2 |
-| `right-6` | .position({ trailing: '2xl' }) | 2 | 2 |
+| `right-6` | .position({ right: '2xl' }) | 2 | 2 |
 | `rounded-t-3xl` | .corner('2xl', 'top') | 2 | 2 |
 | `shadow-xl` | .shadow('0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)') | 2 | 2 |
 | `size-5` | .frame({ width: 'xl', height: 'xl' }) | 2 | 2 |
@@ -962,7 +963,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `:` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 3 |
 | `border-t-transparent` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `bottom` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 3 |
-| `flex-none` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `gap-x-6` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `left` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `peer` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
@@ -989,3 +989,4 @@ a Bloom role: it becomes the app's own token, declared once with
 | `max-w-[90%]` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `pb-safe` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `pb-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `pt-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
