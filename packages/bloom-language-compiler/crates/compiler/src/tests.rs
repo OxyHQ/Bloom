@@ -1531,7 +1531,7 @@ fn category_bars_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("CategoryBar('C', [], t).backdrop('paper')", "Unknown color token 'paper' for .backdrop()"),
-        ("CategoryBar('C', [], t).disabled()", "CategoryBar has no modifier .disabled()"),
+        ("CategoryBar('C', [], t).loading()", "CategoryBar has no modifier .loading()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (t) => {chain};\n"));
@@ -1778,7 +1778,7 @@ fn data_tables_are_checked() {
     let cases = [
         ("DataTable(r, i).style('grid')", "Unknown dataTableStyle token 'grid' for .style()"),
         ("DataTable(r, i).size('lg')", "Unknown tableSize token 'lg' for .size()"),
-        ("DataTableSearch(r, 'Q').disabled()", "DataTableSearch has no modifier .disabled()"),
+        ("DataTableSearch(r, 'Q').loading()", "DataTableSearch has no modifier .loading()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (r, i) => {chain};\n"));
@@ -1900,7 +1900,7 @@ fn the_composer_panel_is_checked() {
     let cases = [
         ("ComposerPanel(p).surface(false)", "ComposerPanel has no modifier .surface()"),
         ("ComposerPill(p).size('sm')", "ComposerPill has no modifier .size()"),
-        ("ComposerPanelStatusTab().disabled()", "ComposerPanelStatusTab has no modifier .disabled()"),
+        ("ComposerPanelStatusTab().loading()", "ComposerPanelStatusTab has no modifier .loading()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (p) => {chain};\n"));
@@ -2281,7 +2281,7 @@ fn the_home_search_family_is_checked() {
     let cases = [
         ("SearchModeTabs(m).style('pill')", "Unknown searchModeTabsStyle token 'pill' for .style()"),
         ("HomeSearchBar(s, m).style('tabs')", "HomeSearchBar has no modifier .style()"),
-        ("SavedSearchCard('a').disabled()", "SavedSearchCard has no modifier .disabled()"),
+        ("SavedSearchCard('a').loading()", "SavedSearchCard has no modifier .loading()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (s, m) => {chain};\n"));
@@ -2299,7 +2299,7 @@ fn the_listing_actions_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("MortgageCalculator().style('wide')", "Unknown mortgageLayout token 'wide' for .style()"),
-        ("RentalActionCard('a').disabled()", "RentalActionCard has no modifier .disabled()"),
+        ("RentalActionCard('a').pressed(true)", "RentalActionCard has no modifier .pressed()"),
         ("ListingActionBar('a', 'b').style('auto')", "ListingActionBar has no modifier .style()"),
     ];
     for (chain, message) in cases {
@@ -2341,7 +2341,7 @@ fn the_listing_editor_and_the_offering_badge_are_checked() {
     let cases = [
         ("OfferingBadge('sale').size('lg')", "Unknown offeringBadgeSize token 'lg' for .size()"),
         ("OfferingBadge('sale').style('solid')", "Unknown offeringBadgeStyle token 'solid' for .style()"),
-        ("ListingQualityMeter(i).disabled()", "ListingQualityMeter has no modifier .disabled()"),
+        ("ListingQualityMeter(i).loading()", "ListingQualityMeter has no modifier .loading()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (i) => {chain};\n"));
@@ -2645,7 +2645,7 @@ fn the_cart_menu_items_and_vendor_card_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("CartLine('a', o).density('cozy')", "Unknown density token 'cozy' for .density()"),
-        ("CartPanel('a', o).disabled()", "CartPanel has no modifier .disabled()"),
+        ("CartPanel('a', o).loading()", "CartPanel has no modifier .loading()"),
         ("VendorCard('a').tint('success')", "VendorCard has no modifier .tint()"),
     ];
     for (chain, message) in cases {
@@ -2722,7 +2722,7 @@ fn the_checkout_summary_delivery_slots_and_order_confirmation_are_checked() {
     let cases = [
         ("DeliverySlotDays(b, d).tint('teal')", "Unknown color token 'teal' for .tint()"),
         ("OrderConfirmation().density('cozy')", "Unknown density token 'cozy' for .density()"),
-        ("CheckoutSummary().disabled()", "CheckoutSummary has no modifier .disabled()"),
+        ("CheckoutSummary().loading()", "CheckoutSummary has no modifier .loading()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (b, d) => {chain};\n"));
@@ -2942,4 +2942,80 @@ fn a_glass_value_is_checked_through_its_methods_and_hoists() {
     assert_eq!(output.hoisted, 1);
     let wrong = glass("export const x = () => HStack().glass(regular.interactive(false).tint('blue'));\n");
     assert_eq!(messages(&wrong.diagnostics), ["Unknown color token 'blue' for .tint()"]);
+}
+
+const ENVIRONMENT_IMPORTS: &str = "import { Button, HStack, Text, VStack, defineEnvironment } from '@oxy.so/bloom-language';
+";
+
+fn environment(body: &str) -> crate::Output {
+    compile(&format!("{ENVIRONMENT_IMPORTS}{body}"), "environment.tsx")
+}
+
+#[test]
+fn environment_values_are_checked() {
+    let fine = environment(
+        "const Compact = defineEnvironment('compact', false);\nexport const x = () => VStack(Text('a')).environment(Compact, true).disabled().controlSize('sm').buttonStyle('glass');\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", messages(&fine.diagnostics));
+    let wrong = environment(
+        "const Compact = defineEnvironment('compact', false);\nexport const x = () => VStack().environment(Compact, 'yes');\n",
+    );
+    assert_eq!(messages(&wrong.diagnostics), [".environment() sets a boolean value to a string"]);
+    let named = environment("const name = 'c';\nexport const Compact = defineEnvironment(name, false);\n");
+    assert_eq!(messages(&named.diagnostics), ["defineEnvironment() takes its name as a string literal"]);
+    let object = environment("export const Theme = defineEnvironment('theme', { dark: true });\n");
+    assert_eq!(
+        messages(&object.diagnostics),
+        ["defineEnvironment() takes a literal default: a string, a number, a boolean, null or undefined"]
+    );
+    let size = environment("export const x = () => HStack().controlSize('xxl');\n");
+    assert_eq!(messages(&size.diagnostics), ["Unknown controlSize token 'xxl' for .controlSize()"]);
+    let style = environment("export const x = () => HStack().buttonStyle('shiny');\n");
+    assert_eq!(messages(&style.diagnostics), ["Unknown buttonStyle token 'shiny' for .buttonStyle()"]);
+}
+
+#[test]
+fn a_glass_button_style_is_glass() {
+    let fine = environment("export const x = () => Button(Text('Done')).style('glassProminent');\n");
+    assert!(fine.diagnostics.is_empty(), "{:?}", messages(&fine.diagnostics));
+    let nested = environment("export const x = () => HStack(Button(Text('Done')).style('glass')).glass();\n");
+    assert_eq!(messages(&nested.diagnostics), ["glass on glass: this glass is inside another glass"]);
+}
+
+#[test]
+fn an_environment_key_is_static() {
+    let output = environment(
+        "const Compact = defineEnvironment('compact', false);\nexport function X() {\n  return VStack(Text('a')).environment(Compact, true);\n}\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
+    assert_eq!(output.hoisted, 1);
+}
+
+const MODIFIER_IMPORTS: &str = "import { HStack, Text, VStack, defineModifier } from '@oxy.so/bloom-language';
+";
+
+fn modifier(body: &str) -> crate::Output {
+    compile(&format!("{MODIFIER_IMPORTS}{body}"), "modifier.tsx")
+}
+
+#[test]
+fn a_custom_modifier_is_checked_where_it_is_defined() {
+    let fine = modifier(
+        "export const card = defineModifier((v) => v.padding('md').background('card').corner('lg').when('md', (w) => w.padding('lg')));\nexport const tag = defineModifier((v, tone) => v.padding('horizontal', 'xs').background(tone));\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", messages(&fine.diagnostics));
+    let token = modifier("export const card = defineModifier((v) => v.padding('mdd'));\n");
+    assert_eq!(messages(&token.diagnostics), ["Unknown padding token 'mdd' for .padding()"]);
+    let text = modifier("export const two = defineModifier((v) => v.padding('md').lines(2));\n");
+    assert_eq!(messages(&text.diagnostics), ["A modifier cannot chain .lines(): it applies to any view"]);
+}
+
+#[test]
+fn a_chain_that_applies_a_custom_modifier_hoists_like_the_chain_it_stands_for() {
+    let output = modifier(
+        "const card = defineModifier((v) => v.padding('md').corner('lg'));\nexport function Storage() {\n  return VStack(Text('Storage')).modifier(card);\n}\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
+    assert_eq!(output.hoisted, 1);
+    assert!(output.code.contains("const _bloomStatic0 = VStack(Text(\"Storage\")).modifier(card);"), "{}", output.code);
 }
