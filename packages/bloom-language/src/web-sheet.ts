@@ -43,13 +43,21 @@ function termsSelector(terms: readonly LiveTerm[]): string {
   );
 }
 
-/** One rule of the generated sheet: its place in react-native-web's order, what follows the class in its selector, its declarations. */
-type GeneratedRule = readonly [index: number, rest: string, declarations: string];
+/**
+ * One rule of the generated sheet: its place in react-native-web's order, what
+ * follows the class in its selector, its declarations, and whether the
+ * selector is inside `:where()` (no specificity, as Tailwind's `space-y` rule).
+ */
+type GeneratedRule = readonly [index: number, rest: string, declarations: string, where: boolean];
+
+/** `:where(` around a selector of the sheet (a child spacing's rule). */
+const WHERE = ':where(';
 
 /**
- * The generated sheet's rules by class. A rule is `.<class><rest>{…}`: `rest`
- * is what follows the class in its selector (`>*` for what a `pointerEvents`
- * rule reaches), kept after it; a class can have more than one.
+ * The generated sheet's rules by class. A rule is `.<class><rest>{…}`, or
+ * `:where(.<class><rest>){…}`: `rest` is what follows the class in its
+ * selector (`>*` for what a `pointerEvents` rule reaches, `> :not(:last-child)`
+ * for a child spacing's), kept after it; a class can have more than one.
  */
 let generated: ReadonlyMap<string, readonly GeneratedRule[]> | undefined;
 function generatedRules(): ReadonlyMap<string, readonly GeneratedRule[]> {
@@ -57,11 +65,12 @@ function generatedRules(): ReadonlyMap<string, readonly GeneratedRule[]> {
     const rules = new Map<string, GeneratedRule[]>();
     WEB_SHEET.split('\n').forEach((rule, index) => {
       const open = rule.indexOf('{');
-      const selector = rule.slice(1, open);
+      const where = rule.startsWith(WHERE);
+      const selector = where ? rule.slice(WHERE.length + 1, open - 1) : rule.slice(1, open);
       const end = /^[\w-]+/.exec(selector)?.[0].length ?? selector.length;
       const name = selector.slice(0, end);
       const list = rules.get(name) ?? [];
-      list.push([index, selector.slice(end), rule.slice(open)]);
+      list.push([index, selector.slice(end), rule.slice(open), where]);
       rules.set(name, list);
     });
     generated = rules;
@@ -86,9 +95,10 @@ export function variantSheet(condition: LiveCondition, names: Iterable<string>):
   const terms = termsOf(condition);
   const suffix = variantSuffix(condition);
   const selector = termsSelector(terms);
-  const body = ordered.map(
-    ([name, [, rest, declarations]]) =>
-      `${selector.replace('&', `.${name}-${suffix}${rest}`)}${declarations}`,
+  const body = ordered.map(([name, [, rest, declarations, where]]) =>
+    where
+      ? `${WHERE}${selector.replace('&', `.${name}-${suffix}`)}${rest})${declarations}`
+      : `${selector.replace('&', `.${name}-${suffix}${rest}`)}${declarations}`,
   );
   const widths = terms
     .map((term) => (BREAKPOINT as Record<string, number | undefined>)[term])
