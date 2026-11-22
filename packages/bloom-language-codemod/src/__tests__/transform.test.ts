@@ -162,6 +162,55 @@ const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
     );
     expect(result.fixtures[0]?.before).toContain('fill={parityTheme.colors.textSecondary}');
   });
+  it('reads a RefreshControl as a pull to refresh, and an indicator’s boolean on its axis', () => {
+    const result = run(`import { RefreshControl } from 'react-native';
+import { ScreenScrollView } from '@oxy.so/bloom/screen';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <ScreenScrollView
+      refreshControl={<RefreshControl refreshing={busy} onRefresh={reload} tintColor={theme.colors.primary} colors={[theme.colors.primary]} />}
+      showsVerticalScrollIndicator={false}
+    />
+  );
+}
+export const B = () => <ScreenScrollView refreshControl={<RefreshControl refreshing={busy} onRefresh={() => { reload(); }} />} showsHorizontalScrollIndicator />;
+export function C() {
+  const theme = useTheme();
+  return <ScreenScrollView refreshControl={<RefreshControl refreshing={busy} onRefresh={reload} tintColor={theme.colors.primary} />} />;
+}
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(ScrollView().refreshable([busy, () => reload()], 'primary').scrollIndicators('hidden', 'vertical'))",
+    );
+    expect(flat(result.code)).toContain(
+      "toElement(ScrollView().refreshable([busy, () => { reload(); }]).scrollIndicators('visible', 'horizontal'))",
+    );
+    // A tintColor alone tints iOS only; the language's tint paints Android's colours too.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'ScrollView:refreshControl',
+    ]);
+  });
+  it('reads a static content container style as content margins, and keeps a content className', () => {
+    const result = run(`import { StyleSheet } from 'react-native';
+import { ScreenScrollView } from '@oxy.so/bloom/screen';
+export const A = () => <ScreenScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }} />;
+export const B = () => <ScreenScrollView contentContainerStyle={styles.content} />;
+export const C = () => <ScreenScrollView contentContainerClassName="px-4" />;
+export const D = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 1 }} />;
+const styles = StyleSheet.create({ content: { padding: 16 } });
+`);
+    expect(result.code).toContain(
+      "toElement(ScrollView().contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
+    );
+    expect(result.code).toContain("toElement(ScrollView().contentMargins('lg'))");
+    expect(result.fixtures[1]?.before).toContain('contentContainerStyle={{ padding: 16 }}');
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'ScrollView:contentContainerClassName',
+      'ScrollView:contentContainerStyle',
+    ]);
+  });
   it('carries a JSX comment into the chain where it is', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View className="gap-2">{/* head */}<View className="p-2" />{/* end */}</View>;

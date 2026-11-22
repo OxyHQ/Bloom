@@ -88,7 +88,7 @@ the element JSX with the reason `Node:prop`.
 | --- | --- |
 | `Switch` | `Toggle([checked, onCheckedChange])` |
 | `GroupedSection`, `GroupedSectionItem` | `GroupedSection(...rows).title().caption()`, `GroupedSectionItem(title).leadingView().trailing().value()` |
-| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold)` |
+| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable([refreshing, () => onRefresh()], tint).scrollIndicators(value, axis)` |
 | `SettingsSection`, `SettingsValueField` | `SettingsSection(label, ...children).trailing()`, `SettingsValue(text)` |
 | `TextFieldInput` (bare, or in a `TextField` shell with its `TextFieldIcon`s), `Textarea`, `Search`, `Checkbox`, `Field` | `TextField([value, set], label)`, `TextEditor([value, set], label)`, `Search([value, set])`, `Checkbox([checked, set], label)`, `Field(label, ...children)` |
 | `Card`, `Item`, `Chip`, `ResponsiveGrid` | `Card(...children)`, `Row(title)`, `Chip(Icon, Text, Icon)`, `Grid(...cells)` |
@@ -108,6 +108,24 @@ nothing around it:
   (`.icon()`, `.trailingIcon()`, the shell's `size` and `invalid`).
 - A node drawn only inside a Bloom component (a `ScrollView` in a `Screen`, an
   `Action` in an `EngagementBar`) has both sides of its parity drawn in one.
+
+A scroll view's `refreshControl` of React Native's `RefreshControl` is
+`.refreshable(binding, tint)`: the binding is its `refreshing` and a setter a
+pull calls with `true`, which calls `onRefresh` with no arguments, as React
+Native does (`() => onRefresh()`; a function of no parameters is carried as
+it is). Its tint paints the control's `tintColor` and `colors` from one role,
+so a `tintColor` and `colors` of the same theme colour are its tint, and a
+`tintColor` alone (iOS only, Android's spinner left the platform's) stays
+JSX. `showsVerticalScrollIndicator={false}` is
+`.scrollIndicators('hidden', 'vertical')` (`true` is `'visible'`; horizontal
+alike).
+A static `contentContainerStyle` of paddings and a gap, each a space token
+(`{ padding: 16, gap: 12 }`), is `.contentMargins(edge, token)` and
+`.spacing(token)`: the language's content container style holds the same keys.
+A `contentContainerClassName` stays JSX: Bloom lays a class out in a view of
+its own inside a content container that grows to the viewport (and reports no
+intrinsic height to a content-sized screen), where the margins pad the content
+container itself. A prop a rule names in `differs` is kept with that reason.
 
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).

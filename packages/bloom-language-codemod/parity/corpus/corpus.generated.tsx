@@ -42,10 +42,11 @@ import { RiMailLine as I35 } from '@oxy.so/bloom/icons/RiMailLine';
 import { Slider as I36 } from '@oxy.so/bloom/slider';
 import { Admonition as I37 } from '@oxy.so/bloom/admonition';
 import { PageHeader as I38 } from '@oxy.so/bloom/page-header';
-import { Pressable as I39 } from 'react-native-css/components/Pressable';
-import { Text as I40 } from '@oxy.so/bloom/typography';
-import { RiArrowRightLine as I41 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I42 } from '../support/app-text';
+import { RefreshControl as I39 } from 'react-native';
+import { Pressable as I40 } from 'react-native-css/components/Pressable';
+import { Text as I41 } from '@oxy.so/bloom/typography';
+import { RiArrowRightLine as I42 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I43 } from '../support/app-text';
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -258,8 +259,26 @@ export const CASES = [
     after: () => { const PageHeader = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L; return (toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())); },
   },
   {
+    name: "components/Components.tsx:328",
+    before: () => { function Before() { const parityTheme = useParityTheme(); const ScreenScrollView = I8; const RefreshControl = I39; return (<ScreenScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={true}
+          onRefresh={(() => {})}
+          tintColor={parityTheme.colors.primary}
+          colors={[parityTheme.colors.primary]}
+        />
+      }
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}
+    >
+      {<Hole n="0" />}
+    </ScreenScrollView>); } return (<I11>{<Before />}</I11>); },
+    after: () => { const ScreenScrollView = I8; const RefreshControl = I39; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L; return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
+  },
+  {
     name: "components/Rows.tsx:19",
-    before: () => { const Pressable = I39; const RiHeart3Line = I29; const View = I9; const Text = I40; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
+    before: () => { const Pressable = I40; const RiHeart3Line = I29; const View = I9; const Text = I41; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
         <Text variant="body-semibold" numberOfLines={1}>
@@ -268,11 +287,11 @@ export const CASES = [
         <Text className="text-sm text-muted-foreground">{'⟨1⟩'} likes</Text>
       </View>
     </Pressable>); },
-    after: () => { const Pressable = I39; const RiHeart3Line = I29; const View = I9; const Text = I40; const { HStack, Icon, VStack, Text: LText } = L; return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
+    after: () => { const Pressable = I40; const RiHeart3Line = I29; const View = I9; const Text = I41; const { HStack, Icon, VStack, Text: LText } = L; return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:41",
-    before: () => { const View = I9; const Text = I40; const Switch = I3; const Button = I13; const RiArrowRightLine = I41; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I9; const Text = I41; const Switch = I3; const Button = I13; const RiArrowRightLine = I42; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -280,7 +299,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I9; const Text = I40; const Switch = I3; const Button = I13; const RiArrowRightLine = I41; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I9; const Text = I41; const Switch = I3; const Button = I13; const RiArrowRightLine = I42; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54",
@@ -293,17 +312,17 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:58",
-    before: () => { const View = I9; const Text = I40; return (<View  className="flex-row justify-between">
+    before: () => { const View = I9; const Text = I41; return (<View  className="flex-row justify-between">
           <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I9; const Text = I40; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
+    after: () => { const View = I9; const Text = I41; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
   },
   {
     name: "components/Rows.tsx:68",
-    before: () => { const View = I9; const NativeText = I42; const Text = I40; return (<View className="flex-1 mt-2">
+    before: () => { const View = I9; const NativeText = I43; const Text = I41; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I9; const NativeText = I42; const Text = I40; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I9; const NativeText = I43; const Text = I41; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
 ];
