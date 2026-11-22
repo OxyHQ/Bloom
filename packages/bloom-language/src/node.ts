@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { PropertyInsightKind } from './controls/property-insights';
 import type { OfferingBadgeKind } from './controls/offering-badge';
 import type { ListingEditorKind } from './controls/listing-editor';
 import type { ListingCardKind } from './controls/listing-card';
@@ -1498,7 +1499,8 @@ export type NodeKind =
   | ListingActionKind
   | ListingCardKind
   | ListingEditorKind
-  | OfferingBadgeKind;
+  | OfferingBadgeKind
+  | PropertyInsightKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {

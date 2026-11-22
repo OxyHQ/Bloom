@@ -170,3 +170,5 @@ export const ListingPreviewPane = 'ListingPreviewPane';
 export const ListingQualityMeter = 'ListingQualityMeter';
 export const PropertyTypeSelector = 'PropertyTypeSelector';
 export const OfferingBadge = 'OfferingBadge';
+export const PriceEstimate = 'PriceEstimate';
+export const PricePerAreaComparison = 'PricePerAreaComparison';
