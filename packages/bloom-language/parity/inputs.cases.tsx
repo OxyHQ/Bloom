@@ -476,6 +476,25 @@ const editors: ParityCase[] = [
     bloom: () => <Textarea value="Ada Lovelace" onValueChange={set} />,
   },
   {
+    name: 'TextEditor named for assistive technology',
+    language: () => toElement(L.TextEditor(empty).placeholder('Write a post').label('Post body')),
+    bloom: () => (
+      <Textarea
+        value=""
+        onValueChange={set}
+        placeholder="Write a post"
+        accessibilityLabel="Post body"
+      />
+    ),
+  },
+  {
+    name: 'TextEditor with a visible label and an accessible name',
+    language: () => toElement(L.TextEditor(empty, 'Bio').label('Your bio')),
+    bloom: () => (
+      <Textarea label="Bio" value="" onValueChange={set} accessibilityLabel="Your bio" />
+    ),
+  },
+  {
     name: 'TextEditor with a label, a placeholder and a description',
     language: () =>
       toElement(
