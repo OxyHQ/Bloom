@@ -138,6 +138,30 @@ export const C = () => <Textarea value={a} onValueChange={setA} maxRows={6} />;
     expect(result.code).toContain('toElement(Text(note).textStyle("muted").lines(1))');
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['TextEditor:maxRows']);
   });
+  it('reads an icon’s theme fill and side, a role, and a static style', () => {
+    const result = run(`import { StyleSheet, View } from 'react-native';
+import { useTheme } from '@oxy.so/bloom/theme';
+import { RiHeart3Line } from '@oxy.so/bloom/icons';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View style={styles.row} accessibilityRole="header">
+      <RiHeart3Line width={20} height={20} fill={theme.colors.textSecondary} />
+    </View>
+  );
+}
+export function B({ theme }) { return <RiHeart3Line fill={theme.colors.text} />; }
+const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
+`);
+    expect(flat(result.code)).toContain(
+      'toElement(HStack(Icon(RiHeart3Line).size("md").foreground("muted")).spacing("sm").role("header"))',
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['icon-fill']);
+    expect(result.fixtures[0]?.before).toContain(
+      '<View style={{ flexDirection: \'row\', gap: 8 }} accessibilityRole="header">',
+    );
+    expect(result.fixtures[0]?.before).toContain('fill={parityTheme.colors.textSecondary}');
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');
