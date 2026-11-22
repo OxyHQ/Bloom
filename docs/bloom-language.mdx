@@ -2563,7 +2563,9 @@ constants and an app's existing data fit as they are (a node inside data, a
 suggestion's `leading`, is a React element: `toElement(view)`). Its look is modifiers, checked by the spec: a
 size, a style or a tone is a token, a colour a role (painted where it is
 drawn), a length a space token, a duration (a reveal's pace, a count-up, a
-cross-fade) a duration token. The universal modifiers place, box and name
+cross-fade) a duration token, and each value it edits beside its main one a
+binding modifier (`.expanded([open, setOpen])`, see [Inputs](#inputs)), never
+a value and its `on…Change` in the options. The universal modifiers place, box and name
 it, and `.onPress()` puts a press on a component that takes none of its own.
 
 ### Colour lists
@@ -3486,13 +3488,14 @@ for its skeletons; a card's `actions` and a list's `emptyAction` are
 children); `EarningsSummary(periods, options?)` (its `payoutAction` a child,
 `chartHeight` a space token), `EarningsBreakdown(lines, options?)` and
 `EarningsPayoutRow(payout, options?)` (its `action` a child; `.onPress()` its
-own); `SignaturePad(options?)` (its value controlled or not, as Bloom's;
-`.tint()` its ink, a colour role; `height` a space token) and
-`ProofOfDelivery(options?)` (`.loading()` while it submits, `actions` a
-child, `signatureHeight` a space token), both `.disabled()`;
+own); `SignaturePad(options?)` (its value Bloom's own from a
+`defaultValue`, or `.value([signature, setSignature])`; `.tint()` its ink, a
+colour role; `height` a space token) and `ProofOfDelivery(options?)`
+(`.value()` the same way, `.loading()` while it submits, `actions` a child,
+`signatureHeight` a space token), both `.disabled()`;
 `VehiclePicker(vehicle, options?)` and `ShipmentLoadPicker(load, options?)`
-write their binding; `ShipmentOptionsList(options?)` keeps its three choices
-in the options, as Bloom's; `ShipmentRequestForm(route, load, options?)` (its
+write their binding; `ShipmentOptionsList(options?)` takes its three choices
+as `.selectedExtras()`, `.access()` and `.window()` bindings; `ShipmentRequestForm(route, load, options?)` (its
 route Bloom's `RouteStops` data, its load a binding, its `footer` a child);
 each takes `.disabled()`. A pad's stroke width stays a number in the options
 (a line's weight, not a length on the space scale).
@@ -4102,227 +4105,204 @@ a theme switch; each fixture also pins how many chains the compiler hoists.
 One line holds the whole language (`feat/bloom-language-next`): the core,
 spec and compiler; the platform components and navigation; the primitives,
 numeric tokens, layout and style modifiers and variants; the motion engine;
-and `@oxy.so/bloom-data` beside it.
+and `@oxy.so/bloom-data` beside it. Each area below says what is built and,
+after **Not built**, what is not; nothing is listed twice.
 
-**Built**
-
-- The node model, `view()`, the one spec (runtime tables, web sheet and the
-  compiler's tables from `spec/language.json`) and the compiler (checks,
-  hoisting), with unit tests, cargo tests and parity against hand-written
-  Bloom on native and web, light and dark.
-- Primitives: stacks, `Spacer`, `Text` (Bloom's `Text`, its families and
+- **Core.** The node model, `view()`, the one spec (runtime tables, web sheet
+  and the compiler's tables from `spec/language.json`) and the compiler
+  (checks, hoisting), with unit tests, cargo tests and parity against
+  hand-written Bloom on native and web, light and dark. **Not built:** the
+  compiler's distribution (prebuilt addons per platform from CI, a WASI
+  fallback).
+- **Renderers.** Everything renders through React Native and
+  react-native-web. **Not built:** a SwiftUI, native-view or CSS renderer;
+  iOS is typechecked and tested against stand-ins, not run on a device; the
+  web stylesheet is not in server-rendered HTML; on the web `hoverGroup()`
+  sets `group` through `react-native-css`.
+- **Primitives.** Stacks, `Spacer`, `Text` (Bloom's `Text`, its families and
   ramp, mono), `Icon`, `Image`, `Embed`, `Avatar` and `AvatarGroup`, `Badge`,
   `IconCircle`, `Loading`, `Skeleton`, `Shape`, `Divider`, `Fill`,
   `AspectRatio`, `Grid`, `Button`, `ButtonGroup`, `FAB`, `Lottie`, the action
-  bar.
-- Platform components per platform (Menu, Button, Header, BottomBar, FAB, the
-  glass: the lens on Android and OxyOS, `glassEffect` on iOS, Bloom's
-  material on the web) and navigation (`AppLayout`, stacks, routes, tabs, the
-  iOS system components).
-- Tokens: Bloom's named rungs, numeric tokens by one rule (an exact value apps
-  write in two or more places, named by its value), and an app's own tokens
-  (`defineTokens`: space, icon and avatar sizes, leading, motion, and brand
-  colours).
-- Layout and style modifiers: distribution, placement, overlays, elevation,
-  rings, corners and their curve, text styles, links, truncation.
-- Variants: breakpoints, the scheme, a view's own hover, focus
+  bar. **Not built:** a full `ZStack` (the first child sets the size and the
+  rest cover it; `.overlay(view, alignment)` is the aligned form).
+- **Tokens.** Bloom's named rungs; numeric tokens by one rule (an exact value
+  apps write, named by its value), durations included (`'0'`, `'800'`,
+  `'2500'`); a card's corner as a corner token of Bloom's radius scale; a
+  node's densities its own (each node lists Bloom's names for them); and an
+  app's own tokens (`defineTokens`: space, icon and avatar sizes, leading,
+  motion, and brand colours). **Not built:** a generic component's own timing
+  modifiers take milliseconds (a hover card's and a tooltip's `.openDelay()`
+  and `.closeDelay()`, a notification's `.autoDismiss()` and
+  `.introDelay(seconds)`, a connection status's `.reconnectingDelay()` and
+  `.restoredDuration()`), and an accordion's, a collapsible's and a meter's
+  reveal take Bloom's `{ duration, easing }`; a signature's stroke width is a
+  number, not a space token.
+- **Bindings.** A node's main value is its constructor's binding, and every
+  other value it edits a modifier taking a `Binding` (`.presented()`,
+  `.query()`, `.expanded()`, `.sorting()`, `.refreshable()`…), across every
+  family. **Not built:** a handler alone (hearing an uncontrolled value
+  change): the screen owns the value instead; a selection told by an event
+  (`selectedId` beside `onSelect`, a sidebar's `.selection()` beside
+  `.onSelect()`) stays the value and its event, as a press chooses; a value
+  inside Bloom's own data (a mail row's `starred`, a cart panel's `tip`, a
+  share sheet's `search`, a call screen's `controls`) stays that data.
+- **Layout and style.** Distribution, placement, overlays, elevation, rings,
+  corners and their curve, text styles, links, truncation.
+- **Variants.** Breakpoints, the scheme, a view's own hover, focus
   (`:focus-visible`) and press, `disabled` and the platforms; nested
   variants; a glass's padding, frame, border, corner and fill, as the
-  material's own props; on the web a sheet per condition holding only the classes that
-  render; a Bloom component's variants in its own style, its state tracked by
-  its box (a component with no press of its own takes it on a host around
-  it); the innermost pressable owns a hover or a press, as react-native-web's
-  does, a Bloom Avatar or Action inside a stack included.
-- Motion (`@oxy.so/bloom/motion`): motion tokens and curves, `.animation()`,
-  `.transition()`, `.keyframes()`, `.matchedGeometry()`,
-  `.contentTransition('roll')`, `.pressScale()`, geometry (`.scale()`,
-  `.offset()`, `.rotation()`) as tokens or bound to a `MotionValue`, `.drag()`
-  and `.swipe()` on Gesture Handler 3. Resting geometry that nothing plays is
-  the box's own style. Bloom's pop, roll, toast and press feedback play on the
-  same engine; the bottom sheet's drags are the same gesture layer's
-  (docs/motion.mdx, Motion values and gestures).
-- The className table (`docs/bloom-language-classnames.mdx`), which says what
-  each utility the apps use becomes.
-- Inputs (see [Inputs](#inputs)): `TextField`, `SecureField`, `TextEditor`,
-  `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup` (swatches included),
-  `Segmented`, `Picker` with their `Option` and `OptionGroup`, and `Search`,
-  each value a `Binding` (`[value, setValue]`, what `useState` returns), focus
-  included (`.focused(binding)`); a trailing field icon, a completion, a
-  picker row's mark, a search's trigger, trailing content and box.
-- Overlays and feedback (see [Overlays and feedback](#overlays-and-feedback)):
-  `.alert()`, `.dialog()` and `.popover()` on any view, each shown while its
-  binding holds (Bloom's `AlertDialog`, `Dialog` and `Popover`, the view as the
-  popover's trigger), with an alert's icon, a dialog's header, footer, page,
-  size, padding and every tier's placement, and a popover's offsets and sizes;
-  `ConnectionStatus` with its own words and timings; `toast` as Bloom's
-  imperative call with a title or a language view, and `toast.custom`. Web
-  parity compares an open overlay's portaled DOM and a toast's row.
-- Containers (see [Containers](#containers)): `Card` and its parts, `Row`
-  (Bloom's `Item`), `GroupedSection`, `GroupedSectionItem` (with a box of its
-  own), `GroupedSectionIcon`, `GroupedSectionDivider` and
-  `GroupedSectionCollapse`, `Chip` (a filter chip through a binding, its role,
-  the inverted chip), `ChipRow` and `CappedChipRow`, `EmptyState` (its actions
-  and suggestions read from `Button` nodes, a `navigate()` included),
-  `Admonition`, `Tabs`/`TabItem`/`TabContent` (the selection a binding,
-  reordering), `SelectionCard`, `Kbd` and `ErrorBoundary` (a box, a fallback
-  that is a function of the error).
-- App chrome (see [App chrome](#app-chrome)), each Bloom's own component with
-  parity on native, the web and Chrome: `ScrollView` and all of `screen()`'s
-  `Screen` (kind, scroll owner, document scroll, header placement and scroll
-  edge, underlay, floating action, clearance, navigation scope, colour preset
-  and seed, activity, starting chrome heights); a `.sheet()`'s `BottomSheet`
-  (iOS: the system sheet, not verified); `Sidebar` with its destinations,
-  tree, modes, team, plan, onboarding card, search query and tree drops (a
-  touch drag on Bloom's gesture layer), `Rail`, `PageFooter`; `Command`;
-  `SettingsModal` and the settings pages' rows (`SettingsSection`,
-  `SettingsValue`, `SettingsSelect`, `SettingsTextField`,
-  `SettingsDateField`); `AppLayout`'s semantic layout, panels, deck and
-  inspector, and its destinations (Bloom's pager provider); the layout
-  family's `Toolbar`, `StickySection`, `ScrollArea`, `ScrollSurface`,
-  `AutoHideBar` and `ResizeHandle`. Decided, not missing: on iPad the sidebar
-  is Bloom's `AppShell` sidebar; an iOS sheet's title is an accessibility name
-  (the system sheet has no title bar); a `.sheet()` whose content is not a
-  `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
-  does the node.
-- Generic components (see [Generic components](#generic-components)), drawn as
-  Bloom's own: the date and time pickers, ratings, meters and progress bars, stickers,
-  tables, rows and lists, carousels, markdown, sliders,
-  accordions, code, steppers, tooltips, breadcrumbs, activity heatmaps,
-  tag fields,
-  file uploads,
-  videos,
-  one-time codes,
-  colour swatch pickers,
-  animated checks,
-  context menus,
-  collapsibles,
-  drop zones,
-  media inset borders,
-  image aspect ratios,
-  fact strips,
-  photo grids,
-  choice lists,
-  category bars,
-  video playback,
-  hover cards,
-  expandable text,
-  menubars,
-  composition bars,
-  phone inputs,
-  media flights,
-  avatar flights,
-  input groups,
-  notifications,
-  link previews,
-  social buttons,
-  media galleries,
-  data tables,
-  sortable chip rows,
-  viewports.
-- Product components (wave 5), each Bloom's own with parity on native,
-  web and Chrome: `AgentAvatar`; the chat composer family (`ChatComposer`,
-  `CompactComposer`, `ComposerBanner`, `ComposerIconButton`, `SuggestionList`,
-  `VoiceRecorder`, `AttachmentMenu`, `EmojiPicker`, `ReactionPicker`,
-  `MessageContextMenu`); the chart cards (`AreaChartCard`, `BarListCard`,
-  `ContributionsCard`, `HeatmapChartCard`, `LineChartCard`, `RadarChartCard`,
-  `SleepScoreCard`, `StageBarsCard`, `StepsCard`, `TokensChartCard`,
-  `ChartCardSurface`, `ChartHeadline`, `ChartStatTiles`, `Sparkline`); the
-  composer panel (`ComposerPanel`, `ComposerPill`, `ComposerPanelStatusTab`);
-  the AI chat (`AiChatShell`, `AiChatContainer`, `AiChatThread`,
-  `AiChatUserMessage`, `AiChatAssistantMessage`, `AiChatMessageLine`,
-  `AiChatHeader`, `AiChatMobileHeader`, `AiChatCodePanel`, `AiChatGalleryPanel`);
-  `StatCard`, `StatCards`; `PlayButton`, `PlaybackProgress`; the agent
-  families (`AgentLimitsCard`, `UsageCard`, `AgentThinking`, `AgentProgress`,
-  `AgentProgressLoadingText`, the agent log's five, `ComposerLoader`,
-  `ConversationSidebar`, `Questionnaire`); the chat families (the chat
-  screen's, chat list's, indicators' and message media's 24); the listing
-  details, map markers, follow button, shelves, subscription plans and user
-  hover card; the card form and its parts; the checkout sheet. Their lists
-  of colours are `.gradient()` and their secondary looks modifiers.
-- Product components (wave 6), the families one app uses, each Bloom's own
-  with parity on native, web and Chrome: Homiio's (booking, home search,
-  listing actions as `ListingActionBar`, listing cards, the listing editor,
-  the offering badge, price insights, the stay filters and search, tenancy,
-  eviction, place reviews); GoWay's map chrome, places and directions, and
-  Mercaria's place picker; Gemies' and Astro's (the agent editor, the reply's
-  identity, the multi-agent chat, the task list, the voice controls, web
-  search, the AI profile card, the agent chat); Allo's call screens, people
-  and message bubbles; Inbox's mail and note toolbar; Nilo's project board
-  and activity feed; Peable's order status, Atlas' lockup, Willo's ambient
-  photo and the month calendar; and the action bar's orientation, tone and
-  zero counts Mention sets.
-- The families no app imports yet (wave 7), each Bloom's own with parity on
-  native, web and Chrome: commerce (addresses, payment methods, the price
-  summary, payment status, the cart, menu items, the vendor card, the
-  checkout summary, delivery slots, the order confirmation); logistics
-  (carrier quotes, earnings, the job board, proof of delivery, the shipment
-  request, the vehicle picker); music (the media cards, lyrics, the media
-  player, the creator studio, the music library, the queue panel, the track
-  list); CRM (`ContactProfileCard`, `LeadScoreCard`, the pipeline); the
-  dashboard cards (`ImportantAlertsCard`, `PatientInfoCard`,
-  `RecentHiresCard`); `RouteStops`, `NoteCard`, `ShareSheet`; and the generic
-  components (`ConnectionDots`, `OutlineNav`, `Pagination`,
-  `ProgressiveBlur`, `RowActions`, `SwipeRow` on Gesture Handler,
-  `ThemeToggle`).
-
-**Not built**
-
-- Variants: a scale or an offset under `when()` (geometry is the motion
+  material's own props; on the web a sheet per condition holding only the
+  classes that render; a Bloom component's variants in its own style, its
+  state tracked by its box (a component with no press of its own takes it on
+  a host around it); the innermost pressable owns a hover or a press, as
+  react-native-web's does, a Bloom Avatar or Action inside a stack included.
+  **Not built:** a scale or an offset under `when()` (geometry is the motion
   layer's, and the web has no transform class to vary); an app colour under
-  `when()` (it has no class); a material's opacity (never faded); an
-  island's or a concentric box's frame, border, corner and fill (only their
-  padding varies); a state variant of the glass under a Button or FAB (the
-  control tracks its own state, inside the glass).
-- A pressable of another component inside a pressable stack on the web
-  (`Embed`, or a Bloom component the language does not draw): it carries no
-  press host class, so the stack still answers a hover or a press of it.
-- Motion: `transition-colors` (the engine plays geometry and opacity, not
+  `when()` (it has no class); a material's opacity (never faded); an island's
+  or a concentric box's frame, border, corner and fill (only their padding
+  varies); a state variant of the glass under a Button or FAB (the control
+  tracks its own state, inside the glass); on the web, a pressable of another
+  component inside a pressable stack (`Embed`, or a Bloom component the
+  language does not draw) carries no press host class, so the stack still
+  answers a hover or a press of it.
+- **Glass and platform components.** Per platform: Menu, Button, Header,
+  BottomBar, FAB, the glass (the lens on Android and OxyOS, `glassEffect` on
+  iOS, Bloom's material on the web), and navigation (`AppLayout`, stacks,
+  routes, tabs, the iOS system components). **Not built:** an island of
+  shared controls (a `Button` inside `.blur()` draws its own material rather
+  than Bloom's `material="shared"` on the island's).
+- **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,
+  `.animation()`, `.transition()`, `.keyframes()`, `.matchedGeometry()`,
+  `.contentTransition('roll')`, `.pressScale()`, geometry (`.scale()`,
+  `.offset()`, `.rotation()`) as tokens or bound to a `MotionValue`,
+  `.drag()` and `.swipe()` on Gesture Handler 3. Resting geometry that
+  nothing plays is the box's own style. Bloom's pop, roll, toast and press
+  feedback play on the same engine; the bottom sheet's drags are the same
+  gesture layer's (docs/motion.mdx, Motion values and gestures). **Not
+  built:** `transition-colors` (the engine plays geometry and opacity, not
   colour), loops (`animate-spin`, `animate-pulse`), a `delay`, a transform
   `origin`; `withAnimation`, `map()`, `.pinch`, `.onDoubleTap`,
   `.contentTransition('numeric')`, matched geometry across screens. An
   `.animation()` scope reaches its own body, not the bodies of `view()`s
   inside it; a removal plays only for a keyed list's child.
-- Renderers: everything renders through React Native and react-native-web;
-  no SwiftUI, native-view or CSS renderer yet. iOS is typechecked and tested
-  against stand-ins, not run on a device. The web stylesheet is not in
-  server-rendered HTML. On the web, `hoverGroup()` sets `group` through
-  `react-native-css`.
-- An island of shared controls: a `Button` inside `.blur()` draws its own
-  material rather than Bloom's `material="shared"` on the island's.
-- `ZStack` is basic: the first child sets the size and the rest cover it;
-  `.overlay(view, alignment)` is the aligned form.
-- Compiler distribution: prebuilt addons per platform from CI, and a WASI
-  fallback.
-- App chrome: a handful of props that take a raw value with no token
-  (an `AutoHideBar`'s band colour and a `ScrollSurface`'s fade colour) and an
-  `AutoHideBar`'s own timings and motion, which keep Bloom's. The shell's
-  panels render only once it has measured itself, so they are compared in
-  Chrome.
-- Replacing `className`: the codemods read the className table; what it
-  flags needs a modifier or a named token first.
-- Parity: a field that takes the focus as it appears and a toast are
-  compared by Jest, not in Chrome (a page has one focus and one toast store);
-  the Chrome check compares an overlay's presenting view (an open picker's
-  trigger), not its portal; the web suite compares the portal, an open
-  picker's grouped rows included.
-- Product components: a mark that moves on the JS thread (the
-  thinking marks, the working row, the typing dots) is compared by Jest, not
-  in Chrome; an overlay a product component presents (the checkout sheet) is
-  compared by Jest, as Chrome's check reads the table's cells. Bloom's
-  helpers and constants (`computeMortgage`, `listingQualityScore`,
-  `messageEntities`…) stay Bloom's; a reply preview's colour inside a message
-  bubble's data and an ambient photo's fade and drift timings stay Bloom's
-  values; the radii `UsageCard` and `ChartCardSurface` take by Bloom's own
-  names stay options.
-- Wave 7's families: colours that come with the data (a lyrics view's or a
-  player's `artworkColor`, a swipe row's `paint`, an alert's tone, a CRM
-  card's accents, a vendor card's `promoTone`) stay Bloom's data in the
-  options; content Bloom takes inside its data (a price line's `info`, a
-  checkout summary's address, delivery and price) stays Bloom's data, not
-  language children; a value some components keep controlled or not (a
-  signature pad, proof of delivery, shipment options, menu item options)
-  stays Bloom's `value` and handler in the options rather than a binding; a
-  signature's stroke width is a number, not a space token. The playing track
-  list and row, and a live friend-activity card, move on the JS thread:
-  compared by Jest, not in Chrome. `mail-list` exports no component, so it
-  has no node.
+- **className.** The className table (`docs/bloom-language-classnames.mdx`)
+  says what each utility the apps use becomes. **Not built:** replacing
+  `className` outright: the codemods read the table, and what it flags needs
+  a modifier or a named token first.
+- **Inputs** (see [Inputs](#inputs)). `TextField`, `SecureField`,
+  `TextEditor`, `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup`
+  (swatches included), `Segmented`, `Picker` with their `Option` and
+  `OptionGroup`, and `Search`, each value a `Binding`, focus included
+  (`.focused(binding)`); a trailing field icon, a completion, a picker row's
+  mark, a search's trigger, trailing content and box.
+- **Overlays and feedback** (see [Overlays and feedback](#overlays-and-feedback)).
+  `.alert()`, `.dialog()` and `.popover()` on any view, each shown while its
+  binding holds (Bloom's `AlertDialog`, `Dialog` and `Popover`, the view as
+  the popover's trigger), with an alert's icon, a dialog's header, footer,
+  page, size, padding and every tier's placement, and a popover's offsets
+  and sizes; `ConnectionStatus` with its own words and timings; `toast` as
+  Bloom's imperative call with a title or a language view, and
+  `toast.custom`. Web parity compares an open overlay's portaled DOM and a
+  toast's row.
+- **Containers** (see [Containers](#containers)). `Card` and its parts, `Row`
+  (Bloom's `Item`), `GroupedSection`, `GroupedSectionItem` (with a box of its
+  own), `GroupedSectionIcon`, `GroupedSectionDivider` and
+  `GroupedSectionCollapse`, `Chip` (a filter chip through a binding, its
+  role, the inverted chip), `ChipRow` and `CappedChipRow`, `EmptyState` (its
+  actions and suggestions read from `Button` nodes, a `navigate()`
+  included), `Admonition`, `Tabs`/`TabItem`/`TabContent` (the selection a
+  binding, reordering), `SelectionCard`, `Kbd` and `ErrorBoundary` (a box, a
+  fallback that is a function of the error).
+- **App chrome** (see [App chrome](#app-chrome)), each Bloom's own component
+  with parity on native, the web and Chrome: `ScrollView` and all of
+  `screen()`'s `Screen` (kind, scroll owner, document scroll, header
+  placement and scroll edge, underlay, floating action, clearance, navigation
+  scope, colour preset and seed, activity, starting chrome heights); a
+  `.sheet()`'s `BottomSheet` (iOS: the system sheet, not verified); `Sidebar`
+  with its destinations, tree, modes, team, plan, onboarding card, search
+  query and tree drops (a touch drag on Bloom's gesture layer), `Rail`,
+  `PageFooter`; `Command`; `SettingsModal` and the settings pages' rows
+  (`SettingsSection`, `SettingsValue`, `SettingsSelect`, `SettingsTextField`,
+  `SettingsDateField`); `AppLayout`'s semantic layout, panels, deck and
+  inspector, and its destinations (Bloom's pager provider); the layout
+  family's `Toolbar`, `StickySection`, `ScrollArea`, `ScrollSurface`,
+  `AutoHideBar` and `ResizeHandle`. Decided, not missing: on iPad the sidebar
+  is Bloom's `AppShell` sidebar; an iOS sheet's title is an accessibility
+  name (the system sheet has no title bar); a `.sheet()` whose content is not
+  a `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so
+  neither does the node. **Not built:** an `AutoHideBar`'s band colour and a
+  `ScrollSurface`'s fade colour take a raw value with no token, and an
+  `AutoHideBar`'s own timings and motion keep Bloom's.
+- **Generic components** (see [Generic components](#generic-components)),
+  drawn as Bloom's own: the date and time pickers, ratings, meters and
+  progress bars, stickers, tables, rows and lists, carousels, markdown,
+  sliders, accordions, code, steppers, tooltips, breadcrumbs, activity
+  heatmaps, tag fields, file uploads, videos, one-time codes, colour swatch
+  pickers, animated checks, context menus, collapsibles, drop zones, media
+  inset borders, image aspect ratios, fact strips, photo grids, choice lists,
+  category bars, video playback, hover cards, expandable text, menubars,
+  composition bars, phone inputs, media flights, avatar flights, input
+  groups, notifications, link previews, social buttons, media galleries, data
+  tables, sortable chip rows, viewports; and, of wave 7, `ConnectionDots`,
+  `OutlineNav`, `Pagination`, `ProgressiveBlur`, `RowActions`, `SwipeRow` on
+  Gesture Handler and `ThemeToggle`.
+- **Product components**, each Bloom's own with parity on native, web and
+  Chrome. Wave 5: `AgentAvatar`; the chat composer family (`ChatComposer`,
+  `CompactComposer`, `ComposerBanner`, `ComposerIconButton`,
+  `SuggestionList`, `VoiceRecorder`, `AttachmentMenu`, `EmojiPicker`,
+  `ReactionPicker`, `MessageContextMenu`); the chart cards (`AreaChartCard`,
+  `BarListCard`, `ContributionsCard`, `HeatmapChartCard`, `LineChartCard`,
+  `RadarChartCard`, `SleepScoreCard`, `StageBarsCard`, `StepsCard`,
+  `TokensChartCard`, `ChartCardSurface`, `ChartHeadline`, `ChartStatTiles`,
+  `Sparkline`); the composer panel (`ComposerPanel`, `ComposerPill`,
+  `ComposerPanelStatusTab`); the AI chat (`AiChatShell`, `AiChatContainer`,
+  `AiChatThread`, `AiChatUserMessage`, `AiChatAssistantMessage`,
+  `AiChatMessageLine`, `AiChatHeader`, `AiChatMobileHeader`,
+  `AiChatCodePanel`, `AiChatGalleryPanel`); `StatCard`, `StatCards`;
+  `PlayButton`, `PlaybackProgress`; the agent families (`AgentLimitsCard`,
+  `UsageCard`, `AgentThinking`, `AgentProgress`, `AgentProgressLoadingText`,
+  the agent log's five, `ComposerLoader`, `ConversationSidebar`,
+  `Questionnaire`); the chat families (the chat screen's, chat list's,
+  indicators' and message media's 24); the listing details, map markers,
+  follow button, shelves, subscription plans and user hover card; the card
+  form and its parts; the checkout sheet; their lists of colours are
+  `.gradient()` and their secondary looks modifiers. Wave 6, the families one
+  app uses: Homiio's (booking, home search, listing actions as
+  `ListingActionBar`, listing cards, the listing editor, the offering badge,
+  price insights, the stay filters and search, tenancy, eviction, place
+  reviews); GoWay's map chrome, places and directions, and Mercaria's place
+  picker; Gemies' and Astro's (the agent editor, the reply's identity, the
+  multi-agent chat, the task list, the voice controls, web search, the AI
+  profile card, the agent chat); Allo's call screens, people and message
+  bubbles; Inbox's mail and note toolbar; Nilo's project board and activity
+  feed; Peable's order status, Atlas' lockup, Willo's ambient photo and the
+  month calendar; and the action bar's orientation, tone and zero counts
+  Mention sets. Wave 7, the families no app imports yet: commerce
+  (addresses, payment methods, the price summary, payment status, the cart,
+  menu items, the vendor card, the checkout summary, delivery slots, the
+  order confirmation); logistics (carrier quotes, earnings, the job board,
+  proof of delivery, the shipment request, the vehicle picker); music (the
+  media cards, lyrics, the media player, the creator studio, the music
+  library, the queue panel, the track list); CRM (`ContactProfileCard`,
+  `LeadScoreCard`, the pipeline); the dashboard cards
+  (`ImportantAlertsCard`, `PatientInfoCard`, `RecentHiresCard`);
+  `RouteStops`, `NoteCard`, `ShareSheet`. **Not built:** Bloom's helpers and
+  constants (`computeMortgage`, `listingQualityScore`, `messageEntities`…)
+  stay Bloom's; colours that come with the data (a reply preview's inside a
+  message bubble's data, a lyrics view's or a player's `artworkColor`, a
+  swipe row's `paint`, an alert's tone, a CRM card's accents, a vendor card's
+  `promoTone`) stay Bloom's data in the options; content Bloom takes inside
+  its data (a price line's `info`, a checkout summary's address, delivery and
+  price) stays Bloom's data, not language children; `mail-list` exports no
+  component, so it has no node.
+- **Parity.** Every family above is compared against hand-written Bloom.
+  **Not built:** a field that takes the focus as it appears and a toast are
+  compared by Jest, not in Chrome (a page has one focus and one toast
+  store); the Chrome check compares an overlay's presenting view (an open
+  picker's trigger), not its portal, which the web suite compares, an open
+  picker's grouped rows included; the shell's panels render only once it has
+  measured itself, so they are compared in Chrome; a mark that moves on the
+  JS thread (the thinking marks, the working row, the typing dots, the
+  playing track list and row, a live friend-activity card) and an overlay a
+  product component presents (the checkout sheet) are compared by Jest, not
+  in Chrome.
