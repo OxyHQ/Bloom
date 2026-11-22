@@ -368,9 +368,8 @@ export function composeChatRowName(
 //  Web stylesheet
 //
 //  Hover and keyboard-focus affordances no inline style can carry. The hooks
-//  are `data-*` attributes through `dataSet` (a `className` never reaches the
-//  DOM here — react-native-css consumes it into `style`), and
-//  `adoptStyleSheet` no-ops without a `document`, so this file stays universal.
+//  are `data-*` attributes through `dataSet` (react-native-web drops a
+//  `className`), and `adoptStyleSheet` no-ops without a `document`, so this file stays universal.
 // ---------------------------------------------------------------------------
 
 export const CHAT_LIST_STYLE_ID = 'bloom-chat-list-web-css';
