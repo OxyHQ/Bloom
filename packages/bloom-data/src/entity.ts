@@ -29,10 +29,13 @@ export interface EntityOptions<T> {
    */
   viewerFields?: readonly (keyof T & string)[];
   /**
-   * Copy the records to the durable store. A changed `version` drops this
-   * type's stored rows when the store opens.
+   * Copy the records to the durable store. A changed `version` (default 1)
+   * drops this type's stored rows when the store opens. `keep` bounds the
+   * rows on disk to the newest `keep` written (memory holds whatever is
+   * loaded): older rows are deleted with each write, so a restart restores
+   * only the kept ones. Rows written in one batch count as equally new.
    */
-  persist?: boolean | { version: number };
+  persist?: boolean | { version?: number; keep?: number };
   /** Whether stored rows not written for `persistMaxAgeMs` are dropped. Default true. */
   expires?: boolean;
   /**
@@ -93,7 +96,7 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
       ? null
       : options.persist === true
         ? 1
-        : options.persist.version;
+        : (options.persist.version ?? 1);
   const definition: EntityDefinition = {
     kind: 'entity',
     type,
@@ -117,6 +120,7 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
     onStore: options.onStore as EntityDefinition['onStore'],
     persistVersion,
     expires: options.expires ?? true,
+    persistLimit: typeof options.persist === 'object' ? options.persist.keep : undefined,
     indexes: Object.entries(options.index ?? {}).map(([name, keyOf]) => [
       name,
       (record: Plain) => {

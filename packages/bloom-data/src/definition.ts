@@ -20,6 +20,8 @@ export interface EntityDefinition {
   readonly persistVersion: number | null;
   /** Whether stored rows age out (`persistMaxAgeMs`). A model's never do. */
   readonly expires: boolean;
+  /** The most rows of this type the durable copy keeps (the newest written); `undefined`: no bound. */
+  readonly persistLimit: number | undefined;
   /** Secondary keys, by name: a record's value for each (`undefined`: none). */
   readonly indexes: ReadonlyArray<readonly [string, (record: Plain) => string | undefined]>;
 }
@@ -133,6 +135,15 @@ export function persistedKeep(): string[] {
   return persisted()
     .filter((d) => !d.expires)
     .map((d) => d.type);
+}
+
+/** The persisted types with a bound on their rows, and the bound. */
+export function persistedLimits(): Record<string, number> {
+  const limits: Record<string, number> = {};
+  for (const definition of persisted()) {
+    if (definition.persistLimit !== undefined) limits[definition.type] = definition.persistLimit;
+  }
+  return limits;
 }
 
 export function persistedVersions(): Record<string, number> {
