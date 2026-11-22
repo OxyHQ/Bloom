@@ -5,7 +5,7 @@ import type { ButtonProps, ButtonIconComponent } from '../button/types';
 /** Visual options only; the carousel retains navigation, names and disabled state. */
 export type CarouselArrowButtonProps = Pick<
   ButtonProps,
-  'className' | 'material' | 'appearance' | 'tone' | 'size' | 'iconSize'
+  'style' | 'colors' | 'material' | 'appearance' | 'tone' | 'size' | 'iconSize'
 >;
 
 /** Spread onto a Bloom Button; carousel owns logical direction and edge state. */
