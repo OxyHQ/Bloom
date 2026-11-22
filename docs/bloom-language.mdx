@@ -2275,7 +2275,20 @@ and `@oxy.so/bloom-data` beside it.
   `ConversationSidebar`, `Questionnaire`); the chat families (the chat
   screen's, chat list's, indicators' and message media's 24); the listing
   details, map markers, follow button, shelves, subscription plans and user
-  hover card; the card form and its parts; the checkout sheet.
+  hover card; the card form and its parts; the checkout sheet. Their lists
+  of colours are `.gradient()` and their secondary looks modifiers.
+- Product components (wave 6), the families one app uses, each Bloom's own
+  with parity on native, web and Chrome: Homiio's (booking, home search,
+  listing actions as `ListingActionBar`, listing cards, the listing editor,
+  the offering badge, price insights, the stay filters and search, tenancy,
+  eviction, place reviews); GoWay's map chrome, places and directions, and
+  Mercaria's place picker; Gemies' and Astro's (the agent editor, the reply's
+  identity, the multi-agent chat, the task list, the voice controls, web
+  search, the AI profile card, the agent chat); Allo's call screens, people
+  and message bubbles; Inbox's mail and note toolbar; Nilo's project board
+  and activity feed; Peable's order status, Atlas' lockup, Willo's ambient
+  photo and the month calendar; and the action bar's orientation, tone and
+  zero counts Mention sets.
 
 **Not built**
 
@@ -2310,5 +2323,9 @@ and `@oxy.so/bloom-data` beside it.
 - Product components: a mark that moves on the JS thread (the
   thinking marks, the working row, the typing dots) is compared by Jest, not
   in Chrome; an overlay a product component presents (the checkout sheet) is
-  compared by Jest, as Chrome's check reads the table's cells. The product
-  families only one app uses are not drawn yet.
+  compared by Jest, as Chrome's check reads the table's cells. Bloom's
+  helpers and constants (`computeMortgage`, `listingQualityScore`,
+  `messageEntities`…) stay Bloom's; a reply preview's colour inside a message
+  bubble's data and an ambient photo's fade and drift timings stay Bloom's
+  values; the radii `UsageCard` and `ChartCardSurface` take by Bloom's own
+  names stay options.
