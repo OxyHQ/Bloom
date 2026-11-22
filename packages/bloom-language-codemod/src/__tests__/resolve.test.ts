@@ -51,12 +51,13 @@ describe('resolveClassName', () => {
       { name: 'border', args: ['border', 'thin', 'bottom'] },
     ]);
   });
-  it('maps a colour at an opacity, a fixed one too, but not under a live condition', () => {
+  it('maps a colour at an opacity, a fixed one too, under any condition', () => {
     expect(codes('bg-primary/10 border-border/60 border')).toEqual([]);
     expect(codes('text-white/70', 'text')).toEqual([]);
     expect(codes('web:bg-primary/10')).toEqual([]);
-    expect(codes('dark:bg-primary/10')).toEqual(['measured-difference']);
-    expect(codes('hover:bg-primary/10', 'pressable')).toEqual(['measured-difference']);
+    expect(codes('dark:bg-primary/10')).toEqual([]);
+    expect(codes('md:bg-primary/10')).toEqual([]);
+    expect(codes('hover:bg-primary/10', 'pressable')).toEqual([]);
   });
   it('maps a leading from a ratio of a size the text sets, and keeps one of no size', () => {
     expect(codes('text-sm leading-snug', 'text')).toEqual([]);
