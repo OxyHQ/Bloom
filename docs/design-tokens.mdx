@@ -84,6 +84,21 @@ For visual review, run Storybook and open **Theme / Color System Playground**
 views, renders both modes from `getResolvedTokens()`, and filters the complete
 registry by family or curated/derived pairing.
 
+## Apps still using `className`
+
+For apps still using `className` (removed once the fleet has migrated), Bloom
+keeps two generated token outputs: `@oxy.so/bloom/design-tokens/theme.css`, the
+Tailwind v4 `@theme` block (`--color-<role>: var(--canonical)`, spacing, radius,
+type and shadow), and `@oxy.so/bloom/tailwind-preset`, the same vocabulary as a
+JS preset. Import the CSS after Tailwind; never paste the tokens into the app:
+
+```css
+@import "@oxy.so/bloom/design-tokens/theme.css";
+```
+
+They come from the same scales and roles as Bloom's own styles. Bloom itself
+styles without them.
+
 ## Outside a component
 
 ### The pre-JS palette (prerendered apps)

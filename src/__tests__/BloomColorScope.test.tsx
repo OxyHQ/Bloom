@@ -229,8 +229,9 @@ describe('BloomColorScope', () => {
       expect(flat).toEqual(expect.arrayContaining([expect.objectContaining({ padding: 8 })]));
 
       // Web var contract: the scoped base tokens (`--background`, `--primary`)
-      // must be full `rgb(...)` colors from the single canonical pipeline, with
-      // no Tailwind `--color-*` alias layer beside them.
+      // must be full `rgb(...)` colors from the single canonical pipeline, and
+      // the scoped Tailwind `--color-*` aliases (for apps still using className)
+      // carry those same values.
       const vars = Object.assign(
         {},
         ...flat.filter(
@@ -241,7 +242,7 @@ describe('BloomColorScope', () => {
       const primary = String(vars['--primary'] ?? '');
       expect(background.startsWith('rgb(')).toBe(true);
       expect(primary.startsWith('rgb(')).toBe(true);
-      expect(vars['--color-primary']).toBeUndefined();
+      expect(vars['--color-primary']).toBe(primary);
       expect(/^-?\d[\d.]*\s+[\d.]+%/.test(background)).toBe(false);
     });
   });

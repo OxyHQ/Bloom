@@ -106,7 +106,7 @@ it('resolves', () => {
         j++;
       }
       const inner = css.slice(open + 1, j - 1);
-      const own = inner.replace(/[^;{}]*\{[^]*\}/g, '').trim();
+      const own = inner.replace(/[^;{}]*\{[\s\S]*\}/g, '').trim();
       blocks.push({ head, body: own.replace(/\s+/g, ' '), parents });
       if (inner.includes('{')) parse(inner, [...parents, head]);
       i = j;

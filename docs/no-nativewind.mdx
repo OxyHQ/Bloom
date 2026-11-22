@@ -95,14 +95,23 @@ the authority.
 
 - Removed props: every `className` and `*ClassName` prop. A consumer passes
   `style` (or the language's modifiers); the codemod rewrites app call sites.
-- Removed exports: `useColorScopeStyle`, `initCssInteropDarkMode`,
-  `./tailwind-preset`, `./design-tokens/theme.css`.
+- Removed exports: `useColorScopeStyle`, `initCssInteropDarkMode`.
+- Kept, for apps still using `className` (removed once the fleet has
+  migrated): `./tailwind-preset` and `./design-tokens/theme.css`, generated from
+  the same token scales and roles Bloom's styles read, and the scoped `--color-*`
+  aliases a colour scope writes on the web. They are token outputs for an app's
+  own Tailwind; Bloom has no NativeWind or Tailwind dependency. The concentric
+  `rounded-concentric` utilities are gone: Bloom's concentric geometry comes from
+  `radius` and `style`.
 - Added exports (`@oxy.so/bloom/theme`): `useColorTokens`, `createTokenStyles`,
   `tokenAlpha`, `ColorToken`, `ColorTokens`.
 - Peers removed: `nativewind`, `react-native-css`.
 - Apps no longer need NativeWind, react-native-css, Tailwind or
   `@oxy.so/app-preset/base.css` for Bloom. An app keeps them only for its own
-  `className`, until the codemod moves it.
+  `className`, until the codemod moves it; `theme.css` and the preset keep its
+  classes on Bloom's tokens meanwhile. On native, Bloom no longer publishes its
+  tokens to react-native-css, so an app with classes left mounts app-preset's
+  `BloomNativeWindTheme` once inside `BloomProvider`.
 
 ## App side
 
