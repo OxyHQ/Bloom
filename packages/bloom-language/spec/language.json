@@ -529,7 +529,9 @@
     "priceScale": ["linear", "log"],
     "featureFilterStyle": ["chips", "checkboxes"],
     "filterTriggerSize": ["sm", "md", "lg"],
-    "guestPickerSize": ["sm", "md"]
+    "guestPickerSize": ["sm", "md"],
+    "tenancyLayout": ["auto", "wide", "narrow"],
+    "rentOutstandingTone": ["default", "error"]
   },
   "glass": {
     "$comment": [
@@ -1454,7 +1456,29 @@
       "constructors": ["GuestPicker"],
       "modifiers": ["size"],
       "size": "guestPickerSize"
-    }
+    },
+    "tenancyTimeline": { "constructors": ["TenancyTimeline"], "modifiers": ["density"] },
+    "leaseSummaryCard": {
+      "constructors": ["LeaseSummaryCard"],
+      "modifiers": ["style"],
+      "style": "tenancyLayout"
+    },
+    "rentPaymentList": {
+      "constructors": ["RentPaymentList"],
+      "modifiers": ["style", "tint"],
+      "style": "tenancyLayout",
+      "tint": "rentOutstandingTone"
+    },
+    "maintenanceRequestCard": { "constructors": ["MaintenanceRequestCard"], "modifiers": [] },
+    "documentList": {
+      "constructors": ["DocumentList"],
+      "modifiers": ["style"],
+      "style": "tenancyLayout"
+    },
+    "evictionReportCard": { "constructors": ["EvictionReportCard"], "modifiers": ["lines"] },
+    "evictionTimeline": { "constructors": ["EvictionTimeline"], "modifiers": [] },
+    "placeReviewSummary": { "constructors": ["PlaceReviewSummary"], "modifiers": [] },
+    "writeReviewPrompt": { "constructors": ["WriteReviewPrompt"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
