@@ -77,6 +77,7 @@ import { AGENT_CASES } from '../../parity/agents.cases';
 import { CHAT_CASES } from '../../parity/chat.cases';
 import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
 import { CARD_FORM_CASES } from '../../parity/card-form.cases';
+import { CHECKOUT_DELIVERY_ORDER_CASES } from '../../parity/checkout-delivery-order.cases';
 import { CHECKOUT_SHEET_CASES } from '../../parity/checkout-sheet.cases';
 import { STAY_FILTER_CASES } from '../../parity/stay-filters.cases';
 import { STAY_SEARCH_CASES } from '../../parity/stay-search.cases';
@@ -239,6 +240,7 @@ export const FAMILIES = {
   crm: CRM_CASES,
   dashboardCard: DASHBOARD_CARD_CASES,
   cartMenuVendor: CART_MENU_VENDOR_CASES,
+  checkoutDeliveryOrder: CHECKOUT_DELIVERY_ORDER_CASES,
   mediaCard: MEDIA_CARD_CASES,
   lyrics: LYRICS_CASES,
   creatorStudio: CREATOR_STUDIO_CASES,
