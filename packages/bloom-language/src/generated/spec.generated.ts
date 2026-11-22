@@ -13141,7 +13141,9 @@ export const NODE_MODIFIERS = {
     "headerContent",
     "footerContent",
     "emptyState",
-    "tuning"
+    "tuning",
+    "safeAreaInset",
+    "safeAreaBar"
   ],
   "listSelectionBar": [
     "padding",
