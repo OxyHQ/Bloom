@@ -48,6 +48,8 @@ export type CornerName = keyof typeof CORNER | (typeof ENUMS.cornerExtra)[number
 export type CornerCurve = (typeof ENUMS.cornerCurve)[number];
 /** A control's size: Bloom's control rungs. */
 export type ControlSize = (typeof ENUMS.controlSize)[number];
+/** The edge of a scroll a `safeAreaInset` or `safeAreaBar` is pinned at. */
+export type InsetEdge = (typeof ENUMS.insetEdge)[number];
 /** A Button's style: Bloom's appearances, and the glass styles (`glass`, `glassProminent`). */
 export type ButtonStyle = (typeof ENUMS.buttonStyle)[number];
 /** Bloom `Divider`'s treatments: one hairline, two framing hairlines, a soft strip. */

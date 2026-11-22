@@ -11,6 +11,7 @@ import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/scre
 import { refreshing } from '../binding';
 import type { Edge, Modifier, Node, ValueModifiers } from '../node';
 import { valuesOf } from '../platform/values';
+import { type InsetRoom, withRoom } from './safe-area-inset';
 import type { NodeHostProps } from '../platform/host.types';
 import { resolveSpace, tokenKey } from '../tokens';
 import type { KeyboardDismiss, KeyboardTaps, ScrollIndicators, SpaceToken } from '../tokens';
@@ -66,12 +67,16 @@ function indicators(value: ScrollIndicators | undefined): boolean | undefined {
   return value === undefined || value === 'automatic' ? undefined : value === 'visible';
 }
 
-export function ScrollViewHost({ node, children }: NodeHostProps & { children?: ReactNode }) {
+export function ScrollViewHost({
+  node,
+  room,
+  children,
+}: NodeHostProps & { room?: InsetRoom; children?: ReactNode }) {
   const values = valuesOf(node);
   const refresh = values.refreshable as ValueModifiers['refreshable'] | undefined;
   // Only what the chain sets: an explicit undefined would replace the scroll view's own defaults.
   const props: { -readonly [K in keyof ScreenScrollViewProps]: ScreenScrollViewProps[K] } = {};
-  const container = containerStyle(node, values.spacing as SpaceToken | undefined);
+  const container = withRoom(containerStyle(node, values.spacing as SpaceToken | undefined), room);
   if (container) props.contentContainerStyle = container;
   const shown = indicators(values.scrollIndicators as ScrollIndicators | undefined);
   if (shown !== undefined) {

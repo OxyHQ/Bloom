@@ -25,6 +25,7 @@ import {
 
 import type { Child, Node } from '../node';
 import { valuesOf } from '../platform/values';
+import { type InsetRoom, withRoom } from './safe-area-inset';
 import type { NodeHostProps } from '../platform/host.types';
 import {
   resolveDuration,
@@ -72,11 +73,14 @@ export function StickySectionHost({ node, children }: HostProps) {
 }
 
 /** What a `ScrollArea` and a `ScrollSurface` both take: the scroll, its bar and the keyboard. */
-function scrollAreaProps(node: Node): ScrollAreaProps {
+function scrollAreaProps(node: Node, room: InsetRoom | undefined): ScrollAreaProps {
   const values = valuesOf(node);
   const dismiss = values.scrollDismissesKeyboard as KeyboardDismiss | undefined;
   return defined({
-    contentContainerStyle: containerStyle(node, values.spacing as SpaceToken | undefined),
+    contentContainerStyle: withRoom(
+      containerStyle(node, values.spacing as SpaceToken | undefined),
+      room,
+    ),
     horizontal:
       (values.axis as Axis | undefined) === undefined ? undefined : values.axis === 'horizontal',
     scrollbar: values.scrollbar as ScrollbarVisibility | undefined,
@@ -88,8 +92,8 @@ function scrollAreaProps(node: Node): ScrollAreaProps {
   });
 }
 
-export function ScrollAreaHost({ node, children }: HostProps) {
-  return <ScrollArea {...scrollAreaProps(node)}>{children}</ScrollArea>;
+export function ScrollAreaHost({ node, room, children }: HostProps & { room?: InsetRoom }) {
+  return <ScrollArea {...scrollAreaProps(node, room)}>{children}</ScrollArea>;
 }
 
 /** A motion token as Bloom's spec; none when the chain names none. */
@@ -97,13 +101,18 @@ function motion(value: unknown): MotionSpec | undefined {
   return value === undefined ? undefined : resolveMotion(value as MotionToken);
 }
 
-export function ScrollSurfaceHost({ node, render, children }: HostProps) {
+export function ScrollSurfaceHost({
+  node,
+  render,
+  room,
+  children,
+}: HostProps & { room?: InsetRoom }) {
   const values = valuesOf(node);
   const fade = values.fade as InkToken | undefined;
   const header = values.stickyHeader as Child;
   const footer = values.stickyFooter as Child;
   const props: ScrollSurfaceProps = {
-    ...scrollAreaProps(node),
+    ...scrollAreaProps(node, room),
     ...defined({
       stickyHeader: header ? render(header) : undefined,
       stickyFooter: footer ? render(footer) : undefined,

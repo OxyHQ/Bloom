@@ -388,6 +388,7 @@ import {
   type PaddingToken,
   type SpaceToken,
   type ControlSize,
+  type InsetEdge,
   type ButtonStyle,
   type WeightName,
   type HeaderPresentation,
@@ -1583,6 +1584,15 @@ export type Modifier =
       readonly key: string;
       readonly id: string;
       readonly namespace: Namespace;
+    }
+  | {
+      /** `.safeAreaInset()` and `.safeAreaBar()` (`bar`): a view pinned at a scroll's edge. */
+      readonly kind: 'safeAreaInset';
+      readonly key: string;
+      readonly edge: InsetEdge;
+      readonly content: ViewNode;
+      readonly spacing: SpaceToken | undefined;
+      readonly bar: boolean;
     }
   | {
       readonly kind: 'environment';
@@ -3189,6 +3199,19 @@ export class Node {
   }
   titleVisibility(value: TitleVisibility): Node {
     return this.set('titleVisibility', value);
+  }
+  safeAreaInset(edge: InsetEdge, content: ViewNode, spacing?: SpaceToken): Node {
+    return this.with({ kind: 'safeAreaInset', key: 'inset', edge, content, spacing, bar: false });
+  }
+  safeAreaBar(edge: InsetEdge, content: ViewNode): Node {
+    return this.with({
+      kind: 'safeAreaInset',
+      key: 'inset',
+      edge,
+      content,
+      spacing: undefined,
+      bar: true,
+    });
   }
   dialog(isPresented: Binding<boolean>, content: PresentedNode): Node {
     return this.set('dialog', { isPresented, content });
@@ -4855,6 +4878,17 @@ export type ComposedView = ViewModifiers<ComposedView>;
  * content, laid out in a column.
  */
 export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
+  /**
+   * SwiftUI's `safeAreaInset`: `view` pinned at the scroll's `edge`, and the
+   * content inset by its measured height (and `spacing`), so it scrolls clear
+   * of it: a filter bar over a list, a composer under a chat.
+   */
+  safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): ScrollViewNode;
+  /**
+   * SwiftUI's `safeAreaBar`: a `safeAreaInset` that is a bar, with Bloom's
+   * scroll edge scrim under it, so the content fades as it scrolls beneath.
+   */
+  safeAreaBar(edge: InsetEdge, view: ViewNode): ScrollViewNode;
   /** Room around the content, inside the scroll (the content container's padding). */
   contentMargins(value: SpaceToken): ScrollViewNode;
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
@@ -5173,6 +5207,17 @@ export interface StickySectionView extends ViewNode {
 
 /** What Bloom's `ScrollArea` and `ScrollSurface` both take: the scroll and its bar. */
 interface ScrollAreaModifiers<Self> extends ViewModifiers<Self> {
+  /**
+   * SwiftUI's `safeAreaInset`: `view` pinned at the scroll's `edge`, and the
+   * content inset by its measured height (and `spacing`), so it scrolls clear
+   * of it: a filter bar over a list, a composer under a chat.
+   */
+  safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): Self;
+  /**
+   * SwiftUI's `safeAreaBar`: a `safeAreaInset` that is a bar, with Bloom's
+   * scroll edge scrim under it, so the content fades as it scrolls beneath.
+   */
+  safeAreaBar(edge: InsetEdge, view: ViewNode): Self;
   /** Room around the content, inside the scroll (the content container's padding). */
   contentMargins(value: SpaceToken): Self;
   contentMargins(edge: Edge, value: SpaceToken): Self;

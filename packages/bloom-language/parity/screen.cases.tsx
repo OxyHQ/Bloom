@@ -1,7 +1,8 @@
-import { RefreshControl } from 'react-native';
-import { PageHeader } from '@oxy.so/bloom/page-header';
+import { type ReactNode, useState } from 'react';
+import { RefreshControl, View } from 'react-native';
+import { EdgeScrim, PageHeader, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
-import { tokens } from '@oxy.so/bloom/styles';
+import { tokens, useSurfaceFill } from '@oxy.so/bloom/styles';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
@@ -295,4 +296,91 @@ const screens: ParityCase[] = [
   },
 ];
 
-export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...screens];
+/**
+ * A scroll with a view pinned at its edge, as an app writes it with Bloom: a
+ * box the scroll fills, the view absolute at the edge and measured, the
+ * content padded by its height (and a gap), a bar with Bloom's scrim under it.
+ */
+function Pinned({
+  edge,
+  gap = 0,
+  bar = false,
+  view,
+  children,
+}: {
+  edge: 'top' | 'bottom';
+  gap?: number;
+  bar?: boolean;
+  view: ReactNode;
+  children: ReactNode;
+}) {
+  const [height, setHeight] = useState(0);
+  const fill = useSurfaceFill();
+  const room = height + gap;
+  const at = edge === 'top' ? { top: 0 } : { bottom: 0 };
+  const pinned = { position: 'absolute', left: 0, right: 0, ...at } as const;
+  return (
+    <View style={{ flex: 1 }}>
+      <ScreenScrollView
+        contentContainerStyle={
+          room === 0
+            ? undefined
+            : { paddingTop: edge === 'top' ? room : 0, paddingBottom: edge === 'bottom' ? room : 0 }
+        }
+      >
+        {children}
+      </ScreenScrollView>
+      {bar && height > 0 ? (
+        <View pointerEvents="none" style={[pinned, { height: height * (1 + SCRIM_TAIL_RATIO) }]}>
+          <EdgeScrim color={fill} edge={edge} opaqueFraction={1 / (1 + SCRIM_TAIL_RATIO)} />
+        </View>
+      ) : null}
+      <View style={pinned} onLayout={(event) => setHeight(event.nativeEvent.layout.height)}>
+        {view}
+      </View>
+    </View>
+  );
+}
+
+const insets: ParityCase[] = inScreen([
+  {
+    name: 'a view pinned at the top of a scroll, with a gap',
+    language: () =>
+      toElement(
+        L.ScrollView(L.Text('a'), L.Text('b')).safeAreaInset('top', L.Text('Filters'), 'sm'),
+      ),
+    bloom: () => (
+      <Pinned edge="top" gap={space.sm} view={<Text>Filters</Text>}>
+        <Text>a</Text>
+        <Text>b</Text>
+      </Pinned>
+    ),
+  },
+  {
+    name: 'a bar pinned at the bottom of a scroll, with its scrim',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).safeAreaBar('bottom', L.Text('Composer').padding('md'))),
+    bloom: () => (
+      <Pinned
+        edge="bottom"
+        bar
+        view={
+          <Text
+            style={{
+              paddingTop: space.md,
+              paddingBottom: space.md,
+              paddingStart: space.md,
+              paddingEnd: space.md,
+            }}
+          >
+            Composer
+          </Text>
+        }
+      >
+        <Text>a</Text>
+      </Pinned>
+    ),
+  },
+]);
+
+export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...insets, ...screens];
