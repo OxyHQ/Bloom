@@ -223,12 +223,11 @@ export function C() {
       'ScrollView:refreshControl',
     ]);
   });
-  it('reads a static content container style as content margins, and keeps a content className', () => {
+  it('reads a static content container style as content margins', () => {
     const result = run(`import { StyleSheet } from 'react-native';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
 export const A = () => <ScreenScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }} />;
 export const B = () => <ScreenScrollView contentContainerStyle={styles.content} />;
-export const C = () => <ScreenScrollView contentContainerClassName="px-4" />;
 export const D = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 1 }} />;
 const styles = StyleSheet.create({ content: { padding: 16 } });
 `);
@@ -238,8 +237,32 @@ const styles = StyleSheet.create({ content: { padding: 16 } });
     expect(result.code).toContain("toElement(ScrollView().contentMargins('lg'))");
     expect(result.fixtures[1]?.before).toContain('contentContainerStyle={{ padding: 16 }}');
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'ScrollView:contentContainerClassName',
       'ScrollView:contentContainerStyle',
+    ]);
+  });
+  it('lays a content className out as the scroll view’s content view', () => {
+    const result = run(`import { ScreenScrollView } from '@oxy.so/bloom/screen';
+export const A = () => <ScreenScrollView contentContainerClassName="gap-4 px-4 pb-8" />;
+export const B = () => <ScreenScrollView contentContainerClassName="flex-1 items-center justify-center" contentContainerStyle={{ padding: 16 }} />;
+export const C = () => <ScreenScrollView contentContainerClassName="flex-row gap-2" />;
+export const D = () => <ScreenScrollView contentContainerClassName="bg-card p-4" />;
+export const E = () => <ScreenScrollView contentContainerClassName="p-4 md:p-8" />;
+export const F = () => <ScreenScrollView contentContainerClassName={cls} />;
+`);
+    expect(result.code).toContain(
+      "toElement(ScrollView().contentView((v) => v.padding('horizontal', 'lg').padding('bottom', '3xl').spacing('lg')))",
+    );
+    expect(result.code).toContain(
+      "toElement(ScrollView().contentView((v) => v.flex('1').align('center').justify('center')).contentMargins('lg'))",
+    );
+    expect(result.code).toContain(
+      "toElement(ScrollView().contentView((v) => v.axis('horizontal').spacing('sm')))",
+    );
+    expect(result.fixtures[0]?.classes).toEqual(['gap-4', 'px-4', 'pb-8']);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'contentView:background',
+      'contentView:variant',
+      'ScrollView:contentContainerClassName',
     ]);
   });
   it('chooses a value by a className’s condition, and proves both branches', () => {

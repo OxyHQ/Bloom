@@ -50,9 +50,12 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
   enums: { role: readonly string[]; appColorName: readonly string[] };
+  contentView: { modifiers: readonly string[] };
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
+/** What a scroll view's content view takes: the layout of one view. */
+const CONTENT_VIEW = new Set(spec.contentView.modifiers);
 /** A Bloom theme colour (`theme.colors.textSecondary`) as the role painted from it (`muted`). */
 const ROLE_OF_THEME_COLOR = new Map<string, string>();
 for (const [role, entry] of Object.entries(spec.colors))
@@ -240,6 +243,8 @@ type Tagged =
   | { readonly $: 'options'; readonly entries: readonly (readonly [string, Value])[] }
   /** A list's row: its one parameter, as written, and the view it returns. */
   | { readonly $: 'row'; readonly param: string; readonly view: Ir }
+  /** A view's build function: its parameter and the modifiers it chains (`(v) => v.padding('lg')`). */
+  | { readonly $: 'build'; readonly mods: readonly Mod[] }
   /** A list's row as a named function, embedded as it is called: `(info) => Embed(renderPost(info))`. */
   | { readonly $: 'renderer'; readonly fn: Carried }
   | { readonly $: 'absent' }
@@ -1614,6 +1619,14 @@ export function transformSource(source: string, options: TransformOptions): File
         continue;
       }
       const prop: PropRule | undefined = rule.props?.[name];
+      if (prop?.form === 'className') {
+        const text = value ? staticString(value) : undefined;
+        const view = text === undefined ? undefined : contentViewOf(text);
+        if (!view) unmapped(name);
+        else if ('reasons' in view) reasons.push(...view.reasons);
+        else props.push({ name: prop.modifier, args: [view] });
+        continue;
+      }
       if (prop?.form === 'contentStyle') {
         const margins = value ? contentStyleOf(attributeExpression(value)) : undefined;
         if (margins) props.push(...margins);
@@ -2012,6 +2025,47 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     if (object !== expression) styleLiterals.set(expression, recast.print(object).code);
     return mods;
+  }
+
+  /**
+   * A scroll view's content class as its content view's build function: each
+   * class through the className table, as a View's, and every modifier one the
+   * content view takes (the spec's `contentView.modifiers`: the layout of one view).
+   */
+  function contentViewOf(
+    className: string,
+  ): { readonly $: 'build'; readonly mods: Mod[] } | { reasons: Reason[] } {
+    const resolution = resolveClassName(className, 'view', options.table, {
+      overridden: options.overridden,
+    });
+    if (!resolution.ok) return { reasons: [...resolution.reasons] };
+    for (const token of className.split(/\s+/).filter(Boolean)) classes.add(token);
+    const { axis, mods, variants } = resolution.value;
+    const all: Mod[] =
+      axis === 'row' ? [{ name: 'axis', args: ['horizontal'] }, ...mods] : [...mods];
+    const subject = 'contentContainerClassName';
+    if (variants.length)
+      return {
+        reasons: [
+          {
+            subject,
+            code: 'contentView:variant',
+            why: 'a content class with a variant (`md:`, `dark:`): the content view takes the layout of one view, without variants',
+          },
+        ],
+      };
+    const outside = all.find((mod) => !CONTENT_VIEW.has(mod.name));
+    if (outside)
+      return {
+        reasons: [
+          {
+            subject,
+            code: `contentView:${outside.name}`,
+            why: `the content view takes the layout of one view (the spec's \`contentView.modifiers\`), not \`.${outside.name}()\``,
+          },
+        ],
+      };
+    return { $: 'build', mods: all };
   }
 
   /**
@@ -2414,6 +2468,8 @@ export function transformSource(source: string, options: TransformOptions): File
             : '{}';
         case 'row':
           return `(${value.param}) => ${print(value.view, carry)}`;
+        case 'build':
+          return `(v) => v${value.mods.map(printMod).join('')}`;
         case 'renderer':
           return `(${ROW_INFO}) => ${lang('Embed')}(${carry(value.fn)}(${ROW_INFO}))`;
         case 'absent':
@@ -2610,7 +2666,8 @@ export function transformSource(source: string, options: TransformOptions): File
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
     }
     const regionClasses = new Set<string>();
-    for (const m of before.matchAll(/className=["'`{]+([^"'`}]*)/g))
+    // A className, and a content class (`contentContainerClassName`).
+    for (const m of before.matchAll(/(?:className|ClassName)=["'`{]+([^"'`}]*)/g))
       for (const token of (m[1] as string).split(/\s+/).filter(Boolean)) regionClasses.add(token);
     for (const [read, both] of choiceClasses)
       if (read.start >= node.start && read.end <= node.end)

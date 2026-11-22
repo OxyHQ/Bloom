@@ -91,7 +91,7 @@ the element JSX with the reason `Node:prop`.
 | --- | --- |
 | `Switch` | `Toggle([checked, onCheckedChange])` |
 | `GroupedSection`, `GroupedSectionItem` | `GroupedSection(...rows).title().caption()`, `GroupedSectionItem(title).leadingView().trailing().value()` |
-| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable([refreshing, () => onRefresh()], tint).scrollIndicators(value, axis)` |
+| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable([refreshing, () => onRefresh()], tint).scrollIndicators(value, axis).contentView((v) => v…)` |
 | `SettingsSection`, `SettingsValueField` | `SettingsSection(label, ...children).trailing()`, `SettingsValue(text)` |
 | `TextFieldInput` (bare, or in a `TextField` shell with its `TextFieldIcon`s), `Textarea`, `Search`, `Checkbox`, `Field` | `TextField([value, set], label)`, `TextEditor([value, set], label)`, `Search([value, set])`, `Checkbox([checked, set], label)`, `Field(label, ...children)` |
 | `Card`, `Item`, `Chip`, `ResponsiveGrid` | `Card(...children)`, `Row(title)`, `Chip(Icon, Text, Icon)`, `Grid(...cells)` |
@@ -131,10 +131,17 @@ alike).
 A static `contentContainerStyle` of paddings and a gap, each a space token
 (`{ padding: 16, gap: 12 }`), is `.contentMargins(edge, token)` and
 `.spacing(token)`: the language's content container style holds the same keys.
-A `contentContainerClassName` stays JSX: Bloom lays a class out in a view of
-its own inside a content container that grows to the viewport (and reports no
-intrinsic height to a content-sized screen), where the margins pad the content
-container itself. A prop a rule names in `differs` is kept with that reason.
+A static `contentContainerClassName` is `.contentView((v) => v…)`, the scroll
+view's content view: Bloom lays the class out in a view of its own inside the
+content container, and the language hands Bloom that view's style. Each class
+goes through the className table as a `View`'s (`flex-row` is
+`.axis('horizontal')`), and every modifier must be one the content view takes,
+the layout of one view (the spec's `contentView.modifiers`): a colour, a
+corner or a variant (`md:`) is a reason (`contentView:background`,
+`contentView:variant`). A `contentContainerStyle` beside it is the content
+margins and spacing, which go on that view after its own, as Bloom draws the
+style after the class. A className chosen at runtime stays JSX. A prop a rule
+names in `differs` is kept with that reason.
 
 A compound element converts whole, with its parts (`parts` and `partOf` in a
 rule), as the language's parity cases draw it: each child is one of its parts
