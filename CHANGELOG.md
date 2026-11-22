@@ -8,8 +8,13 @@
 - `adoptStyleSheet(id, css)` is exported from `@oxy.so/bloom/styles`: the CSP-safe way to put CSS on a web page as a constructed stylesheet, the mechanism Bloom's web forks use.
 - `useScreenActionClaimed()` is exported from `@oxy.so/bloom/app-shell/hooks`: whether the screen in front shows a primary action of its own (`Screen primaryAction`). A floating action the app draws for the shell (a bottom bar's FAB) steps aside while it is `true`, as the shell's own does, so a route with its own action never shows two.
 
+### Changed
+
+- Bloom styles without NativeWind, react-native-css or Tailwind: every component draws React Native styles from tokens, with no `className` (see `docs/no-nativewind.mdx`). The look is unchanged. Removed: the `className`/`*ClassName` props, the `nativewind` and `react-native-css` peers, `useColorScopeStyle` and `initCssInteropDarkMode`. Added: `useColorTokens`, `createTokenStyles`, `tokenAlpha` and `ColorScopeLayerContext` (`@oxy.so/bloom/theme`). `./design-tokens/theme.css` and `./tailwind-preset` stay, for apps still using `className`, until the fleet has migrated.
+
 ### Fixed
 
+- The custom-colour popover's edge highlight (the agent creator's colour picker) follows the popover's 24px corners. It was computed for 16px corners while the panel drew 24px, so the highlight ran off the rounded edge.
 - The native `reveal` navigation drawer clears the device's top and bottom edges the shell frame leaves it. Without `safeArea` it ran under the status bar; with it, geometry is unchanged.
 
 ## 22.1.11
