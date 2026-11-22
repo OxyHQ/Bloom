@@ -41,9 +41,6 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   label,
   description,
   selectedAppearance = 'accent',
-  className,
-  labelClassName,
-  descriptionClassName,
   ref,
   disabled,
   nativeID,
@@ -137,7 +134,6 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     <AnimatedPressable
       {...webProps}
       ref={tooltipRef}
-      className={className}
       disabled={disabled}
       nativeID={nativeID}
       aria-expanded={ariaExpanded}
@@ -186,20 +182,14 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
               gap: description != null ? 2 : 0,
             }}
           >
-            <Text
-              variant={metrics.row.label}
-              className={labelClassName}
-              numberOfLines={1}
-              style={labelClassName ? undefined : { color: foreground }}
-            >
+            <Text variant={metrics.row.label} numberOfLines={1} style={{ color: foreground }}>
               {label}
             </Text>
             {description != null ? (
               <Text
                 variant="body-regular"
-                className={descriptionClassName}
                 numberOfLines={1}
-                style={descriptionClassName ? undefined : { color: palette.textTertiary }}
+                style={{ color: palette.textTertiary }}
               >
                 {description}
               </Text>
