@@ -96,6 +96,7 @@ import { AGENT_CHATS } from './agent-chat';
 import { ROUTE_STOPS } from './route-stops';
 import { NOTE_CARDS } from './note-card';
 import { SHARE_SHEETS } from './share-sheet';
+import { GENERIC } from './generic';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -199,4 +200,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...ROUTE_STOPS,
   ...NOTE_CARDS,
   ...SHARE_SHEETS,
+  ...GENERIC,
 };

@@ -114,6 +114,7 @@ import type { MultiAgentChatKind } from './controls/multi-agent-chat';
 import type { AgentChatKind } from './controls/agent-chat';
 import type { WebSearchKind } from './controls/web-search';
 import type { TaskListKind } from './controls/task-list';
+import type { GenericKind } from './controls/generic';
 import type { ShareSheetKind } from './controls/share-sheet';
 import type { NoteCardKind } from './controls/note-card';
 import type { RouteStopsKind } from './controls/route-stops';
@@ -249,6 +250,7 @@ import {
   type OfferingBadgeStyle,
   type ListingCardLayout,
   type MortgageLayout,
+  type OutlineNavStyle,
   type NoteCardLayout,
   type ShareSheetSize,
   type ShelfLayout,
@@ -1297,7 +1299,8 @@ export type Modifier =
         | ActivityFeedGrouping
         | OrderStatusBarStyle
         | SidebarVariant
-        | NoteCardLayout;
+        | NoteCardLayout
+        | OutlineNavStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1602,7 +1605,8 @@ export type NodeKind =
   | AgentChatKind
   | RouteStopsKind
   | NoteCardKind
-  | ShareSheetKind;
+  | ShareSheetKind
+  | GenericKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1981,7 +1985,8 @@ export class Node {
       | ActivityFeedGrouping
       | OrderStatusBarStyle
       | SidebarVariant,
-      | NoteCardLayout,
+      | NoteCardLayout
+      | OutlineNavStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
