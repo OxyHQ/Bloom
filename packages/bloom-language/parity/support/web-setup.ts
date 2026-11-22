@@ -21,3 +21,32 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
     disconnect() {}
   } as unknown as typeof ResizeObserver;
 }
+
+// jsdom knows `font-variant` as CSS 2 wrote it (`normal | small-caps`) and drops
+// `font-variant: tabular-nums` (react-native-web's `fontVariant`), inline or read
+// from a rule. The browser takes the shorthand's numeric keywords as the
+// longhand they belong to (Chrome computes `font-variant-numeric: tabular-nums`
+// for both), so here they are written to that longhand.
+const NUMERIC = new Set([
+  'lining-nums',
+  'oldstyle-nums',
+  'proportional-nums',
+  'tabular-nums',
+  'diagonal-fractions',
+  'stacked-fractions',
+  'ordinal',
+  'slashed-zero',
+]);
+for (const name of ['fontVariant', 'font-variant']) {
+  const own = Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype, name);
+  if (own?.set === undefined) continue;
+  const set = own.set;
+  Object.defineProperty(CSSStyleDeclaration.prototype, name, {
+    ...own,
+    set(this: CSSStyleDeclaration, value: unknown) {
+      if (typeof value === 'string' && value.split(' ').every((word) => NUMERIC.has(word)))
+        this.fontVariantNumeric = value;
+      else set.call(this, value);
+    },
+  });
+}
