@@ -15,6 +15,7 @@ import { SOCIAL_BUTTONS } from './social-button';
 import { LINK_PREVIEWS } from './link-preview';
 import { NOTIFICATIONS } from './notification';
 import { COMPOSITION_BARS } from './composition-bar';
+import { DATA_TABLES } from './data-table';
 import { SORTABLE_MEDIA } from './sortable-media';
 import { EXPANDABLE_TEXTS } from './expandable-text';
 import { DROP_ZONES } from './drop-zone';
@@ -95,4 +96,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...NOTIFICATIONS,
   ...LINK_PREVIEWS,
   ...SOCIAL_BUTTONS,
+  ...DATA_TABLES,
 };
