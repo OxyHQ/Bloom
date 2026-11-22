@@ -91,6 +91,7 @@ import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
 import { getPlatformGlass } from './platform/glass-host';
+import type { GlassMember } from './platform/glass-host.types';
 import { ConfirmationHost } from './platform/confirmation-host';
 import { type InsetRoom, insetsOf, NO_INSETS, SafeAreaInsets } from './chrome/safe-area-inset';
 import { MenuHost } from './platform/menu-host';
@@ -346,6 +347,36 @@ interface Plan {
   control: { tint: ColorName | undefined; reports: readonly LiveCondition[] } | undefined;
   /** Present when the node has a motion modifier: it is then drawn by `MotionNode`. */
   motion: MotionPlan | undefined;
+  /** Its glass's identity in a glass group (`.glassID()`, `.glassUnion()`, `.glassTransition()`). */
+  glassMember: GlassMember | undefined;
+}
+
+/** A number per namespace, so an id is unique to its namespace as a string (a glass's key in its group). */
+const namespaceNumbers = new WeakMap<Namespace, number>();
+let namespaceCount = 0;
+
+function namespaced(prefix: string, id: string, namespace: Namespace): string {
+  let number = namespaceNumbers.get(namespace);
+  if (number === undefined) {
+    namespaceCount += 1;
+    number = namespaceCount;
+    namespaceNumbers.set(namespace, number);
+  }
+  return `${prefix}:${number}:${id}`;
+}
+
+/** A glass's identity in its group, from its chain; `undefined` with none. */
+function glassMemberOf(modifiers: readonly Modifier[]): GlassMember | undefined {
+  let member: GlassMember | undefined;
+  for (const modifier of modifiers) {
+    if (modifier.kind === 'glassID')
+      member = { ...member, id: namespaced('bloom-glass', modifier.id, modifier.namespace) };
+    else if (modifier.kind === 'glassUnion')
+      member = { ...member, union: namespaced('bloom-union', modifier.id, modifier.namespace) };
+    else if (modifier.kind === 'glassTransition')
+      member = { ...member, transition: modifier.value };
+  }
+  return member;
 }
 
 const MOTION_KINDS: ReadonlySet<string> = new Set([
@@ -624,6 +655,7 @@ function plan(node: Node, env: Env): Plan {
     own: new Map(),
     control: undefined,
     motion: undefined,
+    glassMember: undefined,
   };
   const onGlass = node.modifiers.some((modifier) => modifier.kind === 'glass');
   // What the environment sets on this kind of node comes first: its own chain wins.
@@ -742,6 +774,8 @@ function plan(node: Node, env: Env): Plan {
       reports: glassStates(result.layers),
     };
   }
+  if (result.layers.some((layer) => layer.glass !== undefined))
+    result.glassMember = glassMemberOf(modifiers);
   // A view whose geometry varies is moving: its box draws the geometry (see `renderNode`).
   if (moving || result.place.variants.some(([, modifier]) => GEOMETRY_KINDS.has(modifier.kind)))
     result.motion = motionPlan(node, result.layers);
@@ -1485,6 +1519,7 @@ function wrapLayer(
         radius,
         fallbackTint: p.control?.tint,
         interactive: glass.interactiveSaid ?? (p.pressable || p.control !== undefined),
+        member: p.glassMember,
         key: ownKey,
       };
       // A fill that varies is the glass's tint, the token as the platform's glass takes it.

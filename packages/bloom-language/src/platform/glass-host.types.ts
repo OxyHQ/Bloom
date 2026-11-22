@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { GlassValue } from '../glass';
+import type { GlassTransition, GlassValue } from '../glass';
 import type { RoleRef } from '../style';
 import type { ColorName } from '../tokens';
 
@@ -16,8 +16,21 @@ export interface GlassHostProps {
   fill?: RoleRef;
   /** The glass answers touch (a pressable view on it). */
   interactive?: boolean;
+  /** Its identity in a glass group (`.glassID()`, `.glassUnion()`, `.glassTransition()`), when it has one. */
+  member?: GlassMember;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
+}
+
+/**
+ * A glass's identity in its group, each id unique to its namespace: `id` from
+ * `.glassID()`, `union` from `.glassUnion()` (glasses with one union are one
+ * shape), and how it arrives and leaves.
+ */
+export interface GlassMember {
+  id?: string;
+  union?: string;
+  transition?: GlassTransition;
 }
 
 /**
