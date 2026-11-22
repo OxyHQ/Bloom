@@ -4,10 +4,10 @@ import {
   AccordionContent as BloomAccordionContent,
   AccordionItem as BloomAccordionItem,
   AccordionTrigger as BloomAccordionTrigger,
-  type AccordionTransition,
 } from '@oxy.so/bloom/accordion';
 
 import type { Binding } from '../binding';
+import { resolveTimedMotion, type TimedMotionToken } from '../motion/tokens';
 import { Node, type Child, type ViewModifiers } from '../node';
 import type { ControlDraw, ControlRenderer } from './draw';
 
@@ -22,8 +22,8 @@ export interface AccordionView extends ViewModifiers<AccordionView> {
   size(value: BloomSize): AccordionView;
   /** Several items open at once (one at a time by default). */
   allowsMultiple(): AccordionView;
-  /** How a section opens: Bloom's `spring`, or a duration and curve. */
-  revealMotion(value: AccordionTransition): AccordionView;
+  /** How a section opens: a timed motion token in place of Bloom's spring (its default). */
+  revealMotion(value: TimedMotionToken): AccordionView;
 }
 /** Bloom `AccordionItem`: a trigger and its content. */
 export interface AccordionItemView extends ViewModifiers<AccordionItemView> {
@@ -60,12 +60,13 @@ export const ACCORDIONS: Record<AccordionKind, ControlRenderer> = {
   accordion: (d) => {
     const [value, onValueChange] = (d.node.props as { open: Binding<AccordionSelection> }).open;
     const props = d.props();
+    const motion = d.own('revealMotion')?.value;
     Object.assign(props, {
       value,
       onValueChange,
       size: d.own('size')?.value,
       type: d.own('allowsMultiple') === undefined ? undefined : 'multiple',
-      transition: d.own('revealMotion')?.value,
+      transition: motion === undefined ? undefined : resolveTimedMotion(motion),
     });
     return d.component(BloomAccordion, props, ...children(d));
   },

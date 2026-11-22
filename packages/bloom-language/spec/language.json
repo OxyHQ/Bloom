@@ -917,7 +917,8 @@
     },
     "edges": { "keys": ["top", "bottom", "leading", "trailing"], "tokens": "padding" },
     "offset": { "keys": ["x", "y"], "tokens": "padding" },
-    "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" }
+    "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" },
+    "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
   },
   "variants": {
     "$comment": [
@@ -977,7 +978,7 @@
     "pulse": [0.4, 0, 0.6, 1]
   },
   "motion": {
-    "$comment": "Bloom's motion table (MOTION in @oxy.so/bloom/motion) by name, the timings Bloom's own animations play: { duration, easing } (an easing above) or a spring { response, dampingRatio }. spec.test.ts holds this table equal to Bloom's.",
+    "$comment": "Bloom's motion table (MOTION in @oxy.so/bloom/motion) by name, the timings Bloom's own animations play: { duration, easing } (an easing above) or a spring { response, dampingRatio }. spec.test.ts holds this table equal to Bloom's. The timed ones (every motion with a duration) are the timedMotion set, what a reveal takes: Bloom eases a reveal and never springs it.",
     "press": { "duration": 100, "easing": "inOutQuad" },
     "select": { "response": 0.42, "dampingRatio": 0.82 },
     "expand": { "response": 0.38, "dampingRatio": 1 },
@@ -1374,7 +1375,7 @@
     "starLabel": ["value"],
     "valueLabel": ["value"],
     "labelWidth": ["space"],
-    "reveal": ["value"],
+    "reveal": ["meterReveal"],
     "valueText": ["value"],
     "decorative": [],
     "trackTint": ["color"],
@@ -1430,7 +1431,7 @@
     "onCommit": ["value"],
     "valueFormat": ["value"],
     "allowsMultiple": [],
-    "revealMotion": ["value"],
+    "revealMotion": ["timedMotion"],
     "language": ["value"],
     "lineNumbers": ["value?"],
     "highlight": ["value"],
@@ -2720,7 +2721,7 @@
     },
     "ratingBar": {
       "constructors": ["RatingBar"],
-      "modifiers": ["max", "valueLabel", "labelWidth", "reveal"]
+      "modifiers": ["max", "valueLabel", "labelWidth", "reveal", "revealMotion"]
     },
     "ratingSummary": { "constructors": ["RatingSummary"], "modifiers": ["labels"] },
     "meter": {
@@ -2734,7 +2735,8 @@
         "thickness",
         "fillDuration",
         "barCorner",
-        "reveal"
+        "reveal",
+        "revealMotion"
       ],
       "tint": "color"
     },

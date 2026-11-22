@@ -80,6 +80,8 @@ export type {
   MotionToken,
   RotationName,
   ScaleName,
+  TimedMotionName,
+  TimedMotionToken,
 } from './motion/tokens';
 export { defineTokens } from './tokens';
 export { Node, isNode } from './node';
@@ -444,7 +446,7 @@ export {
   SplitBar,
   StatBar,
 } from './controls/stat-bar';
-export type { MeterRingView, MeterView, StatBarView } from './controls/stat-bar';
+export type { MeterReveal, MeterRingView, MeterView, StatBarView } from './controls/stat-bar';
 
 // Tables (controls/table.tsx)
 export { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from './controls/table';

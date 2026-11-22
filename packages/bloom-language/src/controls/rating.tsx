@@ -4,10 +4,10 @@ import {
   RatingInput as BloomRatingInput,
   RatingSummary as BloomRatingSummary,
 } from '@oxy.so/bloom/rating';
-import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
 
 import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
+import type { TimedMotionToken } from '../motion/tokens';
 import type {
   ColorName,
   ColorToken,
@@ -19,6 +19,7 @@ import type {
 } from '../tokens';
 import { resolveSpace } from '../tokens';
 import type { ControlRenderer } from './draw';
+import { type MeterReveal, meterReveal } from './stat-bar';
 
 /** Ratings: the compact star and value, the stars a review form is written with, a breakdown's bar and summary. */
 export type RatingKind = 'rating' | 'ratingInput' | 'ratingBar' | 'ratingSummary';
@@ -98,6 +99,8 @@ export interface RatingBarView extends ViewModifiers<RatingBarView> {
   labelWidth(value: SpaceToken): RatingBarView;
   /** The bar's entrance, which never changes its accessible measurement. */
   reveal(value: MeterReveal): RatingBarView;
+  /** How the bar enters: a timed motion token (Bloom's 300ms ease by default). */
+  revealMotion(value: TimedMotionToken): RatingBarView;
 }
 /** Bloom `RatingSummary`: the average, the bars of each star and the count. */
 export interface RatingSummaryView extends ViewModifiers<RatingSummaryView> {
@@ -177,7 +180,7 @@ export const RATINGS: Record<RatingKind, ControlRenderer> = {
       max: d.own('max')?.value,
       display: d.own('valueLabel')?.value,
       labelWidth: space(d.own('labelWidth')?.value),
-      reveal: d.own('reveal')?.value,
+      reveal: meterReveal(d),
     });
     return d.component(BloomRatingBar, props);
   },

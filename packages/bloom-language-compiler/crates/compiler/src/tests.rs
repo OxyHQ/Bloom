@@ -842,7 +842,7 @@ fn ratings_are_checked() {
         "import { Rating, RatingInput, RatingBar, RatingSummary, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (r, set) => VStack(Rating(4.5).count('1.2k').countStyle('reviews').size('sm').style('stars').showsValue(false).starSize('xl').tint('white').starTint('warning').countTint('muted/half').emptyTint('border').fillValue(4.5).labels({}), RatingInput([r, set]).max(10).size('lg').disabled().starLabel(String), RatingBar('Value', 3).max(1).valueLabel('72%').labelWidth('56').reveal({ visible: true }), RatingSummary(4.4, 128, {}).labels({}));\n",
+        "export const x = (r, set) => VStack(Rating(4.5).count('1.2k').countStyle('reviews').size('sm').style('stars').showsValue(false).starSize('xl').tint('white').starTint('warning').countTint('muted/half').emptyTint('border').fillValue(4.5).labels({}), RatingInput([r, set]).max(10).size('lg').disabled().starLabel(String), RatingBar('Value', 3).max(1).valueLabel('72%').labelWidth('56').reveal({ visible: true, once: true }).revealMotion('enter'), RatingSummary(4.4, 128, {}).labels({}));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -864,7 +864,7 @@ fn meters_and_progress_bars_are_checked() {
     let imports = "import { Meter, ProgressBar, MeterRing, ProgressRing, StatBar, SplitBar, Text, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (stop, share) => VStack(Meter(3, 5).valueText('3 of 5').tint('success').trackTint('muted/20').thickness('10').barCorner('2xs').fillDuration('slow').reveal({ visible: true }), ProgressBar(0).indeterminate().decorative(), MeterRing(0.9).size('80').cap('butt').backdrop('black/half').content(Text('9')), ProgressRing(0.3).onStop(stop, 'Stop').progress(share), StatBar('Level', 40, 100).rangeLabels('0', '100').trailing(Text('!')), SplitBar('Wins', 30, '3', '7').tint('info'));\n",
+        "export const x = (stop, share) => VStack(Meter(3, 5).valueText('3 of 5').tint('success').trackTint('muted/20').thickness('10').barCorner('2xs').fillDuration('slow').reveal({ visible: true, delay: 'fast' }).revealMotion('slide'), ProgressBar(0).indeterminate().decorative(), MeterRing(0.9).size('80').cap('butt').backdrop('black/half').content(Text('9')), ProgressRing(0.3).onStop(stop, 'Stop').progress(share), StatBar('Level', 40, 100).rangeLabels('0', '100').trailing(Text('!')), SplitBar('Wins', 30, '3', '7').tint('info'));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -996,7 +996,7 @@ fn accordions_are_checked() {
     let imports = "import { Accordion, AccordionItem, AccordionTrigger, AccordionContent, Text } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (open) => Accordion(open, AccordionItem('a', AccordionTrigger('A').indicator(Text('+')), AccordionContent(Text('more'))).disabled()).size('sm').allowsMultiple().revealMotion('spring');\n",
+        "export const x = (open) => Accordion(open, AccordionItem('a', AccordionTrigger('A').indicator(Text('+')), AccordionContent(Text('more'))).disabled()).size('sm').allowsMultiple().revealMotion('slide');\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -1173,6 +1173,50 @@ fn collapsibles_are_checked() {
     for (chain, message) in cases {
         let output = check(&format!("export const x = (t) => {chain};\n"));
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
+
+#[test]
+fn a_reveal_takes_a_timed_motion_token() {
+    let imports =
+        "import { Accordion, Collapsible, Meter, RatingBar, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    // Bloom's timed motions by name, an app's own by its token; a bar's wait is a duration token.
+    let valid = check(
+        "export const x = (open, app, seen) => VStack(Accordion(open).revealMotion('fade'), Collapsible(true, Text('a')).revealMotion(app), Meter(1).reveal({ visible: seen, once: true, delay: '0' }).revealMotion('pop'), RatingBar('a', 1).reveal({ visible: seen }).revealMotion(app));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        // A reveal eases and never springs: Bloom's springs are not timed motions.
+        (
+            "Collapsible(t).revealMotion('expand')",
+            "Unknown timedMotion token 'expand' for .revealMotion()",
+            None,
+        ),
+        (
+            "Accordion(t).revealMotion('spring')",
+            "Unknown timedMotion token 'spring' for .revealMotion()",
+            None,
+        ),
+        (
+            "Meter(1).revealMotion('slid')",
+            "Unknown timedMotion token 'slid' for .revealMotion()",
+            Some("slide"),
+        ),
+        ("Meter(1).reveal({ visible: t, duration: 600 })", ".reveal() has no 'duration'", None),
+        (
+            "RatingBar('a', 1).reveal({ visible: t, delay: 'fsat' })",
+            "Unknown duration token 'fsat' for .reveal()",
+            Some("fast"),
+        ),
+    ];
+    for (chain, message, suggestion) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+        if let Some(token) = suggestion {
+            let help = output.diagnostics[0].help.as_deref().unwrap();
+            assert!(help.starts_with(&format!("did you mean '{token}'?")), "{help}");
+        }
     }
 }
 

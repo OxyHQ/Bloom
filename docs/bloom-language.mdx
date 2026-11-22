@@ -1837,8 +1837,8 @@ takes a number or a string drawn as given (`null` draws `New`): `.count()`,
 value, over a brand colour), `.starTint()`, `.countTint()`, `.emptyTint()`.
 `RatingInput([value, set])` takes `.max()`, `.size('sm' | 'md' | 'lg')`,
 `.disabled()` and `.starLabel(fn)`; name it with `.label()`. `RatingBar(label,
-value)` takes `.max()`, `.valueLabel()`, `.labelWidth(space)` and `.reveal()`;
-`RatingSummary(average, count, distribution)` takes `.labels({ count, outOf,
+value)` takes `.max()`, `.valueLabel()`, `.labelWidth(space)`, and `.reveal()`
+and `.revealMotion()` as a meter's bar does; `RatingSummary(average, count, distribution)` takes `.labels({ count, outOf,
 noRatings })`.
 
 ### Meters and progress bars
@@ -1861,8 +1861,12 @@ progress (`progressbar`). Name each with `.label()`. Both take
 drawing inside a control that names itself), `.tint()` and `.trackTint()`
 (roles), `.thickness(space)` and `.fillDuration(duration)` (the web's ease to a
 new value). A bar is the width of its parent unless framed, and takes
-`.barCorner(corner)` and `.reveal()`; a ring takes `.size(space)`,
-`.backdrop(role)`, `.cap('round' | 'butt')`, `.content(view)`,
+`.barCorner(corner)` and its entrance: `.reveal({ visible, once?, delay? })`
+(it fills from empty once `visible`; `once` keeps it filled after it is first
+seen; `delay` a duration token) and `.revealMotion(motion)`, how it fills (a
+timed motion token: one of Bloom's motions with a duration, or an app's own
+from `defineTokens({ motion })`; Bloom's 300ms ease by default). A ring takes
+`.size(space)`, `.backdrop(role)`, `.cap('round' | 'butt')`, `.content(view)`,
 `.onStop(action, label)` and, decorative, `.progress(sharedValue)`.
 `StatBar(label, value, max)` takes `.rangeLabels(min, max)`, `.trailing(view)`,
 `.tint()`, `.trackTint()` and `.thickness()`; `SplitBar(label, percent, left,
@@ -2022,7 +2026,9 @@ Accordion(
 Bloom's `Accordion`, `AccordionItem`, `AccordionTrigger` and
 `AccordionContent`, fully controlled: the binding holds the open item's value
 (or the values, with `.allowsMultiple()`, or `undefined`). An accordion takes
-`.size()` and `.revealMotion('spring' | { duration, easing })`; an item
+`.size()` and `.revealMotion(motion)`: a section opens on Bloom's spring, or on
+a timed motion token in its place (one of Bloom's motions with a duration, or
+an app's own); an item
 `.disabled()`; a trigger's title is a string in its type or a view, and
 `.indicator(view)` replaces its chevron.
 
@@ -2210,12 +2216,14 @@ press.
 ### Collapsibles
 
 ```ts
-Collapsible(expanded, Text(order.notes)).revealMotion({ duration: 180 }).keepsMounted(false)
+Collapsible(expanded, Text(order.notes)).revealMotion('exit').keepsMounted(false)
 ```
 
 Bloom's `Collapsible`: a measured reveal of its children while `open` is true,
 with no trigger of its own (the screen's row or button flips the value). It
-takes `.revealMotion({ duration, easing })` (300ms ease-in-out by default),
+takes `.revealMotion(motion)` (a timed motion token: one of Bloom's motions
+with a duration, or an app's own from `defineTokens({ motion })`; Bloom's
+300ms ease-in-out by default),
 `.revealsOnAppear()` (mounted open, it opens from nothing) and
 `.keepsMounted(false)` (the content unmounts once shut).
 
@@ -3867,7 +3875,10 @@ name, `press`, `present`, `dismiss`, `fade`, `slide`, `thumb`, `pop`, `roll`,
 `enter`, `exit`, `restack`, `spin`, `pulse`, and the springs `select` and
 `expand` (SwiftUI's `response` and `dampingRatio`); `spec.test.ts` holds the
 spec's table equal to Bloom's. An app names its own with `defineTokens({
-motion: { … } })`, which gives Bloom `MotionSpec`s. Curves are named too
+motion: { … } })`, which gives Bloom `MotionSpec`s. A reveal (an accordion's, a
+collapsible's, a meter's `.revealMotion()`) takes a timed motion: every name but
+the springs, or an app's own with a `duration`; Bloom eases a reveal and never
+springs it. Curves are named too
 (`ease`, `inOutQuad`, `outQuart`, `outExpo`, `backOut`, `linear`, and `pulse`,
 Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 
