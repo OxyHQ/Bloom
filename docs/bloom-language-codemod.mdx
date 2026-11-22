@@ -55,10 +55,21 @@ does not keeps the element JSX. Each class goes through the className table
   The codemod compiles the app's CSS entry and Bloom's with Tailwind and
   compares every class's declarations, variables resolved.
 
-Measured on the corpus and kept as reasons (`measuredDifference` in
-`src/resolve.ts`): a text size class that would land on a ramp step with its
-own tracking (the table now maps sizes to a size and a line height, so none
-does today).
+Measured on the corpus and kept as reasons (`measuredDifference` and
+`rounding` in `src/resolve.ts`):
+
+- `rounded-full`: NativeWind writes 9007199254740000 on native and
+  `calc(infinity * 1px)` on the web; the language's `full` is 9999.
+- `space-x-*`/`space-y-*`: Tailwind spaces children with margins on each of
+  them; `.spacing()` is a gap.
+- `z-auto`: `z-index: auto` over react-native-web's 0; the language writes nothing.
+- `truncate`: `white-space: nowrap` and an ellipsis on the web; `.lines(1)` is
+  a line clamp.
+- `tabular-nums`: NativeWind writes no `fontVariant` on native.
+- `text-white/70` and the like: NativeWind writes a fixed colour at an opacity
+  as an 8-bit hex alpha, rounded down (`#ffffffb2`), where `0.7` is 178.5/255.
+- A line height as a ratio or a letter spacing in em whose product has more
+  than two decimals: NativeWind rounds it (`20.625` to `20.63`).
 
 ## Running it on an app
 
