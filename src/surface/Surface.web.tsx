@@ -161,9 +161,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
                 materialRecipe.resolvePreset(preset, mode).publishedFill,
             }}
           >
-            <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
-              {children}
-            </ConcentricProvider>
+            <ConcentricProvider value={concentric.context}>{children}</ConcentricProvider>
           </SurfaceLevelProvider>
         </StyledView>
       </>

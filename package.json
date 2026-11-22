@@ -10,7 +10,6 @@
   "source": "src/index.ts",
   "sideEffects": [
     "**/hooks/use-prefers-reduced-motion.*",
-    "**/theme/init-css-interop.*",
     "**/toast/use-stack-hover.*",
     "**/window/layouts.*"
   ],

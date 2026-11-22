@@ -50,14 +50,6 @@ const SRC = join(__dirname, '..');
  */
 const ACCEPTED: ReadonlyArray<{ where: string; statement: string; why: string }> = [
   {
-    where: 'theme/init-css-interop.ts',
-    statement: 'initCssInteropDarkMode();',
-    why:
-      "Sets react-native-css-interop's darkMode flag before css-interop's " +
-      'MutationObserver can fire. An effect would be too late: observers run ' +
-      'during the initial render. Idempotent, and a no-op off web.',
-  },
-  {
     where: 'hooks/use-prefers-reduced-motion.ts',
     statement: 'queryNative();',
     why:
@@ -327,7 +319,7 @@ describe('the census reaches the package', () => {
     expect(ENTRIES.length).toBeGreaterThanOrEqual(80);
     expect(REACHABLE.length).toBeGreaterThanOrEqual(400);
     expect(REACHABLE.some((f) => f.endsWith('button/Button.tsx'))).toBe(true);
-    expect(REACHABLE.some((f) => f.endsWith('theme/init-css-interop.ts'))).toBe(true);
+    expect(REACHABLE.some((f) => f.endsWith('theme/BloomThemeProvider.tsx'))).toBe(true);
   });
 
   it('sees module-scope statements, and classifies self-initialisation as not an effect', () => {
@@ -374,8 +366,8 @@ describe('nothing does work when a consumer imports it', () => {
 
 describe('the package sideEffects flag', () => {
   // `"sideEffects": false` lets Rollup, Vite and rolldown drop any import whose
-  // bindings are unused, including a bare `import './init-css-interop'`, which
-  // is the only thing that sets the dark-mode flag before css-interop observes.
+  // bindings are unused, including a bare side-effect import that wires a
+  // module to a store it owns.
   // The flag must name exactly the modules ACCEPTED above, and nothing else.
   it('lists exactly the accepted module-scope effects', () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
