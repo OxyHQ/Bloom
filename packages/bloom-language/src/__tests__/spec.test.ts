@@ -312,6 +312,11 @@ import type {
   SaleActionCardView,
 } from '../controls/listing-actions';
 import type {
+  ListingCardView,
+  ListingCardGridView,
+  WishlistCardView,
+} from '../controls/listing-card';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -897,7 +902,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<MortgageCalculatorView>, Of<'mortgageCalculator'>>,
       Same<MethodsOf<RentalActionCardView>, Of<'rentalActionCard'>>,
       Same<MethodsOf<SaleActionCardView>, Of<'saleActionCard'>>,
+      Same<MethodsOf<ListingCardView>, Of<'listingCard'>>,
+      Same<MethodsOf<ListingCardGridView>, Of<'listingCardGrid'>>,
+      Same<MethodsOf<WishlistCardView>, Of<'wishlistCard'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

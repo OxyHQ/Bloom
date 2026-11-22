@@ -158,3 +158,4 @@ export const Mail: Story = { args: { family: 'mail' } };
 export const Booking: Story = { args: { family: 'booking' } };
 export const HomeSearch: Story = { args: { family: 'homeSearch' } };
 export const ListingActions: Story = { args: { family: 'listingAction' } };
+export const ListingCards: Story = { args: { family: 'listingCard' } };
