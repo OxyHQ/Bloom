@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-import { StyledView } from '../styles/styled-primitives';
 import { useCommonMessages } from '../locale/common-messages';
 import type { SkeletonRegionProps } from './types';
 
@@ -130,24 +129,23 @@ function ShimmerView({
 }
 
 /** One loading announcement and animation driver for a composed placeholder. */
-export function Region({ children, label, testID, className, style }: SkeletonRegionProps) {
+export function Region({ children, label, testID, style }: SkeletonRegionProps) {
   const inherited = useContext(ShimmerContext);
   const shimmer = useShimmer();
   const common = useCommonMessages();
   return (
     <ShimmerContext.Provider value={shimmer}>
-      <StyledView
+      <View
         accessible={inherited ? undefined : true}
         role={inherited ? undefined : 'group'}
         accessibilityLabel={inherited ? undefined : (label ?? common.loading)}
         accessibilityState={inherited ? undefined : { busy: true }}
         aria-busy={inherited ? undefined : true}
         testID={testID}
-        className={className}
         style={style}
       >
         {children}
-      </StyledView>
+      </View>
     </ShimmerContext.Provider>
   );
 }
