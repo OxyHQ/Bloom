@@ -51,10 +51,12 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
       .map(([local, source]) => `const ${local} = ${alias(source)};`)
       .join(' ');
     const language = fixture.language.length ? `const { ${fixture.language.join(', ')} } = L;` : '';
+    // A screen's scroll view is drawn inside a Bloom Screen, on both sides, as the app draws it.
+    const [open, close] = fixture.inScreen ? ['<ParityScreen>{', '}</ParityScreen>'] : ['', ''];
     return `  {
     name: ${JSON.stringify(fixture.name)},
-    before: () => { ${bindings} return (${fixture.before}); },
-    after: () => { ${bindings} ${language} return ${fixture.after}; },
+    before: () => { ${bindings} return (${open}${fixture.before}${close}); },
+    after: () => { ${bindings} ${language} return (${open}${fixture.after}${close}); },
   },`;
   });
   const lines = [
@@ -62,6 +64,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as RN from 'react-native';",
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
+    "import { Screen as ParityScreen } from '@oxy.so/bloom/screen';",
     ...[...imports].map(([key, local]) => {
       const [module, name] = key.split('#');
       return `import { ${name} as ${local} } from '${module}';`;

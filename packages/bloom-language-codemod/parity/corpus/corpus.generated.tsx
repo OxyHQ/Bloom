@@ -2,14 +2,24 @@
 import * as RN from 'react-native';
 import * as L from '@oxy.so/bloom-language';
 import { toElement } from '@oxy.so/bloom-language';
-import { Pressable as I0 } from 'react-native-css/components/Pressable';
-import { RiHeart3Line as I1 } from '@oxy.so/bloom/icons/RiHeart3Line';
-import { View as I2 } from 'react-native-css/components/View';
-import { Text as I3 } from '@oxy.so/bloom/typography';
-import { Switch as I4 } from '@oxy.so/bloom/switch';
-import { Button as I5 } from '@oxy.so/bloom/button';
-import { RiArrowRightLine as I6 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I7 } from '../support/app-text';
+import { Screen as ParityScreen } from '@oxy.so/bloom/screen';
+import { SettingsSection as I0 } from '@oxy.so/bloom/settings-modal';
+import { GroupedSection as I1 } from '@oxy.so/bloom/grouped-section';
+import { GroupedSectionItem as I2 } from '@oxy.so/bloom/grouped-section';
+import { Switch as I3 } from '@oxy.so/bloom/switch';
+import { Card as I4 } from '@oxy.so/bloom/card';
+import { SettingsValueField as I5 } from '@oxy.so/bloom/settings-modal';
+import { RiSmartphoneLine as I6 } from '@oxy.so/bloom/icons/RiSmartphoneLine';
+import { ScreenScrollView as I7 } from '@oxy.so/bloom/screen';
+import { View as I8 } from 'react-native-css/components/View';
+import { TextFieldInput as I9 } from '@oxy.so/bloom/text-field';
+import { ChatEmptyState as I10 } from '@oxy.so/bloom/chat-screen';
+import { Button as I11 } from '@oxy.so/bloom/button';
+import { Pressable as I12 } from 'react-native-css/components/Pressable';
+import { RiHeart3Line as I13 } from '@oxy.so/bloom/icons/RiHeart3Line';
+import { Text as I14 } from '@oxy.so/bloom/typography';
+import { RiArrowRightLine as I15 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I16 } from 'react-native-css/components/Text';
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -17,8 +27,69 @@ function Hole({ n }: { n: string }) {
 
 export const CASES = [
   {
+    name: "components/Components.tsx:25",
+    before: () => { const SettingsSection = I0; const GroupedSection = I1; const GroupedSectionItem = I2; const Switch = I3; return (<SettingsSection
+      label={'⟨0⟩'}
+      description={'⟨11⟩'}
+    >
+      <GroupedSection title={'⟨9⟩'} footer={'⟨10⟩'} variant="filled">
+        <GroupedSectionItem
+          title={'⟨1⟩'}
+          description={'⟨2⟩'}
+          rightElement={<Switch checked={true} onCheckedChange={() => {}} />}
+        />
+        <GroupedSectionItem title="Language" value="English" onPress={() => {}} />
+        <GroupedSectionItem
+          title={'⟨6⟩'}
+          destructive
+          showChevron={false}
+          onPress={() => {}}
+        />
+        <GroupedSectionItem title={'⟨8⟩'} titleNumberOfLines={0} disabled />
+      </GroupedSection>
+    </SettingsSection>); },
+    after: () => { const SettingsSection = I0; const GroupedSection = I1; const GroupedSectionItem = I2; const Switch = I3; const { Toggle, GroupedSectionItem: LGroupedSectionItem, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection } = L; return (toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨8⟩').lines(0).disabled()).title('⟨9⟩').caption('⟨10⟩').style('filled')).description('⟨11⟩'))); },
+  },
+  {
+    name: "components/Components.tsx:50",
+    before: () => { const SettingsSection = I0; const Card = I4; const SettingsValueField = I5; const RiSmartphoneLine = I6; return (<SettingsSection>
+      <Card appearance="outline" radius="radius-16" border="thin" elevation="none">
+        <SettingsValueField icon={RiSmartphoneLine}>Pixel 9</SettingsValueField>
+      </Card>
+    </SettingsSection>); },
+    after: () => { const SettingsSection = I0; const Card = I4; const SettingsValueField = I5; const RiSmartphoneLine = I6; const { Toggle, GroupedSectionItem: LGroupedSectionItem, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard } = L; return (toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))); },
+  },
+  {
+    name: "components/Components.tsx:68",
+    before: () => { const ScreenScrollView = I7; const View = I8; const TextFieldInput = I9; return (<ParityScreen>{<ScreenScrollView keyboardShouldPersistTaps="handled">
+      <View className="gap-4 p-4">
+        <TextFieldInput
+          label={'⟨2⟩'}
+          value={'⟨0⟩'}
+          onChangeText={() => {}}
+          placeholder={'⟨3⟩'}
+          maxLength={50}
+          autoCapitalize="words"
+          autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={() => {}}
+        />
+      </View>
+    </ScreenScrollView>}</ParityScreen>); },
+    after: () => { const ScreenScrollView = I7; const View = I8; const TextFieldInput = I9; const { Toggle, GroupedSectionItem: LGroupedSectionItem, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField, ScrollView } = L; return (<ParityScreen>{toElement(ScrollView(VStack(TextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))}</ParityScreen>); },
+  },
+  {
+    name: "components/Components.tsx:88",
+    before: () => { const ChatEmptyState = I10; const Button = I11; return (<ChatEmptyState
+      title={'⟨0⟩'}
+      description={'⟨1⟩'}
+      action={<Button onPress={() => {}}>{'⟨2⟩'}</Button>}
+    />); },
+    after: () => { const ChatEmptyState = I10; const Button = I11; const { Toggle, GroupedSectionItem: LGroupedSectionItem, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState } = L; return (toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(Text('⟨2⟩')).onPress(() => {}) }))); },
+  },
+  {
     name: "components/Rows.tsx:19",
-    before: () => { const Pressable = I0; const RiHeart3Line = I1; const View = I2; const Text = I3; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
+    before: () => { const Pressable = I12; const RiHeart3Line = I13; const View = I8; const Text = I14; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
         <Text variant="body-semibold" numberOfLines={1}>
@@ -27,11 +98,11 @@ export const CASES = [
         <Text className="text-sm text-muted-foreground">{'⟨1⟩'} likes</Text>
       </View>
     </Pressable>); },
-    after: () => { const Pressable = I0; const RiHeart3Line = I1; const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText } = L; return toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {})); },
+    after: () => { const Pressable = I12; const RiHeart3Line = I13; const View = I8; const Text = I14; const { HStack, Icon, VStack, Text: LText } = L; return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:41",
-    before: () => { const View = I2; const Text = I3; const Switch = I4; const Button = I5; const RiArrowRightLine = I6; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I8; const Text = I14; const Switch = I3; const Button = I11; const RiArrowRightLine = I15; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -39,30 +110,30 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I2; const Text = I3; const Switch = I4; const Button = I5; const RiArrowRightLine = I6; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl'))); },
+    after: () => { const View = I8; const Text = I14; const Switch = I3; const Button = I11; const RiArrowRightLine = I15; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54",
-    before: () => { const View = I2; return (<View className="gap-2 border-b border-border pb-3">
+    before: () => { const View = I8; return (<View className="gap-2 border-b border-border pb-3">
       {true ? <View className="h-10 w-full bg-muted" /> : null}
       {true && <View className="h-px bg-border" />}
       {<Hole n="2" />}
     </View>); },
-    after: () => { const View = I2; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm')); },
+    after: () => { const View = I8; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
   },
   {
     name: "components/Rows.tsx:58",
-    before: () => { const View = I2; const Text = I3; return (<View  className="flex-row justify-between">
+    before: () => { const View = I8; const Text = I14; return (<View  className="flex-row justify-between">
           <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between')); },
+    after: () => { const View = I8; const Text = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
   },
   {
     name: "components/Rows.tsx:68",
-    before: () => { const View = I2; const NativeText = I7; const Text = I3; return (<View className="flex-1 mt-2">
+    before: () => { const View = I8; const NativeText = I16; const Text = I14; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <Hole n="0" />
     </View>); },
-    after: () => { const View = I2; const NativeText = I7; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), Embed(<Hole n="0" />)).flex('1').margin('top', 'sm')); },
+    after: () => { const View = I8; const NativeText = I16; const Text = I14; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), Embed(<Hole n="0" />)).flex('1').margin('top', 'sm'))); },
   },
 ];
