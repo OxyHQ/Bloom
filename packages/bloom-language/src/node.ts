@@ -26,6 +26,9 @@ import type { ListingEditorKind } from './controls/listing-editor';
 import type { ListingCardKind } from './controls/listing-card';
 import type { ListingActionKind } from './controls/listing-actions';
 import type { VoiceKind } from './controls/voice';
+import type { AgentCreatorKind } from './controls/agent-creator';
+import type { AgentReplyKind } from './controls/agent-reply';
+import type { AiProfileCardKind } from './controls/ai-profile-card';
 import type { WebSearchKind } from './controls/web-search';
 import type { TaskListKind } from './controls/task-list';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
@@ -432,6 +435,8 @@ export interface ValueModifiers {
   frosted: boolean;
   methodTitleAlign: MethodTitleAlign;
   methodTitleVariant: TypeRampStep;
+  // Agent creator (controls/agent-creator.tsx)
+  multiline: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -838,7 +843,10 @@ export type NodeKind =
   | CalendarViewKind
   | TaskListKind
   | WebSearchKind
-  | VoiceKind;
+  | VoiceKind
+  | AgentCreatorKind
+  | AgentReplyKind
+  | AiProfileCardKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1706,6 +1714,11 @@ export class Node {
   }
   methodTitleVariant(value: TypeRampStep): Node {
     return this.set('methodTitleVariant', value);
+  }
+
+  // Agent creator (controls/agent-creator.tsx)
+  multiline(value = true): Node {
+    return this.set('multiline', value);
   }
 }
 

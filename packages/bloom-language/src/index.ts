@@ -898,3 +898,25 @@ export type { WebSearchOptions, WebSearchView } from './controls/web-search';
 // Voice (controls/voice.tsx)
 export { VoiceControls } from './controls/voice';
 export type { VoiceControlsOptions, VoiceControlsView } from './controls/voice';
+
+// Agent creator (controls/agent-creator.tsx)
+export { AgentCreator, AgentCreatorField, AgentCreatorSection } from './controls/agent-creator';
+export type {
+  AgentCreatorFieldView,
+  AgentCreatorOptions,
+  AgentCreatorSectionView,
+  AgentCreatorView,
+} from './controls/agent-creator';
+
+// Agent reply (controls/agent-reply.tsx)
+export { AgentProfile, AgentReplyIdentity } from './controls/agent-reply';
+export type {
+  AgentProfileOptions,
+  AgentProfileView,
+  AgentReplyIdentityOptions,
+  AgentReplyIdentityView,
+} from './controls/agent-reply';
+
+// AI profile card (controls/ai-profile-card.tsx)
+export { AiProfileCard } from './controls/ai-profile-card';
+export type { AiProfileCardOptions, AiProfileCardView } from './controls/ai-profile-card';

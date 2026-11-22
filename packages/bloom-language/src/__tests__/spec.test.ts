@@ -316,6 +316,13 @@ import type { AccentTone, ContentFit } from '../tokens';
 import type { VoiceControlsView } from '../controls/voice';
 import type { WebSearchView } from '../controls/web-search';
 import type { TaskListView } from '../controls/task-list';
+import type {
+  AgentCreatorView,
+  AgentCreatorFieldView,
+  AgentCreatorSectionView,
+} from '../controls/agent-creator';
+import type { AgentProfileView, AgentReplyIdentityView } from '../controls/agent-reply';
+import type { AiProfileCardView } from '../controls/ai-profile-card';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -710,7 +717,19 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TaskListView>, Of<'taskList'>>,
       Same<MethodsOf<WebSearchView>, Of<'webSearch'>>,
       Same<MethodsOf<VoiceControlsView>, Of<'voiceControls'>>,
+      Same<MethodsOf<AgentCreatorView>, Of<'agentCreator'>>,
+      Same<MethodsOf<AgentCreatorFieldView>, Of<'agentCreatorField'>>,
+      Same<MethodsOf<AgentCreatorSectionView>, Of<'agentCreatorSection'>>,
+      Same<MethodsOf<AgentProfileView>, Of<'agentProfile'>>,
+      Same<MethodsOf<AgentReplyIdentityView>, Of<'agentReplyIdentity'>>,
+      Same<MethodsOf<AiProfileCardView>, Of<'aiProfileCard'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

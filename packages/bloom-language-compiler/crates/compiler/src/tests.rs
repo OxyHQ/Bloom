@@ -1195,3 +1195,18 @@ fn the_task_list_web_search_and_voice_controls_are_checked() {
     let output = check("export const x = (t) => TaskList(t).style('plain');\n");
     assert_eq!(output.diagnostics[0].message, "TaskList has no modifier .style()");
 }
+
+#[test]
+fn the_agent_editor_identity_and_profile_card_are_checked() {
+    let imports =
+        "import { AgentCreatorField, AgentProfile, AiProfileCard, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (a) => [AgentCreatorField('Name', Text('A')).multiline().divider(false), AgentProfile(a).label('Team'), AiProfileCard('Maya').tint('success/half')];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = () => AiProfileCard('Maya').tint('violet');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token 'violet' for .tint()");
+    let output = check("export const x = (a) => AgentProfile(a).multiline();\n");
+    assert_eq!(output.diagnostics[0].message, "AgentProfile has no modifier .multiline()");
+}

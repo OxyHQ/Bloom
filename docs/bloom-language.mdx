@@ -1783,6 +1783,30 @@ Bloom's `property-insights` price pieces: `PriceEstimate(low, high,
 confidence, options?)` takes the asking price, words, reasons and handlers as
 Bloom does; `PricePerAreaComparison(rows)` takes Bloom's rows, `.label()` its
 name.
+### Agent editor, identity and profile
+
+```ts
+AgentCreator([agent, setAgent], { voices, onClose: close, sections: AgentCreatorSection('Memory', rows) })
+AgentCreatorField('Description', TextEditor([text, setText])).multiline().divider(false)
+AgentReplyIdentity(agent.avatar, agent.name, { thinking, reasoning: Text(thought) }).onPress(open).label('Open Ana')
+AgentProfile(agents, { expanded }).onPress(openMenu)
+AiProfileCard('Maya Collins', { handle: '@maya', stats, cells, actions: Button(Text('Follow')) }).tint('primary')
+```
+
+Bloom's `agent-creator`, `agent-reply` and `ai-profile-card`, as Gemies draws
+them. `AgentCreator(agent, options?)` edits the agent its binding holds (its
+`children` rows and its `sections` are language children);
+`AgentCreatorField(label, content)` is one of its rows, `.multiline()` the
+taller row with its label at the top, `.divider(false)` a card's first row
+with no hairline above it; `AgentCreatorSection(title, content)` a titled
+card of rows (a list keyed by `.id()`). `AgentProfile(agents, options?)` and
+`AgentReplyIdentity(character, name, options?)` take `.onPress()`
+themselves, `.label()` naming the press; an identity's `reasoning` is a
+language child. `AiProfileCard(name, options?)` takes Bloom's data and
+handlers, `actions` a language child, `.tint(role)` its activity grid.
+
+- The editor's emotion ring turns on every frame: its cases are compared by
+  Jest as they mount, not in Chrome.
 
 ### Order status
 
