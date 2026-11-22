@@ -759,6 +759,26 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       testID: p('testID', 'string'),
     },
   },
+  // parity/chat.cases.tsx, ChatSearchField: the query a binding, the rest its options.
+  '@oxy.so/bloom/chat-list#ChatSearchField': {
+    node: 'ChatSearchField',
+    params: [
+      { binding: ['value', 'onChangeText'], hole: 'string' },
+      {
+        options: {
+          placeholder: 'string',
+          clearLabel: 'string',
+          onClear: 'handler',
+          onSubmit: 'handler',
+          onFocus: 'handler',
+          onBlur: 'handler',
+          trailing: 'view',
+          autoFocus: 'boolean',
+        },
+      },
+    ],
+    props: { accessibilityLabel: p('label', 'string'), testID: p('testID', 'string') },
+  },
 };
 
 /**
@@ -804,6 +824,12 @@ export const KEPT: Readonly<Record<string, string>> = {
     'the language’s `Menu` is the platform’s menu (the lens menu on Android, SwiftUI’s on iOS), Bloom’s DropdownMenu only on the web and as a fallback; no parity case pairs it with a DropdownMenu and its parts',
   '@oxy.so/bloom/screen#Screen':
     'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root: only a default-exported function component whose every return is a Screen converts (`SCREEN`)',
+  '@oxy.so/bloom/app-shell#AppShell':
+    'a Bloom AppShell is a layout route’s `AppLayout(navigator)` in the language (`.shellLayout()`, `.panels(Panel(…))`); no node a region holds draws one',
+  '@oxy.so/bloom/app-shell#AppShellPanels':
+    'Bloom’s AppShellPanels are an `AppLayout`’s `.panels(Panel(…))` in the language, not a node a region holds',
+  '@oxy.so/bloom/app-shell#AppShellPanel':
+    'a Bloom AppShellPanel is a `Panel(id, content)` of an `AppLayout`’s `.panels()` in the language, not a node a region holds',
 };
 
 /**
