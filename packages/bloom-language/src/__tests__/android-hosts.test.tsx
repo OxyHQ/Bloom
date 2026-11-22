@@ -28,7 +28,8 @@ import { ToolbarGroup } from '../controls/toolbar-group';
 import { ConfirmationDialog } from '../controls/confirmation-dialog';
 import { menu } from '../primitives';
 import { toElement } from '../render';
-import { resolveCorner } from '../tokens';
+import { resolveCorner, resolveSpace } from '../tokens';
+import type { Namespace } from '../motion/namespace';
 
 /**
  * The lens is the upstream app's menu component itself (`@oxy.so/bloom-lens`, its Android files);
@@ -355,6 +356,83 @@ describe('glass groups, interactive and identity glass', () => {
     const lenses = hosts(r, 'BloomLensMenu');
     expect(lenses).toHaveLength(1);
     expect(lenses[0]?.props).toMatchObject({ lens: true, items: [], cornerRadius: undefined });
+  });
+
+  /** The views the engine finds a group's glasses by: each marked with its member's key. */
+  const marked = (r: ReturnType<typeof mount>) =>
+    hosts(r, 'View').filter((view) => String(view.props.nativeID).startsWith('bloom-'));
+
+  it('the base draws each glass in the group as its own shape, found by its view, blended within `blend`', () => {
+    const r = mount(
+      toElement(
+        GlassGroup(
+          HStack(HStack(Text('a')).glass().corner('lg'), HStack(Text('b')).glass()).spacing('xl'),
+        ).blend('xl'),
+      ),
+    );
+    const lens = only(r, 'BloomLensMenu');
+    expect(lens.props.blend).toBe(resolveSpace('xl'));
+    const members = lens.props.members as { key: string; cornerRadius?: number }[];
+    expect(members).toHaveLength(2);
+    expect(members[0]?.cornerRadius).toBe(16);
+    expect(members[1]?.cornerRadius).toBeUndefined();
+    expect(marked(r).map((view) => view.props.nativeID)).toEqual(
+      members.map((member) => member.key),
+    );
+    expect(new Set(members.map((member) => member.key)).size).toBe(2);
+  });
+
+  it('glasses of one union are one shape: they share a key', () => {
+    const ns: Namespace = { frames: new Map() };
+    const r = mount(
+      toElement(
+        GlassGroup(
+          HStack(
+            HStack(Text('a')).glass().glassUnion('pair', ns),
+            HStack(Text('b')).glass().glassUnion('pair', ns),
+            HStack(Text('c')).glass(),
+          ),
+        ),
+      ),
+    );
+    const members = only(r, 'BloomLensMenu').props.members as { key: string }[];
+    expect(members).toHaveLength(2);
+    const keys = marked(r).map((view) => view.props.nativeID);
+    expect(keys[0]).toBe(keys[1]);
+    expect(keys[0]).toBe(members[0]?.key);
+    expect(keys[2]).toBe(members[1]?.key);
+  });
+
+  it('a glassID is the key: the glass that takes it over takes the shape; materialize reaches the engine', () => {
+    const ns: Namespace = { frames: new Map() };
+    const row = (selected: number) =>
+      toElement(
+        GlassGroup(
+          HStack(
+            ...[0, 1].map((slot) =>
+              slot === selected
+                ? HStack(Text(String(slot)))
+                    .glass()
+                    .glassID('selected', ns)
+                : HStack(Text(String(slot)))
+                    .glass()
+                    .glassTransition('materialize'),
+            ),
+          ),
+        ),
+      );
+    const r = mount(row(0));
+    const key = (only(r, 'BloomLensMenu').props.members as { key: string }[])[0]?.key;
+    expect(marked(r)[0]?.props.nativeID).toBe(key);
+    expect(only(r, 'BloomLensMenu').props.members[1]).toMatchObject({ transition: 'materialize' });
+    act(() => r.update(row(1)));
+    expect(marked(r)[1]?.props.nativeID).toBe(key);
+    expect(marked(r)[0]?.props.nativeID).not.toBe(key);
+  });
+
+  it('a glass outside a group is no member: its base has none', () => {
+    const r = mount(toElement(HStack(Text('a')).glass()));
+    expect(only(r, 'BloomLensMenu').props.members).toBeUndefined();
   });
 
   it('a glass that is not interactive turns the jelly off; unsaid, the engine’s own', () => {

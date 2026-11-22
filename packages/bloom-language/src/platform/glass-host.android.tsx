@@ -14,14 +14,24 @@ import { useTheme } from '@oxy.so/bloom/theme';
 
 import { glassTriggerConfig } from './lens-glass';
 import { getLens } from './lens';
+import { LensGroupGlass, useInLensGroup } from './lens-group';
 import type { GlassHostProps, PlatformGlass } from './glass-host.types';
 
-function LensGlass({ glass, radius, fallbackTint, fill, style, children }: GlassHostProps) {
+function LensGlass({ glass, radius, fallbackTint, fill, member, style, children }: GlassHostProps) {
   const lens = getLens();
   const theme = useTheme();
   const inBase = lens?.useInLensBase() ?? false;
+  const inGroup = useInLensGroup();
   if (!lens) return null;
-  // Inside a base (a glass group, a group of controls) the base draws the one lens: no glass on glass.
+  // In a glass group the group draws this glass as one of its shapes, where this view is.
+  if (inGroup) {
+    return (
+      <LensGroupGlass member={member} radius={radius} style={style}>
+        {children}
+      </LensGroupGlass>
+    );
+  }
+  // Inside any other base (a group of controls) the base draws the one lens: no glass on glass.
   if (inBase) return <View style={style}>{children}</View>;
   const { LensBase } = lens;
   const config = glassTriggerConfig(glass, fallbackTint, theme.colors, fill);

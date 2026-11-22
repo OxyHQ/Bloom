@@ -1173,11 +1173,11 @@ Badge(count).glass().glassID('badge', ns).glassTransition('materialize')
 
 | | Android, OxyOS | iOS (not verified) | Web |
 | --- | --- | --- | --- |
-| `GlassGroup` | one lens base: one lens over the whole group, and a menu from anything in it grows out of the whole group | UIKit's glass container (`expo-glass-effect`'s `GlassContainer spacing={blend}`) around the `GlassView`s | a view; each glass is its own `Surface` |
-| a glass inside | no lens of its own (`useInLensBase`): the base draws it | its `GlassView` | its `Surface` |
-| `.blend()` | not read: the engine blends no separate shapes at rest | the container's `spacing` | not read |
-| `.glassUnion()` | the base is already one shape | the container's merge within `blend` | each `Surface` on its own (decided: see below) |
-| `.glassID()` | the engine's matched geometry of the view | SwiftUI's own `glassEffectID` for a group of glass icon buttons (below); else the motion engine's matched geometry | matched geometry (the Web Animations API) |
+| `GlassGroup` | one lens base drawn as the glasses inside it, each its own shape where its view is; a menu from anything in it grows out of the whole group | UIKit's glass container (`expo-glass-effect`'s `GlassContainer spacing={blend}`) around the `GlassView`s | a view; each glass is its own `Surface` |
+| a glass inside | no lens of its own (`useInLensBase`): the base draws its shape, found by its view's `nativeID` | its `GlassView` | its `Surface` |
+| `.blend()` | the engine's smooth union: shapes closer than it flow together | the container's `spacing` | not read |
+| `.glassUnion()` | the glasses with that id are one shape around them all | the container's merge within `blend` | each `Surface` on its own (decided: see below) |
+| `.glassID()` | the shape's key: the glass that takes the id over takes the shape there on a spring, and the content keeps the motion engine's matched geometry | SwiftUI's own `glassEffectID` for a group of glass icon buttons (below); else the motion engine's matched geometry | matched geometry (the Web Animations API) |
 
 **iOS's own morph (not verified).** A group that is one stack of glass icon
 buttons, each a glyph with an SF Symbol, a `.label()`, `.glass()` and
@@ -1188,20 +1188,21 @@ the group keyed by its ids, so a button that arrives grows out of its
 neighbour as Apple's `glassEffectID` does. Any other group stays UIKit's
 container around Bloom's views.
 
-**Decided: on Android a group is one capsule.** The lens engine draws a base as one
-rounded rectangle, and its field and shader hold exactly two shapes: the
-trigger and the panel a menu morphs between (`GlassGaussianField`'s incoming
-and outgoing rects, the shader's primary and `secondary` uniforms). Separate
-shapes that blend at rest, a `glassID` morph between siblings and a union of
-some members need an N-shape field and shader, each member's rect measured
-from JavaScript into the base, and the overlay drawing a base as several
-shapes: a rewrite of the engine's renderer, not a patch on it, kept as a
-possible engine project of its own.
+**Android: a group draws its glasses.** The lens base of a group is given
+its glasses as members (`LensBase members blend`): each glass marks its view
+with its key (`nativeID`: its `glassID`, its `glassUnion`, or one of its own),
+and the engine finds and measures those views before each frame and draws
+each as a shape of one field, blended within `blend` by the smooth union the
+menu's morph uses. A view's own motion moves its glass with it; what a view
+cannot do the engine does on a spring: a glass that arrives grows out of the
+nearest one, one that leaves goes back into it (`materialize`: in place), and
+an id that another glass takes over takes its shape there. The field holds
+eight shapes; a group with more draws its first eight.
 
 **Decided: a union is the platform's merge.** `.glassUnion()` draws no shape
-of its own. On Android the group is one capsule already; on iOS UIKit's
-container merges glasses within `blend`; on the web each glass is its own
-`Surface`. Drawing a union as one glass around its members would replace each
+of its own. On Android the engine draws the union's glasses as one shape; on
+iOS UIKit's container merges glasses within `blend`; on the web each glass is
+its own `Surface`. Drawing a union as one glass around its members would replace each
 member's own glass (and the glass a glass button style adds) with one around
 them, and tell the members they sit on it. The island environment (a `.blur()`
 whose controls share its material) is the nearest mechanism, but it marks
@@ -4993,9 +4994,9 @@ with its reason. Nothing else is missing.
   styles, `confirmationDialog`, custom modifiers, `.safeAreaInset()` and
   `.safeAreaBar()`, `ToolbarGroup` and `ToolbarSpacer`, `.phases()` and
   keyframe tracks, `ViewThatFits`, and the Liquid Glass rules in the compiler.
-  **Decided** (see Glass groups): on Android a group is one capsule (separate
-  shapes that blend and a `glassID` morph between siblings would be an engine
-  rewrite); a union is the platform's merge; the web has no shared sampling;
+  **Decided** (see Glass groups): on Android a group draws each glass as its
+  own shape, blended, united and moved by id in the lens engine; a union is
+  the platform's merge; the web has no shared sampling;
   on iOS only a group of glass icon buttons morphs by SwiftUI's
   `glassEffectID`, since those are the one glass the language draws as
   SwiftUI controls, and any other glass is a React Native view under
