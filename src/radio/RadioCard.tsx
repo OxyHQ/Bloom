@@ -73,8 +73,6 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   disabled: disabledProp = false,
   tone: toneProp,
   style,
-  className,
-  labelClassName,
   labelStyle,
   accessibilityLabel,
   testID,
@@ -146,10 +144,9 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
 
   return (
     <RadioHost
-      className={className}
       {...groupItem}
       {...webDataSet({ bloomRadioCard: '' })}
-      style={[className ? { '--bloom-radio-ring': paint.ring, ...ringOffset } : cardStyle, style]}
+      style={[cardStyle, style]}
       onPress={handlePress}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={disabled ? undefined : onPressOut}
@@ -178,10 +175,9 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
           </View>
         ) : (
           <RadioLabel
-            className={labelClassName}
             variant="body-medium"
             numberOfLines={1}
-            style={[!labelClassName && { color: paint.title }, labelStyle]}
+            style={[{ color: paint.title }, labelStyle]}
           >
             {title}
           </RadioLabel>
