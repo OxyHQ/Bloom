@@ -825,3 +825,18 @@ fn the_call_screens_are_checked() {
     let output = check("export const x = (n) => CallScreen(n, 'active').style('audio');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown callMode token 'audio' for .style()");
 }
+
+#[test]
+fn the_people_beside_a_chat_are_checked() {
+    let imports =
+        "import { NewGroupForm, SelectedChipsRow, StoryViewer, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (p, s, n) => VStack(SelectedChipsRow(p).style('wrap'), StoryViewer(s, 0, { name: 'Ana', time: '2h' }).label('Story'), NewGroupForm(n));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (p) => SelectedChipsRow(p).style('grid');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown selectedChipsLayout token 'grid' for .style()");
+    let output = check("export const x = (n) => NewGroupForm(n).style('wrap');\n");
+    assert_eq!(output.diagnostics[0].message, "NewGroupForm has no modifier .style()");
+}

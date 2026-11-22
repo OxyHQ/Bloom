@@ -1,5 +1,6 @@
 import type { NodeKind } from '../node';
 import { CALL_UIS } from './call-ui';
+import { CHAT_PEOPLE } from './chat-people';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { STAY_FILTERS } from './stay-filters';
@@ -50,4 +51,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...EVICTION,
   ...PLACE_REVIEWS,
   ...CALL_UIS,
+  ...CHAT_PEOPLE,
 };

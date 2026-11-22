@@ -233,6 +233,11 @@ import type {
   IncomingCallScreenView,
   IncomingCallBannerView,
 } from '../controls/call-ui';
+import type {
+  NewGroupFormView,
+  SelectedChipsRowView,
+  StoryViewerView,
+} from '../controls/chat-people';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -561,7 +566,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<GroupCallGridView>, Of<'groupCallGrid'>>,
       Same<MethodsOf<IncomingCallScreenView>, Of<'incomingCallScreen'>>,
       Same<MethodsOf<IncomingCallBannerView>, Of<'incomingCallBanner'>>,
+      Same<MethodsOf<StoryViewerView>, Of<'storyViewer'>>,
+      Same<MethodsOf<SelectedChipsRowView>, Of<'selectedChipsRow'>>,
+      Same<MethodsOf<NewGroupFormView>, Of<'newGroupForm'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

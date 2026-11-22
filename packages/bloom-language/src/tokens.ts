@@ -172,6 +172,8 @@ export type CallControlSize = (typeof ENUMS.callControlSize)[number];
 export type GroupCallLayout = (typeof ENUMS.groupCallLayout)[number];
 /** How an incoming call is answered: two round `buttons`, or a `slide` track. */
 export type IncomingCallAnswer = (typeof ENUMS.incomingCallAnswer)[number];
+/** Picked people's chips: one row that `scroll`s sideways, or as many rows as they `wrap` to. */
+export type SelectedChipsLayout = (typeof ENUMS.selectedChipsLayout)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];

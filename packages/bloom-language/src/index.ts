@@ -650,3 +650,14 @@ export type {
   IncomingCallScreenOptions,
   IncomingCallScreenView,
 } from './controls/call-ui';
+
+// The people beside a chat (controls/chat-people.tsx)
+export { NewGroupForm, SelectedChipsRow, StoryViewer } from './controls/chat-people';
+export type {
+  NewGroupFormOptions,
+  NewGroupFormView,
+  SelectedChipsRowOptions,
+  SelectedChipsRowView,
+  StoryViewerOptions,
+  StoryViewerView,
+} from './controls/chat-people';

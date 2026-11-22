@@ -127,3 +127,6 @@ export const CallMinimisedPill = 'CallMinimisedPill';
 export const GroupCallGrid = 'GroupCallGrid';
 export const IncomingCallScreen = 'IncomingCallScreen';
 export const IncomingCallBanner = 'IncomingCallBanner';
+export const StoryViewer = 'StoryViewer';
+export const SelectedChipsRow = 'SelectedChipsRow';
+export const NewGroupForm = 'NewGroupForm';

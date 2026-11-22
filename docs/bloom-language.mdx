@@ -1477,6 +1477,24 @@ picture-in-picture's corner).
 - A speaking ring and the slide track's chevrons breathe on a loop: those
   cases are compared by Jest as they mount, not in Chrome.
 
+### People beside a chat
+
+```ts
+StoryViewer(friend.stories, index, { name: friend.name, avatar: friend.avatar, time, onNext, onPrevious, onClose })
+SelectedChipsRow(picked, { onRemove: unpick, emptyState: Text('Nobody yet') }).style('wrap')
+NewGroupForm([groupName, setGroupName], { members: picked, onAddMembers: pick })
+```
+
+Bloom's `chat-people`: `StoryViewer(stories, index, options)` takes the
+author, time, playback state and handlers as Bloom does (a story's `media` is
+a React element: `toElement(view)`); a composer of the app's own is a
+language child, its `height` a space token. `SelectedChipsRow(people,
+options?)` lays its chips out with `.style('scroll' | 'wrap')`; what it shows
+with nobody picked is a child. `NewGroupForm(name, options?)` writes the
+group's name its binding holds; `content` is the rows it draws between the
+fields and the members (Bloom's children). The story's progress bars run on
+a timer unless `paused`, so its cases hold them still.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
