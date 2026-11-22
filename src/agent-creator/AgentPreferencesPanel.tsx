@@ -9,8 +9,9 @@ import {
   SegmentedControlItemText,
 } from '../segmented-control';
 import { GroupedSection, GroupedSectionItem } from '../grouped-section';
-import { StyledView } from '../styles/styled-primitives';
+import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Switch } from '../switch';
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { AGENT_LANGUAGES, AGENT_SPEECH_RATES } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
@@ -27,6 +28,13 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
   const messages = useAgentCreatorMessages();
   const { agent, onChange } = props;
   const { colors } = useTheme();
+  const tokens = useColorTokens();
+  // The preview's quiet paint: native drew it on the button's host; the web's own button
+  // sheet already paints a plain neutral button so.
+  const previewButtonPaint =
+    Platform.OS === 'web'
+      ? {}
+      : { style: { backgroundColor: '#0000', color: tokens.mutedForeground } as ViewStyle };
   const preferences = normalizeAgentPreferences(agent.preferences);
   const { voices, canPreview, canSelect, preview } = useAgentVoices(props);
   const { SettingsSelect } = useAgentCreatorBindings();
@@ -59,7 +67,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
       : []),
   ];
   return (
-    <StyledView className="mt-4 flex flex-col gap-3 pb-3">
+    <View style={styles.panel}>
       <GroupedSection separator="line">
         <GroupedSectionItem
           title={messages.language}
@@ -101,7 +109,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
           icon={<RiVolumeUpLine size="md" fill={colors.icon} aria-hidden />}
           wrapControl
           rightElement={
-            <StyledView className="flex min-w-0 items-center gap-1 flex-row">
+            <View style={styles.voice}>
               {!!preferences.voice && (
                 <Button
                   iconOnly
@@ -111,7 +119,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
                   icon={PreviewPlayIcon}
                   accessibilityLabel={messages.previewVoice}
                   disabled={!canPreview}
-                  className="bg-transparent text-text-secondary hover:bg-background-tertiary-default hover:text-text-primary active:bg-background-tertiary-hover active:text-text-primary"
+                  {...previewButtonPaint}
                   onPress={() => preview(preferences)}
                 />
               )}
@@ -126,7 +134,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
                 onChange={(voice) => update({ voice: voice === 'off' ? '' : voice })}
                 items={voiceItems}
               />
-            </StyledView>
+            </View>
           }
         />
         <GroupedSectionItem
@@ -145,7 +153,7 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
                   key={speed}
                   value={String(speed)}
                   accessibilityLabel={messages.playbackSpeedLabel(speed)}
-                  style={{ flex: 1, minWidth: 0, paddingHorizontal: 4 }}
+                  style={[styles.speedItem, { flex: 1, minWidth: 0, paddingHorizontal: 4 }]}
                 >
                   <SegmentedControlItemText>{speed}×</SegmentedControlItemText>
                 </SegmentedControlItem>
@@ -154,6 +162,12 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
           }
         />
       </GroupedSection>
-    </StyledView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  panel: { marginTop: 16, flexDirection: 'column', gap: 12, paddingBottom: 12 },
+  voice: { minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  speedItem: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%', paddingInline: 4 },
+});
