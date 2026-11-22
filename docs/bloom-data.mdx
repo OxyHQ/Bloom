@@ -161,6 +161,10 @@ and each has a test in `src/__tests__/source.test.tsx`:
   (`refetchOnFocus`, `refetchOnReconnect`).
 - A key nobody observes leaves memory after `gcTime` (default 5 minutes). Its
   disk copy stays.
+- `invalidate(...args)` marks a key stale in the store in scope, whatever its
+  `stale` age, and `invalidateAll()` marks every key of the source. A key on
+  screen (or being read) reads again now; one off screen reads again when it
+  is next observed. Once a read started since answers, `stale` applies again.
 
 `useListState(list, key)` reads a held list without reading it from the
 server. `useList(source, skip)` observes nothing until its arguments are known (the
@@ -287,6 +291,13 @@ in one SQLite file. `open` returns expo-sqlite's database:
   one read) or at boot, never during render. Memory always wins over disk.
 - A changed entity `persist.version` drops that type's rows when the file
   opens. Rows not written for 7 days are dropped with the first write.
+- `persist: { keep: N }` bounds an entity's rows on disk to the N written
+  last; memory holds whatever is loaded. Each write that stores rows of the
+  type deletes the ones past the bound, so a restart restores only the kept
+  ones (a persisted list keeps only the ids whose records are on disk).
+  Rows written in one batch count as equally new. For `@gemies/sdk`'s
+  conversations, the 20 most recently written, as the app's
+  `MAX_PERSISTED_CONVERSATIONS` did.
 - `createAccounts({ persister: (account) => ... })` opens one store, and one
   file, per account. `open(account)` closes the previous store at once: its
   queued writes still reach its own file, and anything that lands for it later
