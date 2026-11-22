@@ -2,7 +2,7 @@ import { createElement, useContext } from 'react';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { mount, only, quietRenderer } from './support/mount';
-import { Embed, ScrollArea, Text, VirtualList } from '../index';
+import { Embed, List, ScrollArea, Text, VirtualList } from '../index';
 import { toElement } from '../render';
 import { resolveSpace } from '../tokens';
 
@@ -39,6 +39,16 @@ describe('safe-area insets on a scroll', () => {
       (node) =>
         (node.props.contentContainerStyle as { paddingBottom?: number } | undefined)
           ?.paddingBottom === resolveSpace('md'),
+    );
+    expect(padded.length).toBeGreaterThan(0);
+  });
+
+  it('a list that scrolls makes room in its scroller’s content', () => {
+    const r = mount(toElement(List([]).scrollable().safeAreaInset('top', Text('Filters'), 'md')));
+    const padded = r.root.findAll(
+      (node) =>
+        (node.props.contentContainerStyle as { paddingTop?: number } | undefined)?.paddingTop ===
+        resolveSpace('md'),
     );
     expect(padded.length).toBeGreaterThan(0);
   });

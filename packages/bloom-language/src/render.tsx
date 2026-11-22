@@ -1917,7 +1917,7 @@ function iconGlyph(
 
 /** The language's scrolls, each Bloom's own: the screen's, a scroll of its own, and one on a surface. */
 /** The lists whose content makes room for views pinned at their edges. */
-const INSET_LISTS: ReadonlySet<string> = new Set(['virtualList']);
+const INSET_LISTS: ReadonlySet<string> = new Set(['list', 'virtualList']);
 
 const SCROLL_HOSTS = {
   scrollView: ScrollViewHost,

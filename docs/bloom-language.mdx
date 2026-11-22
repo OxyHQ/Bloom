@@ -1131,7 +1131,7 @@ Badge(count).glass().glassID('badge', ns).glassTransition('materialize')
 | `GlassGroup` | one lens base: one lens over the whole group, and a menu from anything in it grows out of the whole group | UIKit's glass container (`expo-glass-effect`'s `GlassContainer spacing={blend}`) around the `GlassView`s | a view; each glass is its own `Surface` |
 | a glass inside | no lens of its own (`useInLensBase`): the base draws it | its `GlassView` | its `Surface` |
 | `.blend()` | not read: the engine blends no separate shapes at rest | the container's `spacing` | not read |
-| `.glassUnion()` | the base is already one shape | the container's merge within `blend` | each `Surface` on its own |
+| `.glassUnion()` | the base is already one shape | the container's merge within `blend` | each `Surface` on its own (decided: see below) |
 | `.glassID()` | the engine's matched geometry of the view | SwiftUI's own `glassEffectID` for a group of glass icon buttons (below); else the motion engine's matched geometry | matched geometry (the Web Animations API) |
 
 **iOS's own morph (not verified).** A group that is one stack of glass icon
@@ -1143,15 +1143,26 @@ the group keyed by its ids, so a button that arrives grows out of its
 neighbour as Apple's `glassEffectID` does. Any other group stays UIKit's
 container around Bloom's views.
 
-**Why Android's group is one shape.** The lens engine draws a base as one
+**Decided: on Android a group is one capsule.** The lens engine draws a base as one
 rounded rectangle, and its field and shader hold exactly two shapes: the
 trigger and the panel a menu morphs between (`GlassGaussianField`'s incoming
 and outgoing rects, the shader's primary and `secondary` uniforms). Separate
 shapes that blend at rest, a `glassID` morph between siblings and a union of
 some members need an N-shape field and shader, each member's rect measured
 from JavaScript into the base, and the overlay drawing a base as several
-shapes: a change to the engine's renderer, not a patch on it, so it is not
-built.
+shapes: a rewrite of the engine's renderer, not a patch on it, kept as a
+possible engine project of its own.
+
+**Decided: a union is the platform's merge.** `.glassUnion()` draws no shape
+of its own. On Android the group is one capsule already; on iOS UIKit's
+container merges glasses within `blend`; on the web each glass is its own
+`Surface`. Drawing a union as one glass around its members would replace each
+member's own glass (and the glass a glass button style adds) with one around
+them, and tell the members they sit on it. The island environment (a `.blur()`
+whose controls share its material) is the nearest mechanism, but it marks
+Bloom's island, and a glass ends it by design: reusing it would give it a
+second meaning, and rewriting the members inside a group is a second path for
+a glass. Neither is clean, so the union stays the platform's merge.
 
 The web's glass is a blurred `Surface` with no refraction and no shared
 sampling, so shapes there never blend; that is Bloom's measured rule (no SVG
@@ -1572,8 +1583,8 @@ export default screen(function Feed() {
 ```
 
 **Insets on any scroll.** `.safeAreaInset(edge, view, spacing?)` is SwiftUI's
-`safeAreaInset`, on a `ScrollView`, a `ScrollArea`, a `ScrollSurface` or a
-`VirtualList`: the
+`safeAreaInset`, on a `ScrollView`, a `ScrollArea`, a `ScrollSurface`, a
+`List` or a `VirtualList`: the
 view is pinned at the scroll's `top` or `bottom`, measured, and the content
 gets that much room at the edge (and the spacing), so it scrolls clear of it
 (a filter bar over a list, a mini-player above the bar). `.safeAreaBar(edge,
@@ -1593,9 +1604,9 @@ stack outward in the order chained. What the content reads of the safe area
 (react-native-safe-area-context's `SafeAreaInsetsContext`) is raised by the
 same room, as SwiftUI raises the safe area of what is under an inset, so a view
 inside that keeps clear of the device's edges keeps clear of the pinned views
-too. A `VirtualList`'s room is its `contentContainerStyle`'s padding. Not
-built: a `List` that scrolls (Bloom's `List` takes no content style for its
-scroller; it needs that prop first).
+too. A `VirtualList`'s room is its `contentContainerStyle`'s padding, and a
+`List`'s its scroller's (Bloom's `List` takes `contentContainerStyle`, read
+when it scrolls: `.scrollable()`, a height or a section index).
 
 `ScrollView(...children)` is Bloom's `ScreenScrollView`, the screen's
 scroller: it binds the header's scroll-edge fade, the bottom bar's fold, the
@@ -4862,12 +4873,11 @@ with its reason. Nothing else is missing.
   styles, `confirmationDialog`, custom modifiers, `.safeAreaInset()` and
   `.safeAreaBar()`, `ToolbarGroup` and `ToolbarSpacer`, `.phases()` and
   keyframe tracks, `ViewThatFits`, and the Liquid Glass rules in the compiler.
-  **Not built:** separate glass shapes that blend at rest on Android (a group is
-  one base; the engine's field blends two shapes, so a `glassID` morph between
-  siblings is engine work: see Glass groups) and on the web (no shared sampling);
-  SwiftUI's own `glassEffectID` for a group of anything but glass icon
-  buttons; a `.glassUnion()` drawn as one shape on iOS and the web; the
-  insets of a scrolling `List`; the Liquid Glass rules across a
+  **Decided** (see Glass groups): on Android a group is one capsule (separate
+  shapes that blend and a `glassID` morph between siblings would be an engine
+  rewrite); a union is the platform's merge; the web has no shared sampling.
+  **Not built:** SwiftUI's own `glassEffectID` for a group of anything but
+  glass icon buttons; the Liquid Glass rules across a
   `view()`'s boundary (the compiler sees one expression). iOS is type-checked
   and held against stand-ins, not run.
 - **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,
