@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import {
   Admonition,
   AdmonitionButton,
@@ -182,6 +183,43 @@ const cards: ParityCase[] = [
       >
         <Badge content={1} />
       </Card>
+    ),
+  },
+  {
+    // Every box modifier is the card's `style`, as an app writes it. On the web
+    // a role in a Bloom component's style is its CSS variable, as Bloom's
+    // prepainted theme hands it to an app (`useThemePaint()`).
+    name: 'Card with a fill, a corner, a margin and a flex',
+    language: () =>
+      toElement(
+        C.Card(L.Badge(1))
+          .padding('horizontal', 'md')
+          .frame({ minHeight: '4xl' })
+          .background('surface')
+          .corner('lg')
+          .margin('top', 'sm')
+          .flex('1'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Card
+            style={{
+              paddingStart: 12,
+              paddingEnd: 12,
+              minHeight: 40,
+              backgroundColor: Platform.OS === 'web' ? 'var(--surface)' : c.backgroundSecondary,
+              borderRadius: 16,
+              marginTop: 8,
+              flexGrow: 1,
+              flexShrink: 1,
+              flexBasis: '0%',
+            }}
+          >
+            <Badge content={1} />
+          </Card>
+        )}
+      </Themed>
     ),
   },
 ];
