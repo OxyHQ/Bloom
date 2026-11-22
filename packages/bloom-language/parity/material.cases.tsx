@@ -591,6 +591,19 @@ const named: ParityCase[] = [
       </ThemedRgb>
     ),
   },
+  // A fixed colour at an opacity (`bg-white/70`): on native NativeWind's compiler writes its
+  // hex with the alpha in 8 bits rounded down; the browser draws the mix at its exact alpha.
+  {
+    name: 'a fixed colour at an opacity',
+    language: () => toElement(L.VStack().background('white/70')),
+    bloom: () => (
+      <RN.View
+        style={{
+          backgroundColor: RN.Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.7)' : '#ffffffb2',
+        }}
+      />
+    ),
+  },
   ...(
     [
       ['20', 0.2],

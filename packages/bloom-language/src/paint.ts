@@ -99,6 +99,28 @@ function atOpacity(color: string, opacity: number): string {
     : `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
 }
 
+/** A prop painted from a role (an icon's `fill`), at its opacity: what an app hands Bloom. */
+function propColor(colors: ThemeColors, role: ColorName, opacity: number | undefined): string {
+  const color = colors[COLORS[role].paint];
+  return opacity === undefined ? color : atOpacity(color, opacity);
+}
+
+/**
+ * A style property painted from a role, at its opacity: what a class draws.
+ * On native a fixed colour (`white`, `black`) at an opacity is what
+ * NativeWind's compiler writes for `bg-white/70`, its hex with the alpha in 8
+ * bits rounded down (`#ffffffb2`); the web keeps the exact percentage (its
+ * `color-mix()`, `webInk`), as Tailwind writes it.
+ */
+function styleColor(colors: ThemeColors, role: ColorName, opacity: number | undefined): string {
+  const fixed = COLORS[role].web;
+  if (opacity === undefined || IS_WEB || !fixed.startsWith('#'))
+    return propColor(colors, role, opacity);
+  return `${fixed}${Math.floor(opacity * 255)
+    .toString(16)
+    .padStart(2, '0')}`;
+}
+
 /** The props a paint resolves to under one palette, built once per palette and reused. */
 function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> {
   let byPaint = resolved.get(colors);
@@ -111,18 +133,14 @@ function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> 
     props = {};
     if (paint.styleRoles.length > 0) {
       const style: Record<string, unknown> = { ...paint.style };
-      for (const [key, role, opacity] of paint.styleRoles) {
-        const color = colors[COLORS[role].paint];
-        style[key] = opacity === undefined ? color : atOpacity(color, opacity);
-      }
+      for (const [key, role, opacity] of paint.styleRoles)
+        style[key] = styleColor(colors, role, opacity);
       props.style = Object.freeze(composeGeometry(style));
     } else if (paint.style !== undefined) {
       props.style = composeGeometry(paint.style);
     }
-    for (const [key, role, opacity] of paint.propRoles) {
-      const color = colors[COLORS[role].paint];
-      props[key] = opacity === undefined ? color : atOpacity(color, opacity);
-    }
+    for (const [key, role, opacity] of paint.propRoles)
+      props[key] = propColor(colors, role, opacity);
     Object.freeze(props);
     byPaint.set(paint, props);
   }
@@ -249,20 +267,18 @@ function conditionedProps(
   let props = byHolding.get(holding);
   if (props === undefined) {
     const next: Record<string, unknown> = { ...base };
-    const paintColor = (role: ColorName, opacity: number | undefined) => {
-      const color = colors[COLORS[role].paint];
-      return opacity === undefined ? color : atOpacity(color, opacity);
-    };
     // From the paint's own values (geometry by component, so a variant sets only its own), then each holding variant.
     const style: Record<string, unknown> = { ...paint.style };
-    for (const [key, role, opacity] of paint.styleRoles) style[key] = paintColor(role, opacity);
+    for (const [key, role, opacity] of paint.styleRoles)
+      style[key] = styleColor(colors, role, opacity);
     (paint.variants ?? []).forEach((variant, index) => {
       if ((holding & (1 << index)) === 0) return;
       Object.assign(style, variant.style);
       Object.assign(next, variant.props);
-      for (const [key, role, opacity] of variant.styleRoles) style[key] = paintColor(role, opacity);
+      for (const [key, role, opacity] of variant.styleRoles)
+        style[key] = styleColor(colors, role, opacity);
       for (const [key, role, opacity] of variant.propRoles ?? [])
-        next[key] = paintColor(role, opacity);
+        next[key] = propColor(colors, role, opacity);
     });
     // A paint of props alone (an icon's fill) gains no style.
     if (base.style !== undefined || Object.keys(style).length > 0)

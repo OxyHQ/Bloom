@@ -577,17 +577,28 @@ export function resolveFont(
   // Both measure from the size: the font's, else Bloom's `Text` with no variant (its size is not written).
   const size = style.fontSize ?? ENVIRONMENT_DEFAULTS.fontSize;
   if (leading !== undefined) {
-    if (typeof leading !== 'string') style.lineHeight = size * leading.value;
+    if (typeof leading !== 'string') style.lineHeight = ofSize(size, leading.value);
     else if (leading in LEADING_PX)
       style.lineHeight = LEADING_PX[leading as keyof typeof LEADING_PX];
-    else style.lineHeight = size * LEADING[leading as keyof typeof LEADING];
+    else style.lineHeight = ofSize(size, LEADING[leading as keyof typeof LEADING]);
   }
   if (tracking !== undefined)
     style.letterSpacing =
       tracking in TRACKING_PX
         ? TRACKING_PX[tracking as keyof typeof TRACKING_PX]
-        : size * TRACKING[tracking as keyof typeof TRACKING];
+        : ofSize(size, TRACKING[tracking as keyof typeof TRACKING]);
   return style;
+}
+
+/**
+ * A length that is a ratio of the text's size (a leading, a tracking in em).
+ * On native it is rounded to two decimals, as NativeWind's compiler writes the
+ * class (`leading-snug` at 13pt is 16.9, `tracking-wide` at 13pt 0.33); the
+ * web keeps the exact product, as the browser computes it.
+ */
+function ofSize(size: number, ratio: number): number {
+  const length = size * ratio;
+  return Platform.OS === 'web' ? length : Math.round(length * 100) / 100;
 }
 export type LyricsSize = (typeof ENUMS.lyricsSize)[number];
 export type TransportSize = (typeof ENUMS.transportSize)[number];
