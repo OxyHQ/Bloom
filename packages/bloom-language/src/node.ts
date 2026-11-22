@@ -1608,7 +1608,13 @@ export type Modifier =
       readonly value: EnvironmentValue;
     }
   | {
-      readonly kind: 'glassID' | 'glassUnion';
+      readonly kind: 'glassID';
+      readonly key: string;
+      readonly id: string;
+      readonly namespace: Namespace;
+    }
+  | {
+      readonly kind: 'glassUnion';
       readonly key: string;
       readonly id: string;
       readonly namespace: Namespace;

@@ -12,6 +12,9 @@ import { GlassGroup } from '../controls/glass-group';
 import { ToolbarGroup, ToolbarSpacer } from '../controls/toolbar-group';
 import { ConfirmationDialog } from '../controls/confirmation-dialog';
 import { resolveSpace } from '../tokens';
+import { useNamespace } from '../motion/namespace';
+import { RiDeleteBinLine } from '@oxy.so/bloom/icons/RiDeleteBinLine';
+import { RiLinkM } from '@oxy.so/bloom/icons/RiLinkM';
 import { toElement } from '../render';
 
 const host = (name: string) => (props: { children?: ReactNode }) =>
@@ -36,10 +39,19 @@ jest.mock('@expo/ui/swift-ui', () => ({
     Message: host('SwiftConfirmationMessage'),
   }),
   Text: host('SwiftText'),
+  GlassEffectContainer: host('SwiftGlassEffectContainer'),
+  Namespace: host('SwiftNamespace'),
+  HStack: host('SwiftHStack'),
+  VStack: host('SwiftVStack'),
 }));
 jest.mock('@expo/ui/swift-ui/modifiers', () => ({
   disabled: (value?: boolean) => ({ disabled: value }),
   menuActionDismissBehavior: (value: string) => ({ dismiss: value }),
+  glassEffect: (options: object) => ({ glassEffect: options }),
+  glassEffectId: (id: string, namespace: string) => ({ glassEffectId: [id, namespace] }),
+  labelStyle: (style: string) => ({ labelStyle: style }),
+  animation: (animation: unknown, value: unknown) => ({ animation, value }),
+  Animation: { spring: () => 'spring' },
 }));
 jest.mock('expo-router', () => ({
   Stack: {
@@ -225,5 +237,39 @@ describe('toolbar groups in the system bar', () => {
     );
     expect(hosts(r, 'ToolbarButton')).toHaveLength(3);
     expect(only(r, 'ToolbarSpacer').props.width).toBe(resolveSpace('sm'));
+  });
+});
+
+describe('a group of glass icon buttons is SwiftUI’s own glass', () => {
+  function Tools({ erasing }: { erasing: boolean }) {
+    const ns = useNamespace();
+    return toElement(
+      GlassGroup(
+        HStack(
+          Button(Icon(RiLinkM)).label('Link').glass().glassID('link', ns),
+          erasing
+            ? Button(Icon(RiDeleteBinLine)).label('Erase').glass().glassID('erase', ns)
+            : null,
+        ).spacing('xl'),
+      ).blend('xl'),
+    );
+  }
+
+  it('each button has glassEffect and its glassEffectId in the group’s namespace', () => {
+    const r = mount(createElement(Tools, { erasing: true }));
+    expect(only(r, 'SwiftGlassEffectContainer').props.spacing).toBe(resolveSpace('xl'));
+    const namespace = only(r, 'SwiftNamespace').props.id;
+    const buttons = hosts(r, 'SwiftButton');
+    expect(buttons.map((button) => button.props.label)).toEqual(['Link', 'Erase']);
+    expect(buttons[1]?.props.modifiers).toContainEqual({ glassEffectId: ['erase', namespace] });
+    expect(hosts(r, 'GlassContainer')).toHaveLength(0);
+  });
+
+  it('a group of anything else is UIKit’s container around Bloom’s views', () => {
+    const r = mount(
+      toElement(GlassGroup(HStack(HStack(Text('a')).glass(), HStack(Text('b')).glass()))),
+    );
+    expect(hosts(r, 'SwiftGlassEffectContainer')).toHaveLength(0);
+    expect(hosts(r, 'GlassContainer')).toHaveLength(1);
   });
 });

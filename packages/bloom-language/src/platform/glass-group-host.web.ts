@@ -1,4 +1,4 @@
-import type { PlatformGlassGroup } from './glass-group-host.types';
+import type { PlatformGlassGroup, SystemGlassGroup } from './glass-group-host.types';
 
 /**
  * The web has no glass container: each glass in a group is its own frosted
@@ -9,3 +9,6 @@ import type { PlatformGlassGroup } from './glass-group-host.types';
 export function getPlatformGlassGroup(): PlatformGlassGroup {
   return null;
 }
+
+/** Only iOS draws a group as the system's own glass. */
+export const systemGlassGroup: SystemGlassGroup = null;

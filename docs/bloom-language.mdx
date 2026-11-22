@@ -1132,7 +1132,16 @@ Badge(count).glass().glassID('badge', ns).glassTransition('materialize')
 | a glass inside | no lens of its own (`useInLensBase`): the base draws it | its `GlassView` | its `Surface` |
 | `.blend()` | not read: the engine blends no separate shapes at rest | the container's `spacing` | not read |
 | `.glassUnion()` | the base is already one shape | the container's merge within `blend` | each `Surface` on its own |
-| `.glassID()` | the engine's matched geometry of the view | the motion engine's matched geometry (SwiftUI's `glassEffectID` needs a SwiftUI host) | matched geometry (the Web Animations API) |
+| `.glassID()` | the engine's matched geometry of the view | SwiftUI's own `glassEffectID` for a group of glass icon buttons (below); else the motion engine's matched geometry | matched geometry (the Web Animations API) |
+
+**iOS's own morph (not verified).** A group that is one stack of glass icon
+buttons, each a glyph with an SF Symbol, a `.label()`, `.glass()` and
+`.glassID()`, is drawn by SwiftUI through `@expo/ui`: a `GlassEffectContainer`
+(its spacing the blend) in a `Namespace`, each button a SwiftUI button with
+`glassEffect` and `glassEffectId(id, namespace)`, and a spring `animation` on
+the group keyed by its ids, so a button that arrives grows out of its
+neighbour as Apple's `glassEffectID` does. Any other group stays UIKit's
+container around Bloom's views.
 
 The web's glass is a blurred `Surface` with no refraction and no shared
 sampling, so shapes there never blend; that is Bloom's measured rule (no SVG
@@ -4845,9 +4854,9 @@ with its reason. Nothing else is missing.
   keyframe tracks, `ViewThatFits`, and the Liquid Glass rules in the compiler.
   **Not built:** separate glass shapes that blend at rest on Android (a group is
   one base; the engine's field blends two shapes, so a `glassID` morph between
-  siblings is engine work) and on the web (no shared sampling); SwiftUI's own
-  `glassEffectID` morph on iOS (it needs a SwiftUI host for the glass's
-  content); a `.glassUnion()` drawn as one shape on iOS and the web; the
+  siblings is engine work: see below) and on the web (no shared sampling);
+  SwiftUI's own `glassEffectID` for a group of anything but glass icon
+  buttons; a `.glassUnion()` drawn as one shape on iOS and the web; the
   insets of a scrolling `List`; the Liquid Glass rules across a
   `view()`'s boundary (the compiler sees one expression). iOS is type-checked
   and held against stand-ins, not run.
