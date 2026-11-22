@@ -477,16 +477,8 @@ const textField: ControlRenderer = (d) => {
   const disabled = d.own('disabled')?.value;
   const icon = d.own('icon')?.value as IconComponent | undefined;
   const trailingIcon = d.own('trailingIcon')?.value;
-<<<<<<< ours
-  const prefix = d.own('prefix')?.value;
-  const suffix = d.own('suffix')?.value;
-||||||| base
-  const prefix = d.own('prefix')?.value as string | undefined;
-  const suffix = d.own('suffix')?.value;
-=======
   const prefix = d.own('prefix')?.value as string | undefined;
   const suffix = d.own('suffix')?.value as string | undefined;
->>>>>>> theirs
   const completion = d.own('completion')?.value;
   // The shell is what an app writes around the input; a bare `TextFieldInput`
   // draws the same shell itself. The box is the shell's.

@@ -108,7 +108,7 @@ function content(d: ControlDraw, value: TableContent): ReactNode {
 }
 
 function layout(d: ControlDraw, props: Record<string, unknown>): Record<string, unknown> {
-  const width = d.own('width')?.value;
+  const width = d.own('width')?.value as ColumnWidthToken | undefined;
   const minWidth = d.own('minWidth')?.value;
   props.width = width === undefined ? undefined : width === 'fit' ? 'auto' : resolveSpace(width);
   props.flex = d.own('share')?.value;
@@ -140,7 +140,7 @@ export const TABLES: Record<TableKind, ControlRenderer> = {
     const props = layout(d, d.props());
     const sort = d.own('sort')?.value;
     if (sort !== undefined) [props.sortDirection, props.onSort] = sort;
-    const prefix = d.own('prefix')?.value;
+    const prefix = d.own('prefix')?.value as Child | undefined;
     if (prefix !== undefined) props.leading = d.render(prefix);
     return d.component(
       BloomTableColumn,

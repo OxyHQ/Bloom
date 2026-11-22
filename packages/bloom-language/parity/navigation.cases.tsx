@@ -116,10 +116,10 @@ const sidebars: ParityCase[] = [
     name: 'a quick search held by the app',
     language: () =>
       toElement(
-        L.Sidebar(L.NavItem('Home', RiHome5Line), L.NavItem('Search', RiSearchLine)).query(
+        L.Sidebar(L.NavItem('Home', RiHome5Line), L.NavItem('Search', RiSearchLine)).query([
           'ho',
           typed,
-        ),
+        ]),
       ),
     bloom: () => (
       <Sidebar

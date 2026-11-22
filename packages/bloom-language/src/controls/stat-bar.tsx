@@ -182,7 +182,7 @@ export const STAT_BARS: Record<StatBarKind, ControlRenderer> = {
     const stop = d.own('onStop');
     if (stop !== undefined) [props.onStop, props.stopLabel] = stop.value;
     if (props.decorative) props.progress = d.own('progress')?.value;
-    const content = d.own('content')?.value;
+    const content = d.own('content')?.value as Child | undefined;
     const children: ReactNode[] = content === undefined ? [] : [d.render(content)];
     return d.painted(
       BloomMeterRing,

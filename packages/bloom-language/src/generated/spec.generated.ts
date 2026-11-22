@@ -2050,7 +2050,8 @@ export const MODIFIERS = {
     "value?"
   ],
   "side": [
-    "tooltipSide"
+    "floatingSide",
+    "floatingAlign?"
   ],
   "onPress": [
     "value"
@@ -2283,7 +2284,7 @@ export const MODIFIERS = {
     "children"
   ],
   "selected": [
-    "value"
+    "value?"
   ],
   "highlighted": [
     "value?"
@@ -2292,7 +2293,7 @@ export const MODIFIERS = {
     "value"
   ],
   "separator": [
-    "listSeparator"
+    "separator"
   ],
   "value": [
     "value"
@@ -2325,7 +2326,9 @@ export const MODIFIERS = {
   "resetKey": [
     "value"
   ],
-  "fullWidth": [],
+  "fullWidth": [
+    "value?"
+  ],
   "pressed": [
     "value"
   ],
@@ -2482,7 +2485,7 @@ export const MODIFIERS = {
     "value"
   ],
   "page": [
-    "value"
+    "value?"
   ],
   "sideOffset": [
     "space"
@@ -2515,6 +2518,9 @@ export const MODIFIERS = {
     "value"
   ],
   "suggestions": [
+    "children"
+  ],
+  "tagSuggestions": [
     "value",
     "value?"
   ],
@@ -2532,7 +2538,7 @@ export const MODIFIERS = {
     "motionValue"
   ],
   "indicator": [
-    "value"
+    "selectionIndicator"
   ],
   "fade": [
     "color"
@@ -3333,9 +3339,6 @@ export const MODIFIERS = {
   "sortsDescendingFirst": [
     "value?"
   ],
-  "summary": [
-    "value"
-  ],
   "sorting": [
     "value"
   ],
@@ -3349,9 +3352,6 @@ export const MODIFIERS = {
     "value"
   ],
   "bordered": [
-    "value"
-  ],
-  "onReorder": [
     "value"
   ],
   "onDragChange": [
@@ -12393,7 +12393,7 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "placeholder",
-    "suggestions",
+    "tagSuggestions",
     "allowsCreate",
     "max",
     "onMaxReached",
@@ -14845,6 +14845,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14854,6 +14857,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "bounds",
     "unavailable",
@@ -14919,6 +14936,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14928,6 +14948,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "streaming",
     "onLinkPress",
@@ -14987,6 +15021,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -14996,6 +15033,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "title",
     "summary",
@@ -15075,6 +15126,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -15084,6 +15138,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "disabled"
   ],
@@ -15139,6 +15207,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -15148,6 +15219,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "placeholder"
   ],
@@ -15203,6 +15288,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -15212,6 +15300,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "size",
     "disabled"
@@ -15268,6 +15370,9 @@ export const NODE_MODIFIERS = {
     "headingLevel",
     "footer",
     "sheet",
+    "alert",
+    "dialog",
+    "popover",
     "onReselect",
     "when",
     "rotation",
@@ -15277,6 +15382,20 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
     "fullScreenCover",
     "onReorder",
     "onDragChange",

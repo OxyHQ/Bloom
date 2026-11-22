@@ -1202,11 +1202,11 @@ the same, and `parity/` proves it (see [Component parity](#component-parity)).
 
 ```ts
 export default screen(function Feed() {
-  const { posts, more, refresh } = useFeed();
+  const { posts, more, refreshing, refresh } = useFeed();
   return ScrollView(posts.map((post) => PostRow({ post }).id(post.id)))
     .contentMargins('horizontal', 'lg')
     .spacing('sm')
-    .refreshable(refresh)
+    .refreshable(refreshing, refresh)
     .onEndReached(more)
     .keyboardTaps('handled')
     .title(t('feed.title'))
@@ -1225,7 +1225,7 @@ inside a screen, as Bloom's is.
 | Modifier | Bloom `ScreenScrollView` |
 | --- | --- |
 | `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
-| `.refreshable(action)` | a `RefreshControl` that spins from the pull until what `action` returns settles |
+| `.refreshable(refreshing, onRefresh)` | a `RefreshControl` with the app's `refreshing` state and `onRefresh` |
 | `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden')` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator` |
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
@@ -1356,7 +1356,7 @@ its actions, `.disabled`, `.expanded` and `.onExpandedChange` its open state,
 | `.mode(key)`, `.onModeChange(fn)`, `.modePresentation('segmented' \| 'toggle')`, `.modesLabel(text)` | `mode`, `onModeChange`, `modesPresentation`, `modesLabel`: the switcher of its `SidebarMode` rows |
 | `.team(team)`, `.teamPlacement('header' \| 'footer')`, `.plan(plan)` | `team`, `teamPlacement`, `plan` (Bloom's `SidebarTeam` and `SidebarPlan` data) |
 | `.onboarding({ title, leading, steps, … })` | `onboarding`: the getting-started card, its `leading` a view |
-| `.query(text, onChange)` | `searchQuery`, `onSearchQueryChange`: the quick search held by the app, which filters its own content with it |
+| `.query([text, onChange])` | `searchQuery`, `onSearchQueryChange`: the quick search held by the app, which filters its own content with it |
 | `.onDrop(drop => …)` | `onTreeItemDrop`, told by id: `{ id, from, target?, position, section }` |
 
 A `SidebarMode(label, icon)` row is a mode of the switcher under the header
@@ -1417,7 +1417,7 @@ description, `.keywords(...)`, `.shortcut`, `.disabled`, `.onPress` its
 `onSelect`); a `CommandGroup(title, ...items)` puts its items under that
 group, after the ungrouped ones, as Bloom orders them. The palette takes
 `.presented([open, setOpen])` (a binding: Bloom's `open` and
-`onOpenChange`), `.placeholder`, `.emptyLabel`, `.query(value, onChange)` and
+`onOpenChange`), `.placeholder`, `.emptyLabel`, `.query([value, onChange])` and
 `.filter(fn)`.
 
 `SettingsModal(...groups)` is Bloom's `SettingsModal`. Each
@@ -2020,11 +2020,11 @@ unless `.colorScale([...roles])` names them, faintest to strongest
 ### Tag fields
 
 ```ts
-TagField([topics, setTopics], 'Topics').suggestions(known, 5).max(10).placeholder('Add a topic')
+TagField([topics, setTopics], 'Topics').tagSuggestions(known, 5).max(10).placeholder('Add a topic')
 ```
 
 Bloom's `TagField`: the binding's tags; a title is its visible label and name.
-It takes `.placeholder()`, `.suggestions(list, max?)`, `.allowsCreate(false)`,
+It takes `.placeholder()`, `.tagSuggestions(list, max?)`, `.allowsCreate(false)`,
 `.max(n)` and `.onMaxReached()`, `.normalize(fn)`, `.query([text, set])` (the
 typed text, when the screen owns it), `.tint(accentTone)`, `.size()`,
 `.disabled()`, `.invalid()` and `.labels()`.

@@ -178,7 +178,6 @@ export type {
   SheetMaterial,
   SheetSizing,
   FloatingActionOptions,
-  RefreshAction,
   ActionPlacement,
   ChromePlacement,
   KeyboardDismiss,
@@ -398,7 +397,6 @@ export type {
   TabsStyle,
   TabsView,
 } from './controls/containers';
-export type { Binding } from './binding';
 
 // Date and time pickers (controls/date-picker.tsx)
 export {

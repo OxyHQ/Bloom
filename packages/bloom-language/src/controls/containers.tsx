@@ -784,7 +784,7 @@ function tabs(d: ControlDraw): ReactElement {
       value: tab,
       label,
       leadingIcon: lastOf(item, 'icon')?.value as IconComponent | undefined,
-      count: lastOf(item, 'count')?.value ?? undefined,
+      count: (lastOf(item, 'count')?.value as number | null | undefined) ?? undefined,
       disabled: lastOf(item, 'disabled')?.value,
       testID: lastOf(item, 'testID')?.value,
       iconOnly: lastOf(item, 'iconOnly') === undefined ? undefined : true,

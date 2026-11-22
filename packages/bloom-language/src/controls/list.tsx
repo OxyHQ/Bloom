@@ -258,9 +258,9 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     Object.assign(props, {
       supporting: text(d, d.own('supporting')?.value),
       supportingLines: d.own('supportingLines')?.value,
-      leading: slot(d, d.own('prefix')?.value),
+      leading: slot(d, d.own('prefix')?.value as Child | undefined),
       trailing: trailing === undefined ? undefined : d.render(trailing[0]),
-      content: slot(d, d.own('content')?.value),
+      content: slot(d, d.own('content')?.value as Child | undefined),
       footer: slot(d, d.own('footnote')?.value),
       attachments: slot(d, d.own('attachments')?.value),
       density:
@@ -301,7 +301,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     const header = d.own('headerContent')?.value;
     const footer = d.own('footerContent')?.value;
     const empty = d.own('emptyState')?.value as Child | undefined;
-    const end = d.own('onEndReached')?.value;
+    const end = d.own('onEndReached');
     const refresh = d.own('refreshable')?.value;
     Object.assign(props, d.own('tuning')?.value, {
       data,
@@ -315,7 +315,10 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       ListFooterComponent: footer === undefined ? undefined : (d.render(footer) as ReactElement),
       ListEmptyComponent: empty === undefined ? undefined : (d.render(empty) as ReactElement),
     });
-    if (end !== undefined) [props.onEndReached, props.onEndReachedThreshold] = end;
+    if (end !== undefined) {
+      props.onEndReached = end.value;
+      props.onEndReachedThreshold = end.threshold;
+    }
     if (refresh !== undefined) [props.refreshing, props.onRefresh] = refresh;
     props.row = row;
     props.render = d.render;

@@ -303,7 +303,7 @@ export function Header(title?: string): HeaderView {
  * ScrollView(Text(title).font('title-1'), Text(body))
  *   .contentMargins('md')
  *   .spacing('sm')
- *   .refreshable(refresh)
+ *   .refreshable(refreshing, refresh)
  * ```
  */
 export function ScrollView(...children: Child[]): ScrollViewNode {

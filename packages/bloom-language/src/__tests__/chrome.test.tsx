@@ -67,7 +67,7 @@ describe('Sidebar is Bloom’s Sidebar', () => {
             steps: [{ key: 'invite', label: 'Invite your team' }],
             visibleCount: 1,
           })
-          .query('road', typed),
+          .query(['road', typed]),
       ),
     );
     const props = only(r, 'Sidebar').props;
@@ -229,7 +229,7 @@ describe('Command and SettingsModal', () => {
           .presented([true, change])
           .placeholder('Search')
           .emptyLabel('Nothing')
-          .query('ne', query),
+          .query(['ne', query]),
       ),
     );
     const props = only(r, 'Command').props;

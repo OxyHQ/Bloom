@@ -40,7 +40,7 @@ export const TAG_FIELD_CASES: readonly ParityCase[] = [
     language: () =>
       toElement(
         L.TagField([TAGS, set], 'Topics')
-          .suggestions(SUGGESTIONS, 3)
+          .tagSuggestions(SUGGESTIONS, 3)
           .allowsCreate(false)
           .max(3)
           .onMaxReached(set)

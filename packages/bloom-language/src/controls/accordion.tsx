@@ -78,7 +78,7 @@ export const ACCORDIONS: Record<AccordionKind, ControlRenderer> = {
   accordionTrigger: (d) => {
     const { title } = d.node.props as { title: string | Child };
     const props = d.props();
-    const indicator = d.own('indicator')?.value;
+    const indicator = d.own('indicator')?.value as Child | undefined;
     props.icon = indicator === undefined ? undefined : d.render(indicator);
     return d.component(
       BloomAccordionTrigger,

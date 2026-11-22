@@ -60,7 +60,7 @@ export const BREADCRUMBS: Record<BreadcrumbKind, ControlRenderer> = {
   breadcrumbItem: (d) => {
     const { title } = d.node.props as { title: string | Child };
     const props = d.props();
-    const prefix = d.own('prefix')?.value;
+    const prefix = d.own('prefix')?.value as Child | undefined;
     Object.assign(props, {
       size: d.own('size')?.value,
       icon: d.own('icon')?.value,

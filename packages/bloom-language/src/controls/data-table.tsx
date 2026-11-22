@@ -164,7 +164,7 @@ function column(d: ControlDraw, node: Node): DataTableColumn<unknown> {
     header: TableContent;
     value?: (row: unknown) => DataTableSortValue;
   };
-  const width = lastOf(node, 'width')?.value;
+  const width = lastOf(node, 'width')?.value as ColumnWidthToken | undefined;
   const cell = lastOf(node, 'cell')?.value as
     | ((context: DataTableCellContext<unknown>) => Child)
     | undefined;
@@ -196,7 +196,7 @@ export const DATA_TABLES: Record<DataTableKind, ControlRenderer> = {
     };
     const sorting = d.own('sorting')?.value;
     const selection = d.own('rowSelection')?.value;
-    const page = d.own('page')?.value;
+    const page = d.own('page')?.value as Binding<number> | undefined;
     const toggle = d.own('sizeToggle')?.value;
     const labels = d.own('labels')?.value as DataTableLabels | undefined;
     const toolbar = d.own('toolbar')?.value as readonly Child[] | undefined;

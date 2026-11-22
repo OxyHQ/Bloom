@@ -17,7 +17,7 @@ export type TagFieldKind = 'tagField';
 export interface TagFieldView extends ViewModifiers<TagFieldView> {
   placeholder(value: string): TagFieldView;
   /** What it suggests as the person types, and the most it lists. */
-  suggestions(value: ReadonlyArray<string | TagSuggestion>, max?: number): TagFieldView;
+  tagSuggestions(value: ReadonlyArray<string | TagSuggestion>, max?: number): TagFieldView;
   /** A typed tag that is no suggestion can be added (on by default). */
   allowsCreate(value: boolean): TagFieldView;
   /** The most tags, and what reaching it does. */
@@ -46,7 +46,7 @@ export const TAG_FIELDS: Record<TagFieldKind, ControlRenderer> = {
       tags: Binding<ReadonlyArray<string>>;
       title?: string;
     };
-    const suggestions = d.own('suggestions')?.value;
+    const suggestions = d.own('tagSuggestions')?.value;
     const query = d.own('query')?.value;
     const props = d.props();
     Object.assign(props, {

@@ -4,11 +4,11 @@
  * screen's reselect and, with a footer that follows the keyboard, keeps the
  * focused input above it. Its modifiers are the scroll view's own props.
  */
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { RefreshControl, type ViewStyle } from 'react-native';
 import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 
-import type { Edge, Modifier, Node, RefreshAction } from '../node';
+import type { Edge, Modifier, Node, ValueModifiers } from '../node';
 import { valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
 import { resolveSpace, tokenKey } from '../tokens';
@@ -65,20 +65,9 @@ function indicators(value: ScrollIndicators | undefined): boolean | undefined {
   return value === undefined || value === 'automatic' ? undefined : value === 'visible';
 }
 
-/** Pull to refresh: the spinner shows from the pull until what the action returns settles. */
-function useRefresh(action: RefreshAction | undefined) {
-  const [refreshing, setRefreshing] = useState(false);
-  if (action === undefined) return undefined;
-  const onRefresh = () => {
-    setRefreshing(true);
-    Promise.resolve(action()).finally(() => setRefreshing(false));
-  };
-  return <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />;
-}
-
 export function ScrollViewHost({ node, children }: NodeHostProps & { children?: ReactNode }) {
   const values = valuesOf(node);
-  const refreshControl = useRefresh(values.refreshable as RefreshAction | undefined);
+  const refresh = values.refreshable as ValueModifiers['refreshable'] | undefined;
   // Only what the chain sets: an explicit undefined would replace the scroll view's own defaults.
   const props: { -readonly [K in keyof ScreenScrollViewProps]: ScreenScrollViewProps[K] } = {};
   const container = containerStyle(node, values.spacing as SpaceToken | undefined);
@@ -96,7 +85,8 @@ export function ScrollViewHost({ node, children }: NodeHostProps & { children?: 
     props.onEndReached = modifier.value;
     if (modifier.threshold !== undefined) props.onEndReachedThreshold = modifier.threshold;
   }
-  if (refreshControl) props.refreshControl = refreshControl;
+  if (refresh)
+    props.refreshControl = <RefreshControl refreshing={refresh[0]} onRefresh={refresh[1]} />;
   if (values.testID !== undefined) props.testID = values.testID as string;
   return <ScreenScrollView {...props}>{children}</ScreenScrollView>;
 }

@@ -35,6 +35,8 @@ const frame = { width: '320', height: '200' } as const;
 export const MEDIA_FLIGHT_CASES: readonly ParityCase[] = [
   {
     name: 'the layer flights paint in, at rest',
+    // At rest no flight is up: the layer draws nothing on the web.
+    drawsNothing: ['web'],
     language: () => toElement(L.MediaFlightLayer()),
     bloom: () => <MediaFlightLayer />,
   },
