@@ -179,7 +179,7 @@ if (stories.length === 0) {
 // One browser per side: each page is its window's foreground tab. Two tabs of one
 // window leave one in the background, where Chrome pauses its animation frames,
 // so Bloom's per-frame work (baking a surface's material) never runs there.
-const launch = () =>
+const launchOnce = () =>
   puppeteer.launch({
     executablePath: findChrome(),
     args: [
@@ -192,6 +192,17 @@ const launch = () =>
     ],
     defaultViewport: { width: WIDTH, height: 900 },
   });
+/** Chrome sometimes fails to start while other checks launch theirs: retry. */
+async function launch() {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await launchOnce();
+    } catch (error) {
+      if (attempt === 4) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    }
+  }
+}
 const browsers = [await launch(), await launch()];
 const [left, right] = await Promise.all(
   browsers.map((browser) => browser.pages().then((pages) => pages[0] ?? browser.newPage())),
