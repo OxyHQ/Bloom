@@ -1,7 +1,7 @@
 import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useRef, useState, type ReactNode } from 'react';
-import { Platform, useWindowDimensions, type TextInput } from 'react-native';
+import { Platform, useWindowDimensions, type TextInput, type ViewStyle } from 'react-native';
 import { useDialogControl } from '../dialog/context';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
@@ -32,10 +32,18 @@ const PRIORITY_STYLES = {
 
 function TicketFormBody({ children }: { children: ReactNode }) {
   const { height } = useWindowDimensions();
+  const tokens = useColorTokens();
   if (Platform.OS === 'web')
     return (
       <ScrollArea
-        containerClassName="max-h-[calc(100dvh-56px)] rounded-3xl bg-background-primary-default outline-none"
+        style={
+          {
+            maxHeight: 'calc(100dvh - 56px)',
+            borderRadius: 24,
+            backgroundColor: tokens.card,
+            outlineStyle: 'none',
+          } as unknown as ViewStyle
+        }
         contentContainerStyle={{ padding: 16 }}
       >
         {children}
@@ -43,9 +51,14 @@ function TicketFormBody({ children }: { children: ReactNode }) {
     );
   return (
     <ScrollArea
-      containerClassName="rounded-3xl bg-background-primary-default"
       testID="project-board-create-scroll"
-      style={{ maxHeight: height - 56, flexGrow: 0, flexShrink: 1 }}
+      style={{
+        borderRadius: 24,
+        backgroundColor: tokens.card,
+        maxHeight: height - 56,
+        flexGrow: 0,
+        flexShrink: 1,
+      }}
       contentContainerStyle={{ padding: 16 }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="interactive"

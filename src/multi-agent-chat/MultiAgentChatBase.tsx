@@ -579,10 +579,13 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         ref={scroll}
         accessibilityLabel={messages.messages}
         style={{ flex: 1 }}
-        contentContainerClassName={
-          chat?.messages.length ? 'pb-4 pt-2' : 'flex items-center justify-center p-4'
-        }
-        contentContainerStyle={[CHAT_CONTENT_STYLE, { flexGrow: 1 }]}
+        contentContainerStyle={[
+          CHAT_CONTENT_STYLE,
+          { flexGrow: 1 },
+          chat?.messages.length
+            ? { paddingTop: 8, paddingBottom: 16 }
+            : { alignItems: 'center', justifyContent: 'center', padding: 16 },
+        ]}
         scrollEventThrottle={16}
         onScroll={(event) => {
           const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;

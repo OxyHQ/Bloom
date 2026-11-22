@@ -16,6 +16,8 @@ import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MeterRing } from '../stat-bar/MeterRing';
 import { IS_WEB } from '../styles/platform';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
+import { useColorTokens } from '../theme/color-tokens';
 import { StyledView as View } from '../styles/styled-primitives';
 import type { Surface as SurfaceComponent } from '../surface/Surface';
 import { Textarea } from '../textarea/Textarea';
@@ -86,6 +88,10 @@ export function createCompactComposer({
       canSubmit &&
       value.length <= maxLength &&
       (value.trim().length > 0 || hasAttachments);
+    const tokens = useColorTokens();
+    const tier = useWindowBreakpoint();
+    // From `md` up the scroller holds more lines.
+    const wide = tier !== 'base' && tier !== 'sm';
     const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
     const inputLabel = labels?.input ?? placeholder ?? messages.input;
     const actions = (location: string) =>
@@ -114,9 +120,8 @@ export function createCompactComposer({
         testID={testID}
       >
         <ScrollArea
-          className="max-h-64 md:max-h-80"
-          containerClassName="max-h-64 md:max-h-80"
-          contentContainerClassName="px-3 py-1.5"
+          style={{ maxHeight: wide ? 320 : 256 }}
+          contentContainerStyle={{ paddingInline: 12, paddingBlock: 6 }}
           scrollbar="always"
           keyboardShouldPersistTaps="handled"
           testID={id('scroll')}
@@ -141,9 +146,16 @@ export function createCompactComposer({
               rows={1}
               autoResize
               scrollEnabled={false}
-              className="min-w-0 flex-1"
-              fieldClassName="bg-transparent"
-              inputClassName="overflow-hidden p-0 text-base leading-5 text-foreground"
+              style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%' }}
+              bare
+              inputStyle={{
+                overflow: 'hidden',
+                paddingLeft: 0,
+                paddingRight: 0,
+                fontSize: 14,
+                lineHeight: 20,
+                color: tokens.foreground,
+              }}
               testID={id('input')}
             />
             <View className="flex-row items-center">

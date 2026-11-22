@@ -1,11 +1,10 @@
 import React, { useLayoutEffect, useRef, useState, type ComponentRef } from 'react';
-import { Pressable, StyleSheet, View as RNView } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
 import { animateWithSpec, motionCss, type MotionSpec } from '../motion/spec';
 import { IS_WEB } from '../styles/platform';
-import { StyledView as View } from '../styles/styled-primitives';
 import { useSurfaceFill } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Muted } from '../typography';
@@ -87,7 +86,7 @@ export function useAutoHideBar({
     offset: 0,
     animate: false,
   });
-  const bodyRef = useRef<ComponentRef<typeof RNView>>(null);
+  const bodyRef = useRef<ComponentRef<typeof View>>(null);
 
   useLayoutEffect(() => {
     if (previousBar.current !== barTarget) {
@@ -286,8 +285,8 @@ export function AutoHideBarRegion({
   testID?: string;
 }) {
   const { controls, hiddenBar, height, strip, label, fill, styles } = controller;
-  const controlsRef = useRef<ComponentRef<typeof RNView>>(null);
-  const summaryRef = useRef<ComponentRef<typeof RNView>>(null);
+  const controlsRef = useRef<ComponentRef<typeof View>>(null);
+  const summaryRef = useRef<ComponentRef<typeof View>>(null);
   // The bar may hold material controls: fade its pieces, never an ancestor of
   // a material host (that would turn the material flat for the whole fade).
   // The region owns them, so a region mounted after its controller fades too.

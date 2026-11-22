@@ -1,7 +1,7 @@
 import React from 'react';
 import { BloomScope, useBloomAppearance } from '../appearance';
 import { TOOLBAR_GEOMETRY } from '../appearance/control-geometry';
-import { StyledView as View } from '../styles/styled-primitives';
+import { View } from 'react-native';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { ScrollArea } from './ScrollArea';
 import type { ToolbarProps } from './types';
@@ -13,7 +13,6 @@ export function Toolbar({
   accessory,
   size: sizeProp,
   style,
-  className,
   testID,
 }: ToolbarProps) {
   const direction = useDirectionProps();
@@ -34,7 +33,6 @@ export function Toolbar({
           },
           style,
         ]}
-        className={className}
         testID={testID}
       >
         <View
