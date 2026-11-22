@@ -17,6 +17,8 @@ const MenuTriggerBase: FC<IMenuTrigger> = ({
   onMenuClosed,
   restBackdrop,
   openOnTap,
+  members,
+  blend,
   accessibilityLabel,
   style,
   children,
@@ -42,6 +44,8 @@ const MenuTriggerBase: FC<IMenuTrigger> = ({
       onMenuClosed={onMenuClosed}
       restBackdrop={restBackdrop}
       openOnTap={openOnTap}
+      members={members}
+      blend={blend}
       style={style}
       onItemSelect={(event: { nativeEvent: TMenuSelectEvent }): void =>
         menu?.select(event.nativeEvent)

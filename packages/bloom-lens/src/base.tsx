@@ -11,6 +11,12 @@
  * so opening that menu is one call to the engine; another menu of the same base swaps its rows in
  * and the view opens itself with them (`openWithItems`), as does a menu whose rows are built only
  * by the press that opens it.
+ *
+ * A base can be a group of glasses (SwiftUI's `GlassEffectContainer`): given `members`, it draws
+ * each member's glass where that member's views are (the views whose `nativeID` is the member's
+ * key, several of them one shape around them all), not its own rect, and they blend within
+ * `blend` points. A member that arrives grows out of the nearest glass and one that leaves goes
+ * back into it; a key that moves to another view takes its glass there with it.
  */
 import {
   createContext,
@@ -37,6 +43,16 @@ export interface LensMenu {
   onOpenChange?: (open: boolean) => void;
   /** The menu has finished closing. */
   onClosed?: () => void;
+}
+
+/** A glass of a group on one base. */
+export interface LensGroupMember {
+  /** The `nativeID` of the member's views; several views with one key are one shape (a union). */
+  key: string;
+  /** The corner radius in points; unset is a capsule. */
+  cornerRadius?: number;
+  /** How it arrives and leaves: out of and into the nearest glass (default), or where it is. */
+  transition?: 'matchedGeometry' | 'materialize';
 }
 
 /** What a menu inside a base calls. */
@@ -75,6 +91,10 @@ export interface LensBaseProps {
    * round trip to JS. Not for a group, whose items open their own menus or do their own thing.
    */
   openOnTap?: boolean;
+  /** The base is a group of glasses: each member's glass, not the base's rect. */
+  members?: readonly LensGroupMember[];
+  /** The distance in points within which a group's glasses blend into one another. */
+  blend?: number;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
 }
@@ -86,6 +106,8 @@ export function LensBase({
   config,
   restBackdrop,
   openOnTap,
+  members,
+  blend,
   style,
   children,
 }: LensBaseProps) {
@@ -131,6 +153,8 @@ export function LensBase({
         config={trigger}
         restBackdrop={restBackdrop}
         openOnTap={openOnTap}
+        members={members}
+        blend={blend}
         openOnPress={false}
         openWithItems={pending}
         onMenuClosed={() => current.current?.menu.onClosed?.()}

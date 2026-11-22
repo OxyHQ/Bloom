@@ -1,6 +1,7 @@
 package so.oxy.bloom.glassmenu.render
 
 import android.graphics.RectF
+import so.oxy.bloom.glassmenu.field.GlassShapes
 import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
 
@@ -30,6 +31,8 @@ internal class GlassSurfaceState {
   var magnify = 1f
   // Width of the refraction band in dp. 0 = the default band (min(extent * 0.25, 20 dp)). The menu never sets it.
   var lensBand = 0f
+  // The trigger drawn as several shapes (a group of glasses), in its place: empty, the trigger is its one rect.
+  val members = GlassShapes()
   var config = GlassMenuConfigRecord()
   var trigger = GlassTriggerConfigRecord()
 }
