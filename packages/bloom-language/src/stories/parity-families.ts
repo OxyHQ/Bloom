@@ -89,6 +89,7 @@ import { BOOKING_CASES } from '../../parity/booking.cases';
 import { HOME_SEARCH_CASES } from '../../parity/home-search.cases';
 import { LISTING_ACTION_CASES } from '../../parity/listing-actions.cases';
 import { LISTING_CARD_CASES } from '../../parity/listing-card.cases';
+import { LISTING_EDITOR_CASES } from '../../parity/listing-editor.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -183,6 +184,7 @@ export const FAMILIES = {
   homeSearch: HOME_SEARCH_CASES,
   listingAction: LISTING_ACTION_CASES,
   listingCard: LISTING_CARD_CASES,
+  listingEditor: LISTING_EDITOR_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
