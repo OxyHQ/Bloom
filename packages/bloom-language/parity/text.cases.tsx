@@ -581,6 +581,17 @@ const raw: ParityCase[] = [
     ),
   },
   {
+    name: 'a physical alignment (text-left, text-right)',
+    language: () =>
+      toElement(L.VStack(L.Text('a').textAlign('left'), L.RawText('b').textAlign('right'))),
+    bloom: () => (
+      <RN.View>
+        <Text style={{ textAlign: 'left' }}>a</Text>
+        <BaseFontText style={{ textAlign: 'right' }}>b</BaseFontText>
+      </RN.View>
+    ),
+  },
+  {
     name: 'RawText in a family of its own',
     language: () => toElement(L.RawText('Raw').font('mono')),
     bloom: () => <BaseFontText style={fontFamilyStyle('mono')}>Raw</BaseFontText>,

@@ -500,7 +500,7 @@
       "blockquote"
     ],
     "truncation": ["head", "middle", "tail", "clip"],
-    "textAlign": ["start", "center", "end", "justify"],
+    "textAlign": ["start", "center", "end", "justify", "left", "right"],
     "textCase": ["uppercase", "lowercase", "capitalize"],
     "wordBreak": ["all", "words"],
     "listMarker": ["disc", "decimal"],

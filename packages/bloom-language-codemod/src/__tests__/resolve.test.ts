@@ -67,7 +67,6 @@ describe('resolveClassName', () => {
     ['px-2 pl-4', 'padding-overlap'],
     ['mt-2 my-2', 'margin-overlap'],
     ['bg-card bg-surface', 'conflict'],
-    ['text-left', 'physical-edge'],
     ['rounded-t-3xl rounded-tl-lg', 'corner-overlap'],
     ['rounded-l-full rounded-tl-lg', 'corner-overlap'],
     ['md:space-y-2', 'child-spacing-variant'],

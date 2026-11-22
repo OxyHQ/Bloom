@@ -405,10 +405,10 @@ const ALIGN = {
   baseline: 'baseline',
 };
 const TEXT_ALIGN = {
-  left: 'start',
+  left: 'left',
   start: 'start',
   center: 'center',
-  right: 'end',
+  right: 'right',
   end: 'end',
   justify: 'justify',
 };
