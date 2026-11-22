@@ -2350,6 +2350,14 @@ export const OBJECTS = {
       "xl"
     ],
     "tokens": "dialogPlacement"
+  },
+  "meterReveal": {
+    "keys": [
+      "visible",
+      "once",
+      "delay"
+    ],
+    "tokens": "duration"
   }
 } as const;
 
@@ -3404,7 +3412,7 @@ export const MODIFIERS = {
     "space"
   ],
   "reveal": [
-    "value"
+    "meterReveal"
   ],
   "valueText": [
     "value"
@@ -3571,7 +3579,7 @@ export const MODIFIERS = {
   ],
   "allowsMultiple": [],
   "revealMotion": [
-    "value"
+    "timedMotion"
   ],
   "language": [
     "value"
@@ -10419,7 +10427,8 @@ export const NODE_MODIFIERS = {
     "max",
     "valueLabel",
     "labelWidth",
-    "reveal"
+    "reveal",
+    "revealMotion"
   ],
   "ratingSummary": [
     "padding",
@@ -10597,7 +10606,8 @@ export const NODE_MODIFIERS = {
     "thickness",
     "fillDuration",
     "barCorner",
-    "reveal"
+    "reveal",
+    "revealMotion"
   ],
   "meterRing": [
     "padding",

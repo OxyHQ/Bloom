@@ -13,6 +13,8 @@ import { toElement } from '../src/render';
 import { type ParityCase, Themed } from './support/cases';
 
 const set = () => {};
+/** An app's own motion: Bloom's 300ms ease, the timing a section opens on here. */
+const motions = L.defineTokens({ motion: { section: { duration: 300 } } });
 
 const items = () => [
   L.AccordionItem(
@@ -61,12 +63,11 @@ export const ACCORDION_CASES: readonly ParityCase[] = [
     ),
   })),
   {
-    name: 'several open, a spring, padded',
+    name: 'several open, Bloom’s spring (its default), padded',
     language: () =>
       toElement(
         L.Accordion([['shipping', 'returns'], set], ...items())
           .allowsMultiple()
-          .revealMotion('spring')
           .padding('sm')
           .testID('faq'),
       ),
@@ -94,7 +95,7 @@ export const ACCORDION_CASES: readonly ParityCase[] = [
             L.AccordionTrigger(L.Text('Details').weight('semibold')).indicator(L.Icon(RiAddLine)),
             L.AccordionContent(L.Text('More.')),
           ),
-        ).revealMotion({ duration: 300 }),
+        ).revealMotion(motions.motion.section),
       ),
     bloom: () => (
       <Themed>

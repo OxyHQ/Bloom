@@ -86,7 +86,6 @@ import type { ActivityHeatmapDay } from '@oxy.so/bloom/activity-heatmap';
 import type { StepperKind } from './controls/stepper';
 import type { CodeKind } from './controls/code';
 import type { AccordionKind } from './controls/accordion';
-import type { AccordionTransition } from '@oxy.so/bloom/accordion';
 import type { SliderKind } from './controls/slider';
 import type { MarkdownKind } from './controls/markdown';
 import type { CarouselKind } from './controls/carousel';
@@ -96,7 +95,7 @@ import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 import type { TableKind } from './controls/table';
 import type { StatBarKind } from './controls/stat-bar';
 import type { RatingKind } from './controls/rating';
-import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
+import type { MeterReveal } from './controls/stat-bar';
 import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
@@ -216,7 +215,13 @@ import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import { loopKeyframes, type KeyframesValue } from './motion/keyframes';
 import type { Namespace } from './motion/namespace';
-import type { AnchorName, LoopName, MotionToken, RotationName } from './motion/tokens';
+import type {
+  AnchorName,
+  LoopName,
+  MotionToken,
+  RotationName,
+  TimedMotionToken,
+} from './motion/tokens';
 import { motionKey } from './motion/tokens';
 import type { TransitionValue } from './motion/transition';
 import {
@@ -889,7 +894,7 @@ export interface ValueModifiers {
 
   // Accordions (controls/accordion.tsx)
   allowsMultiple: true;
-  revealMotion: AccordionTransition;
+  revealMotion: TimedMotionToken;
 
   // Code (controls/code.tsx)
   language: string;
@@ -3450,7 +3455,7 @@ export class Node {
   allowsMultiple(): Node {
     return this.set('allowsMultiple', true);
   }
-  revealMotion(value: AccordionTransition): Node {
+  revealMotion(value: TimedMotionToken): Node {
     return this.set('revealMotion', value);
   }
 

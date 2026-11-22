@@ -4,9 +4,10 @@ import {
   MeterRing as BloomMeterRing,
   StatBar as BloomStatBar,
 } from '@oxy.so/bloom/stat-bar';
-import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
+import type { MeterReveal as BloomMeterReveal } from '@oxy.so/bloom/stat-bar';
 
 import { DURATION } from '../generated/spec.generated';
+import { resolveTimedMotion, type TimedMotionToken } from '../motion/tokens';
 import { Node, type Child, type Progress, type ViewModifiers } from '../node';
 import {
   resolveCorner,
@@ -44,6 +45,32 @@ export type StatBarProps =
       readonly rightValue: string;
     };
 
+/**
+ * A bar's entrance (Bloom's `MeterReveal` without its timing): whether it has
+ * come into view, whether it stays revealed once it has, and a duration
+ * token's wait before it fills. How it fills is `.revealMotion()`.
+ */
+export interface MeterReveal {
+  readonly visible: boolean;
+  /** It stays revealed after it is first seen (it empties again by default). */
+  readonly once?: boolean;
+  /** How long it waits before it fills (`'0'` by default). */
+  readonly delay?: DurationName;
+}
+
+/** What a bar's reveal is to Bloom: its state, its wait in milliseconds, and its motion's `{ duration, easing }`. */
+export function meterReveal(d: ControlDraw): BloomMeterReveal | undefined {
+  const reveal = d.own('reveal')?.value;
+  if (reveal === undefined) return undefined;
+  const { delay, ...state } = reveal;
+  const motion = d.own('revealMotion')?.value;
+  return {
+    ...state,
+    ...(delay === undefined ? null : { delay: DURATION[delay] }),
+    ...(motion === undefined ? null : resolveTimedMotion(motion)),
+  };
+}
+
 /** What a bar and a ring share. */
 interface MeterModifiers<Self> {
   /** The reading a screen reader says (`4 of 5`); the share of the track in the locale by default. */
@@ -67,6 +94,8 @@ export interface MeterView extends ViewModifiers<MeterView>, MeterModifiers<Mete
   barCorner(value: Exclude<CornerName, 'concentric'>): MeterView;
   /** The fill's entrance, which never changes the accessible measurement. */
   reveal(value: MeterReveal): MeterView;
+  /** How the fill enters: a timed motion token (Bloom's 300ms ease by default). */
+  revealMotion(value: TimedMotionToken): MeterView;
 }
 /** Bloom `MeterRing`: the same measurement as a ring. */
 export interface MeterRingView extends ViewModifiers<MeterRingView>, MeterModifiers<MeterRingView> {
@@ -171,7 +200,7 @@ export const STAT_BARS: Record<StatBarKind, ControlRenderer> = {
     props.height = space(d.own('thickness')?.value);
     const corner = d.own('barCorner')?.value;
     props.radius = corner === undefined ? undefined : resolveCorner(corner);
-    props.reveal = d.own('reveal')?.value;
+    props.reveal = meterReveal(d);
     return d.painted(BloomMeter, props, colors(d));
   },
   meterRing: (d) => {

@@ -1,6 +1,11 @@
 import { HStack, Text, VStack, Spacer, Icon } from '../primitives';
 import { Node } from '../node';
+import { Collapsible } from '../controls/collapsible';
+import { Meter } from '../controls/stat-bar';
 import { Tooltip } from '../controls/tooltip';
+import { defineTokens } from '../tokens';
+
+const springs = defineTokens({ motion: { bounce: { response: 0.4, dampingRatio: 0.7 } } });
 
 const Glyph = () => null;
 
@@ -68,6 +73,12 @@ describe('the typed vocabulary', () => {
     Text('x').delay('700');
     // @ts-expect-error a component's wait is a duration token, not milliseconds
     Tooltip(Text('i'), 'About').openDelay(1000);
+    // @ts-expect-error a reveal eases and never springs: `expand` is a spring
+    Collapsible(true).revealMotion('expand');
+    // @ts-expect-error nor does an app's own spring
+    Collapsible(true).revealMotion(springs.motion.bounce);
+    // @ts-expect-error a bar's reveal takes its motion from .revealMotion(), not milliseconds
+    Meter(1).reveal({ visible: true, duration: 600 });
     // @ts-expect-error colours opt in by name, with no argument
     Text('x').animatesColors(true);
     expect(true).toBe(true);

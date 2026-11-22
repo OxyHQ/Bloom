@@ -1,5 +1,6 @@
 import { makeMutable } from 'react-native-reanimated';
 import { RiTrophyLine } from '@oxy.so/bloom/icons';
+import { MOTION } from '@oxy.so/bloom/motion';
 import { Meter, MeterRing, StatBar } from '@oxy.so/bloom/stat-bar';
 import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
@@ -11,6 +12,8 @@ import { type ParityCase, Themed } from './support/cases';
 
 const stop = () => {};
 const share = makeMutable(0.5);
+/** An app's own motion: a fill over 600ms on Bloom's ease. */
+const motions = L.defineTokens({ motion: { fill: { duration: 600 } } });
 
 const bars: ParityCase[] = [
   {
@@ -74,9 +77,29 @@ const bars: ParityCase[] = [
   },
   {
     name: 'Meter, revealed',
-    language: () => toElement(L.Meter(0.8).reveal({ visible: true, duration: 600 }).label('Score')),
+    language: () =>
+      toElement(
+        L.Meter(0.8).reveal({ visible: true }).revealMotion(motions.motion.fill).label('Score'),
+      ),
     bloom: () => (
       <Meter value={0.8} reveal={{ visible: true, duration: 600 }} accessibilityLabel="Score" />
+    ),
+  },
+  {
+    name: 'Meter, revealed once after a wait, on one of Bloom’s motions',
+    language: () =>
+      toElement(
+        L.Meter(0.6)
+          .reveal({ visible: true, once: true, delay: 'fast' })
+          .revealMotion('enter')
+          .label('Charge'),
+      ),
+    bloom: () => (
+      <Meter
+        value={0.6}
+        reveal={{ visible: true, once: true, delay: 150, ...MOTION.enter }}
+        accessibilityLabel="Charge"
+      />
     ),
   },
 ];
