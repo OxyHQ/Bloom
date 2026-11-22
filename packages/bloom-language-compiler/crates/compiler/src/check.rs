@@ -79,6 +79,7 @@ impl<'a> Visit<'a> for Checker<'_> {
             self.checked.errors.push(problem);
         }
         let glass = self.check_glass(expression);
+        self.check_toolbar(expression);
         // The chain's own calls were checked together; their arguments are visited
         // for the chains inside them, never the chain's own prefix again. Its
         // children (the constructor's arguments) are inside it: in its glass, its
@@ -166,6 +167,57 @@ impl Checker<'_> {
             self.checked.errors.push(problem);
         }
         glass
+    }
+}
+
+impl Checker<'_> {
+    /// Apple's toolbar rules: at most three groups in a toolbar, and text actions
+    /// kept apart from icon actions within a group.
+    fn check_toolbar(&mut self, expression: &Expression) {
+        let (module, scoping) = (self.module, self.scoping);
+        for (name, call) in modifier_calls(expression) {
+            if name != "toolbar" && name != "toolbarLeading" {
+                continue;
+            }
+            let groups = call
+                .arguments
+                .iter()
+                .filter_map(Argument::as_expression)
+                .filter(|item| chain_kind(item, module, scoping) == "toolbarGroup")
+                .count();
+            if groups > 3 {
+                self.checked.warnings.push(Problem {
+                    span: call.span,
+                    message: format!("{groups} toolbar groups: a toolbar has at most three"),
+                    help: Some("Apple: aim for a maximum of three groups; move the rest into a menu".into()),
+                });
+            }
+        }
+        if chain_kind(expression, module, scoping) != "toolbarGroup" {
+            return;
+        }
+        let Some(root) = root_call(expression) else { return };
+        let (mut text, mut icons) = (false, false);
+        for item in root.arguments.iter().filter_map(Argument::as_expression) {
+            if chain_kind(item, module, scoping) != "button" {
+                continue;
+            }
+            let Some(button) = root_call(item) else { continue };
+            let worded = button
+                .arguments
+                .iter()
+                .filter_map(Argument::as_expression)
+                .any(|child| chain_kind(child, module, scoping) == "text");
+            text |= worded;
+            icons |= !worded;
+        }
+        if text && icons {
+            self.checked.warnings.push(Problem {
+                span: root.span,
+                message: "a toolbar group mixes text and icon buttons".into(),
+                help: Some("Apple: keep actions with text labels apart; put them in groups of their own".into()),
+            });
+        }
     }
 }
 

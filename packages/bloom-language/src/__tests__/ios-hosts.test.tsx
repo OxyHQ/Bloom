@@ -9,6 +9,7 @@ import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import { Button, Header, HStack, Icon, Item, Menu, menu, Section, Text } from '../primitives';
 import { clear, regular } from '../glass';
 import { GlassGroup } from '../controls/glass-group';
+import { ToolbarGroup, ToolbarSpacer } from '../controls/toolbar-group';
 import { ConfirmationDialog } from '../controls/confirmation-dialog';
 import { resolveSpace } from '../tokens';
 import { toElement } from '../render';
@@ -48,6 +49,7 @@ jest.mock('expo-router', () => ({
       Menu: host('ToolbarMenu'),
       MenuAction: host('ToolbarMenuAction'),
       View: host('ToolbarView'),
+      Spacer: 'ToolbarSpacer',
     }),
   },
 }));
@@ -207,5 +209,21 @@ describe('a confirmation dialog is SwiftUI’s', () => {
     expect(only(r, 'SwiftButton').props).toMatchObject({ label: 'Delete', role: 'destructive' });
     expect(hosts(r, 'SwiftText')).toHaveLength(1);
     expect(hosts(r, 'RNHostView')).toHaveLength(1);
+  });
+});
+
+describe('toolbar groups in the system bar', () => {
+  it('a group’s items sit side by side, and a spacer separates groups', () => {
+    const r = mount(
+      toElement(
+        Header('Edit').toolbar(
+          ToolbarGroup(Button(Text('Bold')), Button(Text('Italic'))),
+          ToolbarSpacer('fixed'),
+          Button(Text('Done')).style('glassProminent'),
+        ),
+      ),
+    );
+    expect(hosts(r, 'ToolbarButton')).toHaveLength(3);
+    expect(only(r, 'ToolbarSpacer').props.width).toBe(resolveSpace('sm'));
   });
 });

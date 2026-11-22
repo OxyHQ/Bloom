@@ -34,6 +34,7 @@ import { builtOnOpen, readMenuRows, type MenuRowData } from './menu-rows';
 import { PageHeaderHost, readHeader } from './header-page';
 import { sfSymbolOf } from './sf-symbol';
 import { nodesOf, valuesOf } from './values';
+import { TOOLBAR_SPACER_WIDTH } from '../controls/toolbar-group';
 import type { NodeHostProps } from './host.types';
 
 type Item = ComponentType<Record<string, unknown> & { children?: ReactNode }>;
@@ -45,6 +46,7 @@ interface StackModule {
     Menu: Item;
     MenuAction: Item;
     View: Item;
+    Spacer: Item;
   };
 }
 
@@ -142,8 +144,13 @@ function buttonFace(node: Node): { symbol: string | undefined; title: string | u
   return { symbol, title };
 }
 
-function barItem(node: Node, index: number, bar: BarContext): ReactNode {
+function barItem(node: Node, index: number | string, bar: BarContext): ReactNode {
   const { Stack } = bar;
+  // A group's items share the bar's background, side by side; a spacer separates groups.
+  if (node.kind === 'toolbarGroup')
+    return nodesOf(node.children).map((child, at) => barItem(child, `${index}.${at}`, bar));
+  if (node.kind === 'toolbarSpacer')
+    return <Stack.Toolbar.Spacer key={index} width={TOOLBAR_SPACER_WIDTH} />;
   const values = valuesOf(node);
   const label = values.label as string | undefined;
   if (node.kind === 'button') {

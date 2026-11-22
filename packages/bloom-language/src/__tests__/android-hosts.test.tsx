@@ -24,6 +24,7 @@ import {
 } from '../primitives';
 import { clear, identity, regular } from '../glass';
 import { GlassGroup } from '../controls/glass-group';
+import { ToolbarGroup } from '../controls/toolbar-group';
 import { ConfirmationDialog } from '../controls/confirmation-dialog';
 import { menu } from '../primitives';
 import { toElement } from '../render';
@@ -397,5 +398,22 @@ describe('a confirmation dialog is the lens menu, grown out of the view that ask
     // Presented: the base opens with the rows it holds (the view opens itself with them).
     expect(lens.props.openWithItems || mockLensHandle.open.mock.calls.length > 0).toBe(true);
     expect(hosts(r, 'Dialog')).toHaveLength(0);
+  });
+});
+
+describe('toolbar groups', () => {
+  it('each group is one lens base; its buttons draw no lens of their own', () => {
+    const r = mount(
+      toElement(
+        HStack(
+          ToolbarGroup(
+            Button(Icon(Glyph)).shape('circle').label('Share'),
+            Button(Icon(Glyph)).shape('circle').label('Like'),
+          ),
+          ToolbarGroup(Button(Icon(Glyph)).shape('circle').label('More').glass()),
+        ),
+      ),
+    );
+    expect(hosts(r, 'BloomLensMenu')).toHaveLength(2);
   });
 });

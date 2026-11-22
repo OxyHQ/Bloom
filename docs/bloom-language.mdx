@@ -1150,6 +1150,8 @@ is written):
 | Glass belongs to the navigation layer | "Don't use Liquid Glass in the content layer" | **warning**: a glass in the children of a `ScrollView`, `ScrollArea`, `ScrollSurface`, `List`, `VirtualList` or `Card` |
 | Nearby glass shares one container | "use `GlassEffectContainer` when applying Liquid Glass effects on multiple views" | **warning**: two or more glasses side by side in a stack outside a `GlassGroup` |
 | Every icon-only control has a label | "Provide an accessibility label for every icon" | **error**: a `Button` or `FAB` whose content is only `Icon`s, with no `.label()` |
+| At most three toolbar groups | "aim for a maximum of three" groups | **warning**: more than three `ToolbarGroup`s in one `.toolbar()` |
+| Text actions apart from icon actions | "keep actions with text labels separate" | **warning**: a `ToolbarGroup` with both a text `Button` and an icon-only one |
 
 A warning is printed (`warning[bloom]`, `console.warn` in Metro and Jest) and
 the module compiles; an error fails it, as every other check does.
@@ -1286,6 +1288,30 @@ is a bar button, a `Menu` of plain or tagged rows opened from one is a bar
 menu, anything else Bloom's own view in the bar. The system back button pops
 the stack (a custom `onBack` is not called; `null` hides it). Outside a native
 stack (a tab page without a stack of its own, a panel), Bloom's PageHeader.
+
+**Toolbar groups.** `ToolbarGroup(...items)` is SwiftUI's `ToolbarItemGroup`:
+items that share one background. `ToolbarSpacer('fixed' | 'flexible')` is
+`ToolbarSpacer`: a small gap between groups (Bloom's `sm`), or the free space.
+
+```ts
+Header('Landmark').toolbar(
+  ToolbarGroup(ShareButton()),
+  ToolbarSpacer('fixed'),
+  ToolbarGroup(FavoriteButton(), CollectionsMenu()),
+  ToolbarSpacer('fixed'),
+  Button(Text('Done')).style('glassProminent'),
+)
+```
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `ToolbarGroup` | one lens base: one lens over the group, and a menu from any item grows out of the whole group | in the system bar, its items side by side on the bar's shared background; in Bloom's `PageHeader`, one Liquid Glass capsule | one `Surface` capsule |
+| `ToolbarSpacer` | a gap, or the free space | `Stack.Toolbar.Spacer` with the gap's width (a bar's spacer needs one) | a gap, or the free space |
+
+A group is `HStack(...items).glass()`, so an item inside on glass of its own
+is glass on glass (a compiler error). The compiler warns past three groups in
+one toolbar, and when a group mixes text and icon buttons (Apple: keep actions
+with text labels apart).
 
 **BottomBar.** `BottomBar(...tabs)`, `Tab(label, icon)` with `.id`,
 `.activeIcon` and `.badge`; the bar takes `.selection([id, setId])` (a
