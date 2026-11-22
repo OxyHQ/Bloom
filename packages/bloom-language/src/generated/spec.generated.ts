@@ -3095,6 +3095,9 @@ export const MODIFIERS = {
   "hue": [
     "chipHue"
   ],
+  "color": [
+    "accentTone"
+  ],
   "media": [
     "emptyStateMedia"
   ],
@@ -5392,6 +5395,7 @@ export const NODE_MODIFIERS = {
     "phases",
     "style",
     "tint",
+    "color",
     "size",
     "icon",
     "dot",
