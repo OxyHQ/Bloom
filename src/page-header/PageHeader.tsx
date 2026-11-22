@@ -4,7 +4,6 @@ import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { resolvePaintMode } from '../theme/paint';
 import { createHeaderActionsHost, HeaderActionsHostContext } from './context';
 import { pointerEventsStyle } from '../styles/pointer-events';
-import { StyledView } from '../styles/styled-primitives';
 import {
   memo,
   useContext,
@@ -1059,19 +1058,17 @@ function PageHeaderComponent({
         ) : null}
         {barEmpty ? null : (
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
-            <StyledView
+            <View
               {...(windowRoom > 0
                 ? dataHooks({ bloomPageHeaderBar: '', bloomPageHeaderWindow: '' })
                 : dataHook('bloomPageHeaderBar'))}
-              className={
-                navigationPresentation || windowToolbar > 0
-                  ? 'py-0'
-                  : compact
-                    ? 'min-h-8 py-0'
-                    : 'min-h-14'
-              }
               style={[
                 [
+                  navigationPresentation || windowToolbar > 0
+                    ? styles.barFlush
+                    : compact
+                      ? styles.barCompact
+                      : styles.barTall,
                   styles.bar,
                   stacked && { alignItems: 'flex-start' },
                   !compact &&
@@ -1201,7 +1198,7 @@ function PageHeaderComponent({
               ) : (
                 actionsSlot
               )}
-            </StyledView>
+            </View>
           </BloomScope>
         )}
         {accessory ? (
@@ -1248,6 +1245,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 1,
   },
+  barFlush: { paddingBlock: 0 },
+  barCompact: { minHeight: 32, paddingBlock: 0 },
+  barTall: { minHeight: 56 },
   bar: {
     flexDirection: 'row',
     alignItems: 'center',

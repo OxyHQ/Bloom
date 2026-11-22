@@ -48,7 +48,7 @@ import { DISABLED_OPACITY } from '../styles/tokens';
 import { RiPencilLine } from '../icons/remix/RiPencilLine';
 import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
-import { resolvedStyle, classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
 import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
@@ -640,7 +640,7 @@ describe('AiChatShell', () => {
       </AiChatShell>,
     );
     expect(getByText('Alia + Sindi')).toBeTruthy();
-    expect(classNamesOn(getByTestId('header-bar').props.style)).toContain('min-h-14');
+    expect(resolvedStyle(getByTestId('header-bar').props.style).minHeight).toBe(56);
     expect(getByLabelText('Open navigation')).toBeTruthy();
     fireEvent.press(getByLabelText('Open code'));
     expect(getByLabelText('Code')).toBeTruthy();
@@ -664,7 +664,7 @@ describe('AiChatShell', () => {
         <AiChatMobileHeader testID="header" title="Agentic chat" />
       </AiChatShell>,
     );
-    expect(classNamesOn(getByTestId('header-bar').props.style)).toContain('min-h-14');
+    expect(resolvedStyle(getByTestId('header-bar').props.style).minHeight).toBe(56);
     expect(resolvedStyle(getByTestId('header').props.style).height).toBeUndefined();
   });
 
