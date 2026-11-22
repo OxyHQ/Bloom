@@ -25,8 +25,15 @@ export function useThemePaint(): ThemeColors {
 }
 export { parseRgb, withAlpha } from '../../../../../src/theme/color-utils';
 
+/**
+ * The theme's RGB palette when a test paints with another one: a web prepaint,
+ * whose paints are `var(--bloom-paint-…)` while `useTheme().colors` stays RGB.
+ */
+export const RgbContext = createContext<ThemeColors | null>(null);
+
 /** Stands in for `useTheme`: the palette a test renders under, and whether it is dark. */
 export function useTheme(): { colors: ThemeColors; isDark: boolean } {
-  const colors = useContext(PaintContext);
+  const paint = useContext(PaintContext);
+  const colors = useContext(RgbContext) ?? paint;
   return { colors, isDark: colors === DARK };
 }
