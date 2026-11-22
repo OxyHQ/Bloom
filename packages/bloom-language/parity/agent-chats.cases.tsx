@@ -169,7 +169,8 @@ const chats: ParityCase[] = [
 const workspaces: ParityCase[] = [
   {
     name: 'MultiAgentChat',
-    isolated: true,
+    // What it presents holds the agents' turning rings, which two pages read at
+    // different frames: Chrome compares its own view, the web suite its portal too.
     language: () => toElement(L.MultiAgentChat({ storageKey: null })),
     bloom: () => <MultiAgentChat storageKey={null} />,
   },
