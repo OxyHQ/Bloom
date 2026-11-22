@@ -98,7 +98,12 @@ export interface ButtonProps {
   size?: ButtonSize | number;
   /** Explicit override of the nearest BloomScope's contextual action geometry. */
   density?: BloomControlDensity;
-  style?: StyleProp<ViewStyle>;
+  /**
+   * The button's box. Its text keys (`color`, font, line height) are the
+   * content's: on the web they cascade to the label, glyph and spinner in every
+   * state; native forwards them to the built-in label and icon renderers.
+   */
+  style?: StyleProp<TextStyle>;
   textStyle?: StyleProp<TextStyle>;
 
   /**

@@ -344,6 +344,7 @@ function ArrowRecipeDemo({ placement }: { placement: 'header' | 'overlay' | 'foo
             borderWidth: 0.5,
             borderColor: isDark ? '#ffffff1a' : '#183b4e0f',
             backgroundColor: arrowFill,
+            color: isDark ? '#fff' : '#121212',
             boxShadow: '0 2px 8px #0000000f',
           },
         }}
