@@ -378,7 +378,7 @@ export const LeadingMarks: Story = {
         ))}
         <View style={{ width: 150 }}>
           <Select value={admission} onValueChange={setAdmission}>
-            <SelectTrigger label="Admission" className="pl-2">
+            <SelectTrigger label="Admission" fieldStyle={{ paddingLeft: 8 }}>
               <SelectValue
                 leading={(item) => {
                   const Icon = (item as (typeof ADMISSIONS)[number] | undefined)?.icon;
