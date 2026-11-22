@@ -306,6 +306,12 @@ import type {
   SavedSearchCardView,
 } from '../controls/home-search';
 import type {
+  ListingActionBarView,
+  MortgageCalculatorView,
+  RentalActionCardView,
+  SaleActionCardView,
+} from '../controls/listing-actions';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -887,7 +893,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SearchModeTabsView>, Of<'searchModeTabs'>>,
       Same<MethodsOf<PropertyTypePickerView>, Of<'propertyTypePicker'>>,
       Same<MethodsOf<SavedSearchCardView>, Of<'savedSearchCard'>>,
+      Same<MethodsOf<ListingActionBarView>, Of<'listingActionBar'>>,
+      Same<MethodsOf<MortgageCalculatorView>, Of<'mortgageCalculator'>>,
+      Same<MethodsOf<RentalActionCardView>, Of<'rentalActionCard'>>,
+      Same<MethodsOf<SaleActionCardView>, Of<'saleActionCard'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

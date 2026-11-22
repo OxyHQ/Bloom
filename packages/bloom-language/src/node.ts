@@ -101,6 +101,7 @@ import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ListingActionKind } from './controls/listing-actions';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
 import type { StaySearchKind } from './controls/stay-search';
@@ -223,6 +224,7 @@ import {
   type TooltipSide,
   type RatingStyle,
   type AgentMood,
+  type MortgageLayout,
   type ShelfLayout,
   type PriceScale,
   type FeatureFilterStyle,
@@ -1198,7 +1200,8 @@ export type Modifier =
         | ShelfLayout
         | TripCardOrientation
         | TripCardOrientation
-        | SearchModeTabsStyle;
+        | SearchModeTabsStyle
+        | MortgageLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1481,7 +1484,8 @@ export type NodeKind =
   | CheckoutSheetKind
   | BookingKind
   | BookingKind
-  | HomeSearchKind;
+  | HomeSearchKind
+  | ListingActionKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1849,7 +1853,8 @@ export class Node {
       | PlaceCardStyle
       | MailComposeStyle
       | TripCardOrientation
-      | SearchModeTabsStyle,
+      | SearchModeTabsStyle
+      | MortgageLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

@@ -159,3 +159,7 @@ export const HomeSearchBar = 'HomeSearchBar';
 export const SearchModeTabs = 'SearchModeTabs';
 export const PropertyTypePicker = 'PropertyTypePicker';
 export const SavedSearchCard = 'SavedSearchCard';
+export const ActionBar = 'ActionBar';
+export const MortgageCalculator = 'MortgageCalculator';
+export const RentalActionCard = 'RentalActionCard';
+export const SaleActionCard = 'SaleActionCard';

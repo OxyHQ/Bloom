@@ -87,6 +87,7 @@ import { PLACE_CASES } from '../../parity/places.cases';
 import { MAIL_CASES } from '../../parity/mail.cases';
 import { BOOKING_CASES } from '../../parity/booking.cases';
 import { HOME_SEARCH_CASES } from '../../parity/home-search.cases';
+import { LISTING_ACTION_CASES } from '../../parity/listing-actions.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -179,6 +180,7 @@ export const FAMILIES = {
   mail: MAIL_CASES,
   booking: BOOKING_CASES,
   homeSearch: HOME_SEARCH_CASES,
+  listingAction: LISTING_ACTION_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
