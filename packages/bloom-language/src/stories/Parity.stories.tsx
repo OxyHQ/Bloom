@@ -178,3 +178,4 @@ export const AddressesAndPaymentMethods: Story = { args: { family: 'addressPayme
 export const PricesAndPaymentStatus: Story = { args: { family: 'pricePaymentStatus' } };
 export const Crm: Story = { args: { family: 'crm' } };
 export const DashboardCards: Story = { args: { family: 'dashboardCard' } };
+export const CartMenuItemsAndVendors: Story = { args: { family: 'cartMenuVendor' } };

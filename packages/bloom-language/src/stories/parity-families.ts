@@ -108,6 +108,7 @@ import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
 import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
 import { CRM_CASES } from '../../parity/crm.cases';
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
+import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -221,6 +222,7 @@ export const FAMILIES = {
   pricePaymentStatus: PRICE_PAYMENT_STATUS_CASES,
   crm: CRM_CASES,
   dashboardCard: DASHBOARD_CARD_CASES,
+  cartMenuVendor: CART_MENU_VENDOR_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
