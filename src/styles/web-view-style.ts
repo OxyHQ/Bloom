@@ -56,6 +56,9 @@ export function webViewportHeightMinus(px: number): ViewStyle['height'] {
  */
 export const WEB_OVERFLOW_CLIP = 'clip' as ViewStyle['overflow'];
 
+/** CSS grid layout on a web host; RNW forwards `display: grid` and the grid keys below. */
+export const WEB_DISPLAY_GRID = 'grid' as ViewStyle['display'];
+
 /**
  * A `ViewStyle` that may ALSO carry CSS react-native-web forwards straight to the
  * DOM node but React Native does not model at all.
@@ -111,6 +114,17 @@ export interface WebCssStyle extends ViewStyle {
   overscrollBehavior?: 'auto' | 'contain' | 'none';
   /** RN declares this on `TextStyle`, not `ViewStyle`. */
   userSelect?: 'auto' | 'none' | 'text' | 'contain' | 'all';
+  /** One axis's overflow, as a utility wrote it (`overflow-x-auto`). */
+  overflowX?: 'visible' | 'hidden' | 'clip' | 'scroll' | 'auto';
+  overflowY?: 'visible' | 'hidden' | 'clip' | 'scroll' | 'auto';
+  /** CSS grid, on a host whose `display` is {@link WEB_DISPLAY_GRID}. */
+  gridArea?: string;
+  gridTemplateColumns?: string;
+  gridTemplateRows?: string;
+  clipPath?: string;
+  /** The individual transform properties, which compose with `transform`. */
+  translate?: string;
+  scale?: string;
   /**
    * CSS custom properties, for a component whose self-injected sheet reads a
    * per-instance value it cannot know statically — a resolved theme colour in a
