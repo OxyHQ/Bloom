@@ -498,6 +498,7 @@ export type {
   ListView,
   SupportingLines,
   VirtualListRow,
+  VirtualListRowFn,
   VirtualListScreen,
   VirtualListTuning,
   VirtualListView,

@@ -1,4 +1,11 @@
-import { createElement, useCallback, useRef, type ReactElement, type ReactNode } from 'react';
+import {
+  createElement,
+  isValidElement,
+  useCallback,
+  useRef,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import type { ViewStyle } from 'react-native';
 import { withRoom } from '../chrome/safe-area-inset';
 import {
@@ -71,6 +78,12 @@ export type VirtualListScreen = NonNullable<VirtualListProps<unknown>['screen']>
 
 /** What a list's row is handed: FlashList's `renderItem` argument as Bloom passes it, the item and its index. */
 export type VirtualListRow<T> = VirtualListRenderItemInfo<T>;
+
+/**
+ * A list's row: the view of an item, or FlashList's own `renderItem` (an
+ * app's named `renderPost`), whose element is drawn as it is.
+ */
+export type VirtualListRowFn<T> = (info: VirtualListRow<T>) => Child | ReactElement;
 
 /** A mail row's data: Bloom's `ListMailData`, but its star, which is its `.starred()`. */
 export type MailRowData = Omit<ListMailData, 'starred' | 'onStarredChange'>;
@@ -230,11 +243,13 @@ export function SectionedList(sections: readonly ListSection[]): ListView {
 }
 /**
  * Bloom `VirtualList`: `row` draws each item from FlashList's `renderItem`
- * argument (`{ item, index }`); keep it stable (module scope, or a `useCallback`).
+ * argument (`{ item, index }`), as a view or as the element FlashList's own
+ * `renderItem` returns; keep it stable (module scope, or a `useCallback`): the
+ * list's `renderItem` keeps its identity while `row` does.
  */
 export function VirtualList<T>(
   data: readonly T[] | null | undefined,
-  row: (info: VirtualListRow<T>) => Child,
+  row: VirtualListRowFn<T>,
 ): VirtualListView {
   return new Node('virtualList', { data, row }, []);
 }
@@ -273,7 +288,7 @@ function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
 }
 
 interface LanguageVirtualListProps {
-  readonly row: (info: VirtualListRow<unknown>) => Child;
+  readonly row: VirtualListRowFn<unknown>;
   readonly render: (child: Child) => ReactNode;
   readonly [prop: string]: unknown;
 }
@@ -281,13 +296,17 @@ interface LanguageVirtualListProps {
 /**
  * Bloom's `VirtualList` with a `renderItem` that keeps its identity while
  * `row` does, as an app's `useCallback` does: the engine re-renders a row only
- * when its item changes. The latest renderer draws it, in the list's environment.
+ * when its item changes. The latest renderer draws a view, in the list's
+ * environment; an element (FlashList's own `renderItem`) is the row as it is.
  */
 function LanguageVirtualList({ row, render, ...props }: LanguageVirtualListProps): ReactElement {
   const latest = useRef(render);
   latest.current = render;
   const renderItem = useCallback(
-    (info: VirtualListRow<unknown>) => latest.current(row(info)) as ReactElement | null,
+    (info: VirtualListRow<unknown>) => {
+      const out = row(info);
+      return (isValidElement(out) ? out : latest.current(out)) as ReactElement | null;
+    },
     [row],
   );
   return createElement(BloomVirtualList as never, { ...props, renderItem });
@@ -351,7 +370,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
   virtualList: (d) => {
     const { data, row } = d.node.props as {
       data: readonly unknown[] | null | undefined;
-      row: (info: VirtualListRow<unknown>) => Child;
+      row: VirtualListRowFn<unknown>;
     };
     const props = d.props();
     const header = d.own('headerContent')?.value;

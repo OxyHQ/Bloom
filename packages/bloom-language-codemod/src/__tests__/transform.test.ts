@@ -538,9 +538,8 @@ export const G = () => <VirtualList data={rows} renderItem={({ item }) => { retu
     expect(flat(result.code)).toContain(
       'toElement(LVirtualList(posts, ({ item: post }) => Embed(<Post post={post} />)).footerContent(Embed(<Footer />)))',
     );
-    expect(result.code).toContain(
-      'toElement(LVirtualList(posts, (info) => Embed(renderPost(info))))',
-    );
+    // A named renderItem is the row itself: a new arrow per render would redraw FlashList's memoised rows.
+    expect(result.code).toContain('toElement(LVirtualList(posts, renderPost))');
     expect(result.code).toContain(
       'toElement(LVirtualList(posts, (row) => Embed(<Post post={row.item} />)))',
     );
@@ -548,11 +547,12 @@ export const G = () => <VirtualList data={rows} renderItem={({ item }) => { retu
       "renderItem={((info) => <Hole n={'1-' + info.index} />)}",
     );
     expect(result.fixtures[1]?.after).toContain(
-      "LVirtualList(ITEMS, (info) => Embed(((info) => <Hole n={'1-' + info.index} />)(info)))",
+      "LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />))",
     );
+    // A function named as the row's own parameter is carried as it is too: nothing shadows it.
+    expect(result.code).toContain('toElement(LVirtualList(posts, info))');
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
       'VirtualList:ListHeaderComponent',
-      'VirtualList:renderItem',
       'VirtualList:renderItem',
     ]);
   });
@@ -575,7 +575,7 @@ export const A = () => (
 export const B = () => <VirtualList data={posts} renderItem={renderPost} screen={{ active }} />;
 `);
     expect(flat(result.code)).toContain(
-      "toElement(LVirtualList(posts, (info) => Embed(renderPost(info))).tuning({ overscan: OVERSCAN_ROWS, removeClippedSubviews: true, windowSize: 10, maintainVisibleContentPosition: false }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
+      "toElement(LVirtualList(posts, renderPost).tuning({ overscan: OVERSCAN_ROWS, removeClippedSubviews: true, windowSize: 10, maintainVisibleContentPosition: false }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['VirtualList:screen']);
   });
