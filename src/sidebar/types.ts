@@ -35,7 +35,6 @@ export interface SidebarAvatar {
 
 /** A navigation row. Rows without `href` / `onPress` are decoration only. */
 export interface SidebarNavItem {
-  className?: string;
   style?: StyleProp<ViewStyle>;
   key: string;
   label: string;
@@ -106,9 +105,6 @@ export interface SidebarItemProps {
   description?: string;
   /** Accent selection is the default; neutral uses the sidebar's tertiary surface. */
   selectedAppearance?: 'accent' | 'neutral';
-  className?: string;
-  labelClassName?: string;
-  descriptionClassName?: string;
   ref?: Ref<ComponentRef<typeof View>>;
   disabled?: boolean;
   nativeID?: string;
@@ -366,7 +362,6 @@ export interface SidebarUserMenuProps {
 }
 
 export interface SidebarProps {
-  className?: string;
   /**
    * Replaces the account/logo header row (logo, account, the collapse control). The panel still
    * owns its fixed chrome and scroll area. `false` draws no header row at all.
@@ -652,10 +647,7 @@ export interface SidebarTreeItem
 }
 
 /** What a tree row takes dropped on it: `DropZone`'s props but its style and children. */
-export type SidebarTreeItemDrop = Omit<
-  DropZoneProps,
-  'style' | 'className' | 'children' | 'testID'
->;
+export type SidebarTreeItemDrop = Omit<DropZoneProps, 'style' | 'children' | 'testID'>;
 
 /**
  * Where a dragged tree row landed: `before` or `after` `target` (as its
@@ -778,7 +770,6 @@ export interface SidebarOnboardingCardProps {
   onSeeAll?: () => void;
   /** Localized "See all" by default. */
   seeAllLabel?: string;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

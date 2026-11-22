@@ -119,7 +119,6 @@ function SidebarOnboardingCardComponent({
   onPress,
   onSeeAll,
   seeAllLabel,
-  className,
   style,
   testID,
 }: SidebarOnboardingCardProps) {
@@ -133,7 +132,6 @@ function SidebarOnboardingCardComponent({
       radius="radius-16"
       border="thin"
       elevation="s"
-      className={className}
       style={[
         {
           width: '100%',

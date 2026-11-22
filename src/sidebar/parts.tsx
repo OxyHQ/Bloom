@@ -162,7 +162,7 @@ export function Collapsible({
 
 const STYLE_ID = 'bloom-sidebar-web-css';
 const MATERIAL_BUTTON = '.bloom-btn--surface';
-const MATERIAL_PAINT = '.bloom-surface-paint';
+const MATERIAL_PAINT = '[data-bloom-surface-paint]';
 const ROW_ACTIONS = '[data-bloom-sidebar-row="hover"] > [data-bloom-sidebar-row-actions]';
 const ROW_ACTIONS_SHOWN = `[data-bloom-sidebar-row="hover"]:hover > [data-bloom-sidebar-row-actions], [data-bloom-sidebar-row="hover"]:focus-within > [data-bloom-sidebar-row-actions]`;
 const SEL = '[data-bloom-sidebar]';
