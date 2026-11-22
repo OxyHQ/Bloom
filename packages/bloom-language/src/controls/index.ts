@@ -3,6 +3,7 @@ import { CALL_UIS } from './call-ui';
 import { CHAT_PEOPLE } from './chat-people';
 import { MESSAGE_BUBBLES } from './message-bubble';
 import { AGENT_AVATARS } from './agent-avatar';
+import { PROPERTY_INSIGHTS } from './property-insights';
 import { OFFERING_BADGES } from './offering-badge';
 import { LISTING_EDITORS } from './listing-editor';
 import { LISTING_CARDS } from './listing-card';
@@ -72,4 +73,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LISTING_CARDS,
   ...LISTING_EDITORS,
   ...OFFERING_BADGES,
+  ...PROPERTY_INSIGHTS,
 };

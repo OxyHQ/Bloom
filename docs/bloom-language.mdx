@@ -1683,6 +1683,18 @@ the type its binding holds, `.columns(n)` and `.disabled()`. Bloom's
 'md')` (by default the nearest appearance scope's), `.style('tinted' |
 'onMedia')`.
 
+### Price insights
+
+```ts
+PriceEstimate(estimate.low, estimate.high, estimate.confidence, { asking: home.price, format: euro, reasons })
+PricePerAreaComparison(rows).label('Price per m², by area')
+```
+
+Bloom's `property-insights` price pieces: `PriceEstimate(low, high,
+confidence, options?)` takes the asking price, words, reasons and handlers as
+Bloom does; `PricePerAreaComparison(rows)` takes Bloom's rows, `.label()` its
+name.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

@@ -1013,3 +1013,15 @@ fn the_listing_editor_and_the_offering_badge_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_price_insights_are_checked() {
+    let imports = "import { PriceEstimate, PricePerAreaComparison, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (r) => VStack(PriceEstimate(1, 2, 'high').padding('md'), PricePerAreaComparison(r).label('Price per m²'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (r) => PricePerAreaComparison(r).style('bars');\n");
+    assert_eq!(output.diagnostics[0].message, "PricePerAreaComparison has no modifier .style()");
+}

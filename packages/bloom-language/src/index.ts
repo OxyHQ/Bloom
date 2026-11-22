@@ -823,3 +823,14 @@ export type {
   OfferingBadgeOptions,
   OfferingBadgeView,
 } from './controls/offering-badge';
+
+// Property insights (controls/property-insights.tsx)
+export {
+  PriceEstimate,
+  PricePerAreaComparison,
+} from './controls/property-insights';
+export type {
+  PriceEstimateOptions,
+  PriceEstimateView,
+  PricePerAreaComparisonView,
+} from './controls/property-insights';
