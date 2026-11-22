@@ -129,9 +129,9 @@ toolbar={<>
 
 | part | spec |
 |---|---|
-| `DataTableFilter` | `<Select className="shrink-0" popoverClassName="min-w-40">`; the trigger hugs its value; the standard 266px list; the chosen row marked by the row wash alone — no check drawn. Uncontrolled from the first option unless `value`/`defaultValue` |
+| `DataTableFilter` | a `<Select>`; the trigger hugs its value; the standard 266px list; the chosen row marked by the row wash alone — no check drawn. Uncontrolled from the first option unless `value`/`defaultValue` |
 | `DataTableSearch` | `InputBase` with `leadingIcon={RiSearchLine}`; `body-medium`, full pill; `w-[153px]` from `sm`, below it `flex-1 min-w-[153px]` in the scrolling toolbar row (window width, like the class) |
-| `DataTableSelect` | a `w-[Npx]` select; an option's `dot` (a `Badge dot`: `green` = `success`, `yellow` = `warning`, `indigo` = `info`) or 18px `icon` (`foreground-icon-secondary`) leads its label in the list and in the trigger (`gap-[5px]`, via `SelectValue`'s [`leading`](./select.mdx#leading-marks)); an icon option trims the trigger's left inset to 8 (`pl-2`) |
+| `DataTableSelect` | a select `width` px wide; an option's `dot` (a `Badge dot`: `green` = `success`, `yellow` = `warning`, `indigo` = `info`) or 18px `icon` (`foreground-icon-secondary`) leads its label in the list and in the trigger (5px apart, via `SelectValue`'s [`leading`](./select.mdx#leading-marks)); an icon option trims the trigger's left inset to 8 (`fieldStyle`) |
 | `DataTableRowActions` | [`RowActions`](./row-actions.mdx) |
 
 ### `DataTableSelect` shrinks like a width class
