@@ -81,6 +81,10 @@ import { OFFERING_BADGES } from './offering-badge';
 import { PROPERTY_INSIGHTS } from './property-insights';
 import { PROJECT_BOARDS } from './project-board';
 import { ACTIVITY_FEEDS } from './activity-feed';
+import { ORDER_STATUSES } from './order-status';
+import { LOCKUPS } from './lockup';
+import { AMBIENT_PHOTOS } from './ambient-photo';
+import { CALENDAR_VIEWS } from './calendar';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -169,4 +173,8 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...PROPERTY_INSIGHTS,
   ...PROJECT_BOARDS,
   ...ACTIVITY_FEEDS,
+  ...ORDER_STATUSES,
+  ...LOCKUPS,
+  ...AMBIENT_PHOTOS,
+  ...CALENDAR_VIEWS,
 };
