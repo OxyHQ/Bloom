@@ -5,14 +5,18 @@ import {
 } from '@oxy.so/bloom/task-list';
 
 import { Node, type ViewModifiers } from '../node';
+import type { DurationName } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
 /** The task list: an agent's tasks, their steps revealed as it works. */
 export type TaskListKind = 'taskList';
 
-/** Bloom `TaskList`'s reveal (its pace, or `revealed` from real events) and its handler. */
-export type TaskListOptions = Omit<TaskListProps, 'tasks' | 'style' | 'testID'>;
+/** Bloom `TaskList`'s reveal (its pace as duration tokens, or `revealed` from real events) and its handler. */
+export type TaskListOptions = Omit<
+  TaskListProps,
+  'tasks' | 'style' | 'testID' | 'stepInterval' | 'startDelay'
+> & { readonly stepInterval?: DurationName; readonly startDelay?: DurationName };
 
 /** Bloom `TaskList`. */
 export type TaskListView = ViewModifiers<TaskListView>;
@@ -26,5 +30,5 @@ export function TaskList(
 }
 
 export const TASK_LISTS: Record<TaskListKind, ControlRenderer> = {
-  taskList: product(BloomTaskList),
+  taskList: product(BloomTaskList, { durations: ['stepInterval', 'startDelay'] }),
 };

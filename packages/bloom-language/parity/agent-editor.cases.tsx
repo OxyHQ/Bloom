@@ -40,8 +40,9 @@ const CELLS: ContributionCell[] = Array.from({ length: 12 * 7 }, (_, index) => (
   tier: ((index * 7) % 6) as ContributionCell['tier'],
   date: `Jan ${(index % 28) + 1}`,
 }));
-/** The card at rest: no count-up, no pop-in. */
-const still = { countUpDuration: 0, animateIn: false } as const;
+/** The card at rest: no count-up, no pop-in (the language's `'0'` duration is Bloom's 0 ms). */
+const still = { countUpDuration: '0', animateIn: false } as const;
+const stillBloom = { countUpDuration: 0, animateIn: false } as const;
 
 const creator: ParityCase[] = [
   {
@@ -130,7 +131,7 @@ const profile: ParityCase[] = [
   {
     name: 'AiProfileCard',
     language: () => toElement(L.AiProfileCard('Maya Collins', { ...still })),
-    bloom: () => <AiProfileCard name="Maya Collins" {...still} />,
+    bloom: () => <AiProfileCard name="Maya Collins" {...stillBloom} />,
   },
   {
     name: 'AiProfileCard full, actions, tinted',
@@ -157,7 +158,7 @@ const profile: ParityCase[] = [
         {(c) => (
           <AiProfileCard
             name="Maya Collins"
-            {...still}
+            {...stillBloom}
             handle="@maya"
             badge="PRO"
             initials="MC"

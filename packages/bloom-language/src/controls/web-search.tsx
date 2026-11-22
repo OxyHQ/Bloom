@@ -5,14 +5,18 @@ import {
 } from '@oxy.so/bloom/web-search';
 
 import { Node, type ViewModifiers } from '../node';
+import type { DurationName } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
 /** The web search: an agent's search trail and the sources it found. */
 export type WebSearchKind = 'webSearch';
 
-/** Bloom `WebSearch`'s reveal (its pace, or `revealed` from real events), words and handler. */
-export type WebSearchOptions = Omit<WebSearchProps, 'steps' | 'style' | 'testID'>;
+/** Bloom `WebSearch`'s reveal (its pace as duration tokens, or `revealed` from real events), words and handler. */
+export type WebSearchOptions = Omit<
+  WebSearchProps,
+  'steps' | 'style' | 'testID' | 'stepInterval' | 'startDelay'
+> & { readonly stepInterval?: DurationName; readonly startDelay?: DurationName };
 
 /** Bloom `WebSearch`. */
 export type WebSearchView = ViewModifiers<WebSearchView>;
@@ -26,5 +30,5 @@ export function WebSearch(
 }
 
 export const WEB_SEARCHES: Record<WebSearchKind, ControlRenderer> = {
-  webSearch: product(BloomWebSearch),
+  webSearch: product(BloomWebSearch, { durations: ['stepInterval', 'startDelay'] }),
 };

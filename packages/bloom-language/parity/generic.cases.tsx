@@ -266,7 +266,7 @@ export const GENERIC_CASES: ParityCase[] = [
   })),
   {
     name: 'ThemeToggle collapsed',
-    language: () => toElement(L.ThemeToggle({ transitionDuration: 400 }).collapsed()),
-    bloom: () => <ThemeToggle collapsed transitionDuration={400} />,
+    language: () => toElement(L.ThemeToggle({ transitionDuration: 'slow' }).collapsed()),
+    bloom: () => <ThemeToggle collapsed transitionDuration={300} />,
   },
 ];

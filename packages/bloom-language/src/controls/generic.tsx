@@ -19,12 +19,13 @@ import {
   type SwipeRowActions,
   type SwipeRowProps,
 } from '@oxy.so/bloom/swipe-row';
-import { ThemeToggle as BloomThemeToggle, type ThemeToggleProps } from '@oxy.so/bloom/theme-toggle';
+import { ThemeToggle as BloomThemeToggle } from '@oxy.so/bloom/theme-toggle';
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   ColorToken,
+  DurationName,
   OutlineNavStyle,
   RowActionStyle,
   SpaceToken,
@@ -81,8 +82,8 @@ export type SwipeRowOptions = Omit<
   readonly actionWidth?: SpaceToken;
   readonly radius?: CornerToken;
 };
-/** Bloom `ThemeToggle`'s data: its web reveal's duration. */
-export type ThemeToggleOptions = Pick<ThemeToggleProps, 'transitionDuration'>;
+/** Bloom `ThemeToggle`'s data: its web reveal's duration, a duration token. */
+export type ThemeToggleOptions = { readonly transitionDuration?: DurationName };
 
 /** Bloom `ConnectionDots`; `.label()` names the link. */
 export type ConnectionDotsView = ViewModifiers<ConnectionDotsView>;
@@ -197,6 +198,7 @@ export const GENERIC: Record<GenericKind, ControlRenderer> = {
     colors: (d) => ({ background: d.own('tint')?.value as ColorToken | undefined }),
   }),
   themeToggle: product(BloomThemeToggle, {
+    durations: ['transitionDuration'],
     own: (d) => ({ variant: d.own('style')?.value, collapsed: d.own('collapsed')?.value }),
   }),
 };

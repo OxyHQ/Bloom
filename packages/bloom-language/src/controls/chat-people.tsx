@@ -11,7 +11,7 @@ import {
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { SelectedChipsLayout, SpaceToken } from '../tokens';
+import type { DurationName, SelectedChipsLayout, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -23,12 +23,12 @@ type Drawn = 'style' | 'testID';
 /**
  * Bloom `StoryViewer`'s data: its author, time, playback state, handlers and
  * words. A composer of the app's own is a language child; its height a space
- * token.
+ * token, a story's `duration` a duration token.
  */
 export type StoryViewerOptions = Omit<
   StoryViewerProps,
-  Drawn | 'stories' | 'index' | 'composer' | 'height'
-> & { readonly composer?: Child; readonly height?: SpaceToken };
+  Drawn | 'stories' | 'index' | 'composer' | 'height' | 'duration'
+> & { readonly composer?: Child; readonly height?: SpaceToken; readonly duration?: DurationName };
 /** Bloom `SelectedChipsRow`'s handlers and words; what it shows with nobody picked is a language child. */
 export type SelectedChipsRowOptions = Omit<
   SelectedChipsRowProps,
@@ -80,7 +80,11 @@ export function NewGroupForm(
 }
 
 export const CHAT_PEOPLE: Record<ChatPeopleKind, ControlRenderer> = {
-  storyViewer: product(BloomStoryViewer, { slots: ['composer'], lengths: ['height'] }),
+  storyViewer: product(BloomStoryViewer, {
+    slots: ['composer'],
+    lengths: ['height'],
+    durations: ['duration'],
+  }),
   selectedChipsRow: product(BloomSelectedChipsRow, {
     slots: ['emptyState'],
     own: (d) => ({ layout: d.own('style')?.value }),

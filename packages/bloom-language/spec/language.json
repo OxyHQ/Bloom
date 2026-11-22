@@ -266,10 +266,14 @@
       "2xl": 1536
     },
     "duration": {
+      "$comment": "Milliseconds: Bloom's animation.duration rungs, then the exact durations apps write, named by their value ('2500' is 2500 ms; '0' stills a count-up).",
       "instant": 100,
       "fast": 150,
       "normal": 200,
-      "slow": 300
+      "slow": 300,
+      "0": 0,
+      "800": 800,
+      "2500": 2500
     },
     "rotation": {
       "$comment": "Degrees: Bloom's own turns, then the exact angle apps write in two or more places, named by its degrees (Tailwind's rotate-45 is '45').",

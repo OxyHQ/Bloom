@@ -4,7 +4,7 @@ import {
 } from '@oxy.so/bloom/ai-profile-card';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ColorToken } from '../tokens';
+import type { ColorToken, DurationName } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -17,8 +17,8 @@ export type AiProfileCardKind = 'aiProfileCard';
  */
 export type AiProfileCardOptions = Omit<
   AiProfileCardProps,
-  'name' | 'color' | 'actions' | 'style' | 'testID'
-> & { readonly actions?: Child };
+  'name' | 'color' | 'actions' | 'style' | 'testID' | 'countUpDuration'
+> & { readonly actions?: Child; readonly countUpDuration?: DurationName };
 
 /** Bloom `AiProfileCard`. */
 export interface AiProfileCardView extends ViewModifiers<AiProfileCardView> {
@@ -34,6 +34,7 @@ export function AiProfileCard(name: string, options: AiProfileCardOptions = {}):
 export const AI_PROFILE_CARDS: Record<AiProfileCardKind, ControlRenderer> = {
   aiProfileCard: product(BloomAiProfileCard, {
     slots: ['actions'],
+    durations: ['countUpDuration'],
     colors: (d) => ({ color: d.own('tint')?.value as ColorToken | undefined }),
   }),
 };

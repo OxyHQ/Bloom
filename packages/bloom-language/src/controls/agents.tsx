@@ -45,6 +45,7 @@ import type {
   AgentThinkingTone,
   Blend,
   ContentAlignment,
+  DurationName,
   InkToken,
   ModesPresentation,
   PrimaryActionPlacement,
@@ -88,7 +89,10 @@ export type AgentThinkingOptions = Omit<
   AgentThinkingProps,
   Drawn | 'children' | 'variant' | 'tone'
 >;
-export type AgentProgressOptions = Omit<AgentProgressProps, Drawn>;
+export type AgentProgressOptions = Omit<
+  AgentProgressProps,
+  Drawn | 'stepDuration' | 'completionDelay'
+> & { readonly stepDuration?: DurationName; readonly completionDelay?: DurationName };
 export type AgentLogRowOptions = Omit<AgentLogRowProps, Drawn | 'children'>;
 /** Bloom `AgentLogToolCall`'s data; `content` is what it shows expanded (Bloom's children). */
 export type AgentLogToolCallOptions = Omit<
@@ -121,7 +125,12 @@ export type ConversationSidebarOptions = Omit<
   ConversationSidebarProps,
   Drawn | 'conversations' | 'after' | SidebarLook
 > & { readonly after?: Child };
-export type QuestionnaireOptions = Omit<QuestionnaireProps, Drawn | 'questions'>;
+export type QuestionnaireOptions = Omit<
+  QuestionnaireProps,
+  Drawn | 'questions' | 'advanceDelay'
+> & {
+  readonly advanceDelay?: DurationName;
+};
 
 /** Bloom `AgentLimitsCard`: the context window and the plan's usage limits. */
 export type AgentLimitsCardView = ViewModifiers<AgentLimitsCardView>;
@@ -273,7 +282,7 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
   agentThinking: product(BloomAgentThinking, {
     own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
   }),
-  agentProgress: product(BloomAgentProgress),
+  agentProgress: product(BloomAgentProgress, { durations: ['stepDuration', 'completionDelay'] }),
   agentProgressLoadingText: text(BloomAgentProgressLoadingText, (d) => ({
     numberOfLines: d.own('lines')?.value,
     variant: d.own('textVariant')?.value,
@@ -319,5 +328,5 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
       teamPlacement: d.own('teamPlacement')?.value,
     }),
   }),
-  questionnaire: product(BloomQuestionnaire),
+  questionnaire: product(BloomQuestionnaire, { durations: ['advanceDelay'] }),
 };

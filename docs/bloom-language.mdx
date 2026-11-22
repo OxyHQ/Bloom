@@ -252,7 +252,10 @@ stacking levels `'2'` and `'60'` (`z-[2]`, `z-[60]`), the 4px border (`'4'`,
 `rotate-45`), and the dialog and popover widths apps give Bloom's `width`,
 `maxWidth` and `minWidth` that the className table also finds in two or more
 places: `'240'` `'300'` `'380'` `'400'` `'420'` `'440'` `'480'` `'512'` `'560'`
-`'720'`. Anything else stays an app's `defineTokens`. A raw hex colour is an app's
+`'720'`. Durations are in milliseconds: Bloom's `instant` 100, `fast` 150,
+`normal` 200 and `slow` 300, then the exact durations apps write, `'800'` and
+`'2500'` (Willo's photo fades), and `'0'`, which stills a count-up. Anything
+else stays an app's `defineTokens`. A raw hex colour is an app's
 brand colour: the app's own token, never a Bloom one (see [className](#classname)).
 
 The vocabulary is closed. Every value is a name from the spec, whose every rung
@@ -2529,7 +2532,8 @@ child, a handler a function, and the data is Bloom's own type, so Bloom's
 constants and an app's existing data fit as they are (a node inside data, a
 suggestion's `leading`, is a React element: `toElement(view)`). Its look is modifiers, checked by the spec: a
 size, a style or a tone is a token, a colour a role (painted where it is
-drawn), a length a space token. The universal modifiers place, box and name
+drawn), a length a space token, a duration (a reveal's pace, a count-up, a
+cross-fade) a duration token. The universal modifiers place, box and name
 it, and `.onPress()` puts a press on a component that takes none of its own.
 
 ### Colour lists
@@ -3294,12 +3298,12 @@ title truncates; `.onPress()` and `.label()` are its link's own.
 ### Ambient photo
 
 ```ts
-AmbientPhoto(photo.url, { fadeMs: 2500, drift: settings.drift, onShown }).frame({ width: 'full', height: 'full' })
+AmbientPhoto(photo.url, { fadeMs: '2500', drift: settings.drift, onShown }).frame({ width: 'full', height: 'full' })
 ```
 
 Bloom's `ambient-photo`: `AmbientPhoto(source, options?)` cross-fades to each
-new photo and drifts while it rests; its timing (`fadeMs`, `drift`,
-`driftMs`, `driftScale`) is Bloom's, as it takes it. It moves on a timer, so
+new photo and drifts while it rests; its timing is Bloom's (`drift`,
+`driftScale`), its `fadeMs` and `driftMs` duration tokens. It moves on a timer, so
 its cases are compared by Jest as they mount, not in Chrome.
 
 ### Month calendar
@@ -3718,7 +3722,7 @@ Bloom's panes per side (`onAction`, `onOpenChange`, `actionPresentation`,
 `fullSwipeAction`, `closeLabel`; `height` and `actionWidth` space tokens,
 `radius` a corner rung); `.tint()` is the fill the row travels on, a colour
 role. Its `paint` stays Bloom's six colours (a set of roles has no prop to
-paint). `ThemeToggle(options?)` (`transitionDuration`): `.style('sidebar' |
+paint). `ThemeToggle(options?)` (`transitionDuration`, a duration token): `.style('sidebar' |
 'segmented' | 'sidebar-segmented' | 'bare-segmented')`, `.collapsed()` for
 a collapsed rail.
 
