@@ -28,10 +28,24 @@ const every: ParityCase[] = BLOOM_ICONS.map(([name, Glyph]) => ({
 
 const [, Heart] = BLOOM_ICONS.find(([name]) => name === 'RiHeart3Line') as [string, BloomIcon];
 
+/** A numeric rung (`'18'`): an exact side carried over from apps, not one of Bloom's names. */
+const exact = (size: IconSizeName) => /^\d+$/.test(size);
+
 const rungs: ParityCase[] = (Object.keys(ICON_SIZE) as IconSizeName[]).map((size) => ({
   name: `size ${size}`,
   language: () => toElement(L.Icon(Heart).size(size)),
-  bloom: () => <Themed>{(c) => <Heart size={size as keyof typeof sizes} fill={c.text} />}</Themed>,
+  // A numeric rung is the side an app writes as the glyph's width and height.
+  bloom: () => (
+    <Themed>
+      {(c) =>
+        exact(size) ? (
+          <Heart width={ICON_SIZE[size]} height={ICON_SIZE[size]} fill={c.text} />
+        ) : (
+          <Heart size={size as keyof typeof sizes} fill={c.text} />
+        )
+      }
+    </Themed>
+  ),
 }));
 
 const inks: ParityCase[] = (Object.keys(COLORS) as ColorName[]).flatMap((role) => [

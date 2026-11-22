@@ -76,7 +76,10 @@ export type TrackingName = keyof typeof TRACKING | keyof typeof TRACKING_PX;
 export type WeightName = keyof typeof WEIGHT;
 /** A line height: a named ratio of the size (Bloom's), or an exact one in px carried over from apps (`'28px'`). */
 export type LeadingName = keyof typeof LEADING | keyof typeof LEADING_PX;
+/** An icon side: Bloom's rungs, or an exact side in points carried over from apps (`'18'`). */
 export type IconSizeName = keyof typeof ICON_SIZE;
+/** An `IconCircle`'s glyph: one of Bloom's named icon rungs, as its `size` takes them. */
+export type IconCircleSize = (typeof ENUMS.iconCircleSize)[number];
 export type AvatarSizeName = keyof typeof AVATAR_SIZE;
 /**
  * Colour roles, by their class-name spelling (`text-muted-foreground` is

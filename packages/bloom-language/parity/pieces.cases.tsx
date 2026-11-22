@@ -9,10 +9,9 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
 import { Text, TYPE_SCALE } from '@oxy.so/bloom/typography';
 
-import { ENUMS, ICON_SIZE } from '../src/generated/spec.generated';
+import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import type { IconSizeName } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
 
 const onPress = () => {};
@@ -71,7 +70,7 @@ const circles: ParityCase[] = [
     language: () => toElement(L.IconCircle(RiHeart3Line)),
     bloom: () => <IconCircle icon={RiHeart3Line} />,
   },
-  ...(Object.keys(ICON_SIZE) as IconSizeName[]).map((size) => ({
+  ...ENUMS.iconCircleSize.map((size) => ({
     name: `IconCircle ${size}`,
     language: () => toElement(L.IconCircle(RiHeart3Line).size(size)),
     bloom: () => <IconCircle icon={RiHeart3Line} size={size} />,

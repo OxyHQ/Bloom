@@ -387,7 +387,7 @@ import {
   type GridFlow,
   type FontName,
   type HitSlopName,
-  type IconSizeName,
+  type IconCircleSize,
   type IconSizeToken,
   type LeadingToken,
   type TrackingName,
@@ -4709,7 +4709,7 @@ export interface BadgeView extends ViewModifiers<BadgeView> {
 }
 /** Bloom `IconCircle`: an icon on a tinted disc. */
 export interface IconCircleView extends ViewModifiers<IconCircleView> {
-  size(value: IconSizeName): IconCircleView;
+  size(value: IconCircleSize): IconCircleView;
 }
 /** Bloom `Loading`: a spinner, the top bar, or an inline line beside its `Text`. */
 export interface LoadingView extends ViewModifiers<LoadingView> {
