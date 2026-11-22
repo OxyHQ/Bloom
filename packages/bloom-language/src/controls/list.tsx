@@ -118,6 +118,10 @@ export interface MailRowView extends ListRowModifiers<MailRowView> {
 }
 /** Bloom `List`: rows from data, in sections or not, with its header, footer and empty state. */
 export interface ListView extends ViewModifiers<ListView> {
+  /** A view pinned at the list's top or bottom, its scroller's content padded by its height (SwiftUI's `safeAreaInset`). */
+  safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): ListView;
+  /** A `safeAreaInset` that is a bar, with Bloom's scroll edge scrim under it (SwiftUI's `safeAreaBar`). */
+  safeAreaBar(edge: InsetEdge, view: ViewNode): ListView;
   /** Between rows: `none`, a full `line`, or an `inset` line (default). */
   separator(value: ListSeparator): ListView;
   /** The list scrolls itself (it is laid out in the page by default). */
@@ -316,6 +320,8 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       sectionIndex: d.own('sectionIndex')?.value,
       loading: d.own('loading')?.value,
       loadingCount: d.own('loadingRows')?.value,
+      // Views pinned at its edges: its scroller's content makes room for them.
+      contentContainerStyle: withRoom(undefined, d.room),
     });
     listSlots(d, props);
     return d.component(BloomList, props);
