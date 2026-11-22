@@ -3096,6 +3096,10 @@ export const MODIFIERS = {
   "buttonStyle": [
     "buttonStyle"
   ],
+  "modifier": [
+    "value",
+    "children"
+  ],
   "drag": [
     "motionValue",
     "value?"
@@ -4507,6 +4511,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing",
     "align",
     "justify",
@@ -4608,6 +4613,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "alignment",
     "hoverHighlight"
   ],
@@ -4703,7 +4709,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "text": [
     "padding",
@@ -4798,6 +4805,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lines",
     "noWrap",
     "truncation",
@@ -4906,6 +4914,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "avatar": [
@@ -5001,6 +5010,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "tint",
     "shape",
@@ -5102,6 +5112,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "layout",
     "size",
     "shape",
@@ -5206,6 +5217,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "size",
@@ -5307,6 +5319,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "loading": [
@@ -5402,6 +5415,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size",
     "tint"
@@ -5498,7 +5512,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "skeletonGroup": [
     "padding",
@@ -5592,7 +5607,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "image": [
     "padding",
@@ -5687,6 +5703,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -5786,7 +5803,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "ratio": [
     "padding",
@@ -5880,7 +5898,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "grid": [
     "padding",
@@ -5975,6 +5994,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "columns",
     "minCellWidth",
     "spacing",
@@ -6073,6 +6093,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "shape",
     "size",
@@ -6180,6 +6201,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "fill",
     "stroke",
@@ -6278,6 +6300,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "axis",
     "size",
     "dividers",
@@ -6376,6 +6399,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size",
     "tint",
@@ -6474,6 +6498,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "actions"
   ],
   "menuItem": [
@@ -6589,6 +6614,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lineStyle",
     "align",
     "spacing",
@@ -6761,6 +6787,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "count",
     "active",
     "tint"
@@ -6858,6 +6885,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "trailing",
     "countFormat",
     "size",
@@ -6957,7 +6985,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "lottie": [
     "padding",
@@ -7052,6 +7081,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loop",
     "paused",
     "fallback",
@@ -7150,6 +7180,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "radius",
@@ -7249,7 +7280,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardBody": [
     "padding",
@@ -7343,7 +7375,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardFooter": [
     "padding",
@@ -7437,7 +7470,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardTitle": [
     "lines"
@@ -7538,6 +7572,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "leadingView",
     "trailing",
@@ -7641,6 +7676,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "caption",
     "style",
     "separator",
@@ -7763,6 +7799,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "size",
@@ -7864,6 +7901,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "icon",
     "description",
     "media",
@@ -7968,6 +8006,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size"
   ],
@@ -8064,6 +8103,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "fullWidth",
     "onReorder",
@@ -8172,6 +8212,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "errorBoundary": [
@@ -8284,7 +8325,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "view": [
     "padding",
@@ -8378,7 +8420,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "appLayout": [
     "primaryAction",
@@ -8487,6 +8530,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "placeholder",
     "size",
     "invalid",
@@ -8600,6 +8644,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "placeholder",
     "description",
     "size",
@@ -8709,6 +8754,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "description",
     "error",
     "required"
@@ -8806,6 +8852,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "required"
   ],
@@ -8902,6 +8949,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "tint"
   ],
@@ -8998,6 +9046,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "description",
     "size",
     "tint",
@@ -9097,6 +9146,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size",
     "tint"
@@ -9194,6 +9244,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size",
     "tabs"
@@ -9291,6 +9342,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "placeholder",
     "size",
     "presented"
@@ -9396,6 +9448,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "placeholder",
     "size",
     "collapsible",
@@ -9505,6 +9558,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing",
     "contentInset",
     "fade",
@@ -9604,6 +9658,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing",
     "lines"
   ],
@@ -9709,7 +9764,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "selectionCard": [
     "padding",
@@ -9804,6 +9860,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "toggle",
     "selected",
     "description",
@@ -9908,6 +9965,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentMargins",
     "spacing",
     "refreshable",
@@ -10176,6 +10234,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentMargins",
     "spacing",
     "axis",
@@ -10278,6 +10337,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentMargins",
     "spacing",
     "axis",
@@ -10416,6 +10476,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "description",
     "trailing",
     "inset"
@@ -10513,6 +10574,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "icon",
     "muted"
   ],
@@ -10609,6 +10671,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "compact",
     "size",
     "width"
@@ -10722,6 +10785,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10823,6 +10887,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10925,6 +10990,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "unavailable",
     "weekStart",
@@ -11025,6 +11091,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "unavailable",
     "weekStart",
@@ -11126,6 +11193,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "step",
     "hourFormat",
@@ -11225,6 +11293,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "count",
     "countStyle",
     "size",
@@ -11331,6 +11400,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "max",
     "size",
     "starLabel"
@@ -11428,6 +11498,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "max",
     "valueLabel",
     "labelWidth",
@@ -11527,6 +11598,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "labels"
   ],
   "meter": [
@@ -11622,6 +11694,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11726,6 +11799,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11833,6 +11907,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "trackTint",
     "thickness",
@@ -11932,6 +12007,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "minWidth"
   ],
@@ -12027,7 +12103,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "tableColumn": [
     "padding",
@@ -12122,6 +12199,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "width",
     "share",
     "minWidth",
@@ -12222,6 +12300,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "emptyState"
   ],
   "tableRow": [
@@ -12317,6 +12396,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "selected"
   ],
   "tableCell": [
@@ -12412,6 +12492,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "width",
     "share",
     "minWidth",
@@ -12510,6 +12591,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "supporting",
     "supportingLines",
     "prefix",
@@ -12623,6 +12705,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "supporting",
     "supportingLines",
     "prefix",
@@ -12737,6 +12820,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "separator",
     "scrollable",
     "scrollHeight",
@@ -12841,6 +12925,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "itemKey",
     "itemType",
     "estimatedItemSize",
@@ -12947,6 +13032,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "selecting",
     "onSelectAll",
     "onClear",
@@ -13046,6 +13132,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "headerContent",
     "footerContent",
     "loop",
@@ -13154,6 +13241,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "width"
   ],
   "carouselDots": [
@@ -13249,6 +13337,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "shape",
     "style",
     "max",
@@ -13347,6 +13436,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "streaming",
     "size",
     "onLinkPress",
@@ -13445,6 +13535,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "tint",
     "bounds",
@@ -13552,6 +13643,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "tint",
     "bounds",
@@ -13660,6 +13752,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "allowsMultiple",
     "revealMotion"
@@ -13756,7 +13849,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "accordionTrigger": [
     "padding",
@@ -13851,6 +13945,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "indicator"
   ],
   "accordionContent": [
@@ -13945,7 +14040,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "code": [
     "padding",
@@ -14039,7 +14135,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "pre": [
     "padding",
@@ -14134,6 +14231,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "language",
     "lineNumbers"
   ],
@@ -14230,6 +14328,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "language",
     "lineNumbers",
     "highlight",
@@ -14329,6 +14428,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "language",
     "lineNumbers",
     "highlight",
@@ -14434,6 +14534,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "step",
     "size",
@@ -14535,6 +14636,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "step",
     "size",
@@ -14638,6 +14740,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "presented",
     "side",
     "openDelay",
@@ -14736,6 +14839,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "collapses",
     "separatorView",
@@ -14834,6 +14938,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "icon",
     "prefix",
@@ -14934,6 +15039,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "days",
     "endDate",
     "levels",
@@ -15038,6 +15144,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "placeholder",
     "tagSuggestions",
     "allowsCreate",
@@ -15143,6 +15250,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "file",
     "uploadProgress",
     "onFileSelected",
@@ -15247,6 +15355,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
@@ -15344,6 +15453,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "length",
     "characters",
     "onComplete",
@@ -15444,6 +15554,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "labels",
     "size"
   ],
@@ -15540,6 +15651,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "tint"
   ],
@@ -15636,6 +15748,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "actions",
     "presentedAt"
   ],
@@ -15732,6 +15845,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
@@ -15829,6 +15943,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "fileTypes",
     "dragActions",
     "folder",
@@ -15929,6 +16044,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "opaque",
     "mediaCorner"
   ],
@@ -16025,6 +16141,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "minItemWidth",
     "contentInset"
   ],
@@ -16127,6 +16244,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "onRemove",
     "onRetry",
     "onAdd",
@@ -16229,6 +16347,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "axis",
     "spacing",
     "optionBox"
@@ -16331,6 +16450,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "presented",
     "openDelay",
     "closeDelay",
@@ -16431,6 +16551,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lines",
     "style",
     "labels"
@@ -16528,6 +16649,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "trailing",
     "spacing",
     "backdrop",
@@ -16626,6 +16748,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "openMenu",
     "actions"
   ],
@@ -16727,6 +16850,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "readoutFormat"
   ],
   "phoneInput": [
@@ -16822,6 +16946,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "country",
     "countries",
     "placeholder",
@@ -16927,6 +17052,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -17026,6 +17152,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -17125,6 +17252,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "contentFit"
   ],
   "emptyMediaSurface": [
@@ -17219,7 +17347,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "avatarAnchor": [
     "padding",
@@ -17313,7 +17442,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "avatarFlightLayer": [],
   "inputGroup": [
@@ -17409,6 +17539,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "invalid"
   ],
@@ -17505,6 +17636,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "divider",
     "flush"
   ],
@@ -17601,6 +17733,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "description",
     "timestamp",
     "status",
@@ -17707,6 +17840,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "coverFill"
   ],
   "socialButton": [
@@ -17802,6 +17936,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "iconOnly",
@@ -17912,6 +18047,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "bounds",
     "unavailable",
     "weekStart",
@@ -18016,6 +18152,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "streaming",
     "onLinkPress",
     "plainRun",
@@ -18115,6 +18252,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "summary",
     "sorting",
     "rowSelection",
@@ -18231,7 +18369,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "dataTableSearch": [
     "padding",
@@ -18326,6 +18465,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "placeholder"
   ],
   "dataTableSelect": [
@@ -18421,6 +18561,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "sortableChipRow": [
@@ -18516,6 +18657,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "onReorder",
     "onDragChange",
     "trailing"
@@ -18617,6 +18759,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "blend"
   ],
   "agentAvatar": [
@@ -18712,6 +18855,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "mood",
     "paused",
@@ -18811,6 +18955,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "activeIndex"
   ],
   "compactComposer": [
@@ -18905,7 +19050,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "composerBanner": [
     "padding",
@@ -19000,6 +19146,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "composerIconButton": [
@@ -19095,6 +19242,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "size",
     "iconSize"
@@ -19192,6 +19340,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "loading",
     "presented",
@@ -19289,7 +19438,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "attachmentMenu": [
     "padding",
@@ -19384,6 +19534,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "columns",
     "presented"
@@ -19481,6 +19632,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "activeGroup",
     "query",
@@ -19580,6 +19732,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "surface"
   ],
@@ -19676,6 +19829,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "presented"
   ],
   "areaChartCard": [
@@ -19771,6 +19925,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "shape",
     "activeIndex",
@@ -19869,6 +20024,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "mono"
   ],
@@ -19965,6 +20121,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing"
   ],
   "chartHeadline": [
@@ -20059,7 +20216,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "chartStatTiles": [
     "padding",
@@ -20154,6 +20312,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "activeIndex"
   ],
   "contributionsCard": [
@@ -20249,6 +20408,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "activeCell"
   ],
@@ -20345,6 +20505,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "activeTint",
     "range",
@@ -20443,6 +20604,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "shape",
     "tint",
     "activeTint",
@@ -20541,6 +20703,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "legend",
     "activeIndex",
@@ -20639,6 +20802,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "activeIndex"
   ],
   "sparkline": [
@@ -20734,6 +20898,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "shape",
     "filled"
@@ -20831,6 +20996,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "mono",
     "activeIndex",
     "range"
@@ -20928,6 +21094,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "activeTint",
     "activeIndex"
@@ -21025,6 +21192,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "activeTint",
     "activeIndex"
@@ -21122,6 +21290,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "model",
     "effort",
     "voiceState",
@@ -21220,6 +21389,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "surface",
     "frosted",
     "model",
@@ -21319,7 +21489,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiChatShell": [
     "padding",
@@ -21414,6 +21585,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "sidebarSurface",
     "sidebarScrollbarSide",
     "surface",
@@ -21513,6 +21685,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "surface",
     "floatingChrome"
   ],
@@ -21608,7 +21781,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiChatUserMessage": [
     "padding",
@@ -21702,7 +21876,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiChatAssistantMessage": [
     "padding",
@@ -21796,7 +21971,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiChatMessageLine": [
     "padding",
@@ -21891,6 +22067,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "selectable"
   ],
@@ -21986,7 +22163,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiChatMobileHeader": [
     "padding",
@@ -22080,7 +22258,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiChatCodePanel": [
     "padding",
@@ -22175,6 +22354,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tab"
   ],
   "aiChatGalleryPanel": [
@@ -22270,6 +22450,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tab"
   ],
   "statCard": [
@@ -22365,6 +22546,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "statCards": [
@@ -22460,6 +22642,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "columns"
   ],
@@ -22556,6 +22739,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -22653,6 +22837,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "agentLimitsCard": [
@@ -22748,6 +22933,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "usageCard": [
@@ -22843,6 +23029,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "agentThinking": [
@@ -22938,6 +23125,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "presented"
@@ -23035,6 +23223,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "minimized"
   ],
   "agentProgressLoadingText": [
@@ -23130,6 +23319,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lines",
     "textVariant"
   ],
@@ -23225,7 +23415,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentLogShimmerText": [
     "padding",
@@ -23319,7 +23510,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentLogToolCall": [
     "padding",
@@ -23414,6 +23606,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "agentLogToolCalls": [
@@ -23508,7 +23701,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentLogWorkingRow": [
     "padding",
@@ -23602,7 +23796,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "composerLoader": [
     "padding",
@@ -23697,6 +23892,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "gradient",
     "blend",
     "bloomOnly",
@@ -23795,6 +23991,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size",
     "sidebarSurface",
@@ -23905,6 +24102,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "step",
     "answers"
   ],
@@ -24001,6 +24199,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "gradient"
@@ -24098,6 +24297,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "chatEmptyState": [
@@ -24192,7 +24392,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "chatHeader": [
     "padding",
@@ -24287,6 +24488,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "presentation",
     "titleAlign",
@@ -24388,6 +24590,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tab",
     "memberQuery"
@@ -24485,6 +24688,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "dismissIcon"
   ],
   "scrollToBottomButton": [
@@ -24579,7 +24783,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "chatFolderTabs": [
     "padding",
@@ -24674,6 +24879,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing",
     "dividers",
     "value"
@@ -24770,7 +24976,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "chatSearchResults": [
     "padding",
@@ -24864,7 +25071,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "storiesRow": [
     "padding",
@@ -24959,6 +25167,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing"
   ],
   "storyRing": [
@@ -25054,6 +25263,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "gradient"
   ],
   "typingDots": [
@@ -25149,6 +25359,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "contactMessage": [
@@ -25244,6 +25455,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -25341,6 +25553,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "dividers"
   ],
   "fileMessage": [
@@ -25436,6 +25649,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "bubbleTint",
@@ -25534,6 +25748,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -25632,6 +25847,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -25730,6 +25946,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -25827,6 +26044,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -25924,6 +26142,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "columns",
     "spacing"
   ],
@@ -26020,6 +26239,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -26117,6 +26337,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "bubbleTint",
@@ -26216,6 +26437,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -26314,7 +26536,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "hostCard": [
     "padding",
@@ -26408,7 +26631,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "listingHeader": [
     "padding",
@@ -26503,6 +26727,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "listingHeaderAction": [
@@ -26598,6 +26823,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "iconOnly"
   ],
   "listingPhotoGrid": [
@@ -26693,6 +26919,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "reviewCard": [
@@ -26788,6 +27015,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lines",
     "expanded"
   ],
@@ -26884,6 +27112,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "mapPriceMarker": [
@@ -26979,6 +27208,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "size"
   ],
@@ -27074,7 +27304,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "followButton": [
     "padding",
@@ -27169,6 +27400,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "size",
@@ -27269,6 +27501,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "spacing"
   ],
@@ -27365,6 +27598,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "spacing",
     "round",
@@ -27462,7 +27696,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "subscriptionPrice": [
     "padding",
@@ -27556,7 +27791,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "userHoverCard": [
     "padding",
@@ -27650,7 +27886,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardForm": [
     "padding",
@@ -27744,7 +27981,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardFormCountry": [
     "padding",
@@ -27838,7 +28076,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardFormPostcode": [
     "padding",
@@ -27932,7 +28171,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cardFormHostedField": [
     "padding",
@@ -28026,7 +28266,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "checkoutSheet": [
     "padding",
@@ -28121,6 +28362,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "methodTitleAlign",
     "methodTitleVariant"
   ],
@@ -28217,6 +28459,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "dividers"
   ],
   "priceRangeFilter": [
@@ -28312,6 +28555,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "countFilter": [
@@ -28406,7 +28650,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "toggleChipGroup": [
     "padding",
@@ -28500,7 +28745,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "amenityFilter": [
     "padding",
@@ -28594,7 +28840,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "switchFilterRow": [
     "padding",
@@ -28688,7 +28935,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "filterFooter": [
     "padding",
@@ -28783,6 +29031,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "filterTriggerButton": [
@@ -28878,6 +29127,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "areaRangeFilter": [
@@ -28972,7 +29222,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "availabilityFilter": [
     "padding",
@@ -29067,6 +29318,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "date"
   ],
   "featureFilter": [
@@ -29162,6 +29414,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "floorFilter": [
@@ -29256,7 +29509,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "staySearchCompact": [
     "padding",
@@ -29350,7 +29604,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "staySearchPanel": [
     "padding",
@@ -29444,7 +29699,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "staySearchStep": [
     "padding",
@@ -29538,7 +29794,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "destinationSuggestions": [
     "padding",
@@ -29633,6 +29890,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "highlightedIndex"
   ],
   "guestPicker": [
@@ -29728,6 +29986,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "tenancyTimeline": [
@@ -29823,6 +30082,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "leaseSummaryCard": [
@@ -29918,6 +30178,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "rentPaymentList": [
@@ -30013,6 +30274,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint"
   ],
@@ -30108,7 +30370,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "documentList": [
     "padding",
@@ -30203,6 +30466,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "evictionReportCard": [
@@ -30298,6 +30562,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lines"
   ],
   "evictionTimeline": [
@@ -30392,7 +30657,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "placeReviewSummary": [
     "padding",
@@ -30486,7 +30752,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "writeReviewPrompt": [
     "padding",
@@ -30580,7 +30847,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "callScreen": [
     "padding",
@@ -30675,6 +30943,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "size",
@@ -30777,6 +31046,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "muted"
@@ -30874,6 +31144,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "columns",
     "spacing",
@@ -30972,6 +31243,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "answerStyle"
@@ -31069,6 +31341,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint"
   ],
@@ -31165,6 +31438,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "muted"
   ],
   "selectedChipsRow": [
@@ -31260,6 +31534,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "newGroupForm": [
@@ -31355,6 +31630,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "description"
   ],
   "messageBubble": [
@@ -31450,6 +31726,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "groupPosition",
     "mediaFit",
     "tail",
@@ -31548,7 +31825,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "messageList": [
     "padding",
@@ -31642,7 +31920,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "mapScaleBar": [
     "padding",
@@ -31737,6 +32016,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "mapControls": [
@@ -31832,6 +32112,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "axis",
     "align",
     "tilted"
@@ -31929,6 +32210,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "navigationBanner": [
@@ -32023,7 +32305,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "placeCard": [
     "padding",
@@ -32118,6 +32401,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "loading",
     "favorite"
@@ -32215,6 +32499,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "placeInfoList": [
@@ -32309,7 +32594,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "placeTransit": [
     "padding",
@@ -32403,7 +32689,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "placeListCard": [
     "padding",
@@ -32498,6 +32785,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "placeList": [
@@ -32592,7 +32880,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "directionsSteps": [
     "padding",
@@ -32687,6 +32976,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "placePicker": [
@@ -32782,6 +33072,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "query"
   ],
@@ -32878,6 +33169,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "loading",
     "minimized"
@@ -32975,6 +33267,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "query"
   ],
   "mailMessage": [
@@ -33070,6 +33363,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded",
     "starred"
   ],
@@ -33166,6 +33460,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "starred",
     "expandedIds"
   ],
@@ -33262,6 +33557,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "noteEditorToolbar": [
@@ -33357,6 +33653,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "tripCard": [
@@ -33452,6 +33749,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "bookingCard": [
@@ -33547,6 +33845,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading",
     "guestsOpen"
   ],
@@ -33643,6 +33942,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "priceBreakdown": [
@@ -33737,7 +34037,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "homeSearchBar": [
     "padding",
@@ -33832,6 +34133,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "query"
   ],
   "searchModeTabs": [
@@ -33927,6 +34229,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "propertyTypePicker": [
@@ -34022,6 +34325,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "columns"
   ],
   "savedSearchCard": [
@@ -34116,7 +34420,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "listingActionBar": [
     "padding",
@@ -34211,6 +34516,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "mortgageCalculator": [
@@ -34306,6 +34612,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "price",
     "downPayment",
@@ -34405,6 +34712,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "saleActionCard": [
@@ -34500,6 +34808,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "listingCard": [
@@ -34595,6 +34904,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "density",
     "loading",
@@ -34693,6 +35003,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "wishlistCard": [
@@ -34788,6 +35099,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "listingPreviewPane": [
@@ -34883,6 +35195,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "mode"
   ],
   "listingQualityMeter": [
@@ -34977,7 +35290,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "propertyTypeSelector": [
     "padding",
@@ -35072,6 +35386,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "columns"
   ],
   "offeringBadge": [
@@ -35167,6 +35482,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style"
   ],
@@ -35263,6 +35579,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "pricePerAreaComparison": [
@@ -35357,7 +35674,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "projectBoard": [
     "padding",
@@ -35451,7 +35769,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "projectBoardCardContent": [
     "padding",
@@ -35545,7 +35864,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "boardDragHandle": [
     "padding",
@@ -35639,7 +35959,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "activityFeed": [
     "padding",
@@ -35734,6 +36055,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "density",
     "lines"
@@ -35831,6 +36153,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint"
   ],
@@ -35927,6 +36250,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "axis",
     "density"
   ],
@@ -36023,6 +36347,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "shape",
     "divider",
@@ -36121,6 +36446,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "divider"
   ],
@@ -36216,7 +36542,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "calendarView": [
     "padding",
@@ -36311,6 +36638,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "month"
   ],
@@ -36406,7 +36734,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "calendarViewMonthGrid": [
     "padding",
@@ -36501,6 +36830,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "taskList": [
@@ -36595,7 +36925,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "webSearch": [
     "padding",
@@ -36689,7 +37020,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "voiceControls": [
     "padding",
@@ -36784,6 +37116,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "muted",
     "paused"
@@ -36880,7 +37213,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentCreatorField": [
     "padding",
@@ -36975,6 +37309,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "multiline",
     "divider"
   ],
@@ -37070,7 +37405,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentProfile": [
     "padding",
@@ -37164,7 +37500,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentReplyIdentity": [
     "padding",
@@ -37258,7 +37595,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "aiProfileCard": [
     "padding",
@@ -37353,6 +37691,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "period",
     "activeCell"
@@ -37449,7 +37788,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "multiAgentChat": [
     "padding",
@@ -37543,7 +37883,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "agentChatHistory": [
     "padding",
@@ -37638,6 +37979,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "surface",
     "query",
     "selection"
@@ -37735,6 +38077,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "titleAlign",
     "value",
     "selection"
@@ -37832,6 +38175,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "noteCard": [
@@ -37927,6 +38271,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tint",
     "loading",
@@ -38025,6 +38370,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "lines"
   ],
@@ -38121,6 +38467,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "search"
   ],
@@ -38216,7 +38563,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "outlineNav": [
     "padding",
@@ -38311,6 +38659,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "pagination": [
@@ -38405,7 +38754,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "progressiveBlur": [
     "padding",
@@ -38499,7 +38849,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "addressRow": [
     "padding",
@@ -38594,6 +38945,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "density"
   ],
@@ -38690,6 +39042,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "density",
@@ -38788,6 +39141,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "paymentMethodRow": [
@@ -38883,6 +39237,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "paymentMethodList": [
@@ -38978,6 +39333,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "density",
     "loading"
@@ -39075,6 +39431,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "expanded"
   ],
   "priceSummaryLine": [
@@ -39170,6 +39527,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "paymentStatusBar": [
@@ -39265,6 +39623,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "paymentStatusBlock": [
@@ -39360,6 +39719,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "contactProfileCard": [
@@ -39455,6 +39815,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "leadScoreCard": [
@@ -39549,7 +39910,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "dealCard": [
     "padding",
@@ -39643,7 +40005,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "pipelineColumn": [
     "padding",
@@ -39737,7 +40100,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "pipelineBoard": [
     "padding",
@@ -39832,6 +40196,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "stage"
   ],
@@ -39927,7 +40292,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "patientInfoCard": [
     "padding",
@@ -40021,7 +40387,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "recentHiresCard": [
     "padding",
@@ -40115,7 +40482,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cartLine": [
     "padding",
@@ -40210,6 +40578,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "quantity"
   ],
@@ -40306,6 +40675,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "tip",
     "promo"
@@ -40402,7 +40772,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "cartTipPicker": [
     "padding",
@@ -40496,7 +40867,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "menuItemRow": [
     "padding",
@@ -40591,6 +40963,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "quantity"
   ],
@@ -40687,6 +41060,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "value",
     "quantity"
   ],
@@ -40783,6 +41157,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "loading",
     "favorite"
@@ -40880,6 +41255,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -40977,6 +41353,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading",
@@ -41075,6 +41452,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41172,6 +41550,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41269,6 +41648,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41366,6 +41746,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41463,6 +41844,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41560,6 +41942,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41657,6 +42040,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41754,6 +42138,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41851,6 +42236,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading"
@@ -41948,6 +42334,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "friendActivityCard": [
@@ -42042,7 +42429,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "quickAccessTile": [
     "padding",
@@ -42137,6 +42525,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "recapCard": [
@@ -42231,7 +42620,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "shareCard": [
     "padding",
@@ -42325,7 +42715,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "lyricsView": [
     "padding",
@@ -42420,6 +42811,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "lyricsPreviewCard": [
@@ -42515,6 +42907,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "lines"
   ],
   "audienceOverview": [
@@ -42609,7 +43002,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "streamsChart": [
     "padding",
@@ -42704,6 +43098,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "metric"
   ],
   "topTracksTable": [
@@ -42798,7 +43193,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "audienceBreakdown": [
     "padding",
@@ -42892,7 +43288,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "releaseCard": [
     "padding",
@@ -42987,6 +43384,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "releaseStatusBadge": [
@@ -43082,6 +43480,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size"
   ],
   "releaseTimeline": [
@@ -43177,6 +43576,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "axis"
   ],
   "trackUploadRow": [
@@ -43271,7 +43671,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "trackMetadataForm": [
     "padding",
@@ -43365,7 +43766,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "artistChipsInput": [
     "padding",
@@ -43459,7 +43861,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "isrcField": [
     "padding",
@@ -43553,7 +43956,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "creditsEditor": [
     "padding",
@@ -43647,7 +44051,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "artworkUploader": [
     "padding",
@@ -43741,7 +44146,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "payoutSummaryCard": [
     "padding",
@@ -43835,7 +44241,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "pitchCard": [
     "padding",
@@ -43930,6 +44337,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "release",
     "selectedMoods",
     "selectedGenres",
@@ -44027,7 +44435,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "checkoutSummary": [
     "padding",
@@ -44121,7 +44530,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "checkoutConfirm": [
     "padding",
@@ -44216,6 +44626,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading"
   ],
   "deliverySlotDays": [
@@ -44311,6 +44722,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "deliverySlotOption": [
@@ -44405,7 +44817,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "deliverySlotPicker": [
     "padding",
@@ -44500,6 +44913,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading",
     "tint",
     "day"
@@ -44597,6 +45011,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "transportControls": [
@@ -44692,6 +45107,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "style",
     "loading",
@@ -44792,6 +45208,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "muted",
     "liked",
     "devicePickerOpen",
@@ -44895,6 +45312,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "liked"
   ],
   "fullScreenPlayer": [
@@ -44990,6 +45408,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "liked",
     "shuffle",
     "repeat",
@@ -45088,6 +45507,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "presented"
   ],
@@ -45184,6 +45604,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "size",
     "presented"
   ],
@@ -45279,7 +45700,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "connectBanner": [
     "padding",
@@ -45373,7 +45795,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "carrierQuoteCard": [
     "padding",
@@ -45468,6 +45891,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "carrierQuoteList": [
@@ -45563,6 +45987,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "loading",
     "sorting"
@@ -45660,6 +46085,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "period"
   ],
   "earningsBreakdown": [
@@ -45754,7 +46180,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "earningsPayoutRow": [
     "padding",
@@ -45848,7 +46275,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "jobCard": [
     "padding",
@@ -45943,6 +46371,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "jobBoard": [
@@ -46038,6 +46467,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "loading",
     "sorting",
@@ -46137,6 +46567,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint",
     "strokeWidth",
     "value"
@@ -46234,6 +46665,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "loading",
     "value"
   ],
@@ -46329,7 +46761,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "shipmentLoadPicker": [
     "padding",
@@ -46423,7 +46856,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "shipmentOptionsList": [
     "padding",
@@ -46518,6 +46952,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "selectedExtras",
     "access",
     "window"
@@ -46614,7 +47049,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "rowActions": [
     "padding",
@@ -46709,6 +47145,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "rowActionButton": [
@@ -46804,6 +47241,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "active",
     "pressed"
@@ -46901,6 +47339,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "tint"
   ],
   "themeToggle": [
@@ -46996,6 +47435,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "collapsed"
   ],
@@ -47092,6 +47532,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "query",
     "expanded",
     "collapsed",
@@ -47193,6 +47634,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "searchField": [
@@ -47287,7 +47729,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "topResultCard": [
     "padding",
@@ -47381,7 +47824,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "searchResultTabs": [
     "padding",
@@ -47475,7 +47919,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "recentSearches": [
     "padding",
@@ -47569,7 +48014,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "browseGrid": [
     "padding",
@@ -47664,6 +48110,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "spacing"
   ],
   "queuePanel": [
@@ -47759,6 +48206,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style",
     "tab"
   ],
@@ -47854,7 +48302,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "recentlyPlayedList": [
     "padding",
@@ -47948,7 +48397,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "trackList": [
     "padding",
@@ -48043,6 +48493,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "tint",
     "selectedIds"
@@ -48140,6 +48591,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "tint"
   ],
@@ -48236,6 +48688,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density",
     "liked"
   ],
@@ -48332,6 +48785,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "density"
   ],
   "trackListEmpty": [
@@ -48426,7 +48880,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "selectionBar": [
     "padding",
@@ -48521,6 +48976,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "style"
   ],
   "episodeRow": [
@@ -48616,6 +49072,7 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
+    "modifier",
     "saved",
     "downloaded"
   ],
@@ -48711,7 +49168,8 @@ export const NODE_MODIFIERS = {
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ]
 } as const;
 
