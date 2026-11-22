@@ -955,3 +955,22 @@ fn the_home_search_family_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_listing_actions_are_checked() {
+    let imports = "import { ListingActionBar, MortgageCalculator, RentalActionCard, SaleActionCard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = () => VStack(ListingActionBar('$1', 'Apply').loading().disabled(), MortgageCalculator().style('split'), RentalActionCard('$1').loading(), SaleActionCard('$1').loading());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("MortgageCalculator().style('wide')", "Unknown mortgageLayout token 'wide' for .style()"),
+        ("RentalActionCard('a').disabled()", "RentalActionCard has no modifier .disabled()"),
+        ("ListingActionBar('a', 'b').style('auto')", "ListingActionBar has no modifier .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

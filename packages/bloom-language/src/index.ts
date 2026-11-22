@@ -769,3 +769,21 @@ export type {
   SearchModeTabsOptions,
   SearchModeTabsView,
 } from './controls/home-search';
+
+// Listing actions (controls/listing-actions.tsx)
+export {
+  ListingActionBar,
+  MortgageCalculator,
+  RentalActionCard,
+  SaleActionCard,
+} from './controls/listing-actions';
+export type {
+  ListingActionBarOptions,
+  ListingActionBarView,
+  MortgageCalculatorOptions,
+  MortgageCalculatorView,
+  RentalActionCardOptions,
+  RentalActionCardView,
+  SaleActionCardOptions,
+  SaleActionCardView,
+} from './controls/listing-actions';

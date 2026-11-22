@@ -20,6 +20,7 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { ListingActionKind } from './controls/listing-actions';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
 import type { StaySearchKind } from './controls/stay-search';
@@ -89,6 +90,7 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type MortgageLayout,
   type ShelfLayout,
   type PriceScale,
   type FeatureFilterStyle,
@@ -549,7 +551,8 @@ export type Modifier =
         | ShelfLayout
         | TripCardOrientation
         | TripCardOrientation
-        | SearchModeTabsStyle;
+        | SearchModeTabsStyle
+        | MortgageLayout;
     }
   | {
       readonly kind: 'shape';
@@ -734,7 +737,8 @@ export type NodeKind =
   | CheckoutSheetKind
   | BookingKind
   | BookingKind
-  | HomeSearchKind;
+  | HomeSearchKind
+  | ListingActionKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1088,7 +1092,8 @@ export class Node {
       | PlaceCardStyle
       | MailComposeStyle
       | TripCardOrientation
-      | SearchModeTabsStyle,
+      | SearchModeTabsStyle
+      | MortgageLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

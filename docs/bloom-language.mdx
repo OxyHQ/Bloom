@@ -1624,6 +1624,26 @@ open segment its binding holds (`null` at rest), its `panel` a language child;
 selected types, `.columns(n)` its tiles per row and `.disabled()`;
 `SavedSearchCard(title, options?)` takes `.onPress()` itself.
 
+### Listing actions
+
+```ts
+ListingActionBar(home.price, 'Apply', { priceUnit: 'month', onPrimary: apply, bottomInset: 'lg' }).loading(applying)
+RentalActionCard(home.price, { priceUnit: 'month', facts, status, onApply: apply, note: Text('Pets considered') })
+SaleActionCard(home.price, { mortgageEstimate, onPressMortgage, onMakeOffer }).loading(sending)
+MortgageCalculator({ defaultPrice: home.price, formatCurrency, disclaimer: Text(terms) }).style('split')
+```
+
+Bloom's `listing-actions`. Bloom's listing `ActionBar` is `ListingActionBar(price,
+primaryLabel, options?)` (the language's `ActionBar` is the engagement bar):
+`.loading()` spins its primary button and `.disabled()` disables it; its
+`bottomInset` is a space token. `RentalActionCard(price, options?)` and
+`SaleActionCard(price, options?)` take a listing's words, facts, status and
+handlers as Bloom does, `.loading()`, their `note` and `footer` language
+children. `MortgageCalculator(options?)` takes its values controlled or from
+their defaults, as Bloom's does; `.style('auto' | 'stacked' | 'split')` is its
+layout, its `disclaimer` a child, its `maxWidth` a space token. Bloom's
+`computeMortgage` stays Bloom's.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
