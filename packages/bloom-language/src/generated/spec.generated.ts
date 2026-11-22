@@ -200,6 +200,7 @@ export const ALIGNMENT = {
 } as const;
 export const GLASS_OPACITY = {
   "subtle": 0.24,
+  "dim": 0.35,
   "medium": 0.48,
   "strong": 0.72
 } as const;
