@@ -137,12 +137,8 @@ const CONDITIONS: Record<string, string> = {
 /** The view's own states: NativeWind answers them on a Pressable only, so the language may too. */
 const STATES = new Set(['hovered', 'pressed', 'focused']);
 
-/**
- * Utilities on one physical side the language has no physical form for yet:
- * text alignment (`text-left`; React Native and react-native-web flip it
- * right to left differently), scroll snapping.
- */
-const PHYSICAL = /^-?(text-(left|right)|scroll-[mp][lr]|space-x-reverse)(-|$)/;
+/** Utilities on one physical side the language has no physical form for yet: scroll snapping, a reversed child spacing. */
+const PHYSICAL = /^-?(scroll-[mp][lr]|space-x-reverse)(-|$)/;
 
 /** The sides an edge writes: `s`/`e` follow the reading direction, `l`/`r` are physical. */
 const SIDES: Record<string, string> = {
