@@ -1520,6 +1520,7 @@
       "src/stepper/Stepper.tsx#Stepper",
       "src/stepper/StepperRow.tsx#StepperRow",
       "src/sticker/Sticker.tsx#Sticker",
+      "src/styles/ServerStyleSheet.tsx#ServerStyleSheet",
       "src/styles/surface-levels.ts#SurfaceLevelProvider",
       "src/subscription-plans/SubscriptionPlans.tsx#SubscriptionPlans",
       "src/subscription-plans/SubscriptionPrice.tsx#SubscriptionPrice",
