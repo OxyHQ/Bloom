@@ -1,34 +1,9 @@
 import React from 'react';
 import { View } from 'react-native';
 import { render } from '@testing-library/react-native';
-import { compile } from 'react-native-css/compiler';
-import { StyleCollection } from 'react-native-css/native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
 import { resolvedStyle } from './support/rendered-style';
-jest.mock('react-native', () => ({
-  ...jest.requireActual('../../__mocks__/react-native'),
-  PlatformColor: (...names: string[]) => ({ semantic: names }),
-}));
-jest.mock('react-native-css', () => jest.requireActual('react-native-css/native'));
-jest.mock('react-native-css/native-internal', () =>
-  jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
-);
-beforeEach(() => {
-  StyleCollection.styles.clear();
-  StyleCollection.inject(
-    compile(`
-    .root { gap:8px; width:360px; }
-    .item { border-bottom-color:#5433eb; }
-    .trigger { padding:16px 0; font-size:18px; }
-    .panel { background-color:#eef0f1; }
-    .body { padding:0 0 16px; }
-    .label { font-size:10px; font-weight:600; color:#121212; }
-    .track { height:8px; background-color:#eef0f1; }
-    .fill { width:100%; background-color:#121212; }
-  `).stylesheet(),
-  );
-});
 it('puts Accordion styles after native defaults on each actual host and the measured body', () => {
   const api = render(
     <BloomThemeProvider>
