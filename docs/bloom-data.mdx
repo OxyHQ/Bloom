@@ -295,9 +295,17 @@ in one SQLite file. `open` returns expo-sqlite's database:
   last; memory holds whatever is loaded. Each write that stores rows of the
   type deletes the ones past the bound, so a restart restores only the kept
   ones (a persisted list keeps only the ids whose records are on disk).
-  Rows written in one batch count as equally new. For `@gemies/sdk`'s
-  conversations, the 20 most recently written, as the app's
-  `MAX_PERSISTED_CONVERSATIONS` did.
+  Rows written in one batch count as equally new.
+- `persist: { trim(record) }` decides what the durable copy stores of a
+  record, each time it is written there: the record in the same shape (a ref
+  field holds the referenced record's id), or `null` to skip this write (the
+  stored row stays as it was). Memory always keeps the whole record, and a
+  restart restores the trimmed one. A `trim` that throws is reported and the
+  record is not written.
+- Together, `keep` and `trim` are React Query's old `PersistedRootBound`
+  (`maxQueries` and `trim`). `@gemies/sdk`'s conversations use the bound the
+  app had: the 20 written last, each with its last 40 finished, text-only
+  messages, at most 150 KB.
 - `createAccounts({ persister: (account) => ... })` opens one store, and one
   file, per account. `open(account)` closes the previous store at once: its
   queued writes still reach its own file, and anything that lands for it later
