@@ -3,11 +3,16 @@
  * react-native-web takes a colour it can parse or a `var()` and drops anything
  * else (its `normalizeColor`), so a `color-mix()` written inline draws nothing:
  * here the fill must reach the element, the role's own colour at the alpha,
- * under a live variant too, and in the generated sheet's precedence.
+ * under a live variant too, and as a prop a Bloom component draws as a style
+ * under Bloom's prepaint (its colours `var(--bloom-paint-…)`).
  */
 import type { Node } from '../src/node';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
+import { LISTING_CARD_CASES } from './listing-card.cases';
+import { RATING_CASES } from './rating.cases';
+import { SLIDER_CASES } from './slider.cases';
+import { STAT_BAR_CASES } from './stat-bar.cases';
 import { type DomTree, webTree } from './support/web';
 
 type Scheme = 'light' | 'dark';
@@ -48,6 +53,39 @@ describe.each(['light', 'dark'] as const)('%s', (scheme) => {
     expect(css(view, scheme)['background-color']).toBe(at('primary', 0.1, scheme));
     expect(document.getElementById('bloom-language-md')?.textContent).toMatch(
       /^@media \(min-width: 768px\)\{\.bl\w+-primary-20-md\{background-color:var\(--bl-primary-20\);\}\}$/,
+    );
+  });
+});
+
+/** Every colour property the tree's elements draw, by element. */
+function colours(tree: unknown): string[] {
+  const out: string[] = [];
+  const walk = (node: DomTree | string, path: string) => {
+    if (typeof node === 'string') return;
+    for (const [name, value] of Object.entries(node.css))
+      if (/color/.test(name)) out.push(`${path} ${name}: ${value}`);
+    node.children.forEach((child, index) => walk(child, `${path}/${index}`));
+  };
+  (tree as DomTree[]).forEach((node, index) => walk(node, String(index)));
+  return out;
+}
+
+// A prop painted from a role at an opacity that the component draws as a react-native-web
+// style: under the prepaint its colour is a variable, which only the browser can mix.
+const PROPS = [
+  ...LISTING_CARD_CASES.filter((c) => c.name === 'WishlistCard empty, its colour and glyph'),
+  ...RATING_CASES.filter((c) => c.name === 'Rating with its star, count and empty star tinted'),
+  ...SLIDER_CASES.filter(
+    (c) => c.name === 'a slider of its own geometry and colours, committed, formatted, no bubble',
+  ),
+  ...STAT_BAR_CASES.filter((c) => c.name === 'MeterRing with content, tinted, over a backdrop'),
+];
+
+describe.each(['light', 'dark'] as const)('%s, under Bloom’s prepaint', (scheme) => {
+  it('finds every case', () => expect(PROPS).toHaveLength(4));
+  it.each(PROPS.map((c) => [c.name, c] as const))('%s draws its colours', (_name, c) => {
+    expect(colours(webTree(c.language(), scheme, true))).toEqual(
+      colours(webTree(c.language(), scheme)),
     );
   });
 });

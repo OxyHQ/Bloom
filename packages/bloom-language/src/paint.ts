@@ -17,6 +17,7 @@ import {
 } from '@oxy.so/bloom/theme';
 
 import { COLORS } from './generated/spec.generated';
+import { adoptInk } from './web-sheet';
 import type { ColorName } from './tokens';
 import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './variants';
 
@@ -59,12 +60,20 @@ const resolved = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>
  * A colour at an opacity: Bloom's `withAlpha` of a colour it can parse, as an
  * app writes it (Surface computes its material from its fill, which a
  * `color-mix()` hides from it: drawn opaque, at 72%). A web paint can be a CSS
- * variable (Bloom's prepaint), which only the browser can mix.
+ * variable (Bloom's prepaint), which only the browser can mix: the mix is a
+ * custom property of the language's ink sheet (`--bl-bloom-paint-primary-24`,
+ * web-sheet.ts) and the prop its `var()`, as a style's ink is
+ * (`webInk`), since react-native-web drops a `color-mix()` from a style a
+ * component draws the prop as.
  */
 function atOpacity(color: string, opacity: number): string {
-  return !IS_WEB || parseRgb(color) !== null
-    ? withAlpha(color, opacity)
-    : `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
+  if (!IS_WEB || parseRgb(color) !== null) return withAlpha(color, opacity);
+  const mix = `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
+  const variable = /^var\(--([\w-]+)\)$/.exec(color)?.[1];
+  if (variable === undefined) return mix;
+  const name = `--bl-${variable}-${String(Number((opacity * 100).toFixed(4))).replace('.', '_')}`;
+  adoptInk(name, mix);
+  return `var(${name})`;
 }
 
 /** A prop painted from a role (an icon's `fill`), at its opacity: what an app hands Bloom. */
