@@ -57,8 +57,9 @@ import { Pressable as I49 } from 'react-native-css/components/Pressable';
 import { PressableScale as I50 } from '@oxy.so/bloom/pressable-scale';
 import { ChatSearchField as I51 } from '@oxy.so/bloom/chat-list';
 import { Text as I52 } from '@oxy.so/bloom/typography';
-import { RiArrowRightLine as I53 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I54 } from '../support/app-text';
+import { Dialog as I53 } from '@oxy.so/bloom/dialog';
+import { RiArrowRightLine as I54 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I55 } from '../support/app-text';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 
@@ -450,6 +451,46 @@ export const CASES = [
     after: () => { const View = I9; const Text = I52; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList, ChatSearchField: LChatSearchField } = L;  return (toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())); },
   },
   {
+    name: "components/Dialogs.tsx:8",
+    before: () => { const Dialog = I53; const View = I9; const Text = I52; return (<Dialog open={true} onClose={(() => {})} title="Post as" label="Post as">
+      <View className="gap-4 p-4">
+        <Text className="text-sm">Choose an account</Text>
+      </View>
+    </Dialog>); },
+    after: () => { const Dialog = I53; const View = I9; const Text = I52; const { VStack, Text: LText, Dialog: LDialog } = L;  return (toElement(LDialog(VStack(LText('Choose an account').font('14').leading('20px')).padding('all', 'lg').spacing('lg')).title('Post as').label('Post as').presented([true, () => (() => {})()]))); },
+  },
+  {
+    name: "components/Dialogs.tsx:18",
+    before: () => { const Dialog = I53; const Text = I52; return (<Dialog
+      open={true}
+      onClose={() => {}}
+      label="Sources"
+      placement={{ base: 'bottom', md: 'center' }}
+      contentPadding={0}
+      maxWidth={400}
+      actions={ITEMS}
+      dismissOnBackdrop={false}
+    >
+      <Text>Where it came from</Text>
+    </Dialog>); },
+    after: () => { const Dialog = I53; const Text = I52; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(LDialog(LText('Where it came from')).label('Sources').presentAt('bottom', { md: 'center' }).padding('none').frame({ maxWidth: '400' }).buttons(ITEMS).dismissOnBackdrop(false).presented([true, () => {}]))); },
+  },
+  {
+    name: "components/Dialogs.tsx:35",
+    before: () => { const View = I9; const Text = I52; const Dialog = I53; return (<View className="gap-2">
+      <Text>Shortcuts</Text>
+      <Dialog
+        open={true}
+        onClose={(() => {})}
+        header={ITEMS}
+        placement="center"
+      >
+        <View className="px-5" />
+      </Dialog>
+    </View>); },
+    after: () => { const View = I9; const Text = I52; const Dialog = I53; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
+  },
+  {
     name: "components/Rows.tsx:19",
     before: () => { const Pressable = I49; const RiHeart3Line = I29; const View = I9; const Text = I52; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
@@ -464,7 +505,7 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:41",
-    before: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I53; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I54; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -472,7 +513,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I53; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I54; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
@@ -501,11 +542,11 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:68",
-    before: () => { const View = I9; const NativeText = I54; const Text = I52; return (<View className="flex-1 mt-2">
+    before: () => { const View = I9; const NativeText = I55; const Text = I52; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I9; const NativeText = I54; const Text = I52; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I9; const NativeText = I55; const Text = I52; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
   {
     name: "components/Rows.tsx:85 (false)",
@@ -592,5 +633,47 @@ export const CASES = [
       </ScreenScrollView>
     </Screen>); },
     after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I52; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
+  },
+  {
+    name: "components/ThreadRoute.tsx:12",
+    before: () => { const Screen = I11; const PageHeader = I38; const Text = I52; const View = I9; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
+        <>
+          <Text className="text-sm">{'⟨0⟩'}</Text>
+          <View className="p-4" />
+        </>
+      </Screen>); },
+    after: () => { const Screen = I11; const PageHeader = I38; const Text = I52; const View = I9; const { Text: LText, VStack, Group, Header } = L;  return (<ScreenHost root={Group(LText('⟨0⟩').font('14').leading('20px'), VStack().padding('all', 'lg')).header(Header('⟨1⟩').inPage())} />); },
+  },
+  {
+    name: "components/ThreadRoute.tsx:20 (false)",
+    before: () => { const Screen = I11; const View = I9; const ScreenScrollView = I8; const Text = I52; return (<Screen
+      scroll="content"
+      bottomBar={<View className="px-4 py-2 bg-card" />}
+      bottomBarPlacement="overlay"
+      bottomBarKeyboardBehavior="follow"
+    >
+      {/* The messages, then a note under them. */}
+      <ScreenScrollView>
+        <Text>{'⟨0⟩'}</Text>
+      </ScreenScrollView>
+      {false ? <Text className="text-xs text-muted-foreground">{'⟨2⟩'}</Text> : null}
+    </Screen>); },
+    after: () => { const Screen = I11; const View = I9; const ScreenScrollView = I8; const Text = I52; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), false ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
+  },
+  {
+    name: "components/ThreadRoute.tsx:20",
+    before: () => { const Screen = I11; const View = I9; const ScreenScrollView = I8; const Text = I52; return (<Screen
+      scroll="content"
+      bottomBar={<View className="px-4 py-2 bg-card" />}
+      bottomBarPlacement="overlay"
+      bottomBarKeyboardBehavior="follow"
+    >
+      {/* The messages, then a note under them. */}
+      <ScreenScrollView>
+        <Text>{'⟨0⟩'}</Text>
+      </ScreenScrollView>
+      {true ? <Text className="text-xs text-muted-foreground">{'⟨2⟩'}</Text> : null}
+    </Screen>); },
+    after: () => { const Screen = I11; const View = I9; const ScreenScrollView = I8; const Text = I52; const { Text: LText, VStack, Group, Header, ScrollView } = L;  return (<ScreenHost root={Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), true ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })} />); },
   },
 ];

@@ -19,8 +19,10 @@ import * as babelTs from 'recast/parsers/babel-ts';
 
 import {
   type ComponentRule,
+  DIALOG_PLACEMENT,
   type Form,
   KEPT,
+  PLACEMENT_TIERS,
   type PropRule,
   REMOVED,
   ruleFor,
@@ -229,7 +231,7 @@ const COLOR_SCOPE = '@oxy.so/bloom/theme#BloomColorScope';
 type Value = Arg | Carried | Tagged;
 type Tagged =
   | { readonly $: 'view'; readonly view: Ir }
-  | { readonly $: 'binding'; readonly binding: readonly [Carried, Carried] }
+  | { readonly $: 'binding'; readonly binding: readonly [Value, Value] }
   | { readonly $: 'icon'; readonly name: string }
   | { readonly $: 'options'; readonly entries: readonly (readonly [string, Value])[] }
   /** A list's row: its parameters (the item's name, and the index's) and the view it returns. */
@@ -1245,26 +1247,31 @@ export function transformSource(source: string, options: TransformOptions): File
   }
 
   /**
-   * A route's Screen by `SCREEN`: its one child is the body's root, its props
-   * the root's screen modifiers; with no header it is `.header(false)`.
+   * A route's Screen by `SCREEN`: its one child is the body's root, and several
+   * (a fragment's, a comment or a condition among them) a `Group` of them, which
+   * draws no view of its own; its props are the root's screen modifiers, with no
+   * header `.header(false)`.
    */
   function convertScreen(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
     const inner = convertComponent(node, SCREEN);
     if (!('ir' in inner) || inner.ir.type !== 'component') return inner;
-    const views = inner.ir.args.flatMap((arg) =>
-      isTagged(arg) && arg.$ === 'view' && arg.view.type !== 'comment' ? [arg.view] : [],
-    );
-    const root = views[0];
-    if (views.length !== 1 || inner.ir.args.length !== 1 || !root || root.type === 'cond')
+    const { args } = inner.ir;
+    const only = args.length === 1 ? (args[0] as Value) : undefined;
+    const view = only && isTagged(only) && only.$ === 'view' ? only.view : undefined;
+    if (!args.some((arg) => isTagged(arg) && arg.$ === 'view' && arg.view.type !== 'comment'))
       return {
         reasons: [
           {
             subject: 'children',
             code: 'screen:children',
-            why: 'a screen whose content is not one view: the body’s root is one',
+            why: 'a screen with no content: the body’s root is a view',
           },
         ],
       };
+    const root: Ir =
+      view && view.type !== 'cond' && view.type !== 'comment'
+        ? view
+        : { type: 'component', node: 'Group', within: undefined, args, props: [], key: null };
     const props = inner.ir.props;
     if (!props.some((prop) => prop.name === 'header'))
       props.unshift({ name: 'header', args: [false] });
@@ -1573,9 +1580,15 @@ export function transformSource(source: string, options: TransformOptions): File
       }
     }
     const props: PropMod[] = [];
-    // A prop that is another's modifier's next argument is read with it.
-    for (const prop of Object.values(rule.props ?? {}))
+    /** A binding that ends the chain (`.presented()`), written after every other modifier. */
+    let last: PropMod | undefined;
+    // A prop that is another's modifier's next argument (or its close handler) is read with it.
+    for (const prop of Object.values(rule.props ?? {})) {
       if (prop.with && given.has(prop.with[0])) consumed.add(prop.with[0]);
+      if (prop.closedBy && given.has(prop.closedBy)) consumed.add(prop.closedBy);
+      for (const option of Object.keys(prop.options ?? {}))
+        if (given.has(option)) consumed.add(option);
+    }
     for (const [name, value] of given) {
       if (consumed.has(name)) continue;
       const differs = rule.differs?.[name];
@@ -1608,11 +1621,51 @@ export function transformSource(source: string, options: TransformOptions): File
         if (next?.length !== 1) unmapped(prop.with[0]);
         else values.push(next[0] as Value);
       }
+      if (prop.closedBy) {
+        // The value and the close handler, one binding: setting it false calls the handler.
+        const close = given.has(prop.closedBy)
+          ? actionOf(attributeExpression(given.get(prop.closedBy)))
+          : undefined;
+        if (values.length !== 1 || !close) unmapped(name);
+        else
+          last = {
+            name: prop.modifier,
+            args: [{ $: 'binding', binding: [values[0] as Value, close] }],
+          };
+        continue;
+      }
+      if (prop.options) {
+        // Its options object, each prop given by its key.
+        const entries: [string, Value][] = [];
+        for (const [option, [key, form, map]] of Object.entries(prop.options)) {
+          if (!given.has(option)) continue;
+          const value = valuesOf(form, given.get(option), map);
+          if (value?.length !== 1) unmapped(option);
+          else entries.push([key, value[0] as Value]);
+        }
+        if (entries.length) values.push({ $: 'options', entries });
+      }
+      if (prop.key) {
+        // One object for the modifier: each prop its key.
+        const entry: [string, Value] = [prop.key, values[0] as Value];
+        const joined = props.find((mod) => mod.name === prop.modifier);
+        const object = joined?.args[0];
+        if (values.length !== 1) unmapped(name);
+        else if (object && isTagged(object) && object.$ === 'options')
+          joined.args[0] = { $: 'options', entries: [...object.entries, entry] };
+        else props.push({ name: prop.modifier, args: [{ $: 'options', entries: [entry] }] });
+        continue;
+      }
       props.push({ name: prop.modifier, args: [...values, ...(prop.args ?? [])] });
     }
-    // A next argument given without its modifier's prop.
-    for (const [name, prop] of Object.entries(rule.props ?? {}))
+    if (last) props.push(last);
+    // A next argument (or a close handler) given without its modifier's prop.
+    for (const [name, prop] of Object.entries(rule.props ?? {})) {
       if (prop.with && given.has(prop.with[0]) && !given.has(name)) unmapped(prop.with[0]);
+      if (prop.closedBy && given.has(prop.closedBy) && !given.has(name)) unmapped(prop.closedBy);
+      for (const option of Object.keys(prop.options ?? {}))
+        if (given.has(option) && !given.has(name)) unmapped(option);
+    }
 
     /** Its parts, each converted with it. */
     const parts = new Map<AnyNode, Ir>();
@@ -1621,7 +1674,13 @@ export function transformSource(source: string, options: TransformOptions): File
       if ('reasons' in converted) reasons.push(...converted.reasons);
       else args.push(...converted.views.map((view): Value => ({ $: 'view', view })));
     } else if (rule.children) {
-      for (const child of node.children) {
+      // A fragment's children are the element's own, where the fragment is.
+      const children = rule.fragments
+        ? node.children.flatMap((child: AnyNode) =>
+            n.JSXFragment.check(child) ? child.children : [child],
+          )
+        : node.children;
+      for (const child of children) {
         const view = childView(child);
         if (view === null) continue;
         if (view === undefined) unmapped('children');
@@ -1846,7 +1905,55 @@ export function transformSource(source: string, options: TransformOptions): File
         const row = rowOf(expression);
         return row === undefined ? undefined : [row];
       }
+      case 'placement':
+        return placementOf(value);
     }
+  }
+
+  /**
+   * Bloom's responsive placement as `.presentAt(base, tiers)`: a static token,
+   * or an object literal of static tokens with its `base` and any of the
+   * breakpoints, each tier written as Bloom reads it over the base.
+   */
+  function placementOf(value: AnyNode): Value[] | undefined {
+    const text = staticString(value);
+    if (text !== undefined) {
+      const token = DIALOG_PLACEMENT[text];
+      return token === undefined ? undefined : [token];
+    }
+    const object = attributeExpression(value);
+    if (!n.ObjectExpression.check(object)) return undefined;
+    let base: string | undefined;
+    const tiers: [string, Value][] = [];
+    for (const property of object.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key)
+      )
+        return undefined;
+      const token = DIALOG_PLACEMENT[staticString(property.value) ?? ''];
+      const key = property.key.name as string;
+      if (token === undefined) return undefined;
+      if (key === 'base') base = token;
+      else if (PLACEMENT_TIERS.includes(key)) tiers.push([key, token]);
+      else return undefined;
+    }
+    // An object is drawn as an object (`{ base, ...tiers }`), its tiers none or more.
+    return base === undefined ? undefined : [base, { $: 'options', entries: tiers }];
+  }
+
+  /**
+   * A handler Bloom calls with no arguments, as a function of none: an arrow of
+   * no parameters as it is (it ignores what it is called with), a name or a
+   * member called with none (`() => onClose()`). Anything else may read an argument.
+   */
+  function actionOf(expression: AnyNode): Carried | undefined {
+    if (n.ArrowFunctionExpression.check(expression) && expression.params.length === 0)
+      return { node: expression, hole: 'handler' };
+    if (n.Identifier.check(expression) || n.MemberExpression.check(expression))
+      return { node: expression, hole: 'action' };
+    return undefined;
   }
 
   /**
@@ -1905,12 +2012,7 @@ export function transformSource(source: string, options: TransformOptions): File
     if (Object.keys(rest).length || !refreshing || !onRefresh || hasJsx(refreshing))
       return undefined;
     // A function of no parameters ignores the `true` a pull writes; a named one is called with none.
-    const action: Carried | undefined =
-      n.ArrowFunctionExpression.check(onRefresh) && onRefresh.params.length === 0
-        ? { node: onRefresh, hole: 'handler' }
-        : n.Identifier.check(onRefresh) || n.MemberExpression.check(onRefresh)
-          ? { node: onRefresh, hole: 'action' }
-          : undefined;
+    const action = actionOf(onRefresh);
     if (!action) return undefined;
     const binding: Value = {
       $: 'binding',
@@ -2275,7 +2377,9 @@ export function transformSource(source: string, options: TransformOptions): File
         case 'icon':
           return value.name;
         case 'options':
-          return `{ ${value.entries.map(([key, v]) => `${key}: ${printValue(v, carry)}`).join(', ')} }`;
+          return value.entries.length
+            ? `{ ${value.entries.map(([key, v]) => `${key}: ${printValue(v, carry)}`).join(', ')} }`
+            : '{}';
         case 'row':
           return `(${value.params.join(', ')}) => ${print(value.view, carry)}`;
         case 'absent':
@@ -2295,7 +2399,7 @@ export function transformSource(source: string, options: TransformOptions): File
     if (isCarried(value)) out.push(value);
     else if (isTagged(value)) {
       if (value.$ === 'view' || value.$ === 'row') carriedOf(value.view, out);
-      else if (value.$ === 'binding') out.push(...value.binding);
+      else if (value.$ === 'binding') for (const v of value.binding) carriedOfValue(v, out);
       else if (value.$ === 'options') for (const [, v] of value.entries) carriedOfValue(v, out);
     }
   }

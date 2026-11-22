@@ -298,6 +298,38 @@ export default function Route({ id }) {
     expect(result.code).toContain("import { screen } from '@oxy.so/bloom-language/router';");
     expect(result.fixtures.filter((f) => f.screen)).toHaveLength(2);
   });
+  it('makes a Screen of several views a Group, and its bottom bar the screen’s footer', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { View } from 'react-native';
+export default function Route({ id, reply }) {
+  if (!id)
+    return (
+      <Screen bottomBar={<View className="p-2" />} bottomBarPlacement="overlay" bottomBarKeyboardBehavior="follow">
+        <Seo />
+        {/* the thread */}
+        <View className="p-4" />
+      </Screen>
+    );
+  if (id === 'x') return <Screen><>{id ? <View /> : null}<View /></></Screen>;
+  return <Screen>{id ? <View /> : null}</Screen>;
+}
+`);
+    expect(flat(result.code)).toContain(
+      "if (!id) return Group(Embed(<Seo />), /* the thread */ VStack().padding('all', 'lg')).header(false).footer(VStack().padding('all', 'sm'), { placement: 'overlay', keyboard: 'follow' });",
+    );
+    // A fragment's children are the Screen's; a condition is a Group of one.
+    expect(flat(result.code)).toContain(
+      "if (id === 'x') return Group(id ? VStack() : null, VStack()).header(false);",
+    );
+    expect(flat(result.code)).toContain('return Group(id ? VStack() : null).header(false);');
+    expect(result.unconverted).toEqual([]);
+    const lone = run(`import { Screen } from '@oxy.so/bloom/screen';
+export default function Route() { return <Screen bottomBarPlacement="overlay" />; }
+`);
+    expect(lone.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([
+      ['screen:bottomBarPlacement'],
+    ]);
+  });
   it('keeps a route JSX when one of its Screens cannot convert, or its name is read', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';
 import { View } from 'react-native';
@@ -494,6 +526,38 @@ export const D = () => <View pointerEvents={mode} />;
     expect(result.code).toContain("toElement(VStack().allowsHitTesting('children'))");
     expect(result.code).toContain("toElement(VStack().allowsHitTesting('self'))");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:pointerEvents']);
+  });
+  it('draws a Dialog opened by its open and onClose as a presented dialog, and keeps an imperative one', () => {
+    const result = run(`import { Dialog } from '@oxy.so/bloom/dialog';
+import { View } from 'react-native';
+export function A({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose} title="Post as" maxWidth={400} contentPadding={0} placement={{ base: 'bottom', md: 'center' }}>
+      <View className="p-4" />
+    </Dialog>
+  );
+}
+export const B = ({ open, done }) => <Dialog open={open} onClose={() => { done(); }} label="Done" placement="center" />;
+export const C = ({ control, onClose }) => <Dialog control={control} onClose={onClose} label="C" />;
+export const D = ({ open, close }) => <Dialog open={open} onClose={(reason) => close(reason)} label="D" />;
+export const E = ({ open }) => <Dialog open={open} label="E" />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LDialog(VStack().padding('all', 'lg')).title('Post as').frame({ maxWidth: '400' }).padding('none').presentAt('bottom', { md: 'center' }).presented([open, () => onClose()]))",
+    );
+    expect(flat(result.code)).toContain(
+      "toElement(LDialog().label('Done').presentAt('center').presented([open, () => { done(); }]))",
+    );
+    // The language's Dialog beside Bloom's, which the dialogs kept JSX still draw.
+    expect(result.code).toContain(
+      "import { Dialog as LDialog, VStack, toElement } from '@oxy.so/bloom-language';",
+    );
+    // An imperative control, a handler that may read an argument, and an open no one closes stay JSX.
+    expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([
+      ['Dialog:control', 'Dialog:onClose'],
+      ['Dialog:open'],
+      ['Dialog:open'],
+    ]);
   });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
