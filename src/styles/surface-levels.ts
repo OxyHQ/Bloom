@@ -224,11 +224,10 @@ export function resolveSurfaceLevel(theme: Theme, level: SurfaceLevel): SurfaceL
 export const SURFACE_FILL_VAR = '--bloom-surface';
 
 /**
- * How to REFERENCE the published fill from CSS or an arbitrary Tailwind value:
+ * How to REFERENCE the published fill from CSS (web only):
  *
  * ```
  * background-color: var(--bloom-surface, var(--background));
- * className="bg-[var(--bloom-surface,var(--background))]"   // web-only
  * ```
  *
  * The fallback is what makes it safe: the variable exists only where a container
