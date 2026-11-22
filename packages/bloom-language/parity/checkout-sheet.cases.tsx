@@ -48,6 +48,8 @@ const STEPS = ['review', 'confirmation', 'payment', 'success'] as const;
 export const CHECKOUT_SHEET_CASES: ParityCase[] = [
   {
     name: 'CheckoutSheet closed',
+    // Closed, the sheet draws nothing on the web.
+    drawsNothing: ['web'],
     language: () => toElement(L.CheckoutSheet({ ...SHEET, open: false, step: 'review' })),
     bloom: () => <CheckoutSheet {...SHEET} open={false} step="review" />,
   },

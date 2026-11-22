@@ -70,7 +70,8 @@ function describeInPage(testid, portals) {
   // (parity/support/web.tsx names them); an id is compared by its order in its
   // cell, Bloom's counted ones read first.
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
-  const BLOOM_ID = /\bbloom-(?:alerts-fade|heading-cone|stat-tile|story-ring-)\d+\b/g;
+  const BLOOM_ID =
+    /\bbloom-(?:alerts-fade|call-scrim-|call-stage-|heading-cone|media-card-cover-|stat-tile|story-ring-|story-scrim-|theme-toggle-gradient)\d+\b/g;
   const map = new Map();
   const byOrder = (id) => {
     if (!map.has(id)) map.set(id, `id${map.size}`);

@@ -167,6 +167,8 @@ const chrome: ParityCase[] = [
   },
   {
     name: 'AiChatMobileHeader',
+    // Outside a compact AI chat shell the header draws nothing on the web.
+    drawsNothing: ['web'],
     language: () => toElement(L.AiChatMobileHeader('Trip')),
     bloom: () => <AiChatMobileHeader title="Trip" />,
   },

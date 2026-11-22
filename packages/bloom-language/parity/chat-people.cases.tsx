@@ -114,6 +114,8 @@ const chips: ParityCase[] = [
   },
   {
     name: 'SelectedChipsRow empty, nothing shown',
+    // Nobody chosen and no empty state: the row draws nothing on the web.
+    drawsNothing: ['web'],
     language: () => toElement(L.SelectedChipsRow([])),
     bloom: () => <SelectedChipsRow people={[]} />,
   },
