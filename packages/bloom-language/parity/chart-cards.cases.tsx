@@ -98,9 +98,7 @@ const cards: ParityCase[] = [
   {
     name: 'BarListCard tinted, mono, shares',
     language: () =>
-      toElement(
-        L.BarListCard({ items: BARS, mono: true, metric: 'share', limit: 2 }).tint('success'),
-      ),
+      toElement(L.BarListCard({ items: BARS, metric: 'share', limit: 2 }).tint('success').mono()),
     bloom: () => (
       <Themed>
         {(c) => <BarListCard items={BARS} mono metric="share" limit={2} color={c.success} />}
@@ -182,6 +180,18 @@ const cards: ParityCase[] = [
       <RadarChartCard title="Fit" data={RADAR} series={RADAR_SERIES} max={100} variant={variant} />
     ),
   })),
+  ...ENUMS.radarLegend.map((legend) => ({
+    name: `RadarChartCard legend ${legend}`,
+    language: () =>
+      toElement(
+        L.RadarChartCard({ title: 'Fit', data: RADAR, series: RADAR_SERIES, max: 100 }).legend(
+          legend,
+        ),
+      ),
+    bloom: () => (
+      <RadarChartCard title="Fit" data={RADAR} series={RADAR_SERIES} max={100} legend={legend} />
+    ),
+  })),
   {
     name: 'SleepScoreCard',
     language: () => toElement(L.SleepScoreCard(SLEEP, { title: 'Sleep', range: 'Last night' })),
@@ -203,10 +213,9 @@ const cards: ParityCase[] = [
       toElement(
         L.StageBarsCard({
           stages: STAGES,
-          mono: true,
           showPercentages: true,
           percentageBase: 'first',
-        }),
+        }).mono(),
       ),
     bloom: () => <StageBarsCard stages={STAGES} mono showPercentages percentageBase="first" />,
   },
@@ -283,12 +292,10 @@ const pieces: ParityCase[] = [
     name: `Sparkline ${tone}, sized, filled`,
     language: () =>
       toElement(
-        L.Sparkline([3, 5, 2, 8, 6], {
-          width: '96',
-          height: '28',
-          fill: true,
-          shape: 'sharp',
-        }).tint(tone),
+        L.Sparkline([3, 5, 2, 8, 6], { width: '96', height: '28' })
+          .tint(tone)
+          .shape('sharp')
+          .filled(),
       ),
     bloom: () => (
       <Sparkline data={[3, 5, 2, 8, 6]} width={96} height={28} fill shape="sharp" tone={tone} />
@@ -296,4 +303,12 @@ const pieces: ParityCase[] = [
   })),
 ];
 
-export const CHART_CARD_CASES: ParityCase[] = [...cards, ...pieces];
+const looks: ParityCase[] = [
+  ...ENUMS.chartShape.map((shape) => ({
+    name: `Sparkline ${shape}, not filled`,
+    language: () => toElement(L.Sparkline([3, 5, 2, 8, 6]).shape(shape).filled(false)),
+    bloom: () => <Sparkline data={[3, 5, 2, 8, 6]} shape={shape} fill={false} />,
+  })),
+];
+
+export const CHART_CARD_CASES: ParityCase[] = [...cards, ...pieces, ...looks];

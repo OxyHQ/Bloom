@@ -1149,3 +1149,35 @@ fn the_agent_families_secondary_looks_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_other_secondary_looks_are_checked() {
+    let imports = "import { AiChatContainer, AiChatShell, BarListCard, CheckoutSheet, ComposerPill, FollowButton, ListingHeaderAction, RadarChartCard, ShelfSkeleton, Sparkline, StageBarsCard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (b, c, o, s) => VStack(FollowButton(b).material('lens').iconOnly(), ListingHeaderAction('Save').iconOnly(), ShelfSkeleton().round().eyebrow(), AiChatShell(c, s).sidebarSurface('docked').sidebarScrollbarSide('start').surface(false), AiChatContainer(c).surface(false).floatingChrome(), RadarChartCard(o).legend('overlay'), Sparkline(s).shape('sharp').filled(), BarListCard(o).mono(), StageBarsCard(o).mono(), CheckoutSheet(o).methodTitleAlign('center').methodTitleVariant('title-2-bold'), ComposerPill(b).frosted());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("FollowButton(b).material('glass')", "Unknown buttonMaterial token 'glass' for .material()"),
+        ("RadarChartCard(b).legend('left')", "Unknown radarLegend token 'left' for .legend()"),
+        ("Sparkline(b).shape('round')", "Unknown chartShape token 'round' for .shape()"),
+        (
+            "CheckoutSheet(b).methodTitleAlign('start')",
+            "Unknown methodTitleAlign token 'start' for .methodTitleAlign()",
+        ),
+        (
+            "CheckoutSheet(b).methodTitleVariant('title-2')",
+            "Unknown typeRamp token 'title-2' for .methodTitleVariant()",
+        ),
+        (
+            "AiChatShell(b, {}).sidebarScrollbarSide('left')",
+            "Unknown scrollbarSide token 'left' for .sidebarScrollbarSide()",
+        ),
+        ("StageBarsCard(b).legend('top')", "StageBarsCard has no modifier .legend()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

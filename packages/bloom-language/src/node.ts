@@ -144,6 +144,9 @@ import {
   type ScrollbarSide,
   type TeamPlacement,
   type Blend,
+  type ButtonMaterial,
+  type RadarLegend,
+  type MethodTitleAlign,
   type TypeRampStep,
   type FollowButtonSize,
   type MapPriceMarkerSize,
@@ -412,6 +415,20 @@ export interface ValueModifiers {
   textVariant: TypeRampStep;
   blend: Blend;
   bloomOnly: boolean;
+
+  // The other product components' secondary looks
+  material: ButtonMaterial;
+  iconOnly: boolean;
+  round: boolean;
+  eyebrow: boolean;
+  sidebarScrollbarSide: ScrollbarSide;
+  floatingChrome: boolean;
+  legend: RadarLegend;
+  filled: boolean;
+  mono: boolean;
+  frosted: boolean;
+  methodTitleAlign: MethodTitleAlign;
+  methodTitleVariant: TypeRampStep;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1647,6 +1664,44 @@ export class Node {
   }
   bloomOnly(value = true): Node {
     return this.set('bloomOnly', value);
+  }
+
+  // The other product components' secondary looks
+  material(value: ButtonMaterial): Node {
+    return this.set('material', value);
+  }
+  iconOnly(value = true): Node {
+    return this.set('iconOnly', value);
+  }
+  round(value = true): Node {
+    return this.set('round', value);
+  }
+  eyebrow(value = true): Node {
+    return this.set('eyebrow', value);
+  }
+  sidebarScrollbarSide(value: ScrollbarSide): Node {
+    return this.set('sidebarScrollbarSide', value);
+  }
+  floatingChrome(value = true): Node {
+    return this.set('floatingChrome', value);
+  }
+  legend(value: RadarLegend): Node {
+    return this.set('legend', value);
+  }
+  filled(value = true): Node {
+    return this.set('filled', value);
+  }
+  mono(value = true): Node {
+    return this.set('mono', value);
+  }
+  frosted(value = true): Node {
+    return this.set('frosted', value);
+  }
+  methodTitleAlign(value: MethodTitleAlign): Node {
+    return this.set('methodTitleAlign', value);
+  }
+  methodTitleVariant(value: TypeRampStep): Node {
+    return this.set('methodTitleVariant', value);
   }
 }
 

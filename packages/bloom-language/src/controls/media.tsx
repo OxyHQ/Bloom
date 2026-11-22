@@ -22,7 +22,7 @@ import type { BloomAppearance, BloomTone } from '@oxy.so/bloom/appearance';
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { FollowButtonSize, ShelfLayout, SpaceToken } from '../tokens';
+import type { ButtonMaterial, FollowButtonSize, ShelfLayout, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { length, product } from './product';
 
@@ -51,13 +51,15 @@ export type FollowButtonOptions = Omit<
   | 'size'
   | 'loading'
   | 'color'
+  | 'material'
+  | 'iconOnly'
 >;
 export type ShelfOptions = Lengths<
   Omit<ShelfProps, Drawn | 'title' | 'children' | 'layout' | 'gap'>,
   'itemWidth' | 'minItemWidth' | 'peek' | 'rowGap' | 'contentInset'
 >;
 export type ShelfSkeletonOptions = Lengths<
-  Omit<ShelfSkeletonProps, Drawn | 'layout' | 'gap'>,
+  Omit<ShelfSkeletonProps, Drawn | 'layout' | 'gap' | 'round' | 'eyebrow'>,
   'itemWidth' | 'minItemWidth'
 >;
 type PlanSlots = 'heroBackground' | 'controls' | 'terms' | 'footer' | 'fallback';
@@ -77,6 +79,10 @@ export interface FollowButtonView extends ViewModifiers<FollowButtonView> {
   /** `sm`, `md` (default) or `lg`. */
   size(value: FollowButtonSize): FollowButtonView;
   loading(value?: boolean): FollowButtonView;
+  /** The shared Button's material: its `surface` (default), `flat`, the `shared` island's or the `lens`. */
+  material(value: ButtonMaterial): FollowButtonView;
+  /** The compact toggle of icons, under the same accessible name. */
+  iconOnly(value?: boolean): FollowButtonView;
 }
 /** Bloom `Shelf`: a titled row, grid or pages of media. */
 export interface ShelfView extends ViewModifiers<ShelfView> {
@@ -87,6 +93,10 @@ export interface ShelfView extends ViewModifiers<ShelfView> {
 export interface ShelfSkeletonView extends ViewModifiers<ShelfSkeletonView> {
   style(value: ShelfLayout): ShelfSkeletonView;
   spacing(value: SpaceToken): ShelfSkeletonView;
+  /** Round covers (artists). */
+  round(value?: boolean): ShelfSkeletonView;
+  /** The eyebrow's placeholder. */
+  eyebrow(value?: boolean): ShelfSkeletonView;
 }
 /** Bloom `SubscriptionPlans`: a product's plans, the chosen one as its binding holds. */
 export type SubscriptionPlansView = ViewModifiers<SubscriptionPlansView>;
@@ -135,6 +145,8 @@ export const MEDIA: Record<MediaKind, ControlRenderer> = {
       tone: d.own('tint')?.value,
       size: d.own('size')?.value,
       loading: d.own('loading')?.value,
+      material: d.own('material')?.value,
+      iconOnly: d.own('iconOnly')?.value,
     }),
   }),
   shelf: product(BloomShelf, {
@@ -143,7 +155,12 @@ export const MEDIA: Record<MediaKind, ControlRenderer> = {
   }),
   shelfSkeleton: product(BloomShelfSkeleton, {
     lengths: ['itemWidth', 'minItemWidth'],
-    own: (d) => ({ layout: d.own('style')?.value, gap: gap(d) }),
+    own: (d) => ({
+      layout: d.own('style')?.value,
+      gap: gap(d),
+      round: d.own('round')?.value,
+      eyebrow: d.own('eyebrow')?.value,
+    }),
   }),
   subscriptionPlans: product(BloomSubscriptionPlans, {
     binding: ['value', 'onValueChange'],

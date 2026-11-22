@@ -1,6 +1,7 @@
 import { CheckoutSheet, emptyCheckoutDraft } from '@oxy.so/bloom/checkout-sheet';
 import { Text } from '@oxy.so/bloom/typography';
 
+import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
@@ -55,5 +56,23 @@ export const CHECKOUT_SHEET_CASES: ParityCase[] = [
     language: () =>
       toElement(L.CheckoutSheet({ ...SHEET, open: true, step, cardEntry: L.Text('Card fields') })),
     bloom: () => <CheckoutSheet {...SHEET} open step={step} cardEntry={<Text>Card fields</Text>} />,
+  })),
+  ...ENUMS.methodTitleAlign.map((align) => ({
+    name: `CheckoutSheet method, its title ${align}, title-2-bold`,
+    language: () =>
+      toElement(
+        L.CheckoutSheet({ ...SHEET, open: true, step: 'method' })
+          .methodTitleAlign(align)
+          .methodTitleVariant('title-2-bold'),
+      ),
+    bloom: () => (
+      <CheckoutSheet
+        {...SHEET}
+        open
+        step="method"
+        methodTitleAlign={align}
+        methodTitleVariant="title-2-bold"
+      />
+    ),
   })),
 ];

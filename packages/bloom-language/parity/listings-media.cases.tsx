@@ -83,11 +83,9 @@ const listings: ParityCase[] = [
     name: 'ListingHeaderAction icon only, pressed',
     language: () =>
       toElement(
-        L.ListingHeaderAction('Share', {
-          icon: RiHeart3Line,
-          iconOnly: true,
-          pressed: true,
-        }).onPress(press),
+        L.ListingHeaderAction('Share', { icon: RiHeart3Line, pressed: true })
+          .iconOnly()
+          .onPress(press),
       ),
     bloom: () => (
       <ListingHeaderAction label="Share" icon={RiHeart3Line} iconOnly pressed onPress={press} />
@@ -170,6 +168,21 @@ const media: ParityCase[] = [
       />
     ),
   })),
+  ...ENUMS.buttonMaterial.map((material) => ({
+    name: `FollowButton ${material} material`,
+    language: () => toElement(L.FollowButton([false, set]).material(material)),
+    bloom: () => <FollowButton following={false} onFollowChange={set} material={material} />,
+  })),
+  ...[false, true].map((following) => ({
+    name: `FollowButton icon only, ${following ? 'following' : 'not following'}`,
+    language: () => toElement(L.FollowButton([following, set]).iconOnly()),
+    bloom: () => <FollowButton following={following} onFollowChange={set} iconOnly />,
+  })),
+  {
+    name: 'ShelfSkeleton an eyebrow, square covers',
+    language: () => toElement(L.ShelfSkeleton({ count: 3 }).eyebrow().round(false)),
+    bloom: () => <ShelfSkeleton count={3} eyebrow round={false} />,
+  },
   ...ENUMS.shelfLayout.map((layout) => ({
     name: `Shelf ${layout}`,
     language: () =>
@@ -199,7 +212,7 @@ const media: ParityCase[] = [
   ...ENUMS.shelfLayout.map((layout) => ({
     name: `ShelfSkeleton ${layout}`,
     language: () =>
-      toElement(L.ShelfSkeleton({ count: 3, round: true, itemWidth: '120' }).style(layout)),
+      toElement(L.ShelfSkeleton({ count: 3, itemWidth: '120' }).style(layout).round()),
     bloom: () => <ShelfSkeleton count={3} round itemWidth={120} layout={layout} />,
   })),
   {

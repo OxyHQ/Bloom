@@ -55,7 +55,7 @@ export type ListingHeaderOptions = Omit<
 > & { readonly badge?: Child; readonly actions?: Child };
 export type ListingHeaderActionOptions = Omit<
   ListingHeaderActionProps,
-  Drawn | 'label' | 'onPress'
+  Drawn | 'label' | 'onPress' | 'iconOnly'
 >;
 export type ListingPhotoGridOptions = Omit<ListingPhotoGridProps, Drawn | 'photos' | 'layout'>;
 export type ReviewCardOptions = Omit<ReviewCardProps, Drawn | 'name' | 'text' | 'numberOfLines'>;
@@ -81,7 +81,10 @@ export interface ListingHeaderView extends ViewModifiers<ListingHeaderView> {
   size(value: ListingHeaderSize): ListingHeaderView;
 }
 /** Bloom `ListingHeaderAction`; `.onPress()` is what it does. */
-export type ListingHeaderActionView = ViewModifiers<ListingHeaderActionView>;
+export interface ListingHeaderActionView extends ViewModifiers<ListingHeaderActionView> {
+  /** The icon alone (a narrow header); its label still names it. */
+  iconOnly(value?: boolean): ListingHeaderActionView;
+}
 export interface ListingPhotoGridView extends ViewModifiers<ListingPhotoGridView> {
   /** `auto` (default), `grid` or `carousel`. */
   style(value: ListingPhotoLayout): ListingPhotoGridView;
@@ -164,7 +167,10 @@ export const LISTINGS: Record<ListingKind, ControlRenderer> = {
     slots: ['badge', 'actions'],
     own: (d) => ({ size: d.own('size')?.value }),
   }),
-  listingHeaderAction: product(BloomListingHeaderAction, { press: true }),
+  listingHeaderAction: product(BloomListingHeaderAction, {
+    press: true,
+    own: (d) => ({ iconOnly: d.own('iconOnly')?.value }),
+  }),
   listingPhotoGrid: product(BloomListingPhotoGrid, {
     own: (d) => ({ layout: d.own('style')?.value }),
   }),

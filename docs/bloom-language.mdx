@@ -1163,13 +1163,16 @@ card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
 
 - `AreaChartCard`: `.style('stacked' | 'overlap' | 'percent')`,
   `.shape('curved' | 'sharp')`. `LineChartCard`: `.shape()`.
-  `RadarChartCard`: `.style('filled' | 'dots' | 'lines' | 'score')`.
+  `RadarChartCard`: `.style('filled' | 'dots' | 'lines' | 'score')`,
+  `.legend('bottom' | 'top' | 'overlay')`. `BarListCard` and `StageBarsCard`:
+  `.mono()`, one ink for every bar.
 - A card's own colour is `.tint(role)`, its active point's `.activeTint(role)`
   (`BarListCard` and `ContributionsCard` take a tint; `HeatmapChartCard`,
   `LineChartCard`, `StepsCard` and `TokensChartCard` both). A series' or a
   stage's colour is its data's, as Bloom takes it.
 - `Sparkline(values, options?)`: `.tint('accent' | 'positive' | 'negative' |
-  'neutral')`; its `width` and `height` are space tokens, as are a sleep
+  'neutral')`, `.shape('curved' | 'sharp')`, `.filled()`; its `width` and
+  `height` are space tokens, as are a sleep
   card's `height` and a tokens card's `plotHeight`.
 - `ChartCardSurface(content, options?)`: the card the others are drawn on (a
   list of views is its children, keyed by `.id()`); `.spacing()` its gap, its
@@ -1188,7 +1191,7 @@ binding holds (`value`/`onValueChange`). The options are its data as Bloom
 takes them (Bloom's `COMPOSER_PANEL_ADD_MENU` and `COMPOSER_PANEL_PERMISSIONS`
 fit as they are); `question`, `status` and `emptyAction` are language
 children. `.disabled()` disables either composer; `.surface(false)` draws the
-pill on a surface of yours.
+pill on a surface of yours, `.frosted()` frosts it.
 
 ### AI chat
 
@@ -1214,6 +1217,10 @@ tokens), `AiChatContainer` (`actions`, `header`, `composer`, `background`),
 (their lines; `actions`, `feedback`, `feedbackProps`, `animate`). A list of
 content is the component's children as Bloom takes them, one each, keyed by
 `.id()`.
+
+- Their looks are modifiers: a shell's `.sidebarSurface('card' | 'plain' |
+  'docked')`, `.sidebarScrollbarSide('end' | 'start')` and `.surface(false)`;
+  a container's `.surface(false)` and `.floatingChrome()`.
 
 - `AiChatMessageLine(content)`: a string is the line's text; a view is a
   block of the reply (Bloom's `block`). `.tint('primary' | 'secondary')`,
@@ -1350,12 +1357,15 @@ markers (`MapClusterMarker` and `MapPriceMarker` `.style('default' | 'active' |
 `MapSearchAreaButton` a button or a toggle, `.disabled()`), `FollowButton`
 (its binding whether one follows; `.style()` and `.tint()` a button's,
 `.size('sm' | 'md' | 'lg')`, `.loading()`), `Shelf(title, items, options?)`
-and `ShelfSkeleton` (`.style('row' | 'grid' | 'paged')`, `.spacing()`),
+and `ShelfSkeleton` (`.style('row' | 'grid' | 'paged')`, `.spacing()`; a
+skeleton's `.round()` covers and `.eyebrow()`),
 `SubscriptionPlans(plan, options)` (its binding the chosen plan; its hero,
 controls, terms, footer and fallback children), `SubscriptionPrice(price)`
 and `UserHoverCard(displayName, options?)` (its action, badge and footer
 children). The markers, the header action and the follow button take
-`.onPress()` themselves.
+`.onPress()` themselves. A follow button's `.material('surface' | 'flat' |
+'shared' | 'lens')` is the shared Button's material; it and the header
+action take `.iconOnly()`.
 
 ### Card form
 
@@ -1381,8 +1391,10 @@ CheckoutSheet({ open, step, direction, request, draft, onDraft, onStep, onBack, 
 Bloom's `checkout-sheet`: `CheckoutSheet(options)` is controlled by the app
 as Bloom's is (its request, draft, step and their handlers, its words and
 amounts); `methodContent`, `footer`, `resultIllustration`, `cardEntry` and
-`notice` are language children. Its open sheet is compared by Jest; in
-Chrome it is presented outside the parity table's cells.
+`notice` are language children. The method step's title is
+`.methodTitleAlign('left' | 'center')` and `.methodTitleVariant(step)`, a step
+of Bloom's type ramp. Its open sheet is compared by Jest; in Chrome it is
+presented outside the parity table's cells.
 
 ### Stay filters
 
@@ -2234,9 +2246,7 @@ and `@oxy.so/bloom-data` beside it.
   fallback.
 - Replacing `className`: the codemods read the className table; what it
   flags needs a modifier or a named token first.
-- Product components: a component's secondary look options (a chat header's
-  title layout, a follow button's material) keep Bloom's names in its
-  options rather than a modifier; a mark that moves on the JS thread (the
+- Product components: a mark that moves on the JS thread (the
   thinking marks, the working row, the typing dots) is compared by Jest, not
   in Chrome; an overlay a product component presents (the checkout sheet) is
   compared by Jest, as Chrome's check reads the table's cells. The product

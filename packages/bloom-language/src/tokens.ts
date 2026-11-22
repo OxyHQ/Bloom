@@ -222,6 +222,12 @@ export type ScrollbarSide = (typeof ENUMS.scrollbarSide)[number];
 export type TeamPlacement = (typeof ENUMS.teamPlacement)[number];
 /** How a light composites over what is beneath it: CSS's blend modes. */
 export type Blend = (typeof ENUMS.blend)[number];
+/** A Bloom Button's material: its `surface` (default), `flat`, the `shared` island's, or the `lens`. */
+export type ButtonMaterial = (typeof ENUMS.buttonMaterial)[number];
+/** Where a radar card's legend goes: `bottom` (default), `top` or `overlay`. */
+export type RadarLegend = (typeof ENUMS.radarLegend)[number];
+/** A checkout sheet's method title: `left` or `center`. */
+export type MethodTitleAlign = (typeof ENUMS.methodTitleAlign)[number];
 /** A step of Bloom's type ramp (`body-regular`, `title-2-semibold`…). */
 export type TypeRampStep = keyof typeof TYPE_RAMP;
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
