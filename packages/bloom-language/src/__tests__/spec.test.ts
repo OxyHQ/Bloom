@@ -313,6 +313,9 @@ import type {
   CalendarViewView,
 } from '../controls/calendar';
 import type { AccentTone, ContentFit } from '../tokens';
+import type { VoiceControlsView } from '../controls/voice';
+import type { WebSearchView } from '../controls/web-search';
+import type { TaskListView } from '../controls/task-list';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -704,7 +707,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CalendarViewView>, Of<'calendarView'>>,
       Same<MethodsOf<CalendarViewHeaderView>, Of<'calendarViewHeader'>>,
       Same<MethodsOf<CalendarViewMonthGridView>, Of<'calendarViewMonthGrid'>>,
+      Same<MethodsOf<TaskListView>, Of<'taskList'>>,
+      Same<MethodsOf<WebSearchView>, Of<'webSearch'>>,
+      Same<MethodsOf<VoiceControlsView>, Of<'voiceControls'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

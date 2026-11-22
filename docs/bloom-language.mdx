@@ -1589,6 +1589,25 @@ token. `TypingBubble(options?)` is named with `.label()`.
 
 - The typing dots pulse and a highlighted bubble flashes on the JS thread:
   those cases are compared by Jest as they mount, not in Chrome.
+### Task list, web search and voice
+
+```ts
+TaskList(tasks, { revealed: events.length, collapseOnComplete: true, onComplete: done })
+WebSearch(steps, { revealed, labels: { sources: 'Sources' } })
+VoiceControls(session.state, { muted, onMutedChange: setMuted, onEnd: hangUp, trailing: Text(elapsed) }).size('md')
+```
+
+Bloom's `task-list`, `web-search` and `voice`, as Gemies draws them.
+`TaskList(tasks, options?)` and `WebSearch(steps, options?)` take Bloom's
+`TaskListTask`s and `WebSearchStep`s (a chip's or a source's `icon` is a React
+element: `toElement(view)`), and their reveal as Bloom takes it: its pace, or
+`revealed` counted from real events, `working`, `onComplete`, `reduce`.
+`VoiceControls(state?, options?)` takes the session's state (`listening` by
+default) and its handlers, each showing its control; `leading` and `trailing`
+are language children. `.size('sm' | 'md' | 'lg')`, `.disabled()`.
+
+- The working row that trails a running log moves on the JS thread: compared
+  by Jest as it mounts, not in Chrome.
 
 ### Map chrome
 

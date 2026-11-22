@@ -10,6 +10,9 @@ import { LISTING_CARDS } from './listing-card';
 import { LISTING_ACTIONS } from './listing-actions';
 import { HOME_SEARCHES } from './home-search';
 import { BOOKINGS } from './booking';
+import { VOICES } from './voice';
+import { WEB_SEARCHES } from './web-search';
+import { TASK_LISTS } from './task-list';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { STAY_FILTERS } from './stay-filters';
 import { STAY_SEARCH } from './stay-search';
@@ -86,4 +89,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LOCKUPS,
   ...AMBIENT_PHOTOS,
   ...CALENDAR_VIEWS,
+  ...TASK_LISTS,
+  ...WEB_SEARCHES,
+  ...VOICES,
 };

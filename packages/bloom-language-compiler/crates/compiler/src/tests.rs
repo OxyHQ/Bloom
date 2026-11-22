@@ -1181,3 +1181,17 @@ fn the_other_secondary_looks_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_task_list_web_search_and_voice_controls_are_checked() {
+    let imports = "import { TaskList, WebSearch, VoiceControls } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t, s) => [TaskList(t).padding('md'), WebSearch(s), VoiceControls('listening').size('sm').disabled()];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = () => VoiceControls().size('xs');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown voiceSize token 'xs' for .size()");
+    let output = check("export const x = (t) => TaskList(t).style('plain');\n");
+    assert_eq!(output.diagnostics[0].message, "TaskList has no modifier .style()");
+}

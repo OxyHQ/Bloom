@@ -25,6 +25,9 @@ import type { OfferingBadgeKind } from './controls/offering-badge';
 import type { ListingEditorKind } from './controls/listing-editor';
 import type { ListingCardKind } from './controls/listing-card';
 import type { ListingActionKind } from './controls/listing-actions';
+import type { VoiceKind } from './controls/voice';
+import type { WebSearchKind } from './controls/web-search';
+import type { TaskListKind } from './controls/task-list';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
 import type { StaySearchKind } from './controls/stay-search';
@@ -832,7 +835,10 @@ export type NodeKind =
   | OrderStatusKind
   | LockupKind
   | AmbientPhotoKind
-  | CalendarViewKind;
+  | CalendarViewKind
+  | TaskListKind
+  | WebSearchKind
+  | VoiceKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {

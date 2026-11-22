@@ -887,3 +887,14 @@ export type {
   CalendarViewOptions,
   CalendarViewView,
 } from './controls/calendar';
+// Task list (controls/task-list.tsx)
+export { TaskList } from './controls/task-list';
+export type { TaskListOptions, TaskListView } from './controls/task-list';
+
+// Web search (controls/web-search.tsx)
+export { WebSearch } from './controls/web-search';
+export type { WebSearchOptions, WebSearchView } from './controls/web-search';
+
+// Voice (controls/voice.tsx)
+export { VoiceControls } from './controls/voice';
+export type { VoiceControlsOptions, VoiceControlsView } from './controls/voice';

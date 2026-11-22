@@ -230,6 +230,8 @@ export type RadarLegend = (typeof ENUMS.radarLegend)[number];
 export type MethodTitleAlign = (typeof ENUMS.methodTitleAlign)[number];
 /** A step of Bloom's type ramp (`body-regular`, `title-2-semibold`…). */
 export type TypeRampStep = keyof typeof TYPE_RAMP;
+/** Bloom's voice parts' sizes (`VoiceSize`). */
+export type VoiceSize = (typeof ENUMS.voiceSize)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
