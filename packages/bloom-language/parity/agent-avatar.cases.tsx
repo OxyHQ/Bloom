@@ -18,12 +18,14 @@ export const AGENT_AVATAR_CASES: ParityCase[] = [
     bloom: () => <AgentAvatar character={BERET} />,
   },
   // In view as the page loads: the renderer draws an avatar once it is on screen.
+  // Paused: its idle never rests, and Chrome reads each side's held press at a
+  // moment of its own.
   {
     name: 'AgentAvatar pressable',
-    language: () => toElement(L.AgentAvatar(BERET).onPress(onPress).label('Open Ana')),
+    language: () => toElement(L.AgentAvatar(BERET).paused(true).onPress(onPress).label('Open Ana')),
     bloom: () => (
       <Pressable onPress={onPress} accessibilityLabel="Open Ana">
-        <AgentAvatar character={BERET} />
+        <AgentAvatar character={BERET} paused />
       </Pressable>
     ),
   },
