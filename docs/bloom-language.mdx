@@ -787,6 +787,8 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
 - **`IconCircle(icon)`**: an icon on Bloom's tinted disc; `.size()` an icon rung.
 - **`Loading(Text(…)?)`**: `.style('spinner' | 'top' | 'inline')`, `.size()`,
   `.tint(tone)`; the `Text` is what it says, `.label()` names it as a progress bar.
+  Its box modifiers (padding, frame, fill, corner, margin, flex) are its
+  `style`, as an app writes them.
 - **`Skeleton(shape)`**: `text`, `circle`, `pill` or `box`. Its frame is its
   size (a circle's and a pill's height, a box's width and height), a box's
   corner its radius, a text line's height its font's. It takes nothing else
@@ -1679,8 +1681,9 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   content to the corner, `.cornerCurve('round' | 'smooth')` is its own curve
   (Bloom's `cornerCurve`, beside its radius). `.onPress` is the card's own press (`.disabled()`,
   `.label()`, `.role('link')`). `CardTitle` and `CardDescription` take
-  `.lines(n)`. The box modifiers (padding, frame, background) are the card's
-  `style`, as an app writes them.
+  `.lines(n)`. The box modifiers (padding, frame, background, corner, margin,
+  flex) are the card's `style`, as an app writes them; on the web a role in
+  it is its CSS variable, as Bloom's prepainted theme hands it to an app.
 - **Row.** `.subtitle()`, `.leadingView(...)` and `.trailing(...)` (its slots,
   as views), `.size()`, `.lines(n)` (the title's), `.disabled()`,
   `.destructive()`, `.selected()`, `.active()`, `.highlighted()`,
