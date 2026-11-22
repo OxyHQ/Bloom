@@ -35,7 +35,8 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:89",
@@ -72,7 +73,8 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:107",
@@ -113,7 +115,8 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:128",
@@ -148,7 +151,8 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:150",
@@ -201,7 +205,8 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:160",
@@ -247,7 +252,8 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:186",
@@ -310,7 +316,8 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:221",
@@ -383,7 +390,8 @@
    "@oxy.so/bloom/engagement-bar#EngagementBar"
   ],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:244",
@@ -442,12 +450,13 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Components.tsx:260",
-  "before": "<View className=\"flex-row gap-2\" accessibilityRole=\"header\">\n      <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />\n      <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />\n      <RiStarLine fill={parityTheme.colors.error} />\n    </View>",
-  "after": "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error')).spacing('sm').role('header'))",
+  "before": "<View className=\"flex-row gap-2\" accessibilityRole=\"header\">\n      <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />\n      <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />\n      <RiStarLine fill={parityTheme.colors.error} />\n      <RiStarLine size=\"sm\" fill={'#F5A623'} />\n      <RiHeart3Fill fill=\"#fff\" />\n    </View>",
+  "after": "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error'), Icon(RiStarLine).size('sm').foreground(appColors.color.STAR), Icon(RiHeart3Fill).foreground(appColors.color.hexfff)).spacing('sm').role('header'))",
   "bindings": {
    "View": {
     "module": "react-native",
@@ -464,6 +473,10 @@
    "RiStarLine": {
     "module": "@oxy.so/bloom/icons/RiStarLine",
     "imported": "RiStarLine"
+   },
+   "RiHeart3Fill": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Fill",
+    "imported": "RiHeart3Fill"
    }
   },
   "language": [
@@ -496,7 +509,8 @@
    "HStack",
    "Chip: LChip",
    "Icon",
-   "Action"
+   "Action",
+   "defineTokens"
   ],
   "classes": [
    "flex-row",
@@ -504,10 +518,17 @@
   ],
   "within": [],
   "themed": true,
-  "screen": false
+  "screen": false,
+  "appColors": {
+   "table": "appColors",
+   "color": {
+    "STAR": "#F5A623",
+    "hexfff": "#fff"
+   }
+  }
  },
  {
-  "name": "components/Components.tsx:270",
+  "name": "components/Components.tsx:274",
   "before": "<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>\n      <View style={{ flexGrow: 1, gap: 12 }}>{<Hole n=\"0\" />}</View>\n      <View style={[{ width: 24, height: 24 }, { marginLeft: 8 }]} />\n    </View>",
   "after": "toElement(HStack(VStack(Embed(<Hole n=\"0\" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))",
   "bindings": {
@@ -546,15 +567,17 @@
    "HStack",
    "Chip: LChip",
    "Icon",
-   "Action"
+   "Action",
+   "defineTokens"
   ],
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:292",
+  "name": "components/Components.tsx:296",
   "before": "<Slider\n      value={2}\n      onValueChange={() => {}}\n      label={'⟨2⟩'}\n      min={0.5}\n      max={2}\n      step={0.25}\n      formatValue={() => {}}\n      onSlidingComplete={() => {}}\n    />",
   "after": "toElement(LSlider([2, () => {}], '⟨2⟩').bounds(0.5, 2).step(0.25).valueFormat(() => {}).onCommit(() => {}))",
   "bindings": {
@@ -594,15 +617,17 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider"
   ],
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:306",
+  "name": "components/Components.tsx:310",
   "before": "<Admonition type=\"info\">{'⟨0⟩'}</Admonition>",
   "after": "toElement(LAdmonition(Text('⟨0⟩')).style('info'))",
   "bindings": {
@@ -642,16 +667,18 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition"
   ],
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:311",
+  "name": "components/Components.tsx:315",
   "before": "<PageHeader\n      title={'⟨0⟩'}\n      backLabel={'⟨1⟩'}\n      onBack={() => {}}\n      titleAlign=\"center\"\n      safeArea={false}\n      actions={<Button onPress={() => {}}>{'⟨3⟩'}</Button>}\n    />",
   "after": "toElement(LHeader('⟨0⟩').backLabel('⟨1⟩').onBack(() => {}).titleAlign('center').safeArea(false).toolbar(LButton(Text('⟨3⟩')).onPress(() => {})).inPage())",
   "bindings": {
@@ -695,6 +722,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader"
@@ -702,10 +730,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:323",
+  "name": "components/Components.tsx:327",
   "before": "<PageHeader title={'⟨0⟩'} onBack={null} presentation=\"floating\" />",
   "after": "toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())",
   "bindings": {
@@ -745,6 +774,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader"
@@ -752,10 +782,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:337",
+  "name": "components/Components.tsx:341",
   "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={(() => {})}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
   "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
   "bindings": {
@@ -799,6 +830,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader"
@@ -808,10 +840,11 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": true,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:364",
+  "name": "components/Components.tsx:368",
   "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} variant=\"underline\">\n      {ITEMS.map((item: { id: string; label: string; count?: number }) => (\n        <TabsTrigger key={'k6'} value={'⟨3⟩'} label={'⟨4⟩'} count={2} />\n      ))}\n    </Tabs>",
   "after": "toElement(LTabs(['⟨0⟩', () => {}], ITEMS.map((item: { id: string; label: string; count?: number }) => TabItem('⟨3⟩', '⟨4⟩').count(2))).style('underline'))",
   "bindings": {
@@ -855,6 +888,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -864,10 +898,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:374",
+  "name": "components/Components.tsx:378",
   "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} fullWidth label={'⟨4⟩'}>\n      <TabsTrigger value=\"posts\" label={'⟨2⟩'} leadingIcon={RiStarLine} />\n      {/* Likes are private. */}\n      <TabsTrigger value=\"likes\" label={'⟨3⟩'} leadingIcon={RiHeart3Line} iconOnly />\n    </Tabs>",
   "after": "toElement(LTabs(['⟨0⟩', () => {}], TabItem('posts', '⟨2⟩').icon(RiStarLine), /* Likes are private. */ TabItem('likes', '⟨3⟩').icon(RiHeart3Line).iconOnly()).fullWidth().label('⟨4⟩'))",
   "bindings": {
@@ -919,6 +954,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -928,10 +964,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:392",
+  "name": "components/Components.tsx:396",
   "before": "<View className=\"gap-2\">\n      <SegmentedControl\n        label={'⟨5⟩'}\n        type=\"radio\"\n        size=\"sm\"\n        value={'⟨0⟩'}\n        onChange={() => {}}\n      >\n        <SegmentedControlItem value=\"24h\">\n          <SegmentedControlItemText>{'⟨2⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"7d\" disabled={true}>\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n      <SegmentedControl type=\"tabs\" variant=\"plain\" value={'⟨6⟩'} onValueChange={() => {}}>\n        {ITEMS.map((item) => (\n          <SegmentedControlItem key={'k11'} value={'⟨9⟩'}>\n            <SegmentedControlItemText>{'⟨10⟩'}</SegmentedControlItemText>\n          </SegmentedControlItem>\n        ))}\n      </SegmentedControl>\n    </View>",
   "after": "toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))",
   "bindings": {
@@ -983,6 +1020,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -996,10 +1034,11 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:426",
+  "name": "components/Components.tsx:430",
   "before": "<Field label={'⟨0⟩'}>\n      <SegmentedControl type=\"radio\" value={'⟨1⟩'} onValueChange={() => {}}>\n        <SegmentedControlItem value=\"month\">\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"year\">\n          <SegmentedControlItemText>{'⟨4⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n    </Field>",
   "after": "toElement(LField('⟨0⟩', Segmented(['⟨1⟩', () => {}], Option('month', '⟨3⟩'), Option('year', '⟨4⟩'))))",
   "bindings": {
@@ -1051,6 +1090,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -1062,10 +1102,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:441",
+  "name": "components/Components.tsx:445",
   "before": "<SettingsSelect\n      label={'⟨0⟩'}\n      value={'⟨1⟩'}\n      onChange={() => {}}\n      items={ITEMS}\n    />",
   "after": "toElement(LSettingsSelect('⟨0⟩', ['⟨1⟩', () => {}], ITEMS))",
   "bindings": {
@@ -1105,6 +1146,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -1117,10 +1159,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:455",
+  "name": "components/Components.tsx:459",
   "before": "<AvatarGroup\n      items={ITEMS}\n      layout=\"conversation\"\n      size={32}\n      max={3}\n      total={2}\n      showInitials\n    />",
   "after": "toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())",
   "bindings": {
@@ -1160,6 +1203,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -1173,10 +1217,11 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:468",
+  "name": "components/Components.tsx:472",
   "before": "<View className=\"gap-2\">\n      <List\n        items={ITEMS}\n        separator=\"line\"\n        header={<Muted>{'⟨1⟩'}</Muted>}\n        empty={<Muted>{'⟨2⟩'}</Muted>}\n        testID=\"people\"\n      />\n      <List items={ITEMS} loading={true} loadingCount={2} />\n    </View>",
   "after": "toElement(VStack(LList(ITEMS).separator('line').headerContent(Text('⟨1⟩').textStyle('muted')).emptyState(Text('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))",
   "bindings": {
@@ -1224,6 +1269,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -1240,10 +1286,11 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
-  "name": "components/Components.tsx:491",
+  "name": "components/Components.tsx:495",
   "before": "<VirtualList\n      data={ITEMS}\n      keyExtractor={() => {}}\n      renderItem={({ item, index }) => (\n        <Pressable onPress={() => {}} className=\"px-4 py-3\">\n          <Muted numberOfLines={2}>{'⟨1⟩'}</Muted>\n        </Pressable>\n      )}\n      estimatedItemSize={56}\n      onEndReached={() => {}}\n      onEndReachedThreshold={0.5}\n      ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}\n    />",
   "after": "toElement(LVirtualList(ITEMS, (item, index) => VStack(Text('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(Text('⟨6⟩').textStyle('muted')))",
   "bindings": {
@@ -1291,6 +1338,7 @@
    "Chip: LChip",
    "Icon",
    "Action",
+   "defineTokens",
    "Slider: LSlider",
    "Admonition: LAdmonition",
    "Header: LHeader",
@@ -1309,7 +1357,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:19",
@@ -1352,7 +1401,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:41",
@@ -1403,7 +1453,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:54 (false)",
@@ -1438,7 +1489,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:54",
@@ -1473,7 +1525,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:58",
@@ -1509,7 +1562,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:68",
@@ -1549,7 +1603,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:85 (false)",
@@ -1593,7 +1648,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/Rows.tsx:85",
@@ -1637,7 +1693,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/SettingsRoute.tsx:13",
@@ -1662,7 +1719,8 @@
   ],
   "within": [],
   "themed": false,
-  "screen": true
+  "screen": true,
+  "appColors": null
  },
  {
   "name": "components/SettingsRoute.tsx:17",
@@ -1681,7 +1739,8 @@
   "classes": [],
   "within": [],
   "themed": false,
-  "screen": false
+  "screen": false,
+  "appColors": null
  },
  {
   "name": "components/SettingsRoute.tsx:19",
@@ -1713,6 +1772,7 @@
   ],
   "within": [],
   "themed": false,
-  "screen": true
+  "screen": true,
+  "appColors": null
  }
 ]

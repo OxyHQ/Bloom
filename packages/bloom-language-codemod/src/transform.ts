@@ -121,7 +121,14 @@ type Ir =
       key: Carried | null;
       runs: TextRun[];
     }
-  | { type: 'icon'; component: string; mods: Mod[]; key: Carried | null }
+  | {
+      type: 'icon';
+      component: string;
+      mods: Mod[];
+      key: Carried | null;
+      /** An app colour it is filled with, `.foreground()` of the file's `defineTokens` table. */
+      color?: AppColor;
+    }
   | {
       type: 'component';
       node: string;
@@ -162,6 +169,24 @@ interface Choice {
 }
 
 type TextRun = { type: 'string'; value: string } | { type: 'expr'; value: Carried } | Ir;
+
+/**
+ * An app colour (`defineTokens({ color })`): a static hex in the file, by its
+ * token name (a module constant's own name, else `hex` and its digits), and
+ * the constant it is read from.
+ */
+interface AppColor {
+  readonly name: string;
+  readonly value: string;
+  readonly constant?: string;
+  /** Where the icon's fill reads the constant. */
+  readonly read?: AnyNode;
+}
+
+/** What `defineTokens` takes as a colour: a hex of 3, 4, 6 or 8 digits. */
+const HEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+/** Bloom's colour scope: inside it, a theme read outside it is another scheme's colour. */
+const COLOR_SCOPE = '@oxy.so/bloom/theme#BloomColorScope';
 
 /**
  * A value a modifier or a constructor takes: a literal, a carried value, a
@@ -231,6 +256,11 @@ export interface Fixture {
   readonly themed: boolean;
   /** The after side is a route's body root, drawn by the language's `ScreenHost` as `screen()` draws it. */
   readonly screen: boolean;
+  /** The app colours the chain paints with: the table's local name and each token's hex. */
+  readonly appColors: {
+    readonly table: string;
+    readonly color: Readonly<Record<string, string>>;
+  } | null;
 }
 
 export interface FileResult {
@@ -565,6 +595,42 @@ export function transformSource(source: string, options: TransformOptions): File
       this.traverse(path);
     },
   });
+  /**
+   * Module-level `const NAME = 'text'` (no type annotation, so a hex's type is
+   * the literal `defineTokens` takes), by name: a colour the codemod reads in the file.
+   */
+  const colorConstants = new Map<string, { value: string; statement: AnyNode }>();
+  for (const statement of ast.program.body as AnyNode[]) {
+    const declaration = n.ExportNamedDeclaration.check(statement)
+      ? statement.declaration
+      : statement;
+    if (!n.VariableDeclaration.check(declaration) || declaration.kind !== 'const') continue;
+    for (const declarator of declaration.declarations as AnyNode[]) {
+      const value = staticString(declarator.init);
+      if (
+        n.Identifier.check(declarator.id) &&
+        !declarator.id.typeAnnotation &&
+        n.StringLiteral.check(declarator.init) &&
+        value !== undefined
+      )
+        colorConstants.set(declarator.id.name, { value, statement });
+    }
+  }
+  /** Each name that reads a string constant of the module's (not a name that shadows it). */
+  const colorConstantReads = new Set<AnyNode>();
+  if (colorConstants.size > 0)
+    recast.visit(ast, {
+      visitIdentifier(path) {
+        if (colorConstants.has(path.node.name) && scopeOf(path, path.node.name)?.isGlobal)
+          colorConstantReads.add(path.node);
+        this.traverse(path);
+      },
+    });
+  /** The local name of the file's app colour table, free in the file. */
+  let appColorTable = 'appColors';
+  for (let i = 2; declared.has(appColorTable); i++) appColorTable = `appColors${i}`;
+  /** The app colours the converted regions paint with, by token name: the file's table. */
+  const appColors = new Map<string, AppColor>();
 
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
@@ -662,6 +728,67 @@ export function transformSource(source: string, options: TransformOptions): File
     });
     if (returned.length && returned.every(isScreen) && named === 1)
       for (const node of returned) screenRoutes.set(node, fn);
+  }
+
+  /**
+   * An icon's fill as the chain paints it: a Bloom theme colour read from
+   * `useTheme()` is its role, and a static hex (a literal, or a module
+   * constant) an app colour, the same hex in both schemes. Anything else is a reason.
+   */
+  function iconFill(
+    node: AnyNode,
+    fill: AnyNode,
+  ): { role: string } | { color: AppColor } | { reason: Reason } {
+    const reason = (code: string, why: string) => ({ reason: { subject: 'fill', code, why } });
+    const expression = attributeExpression(fill);
+    const role = themeRoles.get(expression);
+    if (role) {
+      const scope = insideOf(node, [COLOR_SCOPE]);
+      return scope
+        ? reason(
+            'icon-fill:color-scope',
+            `a theme colour read outside the ${scope} the icon is drawn in, where the role paints the scope's scheme`,
+          )
+        : { role };
+    }
+    const constant =
+      n.Identifier.check(expression) && colorConstantReads.has(expression)
+        ? (expression.name as string)
+        : undefined;
+    const value = constant ? colorConstants.get(constant)?.value : staticString(fill);
+    if (value !== undefined) {
+      if (!HEX.test(value))
+        return reason(
+          'icon-fill:not-hex',
+          'a colour that is no hex (a name, an `rgba()`): an app colour token is a hex',
+        );
+      const name = constant ?? `hex${value.slice(1)}`;
+      if (!constant && colorConstants.has(name))
+        return reason('icon-fill', `a hex whose token name the file declares (\`${name}\`)`);
+      return { color: constant ? { name, value, constant, read: expression } : { name, value } };
+    }
+    // `x.colors.key` or `colors.key` with no role, or not bound to `useTheme()` where it is read.
+    const object = n.MemberExpression.check(expression) ? expression.object : undefined;
+    const themed =
+      object &&
+      !expression.computed &&
+      n.Identifier.check(expression.property) &&
+      ((n.Identifier.check(object) && object.name === 'colors') ||
+        (n.MemberExpression.check(object) &&
+          !object.computed &&
+          n.Identifier.check(object.property) &&
+          object.property.name === 'colors'));
+    if (themed && !ROLE_OF_THEME_COLOR.has(expression.property.name))
+      return reason(
+        'icon-fill:no-role',
+        `a theme colour no language role paints (\`${expression.property.name}\`)`,
+      );
+    if (themed)
+      return reason(
+        'icon-fill:theme-handed-in',
+        'a theme colour read from a theme handed in (a prop, a parameter), not from `useTheme()` here: the scheme it was read in may not be the one the icon is drawn in',
+      );
+    return reason('icon-fill', 'a fill set at runtime, or read from outside the file');
   }
 
   const results = new Map<AnyNode, { ir: Ir } | { reasons: Reason[] }>();
@@ -900,17 +1027,18 @@ export function transformSource(source: string, options: TransformOptions): File
       if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
         fail('children', 'icon-children', 'an icon with children');
       const fill = iconProps.get('fill');
+      let color: AppColor | undefined;
       if (fill !== undefined) {
-        // A theme colour is the role painted from it, in every theme.
-        const role = themeRoles.get(attributeExpression(fill));
-        if (role) mods.push({ name: 'foreground', args: [role] });
-        else fail('fill', 'icon-fill', 'a fill that is no colour of the Bloom theme');
+        const ink = iconFill(node, fill);
+        if ('role' in ink) mods.push({ name: 'foreground', args: [ink.role] });
+        else if ('color' in ink) color = ink.color;
+        else reasons.push(ink.reason);
       } else {
         // A bare Bloom icon paints primary; Icon(X) paints the ink around it.
         mods.push(...options.table.bareIcon);
       }
       if (reasons.length) return { reasons };
-      return { ir: { type: 'icon', component: local, mods, key } };
+      return { ir: { type: 'icon', component: local, mods, key, ...(color && { color }) } };
     }
 
     const isText = kind === 'bloomText' || kind === 'rnText';
@@ -1937,7 +2065,7 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'map':
         return `${carry(ir.items)}.map((${ir.params.map((param) => recast.print(param).code).join(', ')}) => ${print(ir.body, carry)})`;
       case 'icon':
-        return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
+        return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.color ? `.foreground(${appColorTable}.color.${ir.color.name})` : ''}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       case 'component': {
         // Its children (the trailing views) with their comments; the arguments before them as values.
         const first = ir.args.findIndex((a) => isTagged(a) && a.$ === 'view');
@@ -2199,6 +2327,11 @@ export function transformSource(source: string, options: TransformOptions): File
           text: `parityTheme.colors.${read.property.name}`,
         });
       }
+    // A constant the chain names as an app colour is its hex on the before side, drawn without the module.
+    const colors = colorsOf(ir);
+    for (const color of colors)
+      if (color.read)
+        spans.push({ start: color.read.start, end: color.read.end, text: quote(color.value) });
     spans.sort((a, b) => a.start - b.start);
     for (const span of spans) {
       if (span.start < at) continue;
@@ -2234,7 +2367,24 @@ export function transformSource(source: string, options: TransformOptions): File
       within: withinOf(ir).filter((key) => ir.type !== 'screen' || key !== SCREEN_KEY),
       themed,
       screen: ir.type === 'screen',
+      appColors: colors.length
+        ? {
+            table: appColorTable,
+            color: Object.fromEntries(colors.map((c) => [c.name, c.value])),
+          }
+        : null,
     });
+  }
+
+  /** The app colours a region's icons paint with. */
+  function colorsOf(ir: Ir): AppColor[] {
+    const found: AppColor[] = [];
+    const visit = (at: Ir) => {
+      if (at.type === 'icon' && at.color) found.push(at.color);
+      for (const child of childrenOf(at)) visit(child);
+    };
+    visit(ir);
+    return found;
   }
 
   /** The Bloom components the region's nodes are drawn only inside. */
@@ -2283,6 +2433,11 @@ export function transformSource(source: string, options: TransformOptions): File
       markConverted(node);
       const ir = result.ir;
       const rootKey = 'key' in ir ? ir.key : null;
+      // The file's table holds every app colour a region paints with.
+      for (const color of colorsOf(ir)) {
+        appColors.set(color.name, color);
+        lang('defineTokens');
+      }
       if (options.fixtures) fixture(node, ir, rootKey);
       // Regions inside the values it carries (an embedded element's children, an array's elements).
       for (const c of carriedOf(ir)) {
@@ -2409,6 +2564,23 @@ export function transformSource(source: string, options: TransformOptions): File
       -1,
     );
     body.splice(lastImport + 1, 0, ...declarations);
+    if (appColors.size > 0) {
+      // The app colour table, after the imports and the constants it reads.
+      const entries = [...appColors.values()].map((c) =>
+        c.constant ? c.constant : `${c.name}: ${quote(c.value)}`,
+      );
+      const table = recast.parse(
+        `const ${appColorTable} = ${lang('defineTokens')}({ color: { ${entries.join(', ')} } });\n`,
+        { parser: babelTs },
+      ).program.body[0];
+      const after = Math.max(
+        lastImport + 1,
+        ...[...appColors.values()].map((c) =>
+          c.constant ? body.indexOf(colorConstants.get(c.constant)?.statement) : -1,
+        ),
+      );
+      body.splice(after + 1, 0, table);
+    }
   }
 
   return {

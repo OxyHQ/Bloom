@@ -261,9 +261,13 @@ export function Glyphs() {
       <RiHeart3Line width={20} height={20} fill={theme.colors.textSecondary} />
       <RiMailLine width={16} height={16} fill={colors.primary} />
       <RiStarLine fill={theme.colors.error} />
+      <RiStarLine size="sm" fill={STAR} />
+      <RiHeart3Fill fill="#fff" />
     </View>
   );
 }
+
+const STAR = '#F5A623';
 
 export function Styled({ children }: { children: React.ReactNode }) {
   return (

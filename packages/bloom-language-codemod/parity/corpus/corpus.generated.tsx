@@ -58,6 +58,8 @@ import { Text as I50 } from '@oxy.so/bloom/typography';
 import { RiArrowRightLine as I51 } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { Text as I52 } from '../support/app-text';
 
+const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff"} });
+
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
 }
@@ -98,7 +100,7 @@ export const CASES = [
         <GroupedSectionItem title={'⟨10⟩'} titleNumberOfLines={0} disabled />
       </GroupedSection>
     </SettingsSection>); },
-    after: () => { const SettingsSection = I0; const GroupedSection = I1; const GroupedSectionItem = I2; const Switch = I3; const SpinnerIcon = I4; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection } = L; return (toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))); },
+    after: () => { const SettingsSection = I0; const GroupedSection = I1; const GroupedSectionItem = I2; const Switch = I3; const SpinnerIcon = I4; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection } = L;  return (toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))); },
   },
   {
     name: "components/Components.tsx:89",
@@ -107,7 +109,7 @@ export const CASES = [
         <SettingsValueField icon={RiSmartphoneLine}>Pixel 9</SettingsValueField>
       </Card>
     </SettingsSection>); },
-    after: () => { const SettingsSection = I0; const Card = I5; const SettingsValueField = I6; const RiSmartphoneLine = I7; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard } = L; return (toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))); },
+    after: () => { const SettingsSection = I0; const Card = I5; const SettingsValueField = I6; const RiSmartphoneLine = I7; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard } = L;  return (toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))); },
   },
   {
     name: "components/Components.tsx:107",
@@ -127,7 +129,7 @@ export const CASES = [
         />
       </View>
     </ScreenScrollView>}</I11>); },
-    after: () => { const ScreenScrollView = I8; const View = I9; const TextFieldInput = I10; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView } = L; return (<I11>{toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))}</I11>); },
+    after: () => { const ScreenScrollView = I8; const View = I9; const TextFieldInput = I10; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView } = L;  return (<I11>{toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))}</I11>); },
   },
   {
     name: "components/Components.tsx:128",
@@ -136,7 +138,7 @@ export const CASES = [
       description={'⟨1⟩'}
       action={<Button onPress={() => {}}>{'⟨2⟩'}</Button>}
     />); },
-    after: () => { const ChatEmptyState = I12; const Button = I13; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState } = L; return (toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(Text('⟨2⟩')).onPress(() => {}) }))); },
+    after: () => { const ChatEmptyState = I12; const Button = I13; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState } = L;  return (toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(Text('⟨2⟩')).onPress(() => {}) }))); },
   },
   {
     name: "components/Components.tsx:150",
@@ -152,7 +154,7 @@ export const CASES = [
       {<Hole n="4" />}
       <Loading size="sm" variant="inline" />
     </ScreenScrollView>}</I11>); },
-    after: () => { const ScreenScrollView = I8; const Search = I14; const Muted = I15; const Divider = I16; const Loading = I17; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading } = L; return (<I11>{toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), Text('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n="4" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))}</I11>); },
+    after: () => { const ScreenScrollView = I8; const Search = I14; const Muted = I15; const Divider = I16; const Loading = I17; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading } = L;  return (<I11>{toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), Text('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n="4" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))}</I11>); },
   },
   {
     name: "components/Components.tsx:160",
@@ -164,7 +166,7 @@ export const CASES = [
           trailing={<Badge content={'⟨4⟩'} variant="subtle" size="sm" />}
           onPress={() => {}}
         />); },
-    after: () => { const Item = I18; const Avatar = I19; const Badge = I20; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row } = L; return (toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))); },
+    after: () => { const Item = I18; const Avatar = I19; const Badge = I20; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row } = L;  return (toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))); },
   },
   {
     name: "components/Components.tsx:186",
@@ -184,7 +186,7 @@ export const CASES = [
       />
       <IconCircle icon={RiStarLine} size="lg" />
     </ResponsiveGrid>); },
-    after: () => { const ResponsiveGrid = I21; const Field = I22; const Checkbox = I23; const Textarea = I24; const IconCircle = I25; const RiStarLine = I26; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid } = L; return (toElement(Grid(LField('⟨0⟩', LCheckbox([true, () => {}], '⟨3⟩')).description('⟨4⟩'), TextEditor(['⟨5⟩', () => {}]).placeholder('⟨7⟩').rows(4).autoResize(8).showCount().maxLength(500), LIconCircle(RiStarLine).size('lg')).columns(2).spacing('lg').testID('about'))); },
+    after: () => { const ResponsiveGrid = I21; const Field = I22; const Checkbox = I23; const Textarea = I24; const IconCircle = I25; const RiStarLine = I26; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid } = L;  return (toElement(Grid(LField('⟨0⟩', LCheckbox([true, () => {}], '⟨3⟩')).description('⟨4⟩'), TextEditor(['⟨5⟩', () => {}]).placeholder('⟨7⟩').rows(4).autoResize(8).showCount().maxLength(500), LIconCircle(RiStarLine).size('lg')).columns(2).spacing('lg').testID('about'))); },
   },
   {
     name: "components/Components.tsx:221",
@@ -206,7 +208,7 @@ export const CASES = [
         popOnActivate
       />
     </View>}</I32>); },
-    after: () => { const View = I9; const Chip = I27; const EngagementAction = I28; const RiHeart3Line = I29; const RiCloseLine = I30; const RiHeart3Fill = I31; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L; return (<I32>{toElement(HStack(LChip(Text('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), Text('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))}</I32>); },
+    after: () => { const View = I9; const Chip = I27; const EngagementAction = I28; const RiHeart3Line = I29; const RiCloseLine = I30; const RiHeart3Fill = I31; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L;  return (<I32>{toElement(HStack(LChip(Text('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), Text('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))}</I32>); },
   },
   {
     name: "components/Components.tsx:244",
@@ -219,27 +221,29 @@ export const CASES = [
         keyboardType="email-address"
       />
     </TextField>); },
-    after: () => { const TextField = I33; const TextFieldIcon = I34; const TextFieldInput = I10; const RiMailLine = I35; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L; return (toElement(LTextField(['⟨0⟩', () => {}], '⟨2⟩').keyboard('email-address').size('lg').disabled().icon(RiMailLine))); },
+    after: () => { const TextField = I33; const TextFieldIcon = I34; const TextFieldInput = I10; const RiMailLine = I35; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L;  return (toElement(LTextField(['⟨0⟩', () => {}], '⟨2⟩').keyboard('email-address').size('lg').disabled().icon(RiMailLine))); },
   },
   {
     name: "components/Components.tsx:260",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; return (<View className="flex-row gap-2" accessibilityRole="header">
+    before: () => { function Before() { const parityTheme = useParityTheme(); const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const RiHeart3Fill = I31; return (<View className="flex-row gap-2" accessibilityRole="header">
       <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />
       <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />
       <RiStarLine fill={parityTheme.colors.error} />
+      <RiStarLine size="sm" fill={'#F5A623'} />
+      <RiHeart3Fill fill="#fff" />
     </View>); } return (<Before />); },
-    after: () => { const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L; return (toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error')).spacing('sm').role('header'))); },
+    after: () => { const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const RiHeart3Fill = I31; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens } = L; const appColors = T0; return (toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error'), Icon(RiStarLine).size('sm').foreground(appColors.color.STAR), Icon(RiHeart3Fill).foreground(appColors.color.hexfff)).spacing('sm').role('header'))); },
   },
   {
-    name: "components/Components.tsx:270",
+    name: "components/Components.tsx:274",
     before: () => { const View = I9; return (<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
       <View style={{ flexGrow: 1, gap: 12 }}>{<Hole n="0" />}</View>
       <View style={[{ width: 24, height: 24 }, { marginLeft: 8 }]} />
     </View>); },
-    after: () => { const View = I9; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action } = L; return (toElement(HStack(VStack(Embed(<Hole n="0" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))); },
+    after: () => { const View = I9; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens } = L;  return (toElement(HStack(VStack(Embed(<Hole n="0" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))); },
   },
   {
-    name: "components/Components.tsx:292",
+    name: "components/Components.tsx:296",
     before: () => { const Slider = I36; return (<Slider
       value={2}
       onValueChange={() => {}}
@@ -250,15 +254,15 @@ export const CASES = [
       formatValue={() => {}}
       onSlidingComplete={() => {}}
     />); },
-    after: () => { const Slider = I36; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider } = L; return (toElement(LSlider([2, () => {}], '⟨2⟩').bounds(0.5, 2).step(0.25).valueFormat(() => {}).onCommit(() => {}))); },
+    after: () => { const Slider = I36; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider } = L;  return (toElement(LSlider([2, () => {}], '⟨2⟩').bounds(0.5, 2).step(0.25).valueFormat(() => {}).onCommit(() => {}))); },
   },
   {
-    name: "components/Components.tsx:306",
+    name: "components/Components.tsx:310",
     before: () => { const Admonition = I37; return (<Admonition type="info">{'⟨0⟩'}</Admonition>); },
-    after: () => { const Admonition = I37; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition } = L; return (toElement(LAdmonition(Text('⟨0⟩')).style('info'))); },
+    after: () => { const Admonition = I37; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition } = L;  return (toElement(LAdmonition(Text('⟨0⟩')).style('info'))); },
   },
   {
-    name: "components/Components.tsx:311",
+    name: "components/Components.tsx:315",
     before: () => { const PageHeader = I38; const Button = I13; return (<PageHeader
       title={'⟨0⟩'}
       backLabel={'⟨1⟩'}
@@ -267,15 +271,15 @@ export const CASES = [
       safeArea={false}
       actions={<Button onPress={() => {}}>{'⟨3⟩'}</Button>}
     />); },
-    after: () => { const PageHeader = I38; const Button = I13; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L; return (toElement(LHeader('⟨0⟩').backLabel('⟨1⟩').onBack(() => {}).titleAlign('center').safeArea(false).toolbar(LButton(Text('⟨3⟩')).onPress(() => {})).inPage())); },
+    after: () => { const PageHeader = I38; const Button = I13; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (toElement(LHeader('⟨0⟩').backLabel('⟨1⟩').onBack(() => {}).titleAlign('center').safeArea(false).toolbar(LButton(Text('⟨3⟩')).onPress(() => {})).inPage())); },
   },
   {
-    name: "components/Components.tsx:323",
+    name: "components/Components.tsx:327",
     before: () => { const PageHeader = I38; return (<PageHeader title={'⟨0⟩'} onBack={null} presentation="floating" />); },
-    after: () => { const PageHeader = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L; return (toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())); },
+    after: () => { const PageHeader = I38; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())); },
   },
   {
-    name: "components/Components.tsx:337",
+    name: "components/Components.tsx:341",
     before: () => { function Before() { const parityTheme = useParityTheme(); const ScreenScrollView = I8; const RefreshControl = I39; return (<ScreenScrollView
       refreshControl={
         <RefreshControl
@@ -290,28 +294,28 @@ export const CASES = [
     >
       {<Hole n="0" />}
     </ScreenScrollView>); } return (<I11>{<Before />}</I11>); },
-    after: () => { const ScreenScrollView = I8; const RefreshControl = I39; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L; return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
+    after: () => { const ScreenScrollView = I8; const RefreshControl = I39; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
   },
   {
-    name: "components/Components.tsx:364",
+    name: "components/Components.tsx:368",
     before: () => { const Tabs = I40; const TabsTrigger = I41; return (<Tabs value={'⟨0⟩'} onValueChange={() => {}} variant="underline">
       {ITEMS.map((item: { id: string; label: string; count?: number }) => (
         <TabsTrigger key={'k6'} value={'⟨3⟩'} label={'⟨4⟩'} count={2} />
       ))}
     </Tabs>); },
-    after: () => { const Tabs = I40; const TabsTrigger = I41; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs } = L; return (toElement(LTabs(['⟨0⟩', () => {}], ITEMS.map((item: { id: string; label: string; count?: number }) => TabItem('⟨3⟩', '⟨4⟩').count(2))).style('underline'))); },
+    after: () => { const Tabs = I40; const TabsTrigger = I41; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs } = L;  return (toElement(LTabs(['⟨0⟩', () => {}], ITEMS.map((item: { id: string; label: string; count?: number }) => TabItem('⟨3⟩', '⟨4⟩').count(2))).style('underline'))); },
   },
   {
-    name: "components/Components.tsx:374",
+    name: "components/Components.tsx:378",
     before: () => { const Tabs = I40; const TabsTrigger = I41; const RiStarLine = I26; const RiHeart3Line = I29; return (<Tabs value={'⟨0⟩'} onValueChange={() => {}} fullWidth label={'⟨4⟩'}>
       <TabsTrigger value="posts" label={'⟨2⟩'} leadingIcon={RiStarLine} />
       {/* Likes are private. */}
       <TabsTrigger value="likes" label={'⟨3⟩'} leadingIcon={RiHeart3Line} iconOnly />
     </Tabs>); },
-    after: () => { const Tabs = I40; const TabsTrigger = I41; const RiStarLine = I26; const RiHeart3Line = I29; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs } = L; return (toElement(LTabs(['⟨0⟩', () => {}], TabItem('posts', '⟨2⟩').icon(RiStarLine), /* Likes are private. */ TabItem('likes', '⟨3⟩').icon(RiHeart3Line).iconOnly()).fullWidth().label('⟨4⟩'))); },
+    after: () => { const Tabs = I40; const TabsTrigger = I41; const RiStarLine = I26; const RiHeart3Line = I29; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs } = L;  return (toElement(LTabs(['⟨0⟩', () => {}], TabItem('posts', '⟨2⟩').icon(RiStarLine), /* Likes are private. */ TabItem('likes', '⟨3⟩').icon(RiHeart3Line).iconOnly()).fullWidth().label('⟨4⟩'))); },
   },
   {
-    name: "components/Components.tsx:392",
+    name: "components/Components.tsx:396",
     before: () => { const View = I9; const SegmentedControl = I42; const SegmentedControlItem = I43; const SegmentedControlItemText = I44; return (<View className="gap-2">
       <SegmentedControl
         label={'⟨5⟩'}
@@ -335,10 +339,10 @@ export const CASES = [
         ))}
       </SegmentedControl>
     </View>); },
-    after: () => { const View = I9; const SegmentedControl = I42; const SegmentedControlItem = I43; const SegmentedControlItemText = I44; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented } = L; return (toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))); },
+    after: () => { const View = I9; const SegmentedControl = I42; const SegmentedControlItem = I43; const SegmentedControlItemText = I44; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented } = L;  return (toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))); },
   },
   {
-    name: "components/Components.tsx:426",
+    name: "components/Components.tsx:430",
     before: () => { const Field = I22; const SegmentedControl = I42; const SegmentedControlItem = I43; const SegmentedControlItemText = I44; return (<Field label={'⟨0⟩'}>
       <SegmentedControl type="radio" value={'⟨1⟩'} onValueChange={() => {}}>
         <SegmentedControlItem value="month">
@@ -349,20 +353,20 @@ export const CASES = [
         </SegmentedControlItem>
       </SegmentedControl>
     </Field>); },
-    after: () => { const Field = I22; const SegmentedControl = I42; const SegmentedControlItem = I43; const SegmentedControlItemText = I44; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented } = L; return (toElement(LField('⟨0⟩', Segmented(['⟨1⟩', () => {}], Option('month', '⟨3⟩'), Option('year', '⟨4⟩'))))); },
+    after: () => { const Field = I22; const SegmentedControl = I42; const SegmentedControlItem = I43; const SegmentedControlItemText = I44; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented } = L;  return (toElement(LField('⟨0⟩', Segmented(['⟨1⟩', () => {}], Option('month', '⟨3⟩'), Option('year', '⟨4⟩'))))); },
   },
   {
-    name: "components/Components.tsx:441",
+    name: "components/Components.tsx:445",
     before: () => { const SettingsSelect = I45; return (<SettingsSelect
       label={'⟨0⟩'}
       value={'⟨1⟩'}
       onChange={() => {}}
       items={ITEMS}
     />); },
-    after: () => { const SettingsSelect = I45; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect } = L; return (toElement(LSettingsSelect('⟨0⟩', ['⟨1⟩', () => {}], ITEMS))); },
+    after: () => { const SettingsSelect = I45; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect } = L;  return (toElement(LSettingsSelect('⟨0⟩', ['⟨1⟩', () => {}], ITEMS))); },
   },
   {
-    name: "components/Components.tsx:455",
+    name: "components/Components.tsx:459",
     before: () => { const AvatarGroup = I46; return (<AvatarGroup
       items={ITEMS}
       layout="conversation"
@@ -371,10 +375,10 @@ export const CASES = [
       total={2}
       showInitials
     />); },
-    after: () => { const AvatarGroup = I46; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup } = L; return (toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())); },
+    after: () => { const AvatarGroup = I46; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup } = L;  return (toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())); },
   },
   {
-    name: "components/Components.tsx:468",
+    name: "components/Components.tsx:472",
     before: () => { const View = I9; const List = I47; const Muted = I15; return (<View className="gap-2">
       <List
         items={ITEMS}
@@ -385,10 +389,10 @@ export const CASES = [
       />
       <List items={ITEMS} loading={true} loadingCount={2} />
     </View>); },
-    after: () => { const View = I9; const List = I47; const Muted = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList } = L; return (toElement(VStack(LList(ITEMS).separator('line').headerContent(Text('⟨1⟩').textStyle('muted')).emptyState(Text('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))); },
+    after: () => { const View = I9; const List = I47; const Muted = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList } = L;  return (toElement(VStack(LList(ITEMS).separator('line').headerContent(Text('⟨1⟩').textStyle('muted')).emptyState(Text('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))); },
   },
   {
-    name: "components/Components.tsx:491",
+    name: "components/Components.tsx:495",
     before: () => { const VirtualList = I48; const Pressable = I49; const Muted = I15; return (<VirtualList
       data={ITEMS}
       keyExtractor={() => {}}
@@ -402,7 +406,7 @@ export const CASES = [
       onEndReachedThreshold={0.5}
       ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}
     />); },
-    after: () => { const VirtualList = I48; const Pressable = I49; const Muted = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L; return (toElement(LVirtualList(ITEMS, (item, index) => VStack(Text('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(Text('⟨6⟩').textStyle('muted')))); },
+    after: () => { const VirtualList = I48; const Pressable = I49; const Muted = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (toElement(LVirtualList(ITEMS, (item, index) => VStack(Text('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(Text('⟨6⟩').textStyle('muted')))); },
   },
   {
     name: "components/Rows.tsx:19",
@@ -415,7 +419,7 @@ export const CASES = [
         <Text className="text-sm text-muted-foreground">{'⟨1⟩'} likes</Text>
       </View>
     </Pressable>); },
-    after: () => { const Pressable = I49; const RiHeart3Line = I29; const View = I9; const Text = I50; const { HStack, Icon, VStack, Text: LText } = L; return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
+    after: () => { const Pressable = I49; const RiHeart3Line = I29; const View = I9; const Text = I50; const { HStack, Icon, VStack, Text: LText } = L;  return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:41",
@@ -427,7 +431,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I9; const Text = I50; const Switch = I3; const Button = I13; const RiArrowRightLine = I51; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I9; const Text = I50; const Switch = I3; const Button = I13; const RiArrowRightLine = I51; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
@@ -436,7 +440,7 @@ export const CASES = [
       {false && <View className="h-px bg-border" />}
       {<Hole n="2" />}
     </View>); },
-    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
+    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
   },
   {
     name: "components/Rows.tsx:54",
@@ -445,14 +449,14 @@ export const CASES = [
       {true && <View className="h-px bg-border" />}
       {<Hole n="2" />}
     </View>); },
-    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
+    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
   },
   {
     name: "components/Rows.tsx:58",
     before: () => { const View = I9; const Text = I50; return (<View  className="flex-row justify-between">
           <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I9; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
+    after: () => { const View = I9; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
   },
   {
     name: "components/Rows.tsx:68",
@@ -460,7 +464,7 @@ export const CASES = [
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I9; const NativeText = I52; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I9; const NativeText = I52; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
   {
     name: "components/Rows.tsx:85 (false)",
@@ -476,7 +480,7 @@ export const CASES = [
         {'⟨0⟩'}
       </Text>
     </Pressable>); },
-    after: () => { const Pressable = I49; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+    after: () => { const Pressable = I49; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:85",
@@ -492,19 +496,19 @@ export const CASES = [
         {'⟨0⟩'}
       </Text>
     </Pressable>); },
-    after: () => { const Pressable = I49; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+    after: () => { const Pressable = I49; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
     name: "components/SettingsRoute.tsx:13",
     before: () => { const Screen = I11; const Text = I50; return (<Screen>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
       </Screen>); },
-    after: () => { const Screen = I11; const Text = I50; const { Text: LText } = L; return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)} />); },
+    after: () => { const Screen = I11; const Text = I50; const { Text: LText } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)} />); },
   },
   {
     name: "components/SettingsRoute.tsx:17",
     before: () => { const PageHeader = I38; return (<PageHeader title={'⟨0⟩'} />); },
-    after: () => { const PageHeader = I38; const { Text: LText, Header } = L; return (toElement(Header('⟨0⟩').inPage())); },
+    after: () => { const PageHeader = I38; const { Text: LText, Header } = L;  return (toElement(Header('⟨0⟩').inPage())); },
   },
   {
     name: "components/SettingsRoute.tsx:19",
@@ -513,6 +517,6 @@ export const CASES = [
         <Text className="text-sm">{'⟨0⟩'}</Text>
       </ScreenScrollView>
     </Screen>); },
-    after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I50; const { Text: LText, Header, toElement, ScrollView, Embed } = L; return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
+    after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I50; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
   },
 ];

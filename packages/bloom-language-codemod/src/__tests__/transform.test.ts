@@ -159,7 +159,9 @@ const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
     expect(flat(result.code)).toContain(
       "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted')).spacing('sm').role('header'))",
     );
-    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['icon-fill']);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'icon-fill:theme-handed-in',
+    ]);
     expect(result.fixtures[0]?.before).toContain(
       '<View style={{ flexDirection: \'row\', gap: 8 }} accessibilityRole="header">',
     );
@@ -271,6 +273,43 @@ export default function Route() { return <Screen />; }
 Route.options = {};
 `);
     expect(named.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['kept:Screen']);
+  });
+  it('paints a static hex fill as an app colour, declared once after the constants it reads', () => {
+    const result = run(`import { View } from 'react-native';
+import { BloomColorScope, useTheme } from '@oxy.so/bloom/theme';
+import { RiHeart3Line, RiPlayFill } from '@oxy.so/bloom/icons';
+const LIKE = '#FF3040';
+const MUTED = 'rgba(255,255,255,0.72)';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View className="flex-row gap-2">
+      <RiHeart3Line size="sm" fill={LIKE} />
+      <RiPlayFill fill="#fff" />
+      <RiPlayFill fill="white" />
+      <RiPlayFill fill={MUTED} />
+      <BloomColorScope mode="dark"><RiPlayFill fill={theme.colors.text} /></BloomColorScope>
+    </View>
+  );
+}
+`);
+    expect(result.code).toContain(
+      "const LIKE = '#FF3040';\nconst appColors = defineTokens({ color: { LIKE, hexfff: '#fff' } });",
+    );
+    expect(flat(result.code)).toContain(
+      "HStack(Icon(RiHeart3Line).size('sm').foreground(appColors.color.LIKE), Icon(RiPlayFill).foreground(appColors.color.hexfff),",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'icon-fill:not-hex',
+      'icon-fill:not-hex',
+      'icon-fill:color-scope',
+    ]);
+    // The before side reads the constant's hex; the corpus declares the table the chain reads.
+    expect(result.fixtures[0]?.before).toContain("fill={'#FF3040'}");
+    expect(result.fixtures[0]?.appColors).toEqual({
+      table: 'appColors',
+      color: { LIKE: '#FF3040', hexfff: '#fff' },
+    });
   });
   it('carries a JSX comment into the chain where it is', () => {
     const result = run(`import { View } from 'react-native';
