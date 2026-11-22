@@ -243,10 +243,15 @@ describe('styles are resolved once per theme', () => {
     }
   });
 
-  it('an app colour is a hex, and it does not vary', () => {
-    expect(() => defineTokens({ color: { blue: 'blue' as `#${string}` } })).toThrow(
-      'color.blue is not a hex colour',
-    );
+  it('an app colour is a hex, an rgb() or a colour name, and it does not vary', () => {
+    for (const value of ['blurple', 'burntsienna', 'hsl(0, 0%, 100%)', 'rgba(0 0 0 / 0.5)'])
+      expect(() => defineTokens({ color: { blue: value as `#${string}` } })).toThrow(
+        'color.blue is no colour both platforms paint alike',
+      );
+    expect(
+      defineTokens({ color: { a: 'white', b: 'rgba(255, 255, 255, 0.72)', c: 'rgb(0,0,0)' } }).color
+        .b.value,
+    ).toBe('rgba(255, 255, 255, 0.72)');
     const brand = defineTokens({ color: { blue: '#1877f2' } }).color.blue;
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const r = mount(

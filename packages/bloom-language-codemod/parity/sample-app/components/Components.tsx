@@ -266,11 +266,14 @@ export function Glyphs() {
       <RiStarLine fill={theme.colors.textTertiary} />
       <RiStarLine size="sm" fill={STAR} />
       <RiHeart3Fill fill="#fff" />
+      <RiHeart3Fill fill="white" />
+      <RiStarLine fill={VEIL} />
     </View>
   );
 }
 
 const STAR = '#F5A623';
+const VEIL = 'rgba(255,255,255,0.72)';
 
 export function Styled({ children }: { children: React.ReactNode }) {
   return (

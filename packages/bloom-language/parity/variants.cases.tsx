@@ -405,6 +405,43 @@ export const VARIANT_CASES: ParityCase[] = [
       </RN.View>
     ),
   },
+  ...[true, false].flatMap((active): ParityCase[] => [
+    {
+      // The app's own condition: settled as the view renders, its values over the chain's.
+      name: `a variant of the app's own condition (${active})`,
+      language: () =>
+        toElement(
+          L.VStack(L.Text('a'))
+            .padding('sm')
+            .background('mutedFill')
+            .when(active, (v) => v.padding('lg').background('primary')),
+        ),
+      bloom: () => (
+        <Themed>
+          {(c) => (
+            <RN.View
+              style={{
+                ...padding(active ? space.lg : space.sm),
+                backgroundColor:
+                  RN.Platform.OS === 'web'
+                    ? `var(--${active ? 'primary' : 'muted'})`
+                    : active
+                      ? c.primary
+                      : c.contrast50,
+              }}
+            >
+              <Text>a</Text>
+            </RN.View>
+          )}
+        </Themed>
+      ),
+    },
+    {
+      name: `a text trait of the app's own condition (${active})`,
+      language: () => toElement(L.Text('a').when(active, (v) => v.weight('bold'))),
+      bloom: () => <Text style={active ? { fontWeight: '700' } : undefined}>a</Text>,
+    },
+  ]),
   {
     name: 'a disabled pressable’s variant',
     language: () =>

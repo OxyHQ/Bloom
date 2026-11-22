@@ -1280,7 +1280,8 @@ export type Modifier =
   | {
       readonly kind: 'when';
       readonly key: string;
-      readonly condition: Condition;
+      /** A live or platform condition, or the app's own boolean. */
+      readonly condition: Condition | boolean;
       /** What the variant changes: modifiers over the values the chain set before it. */
       readonly modifiers: readonly Modifier[];
     }
@@ -1979,7 +1980,7 @@ export class Node {
   shadow(value: ShadowName): Node {
     return this.with({ kind: 'shadow', key: `sh:${value}`, value });
   }
-  when(condition: Condition, build: (variant: Node) => Node): Node {
+  when(condition: Condition | boolean, build: (variant: Node) => Node): Node {
     const { modifiers } = build(new Node(this.kind, undefined, []));
     const key = `when:${condition}(${modifiers.map((modifier) => modifier.key).join(';')})`;
     return this.with({ kind: 'when', key, condition, modifiers });
@@ -4094,9 +4095,11 @@ export interface ViewModifiers<Self> extends ViewNode {
    * view override the values set before this call (`.padding('sm').when('md',
    * (v) => v.padding('lg'))`). Only style modifiers vary (the spec's
    * `variants.modifiers`); on the web a breakpoint, the scheme and a state are
-   * CSS, on native environment reads.
+   * CSS, on native environment reads. A boolean is the app's own condition,
+   * settled when the view renders as a platform is (`.when(isActive, (v) =>
+   * v.background('primary'))`).
    */
-  when(condition: Condition, build: (variant: Self) => Self): Self;
+  when(condition: Condition | boolean, build: (variant: Self) => Self): Self;
   /**
    * Rounds the box: a radius rung, `full`, or `concentric` (the radius of the
    * shape it sits in, less the inset between them: a glass's, another
