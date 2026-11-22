@@ -417,6 +417,19 @@ describe('.transition() in a keyed list', () => {
     expect(all(r, 'Animated.View')).toHaveLength(1);
   });
 
+  it('a conditional child leaves at once; in a list of one, keyed, its removal plays', () => {
+    const bare = (show: boolean) => VStack(show && Text('a').transition(rise).id('a'), Text('b'));
+    const r = mount(bare(true));
+    update(r, bare(false));
+    expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['b']);
+    const slot = (show: boolean) => VStack([show && Text('a').transition(rise).id('a')], Text('b'));
+    const s = mount(slot(true));
+    update(s, slot(false));
+    const [leaving] = all(s, 'Animated.View');
+    expect(leaving && textOf(leaving)).toBe('a');
+    expect(flat(leaving?.props.style).animationFillMode).toBe('forwards');
+  });
+
   it('under reduced motion a removed child goes at once', () => {
     const r = mount(list(['a', 'b']));
     runtime.reducedMotion = true;
