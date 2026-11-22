@@ -230,13 +230,19 @@ describe('the menu is the lens menu', () => {
     builtRows.mockClear();
     const r = mount(toElement(Menu(Icon(Glyph), Rows())));
     const lens = only(r, 'BloomLensMenu');
-    expect(lens.props).toMatchObject({ items: [], openWithItems: true });
+    expect(lens.props).toMatchObject({ items: [], openWithItems: false });
     expect(builtRows).not.toHaveBeenCalled();
     act(() => only(r, 'Pressable').props.onPress());
-    // No call: the view opens itself as the rows arrive.
+    // No call: the base asks the view to open itself as the rows arrive.
     expect(mockLensHandle.open).not.toHaveBeenCalled();
     expect(only(r, 'BloomLensMenu')).toBe(lens);
-    expect(lens.props.items).toEqual([{ id: 'r0', title: 'Copy', iconSlot: 0 }]);
+    expect(lens.props).toMatchObject({
+      items: [{ id: 'r0', title: 'Copy', iconSlot: 0 }],
+      openWithItems: true,
+    });
+    // Opened, it re-arms.
+    act(() => lens.props.onMenuOpenChange({ nativeEvent: { open: true } }));
+    expect(only(r, 'BloomLensMenu').props.openWithItems).toBe(false);
     expect(builtRows).toHaveBeenCalled();
     act(() => lens.props.onMenuClosed());
     expect(only(r, 'BloomLensMenu').props.items).toEqual([]);
@@ -268,7 +274,7 @@ describe('the menu is the lens menu', () => {
     // The fixed layer's glass: drawn by the window, as upstream.
     expect(lens.props.restBackdrop).toBeUndefined();
     expect(only(r, 'BloomButton').props.material).toBeUndefined();
-    act(() => only(r, 'Pressable').props.onPress());
+    act(() => only(r, 'BloomButton').props.onPress());
     expect(mockLensHandle.open).toHaveBeenCalledTimes(1);
   });
 });

@@ -70,7 +70,19 @@ diff -ruN a/constants/menu.const.ts b/constants/menu.const.ts
 diff -ruN a/interface.ts b/interface.ts
 --- a/interface.ts
 +++ b/interface.ts
-@@ -112,13 +112,20 @@
+@@ -56,6 +56,11 @@
+   morphBlur?: number;
+   tintColor?: string;
+   tintOpacity?: number;
++  // Bloom: the rows' ink (the engine's patch); a missing colour keeps the engine's own.
++  textColor?: string;
++  mutedColor?: string;
++  destructiveColor?: string;
++  separatorColor?: string;
+   saturation?: number;
+   refraction?: number;
+   rim?: number;
+@@ -112,13 +117,20 @@
  }
  
  interface IMenuTrigger {

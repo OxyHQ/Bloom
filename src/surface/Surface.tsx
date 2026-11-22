@@ -13,7 +13,7 @@ import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';
 import { SurfacePaint } from './SurfacePaint';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { LensMaterialProvider, useLensAvailable } from '../floating/lens/lens-material';
+import { useLensAvailable } from '../floating/lens/lens-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -109,14 +109,14 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       </StyledView>
     );
     if (!split) return surface;
-    // The native lens is the material: it draws behind the content, and what it holds takes the
-    // surface paint, so a lens is never drawn inside a lens.
+    // The native lens is the material: it draws behind the content (the lens base, whose content
+    // draws no lens of its own).
     return (
       <LensButtonHost
         radius={typeof geometry.radius === 'number' ? geometry.radius : undefined}
         style={split.host}
       >
-        <LensMaterialProvider value="surface">{surface}</LensMaterialProvider>
+        {surface}
       </LensButtonHost>
     );
   },

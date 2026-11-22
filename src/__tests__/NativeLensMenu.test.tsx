@@ -44,10 +44,15 @@ import {
 } from '../dropdown-menu/DropdownMenu';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../select/Select';
 
-jest.mock('../floating/lens/native-lens', () => ({
-  ...jest.requireActual('../floating/lens/native-lens'),
-  getNativeLens: () => jest.requireActual('./lens-stub').stubLens,
-}));
+jest.mock('../floating/lens/native-lens', () => {
+  const { stubLens } = jest.requireActual('./lens-stub');
+  return {
+    ...jest.requireActual('../floating/lens/native-lens'),
+    getNativeLens: () => stubLens,
+    useInLensBase: stubLens.useInLensBase,
+    useLensBaseMenu: stubLens.useLensBaseMenu,
+  };
+});
 
 /** What the native view was last given. */
 const props = () => lens.last;
@@ -124,7 +129,7 @@ describe('DropdownMenu as the native lens menu', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(props()).toMatchObject({ fontFamily: 'Inter', openWithItems: false });
+    expect(props()).toMatchObject({ fontFamily: 'Inter' });
     // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
     // morphing out of untinted glass.
     expect(props()?.config?.tintOpacity).toBeUndefined();
@@ -153,7 +158,7 @@ describe('DropdownMenu as the native lens menu', () => {
 });
 
 describe('a lens trigger', () => {
-  it('morphs out of its tone and takes its menu back as a glass trigger does', () => {
+  it('is a lens base tinted with its tone (the base takes the menu back as the upstream trigger)', () => {
     wrap(
       <DropdownMenu>
         <DropdownMenuTrigger asChild lensTone="primary">
@@ -165,10 +170,7 @@ describe('a lens trigger', () => {
       </DropdownMenu>,
     );
     expect(props()?.lens).toBe(true);
-    expect(props()?.triggerConfig).toMatchObject({
-      tintOpacity: 0.96,
-      absorb: { duration: 0.48 },
-    });
+    expect(props()?.triggerConfig).toMatchObject({ tintOpacity: 0.96 });
   });
 });
 
@@ -178,19 +180,19 @@ describe('a DropdownMenu whose rows a component of its own renders, only while i
     const screen = wrap(<Menu onDelete={onDelete} />);
     expect(screen.getByTestId('native-lens')).toBeTruthy();
     expect(props()?.items).toEqual([]);
-    expect(props()?.openWithItems).toBe(true);
+    expect(lens.handle.open).not.toHaveBeenCalled();
 
     fireEvent.press(screen.getByText('Open'));
-    // The same view, given its rows: it opens itself with them.
+    // The same base, given its rows: it opens with them.
     expect(lens.mounts).toBe(1);
-    expect(props()?.openWithItems).toBe(true);
+    expect(lens.handle.open).toHaveBeenCalledTimes(1);
     const items = props()?.items ?? [];
     expect(items.map((item) => item.title)).toEqual(['Share', '', 'Delete']);
     act(() => props()?.onItemSelect?.({ nativeEvent: { id: items[2]?.id ?? '', index: 2 } }));
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the rows until the native menu has finished closing, then the view waits for the next', () => {
+  it('keeps the rows until the native menu has finished closing, then opens again from the same base', () => {
     const screen = wrap(<Menu onDelete={() => {}} />);
     fireEvent.press(screen.getByText('Open'));
     act(() => props()?.onMenuOpenChange?.({ nativeEvent: { open: true } }));
@@ -198,10 +200,10 @@ describe('a DropdownMenu whose rows a component of its own renders, only while i
     act(() => props()?.onMenuOpenChange?.({ nativeEvent: { open: false } }));
     expect(props()?.items).toHaveLength(3);
     act(() => props()?.onMenuClosed?.());
-    expect(props()?.items).toEqual([]);
-    // Opened again: the same view, its rows again.
+    // Opened again: the same base, its rows again.
     fireEvent.press(screen.getByText('Open'));
     expect(props()?.items).toHaveLength(3);
+    expect(lens.handle.open).toHaveBeenCalledTimes(2);
     expect(lens.mounts).toBe(1);
   });
 
@@ -216,7 +218,7 @@ describe('a DropdownMenu whose rows a component of its own renders, only while i
         </OwnContent>
       </DropdownMenu>,
     );
-    // The view around the trigger is given no rows: the sheet draws them.
+    // The base around the trigger is given no rows: the sheet draws them.
     expect(props()?.items).toEqual([]);
   });
 });
@@ -340,6 +342,27 @@ describe('a ButtonGroup with the lens material', () => {
     expect(props()?.items).toEqual([]);
     expect(screen.getByLabelText('Actions')).toBeTruthy();
     act(() => screen.getByText('Share').props.onPress?.());
+  });
+
+  it('is one base: a menu opened from an item grows out of the group, and its buttons draw no lens', () => {
+    const screen = wrap(
+      <Button.Group material="lens" accessibilityLabel="Actions">
+        <Button material="lens">Share</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Text>More</Text>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Copy</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Button.Group>,
+    );
+    // One native view: the group's base, holding the menu's rows.
+    expect(screen.getAllByTestId('native-lens')).toHaveLength(1);
+    expect(props()?.items.map((item) => item.title)).toEqual(['Copy']);
+    fireEvent.press(screen.getByText('More'));
+    expect(lens.handle.open).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the shared surface without the lens prop', () => {

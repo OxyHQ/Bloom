@@ -1,6 +1,6 @@
 /**
- * The native lens material for a control that is not a menu: the same view as a menu trigger,
- * with no rows. It draws the fill (the lens, tinted), springs under the finger and runs on the
+ * The native lens material for a control: the lens base (see `@oxy.so/bloom-lens`), the same
+ * glass a menu grows out of. It draws the fill (the lens, tinted), springs under the finger and runs on the
  * UI thread; the control inside only draws its content and handles the press.
  */
 import { Children, type ReactNode } from 'react';
@@ -105,24 +105,22 @@ export function LensButtonHost({ tint, radius, jelly, style, children }: LensBut
   const native = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
   if (!native) return <>{Children.only(children)}</>;
-  const { Menu } = native;
-  // The upstream app's lens button: its menu trigger with no rows, the control's own press kept.
+  const { LensBase } = native;
+  // The one lens base (the upstream app's glass trigger): what it holds draws no lens of its own,
+  // and a menu opened from inside it grows out of it.
   return (
-    <Menu colorScheme={dark ? 'dark' : 'light'}>
-      <Menu.Trigger
-        lens
-        openOnPress={false}
-        cornerRadius={radius}
-        config={
-          tint || jelly !== undefined
-            ? { ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null), jelly }
-            : undefined
-        }
-        style={[HOST, style]}
-      >
-        {children}
-      </Menu.Trigger>
-    </Menu>
+    <LensBase
+      colorScheme={dark ? 'dark' : 'light'}
+      cornerRadius={radius}
+      config={
+        tint || jelly !== undefined
+          ? { ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null), jelly }
+          : undefined
+      }
+      style={[HOST, style]}
+    >
+      {children}
+    </LensBase>
   );
 }
 

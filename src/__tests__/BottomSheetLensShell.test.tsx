@@ -16,6 +16,7 @@ let lens = false;
 jest.mock('../floating/lens/native-lens', () => ({
   ...jest.requireActual('../floating/lens/native-lens'),
   getNativeLens: () => (lens ? jest.requireActual('./lens-stub').stubLens : null),
+  useInLensBase: () => false,
 }));
 
 function renderSheet() {
