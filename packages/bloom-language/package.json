@@ -59,7 +59,8 @@
     "typescript": "tsc --noEmit -p .",
     "test": "jest && jest -c parity/jest.config.js",
     "test:parity": "jest -c parity/jest.config.js",
-    "test:unit": "jest"
+    "test:unit": "jest",
+    "generate:reference": "node scripts/generate-reference.mjs"
   },
   "peerDependencies": {
     "@expo/ui": ">=58.0.0",
