@@ -1397,7 +1397,8 @@ export const ENUMS = {
     "inline"
   ],
   "contentTransition": [
-    "roll"
+    "roll",
+    "numeric"
   ],
   "swipeDirection": [
     "left",

@@ -105,7 +105,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("tabsStyle", &["underline", "pill", "filled"]),
     ("kbdSize", &["sm", "md"]),
     ("loadingStyle", &["spinner", "top", "inline"]),
-    ("contentTransition", &["roll"]),
+    ("contentTransition", &["roll", "numeric"]),
     ("swipeDirection", &["left", "right", "up", "down"]),
     ("keyboard", &["default", "email-address", "numeric", "number-pad", "decimal-pad", "phone-pad", "url", "web-search"]),
     ("autocapitalize", &["none", "sentences", "words", "characters"]),
