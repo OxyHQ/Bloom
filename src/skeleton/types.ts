@@ -6,6 +6,5 @@ export interface SkeletonRegionProps {
   /** Accessible loading description; defaults to the localized Loading message. */
   label?: string;
   testID?: string;
-  className?: string;
   style?: StyleProp<ViewStyle>;
 }

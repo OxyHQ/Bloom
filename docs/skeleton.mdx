@@ -27,7 +27,7 @@ import * as Skeleton from '@oxy.so/bloom/skeleton';
 
 | part               | takes                | for                                |
 | ------------------ | -------------------- | ---------------------------------- |
-| `Skeleton.Region`  | `children`, `label`, `style`, `className`, `testID` | loading semantics and shared shimmer |
+| `Skeleton.Region`  | `children`, `label`, `style`, `testID` | loading semantics and shared shimmer |
 | `Skeleton.Text`    | `style` (`width`, `lineHeight`) | a line of text          |
 | `Skeleton.Circle`  | `size`               | an avatar                          |
 | `Skeleton.Pill`    | `size`               | a chip, a badge, a button          |
@@ -67,7 +67,7 @@ explanation instead.
 Wrap a composed placeholder in `Skeleton.Region`. It announces a busy group with
 `label` (localized “Loading” by default); shapes are decorative and hidden from
 assistive technology. The region adds no sizing, padding or layout decisions.
-Use `style` or NativeWind `className` to match the incoming content.
+Use `style` to match the incoming content.
 
 Shapes in a region share a shimmer phase. Nested regions inherit it and do not
 repeat the loading announcement. Without a region, shapes still work independently.
