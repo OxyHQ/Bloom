@@ -427,6 +427,7 @@
     "glassTransition": ["matchedGeometry", "materialize"],
     "buttonStyle": ["solid", "subtle", "outline", "plain", "glass", "glassProminent"],
     "titleVisibility": ["automatic", "visible", "hidden"],
+    "insetEdge": ["top", "bottom"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
@@ -1220,6 +1221,8 @@
     "modifier": ["value", "children"],
     "confirmationDialog": ["value", "value"],
     "titleVisibility": ["titleVisibility"],
+    "safeAreaInset": ["insetEdge", "value", "space?"],
+    "safeAreaBar": ["insetEdge", "value"],
     "drag": ["motionValue", "value?"],
     "swipe": ["swipeDirection", "value"],
     "pinch": ["motionValue", "value?"],
@@ -2410,7 +2413,9 @@
         "onEndReached",
         "scrollIndicators",
         "scrollDismissesKeyboard",
-        "keyboardTaps"
+        "keyboardTaps",
+        "safeAreaInset",
+        "safeAreaBar"
       ]
     },
     "bottomSheet": {
@@ -2612,7 +2617,9 @@
         "scrollbarSide",
         "size",
         "scrollDismissesKeyboard",
-        "keyboardTaps"
+        "keyboardTaps",
+        "safeAreaInset",
+        "safeAreaBar"
       ],
       "size": "scrollbarSize"
     },
@@ -2633,7 +2640,9 @@
         "fadeBottom",
         "fade",
         "matchSurfacePaint",
-        "style"
+        "style",
+        "safeAreaInset",
+        "safeAreaBar"
       ],
       "size": "scrollbarSize",
       "style": "scrollSurfaceStyle"
