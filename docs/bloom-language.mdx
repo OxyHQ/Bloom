@@ -2848,6 +2848,23 @@ of `FeatureFilter` and `FloorFilter` (Bloom's `options`); name a group with
   fetched.
 - Every filter takes `.disabled()`.
 
+### Stay search
+
+```ts
+StaySearchCompact({ summary: 'Anywhere · Any week', onFilterPress: openFilters }).onPress(openSearch)
+StaySearchStep('Where', DestinationSuggestions(places, { onSelect: choose }), { expanded: step === 'where', summary }).onPress(() => setStep('where'))
+StaySearchPanel(GuestPicker([guests, setGuests], { note: Text(t('At most 4 guests')) }).size('sm'), { width: '320' }).label('Who')
+```
+
+Bloom's `stay-search`, as a narrow screen draws it. `StaySearchCompact(options?)`
+and `StaySearchStep(label, content, options)` take `.onPress()` themselves (the
+step's `expanded` is the app's); `StaySearchPanel(content, options?)` is the
+card a step's content drops into, its `width` and `padding` space tokens and
+`.label()` naming it a dialog. `DestinationSuggestions(items, options)` takes
+Bloom's suggestions and their `onSelect`. `GuestPicker(guests, options?)` edits
+the counts its binding holds: `.size('sm' | 'md')` its steppers, its `note` a
+language child.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

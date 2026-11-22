@@ -146,3 +146,4 @@ export const ListingsAndMedia: Story = { args: { family: 'listingsMedia' } };
 export const CardForms: Story = { args: { family: 'cardForm' } };
 export const CheckoutSheets: Story = { args: { family: 'checkoutSheet' } };
 export const StayFilters: Story = { args: { family: 'stayFilter' } };
+export const StaySearch: Story = { args: { family: 'staySearch' } };

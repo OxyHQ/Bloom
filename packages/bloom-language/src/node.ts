@@ -103,6 +103,7 @@ import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
 import type { AgentAvatarKind } from './controls/agent-avatar';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
+import type { StaySearchKind } from './controls/stay-search';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -215,6 +216,7 @@ import {
   type PriceScale,
   type FeatureFilterStyle,
   type FilterTriggerSize,
+  type GuestPickerSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1107,7 +1109,8 @@ export type Modifier =
         | ListingHeaderSize
         | MapPriceMarkerSize
         | FollowButtonSize
-        | FilterTriggerSize;
+        | FilterTriggerSize
+        | GuestPickerSize;
     }
   | {
       readonly kind: 'style';
@@ -1412,7 +1415,8 @@ export type NodeKind =
   | MediaKind
   | CardFormKind
   | CheckoutSheetKind
-  | StayFilterKind;
+  | StayFilterKind
+  | StaySearchKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1730,7 +1734,8 @@ export class Node {
       | ListingHeaderSize
       | MapPriceMarkerSize
       | FollowButtonSize
-      | FilterTriggerSize,
+      | FilterTriggerSize
+      | GuestPickerSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
