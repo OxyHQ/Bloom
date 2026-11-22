@@ -31,7 +31,7 @@ An `icon` without children makes a square action. Labelled actions use `leadingI
 
 `loading` blocks activation while preserving the mounted label's width. `aria-busy` announces ongoing work without blocking activation; `loading` still wins when both are supplied. `disabled` also blocks activation. A control drawing no text needs `accessibilityLabel`. On native, `accessibilityValue` (what it shows beyond its name: a dock icon's "running"), `accessibilityActions` and `onAccessibilityAction` reach its pressable as a `Pressable`'s do, so a `ContextMenuTrigger asChild` around a `Button` gives it the menu's `longpress` action; the web fork's `<button>` ignores them. Native touch targets retain the padding around compact visuals: vertical hit slop brings every size to 44pt on iOS and 48dp (Material's floor) on Android, so a 44dp `lg` button gets 2dp above and below on Android. Web has real button, anchor and form semantics (`type="submit"` or `"reset"`). Activation is always `onPress`.
 
-The pressable is the parent's layout child: `className` and `style` are applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
+The pressable is the parent's layout child: `style` is applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
 
 `interactive={false}` renders the same shared geometry and material as a nonfocusable decoration, with no action handlers. It is hidden from assistive technology unless an explicit label names it as an image. Use this for an affordance inside a parent press target, such as a play glyph on a poster, without nesting buttons.
 
@@ -150,53 +150,15 @@ labels; the spinner is decorative. Web links keep their link role while
 navigation is disabled. Hiding the paint does not replace or duplicate the
 content, alter its accessible name, or reset child state.
 
-## Consumer classes
+## Authored paint
 
-`className` owns the properties it supplies, including height, padding, radius,
-font, fill, border, shadow and state styles. Unclaimed properties keep Bloom's
-defaults. Use `material="flat"` when classes paint the complete control;
-`surface` retains Bloom's optical layers. Explicit `style` and `textStyle`
-overrides still take precedence over ordinary classes.
-
-Web defaults live in the CSS `base` layer so a consumer's `components` or
-utility recipes can override them. Native resolves utilities separately and applies them after
-Bloom's defaults, and forwards resolved text styles to the built-in label and
-foreground color to icon renderers and the loading spinner. Custom child
-components remain responsible for their own explicit styles. Loading retains
-mounted content and uses the resolved foreground unless `loadingColor` is set.
-
-```tsx
-import { useReducedMotion } from 'react-native-reanimated';
-
-const reducedMotion = useReducedMotion();
-const interactive = !disabled && !loading;
-<Button material="flat" disabled={disabled} loading={loading}
-  className={[
-    'purchase-action',
-    disabled ? 'purchase-action-disabled' : '',
-    interactive ? 'purchase-action-interactive' : '',
-    interactive && !reducedMotion ? 'purchase-action-motion' : '',
-  ].join(' ')}>
-  Continue
-</Button>
-```
-
-`purchase-action` is a consumer-owned class, not a Bloom token. Its interaction
-class can define `:hover` and `:active`; the optional motion class can define
-`transform: scale(.99)` on `:active`. Removing interaction classes during loading
-keeps the rest paint stable. With react-native-css 3.0.7, native `:enabled` and
-`:not(...)` rules are discarded, and its runtime does not evaluate
-`prefers-reduced-motion`; use conditional classes with the `useReducedMotion` hook from
-`react-native-reanimated` for shared recipes.
-Web recipes can additionally use the reduced-motion media query.
-
-The same native resolver version drops deferred `line-height` values even on a
-bare styled Text, for both pixel and unitless declarations. Combining that
-declaration with compound `box-shadow` in one rule can additionally leave an
-unresolved placeholder. Separate typography and shadow rules avoid the
-placeholder, but do not restore the missing native line height. Web line height
-works normally. Bloom forwards resolved styles; it does not rewrite consumer CSS
-or patch the upstream resolver.
+`style` owns the properties it supplies, including height, padding, radius,
+fill, border and shadow; `textStyle` the label's font. Unclaimed properties keep
+Bloom's defaults. Use `material="flat"` when the style paints the complete
+control; `surface` retains Bloom's optical layers. `colors` sets the foreground
+the label, icons and loading spinner take. On the web, `dataSet` puts `data-*`
+attributes on the button's element, a hook for a stylesheet's state rules
+(`:hover`, `:active`).
 
 `aria-current` marks the current destination or item, independently of the
 `pressed` toggle state. It accepts the standard ARIA values (`page`, `step`,
@@ -295,10 +257,9 @@ by 44px in coarse mode, then restored in fine mode. CSS `max()` cannot combine
 an intrinsic keyword with a numeric floor; use a numeric/length minimum when
 both a larger minimum and touch enforcement are needed. This limitation applies
 to the DOM child's minimum, not to Button's supported numeric/percentage style
-contract. Class-based layout still
-lands on the same interactive node. A mounted control keeps its node and focus
-when the input device changes. Long labels can wrap with the existing
-`className="whitespace-normal"` and `style={{ height: 'auto' }}` recipe.
+contract. Layout styles still
+land on the same interactive node. A mounted control keeps its node and focus
+when the input device changes. Long labels keep to one line.
 
 The #414 browser reproduction measured default coarse targets at 24/32/36px,
 icon-only targets at 24/32/36px square, and small overrides at 12px high.
