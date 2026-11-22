@@ -1371,7 +1371,9 @@
     "rowSelection": ["value"],
     "pageSize": ["value"],
     "sizeToggle": ["value"],
-    "bordered": ["value"]
+    "bordered": ["value"],
+    "onReorder": ["value"],
+    "onDragChange": ["value"]
   },
   "universal": [
     "padding",
@@ -3045,7 +3047,12 @@
       "constructors": ["DataTableSelect"],
       "modifiers": ["size", "disabled"],
       "size": "tableSize"
-    }
+    },
+    "sortableChipRow": {
+      "constructors": ["SortableChipRow"],
+      "modifiers": ["onReorder", "onDragChange", "trailing", "disabled"]
+    },
+    "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
