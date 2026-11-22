@@ -109,6 +109,9 @@ import { VENDOR_CARDS } from './vendor-card';
 import { MEDIA_CARDS } from './media-cards';
 import { LYRICS } from './lyrics';
 import { CREATOR_STUDIO } from './creator-studio';
+import { CHECKOUT_SUMMARIES } from './checkout-summary';
+import { DELIVERY_SLOTS } from './delivery-slot';
+import { ORDER_CONFIRMATIONS } from './order-confirmation';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -225,4 +228,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA_CARDS,
   ...LYRICS,
   ...CREATOR_STUDIO,
+  ...CHECKOUT_SUMMARIES,
+  ...DELIVERY_SLOTS,
+  ...ORDER_CONFIRMATIONS,
 };
