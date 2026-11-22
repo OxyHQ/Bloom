@@ -73,6 +73,8 @@ export interface ComponentRule {
   readonly props?: Readonly<Record<string, PropRule>>;
   /** The element's children as the constructor's rest arguments, each a view. */
   readonly children?: boolean;
+  /** Modifiers with no argument the node always takes (a `Header` drawn as Bloom's PageHeader: `.inPage()`). */
+  readonly always?: readonly string[];
   /**
    * A Bloom component (`module#export`) it is drawn only inside (a screen's
    * scroll view in a `Screen`): its parity draws both sides in one.
@@ -211,6 +213,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       rightElement: p('trailing', 'view'),
       showChevron: p('chevron', 'flag'),
       titleNumberOfLines: p('lines', 'number'),
+      descriptionLines: p('descriptionLines', 'number'),
+      wrapControl: p('wrapControl', 'flag'),
       destructive: p('destructive', 'mark'),
       disabled: p('disabled', 'flag'),
       onPress: p('onPress', 'handler'),
@@ -278,6 +282,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     props: {
       size: p('size', 'token', tokens('controlSize')),
       invalid: p('invalid', 'flag'),
+      // Measured: a shell's disabled draws what the node's .disabled() draws.
+      disabled: p('disabled', 'flag'),
     },
   },
   // parity/containers.cases.tsx, Card.
@@ -367,6 +373,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       resize: p('resize', 'token', tokens('textareaResize')),
       showCount: p('showCount', 'mark'),
       ...TEXT_INPUT,
+      accessibilityLabel: p('label', 'string'),
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
     },
@@ -381,6 +388,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       placeholder: p('placeholder', 'string'),
       size: p('size', 'token', tokens('controlSize')),
       disabled: p('disabled', 'flag'),
+      onClearText: p('onClearText', 'handler'),
       ...TEXT_INPUT,
       testID: p('testID', 'string'),
     },
@@ -432,6 +440,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       dot: p('dot', 'mark'),
       max: p('max', 'number'),
       placement: p('placement', 'token', tokens('badgePlacement')),
+      color: p('color', 'token', tokens('accentTone')),
       ...NAMED,
     },
   },
@@ -465,6 +474,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       minItemWidth: p('minCellWidth', 'token', SPACE),
       gap: p('spacing', 'token', SPACE),
       flow: p('flow', 'token', tokens('gridFlow')),
+      stretchItems: p('stretchItems', 'flag'),
       ...NAMED,
     },
   },
@@ -521,6 +531,33 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       size: p('size', 'token', tokens('controlSize')),
     },
   },
+  // parity/screen.cases.tsx and header cases: Bloom's PageHeader, in the page on every platform.
+  '@oxy.so/bloom/page-header#PageHeader': {
+    node: 'Header',
+    params: [{ prop: 'title', form: 'string', optional: true }],
+    always: ['inPage'],
+    props: {
+      subtitle: p('subtitle', 'string'),
+      actions: p('toolbar', 'view'),
+      leading: p('toolbarLeading', 'view'),
+      onBack: p('onBack', 'handler'),
+      backLabel: p('backLabel', 'string'),
+      headingLevel: p('headingLevel', 'number'),
+      scrim: p('scrollEdge', 'token', tokens('scrollEdge')),
+      presentation: p('presentation', 'token', tokens('headerPresentation')),
+      safeArea: p('safeArea', 'flag'),
+      titleAlign: p('titleAlign', 'token', tokens('titleAlign')),
+      accessory: p('accessory', 'view'),
+      tone: p('tone', 'token', tokens('headerTone')),
+      scrimFalloff: p('scrimFalloff', 'token', tokens('scrimFalloff')),
+      titleReveal: p('titleReveal', 'token', tokens('titleReveal')),
+      testID: p('testID', 'string'),
+    },
+  },
+  '@oxy.so/bloom/loading#SpinnerIcon': {
+    node: 'SpinnerIcon',
+    props: { size: p('size', 'token', ICON_SIZE), testID: p('testID', 'string') },
+  },
   // parity/slider.cases.tsx.
   '@oxy.so/bloom/slider#Slider': {
     node: 'Slider',
@@ -563,6 +600,18 @@ export const TEXT_STYLES: Readonly<Record<string, string>> = {
   Muted: 'muted',
 };
 
+/** Components removed in Bloom 22 that apps on 21 still draw, and what replaces each (docs/migrating-to-22.mdx). */
+export const REMOVED: Readonly<Record<string, string>> = {
+  '@oxy.so/bloom/settings-modal#SettingsRow':
+    '`GroupedSectionItem` (its `title` and `rightElement`) in a `GroupedSection`',
+  '@oxy.so/bloom/settings-modal#SettingsCard': '`GroupedSection`',
+  '@oxy.so/bloom/button#GlyphButton':
+    '`Button appearance="plain" tone="neutral"` (`glyphSize` is `iconSize`, `busy` is `loading`)',
+  '@oxy.so/bloom/button#CloseButton': '`Button icon={CloseIcon}` with an `accessibilityLabel`',
+  '@oxy.so/bloom/button-group#ButtonGroup': '`Button.Group` holding ordinary `Button`s',
+  '@oxy.so/bloom/button-group#ButtonGroupItem': 'a `Button` in a `Button.Group`',
+};
+
 /**
  * Bloom components that stay JSX whatever their props, and why: the language
  * draws them, but not as a node a region can hold in their place.
@@ -572,8 +621,6 @@ export const KEPT: Readonly<Record<string, string>> = {
     'the language presents a dialog from the view that owns it (`.dialog(isPresented, Dialog(...))`), not as an element in place',
   '@oxy.so/bloom/screen#Screen':
     'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root; no node a region holds draws one',
-  '@oxy.so/bloom/page-header#PageHeader':
-    'the language’s `Header` is the system navigation bar on iOS in a native stack, where Bloom’s PageHeader is drawn as it is',
 };
 
 const exported = readFileSync(join(LANGUAGE_PACKAGE, 'src/index.ts'), 'utf8');

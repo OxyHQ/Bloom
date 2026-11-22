@@ -20,7 +20,8 @@ import { RiSmartphoneLine } from '@oxy.so/bloom/icons/RiSmartphoneLine';
 import { RiStarLine } from '@oxy.so/bloom/icons/RiStarLine';
 import { IconCircle } from '@oxy.so/bloom/icon-circle';
 import { Item } from '@oxy.so/bloom/item';
-import { Loading } from '@oxy.so/bloom/loading';
+import { Loading, SpinnerIcon } from '@oxy.so/bloom/loading';
+import { PageHeader } from '@oxy.so/bloom/page-header';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
 import { Slider } from '@oxy.so/bloom/slider';
 import { Search } from '@oxy.so/bloom/search';
@@ -55,6 +56,13 @@ export function Notifications({
           rightElement={<Switch checked={on} onCheckedChange={setOn} />}
         />
         <GroupedSectionItem title="Language" value="English" onPress={open} />
+        <GroupedSectionItem
+          title={t('settings.quality')}
+          description={t('settings.qualityHint')}
+          descriptionLines={0}
+          wrapControl
+          rightElement={<SpinnerIcon size={20} />}
+        />
         <GroupedSectionItem
           title={t('settings.signOut')}
           destructive
@@ -223,7 +231,7 @@ export function Filters({
 
 export function Email({ email, setEmail }: { email: string; setEmail: (email: string) => void }) {
   return (
-    <TextField size="lg">
+    <TextField size="lg" disabled>
       <TextFieldIcon icon={RiMailLine} />
       <TextFieldInput
         label={t('account.email')}
@@ -286,4 +294,21 @@ export function Speed({
 
 export function Notice() {
   return <Admonition type="info">{t('post.privateMentions')}</Admonition>;
+}
+
+export function Header({ back }: { back: () => void }) {
+  return (
+    <PageHeader
+      title={t('settings.title')}
+      backLabel={t('common.back')}
+      onBack={back}
+      titleAlign="center"
+      safeArea={false}
+      actions={<Button onPress={back}>{t('common.done')}</Button>}
+    />
+  );
+}
+
+export function TopHeader() {
+  return <PageHeader title={t('home.title')} onBack={null} presentation="floating" />;
 }
