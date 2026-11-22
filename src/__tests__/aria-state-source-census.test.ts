@@ -219,7 +219,10 @@ const RN_HOSTS = new Set([
 // `aria-state-web.test.tsx` and `Meter.test.tsx` pin for both roles. `MeterRing`
 // does the same for the ring (`message-media`'s send ring hands it
 // `role="progressbar"`), pinned by the same two suites.
-const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', 'RadioHost'];
+// `Slot` (agent-creator/ShapeArc) is `Pressable` on the web and its Reanimated wrapper on
+// native, picked per platform, so the alias scan cannot see it: it answers role and state
+// as the primitive does.
+const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', 'RadioHost', 'Slot'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -271,6 +274,7 @@ const NAME_DELEGATING_TAGS = [
   'MeterRing',
   'PressableScale',
   'RadioHost',
+  'Slot',
 ];
 
 /**
