@@ -40,7 +40,7 @@ import { RiMailLine as I34 } from '@oxy.so/bloom/icons/RiMailLine';
 import { Pressable as I35 } from 'react-native-css/components/Pressable';
 import { Text as I36 } from '@oxy.so/bloom/typography';
 import { RiArrowRightLine as I37 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I38 } from 'react-native-css/components/Text';
+import { Text as I38 } from '../support/app-text';
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
