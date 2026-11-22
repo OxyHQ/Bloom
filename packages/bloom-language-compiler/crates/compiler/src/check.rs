@@ -856,7 +856,12 @@ fn check_variant(
 
 /// A phase's build (`phaseAnimator(…, (v, phase) => v…)`): the chain on its
 /// view sets geometry and opacity only, each one the node takes.
-fn check_phase(value: &Expression, spec: &NodeSpec, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+fn check_phase(
+    value: &Expression,
+    spec: &NodeSpec,
+    module: &Module,
+    scoping: &Scoping,
+) -> Result<(), Problem> {
     let changes = only_taken(PHASE_MODIFIERS, spec);
     let build = Build {
         allowed: &changes,
