@@ -85,6 +85,9 @@ const DECISIONS: Record<string, readonly string[]> = {
   'zoomable-media-gallery/ZoomableMediaGalleryBase.tsx': ['default', 'default'],
   // Card drag between columns is 2-D.
   'project-board/BoardGesture.tsx': ['none'],
+  // A chip's drag reorders a wrapping row: it moves on both axes to the chip
+  // nearest the finger, so the gesture needs both.
+  'sortable-chip-row/SortableChipRow.tsx': ['default'],
   // A cover normally belongs to page scroll content (auto). Explicit crop
   // editing temporarily owns both drag axes (none); leaving or revoking edit
   // restores browser panning. CoverHeaderEditing tests both transitions.
