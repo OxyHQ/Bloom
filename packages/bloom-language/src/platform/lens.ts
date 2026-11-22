@@ -73,6 +73,8 @@ export interface Lens {
     config?: LensTriggerConfig;
     /** The colour the base sits on: its lens is drawn in its place in the page (a base in a scroll). */
     restBackdrop?: string;
+    /** The base is one menu's trigger: a tap opens it natively, with no round trip to JS. */
+    openOnTap?: boolean;
     style?: StyleProp<ViewStyle>;
     children?: ReactNode;
   }>;

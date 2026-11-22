@@ -43,6 +43,9 @@ class GlassMenuAndroidModule : Module() {
       Prop("openWithItems") { view: GlassMenuAndroidView, open: Boolean? ->
         view.openWithItems = open ?: false
       }
+      Prop("openOnTap") { view: GlassMenuAndroidView, open: Boolean? ->
+        view.openOnTap = open ?: false
+      }
       Prop("restBackdrop") { view: GlassMenuAndroidView, color: android.graphics.Color? ->
         view.restBackdrop = color?.toArgb()
       }

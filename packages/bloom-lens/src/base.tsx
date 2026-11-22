@@ -70,6 +70,11 @@ export interface LensBaseProps {
   config?: TMenuTriggerConfig;
   /** The colour the base sits on: its lens is drawn in its place in the page (a base in a scroll). */
   restBackdrop?: string;
+  /**
+   * The base is one menu's trigger: a tap opens the menu it holds natively, on the UI thread, with no
+   * round trip to JS. Not for a group, whose items open their own menus or do their own thing.
+   */
+  openOnTap?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
 }
@@ -80,6 +85,7 @@ export function LensBase({
   cornerRadius,
   config,
   restBackdrop,
+  openOnTap,
   style,
   children,
 }: LensBaseProps) {
@@ -124,6 +130,7 @@ export function LensBase({
         cornerRadius={cornerRadius}
         config={trigger}
         restBackdrop={restBackdrop}
+        openOnTap={openOnTap}
         openOnPress={false}
         openWithItems={pending}
         onMenuClosed={() => current.current?.menu.onClosed?.()}

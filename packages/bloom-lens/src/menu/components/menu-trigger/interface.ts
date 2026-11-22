@@ -29,6 +29,7 @@ interface INativeMenu {
   triggerConfig?: TMenuTriggerConfig;
   openWithItems?: boolean;
   restBackdrop?: string;
+  openOnTap?: boolean;
   onMenuClosed?: () => void;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
