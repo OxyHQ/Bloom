@@ -205,7 +205,9 @@
       "baseline": "baseline"
     },
     "glassOpacity": {
+      "$comment": "A glass tint's transparency. dim is Apple's dimming layer under clear glass over bright media (35% black: clear.dimmed()).",
       "subtle": 0.24,
+      "dim": 0.35,
       "medium": 0.48,
       "strong": 0.72
     },
