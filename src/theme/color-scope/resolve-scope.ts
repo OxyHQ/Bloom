@@ -3,7 +3,6 @@ import { CANONICAL_TOKENS, type CanonicalToken } from '../token-registry';
 import { chartColorsFromTokens } from '../chart-colors';
 import type { ThemeColors } from '../types';
 import type { ScopePalette } from './context';
-import { withScopeAliases } from './seed-scope';
 import type { BloomColorScopeTokens } from './types';
 
 /** All JS aliases of an exact canonical override share the same supplied value. */
@@ -52,7 +51,7 @@ const COLOR_FIELDS = {
   accent: ['accent'],
 } satisfies Partial<Record<CanonicalToken, readonly (keyof ThemeColors)[]>>;
 
-/** Preserve unspecified roles; rebuild the full CSS alias layer after exact overrides. */
+/** Preserve unspecified roles; apply exact overrides to the tokens and the theme alike. */
 export function applyScopeTokens(
   base: ScopePalette,
   overrides?: BloomColorScopeTokens,
@@ -75,9 +74,7 @@ export function applyScopeTokens(
     if (name.startsWith('chart-')) changedCharts = true;
   }
   return {
-    vars: withScopeAliases(
-      Object.fromEntries(Object.entries(vars).filter(([name]) => !name.startsWith('--color-'))),
-    ),
+    vars,
     theme: {
       ...base.theme,
       colors,

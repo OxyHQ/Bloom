@@ -25,7 +25,7 @@ function Probe({ name }: { name: string }) {
         boxSizing: 'border-box',
         flexWrap: 'wrap',
         backgroundColor: 'var(--background)',
-        color: 'var(--color-text)',
+        color: 'var(--foreground)',
         pointerEvents: 'auto',
         display: 'flex',
         alignItems: 'center',
