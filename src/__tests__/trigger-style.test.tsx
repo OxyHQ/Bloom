@@ -8,9 +8,9 @@ import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
 import { Popover, PopoverTrigger } from '../popover';
 import { Select, SelectTrigger } from '../select';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { classNamesOn, hostNodes } from './support/rendered-style';
+import { hostNodes, resolvedStyle } from './support/rendered-style';
 
-const MARKER_CLASS = 'min-w-[137px]';
+const MARKER = { minWidth: 137 };
 
 function renderTrigger(children: React.ReactNode) {
   return render(
@@ -21,19 +21,15 @@ function renderTrigger(children: React.ReactNode) {
 }
 
 function markerCount(tree: unknown): number {
-  return hostNodes(tree).filter((node) =>
-    classNamesOn(node.props.style).some((className) =>
-      className.split(/\s+/).includes(MARKER_CLASS),
-    ),
-  ).length;
+  return hostNodes(tree).filter((node) => resolvedStyle(node.props.style).minWidth === 137).length;
 }
 
-describe('anchored trigger className wiring', () => {
+describe('anchored trigger style wiring', () => {
   it.each([
     [
       'ContextMenu',
       <ContextMenu key="context">
-        <ContextMenuTrigger className={MARKER_CLASS} label="Open context menu">
+        <ContextMenuTrigger style={MARKER} label="Open context menu">
           <Text>Open</Text>
         </ContextMenuTrigger>
       </ContextMenu>,
@@ -41,7 +37,7 @@ describe('anchored trigger className wiring', () => {
     [
       'DropdownMenu',
       <DropdownMenu key="dropdown">
-        <DropdownMenuTrigger className={MARKER_CLASS} label="Open menu">
+        <DropdownMenuTrigger style={MARKER} label="Open menu">
           <Text>Open</Text>
         </DropdownMenuTrigger>
       </DropdownMenu>,
@@ -49,7 +45,7 @@ describe('anchored trigger className wiring', () => {
     [
       'Popover',
       <Popover key="popover">
-        <PopoverTrigger className={MARKER_CLASS} label="Open popover">
+        <PopoverTrigger style={MARKER} label="Open popover">
           <Text>Open</Text>
         </PopoverTrigger>
       </Popover>,
@@ -58,19 +54,19 @@ describe('anchored trigger className wiring', () => {
       'Menubar',
       <Menubar key="menubar">
         <MenubarMenu value="file">
-          <MenubarTrigger className={MARKER_CLASS}>File</MenubarTrigger>
+          <MenubarTrigger style={MARKER}>File</MenubarTrigger>
         </MenubarMenu>
       </Menubar>,
     ],
     [
       'Select',
       <Select key="select">
-        <SelectTrigger className={MARKER_CLASS} label="Choose model">
+        <SelectTrigger style={MARKER} label="Choose model">
           <Text>Automatic</Text>
         </SelectTrigger>
       </Select>,
     ],
-  ])('%s does not drop the public className prop', (_family, trigger) => {
+  ])('%s lands the public style prop on one node', (_family, trigger) => {
     const rendered = renderTrigger(trigger);
     expect(markerCount(rendered.toJSON())).toBe(1);
   });

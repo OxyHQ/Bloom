@@ -17,24 +17,19 @@ import { useMenuDensity } from '../floating/use-menu-density';
 import type React from 'react';
 import { createContext, useContext } from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
 import { borderRadius } from '../styles/tokens';
 
-import {
-  ROW_ICON_SIZE,
-  ROW_INDICATOR_END_CLASS,
-  SELECT_ITEM_TEXT_CLASS,
-} from '../floating/constants';
+import { ROW_ICON_SIZE, ROW_INDICATOR_END_STYLE, ROW_TEXT_STYLE } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
-import { menuType, menuTypeClass } from '../floating/menu-type';
-import { cx } from '../floating/shared';
+import { menuType } from '../floating/menu-type';
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { RiArrowDownSLine as ChevronDownIcon } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine as ChevronUpIcon } from '../icons/remix/RiArrowUpSLine';
-import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 import type {
   SelectGroupProps,
   SelectItemContextValue,
@@ -105,7 +100,7 @@ export function SelectValueRow({
   children: React.ReactNode;
 }) {
   return (
-    <StyledView
+    <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -116,7 +111,7 @@ export function SelectValueRow({
     >
       {leading}
       {children}
-    </StyledView>
+    </View>
   );
 }
 
@@ -198,44 +193,32 @@ export const SelectScrollProvider = SelectScrollContext.Provider;
 // ---------------------------------------------------------------------------
 
 /** A set of related options, so a screen reader announces them as one. */
-export function SelectGroup({ children, className, style }: SelectGroupProps) {
+export function SelectGroup({ children, style }: SelectGroupProps) {
   // `group` carries no ARIA state, so there is no `aria-*` counterpart here.
   return (
-    <StyledView
-      collapsable={false}
-      role="group"
-      className={cx(useMenuDensity().groupClass, className)}
-      style={style}
-    >
+    <View collapsable={false} role="group" style={[useMenuDensity().groupStyle, style]}>
       {children}
-    </StyledView>
+    </View>
   );
 }
 SelectGroup.displayName = 'SelectGroup';
 
 /** The heading of a `SelectGroup`. */
-export function SelectLabel({ children, className, style }: SelectLabelProps) {
+export function SelectLabel({ children, style }: SelectLabelProps) {
   const density = useMenuDensity();
   const palette = useMenuPalette();
-  // The group label (`pl-2 text-body-medium text-text-secondary`), the same
-  // heading a menu group carries. Colour inline only without a caller
-  // `className`, which an inline colour would outrank on native.
+  // The group label, the same heading a menu group carries.
   return (
-    <StyledText
-      className={cx(
-        density.labelClass,
-        menuTypeClass('caption-1-medium', className),
-        className && 'text-muted-foreground',
-        className,
-      )}
+    <Text
       style={[
-        menuType('caption-1-medium', className),
-        className ? null : { color: palette.textSecondary },
+        density.labelStyle,
+        menuType('caption-1-medium'),
+        { color: palette.textSecondary },
         style,
       ]}
     >
       {children}
-    </StyledText>
+    </Text>
   );
 }
 SelectLabel.displayName = 'SelectLabel';
@@ -255,7 +238,9 @@ SelectLabel.displayName = 'SelectLabel';
  * disappeared. They stay exported for a caller composing their own content
  * inside a `SelectScrollProvider`.
  */
-function SelectScrollButton({ direction, className, style }: SelectScrollButtonProps) {
+const SCROLL_BUTTON = { alignItems: 'center', justifyContent: 'center', paddingBlock: 4 } as const;
+
+function SelectScrollButton({ direction, style }: SelectScrollButtonProps) {
   const palette = useMenuPalette();
   const scroll = useContext(SelectScrollContext);
   const { messages } = useMessages(SELECT_MESSAGES);
@@ -269,10 +254,9 @@ function SelectScrollButton({ direction, className, style }: SelectScrollButtonP
       accessibilityRole="button"
       accessibilityLabel={isUp ? messages.scrollUp : messages.scrollDown}
       onPress={() => scroll.scrollBy(direction)}
-      // `flex cursor-default items-center justify-center py-1`, opaque so the
-      // rows scrolling under it do not show through.
-      className={cx('items-center justify-center py-space-4', className)}
-      style={[{ backgroundColor: palette.surface }, style]}
+      // Centred, 4px down, opaque so the rows scrolling under it do not show
+      // through.
+      style={[SCROLL_BUTTON, { backgroundColor: palette.surface }, style]}
     >
       {/* `size-4` — the same 16px glyph the rows use. */}
       <Chevron width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
@@ -280,19 +264,13 @@ function SelectScrollButton({ direction, className, style }: SelectScrollButtonP
   );
 }
 
-export function SelectScrollUpButton({
-  className,
-  style,
-}: Omit<SelectScrollButtonProps, 'direction'>) {
-  return <SelectScrollButton direction="up" className={className} style={style} />;
+export function SelectScrollUpButton({ style }: Omit<SelectScrollButtonProps, 'direction'>) {
+  return <SelectScrollButton direction="up" style={style} />;
 }
 SelectScrollUpButton.displayName = 'SelectScrollUpButton';
 
-export function SelectScrollDownButton({
-  className,
-  style,
-}: Omit<SelectScrollButtonProps, 'direction'>) {
-  return <SelectScrollButton direction="down" className={className} style={style} />;
+export function SelectScrollDownButton({ style }: Omit<SelectScrollButtonProps, 'direction'>) {
+  return <SelectScrollButton direction="down" style={style} />;
 }
 SelectScrollDownButton.displayName = 'SelectScrollDownButton';
 
@@ -311,31 +289,23 @@ export const VALUE_TYPE = {
 /**
  * An option's label. The selected option is marked by the check and the row
  * highlight, so its text stays at the same weight as every other row's.
- *
- * The colour is inline ONLY without a caller `className`: an inline colour
- * outranks a class on native, so a `text-*` utility would be silently dead.
  */
-export function SelectItemText({ children, className, style }: SelectItemTextProps) {
+export function SelectItemText({ children, style }: SelectItemTextProps) {
   const density = useMenuDensity();
-  const { disabled, size } = useSelectItemContext();
+  const { disabled } = useSelectItemContext();
   const palette = useMenuPalette();
   return (
-    <StyledText
+    <Text
       numberOfLines={1}
-      className={cx(
-        SELECT_ITEM_TEXT_CLASS[size],
-        menuTypeClass(density.type, className),
-        className && 'text-foreground',
-        className,
-      )}
       style={[
-        menuType(density.type, className),
-        className ? null : { color: disabled ? palette.textDisabled : palette.text },
+        ROW_TEXT_STYLE,
+        menuType(density.type),
+        { color: disabled ? palette.textDisabled : palette.text },
         style,
       ]}
     >
       {children}
-    </StyledText>
+    </Text>
   );
 }
 SelectItemText.displayName = 'SelectItemText';
@@ -359,13 +329,9 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
   if (!selected) return null;
 
   return (
-    <StyledView
-      className={ROW_INDICATOR_END_CLASS}
-      style={{ width: density.leadingSize }}
-      pointerEvents="none"
-    >
+    <View style={[ROW_INDICATOR_END_STYLE, { width: density.leadingSize }]} pointerEvents="none">
       <IconComponent width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
-    </StyledView>
+    </View>
   );
 }
 SelectItemIndicator.displayName = 'SelectItemIndicator';
@@ -378,9 +344,7 @@ SelectItemIndicator.displayName = 'SelectItemIndicator';
 export function SelectSeparator() {
   const density = useMenuDensity();
   const palette = useMenuPalette();
-  return (
-    <StyledView className={density.separatorClass} style={{ backgroundColor: palette.border }} />
-  );
+  return <View style={[density.separatorStyle, { backgroundColor: palette.border }]} />;
 }
 SelectSeparator.displayName = 'SelectSeparator';
 
