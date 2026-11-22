@@ -43,3 +43,10 @@ export function hsvToHex({ h, s, v }: Hsv) {
   };
   return `#${channel(5)}${channel(3)}${channel(1)}`;
 }
+
+/** A details card's frame: the clipped 16px card with the rows' 12px start inset. */
+export const AGENT_CREATOR_CARD = {
+  overflow: 'hidden',
+  borderRadius: 16,
+  paddingInlineStart: 12,
+} as const;

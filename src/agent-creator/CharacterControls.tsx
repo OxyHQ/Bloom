@@ -4,8 +4,9 @@ import {
   resolveAvatarCharacter,
   updateAvatarCharacter,
 } from '../agent-avatar/character';
-import { StyledView } from '../styles/styled-primitives';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '../typography';
+import { useAgentCreatorLabelStyles } from './AgentCreatorField';
 import { CHARACTER_OPTIONS } from './constants';
 import { useAgentCreatorBindings, useAgentCreatorMessages } from './context';
 
@@ -30,6 +31,7 @@ export function CharacterControls({
     SelectItem,
     SelectItemText,
   } = useAgentCreatorBindings();
+  const labels = useAgentCreatorLabelStyles();
   const resolved = resolveAvatarCharacter(character);
   const row = (
     label: string,
@@ -38,11 +40,11 @@ export function CharacterControls({
     onSelect: (id: string) => void,
     placeholder = label,
   ) => (
-    <StyledView key={label} className="flex flex-row items-center gap-3">
-      <Text variant="body-regular" className="w-[96px] text-body-regular text-text-primary">
+    <View key={label} style={styles.row}>
+      <Text variant="body-regular" style={[labels.label, styles.label]}>
         {label}
       </Text>
-      <StyledView className="min-w-0 flex-1">
+      <View style={styles.control}>
         <Select size="sm" value={value} onValueChange={onSelect}>
           <SelectTrigger label={label}>
             <SelectValue placeholder={placeholder} />
@@ -60,18 +62,15 @@ export function CharacterControls({
             )}
           />
         </Select>
-      </StyledView>
-    </StyledView>
+      </View>
+    </View>
   );
   const parts = {
     eyewear: messages.eyewear,
     accessory: messages.accessory,
   } as const;
   return (
-    <StyledView
-      className="mt-[15px] flex flex-col gap-2 px-3"
-      testID="agent-creator-character-controls"
-    >
+    <View style={styles.controls} testID="agent-creator-character-controls">
       {(['eyewear', 'accessory'] as const).map((part) =>
         row(
           parts[part],
@@ -96,6 +95,13 @@ export function CharacterControls({
           parts[part],
         ),
       )}
-    </StyledView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  label: { width: 96 },
+  control: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%' },
+  controls: { marginTop: 15, flexDirection: 'column', gap: 8, paddingInline: 12 },
+});
