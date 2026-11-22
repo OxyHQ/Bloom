@@ -2715,7 +2715,9 @@ Bloom's `chart-cards` family. A card takes its data as options, as Bloom's
 does (its title, points, series, ranges, stats and their handlers); data a
 card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
 `StepsCard(points)`, `TokensChartCard(points)`, `Sparkline(values)`,
-`ChartHeadline(label)`, `ChartStatTiles(tiles)`).
+`ChartHeadline(label)`, `ChartStatTiles(tiles)`). `ChartStatTiles` takes
+`.activeIndex([index, setIndex])`, the hovered tile (`null` none) as a
+binding: Bloom's `activeIndex`, and its `onActiveChange` writing it.
 
 - `AreaChartCard`: `.style('stacked' | 'overlap' | 'percent')`,
   `.shape('curved' | 'sharp')`. `LineChartCard`: `.shape()`.
@@ -2834,7 +2836,11 @@ default),
 its `content` what it shows expanded), `AgentLogToolCalls(calls)`,
 `AgentLogWorkingRow(label)`, `ComposerLoader(content, options?)` (round the
 composer; its `radius` a corner token, its `line` and `offset` space tokens),
-`ConversationSidebar(conversations, options)` (its `after` a child) and
+`ConversationSidebar(conversations, active, options?)` (`active` the open
+conversation's id, a binding: Bloom's `activeId` and its `onSelect`; its
+`after` a child; `.destination([id, setId])` the selected destination or tree
+row of the sidebar's own rows, a binding drawn as a `Sidebar`'s
+`.selection()`) and
 `Questionnaire(questions, options?)`.
 
 - `ComposerLoader(...).gradient([c0, c1, c2, c3])` is the loader's four
@@ -3426,7 +3432,7 @@ timer: compared by Jest, not in Chrome.
 
 ```ts
 AgentChat(messages, { title, status, onSubmit: send, threads, showHistory: true, headerLeading: Back() }).titleAlign('center')
-AgentChatHistory(threads, { activeId, onSelect: open, after: Help() }).surface(false)
+AgentChatHistory(threads, { after: Help() }).selection([openId, open]).surface(false)
 SelectedAgentPreview(chosen, { flights, anchor: 'picker', caption: true })
 MultiAgentChat({ onRespond: reply, storageKey: 'workspace' })
 ```
@@ -3435,7 +3441,10 @@ Bloom's `agent-chat` (Astro's) and `multi-agent-chat` (Gemies' preview, the
 site's workspace). `AgentChat(messages, options?)` takes its state, draft,
 handlers, history and words as Bloom does; `emptyState`, `headerLeading` and
 `headerIdentity` are language children; `.titleAlign('start' | 'center')` its
-header's title. `AgentChatHistory(threads, options?)`: `after` a child,
+header's title, `.selection([id, setId])` the open thread of its history (a
+binding: Bloom's `activeThreadId` and its `onSelectThread`).
+`AgentChatHistory(threads, options?)`: `after` a child, `.selection([id,
+setId])` the open thread (Bloom's `activeId` and its `onSelect`),
 `.surface(false)` on a surface of the host's (Bloom's `framed={false}`).
 `SelectedAgentPreview(agents, options)` takes the app's avatar flights
 (`useAvatarFlights()`) and the name its avatars fly by;
@@ -3456,7 +3465,10 @@ child); `PaymentMethodMark(options?)` (its `image` a child),
 `PaymentMethodRow(options?)` (its `image`, `leading` and `action` children)
 and `PaymentMethodList(methods, options?)` (its `empty` a child). The options
 are Bloom's data as it is: the selection (`selected`, `selectedId`,
-`onSelect`), a row's `role`, the words.
+`onSelect`), a row's `role`, the words. A list's `onSelect` stays its event,
+not a binding: Bloom's one handler is also the row press of a read `list` (a
+search result opened, nothing selected), and `selectedId` is read only by a
+`picker`.
 
 - `.density('comfortable' | 'compact')` is the family's density; a list's `.style('list' | 'picker')` is whether it is read
   or one entry chosen; an address's `.size()` a control size. `.disabled()`
@@ -3741,7 +3753,8 @@ child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
 stage's data; its deals the content, its `width` a space token) and
 `PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
 language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
-and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
+and `singleMaxWidth` space tokens; `.stage([id, setId])` the stage the
+`single` layout shows, a binding: Bloom's `stageId` and its `onStageChange`). A cover's and a last touch's tones are
 Bloom's accent tones, kept in the options as data.
 
 ### Dashboard cards

@@ -67,6 +67,9 @@ const CONVERSATIONS = [
   { id: 'c2', title: 'Budget', description: 'Q3', agents: [], pinned: true },
 ];
 const SIDEBAR = { activeId: 'c1', onSelect: press, onCreate: press };
+const ACTIVE = ['c1', press] as const;
+const CREATE = { onCreate: press };
+const DESTINATIONS = [{ key: 'chats', label: 'Chats', icon: RiChat3Line }];
 const MODES = [
   { key: 'chats', label: 'Chats', icon: RiChat3Line },
   { key: 'agents', label: 'Agents', icon: RiRobot2Line },
@@ -290,10 +293,7 @@ export const AGENT_CASES: ParityCase[] = [
   },
   {
     name: 'ConversationSidebar',
-    language: () =>
-      toElement(
-        L.ConversationSidebar(CONVERSATIONS, { activeId: 'c1', onSelect: press, onCreate: press }),
-      ),
+    language: () => toElement(L.ConversationSidebar(CONVERSATIONS, ACTIVE, CREATE)),
     bloom: () => (
       <ConversationSidebar
         conversations={CONVERSATIONS}
@@ -303,11 +303,32 @@ export const AGENT_CASES: ParityCase[] = [
       />
     ),
   },
+  {
+    name: 'ConversationSidebar, a destination selected',
+    language: () =>
+      toElement(
+        L.ConversationSidebar(CONVERSATIONS, ACTIVE, {
+          ...CREATE,
+          items: DESTINATIONS,
+        }).destination(['chats', press]),
+      ),
+    bloom: () => (
+      <ConversationSidebar
+        conversations={CONVERSATIONS}
+        {...SIDEBAR}
+        items={DESTINATIONS}
+        selected="chats"
+        selectedTreeItem="chats"
+        onNavigate={press}
+        onTreeItemPress={press}
+      />
+    ),
+  },
   ...ENUMS.sidebarVariant.flatMap((variant) =>
     ENUMS.sidebarSize.map((size) => ({
       name: `ConversationSidebar ${variant} ${size}`,
       language: () =>
-        toElement(L.ConversationSidebar(CONVERSATIONS, SIDEBAR).style(variant).size(size)),
+        toElement(L.ConversationSidebar(CONVERSATIONS, ACTIVE, CREATE).style(variant).size(size)),
       bloom: () => (
         <ConversationSidebar
           conversations={CONVERSATIONS}
@@ -323,7 +344,9 @@ export const AGENT_CASES: ParityCase[] = [
       name: `ConversationSidebar ${surface}, scrollbar ${side}`,
       language: () =>
         toElement(
-          L.ConversationSidebar(CONVERSATIONS, SIDEBAR).sidebarSurface(surface).scrollbarSide(side),
+          L.ConversationSidebar(CONVERSATIONS, ACTIVE, CREATE)
+            .sidebarSurface(surface)
+            .scrollbarSide(side),
         ),
       bloom: () => (
         <ConversationSidebar
@@ -340,7 +363,7 @@ export const AGENT_CASES: ParityCase[] = [
       name: `ConversationSidebar content ${alignment}, primary action ${placement}`,
       language: () =>
         toElement(
-          L.ConversationSidebar(CONVERSATIONS, SIDEBAR)
+          L.ConversationSidebar(CONVERSATIONS, ACTIVE, CREATE)
             .contentAlignment(alignment)
             .primaryActionPlacement(placement),
         ),
@@ -359,7 +382,7 @@ export const AGENT_CASES: ParityCase[] = [
       name: `ConversationSidebar rail, labels ${labels}, selection ${selection}`,
       language: () =>
         toElement(
-          L.ConversationSidebar(CONVERSATIONS, SIDEBAR)
+          L.ConversationSidebar(CONVERSATIONS, ACTIVE, CREATE)
             .style('rail')
             .railLabels(labels)
             .railSelection(selection),
@@ -380,8 +403,8 @@ export const AGENT_CASES: ParityCase[] = [
       name: `ConversationSidebar modes ${presentation}, team in the ${placement}`,
       language: () =>
         toElement(
-          L.ConversationSidebar(CONVERSATIONS, {
-            ...SIDEBAR,
+          L.ConversationSidebar(CONVERSATIONS, ACTIVE, {
+            ...CREATE,
             modes: MODES,
             team: TEAM,
           })
