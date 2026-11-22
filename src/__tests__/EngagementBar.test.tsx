@@ -95,7 +95,8 @@ describe('EngagementAction at rest', () => {
       fill: '#FFFFFF',
     });
     expect(resolvedStyle(action.findByProps({ children: '3' }).props.style).color).toBe('#FFFFFF');
-    expect(cost(actions(renderer)[0]!)).toEqual({ fibers: 7, hooks: 1 });
+    // the action + Pressable (2) + the glyph + Text (2), React Native's text-ancestor context and its string
+    expect(cost(actions(renderer)[0]!)).toEqual({ fibers: 8, hooks: 1 });
     expect(animated(renderer)).toHaveLength(0);
     renderer.unmount();
   });
@@ -141,8 +142,8 @@ describe('EngagementAction at rest', () => {
     // the action + Pressable (2) + the glyph
     expect(reply).toEqual({ fibers: 4, hooks: 1 });
     expect(save).toEqual({ fibers: 4, hooks: 1 });
-    // + Text (2) and its string
-    expect(like).toEqual({ fibers: 7, hooks: 1 });
+    // + Text (2), React Native's text-ancestor context (as its Text provides it) and its string
+    expect(like).toEqual({ fibers: 8, hooks: 1 });
     expect(animated(renderer)).toHaveLength(0);
     expect(renderer.root.findByType(ActiveGlyph)).toBeTruthy();
     expect(renderer.root.findByType(ActiveGlyph).props.width).toBe(20);
