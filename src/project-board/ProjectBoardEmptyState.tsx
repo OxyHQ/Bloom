@@ -22,7 +22,7 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 const styles = StyleSheet.create({
   root: { position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' },
   art: { position: 'relative', height: 146, width: 170 },
-  backdrop: { position: 'absolute', top: 18, left: 15, height: 103, width: 140, borderRadius: 20 },
+  backCard: { position: 'absolute', top: 18, left: 15, height: 103, width: 140, borderRadius: 20 },
   cards: { position: 'absolute', top: 41, left: 64 },
   label: { position: 'absolute', top: 87, left: 0, width: '100%', alignItems: 'center' },
 });
@@ -106,7 +106,7 @@ export function ProjectBoardEmptyState() {
       // "No tickets" again on top of it.
     >
       <View style={styles.art}>
-        <View style={[styles.backdrop, { backgroundColor: colors.backgroundTertiary }]} />
+        <View style={[styles.backCard, { backgroundColor: colors.backgroundTertiary }]} />
         <View style={styles.cards}>
           <Svg width={42} height={35} viewBox="0 0 42 35">
             <EmptyCard delay={720}>

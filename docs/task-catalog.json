@@ -19,11 +19,9 @@
       "expo-video": "*",
       "expo-web-browser": "*",
       "lottie-react-native": ">=7.0.0",
-      "nativewind": ">=5.0.0 || 5.0.0-rc.0",
       "react": ">=18.0.0",
       "react-dom": ">=18.0.0",
       "react-native": ">=0.73.0",
-      "react-native-css": ">=3.1.0-rc.0",
       "react-native-gesture-handler": ">=3.3.0",
       "react-native-keyboard-controller": ">=1.11.4",
       "react-native-pager-view": ">=6.0.0",
@@ -70,9 +68,6 @@
         "optional": true
       },
       "lottie-react-native": {
-        "optional": true
-      },
-      "nativewind": {
         "optional": true
       },
       "react-dom": {
