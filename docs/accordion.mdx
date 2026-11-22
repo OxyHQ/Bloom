@@ -36,8 +36,8 @@ const [open, setOpen] = useState<string | string[] | undefined>('shipping');
 | `onValueChange` | receives the next value, or `undefined` when everything closes         |
 | `disabled`      | per `AccordionItem`, a section that cannot be opened                   |
 | `icon`          | per `AccordionTrigger`, appears before the label                   |
-| `className` | on Root, Item, Trigger and Content: styles that component’s actual host |
-| `contentClassName` | on Content: styles its measured inner body, including padding |
+| `style` | on Root, Item, Trigger and Content: styles that component’s actual host |
+| `contentStyle` | on Content: styles its measured inner body, including padding |
 | `transition` | default `"spring"`, or `{ duration, easing? }` for a timed reveal and chevron |
 | `size` | optional `xs`, `sm`, `md` or `lg` override for the accordion; otherwise the nearest `BloomScope` applies |
 
@@ -79,19 +79,20 @@ animates its own height, let one of the two own the measurement.
 
 ### Authored surfaces and motion
 
-Defaults remain in the base CSS layer on web; component and utility classes
-can override geometry, typography and paint. On native the same class props
-resolve after default styles. `contentClassName` belongs to the measured inner
-body, so changing its padding also changes the reveal's measured height.
-`style` remains available; a string trigger label inherits trigger typography,
-and `textStyle` overrides the label explicitly.
+`style` and `contentStyle` apply after the default styles and can override
+geometry, typography and paint. `contentStyle` belongs to the measured inner
+body, so changing its padding also changes the reveal's measured height. A
+string trigger label inherits the trigger style's typography, and `textStyle`
+overrides the label explicitly.
 
 ```tsx
 <Accordion value={open} onValueChange={setOpen}
   transition={{ duration: 250, easing: [0.23, 1, 0.32, 1] }}>
-  <AccordionItem value="details" className="border-border">
-    <AccordionTrigger className="px-0 py-4">Details</AccordionTrigger>
-    <AccordionContent contentClassName="px-0 pb-4">
+  <AccordionItem value="details" style={{ borderBottomColor: colors.border }}>
+    <AccordionTrigger style={{ paddingLeft: 0, paddingRight: 0, paddingTop: 16, paddingBottom: 16 }}>
+      Details
+    </AccordionTrigger>
+    <AccordionContent contentStyle={{ paddingLeft: 0, paddingRight: 0, paddingBottom: 16 }}>
       <Text>Details stay mounted while the section is closed.</Text>
     </AccordionContent>
   </AccordionItem>
