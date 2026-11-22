@@ -10,6 +10,7 @@
     --text-xs--line-height: calc(1 / 0.75);
     --text-sm: 0.875rem;
     --text-sm--line-height: calc(1.25 / 0.875);
+    --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --tracking-wide: 0.025em;
     --radius-xl: 12px;
@@ -19,6 +20,8 @@
     --color-border: var(--border);
     --color-foreground: var(--foreground);
     --color-surface: var(--surface);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
     --color-card: var(--card);
@@ -214,6 +217,9 @@
 .rounded-2xl {
   border-radius: var(--radius-2xl);
 }
+.rounded-full {
+  border-radius: calc(infinity * 1px);
+}
 .rounded-xl {
   border-radius: var(--radius-xl);
 }
@@ -243,6 +249,9 @@
 .bg-muted {
   background-color: var(--color-muted);
 }
+.bg-primary {
+  background-color: var(--color-primary);
+}
 .bg-surface {
   background-color: var(--color-surface);
 }
@@ -255,8 +264,14 @@
   --bloom-cx-rpadding-left: calc(4px * 4);
   padding: calc(4px * 4);
 }
+.px-3 {
+  padding-inline: calc(4px * 3);
+}
 .px-4 {
   padding-inline: calc(4px * 4);
+}
+.py-1\.5 {
+  padding-block: calc(4px * 1.5);
 }
 .py-3 {
   padding-block: calc(4px * 3);
@@ -272,6 +287,10 @@
   font-size: var(--text-xs);
   line-height: var(--tw-leading, var(--text-xs--line-height));
 }
+.font-medium {
+  --tw-font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-medium);
+}
 .font-semibold {
   --tw-font-weight: var(--font-weight-semibold);
   font-weight: var(--font-weight-semibold);
@@ -285,6 +304,9 @@
 }
 .text-muted-foreground {
   color: var(--color-muted-foreground);
+}
+.text-primary-foreground {
+  color: var(--color-primary-foreground);
 }
 .uppercase {
   text-transform: uppercase;
@@ -310,6 +332,27 @@
   --bloom-cx-auto-bottomLeft: 0;
   --bloom-cx-rauto-bottomLeft: 0;
 }
+.rounded-full {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: calc(infinity * 1px);
+  --bloom-cx-rradius-topRight: calc(infinity * 1px);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
 .rounded-xl {
   --bloom-cx-publisher: 0px;
   --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
@@ -331,11 +374,21 @@
   --bloom-cx-auto-bottomLeft: 0;
   --bloom-cx-rauto-bottomLeft: 0;
 }
+.px-3 {
+  --bloom-cx-padding-left: calc(4px * 3);
+  --bloom-cx-rpadding-left: calc(4px * 3);
+  --bloom-cx-padding-right: calc(4px * 3);
+  --bloom-cx-rpadding-right: calc(4px * 3);
+}
 .px-4 {
   --bloom-cx-padding-left: calc(4px * 4);
   --bloom-cx-rpadding-left: calc(4px * 4);
   --bloom-cx-padding-right: calc(4px * 4);
   --bloom-cx-rpadding-right: calc(4px * 4);
+}
+.py-1\.5 {
+  --bloom-cx-padding-top: calc(4px * 1.5);
+  --bloom-cx-padding-bottom: calc(4px * 1.5);
 }
 .py-3 {
   --bloom-cx-padding-top: calc(4px * 3);
