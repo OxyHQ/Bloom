@@ -18,7 +18,10 @@ import { LIVE_ORDER, termsOf, type LiveCondition, type LiveTerm } from './varian
  * styleq keeps one class per property.) A repeat call parses and adopts nothing.
  */
 export function adoptLanguageSheet(): void {
-  if (Platform.OS === 'web') adoptStyleSheet('bloom-language', WEB_SHEET);
+  if (Platform.OS !== 'web') return;
+  adoptStyleSheet('bloom-language', WEB_SHEET);
+  // The ink classes' sheet follows it, adopted with it so the variant sheets follow both.
+  adoptStyleSheet('bloom-language-ink-classes', inkSheet);
 }
 
 /** A variant class's suffix: its condition, terms joined by `-` (`md-hovered`). */
@@ -89,7 +92,9 @@ function generatedRules(): ReadonlyMap<string, readonly GeneratedRule[]> {
 export function variantSheet(condition: LiveCondition, names: Iterable<string>): string {
   const rules = generatedRules();
   const ordered = [...new Set(names)]
-    .flatMap((name) => (rules.get(name) ?? []).map((rule) => [name, rule] as const))
+    .flatMap((name) =>
+      (rules.get(name) ?? inkRules.get(name) ?? []).map((rule) => [name, rule] as const),
+    )
     .sort((a, b) => a[1][0] - b[1][0]);
   if (ordered.length === 0) return '';
   const terms = termsOf(condition);
@@ -159,6 +164,55 @@ export function languageSheets(): (readonly [id: string, css: string])[] {
   for (const [joined, { css }] of drawn)
     if (joined.includes('+') && css) sheets.push([`bloom-language-${variantSuffix(joined)}`, css]);
   return sheets;
+}
+
+/** The ink classes drawn so far, by name: their generated class's rules, painting the ink. */
+const inkRules = new Map<string, readonly GeneratedRule[]>();
+/** The ink classes' rules, in the generated sheet's order. */
+let inkSheet = '';
+
+/**
+ * A class painting `ink` (a role at an opacity, `var(--bl-…)`) where the
+ * generated class `base` paints the role as `paint`: `base`'s rules with the
+ * ink for the role's colour, named `<base>-<role>-<opacity>`. Added the first
+ * time a style naming it is resolved; `undefined` when `base` does not write
+ * `paint`.
+ *
+ * A class, not an inline style, so a live variant can override it: the
+ * variant is this class again under its condition (`variantSheet`), in the
+ * generated sheet's order. Its sheet follows the language's: a view's own
+ * classes never write one property twice (styleq keeps one class per style
+ * key, and an edge's border colour and every edge's are two views).
+ */
+export function inkClass(
+  base: string,
+  token: string,
+  paint: string,
+  ink: string,
+): string | undefined {
+  const name = `${base}-${token.replace('/', '-')}`;
+  if (inkRules.has(name)) return name;
+  const rules = generatedRules().get(base) ?? [];
+  if (rules.length === 0 || !rules.every(([, , declarations]) => declarations.includes(paint)))
+    return undefined;
+  inkRules.set(
+    name,
+    rules.map(([index, rest, declarations, where]) => [
+      index,
+      rest,
+      declarations.replaceAll(paint, ink),
+      where,
+    ]),
+  );
+  inkSheet = [...inkRules]
+    .flatMap(([ruleName, list]) => list.map((rule) => [ruleName, rule] as const))
+    .sort((a, b) => a[1][0] - b[1][0])
+    .map(([ruleName, [, rest, declarations, where]]) =>
+      where ? `${WHERE}.${ruleName}${rest})${declarations}` : `.${ruleName}${rest}${declarations}`,
+    )
+    .join('\n');
+  adoptLanguageSheet();
+  return name;
 }
 
 /** The colours at an opacity drawn so far: each custom property and the mix it holds. */

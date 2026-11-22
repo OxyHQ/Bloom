@@ -38,8 +38,19 @@ function viewportMatches(media: string): boolean {
   return [...media.matchAll(/min-width:\s*(\d+)px/g)].every((match) => width >= Number(match[1]));
 }
 
+/**
+ * The document's sheets in the order of their elements, as the browser
+ * cascades them: jsdom's `document.styleSheets` lists a `<style>` whose text
+ * changed last.
+ */
+function documentSheets(): CSSStyleSheet[] {
+  return Array.from(document.querySelectorAll('style'))
+    .map((element) => element.sheet)
+    .filter((sheet) => sheet !== null);
+}
+
 function styleRules(): CSSStyleRule[] {
-  const sheets: CSSStyleSheet[] = [...Array.from(document.styleSheets)];
+  const sheets: CSSStyleSheet[] = documentSheets();
   const adopted = (document as Document & { adoptedStyleSheets?: CSSStyleSheet[] })
     .adoptedStyleSheets;
   if (adopted) sheets.push(...adopted);
