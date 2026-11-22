@@ -129,6 +129,78 @@ function passed to `view()`; without the compiler, write it yourself. A body
 that holds manual `useMemo`/`useCallback` still does not compile ("could not
 be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 
+## Environment
+
+A view sets values on everything inside it, as SwiftUI's environment does:
+set once on the container, read by every control within.
+
+```ts
+Form(...).disabled(saving)                 // every control inside takes no input
+Toolbar(...).controlSize('sm')             // every Button, FAB, field… that names no size
+HStack(a, b, c).buttonStyle('glass')       // every Button that names no style
+
+export const Compact = defineEnvironment('compact', false);
+FeedRow({ post }).environment(Compact, true);
+const PostMeta = view(function PostMeta() {
+  const compact = useEnvironment(Compact);
+  return compact ? null : Text(meta);
+});
+```
+
+- **Built-in values.** `.disabled()`, `.controlSize()` and `.buttonStyle()` are
+  on every view. A node inside takes the value as its own modifier (`disabled`,
+  `size`, `style`) when its chain names none, so its own always wins
+  (`Button(...).disabled(false)` inside a disabled form). Which nodes take each
+  is the spec's (`environment.values`, generated as `ENVIRONMENT_TAKERS`): every
+  node with a `disabled`, every node whose size is a control rung, a `Button`'s
+  style. `when('disabled', …)` answers an inherited `disabled` too.
+- **Where `disabled` reaches.** A stack's `.disabled()`, and any view's that
+  takes no `disabled` of its own, reaches everything inside it. A Bloom
+  component that takes one (a `ChipRow`, a `CarrierQuoteCard`) keeps it: Bloom
+  decides what its content does, as it does for an app's JSX, so a chain that
+  disabled one before draws what it drew.
+- **An app's values.** `defineEnvironment(name, default)` at module scope; the
+  name is the value's identity (a built-in name is rejected).
+  `.environment(key, value)` sets it, `useEnvironment(key)` reads it in a
+  `view()` body, and `environmentValues.disabled` (`controlSize`,
+  `buttonStyle`) reads a built-in one.
+- **One mechanism, cheap reads.** Values travel in the same interned
+  environment as the text traits: a renderer reads them where it draws a node,
+  and across a `view()` boundary `EnvContext` is provided only where a value
+  changed, so `useEnvironment` is one context read. A node takes what it
+  inherits as modifiers chained before its own, built once per environment and
+  node kind.
+- **Values are plain.** A value is a token, a string, a number, a boolean,
+  `null` or `undefined`, never a raw style or an object; the compiler holds
+  `defineEnvironment` to a literal name and default, and a literal
+  `.environment(key, value)` to the default's type.
+
+## Custom modifiers
+
+`defineModifier` names a recipe of modifiers, as SwiftUI's `ViewModifier` does,
+and `.modifier(m, ...args)` applies it:
+
+```ts
+export const sectionCard = defineModifier((v) =>
+  v.padding('md').background('card').corner('lg').cornerCurve('smooth').shadow('s'));
+export const tag = defineModifier((v, tone: InkToken) =>
+  v.padding('horizontal', 'xs').background(tone).corner('full'));
+
+VStack(...).modifier(sectionCard)
+Text('Beta').modifier(tag, 'primary/10')
+```
+
+- **A pure function of the view.** Nodes are immutable data, so
+  `.modifier(m, ...args)` is `m(view, ...args)`: the same chain, the same
+  rendering. A recipe chains the universal modifiers (it applies to any view),
+  `when()` included; it reads no hooks and stays inside the token system.
+- **Compiler.** It checks the recipe where it is defined (each modifier and
+  literal token against the spec, as a chain's), and a module-scope recipe is
+  the same value at every use, so a chain that applies it is static and hoists
+  like the chain it stands for.
+- **Where shared ones go.** A recipe several apps repeat belongs in Bloom
+  (Bloom-first), not re-spelled in each app.
+
 ## Rendering
 
 | Node | Draws |
@@ -794,6 +866,24 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
   native), `.lines(n)`, `.underline()` (at rest).
 - **On glass** it keeps its own press, ink and name; the glass draws its fill
   (see [Glass](#glass)).
+- **Glass styles.** `.style('glass')` and `.style('glassProminent')` are
+  SwiftUI's glass button styles, the way to put a button on glass:
+
+  ```ts
+  Button(Text('Done')).style('glassProminent')                  // the key action: one per bar
+  Button(Icon(RiShareLine)).label('Share').style('glass')
+  HStack(a, b, c).buttonStyle('glass')                          // through the environment
+  ```
+
+  Each is the chain it stands for: `glass` is `.style('subtle').tint('neutral')`
+  on `.glass()`, `glassProminent` `.style('solid').tint('accent')` on `.glass()`,
+  whose untinted glass takes the button's fill. A `.tint()` the chain names
+  wins, and a `.glass()` it names (`clear`, a tint) is the glass instead.
+
+  | | Android, OxyOS | iOS (not verified) | Web |
+  | --- | --- | --- | --- |
+  | `glass` | the button on the lens | on Liquid Glass, interactive; in the system bar a plain bar button | on Surface |
+  | `glassProminent` | on the lens tinted with its fill | on Liquid Glass tinted with its fill; in the system bar `variant: 'prominent'` | on Surface with its fill |
 
 Not in the language: a brand fill that is no colour role (a raw hex in
 `colors`), the state colours over artwork (`color`, `hoverColor`…), which are
