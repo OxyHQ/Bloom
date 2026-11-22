@@ -24,6 +24,7 @@ import {
   type PropRule,
   REMOVED,
   ruleFor,
+  SPACE,
   TEXT_STYLES,
 } from './components';
 import { type HostKind, type Reason, type Resolved, resolveClassName } from './resolve';
@@ -51,6 +52,19 @@ for (const [role, entry] of Object.entries(spec.colors))
 const ICON_SIZES = Object.entries(spec.scales.iconSize);
 const RAMP = new Set(Object.keys(spec.typeRamp).filter((k) => !k.startsWith('$')));
 
+/** A content container's padding key as the edge of its content margin. */
+const CONTENT_EDGE: Readonly<Record<string, string>> = {
+  padding: 'all',
+  paddingHorizontal: 'horizontal',
+  paddingVertical: 'vertical',
+  paddingTop: 'top',
+  paddingBottom: 'bottom',
+  paddingStart: 'leading',
+  paddingEnd: 'trailing',
+  paddingLeft: 'left',
+  paddingRight: 'right',
+};
+
 /** Where an element's component comes from: a module and the name it exports. */
 export interface Source {
   readonly module: string;
@@ -74,6 +88,8 @@ interface Carried {
   readonly hole:
     | 'text'
     | 'handler'
+    /** A function React Native calls with no arguments, called with none (`() => onRefresh()`). */
+    | 'action'
     | 'string'
     | 'number'
     | 'boolean'
@@ -1091,7 +1107,18 @@ export function transformSource(source: string, options: TransformOptions): File
       if (prop.with && given.has(prop.with[0])) consumed.add(prop.with[0]);
     for (const [name, value] of given) {
       if (consumed.has(name)) continue;
+      const differs = rule.differs?.[name];
+      if (differs) {
+        reasons.push({ subject: name, code: `${rule.node}:${name}`, why: differs });
+        continue;
+      }
       const prop: PropRule | undefined = rule.props?.[name];
+      if (prop?.form === 'contentStyle') {
+        const margins = value ? contentStyleOf(attributeExpression(value)) : undefined;
+        if (margins) props.push(...margins);
+        else unmapped(name);
+        continue;
+      }
       const values = prop ? valuesOf(prop.form, value, prop.map) : undefined;
       if (!prop || !values) {
         unmapped(name);
@@ -1102,7 +1129,7 @@ export function transformSource(source: string, options: TransformOptions): File
         if (next?.length !== 1) unmapped(prop.with[0]);
         else values.push(next[0] as Value);
       }
-      props.push({ name: prop.modifier, args: values });
+      props.push({ name: prop.modifier, args: [...values, ...(prop.args ?? [])] });
     }
     // A next argument given without its modifier's prop.
     for (const [name, prop] of Object.entries(rule.props ?? {}))
@@ -1147,7 +1174,13 @@ export function transformSource(source: string, options: TransformOptions): File
   ): Value[] | undefined {
     if (value === null)
       // A bare prop is `true`.
-      return form === 'flag' || form === 'mark' ? [] : form === 'boolean' ? [true] : undefined;
+      return form === 'flag' || form === 'mark'
+        ? []
+        : form === 'boolean'
+          ? [true]
+          : form === 'literal' && map?.true !== undefined
+            ? [map.true]
+            : undefined;
     const expression = attributeExpression(value);
     if (n.JSXEmptyExpression.check(expression)) return undefined;
     switch (form) {
@@ -1202,7 +1235,92 @@ export function transformSource(source: string, options: TransformOptions): File
         return n.Identifier.check(expression) && kindOf(sources.get(expression.name)) === 'icon'
           ? [{ $: 'icon', name: expression.name }]
           : undefined;
+      case 'literal': {
+        const token = n.BooleanLiteral.check(expression)
+          ? map?.[String(expression.value)]
+          : undefined;
+        return token === undefined ? undefined : [token];
+      }
+      case 'refresh':
+        return refreshOf(expression);
     }
+  }
+
+  /**
+   * A static content container style (an object literal or a module
+   * StyleSheet's style) of paddings and a gap, each a space token, as the
+   * scroll view's content margins and spacing: the language's content
+   * container style holds the same keys.
+   */
+  function contentStyleOf(expression: AnyNode): PropMod[] | undefined {
+    const object = moduleStyleReads.has(expression)
+      ? styleSheets.get(expression.object.name)?.get(expression.property.name)
+      : expression;
+    if (!n.ObjectExpression.check(object)) return undefined;
+    const mods: PropMod[] = [];
+    for (const property of object.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key)
+      )
+        return undefined;
+      const token = SPACE[String(staticNumber(property.value))];
+      const key = property.key.name as string;
+      const edge = key === 'gap' ? undefined : CONTENT_EDGE[key];
+      if (token === undefined || (key !== 'gap' && !edge)) return undefined;
+      mods.push(
+        key === 'gap'
+          ? { name: 'spacing', args: [token] }
+          : { name: 'contentMargins', args: edge === 'all' ? [token] : [edge as string, token] },
+      );
+    }
+    if (object !== expression) styleLiterals.set(expression, recast.print(object).code);
+    return mods;
+  }
+
+  /**
+   * React Native's `RefreshControl` as a pull to refresh: its `refreshing` and
+   * the binding a pull writes `true` to, which calls `onRefresh` with no
+   * arguments as React Native does; its `tintColor` and `colors` as the tint
+   * when both are one theme colour, since the tint paints both. A `tintColor`
+   * alone tints iOS only, which no tint draws.
+   */
+  function refreshOf(expression: AnyNode): Value[] | undefined {
+    const local = n.JSXElement.check(expression) ? jsxName(expression) : undefined;
+    const source = local ? sources.get(local) : undefined;
+    if (source?.module !== 'react-native' || source.imported !== 'RefreshControl') return undefined;
+    if (expression.children.length) return undefined;
+    const given = new Map<string, AnyNode>();
+    for (const attribute of expression.openingElement.attributes) {
+      if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+        return undefined;
+      if (!attribute.value) return undefined;
+      given.set(attribute.name.name, attributeExpression(attribute.value));
+    }
+    const { refreshing, onRefresh, tintColor, colors, ...rest } = Object.fromEntries(given);
+    if (Object.keys(rest).length || !refreshing || !onRefresh || hasJsx(refreshing))
+      return undefined;
+    // A function of no parameters ignores the `true` a pull writes; a named one is called with none.
+    const action: Carried | undefined =
+      n.ArrowFunctionExpression.check(onRefresh) && onRefresh.params.length === 0
+        ? { node: onRefresh, hole: 'handler' }
+        : n.Identifier.check(onRefresh) || n.MemberExpression.check(onRefresh)
+          ? { node: onRefresh, hole: 'action' }
+          : undefined;
+    if (!action) return undefined;
+    const binding: Value = {
+      $: 'binding',
+      binding: [{ node: refreshing, hole: 'boolean' }, action],
+    };
+    // Its import goes with the element when nothing else draws one.
+    convertedLocals.add(local as string);
+    if (!tintColor && !colors) return [binding];
+    const tint = tintColor && themeRoles.get(tintColor);
+    const [only, ...others] = n.ArrayExpression.check(colors) ? colors.elements : [];
+    return tint && only && !others.length && themeRoles.get(only) === tint
+      ? [binding, tint]
+      : undefined;
   }
 
   /** An element as a view: converted when it can be, else embedded. */
@@ -1485,13 +1603,13 @@ export function transformSource(source: string, options: TransformOptions): File
   }
 
   function printValue(value: Value, carry: (c: Carried) => string): string {
-    if (isCarried(value)) return carry(value);
+    if (isCarried(value)) return value.hole === 'action' ? `() => ${carry(value)}()` : carry(value);
     if (isTagged(value)) {
       switch (value.$) {
         case 'view':
           return print(value.view, carry);
         case 'binding':
-          return `[${carry(value.binding[0])}, ${carry(value.binding[1])}]`;
+          return `[${printValue(value.binding[0], carry)}, ${printValue(value.binding[1], carry)}]`;
         case 'icon':
           return value.name;
         case 'options':
@@ -1599,6 +1717,7 @@ export function transformSource(source: string, options: TransformOptions): File
     boolean: () => 'true',
     condition: () => 'true',
     handler: () => '() => {}',
+    action: () => '(() => {})',
     element: (i: number) => `<Hole n="${i}" />`,
   } as const;
 

@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { LANGUAGE_PACKAGE } from './table';
+import { type Arg, LANGUAGE_PACKAGE } from './table';
 
 /**
  * The forms a prop's value takes in a rule:
@@ -20,7 +20,12 @@ import { LANGUAGE_PACKAGE } from './table';
  * - `number`: a static number, or an expression (a hole);
  * - `handler`: a function, carried as it is;
  * - `view`: an element, converted when it can be, else embedded;
- * - `icon`: a Bloom icon component, by name.
+ * - `icon`: a Bloom icon component, by name;
+ * - `literal`: a boolean literal (bare is `true`), through the rule's map (`'true'`, `'false'`);
+ * - `refresh`: React Native's `RefreshControl` element, as a pull to refresh's
+ *   binding and tint (`.refreshable([refreshing, () => onRefresh()], tint)`);
+ * - `contentStyle`: a static content container style of paddings and a gap, as
+ *   `.contentMargins(edge, token)` and `.spacing(token)`.
  */
 export type Form =
   | 'string'
@@ -31,7 +36,10 @@ export type Form =
   | 'number'
   | 'handler'
   | 'view'
-  | 'icon';
+  | 'icon'
+  | 'literal'
+  | 'refresh'
+  | 'contentStyle';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -43,6 +51,8 @@ export interface PropRule {
    * to `.onEndReached(action, threshold)`); given without this prop, it is a reason.
    */
   readonly with?: readonly [prop: string, form: Form];
+  /** Fixed arguments after the value (`showsVerticalScrollIndicator` to `.scrollIndicators(value, 'vertical')`). */
+  readonly args?: readonly Arg[];
 }
 
 /**
@@ -91,6 +101,8 @@ export interface ComponentRule {
    * which are the node's `icon` and `trailingIcon`; its own props join the input's.
    */
   readonly shell?: { readonly input: string; readonly icon: string };
+  /** Props the Bloom component draws in a way no modifier of the node does, and how: each is the reason it stays JSX. */
+  readonly differs?: Readonly<Record<string, string>>;
 }
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
@@ -134,8 +146,15 @@ const p = (modifier: string, form: Form, map?: Readonly<Record<string, string>>)
   map,
 });
 
+/** A scroll indicator's boolean prop as `.scrollIndicators()` on its axis. */
+const INDICATOR = { true: 'visible', false: 'hidden' } as const;
+const indicator = (axis: 'vertical' | 'horizontal'): PropRule => ({
+  ...p('scrollIndicators', 'literal', INDICATOR),
+  args: [axis],
+});
+
 /** Bloom's spacing in points (`12`) as the language's space token (`md`), the spec's scale turned round. */
-const SPACE: Readonly<Record<string, string>> = Object.fromEntries(
+export const SPACE: Readonly<Record<string, string>> = Object.fromEntries(
   Object.entries(spec.scales.space)
     .filter(([name]) => !name.startsWith('$'))
     .map(([name, value]) => [String(value), name]),
@@ -229,7 +248,15 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     props: {
       keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),
       onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
+      refreshControl: p('refreshable', 'refresh'),
+      showsVerticalScrollIndicator: indicator('vertical'),
+      showsHorizontalScrollIndicator: indicator('horizontal'),
+      contentContainerStyle: p('contentMargins', 'contentStyle'),
       testID: p('testID', 'string'),
+    },
+    differs: {
+      contentContainerClassName:
+        'Bloom lays a content className out in a view of its own inside a content container that grows to the viewport, and reports no intrinsic height; the content margins pad the content container itself',
     },
   },
   // parity/settings.cases.tsx.
