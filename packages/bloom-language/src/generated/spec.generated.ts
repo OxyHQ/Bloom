@@ -1584,8 +1584,8 @@ export const ENUMS = {
     "never"
   ],
   "scrollbarSide": [
-    "start",
-    "end"
+    "end",
+    "start"
   ],
   "scrollbarSize": [
     "sm",
@@ -1605,8 +1605,8 @@ export const ENUMS = {
     "toggle"
   ],
   "teamPlacement": [
-    "header",
-    "footer"
+    "footer",
+    "header"
   ],
   "hourFormat": [
     "12h",
@@ -2029,6 +2029,45 @@ export const ENUMS = {
   "dismissIcon": [
     "close",
     "unpin"
+  ],
+  "contentAlignment": [
+    "start",
+    "center"
+  ],
+  "primaryActionPlacement": [
+    "bottom",
+    "top"
+  ],
+  "railLabels": [
+    "visible",
+    "hidden"
+  ],
+  "railSelection": [
+    "pill",
+    "icon"
+  ],
+  "modesPresentation": [
+    "segmented",
+    "toggle"
+  ],
+  "blend": [
+    "normal",
+    "multiply",
+    "screen",
+    "overlay",
+    "darken",
+    "lighten",
+    "color-dodge",
+    "color-burn",
+    "hard-light",
+    "soft-light",
+    "difference",
+    "exclusion",
+    "hue",
+    "saturation",
+    "color",
+    "luminosity",
+    "plus-lighter"
   ]
 } as const;
 
@@ -3689,6 +3728,33 @@ export const MODIFIERS = {
   ],
   "dismissIcon": [
     "dismissIcon"
+  ],
+  "sidebarSurface": [
+    "sidebarSurface"
+  ],
+  "contentAlignment": [
+    "contentAlignment"
+  ],
+  "primaryActionPlacement": [
+    "primaryActionPlacement"
+  ],
+  "railLabels": [
+    "railLabels"
+  ],
+  "railSelection": [
+    "railSelection"
+  ],
+  "modesPresentation": [
+    "modesPresentation"
+  ],
+  "textVariant": [
+    "typeRamp"
+  ],
+  "blend": [
+    "blend"
+  ],
+  "bloomOnly": [
+    "value?"
   ]
 } as const;
 
@@ -19551,7 +19617,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "lines"
+    "lines",
+    "textVariant"
   ],
   "agentLogRow": [
     "padding",
@@ -20032,7 +20099,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "gradient"
+    "gradient",
+    "blend",
+    "bloomOnly",
+    "surface"
   ],
   "conversationSidebar": [
     "padding",
@@ -20112,7 +20182,17 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "style",
+    "size",
+    "sidebarSurface",
+    "contentAlignment",
+    "primaryActionPlacement",
+    "railLabels",
+    "railSelection",
+    "modesPresentation",
+    "scrollbarSide",
+    "teamPlacement"
   ],
   "questionnaire": [
     "padding",
