@@ -11,19 +11,7 @@
  * platform branch for background, border and elevation, shared with every other
  * Bloom card.
  *
- * NOTHING here is drawn by a class string. The card's chrome and its whole text
- * block are resolved tokens in inline style, because a className is INERT on web
- * until the consumer wires the Tailwind pipeline — and this card's content block
- * was the last place in the library that still depended on one. The failure was
- * total and silent: with no pipeline the `p-3` inset, both `mt-1` gaps, all
- * three sizes, both weights, the uppercase transform, the tracking AND the
- * `text-muted-foreground` / `text-foreground` colours were dropped at once, so
- * the card rendered as three identical 14px black lines flush against its own
- * border with the last one clipped by the corner radius. Storybook has no
- * Tailwind pipeline, so no story could see it either.
- *
- * The numbers below are exactly what those class strings resolved to, and each
- * one is named beside the utility it came from.
+ * The card's chrome and its whole text block are resolved tokens in style.
  *
  * The `image` prop is an absolute URL, or the same image at several widths, and
  * is rendered with `expo-image` (which picks among the widths by the cover's
@@ -98,7 +86,6 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   author,
   coverFill = false,
   onPress,
-  className,
   style,
 }) => {
   const { colors } = useTheme();
@@ -135,7 +122,6 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
       radius="radius-20"
       clipContent
       contentStyle={coverFill ? { flex: 1 } : undefined}
-      className={className}
       style={style}
       onPress={handlePress}
       accessibilityRole="link"
