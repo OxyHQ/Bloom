@@ -1,6 +1,7 @@
 import { ScrollArea } from '../layout/ScrollArea';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -18,7 +19,6 @@ import { OverlayRoot } from '../overlay';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
 import { Portal } from '../portal';
 import { IS_WEB } from '../styles/platform';
-import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { AudioWaveVisualizer } from './AudioWaveVisualizer';
@@ -30,11 +30,11 @@ import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
- * The panel carries `className`, the safe-area padding AND the fade, so all
- * three are ONE element type, built once at module scope — a type constructed
- * during render remounts the subtree on every render. See `button/Button.tsx`.
+ * The panel carries the safe-area padding AND the fade, so both are ONE element
+ * type, built once at module scope: a type constructed during render remounts
+ * the subtree on every render.
  */
-const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
+const AnimatedPanel = Animated.createAnimatedComponent(View);
 
 /**
  * Voice mode: a full-surface modal for a live conversation with an agent. The
@@ -66,7 +66,6 @@ export function VoiceOverlay({
   onEnd,
   onTypeInstead,
   label,
-  className,
   testID,
 }: VoiceOverlayProps) {
   const { colors } = useTheme();
@@ -135,7 +134,6 @@ export function VoiceOverlay({
           aria-modal
           aria-label={label ?? messages.voiceMode}
           accessibilityViewIsModal
-          className={className}
           testID={testID}
           style={[
             StyleSheet.absoluteFill,

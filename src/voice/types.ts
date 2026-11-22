@@ -45,7 +45,6 @@ export interface AudioWaveVisualizerProps {
   size?: VoiceSize;
   /** Bar colour, as a semantic tone. Default `neutral`. */
   tone?: BloomTone;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   ref?: Ref<ComponentRef<typeof View>>;
   testID?: string;
@@ -74,7 +73,6 @@ export interface VoiceControlsProps {
   leading?: ReactNode;
   /** After the controls, at the row's end. */
   trailing?: ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   ref?: Ref<ComponentRef<typeof View>>;
   testID?: string;
@@ -102,6 +100,5 @@ export interface VoiceOverlayProps {
   onTypeInstead?: () => void;
   /** The dialog's accessible name. Default "Voice mode". */
   label?: string;
-  className?: string;
   testID?: string;
 }
