@@ -174,6 +174,10 @@ export type GroupCallLayout = (typeof ENUMS.groupCallLayout)[number];
 export type IncomingCallAnswer = (typeof ENUMS.incomingCallAnswer)[number];
 /** Picked people's chips: one row that `scroll`s sideways, or as many rows as they `wrap` to. */
 export type SelectedChipsLayout = (typeof ENUMS.selectedChipsLayout)[number];
+/** Where a message sits in its sender's run. */
+export type MessagePosition = (typeof ENUMS.messagePosition)[number];
+/** How a message's media sits in its bubble. */
+export type MessageMediaFit = (typeof ENUMS.messageMediaFit)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];

@@ -1495,6 +1495,31 @@ group's name its binding holds; `content` is the rows it draws between the
 fields and the members (Bloom's children). The story's progress bars run on
 a timer unless `paused`, so its cases hold them still.
 
+### Message bubbles
+
+```ts
+MessageBubble('outgoing', message.text, { time, status, reactions, onToggleReaction: react }).groupPosition('last').tail()
+MessageBubble('incoming', undefined, { media: Image(photo.url), time }).mediaFit('inset').metaOverlay()
+MessageList(items, { showAvatars: group, showSenderNames: group, unreadLabel: t('unread') })
+TypingBubble({ senderName: 'Ana' }).label('Ana is typing')
+```
+
+Bloom's `message-bubble`. `MessageBubble(direction, content?, options?)`:
+`incoming` or `outgoing` first, then its text (a string, which Bloom links)
+or a view of rich content; the options are its sender, reply, reactions,
+time, state, handlers and words as Bloom takes them, its `media` a language
+child, its `maxWidth` a space token. Its look is modifiers:
+`.groupPosition('single' | 'first' | 'middle' | 'last')` (where it sits in
+its sender's run), `.mediaFit('bleed' | 'inset' | 'bare')`, `.tail()`,
+`.metaOverlay()` (its time over its media) and `.senderTint(role)` (the
+sender's name, painted from a role); `.onPress()` and `.onLongPress()` are
+its own. `MessageList(items, options?)` takes Bloom's `MessageListItem`s
+(a media is a React element: `toElement(view)`), its avatars' size a space
+token. `TypingBubble(options?)` is named with `.label()`.
+
+- The typing dots pulse and a highlighted bubble flashes on the JS thread:
+  those cases are compared by Jest as they mount, not in Chrome.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

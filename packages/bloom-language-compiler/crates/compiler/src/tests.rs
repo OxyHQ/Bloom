@@ -840,3 +840,29 @@ fn the_people_beside_a_chat_are_checked() {
     let output = check("export const x = (n) => NewGroupForm(n).style('wrap');\n");
     assert_eq!(output.diagnostics[0].message, "NewGroupForm has no modifier .style()");
 }
+
+#[test]
+fn the_message_bubbles_are_checked() {
+    let imports =
+        "import { MessageBubble, MessageList, TypingBubble, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t, items) => VStack(MessageBubble('outgoing', t).groupPosition('last').mediaFit('inset').tail().metaOverlay(false).senderTint('success/half'), TypingBubble().label('Ana is typing'), MessageList(items));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    for (call, message) in [
+        (
+            "MessageBubble('incoming', t).groupPosition('top')",
+            "Unknown messagePosition token 'top' for .groupPosition()",
+        ),
+        (
+            "MessageBubble('incoming', t).mediaFit('cover')",
+            "Unknown messageMediaFit token 'cover' for .mediaFit()",
+        ),
+        ("MessageBubble('incoming', t).senderTint('pink')", "Unknown color token 'pink' for .senderTint()"),
+        ("TypingBubble().tail()", "TypingBubble has no modifier .tail()"),
+    ] {
+        let output = check(&format!("export const x = (t) => {call};\n"));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
+    }
+}

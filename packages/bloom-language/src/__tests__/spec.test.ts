@@ -238,6 +238,11 @@ import type {
   SelectedChipsRowView,
   StoryViewerView,
 } from '../controls/chat-people';
+import type {
+  MessageBubbleView,
+  MessageListView,
+  TypingBubbleView,
+} from '../controls/message-bubble';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -569,7 +574,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<StoryViewerView>, Of<'storyViewer'>>,
       Same<MethodsOf<SelectedChipsRowView>, Of<'selectedChipsRow'>>,
       Same<MethodsOf<NewGroupFormView>, Of<'newGroupForm'>>,
+      Same<MethodsOf<MessageBubbleView>, Of<'messageBubble'>>,
+      Same<MethodsOf<TypingBubbleView>, Of<'typingBubble'>>,
+      Same<MethodsOf<MessageListView>, Of<'messageList'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

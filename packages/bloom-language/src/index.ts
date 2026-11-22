@@ -661,3 +661,14 @@ export type {
   StoryViewerOptions,
   StoryViewerView,
 } from './controls/chat-people';
+
+// Message bubbles (controls/message-bubble.tsx)
+export { MessageBubble, MessageList, TypingBubble } from './controls/message-bubble';
+export type {
+  MessageBubbleOptions,
+  MessageBubbleView,
+  MessageListOptions,
+  MessageListView,
+  TypingBubbleOptions,
+  TypingBubbleView,
+} from './controls/message-bubble';
