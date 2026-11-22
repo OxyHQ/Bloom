@@ -5,7 +5,13 @@ import * as L from '../src/index';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 
-const PLAYER = { play: () => {}, pause: () => {} } as never;
+/** A player as expo-video's web view uses one: it mounts the view's `<video>`. */
+const PLAYER = {
+  play: () => {},
+  pause: () => {},
+  mountVideoView: () => {},
+  unmountVideoView: () => {},
+} as never;
 
 export const VIDEO_CASES: readonly ParityCase[] = [
   {

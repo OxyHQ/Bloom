@@ -1,3 +1,6 @@
+import * as ExpoVideo from 'expo-video';
+import { provideExpoVideo, type ExpoVideoLike } from '@oxy.so/bloom/media-flight';
+
 import type { ParityCase } from '../../parity/support/cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
@@ -117,6 +120,11 @@ import { LOGISTICS_CASES } from '../../parity/logistics.cases';
 import { MUSIC_LIBRARY_CASES } from '../../parity/music-library.cases';
 import { QUEUE_PANEL_CASES } from '../../parity/queue-panel.cases';
 import { TRACK_LIST_CASES } from '../../parity/track-list.cases';
+
+// The tables draw as a web app does: an ESM bundle hands Bloom expo-video
+// (its optional-peer `require` cannot run here), or a video draws nothing.
+// Bloom types the module by the slice it renders, its player structurally.
+provideExpoVideo(ExpoVideo as unknown as ExpoVideoLike);
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
