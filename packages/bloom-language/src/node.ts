@@ -54,6 +54,7 @@ import type { VideoSlot } from './controls/media-flight';
 import type { VideoSurfaceType } from '@oxy.so/bloom/media-flight';
 import type { MediaFlightKind } from './controls/media-flight';
 import type { DataTableKind, DataTableStyle } from './controls/data-table';
+import type { SortableChipRowKind } from './controls/sortable-chip-row';
 import type { DataTableCellContext, DataTableSize, DataTableSort } from '@oxy.so/bloom/data-table';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
@@ -896,6 +897,10 @@ export interface ValueModifiers {
   sizeToggle: Binding<DataTableSize>;
   bordered: boolean;
 
+  // Sortable chip rows (controls/sortable-chip-row.tsx)
+  onReorder: (keys: string[]) => void;
+  onDragChange: (dragging: boolean) => void;
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -1319,6 +1324,7 @@ export type NodeKind =
   | HoverCardKind
   | MenubarKind
   | DataTableKind
+  | SortableChipRowKind
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind
@@ -3197,6 +3203,14 @@ export class Node {
   }
   bordered(value: boolean): Node {
     return this.set('bordered', value);
+  }
+
+  // Sortable chip rows (controls/sortable-chip-row.tsx)
+  onReorder(value: (keys: string[]) => void): Node {
+    return this.set('onReorder', value);
+  }
+  onDragChange(value: (dragging: boolean) => void): Node {
+    return this.set('onDragChange', value);
   }
 
   // Context menus (controls/context-menu.tsx)

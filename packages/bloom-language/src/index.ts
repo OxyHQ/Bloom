@@ -589,6 +589,10 @@ export type {
   DataTableView,
 } from './controls/data-table';
 
+// Sortable chip rows (controls/sortable-chip-row.tsx)
+export { SortableChip, SortableChipRow } from './controls/sortable-chip-row';
+export type { SortableChipRowView, SortableChipView } from './controls/sortable-chip-row';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';
