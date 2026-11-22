@@ -3100,3 +3100,48 @@ fn view_that_fits_measures_few_candidates() {
     );
     assert_eq!(messages(&many.warnings), ["ViewThatFits measures 4 candidates"]);
 }
+
+const RULE_IMPORTS: &str =
+    "import { Button, GlassGroup, HStack, Text, VStack, clear, regular } from '@oxy.so/bloom-language';
+";
+
+fn rules(body: &str) -> crate::Output {
+    compile(&format!("{RULE_IMPORTS}{body}"), "rules.tsx")
+}
+
+#[test]
+fn clear_glass_takes_a_dimming_layer() {
+    let bare = rules("export const x = () => VStack(Text('a')).glass(clear);\n");
+    assert_eq!(messages(&bare.warnings), ["clear glass with no dimming layer"]);
+    let dimmed = rules("export const x = () => VStack(Text('a')).glass(clear.dimmed());\n");
+    assert!(
+        dimmed.warnings.is_empty() && dimmed.diagnostics.is_empty(),
+        "{:?}",
+        messages(&dimmed.diagnostics)
+    );
+    let tinted = rules("export const x = () => VStack(Text('a')).glass(clear.tint('primary'));\n");
+    assert!(tinted.warnings.is_empty());
+}
+
+#[test]
+fn one_tinted_control_per_group() {
+    let two = rules(
+        "export const x = () => GlassGroup(HStack(Button(Text('Done')).style('glassProminent'), Button(Text('Save')).glass(regular.tint('primary'))));\n",
+    );
+    assert_eq!(messages(&two.warnings), ["2 tinted glasses in one group: tint one, the primary action"]);
+    let one = rules(
+        "export const x = () => GlassGroup(HStack(Button(Text('Done')).style('glassProminent'), Button(Text('Save')).style('glass')));\n",
+    );
+    assert!(one.warnings.is_empty(), "{:?}", messages(&one.warnings));
+}
+
+#[test]
+fn the_lens_budget_and_a_glass_per_item() {
+    let glasses = (0..13)
+        .map(|i| format!("export const g{i} = () => VStack(Text('a')).glass();\n"))
+        .collect::<String>();
+    let many = rules(&glasses);
+    assert_eq!(messages(&many.warnings), ["13 glasses in one module: past the budget of 12"]);
+    let list = rules("export const x = (items) => VStack(items.map((item) => Text(item).glass()));\n");
+    assert_eq!(messages(&list.warnings), ["a glass per item of a list"]);
+}

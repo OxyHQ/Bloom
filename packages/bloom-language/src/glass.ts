@@ -43,6 +43,14 @@ export class GlassValue {
   }
 
   /**
+   * The same material over Apple's dimming layer (black at `dim`, 35%): what
+   * `clear` glass over bright media takes so what is on it stays legible.
+   */
+  dimmed(): GlassValue {
+    return this.tint('black', 'dim');
+  }
+
+  /**
    * The same material, answering touch or not (SwiftUI's `Glass.interactive`):
    * it springs under the finger on Android and OxyOS and reacts on iOS. Unsaid,
    * a glass answers touch where the platform's default does.

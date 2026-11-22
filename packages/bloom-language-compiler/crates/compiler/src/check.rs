@@ -42,11 +42,29 @@ pub fn check_program(program: &Program, module: &Module, scoping: &Scoping) -> C
         module,
         scoping,
         place: Place::default(),
+        groups: Vec::new(),
+        lenses: Vec::new(),
         checked: Checked { errors: Vec::new(), warnings: Vec::new() },
     };
     checker.visit_program(program);
+    if let Some(&span) = checker.lenses.get(LENS_BUDGET) {
+        checker.checked.warnings.push(Problem {
+            span,
+            message: format!("{} glasses in one module: past the budget of {LENS_BUDGET}", checker.lenses.len()),
+            help: Some(
+                "every lens is drawn each frame (60 at once were 21% janky frames on a Pixel 8a): group nearby \
+                 glass in a GlassGroup, and keep glass to the navigation layer"
+                    .into(),
+            ),
+        });
+    }
     checker.checked
 }
+
+/// How many glasses one module may draw before the compiler warns: a screen's
+/// bars, toolbar groups and a floating control, well under the 60 lenses Bloom
+/// measured at 21% janky frames on a Pixel 8a (AGENTS.rules.md, Material).
+const LENS_BUDGET: usize = 12;
 
 /// Where a chain is written, as far as one expression shows it: inside the
 /// children of a glass, of scrolling content, of a glass group.
@@ -55,12 +73,18 @@ struct Place {
     in_glass: bool,
     in_content: bool,
     in_group: bool,
+    /// Inside a callback of `.map()`: one per item of a list.
+    in_list: bool,
 }
 
 struct Checker<'m> {
     module: &'m Module,
     scoping: &'m Scoping,
     place: Place,
+    /// Per enclosing glass group, toolbar group or toolbar: its tinted glasses.
+    groups: Vec<u32>,
+    /// Every glass the module draws, in source order (the lens budget).
+    lenses: Vec<Span>,
     checked: Checked,
 }
 
@@ -71,6 +95,20 @@ impl<'a> Visit<'a> for Checker<'_> {
                 .and_then(|()| check_define_modifier(expression, self.module, self.scoping))
             {
                 self.checked.errors.push(problem);
+            }
+            // A callback of `.map()` draws once per item.
+            if let Expression::CallExpression(call) = expression.without_parentheses()
+                && let Expression::StaticMemberExpression(member) = &call.callee
+                && member.property.name == "map"
+            {
+                self.visit_expression(&member.object);
+                let outer = self.place;
+                self.place.in_list = true;
+                for argument in &call.arguments {
+                    self.visit_argument(argument);
+                }
+                self.place = outer;
+                return;
             }
             walk::walk_expression(self, expression);
             return;
@@ -92,15 +130,21 @@ impl<'a> Visit<'a> for Checker<'_> {
                 self.place.in_glass |= glass.is_some();
                 self.place.in_content |= CONTENT_KINDS.contains(&kind);
                 self.place.in_group |= kind == "glassGroup";
-                for argument in &call.arguments {
-                    self.visit_argument(argument);
-                }
+                let group = kind == "glassGroup" || kind == "toolbarGroup";
+                self.in_group_scope(group, call.span, |checker| {
+                    for argument in &call.arguments {
+                        checker.visit_argument(argument);
+                    }
+                });
                 self.place = outer;
                 break;
             };
-            for argument in &call.arguments {
-                self.visit_argument(argument);
-            }
+            let toolbar = matches!(member.property.name.as_str(), "toolbar" | "toolbarLeading");
+            self.in_group_scope(toolbar, call.span, |checker| {
+                for argument in &call.arguments {
+                    checker.visit_argument(argument);
+                }
+            });
             current = member.object.without_parentheses();
         }
     }
@@ -117,15 +161,70 @@ struct Glass {
     span: Span,
     /// `.inContent()`: in the content layer on purpose.
     in_content: bool,
+    /// Tinted with a colour (`.tint()`, or `glassProminent`'s accent).
+    tinted: bool,
+    /// `clear` with neither a tint nor `.dimmed()`.
+    undimmed_clear: bool,
 }
 
 impl Checker<'_> {
+    /// Visits a group's (a glass group's, a toolbar group's, a toolbar's)
+    /// content, then holds Apple's rule of one tinted control in it.
+    fn in_group_scope(&mut self, group: bool, span: Span, visit: impl FnOnce(&mut Self)) {
+        if !group {
+            visit(self);
+            return;
+        }
+        self.groups.push(0);
+        visit(self);
+        let tinted = self.groups.pop().unwrap_or(0);
+        if tinted > 1 {
+            self.checked.warnings.push(Problem {
+                span,
+                message: format!("{tinted} tinted glasses in one group: tint one, the primary action"),
+                help: Some(
+                    "Apple: refrain from adding color to the background of multiple controls; the key action is \
+                     .style('glassProminent'), the rest untinted"
+                        .into(),
+                ),
+            });
+        }
+    }
+
     /// The Liquid Glass rules for one chain (see docs/bloom-language.mdx, Liquid
     /// Glass rules); returns the chain's glass, if it draws one.
     fn check_glass(&mut self, expression: &Expression) -> Option<Glass> {
         let (module, scoping) = (self.module, self.scoping);
         let glass = glass_of(expression, module, scoping);
         if let Some(glass) = &glass {
+            self.lenses.push(glass.span);
+            if glass.tinted {
+                for count in &mut self.groups {
+                    *count += 1;
+                }
+            }
+            if glass.undimmed_clear {
+                self.checked.warnings.push(Problem {
+                    span: glass.span,
+                    message: "clear glass with no dimming layer".into(),
+                    help: Some(
+                        "Apple: clear glass sits over rich media, with a dimming layer when the media is bright: \
+                         .glass(clear.dimmed()), or a tint"
+                            .into(),
+                    ),
+                });
+            }
+            if self.place.in_list && !glass.in_content {
+                self.checked.warnings.push(Problem {
+                    span: glass.span,
+                    message: "a glass per item of a list".into(),
+                    help: Some(
+                        "every lens is drawn each frame; a row's control that is glass on purpose says so with \
+                         .inContent()"
+                            .into(),
+                    ),
+                });
+            }
             if self.place.in_glass {
                 self.checked.errors.push(Problem {
                     span: glass.span,
@@ -278,6 +377,7 @@ fn glass_of(expression: &Expression, module: &Module, scoping: &Scoping) -> Opti
     let in_content = calls.iter().any(|(name, _)| *name == "inContent");
     let mut glass: Option<Span> = None;
     let mut identity = false;
+    let (mut tinted, mut undimmed_clear) = (false, false);
     for (name, call) in calls.iter().rev() {
         match *name {
             "glass" => {
@@ -285,8 +385,17 @@ fn glass_of(expression: &Expression, module: &Module, scoping: &Scoping) -> Opti
                 identity =
                     value.is_some_and(|value| module.resolve(value, scoping) == Some(Binding::GlassIdentity));
                 glass = (!identity).then_some(call.span);
+                let (root, methods) = value.map_or(("regular", Vec::new()), glass_value_parts);
+                tinted = methods.contains(&"tint");
+                undimmed_clear = root == "clear" && !tinted && !methods.contains(&"dimmed");
             }
-            "style" if is_glass_style(call) => glass = glass.or(Some(call.span)),
+            "style" if is_glass_style(call) => {
+                glass = glass.or(Some(call.span));
+                tinted |= matches!(
+                    call.arguments.first().and_then(Argument::as_expression).map(Expression::without_parentheses),
+                    Some(Expression::StringLiteral(style)) if style.value == "glassProminent"
+                );
+            }
             _ => {}
         }
     }
@@ -294,7 +403,25 @@ fn glass_of(expression: &Expression, module: &Module, scoping: &Scoping) -> Opti
     if glass.is_none() && kind == "fab" && !identity {
         glass = root_call(expression).map(|root| root.span);
     }
-    glass.map(|span| Glass { span, in_content })
+    glass.map(|span| Glass { span, in_content, tinted, undimmed_clear })
+}
+
+/// A glass value's root name (`regular`, `clear`, `identity`, or a name of the
+/// module's) and the methods chained on it (`tint`, `dimmed`, `interactive`).
+fn glass_value_parts<'e>(value: &'e Expression) -> (&'e str, Vec<&'e str>) {
+    let mut methods = Vec::new();
+    let mut current = value.without_parentheses();
+    loop {
+        match current {
+            Expression::CallExpression(call) => {
+                let Expression::StaticMemberExpression(member) = &call.callee else { return ("", methods) };
+                methods.push(member.property.name.as_str());
+                current = member.object.without_parentheses();
+            }
+            Expression::Identifier(identifier) => return (identifier.name.as_str(), methods),
+            _ => return ("", methods),
+        }
+    }
 }
 
 /// `.style('glass')` or `.style('glassProminent')`: a button on glass.
