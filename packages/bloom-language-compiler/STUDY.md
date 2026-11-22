@@ -470,7 +470,13 @@ spec, just as `tokens.json` already feeds the Tailwind preset.
    exports and SSR (Expo static rendering), are both unbuilt.
 8. **Distribution.**
    - Prebuilt napi binaries per platform (darwin-arm64/x64, linux gnu/musl, win32) must come from
-     CI, never a laptop, plus a WASI fallback (threadless WASI cannot spawn).
+     CI, never a laptop, plus a WASI fallback (threadless WASI cannot spawn). Built: the
+     `Language compiler binaries` workflow builds linux x64/arm64 (glibc), darwin x64/arm64,
+     win32 x64 and `wasm32-wasip1-threads` with napi-rs, packs the platform packages beside the
+     compiler (`scripts/pack-prebuilt.mjs`, optional dependencies) and installs them on each
+     platform with no Rust on PATH (`scripts/verify-prebuilt.cjs`: the addon and the WASI build
+     compile every fixture alike). `js/native.js` loads a local build, else the platform's
+     package, else the WASI build (musl Linux takes it). Nothing is published.
    - Bloom CI would need a Rust toolchain.
    - Cargo has no stable minimum-release-age (`--publish-time` is unstable), so the 114 locked
      crates are checked by `scripts/audit-crate-ages.py`. Five crates were too new and were pinned
