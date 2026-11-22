@@ -1444,6 +1444,39 @@ Bloom's `eviction`: `EvictionReportCard(options)` (whether one attends is its
 options)` (its `media` a language child). `PlaceReviewCard`, which no app
 imports, is not drawn.
 
+### Call screens
+
+```ts
+CallScreen(peer.name, call.status, { duration, avatar: peer.avatar, controls: { muted, onMutedChange: setMuted, onEndCall: end } }).style('video').tint('primary')
+CallMinimisedPill(peer.name, { duration, onExpand: expand, onEndCall: end }).style(call.mode)
+GroupCallGrid(participants, { formatMuted }).style('spotlight').columns(2).spacing('xs').aspectRatio(16 / 9)
+IncomingCallScreen(peer.name, { onAccept: answer, onDecline: decline }).answerStyle('slide')
+IncomingCallBanner(peer.name, { onAccept: answer, onDecline: decline }).onPress(open)
+```
+
+Bloom's `call-ui`: a call's medium is `.style('voice' | 'video')` and the hue
+its stage is washed with `.tint(role)` (the theme's accent by default), on
+`CallScreen(name, status, options?)`, `CallMinimisedPill(name?, options?)`,
+`IncomingCallScreen(name, options?)` and `IncomingCallBanner(name, options?)`.
+The options are the call's data as Bloom takes it: its pre-formatted time,
+words, handlers and controlled state (a minimised screen, the
+picture-in-picture's corner).
+
+- `CallScreen`: its video frames (`remoteVideo`, `localVideo`), a control bar
+  of the app's own (`controlsSlot`), the top bar's extra chrome (`topBarSlot`)
+  and `content` (drawn over the stage) are language children; its end-to-end
+  line is a string or a view; the picture-in-picture's width is a space token.
+  `controls` is Bloom's control bar's data, its buttons sized by the screen's
+  `.size('sm' | 'md' | 'lg')`, its extra buttons `extra` (children).
+- `GroupCallGrid(participants, options?)`: `.style('grid' | 'spotlight')`,
+  `.columns(n)`, `.spacing()` its gutter, `.aspectRatio()` a tile's; a fixed
+  `width` is a space token. A participant's colour and video are its data's.
+- `IncomingCallScreen`: `.answerStyle('buttons' | 'slide')`; `content` is
+  what it draws under its buttons. `IncomingCallBanner` takes `.onPress()`
+  itself (its body opens the call).
+- A speaking ring and the slide track's chevrons breathe on a loop: those
+  cases are compared by Jest as they mount, not in Chrome.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

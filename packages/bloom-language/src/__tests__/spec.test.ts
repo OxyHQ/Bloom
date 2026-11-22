@@ -226,6 +226,13 @@ import type {
 } from '../controls/tenancy';
 import type { EvictionReportCardView, EvictionTimelineView } from '../controls/eviction';
 import type { PlaceReviewSummaryView, WriteReviewPromptView } from '../controls/place-reviews';
+import type {
+  CallScreenView,
+  CallMinimisedPillView,
+  GroupCallGridView,
+  IncomingCallScreenView,
+  IncomingCallBannerView,
+} from '../controls/call-ui';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -549,7 +556,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<EvictionTimelineView>, Of<'evictionTimeline'>>,
       Same<MethodsOf<PlaceReviewSummaryView>, Of<'placeReviewSummary'>>,
       Same<MethodsOf<WriteReviewPromptView>, Of<'writeReviewPrompt'>>,
+      Same<MethodsOf<CallScreenView>, Of<'callScreen'>>,
+      Same<MethodsOf<CallMinimisedPillView>, Of<'callMinimisedPill'>>,
+      Same<MethodsOf<GroupCallGridView>, Of<'groupCallGrid'>>,
+      Same<MethodsOf<IncomingCallScreenView>, Of<'incomingCallScreen'>>,
+      Same<MethodsOf<IncomingCallBannerView>, Of<'incomingCallBanner'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

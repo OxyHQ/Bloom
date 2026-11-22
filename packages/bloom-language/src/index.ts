@@ -629,3 +629,24 @@ export type {
   WriteReviewPromptOptions,
   WriteReviewPromptView,
 } from './controls/place-reviews';
+// Call screens (controls/call-ui.tsx)
+export {
+  CallMinimisedPill,
+  CallScreen,
+  GroupCallGrid,
+  IncomingCallBanner,
+  IncomingCallScreen,
+} from './controls/call-ui';
+export type {
+  CallMinimisedPillOptions,
+  CallMinimisedPillView,
+  CallScreenControls,
+  CallScreenOptions,
+  CallScreenView,
+  GroupCallGridOptions,
+  GroupCallGridView,
+  IncomingCallBannerOptions,
+  IncomingCallBannerView,
+  IncomingCallScreenOptions,
+  IncomingCallScreenView,
+} from './controls/call-ui';

@@ -812,3 +812,16 @@ fn the_tenancy_eviction_and_review_families_are_checked() {
         assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
     }
 }
+
+#[test]
+fn the_call_screens_are_checked() {
+    let imports = "import { CallScreen, IncomingCallScreen } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid =
+        check("export const x = (n) => CallScreen(n, 'active').style('video').size('md').tint('primary');\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (n) => IncomingCallScreen(n).answerStyle('swipe');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown incomingCallAnswer token 'swipe' for .answerStyle()");
+    let output = check("export const x = (n) => CallScreen(n, 'active').style('audio');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown callMode token 'audio' for .style()");
+}

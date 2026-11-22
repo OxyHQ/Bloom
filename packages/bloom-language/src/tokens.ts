@@ -166,6 +166,12 @@ export type LoadingStyle = (typeof ENUMS.loadingStyle)[number];
 export type AgentMood = (typeof ENUMS.agentMood)[number];
 export type FollowButtonSize = (typeof ENUMS.followButtonSize)[number];
 export type ShelfLayout = (typeof ENUMS.shelfLayout)[number];
+/** A call's medium: `voice` or `video`. */
+export type CallMode = (typeof ENUMS.callMode)[number];
+export type CallControlSize = (typeof ENUMS.callControlSize)[number];
+export type GroupCallLayout = (typeof ENUMS.groupCallLayout)[number];
+/** How an incoming call is answered: two round `buttons`, or a `slide` track. */
+export type IncomingCallAnswer = (typeof ENUMS.incomingCallAnswer)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
