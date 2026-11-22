@@ -2855,10 +2855,10 @@ fn the_track_list_is_checked() {
 
 #[test]
 fn values_inside_blooms_own_data_are_bindings() {
-    let imports = "import { CallScreen, CartPanel, ListItem, MailRow, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
+    let imports = "import { CallScreen, CartPanel, ListItem, MailRow, MapControls, NowPlayingBar, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]));\n",
+        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]), NowPlayingBar(d, {}).lyricsActive([v, s]).queueActive([v, s]));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [

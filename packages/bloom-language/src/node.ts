@@ -1169,6 +1169,9 @@ export interface ValueModifiers {
   view: AnyBinding;
   date: AnyBinding;
   selectedIds: AnyBinding;
+  tilted: AnyBinding;
+  lyricsActive: AnyBinding;
+  queueActive: AnyBinding;
   speaker: AnyBinding;
   videoOn: AnyBinding;
   screenSharing: AnyBinding;
@@ -2399,6 +2402,15 @@ export class Node {
   }
   selectedIds(value: AnyBinding): Node {
     return this.set('selectedIds', value);
+  }
+  tilted(value: AnyBinding): Node {
+    return this.set('tilted', value);
+  }
+  lyricsActive(value: AnyBinding): Node {
+    return this.set('lyricsActive', value);
+  }
+  queueActive(value: AnyBinding): Node {
+    return this.set('queueActive', value);
   }
   speaker(value: AnyBinding): Node {
     return this.set('speaker', value);

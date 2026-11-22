@@ -3215,7 +3215,8 @@ NavigationBanner('right', 'Carrer del Roure', { distance: '400 m', extras: Lanes
 
 What a map draws over its tiles, each Bloom's own: `MapScaleBar(scales,
 options?)` (`.style('island' | 'inline')`), `MapControls(options?)` (each
-control drawn when its handler is given; `.axis()` lays the groups in a row or
+control drawn when its handler is given; `.tilted([tilted, setTilted])` the
+tilt, a binding that draws the tilt button; `.axis()` lays the groups in a row or
 a column, `.align('start' | 'end')` picks the edge; its `islands`, a layer
 picker or one of the app's, are language children), `LocationPuck(options?)`
 (its state and heading are data; `.style('following' | 'compass' |
@@ -3677,9 +3678,12 @@ Bloom's `media-player`: `TransportControls(playing, options)` takes
 and `.disabled()`, its `trailing` a language child. `NowPlayingBar(track,
 options)` (its `devicePicker` a child), `MiniPlayer(track, options)` and
 `FullScreenPlayer(track, options)` (its `aboutArtist` a child) take the
-transport, position and duration as Bloom's data; a mini player's
-`.onPress()` is its own. `PlaybackSpeedMenu(rate)` and `SleepTimerMenu(value)`
-write their binding, take the transport's `.size()` and `.disabled()`, and
+transport, position and duration as Bloom's data; a bar's `.liked()`,
+`.muted()`, `.volume()`, `.devicePickerOpen()`, `.lyricsActive()` and
+`.queueActive()` are bindings (a bound lyrics or queue toggle draws its
+button); a mini player's `.onPress()` is its own. `PlaybackSpeedMenu(rate)`
+and `SleepTimerMenu(value)` write their binding, open by `.presented([open,
+setOpen])`, take the transport's `.size()` and `.disabled()`, and
 their `trigger` (Bloom's children) is a language child.
 `DevicePicker(current, devices, options)` and `ConnectBanner(deviceName,
 options?)` (`.onPress()` its own) complete it.
