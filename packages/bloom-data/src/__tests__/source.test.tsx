@@ -400,4 +400,73 @@ describe('environment events', () => {
     off();
     await store.close();
   });
+
+  describe('invalidate', () => {
+    function Home({ feed }: { feed: ReturnType<typeof server>['feed'] }) {
+      return <>{useList(feed, 'home').ids.join(',')}</>;
+    }
+
+    it('reads an observed key again now, though its stale age has not passed', async () => {
+      const { calls, feed } = server(); // stale: 10 s
+      const tree = render(<Home feed={feed} />);
+      await settle(() => calls[0]?.resolve(page(['1'])));
+      expect(tree.toJSON()).toBe('1');
+      update(() => feed.invalidate('home'));
+      expect(calls).toHaveLength(2);
+      await settle(() => calls[1]?.resolve(page(['2', '1'])));
+      expect(tree.toJSON()).toBe('2,1');
+      update(() => tree.unmount());
+    });
+
+    it('reads an unobserved key again when it is next observed', async () => {
+      const { calls, feed } = server();
+      const read = feed.fetch('home');
+      calls[0]?.resolve(page(['1']));
+      await read;
+      // Fresh: mounting reads nothing.
+      let tree = render(<Home feed={feed} />);
+      update(() => tree.unmount());
+      expect(calls).toHaveLength(1);
+      feed.invalidate('home');
+      expect(calls).toHaveLength(1);
+      tree = render(<Home feed={feed} />);
+      expect(calls).toHaveLength(2);
+      await settle(() => calls[1]?.resolve(page(['3'])));
+      expect(tree.toJSON()).toBe('3');
+      // Answered since: fresh again.
+      update(() => tree.unmount());
+      tree = render(<Home feed={feed} />);
+      expect(calls).toHaveLength(2);
+      update(() => tree.unmount());
+    });
+
+    it('invalidateAll marks every key of the source, even one that never goes stale', async () => {
+      const keys: string[] = [];
+      const feed = source(Feed, {
+        key: (type: string) => type,
+        stale: Number.POSITIVE_INFINITY,
+        load: async (_request, type: string) => {
+          keys.push(type);
+          return page([`${type}-${keys.length}`]);
+        },
+      });
+      function Following() {
+        return <>{useList(feed, 'following').ids.join(',')}</>;
+      }
+      await feed.fetch('home');
+      const tree = render(<Following />);
+      await settle();
+      expect(keys).toEqual(['home', 'following']);
+      await settle(() => feed.invalidateAll());
+      // The observed key read again at once; the other waits to be observed.
+      expect(keys).toEqual(['home', 'following', 'following']);
+      expect(tree.toJSON()).toBe('following-3');
+      await feed.fetch('home');
+      expect(keys).toEqual(['home', 'following', 'following', 'home']);
+      // Read since: the rule is back, and it never goes stale.
+      await feed.fetch('home');
+      expect(keys).toHaveLength(4);
+      update(() => tree.unmount());
+    });
+  });
 });
