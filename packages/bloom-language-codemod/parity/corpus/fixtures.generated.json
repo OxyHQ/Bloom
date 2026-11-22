@@ -1,0 +1,140 @@
+[
+ {
+  "name": "components/Rows.tsx:18",
+  "before": "<Pressable onPress={() => {}} className=\"flex-row items-center gap-3 px-4 py-3 active:opacity-70\">\n      <RiHeart3Line size=\"sm\" />\n      <View className=\"gap-1\">\n        <Text variant=\"body-semibold\" numberOfLines={1}>\n          {'⟨0⟩'}\n        </Text>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨1⟩'} likes</Text>\n      </View>\n    </Pressable>",
+  "after": "toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('body').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "RiHeart3Line": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Line",
+    "imported": "RiHeart3Line"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText"
+  ],
+  "classes": [
+   "flex-row",
+   "items-center",
+   "gap-3",
+   "px-4",
+   "py-3",
+   "active:opacity-70",
+   "gap-1",
+   "text-sm",
+   "text-muted-foreground"
+  ]
+ },
+ {
+  "name": "components/Rows.tsx:32",
+  "before": "<View className=\"rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6\">\n      <Text className=\"font-semibold text-foreground\">Card</Text>\n      {<Hole n=\"0\" />}\n      <Button appearance=\"subtle\" size=\"sm\" trailingIcon={RiArrowRightLine} onPress={() => {}}>\n        {'Next'}\n      </Button>\n    </View>",
+  "after": "toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n=\"0\" />), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').when('md', (v) => v.padding('all', '2xl')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "RiArrowRightLine": {
+    "module": "@oxy.so/bloom/icons/RiArrowRightLine",
+    "imported": "RiArrowRightLine"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Button: LButton"
+  ],
+  "classes": [
+   "rounded-2xl",
+   "overflow-hidden",
+   "border",
+   "border-border",
+   "bg-surface",
+   "p-4",
+   "md:p-6",
+   "font-semibold",
+   "text-foreground"
+  ]
+ },
+ {
+  "name": "components/Rows.tsx:44",
+  "before": "<View className=\"gap-2 border-b border-border pb-3\">\n      {true ? <View className=\"h-10 w-full bg-muted\" /> : null}\n      {true && <View className=\"h-px bg-border\" />}\n      {<Hole n=\"2\" />}\n    </View>",
+  "after": "toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n=\"2\" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Button: LButton"
+  ],
+  "classes": [
+   "gap-2",
+   "border-b",
+   "border-border",
+   "pb-3",
+   "h-10",
+   "w-full",
+   "bg-muted",
+   "h-px",
+   "bg-border"
+  ]
+ },
+ {
+  "name": "components/Rows.tsx:48",
+  "before": "<View  className=\"flex-row justify-between\">\n          <Hole n=\"0\" />\n        </View>",
+  "after": "toElement(HStack(Embed(<Hole n=\"0\" />)).justify('between'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Button: LButton"
+  ],
+  "classes": [
+   "flex-row",
+   "justify-between"
+  ]
+ }
+]

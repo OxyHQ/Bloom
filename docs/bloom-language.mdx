@@ -3991,6 +3991,9 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
   default branch, read-only, and writes `codemod/classname-usage.json`.
 - `node scripts/generate-classnames.mjs` writes the table, its JSON and the
   summary below; `spec.test.ts` fails when they are stale.
+- [The codemod](./bloom-language-codemod.mdx) (`packages/bloom-language-codemod`)
+  reads the table, converts what lands exactly and proves each region with the
+  parity harness.
 
 {/* GENERATED:classnames — scripts/generate-classnames.mjs */}
 
