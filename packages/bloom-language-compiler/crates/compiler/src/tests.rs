@@ -185,8 +185,11 @@ fn frame_keys_and_values_are_checked() {
 fn placement_keys_and_tokens_are_checked() {
     let output = compiled("export const x = () => HStack().position({ top: 'none', trailing: '-sm' });\n");
     assert!(output.diagnostics.is_empty());
-    let output = compiled("export const x = () => HStack().position({ right: 'sm' });\n");
-    assert_eq!(output.diagnostics[0].message, ".position() has no 'right'");
+    // A physical side is a placement key too (`right-0`, as NativeWind writes it).
+    let output = compiled("export const x = () => HStack().position({ right: 'sm', left: 'none' });\n");
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let output = compiled("export const x = () => HStack().position({ rihgt: 'sm' });\n");
+    assert_eq!(output.diagnostics[0].message, ".position() has no 'rihgt'");
     let output = compiled("export const x = () => HStack().offset({ x: '2xs', y: 'big' });\n");
     assert_eq!(output.diagnostics[0].message, "Unknown padding token 'big' for .offset()");
     let output = compiled("export const x = () => HStack().zIndex(10);\n");
@@ -219,8 +222,11 @@ fn the_small_modifiers_and_numeric_tokens_are_checked() {
         "export const x = () => VStack(Text('1').monospacedDigit().wordBreak('all')).corner('3xl', 'top').corner('sm', 'bottom-trailing').basis('none').scale('105').allowsHitTesting(false).accessibilityOnly().zIndex('50').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)').ring('primary', '3').frame({ width: 'fit' }).listMarker('disc');\n",
     );
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    // A physical corner is a corner side too (`rounded-tl-lg`).
     let output = compiled("export const x = () => HStack().corner('lg', 'top-left');\n");
-    assert_eq!(output.diagnostics[0].message, "Unknown cornerSide token 'top-left' for .corner()");
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let output = compiled("export const x = () => HStack().corner('lg', 'top-lft');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown cornerSide token 'top-lft' for .corner()");
     let output = compiled("export const x = () => HStack().scale('1.05');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown scale token '1.05' for .scale()");
     let output = compiled("export const x = () => HStack().shadow('0 1px 3px 0 rgb(0 0 0 / 0.2)');\n");
@@ -291,8 +297,11 @@ fn text_styles_truncation_and_links_are_checked() {
     assert_eq!(style.diagnostics[0].message, "Unknown textStyle token 'h7' for .textStyle()");
     let cut = compiled("export const x = () => Text('x').truncation('end');\n");
     assert_eq!(cut.diagnostics[0].message, "Unknown truncation token 'end' for .truncation()");
+    // A physical alignment is a text alignment too (`text-left`, as NativeWind writes it).
     let align = compiled("export const x = () => Text('x').textAlign('left');\n");
-    assert_eq!(align.diagnostics[0].message, "Unknown textAlign token 'left' for .textAlign()");
+    assert!(align.diagnostics.is_empty(), "{:?}", align.diagnostics);
+    let align = compiled("export const x = () => Text('x').textAlign('middle');\n");
+    assert_eq!(align.diagnostics[0].message, "Unknown textAlign token 'middle' for .textAlign()");
     // Text's own modifiers stay on text.
     let stack = compiled("export const x = () => VStack().italic();\n");
     assert_eq!(stack.diagnostics[0].message, "VStack has no modifier .italic()");
