@@ -781,6 +781,10 @@ function planVariant(
       continue;
     }
     if (!varies(modifier)) {
+      // A condition that holds as the view renders (web, native, a platform,
+      // disabled) is the chain's own: what no live variant changes applies as
+      // if chained there (`when('web', (v) => v.noWrap())`).
+      if (condition === null && heldAsOwn(result, modifier)) continue;
       warnNotVaried(modifier);
       continue;
     }
@@ -801,6 +805,35 @@ function planVariant(
       result.hostVariants.push([condition, modifier as StackModifier]);
     }
   }
+}
+
+/** Kinds the plan reads into fields of its own (presses, names): a held variant does not set them. */
+const PLANNED_KINDS: ReadonlySet<string> = new Set([
+  'onPress',
+  'onLongPress',
+  'hoverGroup',
+  'onHover',
+  'label',
+  'hint',
+  'role',
+  'hitSlop',
+  'testID',
+  'id',
+]);
+
+/**
+ * A modifier no live variant can change, under a condition that holds: a text
+ * trait joins the environment, a stack's layout its own, any other the
+ * chain's own modifiers. A box layer or a placement is left out (it stacks).
+ */
+function heldAsOwn(result: Plan, modifier: Modifier): boolean {
+  if (isLayerModifier(modifier) || PLACE_KINDS.has(modifier.kind)) return false;
+  if (PLANNED_KINDS.has(modifier.kind) || MOTION_KINDS.has(modifier.kind)) return false;
+  if (ENV_KINDS.has(modifier.kind)) result.env.push(modifier);
+  else if (STACK_KINDS.has(modifier.kind))
+    result.hostVariants.push([null, modifier as StackModifier]);
+  else result.own.set(modifier.kind, modifier);
+  return true;
 }
 
 /** The style key of a stack's own variants, '' with none. */
@@ -1998,7 +2031,9 @@ function renderHost(
         () => {
           // A layout variant that holds is the layout's own value.
           for (const [condition, modifier] of p.hostVariants) {
-            if (condition === null) Object.assign(layout, layoutOf([modifier]));
+            if (condition === null)
+              for (const [key, value] of Object.entries(layoutOf([modifier])))
+                if (value !== undefined) (layout as Record<string, unknown>)[key] = value;
           }
           const style = Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p));
           if (marker !== undefined) style.listStyleType = marker;

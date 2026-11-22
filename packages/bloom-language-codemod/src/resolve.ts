@@ -59,6 +59,12 @@ spec.layers.forEach((names, index) => {
 const TRAITS = new Set(spec.environment.traits);
 /** The modifiers a `when()` variant can change; any other is left out of it. */
 const VARIES = new Set(spec.variants.modifiers);
+/** Conditions that hold, or not, as the view renders: a platform. */
+const HELD = new Set(['web', 'native', 'ios', 'android']);
+/** The placement modifiers (render.tsx, PLACE_KINDS): a held variant leaves them out too. */
+const PLACEMENT = new Set(['accessibilityOnly']);
+/** Utilities NativeWind draws on the web only: `tabular-nums` sets a variable alone on native. */
+const WEB_ONLY = new Set(['tabular-nums']);
 const TEXT_ONLY = new Set(spec.nodes.text?.modifiers ?? []);
 const STACK_ONLY = new Set(spec.nodes.stack?.modifiers ?? []);
 
@@ -74,8 +80,6 @@ const TRACKED = new Set(
  * with what differs. They stay JSX until the language or the table changes.
  */
 function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
-  if (utility === 'tabular-nums')
-    return 'NativeWind writes no fontVariant on native; .monospacedDigit() does';
   const fixed = /^(?:text|bg|border)-(white|black)\/(\d+)$/.exec(utility);
   if (fixed && !Number.isInteger((Number(fixed[2]) * 255) / 100))
     return `NativeWind writes ${fixed[1]} at ${fixed[2]}% as an 8-bit hex alpha (rounded down); the language writes ${Number(fixed[2]) / 100}`;
@@ -258,7 +262,8 @@ export function resolveClassName(
       fail(token, 'important', 'an !important utility outranks every other rule');
       continue;
     }
-    const conditions: string[] = [];
+    // NativeWind draws these on the web only (on native their rule sets a variable alone).
+    const conditions: string[] = WEB_ONLY.has(rawUtility) ? ['web'] : [];
     let ok = true;
     for (const variant of variants) {
       const condition = CONDITIONS[variant];
@@ -306,7 +311,15 @@ export function resolveClassName(
       fail(token, 'measured-difference', different);
       continue;
     }
-    const fixed = conditions.length > 0 ? entry.mods?.find((m) => !VARIES.has(m.name)) : undefined;
+    // Under a condition that holds as the view renders, what no variant changes is the
+    // chain's own, but a box layer or a placement (render.tsx, heldAsOwn).
+    const held = conditions.every((c) => HELD.has(c));
+    const fixed =
+      conditions.length > 0
+        ? entry.mods?.find(
+            (m) => !VARIES.has(m.name) && (!held || LAYER.has(m.name) || PLACEMENT.has(m.name)),
+          )
+        : undefined;
     if (fixed) {
       fail(
         token,
