@@ -267,7 +267,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | --- | --- |
 | `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`, or a numeric token (`'1'` `'6'` `'10'` `'14'` `'28'` `'44'` `'56'` `'96'`…); `-lg`, `-6` and the like pull outward (a margin) |
 | `spacing(v)` | space: the gap between a stack's children |
-| `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap, and not varied by `when()`; new screens use `spacing()` |
+| `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap; new screens use `spacing()` |
 | `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
 | `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5` |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
@@ -476,7 +476,11 @@ inside; a stack's layout to its host; a placement to its outermost box.
   bytes, and only for what renders.
 - **What varies** is the spec's `variants.modifiers`: box, text and stack
   style, placement (a basis and hit testing included), elevation and rings.
-  A scale or an offset is a transform, which has no class to vary on the web. Anything else inside `when()` is left
+  A scale or an offset is a transform, which has no class to vary on the web. Under a
+  condition that holds as the view renders (`web`, `native`, `ios`, `android`,
+  `disabled`), anything else but a box layer, a placement, a press or a name
+  is the chain's own, as if chained there (`when('web', (v) => v.monospacedDigit())`
+  is Tailwind's `tabular-nums` as NativeWind draws it). Anything else inside `when()` is left
   out and said once in development; the compiler rejects it (`A variant cannot
   change .onPress()`), and checks the condition and every value.
 - **A Bloom component** (Avatar, Button, Image…) reads its style as an

@@ -605,6 +605,21 @@ const raw: ParityCase[] = [
     ),
   },
   {
+    name: 'a platform’s own look: tabular digits and no wrap on the web only',
+    language: () => toElement(L.Text('12').when('web', (v) => v.monospacedDigit().noWrap())),
+    bloom: () => (
+      <Text
+        style={
+          RN.Platform.OS === 'web'
+            ? ({ fontVariant: ['tabular-nums'], whiteSpace: 'nowrap' } as RN.TextStyle)
+            : undefined
+        }
+      >
+        12
+      </Text>
+    ),
+  },
+  {
     name: 'RawText in a family of its own',
     language: () => toElement(L.RawText('Raw').font('mono')),
     bloom: () => <BaseFontText style={fontFamilyStyle('mono')}>Raw</BaseFontText>,
