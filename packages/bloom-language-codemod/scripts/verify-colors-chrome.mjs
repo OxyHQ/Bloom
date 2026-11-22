@@ -6,10 +6,13 @@
  *
  * The language writes `bg-primary/60` as `var(--bl-primary-60)` inline (the
  * `var()` react-native-web passes through), the custom property declared in
- * its ink sheet as `color-mix(in oklab, var(--primary) 60%, transparent)`;
- * Tailwind writes its own `color-mix()` over its theme variable. jsdom drops a
- * mix's percentage, so the web parity suite cannot compare them exactly. Here
- * Chrome computes both, for every such class the corpus converted, under the
+ * its ink sheet as `color-mix(in srgb, var(--primary) 60%, transparent)`;
+ * Tailwind writes its own `color-mix()` over its theme variable, in oklab. jsdom
+ * drops a mix's percentage, so the web parity suite cannot compare them
+ * exactly. Here Chrome computes both and paints each over white and over
+ * black: the two are equal when they paint the same pixels (a mix with
+ * transparent is the colour at that alpha in either space, written as
+ * `oklab()` or `color(srgb …)`), for every such class the corpus converted, under the
  * theme's variables in each scheme (`theme-variables.json`), with the ink
  * sheet the language declared in that suite (`language-ink.css`) and the
  * app's own stylesheet (`app.generated.css`). Writes `parity-chrome-colors.json`.
@@ -90,16 +93,34 @@ try {
       .join('')}</body></html>`;
     await page.setContent(html);
     const computed = await page.evaluate(
-      (list) =>
-        list.map((c, i) => [
-          getComputedStyle(document.getElementById(`a${i}`))[c.camel],
-          getComputedStyle(document.getElementById(`b${i}`))[c.camel],
-        ]),
+      (list) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        // The pixels a colour paints over white and over black.
+        const pixels = (color) =>
+          ['#ffffff', '#000000']
+            .map((ground) => {
+              context.fillStyle = ground;
+              context.fillRect(0, 0, 1, 1);
+              context.fillStyle = color;
+              context.fillRect(0, 0, 1, 1);
+              return [...context.getImageData(0, 0, 1, 1).data].join(',');
+            })
+            .join(' ');
+        return list.map((c, i) => {
+          const pair = [`a${i}`, `b${i}`].map(
+            (id) => getComputedStyle(document.getElementById(id))[c.camel],
+          );
+          return [...pair, pixels(pair[0]) === pixels(pair[1])];
+        });
+      },
       cases.map((c) => ({ camel: c.property.replace(/-(\w)/g, (_, l) => l.toUpperCase()) })),
     );
     cases.forEach((c, i) => {
-      const [tailwind, language] = computed[i];
-      results[`${scheme} ${c.name}`] = { tailwind, language, equal: tailwind === language };
+      const [tailwind, language, equal] = computed[i];
+      results[`${scheme} ${c.name}`] = { tailwind, language, equal };
     });
   }
 } finally {

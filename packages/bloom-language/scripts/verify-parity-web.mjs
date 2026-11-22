@@ -97,17 +97,30 @@ function describeInPage(testid, portals) {
     const animated = element.getAnimations().length > 0;
     const MOVING = new Set(['opacity', 'transform', 'animation-delay']);
     const css = {};
+    // An sRGB colour whose channels are 8-bit values is the legacy colour Chrome
+    // writes for the same pixels (`color(srgb 0.580392 0.133333 0.682353 / 0.1)`
+    // is `rgba(148, 34, 174, 0.1)`): a mix in sRGB computes in the first form.
+    const legacy = (value) =>
+      value.replace(
+        /color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/g,
+        (whole, r, g, b, a) => {
+          const bytes = [r, g, b].map((c) => Number(c) * 255);
+          if (bytes.some((c) => Math.abs(c - Math.round(c)) > 0.001)) return whole;
+          const [R, G, B] = bytes.map(Math.round);
+          return a === undefined ? `rgb(${R}, ${G}, ${B})` : `rgba(${R}, ${G}, ${B}, ${a})`;
+        },
+      );
     // Custom properties are inputs, named per instance (React ids); what they set is compared.
     for (let i = 0; i < style.length; i++)
       if (!style[i].startsWith('--') && !(animated && MOVING.has(style[i])))
-        css[style[i]] = ids(style.getPropertyValue(style[i]));
+        css[style[i]] = ids(legacy(style.getPropertyValue(style[i])));
     // What a pseudo-element draws (Surface's material is its ::before and ::after).
     for (const pseudo of ['::before', '::after']) {
       const drawn = getComputedStyle(element, pseudo);
       if (drawn.content === 'none' || drawn.content === 'normal') continue;
       for (let i = 0; i < drawn.length; i++)
         if (!drawn[i].startsWith('--'))
-          css[`${pseudo} ${drawn[i]}`] = ids(drawn.getPropertyValue(drawn[i]));
+          css[`${pseudo} ${drawn[i]}`] = ids(legacy(drawn.getPropertyValue(drawn[i])));
     }
     // Layout rounds a fraction of a pixel differently at different places on the page.
     const box = element.getBoundingClientRect();
