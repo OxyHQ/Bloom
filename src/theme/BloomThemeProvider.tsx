@@ -100,8 +100,7 @@ declare global {
  * mounted `<BloomThemeProvider>` writes into context A while `useTheme`/`useBloomTheme`/
  * `Toast`/`Dialog` read context B, so `useContext` returns `null` and they throw
  * "must be used within a <BloomThemeProvider>" even when correctly wrapped. This is the
- * same src-vs-lib dual-instance class react-native-css guards its `StyleCollection`/
- * root-variable families against. Anchoring the context on `globalThis` (keyed by the
+ * classic src-vs-lib dual-instance hazard. Anchoring the context on `globalThis` (keyed by the
  * `__oxy_so_bloom_theme_context__` property) collapses all copies onto one object. The
  * `??=` runs `createContext` at most once per process.
  */
