@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { useWindowBreakpoint } from '../hooks/use-width-class';
+import { IS_WEB } from '../styles/platform';
 import { createTokenStyles } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { DetailDialogSectionProps, DetailDialogSectionGroupProps } from './types';
@@ -22,7 +23,13 @@ const styles = StyleSheet.create({
 });
 
 const useStyles = createTokenStyles((t) => ({
-  label: { lineHeight: 20, fontWeight: 500, color: t.mutedForeground },
+  label: {
+    // The body-medium line: 20px on native; on the web its 20/14 ratio of
+    // Text's own 13px, as the type utility drew it there.
+    lineHeight: IS_WEB ? (String(20 / 14) as unknown as number) : 20,
+    fontWeight: 500,
+    color: t.mutedForeground,
+  },
 }));
 
 /** The template's shared label/values row; product controls keep their own data semantics. */

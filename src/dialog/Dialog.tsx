@@ -52,7 +52,6 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { useTheme } from '../theme/use-theme';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { bloomShadowStyle } from '../design-tokens/shadows';
-import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { Context } from './context';
 import { DESKTOP_ALERT_WIDTH, DialogBody, hasChildren } from './DialogContent';
@@ -82,12 +81,12 @@ import { useMessages } from '../locale/messages';
 import { DIALOG_MESSAGES } from './messages';
 
 /**
- * The panel node carries `className`, the caller's `style`, the surface chrome
- * AND the enter/exit transform, so all four are ONE element type — built once at
+ * The panel node carries the caller's `style`, the surface chrome AND the
+ * enter/exit transform, so all three are ONE element type — built once at
  * module scope, because a type constructed during render remounts the subtree on
  * every render. See `button/Button.tsx` for the full rule.
  */
-const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 /**
  * Native variant of `<Dialog>`.
@@ -197,9 +196,7 @@ function CenteredOrSideDialog({
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   style,
   panelStyle,
-  panelClassName,
   containerStyle,
-  containerClassName,
   label,
   children,
   footer,
@@ -448,9 +445,7 @@ function CenteredOrSideDialog({
           headerController={headerController}
           onHeaderDismiss={close}
           panelStyle={panelStyle}
-          panelClassName={panelClassName}
           containerStyle={containerStyle}
-          containerClassName={containerClassName}
           style={style}
         >
           {bodyNode}
@@ -461,7 +456,7 @@ function CenteredOrSideDialog({
 
   const content = (
     <Context.Provider value={context}>
-      <StyledView
+      <View
         testID={testID}
         // Announced as a dialog by its label, else its title, as VoiceOver and TalkBack say a
         // modal pane: without a role the panel was a nameless group the title then repeated.
@@ -472,7 +467,6 @@ function CenteredOrSideDialog({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         accessibilityHint={descriptionHint}
-        className={panelClassName}
         style={[
           // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
           // to the sheet container — the floating card sits ABOVE the
@@ -485,16 +479,15 @@ function CenteredOrSideDialog({
           panelStyle,
         ]}
       >
-        {/* The morph layer is its own node INSIDE the class-name'd container:
-              a className'd component's `onLayout` never fires on web, and this
-              one has to measure the incoming frame. */}
+        {/* The morph layer is its own node INSIDE the container: it has to
+              measure the incoming frame. */}
         <DialogMorphContent
           morph={morphState}
           style={scrollableResolved ? undefined : { flex: 1, minHeight: 0 }}
         >
           {header ? headerBody : bodyNode}
         </DialogMorphContent>
-      </StyledView>
+      </View>
     </Context.Provider>
   );
 
@@ -620,9 +613,7 @@ function SideSheet({
   headerController,
   onHeaderDismiss,
   panelStyle,
-  panelClassName,
   containerStyle,
-  containerClassName,
   style,
   children,
   footer,
@@ -651,9 +642,7 @@ function SideSheet({
   headerController: DialogHeaderController;
   onHeaderDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
-  panelClassName?: string;
   containerStyle?: StyleProp<ViewStyle>;
-  containerClassName?: string;
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -807,7 +796,6 @@ function SideSheet({
       <SafeAreaInsetsContext.Provider value={windowInsets}>
         <OverlayRoot
           style={[sideStyles.root, containerStyle]}
-          className={containerClassName}
           onRequestClose={handleBackdropPress}
           modal
         >
@@ -825,7 +813,7 @@ function SideSheet({
             style={sideStyles.backdrop}
           />
 
-          <AnimatedStyledView
+          <AnimatedView
             accessibilityViewIsModal
             role={label || title ? 'dialog' : undefined}
             // A dialog keeps its children: flattened, its node would be an empty leaf beside them.
@@ -836,7 +824,6 @@ function SideSheet({
             accessibilityHint={descriptionHint}
             testID={testID}
             onLayout={measurePanel}
-            className={panelClassName}
             style={[
               presentation === 'custom' ? { position: 'absolute' } : sideStyles.panel,
               // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
@@ -892,7 +879,7 @@ function SideSheet({
               )}
               {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
             </SurfaceLevelProvider>
-          </AnimatedStyledView>
+          </AnimatedView>
         </OverlayRoot>
       </SafeAreaInsetsContext.Provider>
     </Portal>
