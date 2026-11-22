@@ -58,6 +58,11 @@ does not keeps the element JSX. Each class goes through the className table
 Measured on the corpus and kept as reasons (`measuredDifference` and
 `rounding` in `src/resolve.ts`):
 
+- A colour at an opacity (`bg-primary/10`, `text-white/60`): the language
+  writes it inline on the web as a `color-mix()`, and react-native-web's
+  `normalizeColor` drops any colour that is not a `var()`, so nothing is
+  drawn. The Chrome check below renders the mix directly, past
+  react-native-web, so it does not see this; the jsdom web suite does.
 - `text-white/70` and the like: NativeWind writes a fixed colour at an opacity
   as an 8-bit hex alpha, rounded down (`#ffffffb2`), where `0.7` is 178.5/255.
 - A line height as a ratio or a letter spacing in em whose product has more
