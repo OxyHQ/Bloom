@@ -1,6 +1,5 @@
 import { useContext, useId } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
-import { StyledView } from '../styles/styled-primitives';
 import { useMeasuredSizeClass } from '../hooks/use-width-class';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -11,7 +10,6 @@ export interface ScreenContentProps extends ViewProps {
   kind?: ScreenKind;
   /** Full removes the reading measure, preserving the body's edge inset. */
   width?: 'readable' | 'full';
-  className?: string;
   /** React Native Web data attributes; the internal bloomBody marker is reserved. */
   dataSet?: Record<string, string | number>;
 }
@@ -40,7 +38,7 @@ export function ScreenContent({ kind, width = 'readable', style, ...props }: Scr
       }
     >
       {web ? <ServerStyleSheet id={scope} css={css} owned /> : null}
-      <StyledView
+      <View
         {...props}
         {...(web ? { dataSet: { ...props.dataSet, bloomBody: scope } } : {})}
         style={[
