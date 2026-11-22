@@ -1,12 +1,14 @@
 import {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ComponentType,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { findNodeHandle, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -35,8 +37,18 @@ import {
 } from './pager-view-module';
 import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
+/** What the layout drives the pager with. */
+export interface TabPagerHandle {
+  /**
+   * A tap selected this page: start moving now, before the route change that
+   * follows has rendered.
+   */
+  select: (name: string) => void;
+}
+
 export interface TabPagerProps {
   model: PageModel;
+  handle?: Ref<TabPagerHandle>;
   /** The tabs navigator's state. Pages reach their route BY NAME: expo-router sorts its routes. */
   state: { index: number; routes: readonly { key: string; name: string }[] };
   descriptors: Record<string, { render: () => ReactNode }>;
@@ -99,10 +111,19 @@ function usePageScrollHandler(handler: (event: PageScrollEvent) => void, deps: u
  * a Pixel 10 Pro), so the highlight is sprung from here instead. Reduced
  * motion cuts.
  *
+ * A TAP MOVES AT ONCE. The layout hands the tap to `select` before it
+ * navigates, so the pager starts on the press, not once the route change has
+ * rendered (that render is the whole app's, and takes a while): the slide
+ * next door runs on the platform's pager from the first frame, and further
+ * away the highlight springs and the page in front fades out while the
+ * destination renders. The route change that follows finds the pager already
+ * there.
+ *
  * Without `react-native-pager-view` the same pages render as a tap-only stack.
  */
 export function TabPager({
   model,
+  handle,
   state,
   descriptors,
   progress,
@@ -227,6 +248,16 @@ export function TabPager({
   const cutTo = useCallback((page: number) => {
     pagerRef.current?.setPageWithoutAnimation(page);
   }, []);
+  // The fade-through's second half: the cut and the fade-in, from this thread,
+  // so the destination fades in only once it is there (a tap fades the page
+  // in front out while the destination is still rendering).
+  const reveal = useCallback(
+    (page: number) => {
+      cutTo(page);
+      fade.value = withTiming(1, FADE_IN);
+    },
+    [cutTo, fade],
+  );
   // Commit the already-previewed destination before paint, without the normal
   // tap animation or visiting pages between two nonadjacent history entries.
   useLayoutEffect(() => {
@@ -241,37 +272,39 @@ export function TabPager({
   useEffect(() => {
     if (previewPage >= 0) admit([keyForPage(previewPage)]);
   }, [previewPage, admit, keyForPage]);
-  useEffect(() => {
-    const from = pageRef.current;
-    if (focusedPage === from) return;
-    pageRef.current = focusedPage;
-    admit([keyForPage(focusedPage)]);
-    if (!PagerView) {
-      setSettledPage(focusedPage);
-    } else if (!reducedMotion && Math.abs(focusedPage - from) === 1) {
-      pagerRef.current?.setPage(focusedPage);
-      return;
-    } else if (!reducedMotion) {
-      fade.value = withTiming(0, FADE_OUT, (finished) => {
-        if (!finished) return;
-        runOnJS(cutTo)(focusedPage);
-        fade.value = withTiming(1, FADE_IN);
-      });
-    } else {
-      cutTo(focusedPage);
-    }
-    animateMotion(progress, barPositions[focusedPage] ?? 0, 'select');
-  }, [
-    focusedPage,
-    keyForPage,
-    admit,
-    PagerView,
-    reducedMotion,
-    fade,
-    cutTo,
-    progress,
-    barPositions,
-  ]);
+  const moveTo = useCallback(
+    (page: number) => {
+      const from = pageRef.current;
+      if (page === from) return;
+      pageRef.current = page;
+      admit([keyForPage(page)]);
+      if (!PagerView) {
+        setSettledPage(page);
+      } else if (!reducedMotion && Math.abs(page - from) === 1) {
+        pagerRef.current?.setPage(page);
+        return;
+      } else if (!reducedMotion) {
+        fade.value = withTiming(0, FADE_OUT, (finished) => {
+          if (finished) runOnJS(reveal)(page);
+        });
+      } else {
+        cutTo(page);
+      }
+      animateMotion(progress, barPositions[page] ?? 0, 'select');
+    },
+    [keyForPage, admit, PagerView, reducedMotion, fade, cutTo, reveal, progress, barPositions],
+  );
+  useEffect(() => moveTo(focusedPage), [focusedPage, moveTo]);
+  useImperativeHandle(
+    handle,
+    () => ({
+      select: (name: string) => {
+        const page = model.indexOf(name);
+        if (page >= 0) moveTo(page);
+      },
+    }),
+    [model, moveTo],
+  );
 
   // Warm the neighbours of the resting page once the JS thread is idle after it
   // settled: never on the frame that is already rendering the destination, and
