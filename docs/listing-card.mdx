@@ -199,10 +199,9 @@ only — no scale. The target is at least 32 square (`size` sets the heart, defa
 <ListingCardGrid density="compact">{collections}</ListingCardGrid>
 ```
 
-Wraps its children into columns by its **own width**, as CSS container queries
-(`@container` + `@min-[…]:`) that the browser resolves on web and
-react-native-css resolves on native — nothing is measured or counted in
-JavaScript, and a grid beside a map counts the room it has, not the window's.
+Wraps its children into columns by its **own width**: CSS container queries on
+the web (nothing measured in JavaScript), the grid's measured width on native.
+A grid beside a map counts the room it has, not the window's.
 
 | `density` | columns | gaps (column × row) |
 | --- | --- | --- |
@@ -211,8 +210,7 @@ JavaScript, and a grid beside a map counts the room it has, not the window's.
 
 Gutters are each cell's padding inside a row pulled out by the same amount, so a
 half-width cell is exactly half the grid less one gutter. Rendered as a list
-(`role="list"`, one `listitem` per card). The classes are Tailwind utilities the
-app's pipeline generates from Bloom's `lib` (see the consumer CSS pipeline).
+(`role="list"`, one `listitem` per card).
 
 Bloom's `Grid` (`Row`/`Col`) is not a fit here: it is one fixed row of fractional
 columns that neither wraps nor responds to width.
