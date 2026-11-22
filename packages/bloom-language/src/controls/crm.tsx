@@ -17,9 +17,9 @@ import {
 } from '@oxy.so/bloom/pipeline';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDensity, PipelineLayout, SpaceToken } from '../tokens';
+import type { Density, PipelineLayout, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** A CRM's records: a contact, a lead's score, deals and the board they move on. */
 export type CrmKind =
@@ -55,8 +55,8 @@ export type PipelineBoardOptions = Omit<
 
 /** Bloom `ContactProfileCard`; `.onPress()` opens the record. */
 export interface ContactProfileCardView extends ViewModifiers<ContactProfileCardView> {
-  /** `default` (Bloom's comfortable) or `compact`. */
-  density(value: ControlDensity): ContactProfileCardView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'contactProfileCard'>): ContactProfileCardView;
 }
 export type LeadScoreCardView = ViewModifiers<LeadScoreCardView>;
 /** Bloom `DealCard`; `.onPress()` opens the deal. */
@@ -104,7 +104,7 @@ export const CRM: Record<CrmKind, ControlRenderer> = {
   contactProfileCard: product(BloomContactProfileCard, {
     press: true,
     slots: ['actions'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   leadScoreCard: product(BloomLeadScoreCard),
   dealCard: product(BloomDealCard, { press: true, slots: ['actions'] }),

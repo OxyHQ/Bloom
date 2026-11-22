@@ -7,8 +7,8 @@ import {
 } from '@oxy.so/bloom/listing-card';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ColorToken, ControlDensity, ListingCardLayout } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import type { ColorToken, Density, ListingCardLayout } from '../tokens';
+import type { ControlRenderer } from './draw';
 import { product } from './product';
 
 /** A listing in a search's results: its card, the grid of cards, a wishlist. */
@@ -30,15 +30,15 @@ export type WishlistCardOptions = Omit<
 export interface ListingCardView extends ViewModifiers<ListingCardView> {
   /** `vertical` (default): the photo over the words; `horizontal`: beside them. */
   style(value: ListingCardLayout): ListingCardView;
-  /** `default` (Bloom's `comfortable`) or `compact`, for a dense list. */
-  density(value: ControlDensity): ListingCardView;
+  /** `comfortable` or `compact`, for a dense list. */
+  density(value: Density<'listingCard'>): ListingCardView;
   /** Its skeleton, while the listing loads. */
   loading(value?: boolean): ListingCardView;
 }
 /** Bloom `ListingCardGrid`: listing cards in the columns the window's width gives. */
 export interface ListingCardGridView extends ViewModifiers<ListingCardGridView> {
-  /** `default` (Bloom's `results`) or `compact`. */
-  density(value: ControlDensity): ListingCardGridView;
+  /** `results` (a results page's) or `compact`. */
+  density(value: Density<'listingCardGrid'>): ListingCardGridView;
 }
 /** Bloom `WishlistCard`: a saved list's cover and name; `.onPress()` opens it. */
 export interface WishlistCardView extends ViewModifiers<WishlistCardView> {
@@ -67,24 +67,18 @@ export function WishlistCard(
   return new Node('wishlistCard', { name, photos, options }, []);
 }
 
-/** The language's density as Bloom names it for this component: `default` is `fallback`. */
-const density = (d: ControlDraw, fallback: string) => {
-  const value = d.own('density')?.value;
-  return value === undefined ? undefined : value === 'default' ? fallback : value;
-};
-
 export const LISTING_CARDS: Record<ListingCardKind, ControlRenderer> = {
   listingCard: product(BloomListingCard, {
     slots: ['badge'],
     press: true,
     own: (d) => ({
       layout: d.own('style')?.value,
-      density: density(d, 'comfortable'),
+      density: d.own('density')?.value,
       loading: d.own('loading')?.value,
     }),
   }),
   listingCardGrid: product(BloomListingCardGrid, {
-    own: (d) => ({ density: density(d, 'results') }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   wishlistCard: product(BloomWishlistCard, {
     slots: ['empty'],

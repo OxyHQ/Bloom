@@ -18,7 +18,7 @@ import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
-import { resolveSpace, type ControlDensity, type ListSeparator, type SpaceToken } from '../tokens';
+import { resolveSpace, type Density, type ListSeparator, type SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
@@ -72,8 +72,8 @@ export interface ListItemView extends ViewModifiers<ListItemView> {
   footnote(value: Child): ListItemView;
   /** Media under the row's text. */
   attachments(value: Child): ListItemView;
-  /** `compact` rows (the default is comfortable). */
-  density(value: ControlDensity): ListItemView;
+  /** `comfortable` or `compact` rows. */
+  density(value: Density<'listItem'>): ListItemView;
   /** A compact row's own vertical padding. */
   compactPadding(value: SpaceToken): ListItemView;
   /** The current row (the open conversation). */
@@ -251,7 +251,6 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     const props = rowProps(d);
     if (own.recipe === 'row') props.title = text(d, own.title);
     else props[own.recipe] = own.data;
-    const density = d.own('density')?.value;
     const checkable = d.own('checkable')?.value;
     const swipe = d.own('swipeActions')?.value;
     const trailing = d.own('trailing')?.value;
@@ -263,8 +262,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       content: slot(d, d.own('content')?.value as Child | undefined),
       footer: slot(d, d.own('footnote')?.value),
       attachments: slot(d, d.own('attachments')?.value),
-      density:
-        density === undefined ? undefined : density === 'compact' ? 'compact' : 'comfortable',
+      density: d.own('density')?.value,
       compactPadding: space(d.own('compactPadding')?.value),
       active: d.own('active')?.value,
       disabled: d.own('disabled')?.value,

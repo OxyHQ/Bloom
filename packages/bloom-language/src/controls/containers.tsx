@@ -55,7 +55,7 @@ import { Painted, type Paint } from '../paint';
 import {
   type CardRadius,
   type ColorName,
-  type ContentDensity,
+  type Density,
   type KeyboardTaps,
   resolveCardRadius,
   resolveSpace,
@@ -182,7 +182,7 @@ export interface RowView extends ViewModifiers<RowView> {
   /** Lit as the keyboard's current row (a command list's cursor). */
   highlighted(value?: boolean): RowView;
   /** Its rhythm: the touch list's (`comfortable`) or a desktop form's (`compact`). */
-  density(value: ContentDensity): RowView;
+  density(value: Density<'row'>): RowView;
 }
 /** Bloom `GroupedSection`: rows on one surface, as a settings page groups them. */
 export interface GroupedSectionView extends ViewModifiers<GroupedSectionView> {
@@ -196,7 +196,7 @@ export interface GroupedSectionView extends ViewModifiers<GroupedSectionView> {
   separator(value: GroupedSeparator): GroupedSectionView;
   radius(value: CardRadius): GroupedSectionView;
   /** Its rows' rhythm, reaching every row in it. */
-  density(value: ContentDensity): GroupedSectionView;
+  density(value: Density<'groupedSection'>): GroupedSectionView;
 }
 /** Bloom `GroupedSectionItem`: a row of a grouped section; its box is the row's own. */
 export interface GroupedSectionItemView extends ViewNode, BoxModifiers<GroupedSectionItemView> {
@@ -342,7 +342,7 @@ export interface SelectionCardView extends ViewModifiers<SelectionCardView> {
   /** A view above its head (an image). */
   illustration(value: Child): SelectionCardView;
   /** `compact`: the head's tighter padding. */
-  density(value: ContentDensity): SelectionCardView;
+  density(value: Density<'selectionCard'>): SelectionCardView;
   disabled(value?: boolean): SelectionCardView;
   invalid(value?: boolean): SelectionCardView;
   /** Its id, for a description or a label elsewhere to point at. */

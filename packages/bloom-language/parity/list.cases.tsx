@@ -3,10 +3,10 @@ import { RiArchiveLine, RiArrowRightSLine, RiStarLine } from '@oxy.so/bloom/icon
 import { List, ListItem, ListSelectionBar, VirtualList } from '@oxy.so/bloom/list';
 import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -53,20 +53,14 @@ const rows: ParityCase[] = [
     ),
   },
   // A row takes a control's densities; `comfortable` is a content density.
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.listItem.map((density) => ({
     name: `a ${density} row, active, pressable`,
     language: () =>
       toElement(
         L.ListItem('Inbox').density(density).active(true).onPress(press).onLongPress(press),
       ),
     bloom: () => (
-      <ListItem
-        title="Inbox"
-        density={density === 'compact' ? 'compact' : 'comfortable'}
-        active
-        onPress={press}
-        onLongPress={press}
-      />
+      <ListItem title="Inbox" density={density} active onPress={press} onLongPress={press} />
     ),
   })),
   {

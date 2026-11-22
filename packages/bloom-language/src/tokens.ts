@@ -18,6 +18,7 @@ import {
   LENGTH,
   LEADING,
   LEADING_PX,
+  type NODE_DENSITIES,
   OPACITY,
   SCALE,
   SHADOW,
@@ -134,10 +135,16 @@ export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 /** A plain link button's ink (Bloom `Button`'s `linkTone`). */
 export type ButtonLinkTone = (typeof ENUMS.linkTone)[number];
-/** A control's geometry (Bloom's `BloomControlDensity`). */
-export type ControlDensity = Exclude<(typeof ENUMS.density)[number], 'comfortable'>;
-/** A list's row rhythm (Bloom's `BloomContentDensity`): the touch list, or a desktop form's. */
-export type ContentDensity = Exclude<(typeof ENUMS.density)[number], 'default'>;
+/** A node kind that takes `.density()`. */
+export type DensityNode = keyof typeof NODE_DENSITIES;
+/**
+ * A node's own densities (`.density()`): its Bloom component's names for them,
+ * as the spec lists them per node (a button's `default`/`compact`, a row's
+ * `comfortable`/`compact`, a listing grid's `results`/`compact`).
+ */
+export type Density<K extends DensityNode> = (typeof NODE_DENSITIES)[K][number];
+/** Any node's density: what `.density()` holds before its node reads it. */
+export type AnyDensity = Density<DensityNode>;
 /** How an image fills its box: `BloomImage`'s `contentFit` vocabulary. */
 export type ContentFit = (typeof ENUMS.contentFit)[number];
 export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];

@@ -7,9 +7,9 @@ import {
 } from '@oxy.so/bloom/order-status';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { AccentTone, Axis, ControlDensity, OrderStatusBarStyle } from '../tokens';
+import type { AccentTone, Axis, Density, OrderStatusBarStyle } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rhythm } from './product';
+import { product } from './product';
 
 /** An order's status: the live strip, and the steps it went through. */
 export type OrderStatusKind = 'orderStatusBar' | 'orderStatusTimeline';
@@ -38,8 +38,8 @@ export interface OrderStatusBarView extends ViewModifiers<OrderStatusBarView> {
 export interface OrderStatusTimelineView extends ViewModifiers<OrderStatusTimelineView> {
   /** `vertical` (default): the steps stacked with their notes; `horizontal`: on one rail. */
   axis(value: Axis): OrderStatusTimelineView;
-  /** `default` (Bloom's comfortable rung) or `compact`. */
-  density(value: ControlDensity): OrderStatusTimelineView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'orderStatusTimeline'>): OrderStatusTimelineView;
 }
 
 /** Bloom `OrderStatusBar` of `status`, the live line ("Out for delivery"). */
@@ -63,6 +63,6 @@ export const ORDER_STATUSES: Record<OrderStatusKind, ControlRenderer> = {
     own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
   }),
   orderStatusTimeline: product(BloomOrderStatusTimeline, {
-    own: (d) => ({ orientation: d.own('axis')?.value, density: rhythm(d) }),
+    own: (d) => ({ orientation: d.own('axis')?.value, density: d.own('density')?.value }),
   }),
 };

@@ -13,9 +13,9 @@ import {
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDensity } from '../tokens';
+import type { Density } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** The basket: its lines, the tip and promo fields, and the panel that holds them. */
 export type CartKind = 'cartLine' | 'cartPanel' | 'cartPromoField' | 'cartTipPicker';
@@ -45,11 +45,11 @@ export type CartTipPickerOptions = Omit<
 >;
 
 export interface CartLineView extends ViewModifiers<CartLineView> {
-  /** `default` (comfortable) or `compact`. */
-  density(value: ControlDensity): CartLineView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'cartLine'>): CartLineView;
 }
 export interface CartPanelView extends ViewModifiers<CartPanelView> {
-  density(value: ControlDensity): CartPanelView;
+  density(value: Density<'cartPanel'>): CartPanelView;
 }
 export interface CartPromoFieldView extends ViewModifiers<CartPromoFieldView> {
   disabled(value?: boolean): CartPromoFieldView;
@@ -85,10 +85,10 @@ export function CartTipPicker(
 }
 
 export const CARTS: Record<CartKind, ControlRenderer> = {
-  cartLine: product(BloomCartLine, { own: (d) => ({ density: rowDensity(d) }) }),
+  cartLine: product(BloomCartLine, { own: (d) => ({ density: d.own('density')?.value }) }),
   cartPanel: product(BloomCartPanel, {
     slots: ['empty'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   cartPromoField: product(BloomCartPromoField, {
     binding: ['value', 'onChangeText'],

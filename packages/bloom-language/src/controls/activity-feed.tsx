@@ -5,9 +5,9 @@ import {
 } from '@oxy.so/bloom/activity-feed';
 
 import { Node, type ViewModifiers } from '../node';
-import type { ActivityFeedGrouping, ControlDensity } from '../tokens';
+import type { ActivityFeedGrouping, Density } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rhythm } from './product';
+import { product } from './product';
 
 /** The activity feed: who did what, by day. */
 export type ActivityFeedKind = 'activityFeed';
@@ -22,8 +22,8 @@ export type ActivityFeedOptions = Omit<
 export interface ActivityFeedView extends ViewModifiers<ActivityFeedView> {
   /** `day` (default): under day headings; `none`: in the order given, with separators. */
   style(value: ActivityFeedGrouping): ActivityFeedView;
-  /** `default` (Bloom's comfortable rhythm) or `compact`. */
-  density(value: ControlDensity): ActivityFeedView;
+  /** `comfortable` or `compact` rhythm. */
+  density(value: Density<'activityFeed'>): ActivityFeedView;
   /** The lines a body clamps to before its reveal: 3 by default, `0` never clamps. */
   lines(value: number): ActivityFeedView;
 }
@@ -40,7 +40,7 @@ export const ACTIVITY_FEEDS: Record<ActivityFeedKind, ControlRenderer> = {
   activityFeed: product(BloomActivityFeed, {
     own: (d) => ({
       grouping: d.own('style')?.value,
-      density: rhythm(d),
+      density: d.own('density')?.value,
       bodyLines: d.own('lines')?.value,
     }),
   }),

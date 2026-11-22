@@ -7,10 +7,10 @@ import {
 } from '@oxy.so/bloom/payment-method';
 import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const press = () => {};
 const select = (_id: string) => {};
@@ -39,7 +39,7 @@ const METHODS = [
 ];
 
 const addresses: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.addressRow.map((density) => ({
     name: `AddressRow ${density}`,
     language: () =>
       toElement(
@@ -61,7 +61,7 @@ const addresses: ParityCase[] = [
         meta="12 min"
         badge={<Text>Default</Text>}
         action={<Text>Edit</Text>}
-        density={density === 'compact' ? 'compact' : 'comfortable'}
+        density={density}
         onPress={press}
       />
     ),
@@ -81,7 +81,7 @@ const addresses: ParityCase[] = [
     bloom: () => <AddressRow title="Plaça Reial 3" leading={null} disabled onPress={press} />,
   },
   ...ENUMS.choiceListStyle.flatMap((variant) =>
-    CONTROL_DENSITIES.map((density) => ({
+    NODE_DENSITIES.addressList.map((density) => ({
       name: `AddressList ${variant} ${density}`,
       language: () =>
         toElement(
@@ -95,7 +95,7 @@ const addresses: ParityCase[] = [
           selectedId="home"
           onSelect={select}
           variant={variant}
-          density={density === 'compact' ? 'compact' : 'comfortable'}
+          density={density}
         />
       ),
     })),
@@ -120,22 +120,17 @@ const addresses: ParityCase[] = [
 ];
 
 const payments: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.paymentMethodMark.map((density) => ({
     name: `PaymentMethodMark ${density}`,
     language: () => toElement(L.PaymentMethodMark({ scheme: 'Aurora' }).density(density)),
-    bloom: () => (
-      <PaymentMethodMark
-        scheme="Aurora"
-        density={density === 'compact' ? 'compact' : 'comfortable'}
-      />
-    ),
+    bloom: () => <PaymentMethodMark scheme="Aurora" density={density} />,
   })),
   {
     name: 'PaymentMethodMark a wallet, an image',
     language: () => toElement(L.PaymentMethodMark({ kind: 'wallet', image: L.Text('W') })),
     bloom: () => <PaymentMethodMark kind="wallet" image={<Text>W</Text>} />,
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.paymentMethodRow.map((density) => ({
     name: `PaymentMethodRow ${density}`,
     language: () =>
       toElement(
@@ -156,7 +151,7 @@ const payments: ParityCase[] = [
         expiry="08/29"
         isDefault
         action={<Text>Edit</Text>}
-        density={density === 'compact' ? 'compact' : 'comfortable'}
+        density={density}
         onPress={press}
       />
     ),
@@ -185,7 +180,7 @@ const payments: ParityCase[] = [
     ),
   },
   ...ENUMS.choiceListStyle.flatMap((variant) =>
-    CONTROL_DENSITIES.map((density) => ({
+    NODE_DENSITIES.paymentMethodList.map((density) => ({
       name: `PaymentMethodList ${variant} ${density}`,
       language: () =>
         toElement(
@@ -200,7 +195,7 @@ const payments: ParityCase[] = [
           onSelect={select}
           onAdd={press}
           variant={variant}
-          density={density === 'compact' ? 'compact' : 'comfortable'}
+          density={density}
         />
       ),
     })),

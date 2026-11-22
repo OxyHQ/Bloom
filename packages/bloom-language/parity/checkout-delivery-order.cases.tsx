@@ -12,9 +12,10 @@ import { RiFlashlightLine, RiTimeLine } from '@oxy.so/bloom/icons';
 import { OrderConfirmation } from '@oxy.so/bloom/order-confirmation';
 import { Text } from '@oxy.so/bloom/typography';
 
+import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -300,7 +301,7 @@ const delivery: ParityCase[] = [
 ];
 
 const orders: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.orderConfirmation.map((density) => ({
     name: `OrderConfirmation ${density}`,
     language: () =>
       toElement(
@@ -329,7 +330,7 @@ const orders: ParityCase[] = [
         action={{ label: 'Track order', onPress: press }}
         secondaryAction={{ label: 'Done', onPress: press }}
         footer={<Text>A receipt is on its way</Text>}
-        variant={density === 'compact' ? 'compact' : 'comfortable'}
+        variant={density}
         accessibilityLabel="Order placed"
       />
     ),

@@ -1,9 +1,9 @@
 import { VendorCard as BloomVendorCard, type VendorCardProps } from '@oxy.so/bloom/vendor-card';
 
 import { Node, type ViewModifiers } from '../node';
-import type { ControlDensity } from '../tokens';
+import type { Density } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** A restaurant or a shop in a list. */
 export type VendorCardKind = 'vendorCard';
@@ -19,8 +19,8 @@ export type VendorCardOptions = Omit<
 
 /** Bloom `VendorCard`; `.onPress()` is its own. */
 export interface VendorCardView extends ViewModifiers<VendorCardView> {
-  /** `default` (comfortable) or `compact`. */
-  density(value: ControlDensity): VendorCardView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'vendorCard'>): VendorCardView;
   /** Its placeholder, while the vendor loads. */
   loading(value?: boolean): VendorCardView;
 }
@@ -32,6 +32,6 @@ export function VendorCard(name: string, options: VendorCardOptions = {}): Vendo
 export const VENDOR_CARDS: Record<VendorCardKind, ControlRenderer> = {
   vendorCard: product(BloomVendorCard, {
     press: true,
-    own: (d) => ({ density: rowDensity(d), loading: d.own('loading')?.value }),
+    own: (d) => ({ density: d.own('density')?.value, loading: d.own('loading')?.value }),
   }),
 };

@@ -4,9 +4,9 @@ import {
 } from '@oxy.so/bloom/order-confirmation';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDensity, SpaceToken } from '../tokens';
+import type { Density, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** It is placed: the mark, the reference, the status, where it goes and what was charged. */
 export type OrderConfirmationKind = 'orderConfirmation';
@@ -24,8 +24,8 @@ export type OrderConfirmationOptions = Omit<
 
 /** Bloom `OrderConfirmation`; `.label()` names it. */
 export interface OrderConfirmationView extends ViewModifiers<OrderConfirmationView> {
-  /** `default` (comfortable) or `compact` (Bloom's `variant`). */
-  density(value: ControlDensity): OrderConfirmationView;
+  /** `comfortable` or `compact` (Bloom's `variant`). */
+  density(value: Density<'orderConfirmation'>): OrderConfirmationView;
 }
 
 export function OrderConfirmation(options: OrderConfirmationOptions = {}): OrderConfirmationView {
@@ -36,6 +36,6 @@ export const ORDER_CONFIRMATIONS: Record<OrderConfirmationKind, ControlRenderer>
   orderConfirmation: product(BloomOrderConfirmation, {
     slots: ['mark', 'items', 'footer'],
     lengths: ['markSize'],
-    own: (d) => ({ variant: rowDensity(d) }),
+    own: (d) => ({ variant: d.own('density')?.value }),
   }),
 };

@@ -3,16 +3,15 @@ import { MenuItemOptions, MenuItemRow } from '@oxy.so/bloom/menu-item';
 import { Text } from '@oxy.so/bloom/typography';
 import { VendorCard } from '@oxy.so/bloom/vendor-card';
 
+import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const press = () => {};
 const set = () => {};
 const quantity = (_quantity: number) => {};
 const PHOTO = 'https://cdn.oxy.so/p.jpg';
-const bloomDensity = (density: string) => (density === 'compact' ? 'compact' : 'comfortable');
-
 const LINES = [
   {
     id: 'a',
@@ -68,7 +67,7 @@ const GROUPS = [
 const CHOSEN = { size: ['l'], extra: ['basil'] };
 
 const cart: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.cartLine.map((density) => ({
     name: `CartLine ${density}`,
     language: () =>
       toElement(
@@ -92,7 +91,7 @@ const cart: ParityCase[] = [
         quantity={2}
         onQuantityChange={quantity}
         onRemove={press}
-        density={bloomDensity(density)}
+        density={density}
         accessibilityLabel="Margherita, two"
       />
     ),
@@ -120,7 +119,7 @@ const cart: ParityCase[] = [
       />
     ),
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.cartPanel.map((density) => ({
     name: `CartPanel ${density}`,
     language: () =>
       toElement(
@@ -157,7 +156,7 @@ const cart: ParityCase[] = [
         summary={SUMMARY}
         onCheckout={press}
         checkoutLabel="Checkout"
-        density={bloomDensity(density)}
+        density={density}
       />
     ),
   })),
@@ -241,7 +240,7 @@ const cart: ParityCase[] = [
 ];
 
 const menu: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.menuItemRow.map((density) => ({
     name: `MenuItemRow ${density}`,
     language: () =>
       toElement(
@@ -265,7 +264,7 @@ const menu: ParityCase[] = [
         diets={['gluten-free']}
         spice={2}
         onAdd={press}
-        density={bloomDensity(density)}
+        density={density}
         onPress={press}
       />
     ),
@@ -339,7 +338,7 @@ const menu: ParityCase[] = [
 ];
 
 const vendors: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.vendorCard.map((density) => ({
     name: `VendorCard ${density}`,
     language: () =>
       toElement(
@@ -371,7 +370,7 @@ const vendors: ParityCase[] = [
         promo="20% off"
         favorite
         onFavoriteChange={set}
-        density={bloomDensity(density)}
+        density={density}
         onPress={press}
       />
     ),

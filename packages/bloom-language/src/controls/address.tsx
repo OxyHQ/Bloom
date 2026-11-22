@@ -8,9 +8,9 @@ import {
 import type { BloomSize } from '@oxy.so/bloom/appearance';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ChoiceListStyle, ControlDensity } from '../tokens';
+import type { ChoiceListStyle, Density } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** An address as a row, and a list of them to read or to choose one from. */
 export type AddressesKind = 'addressRow' | 'addressList';
@@ -36,15 +36,15 @@ export type AddressListOptions = Omit<
 /** Bloom `AddressRow`; `.onPress()` is its own. */
 export interface AddressRowView extends ViewModifiers<AddressRowView> {
   size(value: BloomSize): AddressRowView;
-  /** `default` (comfortable) or `compact`. */
-  density(value: ControlDensity): AddressRowView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'addressRow'>): AddressRowView;
   disabled(value?: boolean): AddressRowView;
 }
 export interface AddressListView extends ViewModifiers<AddressListView> {
   size(value: BloomSize): AddressListView;
   /** `list` (default), read; or `picker`, one chosen. */
   style(value: ChoiceListStyle): AddressListView;
-  density(value: ControlDensity): AddressListView;
+  density(value: Density<'addressList'>): AddressListView;
   /** Placeholder rows instead of the sections. */
   loading(value?: boolean): AddressListView;
 }
@@ -59,7 +59,10 @@ export function AddressList(
   return new Node('addressList', { sections, options }, []);
 }
 
-const sized = (d: ControlDraw) => ({ size: d.own('size')?.value, density: rowDensity(d) });
+const sized = (d: ControlDraw) => ({
+  size: d.own('size')?.value,
+  density: d.own('density')?.value,
+});
 
 export const ADDRESSES: Record<AddressesKind, ControlRenderer> = {
   addressRow: product(BloomAddressRow, {

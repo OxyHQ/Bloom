@@ -9,7 +9,7 @@ import {
 } from '@oxy.so/bloom/calendar';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDensity, SpaceToken } from '../tokens';
+import type { Density, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -41,13 +41,13 @@ export type CalendarViewMonthGridOptions = Omit<
 /** Bloom `CalendarView`. */
 export interface CalendarViewView extends ViewModifiers<CalendarViewView> {
   /** `compact`: short fixed day rows for an embedded preview; `default`: rows that answer the width. */
-  density(value: ControlDensity): CalendarViewView;
+  density(value: Density<'calendarView'>): CalendarViewView;
 }
 /** Bloom `CalendarViewHeader`: the month's title, its switcher and the actions. */
 export type CalendarViewHeaderView = ViewModifiers<CalendarViewHeaderView>;
 /** Bloom `CalendarViewMonthGrid`: six Sunday-first weeks and their events. */
 export interface CalendarViewMonthGridView extends ViewModifiers<CalendarViewMonthGridView> {
-  density(value: ControlDensity): CalendarViewMonthGridView;
+  density(value: Density<'calendarViewMonthGrid'>): CalendarViewMonthGridView;
 }
 
 /** Bloom `CalendarView` of `events` (Bloom's `CalendarViewEvent`s). */

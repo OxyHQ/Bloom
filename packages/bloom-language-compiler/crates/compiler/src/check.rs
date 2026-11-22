@@ -347,6 +347,8 @@ fn check_value(
         "tint" => spec.tint.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "style" => spec.style.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "shape" => spec.shape.map_or(Ok(()), |set| check_token(modifier, set, value)),
+        // A density is the node's own: each node lists Bloom's names for its densities.
+        "density" => check_in(modifier, "density", spec.densities, value),
         set => check_token(modifier, set, value),
     }
 }
@@ -442,17 +444,26 @@ fn motion_value_for_token(modifier: &str, param: &str, span: Span) -> Problem {
 fn check_token(modifier: &str, set: &str, value: &Expression) -> Result<(), Problem> {
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
     let token = literal.value.as_str().unwrap_or_default();
-    let (token, set, names) = match token.split_once('/') {
+    match token.split_once('/') {
         Some((role, opacity)) if set == "color" && tokens("color").contains(&role) => {
-            (opacity, "opacity", tokens("opacity"))
+            known(modifier, "opacity", tokens("opacity"), opacity, literal.span)
         }
-        _ => (token, set, tokens(set)),
-    };
+        _ => known(modifier, set, tokens(set), token, literal.span),
+    }
+}
+
+/// A token written out is one of `names`, the set a node lists itself (its densities).
+fn check_in(modifier: &str, set: &str, names: &[&str], value: &Expression) -> Result<(), Problem> {
+    let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
+    known(modifier, set, names, literal.value.as_str().unwrap_or_default(), literal.span)
+}
+
+fn known(modifier: &str, set: &str, names: &[&str], token: &str, span: Span) -> Result<(), Problem> {
     if names.contains(&token) {
         return Ok(());
     }
     Err(Problem {
-        span: literal.span,
+        span,
         message: format!("Unknown {set} token '{token}' for .{modifier}()"),
         help: Some(with_suggestion(suggest(token, names), format!("{set} tokens: {}", names.join(", ")))),
     })

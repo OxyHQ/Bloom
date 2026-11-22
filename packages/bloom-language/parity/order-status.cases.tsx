@@ -1,10 +1,10 @@
 import { RiCheckLine, RiBikeLine } from '@oxy.so/bloom/icons';
 import { OrderStatusBar, OrderStatusTimeline } from '@oxy.so/bloom/order-status';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const STEPS = [
   { id: 'placed', label: 'Placed', timestamp: '14:02', state: 'done' as const, icon: RiCheckLine },
@@ -30,7 +30,6 @@ const PROGRESS = {
   accessibilityLabel: 'Delivery progress',
   valueText: '3 of 4 stops',
 };
-const DENSITY = { default: 'comfortable', compact: 'compact' } as const;
 
 export const ORDER_STATUS_CASES: ParityCase[] = [
   {
@@ -90,11 +89,11 @@ export const ORDER_STATUS_CASES: ParityCase[] = [
     bloom: () => <OrderStatusTimeline steps={STEPS} />,
   },
   ...ENUMS.axis.flatMap((orientation) =>
-    CONTROL_DENSITIES.map((density) => ({
+    NODE_DENSITIES.orderStatusTimeline.map((density) => ({
       name: `OrderStatusTimeline ${orientation}, ${density}`,
       language: () => toElement(L.OrderStatusTimeline(STEPS).axis(orientation).density(density)),
       bloom: () => (
-        <OrderStatusTimeline steps={STEPS} orientation={orientation} density={DENSITY[density]} />
+        <OrderStatusTimeline steps={STEPS} orientation={orientation} density={density} />
       ),
     })),
   ),

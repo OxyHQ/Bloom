@@ -47,9 +47,9 @@ import {
 
 import type { Binding } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ColorToken, ControlDensity, SpaceToken } from '../tokens';
+import type { ColorToken, Density, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** Logistics: carriers' quotes, a courier's earnings and jobs, proof at the door, a shipment. */
 export type LogisticsKind =
@@ -128,12 +128,12 @@ export type ShipmentRequestFormOptions = Omit<
 > & { readonly footer?: Child };
 
 export interface CarrierQuoteCardView extends ViewModifiers<CarrierQuoteCardView> {
-  /** `default` (Bloom's comfortable) or `compact`. */
-  density(value: ControlDensity): CarrierQuoteCardView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'carrierQuoteCard'>): CarrierQuoteCardView;
   disabled(value?: boolean): CarrierQuoteCardView;
 }
 export interface CarrierQuoteListView extends ViewModifiers<CarrierQuoteListView> {
-  density(value: ControlDensity): CarrierQuoteListView;
+  density(value: Density<'carrierQuoteList'>): CarrierQuoteListView;
   /** Skeleton cards while the quotes load. */
   loading(value?: boolean): CarrierQuoteListView;
 }
@@ -142,11 +142,11 @@ export type EarningsBreakdownView = ViewModifiers<EarningsBreakdownView>;
 /** Bloom `EarningsPayoutRow`; `.onPress()` is its own. */
 export type EarningsPayoutRowView = ViewModifiers<EarningsPayoutRowView>;
 export interface JobCardView extends ViewModifiers<JobCardView> {
-  density(value: ControlDensity): JobCardView;
+  density(value: Density<'jobCard'>): JobCardView;
   disabled(value?: boolean): JobCardView;
 }
 export interface JobBoardView extends ViewModifiers<JobBoardView> {
-  density(value: ControlDensity): JobBoardView;
+  density(value: Density<'jobBoard'>): JobBoardView;
   loading(value?: boolean): JobBoardView;
 }
 export interface SignaturePadView extends ViewModifiers<SignaturePadView> {
@@ -247,11 +247,11 @@ const disabled = (d: ControlDraw) => ({ disabled: d.own('disabled')?.value });
 export const LOGISTICS: Record<LogisticsKind, ControlRenderer> = {
   carrierQuoteCard: product(BloomCarrierQuoteCard, {
     slots: ['actions'],
-    own: (d) => ({ density: rowDensity(d), ...disabled(d) }),
+    own: (d) => ({ density: d.own('density')?.value, ...disabled(d) }),
   }),
   carrierQuoteList: product(BloomCarrierQuoteList, {
     slots: ['emptyAction'],
-    own: (d) => ({ density: rowDensity(d), loading: d.own('loading')?.value }),
+    own: (d) => ({ density: d.own('density')?.value, loading: d.own('loading')?.value }),
   }),
   earningsSummary: product(BloomEarningsSummary, {
     slots: ['payoutAction'],
@@ -261,11 +261,11 @@ export const LOGISTICS: Record<LogisticsKind, ControlRenderer> = {
   earningsPayoutRow: product(BloomEarningsPayoutRow, { press: true, slots: ['action'] }),
   jobCard: product(BloomJobCard, {
     slots: ['actions'],
-    own: (d) => ({ density: rowDensity(d), ...disabled(d) }),
+    own: (d) => ({ density: d.own('density')?.value, ...disabled(d) }),
   }),
   jobBoard: product(BloomJobBoard, {
     slots: ['emptyAction'],
-    own: (d) => ({ density: rowDensity(d), loading: d.own('loading')?.value }),
+    own: (d) => ({ density: d.own('density')?.value, loading: d.own('loading')?.value }),
   }),
   signaturePad: product(BloomSignaturePad, {
     lengths: ['height'],

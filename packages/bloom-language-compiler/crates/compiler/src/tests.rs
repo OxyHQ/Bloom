@@ -391,6 +391,10 @@ fn the_button_leftovers_are_checked() {
     assert_eq!(output.diagnostics[0].message, "Unknown linkTone token 'accent' for .linkTone()");
     let output = check("export const x = () => Button(Text('a')).colors('#1877f2', 'white');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown color token '#1877f2' for .colors()");
+    // A button's densities are Bloom's control densities, not a row's content ones.
+    let output = check("export const x = () => Button(Text('a')).density('comfortable');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown density token 'comfortable' for .density()");
+    assert_eq!(output.diagnostics[0].help.as_deref(), Some("density tokens: default, compact"));
 }
 
 #[test]
@@ -538,6 +542,8 @@ fn wave_two_controls_are_checked() {
         ("GroupedSectionIcon(I).tint('lime')", "Unknown accentTone token 'lime' for .tint()"),
         ("SelectionCard('Pro').indicator('dot')", "Unknown selectionIndicator token 'dot' for .indicator()"),
         ("Row('Ana').density('cozy')", "Unknown density token 'cozy' for .density()"),
+        // A row's densities are Bloom's content densities, not a button's control ones.
+        ("Row('Ana').density('default')", "Unknown density token 'default' for .density()"),
         (
             "Dialog().presentAt('bottom', { lg: 'top' })",
             "Unknown dialogPlacement token 'top' for .presentAt()",
@@ -828,6 +834,7 @@ fn rows_and_lists_are_checked() {
         ("List([]).separator('dashed')", "Unknown separator token 'dashed' for .separator()"),
         ("ListItem('a').compactPadding('tight')", "Unknown space token 'tight' for .compactPadding()"),
         ("ListItem('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
+        ("ListItem('a').density('default')", "Unknown density token 'default' for .density()"),
         ("ListItem('a').tuning({})", "ListItem has no modifier .tuning()"),
         ("VirtualList([], s).separator('line')", "VirtualList has no modifier .separator()"),
     ];
@@ -2017,12 +2024,14 @@ fn the_listing_cards_are_checked() {
         "import { ListingCard, ListingCardGrid, WishlistCard, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (p, c) => VStack(ListingCard('Flat', p).style('horizontal').density('compact').loading(), ListingCardGrid(c).density('default'), WishlistCard('Summer', p).tint('primary/half'));\n",
+        "export const x = (p, c) => VStack(ListingCard('Flat', p).style('horizontal').density('compact').loading(), ListingCardGrid(c).density('results'), WishlistCard('Summer', p).tint('primary/half'));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("ListingCard('a', p).style('grid')", "Unknown listingCardLayout token 'grid' for .style()"),
-        ("ListingCardGrid(c).density('results')", "Unknown density token 'results' for .density()"),
+        // A density is the node's own: the grid's comfortable one is Bloom's `results`.
+        ("ListingCardGrid(c).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("ListingCard('a', p).density('results')", "Unknown density token 'results' for .density()"),
         ("WishlistCard('a', p).tint('pink')", "Unknown color token 'pink' for .tint()"),
     ];
     for (chain, message) in cases {
@@ -2270,13 +2279,14 @@ fn addresses_and_payment_methods_are_checked() {
     let imports = "import { AddressList, AddressRow, PaymentMethodList, PaymentMethodRow, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (s, m) => VStack(AddressRow('Home').size('sm').density('compact').disabled(), AddressList(s).style('picker').density('default').loading(), PaymentMethodRow().density('compact').disabled(), PaymentMethodList(m).style('list').loading());\n",
+        "export const x = (s, m) => VStack(AddressRow('Home').size('sm').density('compact').disabled(), AddressList(s).style('picker').density('comfortable').loading(), PaymentMethodRow().density('compact').disabled(), PaymentMethodList(m).style('list').loading());\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("AddressList(s).style('grid')", "Unknown choiceListStyle token 'grid' for .style()"),
         ("PaymentMethodList(s).style('menu')", "Unknown choiceListStyle token 'menu' for .style()"),
         ("AddressRow('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
+        ("AddressRow('a').density('default')", "Unknown density token 'default' for .density()"),
         ("AddressRow('a').tint('accent')", "AddressRow has no modifier .tint()"),
     ];
     for (chain, message) in cases {
@@ -2339,7 +2349,7 @@ fn the_cart_menu_items_and_vendor_card_are_checked() {
     let imports = "import { CartLine, CartPanel, CartPromoField, CartTipPicker, MenuItemOptions, MenuItemRow, VendorCard, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (o, l, b, t, g) => VStack(CartLine('a', o).density('compact'), CartPanel('a', l).density('default'), CartPromoField(b, o).disabled(), CartTipPicker(b, t).disabled(), MenuItemRow('a', o).density('compact'), MenuItemOptions(g, o).disabled(), VendorCard('a').density('compact').loading());\n",
+        "export const x = (o, l, b, t, g) => VStack(CartLine('a', o).density('compact'), CartPanel('a', l).density('comfortable'), CartPromoField(b, o).disabled(), CartTipPicker(b, t).disabled(), MenuItemRow('a', o).density('compact'), MenuItemOptions(g, o).disabled(), VendorCard('a').density('compact').loading());\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -2530,7 +2540,7 @@ fn the_track_list_is_checked() {
         "import { SelectionBar, TrackList, TrackListHeader, TrackRow } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (t, c, a) => [TrackList(t).density('compact').tint('surface'), TrackListHeader(c).density('default'), TrackRow(t, 0).density('compact'), SelectionBar(2, a, {}).style('inline')];\n",
+        "export const x = (t, c, a) => [TrackList(t).density('compact').tint('surface'), TrackListHeader(c).density('comfortable'), TrackRow(t, 0).density('compact'), SelectionBar(2, a, {}).style('inline')];\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [

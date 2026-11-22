@@ -390,7 +390,6 @@
     ],
     "buttonShape": ["circle", "pill", "fit"],
     "linkTone": ["primary", "secondary", "text"],
-    "density": ["default", "compact", "comfortable"],
     "appearance": ["solid", "subtle", "outline", "plain"],
     "tone": [
       "neutral",
@@ -1608,7 +1607,7 @@
     "fullScreenCover"
   ],
   "nodes": {
-    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read }",
+    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
     "stack": {
       "constructors": ["HStack", "VStack", "ZStack"],
       "modifiers": [
@@ -1736,6 +1735,7 @@
         "inverted",
         "density"
       ],
+      "densities": ["default", "compact"],
       "size": "controlSize",
       "tint": "tone",
       "style": "appearance",
@@ -1933,11 +1933,13 @@
         "highlighted",
         "density"
       ],
+      "densities": ["comfortable", "compact"],
       "size": "controlSize"
     },
     "groupedSection": {
       "constructors": ["GroupedSection"],
       "modifiers": ["title", "caption", "style", "separator", "radius", "density"],
+      "densities": ["comfortable", "compact"],
       "style": "groupedSectionStyle"
     },
     "groupedSectionItem": {
@@ -2241,7 +2243,8 @@
         "invalid",
         "nativeID",
         "describedBy"
-      ]
+      ],
+      "densities": ["comfortable", "compact"]
     },
     "scrollView": {
       "constructors": ["ScrollView"],
@@ -2702,7 +2705,8 @@
         "swipeActions",
         "swipeEnabled",
         "contextMenu"
-      ]
+      ],
+      "densities": ["comfortable", "compact"]
     },
     "list": {
       "constructors": ["List", "SectionedList"],
@@ -3410,6 +3414,7 @@
         "density",
         "dividers"
       ],
+      "densities": ["default", "compact"],
       "tint": "chatStatusTone"
     },
     "chatInfoPanel": {
@@ -3561,7 +3566,11 @@
       "modifiers": ["size"],
       "size": "guestPickerSize"
     },
-    "tenancyTimeline": { "constructors": ["TenancyTimeline"], "modifiers": ["density"] },
+    "tenancyTimeline": {
+      "constructors": ["TenancyTimeline"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "leaseSummaryCard": {
       "constructors": ["LeaseSummaryCard"],
       "modifiers": ["style"],
@@ -3711,9 +3720,14 @@
     "listingCard": {
       "constructors": ["ListingCard"],
       "modifiers": ["style", "density", "loading"],
+      "densities": ["comfortable", "compact"],
       "style": "listingCardLayout"
     },
-    "listingCardGrid": { "constructors": ["ListingCardGrid"], "modifiers": ["density"] },
+    "listingCardGrid": {
+      "constructors": ["ListingCardGrid"],
+      "modifiers": ["density"],
+      "densities": ["results", "compact"]
+    },
     "wishlistCard": { "constructors": ["WishlistCard"], "modifiers": ["tint"], "tint": "color" },
     "listingPreviewPane": { "constructors": ["ListingPreviewPane"], "modifiers": [] },
     "listingQualityMeter": { "constructors": ["ListingQualityMeter"], "modifiers": [] },
@@ -3738,6 +3752,7 @@
     "activityFeed": {
       "constructors": ["ActivityFeed"],
       "modifiers": ["style", "density", "lines"],
+      "densities": ["comfortable", "compact"],
       "style": "activityFeedGrouping"
     },
     "orderStatusBar": {
@@ -3748,7 +3763,8 @@
     },
     "orderStatusTimeline": {
       "constructors": ["OrderStatusTimeline"],
-      "modifiers": ["axis", "density"]
+      "modifiers": ["axis", "density"],
+      "densities": ["comfortable", "compact"]
     },
     "lockup": {
       "constructors": ["Lockup"],
@@ -3762,11 +3778,16 @@
       "size": "lockupSize"
     },
     "ambientPhoto": { "constructors": ["AmbientPhoto"], "modifiers": [] },
-    "calendarView": { "constructors": ["CalendarView"], "modifiers": ["density"] },
+    "calendarView": {
+      "constructors": ["CalendarView"],
+      "modifiers": ["density"],
+      "densities": ["default", "compact"]
+    },
     "calendarViewHeader": { "constructors": ["CalendarViewHeader"], "modifiers": [] },
     "calendarViewMonthGrid": {
       "constructors": ["CalendarViewMonthGrid"],
-      "modifiers": ["density"]
+      "modifiers": ["density"],
+      "densities": ["default", "compact"]
     },
     "taskList": { "constructors": ["TaskList"], "modifiers": [] },
     "webSearch": { "constructors": ["WebSearch"], "modifiers": [] },
@@ -3788,7 +3809,11 @@
     "multiAgentChat": { "constructors": ["MultiAgentChat"], "modifiers": [] },
     "agentChatHistory": { "constructors": ["AgentChatHistory"], "modifiers": ["surface"] },
     "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign"] },
-    "routeStops": { "constructors": ["RouteStops"], "modifiers": ["density"] },
+    "routeStops": {
+      "constructors": ["RouteStops"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "noteCard": {
       "constructors": ["NoteCard"],
       "modifiers": ["style", "tint", "loading"],
@@ -3816,22 +3841,30 @@
     "addressRow": {
       "constructors": ["AddressRow"],
       "modifiers": ["size", "density", "disabled"],
+      "densities": ["comfortable", "compact"],
       "size": "controlSize"
     },
     "addressList": {
       "constructors": ["AddressList"],
       "modifiers": ["size", "style", "density", "loading"],
+      "densities": ["comfortable", "compact"],
       "size": "controlSize",
       "style": "choiceListStyle"
     },
-    "paymentMethodMark": { "constructors": ["PaymentMethodMark"], "modifiers": ["density"] },
+    "paymentMethodMark": {
+      "constructors": ["PaymentMethodMark"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "paymentMethodRow": {
       "constructors": ["PaymentMethodRow"],
-      "modifiers": ["density", "disabled"]
+      "modifiers": ["density", "disabled"],
+      "densities": ["comfortable", "compact"]
     },
     "paymentMethodList": {
       "constructors": ["PaymentMethodList"],
       "modifiers": ["style", "density", "disabled", "loading"],
+      "densities": ["comfortable", "compact"],
       "style": "choiceListStyle"
     },
     "priceSummary": { "constructors": ["PriceSummary"], "modifiers": [] },
@@ -3850,7 +3883,11 @@
       "modifiers": ["style"],
       "style": "paymentStatusStyle"
     },
-    "contactProfileCard": { "constructors": ["ContactProfileCard"], "modifiers": ["density"] },
+    "contactProfileCard": {
+      "constructors": ["ContactProfileCard"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "leadScoreCard": { "constructors": ["LeadScoreCard"], "modifiers": [] },
     "dealCard": { "constructors": ["DealCard"], "modifiers": [] },
     "pipelineColumn": { "constructors": ["PipelineColumn"], "modifiers": [] },
@@ -3862,13 +3899,29 @@
     "importantAlertsCard": { "constructors": ["ImportantAlertsCard"], "modifiers": [] },
     "patientInfoCard": { "constructors": ["PatientInfoCard"], "modifiers": [] },
     "recentHiresCard": { "constructors": ["RecentHiresCard"], "modifiers": [] },
-    "cartLine": { "constructors": ["CartLine"], "modifiers": ["density"] },
-    "cartPanel": { "constructors": ["CartPanel"], "modifiers": ["density"] },
+    "cartLine": {
+      "constructors": ["CartLine"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
+    "cartPanel": {
+      "constructors": ["CartPanel"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "cartPromoField": { "constructors": ["CartPromoField"], "modifiers": ["disabled"] },
     "cartTipPicker": { "constructors": ["CartTipPicker"], "modifiers": ["disabled"] },
-    "menuItemRow": { "constructors": ["MenuItemRow"], "modifiers": ["density"] },
+    "menuItemRow": {
+      "constructors": ["MenuItemRow"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "menuItemOptions": { "constructors": ["MenuItemOptions"], "modifiers": ["disabled"] },
-    "vendorCard": { "constructors": ["VendorCard"], "modifiers": ["density", "loading"] },
+    "vendorCard": {
+      "constructors": ["VendorCard"],
+      "modifiers": ["density", "loading"],
+      "densities": ["comfortable", "compact"]
+    },
     "mediaCard": {
       "constructors": ["MediaCard"],
       "modifiers": ["size", "style", "loading"],
@@ -3990,7 +4043,11 @@
       "modifiers": ["disabled", "loading", "tint"],
       "tint": "color"
     },
-    "orderConfirmation": { "constructors": ["OrderConfirmation"], "modifiers": ["density"] },
+    "orderConfirmation": {
+      "constructors": ["OrderConfirmation"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "transportControls": {
       "constructors": ["TransportControls"],
       "modifiers": ["size", "style", "loading", "disabled"],
@@ -4014,17 +4071,27 @@
     "connectBanner": { "constructors": ["ConnectBanner"], "modifiers": [] },
     "carrierQuoteCard": {
       "constructors": ["CarrierQuoteCard"],
-      "modifiers": ["density", "disabled"]
+      "modifiers": ["density", "disabled"],
+      "densities": ["comfortable", "compact"]
     },
     "carrierQuoteList": {
       "constructors": ["CarrierQuoteList"],
-      "modifiers": ["density", "loading"]
+      "modifiers": ["density", "loading"],
+      "densities": ["comfortable", "compact"]
     },
     "earningsSummary": { "constructors": ["EarningsSummary"], "modifiers": [] },
     "earningsBreakdown": { "constructors": ["EarningsBreakdown"], "modifiers": [] },
     "earningsPayoutRow": { "constructors": ["EarningsPayoutRow"], "modifiers": [] },
-    "jobCard": { "constructors": ["JobCard"], "modifiers": ["density", "disabled"] },
-    "jobBoard": { "constructors": ["JobBoard"], "modifiers": ["density", "loading"] },
+    "jobCard": {
+      "constructors": ["JobCard"],
+      "modifiers": ["density", "disabled"],
+      "densities": ["comfortable", "compact"]
+    },
+    "jobBoard": {
+      "constructors": ["JobBoard"],
+      "modifiers": ["density", "loading"],
+      "densities": ["comfortable", "compact"]
+    },
     "signaturePad": {
       "constructors": ["SignaturePad"],
       "modifiers": ["tint", "disabled"],
@@ -4075,15 +4142,25 @@
     "trackList": {
       "constructors": ["TrackList"],
       "modifiers": ["density", "tint"],
+      "densities": ["comfortable", "compact"],
       "tint": "color"
     },
     "trackListHeader": {
       "constructors": ["TrackListHeader"],
       "modifiers": ["density", "tint"],
+      "densities": ["comfortable", "compact"],
       "tint": "color"
     },
-    "trackRow": { "constructors": ["TrackRow"], "modifiers": ["density"] },
-    "trackRowSkeleton": { "constructors": ["TrackRowSkeleton"], "modifiers": ["density"] },
+    "trackRow": {
+      "constructors": ["TrackRow"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
+    "trackRowSkeleton": {
+      "constructors": ["TrackRowSkeleton"],
+      "modifiers": ["density"],
+      "densities": ["comfortable", "compact"]
+    },
     "trackListEmpty": { "constructors": ["TrackListEmpty"], "modifiers": [] },
     "selectionBar": {
       "constructors": ["SelectionBar"],

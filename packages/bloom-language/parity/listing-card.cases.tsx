@@ -4,10 +4,10 @@ import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 import { View } from 'react-native';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -43,7 +43,7 @@ const cards: ParityCase[] = [
     bloom: () => <ListingCard title="Harbour flat" photos={PHOTOS} {...HOME} onPress={press} />,
   },
   ...ENUMS.listingCardLayout.flatMap((layout) =>
-    CONTROL_DENSITIES.map((density) => ({
+    NODE_DENSITIES.listingCard.map((density) => ({
       name: `ListingCard ${layout}, ${density}`,
       language: () =>
         toElement(L.ListingCard('Harbour flat', PHOTOS, HOME).style(layout).density(density)),
@@ -53,7 +53,7 @@ const cards: ParityCase[] = [
           photos={PHOTOS}
           {...HOME}
           layout={layout}
-          density={density === 'default' ? 'comfortable' : density}
+          density={density}
         />
       ),
     })),
@@ -97,7 +97,7 @@ const cards: ParityCase[] = [
 
 export const LISTING_CARD_CASES: ParityCase[] = [
   ...cards.map(inColumn),
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.listingCardGrid.map((density) => ({
     name: `ListingCardGrid ${density}`,
     language: () =>
       toElement(
@@ -106,7 +106,7 @@ export const LISTING_CARD_CASES: ParityCase[] = [
         ).density(density),
       ),
     bloom: () => (
-      <ListingCardGrid density={density === 'default' ? 'results' : density}>
+      <ListingCardGrid density={density}>
         {['a', 'b', 'c'].map((id) => (
           <ListingCard key={id} title={`Home ${id}`} photos={PHOTOS} {...HOME} />
         ))}
