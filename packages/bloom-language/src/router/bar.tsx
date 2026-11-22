@@ -27,8 +27,7 @@ const DestinationBar = view(function DestinationBar(props: { primary: PrimaryDes
       return page.activeIcon ? tab.activeIcon(page.activeIcon) : tab;
     }),
   )
-    .selection(selection ?? '')
-    .onSelect(pager.selectDestination)
+    .selection([selection ?? '', pager.selectDestination])
     .progress(pager.progress)
     .hide(pager.chromeProgress)
     .action(

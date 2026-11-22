@@ -109,8 +109,7 @@ function Components() {
             Tab('Search', RiSearchLine).id('search'),
             Tab('Notifications', RiNotification3Line).id('notifications').badge(3),
           )
-            .selection(tab)
-            .onSelect(setTab)
+            .selection([tab, setTab])
             .action(FAB(Icon(RiQuillPenLine)).label('Compose')),
         ).spacing('2xl'),
       )}

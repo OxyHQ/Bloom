@@ -161,6 +161,25 @@ function sectionOf(node: Node, render: Draw, press: PressOf): SidebarTree {
   });
 }
 
+/**
+ * A sidebar's selection as Bloom takes it: one id over its destinations and
+ * its tree rows, written by a pressed tree row and by a destination that links
+ * (`onNavigate`, which then takes over the link's own push). None bound draws
+ * none of them.
+ */
+export function selectionOf(
+  selection: Binding<string> | undefined,
+): Pick<SidebarProps, 'selected' | 'selectedTreeItem' | 'onNavigate' | 'onTreeItemPress'> {
+  if (selection === undefined) return {};
+  const [id, set] = selection;
+  return {
+    selected: id,
+    selectedTreeItem: id,
+    onNavigate: (item: SidebarNavItem) => set(item.key),
+    onTreeItemPress: (item: SidebarTreeItem) => set(item.key),
+  };
+}
+
 /** Every prop Bloom's sidebar takes from the node, none it left out. */
 export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarProps {
   const values = valuesOf(node);
@@ -173,8 +192,7 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
   const onboarding = values.onboarding as SidebarOnboarding | undefined;
   const onDrop = values.onDrop as ((drop: TreeDrop) => void) | undefined;
   const query = values.query as Binding<string> | undefined;
-  const selection = values.selection as string | undefined;
-  const onSelect = values.onSelect as ((id: string) => void) | undefined;
+  const selection = values.selection as Binding<string> | undefined;
   const header = values.header as Node | false | undefined;
   const toolbar = values.toolbar as readonly Child[] | undefined;
   let footer: Child;
@@ -187,10 +205,7 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
       sections.length > 0
         ? sections.map((section) => sectionOf(section, render, press))
         : undefined,
-    selected: selection,
-    selectedTreeItem: selection,
-    onNavigate: onSelect ? (item: SidebarNavItem) => onSelect(item.key) : undefined,
-    onTreeItemPress: onSelect ? (item: SidebarTreeItem) => onSelect(item.key) : undefined,
+    ...selectionOf(selection),
     header: header === undefined ? undefined : header === false ? false : render(header),
     toolbar: toolbar && toolbar.length > 0 ? render(toolbar) : undefined,
     footer: footer ? render(footer) : undefined,

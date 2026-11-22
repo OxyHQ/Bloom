@@ -550,8 +550,7 @@ export interface ValueModifiers {
   title: string;
   badge: string | number | ViewNode | undefined;
   activeIcon: IconComponent | ViewNode;
-  selection: string;
-  onSelect: (id: string) => void;
+  selection: AnyBinding;
   action: Child;
   minimize: Progress | undefined;
   progress: Progress | undefined;
@@ -2427,11 +2426,8 @@ export class Node {
   activeIcon(value: IconComponent | ViewNode): Node {
     return this.set('activeIcon', value);
   }
-  selection(value: string): Node {
+  selection(value: AnyBinding): Node {
     return this.set('selection', value);
-  }
-  onSelect(value: (id: string) => void): Node {
-    return this.set('onSelect', value);
   }
   action(value: Child): Node {
     return this.set('action', value);
@@ -4636,9 +4632,8 @@ export interface HeaderView extends ViewNode {
 }
 /** The bottom bar: its tabs, the selected one, and its action (a `FAB`). */
 export interface BottomBarView extends ViewNode {
-  /** The `id` of the selected tab. */
-  selection(value: string): BottomBarView;
-  onSelect(value: (id: string) => void): BottomBarView;
+  /** The `id` of the selected tab: a binding, a tab's press writing it. */
+  selection(value: Binding<string>): BottomBarView;
   /** The action beside the tabs: a `FAB`. */
   action(value: Child): BottomBarView;
   /** Folds the bar as the page scrolls (Bloom `Screen`'s collapse progress). */
@@ -4654,7 +4649,7 @@ export interface TabView extends ViewNode {
   activeIcon(value: IconComponent): TabView;
   /** A count over the glyph's corner; nothing at 0. */
   badge(value: number | undefined): TabView;
-  /** The tab's identity: what `selection` and `onSelect` speak. */
+  /** The tab's identity: what the bar's `selection` speaks. */
   id(value: string): TabView;
   testID(value: string): TabView;
 }
@@ -4739,13 +4734,12 @@ export interface BottomSheetView extends ViewNode {
  * (Bloom's tree: `TreeFolder`s and `TreeItem`s, nested).
  */
 export interface SidebarView extends ViewNode {
-  /** The id of the selected row: a destination or a tree row. */
-  selection(value: string | undefined): SidebarView;
   /**
-   * Told the id of a pressed tree row, and of a destination that links (Bloom's
+   * The id of the selected row, a destination or a tree row: a binding, a
+   * pressed tree row writing it, and a destination that links (Bloom's
    * `onNavigate`, which then takes over the link's own push).
    */
-  onSelect(value: (id: string) => void): SidebarView;
+  selection(value: Binding<string>): SidebarView;
   /** Replaces the logo and account row; `false` draws none. */
   header(value: ViewNode | false): SidebarView;
   /** A row of controls under the header, kept in view. */
@@ -4890,9 +4884,8 @@ export interface TreeItemView extends ViewNode {
 }
 /** Bloom `Rail`: a narrow column of destinations, each a `RailItem`. */
 export interface RailView extends ViewNode {
-  /** The id of the active item. */
-  selection(value: string | undefined): RailView;
-  onSelect(value: (id: string) => void): RailView;
+  /** The id of the active item: a binding, an item's press writing it. */
+  selection(value: Binding<string>): RailView;
   /** Pinned above the items (a brand mark). */
   header(value: ViewNode): RailView;
   /** Pinned below the items (an account control). */
@@ -4958,11 +4951,10 @@ export type CommandGroupView = ViewNode;
  * `.content` its page.
  */
 export interface SettingsModalView extends ViewNode {
+  /** Presented: a binding, told `false` when the reader closes it. */
   presented(value: Binding<boolean>): SettingsModalView;
-  /** Told `false` when the reader closes it. */
-  /** The id of the page shown, held by the app. */
-  selection(value: string | undefined): SettingsModalView;
-  onSelect(value: (id: string) => void): SettingsModalView;
+  /** The id of the page shown: a binding, its navigation writing it. */
+  selection(value: Binding<string>): SettingsModalView;
   /** Where a narrow screen starts: the `navigation` list (default) or the `page`. */
   initialView(value: SettingsView): SettingsModalView;
   /** Its header: a `bar` (default) or the `floating` capsule. */
