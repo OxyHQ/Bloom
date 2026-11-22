@@ -4,10 +4,6 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { AgentAvatar } from '../AgentAvatar';
 import { CharacterAvatar } from '../CharacterAvatar';
 import type { AvatarCharacter } from '../character';
-jest.mock('../../styles/styled-primitives', () => ({
-  StyledView: require('react-native').View,
-  StyledText: require('react-native').Text,
-}));
 
 let renderer: ReactTestRenderer;
 afterEach(() => {
@@ -24,12 +20,14 @@ it.each<[string, AvatarCharacter]>([
   ['a hidden face', { preset: 'blue_beret', eyes: 'none' }],
 ])('uses one renderer for %s', (_name, character) => {
   act(() => {
-    renderer = create(<AgentAvatar character={character} label="Ember" className="m-2" paused />);
+    renderer = create(
+      <AgentAvatar character={character} label="Ember" style={{ margin: 8 }} paused />,
+    );
   });
   expect(renderer.root.findAllByType(CharacterAvatar)).toHaveLength(1);
   const root = renderer.root.findByProps({ accessibilityRole: 'image' });
   expect(root.props.accessibilityLabel).toBe('Ember');
-  expect(root.props.className).toBe('m-2');
+  expect(root.props.style).toContainEqual({ margin: 8 });
 });
 it('throws at the component that was handed a character the renderer cannot draw', () => {
   jest.spyOn(console, 'error').mockImplementation(() => undefined);

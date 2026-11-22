@@ -1,17 +1,16 @@
 import { avatarViewBox } from './vector-viewbox';
 import { svgA11yProps } from '../styles/svg-a11y';
 import { useSvgIdPrefix } from '../styles/svg-id';
-import { Platform, type View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { AvatarSnapshotObserver } from './context';
 import { memo, useContext, useEffect, useRef, type ComponentRef } from 'react';
 import Svg, { ClipPath, Defs, Path } from 'react-native-svg';
-import { StyledView } from '../styles/styled-primitives';
 import type { AgentAvatarProps } from './types';
 import type { VectorFrame } from './vector-types';
 
 type Props = Pick<
   AgentAvatarProps,
-  'size' | 'style' | 'className' | 'testID' | 'onReady' | 'accessibilityLabel' | 'label'
+  'size' | 'style' | 'testID' | 'onReady' | 'accessibilityLabel' | 'label'
 > & { frame?: VectorFrame; bodyColor?: string };
 /** Offline projected portrait: no asset fetch, animation clock or runtime canvas. */
 function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Props) {
@@ -47,10 +46,9 @@ function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Prop
     }
   }, [frame, onReady]);
   return (
-    <StyledView
+    <View
       ref={host}
       {...(Platform.OS === 'web' ? { dataSet: { bloomVectorPortrait: '' } } : {})}
-      className={props.className}
       style={[{ width: size, height: size }, props.style]}
       testID={props.testID}
       accessible={props.accessibilityLabel !== ''}
@@ -93,7 +91,7 @@ function StaticPortrait({ frame, size = 64, bodyColor, onReady, ...props }: Prop
           ))}
         </Svg>
       ) : null}
-    </StyledView>
+    </View>
   );
 }
 
@@ -105,7 +103,6 @@ export const VectorStaticPortrait = memo(
     a.bodyColor === b.bodyColor &&
     a.size === b.size &&
     a.style === b.style &&
-    a.className === b.className &&
     a.testID === b.testID &&
     a.onReady === b.onReady &&
     a.accessibilityLabel === b.accessibilityLabel &&
