@@ -184,3 +184,6 @@ export const AmbientPhoto = 'AmbientPhoto';
 export const CalendarView = 'CalendarView';
 export const CalendarViewHeader = 'CalendarViewHeader';
 export const CalendarViewMonthGrid = 'CalendarViewMonthGrid';
+export const TaskList = 'TaskList';
+export const WebSearch = 'WebSearch';
+export const VoiceControls = 'VoiceControls';

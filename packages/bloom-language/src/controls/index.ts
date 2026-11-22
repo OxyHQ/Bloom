@@ -85,6 +85,9 @@ import { ORDER_STATUSES } from './order-status';
 import { LOCKUPS } from './lockup';
 import { AMBIENT_PHOTOS } from './ambient-photo';
 import { CALENDAR_VIEWS } from './calendar';
+import { TASK_LISTS } from './task-list';
+import { WEB_SEARCHES } from './web-search';
+import { VOICES } from './voice';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -177,4 +180,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LOCKUPS,
   ...AMBIENT_PHOTOS,
   ...CALENDAR_VIEWS,
+  ...TASK_LISTS,
+  ...WEB_SEARCHES,
+  ...VOICES,
 };
