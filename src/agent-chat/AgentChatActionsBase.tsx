@@ -6,7 +6,7 @@ import { RiUploadLine } from '../icons/remix/RiUploadLine';
 import { useMessages } from '../locale/messages';
 import { Button } from '../button';
 import { useAgentChatPlatform } from './context';
-import { CONFIRM_MS, DENSE_ROW_CLASS, SMALL_MENU_STYLE, useAgentChatWebCss } from './shared';
+import { CONFIRM_MS, SMALL_MENU_STYLE, useAgentChatWebCss } from './shared';
 import { AGENT_CHAT_MESSAGES } from './messages';
 import type { AgentChatActionsProps } from './types';
 import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
@@ -89,17 +89,13 @@ export function AgentChatActionsBase({
         </DropdownMenuTrigger>
         <DropdownMenuContent label={l.more} side="bottom" align="end" style={SMALL_MENU_STYLE}>
           {onExport ? (
-            <DropdownMenuItem className={DENSE_ROW_CLASS} onPress={onExport}>
-              {l.exportChats}
-            </DropdownMenuItem>
+            <DropdownMenuItem onPress={onExport}>{l.exportChats}</DropdownMenuItem>
           ) : null}
           {onToggleUnread ? (
-            <DropdownMenuItem className={DENSE_ROW_CLASS} onPress={onToggleUnread}>
-              {l.markUnread}
-            </DropdownMenuItem>
+            <DropdownMenuItem onPress={onToggleUnread}>{l.markUnread}</DropdownMenuItem>
           ) : null}
           {onDelete ? (
-            <DropdownMenuItem className={DENSE_ROW_CLASS} tone="danger" onPress={onDelete}>
+            <DropdownMenuItem tone="danger" onPress={onDelete}>
               {l.deleteChat}
             </DropdownMenuItem>
           ) : null}
