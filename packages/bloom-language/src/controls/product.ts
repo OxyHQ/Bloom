@@ -3,9 +3,11 @@ import type { ReactNode } from 'react';
 import type { Binding } from '../binding';
 import type { Child } from '../node';
 import {
+  type CardRadius,
   type CornerName,
   DURATION,
   type DurationName,
+  resolveCardRadius,
   resolveCorner,
   resolveSpace,
   type SpaceToken,
@@ -71,6 +73,8 @@ export interface ProductSpec {
   readonly lengths?: readonly string[];
   /** Options that are corner tokens, where Bloom takes a radius. */
   readonly corners?: readonly string[];
+  /** Options that are a card's corner tokens, where Bloom takes a `Card`'s radius name. */
+  readonly radii?: readonly string[];
   /** Options that are duration tokens, where Bloom takes milliseconds. */
   readonly durations?: readonly string[];
   /** The component takes `.onPress()` and its name itself, rather than a host around it. */
@@ -109,6 +113,10 @@ export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer 
     for (const key of spec.corners ?? []) {
       const corner = options?.[key] as CornerToken | undefined;
       props[key] = corner === undefined ? undefined : resolveCorner(corner);
+    }
+    for (const key of spec.radii ?? []) {
+      const radius = options?.[key] as CardRadius | undefined;
+      props[key] = radius === undefined ? undefined : resolveCardRadius(radius);
     }
     for (const key of spec.durations ?? []) {
       const duration = options?.[key] as DurationName | undefined;

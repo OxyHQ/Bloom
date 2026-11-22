@@ -1592,7 +1592,7 @@ Card(
   CardHeader(CardTitle('Storage'), CardDescription('3 of 5 GB used')),
   CardBody(StorageBar({ used })),
   CardFooter(Button(Text('Manage')).onPress(manage)),
-).style('outline').radius('radius-16')
+).style('outline').radius('lg')
 
 GroupedSection(
   GroupedSectionItem('Wi-Fi').value(network).chevron().onPress(openWifi),
@@ -1624,7 +1624,9 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 | `ErrorBoundary(...content)` | Bloom `ErrorBoundary` |
 
 - **Card.** `.style()` and `.tint()` are its appearance and tone, `.radius()`
-  Bloom's card radius (`radius-0` … `radius-max`, `panel`, `concentric`),
+  its corner: a corner token of Bloom's radius scale (`none` `2xs` `xs` `sm`
+  `md` `lg` `xl` `2xl` `3xl` `full`, drawn as Bloom's `radius-0` …
+  `radius-max` of the same value), `panel` or `concentric`,
   `.elevation('none' | 's' | 'm' | 'floating')`, `.outline('none' |
   'hairline' | 'thin' | 'medium')` its own stroke, `.clipped()` clips the
   content to the corner, `.cornerCurve('round' | 'smooth')` is its own curve
@@ -2633,7 +2635,8 @@ card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
   card's `height` and a tokens card's `plotHeight`.
 - `ChartCardSurface(content, options?)`: the card the others are drawn on (a
   list of views is its children, keyed by `.id()`); `.spacing()` its gap, its
-  `height` a space token or `auto`.
+  `height` a space token or `auto`, its `radius` a card's corner token (as
+  `Card(...).radius()`).
 
 ### Composer panel
 
@@ -2724,7 +2727,7 @@ UsageCard({ usage, plan, limits, footer: Button(Text('Upgrade')) })
 
 The agent families two or more apps share, each Bloom's own:
 `AgentLimitsCard(options)`, `UsageCard(options)` (its `fallback` and
-`footer` children), `AgentThinking(reasoning?, options?)` (`.style('wave' |
+`footer` children, its `radius` a card's corner token), `AgentThinking(reasoning?, options?)` (`.style('wave' |
 'spin' | 'stars' | 'infinity')`, `.tint('subtle' | 'default' | 'primary' |
 'accent')`), `AgentProgress(options)`, `AgentProgressLoadingText(text)`
 (`.lines(n)`, `.textVariant(step)` a step of Bloom's ramp, `body-regular` by
@@ -2733,7 +2736,7 @@ default),
 `AgentLogToolCall(name, status, options?)` (`running`, `done` or `error`;
 its `content` what it shows expanded), `AgentLogToolCalls(calls)`,
 `AgentLogWorkingRow(label)`, `ComposerLoader(content, options?)` (round the
-composer; its `radius`, `line` and `offset` space tokens),
+composer; its `radius` a corner token, its `line` and `offset` space tokens),
 `ConversationSidebar(conversations, options)` (its `after` a child) and
 `Questionnaire(questions, options?)`.
 

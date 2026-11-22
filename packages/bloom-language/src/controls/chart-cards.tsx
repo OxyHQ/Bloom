@@ -36,6 +36,7 @@ import {
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   AreaVariant,
+  CardRadius,
   ChartShape,
   ColorToken,
   RadarLegend,
@@ -72,8 +73,8 @@ export type AreaChartCardOptions = Omit<AreaChartCardProps, Drawn | 'variant' | 
 export type BarListCardOptions = Omit<BarListCardProps, Drawn | Inks | 'mono'>;
 export type ChartCardSurfaceOptions = Omit<
   ChartCardSurfaceProps,
-  Drawn | 'children' | 'gap' | 'height'
-> & { readonly height?: SpaceToken | 'auto' };
+  Drawn | 'children' | 'gap' | 'height' | 'radius'
+> & { readonly height?: SpaceToken | 'auto'; readonly radius?: CardRadius };
 export type ChartHeadlineOptions = Omit<ChartHeadlineProps, Drawn | 'label'>;
 export type ChartStatTilesOptions = Omit<ChartStatTilesProps, Drawn | 'items'>;
 export type ContributionsCardOptions = Omit<ContributionsCardProps, Drawn | Inks>;
@@ -245,6 +246,7 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
     own: (d) => ({ mono: d.own('mono')?.value }),
   }),
   chartCardSurface: product(BloomChartCardSurface, {
+    radii: ['radius'],
     own: (d) => {
       const { height } = (d.node.props as { options: ChartCardSurfaceOptions }).options;
       return {

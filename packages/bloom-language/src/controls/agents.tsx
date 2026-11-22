@@ -42,6 +42,7 @@ import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   AgentThinkingStyle,
+  CardRadius,
   AgentThinkingTone,
   Blend,
   ContentAlignment,
@@ -60,7 +61,7 @@ import type {
   TypeRampStep,
 } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { product } from './product';
+import { type CornerToken, product } from './product';
 
 /** The agent families apps share: limits and usage, thinking, progress, the log, the loader, the sidebar, the questionnaire. */
 export type AgentKind =
@@ -81,9 +82,11 @@ export type AgentKind =
 type Drawn = 'style' | 'testID';
 
 export type AgentLimitsCardOptions = Omit<AgentLimitsCardProps, Drawn>;
-export type UsageCardOptions = Omit<UsageCardProps, Drawn | 'fallback' | 'footer'> & {
+export type UsageCardOptions = Omit<UsageCardProps, Drawn | 'fallback' | 'footer' | 'radius'> & {
   readonly fallback?: Child;
   readonly footer?: Child;
+  /** Its corner: a card's corner token (Bloom's `radius-28` by default is `3xl`). */
+  readonly radius?: CardRadius;
 };
 export type AgentThinkingOptions = Omit<
   AgentThinkingProps,
@@ -104,11 +107,11 @@ export type AgentLogToolCallsOptions = Omit<
   'testID' | 'children' | 'accessibilityLabel'
 >;
 export type AgentLogWorkingRowOptions = Omit<AgentLogWorkingRowProps, Drawn | 'label'>;
-/** Bloom `ComposerLoader`'s motion and phase; its lengths are space tokens. */
+/** Bloom `ComposerLoader`'s motion and phase; its radius a corner token, its lengths space tokens. */
 export type ComposerLoaderOptions = Omit<
   ComposerLoaderProps,
   Drawn | 'children' | 'colors' | 'radius' | 'line' | 'offset' | 'blend' | 'bloomOnly' | 'surface'
-> & { readonly radius?: SpaceToken; readonly line?: SpaceToken; readonly offset?: SpaceToken };
+> & { readonly radius?: CornerToken; readonly line?: SpaceToken; readonly offset?: SpaceToken };
 /** What a conversation sidebar leaves to modifiers: its look. */
 type SidebarLook =
   | 'variant'
@@ -278,7 +281,7 @@ function text(host: unknown, own: (d: ControlDraw) => Record<string, unknown> = 
 
 export const AGENTS: Record<AgentKind, ControlRenderer> = {
   agentLimitsCard: product(BloomAgentLimitsCard),
-  usageCard: product(BloomUsageCard, { slots: ['fallback', 'footer'] }),
+  usageCard: product(BloomUsageCard, { slots: ['fallback', 'footer'], radii: ['radius'] }),
   agentThinking: product(BloomAgentThinking, {
     own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
   }),
@@ -305,7 +308,8 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
   agentLogToolCalls: product(BloomAgentLogToolCalls),
   agentLogWorkingRow: product(BloomAgentLogWorkingRow),
   composerLoader: product(BloomComposerLoader, {
-    lengths: ['radius', 'line', 'offset'],
+    lengths: ['line', 'offset'],
+    corners: ['radius'],
     colors: (d) => ({ colors: d.own('gradient')?.value }),
     own: (d) => ({
       blend: d.own('blend')?.value,
