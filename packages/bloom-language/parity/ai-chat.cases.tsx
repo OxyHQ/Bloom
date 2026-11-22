@@ -13,6 +13,7 @@ import {
 import { RiFileCopyLine } from '@oxy.so/bloom/icons';
 import { Text } from '@oxy.so/bloom/typography';
 
+import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
@@ -150,6 +151,21 @@ const chrome: ParityCase[] = [
     ),
   },
   {
+    name: 'AiChatContainer its chrome floating',
+    language: () =>
+      toElement(
+        L.AiChatContainer(L.AiChatMessageLine('Hello'), {
+          title: 'Trip',
+          composer: L.Text('Composer'),
+        }).floatingChrome(),
+      ),
+    bloom: () => (
+      <AiChatContainer title="Trip" composer={<Text>Composer</Text>} floatingChrome>
+        <AiChatMessageLine>Hello</AiChatMessageLine>
+      </AiChatContainer>
+    ),
+  },
+  {
     name: 'AiChatMobileHeader',
     language: () => toElement(L.AiChatMobileHeader('Trip')),
     bloom: () => <AiChatMobileHeader title="Trip" />,
@@ -219,6 +235,38 @@ const shells: ParityCase[] = [
       </AiChatShell>
     ),
   },
+  ...ENUMS.sidebarSurface.flatMap((surface) =>
+    ENUMS.scrollbarSide.map((side) => ({
+      name: `AiChatShell sidebar ${surface}, its scrollbar ${side}`,
+      language: () =>
+        toElement(
+          L.AiChatShell(L.AiChatMessageLine('Hello'), { sidebar: L.Text('Chats') })
+            .sidebarSurface(surface)
+            .sidebarScrollbarSide(side),
+        ),
+      bloom: () => (
+        <AiChatShell
+          sidebar={<Text>Chats</Text>}
+          sidebarSurface={surface}
+          sidebarScrollbarSide={side}
+        >
+          <AiChatMessageLine>Hello</AiChatMessageLine>
+        </AiChatShell>
+      ),
+    })),
+  ),
+  {
+    name: 'AiChatShell without its surface',
+    language: () =>
+      toElement(
+        L.AiChatShell(L.AiChatMessageLine('Hello'), { sidebar: L.Text('Chats') }).surface(false),
+      ),
+    bloom: () => (
+      <AiChatShell sidebar={<Text>Chats</Text>} surface={false}>
+        <AiChatMessageLine>Hello</AiChatMessageLine>
+      </AiChatShell>
+    ),
+  },
 ];
 
 export const AI_CHAT_CASES: ParityCase[] = [...lines, ...turns, ...chrome, ...shells];
@@ -235,10 +283,9 @@ export const AI_CHAT_CASES_MOVING: ParityCase[] = [
       toElement(
         L.AiChatContainer(L.AiChatMessageLine('Hello'), {
           working: true,
-          surface: false,
           header: L.AiChatHeader(L.Text('Header')),
           onShare: press,
-        }),
+        }).surface(false),
       ),
     bloom: () => (
       <AiChatContainer

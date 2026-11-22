@@ -38,6 +38,7 @@ import type {
   AreaVariant,
   ChartShape,
   ColorToken,
+  RadarLegend,
   RadarVariant,
   SparklineTone,
   SpaceToken,
@@ -68,7 +69,7 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 type Inks = 'color' | 'activeColor';
 
 export type AreaChartCardOptions = Omit<AreaChartCardProps, Drawn | 'variant' | 'shape'>;
-export type BarListCardOptions = Omit<BarListCardProps, Drawn | Inks>;
+export type BarListCardOptions = Omit<BarListCardProps, Drawn | Inks | 'mono'>;
 export type ChartCardSurfaceOptions = Omit<
   ChartCardSurfaceProps,
   Drawn | 'children' | 'gap' | 'height'
@@ -78,15 +79,15 @@ export type ChartStatTilesOptions = Omit<ChartStatTilesProps, Drawn | 'items'>;
 export type ContributionsCardOptions = Omit<ContributionsCardProps, Drawn | Inks>;
 export type HeatmapChartCardOptions = Omit<HeatmapChartCardProps, Drawn | Inks>;
 export type LineChartCardOptions = Omit<LineChartCardProps, Drawn | Inks | 'shape'>;
-export type RadarChartCardOptions = Omit<RadarChartCardProps, Drawn | 'variant'>;
+export type RadarChartCardOptions = Omit<RadarChartCardProps, Drawn | 'variant' | 'legend'>;
 export type SleepScoreCardOptions = Omit<SleepScoreCardProps, Drawn | 'metrics' | 'height'> & {
   readonly height?: SpaceToken;
 };
 export type SparklineOptions = Omit<
   SparklineProps,
-  Drawn | Inks | 'data' | 'tone' | 'width' | 'height'
+  Drawn | Inks | 'data' | 'tone' | 'width' | 'height' | 'shape' | 'fill'
 > & { readonly width?: SpaceToken; readonly height?: SpaceToken };
-export type StageBarsCardOptions = Omit<StageBarsCardProps, Drawn>;
+export type StageBarsCardOptions = Omit<StageBarsCardProps, Drawn | 'mono'>;
 export type StepsCardOptions = Omit<StepsCardProps, Drawn | Inks | 'data'>;
 export type TokensChartCardOptions = Omit<
   TokensChartCardProps,
@@ -111,6 +112,8 @@ export interface AreaChartCardView extends ViewModifiers<AreaChartCardView> {
 /** Bloom `BarListCard`: ranked bars with their values, in tabs. */
 export interface BarListCardView extends ViewModifiers<BarListCardView> {
   tint(value: ColorToken): BarListCardView;
+  /** One ink for every bar (mid grey on light, near-white on dark). */
+  mono(value?: boolean): BarListCardView;
 }
 /** Bloom `ChartCardSurface`: the card every chart card is drawn on. */
 export interface ChartCardSurfaceView extends ViewModifiers<ChartCardSurfaceView> {
@@ -139,6 +142,8 @@ export interface LineChartCardView
 export interface RadarChartCardView extends ViewModifiers<RadarChartCardView> {
   /** `filled` (default), `dots`, `lines` or `score`. */
   style(value: RadarVariant): RadarChartCardView;
+  /** Its legend at the `bottom` (default), the `top`, or over the chart (`overlay`). */
+  legend(value: RadarLegend): RadarChartCardView;
 }
 /** Bloom `SleepScoreCard`: a score from its metrics. */
 export type SleepScoreCardView = ViewModifiers<SleepScoreCardView>;
@@ -146,9 +151,16 @@ export type SleepScoreCardView = ViewModifiers<SleepScoreCardView>;
 export interface SparklineView extends ViewModifiers<SparklineView> {
   /** `accent` (default), `positive`, `negative` or `neutral`. */
   tint(value: SparklineTone): SparklineView;
+  /** `curved` (default) or `sharp`. */
+  shape(value: ChartShape): SparklineView;
+  /** The area under the line, filled. */
+  filled(value?: boolean): SparklineView;
 }
 /** Bloom `StageBarsCard`: a funnel's stages as bars. */
-export type StageBarsCardView = ViewModifiers<StageBarsCardView>;
+export interface StageBarsCardView extends ViewModifiers<StageBarsCardView> {
+  /** One ink for every stage. */
+  mono(value?: boolean): StageBarsCardView;
+}
 /** Bloom `StepsCard`: a day's steps as bars. */
 export interface StepsCardView extends ViewModifiers<StepsCardView>, Inked<StepsCardView> {}
 /** Bloom `TokensChartCard`: tokens used over time. */
@@ -228,7 +240,10 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
   areaChartCard: product(BloomAreaChartCard, {
     own: (d) => ({ variant: d.own('style')?.value, shape: d.own('shape')?.value }),
   }),
-  barListCard: product(BloomBarListCard, { colors: inks }),
+  barListCard: product(BloomBarListCard, {
+    colors: inks,
+    own: (d) => ({ mono: d.own('mono')?.value }),
+  }),
   chartCardSurface: product(BloomChartCardSurface, {
     own: (d) => {
       const { height } = (d.node.props as { options: ChartCardSurfaceOptions }).options;
@@ -247,14 +262,18 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
     colors: inks,
   }),
   radarChartCard: product(BloomRadarChartCard, {
-    own: (d) => ({ variant: d.own('style')?.value }),
+    own: (d) => ({ variant: d.own('style')?.value, legend: d.own('legend')?.value }),
   }),
   sleepScoreCard: product(BloomSleepScoreCard, { lengths: ['height'] }),
   sparkline: product(BloomSparkline, {
     lengths: ['width', 'height'],
-    own: (d) => ({ tone: d.own('tint')?.value }),
+    own: (d) => ({
+      tone: d.own('tint')?.value,
+      shape: d.own('shape')?.value,
+      fill: d.own('filled')?.value,
+    }),
   }),
-  stageBarsCard: product(BloomStageBarsCard),
+  stageBarsCard: product(BloomStageBarsCard, { own: (d) => ({ mono: d.own('mono')?.value }) }),
   stepsCard: product(BloomStepsCard, { colors: inks }),
   tokensChartCard: product(BloomTokensChartCard, { lengths: ['plotHeight'], colors: inks }),
 };

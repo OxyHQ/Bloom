@@ -35,7 +35,7 @@ type Replaced =
 /** Bloom `ComposerPanel`'s data: its menus, models, voice and handlers; its slots as children. */
 export type ComposerPanelOptions = Omit<ComposerPanelProps, Replaced> & Slots;
 /** Bloom `ComposerPill`'s data, as the panel's. */
-export type ComposerPillOptions = Omit<ComposerPillProps, Replaced | 'surface'> & Slots;
+export type ComposerPillOptions = Omit<ComposerPillProps, Replaced | 'surface' | 'frosted'> & Slots;
 export type ComposerPanelStatusTabOptions = Omit<ComposerPanelStatusTabProps, 'style' | 'testID'>;
 
 /** Bloom `ComposerPanel`: prompt, add menu, permissions, model and effort, voice and send. */
@@ -47,6 +47,8 @@ export interface ComposerPillView extends ViewModifiers<ComposerPillView> {
   disabled(value?: boolean): ComposerPillView;
   /** `false` draws it without its own surface (on a surface of yours). */
   surface(value?: boolean): ComposerPillView;
+  /** A frosted pill over what is behind it. */
+  frosted(value?: boolean): ComposerPillView;
 }
 /** Bloom `ComposerPanelStatusTab`: the branch, project and context above the panel. */
 export type ComposerPanelStatusTabView = ViewModifiers<ComposerPanelStatusTabView>;
@@ -83,7 +85,11 @@ export const COMPOSER_PANELS: Record<ComposerPanelKind, ControlRenderer> = {
   }),
   composerPill: product(BloomComposerPill, {
     ...composer,
-    own: (d) => ({ disabled: d.own('disabled')?.value, surface: d.own('surface')?.value }),
+    own: (d) => ({
+      disabled: d.own('disabled')?.value,
+      surface: d.own('surface')?.value,
+      frosted: d.own('frosted')?.value,
+    }),
   }),
   composerPanelStatusTab: product(BloomComposerPanelStatusTab),
 };

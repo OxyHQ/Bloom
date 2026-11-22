@@ -134,8 +134,7 @@ const pills: ParityCase[] = [
   },
   {
     name: 'ComposerPill without its surface, frosted, disabled',
-    language: () =>
-      toElement(L.ComposerPill(['', set], { frosted: true }).surface(false).disabled()),
+    language: () => toElement(L.ComposerPill(['', set]).surface(false).frosted().disabled()),
     bloom: () => <ComposerPill value="" onValueChange={set} frosted surface={false} disabled />,
   },
   ...VOICE.map((voiceState) => ({

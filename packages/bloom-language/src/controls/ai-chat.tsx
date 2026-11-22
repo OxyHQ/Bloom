@@ -21,7 +21,14 @@ import {
 import type { SidebarProps } from '@oxy.so/bloom/sidebar';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import { type AiChatLineTone, type LengthToken, resolveLength, type SpaceToken } from '../tokens';
+import {
+  type AiChatLineTone,
+  type LengthToken,
+  resolveLength,
+  type ScrollbarSide,
+  type SidebarSurface,
+  type SpaceToken,
+} from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -53,6 +60,9 @@ export type AiChatShellOptions = Omit<
   | 'defaultPanelWidth'
   | 'minPanelWidth'
   | 'maxPanelWidth'
+  | 'sidebarSurface'
+  | 'sidebarScrollbarSide'
+  | 'surface'
 > & {
   /** The sidebar, or a function of Bloom's sidebar props that returns it. */
   readonly sidebar: Child | ((props: SidebarProps) => Child);
@@ -68,7 +78,7 @@ export type AiChatShellOptions = Omit<
 };
 export type AiChatContainerOptions = Omit<
   AiChatContainerProps,
-  Drawn | 'actions' | 'header' | 'composer' | 'background'
+  Drawn | 'actions' | 'header' | 'composer' | 'background' | 'surface' | 'floatingChrome'
 > & {
   readonly actions?: Child;
   readonly header?: Child;
@@ -88,9 +98,21 @@ export type AiChatGalleryPanelOptions = Omit<
 > & { readonly stylePresets?: Child; readonly width?: LengthToken };
 
 /** Bloom `AiChatShell`: the sidebar, the chat and its side panel. */
-export type AiChatShellView = ViewModifiers<AiChatShellView>;
+export interface AiChatShellView extends ViewModifiers<AiChatShellView> {
+  /** The sidebar's edge: a `card`, `plain` or `docked`. */
+  sidebarSurface(value: SidebarSurface): AiChatShellView;
+  /** The side the sidebar's web scrollbar is drawn on: `end` or `start`. */
+  sidebarScrollbarSide(value: ScrollbarSide): AiChatShellView;
+  /** `false` draws the shell without its own surface (on a surface of yours). */
+  surface(value?: boolean): AiChatShellView;
+}
 /** Bloom `AiChatContainer`: the chat's header, its content, the composer under it. */
-export type AiChatContainerView = ViewModifiers<AiChatContainerView>;
+export interface AiChatContainerView extends ViewModifiers<AiChatContainerView> {
+  /** `false` draws the chat without its own surface. */
+  surface(value?: boolean): AiChatContainerView;
+  /** The header and composer float over the thread. */
+  floatingChrome(value?: boolean): AiChatContainerView;
+}
 /** Bloom `AiChatThread`: the turns, kept at the bottom as they stream. */
 export type AiChatThreadView = ViewModifiers<AiChatThreadView>;
 /** Bloom `AiChatUserMessage`: what the person wrote, in its bubble. */
@@ -189,11 +211,18 @@ export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
             ? (props: SidebarProps) => d.render(sidebar(props))
             : d.render(sidebar),
         panel: panel === undefined ? undefined : (w: number | '100%') => d.render(panel(w)),
+        sidebarSurface: d.own('sidebarSurface')?.value,
+        sidebarScrollbarSide: d.own('sidebarScrollbarSide')?.value,
+        surface: d.own('surface')?.value,
       };
     },
   }),
   aiChatContainer: product(BloomAiChatContainer, {
     slots: ['actions', 'header', 'composer', 'background'],
+    own: (d) => ({
+      surface: d.own('surface')?.value,
+      floatingChrome: d.own('floatingChrome')?.value,
+    }),
   }),
   aiChatThread: product(BloomAiChatThread),
   aiChatUserMessage: product(BloomAiChatUserMessage),
