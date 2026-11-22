@@ -7,9 +7,13 @@ import { RiHeart3Line } from '../remix/RiHeart3Line';
 function svgSize(element: React.ReactElement): { width: unknown; height: unknown } {
   let renderer!: TestRenderer.ReactTestRenderer;
   act(() => {
-    renderer = TestRenderer.create(<BloomThemeProvider fonts={false}>{element}</BloomThemeProvider>);
+    renderer = TestRenderer.create(
+      <BloomThemeProvider fonts={false}>{element}</BloomThemeProvider>,
+    );
   });
-  const svg = renderer.root.findAll((node) => typeof node.type === 'string' && node.props.width !== undefined)[0];
+  const svg = renderer.root.findAll(
+    (node) => typeof node.type === 'string' && node.props.width !== undefined,
+  )[0];
   return { width: svg?.props.width, height: svg?.props.height };
 }
 
