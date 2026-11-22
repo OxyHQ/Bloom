@@ -1725,6 +1725,7 @@ describe('the spec drives the rules', () => {
       true,
       true,
       true,
+      true,
     ];
     expect(checks.every(Boolean)).toBe(true);
   });
