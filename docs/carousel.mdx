@@ -30,7 +30,7 @@ import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
 | `showArrows` | `true` | Prev/next buttons. They disable at each end; use your app's breakpoint to hide them on small screens. |
 | `arrowsPlacement` | `'header'` | `'header'` shares the title row; `'overlay'` centers controls on the track edges; `'footer'` shares a row below the track. |
 | `renderControls` | | Replace arrows with composed controls using carousel-owned handlers, disabled state, localised names and RTL-aware icons. Rendered only with `showArrows` and at least one slide. |
-| `arrowButtonProps` | | Visual options for both buttons: `className`, `material`, `appearance`, `tone`, `size`, `iconSize`. Names, events and disabled state stay carousel-owned. |
+| `arrowButtonProps` | | Visual options for both buttons: `style`, `colors`, `material`, `appearance`, `tone`, `size`, `iconSize`. Names, events and disabled state stay carousel-owned. |
 | `hideUnavailableArrows` | `false` | Hide each unavailable control while retaining its layout slot; excludes it from focus and accessibility. |
 | `showDots` | `true` | Position indicator, one dot per stop (see below); never shown for a single stop. Each dot is a button. |
 | `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
@@ -134,7 +134,7 @@ The default `arrowsVisibility="always"` keeps existing behavior. This option wor
 ```tsx
 <Carousel accessibilityLabel="Photos" arrowsPlacement="overlay"
   hideUnavailableArrows
-  arrowButtonProps={{ material: 'flat', className: 'h-10 w-10 rounded-full', iconSize: 20 }}>
+  arrowButtonProps={{ material: 'flat', style: { width: 40, height: 40, borderRadius: 9999 }, iconSize: 20 }}>
   {slides}
 </Carousel>
 ```
