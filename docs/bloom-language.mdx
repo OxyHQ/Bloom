@@ -1349,6 +1349,29 @@ amounts); `methodContent`, `footer`, `resultIllustration`, `cardEntry` and
 `notice` are language children. Its open sheet is compared by Jest; in
 Chrome it is presented outside the parity table's cells.
 
+### Addresses and payment methods
+
+```ts
+AddressRow(place.title, { subtitle: place.line, kind: 'saved', action: Button(Text('Edit')) }).density('compact').onPress(choose)
+AddressList(sections, { selectedId, onSelect }).style('picker')
+PaymentMethodList(cards, { selectedId, onSelect, onAdd }).style('picker').loading(fetching)
+```
+
+Bloom's `address` and `payment-method`: `AddressRow(title, options?)` (its
+`leading`, `badge` and `action` language children; `leading: null` draws no
+media, as Bloom's does) and `AddressList(sections, options?)` (its `empty` a
+child); `PaymentMethodMark(options?)` (its `image` a child),
+`PaymentMethodRow(options?)` (its `image`, `leading` and `action` children)
+and `PaymentMethodList(methods, options?)` (its `empty` a child). The options
+are Bloom's data as it is: the selection (`selected`, `selectedId`,
+`onSelect`), a row's `role`, the words.
+
+- `.density('default' | 'compact')` is the family's density (`default` its
+  comfortable one); a list's `.style('list' | 'picker')` is whether it is read
+  or one entry chosen; an address's `.size()` a control size. `.disabled()`
+  and a list's `.loading()` (its placeholder rows).
+- The rows take `.onPress()` themselves.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

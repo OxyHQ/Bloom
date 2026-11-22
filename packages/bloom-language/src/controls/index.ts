@@ -1,6 +1,8 @@
 import type { NodeKind } from '../node';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
+import { PAYMENT_METHODS } from './payment-method';
+import { ADDRESSES } from './address';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -46,4 +48,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...NOTE_CARDS,
   ...SHARE_SHEETS,
   ...GENERIC,
+  ...ADDRESSES,
+  ...PAYMENT_METHODS,
 };

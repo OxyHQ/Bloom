@@ -776,3 +776,23 @@ fn the_generic_components_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn addresses_and_payment_methods_are_checked() {
+    let imports = "import { AddressList, AddressRow, PaymentMethodList, PaymentMethodRow, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, m) => VStack(AddressRow('Home').size('sm').density('compact').disabled(), AddressList(s).style('picker').density('default').loading(), PaymentMethodRow().density('compact').disabled(), PaymentMethodList(m).style('list').loading());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("AddressList(s).style('grid')", "Unknown choiceListStyle token 'grid' for .style()"),
+        ("PaymentMethodList(s).style('menu')", "Unknown choiceListStyle token 'menu' for .style()"),
+        ("AddressRow('a').density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("AddressRow('a').tint('accent')", "AddressRow has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

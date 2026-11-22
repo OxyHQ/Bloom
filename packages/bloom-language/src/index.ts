@@ -562,3 +562,22 @@ export type {
   ProgressiveBlurOptions,
   ProgressiveBlurView,
 } from './controls/generic';
+// Addresses (controls/address.tsx)
+export { AddressRow, AddressList } from './controls/address';
+export type {
+  AddressListOptions,
+  AddressListView,
+  AddressRowOptions,
+  AddressRowView,
+} from './controls/address';
+
+// Payment methods (controls/payment-method.tsx)
+export { PaymentMethodMark, PaymentMethodRow, PaymentMethodList } from './controls/payment-method';
+export type {
+  PaymentMethodListOptions,
+  PaymentMethodListView,
+  PaymentMethodMarkOptions,
+  PaymentMethodMarkView,
+  PaymentMethodRowOptions,
+  PaymentMethodRowView,
+} from './controls/payment-method';

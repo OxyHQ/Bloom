@@ -205,6 +205,12 @@ import type {
   PaginationView,
   ProgressiveBlurView,
 } from '../controls/generic';
+import type { AddressRowView, AddressListView } from '../controls/address';
+import type {
+  PaymentMethodMarkView,
+  PaymentMethodRowView,
+  PaymentMethodListView,
+} from '../controls/payment-method';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -510,7 +516,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<OutlineNavView>, Of<'outlineNav'>>,
       Same<MethodsOf<PaginationView>, Of<'pagination'>>,
       Same<MethodsOf<ProgressiveBlurView>, Of<'progressiveBlur'>>,
+      Same<MethodsOf<AddressRowView>, Of<'addressRow'>>,
+      Same<MethodsOf<AddressListView>, Of<'addressList'>>,
+      Same<MethodsOf<PaymentMethodMarkView>, Of<'paymentMethodMark'>>,
+      Same<MethodsOf<PaymentMethodRowView>, Of<'paymentMethodRow'>>,
+      Same<MethodsOf<PaymentMethodListView>, Of<'paymentMethodList'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

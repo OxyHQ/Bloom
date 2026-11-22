@@ -198,6 +198,9 @@ export type SparklineTone = (typeof ENUMS.sparklineTone)[number];
 export type ComposerButtonTone = (typeof ENUMS.composerButtonTone)[number];
 export type AttachmentLayout = (typeof ENUMS.attachmentLayout)[number];
 export type ReactionPickerSize = (typeof ENUMS.reactionPickerSize)[number];
+// Commerce (controls/address.tsx, payment-method.tsx…)
+/** A list read (`list`) or one entry chosen from it (`picker`). */
+export type ChoiceListStyle = (typeof ENUMS.choiceListStyle)[number];
 
 export {
   COLORS,
