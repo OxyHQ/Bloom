@@ -1,6 +1,6 @@
 /**
  * The native lens material for a control: the lens base (see `@oxy.so/bloom-lens`), the same
- * glass a menu grows out of. It draws the fill (the lens, tinted), springs under the finger and runs on the
+ * lens a menu grows out of. It draws the fill (the lens, tinted), springs under the finger and runs on the
  * UI thread; the control inside only draws its content and handles the press.
  */
 import { Children, type ReactNode } from 'react';
@@ -106,7 +106,7 @@ export function LensButtonHost({ tint, radius, jelly, style, children }: LensBut
   const dark = useTheme().isDark;
   if (!native) return <>{Children.only(children)}</>;
   const { LensBase } = native;
-  // The one lens base (the upstream app's glass trigger): what it holds draws no lens of its own,
+  // The one lens base (the upstream app's lens trigger): what it holds draws no lens of its own,
   // and a menu opened from inside it grows out of it.
   return (
     <LensBase
