@@ -425,6 +425,7 @@
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
     "glassTransition": ["matchedGeometry", "materialize"],
+    "buttonStyle": ["solid", "subtle", "outline", "plain", "glass", "glassProminent"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
@@ -1019,6 +1020,12 @@
       "foreground": "foreground",
       "rampWeight": "regular",
       "fontSize": 13
+    },
+    "values": {
+      "$comment": "Environment values a view sets on everything inside it (SwiftUI's isEnabled, controlSize and buttonStyle): modifier is what sets it, own the modifier a node inside takes it as when it sets none itself. A node takes it when it lists own among its modifiers and, with set, reads own from that token set (generated as ENVIRONMENT_TAKERS). An app's own values are defineEnvironment's.",
+      "disabled": { "own": "disabled" },
+      "controlSize": { "own": "size", "set": "controlSize" },
+      "buttonStyle": { "own": "style", "set": "buttonStyle" }
     }
   },
   "modifiers": {
@@ -1206,6 +1213,9 @@
     "glassUnion": ["value", "namespace"],
     "glassTransition": ["glassTransition"],
     "inContent": [],
+    "environment": ["value", "value"],
+    "controlSize": ["controlSize"],
+    "buttonStyle": ["buttonStyle"],
     "drag": ["motionValue", "value?"],
     "swipe": ["swipeDirection", "value"],
     "pinch": ["motionValue", "value?"],
@@ -1735,7 +1745,11 @@
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
