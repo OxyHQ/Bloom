@@ -68,6 +68,9 @@ function* chunks<T>(items: readonly T[]): Generator<T[]> {
 }
 
 const VERSIONS = 'SELECT type, version FROM bloom_versions';
+/** Deletes a type's rows past the newest `limit` written. */
+const TRIM_TYPE = `DELETE FROM bloom_records WHERE type = ? AND id NOT IN (
+  SELECT id FROM bloom_records WHERE type = ? ORDER BY updated_at DESC, id LIMIT ?)`;
 const DROP_TYPE = 'DELETE FROM bloom_records WHERE type = ?';
 const SET_VERSION = 'INSERT OR REPLACE INTO bloom_versions (type, version) VALUES (?, ?)';
 const READ_LIST = `SELECT l.ids AS ids, l.json AS json, r.id AS id, r.json AS record
@@ -141,6 +144,8 @@ export function sqlitePersister(
   let pruneBefore: number | undefined;
   /** The types the prune spares, as a JSON array. */
   let keep = '[]';
+  /** The most rows each bounded type keeps. */
+  let limits: Readonly<Record<string, number>> = {};
   const db = () => {
     if (!database) {
       const opened = open();
@@ -156,7 +161,7 @@ export function sqlitePersister(
   };
 
   return {
-    async open({ versions, maxAgeMs, keep: kept }: OpenOptions) {
+    async open({ versions, maxAgeMs, keep: kept, limits: bounds = {} }: OpenOptions) {
       const handle = await db();
       await handle.execAsync(SCHEMA);
       const changed = changedVersions(await handle.getAllAsync(VERSIONS), versions);
@@ -170,9 +175,10 @@ export function sqlitePersister(
       }
       pruneBefore = Date.now() - maxAgeMs;
       keep = JSON.stringify(kept);
+      limits = bounds;
     },
 
-    openNow({ versions, maxAgeMs, keep: kept }: OpenOptions) {
+    openNow({ versions, maxAgeMs, keep: kept, limits: bounds = {} }: OpenOptions) {
       const handle = dbNow();
       if (!handle) return false;
       handle.execSync(SCHEMA);
@@ -192,6 +198,7 @@ export function sqlitePersister(
       }
       pruneBefore = Date.now() - maxAgeMs;
       keep = JSON.stringify(kept);
+      limits = bounds;
       return true;
     },
 
@@ -267,6 +274,11 @@ export function sqlitePersister(
               ...chunk,
             );
           }
+        }
+        // Only a write can pass a bound: trim the bounded types it stored.
+        for (const type of new Set(upserts.map((record) => record.type))) {
+          const limit = limits[type];
+          if (limit !== undefined) await handle.runAsync(TRIM_TYPE, type, type, limit);
         }
         for (const list of batch.lists) {
           if (list.ids === null || list.json === null) {

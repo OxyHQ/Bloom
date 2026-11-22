@@ -40,6 +40,11 @@ export interface OpenOptions {
   readonly maxAgeMs: number;
   /** Types whose rows never age out (a model's value). */
   readonly keep: readonly string[];
+  /**
+   * The most rows a type keeps: each write that stores rows of the type
+   * deletes the ones past the newest `limits[type]` written.
+   */
+  readonly limits?: Readonly<Record<string, number>>;
 }
 
 export interface StoredRecord {
