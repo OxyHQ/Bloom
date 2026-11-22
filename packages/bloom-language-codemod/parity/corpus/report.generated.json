@@ -1,0 +1,109 @@
+{
+  "app": "parity/sample-app",
+  "files": 1,
+  "changedFiles": 1,
+  "candidates": 16,
+  "converted": 12,
+  "regions": 4,
+  "rate": 75,
+  "overridden": [],
+  "bloomComponents": {},
+  "patterns": [
+    {
+      "code": "measured-difference",
+      "elements": 2,
+      "top": {
+        "text-xs": 1,
+        "flex-1": 1
+      }
+    },
+    {
+      "code": "annotated",
+      "elements": 1,
+      "top": {
+        "mt-2": 1
+      }
+    },
+    {
+      "code": "react-native-text",
+      "elements": 1,
+      "top": {
+        "Text": 1
+      }
+    },
+    {
+      "code": "prop:style",
+      "elements": 1,
+      "top": {
+        "style": 1
+      }
+    },
+    {
+      "code": "corner-without-clip",
+      "elements": 1,
+      "top": {
+        "rounded-xl": 1
+      }
+    }
+  ],
+  "unconverted": [
+    {
+      "file": "components/Rows.tsx",
+      "line": 49,
+      "element": "Text",
+      "reasons": [
+        {
+          "subject": "text-xs",
+          "code": "measured-difference",
+          "why": ".font('caption-1') brings the ramp’s letter spacing, which text-xs does not write"
+        }
+      ]
+    },
+    {
+      "file": "components/Rows.tsx",
+      "line": 58,
+      "element": "View",
+      "reasons": [
+        {
+          "subject": "flex-1",
+          "code": "measured-difference",
+          "why": "NativeWind writes flexGrow 1, flexShrink 1, flexBasis 0%; .grow() is React Native’s flex: 1 (flexShrink 0 on native)"
+        },
+        {
+          "subject": "mt-2",
+          "code": "annotated",
+          "why": ".padding('top', 'sm') (outside the fill)"
+        }
+      ]
+    },
+    {
+      "file": "components/Rows.tsx",
+      "line": 59,
+      "element": "NativeText",
+      "reasons": [
+        {
+          "subject": "Text",
+          "code": "react-native-text",
+          "why": "React Native’s Text, not Bloom’s: the language’s Text draws Bloom’s family, size and ink where this draws the platform’s"
+        }
+      ]
+    },
+    {
+      "file": "components/Rows.tsx",
+      "line": 60,
+      "element": "View",
+      "reasons": [
+        {
+          "subject": "style",
+          "code": "prop:style",
+          "why": "the prop `style` has no mapping"
+        },
+        {
+          "subject": "rounded-xl",
+          "code": "corner-without-clip",
+          "why": "a corner clips in the language; this className does not clip (no overflow-hidden)"
+        }
+      ]
+    }
+  ]
+}
