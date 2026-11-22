@@ -15,12 +15,6 @@ jest.mock('react-native', () => ({
   ...jest.requireActual('../../../__mocks__/react-native'),
   PlatformColor: (...names: string[]) => ({ semantic: names }),
 }));
-jest.mock('react-native-css', () => jest.requireActual('react-native-css/native'));
-jest.mock('react-native-css/native-internal', () =>
-  jest.requireActual(
-    '../../../node_modules/react-native-css/dist/commonjs/native-internal/index.js',
-  ),
-);
 jest.mock('../../theme/prepaint/use-paint-colors', () =>
   jest.requireActual('../../theme/prepaint/use-paint-colors.native'),
 );
