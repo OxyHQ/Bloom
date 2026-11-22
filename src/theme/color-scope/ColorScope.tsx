@@ -1,5 +1,6 @@
 import type React from 'react';
-import { Children, cloneElement, isValidElement } from 'react';
+import { Children, cloneElement, isValidElement, useContext } from 'react';
+import { ColorScopeLayerContext, throughLayer } from './layer';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext } from '../BloomThemeProvider';
@@ -77,7 +78,8 @@ export function BloomColorScope({
   style,
   children,
 }: BloomColorScopeProps) {
-  const { context, state } = useScope(colorPreset, mode, tokens, seed);
+  const { context, state, vars } = useScope(colorPreset, mode, tokens, seed);
+  const Layer = useContext(ColorScopeLayerContext);
 
   let content: React.ReactNode;
   if (asChild) {
@@ -98,7 +100,9 @@ export function BloomColorScope({
 
   return (
     <BloomThemeContext.Provider value={context}>
-      <ThemeScopeContext.Provider value={state}>{content}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={state}>
+        {throughLayer(Layer, vars, content)}
+      </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }
