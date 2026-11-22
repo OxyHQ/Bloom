@@ -314,6 +314,9 @@ function attributeExpression(value: AnyNode): AnyNode {
   return value;
 }
 
+/** Code without its block comments: a name in a comment is no binding. */
+const uncommented = (code: string) => code.replace(/\/\*[\s\S]*?\*\//g, '');
+
 const quote = (text: string) =>
   `'${text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
 
@@ -1637,10 +1640,10 @@ export function transformSource(source: string, options: TransformOptions): File
     before += source.slice(at, node.end);
     const bindings: Record<string, Source> = {};
     for (const local of new Set(
-      [...before.matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
+      [...uncommented(before).matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
     ))
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
-    for (const match of after.matchAll(/\b([A-Z][\w]*)\b/g)) {
+    for (const match of uncommented(after).matchAll(/\b([A-Z][\w]*)\b/g)) {
       const local = match[1] as string;
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
     }
