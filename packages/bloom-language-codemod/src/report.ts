@@ -70,7 +70,7 @@ export function report(
     `# Bloom language codemod: ${relative(process.cwd(), options.app) || '.'}`,
     '',
     `- Files: ${json.files} read, ${json.changedFiles} changed`,
-    `- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons): ${candidates}`,
+    `- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): ${candidates}`,
     `- Converted: ${converted} (${rate.toFixed(1)}%), in ${regions} regions`,
     `- Classes the app's theme draws differently from Bloom's: ${options.overridden.size}`,
     '',
