@@ -1476,7 +1476,7 @@ export function transformSource(source: string, options: TransformOptions): File
     return reasons.length ? { reasons } : { views };
   }
 
-  /** `items.map((item) => <Element />)`: its array (no JSX), its function's parameters and the element it returns. */
+  /** `items.map((item) => <Element />)`: its array, its function's parameters and the element it returns. */
   function mapOf(
     expression: AnyNode,
   ): { items: AnyNode; params: AnyNode[]; body: AnyNode } | undefined {
@@ -1488,7 +1488,6 @@ export function transformSource(source: string, options: TransformOptions): File
       callee.computed ||
       !n.Identifier.check(callee.property) ||
       callee.property.name !== 'map' ||
-      hasJsx(callee.object) ||
       !n.ArrowFunctionExpression.check(fn) ||
       !n.JSXElement.check(fn.body)
     )
@@ -1597,7 +1596,10 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'refresh':
         return refreshOf(expression);
       case 'items':
-        return hasJsx(expression) || n.StringLiteral.check(expression)
+        // Data carried as it is, the elements inside it (a row's trailing button) included.
+        return n.JSXElement.check(expression) ||
+          n.JSXFragment.check(expression) ||
+          n.StringLiteral.check(expression)
           ? undefined
           : [{ node: expression, hole: 'items' }];
       case 'element':
@@ -2282,9 +2284,9 @@ export function transformSource(source: string, options: TransformOptions): File
       const ir = result.ir;
       const rootKey = 'key' in ir ? ir.key : null;
       if (options.fixtures) fixture(node, ir, rootKey);
-      // Regions inside the values it carries (an embedded element's children).
+      // Regions inside the values it carries (an embedded element's children, an array's elements).
       for (const c of carriedOf(ir)) {
-        if (c.hole === 'element') {
+        if (c.hole === 'element' || c.hole === 'items') {
           // An element can sit at the root of what is carried; visit inside it.
           const holder = { type: 'ExpressionStatement', expression: c.node };
           recast.visit(holder, visitor);

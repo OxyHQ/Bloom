@@ -330,13 +330,18 @@ export const B = () => (
     const result = run(`import { SettingsSelect } from '@oxy.so/bloom/settings-modal/select';
 import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
 import { List } from '@oxy.so/bloom/list';
+import { View } from 'react-native';
 export const A = () => (
   <SettingsSelect label={t('a')} value={mode} onChange={setMode} items={[{ value: 'x', label: t('x') }]} />
 );
 export const B = () => <AvatarGroup items={members} size={32} showInitials total={count} />;
 export const C = () => <List items={rows} separator="none" empty={<Empty />} />;
 export const D = () => <AvatarGroup items={members} size={56} />;
+export const E = () => <List items={rows.map((r) => ({ id: r.id, trailing: <View className="p-2" /> }))} />;
 `);
+    expect(flat(result.code)).toContain(
+      "toElement(LList(rows.map((r) => ({ id: r.id, trailing: toElement(VStack().padding('all', 'sm')) }))))",
+    );
     expect(flat(result.code)).toContain(
       "toElement(LSettingsSelect(t('a'), [mode, setMode], [{ value: 'x', label: t('x') }]))",
     );
