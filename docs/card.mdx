@@ -142,6 +142,14 @@ iOS continuous curves, and circular corners on Android and unsupported browsers.
 Both layers use the same curve; the inner radius accounts for the border width.
 Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and BlurIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.
 
+**Web and native differ on purpose for a Card with no corner of its own** (no
+`radius`, no `style.borderRadius`). The web draws it with the concentric corner
+geometry: the host keeps its rung, and its paint and clip take the corners its
+parent leaves it (the material's edge mask follows them). Native draws the rung
+alone. Both are exactly what apps drew before Bloom dropped NativeWind
+([Bloom without NativeWind](./no-nativewind.mdx)); unifying them is a separate,
+visible decision.
+
 ## What `style` can change
 
 Card reads two values from `style`: a `backgroundColor` for the surface paint,
