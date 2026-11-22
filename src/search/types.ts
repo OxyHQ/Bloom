@@ -30,13 +30,13 @@ export type SearchProps = Omit<TextFieldInputProps, 'label'> & {
   clearOnClose?: boolean;
   closeLabel?: string;
   /** The closed state is the canonical Button. Search owns activation and its name. */
-  triggerProps?: Pick<
-    ButtonProps,
-    'appearance' | 'tone' | 'size' | 'style' | 'className' | 'testID'
-  >;
+  triggerProps?: Pick<ButtonProps, 'appearance' | 'tone' | 'size' | 'style' | 'testID'>;
   /** Optional field action, such as voice search. */
   trailing?: ReactNode;
+  /** The field's layout host: height, width and padding. */
   fieldStyle?: TextFieldProps['style'];
+  /** The field's inset surface: background, border/ring and radius. */
+  fieldChromeStyle?: TextFieldProps['chromeStyle'];
   /** Leading icon edge in pixels. Default 20. */
   iconSize?: number;
   /** Clear glyph/target geometry. Search owns its name, callback and disabled state. */
@@ -57,11 +57,5 @@ export type SearchProps = Omit<TextFieldInputProps, 'label'> & {
    * caret at the start of the text and nothing selected (the last token).
    */
   onRemoveToken?: (key: string) => void;
-  /** Field layout classes (height, width and padding). */
-  fieldClassName?: string;
-  /** Inset surface classes (background, border/ring and radius). */
-  fieldChromeClassName?: string;
-  /** Classes on the outer layout box, including the clear control. */
-  containerClassName?: string;
   containerStyle?: StyleProp<ViewStyle>;
 };

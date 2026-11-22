@@ -8,7 +8,6 @@ import {
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useTouchInput } from '../styles/pointer';
 import { useSearchPresentation } from './use-search-presentation';
-import { StyledView } from '../styles/styled-primitives';
 import {
   forwardRef,
   useCallback,
@@ -18,7 +17,7 @@ import {
   useState,
   type ComponentRef,
 } from 'react';
-import { Platform, StyleSheet, type TextInput } from 'react-native';
+import { Platform, StyleSheet, View, type TextInput } from 'react-native';
 
 import { useFieldMembership } from '../field/membership';
 import { TextFieldGroupContext } from '../text-field/TextField';
@@ -60,6 +59,7 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
     triggerProps,
     trailing,
     fieldStyle,
+    fieldChromeStyle,
     label: labelProp,
     placeholder: placeholderProp,
     onClearText,
@@ -74,9 +74,6 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
     clearButtonProps,
     disabled,
     style,
-    fieldClassName,
-    fieldChromeClassName,
-    containerClassName,
     containerStyle,
     ...rest
   },
@@ -214,7 +211,6 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   const fieldContent = (
     <FieldBox
       {...direction}
-      className={presentation === 'field' ? containerClassName : undefined}
       style={[presentation === 'field' ? containerStyle : undefined]}
       baseStyle={[a.w_full, a.relative]}
       onFocusCapture={presentation === 'field' ? undefined : display.focus}
@@ -237,8 +233,7 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
           ]) ?? undefined
         }
         radius={borderRadius.full}
-        className={fieldClassName}
-        chromeClassName={fieldChromeClassName}
+        chromeStyle={fieldChromeStyle}
         leadingAddon={
           display.collapsible ? (
             <Button
@@ -314,10 +309,7 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
   );
   if (presentation === 'field') return fieldContent;
   return (
-    <StyledView
-      className={containerClassName}
-      style={[{ width: '100%', minWidth: 0 }, containerStyle]}
-    >
+    <View style={[{ width: '100%', minWidth: 0 }, containerStyle]}>
       <SearchTransition
         expanded={display.expanded}
         collapsedWidth={collapsedWidth}
@@ -350,7 +342,7 @@ export const Search: RefComponent<SearchProps, ComponentRef<typeof TextInput>> =
       >
         {fieldContent}
       </SearchTransition>
-    </StyledView>
+    </View>
   );
 });
 Search.displayName = 'Search';
