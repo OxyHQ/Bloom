@@ -583,7 +583,7 @@
     "tabsStyle": ["underline", "pill", "filled"],
     "kbdSize": ["sm", "md"],
     "loadingStyle": ["spinner", "top", "inline"],
-    "contentTransition": ["roll"],
+    "contentTransition": ["roll", "numeric"],
     "swipeDirection": ["left", "right", "up", "down"],
     "keyboard": [
       "default",
