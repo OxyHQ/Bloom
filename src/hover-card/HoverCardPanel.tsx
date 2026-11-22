@@ -23,7 +23,7 @@
  *    reached a button inside it. Pointer enter/leave do not bubble and do not
  *    fire between descendants.
  */
-import React from 'react';
+import type React from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { FloatingPanel } from '../floating/FloatingPanel';
@@ -42,7 +42,6 @@ export interface HoverCardPanelProps extends FloatingPositionProps {
   onPointerLeave: () => void;
   label: string;
   padded?: boolean;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children?: React.ReactNode;
@@ -60,7 +59,6 @@ export function HoverCardPanel({
   align = 'center',
   sideOffset = HOVER_CARD_SIDE_OFFSET,
   alignOffset,
-  className,
   style,
   testID,
   children,
@@ -78,7 +76,6 @@ export function HoverCardPanel({
       sideOffset={sideOffset}
       alignOffset={alignOffset}
       onDismiss={onDismiss}
-      className={className}
       style={[styles.panel, style]}
       testID={testID}
       onPointerEnter={onPointerEnter}
