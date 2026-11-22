@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 
-import { StyledView } from '../styles/styled-primitives';
+import { View } from 'react-native';
 import { MarkdownProvider } from './context';
 import { MarkdownBlocks } from './MarkdownBlocks';
 import type { MarkdownProps } from './types';
@@ -24,7 +24,6 @@ function MarkdownComponent({
   onLinkPress,
   renderCodeBlock,
   style,
-  className,
   testID,
   ref,
 }: MarkdownProps) {
@@ -36,11 +35,11 @@ function MarkdownComponent({
   const blocks = segments.map((segment) => segment.block);
 
   return (
-    <StyledView ref={ref} className={className} style={style} testID={testID}>
+    <View ref={ref} style={style} testID={testID}>
       <MarkdownProvider value={context}>
         <MarkdownBlocks blocks={blocks} streaming={streaming} />
       </MarkdownProvider>
-    </StyledView>
+    </View>
   );
 }
 
