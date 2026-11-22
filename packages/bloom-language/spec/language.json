@@ -1634,7 +1634,10 @@
     "pitchCard": { "constructors": ["PitchCard"], "modifiers": [] },
     "checkoutSummaryRow": { "constructors": ["CheckoutSummaryRow"], "modifiers": ["disabled"] },
     "checkoutSummary": { "constructors": ["CheckoutSummary"], "modifiers": [] },
-    "checkoutConfirm": { "constructors": ["CheckoutConfirm"], "modifiers": ["disabled", "loading"] },
+    "checkoutConfirm": {
+      "constructors": ["CheckoutConfirm"],
+      "modifiers": ["disabled", "loading"]
+    },
     "deliverySlotDays": {
       "constructors": ["DeliverySlotDays"],
       "modifiers": ["disabled", "tint"],
