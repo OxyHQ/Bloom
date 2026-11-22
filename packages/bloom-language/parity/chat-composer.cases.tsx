@@ -272,6 +272,7 @@ const parts: ParityCase[] = [
 const pickers: ParityCase[] = [
   ...ENUMS.attachmentLayout.map((layout) => ({
     name: `AttachmentMenu ${layout}, open`,
+    isolated: true,
     language: () =>
       toElement(
         L.AttachmentMenu(L.Button(L.Text('Attach')).onPress(press), {
@@ -355,6 +356,7 @@ const pickers: ParityCase[] = [
   },
   {
     name: 'MessageContextMenu, open with reactions',
+    isolated: true,
     language: () =>
       toElement(
         L.MessageContextMenu(L.Text('Hello'), MENU, {

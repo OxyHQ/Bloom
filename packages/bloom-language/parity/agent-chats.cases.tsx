@@ -171,6 +171,7 @@ const chats: ParityCase[] = [
 const workspaces: ParityCase[] = [
   {
     name: 'MultiAgentChat',
+    isolated: true,
     language: () => toElement(L.MultiAgentChat({ storageKey: null })),
     bloom: () => <MultiAgentChat storageKey={null} />,
   },

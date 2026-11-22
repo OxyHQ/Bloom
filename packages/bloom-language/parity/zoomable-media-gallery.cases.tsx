@@ -55,11 +55,13 @@ const CASES: readonly ParityCase[] = [
   },
   {
     name: 'an open gallery',
+    isolated: true,
     language: () => toElement(L.Text('Photos').fullScreenCover([true, set], L.Gallery(ITEMS))),
     bloom: () => <BloomCover open />,
   },
   {
     name: 'a page of its own, at the second item, with thumbnails, a corner, controls and words',
+    isolated: true,
     language: () =>
       toElement(
         L.Text('Photos').fullScreenCover(
@@ -88,6 +90,7 @@ const CASES: readonly ParityCase[] = [
   },
   {
     name: 'an avatar, round at every size',
+    isolated: true,
     language: () =>
       toElement(
         L.Text('Photos').fullScreenCover([true, set], L.Gallery(ITEMS).mediaCorner('full')),

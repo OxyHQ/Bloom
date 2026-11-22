@@ -57,6 +57,7 @@ const pickers: ParityCase[] = [
   },
   {
     name: 'DatePicker, open, with labels of its own',
+    isolated: true,
     language: () =>
       toElement(
         L.DatePicker([DAY, set]).presented([true, set]).labels({ cancel: 'Back', apply: 'Done' }),
@@ -103,6 +104,7 @@ const pickers: ParityCase[] = [
   },
   {
     name: 'DateRangePicker, open, bounded',
+    isolated: true,
     language: () =>
       toElement(L.DateRangePicker([RANGE, set]).presented([true, set]).bounds(MIN, null)),
     bloom: () => (
@@ -242,6 +244,7 @@ const meetings: ParityCase[] = [
   },
   {
     name: 'MeetingScheduler open, booked, its own slots and words, 12h, bounded',
+    isolated: true,
     language: () =>
       toElement(
         L.MeetingScheduler([BOOKING, set], HOST, MEETING, 'Amsterdam')

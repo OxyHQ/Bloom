@@ -71,6 +71,7 @@ export const MENUBAR_CASES: readonly ParityCase[] = [
   },
   {
     name: 'an open menu of a menubar, with glyphs, a section, a toggle and a submenu',
+    isolated: true,
     language: () =>
       toElement(
         L.Menubar(

@@ -198,8 +198,14 @@ generated from the spec, not by scanning (no PostCSS plugin).
 - *Logical edges* (`paddingStart`…) are CSS logical properties, resolved by the
   document's direction, which Bloom sets on the root (`useDirectionProps`);
   react-native-web resolves its own against the nearest `dir` prop.
-- *Not covered:* server rendering. An adopted sheet is not in server HTML; an
-  app with Expo static rendering needs the sheet in its document head first.
+- *Server rendering:* an adopted sheet is not in server HTML, so
+  `LanguageStyles` (from the package) goes once around an app that renders on
+  a server with Bloom's `ssrStyles`; the router's `layout()` puts it around
+  itself (an inner layout writes nothing). It draws its children, then the
+  generated sheet and each variant sheet the tree drew, through Bloom's
+  `ServerStyleSheet` (`@oxy.so/bloom/styles`), under the ids the renderer
+  adopts, so the page is styled before it hydrates and hydration keeps the
+  same sheets. Without a server policy, and once hydrated, it writes nothing.
 
 Fonts are Bloom's: a language `Text` is Bloom's `Text`, so it takes Bloom's
 families (Inter, the display face for titles), its desktop scale under a
@@ -4177,6 +4183,27 @@ three read. A case that cannot be equal is a decision, never a tolerance. A
 case whose tree is empty fails, since two empty trees prove nothing, unless
 drawing nothing is its claim on that platform (`drawsNothing`: a closed
 palette on the web).
+
+Every case runs in the Jest suites, native and web. Every case is in the
+`Language/Parity` stories too, except those Chrome cannot compare as a pair
+(`*_MOVING`, `*_FOCUSED`, `*_TIMED` and `*_TOASTS` lists beside each family's
+cases, which the stories leave out). Each is a property of the page, not of
+the case:
+
+| Left out of Chrome | Why two sides cannot be compared in one page | Cases |
+| --- | --- | --- |
+| A mark that moves on its own | Its frames run on a JavaScript timer or a frame loop from the moment it mounts, so two sides read one after the other stand at different frames. Jest compares them as they mount, where time stands still. | the thinking marks and the working row (agents), the typing dots (chat, message bubbles), a working container's seconds (AI chat), the editor's emotion ring (agent editor), the ambient photo's cross-fade and drift, a calendar's pulsing day, a call's speaking ring and slide track, a busy action's mark (engagement), the locating puck (map chrome), live listening bars (media cards), the task list's and web search's working rows, the now-playing bars (track list) |
+| A field that takes the focus as it appears | A page has one focused element, so of two sides drawn side by side only one holds it. | an `autoFocus` field and an open collapsible search (inputs), a one-time code, an open home-search location segment |
+| A notification that dismisses itself | Its countdown runs as it is drawn, so two sides are sampled at different moments of it. | the timed notifications |
+| A toast | A page has one toast store, so two toasters side by side would each draw both toasts. | toasts raised through the language's `toast` and Bloom's |
+
+The Jest web suite cannot compare what needs a layout: jsdom lays nothing
+out, so a view that draws only once it has measured itself (the shell's
+panels, drawn after the shell knows its width) is compared in Chrome. An
+overlay a case presents (an open alert, dialog, popover, picker, tooltip,
+hover card, context menu, menubar menu, gallery, attachment menu, the
+checkout sheet) is `isolated`, so Chrome compares what it portals as well as
+its trigger, as the web suite does.
 
 ## One spec
 

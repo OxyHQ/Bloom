@@ -215,6 +215,7 @@ const shells: ParityCase[] = [
   },
   {
     name: 'AiChatShell with a panel, a sidebar width',
+    isolated: true,
     language: () =>
       toElement(
         L.AiChatShell(L.AiChatMessageLine('Hello'), {

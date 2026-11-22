@@ -30,6 +30,7 @@ const OpenButton = () => <Button onPress={onPress}>Open</Button>;
 const alerts: ParityCase[] = [
   ...([false, true] as const).map((open) => ({
     name: `alert ${open ? 'open' : 'closed'}`,
+    isolated: true,
     language: () => toElement(OPEN.alert([open, setOpen], O.Alert('Delete post?'))),
     bloom: () => (
       <>
@@ -40,6 +41,7 @@ const alerts: ParityCase[] = [
   })),
   {
     name: 'alert with a message and its labels',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.alert(
@@ -70,6 +72,7 @@ const alerts: ParityCase[] = [
   },
   {
     name: 'alert destructive',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.alert(
@@ -93,6 +96,7 @@ const alerts: ParityCase[] = [
   },
   {
     name: 'alert without cancel',
+    isolated: true,
     language: () =>
       toElement(OPEN.alert([true, setOpen], O.Alert('Saved').confirmLabel('OK').hideCancel())),
     bloom: () => (
@@ -104,6 +108,7 @@ const alerts: ParityCase[] = [
   },
   ...ENUMS.alertDefault.map((action) => ({
     name: `alert default ${action}`,
+    isolated: true,
     language: () =>
       toElement(OPEN.alert([true, setOpen], O.Alert('Discard?').defaultAction(action))),
     bloom: () => (
@@ -115,6 +120,7 @@ const alerts: ParityCase[] = [
   })),
   {
     name: 'alert not dismissible, with a test id',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.alert(
@@ -140,6 +146,7 @@ const alerts: ParityCase[] = [
 const dialogs: ParityCase[] = [
   ...([false, true] as const).map((open) => ({
     name: `dialog ${open ? 'open' : 'closed'}`,
+    isolated: true,
     language: () =>
       toElement(OPEN.dialog([open, setOpen], O.Dialog(L.Text('Body')).title('Edit profile'))),
     bloom: () => (
@@ -153,6 +160,7 @@ const dialogs: ParityCase[] = [
   })),
   {
     name: 'dialog with a message, buttons and a name',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -190,6 +198,7 @@ const dialogs: ParityCase[] = [
   },
   ...ENUMS.dialogPlacement.map((placement) => ({
     name: `dialog at ${placement}`,
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -208,6 +217,7 @@ const dialogs: ParityCase[] = [
   })),
   {
     name: 'dialog from the bottom, centred from md',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -231,6 +241,7 @@ const dialogs: ParityCase[] = [
   },
   {
     name: 'dialog scrollable, kept on a backdrop press',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -252,6 +263,7 @@ const dialogs: ParityCase[] = [
 const popovers: ParityCase[] = [
   ...([false, true] as const).map((open) => ({
     name: `popover ${open ? 'open' : 'closed'}`,
+    isolated: true,
     language: () =>
       toElement(OPEN.popover([open, setOpen], O.Popover(L.Text('Details')).label('Details'))),
     bloom: () => (
@@ -268,6 +280,7 @@ const popovers: ParityCase[] = [
   ...ENUMS.floatingSide.flatMap((side) =>
     ENUMS.floatingAlign.map((align) => ({
       name: `popover ${side} ${align}`,
+      isolated: true,
       language: () =>
         toElement(
           OPEN.popover(
@@ -330,6 +343,7 @@ const BloomIcon = () => <Themed>{(c) => <RiInformationLine size="lg" fill={c.pri
 const more: ParityCase[] = [
   {
     name: 'alert with an icon',
+    isolated: true,
     language: () =>
       toElement(OPEN.alert([true, setOpen], O.Alert('Update ready').icon(ICON).hideCancel())),
     bloom: () => (
@@ -347,6 +361,7 @@ const more: ParityCase[] = [
   },
   {
     name: 'dialog with a width, a ceiling and no content padding',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -375,6 +390,7 @@ const more: ParityCase[] = [
   },
   {
     name: 'dialog with a header and a footer',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -402,6 +418,7 @@ const more: ParityCase[] = [
   },
   {
     name: 'dialog on a page of its own',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -427,6 +444,7 @@ const more: ParityCase[] = [
   },
   {
     name: 'dialog at an app width, its gutter and height ceiling',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -457,6 +475,7 @@ const more: ParityCase[] = [
   },
   ...(['sm', 'md', 'lg', 'xl'] as const).map((tier) => ({
     name: `dialog from the bottom, at the end from ${tier}`,
+    isolated: true,
     language: () =>
       toElement(
         OPEN.dialog(
@@ -482,6 +501,7 @@ const more: ParityCase[] = [
   })),
   {
     name: 'popover with offsets and widths',
+    isolated: true,
     language: () =>
       toElement(
         OPEN.popover(
