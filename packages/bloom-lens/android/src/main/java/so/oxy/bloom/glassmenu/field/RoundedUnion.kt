@@ -3,6 +3,7 @@ package so.oxy.bloom.glassmenu.field
 import android.graphics.RectF
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.math.sqrt
 
 // One shape of the field (a rounded rect) or several blended into one (GlassShapes): the distance and gradient at a
 // point, sampled into [distance], [gradientX] and [gradientY].
@@ -42,6 +43,14 @@ internal class RoundedUnion {
       val d = shape.distance(x, y)
       shape.gradient(x, y)
       blendWith(d, shape.gradientX, shape.gradientY, blend)
+    }
+    // Several shapes: a unit normal where they meet, as the shader's (liquidMemberField).
+    if (count > 1) {
+      val length = sqrt(gradientX * gradientX + gradientY * gradientY)
+      if (length > 0.000001f) {
+        gradientX /= length
+        gradientY /= length
+      }
     }
   }
 
