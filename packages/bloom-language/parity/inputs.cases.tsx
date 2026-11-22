@@ -387,6 +387,27 @@ const fields: ParityCase[] = [
     language: () => toElement(L.TextField(text, 'Name').disabled()),
     bloom: () => <TextFieldInput label="Name" value="Ada Lovelace" onValueChange={set} disabled />,
   },
+  // Bloom's input reads its shell's `disabled` (it is not editable, and says so),
+  // so a disabled shell around a plain input draws what `.disabled()` draws.
+  {
+    name: 'TextField disabled by its shell',
+    language: () => toElement(L.TextField(text, 'Name').disabled()),
+    bloom: () => (
+      <TextField disabled>
+        <TextFieldInput label="Name" value="Ada Lovelace" onValueChange={set} />
+      </TextField>
+    ),
+  },
+  {
+    name: 'TextField with an icon disabled by its shell',
+    language: () => toElement(L.TextField(text, 'Name').disabled().icon(RiMailLine)),
+    bloom: () => (
+      <TextField disabled>
+        <TextFieldIcon icon={RiMailLine} />
+        <TextFieldInput label="Name" value="Ada Lovelace" onValueChange={set} />
+      </TextField>
+    ),
+  },
   {
     name: 'TextField with a floating label',
     language: () => toElement(L.TextField(empty, 'Email').floatingLabel()),
