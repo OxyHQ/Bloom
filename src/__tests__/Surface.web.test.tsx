@@ -60,7 +60,6 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
     root.render(
       <Surface
         testID="surface"
-        className="caller-surface"
         style={[{ paddingHorizontal: 16 }, { flexDirection: 'row', borderRadius: 13 }]}
       >
         <span>Content</span>
@@ -68,8 +67,7 @@ it('uses real RN web layout styles and keeps the material on the same root', () 
     ),
   );
   const surface = container.querySelector('[data-testid="surface"]') as HTMLElement;
-  expect(surface.className).toContain('caller-surface');
-  expect(surface.className).toContain('bloom-surface--material');
+  expect(surface.hasAttribute('data-bloom-surface-material')).toBe(true);
   expect(getComputedStyle(surface).display).toBe('flex');
   expect(getComputedStyle(surface).flexDirection).toBe('row');
   expect(getComputedStyle(surface).paddingLeft).toBe('16px');
@@ -124,7 +122,7 @@ it('paints every host opaque with no backdrop filter while transparency is reduc
   const surfaceCss = document.getElementById('bloom-surface-web-css')!.textContent!;
   const buttonCss = document.getElementById('bloom-button-web-css')!.textContent!;
   const hosts: readonly (readonly [css: string, host: string])[] = [
-    [surfaceCss, '.bloom-surface--material'],
+    [surfaceCss, '[data-bloom-surface-material]'],
     [buttonCss, '.bloom-btn--surface'],
   ];
   for (const [css, host] of hosts) {
@@ -149,7 +147,7 @@ it('paints every host opaque with no backdrop filter while transparency is reduc
   expect(surface.style.getPropertyValue('--bloom-surface-solid')).toBe(
     resolveSurfaceFill(resolveSurfaceTint('rgb(9, 20, 30)'), '#ffffff'),
   );
-  const paint = container.querySelector('.bloom-surface-paint') as HTMLElement;
+  const paint = container.querySelector('[data-bloom-surface-paint]') as HTMLElement;
   expect(paint.style.getPropertyValue('--bloom-surface-solid')).toBe(
     resolveSurfaceFill(resolveSurfaceTint('rgb(12, 34, 56)'), '#ffffff'),
   );
@@ -164,13 +162,13 @@ it('gives an unpainted surface no opaque body to inherit', () => {
 it('retains caller colour with subtle translucency beneath the optical edge', () => {
   act(() => root.render(<Surface fill="rgb(9, 20, 30)" testID="solid" />));
   const surface = container.querySelector('[data-testid="solid"]') as HTMLElement;
-  expect(surface.className).toContain('bloom-surface--material');
+  expect(surface.hasAttribute('data-bloom-surface-material')).toBe(true);
   expect(surface.style.getPropertyValue('--bloom-surface-fill')).toBe('rgba(9, 20, 30, 0.72)');
 });
 
 it('the universal paint entry renders web optics without a platform barrel', () => {
   act(() => root.render(<SurfacePaint fill="rgba(12, 34, 56, 0.25)" radius={19} />));
-  const paint = container.querySelector('.bloom-surface-paint') as HTMLElement;
+  const paint = container.querySelector('[data-bloom-surface-paint]') as HTMLElement;
   expect(paint).not.toBeNull();
   expect(paint.style.getPropertyValue('--bloom-surface-paint-fill')).toBe('rgba(12, 34, 56, 0.25)');
   expect(getComputedStyle(paint).position).toBe('absolute');
@@ -231,7 +229,7 @@ it('can turn the edge light off without dropping the glass', () => {
     ),
   );
   const pane = container.querySelector('[data-testid="pane"]') as HTMLElement;
-  expect(pane.className).toContain('bloom-surface-paint');
+  expect(pane.hasAttribute('data-bloom-surface-paint')).toBe(true);
   expect(pane.style.getPropertyValue('--bloom-surface-filter')).toBe(SURFACE_FILTER);
   expect(pane.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe('none');
 });
@@ -333,9 +331,9 @@ it('keeps an explicitly transparent surface on its enclosing fill and depth', ()
       </SurfaceLevelProvider>,
     ),
   );
-  expect(container.querySelector('[data-testid="clear"]')?.className).not.toContain(
-    'bloom-surface--material',
-  );
+  expect(
+    container.querySelector('[data-testid="clear"]')?.hasAttribute('data-bloom-surface-material'),
+  ).toBe(false);
   expect(container.querySelector('[data-testid="probe"]')?.getAttribute('data-fill')).toBe(
     '#123456',
   );
