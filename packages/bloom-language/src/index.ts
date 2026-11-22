@@ -603,6 +603,10 @@ export type { ViewportView } from './controls/viewport';
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';
+
+// Spinner glyphs (controls/spinner-icon.tsx)
+export { SpinnerIcon } from './controls/spinner-icon';
+export type { SpinnerIconView } from './controls/spinner-icon';
 // Context menus (controls/context-menu.tsx)
 export { ContextMenu } from './controls/context-menu';
 export type { ContextMenuView } from './controls/context-menu';
