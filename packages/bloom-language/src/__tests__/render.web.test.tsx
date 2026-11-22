@@ -98,25 +98,14 @@ describe('on the web, styles are classes from the generated sheet', () => {
 });
 
 describe('a ZStack on the web', () => {
-  it('is the tallest child’s height, each child at the alignment, as on native', () => {
-    let renderer!: ReactTestRenderer;
+  it('is the tallest child’s height, each child at the alignment, from each slot’s onLayout, as on native', () => {
+    const r = mount(toElement(ZStack(Text('a'), Text('bb')).alignment('center')));
+    const [stack, , a, bb] = r.root.findAllByType('View' as never);
     act(() => {
-      renderer = TestRenderer.create(
-        createElement(
-          PaintContext.Provider,
-          { value: LIGHT },
-          toElement(ZStack(Text('a'), Text('bb')).alignment('center')),
-        ),
-        {
-          createNodeMock: (host) => {
-            const child = (host.props as { children?: ReactElement }).children;
-            const text = (child?.props as { children?: unknown } | undefined)?.children;
-            return { offsetHeight: text === 'bb' ? 30 : 10 };
-          },
-        },
-      );
+      a?.props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 8, height: 10 } } });
+      bb?.props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 16, height: 30 } } });
     });
-    const [stack, box, a, bb] = renderer.root.findAllByType('View' as never);
+    const [, box, a2, bb2] = r.root.findAllByType('View' as never);
     expect(stack?.props.style).toEqual({
       $$css: true,
       position: WEB_CLASS['position:relative'],
@@ -125,11 +114,11 @@ describe('a ZStack on the web', () => {
       { flexGrow: 1, justifyContent: 'center' },
       { minHeight: 30 },
     ]);
-    expect(a?.props.style).toEqual([
+    expect(a2?.props.style).toEqual([
       { position: 'static', alignItems: 'center' },
       { marginTop: -5, marginBottom: -5 },
     ]);
-    expect(bb?.props.style).toEqual([
+    expect(bb2?.props.style).toEqual([
       { position: 'static', alignItems: 'center' },
       { marginTop: -15, marginBottom: -15 },
     ]);
