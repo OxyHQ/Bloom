@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useColorTokens } from '../theme/color-tokens';
 import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { BottomBar } from '../bottom-bar/BottomBar.web';
@@ -496,6 +497,7 @@ function PhotoLibraryDemo() {
 export const PhotoLibrary: Story = { render: () => <PhotoLibraryDemo /> };
 
 function MusicCollectionDemo() {
+  const tokens = useColorTokens();
   const [query, setQuery] = useState('');
   const [destination, setDestination] = useState('album');
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
@@ -672,7 +674,7 @@ function MusicCollectionDemo() {
                       </Text>
                       <Text
                         variant="caption-1-regular"
-                        className="text-text-secondary"
+                        style={{ color: tokens.mutedForeground }}
                         numberOfLines={1}
                       >
                         {album.artist}
