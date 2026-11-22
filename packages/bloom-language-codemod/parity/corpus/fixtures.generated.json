@@ -1294,7 +1294,7 @@
  {
   "name": "components/Components.tsx:501",
   "before": "<VirtualList\n      data={ITEMS}\n      keyExtractor={() => {}}\n      renderItem={({ item, index }) => (\n        <Pressable onPress={() => {}} className=\"px-4 py-3\">\n          <Muted numberOfLines={2}>{'⟨1⟩'}</Muted>\n        </Pressable>\n      )}\n      estimatedItemSize={56}\n      onEndReached={() => {}}\n      onEndReachedThreshold={0.5}\n      ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}\n    />",
-  "after": "toElement(LVirtualList(ITEMS, (item, index) => VStack(LText('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(LText('⟨6⟩').textStyle('muted')))",
+  "after": "toElement(LVirtualList(ITEMS, ({ item, index }) => VStack(LText('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(LText('⟨6⟩').textStyle('muted')))",
   "bindings": {
    "VirtualList": {
     "module": "@oxy.so/bloom/list",
@@ -1363,7 +1363,129 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:519",
+  "name": "components/Components.tsx:527",
+  "before": "<VirtualList\n      data={ITEMS}\n      renderItem={((info) => <Hole n={'1-' + info.index} />)}\n      screen={{}}\n      scrollbar=\"never\"\n      keyboardShouldPersistTaps=\"handled\"\n      keyboardDismissMode=\"on-drag\"\n      overscan={2}\n      removeClippedSubviews\n      maxToRenderPerBatch={10}\n      windowSize={10}\n      initialNumToRender={10}\n      recycleItems\n      maintainVisibleContentPosition={false}\n      drawDistance={400}\n      maxItemsInRecyclePool={24}\n    />",
+  "after": "toElement(LVirtualList(ITEMS, (info) => Embed(((info) => <Hole n={'1-' + info.index} />)(info))).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
+  "bindings": {
+   "VirtualList": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "VirtualList"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:554",
+  "before": "<VirtualList data={ITEMS} renderItem={({ item }) => <Hole n=\"1\" />} />",
+  "after": "toElement(LVirtualList(ITEMS, ({ item }) => Embed(<Hole n=\"1\" />)))",
+  "bindings": {
+   "VirtualList": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "VirtualList"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:559",
   "before": "<PressableScale\n      onPress={() => {}}\n      accessibilityLabel={'⟨2⟩'}\n      className=\"flex-row items-center gap-3 rounded-xl border border-border bg-surface p-4\"\n    >\n      <Muted>{'⟨0⟩'}</Muted>\n    </PressableScale>",
   "after": "toElement(HStack(LText('⟨0⟩').textStyle('muted')).padding('all', 'lg').background('surface').border('border', 'thin').corner('md').align('center').spacing('md').onPress(() => {}).label('⟨2⟩').pressScale())",
   "bindings": {
@@ -1436,7 +1558,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:537",
+  "name": "components/Components.tsx:577",
   "before": "<ChatSearchField\n      value={'⟨0⟩'}\n      onChangeText={() => {}}\n      onClear={() => {}}\n      placeholder={'⟨2⟩'}\n      accessibilityLabel={'⟨5⟩'}\n      clearLabel={'⟨3⟩'}\n    />",
   "after": "toElement(LChatSearchField(['⟨0⟩', () => {}], { placeholder: '⟨2⟩', clearLabel: '⟨3⟩', onClear: () => {} }).label('⟨5⟩'))",
   "bindings": {
@@ -1497,7 +1619,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:551",
+  "name": "components/Components.tsx:591",
   "before": "<View\n      className=\"flex-row p-2\"\n      style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}\n    >\n      <Text style={{ color: parityTheme.colors.textSecondary }}>a</Text>\n      <Text className=\"text-sm\" style={{ flex: 1, color: parityTheme.colors.primary }}>\n        b\n      </Text>\n    </View>",
   "after": "toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())",
   "bindings": {
