@@ -97,6 +97,8 @@ import { ROUTE_STOPS } from './route-stops';
 import { NOTE_CARDS } from './note-card';
 import { SHARE_SHEETS } from './share-sheet';
 import { GENERIC } from './generic';
+import { ADDRESSES } from './address';
+import { PAYMENT_METHODS } from './payment-method';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -201,4 +203,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...NOTE_CARDS,
   ...SHARE_SHEETS,
   ...GENERIC,
+  ...ADDRESSES,
+  ...PAYMENT_METHODS,
 };

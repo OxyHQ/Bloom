@@ -138,6 +138,8 @@ import type { OrderStatusKind } from './controls/order-status';
 import type { LockupKind } from './controls/lockup';
 import type { AmbientPhotoKind } from './controls/ambient-photo';
 import type { CalendarViewKind } from './controls/calendar';
+import type { PaymentMethodsKind } from './controls/payment-method';
+import type { AddressesKind } from './controls/address';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -297,6 +299,7 @@ import {
   type RadarLegend,
   type MethodTitleAlign,
   type TypeRampStep,
+  type ChoiceListStyle,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1300,7 +1303,8 @@ export type Modifier =
         | OrderStatusBarStyle
         | SidebarVariant
         | NoteCardLayout
-        | OutlineNavStyle;
+        | OutlineNavStyle
+        | ChoiceListStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1606,7 +1610,9 @@ export type NodeKind =
   | RouteStopsKind
   | NoteCardKind
   | ShareSheetKind
-  | GenericKind;
+  | GenericKind
+  | AddressesKind
+  | PaymentMethodsKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1986,7 +1992,8 @@ export class Node {
       | OrderStatusBarStyle
       | SidebarVariant,
       | NoteCardLayout
-      | OutlineNavStyle,
+      | OutlineNavStyle
+      | ChoiceListStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

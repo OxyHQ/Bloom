@@ -104,6 +104,7 @@ import { AGENT_EDITOR_CASES } from '../../parity/agent-editor.cases';
 import { AGENT_CHAT_CASES } from '../../parity/agent-chats.cases';
 import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
 import { GENERIC_CASES } from '../../parity/generic.cases';
+import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -213,6 +214,7 @@ export const FAMILIES = {
   agentChat: AGENT_CHAT_CASES,
   routeNoteShare: ROUTE_NOTE_SHARE_CASES,
   generic: GENERIC_CASES,
+  addressPayment: ADDRESS_PAYMENT_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
