@@ -289,6 +289,15 @@ export interface TransformOptions {
 const LANGUAGE_MODULE = '@oxy.so/bloom-language';
 const SCREEN_KEY = '@oxy.so/bloom/screen#Screen';
 
+/**
+ * Bloom's `PressableScale`: a Pressable that eases to a smaller scale under a
+ * press, its className on the node that scales. The language's parity pairs it
+ * with a pressable stack's `.pressScale()` (parity/pieces.cases.tsx).
+ */
+function isPressableScale(source: Source): boolean {
+  return source.module === '@oxy.so/bloom/pressable-scale' && source.imported === 'PressableScale';
+}
+
 /** The import that names an element, by kind. */
 function kindOf(source: Source | undefined): Kind | undefined {
   if (!source) return undefined;
@@ -305,6 +314,7 @@ function kindOf(source: Source | undefined): Kind | undefined {
   )
     return 'bloomText';
   if (source.module === '@oxy.so/bloom/button' && source.imported === 'Button') return 'button';
+  if (isPressableScale(source)) return 'pressable';
   if (ruleFor(source.module, source.imported)) return 'component';
   if (KEPT[`${source.module}#${source.imported}`] || REMOVED[`${source.module}#${source.imported}`])
     return 'kept';
@@ -1168,6 +1178,8 @@ export function transformSource(source: string, options: TransformOptions): File
       } else fail('child', 'child', 'a child the codemod does not map');
     }
     if (!resolution.ok || reasons.length) return { reasons };
+    if (isPressableScale(sources.get(local) as Source))
+      props.push({ name: 'pressScale', args: [] });
     return { ir: { type: 'stack', resolved: resolution.value, choice, props, key, children } };
   }
 
