@@ -102,6 +102,7 @@ import { PAYMENT_METHODS } from './payment-method';
 import { PRICE_BREAKDOWNS } from './price-breakdown';
 import { PAYMENT_STATUSES } from './payment-status';
 import { CRM } from './crm';
+import { DASHBOARD_CARDS } from './dashboard-cards';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -211,4 +212,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...PRICE_BREAKDOWNS,
   ...PAYMENT_STATUSES,
   ...CRM,
+  ...DASHBOARD_CARDS,
 };
