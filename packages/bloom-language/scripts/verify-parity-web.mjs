@@ -65,7 +65,7 @@ function compareInPage() {
   // (bloom-stat-tile3); an id is compared by its order in its case.
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
   const BLOOM_ID =
-    /\bbloom-(?:alerts-fade|heading-cone|media-card-cover-|stat-tile|story-ring-)\d+\b/g;
+    /\bbloom-(?:alerts-fade|heading-cone|media-card-cover-|stat-tile|story-ring-|theme-toggle-gradient)\d+\b/g;
   let maps = [new Map(), new Map()];
   const ids = (side, text) => {
     const map = maps[side];
@@ -159,7 +159,7 @@ function describeCellInPage(testid) {
   // an id (a clip path's, a gradient's) is compared by its order in the cell.
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
   const BLOOM_ID =
-    /\bbloom-(?:alerts-fade|heading-cone|media-card-cover-|stat-tile|story-ring-)\d+\b/g;
+    /\bbloom-(?:alerts-fade|heading-cone|media-card-cover-|stat-tile|story-ring-|theme-toggle-gradient)\d+\b/g;
   const map = new Map();
   const byOrder = (id) => {
     if (!map.has(id)) map.set(id, `id${map.size}`);
