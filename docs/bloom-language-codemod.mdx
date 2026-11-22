@@ -21,7 +21,7 @@ is `toElement`'s second argument, a child's `.id()`).
 | React Native `View` | `VStack(…)`, or `HStack(…)` with `flex-row` |
 | React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()` |
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
-| React Native `Text` | `RawText(…runs)`: React Native's own Text, only what its chain names |
+| React Native `Text` | `RawText(…runs)`: React Native's own Text in the app preset's base face, then only what its chain names |
 | Bloom `Button` (`@oxy.so/bloom/button`) | `Button(Icon(lead), Text(label), Icon(trail))` with `.style()`, `.tint()`, `.size()`, `.shape()`… as the language's Button parity cases draw it |
 | a Bloom icon (`<RiHeart3Line size="sm" />`, or `size={16}`, a rung's points) | `Icon(RiHeart3Line).size('sm').foreground('primary')` (a bare Bloom icon paints primary) |
 | `className` | modifiers through the className table, in the language's layer order |
@@ -113,7 +113,9 @@ and dark:
 
 - **Before:** the JSX as written, drawn by NativeWind's own runtime
   (`react-native-css`'s components, as the app's Babel preset rewrites React
-  Native's imports) over the app's Tailwind stylesheet, compiled for native
+  Native's imports; React Native's `Text` as `@oxy.so/app-preset` 6.8.0 bundles
+  it, in Bloom's base face, `parity/support/app-text.ts`) over the app's
+  Tailwind stylesheet, compiled for native
   with the preset's `inlineRem: 16`, and in the jsdom document on the web.
 - **After:** the chain the codemod wrote.
 - **Holes:** every value carried over (a handler, a text run, an embedded

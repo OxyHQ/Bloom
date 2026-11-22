@@ -89,7 +89,7 @@ async function main(): Promise<void> {
   if (withFixtures) {
     const fixtures = results.flatMap(({ result }) => result.fixtures);
     writeFileSync(join(out, 'fixtures.generated.json'), `${JSON.stringify(fixtures, null, 1)}\n`);
-    writeFileSync(join(out, 'corpus.generated.tsx'), corpusModule(fixtures));
+    writeFileSync(join(out, 'corpus.generated.tsx'), corpusModule(fixtures, out));
     const used = new Set(fixtures.flatMap((f) => f.classes));
     const css = cssEntry
       ? (await tailwind(readFileSync(cssEntry, 'utf8'), cssEntry, roots)).build([...used])

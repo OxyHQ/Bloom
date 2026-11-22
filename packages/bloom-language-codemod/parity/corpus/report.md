@@ -20,4 +20,4 @@ Not mapped by the codemod yet (each needs its prop rules and parity first):
 
 ## Each element
 
-- components/Rows.tsx:66 `<View>`: `style` (prop:style: the prop `style` has no mapping)
+- components/Rows.tsx:70 `<View>`: `style` (prop:style: the prop `style` has no mapping)

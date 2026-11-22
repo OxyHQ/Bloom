@@ -1,22 +1,32 @@
 /**
  * The parity corpus as a module: each fixture's two sides as functions, the
  * before side drawn by NativeWind's own components (react-native-css, as the
- * app's Babel preset rewrites React Native's imports) and Bloom's, the after
+ * app's Babel preset rewrites React Native's imports; its Text in Bloom's base
+ * face, as `@oxy.so/app-preset` bundles it) and Bloom's, the after
  * side by the language. `parity/corpus.*.test.tsx` renders them.
  */
+import { join, relative } from 'node:path';
+
 import type { Fixture, Source } from './transform';
+
+const APP_TEXT = join(__dirname, '../parity/support/app-text');
 
 const NATIVEWIND: Record<string, string> = {
   View: 'react-native-css/components/View',
   Pressable: 'react-native-css/components/Pressable',
-  Text: 'react-native-css/components/Text',
+  // NativeWind's Text as the app preset bundles it, in Bloom's base face.
+  Text: APP_TEXT,
   Image: 'react-native-css/components/Image',
 };
 
-/** The module and export a binding is drawn from in the corpus. */
-function origin(source: Source): { module: string; name: string } {
+/** The module and export a binding is drawn from in a corpus written to `dir`. */
+function origin(source: Source, dir: string): { module: string; name: string } {
   if (source.module === 'react-native') {
     const module = NATIVEWIND[source.imported];
+    if (module === APP_TEXT) {
+      const path = relative(dir, module);
+      return { module: path.startsWith('.') ? path : `./${path}`, name: source.imported };
+    }
     if (module) return { module, name: source.imported };
   }
   if (source.module === '@oxy.so/bloom/icons')
@@ -24,10 +34,11 @@ function origin(source: Source): { module: string; name: string } {
   return { module: source.module, name: source.imported };
 }
 
-export function corpusModule(fixtures: readonly Fixture[]): string {
+/** The corpus module for `fixtures`, to be written to the directory `dir`. */
+export function corpusModule(fixtures: readonly Fixture[], dir: string): string {
   const imports = new Map<string, string>();
   const alias = (source: Source) => {
-    const { module, name } = origin(source);
+    const { module, name } = origin(source, dir);
     const key = `${module}#${name}`;
     const known = imports.get(key);
     if (known) return known;

@@ -209,7 +209,7 @@ Text('Beta').modifier(tag, 'primary/10')
 | `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers); a `ZStack`'s children in one box of slots (see [Layout](#layout)) |
 | `Spacer` | `View` with `flex: 1` |
 | `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
-| `RawText` | React Native's own `Text`: only what its chain names (no Bloom family, size or ink), as a span. What a screen moved from React Native's `Text` draws; new screens use `Text`. |
+| `RawText` | React Native's own `Text` as an app draws it: Bloom's base face (as `@oxy.so/app-preset` 6.8.0's `metro/base-font` gives every React Native `Text`: Inter on Android and iOS when no text is around it, the document's family on the web), then only what its chain names (no Bloom size or ink), as a span. What a screen moved from React Native's `Text` draws; new screens use `Text`. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
 | `Avatar` | Bloom `Avatar` (with a presence, `AvatarPresence`) |
 | `AvatarGroup` / `Badge` / `IconCircle` / `Loading` | Bloom `AvatarGroup` / `Badge` / `IconCircle` / `Loading` |
