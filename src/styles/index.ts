@@ -17,6 +17,7 @@ export {
   AAA_TEXT_CONTRAST,
 } from './color-contrast';
 export { adoptStyleSheet } from './adopt-style-sheet';
+export { ServerStyleSheet } from './ServerStyleSheet';
 export { webDataSet } from './web-data';
 export { PRESS_HOST_CLASS, PRESS_HOST_STYLE } from './press-host';
 export { svgA11yProps } from './svg-a11y';

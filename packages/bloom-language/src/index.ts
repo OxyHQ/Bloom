@@ -63,7 +63,7 @@ export type { SidebarRow, TreeRow } from './primitives';
 export { view } from './view';
 export { clear, regular, GlassValue } from './glass';
 export type { GlassMaterial } from './glass';
-export { toElement } from './render';
+export { LanguageStyles, toElement } from './render';
 export { defineKeyframes } from './motion/keyframes';
 export type { KeyframesValue } from './motion/keyframes';
 export type { Frame as Keyframe } from './motion/keyframes';
