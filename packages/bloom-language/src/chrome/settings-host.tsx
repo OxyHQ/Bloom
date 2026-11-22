@@ -66,13 +66,14 @@ export function SettingsHost({ node, render, press }: NodeHostProps) {
   const values = valuesOf(node);
   const { groups, pages } = settingsNavigation(node, render, press);
   const presented = values.presented as Binding<boolean> | undefined;
+  const selection = values.selection as Binding<string> | undefined;
   const props: SettingsModalProps = defined({
     groups,
     pages,
     open: presented?.[0] ?? false,
     onClose: presented ? () => presented[1](false) : undefined,
-    page: values.selection as string | undefined,
-    onPageChange: values.onSelect as ((page: string) => void) | undefined,
+    page: selection?.[0],
+    onPageChange: selection?.[1],
     initialView: values.initialView as SettingsView | undefined,
     headerPresentation: values.presentation as SettingsModalProps['headerPresentation'],
     testID: values.testID as string | undefined,

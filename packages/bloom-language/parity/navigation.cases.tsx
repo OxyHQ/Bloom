@@ -181,7 +181,7 @@ const sidebars: ParityCase[] = [
           L.NavItem('Home', RiHome5Line).id('home').activeIcon(RiHome5Fill).link('/'),
           L.NavItem('Search', RiSearchLine).id('search').badge(3).shortcut('⌘K').onPress(noop),
           L.NavItem('Settings', RiSettings3Line).id('settings').secondary(),
-        ).selection('home'),
+        ).selection(['home', select]),
       ),
     bloom: () => (
       <Sidebar
@@ -199,6 +199,8 @@ const sidebars: ParityCase[] = [
         secondaryItems={[{ key: 'settings', label: 'Settings', icon: RiSettings3Line }]}
         selected="home"
         selectedTreeItem="home"
+        onNavigate={noop}
+        onTreeItemPress={noop}
       />
     ),
   },
@@ -219,9 +221,7 @@ const sidebars: ParityCase[] = [
             .id('projects')
             .collapsible()
             .emptyLabel('Nothing yet'),
-        )
-          .selection('q1')
-          .onSelect(select),
+        ).selection(['q1', select]),
       ),
     bloom: () => (
       <Sidebar
@@ -360,8 +360,7 @@ const rails: ParityCase[] = [
           L.RailItem('Files', L.Icon(RiFolderLine).foreground('muted')).id('files'),
           L.RailItem('Settings', L.Icon(RiSettings3Line).foreground('muted')).id('settings'),
         )
-          .selection('home')
-          .onSelect(select)
+          .selection(['home', select])
           .header(L.Text('O'))
           .footer(L.Text('me'))
           .width('96')

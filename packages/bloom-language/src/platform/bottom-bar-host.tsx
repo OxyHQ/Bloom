@@ -12,6 +12,7 @@ import { useScreenActionClaimed } from '@oxy.so/bloom/app-shell/hooks';
 import { BottomBar } from '@oxy.so/bloom/bottom-bar';
 
 import { resolveIconSize } from '../tokens';
+import type { Binding } from '../binding';
 import type { Child, IconComponent, Node, Progress, TabProps } from '../node';
 import { nodesOf, valuesOf } from './values';
 import type { NodeHostProps } from './host.types';
@@ -45,12 +46,13 @@ const NOOP = () => {};
 export function BottomBarHost({ node, render }: NodeHostProps) {
   const values = valuesOf(node);
   const items = itemsOf(node);
+  const selection = values.selection as Binding<string> | undefined;
   const action = useScreenActionClaimed() ? undefined : values.action;
   return (
     <BottomBar
       items={items}
-      value={(values.selection as string | undefined) ?? ''}
-      onValueChange={(values.onSelect as ((id: string) => void) | undefined) ?? NOOP}
+      value={selection?.[0] ?? ''}
+      onValueChange={selection?.[1] ?? NOOP}
       action={action ? render(action as Child) : undefined}
       minimizeProgress={values.minimize as Progress | undefined}
       activeProgress={values.progress as Progress | undefined}

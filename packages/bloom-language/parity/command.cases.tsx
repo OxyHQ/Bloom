@@ -89,8 +89,7 @@ const settings: ParityCase[] = [
           ),
         )
           .presented([true, change])
-          .selection('profile')
-          .onSelect(noop)
+          .selection(['profile', noop])
           .initialView('page')
           .testID('settings'),
       ),

@@ -2611,9 +2611,6 @@ export const MODIFIERS = {
   "selection": [
     "value"
   ],
-  "onSelect": [
-    "value"
-  ],
   "action": [
     "value"
   ],
@@ -6098,7 +6095,6 @@ export const NODE_MODIFIERS = {
   ],
   "bottomBar": [
     "selection",
-    "onSelect",
     "action",
     "minimize",
     "progress",
@@ -9071,7 +9067,6 @@ export const NODE_MODIFIERS = {
   ],
   "sidebar": [
     "selection",
-    "onSelect",
     "header",
     "toolbar",
     "footer",
@@ -9138,7 +9133,6 @@ export const NODE_MODIFIERS = {
   ],
   "rail": [
     "selection",
-    "onSelect",
     "header",
     "footer",
     "width",
@@ -9169,7 +9163,6 @@ export const NODE_MODIFIERS = {
   "settings": [
     "presented",
     "selection",
-    "onSelect",
     "initialView",
     "presentation",
     "testID"

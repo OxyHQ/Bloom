@@ -4,6 +4,7 @@
  */
 import { Rail, type RailItem, type RailProps } from '@oxy.so/bloom/rail';
 
+import type { Binding } from '../binding';
 import type { Child, Node, ViewNode } from '../node';
 import { nodesOf, valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
@@ -28,14 +29,15 @@ export function RailHost({ node, render }: NodeHostProps) {
   const values = valuesOf(node);
   const width = values.width as SpaceToken | undefined;
   const header = values.header as ViewNode | undefined;
+  const selection = values.selection as Binding<string> | undefined;
   let footer: Child;
   for (const modifier of node.modifiers) if (modifier.kind === 'footer') footer = modifier.content;
   const props: RailProps = defined({
     items: nodesOf(node.children)
       .filter((child) => child.kind === 'railItem')
       .map((item) => itemOf(item, render)),
-    onSelect: (values.onSelect as ((id: string) => void) | undefined) ?? NOOP,
-    activeId: values.selection as string | undefined,
+    onSelect: selection?.[1] ?? NOOP,
+    activeId: selection?.[0],
     width: width === undefined ? undefined : resolveSpace(width),
     header: header ? render(header) : undefined,
     footer: footer ? render(footer) : undefined,

@@ -698,11 +698,11 @@ fn a_bottom_sheet_is_checked_against_the_spec() {
 #[test]
 fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (Home, select) => Sidebar(NavItem('Home', Home).id('home').link('/').badge(3).shortcut('⌘1').secondary(), TreeSection('Projects', TreeFolder('Archive', TreeItem('Old')).expanded([true, select]), TreeItem('Roadmap').subtitle('Q1').meta('3').disabled()).collapsible().loading().emptyLabel('None')).selection('home').onSelect(select).variant('rail').surface('docked').size('lg').collapsed().searchable(false).themeToggle(false).label('Navigation');\n",
+        "export const S = (Home, select) => Sidebar(NavItem('Home', Home).id('home').link('/').badge(3).shortcut('⌘1').secondary(), TreeSection('Projects', TreeFolder('Archive', TreeItem('Old')).expanded([true, select]), TreeItem('Roadmap').subtitle('Q1').meta('3').disabled()).collapsible().loading().emptyLabel('None')).selection(['home', select]).variant('rail').surface('docked').size('lg').collapsed().searchable(false).themeToggle(false).label('Navigation');\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let rail = chrome(
-        "export const R = (icon) => Rail(RailItem('Home', icon).id('home').activeIcon(icon)).selection('home').width('96');\n",
+        "export const R = (icon, select) => Rail(RailItem('Home', icon).id('home').activeIcon(icon)).selection(['home', select]).width('96');\n",
     );
     assert!(rail.diagnostics.is_empty(), "{:?}", first_message(&rail));
     let footer = chrome(
@@ -717,12 +717,17 @@ fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
     assert_eq!(first_message(&pinning), Some("Unknown footerPinning token 'fixed' for .pinning()"));
     let row = chrome("export const S = () => TreeItem('a').padding('md');\n");
     assert_eq!(first_message(&row), Some("TreeItem has no modifier .padding()"));
+    // A selection is one binding: no handler of its own beside it.
+    let handler = chrome("export const S = (select) => Sidebar().onSelect(select);\n");
+    assert_eq!(first_message(&handler), Some("Sidebar has no modifier .onSelect()"));
+    let rail = chrome("export const R = (select) => Rail().onSelect(select);\n");
+    assert_eq!(first_message(&rail), Some("Rail has no modifier .onSelect()"));
 }
 
 #[test]
 fn the_command_palette_and_the_settings_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented([open, set]).placeholder('Search').emptyLabel('None').query([q, onQ]).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented([open, set]).selection('p').initialView('page').presentation('floating')];\n",
+        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented([open, set]).placeholder('Search').emptyLabel('None').query([q, onQ]).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented([open, set]).selection(['p', set]).initialView('page').presentation('floating')];\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let view = chrome("export const S = () => SettingsModal().initialView('list');\n");

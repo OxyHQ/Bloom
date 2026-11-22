@@ -147,7 +147,7 @@ describe('Sidebar is Bloom’s Sidebar', () => {
             TreeFolder('Archive', TreeItem('Old')),
             TreeItem('Roadmap', TreeItem('Q1').id('q1')).id('roadmap'),
           ),
-        ).selection('q1'),
+        ),
       ),
     );
     const props = only(r, 'Sidebar').props;
@@ -162,16 +162,18 @@ describe('Sidebar is Bloom’s Sidebar', () => {
         folders: [{ key: 'Archive', label: 'Archive', items: [{ key: 'Old', label: 'Old' }] }],
       },
     ]);
-    expect(props).toMatchObject({ selected: 'q1', selectedTreeItem: 'q1' });
-    // Nothing the chain left out reaches it.
-    expect('showSearch' in props).toBe(false);
-    expect('onNavigate' in props).toBe(false);
+    // Nothing the chain left out reaches it: no selection is bound.
+    for (const prop of ['showSearch', 'selected', 'selectedTreeItem', 'onNavigate'])
+      expect(prop in props).toBe(false);
   });
 
-  it('onSelect hears a tree row and a linking destination by id', () => {
+  it('its selection is one binding: its id selects, a tree row and a linking destination write it', () => {
     const select = jest.fn();
-    const r = mount(toElement(Sidebar(TreeSection('A', TreeItem('B').id('b'))).onSelect(select)));
+    const r = mount(
+      toElement(Sidebar(TreeSection('A', TreeItem('B').id('b'))).selection(['q1', select])),
+    );
     const props = only(r, 'Sidebar').props;
+    expect(props).toMatchObject({ selected: 'q1', selectedTreeItem: 'q1' });
     props.onTreeItemPress({ key: 'b', label: 'B' });
     props.onNavigate({ key: 'home', label: 'Home', icon: Glyph, href: '/' });
     expect(select.mock.calls).toEqual([['b'], ['home']]);
@@ -184,8 +186,7 @@ describe('Rail and PageFooter', () => {
     const r = mount(
       toElement(
         Rail(RailItem('Home', Icon(Glyph)).id('home').activeIcon(Icon(OtherGlyph)))
-          .selection('home')
-          .onSelect(select)
+          .selection(['home', select])
           .width('96'),
       ),
     );
@@ -278,7 +279,7 @@ describe('Command and SettingsModal', () => {
           ),
         )
           .presented([true, change])
-          .selection('profile')
+          .selection(['profile', change])
           .initialView('page')
           .presentation('floating'),
       ),
@@ -296,6 +297,7 @@ describe('Command and SettingsModal', () => {
     expect(props).toMatchObject({
       open: true,
       page: 'profile',
+      onPageChange: change,
       initialView: 'page',
       headerPresentation: 'floating',
     });

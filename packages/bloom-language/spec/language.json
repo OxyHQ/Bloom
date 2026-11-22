@@ -1105,7 +1105,6 @@
     "badge": ["value"],
     "activeIcon": ["value"],
     "selection": ["value"],
-    "onSelect": ["value"],
     "action": ["value"],
     "minimize": ["value"],
     "progress": ["value"],
@@ -1981,7 +1980,7 @@
     "bottomBar": {
       "constructors": ["BottomBar"],
       "universal": false,
-      "modifiers": ["selection", "onSelect", "action", "minimize", "progress", "hide", "testID"]
+      "modifiers": ["selection", "action", "minimize", "progress", "hide", "testID"]
     },
     "tab": {
       "constructors": ["Tab"],
@@ -2384,7 +2383,6 @@
       "universal": false,
       "modifiers": [
         "selection",
-        "onSelect",
         "header",
         "toolbar",
         "footer",
@@ -2466,7 +2464,7 @@
     "rail": {
       "constructors": ["Rail"],
       "universal": false,
-      "modifiers": ["selection", "onSelect", "header", "footer", "width", "testID"]
+      "modifiers": ["selection", "header", "footer", "width", "testID"]
     },
     "railItem": {
       "constructors": ["RailItem"],
@@ -2491,7 +2489,7 @@
     "settings": {
       "constructors": ["SettingsModal"],
       "universal": false,
-      "modifiers": ["presented", "selection", "onSelect", "initialView", "presentation", "testID"]
+      "modifiers": ["presented", "selection", "initialView", "presentation", "testID"]
     },
     "settingsGroup": {
       "constructors": ["SettingsGroup"],

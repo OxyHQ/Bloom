@@ -982,8 +982,7 @@ Header('Notifications')
   )
 
 BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('search'))
-  .selection(page)
-  .onSelect(open)
+  .selection([page, setPage])
   .action(FAB(Icon(RiQuillPenLine)).label('Compose').onPress(compose))
 ```
 
@@ -1086,7 +1085,8 @@ the stack (a custom `onBack` is not called; `null` hides it). Outside a native
 stack (a tab page without a stack of its own, a panel), Bloom's PageHeader.
 
 **BottomBar.** `BottomBar(...tabs)`, `Tab(label, icon)` with `.id`,
-`.activeIcon` and `.badge`; the bar takes `.selection`, `.onSelect`,
+`.activeIcon` and `.badge`; the bar takes `.selection([id, setId])` (a
+binding: Bloom's `value`, and its `onValueChange` a tab's press writes),
 `.action(FAB(...))`, `.minimize` (Screen's collapse), `.progress` (a pager's
 selection) and `.hide` (its presence). The system tab bar on iOS is a
 navigator (expo-router's `NativeTabs`), not a view the bar could be: the
@@ -1408,7 +1408,7 @@ Sidebar(
     ...projects.map((p) => TreeItem(p.name).id(p.id).icon(RiFileLine).subtitle(p.owner)),
   ).trailing(Button(Icon(RiAddLine)).label(t('new')).onPress(create)),
 )
-  .selection(current)
+  .selection([current, setCurrent])
   .surface('docked')
   .footer(AccountRow())
 ```
@@ -1426,8 +1426,7 @@ its actions, `.disabled`, `.expanded([open, setOpen])` its open state,
 
 | Modifier | Bloom `Sidebar` |
 | --- | --- |
-| `.selection(id)` | `selected` and `selectedTreeItem`: one selection over destinations and tree rows |
-| `.onSelect(id => …)` | `onTreeItemPress`, and `onNavigate` (a linking destination; it then takes over the link's push) |
+| `.selection([id, setId])` | `selected` and `selectedTreeItem`: one selection over destinations and tree rows; `onTreeItemPress` and `onNavigate` (a linking destination; it then takes over the link's push) write it |
 | `.header(view \| false)`, `.toolbar(...)`, `.footer(view)` | `header`, `toolbar`, `footer` |
 | `.variant('panel' \| 'rail')`, `.surface('card' \| 'plain' \| 'docked')`, `.size('sm' \| 'md' \| 'lg')` | `variant`, `surface`, `size` |
 | `.collapsed([collapsed, setCollapsed])` | `collapsed`, `onCollapsedChange` |
@@ -1448,8 +1447,9 @@ on Bloom's gesture layer (`useDrag` on the row's lift, as the bottom sheet's
 drags), and it follows the finger; the moves are accessibility actions too.
 The sidebar reports where a row landed; the app moves it.
 
-`.onSelect` is the one selection for destinations and tree rows: Bloom's
-`onTreeItemPress` and its `onNavigate`, which, given, takes over a linking
+`.selection` is the one selection for destinations and tree rows, a binding:
+Bloom's `selected` and `selectedTreeItem` read it, and its `onTreeItemPress`
+and its `onNavigate` write it; `onNavigate`, given, takes over a linking
 destination's own push (on the web the browser's navigation is prevented, so
 the app's router opens it). A row's `navigate()` press goes through the
 navigator of the `layout()` or `screen()` it is drawn under. What a chain
@@ -1458,8 +1458,8 @@ leaves out is not in the data at all, so Bloom's defaults hold.
 `Rail(...items)` is Bloom's `Rail`: each `RailItem(label, glyph)` an item
 whose glyph is a view the app draws in its own ink
 (`RailItem('Home', Icon(RiHome5Line).foreground('muted')).activeIcon(Icon(RiHome5Fill).foreground('primary'))`,
-as apps hand Bloom's rail their elements), with `.selection`, `.onSelect`,
-`.header`, `.footer` and `.width(space)`.
+as apps hand Bloom's rail their elements), with `.selection([id, setId])` (a
+binding: Bloom's `activeId`, and its `onSelect` writing it), `.header`, `.footer` and `.width(space)`.
 
 `PageFooter(...children)` is Bloom's `PageFooter`: its children, then its
 actions (`.toolbar(...)`), on its scrim. `.pinning('absolute' \| 'sticky' \|
@@ -1488,7 +1488,7 @@ SettingsModal(
     SettingsItem(t('profile'), RiUserLine).id('profile').content(() => ProfilePage()),
     SettingsItem(t('signOut'), RiLogoutBoxRLine).onPress(signOut),
   ),
-).presented([settingsOpen, setSettingsOpen]).selection(page).onSelect(setPage)
+).presented([settingsOpen, setSettingsOpen]).selection([page, setPage])
 ```
 
 `Command(...rows)` is Bloom's `Command` palette. Each `CommandItem(label)` is
@@ -1506,7 +1506,8 @@ group, after the ungrouped ones, as Bloom orders them. The palette takes
 `.content(() => view)` (built only while the page is shown; `.title` and
 `.fullBleed` are the page's) or runs its `.onPress`. The modal takes
 `.presented([open, setOpen])` (a binding; its `onClose` sets it to `false`),
-`.selection` and `.onSelect` (the page), `.initialView` and
+`.selection([page, setPage])` (a binding: Bloom's `page` and its
+`onPageChange`), `.initialView` and
 `.presentation('bar' \| 'floating')`. A page's rows are views, and Bloom's own
 settings rows are language nodes:
 
