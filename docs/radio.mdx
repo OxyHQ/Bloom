@@ -204,7 +204,9 @@ secondary descriptions. `labelContent` stays decorative and requires `label` or
 `optionStyle` accepts a style or a function of `{ checked, disabled,
 controlRef }`, on every group variant, over each option's standard layout and
 paint; `labelStyle` sits over the built-in string label's typography and colour,
-and `style` over the group's layout. The semantic disabled state and group
+and `style` over the group's layout. `bareOptions` (or `bare` on a standalone
+option) drops each option's default layout, paint and label type so those
+styles draw it alone. The semantic disabled state and group
 keyboard handling stay owned by Bloom. Standalone `RadioChip` takes the same
 `style` and `labelStyle` and the same `checked`/`onValueChange` contract as
 `Radio`.
