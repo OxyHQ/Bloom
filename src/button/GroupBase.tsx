@@ -32,11 +32,7 @@ import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selec
 import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
 import { IS_WEB } from '../styles/platform';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import {
-  LensMaterialProvider,
-  useControlMaterial,
-  useLensAvailable,
-} from '../floating/lens/lens-material';
+import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
 import { useGroupSelection } from './use-group-selection';
 import type { SurfaceProps } from '../surface/types';
 import type { ButtonGroupProps } from './types';
@@ -189,7 +185,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
               testID={testID}
               style={[{ borderRadius: BUTTON_RADIUS, overflow: 'hidden' }, split.control]}
             >
-              <LensMaterialProvider value="surface">{content}</LensMaterialProvider>
+              {content}
             </View>
           </LensButtonHost>
         );

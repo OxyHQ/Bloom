@@ -1,22 +1,22 @@
 /**
- * A stand-in for `@oxy.so/bloom-lens` (the upstream app's menu component), for the menu tests:
- * it hands what the upstream trigger would hand its native view to `lens.last` (the rows as the
- * engine's items, the trigger's and the panel's config, the events), and counts mounted views.
- * The real component is exercised by the language's Android tests.
+ * A stand-in for `@oxy.so/bloom-lens`, for the lens tests: a `LensBase` that hands what the real
+ * base would hand its native view to `lens.last` (the held menu's rows as the engine's items, the
+ * base's and the panel's config, the events), the base's context, and a menu handle whose opens and
+ * closes are recorded. The real base and menu are exercised by the language's Android tests.
  */
 import {
-  Children,
   createContext,
   createElement,
-  isValidElement,
   useContext,
   useEffect,
-  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useState,
   type ReactNode,
 } from 'react';
 import { View } from 'react-native';
 
-import type { Lens, LensRow } from '../floating/lens/native-lens';
+import type { Lens, LensMenu, LensRow } from '../floating/lens/native-lens';
 
 /** A row as the engine takes it. */
 export interface StubItem {
@@ -31,19 +31,18 @@ export interface StubItem {
   items?: StubItem[];
 }
 
-/** What the native view was last given. */
+/** What the base's native view was last given. */
 export interface StubNative {
   items: StubItem[];
   lens?: boolean;
   cornerRadius?: number;
   colorScheme?: string;
   fontFamily?: string;
-  openWithItems?: boolean;
-  triggerConfig?: { tintColor?: string; tintOpacity?: number; absorb?: unknown };
+  triggerConfig?: { tintColor?: string; tintOpacity?: number; absorb?: unknown; jelly?: number };
   config?: Record<string, unknown>;
   onItemSelect: (event: { nativeEvent: { id: string; index?: number } }) => void;
   onMenuOpenChange: (event: { nativeEvent: { open: boolean } }) => void;
-  onMenuClosed?: () => void;
+  onMenuClosed: () => void;
 }
 
 function toItem(row: LensRow): StubItem {
@@ -89,62 +88,62 @@ export const lens = {
   },
 };
 
-interface MenuProps {
-  ref?: unknown;
+const BaseContext = createContext<{ hold: (menu: LensMenu | null) => void } | null>(null);
+
+function LensBase(props: {
+  lens?: boolean;
   colorScheme?: string;
-  onOpenChange?: (open: boolean) => void;
+  cornerRadius?: number;
+  config?: StubNative['triggerConfig'];
   children?: ReactNode;
-}
-const MenuContext = createContext<MenuProps & { content?: Record<string, unknown> }>({});
-
-function RowsMarker(_: { rows: readonly LensRow[] }) {
-  return null;
-}
-
-function Menu(props: MenuProps) {
-  useImperativeHandle(props.ref as never, () => lens.handle);
-  let content: Record<string, unknown> | undefined;
-  Children.forEach(props.children, (child) => {
-    if (isValidElement(child) && child.type === Content) content = child.props as never;
-  });
-  return createElement(MenuContext.Provider, { value: { ...props, content } }, props.children);
-}
-
-function Trigger(props: Record<string, unknown> & { children?: ReactNode }) {
-  const menu = useContext(MenuContext);
-  const content = menu.content ?? {};
-  let rows: readonly LensRow[] = [];
-  Children.forEach(content.children as ReactNode, (child) => {
-    if (isValidElement(child) && child.type === RowsMarker)
-      rows = (child.props as { rows: readonly LensRow[] }).rows;
-  });
+}) {
+  const [menu, setMenu] = useState<LensMenu | null>(null);
+  const base = useMemo(() => ({ hold: setMenu }), []);
+  const rows = menu?.rows ?? [];
   lens.last = {
     items: rows.map(toItem),
-    lens: props.lens as boolean | undefined,
-    cornerRadius: props.cornerRadius as number | undefined,
-    colorScheme: menu.colorScheme,
-    fontFamily: content.fontFamily as string | undefined,
-    openWithItems: props.openWithItems as boolean | undefined,
-    triggerConfig: props.config as StubNative['triggerConfig'],
-    config: content.config as Record<string, unknown> | undefined,
+    lens: props.lens ?? true,
+    cornerRadius: props.cornerRadius,
+    colorScheme: props.colorScheme,
+    fontFamily: menu?.fontFamily,
+    triggerConfig: props.config,
+    config: menu?.config as Record<string, unknown> | undefined,
     onItemSelect: (event) => {
       const row = find(rows, event.nativeEvent.id);
       if (row?.kind === 'item') row.onSelect?.();
     },
-    onMenuOpenChange: (event) => menu.onOpenChange?.(event.nativeEvent.open),
-    onMenuClosed: props.onMenuClosed as (() => void) | undefined,
+    onMenuOpenChange: (event) => menu?.onOpenChange?.(event.nativeEvent.open),
+    onMenuClosed: () => menu?.onClosed?.(),
   };
   useEffect(() => {
     lens.mounts += 1;
   }, []);
-  return createElement(View, { testID: 'native-lens' }, props.children);
+  return createElement(
+    View,
+    { testID: 'native-lens' },
+    createElement(BaseContext.Provider, { value: base }, props.children),
+  );
 }
 
-function Content(_: Record<string, unknown>) {
-  return null;
+function useLensBaseMenu(menu: LensMenu | null) {
+  const base = useContext(BaseContext);
+  useLayoutEffect(() => {
+    if (base) base.hold(menu);
+  }, [base, menu]);
+  return useMemo(
+    () =>
+      base
+        ? {
+            open: (from?: unknown) => lens.handle.open(from),
+            close: () => lens.handle.close(),
+          }
+        : null,
+    [base],
+  );
 }
 
 export const stubLens: Lens = {
-  Menu: Object.assign(Menu, { Trigger, Content }) as unknown as Lens['Menu'],
-  lensRows: (rows) => [createElement(RowsMarker, { key: 'rows', rows })],
+  LensBase: LensBase as Lens['LensBase'],
+  useInLensBase: () => useContext(BaseContext) !== null,
+  useLensBaseMenu,
 };
