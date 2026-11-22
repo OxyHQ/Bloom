@@ -8,7 +8,7 @@
  * It is the baseline `RawText` is measured against, and the Text a screen
  * moved from React Native's draws before the move (the codemod's corpus).
  */
-import { createContext, forwardRef, useContext } from 'react';
+import { type ComponentProps, createContext, useContext } from 'react';
 import * as RN from 'react-native';
 
 const IS_WEB = RN.Platform.OS === 'web';
@@ -19,10 +19,11 @@ const TextAncestor =
   (RN as unknown as { unstable_TextAncestorContext?: React.Context<boolean> })
     .unstable_TextAncestorContext ?? createContext(false);
 
-type Props = RN.TextProps & { children?: React.ReactNode };
+/** React Native's Text props, its ref among them (a prop in React 19). */
+type Props = ComponentProps<typeof RN.Text>;
 
-export const BaseFontText = forwardRef<RN.Text, Props>(function BaseFontText(props, ref) {
+export function BaseFontText(props: Props) {
   const nested = useContext(TextAncestor);
-  if (nested && !IS_WEB) return <RN.Text ref={ref} {...props} />;
-  return <RN.Text ref={ref} {...props} style={[BASE_FONT, props.style]} />;
-});
+  if (nested && !IS_WEB) return <RN.Text {...props} />;
+  return <RN.Text {...props} style={[BASE_FONT, props.style]} />;
+}

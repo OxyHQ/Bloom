@@ -1998,7 +1998,7 @@ function drawScrollContent(
   children: readonly Child[],
   ctx: Context,
 ): ReactElement {
-  const content = plan(new Node('stack', CONTENT_VIEW, children, modifiers));
+  const content = plan(new Node('stack', CONTENT_VIEW, children, modifiers), ctx.env);
   if (content.layers.length > 1)
     throw new Error(
       'bloom-language: a scroll view’s content view is one view; give its modifiers in layer order (padding before frame)',
@@ -2419,9 +2419,10 @@ function renderHost(
       };
       const content = node.kind === 'scrollView' ? ownValue(p, 'contentView') : undefined;
       // The content's children keep their places as a stack's do.
+      const host = SCROLL_HOSTS[node.kind];
       const scroll = (room?: InsetRoom) =>
         content === undefined
-          ? draw(SCROLL_HOSTS[node.kind], { ...props, room }, ...renderChildren(node.children, ctx))
+          ? draw(host, { ...props, room }, ...renderChildren(node.children, ctx))
           : drawScrollContent(content.modifiers, { ...props, room }, node.children, ctx);
       // Views pinned at its edges: the content makes room for them (SwiftUI's safe area insets).
       const insets = insetsOf(node);

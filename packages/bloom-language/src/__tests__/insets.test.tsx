@@ -28,7 +28,7 @@ describe('safe-area insets on a scroll', () => {
   it('a virtual list makes room for a pinned view in its content', () => {
     const r = mount(
       toElement(
-        VirtualList(['a', 'b'], (item: string) => Text(item)).safeAreaInset(
+        VirtualList(['a', 'b'], ({ item }) => Text(item)).safeAreaInset(
           'bottom',
           Text('Composer'),
           'md',
