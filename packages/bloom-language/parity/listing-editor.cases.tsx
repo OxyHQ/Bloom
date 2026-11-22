@@ -83,17 +83,20 @@ export const LISTING_EDITOR_CASES: ParityCase[] = [
   },
   {
     name: 'PropertyTypeSelector none chosen',
-    language: () => toElement(L.PropertyTypeSelector([null, set])),
-    bloom: () => <PropertyTypeSelector value={null} onValueChange={set} />,
+    // Its tiles share the row's width and a table cell is as wide as what it draws: it is framed.
+    language: () => toElement(L.PropertyTypeSelector([null, set]).frame({ width: '320' })),
+    bloom: () => <PropertyTypeSelector value={null} onValueChange={set} style={{ width: 320 }} />,
   },
   {
     name: 'PropertyTypeSelector in 3 columns, an error, disabled, named',
+    // Framed, as above.
     language: () =>
       toElement(
         L.PropertyTypeSelector(['house', set], { error: 'Pick one' })
           .columns(3)
           .disabled()
-          .label('Property type'),
+          .label('Property type')
+          .frame({ width: '320' }),
       ),
     bloom: () => (
       <PropertyTypeSelector
@@ -103,6 +106,7 @@ export const LISTING_EDITOR_CASES: ParityCase[] = [
         columns={3}
         disabled
         accessibilityLabel="Property type"
+        style={{ width: 320 }}
       />
     ),
   },
