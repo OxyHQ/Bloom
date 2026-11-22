@@ -6,9 +6,12 @@
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
+    --text-xs: 0.75rem;
+    --text-xs--line-height: calc(1 / 0.75);
     --text-sm: 0.875rem;
     --text-sm--line-height: calc(1.25 / 0.875);
     --font-weight-semibold: 600;
+    --tracking-wide: 0.025em;
     --radius-2xl: 16px;
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
@@ -167,6 +170,9 @@
     display: none !important;
   }
 }
+.mt-2 {
+  margin-top: calc(4px * 2);
+}
 .h-10 {
   height: calc(4px * 10);
 }
@@ -175,6 +181,9 @@
 }
 .w-full {
   width: 100%;
+}
+.flex-1 {
+  flex: 1;
 }
 .flex-row {
   flex-direction: row;
@@ -248,15 +257,26 @@
   font-size: var(--text-sm);
   line-height: var(--tw-leading, var(--text-sm--line-height));
 }
+.text-xs {
+  font-size: var(--text-xs);
+  line-height: var(--tw-leading, var(--text-xs--line-height));
+}
 .font-semibold {
   --tw-font-weight: var(--font-weight-semibold);
   font-weight: var(--font-weight-semibold);
+}
+.tracking-wide {
+  --tw-tracking: var(--tracking-wide);
+  letter-spacing: var(--tracking-wide);
 }
 .text-foreground {
   color: var(--color-foreground);
 }
 .text-muted-foreground {
   color: var(--color-muted-foreground);
+}
+.uppercase {
+  text-transform: uppercase;
 }
 .rounded-2xl {
   --bloom-cx-publisher: 0px;
@@ -291,6 +311,9 @@
 }
 .border-b {
   --bloom-cx-border-bottom: 1px;
+}
+.mt-2 {
+  --bloom-cx-margin-top: calc(4px * 2);
 }
 .pb-3 {
   --bloom-cx-padding-bottom: calc(4px * 3);
@@ -546,11 +569,16 @@
   syntax: "*";
   inherits: false;
 }
+@property --tw-tracking {
+  syntax: "*";
+  inherits: false;
+}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
       --tw-border-style: solid;
       --tw-font-weight: initial;
+      --tw-tracking: initial;
       --bloom-cx-publisher: initial;
       --bloom-cx-auto-mask: 0;
       --bloom-cx-rauto-mask: 0;

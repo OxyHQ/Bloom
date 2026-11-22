@@ -21,11 +21,19 @@ export const A = () => <View className="flex-row gap-2"><Text variant="body-semi
     expect(result.converted).toBe(2);
   });
   it('embeds what it cannot convert, and reports it', () => {
-    const result = run(`import { View, Text } from 'react-native';
-export const A = () => <View className="p-4"><Text>x</Text><Foo /></View>;
+    const result = run(`import { View, Image } from 'react-native';
+export const A = () => <View className="p-4"><Image source={s} /><Foo /></View>;
 `);
-    expect(result.code).toContain('VStack(Embed(<Text>x</Text>), Embed(<Foo />))');
-    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['react-native-text']);
+    expect(result.code).toContain('VStack(Embed(<Image source={s} />), Embed(<Foo />))');
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['react-native-image']);
+  });
+  it('draws React Native’s Text as RawText', () => {
+    const result = run(`import { Text } from 'react-native';
+export const A = () => <Text className="text-sm">a <Text className="font-bold">b</Text></Text>;
+`);
+    expect(result.code).toContain(
+      'RawText("a ", RawText("b").weight("bold")).font("14").leading("20px")',
+    );
   });
   it('leaves an element with an unmapped prop as it is', () => {
     const source = `import { View } from 'react-native';

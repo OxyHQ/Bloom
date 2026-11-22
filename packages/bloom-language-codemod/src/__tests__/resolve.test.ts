@@ -33,6 +33,16 @@ describe('resolveClassName', () => {
       'padding',
       'background',
       'corner',
+      'clipped',
+    ]);
+  });
+  it('maps margins, physical sides and flex exactly', () => {
+    const result = resolveClassName('flex-1 mt-2 pl-4 pr-2', 'view', table);
+    expect(result.ok && result.value.mods.map((m) => [m.name, ...m.args])).toEqual([
+      ['padding', 'left', 'lg'],
+      ['padding', 'right', 'sm'],
+      ['flex', '1'],
+      ['margin', 'top', 'sm'],
     ]);
   });
   it('joins a border width and its colour', () => {
@@ -52,14 +62,13 @@ describe('resolveClassName', () => {
     });
   });
   it.each([
-    ['rounded-xl', 'corner-without-clip'],
-    ['overflow-hidden', 'clip-alone'],
     ['border', 'border'],
     ['p-4 px-2', 'padding-overlap'],
+    ['px-2 pl-4', 'padding-overlap'],
+    ['mt-2 my-2', 'margin-overlap'],
     ['bg-card bg-surface', 'conflict'],
-    ['pl-4', 'physical-edge'],
-    ['mt-2', 'annotated'],
-    ['flex-1', 'measured-difference'],
+    ['text-left', 'physical-edge'],
+    ['mx-auto', 'annotated'],
     ['text-sm', 'text-on-view'],
     ['hover:bg-card', 'state-off-pressable'],
     ['group-hover:bg-card', 'variant:group-hover'],

@@ -70,8 +70,6 @@ const TRACKED = new Set(
  * with what differs. They stay JSX until the language or the table changes.
  */
 function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
-  if (mods.some((m) => m.name === 'grow'))
-    return 'NativeWind writes flexGrow 1, flexShrink 1, flexBasis 0%; .grow() is React Native’s flex: 1 (flexShrink 0 on native)';
   const font = mods.find((m) => m.name === 'font');
   if (font && /^text-/.test(utility) && TRACKED.has(font.args[0] as string))
     return `.font('${font.args[0]}') brings the ramp’s letter spacing, which ${utility} does not write`;
@@ -95,22 +93,35 @@ const CONDITIONS: Record<string, string> = {
 const STATES = new Set(['hovered', 'pressed', 'focused']);
 
 /**
- * Utilities on one physical side. The table writes them as the reading
- * direction's side (`pl-4` as `leading`), which is another side in a
- * right-to-left layout, so they stay JSX until the owner decides.
+ * Utilities on one physical side the language has no physical form for yet:
+ * a corner (`rounded-l`), text alignment (`text-left`; React Native and
+ * react-native-web flip it right to left differently), scroll snapping.
  */
 const PHYSICAL =
-  /^-?(p[lr]|m[lr]|left|right|border-[lr]|rounded-[lr]|rounded-[tb][lr]|text-(left|right)|scroll-[mp][lr]|space-x-reverse)(-|$)/;
+  /^-?(rounded-[lr]|rounded-[tb][lr]|text-(left|right)|scroll-[mp][lr]|space-x-reverse)(-|$)/;
 
-const EDGES: Record<string, number> = {
-  all: 0b1111,
-  horizontal: 0b1100,
-  vertical: 0b0011,
-  top: 0b0001,
-  bottom: 0b0010,
-  leading: 0b0100,
-  trailing: 0b1000,
+/** The sides an edge writes: `s`/`e` follow the reading direction, `l`/`r` are physical. */
+const SIDES: Record<string, string> = {
+  all: 'tbse',
+  horizontal: 'se',
+  vertical: 'tb',
+  top: 't',
+  bottom: 'b',
+  leading: 's',
+  trailing: 'e',
+  left: 'l',
+  right: 'r',
 };
+
+/** Whether two edges write one side: a physical side meets either reading-direction side right to left. */
+export function edgesMeet(a: string, b: string): boolean {
+  const x = SIDES[a] ?? '';
+  const y = SIDES[b] ?? '';
+  if ([...x].some((side) => y.includes(side))) return true;
+  const logical = (sides: string) => /[se]/.test(sides);
+  const physical = (sides: string) => /[lr]/.test(sides);
+  return (logical(x) && physical(y)) || (physical(x) && logical(y));
+}
 
 /** Splits `md:hover:p-4` into its variants and utility; brackets keep their colons. */
 export function splitVariants(token: string): { variants: string[]; utility: string } {
@@ -134,7 +145,6 @@ interface Group {
   /** Border widths waiting for their colour: `[width, edge?]`. */
   widths: { subject: string; args: Arg[] }[];
   colors: { subject: string; color: Arg }[];
-  clip: string | null;
   absolute: string | null;
   /** The text-size class's own leading, replaced by an explicit leading class. */
   impliedLeading: Mod | null;
@@ -145,7 +155,6 @@ const newGroup = (): Group => ({
   mods: [],
   widths: [],
   colors: [],
-  clip: null,
   absolute: null,
   impliedLeading: null,
   subjects: new Map(),
@@ -250,8 +259,7 @@ export function resolveClassName(
           if (role[1]) args.push(role[1].slice(1, -1));
           if (role[2]) args.push(role[2].slice(1, -1));
           into.widths.push({ subject: token, args });
-        } else if (utility === 'overflow-hidden') into.clip = token;
-        else if (utility === 'absolute') into.absolute = token;
+        } else if (utility === 'absolute') into.absolute = token;
         else fail(token, 'annotated', entry.language);
         break;
       }
@@ -323,17 +331,6 @@ function finish(
     }
   }
 
-  // Corner: the language's corner clips; a className corner clips only with overflow-hidden.
-  const corners = mods.filter((m) => m.name === 'corner');
-  if (corners.length > 0 && !g.clip)
-    fail(
-      corners.map(subject).join(' '),
-      'corner-without-clip',
-      'a corner clips in the language; this className does not clip (no overflow-hidden)',
-    );
-  if (g.clip && corners.length === 0)
-    fail(g.clip, 'clip-alone', 'overflow-hidden with no corner: the language has no clip modifier');
-
   // Position: `absolute` and its edges are one modifier.
   const edges = mods.filter((m) => m.name === 'position');
   mods = mods.filter((m) => m.name !== 'position');
@@ -360,23 +357,25 @@ function finish(
     if (merged) mods.push(merged);
   }
 
-  // Paddings of one edge add in the language; in CSS the later rule wins.
-  let covered = 0;
-  for (const mod of mods.filter((m) => m.name === 'padding')) {
-    const bits = (mod.args.length === 2 ? EDGES[mod.args[0] as string] : EDGES.all) ?? 0;
-    if (bits & covered)
-      fail(
-        subject(mod),
-        'padding-overlap',
-        'two paddings of one edge: the language adds them, CSS keeps the later',
+  // Two paddings (or margins) of one side: the language adds paddings and keeps
+  // the later margin, CSS keeps the rule Tailwind writes later. Either way, a conflict.
+  for (const name of ['padding', 'margin']) {
+    const seen: Mod[] = [];
+    for (const mod of mods.filter((m) => m.name === name)) {
+      const edge = mod.args.length === 2 ? (mod.args[0] as string) : 'all';
+      const prior = seen.find((p) =>
+        edgesMeet(p.args.length === 2 ? (p.args[0] as string) : 'all', edge),
       );
-    covered |= bits;
+      if (prior)
+        fail(`${subject(prior)} ${subject(mod)}`, `${name}-overlap`, `two ${name}s of one side`);
+      seen.push(mod);
+    }
   }
 
   // Any other modifier twice is decided by Tailwind's rule order.
   const seen = new Map<string, Mod>();
   for (const mod of mods) {
-    if (['padding', 'border', 'corner', 'when'].includes(mod.name)) continue;
+    if (['padding', 'margin', 'border', 'corner', 'when'].includes(mod.name)) continue;
     const prior = seen.get(mod.name);
     if (prior)
       fail(`${subject(prior)} ${subject(mod)}`, 'conflict', `two classes set .${mod.name}()`);
