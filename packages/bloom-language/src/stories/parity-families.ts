@@ -109,6 +109,7 @@ import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.ca
 import { CRM_CASES } from '../../parity/crm.cases';
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
 import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
+import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -223,6 +224,7 @@ export const FAMILIES = {
   crm: CRM_CASES,
   dashboardCard: DASHBOARD_CARD_CASES,
   cartMenuVendor: CART_MENU_VENDOR_CASES,
+  mediaCard: MEDIA_CARD_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
