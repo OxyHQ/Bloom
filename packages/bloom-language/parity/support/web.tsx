@@ -149,10 +149,11 @@ function resolve(text: string, scope: Record<string, string>): string {
  */
 function mixedWithTransparent(text: string): string {
   return text.replace(
-    /color-mix\(in \w+, (?:rgb\((\d+)[ ,]+(\d+)[ ,]+(\d+)\)|#([0-9a-f]{6})) ([\d.]+)%, transparent\)/gi,
+    /color-mix\(in \w+, (?:rgb\((\d+)[ ,]+(\d+)[ ,]+(\d+)\)|#([0-9a-f]{6}|[0-9a-f]{3})) ([\d.]+)%, transparent\)/gi,
     (_, r, g, b, hex: string | undefined, percent) => {
-      const [red, green, blue] = hex
-        ? [0, 2, 4].map((at) => Number.parseInt(hex.slice(at, at + 2), 16))
+      const full = hex?.length === 3 ? hex.replace(/./g, '$&$&') : hex;
+      const [red, green, blue] = full
+        ? [0, 2, 4].map((at) => Number.parseInt(full.slice(at, at + 2), 16))
         : [r, g, b];
       return `rgba(${red}, ${green}, ${blue}, ${Number(percent) / 100})`;
     },

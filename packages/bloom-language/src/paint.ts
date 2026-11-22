@@ -108,15 +108,17 @@ function propColor(colors: ThemeColors, role: ColorName, opacity: number | undef
 /**
  * A style property painted from a role, at its opacity: what a class draws.
  * On native a fixed colour (`white`, `black`) at an opacity is what
- * NativeWind's compiler writes for `bg-white/70`, its hex with the alpha in 8
- * bits rounded down (`#ffffffb2`); the web keeps the exact percentage (its
+ * NativeWind's compiler writes for `bg-white/70`: its hex with the alpha in 8
+ * bits, the opacity × 255 rounded with the opacity a 32-bit float, as its
+ * compiler (lightningcss) holds it (`#ffffffb2`: 178.49999…; `bg-black/50`
+ * `#00000080`: 127.5). The web keeps the exact percentage (its
  * `color-mix()`, `webInk`), as Tailwind writes it.
  */
 function styleColor(colors: ThemeColors, role: ColorName, opacity: number | undefined): string {
   const fixed = COLORS[role].web;
   if (opacity === undefined || IS_WEB || !fixed.startsWith('#'))
     return propColor(colors, role, opacity);
-  return `${fixed}${Math.floor(opacity * 255)
+  return `${fixed}${Math.round(Math.fround(opacity) * 255)
     .toString(16)
     .padStart(2, '0')}`;
 }
