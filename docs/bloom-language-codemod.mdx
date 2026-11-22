@@ -152,15 +152,17 @@ root: its one child, with the Screen's props as the root's screen modifiers
 (`scroll` is `.screenScroll()`, `kind` `.screenKind()`, `documentScroll`,
 `headerPlacement`, `contentClearance`, `navigationScope`, `colorPreset`,
 `testID`). No `header` is `.header(false)`; a header element is
-`.header(Embed(…))` (an element, or a `const` holding one), drawn as it is, since a `Header` node would be the system
-bar on iOS in a native stack where Bloom's PageHeader stays in the page. The
-route converts whole: one Screen that stays JSX keeps the others JSX
+`.header(Embed(…))` (an element, or a `const` holding one), drawn as it is,
+since a `Header` node would be the system bar on iOS in a native stack where
+Bloom's PageHeader stays in the page. The route converts whole: one Screen that stays JSX keeps the others JSX
 (`screen:route`). Its parity draws the root with the language's `ScreenHost`,
 as `screen()` does.
 
-Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, and `Dialog`
-(presented from the view that owns it, `.dialog(isPresented, Dialog(...))`). Components removed in
-Bloom 22 (`SettingsRow`, `SettingsCard`, `GlyphButton`, `CloseButton`,
+Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, `Dialog`
+(presented from the view that owns it, `.dialog(isPresented, Dialog(...))`) and
+`DropdownMenu` with its parts (the language's `Menu` is the platform's own menu
+on Android and iOS, Bloom's DropdownMenu only on the web and as a fallback).
+Components removed in Bloom 22 (`SettingsRow`, `SettingsCard`, `GlyphButton`, `CloseButton`,
 `ButtonGroup`, `ButtonGroupItem`) are reported as `removed:` with their Bloom 22
 replacement (`REMOVED`, from `docs/migrating-to-22.mdx`): the app moves to it in
 its Bloom 22 upgrade.
