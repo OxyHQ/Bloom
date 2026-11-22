@@ -131,3 +131,4 @@ export const LinkPreviews: Story = { args: { family: 'linkPreview' } };
 export const SocialButtons: Story = { args: { family: 'socialButton' } };
 export const MediaGalleries: Story = { args: { family: 'gallery' } };
 export const DataTables: Story = { args: { family: 'dataTable' } };
+export const SortableChipRows: Story = { args: { family: 'sortableChipRow' } };

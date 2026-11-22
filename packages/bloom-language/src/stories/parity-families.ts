@@ -61,6 +61,7 @@ import { LINK_PREVIEW_CASES } from '../../parity/link-preview.cases';
 import { SOCIAL_BUTTON_CASES } from '../../parity/social-button.cases';
 import { GALLERY_CASES } from '../../parity/zoomable-media-gallery.cases';
 import { DATA_TABLE_CASES } from '../../parity/data-table.cases';
+import { SORTABLE_CHIP_ROW_CASES } from '../../parity/sortable-chip-row.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -127,6 +128,7 @@ export const FAMILIES = {
   socialButton: SOCIAL_BUTTON_CASES,
   gallery: GALLERY_CASES,
   dataTable: DATA_TABLE_CASES,
+  sortableChipRow: SORTABLE_CHIP_ROW_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
