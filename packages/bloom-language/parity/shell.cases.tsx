@@ -35,6 +35,7 @@ export const SHELL_CASES: ParityCase[] = [
   })),
   {
     name: 'a workspace with a resizable collection and an open inspector',
+    isolated: true,
     language: () =>
       language(
         AppLayout(Stack())

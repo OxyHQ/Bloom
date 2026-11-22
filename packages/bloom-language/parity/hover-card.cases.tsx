@@ -28,6 +28,7 @@ export const HOVER_CARD_CASES: readonly ParityCase[] = [
   ...ENUMS.tooltipSide.flatMap((side) =>
     ALIGNS.map((align) => ({
       name: `an open hover card on the ${side}, aligned ${align}`,
+      isolated: true,
       language: () =>
         toElement(
           L.HoverCard(trigger(), card())
@@ -48,6 +49,7 @@ export const HOVER_CARD_CASES: readonly ParityCase[] = [
   ),
   {
     name: 'an open hover card with no surface of its own',
+    isolated: true,
     language: () => toElement(L.HoverCard(trigger(), card()).presented([true, set]).padded(false)),
     bloom: () => (
       <HoverCard open onOpenChange={set}>

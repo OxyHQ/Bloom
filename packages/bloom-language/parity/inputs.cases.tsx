@@ -942,6 +942,7 @@ const groupedRow = (item: (typeof GROCERIES)[number], index: number) => {
 const openPickers: ParityCase[] = [
   {
     name: 'Picker open, its groups heading their rows',
+    isolated: true,
     language: () =>
       toElement(
         L.Picker(

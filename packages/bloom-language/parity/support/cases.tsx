@@ -27,7 +27,7 @@ export interface ParityCase {
    * that pins to the document lands where its frame puts it, not where its
    * table cell sits).
    */
-  isolated?: true;
+  isolated?: boolean;
 }
 
 /** Bloom JSX that reads the theme as an app does (`useThemePaint()`), for a colour passed by hand. */

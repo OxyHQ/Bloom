@@ -60,6 +60,7 @@ export const CONTEXT_MENU_CASES: readonly ParityCase[] = [
   },
   {
     name: 'an open context menu, its rows with glyphs, sections and a submenu',
+    isolated: true,
     language: () =>
       toElement(
         L.ContextMenu(

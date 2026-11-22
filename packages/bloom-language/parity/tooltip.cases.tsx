@@ -29,6 +29,7 @@ export const TOOLTIP_CASES: readonly ParityCase[] = [
   ...ENUMS.tooltipSide.flatMap((side) =>
     ENUMS.tooltipSize.map((size) => ({
       name: `a ${size} tooltip shown on the ${side}`,
+      isolated: true,
       language: () =>
         toElement(
           L.Tooltip(trigger(), 'About').presented([true, set]).side(side).size(size).openDelay('0'),
@@ -45,6 +46,7 @@ export const TOOLTIP_CASES: readonly ParityCase[] = [
   ),
   {
     name: 'a tooltip of a view, named',
+    isolated: true,
     language: () =>
       toElement(
         L.Tooltip(trigger(), L.Text('Saved').weight('semibold'))
