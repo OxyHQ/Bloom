@@ -72,6 +72,8 @@ export function indexedDbPersister(name: string): Persister {
   /** Rows older than this go with the first write, so opening stays short. */
   let pruneBefore: number | undefined;
   let keep: ReadonlySet<string> = new Set();
+  /** The most rows each bounded type keeps. */
+  let limits: Readonly<Record<string, number>> = {};
 
   const db = (): Promise<IDBDatabase> => {
     if (!database) {
@@ -102,7 +104,7 @@ export function indexedDbPersister(name: string): Persister {
   };
 
   return {
-    async open({ versions, maxAgeMs, keep: kept }: OpenOptions) {
+    async open({ versions, maxAgeMs, keep: kept, limits: bounds = {} }: OpenOptions) {
       const handle = await db();
       const transaction = handle.transaction([RECORDS, VERSIONS], 'readwrite');
       const stored = (await request(transaction.objectStore(VERSIONS).getAll())) as Array<{
@@ -124,6 +126,7 @@ export function indexedDbPersister(name: string): Persister {
       await done(transaction);
       pruneBefore = Date.now() - maxAgeMs;
       keep = new Set(kept);
+      limits = bounds;
     },
 
     async readRecords(type, ids) {
@@ -173,6 +176,20 @@ export function indexedDbPersister(name: string): Persister {
             json: list.json,
             updatedAt: now,
           });
+      }
+      // Only a write can pass a bound: trim the bounded types it stored.
+      const stored = new Set(
+        batch.records.flatMap((record) => (record.json === null ? [] : [record.type])),
+      );
+      for (const type of stored) {
+        const limit = limits[type];
+        if (limit === undefined) continue;
+        // Every row of the type: keys are [type, id], and an array sorts after any id.
+        const rows = (await request(
+          records.getAll(IDBKeyRange.bound([type], [type, []])),
+        )) as RecordRow[];
+        rows.sort((a, b) => b.updatedAt - a.updatedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+        for (const row of rows.slice(limit)) records.delete([type, row.id]);
       }
       await done(transaction);
     },

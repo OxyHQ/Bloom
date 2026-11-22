@@ -7,6 +7,7 @@ import {
   type ListState,
   listDefinition,
   persistedKeep,
+  persistedLimits,
   persistedVersions,
   readPath,
   writePath,
@@ -190,6 +191,7 @@ export class Store {
         versions: persistedVersions(),
         maxAgeMs: this.persistMaxAgeMs,
         keep: persistedKeep(),
+        limits: persistedLimits(),
       })
       .catch((error) => {
         this.persisterFailed = true;
@@ -883,6 +885,7 @@ export class Store {
           versions: persistedVersions(),
           maxAgeMs: this.persistMaxAgeMs,
           keep: persistedKeep(),
+          limits: persistedLimits(),
         })
       ) {
         return false;
