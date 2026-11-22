@@ -18,7 +18,7 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { HeaderDockProvider, useHeaderDockContext } from '../layout/header-dock';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import type { PageHeaderProps } from '../page-header';
-import { resolvedStyle, classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
 import { mockWindowSize } from './support/window-size';
 
 function renderHeader(props: PageHeaderProps, mode: 'light' | 'dark' = 'light') {
@@ -167,7 +167,7 @@ describe('PageHeader', () => {
   it('uses equal outer insets on all four sides, 12px at every width', () => {
     setWidth(390);
     const phone = renderBar({ title: 'A' });
-    expect(classNamesOn(phone.getByTestId('h-bar').props.style)).toContain('min-h-14');
+    expect(resolvedStyle(phone.getByTestId('h-bar').props.style).minHeight).toBe(56);
     expect(resolvedStyle(phone.getByTestId('h-bar').props.style)).toMatchObject({
       paddingLeft: 12,
       paddingRight: 12,
@@ -188,7 +188,10 @@ describe('PageHeader', () => {
   it('offers compact panel geometry without fixing the content height', () => {
     setWidth(1024);
     const screen = renderBar({ title: 'A', density: 'compact' });
-    expect(classNamesOn(screen.getByTestId('h-bar').props.style)).toContain('min-h-8 py-0');
+    expect(resolvedStyle(screen.getByTestId('h-bar').props.style)).toMatchObject({
+      minHeight: 32,
+      paddingBlock: 0,
+    });
     expect(resolvedStyle(screen.getByTestId('h-bar').props.style)).toMatchObject({
       paddingLeft: 12,
       paddingRight: 12,

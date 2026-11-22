@@ -1,21 +1,10 @@
 import type React from 'react';
-import {
-  TextInput as NativeTextInput,
-  type TextInputProps,
-  type StyleProp,
-  type TextStyle,
-} from 'react-native';
-import { styled } from 'react-native-css';
+import { TextInput, type TextStyle } from 'react-native';
 import { useFieldMembership } from '../field/membership';
 import { useThemePaint } from '../theme/use-theme-paint';
 import { TYPE_SCALE } from '../typography/scale';
 import { IS_WEB } from '../styles/platform';
 import type { PageHeaderTitleInputProps } from './types';
-
-const TextInput: React.ComponentType<TextInputProps> = styled(
-  NativeTextInput as (props: { style?: StyleProp<TextStyle> }) => React.ReactNode,
-  { className: 'style' },
-);
 
 export function PageHeaderTitleInput({
   label,
