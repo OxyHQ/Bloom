@@ -55,14 +55,11 @@ const transport: ParityCase[] = ENUMS.transportStyle.flatMap((variant) =>
           onNext: press,
           onSkipBack: press,
           onSkipForward: press,
-          playbackRate: 1.5,
-          onPlaybackRateChange: set,
-          shuffle: true,
-          onShuffleChange: set,
-          repeat: 'all',
-          onRepeatChange: set,
           subject: 'Glass Harbour Lights',
         })
+          .shuffle([true, set])
+          .repeat(['all', set])
+          .playbackRate([1.5, set])
           .style(variant)
           .size(size),
       ),
@@ -122,18 +119,16 @@ const players: ParityCase[] = [
           duration: 214,
           buffered: 120,
           onSeek: set,
-          liked: true,
-          onLikedChange: set,
           lyricsActive: true,
           onLyricsChange: set,
           onQueueChange: set,
           deviceName: 'Living Room Speaker',
           onDevicePress: press,
-          volume: 0.6,
-          onVolumeChange: set,
-          onMutedChange: set,
           onFullscreenPress: press,
-        }),
+        })
+          .liked([true, set])
+          .volume([0.6, set])
+          .muted([false, set]),
       ),
     bloom: () => (
       <NowPlayingBar
@@ -152,6 +147,7 @@ const players: ParityCase[] = [
         onDevicePress={press}
         volume={0.6}
         onVolumeChange={set}
+        muted={false}
         onMutedChange={set}
         onFullscreenPress={press}
       />
@@ -166,9 +162,7 @@ const players: ParityCase[] = [
           position: 0,
           duration: 3600,
           devicePicker: L.Text('Devices'),
-          devicePickerOpen: false,
-          onDevicePickerOpenChange: set,
-        }),
+        }).devicePickerOpen([false, set]),
       ),
     bloom: () => (
       <NowPlayingBar
@@ -192,11 +186,11 @@ const players: ParityCase[] = [
           position: 42,
           duration: 214,
           artworkColor: '#3A6EA5',
-          liked: false,
-          onLikedChange: set,
           deviceName: 'Living Room Speaker',
           onNext: press,
-        }).onPress(press),
+        })
+          .liked([false, set])
+          .onPress(press),
       ),
     bloom: () => (
       <MiniPlayer
@@ -224,8 +218,6 @@ const players: ParityCase[] = [
           contextName: 'Night drive',
           onCollapse: press,
           onMore: press,
-          liked: true,
-          onLikedChange: set,
           transport: TRANSPORT,
           position: 42,
           duration: 214,
@@ -236,7 +228,7 @@ const players: ParityCase[] = [
           onQueuePress: press,
           lyrics: { lines: ['The road hums low', 'and the lights go by'], activeIndex: 0 },
           aboutArtist: L.Text('Marlow Vance writes at night.'),
-        }),
+        }).liked([true, set]),
       ),
     bloom: () => (
       <FullScreenPlayer

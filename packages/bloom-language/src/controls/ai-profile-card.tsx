@@ -3,6 +3,7 @@ import {
   type AiProfileCardProps,
 } from '@oxy.so/bloom/ai-profile-card';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ColorToken, DurationName } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -17,11 +18,22 @@ export type AiProfileCardKind = 'aiProfileCard';
  */
 export type AiProfileCardOptions = Omit<
   AiProfileCardProps,
-  'name' | 'color' | 'actions' | 'style' | 'testID' | 'countUpDuration'
+  | 'name'
+  | 'color'
+  | 'actions'
+  | 'style'
+  | 'testID'
+  | 'countUpDuration'
+  | 'period'
+  | 'onPeriodChange'
+  | 'activeCell'
+  | 'onActiveCellChange'
 > & { readonly actions?: Child; readonly countUpDuration?: DurationName };
 
 /** Bloom `AiProfileCard`. */
 export interface AiProfileCardView extends ViewModifiers<AiProfileCardView> {
+  period(value: Bound<AiProfileCardProps, 'period'>): AiProfileCardView;
+  activeCell(value: Bound<AiProfileCardProps, 'activeCell'>): AiProfileCardView;
   /** The activity grid's colour: a role (Bloom's violet with none). */
   tint(value: ColorToken): AiProfileCardView;
 }
@@ -33,6 +45,10 @@ export function AiProfileCard(name: string, options: AiProfileCardOptions = {}):
 
 export const AI_PROFILE_CARDS: Record<AiProfileCardKind, ControlRenderer> = {
   aiProfileCard: product(BloomAiProfileCard, {
+    bindings: {
+      period: ['period', 'onPeriodChange'],
+      activeCell: ['activeCell', 'onActiveCellChange'],
+    },
     slots: ['actions'],
     durations: ['countUpDuration'],
     colors: (d) => ({ color: d.own('tint')?.value as ColorToken | undefined }),

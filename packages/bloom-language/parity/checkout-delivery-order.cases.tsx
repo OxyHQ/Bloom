@@ -15,7 +15,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { hold, type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -231,10 +231,8 @@ const delivery: ParityCase[] = [
         L.DeliverySlotPicker(['a', set], DAYS, WINDOWS, {
           label: 'When',
           description: 'Choose a window',
-          day: 'mon',
-          onDayChange: set,
           asap: ASAP,
-        }),
+        }).day(['mon', set]),
       ),
     bloom: () => (
       <DeliverySlotPicker
@@ -254,7 +252,8 @@ const delivery: ParityCase[] = [
     name: 'DeliverySlotPicker loading, a fade colour',
     language: () =>
       toElement(
-        L.DeliverySlotPicker(['', set], DAYS, [], { day: 'tue', loadingRows: 2 })
+        L.DeliverySlotPicker(['', set], DAYS, [], { loadingRows: 2 })
+          .day(['tue', hold])
           .loading()
           .tint('primary'),
       ),
@@ -262,6 +261,7 @@ const delivery: ParityCase[] = [
       <Themed>
         {(colors) => (
           <DeliverySlotPicker
+            onDayChange={hold}
             days={DAYS}
             windows={[]}
             value=""

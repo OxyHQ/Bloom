@@ -49,8 +49,6 @@ const stories: ParityCase[] = [
       toElement(
         L.StoryViewer(STORIES, 0, {
           ...STORY,
-          muted: true,
-          onMutedChange: set,
           onMore: press,
           replyValue: 'So pretty',
           onReplyChange: set,
@@ -59,7 +57,7 @@ const stories: ParityCase[] = [
           onReact: set,
           height: '448',
           labels: { close: 'Close the story' },
-        }),
+        }).muted([true, set]),
       ),
     bloom: () => (
       <StoryViewer
@@ -135,14 +133,12 @@ const groups: ParityCase[] = [
           photo: PHOTO,
           onPickPhoto: press,
           nameMaxLength: 40,
-          description: 'Planning the coast',
-          onDescriptionChange: set,
           descriptionMaxLength: 120,
           members: PEOPLE,
           onRemoveMember: set,
           onAddMembers: press,
           labels: { addMembers: 'Invite people' },
-        }),
+        }).description(['Planning the coast', set]),
       ),
     bloom: () => (
       <NewGroupForm

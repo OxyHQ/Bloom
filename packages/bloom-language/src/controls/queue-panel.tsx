@@ -8,6 +8,7 @@ import {
   type RecentlyPlayedListProps,
 } from '@oxy.so/bloom/queue-panel';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { QueuePanelStyle, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -23,7 +24,10 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
  * what was played, its tab (controlled when given) and its handlers; its
  * panel's width a space token.
  */
-export type QueuePanelOptions = Omit<QueuePanelProps, Drawn | 'variant' | 'width'> & {
+export type QueuePanelOptions = Omit<
+  QueuePanelProps,
+  Drawn | 'variant' | 'width' | 'tab' | 'onTabChange'
+> & {
   readonly width?: SpaceToken;
 };
 export type QueuePanelRowOptions = Omit<
@@ -34,6 +38,7 @@ export type RecentlyPlayedListOptions = Omit<RecentlyPlayedListProps, Drawn | 'i
 
 /** Bloom `QueuePanel`. */
 export interface QueuePanelView extends ViewModifiers<QueuePanelView> {
+  tab(value: Bound<QueuePanelProps, 'tab'>): QueuePanelView;
   /** `panel` (the web's default) or `sheet` (native's). */
   style(value: QueuePanelStyle): QueuePanelView;
 }
@@ -59,6 +64,7 @@ export function RecentlyPlayedList(
 
 export const QUEUE_PANELS: Record<QueuePanelKind, ControlRenderer> = {
   queuePanel: product(BloomQueuePanel, {
+    bindings: { tab: ['tab', 'onTabChange'] },
     lengths: ['width'],
     own: (d) => ({ variant: d.own('style')?.value }),
   }),

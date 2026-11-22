@@ -146,12 +146,12 @@ const profile: ParityCase[] = [
           delta: '+14.8%',
           stats: STATS,
           periods: PERIODS,
-          period: 'year',
-          onPeriodChange: change,
           cells: CELLS,
           columns: 12,
           actions: L.Text('Follow'),
-        }).tint('success'),
+        })
+          .period(['year', change])
+          .tint('success'),
       ),
     bloom: () => (
       <Themed>

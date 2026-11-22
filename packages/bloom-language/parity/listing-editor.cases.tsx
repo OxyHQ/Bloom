@@ -40,11 +40,9 @@ export const LISTING_EDITOR_CASES: ParityCase[] = [
     language: () =>
       toElement(
         L.ListingPreviewPane(LISTING, {
-          mode: 'page',
-          onModeChange: set,
           title: 'Preview',
           renderPage: (listing) => L.Text(`${listing.title}: the page`),
-        }),
+        }).mode(['page', set]),
       ),
     bloom: () => (
       <ListingPreviewPane

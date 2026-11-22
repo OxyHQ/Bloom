@@ -4,6 +4,7 @@ import {
   type VoiceState,
 } from '@oxy.so/bloom/voice';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { VoiceSize } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -19,11 +20,24 @@ type Slots = 'leading' | 'trailing';
  */
 export type VoiceControlsOptions = Omit<
   VoiceControlsProps,
-  'state' | 'size' | 'disabled' | 'className' | 'style' | 'ref' | 'testID' | Slots
+  | 'state'
+  | 'size'
+  | 'disabled'
+  | 'className'
+  | 'style'
+  | 'ref'
+  | 'testID'
+  | Slots
+  | 'muted'
+  | 'onMutedChange'
+  | 'paused'
+  | 'onPausedChange'
 > & { readonly [K in Slots]?: Child };
 
 /** Bloom `VoiceControls`: mute, pause, end and type instead. */
 export interface VoiceControlsView extends ViewModifiers<VoiceControlsView> {
+  muted(value: Bound<VoiceControlsProps, 'muted'>): VoiceControlsView;
+  paused(value: Bound<VoiceControlsProps, 'paused'>): VoiceControlsView;
   /** `sm`, `md` or `lg` (the default, or the nearest scope's). */
   size(value: VoiceSize): VoiceControlsView;
   /** Disables every control. */
@@ -40,6 +54,7 @@ export function VoiceControls(
 
 export const VOICES: Record<VoiceKind, ControlRenderer> = {
   voiceControls: product(BloomVoiceControls, {
+    bindings: { muted: ['muted', 'onMutedChange'], paused: ['paused', 'onPausedChange'] },
     slots: ['leading', 'trailing'],
     own: (d) => ({ size: d.own('size')?.value, disabled: d.own('disabled')?.value }),
   }),

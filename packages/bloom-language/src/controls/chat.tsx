@@ -63,7 +63,7 @@ import {
   type VoiceMessageProps,
 } from '@oxy.so/bloom/message-media';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { OPACITY } from '../generated/spec.generated';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
@@ -152,7 +152,18 @@ export type ChatHeaderOptions = Tokens<
 type ChatInfoSlots = 'headerActions' | 'cover' | 'avatar' | 'settings';
 /** Bloom `ChatInfoPanel`'s data; `content` is what it shows under its sections (Bloom's children). */
 export type ChatInfoPanelOptions = Tokens<
-  Omit<ChatInfoPanelProps, Drawn | 'contentStyle' | 'variant' | 'children' | ChatInfoSlots>,
+  Omit<
+    ChatInfoPanelProps,
+    | Drawn
+    | 'contentStyle'
+    | 'variant'
+    | 'children'
+    | ChatInfoSlots
+    | 'tab'
+    | 'onTabChange'
+    | 'memberQuery'
+    | 'onMemberQueryChange'
+  >,
   'width' | 'coverHeight' | 'avatarSize'
 > & { readonly [K in ChatInfoSlots]?: Child } & { readonly content?: Child };
 export type PinnedMessageBarOptions = Omit<PinnedMessageBarProps, Drawn | 'pins' | 'dismissIcon'>;
@@ -161,7 +172,7 @@ export type ScrollToBottomButtonOptions = Tokens<
   'size'
 >;
 export type ChatFolderTabsOptions = Tokens<
-  Omit<ChatFolderTabsProps, Drawn | 'folders' | 'gap' | 'divider'>,
+  Omit<ChatFolderTabsProps, Drawn | 'folders' | 'gap' | 'divider' | 'value' | 'onValueChange'>,
   'paddingHorizontal'
 >;
 export type ChatSearchFieldOptions = Omit<
@@ -234,7 +245,17 @@ export type VideoMessageOptions = Tokens<
   'radius'
 >;
 export type VoiceMessageOptions = Tokens<
-  Omit<VoiceMessageProps, Drawn | Bubble | 'samples' | 'duration'>,
+  Omit<
+    VoiceMessageProps,
+    | Drawn
+    | Bubble
+    | 'samples'
+    | 'duration'
+    | 'rate'
+    | 'onRateChange'
+    | 'transcriptOpen'
+    | 'onTranscriptOpenChange'
+  >,
   'width'
 >;
 
@@ -281,6 +302,8 @@ export interface ChatHeaderView extends ViewModifiers<ChatHeaderView> {
   dividers(value?: boolean): ChatHeaderView;
 }
 export interface ChatInfoPanelView extends ViewModifiers<ChatInfoPanelView> {
+  tab(value: Bound<ChatInfoPanelProps, 'tab'>): ChatInfoPanelView;
+  memberQuery(value: Bound<ChatInfoPanelProps, 'memberQuery'>): ChatInfoPanelView;
   /** A `pane` beside the chat, or a `screen` of its own. */
   style(value: ChatInfoPanelStyle): ChatInfoPanelView;
 }
@@ -290,6 +313,7 @@ export interface PinnedMessageBarView extends ViewModifiers<PinnedMessageBarView
 }
 export type ScrollToBottomButtonView = ViewModifiers<ScrollToBottomButtonView>;
 export interface ChatFolderTabsView extends ViewModifiers<ChatFolderTabsView> {
+  value(value: Bound<ChatFolderTabsProps, 'value'>): ChatFolderTabsView;
   spacing(value: SpaceToken): ChatFolderTabsView;
   /** The hairline under the tabs. */
   dividers(value?: boolean): ChatFolderTabsView;
@@ -342,7 +366,10 @@ export interface VideoMessageView
 }
 export interface VoiceMessageView
   extends ViewModifiers<VoiceMessageView>,
-    InBubble<VoiceMessageView> {}
+    InBubble<VoiceMessageView> {
+  rate(value: Bound<VoiceMessageProps, 'rate'>): VoiceMessageView;
+  transcriptOpen(value: Bound<VoiceMessageProps, 'transcriptOpen'>): VoiceMessageView;
+}
 
 const node = (kind: ChatKind, props: object, children: Child[] = []) =>
   new Node(kind, props, children);
@@ -532,6 +559,7 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
     },
   }),
   chatInfoPanel: product(BloomChatInfoPanel, {
+    bindings: { tab: ['tab', 'onTabChange'], memberQuery: ['memberQuery', 'onMemberQueryChange'] },
     slots: ['headerActions', 'cover', 'avatar', 'settings'],
     lengths: ['width', 'coverHeight', 'avatarSize'],
     own: (d) => ({ variant: d.own('style')?.value }),
@@ -541,6 +569,7 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
   }),
   scrollToBottomButton: product(BloomScrollToBottomButton, { lengths: ['size'], press: true }),
   chatFolderTabs: product(BloomChatFolderTabs, {
+    bindings: { value: ['value', 'onValueChange'] },
     lengths: ['paddingHorizontal'],
     own: (d) => ({
       gap: length(d.own('spacing')?.value as SpaceToken | undefined),
@@ -617,5 +646,14 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
       true,
     ),
   ),
-  voiceMessage: product(BloomVoiceMessage, bubble({ lengths: sized })),
+  voiceMessage: product(
+    BloomVoiceMessage,
+    bubble({
+      lengths: sized,
+      bindings: {
+        rate: ['rate', 'onRateChange'],
+        transcriptOpen: ['transcriptOpen', 'onTranscriptOpenChange'],
+      },
+    }),
+  ),
 };

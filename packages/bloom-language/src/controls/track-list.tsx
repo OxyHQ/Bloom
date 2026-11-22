@@ -21,6 +21,7 @@ import {
   type TrackRowSkeletonProps,
 } from '@oxy.so/bloom/track-list';
 
+import type { Bound } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { ColorToken, Density, SelectionBarPlacement, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -46,7 +47,14 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
  */
 export type TrackListOptions = Omit<
   TrackListProps,
-  Drawn | 'tracks' | 'density' | 'headerBackground' | 'width' | 'stickyHeaderOffset'
+  | Drawn
+  | 'tracks'
+  | 'density'
+  | 'headerBackground'
+  | 'width'
+  | 'stickyHeaderOffset'
+  | 'selectedIds'
+  | 'onSelectionChange'
 > & { readonly width?: SpaceToken; readonly stickyHeaderOffset?: SpaceToken };
 export type TrackListHeaderOptions = Omit<
   TrackListHeaderProps,
@@ -78,6 +86,8 @@ export interface TrackListView extends ViewModifiers<TrackListView> {
   density(value: Density<'trackList'>): TrackListView;
   /** The header's background, so rows scrolling under it are covered (Bloom's: the page's). */
   tint(value: ColorToken): TrackListView;
+  /** The selected tracks' ids: a binding, which makes the selection controlled. */
+  selectedIds(value: Bound<TrackListProps, 'selectedIds'>): TrackListView;
 }
 export interface TrackListHeaderView extends ViewModifiers<TrackListHeaderView> {
   density(value: Density<'trackListHeader'>): TrackListHeaderView;
@@ -145,6 +155,7 @@ const tinted = (prop: string) => (d: Parameters<ControlRenderer>[0]) => ({
 
 export const TRACK_LISTS: Record<TrackListKind, ControlRenderer> = {
   trackList: product(BloomTrackList, {
+    bindings: { selectedIds: ['selectedIds', 'onSelectionChange'] },
     lengths: ['width', 'stickyHeaderOffset'],
     own: (d) => ({ density: d.own('density')?.value }),
     colors: tinted('headerBackground'),

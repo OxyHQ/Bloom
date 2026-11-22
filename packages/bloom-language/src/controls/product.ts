@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import type { Binding } from '../binding';
-import type { Child } from '../node';
+import type { AnyBinding, Binding } from '../binding';
+import type { Child, ValueModifiers } from '../node';
 import {
   type CardRadius,
   type CornerName,
@@ -32,6 +32,26 @@ export function length(token: SpaceToken | undefined): number | undefined {
   return token === undefined ? undefined : resolveSpace(token);
 }
 
+/** A node's binding modifiers, each drawn as the value and setter props Bloom takes for it. */
+export type Bindings = Readonly<Record<string, readonly [value: string, set: string]>>;
+
+/**
+ * The props a node's binding modifiers are drawn as: for each one chained, its
+ * value and its setter under Bloom's names. One not chained draws neither, so
+ * Bloom keeps the value itself (uncontrolled), as it does when an app passes
+ * neither.
+ */
+export function bound(d: ControlDraw, bindings: Bindings): Record<string, unknown> {
+  const props: Record<string, unknown> = {};
+  for (const [modifier, [value, set]] of Object.entries(bindings)) {
+    const binding = d.own(modifier as keyof ValueModifiers)?.value as AnyBinding | undefined;
+    if (binding === undefined) continue;
+    props[value] = binding[0];
+    props[set] = binding[1];
+  }
+  return props;
+}
+
 /** A corner a product component takes as a radius: a corner rung. */
 export type CornerToken = Exclude<CornerName, 'concentric'>;
 
@@ -42,6 +62,12 @@ export interface ProductSpec {
    * and its setter (`['value', 'onValueChange']`).
    */
   readonly binding?: readonly [value: string, set: string];
+  /**
+   * The node's other editable values: each a modifier taking a `Binding`
+   * (`.expanded([open, setOpen])`), drawn as the value and setter props
+   * Bloom takes for it, by modifier (`{ expanded: ['expanded', 'onExpandedChange'] }`).
+   */
+  readonly bindings?: Bindings;
   /** Options that are language children, where Bloom takes a node. */
   readonly slots?: readonly string[];
   /**
@@ -103,6 +129,7 @@ export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer 
       const duration = options?.[key] as DurationName | undefined;
       props[key] = duration === undefined ? undefined : DURATION[duration];
     }
+    if (spec.bindings !== undefined) Object.assign(props, bound(d, spec.bindings));
     Object.assign(props, spec.own?.(d));
     const child = d.node.children[0];
     const children = child === undefined ? [] : [d.render(child)];

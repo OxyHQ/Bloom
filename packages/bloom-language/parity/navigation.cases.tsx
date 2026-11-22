@@ -15,7 +15,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { hold, type ParityCase, Themed } from './support/cases';
 
 const noop = () => {};
 const select = (_id: string) => {};
@@ -45,8 +45,7 @@ const sidebars: ParityCase[] = [
           L.SidebarMode('Computer', RiComputerLine).id('computer'),
           L.NavItem('Home', RiHome5Line).id('home'),
         )
-          .mode('computer')
-          .onModeChange(select)
+          .mode(['computer', select])
           .modePresentation(presentation)
           .modesLabel('Mode'),
       ),
@@ -210,7 +209,9 @@ const sidebars: ParityCase[] = [
         L.Sidebar(
           L.TreeSection(
             'Projects',
-            L.TreeFolder('Archive', L.TreeItem('Old').id('old')).id('archive').expanded(true),
+            L.TreeFolder('Archive', L.TreeItem('Old').id('old'))
+              .id('archive')
+              .expanded([true, hold]),
             L.TreeItem('Roadmap', L.TreeItem('Q1').id('q1').subtitle('Planning').meta('3'))
               .id('roadmap')
               .icon(RiFileLine),
@@ -241,6 +242,7 @@ const sidebars: ParityCase[] = [
                 key: 'archive',
                 label: 'Archive',
                 open: true,
+                onOpenChange: hold,
                 items: [{ key: 'old', label: 'Old' }],
               },
             ],
@@ -305,8 +307,7 @@ const sidebars: ParityCase[] = [
       toElement(
         L.Sidebar(L.NavItem('Home', RiHome5Line))
           .variant('rail')
-          .collapsed()
-          .onCollapsedChange(noop)
+          .collapsed([true, noop])
           .themeToggle(false)
           .header(L.Text('Oxy'))
           .toolbar(L.Text('tools'))

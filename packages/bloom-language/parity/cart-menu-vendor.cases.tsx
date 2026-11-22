@@ -6,7 +6,7 @@ import { VendorCard } from '@oxy.so/bloom/vendor-card';
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -75,10 +75,9 @@ const cart: ParityCase[] = [
           options: ['Large', 'Extra basil'],
           price: '€12.50',
           secondaryPrice: '≈ $13.60',
-          quantity: 2,
-          onQuantityChange: quantity,
           onRemove: press,
         })
+          .quantity([2, quantity])
           .density(density)
           .label('Margherita, two'),
       ),
@@ -102,14 +101,14 @@ const cart: ParityCase[] = [
       toElement(
         L.CartLine('Tiramisu', {
           price: '€5.00',
-          quantity: 1,
           photo: PHOTO,
           unavailable: true,
           removeInStepper: true,
-        }),
+        }).quantity([1, hold]),
       ),
     bloom: () => (
       <CartLine
+        onQuantityChange={hold}
         name="Tiramisu"
         price="€5.00"
         quantity={1}
@@ -277,9 +276,7 @@ const menu: ParityCase[] = [
           price: '€11.00',
           photo: PHOTO,
           diets: ['vegetarian', 'vegan'],
-          quantity: 2,
-          onQuantityChange: quantity,
-        }),
+        }).quantity([2, quantity]),
       ),
     bloom: () => (
       <MenuItemRow
@@ -305,15 +302,13 @@ const menu: ParityCase[] = [
     language: () =>
       toElement(
         L.MenuItemOptions(GROUPS, {
-          value: CHOSEN,
-          onValueChange: set,
-          quantity: 1,
-          onQuantityChange: quantity,
           total: '€14.00',
           onSubmit: press,
           submitLabel: 'Add to basket',
           header: L.Text('Diavola'),
-        }),
+        })
+          .value([CHOSEN, set])
+          .quantity([1, quantity]),
       ),
     bloom: () => (
       <MenuItemOptions
@@ -331,8 +326,7 @@ const menu: ParityCase[] = [
   },
   {
     name: 'MenuItemOptions disabled',
-    language: () =>
-      toElement(L.MenuItemOptions(GROUPS, { value: {}, onValueChange: set }).disabled()),
+    language: () => toElement(L.MenuItemOptions(GROUPS, {}).value([{}, set]).disabled()),
     bloom: () => <MenuItemOptions groups={GROUPS} value={{}} onValueChange={set} disabled />,
   },
 ];
@@ -351,9 +345,8 @@ const vendors: ParityCase[] = [
           deliveryFee: '€1.90',
           distance: '1.2 km',
           promo: '20% off',
-          favorite: true,
-          onFavoriteChange: set,
         })
+          .favorite([true, set])
           .density(density)
           .onPress(press),
       ),

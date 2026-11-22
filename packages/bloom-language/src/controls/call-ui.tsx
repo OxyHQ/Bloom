@@ -14,6 +14,7 @@ import {
   type IncomingCallScreenProps,
 } from '@oxy.so/bloom/call-ui';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   CallControlSize,
@@ -73,7 +74,10 @@ export type CallScreenOptions = Omit<
   readonly controls?: CallScreenControls;
   readonly content?: Child;
 };
-export type CallMinimisedPillOptions = Omit<CallMinimisedPillProps, Drawn | 'name'>;
+export type CallMinimisedPillOptions = Omit<
+  CallMinimisedPillProps,
+  Drawn | 'name' | 'muted' | 'onMutedChange'
+>;
 /** Bloom `GroupCallGrid`'s data; its fixed width is a space token. */
 export type GroupCallGridOptions = Omit<
   GroupCallGridProps,
@@ -100,7 +104,9 @@ export interface CallScreenView extends ViewModifiers<CallScreenView>, CallLook<
 }
 export interface CallMinimisedPillView
   extends ViewModifiers<CallMinimisedPillView>,
-    CallLook<CallMinimisedPillView> {}
+    CallLook<CallMinimisedPillView> {
+  muted(value: Bound<CallMinimisedPillProps, 'muted'>): CallMinimisedPillView;
+}
 export interface GroupCallGridView extends ViewModifiers<GroupCallGridView> {
   /** `grid` (default): equal tiles; `spotlight`: one big tile and a strip. */
   style(value: GroupCallLayout): GroupCallGridView;
@@ -201,6 +207,7 @@ export const CALL_UIS: Record<CallUiKind, ControlRenderer> = {
     },
   }),
   callMinimisedPill: product(BloomCallMinimisedPill, {
+    bindings: { muted: ['muted', 'onMutedChange'] },
     ...look,
     own: (d) => ({ mode: mode(d) }),
   }),

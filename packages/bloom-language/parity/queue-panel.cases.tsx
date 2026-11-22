@@ -4,7 +4,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const COVER = 'https://cdn.oxy.so/cover.jpg';
@@ -55,8 +55,8 @@ export const QUEUE_PANEL_CASES: ParityCase[] = [
   })),
   {
     name: 'QueuePanel recently played',
-    language: () => toElement(L.QueuePanel({ recentlyPlayed: RECENT, tab: 'recent' })),
-    bloom: () => <QueuePanel recentlyPlayed={RECENT} tab="recent" />,
+    language: () => toElement(L.QueuePanel({ recentlyPlayed: RECENT }).tab(['recent', hold])),
+    bloom: () => <QueuePanel onTabChange={hold} recentlyPlayed={RECENT} tab="recent" />,
   },
   {
     name: 'QueuePanel empty',

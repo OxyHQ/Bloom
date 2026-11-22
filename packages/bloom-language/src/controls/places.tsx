@@ -28,7 +28,7 @@ import {
   type PlacePickerProps,
 } from '@oxy.so/bloom/place-picker';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { BloomSize } from '@oxy.so/bloom/appearance';
 import type { ColorToken, DirectionsDensity, PlaceCardStyle } from '../tokens';
@@ -54,9 +54,12 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
  */
 export type PlaceCardOptions = Omit<
   PlaceCardProps,
-  Drawn | 'name' | 'density' | 'loading' | 'onPress' | 'badge'
+  Drawn | 'name' | 'density' | 'loading' | 'onPress' | 'badge' | 'favorite' | 'onFavoriteChange'
 > & { readonly badge?: string | Child };
-export type PlaceHoursOptions = Omit<PlaceHoursProps, Drawn | 'days'>;
+export type PlaceHoursOptions = Omit<
+  PlaceHoursProps,
+  Drawn | 'days' | 'expanded' | 'onExpandedChange'
+>;
 export type PlaceInfoListOptions = Omit<PlaceInfoListProps, Drawn | 'items'>;
 /** Bloom `PlaceTransit`'s handlers and words; its `footer` is a language child. */
 export type PlaceTransitOptions = Omit<PlaceTransitProps, Drawn | 'stops' | 'footer'> & {
@@ -80,12 +83,15 @@ export type PlacePickerOptions<Option extends PlacePickerOption = PlacePickerOpt
 
 /** Bloom `PlaceCard`; `.onPress()` opens the place (a row). */
 export interface PlaceCardView extends ViewModifiers<PlaceCardView> {
+  favorite(value: Bound<PlaceCardProps, 'favorite'>): PlaceCardView;
   /** `row` (default): a result over the map; `detail`: the header of the place's sheet. */
   style(value: PlaceCardStyle): PlaceCardView;
   /** A skeleton in the same geometry. */
   loading(value?: boolean): PlaceCardView;
 }
-export type PlaceHoursView = ViewModifiers<PlaceHoursView>;
+export interface PlaceHoursView extends ViewModifiers<PlaceHoursView> {
+  expanded(value: Bound<PlaceHoursProps, 'expanded'>): PlaceHoursView;
+}
 export type PlaceInfoListView = ViewModifiers<PlaceInfoListView>;
 export type PlaceTransitView = ViewModifiers<PlaceTransitView>;
 /** Bloom `PlaceListCard`; `.onPress()` opens the list. */
@@ -105,6 +111,8 @@ export interface PlacePickerView extends ViewModifiers<PlacePickerView> {
   /** The field's rung; with none, the nearest scope's (`md`). */
   size(value: BloomSize): PlacePickerView;
   disabled(value?: boolean): PlacePickerView;
+  /** The text it searches with: a binding Bloom requires. */
+  query(value: Binding<string>): PlacePickerView;
 }
 
 /** Bloom `PlaceCard` of the place `name`. */
@@ -151,20 +159,20 @@ export function DirectionsSteps(
   return new Node('directionsSteps', { legs, options }, []);
 }
 /**
- * Bloom `PlacePicker` named `label`: it searches as `query` holds the text,
- * and holds the chosen place in `place`.
+ * Bloom `PlacePicker` named `label`: it holds the chosen place in `place`, and
+ * searches as its `.query()` holds the text.
  */
 export function PlacePicker<Option extends PlacePickerOption = PlacePickerOption>(
   label: string,
   place: Binding<Option | null>,
-  query: Binding<string>,
   options: PlacePickerOptions<Option>,
 ): PlacePickerView {
-  return new Node('placePicker', { label, binding: place, query, options }, []);
+  return new Node('placePicker', { label, binding: place, options }, []);
 }
 
 export const PLACES: Record<PlaceKind, ControlRenderer> = {
   placeCard: product(BloomPlaceCard, {
+    bindings: { favorite: ['favorite', 'onFavoriteChange'] },
     press: true,
     own: (d) => {
       const { badge } = (d.node.props as { options: PlaceCardOptions }).options;
@@ -176,7 +184,9 @@ export const PLACES: Record<PlaceKind, ControlRenderer> = {
       };
     },
   }),
-  placeHours: product(BloomPlaceHours),
+  placeHours: product(BloomPlaceHours, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+  }),
   placeInfoList: product(BloomPlaceInfoList),
   placeTransit: product(BloomPlaceTransit, { slots: ['footer'] }),
   placeListCard: product(BloomPlaceListCard, {
@@ -193,14 +203,7 @@ export const PLACES: Record<PlaceKind, ControlRenderer> = {
   }),
   placePicker: product(BloomPlacePicker, {
     binding: ['value', 'onValueChange'],
-    own: (d) => {
-      const [query, onQueryChange] = (d.node.props as { query: Binding<string> }).query;
-      return {
-        query,
-        onQueryChange,
-        size: d.own('size')?.value,
-        disabled: d.own('disabled')?.value,
-      };
-    },
+    bindings: { query: ['query', 'onQueryChange'] },
+    own: (d) => ({ size: d.own('size')?.value, disabled: d.own('disabled')?.value }),
   }),
 };

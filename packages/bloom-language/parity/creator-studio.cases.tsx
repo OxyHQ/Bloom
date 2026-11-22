@@ -125,20 +125,23 @@ const OPTIONS = [
   { value: 'en', label: 'English' },
 ];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr'].map((label, i) => ({ label, value: 900 + i * 120 }));
-const PITCH = {
+const PITCH_DATA = {
   releases: [{ value: 'r1', label: 'Low Tide' }],
+  moods: ['Calm', 'Hopeful', 'Dark'],
+  genres: ['Pop', 'Folk'],
+  onSubmit: press,
+  onEdit: press,
+};
+const PITCH = {
+  ...PITCH_DATA,
   release: 'r1',
   onReleaseChange: set,
-  moods: ['Calm', 'Hopeful', 'Dark'],
   selectedMoods: ['Calm'],
   onSelectedMoodsChange: set,
-  genres: ['Pop', 'Folk'],
   selectedGenres: [],
   onSelectedGenresChange: set,
   pitch: 'A slow song about the sea.',
   onPitchChange: set,
-  onSubmit: press,
-  onEdit: press,
 };
 
 export const CREATOR_STUDIO_CASES: ParityCase[] = [
@@ -376,7 +379,14 @@ export const CREATOR_STUDIO_CASES: ParityCase[] = [
   },
   ...(['draft', 'submitted', 'declined'] as const).map((status) => ({
     name: `PitchCard ${status}`,
-    language: () => toElement(L.PitchCard({ ...PITCH, status, submittedAt: 'Sent 2 Mar' })),
+    language: () =>
+      toElement(
+        L.PitchCard({ ...PITCH_DATA, status, submittedAt: 'Sent 2 Mar' })
+          .release(['r1', set])
+          .selectedMoods([['Calm'], set])
+          .selectedGenres([[], set])
+          .pitch(['A slow song about the sea.', set]),
+      ),
     bloom: () => <PitchCard {...PITCH} status={status} submittedAt="Sent 2 Mar" />,
   })),
 ];

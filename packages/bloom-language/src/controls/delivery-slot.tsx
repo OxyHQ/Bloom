@@ -9,7 +9,7 @@ import {
   type DeliveryWindow,
 } from '@oxy.so/bloom/delivery-slot';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ColorToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -52,6 +52,8 @@ export type DeliverySlotPickerOptions = Omit<
   | 'loading'
   | 'fadeColor'
   | 'empty'
+  | 'day'
+  | 'onDayChange'
 > & { readonly empty?: Child };
 
 /** Bloom `DeliverySlotDays`; `.label()` names the strip. */
@@ -65,6 +67,7 @@ export interface DeliverySlotOptionView extends ViewModifiers<DeliverySlotOption
   disabled(value?: boolean): DeliverySlotOptionView;
 }
 export interface DeliverySlotPickerView extends ViewModifiers<DeliverySlotPickerView> {
+  day(value: Bound<DeliverySlotPickerProps, 'day'>): DeliverySlotPickerView;
   disabled(value?: boolean): DeliverySlotPickerView;
   /** Placeholder rows while the windows load. */
   loading(value?: boolean): DeliverySlotPickerView;
@@ -110,6 +113,7 @@ export const DELIVERY_SLOTS: Record<DeliverySlotKind, ControlRenderer> = {
     own: (d) => ({ disabled: d.own('disabled')?.value }),
   }),
   deliverySlotPicker: product(BloomDeliverySlotPicker, {
+    bindings: { day: ['day', 'onDayChange'] },
     binding: ['value', 'onValueChange'],
     slots: ['empty'],
     own: (d) => ({ disabled: d.own('disabled')?.value, loading: d.own('loading')?.value }),

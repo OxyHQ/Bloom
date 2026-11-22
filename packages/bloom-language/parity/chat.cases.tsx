@@ -33,7 +33,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed, ThemedRgb } from './support/cases';
+import { hold, type ParityCase, Themed, ThemedRgb } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -290,8 +290,15 @@ const screen: ParityCase[] = [
 const list: ParityCase[] = [
   {
     name: 'ChatFolderTabs',
-    language: () => toElement(L.ChatFolderTabs(FOLDERS, { value: 'all' }).label('Folders')),
-    bloom: () => <ChatFolderTabs folders={FOLDERS} value="all" accessibilityLabel="Folders" />,
+    language: () => toElement(L.ChatFolderTabs(FOLDERS, {}).value(['all', hold]).label('Folders')),
+    bloom: () => (
+      <ChatFolderTabs
+        onValueChange={hold}
+        folders={FOLDERS}
+        value="all"
+        accessibilityLabel="Folders"
+      />
+    ),
   },
   {
     name: 'ChatFolderTabs spaced, padded, a divider',
@@ -560,12 +567,13 @@ const media: ParityCase[] = [
     name: 'VoiceMessage outgoing, a transcript',
     language: () =>
       toElement(
-        L.VoiceMessage(SAMPLES, 12, { transcript: 'See you at six', transcriptOpen: true }).tint(
-          'outgoing',
-        ),
+        L.VoiceMessage(SAMPLES, 12, { transcript: 'See you at six' })
+          .transcriptOpen([true, hold])
+          .tint('outgoing'),
       ),
     bloom: () => (
       <VoiceMessage
+        onTranscriptOpenChange={hold}
         samples={SAMPLES}
         duration={12}
         transcript="See you at six"

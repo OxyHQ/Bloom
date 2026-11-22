@@ -21,7 +21,7 @@ import {
   type NoteEditorToolbarProps,
 } from '@oxy.so/bloom/note-editor';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { MailComposeStyle, NoteToolbarSize, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -45,18 +45,33 @@ type ComposeSlots = 'header' | 'toolbar' | 'footer';
  */
 export type MailComposeSurfaceOptions = Omit<
   MailComposeSurfaceProps,
-  Drawn | 'variant' | 'sending' | 'children' | ComposeSlots
+  Drawn | 'variant' | 'sending' | 'children' | ComposeSlots | 'minimized' | 'onMinimizedChange'
 > & { readonly [K in ComposeSlots]?: Child };
 /** Bloom `MailRecipientField`'s text, suggestions, handlers and words; its `trailing` is a language child. */
 export type MailRecipientFieldOptions = Omit<
   MailRecipientFieldProps,
-  'style' | 'testID' | 'recipients' | 'onRecipientsChange' | 'disabled' | 'trailing'
+  | 'style'
+  | 'testID'
+  | 'recipients'
+  | 'onRecipientsChange'
+  | 'disabled'
+  | 'trailing'
+  | 'value'
+  | 'onChangeText'
 > & { readonly trailing?: Child };
 type MessageSlots = 'trimmed' | 'menu';
 /** Bloom `MailMessage`'s addresses, dates, state and handlers; its trimmed quote and menu are language children. */
 export type MailMessageOptions = Omit<
   MailMessageProps,
-  'style' | 'testID' | 'sender' | 'children' | MessageSlots
+  | 'style'
+  | 'testID'
+  | 'sender'
+  | 'children'
+  | MessageSlots
+  | 'expanded'
+  | 'onExpandedChange'
+  | 'starred'
+  | 'onStarredChange'
 > & { readonly [K in MessageSlots]?: Child };
 type ThreadSlots = 'quickReply' | 'header';
 /**
@@ -65,10 +80,20 @@ type ThreadSlots = 'quickReply' | 'header';
  */
 export type MailThreadOptions = Omit<
   MailThreadProps,
-  Drawn | 'messages' | 'messageGap' | ThreadSlots
+  | Drawn
+  | 'messages'
+  | 'messageGap'
+  | ThreadSlots
+  | 'starred'
+  | 'onStarredChange'
+  | 'expandedIds'
+  | 'onExpandedIdsChange'
 > & { readonly messageGap?: SpaceToken } & { readonly [K in ThreadSlots]?: Child };
 /** Bloom `MailQuoteToggle`'s state and words. */
-export type MailQuoteToggleOptions = Omit<MailQuoteToggleProps, 'style' | 'testID' | 'children'>;
+export type MailQuoteToggleOptions = Omit<
+  MailQuoteToggleProps,
+  'style' | 'testID' | 'children' | 'expanded' | 'onExpandedChange'
+>;
 /** Bloom `NoteEditorToolbar`'s words. */
 export type NoteEditorToolbarOptions = Omit<
   NoteEditorToolbarProps,
@@ -77,6 +102,7 @@ export type NoteEditorToolbarOptions = Omit<
 
 /** Bloom `MailComposeSurface`: a message being written. */
 export interface MailComposeSurfaceView extends ViewModifiers<MailComposeSurfaceView> {
+  minimized(value: Bound<MailComposeSurfaceProps, 'minimized'>): MailComposeSurfaceView;
   /** `docked` (default): a window in a corner; `sheet`: the whole pane. */
   style(value: MailComposeStyle): MailComposeSurfaceView;
   /** The message is being sent: its send button says so and waits. */
@@ -84,11 +110,21 @@ export interface MailComposeSurfaceView extends ViewModifiers<MailComposeSurface
 }
 /** Bloom `MailRecipientField`: the recipients of one line (To, Cc, Bcc). */
 export interface MailRecipientFieldView extends ViewModifiers<MailRecipientFieldView> {
+  /** The text typed before it becomes a recipient (Bloom's `value`). */
+  query(value: Binding<string>): MailRecipientFieldView;
   disabled(value?: boolean): MailRecipientFieldView;
 }
-export type MailMessageView = ViewModifiers<MailMessageView>;
-export type MailThreadView = ViewModifiers<MailThreadView>;
-export type MailQuoteToggleView = ViewModifiers<MailQuoteToggleView>;
+export interface MailMessageView extends ViewModifiers<MailMessageView> {
+  expanded(value: Bound<MailMessageProps, 'expanded'>): MailMessageView;
+  starred(value: Bound<MailMessageProps, 'starred'>): MailMessageView;
+}
+export interface MailThreadView extends ViewModifiers<MailThreadView> {
+  starred(value: Bound<MailThreadProps, 'starred'>): MailThreadView;
+  expandedIds(value: Bound<MailThreadProps, 'expandedIds'>): MailThreadView;
+}
+export interface MailQuoteToggleView extends ViewModifiers<MailQuoteToggleView> {
+  expanded(value: Bound<MailQuoteToggleProps, 'expanded'>): MailQuoteToggleView;
+}
 /** Bloom `NoteEditorToolbar`: a note's formatting actions, the overflow in a menu. */
 export interface NoteEditorToolbarView extends ViewModifiers<NoteEditorToolbarView> {
   /** `md` (default) or `sm`. */
@@ -143,20 +179,34 @@ export function NoteEditorToolbar(
 
 export const MAILS: Record<MailKind, ControlRenderer> = {
   mailComposeSurface: product(BloomMailComposeSurface, {
+    bindings: { minimized: ['minimized', 'onMinimizedChange'] },
     slots: ['header', 'toolbar', 'footer'],
     own: (d) => ({ variant: d.own('style')?.value, sending: d.own('loading')?.value }),
   }),
   mailRecipientField: product(BloomMailRecipientField, {
     binding: ['recipients', 'onRecipientsChange'],
+    bindings: { query: ['value', 'onChangeText'] },
     slots: ['trailing'],
     own: (d) => ({ disabled: d.own('disabled')?.value }),
   }),
-  mailMessage: product(BloomMailMessage, { slots: ['trimmed', 'menu'] }),
+  mailMessage: product(BloomMailMessage, {
+    bindings: {
+      expanded: ['expanded', 'onExpandedChange'],
+      starred: ['starred', 'onStarredChange'],
+    },
+    slots: ['trimmed', 'menu'],
+  }),
   mailThread: product(BloomMailThread, {
+    bindings: {
+      starred: ['starred', 'onStarredChange'],
+      expandedIds: ['expandedIds', 'onExpandedIdsChange'],
+    },
     slots: ['quickReply', 'header'],
     lengths: ['messageGap'],
   }),
-  mailQuoteToggle: product(BloomMailQuoteToggle),
+  mailQuoteToggle: product(BloomMailQuoteToggle, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+  }),
   noteEditorToolbar: product(BloomNoteEditorToolbar, {
     own: (d) => ({ size: d.own('size')?.value, disabled: d.own('disabled')?.value }),
   }),

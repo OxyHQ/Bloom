@@ -42,9 +42,7 @@ const prices: ParityCase[] = [
         L.PriceSummary(LINES, {
           total: TOTAL,
           collapsible: true,
-          expanded: true,
-          onExpandedChange: press,
-        }),
+        }).expanded([true, press]),
       ),
     bloom: () => (
       <PriceSummary lines={LINES} total={TOTAL} collapsible expanded onExpandedChange={press} />

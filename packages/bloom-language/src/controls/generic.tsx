@@ -21,7 +21,7 @@ import {
 } from '@oxy.so/bloom/swipe-row';
 import { ThemeToggle as BloomThemeToggle } from '@oxy.so/bloom/theme-toggle';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   ColorToken,
@@ -67,7 +67,15 @@ export type RowActionsOptions = Omit<
 /** Bloom `RowActionButton`'s data: its tooltip and the Button props it passes on. */
 export type RowActionButtonOptions = Omit<
   RowActionButtonProps,
-  Drawn | 'icon' | 'label' | 'appearance' | 'active' | 'disabled' | 'onPress'
+  | Drawn
+  | 'icon'
+  | 'label'
+  | 'appearance'
+  | 'active'
+  | 'disabled'
+  | 'onPress'
+  | 'pressed'
+  | 'onPressedChange'
 >;
 /**
  * Bloom `SwipeRow`'s data: its handlers, presentation and words; `height` and
@@ -104,6 +112,7 @@ export interface RowActionsView extends ViewModifiers<RowActionsView> {
 }
 /** Bloom `RowActionButton`; `.onPress()` is what it does, `.label()` a fuller name than its tooltip. */
 export interface RowActionButtonView extends ViewModifiers<RowActionButtonView> {
+  pressed(value: Bound<RowActionButtonProps, 'pressed'>): RowActionButtonView;
   /** `plain` (default) or `outline`. */
   style(value: RowActionStyle): RowActionButtonView;
   /** Painted pressed while a menu it opened shows. */
@@ -185,6 +194,7 @@ export const GENERIC: Record<GenericKind, ControlRenderer> = {
     own: (d) => ({ menuAppearance: d.own('style')?.value }),
   }),
   rowActionButton: product(BloomRowActionButton, {
+    bindings: { pressed: ['pressed', 'onPressedChange'] },
     press: true,
     own: (d) => ({
       appearance: d.own('style')?.value,

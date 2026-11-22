@@ -10,7 +10,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const FACTS = [
@@ -68,19 +68,22 @@ export const LISTING_ACTION_CASES: ParityCase[] = [
     language: () =>
       toElement(
         L.MortgageCalculator({
-          price: 300000,
-          downPayment: 60000,
-          years: 25,
-          annualRate: 3.5,
-          onPriceChange: press,
           formatCurrency: euro,
           labels: { title: 'Your mortgage' },
           disclaimer: L.Text('An estimate, not an offer.'),
           maxWidth: '360',
-        }).style(layout),
+        })
+          .downPayment([60000, hold])
+          .years([25, hold])
+          .annualRate([3.5, hold])
+          .price([300000, press])
+          .style(layout),
       ),
     bloom: () => (
       <MortgageCalculator
+        onDownPaymentChange={hold}
+        onYearsChange={hold}
+        onAnnualRateChange={hold}
         price={300000}
         downPayment={60000}
         years={25}

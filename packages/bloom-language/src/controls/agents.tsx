@@ -39,6 +39,7 @@ import {
 } from '@oxy.so/bloom/questionnaire';
 import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/usage-card';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   AgentThinkingStyle,
@@ -61,7 +62,7 @@ import type {
   TypeRampStep,
 } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { type CornerToken, product } from './product';
+import { bound, type CornerToken, product } from './product';
 
 /** The agent families apps share: limits and usage, thinking, progress, the log, the loader, the sidebar, the questionnaire. */
 export type AgentKind =
@@ -81,8 +82,14 @@ export type AgentKind =
 
 type Drawn = 'style' | 'testID';
 
-export type AgentLimitsCardOptions = Omit<AgentLimitsCardProps, Drawn>;
-export type UsageCardOptions = Omit<UsageCardProps, Drawn | 'fallback' | 'footer' | 'radius'> & {
+export type AgentLimitsCardOptions = Omit<
+  AgentLimitsCardProps,
+  Drawn | 'expanded' | 'onExpandedChange'
+>;
+export type UsageCardOptions = Omit<
+  UsageCardProps,
+  Drawn | 'fallback' | 'footer' | 'radius' | 'expanded' | 'onExpandedChange'
+> & {
   readonly fallback?: Child;
   readonly footer?: Child;
   /** Its corner: a card's corner token (Bloom's `radius-28` by default is `3xl`). */
@@ -90,17 +97,17 @@ export type UsageCardOptions = Omit<UsageCardProps, Drawn | 'fallback' | 'footer
 };
 export type AgentThinkingOptions = Omit<
   AgentThinkingProps,
-  Drawn | 'children' | 'variant' | 'tone'
+  Drawn | 'children' | 'variant' | 'tone' | 'open' | 'onOpenChange'
 >;
 export type AgentProgressOptions = Omit<
   AgentProgressProps,
-  Drawn | 'stepDuration' | 'completionDelay'
+  Drawn | 'stepDuration' | 'completionDelay' | 'minimized' | 'onMinimizedChange'
 > & { readonly stepDuration?: DurationName; readonly completionDelay?: DurationName };
 export type AgentLogRowOptions = Omit<AgentLogRowProps, Drawn | 'children'>;
 /** Bloom `AgentLogToolCall`'s data; `content` is what it shows expanded (Bloom's children). */
 export type AgentLogToolCallOptions = Omit<
   AgentLogToolCallProps,
-  'testID' | 'name' | 'status' | 'children'
+  'testID' | 'name' | 'status' | 'children' | 'expanded' | 'onExpandedChange'
 > & { readonly content?: Child };
 export type AgentLogToolCallsOptions = Omit<
   AgentLogToolCallsProps,
@@ -126,28 +133,48 @@ type SidebarLook =
   | 'teamPlacement';
 export type ConversationSidebarOptions = Omit<
   ConversationSidebarProps,
-  Drawn | 'conversations' | 'after' | SidebarLook
+  | Drawn
+  | 'conversations'
+  | 'after'
+  | SidebarLook
+  | 'query'
+  | 'onQueryChange'
+  | 'mode'
+  | 'onModeChange'
+  | 'collapsed'
+  | 'onCollapsedChange'
+  | 'searchQuery'
+  | 'onSearchQueryChange'
+  | 'searchOpen'
+  | 'onSearchOpenChange'
 > & { readonly after?: Child };
 export type QuestionnaireOptions = Omit<
   QuestionnaireProps,
-  Drawn | 'questions' | 'advanceDelay'
+  Drawn | 'questions' | 'advanceDelay' | 'step' | 'onStepChange' | 'answers' | 'onAnswersChange'
 > & {
   readonly advanceDelay?: DurationName;
 };
 
 /** Bloom `AgentLimitsCard`: the context window and the plan's usage limits. */
-export type AgentLimitsCardView = ViewModifiers<AgentLimitsCardView>;
+export interface AgentLimitsCardView extends ViewModifiers<AgentLimitsCardView> {
+  expanded(value: Bound<AgentLimitsCardProps, 'expanded'>): AgentLimitsCardView;
+}
 /** Bloom `UsageCard`: an account's usage and its plan's limits. */
-export type UsageCardView = ViewModifiers<UsageCardView>;
+export interface UsageCardView extends ViewModifiers<UsageCardView> {
+  expanded(value: Bound<UsageCardProps, 'expanded'>): UsageCardView;
+}
 /** Bloom `AgentThinking`: the agent thinking, its reasoning folded under it. */
 export interface AgentThinkingView extends ViewModifiers<AgentThinkingView> {
+  presented(value: Bound<AgentThinkingProps, 'open'>): AgentThinkingView;
   /** Its mark: `wave` (default), `spin`, `stars` or `infinity`. */
   style(value: AgentThinkingStyle): AgentThinkingView;
   /** `subtle`, `default`, `primary` or `accent`. */
   tint(value: AgentThinkingTone): AgentThinkingView;
 }
 /** Bloom `AgentProgress`: the steps an agent works through. */
-export type AgentProgressView = ViewModifiers<AgentProgressView>;
+export interface AgentProgressView extends ViewModifiers<AgentProgressView> {
+  minimized(value: Bound<AgentProgressProps, 'minimized'>): AgentProgressView;
+}
 /** Bloom `AgentProgressLoadingText`: a line of text that shimmers while it loads. */
 export interface AgentProgressLoadingTextView extends ViewModifiers<AgentProgressLoadingTextView> {
   /** At most this many lines. */
@@ -160,7 +187,9 @@ export type AgentLogRowView = ViewModifiers<AgentLogRowView>;
 /** Bloom `AgentLogShimmerText`: a log line that shimmers while it runs. */
 export type AgentLogShimmerTextView = ViewModifiers<AgentLogShimmerTextView>;
 /** Bloom `AgentLogToolCall`: one tool call, its status and what it returned. */
-export type AgentLogToolCallView = ViewModifiers<AgentLogToolCallView>;
+export interface AgentLogToolCallView extends ViewModifiers<AgentLogToolCallView> {
+  expanded(value: Bound<AgentLogToolCallProps, 'expanded'>): AgentLogToolCallView;
+}
 /** Bloom `AgentLogToolCalls`: a turn's tool calls. */
 export type AgentLogToolCallsView = ViewModifiers<AgentLogToolCallsView>;
 /** Bloom `AgentLogWorkingRow`: the row that says the agent is working. */
@@ -178,6 +207,11 @@ export interface ComposerLoaderView extends ViewModifiers<ComposerLoaderView> {
 }
 /** Bloom `ConversationSidebar`: an agent app's conversations. */
 export interface ConversationSidebarView extends ViewModifiers<ConversationSidebarView> {
+  query(value: Bound<ConversationSidebarProps, 'query'>): ConversationSidebarView;
+  mode(value: Bound<ConversationSidebarProps, 'mode'>): ConversationSidebarView;
+  collapsed(value: Bound<ConversationSidebarProps, 'collapsed'>): ConversationSidebarView;
+  searchQuery(value: Bound<ConversationSidebarProps, 'searchQuery'>): ConversationSidebarView;
+  searchOpen(value: Bound<ConversationSidebarProps, 'searchOpen'>): ConversationSidebarView;
   /** A `panel` (default), or a `rail` of icons. */
   style(value: SidebarVariant): ConversationSidebarView;
   /** Its rows, and the panel's width with them: `md` by default. */
@@ -200,7 +234,10 @@ export interface ConversationSidebarView extends ViewModifiers<ConversationSideb
   teamPlacement(value: TeamPlacement): ConversationSidebarView;
 }
 /** Bloom `Questionnaire`: questions asked one at a time. */
-export type QuestionnaireView = ViewModifiers<QuestionnaireView>;
+export interface QuestionnaireView extends ViewModifiers<QuestionnaireView> {
+  step(value: Bound<QuestionnaireProps, 'step'>): QuestionnaireView;
+  answers(value: Bound<QuestionnaireProps, 'answers'>): QuestionnaireView;
+}
 
 export function AgentLimitsCard(options: AgentLimitsCardOptions = {}): AgentLimitsCardView {
   return new Node('agentLimitsCard', { options }, []);
@@ -280,12 +317,22 @@ function text(host: unknown, own: (d: ControlDraw) => Record<string, unknown> = 
 }
 
 export const AGENTS: Record<AgentKind, ControlRenderer> = {
-  agentLimitsCard: product(BloomAgentLimitsCard),
-  usageCard: product(BloomUsageCard, { slots: ['fallback', 'footer'], radii: ['radius'] }),
+  agentLimitsCard: product(BloomAgentLimitsCard, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+  }),
+  usageCard: product(BloomUsageCard, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+    slots: ['fallback', 'footer'],
+    radii: ['radius'],
+  }),
   agentThinking: product(BloomAgentThinking, {
+    bindings: { presented: ['open', 'onOpenChange'] },
     own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
   }),
-  agentProgress: product(BloomAgentProgress, { durations: ['stepDuration', 'completionDelay'] }),
+  agentProgress: product(BloomAgentProgress, {
+    bindings: { minimized: ['minimized', 'onMinimizedChange'] },
+    durations: ['stepDuration', 'completionDelay'],
+  }),
   agentProgressLoadingText: text(BloomAgentProgressLoadingText, (d) => ({
     numberOfLines: d.own('lines')?.value,
     variant: d.own('textVariant')?.value,
@@ -301,7 +348,13 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
     const { content, ...rest } = options;
     return d.component(
       BloomAgentLogToolCall,
-      { ...d.props(), ...rest, name, status },
+      {
+        ...d.props(),
+        ...rest,
+        ...bound(d, { expanded: ['expanded', 'onExpandedChange'] }),
+        name,
+        status,
+      },
       ...(content === undefined ? [] : [d.render(content)]),
     );
   },
@@ -318,6 +371,13 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
     }),
   }),
   conversationSidebar: product(BloomConversationSidebar, {
+    bindings: {
+      query: ['query', 'onQueryChange'],
+      mode: ['mode', 'onModeChange'],
+      collapsed: ['collapsed', 'onCollapsedChange'],
+      searchQuery: ['searchQuery', 'onSearchQueryChange'],
+      searchOpen: ['searchOpen', 'onSearchOpenChange'],
+    },
     slots: ['after'],
     own: (d) => ({
       variant: d.own('style')?.value,
@@ -332,5 +392,8 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
       teamPlacement: d.own('teamPlacement')?.value,
     }),
   }),
-  questionnaire: product(BloomQuestionnaire, { durations: ['advanceDelay'] }),
+  questionnaire: product(BloomQuestionnaire, {
+    bindings: { step: ['step', 'onStepChange'], answers: ['answers', 'onAnswersChange'] },
+    durations: ['advanceDelay'],
+  }),
 };

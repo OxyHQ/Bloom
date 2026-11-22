@@ -17,7 +17,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed, hold } from './support/cases';
 
 const set = () => {};
 const press = () => {};
@@ -275,16 +275,24 @@ const pickers: ParityCase[] = [
     language: () =>
       toElement(
         L.AttachmentMenu(L.Button(L.Text('Attach')).onPress(press), {
-          open: true,
           items: ITEMS,
           onSelect: set,
           label: 'Attach',
         })
+          .presented([true, hold])
           .style(layout)
           .columns(2),
       ),
     bloom: () => (
-      <AttachmentMenu open items={ITEMS} onSelect={set} label="Attach" layout={layout} columns={2}>
+      <AttachmentMenu
+        onOpenChange={hold}
+        open
+        items={ITEMS}
+        onSelect={set}
+        label="Attach"
+        layout={layout}
+        columns={2}
+      >
         <Button onPress={press}>Attach</Button>
       </AttachmentMenu>
     ),
@@ -298,10 +306,19 @@ const pickers: ParityCase[] = [
     name: `EmojiPicker ${size}, searched, a height`,
     language: () =>
       toElement(
-        L.EmojiPicker(GROUPS, { query: 'app', frequentlyUsed: ['👍'], height: '3xl' }).size(size),
+        L.EmojiPicker(GROUPS, { frequentlyUsed: ['👍'], height: '3xl' })
+          .query(['app', hold])
+          .size(size),
       ),
     bloom: () => (
-      <EmojiPicker groups={GROUPS} query="app" frequentlyUsed={['👍']} height={32} size={size} />
+      <EmojiPicker
+        onQueryChange={hold}
+        groups={GROUPS}
+        query="app"
+        frequentlyUsed={['👍']}
+        height={32}
+        size={size}
+      />
     ),
   })),
   {
@@ -341,14 +358,14 @@ const pickers: ParityCase[] = [
     language: () =>
       toElement(
         L.MessageContextMenu(L.Text('Hello'), MENU, {
-          open: true,
           onSelect: set,
           reactions: ['❤️', '👍'],
           selectedReaction: '❤️',
-        }),
+        }).presented([true, hold]),
       ),
     bloom: () => (
       <MessageContextMenu
+        onOpenChange={hold}
         open
         items={MENU}
         onSelect={set}

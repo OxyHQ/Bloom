@@ -14,7 +14,7 @@ import { VehiclePicker } from '@oxy.so/bloom/vehicle-picker';
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { hold, type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -140,23 +140,32 @@ const SIZES = [
   { value: 'medium' as const, label: 'Medium', detail: 'Fits a car' },
   { value: 'large' as const, label: 'Large', detail: 'Needs a van' },
 ];
-const OPTIONS = {
+const OPTIONS_DATA = {
   extras: [{ key: 'help', title: 'Help loading', price: '€9.00' }],
-  selectedExtras: ['help'],
-  onExtrasChange: set,
   accessOptions: [
     { value: 'stairs' as const, label: 'Stairs', price: '€3.40' },
     { value: 'lift' as const, label: 'Lift' },
   ],
-  access: 'stairs' as const,
-  onAccessChange: set,
   windows: [
     { id: 'am', label: 'Morning' },
     { id: 'pm', label: 'Afternoon', price: '€2.00' },
   ],
+};
+const OPTIONS = {
+  ...OPTIONS_DATA,
+  selectedExtras: ['help'],
+  onExtrasChange: set,
+  access: 'stairs' as const,
+  onAccessChange: set,
   window: 'am',
   onWindowChange: set,
 };
+/** The options the app holds, as the language binds them. */
+const shipmentOptions = () =>
+  L.ShipmentOptionsList(OPTIONS_DATA)
+    .selectedExtras([['help'], set])
+    .access(['stairs', set])
+    .window(['am', set]);
 const ROUTE = {
   stops: [
     { id: 'a', title: 'Rua das Amoreiras 12' },
@@ -214,7 +223,7 @@ export const LOGISTICS_CASES: ParityCase[] = [
   {
     name: 'CarrierQuoteList',
     language: () =>
-      toElement(L.CarrierQuoteList(QUOTES, { onAccept: set, sort: 'price', onSortChange: set })),
+      toElement(L.CarrierQuoteList(QUOTES, { onAccept: set }).sorting(['price', set])),
     bloom: () => (
       <CarrierQuoteList quotes={QUOTES} onAccept={set} sort="price" onSortChange={set} />
     ),
@@ -247,11 +256,9 @@ export const LOGISTICS_CASES: ParityCase[] = [
     language: () =>
       toElement(
         L.EarningsSummary(PERIODS, {
-          period: 'day',
-          onPeriodChange: set,
           onPressPayout: press,
           chartHeight: '160',
-        }),
+        }).period(['day', set]),
       ),
     bloom: () => (
       <EarningsSummary
@@ -349,9 +356,7 @@ export const LOGISTICS_CASES: ParityCase[] = [
   {
     name: 'JobBoard',
     language: () =>
-      toElement(
-        L.JobBoard(JOBS, { onTake: set, sort: 'pay', onSortChange: set, defaultFiltersOpen: true }),
-      ),
+      toElement(L.JobBoard(JOBS, { onTake: set, defaultFiltersOpen: true }).sorting(['pay', set])),
     bloom: () => (
       <JobBoard jobs={JOBS} onTake={set} sort="pay" onSortChange={set} defaultFiltersOpen />
     ),
@@ -379,20 +384,26 @@ export const LOGISTICS_CASES: ParityCase[] = [
     ),
   },
   {
-    name: 'SignaturePad',
-    language: () =>
-      toElement(L.SignaturePad({ defaultValue: SIGNATURE, onChange: set, height: '160' })),
-    bloom: () => <SignaturePad defaultValue={SIGNATURE} onChange={set} height={160} />,
+    name: 'SignaturePad, its own value at first',
+    language: () => toElement(L.SignaturePad({ defaultValue: SIGNATURE, height: '160' })),
+    bloom: () => <SignaturePad defaultValue={SIGNATURE} height={160} />,
+  },
+  {
+    name: 'SignaturePad, its value a binding',
+    language: () => toElement(L.SignaturePad({ height: '160' }).value([SIGNATURE, set])),
+    bloom: () => <SignaturePad value={SIGNATURE} onChange={set} height={160} />,
   },
   {
     name: 'SignaturePad inked',
-    language: () => toElement(L.SignaturePad({ value: SIGNATURE }).tint('primary')),
-    bloom: () => <Themed>{(c) => <SignaturePad value={SIGNATURE} ink={c.primary} />}</Themed>,
+    language: () => toElement(L.SignaturePad({}).value([SIGNATURE, hold]).tint('primary')),
+    bloom: () => (
+      <Themed>{(c) => <SignaturePad onChange={hold} value={SIGNATURE} ink={c.primary} />}</Themed>
+    ),
   },
   {
     name: 'SignaturePad typed, disabled',
-    language: () => toElement(L.SignaturePad({ value: SIGNATURE, typed: true }).disabled()),
-    bloom: () => <SignaturePad value={SIGNATURE} typed disabled />,
+    language: () => toElement(L.SignaturePad({ typed: true }).value([SIGNATURE, hold]).disabled()),
+    bloom: () => <SignaturePad onChange={hold} value={SIGNATURE} typed disabled />,
   },
   {
     name: 'ProofOfDelivery',
@@ -482,12 +493,12 @@ export const LOGISTICS_CASES: ParityCase[] = [
   },
   {
     name: 'ShipmentOptionsList',
-    language: () => toElement(L.ShipmentOptionsList(OPTIONS)),
+    language: () => toElement(shipmentOptions()),
     bloom: () => <ShipmentOptionsList {...OPTIONS} />,
   },
   {
     name: 'ShipmentOptionsList disabled',
-    language: () => toElement(L.ShipmentOptionsList(OPTIONS).disabled()),
+    language: () => toElement(shipmentOptions().disabled()),
     bloom: () => <ShipmentOptionsList {...OPTIONS} disabled />,
   },
   {

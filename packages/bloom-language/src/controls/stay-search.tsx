@@ -13,7 +13,7 @@ import {
   type StaySearchStepProps,
 } from '@oxy.so/bloom/stay-search';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { GuestPickerSize, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -38,7 +38,10 @@ export type StaySearchStepOptions = Omit<
   StaySearchStepProps,
   Drawn | 'label' | 'children' | 'onPress'
 >;
-export type DestinationSuggestionsOptions = Omit<DestinationSuggestionsProps, Drawn | 'items'>;
+export type DestinationSuggestionsOptions = Omit<
+  DestinationSuggestionsProps,
+  Drawn | 'items' | 'highlightedIndex' | 'onHighlightedIndexChange'
+>;
 export type GuestPickerOptions = Omit<
   GuestPickerProps,
   Drawn | 'value' | 'onChange' | 'size' | 'note'
@@ -51,7 +54,11 @@ export type StaySearchPanelView = ViewModifiers<StaySearchPanelView>;
 /** Bloom `StaySearchStep`: one step of the search; `.onPress()` expands it. */
 export type StaySearchStepView = ViewModifiers<StaySearchStepView>;
 /** Bloom `DestinationSuggestions`: a listbox of places; `.label()` names it. */
-export type DestinationSuggestionsView = ViewModifiers<DestinationSuggestionsView>;
+export interface DestinationSuggestionsView extends ViewModifiers<DestinationSuggestionsView> {
+  highlightedIndex(
+    value: Bound<DestinationSuggestionsProps, 'highlightedIndex'>,
+  ): DestinationSuggestionsView;
+}
 /** Bloom `GuestPicker`: a stepper per kind of guest. */
 export interface GuestPickerView extends ViewModifiers<GuestPickerView> {
   /** The steppers' size: `md` (default) or `sm` (a popover). */
@@ -96,7 +103,9 @@ export const STAY_SEARCH: Record<StaySearchKind, ControlRenderer> = {
   staySearchCompact: product(BloomStaySearchCompact, { press: true }),
   staySearchPanel: product(BloomStaySearchPanel, { lengths: ['width', 'padding'] }),
   staySearchStep: product(BloomStaySearchStep, { press: true }),
-  destinationSuggestions: product(BloomDestinationSuggestions),
+  destinationSuggestions: product(BloomDestinationSuggestions, {
+    bindings: { highlightedIndex: ['highlightedIndex', 'onHighlightedIndexChange'] },
+  }),
   guestPicker: product(BloomGuestPicker, {
     binding: ['value', 'onChange'],
     slots: ['note'],

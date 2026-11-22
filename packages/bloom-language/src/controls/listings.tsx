@@ -23,6 +23,7 @@ import {
   type MapSearchAreaButtonProps,
 } from '@oxy.so/bloom/map-marker';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   ListingHeaderSize,
@@ -58,7 +59,10 @@ export type ListingHeaderActionOptions = Omit<
   Drawn | 'label' | 'onPress' | 'iconOnly'
 >;
 export type ListingPhotoGridOptions = Omit<ListingPhotoGridProps, Drawn | 'photos' | 'layout'>;
-export type ReviewCardOptions = Omit<ReviewCardProps, Drawn | 'name' | 'text' | 'numberOfLines'>;
+export type ReviewCardOptions = Omit<
+  ReviewCardProps,
+  Drawn | 'name' | 'text' | 'numberOfLines' | 'expanded' | 'onExpandedChange'
+>;
 export type MapClusterMarkerOptions = Omit<
   MapClusterMarkerProps,
   Drawn | 'count' | 'state' | 'onPress'
@@ -90,6 +94,7 @@ export interface ListingPhotoGridView extends ViewModifiers<ListingPhotoGridView
   style(value: ListingPhotoLayout): ListingPhotoGridView;
 }
 export interface ReviewCardView extends ViewModifiers<ReviewCardView> {
+  expanded(value: Bound<ReviewCardProps, 'expanded'>): ReviewCardView;
   /** The review's text folds after this many lines. */
   lines(value: number): ReviewCardView;
 }
@@ -175,6 +180,7 @@ export const LISTINGS: Record<ListingKind, ControlRenderer> = {
     own: (d) => ({ layout: d.own('style')?.value }),
   }),
   reviewCard: product(BloomReviewCard, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
     own: (d) => ({ numberOfLines: d.own('lines')?.value }),
   }),
   mapClusterMarker: product(BloomMapClusterMarker, {

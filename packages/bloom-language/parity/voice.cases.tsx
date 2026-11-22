@@ -5,12 +5,12 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const set = () => {};
 const end = () => {};
 const type = () => {};
-const handlers = { onMutedChange: set, onPausedChange: set, onEnd: end, onTypeInstead: type };
+const handlers = { onEnd: end, onTypeInstead: type };
 
 export const VOICE_CASES: ParityCase[] = [
   {
@@ -21,17 +21,40 @@ export const VOICE_CASES: ParityCase[] = [
   ...(['idle', 'listening', 'transcribing', 'thinking', 'speaking', 'error'] as const).map(
     (state) => ({
       name: `VoiceControls ${state}, every control`,
-      language: () => toElement(L.VoiceControls(state, handlers)),
-      bloom: () => <VoiceControls state={state} {...handlers} />,
+      language: () =>
+        toElement(L.VoiceControls(state, handlers).muted([false, set]).paused([false, set])),
+      bloom: () => (
+        <VoiceControls
+          state={state}
+          {...handlers}
+          muted={false}
+          onMutedChange={set}
+          paused={false}
+          onPausedChange={set}
+        />
+      ),
     }),
   ),
   ...ENUMS.voiceSize.map((size) => ({
     name: `VoiceControls ${size}, muted and paused`,
     language: () =>
       toElement(
-        L.VoiceControls('listening', { ...handlers, muted: true, paused: true }).size(size),
+        L.VoiceControls('listening', { ...handlers })
+          .muted([true, hold])
+          .paused([true, hold])
+          .size(size),
       ),
-    bloom: () => <VoiceControls state="listening" {...handlers} muted paused size={size} />,
+    bloom: () => (
+      <VoiceControls
+        onMutedChange={hold}
+        onPausedChange={hold}
+        state="listening"
+        {...handlers}
+        muted
+        paused
+        size={size}
+      />
+    ),
   })),
   {
     name: 'VoiceControls disabled',

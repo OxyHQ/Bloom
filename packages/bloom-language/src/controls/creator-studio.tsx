@@ -40,7 +40,7 @@ import {
   type TrackUploadRowProps,
 } from '@oxy.so/bloom/creator-studio';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Axis, ReleaseCardLayout, ReleaseStatusBadgeSize, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -71,7 +71,10 @@ export type AudienceOverviewOptions = Omit<
   Drawn | 'metrics' | 'period' | 'onPeriodChange'
 >;
 /** Its height a space token, where Bloom takes a number. */
-export type StreamsChartOptions = Omit<StreamsChartProps, Drawn | 'metrics' | 'height'> & {
+export type StreamsChartOptions = Omit<
+  StreamsChartProps,
+  Drawn | 'metrics' | 'height' | 'metric' | 'onMetricChange'
+> & {
   readonly height?: SpaceToken;
 };
 export type TopTracksTableOptions = Omit<
@@ -102,12 +105,25 @@ export type ArtworkUploaderOptions = Omit<
   Drawn | 'artwork' | 'size' | 'disabled'
 > & { readonly size?: SpaceToken };
 export type PayoutSummaryCardOptions = Omit<PayoutSummaryCardProps, Drawn | 'estimated'>;
-/** Bloom `PitchCard`'s data, as the app controls it (its release, tags, pitch and status). */
-export type PitchCardOptions = Omit<PitchCardProps, Drawn>;
+/** Bloom `PitchCard`'s data (its releases, moods, genres and status); what it edits are bindings. */
+export type PitchCardOptions = Omit<
+  PitchCardProps,
+  | Drawn
+  | 'release'
+  | 'onReleaseChange'
+  | 'selectedMoods'
+  | 'onSelectedMoodsChange'
+  | 'selectedGenres'
+  | 'onSelectedGenresChange'
+  | 'pitch'
+  | 'onPitchChange'
+>;
 
 export type AudienceOverviewView = ViewModifiers<AudienceOverviewView>;
 /** Bloom `StreamsChart`; `.label()` names its plot. */
-export type StreamsChartView = ViewModifiers<StreamsChartView>;
+export interface StreamsChartView extends ViewModifiers<StreamsChartView> {
+  metric(value: Bound<StreamsChartProps, 'metric'>): StreamsChartView;
+}
 /** Bloom `TopTracksTable`; `.label()` names the table. */
 export type TopTracksTableView = ViewModifiers<TopTracksTableView>;
 export type AudienceBreakdownView = ViewModifiers<AudienceBreakdownView>;
@@ -142,7 +158,12 @@ export interface ArtworkUploaderView extends ViewModifiers<ArtworkUploaderView> 
   disabled(value?: boolean): ArtworkUploaderView;
 }
 export type PayoutSummaryCardView = ViewModifiers<PayoutSummaryCardView>;
-export type PitchCardView = ViewModifiers<PitchCardView>;
+export interface PitchCardView extends ViewModifiers<PitchCardView> {
+  release(value: Bound<PitchCardProps, 'release'>): PitchCardView;
+  selectedMoods(value: Bound<PitchCardProps, 'selectedMoods'>): PitchCardView;
+  selectedGenres(value: Bound<PitchCardProps, 'selectedGenres'>): PitchCardView;
+  pitch(value: Bound<PitchCardProps, 'pitch'>): PitchCardView;
+}
 
 /** Bloom `AudienceOverview` of `metrics`, the selected period as its binding holds. */
 export function AudienceOverview(
@@ -239,7 +260,7 @@ export function PayoutSummaryCard(
 ): PayoutSummaryCardView {
   return new Node('payoutSummaryCard', { estimated, options }, []);
 }
-/** Bloom `PitchCard`, controlled by the app as Bloom's is. */
+/** Bloom `PitchCard`: its data here, the release, tags and pitch it edits as bindings Bloom requires. */
 export function PitchCard(options: PitchCardOptions): PitchCardView {
   return new Node('pitchCard', { options }, []);
 }
@@ -249,7 +270,10 @@ const disabled = (d: ControlDraw) => ({ disabled: d.own('disabled')?.value });
 
 export const CREATOR_STUDIO: Record<CreatorStudioKind, ControlRenderer> = {
   audienceOverview: product(BloomAudienceOverview, { binding: ['period', 'onPeriodChange'] }),
-  streamsChart: product(BloomStreamsChart, { lengths: ['height'] }),
+  streamsChart: product(BloomStreamsChart, {
+    bindings: { metric: ['metric', 'onMetricChange'] },
+    lengths: ['height'],
+  }),
   topTracksTable: product(BloomTopTracksTable, { slots: ['summary', 'toolbar'] }),
   audienceBreakdown: product(BloomAudienceBreakdown),
   releaseCard: product(BloomReleaseCard, {
@@ -278,5 +302,12 @@ export const CREATOR_STUDIO: Record<CreatorStudioKind, ControlRenderer> = {
   }),
   artworkUploader: product(BloomArtworkUploader, { lengths: ['size'], own: disabled }),
   payoutSummaryCard: product(BloomPayoutSummaryCard),
-  pitchCard: product(BloomPitchCard),
+  pitchCard: product(BloomPitchCard, {
+    bindings: {
+      release: ['release', 'onReleaseChange'],
+      selectedMoods: ['selectedMoods', 'onSelectedMoodsChange'],
+      selectedGenres: ['selectedGenres', 'onSelectedGenresChange'],
+      pitch: ['pitch', 'onPitchChange'],
+    },
+  }),
 };

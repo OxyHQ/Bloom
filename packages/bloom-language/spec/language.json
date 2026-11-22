@@ -1228,7 +1228,7 @@
     "contentClearance": ["space"],
     "navigationScope": ["navigationScope"],
     "contentMargins": ["edge?", "space"],
-    "refreshable": ["value", "value"],
+    "refreshable": ["value"],
     "onEndReached": ["value", "value?"],
     "scrollIndicators": ["scrollIndicators"],
     "scrollDismissesKeyboard": ["keyboardDismiss"],
@@ -1242,12 +1242,10 @@
     "secondary": [],
     "shortcut": ["value"],
     "expanded": ["value"],
-    "onExpandedChange": ["value"],
     "emptyLabel": ["value"],
     "meta": ["value"],
     "variant": ["sidebarVariant"],
     "surface": ["sidebarSurface", "value?"],
-    "onCollapsedChange": ["value"],
     "searchable": ["value?"],
     "themeToggle": ["value?"],
     "logo": ["value"],
@@ -1297,7 +1295,6 @@
     "onResizeEnd": ["value"],
     "onNudge": ["value"],
     "mode": ["value"],
-    "onModeChange": ["value"],
     "modePresentation": ["modePresentation"],
     "modesLabel": ["value"],
     "team": ["value"],
@@ -1524,7 +1521,59 @@
     "frosted": ["value?"],
     "methodTitleAlign": ["methodTitleAlign"],
     "methodTitleVariant": ["typeRamp"],
-    "multiline": ["value?"]
+    "multiline": ["value?"],
+    "activeIndex": ["value"],
+    "activeGroup": ["value"],
+    "skinTone": ["value"],
+    "activeTab": ["value"],
+    "range": ["value"],
+    "activeCell": ["value"],
+    "model": ["value"],
+    "effort": ["value"],
+    "voiceState": ["value"],
+    "permission": ["value"],
+    "tab": ["value"],
+    "navOpen": ["value"],
+    "panelOpen": ["value"],
+    "minimized": ["value"],
+    "searchQuery": ["value"],
+    "searchOpen": ["value"],
+    "answers": ["value"],
+    "memberQuery": ["value"],
+    "rate": ["value"],
+    "transcriptOpen": ["value"],
+    "highlightedIndex": ["value"],
+    "favorite": ["value"],
+    "starred": ["value"],
+    "expandedIds": ["value"],
+    "guestsOpen": ["value"],
+    "price": ["value"],
+    "downPayment": ["value"],
+    "years": ["value"],
+    "annualRate": ["value"],
+    "month": ["value"],
+    "period": ["value"],
+    "quantity": ["value"],
+    "liked": ["value"],
+    "release": ["value"],
+    "selectedMoods": ["value"],
+    "selectedGenres": ["value"],
+    "pitch": ["value"],
+    "metric": ["value"],
+    "day": ["value"],
+    "shuffle": ["value"],
+    "repeat": ["value"],
+    "playbackRate": ["value"],
+    "devicePickerOpen": ["value"],
+    "volume": ["value"],
+    "filtersOpen": ["value"],
+    "selectedExtras": ["value"],
+    "access": ["value"],
+    "window": ["value"],
+    "downloadedOnly": ["value"],
+    "view": ["value"],
+    "date": ["value"],
+    "selectedIds": ["value"]
   },
   "universal": [
     "padding",
@@ -2288,7 +2337,6 @@
         "surface",
         "size",
         "collapsed",
-        "onCollapsedChange",
         "searchable",
         "themeToggle",
         "logo",
@@ -2296,7 +2344,6 @@
         "label",
         "testID",
         "mode",
-        "onModeChange",
         "modePresentation",
         "modesLabel",
         "team",
@@ -2330,7 +2377,6 @@
         "trailing",
         "collapsible",
         "expanded",
-        "onExpandedChange",
         "loading",
         "error",
         "emptyLabel",
@@ -2340,7 +2386,7 @@
     "treeFolder": {
       "constructors": ["TreeFolder"],
       "universal": false,
-      "modifiers": ["id", "trailing", "expanded", "onExpandedChange"]
+      "modifiers": ["id", "trailing", "expanded"]
     },
     "treeItem": {
       "constructors": ["TreeItem"],
@@ -2354,7 +2400,6 @@
         "trailing",
         "disabled",
         "expanded",
-        "onExpandedChange",
         "emptyLabel",
         "onPress",
         "onLongPress",
@@ -3216,7 +3261,7 @@
       "modifiers": ["size", "mood", "paused", "interactive", "portrait"],
       "size": "avatarSize"
     },
-    "chatComposer": { "constructors": ["ChatComposer"], "modifiers": ["disabled"] },
+    "chatComposer": { "constructors": ["ChatComposer"], "modifiers": ["disabled", "activeIndex"] },
     "compactComposer": { "constructors": ["CompactComposer"], "modifiers": ["disabled"] },
     "composerBanner": {
       "constructors": ["ComposerBanner"],
@@ -3231,18 +3276,18 @@
     },
     "suggestionList": {
       "constructors": ["SuggestionList"],
-      "modifiers": ["size", "loading"],
+      "modifiers": ["size", "loading", "presented", "activeIndex"],
       "size": "controlSize"
     },
     "voiceRecorder": { "constructors": ["VoiceRecorder"], "modifiers": [] },
     "attachmentMenu": {
       "constructors": ["AttachmentMenu"],
-      "modifiers": ["style", "columns"],
+      "modifiers": ["style", "columns", "presented"],
       "style": "attachmentLayout"
     },
     "emojiPicker": {
       "constructors": ["EmojiPicker"],
-      "modifiers": ["size"],
+      "modifiers": ["size", "activeGroup", "query", "skinTone", "activeTab"],
       "size": "controlSize"
     },
     "reactionPicker": {
@@ -3250,10 +3295,10 @@
       "modifiers": ["size", "surface"],
       "size": "reactionPickerSize"
     },
-    "messageContextMenu": { "constructors": ["MessageContextMenu"], "modifiers": [] },
+    "messageContextMenu": { "constructors": ["MessageContextMenu"], "modifiers": ["presented"] },
     "areaChartCard": {
       "constructors": ["AreaChartCard"],
-      "modifiers": ["style", "shape"],
+      "modifiers": ["style", "shape", "activeIndex", "range"],
       "style": "areaVariant",
       "shape": "chartShape"
     },
@@ -3267,52 +3312,58 @@
     "chartStatTiles": { "constructors": ["ChartStatTiles"], "modifiers": [] },
     "contributionsCard": {
       "constructors": ["ContributionsCard"],
-      "modifiers": ["tint"],
+      "modifiers": ["tint", "activeCell"],
       "tint": "color"
     },
     "heatmapChartCard": {
       "constructors": ["HeatmapChartCard"],
-      "modifiers": ["tint", "activeTint"],
+      "modifiers": ["tint", "activeTint", "range", "activeCell"],
       "tint": "color"
     },
     "lineChartCard": {
       "constructors": ["LineChartCard"],
-      "modifiers": ["shape", "tint", "activeTint"],
+      "modifiers": ["shape", "tint", "activeTint", "activeIndex"],
       "tint": "color",
       "shape": "chartShape"
     },
     "radarChartCard": {
       "constructors": ["RadarChartCard"],
-      "modifiers": ["style", "legend"],
+      "modifiers": ["style", "legend", "activeIndex", "range"],
       "style": "radarVariant"
     },
-    "sleepScoreCard": { "constructors": ["SleepScoreCard"], "modifiers": [] },
+    "sleepScoreCard": { "constructors": ["SleepScoreCard"], "modifiers": ["activeIndex"] },
     "sparkline": {
       "constructors": ["Sparkline"],
       "modifiers": ["tint", "shape", "filled"],
       "tint": "sparklineTone",
       "shape": "chartShape"
     },
-    "stageBarsCard": { "constructors": ["StageBarsCard"], "modifiers": ["mono"] },
+    "stageBarsCard": {
+      "constructors": ["StageBarsCard"],
+      "modifiers": ["mono", "activeIndex", "range"]
+    },
     "stepsCard": {
       "constructors": ["StepsCard"],
-      "modifiers": ["tint", "activeTint"],
+      "modifiers": ["tint", "activeTint", "activeIndex"],
       "tint": "color"
     },
     "tokensChartCard": {
       "constructors": ["TokensChartCard"],
-      "modifiers": ["tint", "activeTint"],
+      "modifiers": ["tint", "activeTint", "activeIndex"],
       "tint": "color"
     },
-    "composerPanel": { "constructors": ["ComposerPanel"], "modifiers": ["disabled"] },
+    "composerPanel": {
+      "constructors": ["ComposerPanel"],
+      "modifiers": ["disabled", "model", "effort", "voiceState", "permission"]
+    },
     "composerPill": {
       "constructors": ["ComposerPill"],
-      "modifiers": ["disabled", "surface", "frosted"]
+      "modifiers": ["disabled", "surface", "frosted", "model", "effort", "voiceState", "permission"]
     },
     "composerPanelStatusTab": { "constructors": ["ComposerPanelStatusTab"], "modifiers": [] },
     "aiChatShell": {
       "constructors": ["AiChatShell"],
-      "modifiers": ["sidebarSurface", "sidebarScrollbarSide", "surface"]
+      "modifiers": ["sidebarSurface", "sidebarScrollbarSide", "surface", "navOpen", "panelOpen"]
     },
     "aiChatContainer": {
       "constructors": ["AiChatContainer"],
@@ -3328,8 +3379,8 @@
     },
     "aiChatHeader": { "constructors": ["AiChatHeader"], "modifiers": [] },
     "aiChatMobileHeader": { "constructors": ["AiChatMobileHeader"], "modifiers": [] },
-    "aiChatCodePanel": { "constructors": ["AiChatCodePanel"], "modifiers": [] },
-    "aiChatGalleryPanel": { "constructors": ["AiChatGalleryPanel"], "modifiers": [] },
+    "aiChatCodePanel": { "constructors": ["AiChatCodePanel"], "modifiers": ["tab"] },
+    "aiChatGalleryPanel": { "constructors": ["AiChatGalleryPanel"], "modifiers": ["tab"] },
     "statCard": {
       "constructors": ["StatCard"],
       "modifiers": ["style"],
@@ -3351,22 +3402,22 @@
       "modifiers": ["style", "disabled"],
       "style": "playbackTimes"
     },
-    "agentLimitsCard": { "constructors": ["AgentLimitsCard"], "modifiers": [] },
-    "usageCard": { "constructors": ["UsageCard"], "modifiers": [] },
+    "agentLimitsCard": { "constructors": ["AgentLimitsCard"], "modifiers": ["expanded"] },
+    "usageCard": { "constructors": ["UsageCard"], "modifiers": ["expanded"] },
     "agentThinking": {
       "constructors": ["AgentThinking"],
-      "modifiers": ["style", "tint"],
+      "modifiers": ["style", "tint", "presented"],
       "style": "agentThinkingStyle",
       "tint": "agentThinkingTone"
     },
-    "agentProgress": { "constructors": ["AgentProgress"], "modifiers": [] },
+    "agentProgress": { "constructors": ["AgentProgress"], "modifiers": ["minimized"] },
     "agentProgressLoadingText": {
       "constructors": ["AgentProgressLoadingText"],
       "modifiers": ["lines", "textVariant"]
     },
     "agentLogRow": { "constructors": ["AgentLogRow"], "modifiers": [] },
     "agentLogShimmerText": { "constructors": ["AgentLogShimmerText"], "modifiers": [] },
-    "agentLogToolCall": { "constructors": ["AgentLogToolCall"], "modifiers": [] },
+    "agentLogToolCall": { "constructors": ["AgentLogToolCall"], "modifiers": ["expanded"] },
     "agentLogToolCalls": { "constructors": ["AgentLogToolCalls"], "modifiers": [] },
     "agentLogWorkingRow": { "constructors": ["AgentLogWorkingRow"], "modifiers": [] },
     "composerLoader": {
@@ -3385,12 +3436,17 @@
         "railSelection",
         "modesPresentation",
         "scrollbarSide",
-        "teamPlacement"
+        "teamPlacement",
+        "query",
+        "mode",
+        "collapsed",
+        "searchQuery",
+        "searchOpen"
       ],
       "size": "sidebarSize",
       "style": "sidebarVariant"
     },
-    "questionnaire": { "constructors": ["Questionnaire"], "modifiers": [] },
+    "questionnaire": { "constructors": ["Questionnaire"], "modifiers": ["step", "answers"] },
     "chatBackground": {
       "constructors": ["ChatBackground"],
       "modifiers": ["style", "tint", "gradient"],
@@ -3419,12 +3475,15 @@
     },
     "chatInfoPanel": {
       "constructors": ["ChatInfoPanel"],
-      "modifiers": ["style"],
+      "modifiers": ["style", "tab", "memberQuery"],
       "style": "chatInfoPanelStyle"
     },
     "pinnedMessageBar": { "constructors": ["PinnedMessageBar"], "modifiers": ["dismissIcon"] },
     "scrollToBottomButton": { "constructors": ["ScrollToBottomButton"], "modifiers": [] },
-    "chatFolderTabs": { "constructors": ["ChatFolderTabs"], "modifiers": ["spacing", "dividers"] },
+    "chatFolderTabs": {
+      "constructors": ["ChatFolderTabs"],
+      "modifiers": ["spacing", "dividers", "value"]
+    },
     "chatSearchField": { "constructors": ["ChatSearchField"], "modifiers": [] },
     "chatSearchResults": { "constructors": ["ChatSearchResults"], "modifiers": [] },
     "storiesRow": { "constructors": ["StoriesRow"], "modifiers": ["spacing"] },
@@ -3476,7 +3535,7 @@
     },
     "voiceMessage": {
       "constructors": ["VoiceMessage"],
-      "modifiers": ["tint", "bubbleTint", "contentTint"],
+      "modifiers": ["tint", "bubbleTint", "contentTint", "rate", "transcriptOpen"],
       "tint": "messageTone"
     },
     "amenityList": { "constructors": ["AmenityList"], "modifiers": [] },
@@ -3492,7 +3551,7 @@
       "modifiers": ["style"],
       "style": "listingPhotoLayout"
     },
-    "reviewCard": { "constructors": ["ReviewCard"], "modifiers": ["lines"] },
+    "reviewCard": { "constructors": ["ReviewCard"], "modifiers": ["lines", "expanded"] },
     "mapClusterMarker": {
       "constructors": ["MapClusterMarker"],
       "modifiers": ["style"],
@@ -3550,7 +3609,10 @@
       "size": "filterTriggerSize"
     },
     "areaRangeFilter": { "constructors": ["AreaRangeFilter"], "modifiers": ["disabled"] },
-    "availabilityFilter": { "constructors": ["AvailabilityFilter"], "modifiers": ["disabled"] },
+    "availabilityFilter": {
+      "constructors": ["AvailabilityFilter"],
+      "modifiers": ["disabled", "date"]
+    },
     "featureFilter": {
       "constructors": ["FeatureFilter"],
       "modifiers": ["style", "disabled"],
@@ -3560,7 +3622,10 @@
     "staySearchCompact": { "constructors": ["StaySearchCompact"], "modifiers": [] },
     "staySearchPanel": { "constructors": ["StaySearchPanel"], "modifiers": [] },
     "staySearchStep": { "constructors": ["StaySearchStep"], "modifiers": [] },
-    "destinationSuggestions": { "constructors": ["DestinationSuggestions"], "modifiers": [] },
+    "destinationSuggestions": {
+      "constructors": ["DestinationSuggestions"],
+      "modifiers": ["highlightedIndex"]
+    },
     "guestPicker": {
       "constructors": ["GuestPicker"],
       "modifiers": ["size"],
@@ -3601,7 +3666,7 @@
     },
     "callMinimisedPill": {
       "constructors": ["CallMinimisedPill"],
-      "modifiers": ["style", "tint"],
+      "modifiers": ["style", "tint", "muted"],
       "style": "callMode",
       "tint": "color"
     },
@@ -3622,13 +3687,13 @@
       "style": "callMode",
       "tint": "color"
     },
-    "storyViewer": { "constructors": ["StoryViewer"], "modifiers": [] },
+    "storyViewer": { "constructors": ["StoryViewer"], "modifiers": ["muted"] },
     "selectedChipsRow": {
       "constructors": ["SelectedChipsRow"],
       "modifiers": ["style"],
       "style": "selectedChipsLayout"
     },
-    "newGroupForm": { "constructors": ["NewGroupForm"], "modifiers": [] },
+    "newGroupForm": { "constructors": ["NewGroupForm"], "modifiers": ["description"] },
     "messageBubble": {
       "constructors": ["MessageBubble"],
       "modifiers": ["groupPosition", "mediaFit", "tail", "metaOverlay", "senderTint"]
@@ -3649,10 +3714,10 @@
     "navigationBanner": { "constructors": ["NavigationBanner"], "modifiers": [] },
     "placeCard": {
       "constructors": ["PlaceCard"],
-      "modifiers": ["style", "loading"],
+      "modifiers": ["style", "loading", "favorite"],
       "style": "placeCardStyle"
     },
-    "placeHours": { "constructors": ["PlaceHours"], "modifiers": [] },
+    "placeHours": { "constructors": ["PlaceHours"], "modifiers": ["expanded"] },
     "placeInfoList": { "constructors": ["PlaceInfoList"], "modifiers": [] },
     "placeTransit": { "constructors": ["PlaceTransit"], "modifiers": [] },
     "placeListCard": { "constructors": ["PlaceListCard"], "modifiers": ["tint"], "tint": "color" },
@@ -3664,18 +3729,21 @@
     },
     "placePicker": {
       "constructors": ["PlacePicker"],
-      "modifiers": ["size", "disabled"],
+      "modifiers": ["size", "disabled", "query"],
       "size": "controlSize"
     },
     "mailComposeSurface": {
       "constructors": ["MailComposeSurface"],
-      "modifiers": ["style", "loading"],
+      "modifiers": ["style", "loading", "minimized"],
       "style": "mailComposeStyle"
     },
-    "mailRecipientField": { "constructors": ["MailRecipientField"], "modifiers": ["disabled"] },
-    "mailMessage": { "constructors": ["MailMessage"], "modifiers": [] },
-    "mailThread": { "constructors": ["MailThread"], "modifiers": [] },
-    "mailQuoteToggle": { "constructors": ["MailQuoteToggle"], "modifiers": [] },
+    "mailRecipientField": {
+      "constructors": ["MailRecipientField"],
+      "modifiers": ["disabled", "query"]
+    },
+    "mailMessage": { "constructors": ["MailMessage"], "modifiers": ["expanded", "starred"] },
+    "mailThread": { "constructors": ["MailThread"], "modifiers": ["starred", "expandedIds"] },
+    "mailQuoteToggle": { "constructors": ["MailQuoteToggle"], "modifiers": ["expanded"] },
     "noteEditorToolbar": {
       "constructors": ["NoteEditorToolbar"],
       "modifiers": ["size", "disabled"],
@@ -3688,14 +3756,14 @@
     },
     "bookingCard": {
       "constructors": ["BookingCard"],
-      "modifiers": ["loading", "disabled"]
+      "modifiers": ["loading", "disabled", "guestsOpen"]
     },
     "bookingBar": {
       "constructors": ["BookingBar"],
       "modifiers": ["loading", "disabled"]
     },
     "priceBreakdown": { "constructors": ["PriceBreakdown"], "modifiers": [] },
-    "homeSearchBar": { "constructors": ["HomeSearchBar"], "modifiers": [] },
+    "homeSearchBar": { "constructors": ["HomeSearchBar"], "modifiers": ["query"] },
     "searchModeTabs": {
       "constructors": ["SearchModeTabs"],
       "modifiers": ["style"],
@@ -3712,14 +3780,14 @@
     },
     "mortgageCalculator": {
       "constructors": ["MortgageCalculator"],
-      "modifiers": ["style"],
+      "modifiers": ["style", "price", "downPayment", "years", "annualRate"],
       "style": "mortgageLayout"
     },
     "rentalActionCard": { "constructors": ["RentalActionCard"], "modifiers": ["loading"] },
     "saleActionCard": { "constructors": ["SaleActionCard"], "modifiers": ["loading"] },
     "listingCard": {
       "constructors": ["ListingCard"],
-      "modifiers": ["style", "density", "loading"],
+      "modifiers": ["style", "density", "loading", "favorite"],
       "densities": ["comfortable", "compact"],
       "style": "listingCardLayout"
     },
@@ -3729,7 +3797,7 @@
       "densities": ["results", "compact"]
     },
     "wishlistCard": { "constructors": ["WishlistCard"], "modifiers": ["tint"], "tint": "color" },
-    "listingPreviewPane": { "constructors": ["ListingPreviewPane"], "modifiers": [] },
+    "listingPreviewPane": { "constructors": ["ListingPreviewPane"], "modifiers": ["mode"] },
     "listingQualityMeter": { "constructors": ["ListingQualityMeter"], "modifiers": [] },
     "propertyTypeSelector": {
       "constructors": ["PropertyTypeSelector"],
@@ -3741,7 +3809,7 @@
       "size": "offeringBadgeSize",
       "style": "offeringBadgeStyle"
     },
-    "priceEstimate": { "constructors": ["PriceEstimate"], "modifiers": [] },
+    "priceEstimate": { "constructors": ["PriceEstimate"], "modifiers": ["expanded"] },
     "pricePerAreaComparison": { "constructors": ["PricePerAreaComparison"], "modifiers": [] },
     "projectBoard": {
       "constructors": ["ProjectBoard", "GroupedProjectBoard", "ProjectBoardTemplate"],
@@ -3780,7 +3848,7 @@
     "ambientPhoto": { "constructors": ["AmbientPhoto"], "modifiers": [] },
     "calendarView": {
       "constructors": ["CalendarView"],
-      "modifiers": ["density"],
+      "modifiers": ["density", "month"],
       "densities": ["default", "compact"]
     },
     "calendarViewHeader": { "constructors": ["CalendarViewHeader"], "modifiers": [] },
@@ -3793,7 +3861,7 @@
     "webSearch": { "constructors": ["WebSearch"], "modifiers": [] },
     "voiceControls": {
       "constructors": ["VoiceControls"],
-      "modifiers": ["size", "disabled"],
+      "modifiers": ["size", "disabled", "muted", "paused"],
       "size": "voiceSize"
     },
     "agentCreator": { "constructors": ["AgentCreator"], "modifiers": [] },
@@ -3804,11 +3872,15 @@
     "agentCreatorSection": { "constructors": ["AgentCreatorSection"], "modifiers": [] },
     "agentProfile": { "constructors": ["AgentProfile"], "modifiers": [] },
     "agentReplyIdentity": { "constructors": ["AgentReplyIdentity"], "modifiers": [] },
-    "aiProfileCard": { "constructors": ["AiProfileCard"], "modifiers": ["tint"], "tint": "color" },
+    "aiProfileCard": {
+      "constructors": ["AiProfileCard"],
+      "modifiers": ["tint", "period", "activeCell"],
+      "tint": "color"
+    },
     "selectedAgentPreview": { "constructors": ["SelectedAgentPreview"], "modifiers": [] },
     "multiAgentChat": { "constructors": ["MultiAgentChat"], "modifiers": [] },
-    "agentChatHistory": { "constructors": ["AgentChatHistory"], "modifiers": ["surface"] },
-    "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign"] },
+    "agentChatHistory": { "constructors": ["AgentChatHistory"], "modifiers": ["surface", "query"] },
+    "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign", "value"] },
     "routeStops": {
       "constructors": ["RouteStops"],
       "modifiers": ["density"],
@@ -3816,7 +3888,7 @@
     },
     "noteCard": {
       "constructors": ["NoteCard"],
-      "modifiers": ["style", "tint", "loading"],
+      "modifiers": ["style", "tint", "loading", "selected"],
       "style": "noteCardLayout",
       "tint": "accentTone"
     },
@@ -3867,7 +3939,7 @@
       "densities": ["comfortable", "compact"],
       "style": "choiceListStyle"
     },
-    "priceSummary": { "constructors": ["PriceSummary"], "modifiers": [] },
+    "priceSummary": { "constructors": ["PriceSummary"], "modifiers": ["expanded"] },
     "priceSummaryLine": {
       "constructors": ["PriceSummaryLine"],
       "modifiers": ["tint"],
@@ -3901,7 +3973,7 @@
     "recentHiresCard": { "constructors": ["RecentHiresCard"], "modifiers": [] },
     "cartLine": {
       "constructors": ["CartLine"],
-      "modifiers": ["density"],
+      "modifiers": ["density", "quantity"],
       "densities": ["comfortable", "compact"]
     },
     "cartPanel": {
@@ -3913,13 +3985,16 @@
     "cartTipPicker": { "constructors": ["CartTipPicker"], "modifiers": ["disabled"] },
     "menuItemRow": {
       "constructors": ["MenuItemRow"],
-      "modifiers": ["density"],
+      "modifiers": ["density", "quantity"],
       "densities": ["comfortable", "compact"]
     },
-    "menuItemOptions": { "constructors": ["MenuItemOptions"], "modifiers": ["disabled"] },
+    "menuItemOptions": {
+      "constructors": ["MenuItemOptions"],
+      "modifiers": ["disabled", "value", "quantity"]
+    },
     "vendorCard": {
       "constructors": ["VendorCard"],
-      "modifiers": ["density", "loading"],
+      "modifiers": ["density", "loading", "favorite"],
       "densities": ["comfortable", "compact"]
     },
     "mediaCard": {
@@ -3930,7 +4005,7 @@
     },
     "songCard": {
       "constructors": ["SongCard"],
-      "modifiers": ["size", "style", "loading"],
+      "modifiers": ["size", "style", "loading", "liked"],
       "size": "mediaCardSize",
       "style": "mediaCardLayout"
     },
@@ -4004,7 +4079,7 @@
     },
     "lyricsPreviewCard": { "constructors": ["LyricsPreviewCard"], "modifiers": ["lines"] },
     "audienceOverview": { "constructors": ["AudienceOverview"], "modifiers": [] },
-    "streamsChart": { "constructors": ["StreamsChart"], "modifiers": [] },
+    "streamsChart": { "constructors": ["StreamsChart"], "modifiers": ["metric"] },
     "topTracksTable": { "constructors": ["TopTracksTable"], "modifiers": [] },
     "audienceBreakdown": { "constructors": ["AudienceBreakdown"], "modifiers": [] },
     "releaseCard": {
@@ -4025,7 +4100,10 @@
     "creditsEditor": { "constructors": ["CreditsEditor"], "modifiers": ["disabled"] },
     "artworkUploader": { "constructors": ["ArtworkUploader"], "modifiers": ["disabled"] },
     "payoutSummaryCard": { "constructors": ["PayoutSummaryCard"], "modifiers": [] },
-    "pitchCard": { "constructors": ["PitchCard"], "modifiers": [] },
+    "pitchCard": {
+      "constructors": ["PitchCard"],
+      "modifiers": ["release", "selectedMoods", "selectedGenres", "pitch"]
+    },
     "checkoutSummaryRow": { "constructors": ["CheckoutSummaryRow"], "modifiers": ["disabled"] },
     "checkoutSummary": { "constructors": ["CheckoutSummary"], "modifiers": [] },
     "checkoutConfirm": {
@@ -4040,7 +4118,7 @@
     "deliverySlotOption": { "constructors": ["DeliverySlotOption"], "modifiers": ["disabled"] },
     "deliverySlotPicker": {
       "constructors": ["DeliverySlotPicker"],
-      "modifiers": ["disabled", "loading", "tint"],
+      "modifiers": ["disabled", "loading", "tint", "day"],
       "tint": "color"
     },
     "orderConfirmation": {
@@ -4050,21 +4128,24 @@
     },
     "transportControls": {
       "constructors": ["TransportControls"],
-      "modifiers": ["size", "style", "loading", "disabled"],
+      "modifiers": ["size", "style", "loading", "disabled", "shuffle", "repeat", "playbackRate"],
       "size": "transportSize",
       "style": "transportStyle"
     },
-    "nowPlayingBar": { "constructors": ["NowPlayingBar"], "modifiers": [] },
-    "miniPlayer": { "constructors": ["MiniPlayer"], "modifiers": [] },
-    "fullScreenPlayer": { "constructors": ["FullScreenPlayer"], "modifiers": [] },
+    "nowPlayingBar": {
+      "constructors": ["NowPlayingBar"],
+      "modifiers": ["muted", "liked", "devicePickerOpen", "volume"]
+    },
+    "miniPlayer": { "constructors": ["MiniPlayer"], "modifiers": ["liked"] },
+    "fullScreenPlayer": { "constructors": ["FullScreenPlayer"], "modifiers": ["liked"] },
     "playbackSpeedMenu": {
       "constructors": ["PlaybackSpeedMenu"],
-      "modifiers": ["size", "disabled"],
+      "modifiers": ["size", "disabled", "presented"],
       "size": "transportSize"
     },
     "sleepTimerMenu": {
       "constructors": ["SleepTimerMenu"],
-      "modifiers": ["size", "disabled"],
+      "modifiers": ["size", "disabled", "presented"],
       "size": "transportSize"
     },
     "devicePicker": { "constructors": ["DevicePicker"], "modifiers": [] },
@@ -4076,10 +4157,10 @@
     },
     "carrierQuoteList": {
       "constructors": ["CarrierQuoteList"],
-      "modifiers": ["density", "loading"],
+      "modifiers": ["density", "loading", "sorting"],
       "densities": ["comfortable", "compact"]
     },
-    "earningsSummary": { "constructors": ["EarningsSummary"], "modifiers": [] },
+    "earningsSummary": { "constructors": ["EarningsSummary"], "modifiers": ["period"] },
     "earningsBreakdown": { "constructors": ["EarningsBreakdown"], "modifiers": [] },
     "earningsPayoutRow": { "constructors": ["EarningsPayoutRow"], "modifiers": [] },
     "jobCard": {
@@ -4089,21 +4170,24 @@
     },
     "jobBoard": {
       "constructors": ["JobBoard"],
-      "modifiers": ["density", "loading"],
+      "modifiers": ["density", "loading", "sorting", "filter", "filtersOpen"],
       "densities": ["comfortable", "compact"]
     },
     "signaturePad": {
       "constructors": ["SignaturePad"],
-      "modifiers": ["tint", "disabled"],
+      "modifiers": ["tint", "disabled", "value"],
       "tint": "color"
     },
     "proofOfDelivery": {
       "constructors": ["ProofOfDelivery"],
-      "modifiers": ["loading", "disabled"]
+      "modifiers": ["loading", "disabled", "value"]
     },
     "vehiclePicker": { "constructors": ["VehiclePicker"], "modifiers": ["disabled"] },
     "shipmentLoadPicker": { "constructors": ["ShipmentLoadPicker"], "modifiers": ["disabled"] },
-    "shipmentOptionsList": { "constructors": ["ShipmentOptionsList"], "modifiers": ["disabled"] },
+    "shipmentOptionsList": {
+      "constructors": ["ShipmentOptionsList"],
+      "modifiers": ["disabled", "selectedExtras", "access", "window"]
+    },
     "shipmentRequestForm": { "constructors": ["ShipmentRequestForm"], "modifiers": ["disabled"] },
     "rowActions": {
       "constructors": ["RowActions"],
@@ -4112,7 +4196,7 @@
     },
     "rowActionButton": {
       "constructors": ["RowActionButton"],
-      "modifiers": ["style", "active", "disabled"],
+      "modifiers": ["style", "active", "disabled", "pressed"],
       "style": "rowActionStyle"
     },
     "swipeRow": { "constructors": ["SwipeRow"], "modifiers": ["tint"], "tint": "color" },
@@ -4121,7 +4205,10 @@
       "modifiers": ["style", "collapsed"],
       "style": "themeToggleStyle"
     },
-    "libraryPanel": { "constructors": ["LibraryPanel"], "modifiers": [] },
+    "libraryPanel": {
+      "constructors": ["LibraryPanel"],
+      "modifiers": ["query", "expanded", "collapsed", "sorting", "filter", "downloadedOnly", "view"]
+    },
     "libraryItem": {
       "constructors": ["LibraryItem"],
       "modifiers": ["style"],
@@ -4134,14 +4221,14 @@
     "browseGrid": { "constructors": ["BrowseGrid"], "modifiers": ["spacing"] },
     "queuePanel": {
       "constructors": ["QueuePanel"],
-      "modifiers": ["style"],
+      "modifiers": ["style", "tab"],
       "style": "queuePanelStyle"
     },
     "queuePanelRow": { "constructors": ["QueuePanelRow"], "modifiers": [] },
     "recentlyPlayedList": { "constructors": ["RecentlyPlayedList"], "modifiers": [] },
     "trackList": {
       "constructors": ["TrackList"],
-      "modifiers": ["density", "tint"],
+      "modifiers": ["density", "tint", "selectedIds"],
       "densities": ["comfortable", "compact"],
       "tint": "color"
     },

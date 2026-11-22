@@ -111,15 +111,14 @@ export const TRACK_LIST_CASES: ParityCase[] = [
       toElement(
         L.TrackList(TRACKS, {
           columns: [...COLUMNS],
-          selectedIds: ['b'],
-          onSelectionChange: set,
           reorderable: true,
           onReorder: set,
           stickyHeaderOffset: '56',
           width: '640',
         })
           .density('compact')
-          .tint('surface'),
+          .tint('surface')
+          .selectedIds([['b'], set]),
       ),
     bloom: () => (
       <Themed>

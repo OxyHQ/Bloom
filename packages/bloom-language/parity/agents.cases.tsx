@@ -19,7 +19,7 @@ import { UsageCard } from '@oxy.so/bloom/usage-card';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, ThemedRgb } from './support/cases';
+import { hold, type ParityCase, ThemedRgb } from './support/cases';
 
 const press = () => {};
 /** An app's own colour, as an app declares it. */
@@ -86,8 +86,8 @@ export const AGENT_CASES: ParityCase[] = [
   },
   {
     name: 'AgentLimitsCard expanded',
-    language: () => toElement(L.AgentLimitsCard({ context: CONTEXT, expanded: true })),
-    bloom: () => <AgentLimitsCard context={CONTEXT} expanded />,
+    language: () => toElement(L.AgentLimitsCard({ context: CONTEXT }).expanded([true, hold])),
+    bloom: () => <AgentLimitsCard onExpandedChange={hold} context={CONTEXT} expanded />,
   },
   {
     name: 'UsageCard',
@@ -107,14 +107,20 @@ export const AGENT_CASES: ParityCase[] = [
       toElement(
         L.AgentThinking(L.Text('First, the route.'), {
           label: 'Thought for 4s',
-          open: true,
           showTimer: true,
           durationMs: 4000,
           thinking: false,
-        }),
+        }).presented([true, hold]),
       ),
     bloom: () => (
-      <AgentThinking label="Thought for 4s" open showTimer durationMs={4000} thinking={false}>
+      <AgentThinking
+        onOpenChange={hold}
+        label="Thought for 4s"
+        open
+        showTimer
+        durationMs={4000}
+        thinking={false}
+      >
         <Text>First, the route.</Text>
       </AgentThinking>
     ),
@@ -131,12 +137,17 @@ export const AGENT_CASES: ParityCase[] = [
         L.AgentProgress({
           steps: ['Reading', 'Planning'],
           completedCount: 1,
-          minimized: true,
           paused: true,
-        }),
+        }).minimized([true, hold]),
       ),
     bloom: () => (
-      <AgentProgress steps={['Reading', 'Planning']} completedCount={1} minimized paused />
+      <AgentProgress
+        onMinimizedChange={hold}
+        steps={['Reading', 'Planning']}
+        completedCount={1}
+        minimized
+        paused
+      />
     ),
   },
   {
@@ -198,15 +209,15 @@ export const AGENT_CASES: ParityCase[] = [
     language: () =>
       toElement(
         L.AgentLogToolCalls([
-          L.AgentLogToolCall('read', 'done', { expanded: true, content: L.Text('3 files') }).id(
-            'a',
-          ),
+          L.AgentLogToolCall('read', 'done', { content: L.Text('3 files') })
+            .expanded([true, hold])
+            .id('a'),
           L.AgentLogToolCall('write', 'running').id('b'),
         ]),
       ),
     bloom: () => (
       <AgentLogToolCalls>
-        <AgentLogToolCall name="read" status="done" expanded>
+        <AgentLogToolCall onExpandedChange={hold} name="read" status="done" expanded>
           <Text>3 files</Text>
         </AgentLogToolCall>
         <AgentLogToolCall name="write" status="running" />
@@ -372,14 +383,15 @@ export const AGENT_CASES: ParityCase[] = [
           L.ConversationSidebar(CONVERSATIONS, {
             ...SIDEBAR,
             modes: MODES,
-            mode: 'chats',
             team: TEAM,
           })
+            .mode(['chats', hold])
             .modesPresentation(presentation)
             .teamPlacement(placement),
         ),
       bloom: () => (
         <ConversationSidebar
+          onModeChange={hold}
           conversations={CONVERSATIONS}
           {...SIDEBAR}
           modes={MODES}
@@ -398,8 +410,10 @@ export const AGENT_CASES: ParityCase[] = [
   },
   {
     name: 'Questionnaire the second step, no footer',
-    language: () => toElement(L.Questionnaire(QUESTIONS, { step: 1, footer: false })),
-    bloom: () => <Questionnaire questions={QUESTIONS} step={1} footer={false} />,
+    language: () => toElement(L.Questionnaire(QUESTIONS, { footer: false }).step([1, hold])),
+    bloom: () => (
+      <Questionnaire onStepChange={hold} questions={QUESTIONS} step={1} footer={false} />
+    ),
   },
 ];
 

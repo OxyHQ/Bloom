@@ -9,7 +9,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const pick = (_date: Date) => {};
@@ -42,15 +42,14 @@ const HANDLERS = { onPreviousMonth: press, onNextMonth: press, onSelectDate: pic
 export const CALENDAR_CASES: ParityCase[] = [
   {
     name: 'CalendarView a month',
-    language: () => toElement(L.CalendarView(EVENTS, { month: MONTH, locale: 'en-US' })),
-    bloom: () => <CalendarView events={EVENTS} month={MONTH} locale="en-US" />,
+    language: () => toElement(L.CalendarView(EVENTS, { locale: 'en-US' }).month([MONTH, hold])),
+    bloom: () => <CalendarView onMonthChange={hold} events={EVENTS} month={MONTH} locale="en-US" />,
   },
   ...NODE_DENSITIES.calendarView.map((density) => ({
     name: `CalendarView ${density}, its header's parts`,
     language: () =>
       toElement(
         L.CalendarView(EVENTS, {
-          month: MONTH,
           locale: 'en-US',
           title: 'Bookings',
           breadcrumb: L.Text('Host › Calendar'),
@@ -61,10 +60,13 @@ export const CALENDAR_CASES: ParityCase[] = [
           onMenuPress: press,
           monthSwitcherWidth: '64',
           headingLevel: 2,
-        }).density(density),
+        })
+          .month([MONTH, hold])
+          .density(density),
       ),
     bloom: () => (
       <CalendarView
+        onMonthChange={hold}
         events={EVENTS}
         month={MONTH}
         locale="en-US"

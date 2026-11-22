@@ -383,12 +383,15 @@ describe('screen() on Android', () => {
     ).toEqual(['children']);
   });
 
-  it('pull to refresh is the app’s refreshing state and what a pull runs', () => {
-    const refresh = jest.fn();
-    const r = mount(createElement(screen(() => ScrollView(Text('a')).refreshable(true, refresh))));
+  it('pull to refresh is the app’s refreshing state, a binding a pull writes true', () => {
+    const setRefreshing = jest.fn();
+    const r = mount(
+      createElement(screen(() => ScrollView(Text('a')).refreshable([false, setRefreshing]))),
+    );
     const control = only(r, 'ScreenScrollView').props.refreshControl;
-    expect(control.props.refreshing).toBe(true);
-    expect(control.props.onRefresh).toBe(refresh);
+    expect(control.props.refreshing).toBe(false);
+    control.props.onRefresh();
+    expect(setRefreshing).toHaveBeenCalledWith(true);
   });
 
   it('a sheet is Bloom’s Dialog: built while open, kept while it closes', () => {

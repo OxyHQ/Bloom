@@ -351,7 +351,7 @@ const choices: ParityCase[] = [
   },
   {
     name: 'AvailabilityFilter now',
-    language: () => toElement(L.AvailabilityFilter([true, set], [null, set])),
+    language: () => toElement(L.AvailabilityFilter([true, set]).date([null, set])),
     bloom: () => (
       <AvailabilityFilter availableNow onAvailableNowChange={set} date={null} onDateChange={set} />
     ),
@@ -360,10 +360,12 @@ const choices: ParityCase[] = [
     name: 'AvailabilityFilter from a day, its own words, disabled',
     language: () =>
       toElement(
-        L.AvailabilityFilter([false, set], [DAY, set], {
+        L.AvailabilityFilter([false, set], {
           dateLabel: 'Move in from',
           locale: 'en-GB',
-        }).disabled(),
+        })
+          .date([DAY, set])
+          .disabled(),
       ),
     bloom: () => (
       <AvailabilityFilter
