@@ -70,14 +70,16 @@ float3 nativeGlassSmoothUnion(float3 a, float3 b, float blend) {
     return float3(mix(a.x, b.x, h) - k * h * (1.0 - h), mix(a.yz, b.yz, h));
 }
 // A trigger of several shapes (a group of glasses): its other shapes (center, half size; radius), blended into its first.
-// 7: GlassShapes.Capacity less the first.
+// 7: GlassShapes.Capacity less the first. Where two shapes meet, the union's gradient is the mean of normals that face
+// each other, short at the neck: the glass there still faces outward, so the group's normal is of unit length.
 float3 liquidMemberField(float2 point, float3 first) {
+    if (memberCount < 0.5) return first;
     for (int i = 0; i < 7; i++) {
         if (float(i) >= memberCount) break;
         float3 member = nativeGlassRoundedField(point - members[i].xy, members[i].zw, float2(memberRadii[i]), 0.5);
         first = nativeGlassSmoothUnion(first, member, memberBlend);
     }
-    return first;
+    return float3(first.x, nativeGlassSafeNormal(first.yz));
 }
 // The glass's field: the incoming shape, and in a morph the trigger it grows out of (the secondary shape). The
 // trigger's other shapes, if it has any, are drawn where the trigger is: the secondary in a morph, else the incoming.
