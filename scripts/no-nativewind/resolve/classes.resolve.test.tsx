@@ -89,39 +89,81 @@ it('resolves', () => {
     }
     return out;
   };
-  // Web: the CSS rules for each token, as Tailwind emits them.
+  // Web: each rule a token emits, with the at-rules and selectors it sits in.
+  type Block = { head: string; body: string; parents: string[] };
+  const blocks: Block[] = [];
+  const parse = (css: string, parents: string[]) => {
+    let i = 0;
+    while (i < css.length) {
+      const open = css.indexOf('{', i);
+      if (open === -1) break;
+      const head = css.slice(i, open).split(';').pop()!.trim();
+      let depth = 1;
+      let j = open + 1;
+      while (j < css.length && depth > 0) {
+        if (css[j] === '{') depth++;
+        else if (css[j] === '}') depth--;
+        j++;
+      }
+      const inner = css.slice(open + 1, j - 1);
+      const own = inner.replace(/[^;{}]*\{[^]*\}/g, '').trim();
+      blocks.push({ head, body: own.replace(/\s+/g, ' '), parents });
+      if (inner.includes('{')) parse(inner, [...parents, head]);
+      i = j;
+    }
+  };
+  parse(tw, []);
   const webRules = (token: string) => {
-    const esc = token.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`);
-    const found: string[] = [];
-    const re = new RegExp(`[^{}]*\\.${esc.replace(/\\/g, '\\\\')}[^{]*\\{[^}]*\\}`, 'g');
-    for (const m of tw.match(re) ?? []) found.push(m.trim().replace(/\s+/g, ' '));
-    return found;
+    const esc = `.${token.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`)}`;
+    return blocks
+      .filter((block) => [...block.parents, block.head].some((h) => h.includes(esc)) && block.body)
+      .filter((block) => !/[{]/.test(block.body))
+      .map((block) => [...block.parents, block.head].join(' » ') + ` { ${block.body} }`);
   };
   const result: Record<string, unknown> = {};
-  for (const s of strings) {
+  /** A native transition animates through Reanimated, which Bloom's test mock does not draw. */
+  const MOTION = /^(?:[\w-]+:)*(?:transition|duration|ease|delay|animate)(?:-|$)/;
+  const render = (classes: string) => {
     let r!: TestRenderer.ReactTestRenderer;
     act(() => {
       r = TestRenderer.create(
         <>
-          <View className={s} testID="v" />
-          <Text className={s} testID="t">
+          <View className={classes} testID="v" />
+          <Text className={classes} testID="t">
             x
           </Text>
         </>,
       );
     });
     const [v, t] = r.toJSON() as unknown as { props: { style: unknown } }[];
-    const roles: Record<string, string> = {};
-    const view = decode(flat(v!.props.style), roles);
-    const text = decode(flat(t!.props.style), roles);
-    const unresolved = s
-      .split(/\s+/)
-      .filter(Boolean)
-      .filter((tok) => !tw.includes(`.${tok.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`)}`));
-    const web: Record<string, string[]> = {};
-    for (const tok of s.split(/\s+/).filter(Boolean)) web[tok] = webRules(tok);
-    result[s] = { view, text, unresolved, web };
     act(() => r.unmount());
+    return [v!.props.style, t!.props.style] as const;
+  };
+  for (const s of strings) {
+    const tokens = s.split(/\s+/).filter(Boolean);
+    const motion = tokens.filter((tok) => MOTION.test(tok));
+    let styles: readonly [unknown, unknown];
+    try {
+      styles = render(s);
+    } catch {
+      styles = render(tokens.filter((tok) => !MOTION.test(tok)).join(' '));
+    }
+    const roles: Record<string, string> = {};
+    const view = decode(flat(styles[0]), roles);
+    const text = decode(flat(styles[1]), roles);
+    const unresolved = tokens.filter(
+      (tok) => !tw.includes(`.${tok.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`)}`),
+    );
+    const web: Record<string, string[]> = {};
+    for (const tok of tokens) web[tok] = webRules(tok);
+    result[s] = {
+      view,
+      text,
+      unresolved,
+      // Native animates a change of these properties (react-native-css transitions).
+      ...(motion.length ? { nativeMotion: motion } : {}),
+      web,
+    };
   }
   writeFileSync(process.env.CLASSES_OUT!, JSON.stringify(result, null, 1));
 });
