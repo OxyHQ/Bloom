@@ -176,21 +176,27 @@ if (stories.length === 0) {
   console.error(`no stories under ${PREFIXES.join(', ')}`);
   process.exit(2);
 }
-const browser = await puppeteer.launch({
-  executablePath: findChrome(),
-  // Both pages draw at full speed: a backgrounded page's throttled frames read as a
-  // slow device, and Bloom then bakes its surface material.
-  args: [
-    '--no-sandbox',
-    `--window-size=${WIDTH},900`,
-    '--force-color-profile=srgb',
-    '--disable-background-timer-throttling',
-    '--disable-renderer-backgrounding',
-    '--disable-backgrounding-occluded-windows',
-  ],
-  defaultViewport: { width: WIDTH, height: 900 },
-});
-const [left, right] = [await browser.newPage(), await browser.newPage()];
+// One browser per side: each page is its window's foreground tab. Two tabs of one
+// window leave one in the background, where Chrome pauses its animation frames,
+// so Bloom's per-frame work (baking a surface's material) never runs there.
+const launch = () =>
+  puppeteer.launch({
+    executablePath: findChrome(),
+    args: [
+      '--no-sandbox',
+      `--window-size=${WIDTH},900`,
+      '--force-color-profile=srgb',
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
+      '--disable-backgrounding-occluded-windows',
+    ],
+    defaultViewport: { width: WIDTH, height: 900 },
+  });
+const browsers = [await launch(), await launch()];
+const [left, right] = await Promise.all(
+  browsers.map((browser) => browser.pages().then((pages) => pages[0] ?? browser.newPage())),
+);
+
 let failed = 0;
 for (const story of stories) {
   for (const theme of ['light', 'dark']) {
@@ -234,6 +240,6 @@ for (const story of stories) {
     } else console.log(`✓ ${label}`);
   }
 }
-await browser.close();
+await Promise.all(browsers.map((browser) => browser.close()));
 console.log(`${stories.length * 2 - failed}/${stories.length * 2} identical`);
 process.exit(failed ? 1 : 0);
