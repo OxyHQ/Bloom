@@ -23,6 +23,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   scrollIndicatorInsets,
   scrollbarSide,
   style,
+  viewportStyle,
   testID,
   ref,
   ...props
@@ -52,7 +53,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
         {...(horizontal ? { horizontal: true } : null)}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 1, flexShrink: 1, minHeight: 0 }}
+        style={[{ flexGrow: 1, flexShrink: 1, minHeight: 0 }, viewportStyle]}
       />
       {viewportOverlay}
       {scrollbar === 'never' ? null : (
