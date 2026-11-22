@@ -107,6 +107,7 @@ import type { StaySearchKind } from './controls/stay-search';
 import type { TenancyKind } from './controls/tenancy';
 import type { EvictionKind } from './controls/eviction';
 import type { PlaceReviewKind } from './controls/place-reviews';
+import type { CallUiKind } from './controls/call-ui';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -222,6 +223,9 @@ import {
   type GuestPickerSize,
   type TenancyLayout,
   type RentOutstandingTone,
+  type CallMode,
+  type GroupCallLayout,
+  type IncomingCallAnswer,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -957,6 +961,9 @@ export interface ValueModifiers {
 
   // A product component's list of colours (a loader's, a gradient's, a ring's)
   gradient: readonly InkToken[];
+
+  // Call screens (controls/call-ui.tsx)
+  answerStyle: IncomingCallAnswer;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1153,7 +1160,9 @@ export type Modifier =
         | ShelfLayout
         | PriceScale
         | FeatureFilterStyle
-        | TenancyLayout;
+        | TenancyLayout
+        | CallMode
+        | GroupCallLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1426,7 +1435,8 @@ export type NodeKind =
   | StaySearchKind
   | TenancyKind
   | EvictionKind
-  | PlaceReviewKind;
+  | PlaceReviewKind
+  | CallUiKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1783,7 +1793,9 @@ export class Node {
       | ShelfLayout
       | PriceScale
       | FeatureFilterStyle
-      | TenancyLayout,
+      | TenancyLayout
+      | CallMode
+      | GroupCallLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -3331,6 +3343,11 @@ export class Node {
   // A product component's list of colours
   gradient(colors: readonly InkToken[]): Node {
     return this.set('gradient', colors);
+  }
+
+  // Call screens (controls/call-ui.tsx)
+  answerStyle(value: IncomingCallAnswer): Node {
+    return this.set('answerStyle', value);
   }
 }
 
