@@ -1,3 +1,4 @@
+import { useState, type ReactNode } from 'react';
 import * as RN from 'react-native';
 import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
 import { Border, Fill, Image } from '@oxy.so/bloom/shapes';
@@ -421,10 +422,100 @@ const shapes: ParityCase[] = [
   },
 ];
 
+/**
+ * A ZStack as React Native writes one by hand: each child in a slot of the
+ * stack's width that reports its height (`onLayout`), the slots sharing one
+ * line (each one's margins take back its height, `above` of it above the
+ * line), and the box as tall as the tallest slot.
+ */
+function HandZStack({
+  children,
+  justify,
+  across,
+  above,
+}: {
+  children: ReactNode[];
+  justify: 'flex-start' | 'center' | 'flex-end';
+  across: 'flex-start' | 'center' | 'flex-end';
+  above: number;
+}) {
+  const [heights, setHeights] = useState<number[]>([]);
+  const tallest = Math.max(0, ...heights.filter((height) => height !== undefined));
+  const box = { flexGrow: 1, justifyContent: justify };
+  const slot = { position: 'static' as const, alignItems: across };
+  return (
+    <RN.View style={{ position: 'relative' }}>
+      <RN.View pointerEvents="box-none" style={tallest > 0 ? [box, { minHeight: tallest }] : box}>
+        {children.map((child, i) => {
+          const height = heights[i] ?? 0;
+          const top = height * above;
+          return (
+            <RN.View
+              // biome-ignore lint/suspicious/noArrayIndexKey: a stack's children are its slots, in order
+              key={i}
+              pointerEvents="box-none"
+              onLayout={(event) => {
+                const next = event.nativeEvent.layout.height;
+                setHeights((last) => {
+                  if (last[i] === next) return last;
+                  const out = [...last];
+                  out[i] = next;
+                  return out;
+                });
+              }}
+              style={
+                height === 0 ? slot : [slot, { marginTop: 0 - top, marginBottom: top - height }]
+              }
+            >
+              {child}
+            </RN.View>
+          );
+        })}
+      </RN.View>
+    </RN.View>
+  );
+}
+
+const depth: ParityCase[] = [
+  {
+    name: 'a ZStack at its bottom trailing corner: as big as its largest child',
+    language: () =>
+      toElement(
+        L.ZStack(L.VStack().frame({ width: '5xl', height: '5xl' }), L.Text('over')).alignment(
+          'bottom-trailing',
+        ),
+      ),
+    bloom: () => (
+      <HandZStack justify="flex-end" across="flex-end" above={1}>
+        {[
+          <RN.View key="square" style={{ width: space._5xl, height: space._5xl }} />,
+          <Text key="text">over</Text>,
+        ]}
+      </HandZStack>
+    ),
+  },
+  {
+    name: 'a ZStack, centred: the widest and the tallest child size it',
+    language: () =>
+      toElement(
+        L.ZStack(L.VStack().frame({ width: 'xl', height: '5xl' }), L.Text('wide text over')),
+      ),
+    bloom: () => (
+      <HandZStack justify="center" across="center" above={0.5}>
+        {[
+          <RN.View key="tall" style={{ width: space.xl, height: space._5xl }} />,
+          <Text key="text">wide text over</Text>,
+        ]}
+      </HandZStack>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
   ...distribution,
   ...placement,
   ...overlays,
+  ...depth,
   ...elevation,
   ...small,
   ...shapes,

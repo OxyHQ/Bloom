@@ -143,27 +143,21 @@ describe('overlays', () => {
 });
 
 describe('ZStack', () => {
-  /** Each slot measures as the height its child gives it: `a` 20, `bb` 40. */
-  function mountMeasured(element: ReactElement): ReactTestRenderer {
-    let renderer!: ReactTestRenderer;
+  /** Each slot reports the height its own layout gives it, as React Native's `onLayout` does. */
+  function layOut(slots: (ReactTestInstance | undefined)[], heights: number[]): void {
     act(() => {
-      renderer = TestRenderer.create(
-        createElement(PaintContext.Provider, { value: LIGHT }, element),
-        {
-          createNodeMock: (host) => {
-            const child = (host.props as { children?: ReactElement }).children;
-            const text = (child?.props as { children?: unknown } | undefined)?.children;
-            return { offsetHeight: text === 'bb' ? 40 : 20 };
-          },
-        },
+      slots.forEach((slot, i) =>
+        slot?.props.onLayout({
+          nativeEvent: { layout: { x: 0, y: 0, width: 10, height: heights[i] } },
+        }),
       );
     });
-    return renderer;
   }
 
   it('is as tall as its tallest child; each child sits at the alignment without moving another', () => {
-    const r = mountMeasured(toElement(ZStack(Text('a'), Text('bb')).alignment('bottom-trailing')));
+    const r = mount(toElement(ZStack(Text('a'), Text('bb')).alignment('bottom-trailing')));
     const [stack, box, a, bb] = views(r);
+    layOut([a, bb], [20, 40]);
     expect(stack?.props.style).toEqual({ position: 'relative' });
     expect(box?.props.style).toEqual([
       { flexGrow: 1, justifyContent: 'flex-end' },
@@ -172,18 +166,19 @@ describe('ZStack', () => {
     // Each slot takes back its own height: the slots share one line, at the bottom.
     expect(a?.props.style).toEqual([
       { position: 'static', alignItems: 'flex-end' },
-      { marginTop: -20, marginBottom: -0 },
+      { marginTop: -20, marginBottom: 0 },
     ]);
     expect(bb?.props.style).toEqual([
       { position: 'static', alignItems: 'flex-end' },
-      { marginTop: -40, marginBottom: -0 },
+      { marginTop: -40, marginBottom: 0 },
     ]);
     expect(a?.props.pointerEvents).toBe('box-none');
   });
 
   it('is centred by default: half of each child above the line, half below', () => {
-    const r = mountMeasured(toElement(ZStack(Text('a'), Text('bb'))));
-    const [, box, a] = views(r);
+    const r = mount(toElement(ZStack(Text('a'), Text('bb'))));
+    const [, box, a, bb] = views(r);
+    layOut([a, bb], [20, 40]);
     expect(box?.props.style).toEqual([
       { flexGrow: 1, justifyContent: 'center' },
       { minHeight: 40 },
@@ -194,19 +189,34 @@ describe('ZStack', () => {
     ]);
   });
 
+  it('a slot that lays out again at the same height (its margins moved it) changes nothing', () => {
+    const r = mount(toElement(ZStack(Text('a'), Text('bb')).alignment('top-leading')));
+    const [, box, a, bb] = views(r);
+    layOut([a, bb], [20, 40]);
+    const before = box?.props.style;
+    layOut([a, bb], [20, 40]);
+    expect(views(r)[1]?.props.style).toBe(before);
+    // A child that grows grows the stack.
+    layOut([a, bb], [60, 40]);
+    expect(views(r)[1]?.props.style).toEqual([
+      { flexGrow: 1, justifyContent: 'flex-start' },
+      { minHeight: 60 },
+    ]);
+  });
+
   it('a child pinned to its parent covers the stack and takes no part in its size', () => {
-    const r = mountMeasured(toElement(ZStack(Text('bb'), Fill()).alignment('top-leading')));
-    const [, box, , fillSlot] = views(r);
-    // The fill's slot is static, so the fill is pinned to the stack; its slot measures 20 here
-    // only because the mock does: on a device it is 0, and the tallest child sizes the box.
+    const r = mount(toElement(ZStack(Text('bb'), Fill()).alignment('top-leading')));
+    const [, box, bb, fillSlot] = views(r);
+    // The fill is pinned through its static slot to the stack: its slot lays out at 0.
+    layOut([bb, fillSlot], [40, 0]);
     expect(box?.props.style).toEqual([
       { flexGrow: 1, justifyContent: 'flex-start' },
       { minHeight: 40 },
     ]);
-    expect(fillSlot?.props.style[0]).toEqual({ position: 'static', alignItems: 'flex-start' });
+    expect(fillSlot?.props.style).toEqual({ position: 'static', alignItems: 'flex-start' });
   });
 
-  it('before it is measured the children are in their slots, unmoved', () => {
+  it('before it lays out the children are in their slots, unmoved', () => {
     const [, box, a] = views(mount(toElement(ZStack(Text('a'), Text('b')).alignment('top'))));
     expect(box?.props.style).toEqual({ flexGrow: 1, justifyContent: 'flex-start' });
     expect(a?.props.style).toEqual({ position: 'static', alignItems: 'center' });
