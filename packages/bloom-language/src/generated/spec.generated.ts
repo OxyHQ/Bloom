@@ -2619,7 +2619,8 @@ export const MODIFIERS = {
   ],
   "onDragChange": [
     "value"
-  ]
+  ],
+  "root": []
 } as const;
 
 /** The modifiers each node kind takes. */
@@ -10590,7 +10591,10 @@ export const NODE_MODIFIERS = {
     "trailing",
     "disabled"
   ],
-  "sortableChip": []
+  "sortableChip": [],
+  "viewport": [
+    "root"
+  ]
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -10741,5 +10745,6 @@ export const CONSTRUCTORS = {
   "DataTableSearch": "dataTableSearch",
   "DataTableSelect": "dataTableSelect",
   "SortableChipRow": "sortableChipRow",
-  "SortableChip": "sortableChip"
+  "SortableChip": "sortableChip",
+  "Viewport": "viewport"
 } as const;
