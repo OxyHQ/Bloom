@@ -483,7 +483,7 @@ PageHeader outside that Screen. See [SettingsModal](/docs/bloom/main/settings-mo
 
 For independently scrolling component content, use `ScrollArea` from
 `@oxy.so/bloom/layout`. Its web outer wrapper takes `style`, `containerClassName` and
-`testID`; `className` stays on the actual scroll viewport for compatibility.
+`testID`; `viewportStyle` styles the actual scroll viewport.
 Content padding belongs to `contentContainerStyle` or
 `contentContainerClassName`. Pass processed Reanimated handlers through
 `animatedHandler`; `onScroll` remains an ordinary JS observer. For a virtualized
