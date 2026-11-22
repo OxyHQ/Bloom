@@ -1,15 +1,14 @@
 import { useEffect, type ReactNode } from 'react';
 import { SEARCH_EXPAND } from './context';
-import type { LayoutChangeEvent, ViewStyle } from 'react-native';
+import { View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { animateWithSpec, motionCss } from '../motion/spec';
-import { StyledView } from '../styles/styled-primitives';
 import { IS_WEB } from '../styles/platform';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useSurfacePresence } from '../surface/use-surface-presence';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 // Critically damped: a soft landing without overshooting the available space.
 const EXPAND = SEARCH_EXPAND;
 const CONTENT_MS = 160;
@@ -61,7 +60,7 @@ export function SearchTransition({
     transitionTimingFunction: css.easing,
   };
   return (
-    <StyledView
+    <View
       style={{ width: '100%', minWidth: 0 }}
       onLayout={(event) => {
         available.value = event.nativeEvent.layout.width;
@@ -104,6 +103,6 @@ export function SearchTransition({
           {children}
         </AnimatedView>
       </AnimatedView>
-    </StyledView>
+    </View>
   );
 }

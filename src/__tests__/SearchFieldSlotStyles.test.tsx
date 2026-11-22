@@ -1,29 +1,15 @@
 import React from 'react';
 import { View } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
-import { compile } from 'react-native-css/compiler';
-import { StyleCollection } from 'react-native-css/native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Search } from '../search';
 import { resolvedStyle } from './support/rendered-style';
-jest.mock('react-native', () => ({
-  ...jest.requireActual('../../__mocks__/react-native'),
-  PlatformColor: (...names: string[]) => ({ semantic: names }),
-}));
-jest.mock('react-native-css', () => jest.requireActual('react-native-css/native'));
-jest.mock('react-native-css/native-internal', () =>
-  jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
-);
-beforeEach(() => {
-  StyleCollection.styles.clear();
-  StyleCollection.inject(
-    compile(`
-    .container { width:360px; margin-top:8px; }
-    .field { height:44px; padding-left:12px; padding-right:12px; }
-    .chrome { border-width:1px; border-color:#abcdef; border-radius:14px; background-color:#eef0f1; }
-  `).stylesheet(),
-  );
-});
+const CHROME = {
+  borderWidth: 1,
+  borderColor: '#abcdef',
+  borderRadius: 14,
+  backgroundColor: '#eef0f1',
+};
 const field = (disabled = false, invalid = false) => (
   <BloomThemeProvider>
     <Search
@@ -31,13 +17,13 @@ const field = (disabled = false, invalid = false) => (
       value="query"
       disabled={disabled}
       invalid={invalid}
-      containerClassName="container"
-      fieldClassName="field"
-      fieldChromeClassName="chrome"
+      containerStyle={{ width: 360, marginTop: 8 }}
+      fieldStyle={{ height: 44, paddingLeft: 12, paddingRight: 12 }}
+      fieldChromeStyle={CHROME}
     />
   </BloomThemeProvider>
 );
-it('resolves container, layout and surface classes on distinct native hosts', () => {
+it('puts container, layout and surface styles on distinct native hosts', () => {
   const api = render(field());
   const views = api.UNSAFE_getAllByType(View).map((node) => resolvedStyle(node.props.style));
   expect(views.some((s) => s.width === 360 && s.marginTop === 8)).toBe(true);
