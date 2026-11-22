@@ -399,14 +399,37 @@ export function resolveBorderWidth(width: BorderWidthName): number {
 export type AppTokenScale = 'space' | 'iconSize' | 'avatarSize' | 'leading' | 'motion' | 'color';
 
 /**
+ * An app colour as React Native and the browser both paint it, the string
+ * itself on every platform: a hex (`#1877f2`, `#1877f2cc`), an `rgb()` or
+ * `rgba()` of numbers (`rgba(255,255,255,0.72)`), or a CSS colour name
+ * (`white`).
+ */
+export type AppColorValue =
+  | `#${string}`
+  | `rgb(${string})`
+  | `rgba(${string})`
+  | (typeof ENUMS.appColorName)[number];
+
+const HEX_COLOR = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+/** `rgb(r, g, b)` or `rgba(r, g, b, a)` of numbers, as both platforms read it. */
+const RGB_COLOR =
+  /^rgb\(\s*\d{1,3}\s*(?:,\s*\d{1,3}\s*){2}\)$|^rgba\(\s*\d{1,3}\s*(?:,\s*\d{1,3}\s*){2},\s*(?:0|1|0?\.\d+)\s*\)$/;
+const COLOR_NAMES: ReadonlySet<string> = new Set(ENUMS.appColorName);
+
+/** Whether `value` is an app colour both platforms paint alike (`AppColorValue`). */
+export function isAppColorValue(value: string): value is AppColorValue {
+  return HEX_COLOR.test(value) || RGB_COLOR.test(value) || COLOR_NAMES.has(value);
+}
+
+/**
  * What a token of each scale holds: a number; for `motion` a Bloom `MotionSpec`;
- * for `color` a hex colour (`#1877f2`, `#1877f2cc`), the same in both schemes: an
+ * for `color` an app colour (`AppColorValue`), the same in both schemes: an
  * app's brand colour, which no Bloom role is.
  */
 type AppTokenValue<S extends AppTokenScale> = S extends 'motion'
   ? MotionSpec
   : S extends 'color'
-    ? `#${string}`
+    ? AppColorValue
     : number;
 
 /**
@@ -458,11 +481,10 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, A
         named[name] = Object.freeze({ ...(entries[name] as MotionSpec) }) as unknown as AppToken;
         continue;
       }
-      if (
-        scale === 'color' &&
-        !/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(String(entries[name]))
-      )
-        throw new Error(`[Bloom language] defineTokens: color.${name} is not a hex colour`);
+      if (scale === 'color' && !isAppColorValue(String(entries[name])))
+        throw new Error(
+          `[Bloom language] defineTokens: color.${name} is no colour both platforms paint alike (a hex, an rgb() or rgba() of numbers, or a CSS colour name)`,
+        );
       nextAppToken += 1;
       named[name] = Object.freeze({
         scale,

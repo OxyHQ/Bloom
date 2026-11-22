@@ -379,6 +379,13 @@ fn a_variant_is_checked_against_what_a_variant_changes() {
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .onPress()");
     let output = compiled("export const x = () => Text('a').when('md', (v) => v.justify('center'));\n");
     assert_eq!(output.diagnostics[0].message, "A variant cannot change .justify()");
+    // The app's own boolean is a condition too: its variant is checked the same.
+    let output = compiled(
+        "export const x = (active) => HStack().padding('sm').when(active, (v) => v.padding('lg').background('primary')).when(!active && wide, (v) => v.opacity('half'));\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let output = compiled("export const x = (active) => HStack().when(active, (v) => v.padding('huge'));\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'huge' for .padding()");
     // A variant inside a variant is checked as one.
     let output = compiled(
         "export const x = () => HStack().when('md', (v) => v.when('hovered', (h) => h.padding('lg')));\n",

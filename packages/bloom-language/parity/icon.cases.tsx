@@ -4,6 +4,7 @@ import * as icons from '@oxy.so/bloom/icons';
 import type { Props as IconProps, sizes } from '@oxy.so/bloom/icons/shared';
 import { tokens } from '@oxy.so/bloom/styles';
 import { withAlpha } from '@oxy.so/bloom/theme';
+import { Text } from '@oxy.so/bloom/typography';
 
 import { COLORS, ICON_SIZE } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
@@ -69,7 +70,10 @@ const inks: ParityCase[] = (Object.keys(COLORS) as ColorName[]).flatMap((role) =
   },
 ]);
 
-const row = defineTokens({ iconSize: { context: 13 }, color: { brand: '#1877f2' } });
+const row = defineTokens({
+  iconSize: { context: 13 },
+  color: { brand: '#1877f2', white: 'white', veil: 'rgba(255,255,255,0.72)' },
+});
 
 const placed: ParityCase[] = [
   {
@@ -84,6 +88,30 @@ const placed: ParityCase[] = [
     bloom: () => (
       <RN.View style={{ flexDirection: 'row', borderWidth: 1, borderColor: '#1877f2' }}>
         <Heart size="sm" fill="#1877f2" />
+      </RN.View>
+    ),
+  },
+  {
+    // A colour name and an rgba() are the string itself on every platform, as a fill written out is.
+    name: 'glyphs, text and a box in a named and an rgba() app colour',
+    language: () =>
+      toElement(
+        L.HStack(L.Icon(Heart).size('sm').foreground(row.color.white), L.Text('a'))
+          .foreground(row.color.veil)
+          .background(row.color.white)
+          .border(row.color.veil, 'thin'),
+      ),
+    bloom: () => (
+      <RN.View
+        style={{
+          flexDirection: 'row',
+          backgroundColor: 'white',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.72)',
+        }}
+      >
+        <Heart size="sm" fill="white" />
+        <Text style={{ color: 'rgba(255,255,255,0.72)' }}>a</Text>
       </RN.View>
     ),
   },

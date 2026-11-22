@@ -8,7 +8,7 @@ import type { Condition, Modifier } from './node';
  * values the chain set before the call, while the condition holds.
  *
  * A condition the render already knows is settled when the view is planned: a
- * platform, and `disabled` (the view's own). The rest are LIVE, answered
+ * platform, `disabled` (the view's own), and a boolean (the app's own). The rest are LIVE, answered
  * without running a view body: on the web by CSS (a media query, the scheme's
  * class on the document, the state of the view's outermost box), on native by
  * the leaf that draws each host, from the environment (the window's
@@ -87,8 +87,12 @@ export function varies(modifier: Modifier): boolean {
 
 const IS_WEB = Platform.OS === 'web';
 
-/** A condition as the render settles it: `false` (dropped), `null` (holds) or still live. */
-export function settle(condition: Condition, disabled: boolean): Planned | false {
+/**
+ * A condition as the render settles it: `false` (dropped), `null` (holds) or
+ * still live. A boolean is the app's own condition, known as the view renders.
+ */
+export function settle(condition: Condition | boolean, disabled: boolean): Planned | false {
+  if (typeof condition === 'boolean') return condition ? null : false;
   switch (condition) {
     case 'web':
       return IS_WEB ? null : false;

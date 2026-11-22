@@ -63,6 +63,15 @@ const VARIES = new Set(spec.variants.modifiers);
 const HELD = new Set(['web', 'native', 'ios', 'android']);
 /** The placement modifiers (render.tsx, PLACE_KINDS): a held variant leaves them out too. */
 const PLACEMENT = new Set(['accessibilityOnly']);
+/**
+ * Whether a variant under a condition that holds as the view renders (a
+ * platform, the app's own boolean) changes `mod`: one a variant varies, or
+ * anything but a box layer or a placement, which is then the chain's own
+ * (render.tsx, `heldAsOwn`).
+ */
+export function heldVariantChanges(mod: Mod): boolean {
+  return VARIES.has(mod.name) || (!LAYER.has(mod.name) && !PLACEMENT.has(mod.name));
+}
 /** Utilities NativeWind draws on the web only: `tabular-nums` sets a variable alone on native. */
 const WEB_ONLY = new Set(['tabular-nums']);
 const TEXT_ONLY = new Set(spec.nodes.text?.modifiers ?? []);

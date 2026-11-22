@@ -28,7 +28,13 @@ import {
   SPACE,
   TEXT_STYLES,
 } from './components';
-import { type HostKind, type Reason, type Resolved, resolveClassName } from './resolve';
+import {
+  type HostKind,
+  heldVariantChanges,
+  type Reason,
+  type Resolved,
+  resolveClassName,
+} from './resolve';
 import { styleUtilities } from './style';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
@@ -41,7 +47,7 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
   scales: { iconSize: Record<string, number> };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
-  enums: { role: readonly string[] };
+  enums: { role: readonly string[]; appColorName: readonly string[] };
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
@@ -159,20 +165,24 @@ type Ir =
   | { type: 'map'; items: Carried; params: readonly AnyNode[]; body: Ir };
 
 /**
- * A className that is one of two by a condition: `mods` is what the other
- * branch writes, modifier for modifier the chain's, each value that differs
- * written `test ? value : other`.
+ * A className that is one of two by a condition. When both branches write the
+ * same modifiers, `mods` is what the other branch writes, modifier for
+ * modifier the chain's, each value that differs written `test ? value :
+ * other`. Else the chain is what both write, and `only` what each branch
+ * alone adds, `.when(test, …)` and `.when(!test, …)`.
  */
-interface Choice {
-  readonly test: Carried;
-  readonly mods: readonly Mod[];
-}
+type Choice =
+  | { readonly test: Carried; readonly mods: readonly Mod[] }
+  | {
+      readonly test: Carried;
+      readonly only: { readonly whenTrue: readonly Mod[]; readonly whenFalse: readonly Mod[] };
+    };
 
 type TextRun = { type: 'string'; value: string } | { type: 'expr'; value: Carried } | Ir;
 
 /**
- * An app colour (`defineTokens({ color })`): a static hex in the file, by its
- * token name (a module constant's own name, else `hex` and its digits), and
+ * An app colour (`defineTokens({ color })`): a static colour in the file, by its
+ * token name (a module constant's own name, else the colour's: `appColorName`), and
  * the constant it is read from.
  */
 interface AppColor {
@@ -183,7 +193,6 @@ interface AppColor {
   readonly read?: AnyNode;
 }
 
-/** What `defineTokens` takes as a colour: a hex of 3, 4, 6 or 8 digits. */
 /** React Native's `pointerEvents` as the language's hit testing (`auto` is the default, left as JSX). */
 const HIT_TESTING: Record<string, boolean | string> = {
   none: false,
@@ -191,7 +200,24 @@ const HIT_TESTING: Record<string, boolean | string> = {
   'box-only': 'self',
 };
 
+/**
+ * What `defineTokens` takes as a colour (the language's `isAppColorValue`): a
+ * hex of 3, 4, 6 or 8 digits, an `rgb()` or `rgba()` of numbers, or a CSS
+ * colour name both platforms paint (the spec's `appColorName`).
+ */
 const HEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+const RGB =
+  /^rgb\(\s*\d{1,3}\s*(?:,\s*\d{1,3}\s*){2}\)$|^rgba\(\s*\d{1,3}\s*(?:,\s*\d{1,3}\s*){2},\s*(?:0|1|0?\.\d+)\s*\)$/;
+const COLOR_NAMES = new Set(spec.enums.appColorName);
+const isAppColorValue = (value: string) =>
+  HEX.test(value) || RGB.test(value) || COLOR_NAMES.has(value);
+/** A colour written out as its token's name: `hex` and its digits, a colour name itself, an rgb()'s numbers joined. */
+const appColorName = (value: string) =>
+  HEX.test(value)
+    ? `hex${value.slice(1)}`
+    : COLOR_NAMES.has(value)
+      ? value
+      : value.replace(/[^\w]+/g, '_').replace(/_$/, '');
 /** Bloom's colour scope: inside it, a theme read outside it is another scheme's colour. */
 const COLOR_SCOPE = '@oxy.so/bloom/theme#BloomColorScope';
 
@@ -263,7 +289,7 @@ export interface Fixture {
   readonly themed: boolean;
   /** The after side is a route's body root, drawn by the language's `ScreenHost` as `screen()` draws it. */
   readonly screen: boolean;
-  /** The app colours the chain paints with: the table's local name and each token's hex. */
+  /** The app colours the chain paints with: the table's local name and each token's colour. */
   readonly appColors: {
     readonly table: string;
     readonly color: Readonly<Record<string, string>>;
@@ -613,7 +639,7 @@ export function transformSource(source: string, options: TransformOptions): File
     },
   });
   /**
-   * Module-level `const NAME = 'text'` (no type annotation, so a hex's type is
+   * Module-level `const NAME = 'text'` (no type annotation, so a colour's type is
    * the literal `defineTokens` takes), by name: a colour the codemod reads in the file.
    */
   const colorConstants = new Map<string, { value: string; statement: AnyNode }>();
@@ -749,8 +775,8 @@ export function transformSource(source: string, options: TransformOptions): File
 
   /**
    * An icon's fill as the chain paints it: a Bloom theme colour read from
-   * `useTheme()` is its role, and a static hex (a literal, or a module
-   * constant) an app colour, the same hex in both schemes. Anything else is a reason.
+   * `useTheme()` is its role, and a static colour (a literal, or a module
+   * constant) an app colour, the same colour in both schemes. Anything else is a reason.
    */
   function iconFill(
     node: AnyNode,
@@ -774,14 +800,14 @@ export function transformSource(source: string, options: TransformOptions): File
         : undefined;
     const value = constant ? colorConstants.get(constant)?.value : staticString(fill);
     if (value !== undefined) {
-      if (!HEX.test(value))
+      if (!isAppColorValue(value))
         return reason(
-          'icon-fill:not-hex',
-          'a colour that is no hex (a name, an `rgba()`): an app colour token is a hex',
+          'icon-fill:not-a-colour',
+          'a colour the platforms do not paint alike (`currentColor`, an `hsl()`, a name only one knows): an app colour is a hex, an `rgb()` or `rgba()` of numbers, or a CSS colour name',
         );
-      const name = constant ?? `hex${value.slice(1)}`;
+      const name = constant ?? appColorName(value);
       if (!constant && colorConstants.has(name))
-        return reason('icon-fill', `a hex whose token name the file declares (\`${name}\`)`);
+        return reason('icon-fill', `a colour whose token name the file declares (\`${name}\`)`);
       return { color: constant ? { name, value, constant, read: expression } : { name, value } };
     }
     // `x.colors.key` or `colors.key` with no role, or not bound to `useTheme()` where it is read.
@@ -1075,11 +1101,11 @@ export function transformSource(source: string, options: TransformOptions): File
         'a className on a typography component drops its own style',
       );
     const host: HostKind = isText ? 'text' : (kind as HostKind);
-    const resolution = resolveClassName(className, host, options.table, {
+    let resolution = resolveClassName(className, host, options.table, {
       overridden: options.overridden,
     });
     if (!resolution.ok) reasons.push(...resolution.reasons);
-    // The other branch resolves alike and writes the same modifiers, only their values differing.
+    // The other branch resolves alike: the same modifiers, only their values differing, or a variant of each.
     let choice: Choice | null = null;
     if (other) {
       const otherwise = resolveClassName(other.className, host, options.table, {
@@ -1088,12 +1114,16 @@ export function transformSource(source: string, options: TransformOptions): File
       if (!otherwise.ok) reasons.push(...otherwise.reasons);
       else if (resolution.ok) {
         const mods = sameShape(resolution.value, otherwise.value);
+        const only = mods ? undefined : branchesOnly(resolution.value, otherwise.value);
         if (mods) choice = { test: other.test, mods };
-        else
+        else if (only) {
+          choice = { test: other.test, only };
+          resolution = { ok: true, value: { ...resolution.value, mods: only.both } };
+        } else
           fail(
             'className',
             'dynamic-className',
-            'a className whose two branches write different modifiers, not different values of the same',
+            'a className whose two branches differ in their layout axis or variants, or add a modifier a variant cannot change',
           );
       }
     }
@@ -1130,7 +1160,7 @@ export function transformSource(source: string, options: TransformOptions): File
       const fontMods: Mod[] = textStyle ? [{ name: 'textStyle', args: [textStyle] }] : [];
       if (variant) {
         if (
-          [...resolved.mods, ...(choice?.mods ?? [])].some(
+          [...resolved.mods, ...choiceMods(choice)].some(
             (m) => m.name === 'font' || m.name === 'weight',
           )
         )
@@ -1152,7 +1182,10 @@ export function transformSource(source: string, options: TransformOptions): File
           type: 'text',
           raw: kind === 'rnText',
           resolved: { ...resolved, mods: [...resolved.mods, ...fontMods] },
-          choice: choice && { ...choice, mods: [...choice.mods, ...fontMods] },
+          choice:
+            choice && 'mods' in choice
+              ? { ...choice, mods: [...choice.mods, ...fontMods] }
+              : choice,
           props,
           key,
           runs,
@@ -1252,6 +1285,45 @@ export function transformSource(source: string, options: TransformOptions): File
       whenTrue: head + whenTrue + tail,
       whenFalse: head + whenFalse + tail,
     };
+  }
+
+  /** The modifiers a choice writes besides the chain's. */
+  function choiceMods(choice: Choice | null): readonly Mod[] {
+    if (!choice) return [];
+    return 'mods' in choice ? choice.mods : [...choice.only.whenTrue, ...choice.only.whenFalse];
+  }
+
+  /**
+   * Each branch's own modifiers over those both write, when the branches lay
+   * out on one axis with the same variants, and what each adds alone is what
+   * a variant under the app's condition changes. Both branches resolved with
+   * no two classes setting one thing, so a modifier one branch adds sets
+   * nothing the other modifiers set: the variant adds it, overriding nothing.
+   */
+  function branchesOnly(
+    chain: Resolved,
+    other: Resolved,
+  ): { both: Mod[]; whenTrue: Mod[]; whenFalse: Mod[] } | undefined {
+    if (
+      chain.axis !== other.axis ||
+      JSON.stringify(chain.variants) !== JSON.stringify(other.variants)
+    )
+      return undefined;
+    const rest = other.mods.map((mod) => JSON.stringify(mod));
+    const both: Mod[] = [];
+    const whenTrue: Mod[] = [];
+    for (const mod of chain.mods) {
+      const at = rest.indexOf(JSON.stringify(mod));
+      if (at < 0) whenTrue.push(mod);
+      else {
+        both.push(mod);
+        rest[at] = '';
+      }
+    }
+    const whenFalse = other.mods.filter((_, i) => rest[i] !== '');
+    return [...whenTrue, ...whenFalse].every(heldVariantChanges)
+      ? { both, whenTrue, whenFalse }
+      : undefined;
   }
 
   /**
@@ -2143,7 +2215,7 @@ export function transformSource(source: string, options: TransformOptions): File
     // A value the other branch writes differently is chosen by its condition.
     let out = resolved.mods
       .map((mod, i) => {
-        const other = choice?.mods[i];
+        const other = choice && 'mods' in choice ? choice.mods[i] : undefined;
         if (!choice || !other) return printMod(mod);
         const args = mod.args.map((arg, j) => {
           const alternative = other.args[j] as Arg;
@@ -2154,6 +2226,19 @@ export function transformSource(source: string, options: TransformOptions): File
         return `.${mod.name}(${args.join(', ')})`;
       })
       .join('');
+    // What one branch alone adds is a variant of its condition, before the live variants, which override it.
+    if (choice && 'only' in choice) {
+      const test = carry(choice.test);
+      const plain =
+        n.Identifier.check(choice.test.node) || n.MemberExpression.check(choice.test.node);
+      const holds = isBooleanForm(choice.test.node) ? test : `Boolean(${test})`;
+      const fails = plain ? `!${test}` : `!(${test})`;
+      for (const [condition, mods] of [
+        [holds, choice.only.whenTrue],
+        [fails, choice.only.whenFalse],
+      ] as const)
+        if (mods.length) out += `.when(${condition}, (v) => v${mods.map(printMod).join('')})`;
+    }
     for (const variant of resolved.variants) {
       let inner = `v${variant.mods.map(printMod).join('')}`;
       for (const condition of [...variant.conditions].reverse().slice(0, -1))
@@ -2348,7 +2433,7 @@ export function transformSource(source: string, options: TransformOptions): File
           text: `parityTheme.colors.${read.property.name}`,
         });
       }
-    // A constant the chain names as an app colour is its hex on the before side, drawn without the module.
+    // A constant the chain names as an app colour is its colour on the before side, drawn without the module.
     const colors = colorsOf(ir);
     for (const color of colors)
       if (color.read)
