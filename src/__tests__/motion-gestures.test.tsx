@@ -3,7 +3,14 @@ import React from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 
-import { useDrag, useScrollGesture, useSwipe, type DragOptions } from '../motion/gestures';
+import {
+  useDoubleTap,
+  useDrag,
+  usePinch,
+  useScrollGesture,
+  useSwipe,
+  type DragOptions,
+} from '../motion/gestures';
 import {
   getMotionValue,
   setMotionValue,
@@ -339,5 +346,56 @@ describe('useSwipe', () => {
     act(() => row.pan.__handlers.onFinalize?.({}));
     expect(row.value()).toBe(0);
     expect(onSwipe).not.toHaveBeenCalled();
+  });
+});
+
+describe('usePinch and useDoubleTap', () => {
+  const gestureIn = (root: {
+    findAll: (
+      test: (node: { props: Record<string, unknown> }) => boolean,
+    ) => { props: Record<string, unknown> }[];
+  }) => root.findAll((node) => node.props.gesture !== undefined)[0]?.props.gesture as Recorded;
+
+  it('a pinch scales the value by the spread from where it was, within its bounds, and reports the end', () => {
+    const ends: Array<{ value: number; velocity: number }> = [];
+    let value!: MotionValue;
+    function Box() {
+      value = useMotionValue(2);
+      const gesture = usePinch(value, { min: 1, max: 5, onEnd: (end) => ends.push(end) });
+      return (
+        <GestureDetector gesture={gesture as never}>
+          <View testID="box" />
+        </GestureDetector>
+      );
+    }
+    const { UNSAFE_root } = render(<Box />);
+    const gesture = gestureIn(UNSAFE_root);
+    act(() => {
+      gesture.__handlers.onBegin?.({});
+      gesture.__handlers.onUpdate?.({ scale: 1.5, velocity: 0.8 });
+    });
+    expect(getMotionValue(value)).toBe(3);
+    act(() => gesture.__handlers.onUpdate?.({ scale: 0.1, velocity: -2 }));
+    expect(getMotionValue(value)).toBe(1);
+    act(() => gesture.__handlers.onFinalize?.({}));
+    expect(ends).toEqual([{ value: 1, velocity: -2 }]);
+  });
+
+  it('two taps call back on the JS thread; a cancelled pair does not', () => {
+    const taps: number[] = [];
+    function Box() {
+      const gesture = useDoubleTap(() => taps.push(1));
+      return (
+        <GestureDetector gesture={gesture as never}>
+          <View testID="box" />
+        </GestureDetector>
+      );
+    }
+    const { UNSAFE_root } = render(<Box />);
+    const gesture = gestureIn(UNSAFE_root);
+    expect(gesture.__config).toMatchObject({ numberOfTaps: 2, enabled: true });
+    act(() => gesture.__handlers.onDeactivate?.({ canceled: true }));
+    act(() => gesture.__handlers.onDeactivate?.({ canceled: false }));
+    expect(taps).toEqual([1]);
   });
 });
