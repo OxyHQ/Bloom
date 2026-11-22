@@ -1,9 +1,12 @@
 import { BloomScope } from '../appearance';
+import type { ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header/PageHeader';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
+import { IS_WEB } from '../styles/platform';
 import { Text } from '../typography';
 import { BoardDragContext, BoardGesture, type BoardDragBinding } from './BoardGesture';
 import { BoardOverlay } from './BoardOverlay';
@@ -27,6 +30,13 @@ type CanvasProps<Item> = Omit<ControlledProjectBoardProps<Item>, 'variant'> & {
 };
 
 /** The original ProjectBoard column/card renderer, with slots for product-owned records. */
+/** The column's fill eases as a card is dragged over it (web). */
+const COLUMN_TRANSITION = {
+  transitionProperty: 'box-shadow, background-color',
+  transitionDuration: '150ms',
+  transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+} as unknown as ViewStyle;
+
 export function ProjectBoardCanvas<Item>({
   engine,
   variant,
@@ -44,6 +54,7 @@ export function ProjectBoardCanvas<Item>({
   ...props
 }: CanvasProps<Item>) {
   const { colors } = useTheme();
+  const tokens = useColorTokens();
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   const { Portal, AppShellPanels, ScreenScrollView } = useProjectBoardPlatform();
   const directionProps = useDirectionProps();
@@ -220,11 +231,13 @@ export function ProjectBoardCanvas<Item>({
                 engine.over?.columnId === column.id
                   ? colors.backgroundTertiary
                   : colors.backgroundSecondary,
-              surfaceClassName: cx(
-                'bg-background-secondary-default ring-2 ring-inset ring-transparent transition-[box-shadow,background-color] duration-150 ease-out',
-                engine.over?.columnId === column.id &&
-                  'bg-background-secondary-hover ring-border-button-hover',
-              ),
+              surfaceStyle: [
+                {
+                  backgroundColor:
+                    engine.over?.columnId === column.id ? tokens.popover : tokens.surface,
+                },
+                IS_WEB && COLUMN_TRANSITION,
+              ],
               header: (
                 <PageHeader
                   density="compact"
