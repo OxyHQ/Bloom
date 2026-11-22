@@ -186,6 +186,7 @@ export type StatCardsVariant = (typeof ENUMS.statCardsVariant)[number];
 export type PriceScale = (typeof ENUMS.priceScale)[number];
 export type FeatureFilterStyle = (typeof ENUMS.featureFilterStyle)[number];
 export type FilterTriggerSize = (typeof ENUMS.filterTriggerSize)[number];
+export type GuestPickerSize = (typeof ENUMS.guestPickerSize)[number];
 export type AiChatLineTone = (typeof ENUMS.aiChatLineTone)[number];
 export type AreaVariant = (typeof ENUMS.areaVariant)[number];
 export type ChartShape = (typeof ENUMS.chartShape)[number];

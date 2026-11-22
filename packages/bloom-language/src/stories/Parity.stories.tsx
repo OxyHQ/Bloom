@@ -16,6 +16,7 @@ import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
 import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
 import { STAT_CARD_CASES } from '../../parity/stat-cards.cases';
 import { STAY_FILTER_CASES } from '../../parity/stay-filters.cases';
+import { STAY_SEARCH_CASES } from '../../parity/stay-search.cases';
 import { AVATAR_CASES } from '../../parity/avatar.cases';
 import { BUTTON_CASES } from '../../parity/button.cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
@@ -91,3 +92,4 @@ export const ListingsAndMedia: Story = { args: { cases: LISTINGS_MEDIA_CASES } }
 export const CardForms: Story = { args: { cases: CARD_FORM_CASES } };
 export const CheckoutSheets: Story = { args: { cases: CHECKOUT_SHEET_CASES } };
 export const StayFilters: Story = { args: { cases: STAY_FILTER_CASES } };
+export const StaySearch: Story = { args: { cases: STAY_SEARCH_CASES } };

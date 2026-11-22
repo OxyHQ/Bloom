@@ -210,6 +210,13 @@ import type {
   FeatureFilterView,
   FloorFilterView,
 } from '../controls/stay-filters';
+import type {
+  StaySearchCompactView,
+  StaySearchPanelView,
+  StaySearchStepView,
+  DestinationSuggestionsView,
+  GuestPickerView,
+} from '../controls/stay-search';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -519,7 +526,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AvailabilityFilterView>, Of<'availabilityFilter'>>,
       Same<MethodsOf<FeatureFilterView>, Of<'featureFilter'>>,
       Same<MethodsOf<FloorFilterView>, Of<'floorFilter'>>,
+      Same<MethodsOf<StaySearchCompactView>, Of<'staySearchCompact'>>,
+      Same<MethodsOf<StaySearchPanelView>, Of<'staySearchPanel'>>,
+      Same<MethodsOf<StaySearchStepView>, Of<'staySearchStep'>>,
+      Same<MethodsOf<DestinationSuggestionsView>, Of<'destinationSuggestions'>>,
+      Same<MethodsOf<GuestPickerView>, Of<'guestPicker'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

@@ -781,3 +781,15 @@ fn the_stay_filters_are_checked() {
     let output = check("export const x = (r) => PriceRangeFilter(r, {}).tint('accent');\n");
     assert_eq!(output.diagnostics[0].message, "PriceRangeFilter has no modifier .tint()");
 }
+
+#[test]
+fn the_stay_search_is_checked() {
+    let imports = "import { GuestPicker, StaySearchStep } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check("export const x = (g) => GuestPicker(g).size('sm').label('Guests');\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (g) => GuestPicker(g).size('lg');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown guestPickerSize token 'lg' for .size()");
+    let output = check("export const x = (c) => StaySearchStep('Where', c, {}).style('solid');\n");
+    assert_eq!(output.diagnostics[0].message, "StaySearchStep has no modifier .style()");
+}

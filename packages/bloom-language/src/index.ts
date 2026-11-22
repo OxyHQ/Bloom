@@ -569,3 +569,24 @@ export type {
   ToggleChipGroupOptions,
   ToggleChipGroupView,
 } from './controls/stay-filters';
+
+// Stay search (controls/stay-search.tsx)
+export {
+  DestinationSuggestions,
+  GuestPicker,
+  StaySearchCompact,
+  StaySearchPanel,
+  StaySearchStep,
+} from './controls/stay-search';
+export type {
+  DestinationSuggestionsOptions,
+  DestinationSuggestionsView,
+  GuestPickerOptions,
+  GuestPickerView,
+  StaySearchCompactOptions,
+  StaySearchCompactView,
+  StaySearchPanelOptions,
+  StaySearchPanelView,
+  StaySearchStepOptions,
+  StaySearchStepView,
+} from './controls/stay-search';
