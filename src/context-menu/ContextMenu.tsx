@@ -151,7 +151,6 @@ export function ContextMenuTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
 }: ContextMenuTriggerProps) {
@@ -228,7 +227,6 @@ export function ContextMenuTrigger({
       // instead (`ContextMenu`).
       open={menu.open}
       restoreFocus={menu.anchorRef === menu.triggerRef}
-      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -349,7 +347,6 @@ export function ContextMenuContent({
   minWidth,
   maxWidth,
   maxHeight,
-  className,
   style,
   testID,
 }: ContextMenuContentProps) {
@@ -396,7 +393,6 @@ export function ContextMenuContent({
           minWidth={minWidth}
           maxWidth={maxWidth}
           maxHeight={maxHeight}
-          className={className}
           style={style}
           testID={testID}
         >
