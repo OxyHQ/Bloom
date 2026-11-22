@@ -41,7 +41,7 @@ use oxc_span::{GetSpan, SourceType, Span};
 use oxc_syntax::scope::ScopeFlags;
 use oxc_syntax::symbol::SymbolId;
 
-pub use diagnostics::Diagnostic;
+pub use diagnostics::{Diagnostic, Severity};
 pub use module::LANGUAGE_MODULE;
 use module::{Binding, Module};
 
@@ -53,12 +53,15 @@ pub struct Output {
     pub changed: bool,
     /// How many chains were hoisted to module scope.
     pub hoisted: u32,
+    /// Errors: the module does not compile.
     pub diagnostics: Vec<Diagnostic>,
+    /// Warnings: reported, and the module compiles.
+    pub warnings: Vec<Diagnostic>,
 }
 
 impl Output {
-    fn unchanged(source: &str, diagnostics: Vec<Diagnostic>) -> Self {
-        Self { code: source.to_string(), map: None, changed: false, hoisted: 0, diagnostics }
+    fn unchanged(source: &str, diagnostics: Vec<Diagnostic>, warnings: Vec<Diagnostic>) -> Self {
+        Self { code: source.to_string(), map: None, changed: false, hoisted: 0, diagnostics, warnings }
     }
 }
 
@@ -68,20 +71,27 @@ pub fn compile(source: &str, filename: &str) -> Output {
     let parsed = Parser::new(&allocator, source, source_type).parse();
     // Syntax errors are the next transform's to report, with its own frame.
     if parsed.diagnostics.has_errors() {
-        return Output::unchanged(source, Vec::new());
+        return Output::unchanged(source, Vec::new(), Vec::new());
     }
     let mut program = parsed.program;
     let scoping = SemanticBuilder::new().build(&program).semantic.into_scoping();
     let Some(module) = Module::read(&program, &scoping) else {
-        return Output::unchanged(source, Vec::new());
+        return Output::unchanged(source, Vec::new(), Vec::new());
     };
 
-    let diagnostics: Vec<Diagnostic> = check::check_program(&program, &module, &scoping)
-        .into_iter()
-        .map(|problem| Diagnostic::new(source, filename, problem.span, problem.message, problem.help))
-        .collect();
+    let checked = check::check_program(&program, &module, &scoping);
+    let render = |severity, problems: Vec<check::Problem>| -> Vec<Diagnostic> {
+        problems
+            .into_iter()
+            .map(|problem| {
+                Diagnostic::with_severity(severity, source, filename, problem.span, problem.message, problem.help)
+            })
+            .collect()
+    };
+    let diagnostics = render(Severity::Error, checked.errors);
+    let warnings = render(Severity::Warning, checked.warnings);
     if !diagnostics.is_empty() {
-        return Output::unchanged(source, diagnostics);
+        return Output::unchanged(source, diagnostics, warnings);
     }
 
     let mut bodies =
@@ -104,7 +114,7 @@ pub fn compile(source: &str, filename: &str) -> Output {
     };
     compiler.visit_program(&mut program);
     if compiler.hoisted.is_empty() && compiler.memoized == 0 {
-        return Output::unchanged(source, Vec::new());
+        return Output::unchanged(source, Vec::new(), warnings);
     }
 
     let hoisted = std::mem::take(&mut compiler.hoisted);
@@ -138,6 +148,7 @@ pub fn compile(source: &str, filename: &str) -> Output {
         changed: true,
         hoisted: count,
         diagnostics: Vec::new(),
+        warnings,
     }
 }
 

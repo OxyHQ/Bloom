@@ -29,18 +29,39 @@ fn node(kind: &str) -> &'static NodeSpec {
     NODES.iter().find(|node| node.kind == kind).expect("every node kind is in the spec")
 }
 
+/// What checking a module found: errors fail the build, warnings are reported.
+pub struct Checked {
+    pub errors: Vec<Problem>,
+    pub warnings: Vec<Problem>,
+}
+
 /// Every chain in `program`, each checked once, whatever the compiler later
 /// does with it: a chain nested in another's arguments is its own chain.
-pub fn check_program(program: &Program, module: &Module, scoping: &Scoping) -> Vec<Problem> {
-    let mut checker = Checker { module, scoping, problems: Vec::new() };
+pub fn check_program(program: &Program, module: &Module, scoping: &Scoping) -> Checked {
+    let mut checker = Checker {
+        module,
+        scoping,
+        place: Place::default(),
+        checked: Checked { errors: Vec::new(), warnings: Vec::new() },
+    };
     checker.visit_program(program);
-    checker.problems
+    checker.checked
+}
+
+/// Where a chain is written, as far as one expression shows it: inside the
+/// children of a glass, of scrolling content, of a glass group.
+#[derive(Clone, Copy, Default)]
+struct Place {
+    in_glass: bool,
+    in_content: bool,
+    in_group: bool,
 }
 
 struct Checker<'m> {
     module: &'m Module,
     scoping: &'m Scoping,
-    problems: Vec<Problem>,
+    place: Place,
+    checked: Checked,
 }
 
 impl<'a> Visit<'a> for Checker<'_> {
@@ -50,19 +71,191 @@ impl<'a> Visit<'a> for Checker<'_> {
             return;
         }
         if let Err(problem) = check_chain(expression, self.module, self.scoping) {
-            self.problems.push(problem);
+            self.checked.errors.push(problem);
         }
+        let glass = self.check_glass(expression);
         // The chain's own calls were checked together; their arguments are visited
-        // for the chains inside them, never the chain's own prefix again.
+        // for the chains inside them, never the chain's own prefix again. Its
+        // children (the constructor's arguments) are inside it: in its glass, its
+        // scrolling content, its group.
+        let kind = chain_kind(expression, self.module, self.scoping);
         let mut current = expression.without_parentheses();
         while let Expression::CallExpression(call) = current {
+            let Expression::StaticMemberExpression(member) = &call.callee else {
+                let outer = self.place;
+                self.place.in_glass |= glass.is_some();
+                self.place.in_content |= CONTENT_KINDS.contains(&kind);
+                self.place.in_group |= kind == "glassGroup";
+                for argument in &call.arguments {
+                    self.visit_argument(argument);
+                }
+                self.place = outer;
+                break;
+            };
             for argument in &call.arguments {
                 self.visit_argument(argument);
             }
-            let Expression::StaticMemberExpression(member) = &call.callee else { break };
             current = member.object.without_parentheses();
         }
     }
+}
+
+/// Nodes whose children are content: they scroll, or they are a card of it.
+const CONTENT_KINDS: &[&str] = &["scrollView", "scrollArea", "scrollSurface", "list", "virtualList", "card"];
+
+/// A glass, as the Liquid Glass rules see it.
+struct Glass {
+    span: Span,
+    /// `.inContent()`: in the content layer on purpose.
+    in_content: bool,
+}
+
+impl Checker<'_> {
+    /// The Liquid Glass rules for one chain (see docs/bloom-language.mdx, Liquid
+    /// Glass rules); returns the chain's glass, if it draws one.
+    fn check_glass(&mut self, expression: &Expression) -> Option<Glass> {
+        let (module, scoping) = (self.module, self.scoping);
+        let glass = glass_of(expression, module, scoping);
+        if let Some(glass) = &glass {
+            if self.place.in_glass {
+                self.checked.errors.push(Problem {
+                    span: glass.span,
+                    message: "glass on glass: this glass is inside another glass".into(),
+                    help: Some(
+                        "Liquid Glass is one layer: drop this .glass(), or put both side by side in a GlassGroup".into(),
+                    ),
+                });
+            } else if self.place.in_content && !glass.in_content {
+                self.checked.warnings.push(Problem {
+                    span: glass.span,
+                    message: "glass in scrolling content: glass belongs to the navigation layer".into(),
+                    help: Some(
+                        "put it on a bar, a toolbar or a floating control; a control in a row that is glass on purpose \
+                         says so with .inContent()"
+                            .into(),
+                    ),
+                });
+            }
+        }
+        if let Some(root) = root_call(expression)
+            && !self.place.in_group
+            && chain_kind(expression, module, scoping) == "stack"
+        {
+            let siblings = root
+                .arguments
+                .iter()
+                .filter_map(Argument::as_expression)
+                .filter(|child| module.is_chain(child, scoping) && glass_of(child, module, scoping).is_some())
+                .count();
+            if siblings > 1 {
+                self.checked.warnings.push(Problem {
+                    span: root.span,
+                    message: format!("{siblings} glasses side by side outside a GlassGroup"),
+                    help: Some(
+                        "wrap them in GlassGroup(...): nearby glass renders together, blends and morphs as one".into(),
+                    ),
+                });
+            }
+        }
+        if let Some(problem) = unlabelled_icon_control(expression, module, scoping) {
+            self.checked.errors.push(problem);
+        }
+        glass
+    }
+}
+
+/// The constructor call at the root of a chain.
+fn root_call<'e, 'a>(expression: &'e Expression<'a>) -> Option<&'e CallExpression<'a>> {
+    let mut current = expression.without_parentheses();
+    loop {
+        let Expression::CallExpression(call) = current else { return None };
+        match &call.callee {
+            Expression::StaticMemberExpression(member) => current = member.object.without_parentheses(),
+            _ => return Some(call),
+        }
+    }
+}
+
+/// The node kind a chain makes (`view` for an app's own view).
+fn chain_kind(expression: &Expression, module: &Module, scoping: &Scoping) -> &'static str {
+    match module.chain_root(expression, scoping) {
+        Some(Binding::Constructor { kind, .. }) => kind,
+        _ => "view",
+    }
+}
+
+/// The chain's modifier calls, outermost first: (name, call).
+fn modifier_calls<'e, 'a>(expression: &'e Expression<'a>) -> Vec<(&'e str, &'e CallExpression<'a>)> {
+    let mut calls = Vec::new();
+    let mut current = expression.without_parentheses();
+    while let Expression::CallExpression(call) = current {
+        let Expression::StaticMemberExpression(member) = &call.callee else { break };
+        calls.push((member.property.name.as_str(), &**call));
+        current = member.object.without_parentheses();
+    }
+    calls
+}
+
+/// The glass a chain draws: a `.glass()` that is not `identity`, a glass
+/// button style, or a FAB (always on glass) without `.glass(identity)`.
+fn glass_of(expression: &Expression, module: &Module, scoping: &Scoping) -> Option<Glass> {
+    let calls = modifier_calls(expression);
+    let in_content = calls.iter().any(|(name, _)| *name == "inContent");
+    let mut glass: Option<Span> = None;
+    let mut identity = false;
+    for (name, call) in calls.iter().rev() {
+        match *name {
+            "glass" => {
+                let value = call.arguments.first().and_then(Argument::as_expression);
+                identity =
+                    value.is_some_and(|value| module.resolve(value, scoping) == Some(Binding::GlassIdentity));
+                glass = (!identity).then_some(call.span);
+            }
+            "style" if is_glass_style(call) => glass = glass.or(Some(call.span)),
+            _ => {}
+        }
+    }
+    let kind = chain_kind(expression, module, scoping);
+    if glass.is_none() && kind == "fab" && !identity {
+        glass = root_call(expression).map(|root| root.span);
+    }
+    glass.map(|span| Glass { span, in_content })
+}
+
+/// `.style('glass')` or `.style('glassProminent')`: a button on glass.
+fn is_glass_style(call: &CallExpression) -> bool {
+    matches!(
+        call.arguments.first().and_then(Argument::as_expression).map(Expression::without_parentheses),
+        Some(Expression::StringLiteral(style)) if style.value == "glass" || style.value == "glassProminent"
+    )
+}
+
+/// A `Button` or `FAB` whose content is glyphs alone has a `.label()`: the
+/// glyph says nothing to a screen reader (Apple: "provide an accessibility
+/// label for every icon").
+fn unlabelled_icon_control(expression: &Expression, module: &Module, scoping: &Scoping) -> Option<Problem> {
+    let kind = chain_kind(expression, module, scoping);
+    if kind != "button" && kind != "fab" {
+        return None;
+    }
+    let root = root_call(expression)?;
+    let mut glyphs = 0;
+    for argument in &root.arguments {
+        let child = argument.as_expression()?;
+        if chain_kind(child, module, scoping) != "icon" || !module.is_chain(child, scoping) {
+            return None;
+        }
+        glyphs += 1;
+    }
+    if glyphs == 0 || modifier_calls(expression).iter().any(|(name, _)| *name == "label") {
+        return None;
+    }
+    let name = if kind == "fab" { "FAB" } else { "Button" };
+    Some(Problem {
+        span: root.span,
+        message: format!("an icon-only {name} has no .label()"),
+        help: Some(format!("name what it does: {name}(Icon(…)).label('Share')")),
+    })
 }
 
 /// Check the chain `expression` (a constructor call and its modifiers), if it is one.
@@ -316,18 +509,26 @@ fn check_value(
         }
         "glass" => match value.without_parentheses() {
             Expression::CallExpression(call) => {
-                let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
-                if module.resolve(&member.object, scoping) != Some(Binding::Glass)
-                    || member.property.name != "tint"
-                {
-                    return Ok(());
-                }
-                let mut arguments = call.arguments.iter().filter_map(Argument::as_expression);
-                if let Some(color) = arguments.next() {
-                    check_token("tint", "color", color)?;
-                }
-                if let Some(opacity) = arguments.next() {
-                    check_token("tint", "glassOpacity", opacity)?;
+                // Each method of the value (`regular.tint('primary').interactive(false)`).
+                let mut current = Some(&**call);
+                while let Some(call) = current {
+                    let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
+                    if !module.is_glass_value(&member.object, scoping) {
+                        return Ok(());
+                    }
+                    if member.property.name == "tint" {
+                        let mut arguments = call.arguments.iter().filter_map(Argument::as_expression);
+                        if let Some(color) = arguments.next() {
+                            check_token("tint", "color", color)?;
+                        }
+                        if let Some(opacity) = arguments.next() {
+                            check_token("tint", "glassOpacity", opacity)?;
+                        }
+                    }
+                    current = match member.object.without_parentheses() {
+                        Expression::CallExpression(inner) => Some(&**inner),
+                        _ => None,
+                    };
                 }
                 Ok(())
             }
@@ -359,6 +560,7 @@ fn check_value(
         "tint" => spec.tint.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "style" => spec.style.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "shape" => spec.shape.map_or(Ok(()), |set| check_token(modifier, set, value)),
+        "blend" => check_token(modifier, spec.blend.unwrap_or("blend"), value),
         // A density is the node's own: each node lists Bloom's names for its densities.
         "density" => check_in(modifier, "density", spec.densities, value),
         set => check_token(modifier, set, value),

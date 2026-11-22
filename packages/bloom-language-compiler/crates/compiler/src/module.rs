@@ -33,6 +33,8 @@ pub enum Binding {
     DefineTokens,
     /// `regular` or `clear`.
     Glass,
+    /// `identity`: a glass value that draws no glass.
+    GlassIdentity,
     /// `opacity`: a transition value, immutable like a glass material.
     Fade,
     /// `move`, `scale`, `asymmetric`, `defineKeyframes`: pure builders of motion values.
@@ -250,7 +252,7 @@ impl Module {
                     Expression::StaticMemberExpression(member) => {
                         let receiver = member.object.without_parentheses();
                         let chain = self.is_chain(receiver, scoping)
-                            || self.resolve(receiver, scoping) == Some(Binding::Glass)
+                            || self.is_glass_value(receiver, scoping)
                             || self.is_motion_value(receiver, scoping);
                         if !chain {
                             return None;
@@ -288,6 +290,21 @@ impl Module {
         }
     }
 
+    /// Whether `expression` is a glass value: `regular`, `clear` or `identity`, or a
+    /// method of one (`regular.tint('primary').interactive(false)`).
+    pub fn is_glass_value(&self, expression: &Expression, scoping: &Scoping) -> bool {
+        match expression.without_parentheses() {
+            Expression::Identifier(_) => {
+                matches!(self.resolve(expression, scoping), Some(Binding::Glass | Binding::GlassIdentity))
+            }
+            Expression::CallExpression(call) => match &call.callee {
+                Expression::StaticMemberExpression(member) => self.is_glass_value(&member.object, scoping),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     /// Whether `expression` is a language chain: a constructor (or view) call with modifiers after it.
     pub fn is_chain(&self, expression: &Expression, scoping: &Scoping) -> bool {
         self.chain_root(expression, scoping).is_some()
@@ -319,6 +336,7 @@ fn language_export(name: &str) -> Binding {
         "view" => Binding::View,
         "defineTokens" => Binding::DefineTokens,
         "regular" | "clear" => Binding::Glass,
+        "identity" => Binding::GlassIdentity,
         "opacity" => Binding::Fade,
         "move" | "scale" | "asymmetric" | "defineKeyframes" => Binding::MotionBuilder,
         "useMotionValue" => Binding::UseMotionValue,

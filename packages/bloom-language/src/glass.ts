@@ -1,7 +1,9 @@
-import { GLASS, GLASS_OPACITY } from './generated/spec.generated';
+import { type ENUMS, GLASS, GLASS_OPACITY } from './generated/spec.generated';
 import type { ColorName, GlassOpacityName } from './tokens';
 
 export type GlassMaterial = keyof typeof GLASS;
+/** How a glass with an identity arrives and leaves (SwiftUI's `glassEffectTransition`). */
+export type GlassTransition = (typeof ENUMS.glassTransition)[number];
 
 /**
  * A glass material, as SwiftUI's `glassEffect` takes it: `regular` or
@@ -24,14 +26,29 @@ export class GlassValue {
     readonly material: GlassMaterial,
     readonly tintColor?: ColorName,
     readonly tintOpacity?: GlassOpacityName,
+    /** Whether it answers touch, when said (`.interactive()`); unsaid, the platform's default. */
+    readonly interactiveSaid?: boolean,
+    /** `false` for `identity`: no glass is drawn. */
+    readonly drawn: boolean = true,
   ) {
-    this.key = `glass:${material}:${tintColor ?? ''}:${tintOpacity ?? ''}`;
+    this.key = drawn
+      ? `glass:${material}:${tintColor ?? ''}:${tintOpacity ?? ''}${interactiveSaid === undefined ? '' : `:i${interactiveSaid}`}`
+      : 'glass:identity';
     Object.freeze(this);
   }
 
   /** The same material tinted with a colour role, at a named transparency (or the material's own). */
   tint(color: ColorName, opacity?: GlassOpacityName): GlassValue {
-    return new GlassValue(this.material, color, opacity);
+    return new GlassValue(this.material, color, opacity, this.interactiveSaid, this.drawn);
+  }
+
+  /**
+   * The same material, answering touch or not (SwiftUI's `Glass.interactive`):
+   * it springs under the finger on Android and OxyOS and reacts on iOS. Unsaid,
+   * a glass answers touch where the platform's default does.
+   */
+  interactive(on = true): GlassValue {
+    return new GlassValue(this.material, this.tintColor, this.tintOpacity, on, this.drawn);
   }
 
   /** The role the Surface's fill paints from, if any. */
@@ -55,3 +72,9 @@ export class GlassValue {
 export const regular = new GlassValue('regular');
 /** Glass that lets more of what is behind it through. */
 export const clear = new GlassValue('clear');
+/**
+ * No glass (SwiftUI's `Glass.identity`): the view draws no material, and its
+ * chain keeps its shape, so a value can turn the glass off
+ * (`.glass(active ? regular : identity)`).
+ */
+export const identity = new GlassValue('regular', undefined, undefined, undefined, false);

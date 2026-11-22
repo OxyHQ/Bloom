@@ -56,6 +56,7 @@ import type { MediaFlightKind } from './controls/media-flight';
 import type { DataTableKind, DataTableStyle } from './controls/data-table';
 import type { SortableChipRowKind } from './controls/sortable-chip-row';
 import type { ViewportKind } from './controls/viewport';
+import type { GlassGroupKind } from './controls/glass-group';
 import type { DataTableCellContext, DataTableSize } from '@oxy.so/bloom/data-table';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
@@ -213,7 +214,7 @@ import type { MusicLibraryKind } from './controls/music-library';
 import type { QueuePanelKind } from './controls/queue-panel';
 import type { TrackListKind } from './controls/track-list';
 import { OBJECTS } from './generated/spec.generated';
-import { regular, type GlassValue } from './glass';
+import { regular, type GlassTransition, type GlassValue } from './glass';
 import { loopKeyframes, type KeyframesValue } from './motion/keyframes';
 import type { Namespace } from './motion/namespace';
 import type {
@@ -542,6 +543,10 @@ export type ScrollOffset = NonNullable<PageHeaderProps['scrollY']>;
  */
 export interface ValueModifiers {
   disabled: boolean;
+  /** How a glass with an identity arrives and leaves (`.glassTransition()`). */
+  glassTransition: GlassTransition;
+  /** A glass in the content layer, on purpose (`.inContent()`). */
+  inContent: true;
   loading: boolean;
   collapsed: boolean | AnyBinding;
   icon: IconComponent | ViewNode;
@@ -1099,7 +1104,8 @@ export interface ValueModifiers {
   railSelection: RailSelection;
   modesPresentation: ModesPresentation;
   textVariant: TypeRampStep;
-  blend: Blend;
+  /** A blend mode (a composer loader's), or a glass group's distance at which its glasses blend. */
+  blend: Blend | SpaceToken;
   bloomOnly: boolean;
 
   // The other product components' secondary looks
@@ -1568,6 +1574,12 @@ export type Modifier =
       readonly namespace: Namespace;
     }
   | {
+      readonly kind: 'glassID' | 'glassUnion';
+      readonly key: string;
+      readonly id: string;
+      readonly namespace: Namespace;
+    }
+  | {
       readonly kind: 'contentTransition';
       readonly key: string;
       readonly value: ContentTransition;
@@ -1693,6 +1705,7 @@ export type NodeKind =
   | DataTableKind
   | SortableChipRowKind
   | ViewportKind
+  | GlassGroupKind
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind
@@ -3008,6 +3021,18 @@ export class Node {
   matchedGeometry(id: string, namespace: Namespace): Node {
     return this.with({ kind: 'matchedGeometry', key: 'matchedGeometry', id, namespace });
   }
+  glassID(id: string, namespace: Namespace): Node {
+    return this.with({ kind: 'glassID', key: 'glassID', id, namespace });
+  }
+  glassUnion(id: string, namespace: Namespace): Node {
+    return this.with({ kind: 'glassUnion', key: `glassUnion:${id}`, id, namespace });
+  }
+  glassTransition(value: GlassTransition): Node {
+    return this.set('glassTransition', value);
+  }
+  inContent(): Node {
+    return this.set('inContent', true);
+  }
   drag(value: MotionValue, options: DragSpec = {}): Node {
     return this.with({ kind: 'drag', key: 'drag', value, options });
   }
@@ -4005,7 +4030,7 @@ export class Node {
   textVariant(value: TypeRampStep): Node {
     return this.set('textVariant', value);
   }
-  blend(value: Blend): Node {
+  blend(value: Blend | SpaceToken): Node {
     return this.set('blend', value);
   }
   bloomOnly(value = true): Node {
@@ -4297,6 +4322,30 @@ export interface ViewModifiers<Self> extends ViewNode {
   anchor(value: AnchorName): Self;
   /** SwiftUI's `matchedGeometryEffect`: moves from where the view with this id last was. */
   matchedGeometry(id: string, namespace: Namespace): Self;
+  /**
+   * SwiftUI's `glassEffectID`: the glass's identity in its `GlassGroup`. A glass
+   * that arrives grows out of where the glass with this id was, and one that
+   * leaves goes back into it (see `glassTransition`).
+   */
+  glassID(id: string, namespace: Namespace): Self;
+  /**
+   * SwiftUI's `glassEffectUnion`: the glasses of one `GlassGroup` with the same
+   * id are one shape. Android's group is one base already; iOS's container
+   * merges them within its `blend`; the web draws each glass on its own.
+   */
+  glassUnion(id: string, namespace: Namespace): Self;
+  /**
+   * How the glass arrives and leaves: `matchedGeometry` (the default) grows out
+   * of the glass with its `glassID`; `materialize` fades the material in and out
+   * where it is.
+   */
+  glassTransition(value: GlassTransition): Self;
+  /**
+   * This glass is in the content layer on purpose (a row's control that becomes
+   * its menu): the compiler's warning about glass in scrolling content is not
+   * said for it. Glass belongs to the navigation layer otherwise.
+   */
+  inContent(): Self;
   /**
    * The finger moves `value` along `options.axis` (default `y`), from where it
    * was, within `min`/`max`. Bind the value to see it (`.offset({ y })`);

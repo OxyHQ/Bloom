@@ -16,7 +16,8 @@ import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { GLASS_OPACITY } from '../src/generated/spec.generated';
-import { clear, regular } from '../src/glass';
+import { clear, identity, regular } from '../src/glass';
+import { GlassGroup } from '../src/controls/glass-group';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { defineTokens } from '../src/tokens';
@@ -707,8 +708,73 @@ const islands: ParityCase[] = [
   },
 ];
 
+/** Glass groups, `identity` and `interactive`: what each draws where the platform has no glass of its own. */
+const glassGroups: ParityCase[] = [
+  {
+    name: 'a glass group is a view around its glasses, each its own Surface',
+    language: () =>
+      toElement(
+        GlassGroup(
+          L.HStack(L.VStack(L.Text('Draw')).glass(), L.VStack(L.Text('Erase')).glass()).spacing(
+            'xl',
+          ),
+        ).blend('xl'),
+      ),
+    bloom: () => (
+      <RN.View>
+        <RN.View style={{ flexDirection: 'row', gap: space.xl }}>
+          <Surface>
+            <RN.View>
+              <Text>Draw</Text>
+            </RN.View>
+          </Surface>
+          <Surface>
+            <RN.View>
+              <Text>Erase</Text>
+            </RN.View>
+          </Surface>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a glass group takes a box of its own',
+    language: () => toElement(GlassGroup(L.VStack(L.Text('Tools')).glass()).padding('md')),
+    bloom: () => (
+      <RN.View style={padding(space.md)}>
+        <Surface>
+          <RN.View>
+            <Text>Tools</Text>
+          </RN.View>
+        </Surface>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'identity glass draws no material and keeps the box',
+    language: () => toElement(L.VStack(L.Text('Plain')).padding('md').glass(identity).corner('xl')),
+    bloom: () => (
+      <RN.View style={{ ...padding(space.md), borderRadius: borderRadius.xl, overflow: 'hidden' }}>
+        <Text>Plain</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a glass that says it is not interactive is the same Surface',
+    language: () => toElement(L.VStack(L.Text('Bar')).glass(regular.interactive(false))),
+    bloom: () => (
+      <Surface>
+        <RN.View>
+          <Text>Bar</Text>
+        </RN.View>
+      </Surface>
+    ),
+  },
+];
+
 export const MATERIAL_CASES: ParityCase[] = [
   ...surface,
+  ...glassGroups,
   ...islands,
   ...dividers,
   ...boxes,

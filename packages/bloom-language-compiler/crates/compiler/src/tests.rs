@@ -2873,3 +2873,73 @@ fn values_inside_blooms_own_data_are_bindings() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+const GLASS_IMPORTS: &str = "import { Button, FAB, GlassGroup, HStack, Icon, ScrollView, Text, VStack, regular, identity, useNamespace } from '@oxy.so/bloom-language';
+import { RiShareLine } from '@oxy.so/bloom/icons/RiShareLine';
+";
+
+fn glass(body: &str) -> crate::Output {
+    compile(&format!("{GLASS_IMPORTS}{body}"), "glass.tsx")
+}
+
+fn messages(diagnostics: &[crate::Diagnostic]) -> Vec<&str> {
+    diagnostics.iter().map(|d| d.message.as_str()).collect()
+}
+
+#[test]
+fn glass_on_glass_is_an_error() {
+    let output = glass("export const x = () => VStack(HStack(Text('a')).glass()).glass();\n");
+    assert_eq!(messages(&output.diagnostics), ["glass on glass: this glass is inside another glass"]);
+    assert!(output.diagnostics[0].rendered.starts_with("error[bloom]"));
+    // `identity` draws no glass, and a glass beside another is not on it.
+    let fine = glass("export const x = () => VStack(HStack(Text('a')).glass()).glass(identity);\n");
+    assert!(fine.diagnostics.is_empty());
+    // A FAB is always on glass.
+    let fab = glass("export const x = () => HStack(FAB(Icon(RiShareLine)).label('Share')).glass();\n");
+    assert_eq!(messages(&fab.diagnostics), ["glass on glass: this glass is inside another glass"]);
+}
+
+#[test]
+fn glass_in_scrolling_content_is_a_warning_unless_it_says_so() {
+    let output = glass("export const x = () => ScrollView(HStack(Text('a')).glass());\n");
+    assert!(output.diagnostics.is_empty());
+    assert_eq!(messages(&output.warnings), ["glass in scrolling content: glass belongs to the navigation layer"]);
+    assert!(output.warnings[0].rendered.starts_with("warning[bloom]"));
+    let opted = glass("export const x = () => ScrollView(HStack(Text('a')).glass().inContent());\n");
+    assert!(opted.warnings.is_empty());
+}
+
+#[test]
+fn glass_side_by_side_belongs_in_a_glass_group() {
+    let loose = glass(
+        "export const x = () => HStack(Button(Text('a')).glass(), Button(Text('b')).glass(regular.interactive(false)));\n",
+    );
+    assert!(loose.diagnostics.is_empty());
+    assert_eq!(messages(&loose.warnings), ["2 glasses side by side outside a GlassGroup"]);
+    let grouped = glass(
+        "export function X() {\n  const ns = useNamespace();\n  return GlassGroup(HStack(Button(Text('a')).glass().glassID('a', ns), Button(Text('b')).glass().glassID('b', ns))).blend('xl');\n}\n",
+    );
+    assert!(grouped.diagnostics.is_empty(), "{:?}", messages(&grouped.diagnostics));
+    assert!(grouped.warnings.is_empty(), "{:?}", messages(&grouped.warnings));
+}
+
+#[test]
+fn an_icon_only_control_needs_a_label() {
+    let output = glass("export const x = () => Button(Icon(RiShareLine)).style('subtle');\n");
+    assert_eq!(messages(&output.diagnostics), ["an icon-only Button has no .label()"]);
+    let fab = glass("export const x = () => FAB(Icon(RiShareLine));\n");
+    assert_eq!(messages(&fab.diagnostics), ["an icon-only FAB has no .label()"]);
+    let labelled = glass("export const x = () => Button(Icon(RiShareLine)).label('Share');\n");
+    assert!(labelled.diagnostics.is_empty());
+    let worded = glass("export const x = () => Button(Icon(RiShareLine), Text('Share'));\n");
+    assert!(worded.diagnostics.is_empty());
+}
+
+#[test]
+fn a_glass_value_is_checked_through_its_methods_and_hoists() {
+    let output = glass("export function X() {\n  return HStack(Text('a')).glass(regular.interactive(false).tint('primary', 'subtle'));\n}\n");
+    assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
+    assert_eq!(output.hoisted, 1);
+    let wrong = glass("export const x = () => HStack().glass(regular.interactive(false).tint('blue'));\n");
+    assert_eq!(messages(&wrong.diagnostics), ["Unknown color token 'blue' for .tint()"]);
+}
