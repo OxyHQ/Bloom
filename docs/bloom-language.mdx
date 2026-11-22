@@ -618,8 +618,11 @@ HStack(Icon(RiRepeat2Line), Text('Reposted')).foreground('muted')
 ```
 
 - **Size** is a rung of Bloom's icon scale (`2xs` 8, `xs` 12, `sm` 16, `md` 20,
-  the default, `lg` 24, `xl` 28, `2xl` 32, `3xl` 48) or an app token
-  (`defineTokens({ iconSize: { context: 13 } })`).
+  the default, `lg` 24, `xl` 28, `2xl` 32, `3xl` 48), a numeric side carried
+  over from apps (`'10'` `'11'` `'13'` `'14'` `'15'` `'17'` `'18'` `'21'` `'22'`
+  `'40'` `'44'` `'64'` `'96'`: `.size('18')` is `<X width={18} height={18} />`),
+  or an app token (`defineTokens({ iconSize: { context: 13 } })`). An
+  `IconCircle` takes the named rungs only, as Bloom's `size` names them.
 - **Colour** is the foreground: the icon's own `.foreground()`, else the
   environment's, else `foreground`. A bare Bloom icon element paints
   `primary` when given no fill; a language icon follows the text around it,

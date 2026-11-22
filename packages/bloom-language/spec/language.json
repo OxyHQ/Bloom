@@ -154,7 +154,20 @@
       "lg": 24,
       "xl": 28,
       "2xl": 32,
-      "3xl": 48
+      "3xl": 48,
+      "10": 10,
+      "11": 11,
+      "13": 13,
+      "14": 14,
+      "15": 15,
+      "17": 17,
+      "18": 18,
+      "21": 21,
+      "22": 22,
+      "40": 40,
+      "44": 44,
+      "64": 64,
+      "96": 96
     },
     "avatarSize": {
       "xs": 20,
@@ -545,6 +558,7 @@
     ],
     "avatarColor": ["neutral", "blue", "lime", "pink"],
     "presence": ["online", "idle", "busy", "offline"],
+    "iconCircleSize": ["2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl"],
     "avatarLayout": ["stack", "row", "cluster", "conversation"],
     "avatarOverflow": ["count", "truncate"],
     "badgeStyle": ["solid", "subtle", "outlined", "onMedia"],
@@ -1769,7 +1783,7 @@
     "iconCircle": {
       "constructors": ["IconCircle"],
       "modifiers": ["size"],
-      "size": "iconSize"
+      "size": "iconCircleSize"
     },
     "loading": {
       "constructors": ["Loading"],

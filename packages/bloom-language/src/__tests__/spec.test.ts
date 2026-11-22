@@ -641,6 +641,7 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
       [BORDER_WIDTH as unknown as Record<string, number>, '', 1],
       [ROTATION, '', 1],
       [DURATION, '', 1],
+      [ICON_SIZE, '', 1],
     ];
     let checked = 0;
     for (const [scale, unit, factor] of scales) {
@@ -693,9 +694,11 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
   it('icon and avatar rungs match Bloom’s own tables', () => {
     // Both modules pull the theme provider at import, so their text is read.
     const icons = read('icons/shared.tsx');
-    for (const [name, size] of Object.entries(ICON_SIZE)) {
+    for (const [name, size] of Object.entries(named(ICON_SIZE))) {
       expect(icons).toMatch(new RegExp(`\\n\\s+'?${name}'?: ${size},`));
     }
+    // An IconCircle takes Bloom's named rungs, every one of them.
+    expect([...ENUMS.iconCircleSize]).toEqual(Object.keys(named(ICON_SIZE)));
     const avatars = read('avatar/initials.ts');
     for (const [name, size] of Object.entries(AVATAR_SIZE)) {
       expect(avatars).toMatch(new RegExp(`\\n\\s+${name}: ${size},`));
