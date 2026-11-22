@@ -34,7 +34,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:80",
@@ -70,7 +71,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:98",
@@ -110,7 +112,8 @@
   "within": [
    "@oxy.so/bloom/screen#Screen"
   ],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:119",
@@ -144,7 +147,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:141",
@@ -196,7 +200,8 @@
   "within": [
    "@oxy.so/bloom/screen#Screen"
   ],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:151",
@@ -241,7 +246,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:177",
@@ -303,7 +309,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:212",
@@ -375,7 +382,8 @@
   "within": [
    "@oxy.so/bloom/engagement-bar#EngagementBar"
   ],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:235",
@@ -433,7 +441,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:251",
@@ -494,7 +503,8 @@
    "gap-2"
   ],
   "within": [],
-  "themed": true
+  "themed": true,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:261",
@@ -540,7 +550,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:283",
@@ -587,7 +598,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:297",
@@ -635,7 +647,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:302",
@@ -688,7 +701,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:314",
@@ -737,7 +751,8 @@
   ],
   "classes": [],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Components.tsx:328",
@@ -792,7 +807,8 @@
   "within": [
    "@oxy.so/bloom/screen#Screen"
   ],
-  "themed": true
+  "themed": true,
+  "screen": false
  },
  {
   "name": "components/Rows.tsx:19",
@@ -834,7 +850,8 @@
    "text-muted-foreground"
   ],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Rows.tsx:41",
@@ -884,7 +901,43 @@
    "text-foreground"
   ],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/Rows.tsx:54 (false)",
+  "before": "<View className=\"gap-2 border-b border-border pb-3\">\n      {false ? <View className=\"h-10 w-full bg-muted\" /> : null}\n      {false && <View className=\"h-px bg-border\" />}\n      {<Hole n=\"2\" />}\n    </View>",
+  "after": "toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n=\"2\" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton"
+  ],
+  "classes": [
+   "gap-2",
+   "border-b",
+   "border-border",
+   "pb-3",
+   "h-10",
+   "w-full",
+   "bg-muted",
+   "h-px",
+   "bg-border"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Rows.tsx:54",
@@ -918,7 +971,8 @@
    "bg-border"
   ],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Rows.tsx:58",
@@ -953,7 +1007,8 @@
    "text-muted-foreground"
   ],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
  },
  {
   "name": "components/Rows.tsx:68",
@@ -992,6 +1047,171 @@
    "bg-card"
   ],
   "within": [],
-  "themed": false
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/Rows.tsx:77 (false)",
+  "before": "<Pressable\n      onPress={() => {}}\n      className={false ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'}\n    >\n      <Text className={`text-sm ${false ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}>\n        {'⟨0⟩'}\n      </Text>\n    </Pressable>",
+  "after": "toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "false",
+   "?",
+   "text-sm",
+   "${false",
+   "rounded-full",
+   "bg-primary",
+   "px-3",
+   "py-1.5",
+   "bg-muted",
+   "font-semibold",
+   "text-primary-foreground",
+   "font-medium",
+   "text-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/Rows.tsx:77",
+  "before": "<Pressable\n      onPress={() => {}}\n      className={true ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'}\n    >\n      <Text className={`text-sm ${true ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}>\n        {'⟨0⟩'}\n      </Text>\n    </Pressable>",
+  "after": "toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "true",
+   "?",
+   "text-sm",
+   "${true",
+   "rounded-full",
+   "bg-primary",
+   "px-3",
+   "py-1.5",
+   "bg-muted",
+   "font-semibold",
+   "text-primary-foreground",
+   "font-medium",
+   "text-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/SettingsRoute.tsx:13",
+  "before": "<Screen>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨0⟩'}</Text>\n      </Screen>",
+  "after": "LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText"
+  ],
+  "classes": [
+   "text-sm",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true
+ },
+ {
+  "name": "components/SettingsRoute.tsx:17",
+  "before": "<PageHeader title={'⟨0⟩'} />",
+  "after": "toElement(Header('⟨0⟩').inPage())",
+  "bindings": {
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "Header"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/SettingsRoute.tsx:19",
+  "before": "<Screen header={<Hole n=\"1\" />} scroll=\"content\">\n      <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>\n        <Text className=\"text-sm\">{'⟨0⟩'}</Text>\n      </ScreenScrollView>\n    </Screen>",
+  "after": "ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n=\"1\" />)).screenScroll('content')",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "Header",
+   "toElement",
+   "ScrollView",
+   "Embed"
+  ],
+  "classes": [
+   "text-sm"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true
  }
 ]

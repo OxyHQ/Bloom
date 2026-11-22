@@ -3,6 +3,7 @@ import * as RN from 'react-native';
 import * as L from '@oxy.so/bloom-language';
 import { toElement } from '@oxy.so/bloom-language';
 import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';
+import { ScreenHost } from '../../../bloom-language/src/router/screen-host';
 import { SettingsSection as I0 } from '@oxy.so/bloom/settings-modal';
 import { GroupedSection as I1 } from '@oxy.so/bloom/grouped-section';
 import { GroupedSectionItem as I2 } from '@oxy.so/bloom/grouped-section';
@@ -302,6 +303,15 @@ export const CASES = [
     after: () => { const View = I9; const Text = I41; const Switch = I3; const Button = I13; const RiArrowRightLine = I42; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
+    name: "components/Rows.tsx:54 (false)",
+    before: () => { const View = I9; return (<View className="gap-2 border-b border-border pb-3">
+      {false ? <View className="h-10 w-full bg-muted" /> : null}
+      {false && <View className="h-px bg-border" />}
+      {<Hole n="2" />}
+    </View>); },
+    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))); },
+  },
+  {
     name: "components/Rows.tsx:54",
     before: () => { const View = I9; return (<View className="gap-2 border-b border-border pb-3">
       {true ? <View className="h-10 w-full bg-muted" /> : null}
@@ -324,5 +334,50 @@ export const CASES = [
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
     after: () => { const View = I9; const NativeText = I43; const Text = I41; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+  },
+  {
+    name: "components/Rows.tsx:77 (false)",
+    before: () => { const Pressable = I40; const Text = I41; return (<Pressable
+      onPress={() => {}}
+      className={false ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'}
+    >
+      <Text className={`text-sm ${false ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}>
+        {'⟨0⟩'}
+      </Text>
+    </Pressable>); },
+    after: () => { const Pressable = I40; const Text = I41; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+  },
+  {
+    name: "components/Rows.tsx:77",
+    before: () => { const Pressable = I40; const Text = I41; return (<Pressable
+      onPress={() => {}}
+      className={true ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'}
+    >
+      <Text className={`text-sm ${true ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}>
+        {'⟨0⟩'}
+      </Text>
+    </Pressable>); },
+    after: () => { const Pressable = I40; const Text = I41; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+  },
+  {
+    name: "components/SettingsRoute.tsx:13",
+    before: () => { const Screen = I11; const Text = I41; return (<Screen>
+        <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
+      </Screen>); },
+    after: () => { const Screen = I11; const Text = I41; const { Text: LText } = L; return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)} />); },
+  },
+  {
+    name: "components/SettingsRoute.tsx:17",
+    before: () => { const PageHeader = I38; return (<PageHeader title={'⟨0⟩'} />); },
+    after: () => { const PageHeader = I38; const { Text: LText, Header } = L; return (toElement(Header('⟨0⟩').inPage())); },
+  },
+  {
+    name: "components/SettingsRoute.tsx:19",
+    before: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I41; return (<Screen header={<Hole n="1" />} scroll="content">
+      <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+        <Text className="text-sm">{'⟨0⟩'}</Text>
+      </ScreenScrollView>
+    </Screen>); },
+    after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I41; const { Text: LText, Header, toElement, ScrollView, Embed } = L; return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
   },
 ];
