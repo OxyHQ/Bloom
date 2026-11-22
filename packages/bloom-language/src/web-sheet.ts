@@ -134,3 +134,19 @@ export function adoptVariantClasses(condition: LiveCondition, names: readonly st
   for (const [joined, { css }] of drawn)
     if (joined.includes('+')) adoptStyleSheet(`bloom-language-${variantSuffix(joined)}`, css);
 }
+
+/**
+ * The language's sheets as server-rendered HTML takes them, in the order
+ * they are adopted: the generated sheet, then each live condition's variant
+ * sheet that has drawn a class (the same ids `adoptVariantClasses` adopts).
+ */
+export function languageSheets(): (readonly [id: string, css: string])[] {
+  const sheets: (readonly [string, string])[] = [['bloom-language', WEB_SHEET]];
+  for (const live of LIVE_ORDER) {
+    const css = drawn.get(live)?.css;
+    if (css) sheets.push([`bloom-language-${live}`, css]);
+  }
+  for (const [joined, { css }] of drawn)
+    if (joined.includes('+') && css) sheets.push([`bloom-language-${variantSuffix(joined)}`, css]);
+  return sheets;
+}

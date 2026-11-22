@@ -11,6 +11,7 @@ import { useRouter } from '@oxy.so/bloom/panel-routing/expo-router';
 
 import { EnvContext, navigatorEnv, type Env } from '../env';
 import type { Child } from '../node';
+import { LanguageStyles } from '../render';
 import { drawNavigation } from './navigators';
 import { ScreenHost } from './screen-host';
 
@@ -39,7 +40,12 @@ export function layout(body: () => Child): ComponentType {
   // biome-ignore lint/correctness/noComponentHookFactories: layout() defines one route component per call by design
   function Layout(): ReactNode {
     const env = useNavigatorEnv();
-    return <EnvContext.Provider value={env}>{drawNavigation(body())}</EnvContext.Provider>;
+    // The outermost layout writes the language's sheets into server-rendered HTML.
+    return (
+      <LanguageStyles>
+        <EnvContext.Provider value={env}>{drawNavigation(body())}</EnvContext.Provider>
+      </LanguageStyles>
+    );
   }
   Layout.displayName = body.name || 'Layout';
   return Layout;

@@ -1,4 +1,5 @@
 import {
+  createContext,
   createElement,
   Fragment,
   useContext,
@@ -201,7 +202,7 @@ import {
 } from './tokens';
 import { deriveEnv, EnvContext, materialEnv, type Env } from './env';
 import type { TextTraits } from './style';
-import { adoptLanguageSheet } from './web-sheet';
+import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
   MotionWrapper,
   Presence,
@@ -221,7 +222,7 @@ import {
 } from './motion/motion-node';
 import { TextRoll } from './motion/text-roll';
 import { resolveAnchor, resolveDelay, resolveRotation, resolveScale } from './motion/tokens';
-import { PRESS_HOST_STYLE } from '@oxy.so/bloom/styles';
+import { PRESS_HOST_STYLE, ServerStyleSheet } from '@oxy.so/bloom/styles';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -2971,6 +2972,29 @@ function LanguageRoot({ node }: RootProps): ReactNode {
   return renderChild(node, { env, provided: env, animation: undefined }, undefined);
 }
 LanguageRoot.displayName = 'BloomLanguage';
+
+/** Whether a `LanguageStyles` around this point writes the sheets into server-rendered HTML. */
+const SheetsWritten = createContext(false);
+
+/**
+ * The web: the language's sheets in server-rendered HTML, for an app that
+ * renders on a server with Bloom's `ssrStyles` (which `ServerStyleSheet`
+ * reads). It goes around the app once, as the router's `layout()` does
+ * itself: it draws `children`, then the generated sheet and each variant
+ * sheet the tree drew, so the page is styled before it hydrates. One inside
+ * another writes nothing; without a server policy, and once hydrated,
+ * `ServerStyleSheet` writes nothing and adopts the same sheets the renderer
+ * does. Native draws `children`.
+ */
+export function LanguageStyles({ children }: { children?: ReactNode }): ReactNode {
+  const written = useContext(SheetsWritten);
+  if (!IS_WEB || written) return children;
+  return draw(SheetsWritten.Provider, { value: true }, children, draw(LanguageSheets, null));
+}
+
+function LanguageSheets(): ReactNode {
+  return languageSheets().map(([id, css]) => draw(ServerStyleSheet, { key: id, id, css }));
+}
 
 /**
  * A language tree as a React element, for JSX. A bare `view()` node mounts its
