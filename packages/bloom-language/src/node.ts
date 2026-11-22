@@ -147,6 +147,7 @@ import type { MenuItemKind } from './controls/menu-item';
 import type { CartKind } from './controls/cart-panel';
 import type { PaymentStatusKind } from './controls/payment-status';
 import type { PriceBreakdownKind } from './controls/price-breakdown';
+import type { CreatorStudioKind } from './controls/creator-studio';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -315,6 +316,8 @@ import {
   type PaymentStatusStyle,
   type PriceLineTone,
   type PipelineLayout,
+  type ReleaseCardLayout,
+  type ReleaseStatusBadgeSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1265,7 +1268,8 @@ export type Modifier =
         | SidebarSize
         | ShareSheetSize
         | MediaCardSize
-        | LyricsSize;
+        | LyricsSize
+        | ReleaseStatusBadgeSize;
     }
   | {
       readonly kind: 'style';
@@ -1324,7 +1328,8 @@ export type Modifier =
         | ChoiceListStyle
         | PaymentStatusStyle
         | PipelineLayout
-        | MediaCardLayout;
+        | MediaCardLayout
+        | ReleaseCardLayout;
     }
   | {
       readonly kind: 'shape';
@@ -1641,7 +1646,8 @@ export type NodeKind =
   | MenuItemKind
   | VendorCardKind
   | MediaCardKind
-  | LyricsKind;
+  | LyricsKind
+  | CreatorStudioKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1968,7 +1974,8 @@ export class Node {
       | SidebarSize,
       | ShareSheetSize
       | MediaCardSize
-      | LyricsSize,
+      | LyricsSize
+      | ReleaseStatusBadgeSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -2027,7 +2034,8 @@ export class Node {
       | ChoiceListStyle
       | PaymentStatusStyle
       | PipelineLayout
-      | MediaCardLayout,
+      | MediaCardLayout
+      | ReleaseCardLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
