@@ -12,6 +12,7 @@ import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 import { ConversationSidebar } from '@oxy.so/bloom/conversation-sidebar';
 import { Questionnaire } from '@oxy.so/bloom/questionnaire';
 import { withAlpha } from '@oxy.so/bloom/theme';
+import { RiChat3Line, RiRobot2Line } from '@oxy.so/bloom/icons';
 import { Text } from '@oxy.so/bloom/typography';
 import { UsageCard } from '@oxy.so/bloom/usage-card';
 
@@ -65,6 +66,12 @@ const CONVERSATIONS = [
   },
   { id: 'c2', title: 'Budget', description: 'Q3', agents: [], pinned: true },
 ];
+const SIDEBAR = { activeId: 'c1', onSelect: press, onCreate: press };
+const MODES = [
+  { key: 'chats', label: 'Chats', icon: RiChat3Line },
+  { key: 'agents', label: 'Agents', icon: RiRobot2Line },
+];
+const TEAM = { name: 'Oxy' };
 
 export const AGENT_CASES: ParityCase[] = [
   {
@@ -141,7 +148,7 @@ export const AGENT_CASES: ParityCase[] = [
     name: 'AgentProgressLoadingText a variant, one line',
     language: () =>
       toElement(
-        L.AgentProgressLoadingText('Searching flights', { variant: 'caption-1-medium' }).lines(1),
+        L.AgentProgressLoadingText('Searching flights').textVariant('caption-1-medium').lines(1),
       ),
     bloom: () => (
       <AgentProgressLoadingText variant="caption-1-medium" numberOfLines={1}>
@@ -226,6 +233,25 @@ export const AGENT_CASES: ParityCase[] = [
       </ComposerLoader>
     ),
   },
+  ...ENUMS.blend.map((blend) => ({
+    name: `ComposerLoader blend ${blend}`,
+    language: () => toElement(L.ComposerLoader(L.Text('Composer'), { paused: true }).blend(blend)),
+    bloom: () => (
+      <ComposerLoader paused blend={blend}>
+        <Text>Composer</Text>
+      </ComposerLoader>
+    ),
+  })),
+  ...[true, false].map((on) => ({
+    name: `ComposerLoader ${on ? 'the bloom alone, no surface' : 'line and bloom, a surface'}`,
+    language: () =>
+      toElement(L.ComposerLoader(L.Text('Composer'), { paused: true }).bloomOnly(on).surface(!on)),
+    bloom: () => (
+      <ComposerLoader paused bloomOnly={on} surface={!on}>
+        <Text>Composer</Text>
+      </ComposerLoader>
+    ),
+  })),
   {
     name: 'ComposerLoader four colours: roles, a role at an opacity, an app colour',
     language: () =>
@@ -266,6 +292,105 @@ export const AGENT_CASES: ParityCase[] = [
       />
     ),
   },
+  ...ENUMS.sidebarVariant.flatMap((variant) =>
+    ENUMS.sidebarSize.map((size) => ({
+      name: `ConversationSidebar ${variant} ${size}`,
+      language: () =>
+        toElement(L.ConversationSidebar(CONVERSATIONS, SIDEBAR).style(variant).size(size)),
+      bloom: () => (
+        <ConversationSidebar
+          conversations={CONVERSATIONS}
+          {...SIDEBAR}
+          variant={variant}
+          size={size}
+        />
+      ),
+    })),
+  ),
+  ...ENUMS.sidebarSurface.flatMap((surface) =>
+    ENUMS.scrollbarSide.map((side) => ({
+      name: `ConversationSidebar ${surface}, scrollbar ${side}`,
+      language: () =>
+        toElement(
+          L.ConversationSidebar(CONVERSATIONS, SIDEBAR).sidebarSurface(surface).scrollbarSide(side),
+        ),
+      bloom: () => (
+        <ConversationSidebar
+          conversations={CONVERSATIONS}
+          {...SIDEBAR}
+          surface={surface}
+          scrollbarSide={side}
+        />
+      ),
+    })),
+  ),
+  ...ENUMS.contentAlignment.flatMap((alignment) =>
+    ENUMS.primaryActionPlacement.map((placement) => ({
+      name: `ConversationSidebar content ${alignment}, primary action ${placement}`,
+      language: () =>
+        toElement(
+          L.ConversationSidebar(CONVERSATIONS, SIDEBAR)
+            .contentAlignment(alignment)
+            .primaryActionPlacement(placement),
+        ),
+      bloom: () => (
+        <ConversationSidebar
+          conversations={CONVERSATIONS}
+          {...SIDEBAR}
+          contentAlignment={alignment}
+          primaryActionPlacement={placement}
+        />
+      ),
+    })),
+  ),
+  ...ENUMS.railLabels.flatMap((labels) =>
+    ENUMS.railSelection.map((selection) => ({
+      name: `ConversationSidebar rail, labels ${labels}, selection ${selection}`,
+      language: () =>
+        toElement(
+          L.ConversationSidebar(CONVERSATIONS, SIDEBAR)
+            .style('rail')
+            .railLabels(labels)
+            .railSelection(selection),
+        ),
+      bloom: () => (
+        <ConversationSidebar
+          conversations={CONVERSATIONS}
+          {...SIDEBAR}
+          variant="rail"
+          railLabels={labels}
+          railSelection={selection}
+        />
+      ),
+    })),
+  ),
+  ...ENUMS.modesPresentation.flatMap((presentation) =>
+    ENUMS.teamPlacement.map((placement) => ({
+      name: `ConversationSidebar modes ${presentation}, team in the ${placement}`,
+      language: () =>
+        toElement(
+          L.ConversationSidebar(CONVERSATIONS, {
+            ...SIDEBAR,
+            modes: MODES,
+            mode: 'chats',
+            team: TEAM,
+          })
+            .modesPresentation(presentation)
+            .teamPlacement(placement),
+        ),
+      bloom: () => (
+        <ConversationSidebar
+          conversations={CONVERSATIONS}
+          {...SIDEBAR}
+          modes={MODES}
+          mode="chats"
+          team={TEAM}
+          modesPresentation={presentation}
+          teamPlacement={placement}
+        />
+      ),
+    })),
+  ),
   {
     name: 'Questionnaire',
     language: () => toElement(L.Questionnaire(QUESTIONS, { onComplete: press })),

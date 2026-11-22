@@ -854,7 +854,6 @@ export type {
   AgentLogToolCallsView,
   AgentLogWorkingRowOptions,
   AgentLogWorkingRowView,
-  AgentProgressLoadingTextOptions,
   AgentProgressLoadingTextView,
   AgentProgressOptions,
   AgentProgressView,
