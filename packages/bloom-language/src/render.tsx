@@ -148,7 +148,7 @@ import {
 import { StateHost } from './state-host';
 import { CONTROLS } from './controls';
 import type { ControlRenderer } from './controls/draw';
-import { presentAround } from './controls/overlays';
+import { drawDialog, presentAround } from './controls/overlays';
 import {
   STATES,
   both,
@@ -965,6 +965,7 @@ function drawNode(
       : { env, provided: ctx.provided, animation, inText: ctx.inText };
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
+  if (node.kind === 'dialog') return drawPresentedDialog(node, p, inner, reactKey);
   const layers = p.layers;
   // A Bloom component's hit testing on the web is a view of its own around it:
   // react-native-web drops an inline `pointerEvents`. (Its variants are its own
@@ -2394,6 +2395,27 @@ function renderHost(
       });
     }
   }
+}
+
+/**
+ * `Dialog(...).presented(binding)`: Bloom's Dialog in place, drawn as
+ * `.dialog(binding, Dialog(...))` draws it beside its view. Every modifier of
+ * a dialog is its own (`drawDialog` reads them), so none is a box around it.
+ */
+function drawPresentedDialog(
+  node: Node,
+  p: Plan,
+  inner: Context,
+  key: string | number | undefined,
+): ReactElement {
+  const presented = ownValue(p, 'presented');
+  if (presented === undefined)
+    throw new Error('bloom-language: a Dialog is a view only with .presented(isPresented)');
+  return drawDialog(
+    { isPresented: presented.value, content: node },
+    (children) => renderChildren(children, inner),
+    key,
+  );
 }
 
 /**

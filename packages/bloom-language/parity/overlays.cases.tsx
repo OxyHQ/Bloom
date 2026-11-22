@@ -514,9 +514,82 @@ const more: ParityCase[] = [
   },
 ];
 
+/**
+ * A dialog that is a view of its own (`.presented(binding)`): Bloom's Dialog in
+ * place, as a component that is a dialog returns it, its `open` and `onClose`
+ * handed in by the caller.
+ */
+const presentedDialogs: ParityCase[] = [
+  ...([false, true] as const).map((open) => ({
+    name: `presented dialog ${open ? 'open' : 'closed'}`,
+    // Closed, Bloom's Dialog draws nothing on the web: the claim is that the node draws nothing too.
+    ...(open ? {} : { drawsNothing: ['web'] as const }),
+    language: () =>
+      toElement(O.Dialog(L.Text('Body')).title('Edit profile').presented([open, setOpen])),
+    bloom: () => (
+      <Dialog open={open} onClose={() => setOpen()} title="Edit profile">
+        <Text>Body</Text>
+      </Dialog>
+    ),
+  })),
+  {
+    name: 'presented dialog with its width, padding, placement and actions: none a box',
+    language: () =>
+      toElement(
+        O.Dialog(L.Text('Body'))
+          .label('Sources')
+          .message('Where it came from.')
+          .frame({ maxWidth: '400' })
+          .padding('none')
+          .presentAt('bottom', { md: 'center' })
+          .header({ title: 'Sources' })
+          .buttons([{ label: 'Done', onPress: confirm }])
+          .dismissOnBackdrop(false)
+          .testID('sources')
+          .presented([true, setOpen]),
+      ),
+    bloom: () => (
+      <Dialog
+        open
+        onClose={() => setOpen()}
+        label="Sources"
+        description="Where it came from."
+        maxWidth={400}
+        contentPadding={0}
+        placement={{ base: 'bottom', md: 'center' }}
+        header={{ title: 'Sources' }}
+        actions={[{ label: 'Done', onPress: confirm }]}
+        dismissOnBackdrop={false}
+        testID="sources"
+      >
+        <Text>Body</Text>
+      </Dialog>
+    ),
+  },
+  {
+    name: 'presented dialog in a stack, beside the button that opens it',
+    language: () =>
+      toElement(
+        L.VStack(
+          OPEN,
+          O.Dialog(L.Text('Body')).title('Edit profile').presented([true, setOpen]),
+        ).spacing('md'),
+      ),
+    bloom: () => (
+      <View style={{ gap: space.md }}>
+        <OpenButton />
+        <Dialog open onClose={() => setOpen()} title="Edit profile">
+          <Text>Body</Text>
+        </Dialog>
+      </View>
+    ),
+  },
+];
+
 export const OVERLAY_CASES: ParityCase[] = [
   ...alerts,
   ...dialogs,
+  ...presentedDialogs,
   ...popovers,
   ...feedback,
   ...more,

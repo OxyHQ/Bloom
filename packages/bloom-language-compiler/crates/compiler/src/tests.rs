@@ -582,6 +582,21 @@ fn wave_two_controls_are_checked() {
     }
 }
 
+#[test]
+fn a_presented_dialog_is_checked_against_the_spec() {
+    let imports = "import { Dialog, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "dialog.tsx");
+    let fine = check(
+        "export const D = (open, close) => Dialog(Text('a')).title('Edit').label('Edit').frame({ maxWidth: '400' }).padding('none').presentAt('bottom', { md: 'center' }).presented([open, close]);\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let bare = check("export const D = () => Dialog(Text('a')).presented();\n");
+    assert_eq!(first_message(&bare), Some(".presented() takes 1 argument(s), not 0"));
+    // A dialog's modifiers are its own: a box modifier of a view is none of them.
+    let box_ = check("export const D = (b) => Dialog(Text('a')).background('card').presented(b);\n");
+    assert_eq!(first_message(&box_), Some("Dialog has no modifier .background()"));
+}
+
 /// The app chrome's constructors, imported as a screen file imports them.
 const CHROME: &str = "import { SettingsSection, SettingsValue, SettingsSelect, SettingsTextField, SettingsDateField, SidebarMode, AutoHideBar, ResizeHandle, ScrollArea, ScrollSurface, StickySection, Toolbar, AppLayout, Destination, Panel, Stack, BottomSheet, Command, CommandGroup, CommandItem, NavItem, SettingsGroup, SettingsItem, SettingsModal, PageFooter, Rail, RailItem, ScrollView, Sidebar, Text, TreeFolder, TreeItem, TreeSection } from '@oxy.so/bloom-language';\n";
 

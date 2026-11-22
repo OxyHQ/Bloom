@@ -6228,7 +6228,8 @@ export const NODE_MODIFIERS = {
     "frame",
     "padding",
     "sideGutter",
-    "maxHeightRatio"
+    "maxHeightRatio",
+    "presented"
   ],
   "popover": [
     "label",
