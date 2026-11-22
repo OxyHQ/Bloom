@@ -71,8 +71,6 @@ const TRACKED = new Set(
  * with what differs. They stay JSX until the language or the table changes.
  */
 function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
-  if (/^-?space-[xy]-/.test(utility))
-    return 'Tailwind spaces children with margins on each of them (`> * + *`); .spacing() is a gap';
   if (utility === 'z-auto')
     return 'z-index: auto, over react-native-web’s z-index 0 for a view; the language writes nothing';
   if (utility === 'truncate')
@@ -282,6 +280,14 @@ export function resolveClassName(
     const different = measuredDifference(utility, entry.mods ?? []);
     if (different) {
       fail(token, 'measured-difference', different);
+      continue;
+    }
+    if (conditions.length > 0 && entry.mods?.some((m) => m.name === 'childSpacing')) {
+      fail(
+        token,
+        'child-spacing-variant',
+        'a child spacing under a condition: its rule reaches the children, which a when() class does not',
+      );
       continue;
     }
     const into = group(conditions);

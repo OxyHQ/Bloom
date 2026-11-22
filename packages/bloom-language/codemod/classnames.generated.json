@@ -969,7 +969,7 @@
    "count": 42,
    "apps": 4,
    "status": "mapped",
-   "language": ".spacing('sm')"
+   "language": ".childSpacing('vertical', 'sm')"
   },
   "border-primary": {
    "count": 41,
@@ -1034,8 +1034,8 @@
   "gap-x-4": {
    "count": 37,
    "apps": 9,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "px-1.5": {
    "count": 37,
@@ -1280,8 +1280,8 @@
   "gap-y-1": {
    "count": 29,
    "apps": 8,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "max-w-[1200px]": {
    "count": 29,
@@ -1347,7 +1347,7 @@
    "count": 27,
    "apps": 2,
    "status": "mapped",
-   "language": ".spacing('md')"
+   "language": ".childSpacing('vertical', 'md')"
   },
   "w-16": {
    "count": 27,
@@ -1395,7 +1395,7 @@
    "count": 25,
    "apps": 2,
    "status": "mapped",
-   "language": ".spacing('lg')"
+   "language": ".childSpacing('vertical', 'lg')"
   },
   "w-56": {
    "count": 25,
@@ -1419,7 +1419,7 @@
    "count": 24,
    "apps": 2,
    "status": "mapped",
-   "language": ".spacing('xs')"
+   "language": ".childSpacing('vertical', 'xs')"
   },
   "text-error-text": {
    "count": 24,
@@ -2298,14 +2298,14 @@
   "gap-y-2": {
    "count": 11,
    "apps": 7,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-y-5": {
    "count": 11,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "h-40": {
    "count": 11,
@@ -2529,7 +2529,7 @@
    "count": 10,
    "apps": 2,
    "status": "mapped",
-   "language": ".spacing('2xl')"
+   "language": ".childSpacing('vertical', '2xl')"
   },
   "text-sectionTitle": {
    "count": 10,
@@ -2852,8 +2852,8 @@
   "gap-x-3": {
    "count": 8,
    "apps": 3,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "inset-y-0": {
    "count": 8,
@@ -3852,8 +3852,8 @@
   "gap-y-3": {
    "count": 5,
    "apps": 4,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "h-20": {
    "count": 5,
@@ -4059,7 +4059,7 @@
    "count": 5,
    "apps": 1,
    "status": "mapped",
-   "language": ".spacing('xl')"
+   "language": ".childSpacing('vertical', 'xl')"
   },
   "text-[12.5px]": {
    "count": 5,
@@ -4593,13 +4593,13 @@
    "count": 4,
    "apps": 2,
    "status": "mapped",
-   "language": ".spacing('6')"
+   "language": ".childSpacing('vertical', '6')"
   },
   "space-y-2.5": {
    "count": 4,
    "apps": 1,
    "status": "mapped",
-   "language": ".spacing('10')"
+   "language": ".childSpacing('vertical', '10')"
   },
   "text-[#5b6573]": {
    "count": 4,
@@ -5022,8 +5022,8 @@
   "gap-x-6": {
    "count": 3,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "grid-cols-6": {
    "count": 3,
@@ -6332,20 +6332,20 @@
   "gap-x-2": {
    "count": 2,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-x-5": {
    "count": 2,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-x-8": {
    "count": 2,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "group-focus-within/menu-item:opacity-100": {
    "count": 2,
@@ -7259,7 +7259,7 @@
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".spacing('2xs')"
+   "language": ".childSpacing('vertical', '2xs')"
   },
   "start-3": {
    "count": 2,
@@ -8872,38 +8872,38 @@
   "gap-x-1": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-x-24": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-x-space-8": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-y-1.5": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-y-12": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gap-y-space-4": {
    "count": 1,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "modifier",
+   "language": "one spacing per axis (gap-x, gap-y)"
   },
   "gemies": {
    "count": 1,
@@ -11359,13 +11359,13 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".spacing('4xl')"
+   "language": ".childSpacing('vertical', '4xl')"
   },
   "space-y-8": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".spacing('3xl')"
+   "language": ".childSpacing('vertical', '3xl')"
   },
   "spinner": {
    "count": 1,

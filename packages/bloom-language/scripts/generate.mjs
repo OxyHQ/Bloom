@@ -322,6 +322,25 @@ for (const value of [...numbers(scales.corner), 'calc(infinity * 1px)']) {
     valueClass(`border${corner}Radius`, value);
 }
 valueClass('overflow', 'hidden');
+// `.childSpacing()`: Tailwind's space-x/space-y rule, word for word, on the children of
+// the view that has the class (style.ts, layoutStyle). Its own key: no React Native style has it.
+for (const value of spaceValues) {
+  for (const [key, axis, side] of [
+    ['childSpacingX', 'x', 'inline'],
+    ['childSpacingY', 'y', 'block'],
+  ]) {
+    const id = `${key}:${value}`;
+    if (classes[id]) continue;
+    const name = `bl${hash(id)}`;
+    const reverse = `var(--tw-space-${axis}-reverse)`;
+    rules.push({
+      order: LOGICAL_ORDER,
+      name,
+      text: `:where(.${name} > :not(:last-child)){--tw-space-${axis}-reverse:0;margin-${side}-start:calc(${value}px * ${reverse});margin-${side}-end:calc(${value}px * calc(1 - ${reverse}));}`,
+    });
+    classes[id] = name;
+  }
+}
 for (const value of numbers(scales.opacity)) valueClass('opacity', value);
 // Borders: react-native-web's hairline is 1px.
 for (const edge of ['', 'Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {

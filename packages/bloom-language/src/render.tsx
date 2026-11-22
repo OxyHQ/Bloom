@@ -1983,6 +1983,7 @@ function renderHost(
       const { axis } = node.props as StackProps;
       const layout = {
         spacing: ownValue(p, 'spacing')?.value,
+        childSpacing: ownValue(p, 'childSpacing')?.value,
         align: ownValue(p, 'align')?.value,
         justify: ownValue(p, 'justify')?.value,
         wrap: ownValue(p, 'wrap')?.value,
@@ -1990,7 +1991,7 @@ function renderHost(
       };
       // Web: an HTML list, each child a row behind the marker. Native has no markers.
       const marker = IS_WEB ? ownValue(p, 'listMarker')?.value : undefined;
-      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layerKey}|${flex}`;
+      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layerKey}|${flex}`;
       const out = cachedStyle(
         'host',
         styleKey,

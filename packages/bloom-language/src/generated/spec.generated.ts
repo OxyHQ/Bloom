@@ -2645,6 +2645,10 @@ export const MODIFIERS = {
     "edge?",
     "padding"
   ],
+  "childSpacing": [
+    "axis",
+    "space"
+  ],
   "scale": [
     "scale"
   ],
@@ -4599,6 +4603,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "spacing",
+    "childSpacing",
     "align",
     "justify",
     "wrap",
