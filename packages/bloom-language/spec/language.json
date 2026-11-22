@@ -1589,6 +1589,7 @@
     "stickyIndices": ["value"],
     "restorationKey": ["value"],
     "tuning": ["value"],
+    "screen": ["value?"],
     "onSelectAll": ["value"],
     "onClear": ["value"],
     "groupSize": ["value"],
@@ -3052,7 +3053,11 @@
         "headerContent",
         "footerContent",
         "emptyState",
-        "tuning"
+        "tuning",
+        "screen",
+        "scrollbar",
+        "scrollDismissesKeyboard",
+        "keyboardTaps"
       ]
     },
     "listSelectionBar": {

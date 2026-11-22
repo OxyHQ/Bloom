@@ -3729,6 +3729,9 @@ export const MODIFIERS = {
   "tuning": [
     "value"
   ],
+  "screen": [
+    "value?"
+  ],
   "onSelectAll": [
     "value"
   ],
@@ -11767,7 +11770,11 @@ export const NODE_MODIFIERS = {
     "headerContent",
     "footerContent",
     "emptyState",
-    "tuning"
+    "tuning",
+    "screen",
+    "scrollbar",
+    "scrollDismissesKeyboard",
+    "keyboardTaps"
   ],
   "listSelectionBar": [
     "padding",

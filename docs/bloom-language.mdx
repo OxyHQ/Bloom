@@ -1954,7 +1954,7 @@ layout with these modifiers, not a box of their own.
 ListItem('Ana Lima').supporting('Design lead').prefix(Avatar(ana.avatar)).onPress(open)
 ConversationRow(chat).active(chat.id === openId).swipeActions({ right: archive })
 List(entries).separator('inset').emptyState(Text('Nobody yet'))
-VirtualList(messages, messageRow).itemKey(byId).estimatedItemSize(72).onEndReached(loadMore)
+VirtualList(messages, messageRow).itemKey(byId).estimatedItemSize(72).onEndReached(loadMore).screen()
 ListSelectionBar(selected.length, total).selecting(true).rowActions(bulk, run)
 ```
 
@@ -1976,14 +1976,26 @@ full?)`, `.swipeEnabled()` and `.contextMenu(view)`. `PersonRow`, `CallRow`,
 `.emptyState()`, `.loading()` and `.loadingRows(n)`.
 
 `VirtualList(data, row)` is Bloom's: FlashList (or FlatList) on native, the
-virtualizer on the web. `row(item, index)` returns the item's view; keep it
-stable (module scope, or a `useCallback`), and the list keeps its `renderItem`,
-so the engine re-renders a row only when its item changes, as with JSX. It takes
-`.itemKey()`, `.itemType()` (FlashList's recycling type),
+virtualizer on the web. `row({ item, index })` returns the item's view: it is
+handed FlashList's `renderItem` argument as Bloom passes it, so an app's
+`renderPost` reads what it read before (`(info) => Embed(renderPost(info))`).
+Keep it stable (module scope, or a `useCallback`), and the list keeps its
+`renderItem`, so the engine re-renders a row only when its item changes, as with
+JSX. It takes `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
 `.refreshable([refreshing, setRefreshing])`, `.stickyIndices()`,
-`.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()` and
-`.tuning({...})` (the engine's own knobs). `ListSelectionBar(count, total)`
+`.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()`,
+`.screen(options?)` (Bloom's `screen`, `{}` by default: the list is its screen's
+scroller, binding the header's fade, the bottom bar's fold, the reselect and the
+insets, without a `ScrollView` around it; it must be inside a screen),
+`.scrollbar('scroll' | 'hover' | 'always' | 'never')` (the native indicator; the
+web's bar is the screen's scroller's), `.keyboardTaps()` and
+`.scrollDismissesKeyboard()` (`keyboardShouldPersistTaps` and
+`keyboardDismissMode`, as a `ScrollView`'s), and `.tuning({...})`: the engine's
+own knobs, each as Bloom takes it (`overscan`, the web's rows beyond the
+viewport; `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize`,
+`initialNumToRender`, `recycleItems`, `maintainVisibleContentPosition`,
+`drawDistance`, `maxItemsInRecyclePool`). `ListSelectionBar(count, total)`
 takes `.selecting()`, `.onSelectAll()`, `.onClear()`, `.rowActions()` and
 `.labels()`.
 
