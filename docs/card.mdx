@@ -107,10 +107,7 @@ uses it.
 
 Hand-rolling the chrome means hand-rolling the platform split too, and the
 usual result is a `Platform.OS` branch with slightly different numbers from the
-one next to it. Worse, on web it is tempting to reach for classes —
-`border border-border bg-card` — which are **inert until the consumer wires the
-Tailwind pipeline**. That failure is silent: the card renders as an unbordered
-transparent block, nothing throws, and it looks like a spacing bug.
+one next to it.
 
 `Card` resolves border, radius and shadow from tokens and delegates fill to Surface,
 so the surface paints with or without a consumer's CSS pipeline.
