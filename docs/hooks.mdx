@@ -24,10 +24,8 @@ const { state: pressed, onIn, onOut } = useInteractionState();
 <Pressable onPressIn={onIn} onPressOut={onOut} style={[base, pressed && dim]}>
 ```
 
-Bloom uses this rather than `Pressable`'s function-form `style`, which
-NativeWind's css-interop swallows — taking the base container style (background,
-radius, border, shadow) with it. That failure is silent and total: the component
-renders unstyled and nothing errors.
+Bloom uses this rather than `Pressable`'s function-form `style`, so the pressed
+state is ordinary component state that any style can read.
 
 ## `useDelayedLoading`
 

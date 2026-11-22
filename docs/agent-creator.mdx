@@ -21,7 +21,7 @@ const [agent, setAgent] = useState<AgentCreatorAgent>({
 <AgentCreator agent={agent} onChange={setAgent} onClose={closePanel} />;
 ```
 
-Mount under `BloomProvider` and give the editor a bounded height. Layout classes resolve through Bloom's styled primitives; web consumers must scan Bloom's built `lib/` in their NativeWind/Tailwind pipeline.
+Mount under `BloomProvider` and give the editor a bounded height. It needs no NativeWind or Tailwind.
 
 ## Appearance
 
