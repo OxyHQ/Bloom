@@ -785,6 +785,50 @@ fn the_rest_of_the_layout_family_is_checked_against_the_spec() {
 }
 
 #[test]
+fn a_bars_band_and_a_surfaces_fade_are_colours_and_its_timings_tokens() {
+    let fine = chrome(
+        "export const L = (brand) => [ScrollSurface(Text('a')).fade('background'), ScrollSurface(Text('a')).fade('card/half'), ScrollSurface(Text('a')).fade(brand), AutoHideBar(Text('bar')).band('card').band(brand).peekDelay('fast').unpeekDelay('250').hideMotion('dismiss').showMotion('expand')];\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let cases = [
+        (
+            "ScrollSurface(Text('a')).fade('backgrond')",
+            "Unknown color token 'backgrond' for .fade()",
+            Some("background"),
+        ),
+        ("AutoHideBar(Text('a')).band('#ffffff')", "Unknown color token '#ffffff' for .band()", None),
+        (
+            "AutoHideBar(Text('a')).peekDelay('fats')",
+            "Unknown duration token 'fats' for .peekDelay()",
+            Some("fast"),
+        ),
+        (
+            "AutoHideBar(Text('a')).unpeekDelay('25')",
+            "Unknown duration token '25' for .unpeekDelay()",
+            Some("250"),
+        ),
+        (
+            "AutoHideBar(Text('a')).hideMotion('dismis')",
+            "Unknown motion token 'dismis' for .hideMotion()",
+            Some("dismiss"),
+        ),
+        (
+            "AutoHideBar(Text('a')).showMotion('reveal')",
+            "Unknown motion token 'reveal' for .showMotion()",
+            None,
+        ),
+    ];
+    for (chain, message, suggestion) in cases {
+        let output = chrome(&format!("export const L = () => {chain};\n"));
+        assert_eq!(first_message(&output), Some(message), "{chain}");
+        if let Some(token) = suggestion {
+            let help = output.diagnostics[0].help.as_deref().unwrap();
+            assert!(help.starts_with(&format!("did you mean '{token}'?")), "{help}");
+        }
+    }
+}
+
+#[test]
 fn the_sidebar_s_modes_identities_search_and_drops_are_checked_against_the_spec() {
     let fine = chrome(
         "export const S = (Glyph, choose, team, plan, typed, dropped) => Sidebar(SidebarMode('Search', Glyph).id('search').shortcut('k'), TreeSection('Private', TreeItem('Notes').draggable().droppable(false).dropBeside(false)).droppable(false)).mode(['search', choose]).modePresentation('toggle').modesLabel('Mode').team(team).teamPlacement('header').plan(plan).onboarding({ title: 'Start', steps: [] }).query(['ho', typed]).onDrop(dropped);\n",
@@ -1396,7 +1440,7 @@ fn a_components_waits_are_duration_tokens() {
         let help = output.diagnostics[0].help.as_deref().unwrap();
         match suggestion {
             Some(token) => assert!(help.starts_with(&format!("did you mean '{token}'?")), "{help}"),
-            None => assert!(help.starts_with("duration tokens: 0, 400,"), "{help}"),
+            None => assert!(help.starts_with("duration tokens: 0,"), "{help}"),
         }
     }
 }

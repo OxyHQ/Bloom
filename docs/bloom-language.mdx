@@ -1594,20 +1594,24 @@ The rest of Bloom's `layout` family, each Bloom's own component:
 | `Toolbar(...tools)` | `Toolbar` | `.trailing(...)` (its `actions`, kept in reach at its end), `.accessory(view)` (its second row), `.size` (its controls'), `.testID` |
 | `StickySection(...children)` | `StickySection` (docked under the header as the page scrolls past it, inside the app's `HeaderDockProvider`) | `.testID` |
 | `ScrollArea(...children)` | `ScrollArea`: a scroll of its own (not the screen's) with Bloom's bar | `.contentMargins`, `.spacing`, `.axis('horizontal')`, `.scrollbar('scroll' \| 'hover' \| 'always' \| 'never')`, `.scrollbarSide('start' \| 'end')` (the web's; a native bar is the system's), `.size('sm' \| 'md')` (the bar's), `.scrollDismissesKeyboard`, `.keyboardTaps` |
-| `ScrollSurface(...children)` | `ScrollSurface`: a `ScrollArea` on a surface, its ends fading into it | the `ScrollArea`'s, and `.stickyHeader(view)`, `.stickyFooter(view)`, `.fadeHeight(space)`, `.fadeBottom(false)`, `.matchSurfacePaint()`, `.style('primary' \| 'secondary' \| 'full')` (its `surface`), `.label` |
-| `AutoHideBar(bar, ...body)` | `AutoHideBar`: the bar over the body, a strip while `collapsed` that peeks the bar under the pointer | `.collapsed()`, `.onReveal(fn)`, `.summary(view \| text)`, `.peek(false)`, `.barHeight(space)`, `.collapsedHeight(space)`, `.label` (the strip's button), `.testID` |
+| `ScrollSurface(...children)` | `ScrollSurface`: a `ScrollArea` on a surface, its ends fading into it | the `ScrollArea`'s, and `.stickyHeader(view)`, `.stickyFooter(view)`, `.fadeHeight(space)`, `.fadeBottom(false)`, `.fade(color)` (its `fadeColor`), `.matchSurfacePaint()`, `.style('primary' \| 'secondary' \| 'full')` (its `surface`), `.label` |
+| `AutoHideBar(bar, ...body)` | `AutoHideBar`: the bar over the body, a strip while `collapsed` that peeks the bar under the pointer | `.collapsed()`, `.onReveal(fn)`, `.summary(view \| text)`, `.peek(false)`, `.barHeight(space)`, `.collapsedHeight(space)`, `.band(color)` (its `background`), `.peekDelay(duration)`, `.unpeekDelay(duration)`, `.hideMotion(motion)` and `.showMotion(motion)` (its `motion`), `.label` (the strip's button), `.testID` |
 | `ResizeHandle(onResize)` | `ResizeHandle`: the separator a drag (or, on the web, an arrow key) resizes; `onResize` is told the distance from where the drag started | `.axis` (its `orientation`), `.style('grip' \| 'pill')`, `.thickness(space)`, `.onResizeStart`, `.onResizeEnd`, `.onNudge`, `.label`, `.testID` |
 
 A `ScrollArea`'s and a `ScrollSurface`'s box modifiers are a view around the
 scroll, as a `ScrollView`'s are; their margins and gap are the same code as
 its. A bar, a handle, a toolbar and a sticky section take only their own
 modifiers: a handle is placed by its container (an `.overlay(view, alignment)`
-at a pane's edge). An `AutoHideBar`'s timings (`peekDelay`, `unpeekDelay`) and
-its `motion` keep Bloom's, and its band is the surface it sits on (Bloom's
-`background` takes a raw colour); a `ScrollSurface`'s fade colour is the
-surface's or, with `.matchSurfacePaint()`, the nearest material's (its
-`fadeColor` is a raw colour). The edge and scroll-metric providers are hooks
-and providers an app's own chrome reads, not views.
+at a pane's edge). An `AutoHideBar`'s band is the surface it sits on unless
+`.band()` names a colour, and a `ScrollSurface`'s fade is the surface's or,
+with `.matchSurfacePaint()`, the nearest material's unless `.fade()` names
+one: each a colour role (at an opacity too) painted from the theme, or an
+app's own colour from `defineTokens({ color })`, never a raw value. A bar's
+waits are duration tokens (Bloom's are `fast` before it peeks and `'250'`
+before it collapses again) and its motions motion tokens (Bloom's own
+ease-outs, 150ms collapsing and 200ms coming back, with none named). The edge
+and scroll-metric providers are hooks and providers an app's own chrome
+reads, not views.
 
 ## Image
 
@@ -1712,8 +1716,9 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   `.role('checkbox' | 'radio' | 'tab')` (what it is to assistive technology).
   `.style('inverted')` is Bloom's inverted chip; its `color` is `.tint()`.
 - **Chip rows.** `ChipRow(...)` takes `.spacing()`, `.contentInset()`,
-  `.role('radiogroup' | 'tablist')`, `.label()`, `.disabled()`, `.fade(role)`
-  (the colour its web edges fade into, painted from the theme), `.ringInset()`
+  `.role('radiogroup' | 'tablist')`, `.label()`, `.disabled()`, `.fade(color)`
+  (the colour its web edges fade into: a role painted from the theme, or an
+  app's own colour), `.ringInset()`
   (room for a chip's focus ring) and `.keyboardTaps('always' | 'never' |
   'handled')` (whether a tap reaches a chip while the keyboard is open);
   `CappedChipRow(...)` takes `.lines(n)`, `.spacing()`, `.role('list')` and

@@ -205,6 +205,7 @@ export const GLASS_OPACITY = {
 } as const;
 export const DURATION = {
   "0": 0,
+  "250": 250,
   "400": 400,
   "800": 800,
   "1000": 1000,
@@ -3283,6 +3284,21 @@ export const MODIFIERS = {
   ],
   "barHeight": [
     "space"
+  ],
+  "band": [
+    "color"
+  ],
+  "peekDelay": [
+    "duration"
+  ],
+  "unpeekDelay": [
+    "duration"
+  ],
+  "hideMotion": [
+    "motion"
+  ],
+  "showMotion": [
+    "motion"
   ],
   "collapsedHeight": [
     "space"
@@ -9397,6 +9413,7 @@ export const NODE_MODIFIERS = {
     "stickyFooter",
     "fadeHeight",
     "fadeBottom",
+    "fade",
     "matchSurfacePaint",
     "style"
   ],
@@ -9407,6 +9424,11 @@ export const NODE_MODIFIERS = {
     "peek",
     "barHeight",
     "collapsedHeight",
+    "band",
+    "peekDelay",
+    "unpeekDelay",
+    "hideMotion",
+    "showMotion",
     "label",
     "testID"
   ],
