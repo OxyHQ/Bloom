@@ -197,6 +197,8 @@ export type OrderStatusBarStyle = (typeof ENUMS.orderStatusBarStyle)[number];
 /** Bloom's accent tones (`AccentTone`): what a status tile, a bar or a marker is painted in. */
 export type AccentTone = (typeof ENUMS.accentTone)[number];
 export type LockupSize = (typeof ENUMS.lockupSize)[number];
+/** An action bar's tone: `onImage` keeps it legible over artwork (a video). */
+export type EngagementBarTone = (typeof ENUMS.engagementBarTone)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];

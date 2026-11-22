@@ -1074,3 +1074,17 @@ fn the_month_calendar_is_checked() {
     let output = check("export const x = (m, o) => CalendarViewHeader(m, o).density('compact');\n");
     assert_eq!(output.diagnostics[0].message, "CalendarViewHeader has no modifier .density()");
 }
+
+#[test]
+fn the_action_bars_orientation_and_tone_are_checked() {
+    let imports = "import { Action, ActionBar } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (i) => ActionBar(Action(i, 'Like')).axis('vertical').size('lg').tint('onImage').showZeroCounts();\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (i) => ActionBar(Action(i, 'Like')).tint('accent');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown engagementBarTone token 'accent' for .tint()");
+    let output = check("export const x = (i) => Action(i, 'Like').showZeroCounts();\n");
+    assert_eq!(output.diagnostics[0].message, "Action has no modifier .showZeroCounts()");
+}

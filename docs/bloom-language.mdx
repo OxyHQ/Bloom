@@ -287,7 +287,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `contentFit`, `aspectRatio`, `tint`, `crossFade`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
 | `contentTransition('roll', direction?)` | text only (see [Animations](#animations)) |
 | `count`, `active`, `tint` | `Action` only |
-| `trailing(...)`, `countFormat(fn)` | `ActionBar` only |
+| `trailing(...)`, `countFormat(fn)`, `axis(a)` (a video's vertical column), `tint('default' \| 'onImage')`, `showZeroCounts()` | `ActionBar` only |
 
 Each node type exposes only the modifiers that apply to it, so the editor
 completes `Text(...).` with text modifiers and rejects `HStack().lines(2)`,

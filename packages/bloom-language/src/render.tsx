@@ -2055,6 +2055,9 @@ function renderHost(
         key,
         testID: p.testID,
         size: ownValue(p, 'size')?.value,
+        orientation: ownValue(p, 'axis')?.value,
+        tone: ownValue(p, 'tint')?.value,
+        showZeroCounts: ownValue(p, 'showZeroCounts')?.value,
         formatCount: ownValue(p, 'countFormat')?.value,
         trailing: trailing ? renderChildren(trailing, ctx) : undefined,
       };
