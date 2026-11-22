@@ -13,8 +13,6 @@ interface BaseLoadingProps {
   /** Custom color (defaults to theme primary) */
   color?: string;
   tone?: BloomTone;
-  /** NativeWind className for spinner color (e.g. "text-primary"). Overrides color prop. */
-  className?: string;
   /** Custom container style */
   style?: ViewStyle;
   /** Whether loading is active (for animated variants) */

@@ -19,7 +19,7 @@ so the variant is gone.
 
 ## Spinner (default)
 
-The indicator is the Material 3 morphing loader: a solid shape that morphs through a fixed loop of shapes while it slowly rotates. It takes its colour from `color`, `tone` or `className`, and its size from `size` or `iconSize`.
+The indicator is the Material 3 morphing loader: a solid shape that morphs through a fixed loop of shapes while it slowly rotates. It takes its colour from `color` or `tone`, and its size from `size` or `iconSize`.
 
 ```tsx
 import { Loading } from '@oxy.so/bloom';
@@ -46,14 +46,6 @@ Renders a fixed-height bar at the top of the parent. Use it as a global progress
 
 Spinner + label rendered in a row — small enough to drop into a list row or a button.
 
-## NativeWind className
-
-For native-tailwind users, `className` overrides `color`:
-
-```tsx
-<Loading variant="spinner" className="text-primary" />
-```
-
 ## Accessibility
 
 A spinner draws no words, so nothing but a name can tell a screen reader what is loading. Pass `accessibilityLabel` and the indicator becomes an indeterminate `progressbar`: `role="progressbar"`, `aria-label` and `aria-busy="true"` on web (flat `aria-*`, because react-native-web drops `accessibilityState`), the same role, label and busy state natively, and deliberately **no** `aria-valuenow` — that omission is how ARIA says "indeterminate". The `top` bar carries it only while `showLoading`.
@@ -73,7 +65,6 @@ It is opt-in, so an unlabelled `Loading` renders exactly as before, with no role
 | `variant?` | `'spinner' \| 'top' \| 'inline'` | Default: `'spinner'`. |
 | `size?` | `'sm' \| 'md' \| 'lg'` | Default: `'md'`. |
 | `color?` | `string` | Spinner color. Defaults to theme primary. |
-| `className?` | `string` | NativeWind class. Overrides `color`. |
 | `style?` | `ViewStyle` | Container style. |
 | `showLoading?` | `boolean` | For animated variants — pause when false. |
 | `accessibilityLabel?` | `string` | Names the indicator and makes it an indeterminate `progressbar`. See [Accessibility](#accessibility). |
