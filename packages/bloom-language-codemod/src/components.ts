@@ -33,7 +33,10 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  *   same `{ item, index }`: an arrow of one parameter returning an expression (the
  *   parameter as written; an element its view, any other expression embedded), or a named function, embedded
  *   as it is called (`(info) => Embed(renderPost(info))`);
- * - `empty`: an empty object literal (`screen={{}}`), as the bare modifier.
+ * - `empty`: an empty object literal (`screen={{}}`), as the bare modifier;
+ * - `className`: a static className laid out in a view of its own, as the
+ *   modifiers of that view's build function (`.contentView((v) => v.padding('lg'))`),
+ *   each class through the className table;
  * - `placement`: Bloom's responsive placement, a static token
  *   (`placement="bottom"`) or an object of them (`{ base: 'bottom', md: 'center' }`),
  *   as `.presentAt(base, tiers)`.
@@ -55,7 +58,8 @@ export type Form =
   | 'element'
   | 'row'
   | 'placement'
-  | 'empty';
+  | 'empty'
+  | 'className';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -364,11 +368,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       showsVerticalScrollIndicator: indicator('vertical'),
       showsHorizontalScrollIndicator: indicator('horizontal'),
       contentContainerStyle: p('contentMargins', 'contentStyle'),
+      contentContainerClassName: p('contentView', 'className'),
       testID: p('testID', 'string'),
-    },
-    differs: {
-      contentContainerClassName:
-        'Bloom lays a content className out in a view of its own inside a content container that grows to the viewport, and reports no intrinsic height; the content margins pad the content container itself',
     },
   },
   // parity/settings.cases.tsx.

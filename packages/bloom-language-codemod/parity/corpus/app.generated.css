@@ -6,6 +6,7 @@
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
+    --container-2xl: 42rem;
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
     --text-sm: 0.875rem;
@@ -189,8 +190,14 @@
 .w-full {
   width: 100%;
 }
+.max-w-2xl {
+  max-width: var(--container-2xl);
+}
 .flex-1 {
   flex: 1;
+}
+.grow {
+  flex-grow: 1;
 }
 .flex-row {
   flex-direction: row;
@@ -200,6 +207,9 @@
 }
 .justify-between {
   justify-content: space-between;
+}
+.justify-center {
+  justify-content: center;
 }
 .gap-1 {
   gap: 4px;
@@ -212,6 +222,9 @@
 }
 .gap-4 {
   gap: calc(4px * 4);
+}
+.self-center {
+  align-self: center;
 }
 .overflow-hidden {
   overflow: hidden;
@@ -289,6 +302,9 @@
 .p-4 {
   padding: calc(4px * 4);
 }
+.px-1 {
+  padding-inline: 4px;
+}
 .px-3 {
   padding-inline: calc(4px * 3);
 }
@@ -297,6 +313,12 @@
 }
 .px-5 {
   padding-inline: calc(4px * 5);
+}
+.px-8 {
+  padding-inline: calc(4px * 8);
+}
+.py-1 {
+  padding-block: 4px;
 }
 .py-1\.5 {
   padding-block: calc(4px * 1.5);
@@ -309,6 +331,12 @@
 }
 .pb-3 {
   padding-bottom: calc(4px * 3);
+}
+.pb-6 {
+  padding-bottom: calc(4px * 6);
+}
+.pb-8 {
+  padding-bottom: calc(4px * 8);
 }
 .text-sm {
   font-size: var(--text-sm);
@@ -436,6 +464,12 @@
   --bloom-cx-auto-bottomLeft: 0;
   --bloom-cx-rauto-bottomLeft: 0;
 }
+.px-1 {
+  --bloom-cx-padding-left: calc(4px * 1);
+  --bloom-cx-rpadding-left: calc(4px * 1);
+  --bloom-cx-padding-right: calc(4px * 1);
+  --bloom-cx-rpadding-right: calc(4px * 1);
+}
 .px-3 {
   --bloom-cx-padding-left: calc(4px * 3);
   --bloom-cx-rpadding-left: calc(4px * 3);
@@ -453,6 +487,16 @@
   --bloom-cx-rpadding-left: calc(4px * 5);
   --bloom-cx-padding-right: calc(4px * 5);
   --bloom-cx-rpadding-right: calc(4px * 5);
+}
+.px-8 {
+  --bloom-cx-padding-left: calc(4px * 8);
+  --bloom-cx-rpadding-left: calc(4px * 8);
+  --bloom-cx-padding-right: calc(4px * 8);
+  --bloom-cx-rpadding-right: calc(4px * 8);
+}
+.py-1 {
+  --bloom-cx-padding-top: calc(4px * 1);
+  --bloom-cx-padding-bottom: calc(4px * 1);
 }
 .py-1\.5 {
   --bloom-cx-padding-top: calc(4px * 1.5);
@@ -477,6 +521,12 @@
 }
 .pb-3 {
   --bloom-cx-padding-bottom: calc(4px * 3);
+}
+.pb-6 {
+  --bloom-cx-padding-bottom: calc(4px * 6);
+}
+.pb-8 {
+  --bloom-cx-padding-bottom: calc(4px * 8);
 }
 .active\:opacity-70:active {
   opacity: 70%;
