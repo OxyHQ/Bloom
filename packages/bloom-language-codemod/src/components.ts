@@ -26,7 +26,8 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  *   binding and tint (`.refreshable([refreshing, () => onRefresh()], tint)`);
  * - `contentStyle`: a static content container style of paddings and a gap, as
  *   `.contentMargins(edge, token)` and `.spacing(token)`;
- * - `embed`: an element, or a `const` holding one, drawn as it is (`Embed`), never converted.
+ * - `embed`: an element, or a `const` holding one, drawn as it is (`Embed`), never converted;
+ * - `items`: an array of data (any expression without JSX), carried as it is.
  */
 export type Form =
   | 'string'
@@ -41,7 +42,8 @@ export type Form =
   | 'literal'
   | 'refresh'
   | 'contentStyle'
-  | 'embed';
+  | 'embed'
+  | 'items';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -55,13 +57,19 @@ export interface PropRule {
   readonly with?: readonly [prop: string, form: Form];
   /** Fixed arguments after the value (`showsVerticalScrollIndicator` to `.scrollIndicators(value, 'vertical')`). */
   readonly args?: readonly Arg[];
+  /**
+   * A `mark` named by a static string (`type="tabs"`): each value the prop
+   * takes, as the bare modifier (`true`) or none (`false`).
+   */
+  readonly marks?: Readonly<Record<string, boolean>>;
 }
 
 /**
  * A constructor argument, in order:
  * - a prop (`optional` ones are `undefined` when absent);
  * - a binding: a value prop and its setter, `[value, setValue]`;
- * - the element's text children, as one string;
+ * - the element's text children, as one string (or, naming a component
+ *   `module#export`, the text children of its one child, that component with no props);
  * - an options object: each prop given, under its own name or the key named
  *   beside its form (none given, no argument);
  * - the label and glyphs of a chip or a button: its text children as a `Text`,
@@ -74,7 +82,7 @@ export type Param =
       readonly binding: readonly [value: string, set: string | readonly string[]];
       readonly hole: 'boolean' | 'string' | 'number';
     }
-  | { readonly text: true }
+  | { readonly text: true | string }
   | { readonly options: Readonly<Record<string, Form | readonly [key: string, form: Form]>> }
   | { readonly label: { readonly leading?: string; readonly trailing?: string } };
 
@@ -105,6 +113,14 @@ export interface ComponentRule {
   readonly shell?: { readonly input: string; readonly icon: string };
   /** Props the Bloom component draws in a way no modifier of the node does, and how: each is the reason it stays JSX. */
   readonly differs?: Readonly<Record<string, string>>;
+  /**
+   * The parts (`module#export`, each by its own rule) its children are, converted
+   * with it as one node: each child is one of them, a comment, or a `.map()` whose
+   * function returns one. The language keys a part itself (by its value).
+   */
+  readonly parts?: readonly string[];
+  /** The compound component (`module#export`) this is a part of: alone, it stays JSX. */
+  readonly partOf?: string;
 }
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
@@ -606,6 +622,62 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       onSlidingComplete: p('onCommit', 'handler'),
       ...NAMED,
     },
+  },
+  // parity/containers.cases.tsx, Tabs: the strip and its tabs, one node.
+  '@oxy.so/bloom/tabs#Tabs': {
+    node: 'Tabs',
+    params: [{ binding: ['value', 'onValueChange'], hole: 'string' }],
+    parts: ['@oxy.so/bloom/tabs#TabsTrigger'],
+    props: {
+      variant: p('style', 'token', tokens('tabsStyle')),
+      fullWidth: p('fullWidth', 'flag'),
+      onReorder: p('onReorder', 'handler'),
+      label: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  '@oxy.so/bloom/tabs#TabsTrigger': {
+    node: 'TabItem',
+    partOf: '@oxy.so/bloom/tabs#Tabs',
+    params: [
+      { prop: 'value', form: 'string' },
+      { prop: 'label', form: 'string' },
+    ],
+    props: {
+      leadingIcon: p('icon', 'icon'),
+      count: p('count', 'number'),
+      disabled: p('disabled', 'flag'),
+      iconOnly: p('iconOnly', 'mark'),
+      reorderable: p('reorderable', 'flag'),
+      trailing: p('trailing', 'view'),
+      onLongPress: p('onLongPress', 'handler'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/inputs.cases.tsx, Segmented (SegmentedControl): its items are its options.
+  '@oxy.so/bloom/segmented-control#SegmentedControl': {
+    node: 'Segmented',
+    params: [{ binding: ['value', ['onValueChange', 'onChange']], hole: 'string' }],
+    parts: ['@oxy.so/bloom/segmented-control#SegmentedControlItem'],
+    props: {
+      // Bloom's `type` is `radio` by default; the node draws `tabs` with `.tabs()`.
+      type: { ...p('tabs', 'mark'), marks: { radio: false, tabs: true } },
+      variant: p('style', 'token', tokens('segmentedStyle')),
+      size: p('size', 'token', tokens('controlSize')),
+      disabled: p('disabled', 'flag'),
+      label: p('label', 'string'),
+      accessibilityHint: p('hint', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  '@oxy.so/bloom/segmented-control#SegmentedControlItem': {
+    node: 'Option',
+    partOf: '@oxy.so/bloom/segmented-control#SegmentedControl',
+    params: [
+      { prop: 'value', form: 'string' },
+      { text: '@oxy.so/bloom/segmented-control#SegmentedControlItemText' },
+    ],
+    props: { disabled: p('disabled', 'flag'), testID: p('testID', 'string') },
   },
 };
 
