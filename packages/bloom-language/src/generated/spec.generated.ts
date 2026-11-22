@@ -1257,7 +1257,13 @@ export const ENUMS = {
     "top-leading",
     "top-trailing",
     "bottom-leading",
-    "bottom-trailing"
+    "bottom-trailing",
+    "left",
+    "right",
+    "top-left",
+    "top-right",
+    "bottom-left",
+    "bottom-right"
   ],
   "dividerStyle": [
     "single",

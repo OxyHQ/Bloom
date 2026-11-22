@@ -516,7 +516,13 @@
       "top-leading",
       "top-trailing",
       "bottom-leading",
-      "bottom-trailing"
+      "bottom-trailing",
+      "left",
+      "right",
+      "top-left",
+      "top-right",
+      "bottom-left",
+      "bottom-right"
     ],
     "dividerStyle": ["single", "double", "fill"],
     "dialogPlacement": ["center", "left", "right", "start", "end", "bottom"],
