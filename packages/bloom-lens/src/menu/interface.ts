@@ -131,6 +131,8 @@ interface IMenuTrigger {
   // Bloom: the colour the trigger sits on. Set, the trigger draws its glass at rest in its place in the view hierarchy
   // (a trigger in a scroll, under the bars) against that colour; the overlay draws it only while the menu is open.
   restBackdrop?: string;
+  // Bloom: a tap on the trigger opens the menu natively, with no round trip to JS.
+  openOnTap?: boolean;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;

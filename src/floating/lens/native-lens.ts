@@ -72,6 +72,8 @@ export interface Lens {
     cornerRadius?: number;
     config?: LensTriggerConfig;
     restBackdrop?: string;
+    /** The base is one menu's trigger: a tap opens it natively, with no round trip to JS. */
+    openOnTap?: boolean;
     style?: StyleProp<ViewStyle>;
     children?: ReactNode;
   }>;

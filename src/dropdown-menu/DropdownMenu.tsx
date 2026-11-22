@@ -244,6 +244,7 @@ export function DropdownMenuTrigger({
   return (
     <LensTrigger
       lens={menu.lensHost}
+      opensOnTap={!disabled && (menu.activation !== 'hover' || !primaryAction)}
       triggerLens={lensTrigger || lensTone === 'primary' || lensTint != null}
       tone={lensTone}
       tint={lensTint}
