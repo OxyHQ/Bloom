@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Platform, type ViewStyle } from 'react-native';
+import { Platform, View, type ViewStyle } from 'react-native';
 import {
   surfacePresenceStyle,
   useEnteredPresence,
@@ -14,11 +14,12 @@ import Animated, {
   withTiming,
   type AnimatedStyle,
 } from 'react-native-reanimated';
-import { StyledView } from '../styles/styled-primitives';
 import { UNSET } from '../styles/animated-style';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
+/** The measured slot, with the 6px gap under its card. */
+const SLOT = { position: 'relative', flexShrink: 0, paddingBottom: 6 } as const;
 const DURATION = 320;
 const WEB = Platform.OS === 'web';
 const PRESENCE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -154,9 +155,8 @@ function BoardPresence({
   return (
     <AnimatedView
       ref={slot}
-      className="relative shrink-0 pb-1.5"
       layout={reduced ? undefined : LinearTransition.duration(260)}
-      style={[slotStyle, WEB ? surfacePresenceStyle(presence, presenceMs) : null]}
+      style={[SLOT, slotStyle, WEB ? surfacePresenceStyle(presence, presenceMs) : null]}
       pointerEvents={present || retain ? 'auto' : 'none'}
       aria-hidden={!present}
       accessibilityElementsHidden={!present}

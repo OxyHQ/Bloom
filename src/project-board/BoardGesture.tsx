@@ -8,9 +8,8 @@ import {
   type ReactNode,
   type ComponentRef,
 } from 'react';
-import { Platform, type View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { useMessages } from '../locale/messages';
 import { PROJECT_BOARD_MESSAGES } from './messages';
 import type { BoardDragHandleProps } from './types';
@@ -32,12 +31,10 @@ export function BoardGesture({
   children,
   binding,
   style,
-  className,
 }: {
   children: ReactNode;
   binding: BoardDragBinding;
   style?: StyleProp<ViewStyle>;
-  className?: string;
 }) {
   const callbacks = useRef(binding);
   callbacks.current = binding;
@@ -106,13 +103,13 @@ export function BoardGesture({
     };
   }, []);
   return (
-    <StyledView ref={node} style={[{ minWidth: 0 }, style]} className={className}>
+    <View ref={node} style={[{ minWidth: 0 }, style]}>
       <GestureDetector gesture={gesture} touchAction="none">
-        <StyledView collapsable={false} style={{ minWidth: 0 }}>
+        <View collapsable={false} style={{ minWidth: 0 }}>
           {children}
-        </StyledView>
+        </View>
       </GestureDetector>
-    </StyledView>
+    </View>
   );
 }
 
@@ -120,7 +117,6 @@ export function BoardDragHandle({
   children,
   accessibilityLabel,
   style,
-  className,
   testID,
   onPress,
 }: BoardDragHandleProps) {
@@ -128,13 +124,13 @@ export function BoardDragHandle({
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   if (!binding?.enabled)
     return (
-      <StyledView style={style} className={className} testID={testID}>
+      <View style={style} testID={testID}>
         {children}
-      </StyledView>
+      </View>
     );
   return (
-    <BoardGesture binding={binding} style={style} className={className}>
-      <StyledPressable
+    <BoardGesture binding={binding} style={style}>
+      <Pressable
         accessible
         nativeID={binding.nativeID}
         accessibilityRole="button"
@@ -181,7 +177,7 @@ export function BoardDragHandle({
         testID={testID}
       >
         {children}
-      </StyledPressable>
+      </Pressable>
     </BoardGesture>
   );
 }

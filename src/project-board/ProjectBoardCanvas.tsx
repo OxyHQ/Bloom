@@ -1,9 +1,11 @@
 import { BloomScope } from '../appearance';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 import type { WebCssStyle } from '../styles/web-view-style';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header/PageHeader';
 import { useDirectionProps } from '../hooks/use-is-rtl';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { useColorTokens } from '../theme/color-tokens';
 import { IS_WEB } from '../styles/platform';
@@ -14,13 +16,22 @@ import { ProjectBoardCardSurface } from './ProjectBoardCardSurface';
 import { BoardPresenceList } from './BoardPresence';
 import { boardOccurrence } from './board-engine';
 import { useProjectBoardPlatform } from './context';
-import { cx } from './constants';
 import { PROJECT_BOARD_MESSAGES } from './messages';
 import { useMessages } from '../locale/messages';
 import type { BoardEngine } from './use-board-engine';
+import { TAILWIND_SHADOW } from './styles';
 import type { ControlledProjectBoardProps } from './types';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+/** `flex-1` as react-native-css resolved it. */
+const FILL = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' } as const;
+const styles = StyleSheet.create({
+  slot: { flexShrink: 0, borderRadius: 12 },
+  board: { minHeight: 0, ...FILL, minWidth: 0 },
+  column: { minHeight: 0, minWidth: 0, ...FILL },
+  scroller: { position: 'relative', minHeight: 0, ...FILL },
+});
 
 type CanvasProps<Item> = Omit<ControlledProjectBoardProps<Item>, 'variant'> & {
   engine: BoardEngine<Item>;
@@ -31,6 +42,13 @@ type CanvasProps<Item> = Omit<ControlledProjectBoardProps<Item>, 'variant'> & {
 
 /** The original ProjectBoard column/card renderer, with slots for product-owned records. */
 /** The column's fill eases as a card is dragged over it (web). */
+/**
+ * `ring-2 ring-inset ring-transparent`: a ring that never shows (its drop-target
+ * colour, `ring-border-button-hover`, emitted nothing), kept as the stack it computed.
+ */
+const COLUMN_RING = (IS_WEB
+  ? TAILWIND_SHADOW('inset 0 0 0 2px transparent', '0 0 #0000')
+  : []) as unknown as ViewStyle['boxShadow'];
 const COLUMN_TRANSITION: WebCssStyle = {
   transitionProperty: 'box-shadow, background-color',
   transitionDuration: '150ms',
@@ -43,7 +61,6 @@ export function ProjectBoardCanvas<Item>({
   columnWidth = 273,
   columnStyle,
   style,
-  className,
   accessibilityLabel,
   testID = 'project-board',
   dragMode = 'card',
@@ -104,24 +121,23 @@ export function ProjectBoardCanvas<Item>({
           );
           const content = (
             <AnimatedView
-              className={
-                template
-                  ? 'shrink-0 touch-manipulation rounded-xl outline-none focus-visible:ring-[2.5px] focus-visible:ring-border-button-hover'
-                  : undefined
-              }
-              style={{
-                opacity: engine.droppingKey === key ? 0 : isDragging ? 0.2 : present ? 1 : 0.2,
-                borderTopWidth:
-                  engine.allowReorder &&
-                  engine.over?.columnId === column.id &&
-                  engine.over.index ===
-                    column.items.findIndex((entry) => props.getItemId(entry) === itemId)
-                    ? 3
-                    : 0,
-                borderTopColor: colors.primary,
-              }}
+              {...(template ? webDataSet({ bloomBoardSlot: '' }) : null)}
+              style={[
+                template && styles.slot,
+                {
+                  opacity: engine.droppingKey === key ? 0 : isDragging ? 0.2 : present ? 1 : 0.2,
+                  borderTopWidth:
+                    engine.allowReorder &&
+                    engine.over?.columnId === column.id &&
+                    engine.over.index ===
+                      column.items.findIndex((entry) => props.getItemId(entry) === itemId)
+                      ? 3
+                      : 0,
+                  borderTopColor: colors.primary,
+                },
+              ]}
             >
-              <StyledView
+              <View
                 ref={(node) => {
                   if (present || !node) engine.itemNodes.current[key] = node;
                 }}
@@ -177,7 +193,7 @@ export function ProjectBoardCanvas<Item>({
                 ) : (
                   card
                 )}
-              </StyledView>
+              </View>
             </AnimatedView>
           );
           return (
@@ -194,17 +210,16 @@ export function ProjectBoardCanvas<Item>({
       {engine.allowReorder &&
         engine.over?.columnId === column.id &&
         engine.over.index >= column.items.length && (
-          <StyledView style={{ height: 3, backgroundColor: colors.primary }} />
+          <View style={{ height: 3, backgroundColor: colors.primary }} />
         )}
     </>
   );
   return (
-    <StyledView
+    <View
       {...directionProps}
       ref={engine.boardNode}
       onLayout={engine.measure}
-      className={cx('min-h-0 flex-1', className)}
-      style={[{ minWidth: 0 }, style]}
+      style={[styles.board, style]}
       accessibilityLabel={accessibilityLabel ?? m.board}
       testID={template ? undefined : testID}
     >
@@ -235,6 +250,7 @@ export function ProjectBoardCanvas<Item>({
                 {
                   backgroundColor:
                     engine.over?.columnId === column.id ? tokens.popover : tokens.surface,
+                  boxShadow: COLUMN_RING,
                 },
                 IS_WEB && COLUMN_TRANSITION,
               ],
@@ -256,16 +272,15 @@ export function ProjectBoardCanvas<Item>({
                 />
               ),
               content: (
-                <StyledView
+                <View
                   ref={(node) => {
                     engine.columnNodes.current[column.id] = node;
                   }}
                   onLayout={engine.measure}
                   {...{ dataSet: { 'bloom-board-column': column.id } }}
-                  className="min-h-0 min-w-0 flex-1"
-                  style={columnStyle}
+                  style={[styles.column, columnStyle]}
                 >
-                  <StyledView className="relative min-h-0 flex-1">
+                  <View style={styles.scroller}>
                     <ScreenScrollView
                       ref={(node) => {
                         engine.columnScrolls.current[column.id] = node;
@@ -283,8 +298,8 @@ export function ProjectBoardCanvas<Item>({
                       {props.renderColumnFooter?.(column)}
                     </ScreenScrollView>
                     {column.items.length === 0 ? props.renderEmptyColumn?.(column) : null}
-                  </StyledView>
-                </StyledView>
+                  </View>
+                </View>
               ),
             })),
           }}
@@ -300,6 +315,6 @@ export function ProjectBoardCanvas<Item>({
           </ProjectBoardCardSurface>
         </BoardOverlay>
       )}
-    </StyledView>
+    </View>
   );
 }
