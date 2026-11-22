@@ -63,7 +63,7 @@ describe.each([
 
   // 15.50.0 on a Pixel 8a (Allo, Appearance → Colour): the value sat flush
   // against both ends of the pill. The field's geometry existed only as
-  // classes; it is now inline too, in longhands, unless the caller restyles.
+  // classes; it is inline, in longhands.
   it('carries its inner padding inline, so the value never touches the pill', () => {
     const { getByTestId } = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -86,17 +86,7 @@ describe.each([
     });
   });
 
-  it('leaves the geometry to a caller className, and to fieldStyle over the default', () => {
-    const restyled = render(
-      <BloomThemeProvider mode="light" colorPreset="teal">
-        <Select value={LONG}>
-          <SelectTrigger label="Colour" testID="trigger" className="px-2">
-            <SelectValue placeholder={LONG} />
-          </SelectTrigger>
-        </Select>
-      </BloomThemeProvider>,
-    );
-    expect(field(restyled.getByTestId('trigger')).paddingLeft).toBeUndefined();
+  it('takes fieldStyle over the default geometry', () => {
     const compact = render(
       <BloomThemeProvider mode="light" colorPreset="teal">
         <Select value={LONG}>
