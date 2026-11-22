@@ -1,6 +1,29 @@
-import { StyledView } from '../styles/styled-primitives';
+import { StyleSheet, View } from 'react-native';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
+import { createTokenStyles } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { DetailDialogSectionProps, DetailDialogSectionGroupProps } from './types';
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 20 },
+  // Below `sm` the label stacks over its values.
+  rowCompact: { flexDirection: 'column', gap: 8 },
+  labelColumn: { width: 70, flexShrink: 0, paddingTop: 2 },
+  values: {
+    flex: 1,
+    flexDirection: 'row',
+    minWidth: 0,
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: 20,
+    rowGap: 12,
+  },
+  group: { flexDirection: 'column', gap: 20 },
+});
+
+const useStyles = createTokenStyles((t) => ({
+  label: { lineHeight: 20, fontWeight: 500, color: t.mutedForeground },
+}));
 
 /** The template's shared label/values row; product controls keep their own data semantics. */
 export function DetailDialogSection({
@@ -9,34 +32,31 @@ export function DetailDialogSection({
   accessibilityLabel,
   testID,
 }: DetailDialogSectionProps) {
+  const themed = useStyles();
+  const compact = useWindowBreakpoint() === 'base';
   return (
-    <StyledView
+    <View
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      className="flex flex-row items-start gap-5 max-sm:flex-col max-sm:gap-2"
+      style={[styles.row, compact && styles.rowCompact]}
     >
-      <StyledView className="w-[70px] shrink-0 pt-0.5">
+      <View style={styles.labelColumn}>
         {typeof label === 'string' || typeof label === 'number' ? (
-          <Text className="text-body-medium text-text-secondary">{label}</Text>
+          <Text style={themed.label}>{label}</Text>
         ) : (
           label
         )}
-      </StyledView>
-      <StyledView
-        className="flex flex-row min-w-0 flex-wrap items-center gap-x-5 gap-y-3"
-        style={{ flex: 1 }}
-      >
-        {children}
-      </StyledView>
-    </StyledView>
+      </View>
+      <View style={styles.values}>{children}</View>
+    </View>
   );
 }
 
 /** Shared spacing for a record's property sections, including full-page editors. */
 export function DetailDialogSectionGroup({ children, testID }: DetailDialogSectionGroupProps) {
   return (
-    <StyledView testID={testID} className="flex flex-col gap-5">
+    <View testID={testID} style={styles.group}>
       {children}
-    </StyledView>
+    </View>
   );
 }
