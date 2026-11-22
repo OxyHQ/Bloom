@@ -2608,8 +2608,7 @@ function drawText(
     link: link !== undefined,
     tabular: ownValue(p, 'monospacedDigit') !== undefined,
     wordBreak: ownValue(p, 'wordBreak')?.value,
-    ellipsis:
-      ownValue(p, 'truncation')?.value === 'tail' && ownValue(p, 'lines') === undefined,
+    ellipsis: ownValue(p, 'truncation')?.value === 'tail' && ownValue(p, 'lines') === undefined,
   };
   const textStyleName = span === undefined ? ownValue(p, 'textStyle')?.value : undefined;
   const lookKey = `${look.noWrap ? 'nw' : ''}|${look.align ?? ''}|${look.italic ? 'i' : ''}|${look.underline ? 'u' : ''}|${look.strikethrough ? 's' : ''}|${look.textCase ?? ''}|${look.link ? 'a' : ''}|${look.tabular ? 'tn' : ''}|${look.wordBreak ?? ''}|${look.ellipsis ? 'el' : ''}`;
