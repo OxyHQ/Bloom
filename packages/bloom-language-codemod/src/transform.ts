@@ -14,7 +14,6 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseExpression } from '@babel/parser';
 import * as recast from 'recast';
 import * as babelTs from 'recast/parsers/babel-ts';
 
@@ -122,6 +121,8 @@ type Ir =
       key: Carried | null;
     }
   | { type: 'embed'; content: Carried }
+  /** A JSX comment among children, carried into the chain as the same block comment. */
+  | { type: 'comment'; text: string }
   | { type: 'cond'; test: Carried; then: Ir | null; otherwise: Ir | null };
 
 type TextRun = { type: 'string'; value: string } | { type: 'expr'; value: Carried } | Ir;
@@ -853,7 +854,9 @@ export function transformSource(source: string, options: TransformOptions): File
         if (cleanJsxText(child.value)) fail('text', 'raw-text', 'text directly inside a View');
       } else if (n.JSXExpressionContainer.check(child)) {
         if (n.JSXEmptyExpression.check(child.expression)) {
-          fail('{/* */}', 'comment', 'a JSX comment (kept only in JSX)');
+          const comment = commentOf(child);
+          if (comment) children.push(comment);
+          else fail('{/* */}', 'comment', 'a line comment in JSX (only a block comment moves)');
           continue;
         }
         children.push(expressionChild(child.expression));
@@ -1207,11 +1210,39 @@ export function transformSource(source: string, options: TransformOptions): File
       : { type: 'embed', content: { node: element, hole: 'element' } };
   }
 
+  /** A JSX comment's block comments as a code comment; undefined for a line comment. */
+  function commentOf(container: AnyNode): Ir | undefined {
+    const text = source.slice(container.start + 1, container.end - 1).trim();
+    // Block comments only: a line comment would swallow the arguments after it.
+    return text.startsWith('/*') && text.endsWith('*/') && !text.includes('//')
+      ? { type: 'comment', text }
+      : undefined;
+  }
+
+  /**
+   * A list of views as arguments: a comment sits before the view after it
+   * (after the last one when it ends the list), never an argument of its own.
+   */
+  function printViews(views: readonly Ir[], carry: (c: Carried) => string): string[] {
+    const out: string[] = [];
+    let pending: string[] = [];
+    for (const view of views) {
+      if (view.type === 'comment') pending.push(view.text);
+      else {
+        out.push([...pending, print(view, carry)].join(' '));
+        pending = [];
+      }
+    }
+    if (pending.length && out.length) out[out.length - 1] += ` ${pending.join(' ')}`;
+    else if (pending.length) out.push(pending.join(' '));
+    return out;
+  }
+
   /** A child of a view-holding element as a view; null when it is no child, undefined when it is text. */
   function childView(child: AnyNode): Ir | null | undefined {
     if (n.JSXText.check(child)) return cleanJsxText(child.value) ? undefined : null;
     if (n.JSXExpressionContainer.check(child)) {
-      if (n.JSXEmptyExpression.check(child.expression)) return undefined;
+      if (n.JSXEmptyExpression.check(child.expression)) return commentOf(child);
       if (n.StringLiteral.check(child.expression) || n.TemplateLiteral.check(child.expression))
         return undefined;
       return expressionChild(child.expression);
@@ -1380,12 +1411,26 @@ export function transformSource(source: string, options: TransformOptions): File
     switch (ir.type) {
       case 'embed':
         return `${lang('Embed')}(${carry(ir.content)})`;
+      case 'comment':
+        return ir.text;
       case 'cond':
         return `${carry(ir.test)} ? ${ir.then ? print(ir.then, carry) : 'null'} : ${ir.otherwise ? print(ir.otherwise, carry) : 'null'}`;
       case 'icon':
         return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       case 'component': {
-        const args = ir.args.map((a) => printValue(a, carry)).join(', ');
+        // Its children (the trailing views) with their comments; the arguments before them as values.
+        const first = ir.args.findIndex((a) => isTagged(a) && a.$ === 'view');
+        const leading = first === -1 ? ir.args : ir.args.slice(0, first);
+        const views = first === -1 ? [] : ir.args.slice(first);
+        const args = [
+          ...leading.map((a) => printValue(a, carry)),
+          ...(views.every((a) => isTagged(a) && a.$ === 'view')
+            ? printViews(
+                views.map((a) => (a as { view: Ir }).view),
+                carry,
+              )
+            : views.map((a) => printValue(a, carry))),
+        ].join(', ');
         const tail = ir.props.map((p) => printProp(p, carry)).join('');
         return `${lang(ir.node)}(${args})${tail}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       }
@@ -1412,7 +1457,7 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       case 'stack': {
         const ctor = lang(ir.resolved.axis === 'row' ? 'HStack' : 'VStack');
-        const children = ir.children.map((child) => print(child, carry));
+        const children = printViews(ir.children, carry);
         return `${ctor}(${children.join(', ')})${chainTail(ir.resolved, ir.props, root ? null : ir.key, carry)}`;
       }
     }
@@ -1675,7 +1720,8 @@ export function transformSource(source: string, options: TransformOptions): File
       const carry = (c: Carried) => recast.print(c.node.__carried ?? c.node).code;
       const chain = print(ir, carry, true);
       const code = `${lang('toElement')}(${chain}${rootKey ? `, ${carry(rootKey)}` : ''})`;
-      const expression = parseExpression(code, { plugins: ['jsx', 'typescript'] });
+      // Parsed by recast, so the comments the chain carries are printed where they are.
+      const expression = recast.parse(`${code};`, { parser: babelTs }).program.body[0].expression;
       const parent = path.parent?.node;
       const inJsx =
         parent &&
