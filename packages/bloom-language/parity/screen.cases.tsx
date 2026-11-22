@@ -250,6 +250,15 @@ const screens: ParityCase[] = [
       </Screen>
     ),
   },
+  {
+    name: 'a header in the page: the Screen’s own PageHeader',
+    language: () => <ScreenHost root={L.Text('a').header(L.Header('Home').inPage())} />,
+    bloom: () => (
+      <Screen header={<PageHeader title="Home" />}>
+        <Text>a</Text>
+      </Screen>
+    ),
+  },
   ...ENUMS.scrollEdge.map((edge) => ({
     name: `the header's scroll edge ${edge}`,
     language: () => <ScreenHost root={L.Text('a').title('Home').scrollEdge(edge)} />,
