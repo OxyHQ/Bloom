@@ -9,6 +9,7 @@ import { TicketTokenChart } from './TicketTokenChart';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
 import { Textarea } from '../textarea';
+import { useColorTokens } from '../theme/color-tokens';
 import { BoardTooltip } from './BoardTooltip';
 import { MemberAvatars } from './MemberAvatars';
 import { cx } from './constants';
@@ -73,6 +74,7 @@ export function TicketDetailDialog({
   onCopyTicketId?: (code: string) => void | Promise<void>;
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
+  const tokens = useColorTokens();
   const {
     Button,
     DetailDialog,
@@ -249,8 +251,16 @@ export function TicketDetailDialog({
               rows={1}
               maxLength={2000}
               resize="none"
-              fieldClassName="h-[72px] rounded-xl bg-background-secondary-default pt-3 pb-10"
-              fieldStyle={{ paddingLeft: 12, paddingRight: 12 }}
+              bare
+              fieldStyle={{
+                height: 72,
+                borderRadius: 12,
+                backgroundColor: tokens.surface,
+                paddingTop: 12,
+                paddingBottom: 40,
+                paddingLeft: 12,
+                paddingRight: 12,
+              }}
             />
             <Button
               accessibilityLabel={m.postComment}
