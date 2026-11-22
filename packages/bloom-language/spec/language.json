@@ -3408,6 +3408,7 @@
     "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
     "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] },
     "glassGroup": { "constructors": ["GlassGroup"], "modifiers": ["blend"], "blend": "space" },
+    "viewThatFits": { "constructors": ["ViewThatFits"], "modifiers": [] },
     "toolbarGroup": { "constructors": ["ToolbarGroup"], "universal": false, "modifiers": [] },
     "toolbarSpacer": { "constructors": ["ToolbarSpacer"], "universal": false, "modifiers": [] },
     "confirmationDialog": {
