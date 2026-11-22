@@ -298,8 +298,6 @@ function FollowButtonComponent({
   color,
   appearance = 'subtle',
   material,
-  className,
-  labelClassName,
   tone = 'support',
   iconOnly = false,
   size: sizeProp,
@@ -368,12 +366,8 @@ function FollowButtonComponent({
     >
       {!iconOnly && (
         <View style={{ height: 0, overflow: 'hidden' }}>
-          <FollowLabel className={labelClassName} style={textStyle}>
-            {label}
-          </FollowLabel>
-          <FollowLabel className={labelClassName} style={textStyle}>
-            {followingLabel}
-          </FollowLabel>
+          <FollowLabel style={textStyle}>{label}</FollowLabel>
+          <FollowLabel style={textStyle}>{followingLabel}</FollowLabel>
         </View>
       )}
       <Animated.View
@@ -383,14 +377,7 @@ function FollowButtonComponent({
         {iconOnly ? (
           <RiUserAddLine width={20} height={20} fill={labelColor} />
         ) : (
-          <FollowLabel
-            className={labelClassName}
-            style={[
-              { color: color ?? (labelClassName?.trim() ? undefined : labelColor) },
-              textStyle,
-            ]}
-            numberOfLines={1}
-          >
+          <FollowLabel style={[{ color: labelColor }, textStyle]} numberOfLines={1}>
             {label}
           </FollowLabel>
         )}
@@ -405,14 +392,7 @@ function FollowButtonComponent({
         {iconOnly ? (
           <RiUserFollowLine width={20} height={20} fill={labelColor} />
         ) : (
-          <FollowLabel
-            className={labelClassName}
-            style={[
-              { color: color ?? (labelClassName?.trim() ? undefined : labelColor) },
-              textStyle,
-            ]}
-            numberOfLines={1}
-          >
+          <FollowLabel style={[{ color: labelColor }, textStyle]} numberOfLines={1}>
             {followingLabel}
           </FollowLabel>
         )}
@@ -423,7 +403,6 @@ function FollowButtonComponent({
     <Button
       appearance={appearance}
       material={material}
-      className={className}
       tone={tone}
       size={size}
       iconOnly={iconOnly}
