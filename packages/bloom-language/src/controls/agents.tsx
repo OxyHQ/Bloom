@@ -41,7 +41,7 @@ import {
 import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/usage-card';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { AgentThinkingStyle, AgentThinkingTone, SpaceToken } from '../tokens';
+import type { AgentThinkingStyle, AgentThinkingTone, InkToken, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -126,7 +126,10 @@ export type AgentLogToolCallsView = ViewModifiers<AgentLogToolCallsView>;
 /** Bloom `AgentLogWorkingRow`: the row that says the agent is working. */
 export type AgentLogWorkingRowView = ViewModifiers<AgentLogWorkingRowView>;
 /** Bloom `ComposerLoader`: the light that runs round a composer as an agent works. */
-export type ComposerLoaderView = ViewModifiers<ComposerLoaderView>;
+export interface ComposerLoaderView extends ViewModifiers<ComposerLoaderView> {
+  /** Its four colours, left to right: colour roles or an app's own colours. */
+  gradient(colors: readonly [InkToken, InkToken, InkToken, InkToken]): ComposerLoaderView;
+}
 /** Bloom `ConversationSidebar`: an agent app's conversations. */
 export type ConversationSidebarView = ViewModifiers<ConversationSidebarView>;
 /** Bloom `Questionnaire`: questions asked one at a time. */
@@ -239,7 +242,10 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
   },
   agentLogToolCalls: product(BloomAgentLogToolCalls),
   agentLogWorkingRow: product(BloomAgentLogWorkingRow),
-  composerLoader: product(BloomComposerLoader, { lengths: ['radius', 'line', 'offset'] }),
+  composerLoader: product(BloomComposerLoader, {
+    lengths: ['radius', 'line', 'offset'],
+    colors: (d) => ({ colors: d.own('gradient')?.value }),
+  }),
   conversationSidebar: product(BloomConversationSidebar, { slots: ['after'] }),
   questionnaire: product(BloomQuestionnaire),
 };

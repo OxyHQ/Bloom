@@ -326,6 +326,23 @@ fn check_value(
             }),
             _ => Ok(()),
         },
+        // A list of colours: each one written out is a colour token (an app colour is the runtime's).
+        "colors" => match value.without_parentheses() {
+            Expression::ArrayExpression(array) => {
+                for element in &array.elements {
+                    if let Some(color) = element.as_expression() {
+                        check_token(modifier, "color", color)?;
+                    }
+                }
+                Ok(())
+            }
+            Expression::StringLiteral(literal) => Err(Problem {
+                span: literal.span,
+                message: format!(".{modifier}() takes a list of colours, not '{}'", literal.value.display()),
+                help: Some(format!(".{modifier}(['{}', …])", literal.value.display())),
+            }),
+            _ => Ok(()),
+        },
         "size" => spec.size.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "tint" => spec.tint.map_or(Ok(()), |set| check_token(modifier, set, value)),
         "style" => spec.style.map_or(Ok(()), |set| check_token(modifier, set, value)),

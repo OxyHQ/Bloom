@@ -33,7 +33,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -64,6 +64,8 @@ const SHARED = [
 ];
 const DOCS = [{ id: 'd', name: 'plan.pdf', kind: 'pdf' as const, sizeBytes: 120_000 }];
 const SAMPLES = [0.2, 0.5, 0.9, 0.4, 0.7, 0.3];
+/** An app's own colour, as an app declares it. */
+const BRAND = L.defineTokens({ color: { sky: '#38bdf8' } });
 
 const screen: ParityCase[] = [
   ...ENUMS.chatBackgroundStyle.map((variant) => ({
@@ -92,6 +94,39 @@ const screen: ParityCase[] = [
       <Themed>
         {(c) => <ChatBackground variant="pattern" tint={withAlpha(c.primary, 0.5)} />}
       </Themed>
+    ),
+  },
+  {
+    name: 'ChatBackground gradient of two roles',
+    language: () =>
+      toElement(
+        L.ChatBackground(L.Text('Messages')).style('gradient').gradient(['primary', 'info']),
+      ),
+    bloom: () => (
+      <ThemedRgb>
+        {(c) => (
+          <ChatBackground variant="gradient" colors={[c.primary, c.info]}>
+            <Text>Messages</Text>
+          </ChatBackground>
+        )}
+      </ThemedRgb>
+    ),
+  },
+  {
+    name: 'ChatBackground gradient of three: a role at an opacity, an app colour',
+    language: () =>
+      toElement(
+        L.ChatBackground().style('gradient').gradient(['success/half', BRAND.color.sky, 'warning']),
+      ),
+    bloom: () => (
+      <ThemedRgb>
+        {(c) => (
+          <ChatBackground
+            variant="gradient"
+            colors={[withAlpha(c.success, 0.5), '#38bdf8', c.warning]}
+          />
+        )}
+      </ThemedRgb>
     ),
   },
   ...ENUMS.chatDateHeaderStyle.map((placement) => ({
@@ -267,6 +302,40 @@ const list: ParityCase[] = [
       >
         {toElement(L.Avatar(null, { name: 'Ana Lima' }))}
       </StoryRing>
+    ),
+  },
+  {
+    name: 'StoryRing a solid ring of one role',
+    language: () =>
+      toElement(
+        L.StoryRing(L.Avatar(null, { name: 'Ana Lima' }), { size: '48' }).gradient(['success']),
+      ),
+    bloom: () => (
+      <ThemedRgb>
+        {(c) => (
+          <StoryRing size={48} colors={[c.success]}>
+            {toElement(L.Avatar(null, { name: 'Ana Lima' }))}
+          </StoryRing>
+        )}
+      </ThemedRgb>
+    ),
+  },
+  {
+    name: 'StoryRing a gradient: a role, an app colour',
+    language: () =>
+      toElement(
+        L.StoryRing(L.Avatar(null, { name: 'Ana Lima' }), { size: '56', state: 'unseen' }).gradient(
+          ['primary', BRAND.color.sky],
+        ),
+      ),
+    bloom: () => (
+      <ThemedRgb>
+        {(c) => (
+          <StoryRing size={56} state="unseen" colors={[c.primary, '#38bdf8']}>
+            {toElement(L.Avatar(null, { name: 'Ana Lima' }))}
+          </StoryRing>
+        )}
+      </ThemedRgb>
     ),
   },
 ];

@@ -2,14 +2,8 @@ import type { ReactNode } from 'react';
 
 import type { Binding } from '../binding';
 import type { Child } from '../node';
-import {
-  type ColorToken,
-  type CornerName,
-  resolveCorner,
-  resolveSpace,
-  type SpaceToken,
-} from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
+import { type CornerName, resolveCorner, resolveSpace, type SpaceToken } from '../tokens';
+import type { ControlDraw, ControlRenderer, ProductColor } from './draw';
 
 /**
  * A product component's slot: a language child drawn where the component puts
@@ -45,8 +39,8 @@ export interface ProductSpec {
   readonly press?: true;
   /** Props from the node's own modifiers (a variant, a size, a tone). */
   readonly own?: (d: ControlDraw) => Record<string, unknown>;
-  /** The component's own colours, painted from their roles. */
-  readonly colors?: (d: ControlDraw) => Readonly<Record<string, ColorToken | undefined>>;
+  /** The component's own colours, painted from their roles; a list (a gradient) as a list. */
+  readonly colors?: (d: ControlDraw) => Readonly<Record<string, ProductColor | undefined>>;
 }
 
 /**

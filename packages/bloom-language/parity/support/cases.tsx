@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { useThemePaint, type ThemeColors } from '@oxy.so/bloom/theme';
+import { useTheme, useThemePaint, type ThemeColors } from '@oxy.so/bloom/theme';
 
 export type Scheme = 'light' | 'dark';
 
@@ -26,4 +26,16 @@ export interface ParityCase {
 /** Bloom JSX that reads the theme as an app does (`useThemePaint()`), for a colour passed by hand. */
 export function Themed({ children }: { children: (colors: ThemeColors) => ReactNode }): ReactNode {
   return children(useThemePaint());
+}
+
+/**
+ * Bloom JSX that reads the theme's RGB colours as an app does for colour math
+ * (`useTheme().colors`), for a list of colours passed by hand (a gradient).
+ */
+export function ThemedRgb({
+  children,
+}: {
+  children: (colors: ThemeColors) => ReactNode;
+}): ReactNode {
+  return children(useTheme().colors);
 }

@@ -72,6 +72,7 @@ import type {
   ChatInfoPanelStyle,
   ChatStatusTone,
   ColorToken,
+  InkToken,
   FileMessageStyle,
   MessageTone,
   OpacityName,
@@ -240,6 +241,8 @@ export interface ChatBackgroundView extends ViewModifiers<ChatBackgroundView> {
   /** `plain`, `pattern`, `gradient` or `image`. */
   style(value: ChatBackgroundStyle): ChatBackgroundView;
   tint(value: ColorToken): ChatBackgroundView;
+  /** The `gradient` style's stops, two or more: colour roles or an app's own colours. */
+  gradient(colors: readonly [InkToken, InkToken, ...InkToken[]]): ChatBackgroundView;
 }
 export interface ChatDateHeaderView extends ViewModifiers<ChatDateHeaderView> {
   /** `floating` over the scroll, or `inline` in it. */
@@ -264,7 +267,10 @@ export type ChatSearchResultsView = ViewModifiers<ChatSearchResultsView>;
 export interface StoriesRowView extends ViewModifiers<StoriesRowView> {
   spacing(value: SpaceToken): StoriesRowView;
 }
-export type StoryRingView = ViewModifiers<StoryRingView>;
+export interface StoryRingView extends ViewModifiers<StoryRingView> {
+  /** The ring's colours: one for a solid ring, two or more for a gradient (roles or an app's own colours). */
+  gradient(colors: readonly [InkToken, ...InkToken[]]): StoryRingView;
+}
 export interface TypingDotsView extends ViewModifiers<TypingDotsView> {
   tint(value: ColorToken): TypingDotsView;
 }
@@ -464,7 +470,10 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
         patternOpacity: opacity(options.patternOpacity),
       };
     },
-    colors: (d) => ({ tint: d.own('tint')?.value as ColorToken | undefined }),
+    colors: (d) => ({
+      tint: d.own('tint')?.value as ColorToken | undefined,
+      colors: d.own('gradient')?.value,
+    }),
   }),
   chatDateHeader: product(BloomChatDateHeader, {
     lengths: ['offset'],
@@ -500,6 +509,7 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
     slots: ['badge'],
     lengths: ['size', 'thickness', 'gap'],
     press: true,
+    colors: (d) => ({ colors: d.own('gradient')?.value }),
   }),
   typingDots: product(BloomTypingDots, {
     lengths: ['size'],
