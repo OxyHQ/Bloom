@@ -18,7 +18,6 @@ import {
 import { TYPE_SCALE } from '../typography/scale';
 import { pressHost } from './support/press-host';
 import {
-  classNamesOn,
   renderedChildren,
   resolvedStyle,
   sheenGlow,
@@ -335,7 +334,7 @@ describe('layout: the button IS the node its parent lays out', () => {
   it('renders the pressable as its outermost node — no wrapper in between', () => {
     const { toJSON } = renderWithTheme(
       <View testID="host">
-        <Button testID="btn" className="flex-1">
+        <Button testID="btn" style={{ flex: 1 }}>
           Wide
         </Button>
       </View>,
@@ -348,15 +347,15 @@ describe('layout: the button IS the node its parent lays out', () => {
     expect(rendered[0]?.props.accessibilityRole).toBe('button');
   });
 
-  it('lands the caller className on that same node, beside the button box', () => {
+  it('lands the caller style on that same node, beside the button box', () => {
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" className="flex-1">
+      <Button testID="btn" style={{ flex: 1 }}>
         Wide
       </Button>,
     );
     const style = getByTestId('btn').props.style;
-    expect(classNamesOn(style)).toContain('flex-1');
-    // Same node, so a layout class and the button's visuals cannot diverge. The
+    expect(resolvedStyle(style).flex).toBe(1);
+    // Same node, so a layout style and the button's visuals cannot diverge. The
     // radius is read from the geometry table rather than restated: what this
     // asserts is that the button's BOX is on the classed node.
     expect(resolvedStyle(style).borderRadius).toBe(BUTTON_RADIUS);
@@ -389,17 +388,17 @@ describe('layout: the button IS the node its parent lays out', () => {
   // `className` that the caller's own `className` replaced outright, so
   // `<IconButton className="flex-1" />` shipped transparent and borderless. It
   // now comes from the same resolved tokens `Button.web.tsx` already used.
-  it('keeps the icon variant chrome when the caller passes a className', () => {
+  it('keeps the icon variant chrome when the caller passes a layout style', () => {
     const theme = captureTheme();
     const palette = resolveButtonPalette('outline', theme, 'neutral');
     const { getByTestId } = renderWithTheme(
-      <Button testID="icon" className="flex-1" appearance="outline" tone="neutral" />,
+      <Button testID="icon" style={{ flex: 1 }} appearance="outline" tone="neutral" />,
     );
     const style = resolvedStyle(getByTestId('icon').props.style);
     expect(style.backgroundColor).toBe('transparent');
     expect(style.borderColor).toBe(palette.rest.border);
     expect(style.borderWidth).toBe(palette.borderWidth);
-    expect(classNamesOn(getByTestId('icon').props.style)).toContain('flex-1');
+    expect(style.flex).toBe(1);
   });
 });
 

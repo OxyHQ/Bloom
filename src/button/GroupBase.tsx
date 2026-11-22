@@ -37,13 +37,14 @@ import { useGroupSelection } from './use-group-selection';
 import type { SurfaceProps } from '../surface/types';
 import type { ButtonGroupProps } from './types';
 import { ButtonGroupContext } from './context';
+import { webDataSet } from '../styles/web-data';
 
 const TOUCH_PAINT_CSS = `
-.bloom-surface.bloom-button-group-touch-paint::before,
-.bloom-surface.bloom-button-group-touch-paint::after {
+[data-bloom-surface][data-bloom-button-group-touch-paint]::before,
+[data-bloom-surface][data-bloom-button-group-touch-paint]::after {
   inset-block: var(--bloom-button-group-visual-inset);
 }
-.bloom-surface.bloom-button-group-touch-paint::before { box-shadow: var(--bloom-button-group-shadow, none); }
+[data-bloom-surface][data-bloom-button-group-touch-paint]::before { box-shadow: var(--bloom-button-group-shadow, none); }
 `;
 
 /** Separators resolve against the material actually published by the group. */
@@ -116,7 +117,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
       resolveButtonGeometry(size, undefined, density, touch).height,
       touch,
     );
-    const paintClass = visualInset ? 'bloom-button-group-touch-paint' : undefined;
+    const paintHook = visualInset ? webDataSet({ bloomButtonGroupTouchPaint: '' }) : null;
     const paintStyle: WebCssStyle | undefined = visualInset
       ? {
           '--bloom-button-group-visual-inset': `${visualInset}px`,
@@ -194,7 +195,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
         <Surface
           radius={BUTTON_RADIUS}
           cornerCurve="round"
-          className={paintClass}
+          {...paintHook}
           role="group"
           accessibilityLabel={accessibilityLabel}
           // The group holds its items (GROUP_HOLDS_ITEMS).
@@ -268,7 +269,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
                   ]}
                 >
                   <Surface
-                    className={paintClass}
+                    {...paintHook}
                     radius={BUTTON_RADIUS}
                     cornerCurve="round"
                     fill={
