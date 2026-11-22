@@ -250,8 +250,12 @@ async function atRest(page, read) {
   }
 }
 
-/** What a table page draws: every cell, each side of each row. */
-const TABLE = `(${rowsInPage})().flatMap(({ index }) => ['bloom', 'language'].map((side) => (${describeInPage})(side + '-' + index, false)))`;
+/**
+ * A table page's elements, by their tags alone: what comes and goes (a
+ * sticker's still), read cheaply on a table of many cells, and at rest while
+ * a motion plays on (an agent avatar's idle).
+ */
+const TABLE = `(() => { const shape = (element) => element.tagName + '(' + [...element.children].map(shape).join('') + ')'; return shape(document.body); })()`;
 /** What a page that draws one side alone draws, with what it presents. */
 const FRAME = `(${describeInPage})('parity-frame', true)`;
 
