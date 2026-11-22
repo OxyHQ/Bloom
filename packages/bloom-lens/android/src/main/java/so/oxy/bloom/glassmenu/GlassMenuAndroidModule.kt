@@ -2,6 +2,7 @@ package so.oxy.bloom.glassmenu
 
 import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
 import so.oxy.bloom.glassmenu.records.GlassMenuItemRecord
+import so.oxy.bloom.glassmenu.records.GlassMemberRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -51,6 +52,12 @@ class GlassMenuAndroidModule : Module() {
       }
       Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
         view.alignment = alignment ?: "auto"
+      }
+      Prop("members") { view: GlassMenuAndroidView, members: List<GlassMemberRecord>? ->
+        view.members = members
+      }
+      Prop("blend") { view: GlassMenuAndroidView, blend: Float? ->
+        view.blend = blend ?: 0f
       }
 
       AsyncFunction("open") { view: GlassMenuAndroidView, x: Double?, y: Double?, width: Double?, height: Double? ->

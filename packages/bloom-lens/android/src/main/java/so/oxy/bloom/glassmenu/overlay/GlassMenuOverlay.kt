@@ -128,6 +128,11 @@ internal class GlassMenuOverlay private constructor(
         anchor.placementAlpha = alpha
         moved = true
       }
+      // A group's glasses follow their views: one that moved, arrived or left is drawn again now, and springs on.
+      if (anchor.group.measure(anchor)) {
+        moved = true
+        if (!anchor.group.isSettled) requestFrame()
+      }
     }
     return moved
   }
@@ -191,10 +196,13 @@ internal class GlassMenuOverlay private constructor(
     state.config = anchor.config
     state.trigger = anchor.triggerConfig
     anchor.applyLight(state, restRect, 1f)
-    val renderer = anchor.renderer(density)
-    renderer.prepare(state)
-    renderer.drawGlass(canvas, page, state, limits)
-    if (renderer.warmPipelines(canvas)) post { invalidate() }
+    // A group draws its glasses, and none while it has none (its first views not laid out yet).
+    if (anchor.group.place(state.members, state.incoming, anchor.width, anchor.height, density)) {
+      val renderer = anchor.renderer(density)
+      renderer.prepare(state)
+      renderer.drawGlass(canvas, page, state, limits)
+      if (renderer.warmPipelines(canvas)) post { invalidate() }
+    }
     val content = anchor.recordContent()
     content.alpha = opacity
     content.setScaleX(state.incoming.width() / anchor.width)
@@ -293,6 +301,8 @@ internal class GlassMenuOverlay private constructor(
       anchor.jelly.advance(seconds * anchor.config.speed)
       if (!anchor.jelly.isSettled) running = true
       if (!wasSettled || !anchor.jelly.isSettled) anchor.jellyFrame()
+      anchor.group.advance(seconds)
+      if (!anchor.group.isSettled) running = true
     }
     val active = session
     if (active != null) {

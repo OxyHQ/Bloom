@@ -13,6 +13,7 @@ export {
   useInLensBase,
   useLensBaseMenu,
   type LensBaseProps,
+  type LensGroupMember,
   type LensMenu,
   type LensMenuHandle,
 } from './base';
