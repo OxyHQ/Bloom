@@ -1,6 +1,6 @@
 [
  {
-  "name": "components/Components.tsx:54",
+  "name": "components/Components.tsx:57",
   "before": "<SettingsSection\n      label={'⟨0⟩'}\n      description={'⟨13⟩'}\n    >\n      <GroupedSection title={'⟨11⟩'} footer={'⟨12⟩'} variant=\"filled\">\n        <GroupedSectionItem\n          title={'⟨1⟩'}\n          description={'⟨2⟩'}\n          rightElement={<Switch checked={true} onCheckedChange={() => {}} />}\n        />\n        <GroupedSectionItem title=\"Language\" value=\"English\" onPress={() => {}} />\n        <GroupedSectionItem\n          title={'⟨6⟩'}\n          description={'⟨7⟩'}\n          descriptionLines={0}\n          wrapControl\n          rightElement={<SpinnerIcon size={20} />}\n        />\n        <GroupedSectionItem\n          title={'⟨8⟩'}\n          destructive\n          showChevron={false}\n          onPress={() => {}}\n        />\n        <GroupedSectionItem title={'⟨10⟩'} titleNumberOfLines={0} disabled />\n      </GroupedSection>\n    </SettingsSection>",
   "after": "toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))",
   "bindings": {
@@ -38,7 +38,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:86",
+  "name": "components/Components.tsx:89",
   "before": "<SettingsSection>\n      <Card appearance=\"outline\" radius=\"radius-16\" border=\"thin\" elevation=\"none\">\n        <SettingsValueField icon={RiSmartphoneLine}>Pixel 9</SettingsValueField>\n      </Card>\n    </SettingsSection>",
   "after": "toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))",
   "bindings": {
@@ -75,7 +75,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:104",
+  "name": "components/Components.tsx:107",
   "before": "<ScreenScrollView keyboardShouldPersistTaps=\"handled\">\n      {/* The profile's own fields */}\n      <View className=\"gap-4 p-4\">\n        <TextFieldInput\n          label={'⟨2⟩'}\n          value={'⟨0⟩'}\n          onChangeText={() => {}}\n          placeholder={'⟨3⟩'}\n          maxLength={50}\n          autoCapitalize=\"words\"\n          autoCorrect={false}\n          returnKeyType=\"done\"\n          onSubmitEditing={() => {}}\n        />\n      </View>\n    </ScreenScrollView>",
   "after": "toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))",
   "bindings": {
@@ -116,7 +116,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:125",
+  "name": "components/Components.tsx:128",
   "before": "<ChatEmptyState\n      title={'⟨0⟩'}\n      description={'⟨1⟩'}\n      action={<Button onPress={() => {}}>{'⟨2⟩'}</Button>}\n    />",
   "after": "toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(Text('⟨2⟩')).onPress(() => {}) }))",
   "bindings": {
@@ -151,7 +151,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:147",
+  "name": "components/Components.tsx:150",
   "before": "<ScreenScrollView onEndReached={() => {}} onEndReachedThreshold={0.5}>\n      <Search\n        label={'⟨2⟩'}\n        value={'⟨0⟩'}\n        onChangeText={() => {}}\n        autoCorrect={false}\n      />\n      <Muted numberOfLines={2}>{'⟨3⟩'}</Muted>\n      <Divider spacing={12} />\n      {<Hole n=\"4\" />}\n      <Loading size=\"sm\" variant=\"inline\" />\n    </ScreenScrollView>",
   "after": "toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), Text('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n=\"4\" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))",
   "bindings": {
@@ -204,7 +204,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:157",
+  "name": "components/Components.tsx:160",
   "before": "<Item\n          \n          title={'⟨0⟩'}\n          subtitle={'⟨1⟩'}\n          leading={<Avatar source={'⟨2⟩'} variant={'⟨3⟩'} size={36} />}\n          trailing={<Badge content={'⟨4⟩'} variant=\"subtle\" size=\"sm\" />}\n          onPress={() => {}}\n        />",
   "after": "toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))",
   "bindings": {
@@ -250,7 +250,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:183",
+  "name": "components/Components.tsx:186",
   "before": "<ResponsiveGrid maxColumns={2} gap={16} testID=\"about\">\n      <Field label={'⟨0⟩'} description={'⟨4⟩'}>\n        <Checkbox checked={true} onCheckedChange={() => {}} label={'⟨3⟩'} />\n      </Field>\n      <Textarea\n        value={'⟨5⟩'}\n        onChangeText={() => {}}\n        placeholder={'⟨7⟩'}\n        rows={4}\n        autoResize\n        maxRows={8}\n        showCount\n        maxLength={500}\n      />\n      <IconCircle icon={RiStarLine} size=\"lg\" />\n    </ResponsiveGrid>",
   "after": "toElement(Grid(LField('⟨0⟩', LCheckbox([true, () => {}], '⟨3⟩')).description('⟨4⟩'), TextEditor(['⟨5⟩', () => {}]).placeholder('⟨7⟩').rows(4).autoResize(8).showCount().maxLength(500), LIconCircle(RiStarLine).size('lg')).columns(2).spacing('lg').testID('about'))",
   "bindings": {
@@ -313,7 +313,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:218",
+  "name": "components/Components.tsx:221",
   "before": "<View className=\"flex-row items-center gap-2\">\n      <Chip size=\"xl\" appearance=\"subtle\" selected={true} onPress={() => {}}>\n        {'⟨0⟩'}\n      </Chip>\n      <Chip leadingIcon={RiHeart3Line} trailingIcon={RiCloseLine} disabled>\n        Liked\n      </Chip>\n      <EngagementAction\n        icon={RiHeart3Line}\n        activeIcon={RiHeart3Fill}\n        accessibilityLabel={'⟨3⟩'}\n        onPress={() => {}}\n        active={true}\n        count={2}\n        tone=\"error\"\n        popOnActivate\n      />\n    </View>",
   "after": "toElement(HStack(LChip(Text('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), Text('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))",
   "bindings": {
@@ -386,7 +386,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:241",
+  "name": "components/Components.tsx:244",
   "before": "<TextField size=\"lg\" disabled>\n      <TextFieldIcon icon={RiMailLine} />\n      <TextFieldInput\n        label={'⟨2⟩'}\n        value={'⟨0⟩'}\n        onChangeText={() => {}}\n        keyboardType=\"email-address\"\n      />\n    </TextField>",
   "after": "toElement(LTextField(['⟨0⟩', () => {}], '⟨2⟩').keyboard('email-address').size('lg').disabled().icon(RiMailLine))",
   "bindings": {
@@ -445,7 +445,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:257",
+  "name": "components/Components.tsx:260",
   "before": "<View className=\"flex-row gap-2\" accessibilityRole=\"header\">\n      <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />\n      <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />\n      <RiStarLine fill={parityTheme.colors.error} />\n    </View>",
   "after": "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error')).spacing('sm').role('header'))",
   "bindings": {
@@ -507,7 +507,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:267",
+  "name": "components/Components.tsx:270",
   "before": "<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>\n      <View style={{ flexGrow: 1, gap: 12 }}>{<Hole n=\"0\" />}</View>\n      <View style={[{ width: 24, height: 24 }, { marginLeft: 8 }]} />\n    </View>",
   "after": "toElement(HStack(VStack(Embed(<Hole n=\"0\" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))",
   "bindings": {
@@ -554,7 +554,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:289",
+  "name": "components/Components.tsx:292",
   "before": "<Slider\n      value={2}\n      onValueChange={() => {}}\n      label={'⟨2⟩'}\n      min={0.5}\n      max={2}\n      step={0.25}\n      formatValue={() => {}}\n      onSlidingComplete={() => {}}\n    />",
   "after": "toElement(LSlider([2, () => {}], '⟨2⟩').bounds(0.5, 2).step(0.25).valueFormat(() => {}).onCommit(() => {}))",
   "bindings": {
@@ -602,7 +602,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:303",
+  "name": "components/Components.tsx:306",
   "before": "<Admonition type=\"info\">{'⟨0⟩'}</Admonition>",
   "after": "toElement(LAdmonition(Text('⟨0⟩')).style('info'))",
   "bindings": {
@@ -651,7 +651,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:308",
+  "name": "components/Components.tsx:311",
   "before": "<PageHeader\n      title={'⟨0⟩'}\n      backLabel={'⟨1⟩'}\n      onBack={() => {}}\n      titleAlign=\"center\"\n      safeArea={false}\n      actions={<Button onPress={() => {}}>{'⟨3⟩'}</Button>}\n    />",
   "after": "toElement(LHeader('⟨0⟩').backLabel('⟨1⟩').onBack(() => {}).titleAlign('center').safeArea(false).toolbar(LButton(Text('⟨3⟩')).onPress(() => {})).inPage())",
   "bindings": {
@@ -705,7 +705,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:320",
+  "name": "components/Components.tsx:323",
   "before": "<PageHeader title={'⟨0⟩'} onBack={null} presentation=\"floating\" />",
   "after": "toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())",
   "bindings": {
@@ -755,7 +755,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:334",
+  "name": "components/Components.tsx:337",
   "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={(() => {})}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
   "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
   "bindings": {
@@ -811,7 +811,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:361",
+  "name": "components/Components.tsx:364",
   "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} variant=\"underline\">\n      {ITEMS.map((item: { id: string; label: string; count?: number }) => (\n        <TabsTrigger key={'k6'} value={'⟨3⟩'} label={'⟨4⟩'} count={2} />\n      ))}\n    </Tabs>",
   "after": "toElement(LTabs(['⟨0⟩', () => {}], ITEMS.map((item: { id: string; label: string; count?: number }) => TabItem('⟨3⟩', '⟨4⟩').count(2))).style('underline'))",
   "bindings": {
@@ -867,7 +867,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:371",
+  "name": "components/Components.tsx:374",
   "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} fullWidth label={'⟨4⟩'}>\n      <TabsTrigger value=\"posts\" label={'⟨2⟩'} leadingIcon={RiStarLine} />\n      {/* Likes are private. */}\n      <TabsTrigger value=\"likes\" label={'⟨3⟩'} leadingIcon={RiHeart3Line} iconOnly />\n    </Tabs>",
   "after": "toElement(LTabs(['⟨0⟩', () => {}], TabItem('posts', '⟨2⟩').icon(RiStarLine), /* Likes are private. */ TabItem('likes', '⟨3⟩').icon(RiHeart3Line).iconOnly()).fullWidth().label('⟨4⟩'))",
   "bindings": {
@@ -931,7 +931,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:389",
+  "name": "components/Components.tsx:392",
   "before": "<View className=\"gap-2\">\n      <SegmentedControl\n        label={'⟨5⟩'}\n        type=\"radio\"\n        size=\"sm\"\n        value={'⟨0⟩'}\n        onChange={() => {}}\n      >\n        <SegmentedControlItem value=\"24h\">\n          <SegmentedControlItemText>{'⟨2⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"7d\" disabled={true}>\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n      <SegmentedControl type=\"tabs\" variant=\"plain\" value={'⟨6⟩'} onValueChange={() => {}}>\n        {ITEMS.map((item) => (\n          <SegmentedControlItem key={'k11'} value={'⟨9⟩'}>\n            <SegmentedControlItemText>{'⟨10⟩'}</SegmentedControlItemText>\n          </SegmentedControlItem>\n        ))}\n      </SegmentedControl>\n    </View>",
   "after": "toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))",
   "bindings": {
@@ -999,7 +999,7 @@
   "screen": false
  },
  {
-  "name": "components/Components.tsx:423",
+  "name": "components/Components.tsx:426",
   "before": "<Field label={'⟨0⟩'}>\n      <SegmentedControl type=\"radio\" value={'⟨1⟩'} onValueChange={() => {}}>\n        <SegmentedControlItem value=\"month\">\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"year\">\n          <SegmentedControlItemText>{'⟨4⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n    </Field>",
   "after": "toElement(LField('⟨0⟩', Segmented(['⟨1⟩', () => {}], Option('month', '⟨3⟩'), Option('year', '⟨4⟩'))))",
   "bindings": {
@@ -1060,6 +1060,184 @@
    "Segmented"
   ],
   "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/Components.tsx:441",
+  "before": "<SettingsSelect\n      label={'⟨0⟩'}\n      value={'⟨1⟩'}\n      onChange={() => {}}\n      items={ITEMS}\n    />",
+  "after": "toElement(LSettingsSelect('⟨0⟩', ['⟨1⟩', () => {}], ITEMS))",
+  "bindings": {
+   "SettingsSelect": {
+    "module": "@oxy.so/bloom/settings-modal/select",
+    "imported": "SettingsSelect"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/Components.tsx:455",
+  "before": "<AvatarGroup\n      items={ITEMS}\n      layout=\"conversation\"\n      size={32}\n      max={3}\n      total={2}\n      showInitials\n    />",
+  "after": "toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())",
+  "bindings": {
+   "AvatarGroup": {
+    "module": "@oxy.so/bloom/avatar-group",
+    "imported": "AvatarGroup"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false
+ },
+ {
+  "name": "components/Components.tsx:468",
+  "before": "<View className=\"gap-2\">\n      <List\n        items={ITEMS}\n        separator=\"line\"\n        header={<Muted>{'⟨1⟩'}</Muted>}\n        empty={<Muted>{'⟨2⟩'}</Muted>}\n        testID=\"people\"\n      />\n      <List items={ITEMS} loading={true} loadingCount={2} />\n    </View>",
+  "after": "toElement(VStack(LList(ITEMS).separator('line').headerContent(Text('⟨1⟩').textStyle('muted')).emptyState(Text('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "List": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "List"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList"
+  ],
+  "classes": [
+   "gap-2"
+  ],
   "within": [],
   "themed": false,
   "screen": false

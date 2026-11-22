@@ -1,6 +1,7 @@
 // Bloom components as apps write them, each one a rule of the codemod's (src/components.ts).
 import { Admonition } from '@oxy.so/bloom/admonition';
 import { Avatar } from '@oxy.so/bloom/avatar';
+import { AvatarGroup, type AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
 import { Card } from '@oxy.so/bloom/card';
@@ -20,6 +21,7 @@ import { RiSmartphoneLine } from '@oxy.so/bloom/icons/RiSmartphoneLine';
 import { RiStarLine } from '@oxy.so/bloom/icons/RiStarLine';
 import { IconCircle } from '@oxy.so/bloom/icon-circle';
 import { Item } from '@oxy.so/bloom/item';
+import { List, type ListEntry } from '@oxy.so/bloom/list';
 import { Loading, SpinnerIcon } from '@oxy.so/bloom/loading';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
@@ -31,6 +33,7 @@ import {
   SegmentedControlItemText,
 } from '@oxy.so/bloom/segmented-control';
 import { SettingsSection, SettingsValueField } from '@oxy.so/bloom/settings-modal';
+import { SettingsSelect } from '@oxy.so/bloom/settings-modal/select';
 import { Switch } from '@oxy.so/bloom/switch';
 import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
 import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-field';
@@ -430,5 +433,47 @@ export function Cadence({
         </SegmentedControlItem>
       </SegmentedControl>
     </Field>
+  );
+}
+
+export function Autoplay({ mode, setMode }: { mode: string; setMode: (mode: string) => void }) {
+  return (
+    <SettingsSelect
+      label={t('settings.autoplay')}
+      value={mode}
+      onChange={setMode}
+      items={[
+        { value: 'always', label: t('settings.always') },
+        { value: 'never', label: t('settings.never') },
+      ]}
+    />
+  );
+}
+
+export function Members({ members, total }: { members: AvatarGroupItem[]; total: number }) {
+  return (
+    <AvatarGroup
+      items={members}
+      layout="conversation"
+      size={32}
+      max={3}
+      total={total}
+      showInitials
+    />
+  );
+}
+
+export function Contacts({ rows, loading }: { rows: ListEntry[]; loading: boolean }) {
+  return (
+    <View className="gap-2">
+      <List
+        items={rows}
+        separator="line"
+        header={<Muted>{t('people.title')}</Muted>}
+        empty={<Muted>{t('people.none')}</Muted>}
+        testID="people"
+      />
+      <List items={rows} loading={loading} loadingCount={2} />
+    </View>
   );
 }
