@@ -58,6 +58,7 @@ import type { SortableChipRowKind } from './controls/sortable-chip-row';
 import type { ViewportKind } from './controls/viewport';
 import type { GlassGroupKind } from './controls/glass-group';
 import type { ToolbarGroupKind } from './controls/toolbar-group';
+import type { ViewThatFitsKind } from './controls/view-that-fits';
 import type {
   ConfirmationDialogKind,
   ConfirmationDialogView,
@@ -1740,6 +1741,7 @@ export type NodeKind =
   | ViewportKind
   | GlassGroupKind
   | ToolbarGroupKind
+  | ViewThatFitsKind
   | ConfirmationDialogKind
   | AnimatedCheckKind
   | FactStripKind

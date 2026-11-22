@@ -50,6 +50,7 @@ import { SORTABLE_CHIP_ROWS } from './sortable-chip-row';
 import { VIEWPORTS } from './viewport';
 import { GLASS_GROUPS } from './glass-group';
 import { TOOLBAR_GROUPS } from './toolbar-group';
+import { VIEWS_THAT_FIT } from './view-that-fits';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHAT_COMPOSERS } from './chat-composer';
 import { CHART_CARDS } from './chart-cards';
@@ -176,6 +177,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...VIEWPORTS,
   ...GLASS_GROUPS,
   ...TOOLBAR_GROUPS,
+  ...VIEWS_THAT_FIT,
   ...AGENT_AVATARS,
   ...CHAT_COMPOSERS,
   ...CHART_CARDS,

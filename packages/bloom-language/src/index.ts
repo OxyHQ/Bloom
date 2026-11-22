@@ -616,6 +616,8 @@ export { Viewport } from './controls/viewport';
 export { GlassGroup } from './controls/glass-group';
 export { ConfirmationDialog } from './controls/confirmation-dialog';
 export { ToolbarGroup, ToolbarSpacer } from './controls/toolbar-group';
+export { ViewThatFits } from './controls/view-that-fits';
+export type { ViewThatFitsView } from './controls/view-that-fits';
 export type {
   ToolbarGroupView,
   ToolbarSpacerKind,

@@ -4176,6 +4176,28 @@ what goes into a node's arguments and options.
 `view()` node mounts its component directly. Anything else mounts under one
 boundary component, which takes the environment provided where it is placed.
 
+## ViewThatFits
+
+`ViewThatFits(axis, ...candidates)` is SwiftUI's `ViewThatFits(in:)`: the first
+candidate whose ideal size along `axis` fits the room it is given, else the
+last. It is for content (a long translation, a count, a toolbar label); a
+breakpoint stays `when()`.
+
+```ts
+ViewThatFits('horizontal',
+  HStack(Text(pct), Progress(value).frame({ width: '96' })),
+  Progress(value).frame({ width: '96' }),
+  Text(pct),
+)
+```
+
+The room is the box's own layout, and each candidate's ideal size its layout
+in a hidden, unbounded, absolute row (or column) beside it, hidden from
+assistive technology, so nothing wraps or shrinks it; until both are known the
+first candidate is drawn. It is the same on every platform (on the web,
+react-native-web's layout events). Each candidate is laid out once more, so
+the compiler warns above three.
+
 ## Conditionals and lists
 
 ```ts

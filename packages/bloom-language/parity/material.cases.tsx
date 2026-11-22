@@ -19,6 +19,7 @@ import { GLASS_OPACITY } from '../src/generated/spec.generated';
 import { clear, identity, regular } from '../src/glass';
 import { GlassGroup } from '../src/controls/glass-group';
 import { ToolbarGroup, ToolbarSpacer } from '../src/controls/toolbar-group';
+import { ViewThatFits } from '../src/controls/view-that-fits';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { defineTokens } from '../src/tokens';
@@ -804,7 +805,83 @@ const toolbarGroups: ParityCase[] = [
   },
 ];
 
+/**
+ * The first candidate that fits, as an app measures it with React Native: the
+ * box's own width, and each candidate's ideal width in a hidden, unbounded row.
+ */
+function Fits({ candidates }: { candidates: readonly ReactNode[] }) {
+  const [room, setRoom] = useState<number>();
+  const [ideal, setIdeal] = useState<readonly (number | undefined)[]>(() =>
+    candidates.map(() => undefined),
+  );
+  let chosen = 0;
+  if (room !== undefined && ideal.every((value) => value !== undefined)) {
+    const fits = ideal.findIndex((value) => (value as number) <= room);
+    chosen = fits === -1 ? candidates.length - 1 : fits;
+  }
+  return (
+    <RN.View onLayout={(event) => setRoom(event.nativeEvent.layout.width)}>
+      {candidates[chosen]}
+      <RN.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 100000,
+          flexDirection: 'row',
+          opacity: 0,
+        }}
+        pointerEvents="none"
+        aria-hidden
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        {candidates.map((candidate, index) => (
+          <RN.View
+            // biome-ignore lint/suspicious/noArrayIndexKey: a candidate is its place
+            key={index}
+            style={{ alignSelf: 'flex-start' }}
+            onLayout={(event) => {
+              const width = event.nativeEvent.layout.width;
+              setIdeal((last) => last.map((v, i) => (i === index ? width : v)));
+            }}
+          >
+            {candidate}
+          </RN.View>
+        ))}
+      </RN.View>
+    </RN.View>
+  );
+}
+
+const fits: ParityCase[] = [
+  {
+    name: 'ViewThatFits draws the first candidate that fits',
+    language: () =>
+      toElement(
+        L.VStack(
+          ViewThatFits(
+            'horizontal',
+            L.Text('Share this post with everyone you follow'),
+            L.Text('Share'),
+          ),
+        ).frame({ width: '160' }),
+      ),
+    bloom: () => (
+      <RN.View style={{ width: 160 }}>
+        <Fits
+          candidates={[
+            <Text key="a">Share this post with everyone you follow</Text>,
+            <Text key="b">Share</Text>,
+          ]}
+        />
+      </RN.View>
+    ),
+  },
+];
+
 export const MATERIAL_CASES: ParityCase[] = [
+  ...fits,
   ...surface,
   ...glassGroups,
   ...toolbarGroups,

@@ -174,8 +174,9 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
-    /// Apple's toolbar rules: at most three groups in a toolbar, and text actions
-    /// kept apart from icon actions within a group.
+    /// Apple's toolbar rules (at most three groups in a toolbar, text actions
+    /// kept apart from icon actions within a group), and a `ViewThatFits` of at
+    /// most three candidates.
     fn check_toolbar(&mut self, expression: &Expression) {
         let (module, scoping) = (self.module, self.scoping);
         for (name, call) in modifier_calls(expression) {
@@ -195,6 +196,18 @@ impl Checker<'_> {
                     help: Some("Apple: aim for a maximum of three groups; move the rest into a menu".into()),
                 });
             }
+        }
+        if chain_kind(expression, module, scoping) == "viewThatFits"
+            && let Some(root) = root_call(expression)
+            && root.arguments.len() > 4
+        {
+            self.checked.warnings.push(Problem {
+                span: root.span,
+                message: format!("ViewThatFits measures {} candidates", root.arguments.len() - 1),
+                help: Some(
+                    "each candidate is laid out once more to measure it: keep to three, and small".into(),
+                ),
+            });
         }
         if chain_kind(expression, module, scoping) != "toolbarGroup" {
             return;
@@ -218,7 +231,9 @@ impl Checker<'_> {
             self.checked.warnings.push(Problem {
                 span: root.span,
                 message: "a toolbar group mixes text and icon buttons".into(),
-                help: Some("Apple: keep actions with text labels apart; put them in groups of their own".into()),
+                help: Some(
+                    "Apple: keep actions with text labels apart; put them in groups of their own".into(),
+                ),
             });
         }
     }
@@ -374,7 +389,11 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
 
 /// `defineEnvironment('name', default)`: a literal name, and a literal default
 /// whose kind every `.environment(key, value)` is held to.
-fn check_define_environment(expression: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+fn check_define_environment(
+    expression: &Expression,
+    module: &Module,
+    scoping: &Scoping,
+) -> Result<(), Problem> {
     let Expression::CallExpression(call) = expression.without_parentheses() else { return Ok(()) };
     if module.resolve(&call.callee, scoping) != Some(Binding::DefineEnvironment) {
         return Ok(());
@@ -401,7 +420,9 @@ fn check_define_environment(expression: &Expression, module: &Module, scoping: &
     }
     Err(Problem {
         span: default.map_or(call.span, GetSpan::span),
-        message: "defineEnvironment() takes a literal default: a string, a number, a boolean, null or undefined".into(),
+        message:
+            "defineEnvironment() takes a literal default: a string, a number, a boolean, null or undefined"
+                .into(),
         help: Some("an environment value is a token or a plain value, never a style or an object".into()),
     })
 }
@@ -766,7 +787,8 @@ fn check_on_parameter(
         };
         let (what, only) = only;
         if !only.contains(&modifier) || !spec.modifiers.contains(&modifier) {
-            let varies: Vec<&str> = only.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
+            let varies: Vec<&str> =
+                only.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
             return Err(Problem {
                 span,
                 message: format!("A {what} cannot change .{modifier}()"),
