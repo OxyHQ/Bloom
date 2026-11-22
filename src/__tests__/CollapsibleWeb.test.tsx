@@ -43,13 +43,7 @@ it('measures arbitrary content, retains its state and hides closed descendants w
   const draw = (open: boolean) =>
     act(() =>
       root.render(
-        <Collapsible
-          open={open}
-          testID="body"
-          className="custom-shell"
-          contentClassName="custom-body"
-          contentStyle={{ padding: 18 }}
-        >
+        <Collapsible open={open} testID="body" contentStyle={{ padding: 18 }}>
           <input defaultValue="Saved" />
         </Collapsible>,
       ),
@@ -67,7 +61,9 @@ it('measures arbitrary content, retains its state and hides closed descendants w
   // Open and at rest: no cap and no clip, so content that grows or overflows is never cut.
   expect(panel.style.maxHeight).toBe('');
   expect(panel.style.overflow).toBe('visible');
-  expect(container.querySelector('.custom-body')?.getAttribute('style')).toContain('padding: 18px');
+  expect(container.querySelector('.bloom-collapsible-content')?.getAttribute('style')).toContain(
+    'padding: 18px',
+  );
   naturalHeight = 1300;
   draw(true);
   expect(observations).toBe(0);

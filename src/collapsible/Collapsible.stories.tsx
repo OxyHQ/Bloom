@@ -57,8 +57,8 @@ function Composed() {
                 open={state.checked}
                 returnFocusRef={state.controlRef}
                 testID="plan-body"
-                className="w-full"
-                contentClassName="gap-space-12 p-space-12"
+                style={{ width: '100%' }}
+                contentStyle={{ gap: 12, padding: 12 }}
               >
                 <TextInput accessibilityLabel="Delivery note" placeholder="Delivery note" />
                 <Select value={interval} onValueChange={setInterval}>

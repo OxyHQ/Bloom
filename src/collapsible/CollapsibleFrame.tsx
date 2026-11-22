@@ -1,10 +1,10 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, TextInput, View, type LayoutChangeEvent } from 'react-native';
-import { styled } from 'react-native-css';
 import { CollapsibleVisibilityContext, useCollapsibleVisibility } from './context';
 import type { CollapsibleFrameProps } from './frame-types';
 
-function CollapsibleFrameComponent({
+export function CollapsibleFrame({
   open,
   hidden,
   settled = false,
@@ -103,7 +103,3 @@ function CollapsibleFrameComponent({
     </CollapsibleVisibilityContext.Provider>
   );
 }
-export const CollapsibleFrame = styled(CollapsibleFrameComponent, {
-  className: 'style',
-  contentClassName: 'contentStyle',
-});
