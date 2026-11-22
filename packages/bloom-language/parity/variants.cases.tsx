@@ -291,6 +291,49 @@ export const VARIANT_CASES: ParityCase[] = [
     ),
   },
   {
+    name: 'an embedded pressable inside a pressable: the hover and press are its own',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.Text('a'),
+          L.Embed(
+            <RN.Pressable onPress={onPress} style={{ width: 24, height: 24 }}>
+              <Text>b</Text>
+            </RN.Pressable>,
+          ),
+        )
+          .padding('sm')
+          .onPress(onPress)
+          .when('pressed', (v) => v.opacity('70'))
+          .when('hovered', (v) => v.background('surface')),
+      ),
+    // A pressable react-native-web draws is focusable: the stack's CSS leaves its
+    // hover and press to it, as react-native-web's Pressable does (Chrome holds both).
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...TRACKED}
+            style={
+              RN.Platform.OS === 'web'
+                ? (state: { pressed: boolean; hovered?: boolean }) => ({
+                    ...padding(space.sm),
+                    ...stated(colors.backgroundSecondary, 0.7)(state),
+                  })
+                : { flexDirection: 'row', ...padding(space.sm) }
+            }
+          >
+            <Text>a</Text>
+            <RN.Pressable onPress={onPress} style={{ width: 24, height: 24 }}>
+              <Text>b</Text>
+            </RN.Pressable>
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'a Bloom component’s breakpoint variant, in its own style',
     language: () =>
       toElement(

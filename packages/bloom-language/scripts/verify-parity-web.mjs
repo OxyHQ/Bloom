@@ -12,8 +12,9 @@
  *
  * Then each press host of a language cell is held: a view whose variants
  * answer its state (the anchor class `blsg`) and every pressable
- * react-native-web draws (Bloom's press host class `blsp`: the language's
- * hosts, Bloom's Avatar and EngagementAction). The pointer goes over it (at a
+ * react-native-web draws (Bloom's press host class `blsp` on the language's
+ * hosts, Bloom's Avatar and EngagementAction; `tabindex="0"` on any other, an
+ * Embed's included). The pointer goes over it (at a
  * point no inner host covers), then presses, at the same place in both cells,
  * and the two cells are compared again on every computed style and size. So a
  * state variant draws what Bloom's own pressed or hovered style draws, and a
@@ -181,7 +182,7 @@ function rowsInPage() {
  * inside it.
  */
 function pressHostsInPage(testid) {
-  const HOSTS = '.blsg, .blsp';
+  const HOSTS = '.blsg, .blsp, [tabindex="0"]';
   const cell = document.querySelector(`[data-testid="${testid}"]`);
   const hosts = [];
   const walk = (element, path) => {
