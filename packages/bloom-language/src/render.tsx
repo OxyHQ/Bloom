@@ -88,7 +88,7 @@ import {
   type TextRun,
   type ViewNodeProps,
 } from './node';
-import { ENVIRONMENT, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
+import { ENVIRONMENT, ENVIRONMENT_TAKERS, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
@@ -204,6 +204,7 @@ import {
   type TextStyleName,
 } from './tokens';
 import { deriveEnv, EnvContext, materialEnv, type Env } from './env';
+import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
@@ -296,7 +297,8 @@ const ROLE: Record<Role, string | undefined> = {
   list: 'list',
 };
 
-const ENV_KINDS: ReadonlySet<string> = new Set(ENVIRONMENT);
+/** What sets the environment of what is inside: the text traits, and the environment values. */
+const ENV_KINDS: ReadonlySet<string> = new Set([...ENVIRONMENT, 'environment']);
 
 /** Marks the props of a box drawn by a `StateHost`: its value says whether the box is pressable. */
 const STATEFUL = '$$stateful';
@@ -560,7 +562,51 @@ function isAppToken(value: unknown): value is AppToken<'space'> {
 /** A FAB is on glass: the platform's, unless its chain names another. */
 const FAB_GLASS: Modifier = { kind: 'glass', key: regular.key, value: regular };
 
-function plan(node: Node): Plan {
+/**
+ * A Button's glass styles, as the chain they stand for: the button on glass
+ * (Bloom's `material="shared"`, the glass drawing its fill), `glass` in the
+ * neutral tone's `subtle` ink and `glassProminent` a `solid` one, whose fill
+ * tints the glass (the accent by default). The glass comes first, as a FAB's
+ * does, and a `.glass()` the chain names is the glass instead; a tint it names
+ * comes later and wins.
+ */
+const GLASS_STYLES: Readonly<Record<string, readonly Modifier[]>> = {
+  glass: [
+    { kind: 'tint', key: 'tint:neutral', value: 'neutral' },
+    { kind: 'style', key: 'style:subtle', value: 'subtle' },
+  ],
+  glassProminent: [
+    { kind: 'tint', key: 'tint:accent', value: 'accent' },
+    { kind: 'style', key: 'style:solid', value: 'solid' },
+  ],
+};
+
+/** A button's chain with a glass style written out (see `GLASS_STYLES`). */
+function glassStyled(modifiers: readonly Modifier[], onGlass: boolean): readonly Modifier[] {
+  let style: string | undefined;
+  for (const modifier of modifiers) if (modifier.kind === 'style') style = modifier.value;
+  const styled = style === undefined ? undefined : GLASS_STYLES[style];
+  if (styled === undefined) return modifiers;
+  const [tint, appearance] = styled as [Modifier, Modifier];
+  const out: Modifier[] = onGlass ? [tint] : [FAB_GLASS, tint];
+  for (const modifier of modifiers)
+    out.push(modifier.kind === 'style' && GLASS_STYLES[modifier.value] ? appearance : modifier);
+  return out;
+}
+
+const DISABLED_TAKERS: ReadonlySet<string> = new Set(ENVIRONMENT_TAKERS.disabled.kinds);
+
+/**
+ * Whether a view's `.disabled()` reaches everything inside it: a stack's and
+ * any view's that takes no `disabled` of its own do. A Bloom component that
+ * takes one keeps it, so Bloom decides what its content does, as it does for
+ * an app's JSX (a disabled `ChipRow` and its chips).
+ */
+function handsDownDisabled(kind: NodeKind): boolean {
+  return kind === 'stack' || !DISABLED_TAKERS.has(kind);
+}
+
+function plan(node: Node, env: Env): Plan {
   const result: Plan = {
     layers: [],
     place: emptyPlacement(),
@@ -586,8 +632,15 @@ function plan(node: Node): Plan {
     motion: undefined,
   };
   const onGlass = node.modifiers.some((modifier) => modifier.kind === 'glass');
+  // What the environment sets on this kind of node comes first: its own chain wins.
+  const inherited = inheritedModifiers(node.kind, env);
+  const chained = inherited.length > 0 ? [...inherited, ...node.modifiers] : node.modifiers;
   const modifiers =
-    node.kind === 'fab' && !onGlass ? [FAB_GLASS, ...node.modifiers] : node.modifiers;
+    node.kind === 'fab' && !onGlass
+      ? [FAB_GLASS, ...chained]
+      : node.kind === 'button'
+        ? glassStyled(chained, onGlass)
+        : chained;
   // A `disabled` variant answers the view's own `disabled()`, wherever it is chained.
   let disabled = false;
   for (const modifier of modifiers) if (modifier.kind === 'disabled') disabled = modifier.value;
@@ -622,6 +675,9 @@ function plan(node: Node): Plan {
       result.env.push(modifier);
       continue;
     }
+    // `disabled` is the view's own, and the environment of everything inside it,
+    // except inside a Bloom component that takes it itself (see `handsDownDisabled`).
+    if (modifier.kind === 'disabled' && handsDownDisabled(node.kind)) result.env.push(modifier);
     switch (modifier.kind) {
       case 'grow':
       case 'shrink':
@@ -940,7 +996,7 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
   ) {
     return last.element;
   }
-  const p = plan(node);
+  const p = plan(node, ctx.env);
   if (p.motion !== undefined) placeGeometry(p, p.motion, ctx.animation === undefined);
   const element =
     p.motion === undefined ? drawNode(node, p, ctx, key, undefined) : drawMoving(node, p, ctx, key);
@@ -1160,7 +1216,11 @@ function drawNode(
   const badge = ownValue(p, 'badge')?.value;
   if (isNode(badge) && badge.kind === 'badge') {
     // An attached badge is Bloom's Badge around the view, at its placement.
-    element = draw(BloomBadge, { ...badgeProps(badge, plan(badge)), key: reactKey }, element);
+    element = draw(
+      BloomBadge,
+      { ...badgeProps(badge, plan(badge, ctx.env)), key: reactKey },
+      element,
+    );
   }
   const alert = ownValue(p, 'alert')?.value;
   const dialog = ownValue(p, 'dialog')?.value;
