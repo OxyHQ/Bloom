@@ -477,7 +477,7 @@ const rust = `//! ${HEADER}
 
 /// A node kind: the constructors that make it, every modifier it takes, the
 /// densities its \`density()\` takes, and the token sets its \`size()\`,
-/// \`tint()\`, \`style()\` and \`shape()\` read.
+/// \`tint()\`, \`style()\`, \`shape()\` and \`blend()\` read.
 pub struct NodeSpec {
     pub kind: &'static str,
     pub constructors: &'static [&'static str],
@@ -487,6 +487,7 @@ pub struct NodeSpec {
     pub tint: Option<&'static str>,
     pub style: Option<&'static str>,
     pub shape: Option<&'static str>,
+    pub blend: Option<&'static str>,
 }
 
 /// Token set name → its token names.
@@ -515,7 +516,7 @@ pub const NODES: &[NodeSpec] = &[
 ${Object.entries(nodes)
   .map(
     ([kind, node]) =>
-      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, densities: ${rustList(node.densities ?? [])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)} },`,
+      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, densities: ${rustList(node.densities ?? [])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)}, blend: ${rustOption(node.blend)} },`,
   )
   .join('\n')}
 ];

@@ -424,6 +424,7 @@
     "engagementTone": ["primary", "secondary", "tertiary", "success", "warning", "error", "info"],
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
+    "glassTransition": ["matchedGeometry", "materialize"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
@@ -1201,6 +1202,10 @@
     "delay": ["duration"],
     "anchor": ["anchor"],
     "matchedGeometry": ["value", "namespace"],
+    "glassID": ["value", "namespace"],
+    "glassUnion": ["value", "namespace"],
+    "glassTransition": ["glassTransition"],
+    "inContent": [],
     "drag": ["motionValue", "value?"],
     "swipe": ["swipeDirection", "value"],
     "pinch": ["motionValue", "value?"],
@@ -1726,7 +1731,11 @@
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
@@ -3366,6 +3375,7 @@
     },
     "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
     "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] },
+    "glassGroup": { "constructors": ["GlassGroup"], "modifiers": ["blend"], "blend": "space" },
     "agentAvatar": {
       "constructors": ["AgentAvatar"],
       "modifiers": ["size", "mood", "paused", "interactive", "portrait"],
