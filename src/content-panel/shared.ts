@@ -42,8 +42,8 @@ function repaintedByStyle(style: StyleProp<ViewStyle>): boolean {
  * The exact fill the panel publishes, or `undefined` when it cannot know it.
  *
  * The explicit surfaceColor wins, followed by a string background in
- * surfaceStyle. A class-only repaint is unknown unless its caller supplies
- * surfaceColor. Otherwise the default card token is the raw fill.
+ * surfaceStyle; any other repaint by style is unknown unless its caller
+ * supplies surfaceColor. Otherwise the default card token is the raw fill.
  * Framed hosts move this fill into translucent paint and publish its composite;
  * unframed hosts retain the unmodified fill.
  *
@@ -52,7 +52,6 @@ function repaintedByStyle(style: StyleProp<ViewStyle>): boolean {
  * a panel does not start failing at the moment it gets more informative.
  */
 export function usePanelSurfaceFill(
-  surfaceClassName: string | undefined,
   surfaceStyle: StyleProp<ViewStyle>,
   surfaceColor: string | undefined,
 ): string | undefined {
@@ -60,7 +59,6 @@ export function usePanelSurfaceFill(
   if (surfaceColor) return surfaceColor;
   const background = StyleSheet.flatten(surfaceStyle)?.backgroundColor;
   if (typeof background === 'string') return background;
-  if (surfaceClassName) return undefined;
   if (repaintedByStyle(surfaceStyle)) return undefined;
   return ctx?.theme.colors.card;
 }

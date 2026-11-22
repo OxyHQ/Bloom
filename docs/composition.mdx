@@ -30,7 +30,7 @@ Declare the application family with `AppShell.layout` and material with `present
 
 `AppShell.panelLayout` and embedded `AppShellPanels layout` share one compositor. Stable descriptors own geometry, visibility, ordering and optional panel histories. A route’s `Screen` owns vertical scrolling and measured chrome; a horizontal Deck has a separate owner for its horizontal axis. The host supplies these scopes, so descriptor content does not add another ContentPanel or wrapper Screen. An intentionally embedded group uses `AppShellPanels scope="local"`; a canvas Screen uses `scroll="none"` to reserve chrome without a second vertical scroller. See [Compose application layouts](/docs/bloom/main/compose-layouts) for complete examples.
 
-Surface choices remain independent: group `appearance` selects joined or separated panels; panel `appearance="plain"` inherits its enclosing fill; `chrome="none"` removes edge chrome from a painted panel. `surfaceClassName` paints a custom surface and `surfaceColor` publishes its resolved fill to descendants. Header `density="compact"` changes content geometry without changing inherited control sizes.
+Surface choices remain independent: group `appearance` selects joined or separated panels; panel `appearance="plain"` inherits its enclosing fill; `chrome="none"` removes edge chrome from a painted panel. `surfaceStyle` paints a custom surface and `surfaceColor` publishes its resolved fill to descendants. Header `density="compact"` changes content geometry without changing inherited control sizes.
 
 ## Control presentation — `BloomScope`
 

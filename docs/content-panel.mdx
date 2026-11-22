@@ -49,9 +49,9 @@ the shadow is what makes it a panel lifted off it.
 | `framed`           | whether the panel draws a surface at all                   |
 | `framedFrom`       | the breakpoint it starts framing at — `500` `640` `768` `1024` |
 | `showStickyFrame`  | whether the frame persists behind sticky content           |
-| `surfaceStyle` / `surfaceClassName` | the surface itself; physical per-corner radii (`borderTopLeftRadius`…) in `surfaceStyle` shape the clip and the material too, the other corners keep the panel's radius (a pane along a window's top edge) |
-| `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceClassName`/`surfaceStyle` repainted it |
-| `contentStyle` / `contentClassName` | the column inside it                      |
+| `surfaceStyle` | the surface itself; physical per-corner radii (`borderTopLeftRadius`…) in `surfaceStyle` shape the clip and the material too, the other corners keep the panel's radius (a pane along a window's top edge) |
+| `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceStyle` repainted it |
+| `contentStyle` | the column inside it                      |
 | `maskColor`        | the colour the gutter mask fades to                        |
 | `overlaySizing`     | (web) the screen's frame (default) or the panel's own box — see below |
 | `overlayInset`      | (web) where that sticky frame pins — match your layout's gutter |
@@ -167,7 +167,7 @@ nesting guard remains active within each of its panels.
 
 ## Surface APIs through the compositor
 
-`AppShellPanel` and `AppShellPanelDefinition` forward `surfaceClassName`,
+`AppShellPanel` and `AppShellPanelDefinition` forward `surfaceStyle`,
 `surfaceColor` and `chrome` to this surface. Use `chrome="none"` for a flat custom
 fill and publish the matching resolved color; use `appearance="plain"` only for a
 transparent panel inheriting the enclosing fill. Do not wrap descriptor content
@@ -207,19 +207,17 @@ Two things are worth knowing here:
   in dark mode — the rung is a computed step off the page — and chrome that took
   the rung would sit a visible shade off the column it is supposed to vanish
   into. The panel publishes the fact.
-- **Repainting the surface makes the panel stop claiming to know.**
-  `surfaceClassName` is a utility Bloom cannot resolve to a colour, and a
-  `surfaceStyle` with a `backgroundColor` is the same repaint by the other door
-  — the colour is legible there, but which of the two actually paints differs by
-  platform, so the panel refuses to guess. Either way it falls back to publishing
-  the rung alone rather than a confident wrong answer. `surfaceColor` is how that
-  caller gets the exact answer back:
+- **A repaint the panel cannot read stops it claiming to know.** A
+  `surfaceStyle` whose `backgroundColor` is a plain colour is published as is;
+  any other repaint makes the panel fall back to publishing the rung alone
+  rather than a confident wrong answer. `surfaceColor` is how that caller gets
+  the exact answer back:
 
 ```tsx
-<ContentPanel surfaceClassName="bg-background" surfaceColor={colors.background} />
+<ContentPanel surfaceStyle={paintedStyle} surfaceColor={colors.background} />
 ```
 
-`surfaceColor` changes nothing about how the panel looks — the class still
+`surfaceColor` changes nothing about how the panel looks — the style still
 paints it. It only decides what the panel tells its content.
 
 ### What reads it
