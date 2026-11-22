@@ -383,9 +383,6 @@ type AppTokenValue<S extends AppTokenScale> = S extends 'motion'
     ? `#${string}`
     : number;
 
-/** A scale's tokens as `defineTokens` returns them: a motion is its `MotionSpec`, anything else an `AppToken`. */
-type AppTokenOf<S extends AppTokenScale> = S extends 'motion' ? MotionSpec : AppToken<S>;
-
 /**
  * A named value an app declares once, for a measurement Bloom's scales do not
  * have. It is still a name at every call site, never a number.
@@ -400,8 +397,15 @@ export interface AppToken<S extends AppTokenScale = AppTokenScale> {
 
 let nextAppToken = 0;
 
+/**
+ * A scale's tokens as `defineTokens` returns them: a motion is the spec it
+ * declares (a timed one stays timed, so a reveal takes it), anything else an
+ * `AppToken`.
+ */
 type AppTokenTable<T> = {
-  readonly [S in keyof T & AppTokenScale]: { readonly [N in keyof T[S]]: AppTokenOf<S> };
+  readonly [S in keyof T & AppTokenScale]: {
+    readonly [N in keyof T[S]]: S extends 'motion' ? Readonly<T[S][N]> : AppToken<S>;
+  };
 };
 
 /**

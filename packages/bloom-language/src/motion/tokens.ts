@@ -1,4 +1,4 @@
-import { MOTION, type MotionSpec } from '@oxy.so/bloom/motion';
+import { MOTION, type MotionSpec, type SurfaceTransition } from '@oxy.so/bloom/motion';
 
 import type { ANCHOR, EASING, LOOPS, ROTATION } from '../generated/spec.generated';
 import {
@@ -19,6 +19,16 @@ export type { DurationName, ScaleName };
  */
 export type MotionName = keyof typeof MOTION;
 export type MotionToken = MotionName | MotionSpec;
+/**
+ * A motion that plays for a duration on a curve: Bloom's timed motions by
+ * name (every one but the springs `select` and `expand`), or an app's own
+ * declared with a `duration`. What a reveal takes (an accordion's, a
+ * collapsible's, a meter's): Bloom eases a reveal and never springs it.
+ */
+export type TimedMotionName = {
+  [K in MotionName]: (typeof MOTION)[K] extends SurfaceTransition ? K : never;
+}[MotionName];
+export type TimedMotionToken = TimedMotionName | SurfaceTransition;
 export type EasingName = keyof typeof EASING;
 /** A rotation: `none`, `quarter`, `half`. */
 export type RotationName = keyof typeof ROTATION;
@@ -28,6 +38,11 @@ export type AnchorName = keyof typeof ANCHOR;
 export type LoopName = keyof typeof LOOPS;
 
 export function resolveMotion(token: MotionToken): MotionSpec {
+  return typeof token === 'string' ? MOTION[token] : token;
+}
+
+/** A timed motion as Bloom's `{ duration, easing }`: the table's own entry, or the app's spec itself. */
+export function resolveTimedMotion(token: TimedMotionToken): SurfaceTransition {
   return typeof token === 'string' ? MOTION[token] : token;
 }
 

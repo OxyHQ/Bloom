@@ -1,4 +1,5 @@
 import { Collapsible } from '@oxy.so/bloom/collapsible';
+import { MOTION } from '@oxy.so/bloom/motion';
 import { Text } from '@oxy.so/bloom/typography';
 
 import * as L from '../src/index';
@@ -6,6 +7,8 @@ import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
 
 const TIMED = { duration: 180, easing: [0.4, 0, 0.2, 1] } as const;
+/** The same timing as an app's own motion token. */
+const motions = L.defineTokens({ motion: { reply: TIMED } });
 
 export const COLLAPSIBLE_CASES: readonly ParityCase[] = [
   ...[true, false].map((open) => ({
@@ -22,13 +25,22 @@ export const COLLAPSIBLE_CASES: readonly ParityCase[] = [
     language: () =>
       toElement(
         L.Collapsible(true, L.Text('New reply'))
-          .revealMotion(TIMED)
+          .revealMotion(motions.motion.reply)
           .revealsOnAppear()
           .testID('reply'),
       ),
     bloom: () => (
       <Collapsible open transition={TIMED} appear testID="reply">
         <Text>New reply</Text>
+      </Collapsible>
+    ),
+  },
+  {
+    name: 'a reveal on one of Bloom’s motions',
+    language: () => toElement(L.Collapsible(true, L.Text('Shipped')).revealMotion('slide')),
+    bloom: () => (
+      <Collapsible open transition={MOTION.slide}>
+        <Text>Shipped</Text>
       </Collapsible>
     ),
   },

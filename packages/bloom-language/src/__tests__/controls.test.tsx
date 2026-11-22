@@ -1,15 +1,22 @@
 import { createElement, type ReactElement } from 'react';
 import { act } from 'react-test-renderer';
 
+import { MOTION } from '@oxy.so/bloom/motion';
+
+import { Accordion } from '../controls/accordion';
+import { Collapsible } from '../controls/collapsible';
 import { HoverCard } from '../controls/hover-card';
 import { ListItem, VirtualList } from '../controls/list';
 import { ReviewCard } from '../controls/listings';
 import { SignaturePad } from '../controls/logistics';
 import { MenuItemOptions } from '../controls/menu-item';
 import { Notification } from '../controls/notification';
+import { RatingBar } from '../controls/rating';
+import { Meter } from '../controls/stat-bar';
 import { Tooltip } from '../controls/tooltip';
 import type { Child } from '../node';
 import { Text } from '../primitives';
+import { defineTokens } from '../tokens';
 import { toElement } from '../render';
 import { LIGHT, PaintContext } from './support/bloom-theme';
 import { mount, only, quietRenderer } from './support/mount';
@@ -125,5 +132,54 @@ describe('a signature’s stroke', () => {
     expect(pad('2.5').strokeWidth).toBe(2.5);
     expect(pad('thick').strokeWidth).toBe(2);
     expect(pad().strokeWidth).toBeUndefined();
+  });
+});
+
+describe('a reveal takes a timed motion token', () => {
+  const app = defineTokens({ motion: { reply: { duration: 180, easing: [0.4, 0, 0.2, 1] } } });
+
+  it('is Bloom’s own spec by name, or the app’s spec itself', () => {
+    const shown = (motion: 'slide' | typeof app.motion.reply) =>
+      only(mount(toElement(Collapsible(true, Text('a')).revealMotion(motion))), 'Collapsible').props
+        .transition;
+    expect(shown('slide')).toBe(MOTION.slide);
+    expect(shown(app.motion.reply)).toBe(app.motion.reply);
+    const accordion = only(
+      mount(toElement(Accordion(['a', () => {}]).revealMotion('fade'))),
+      'Accordion',
+    );
+    expect(accordion.props.transition).toBe(MOTION.fade);
+  });
+
+  it('none chained hands Bloom none: a collapsible’s ease, an accordion’s spring', () => {
+    expect(
+      only(mount(toElement(Collapsible(true, Text('a')))), 'Collapsible').props.transition,
+    ).toBeUndefined();
+    expect(
+      only(mount(toElement(Accordion(['a', () => {}]))), 'Accordion').props.transition,
+    ).toBeUndefined();
+  });
+
+  it('a bar’s reveal is Bloom’s: its state, its wait in ms, and its motion’s duration and curve', () => {
+    const meter = only(
+      mount(
+        toElement(
+          Meter(0.5)
+            .reveal({ visible: true, once: true, delay: 'fast' })
+            .revealMotion('enter')
+            .label('a'),
+        ),
+      ),
+      'Meter',
+    );
+    expect(meter.props.reveal).toEqual({ visible: true, once: true, delay: 150, ...MOTION.enter });
+    const bar = only(
+      mount(toElement(RatingBar('Value', 3).reveal({ visible: false }))),
+      'RatingBar',
+    );
+    expect(bar.props.reveal).toEqual({ visible: false });
+    // A motion with no reveal reveals nothing: the bar fills as it always does.
+    const plain = only(mount(toElement(Meter(0.5).revealMotion('enter').label('a'))), 'Meter');
+    expect(plain.props.reveal).toBeUndefined();
   });
 });

@@ -458,6 +458,8 @@ const tokenSets = {
   duration: Object.keys(scales.duration),
   rotation: Object.keys(scales.rotation),
   motion: Object.keys(motion),
+  // What a reveal takes: the motions with a duration, never a spring.
+  timedMotion: Object.keys(motion).filter((name) => 'duration' in motion[name]),
   typeRamp: Object.keys(typeRamp),
   anchor: Object.keys(scales.anchor),
   loop: Object.keys(loops),
