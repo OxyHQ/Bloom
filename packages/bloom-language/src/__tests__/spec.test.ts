@@ -290,6 +290,12 @@ import type {
   ListingCardGridView,
   WishlistCardView,
 } from '../controls/listing-card';
+import type {
+  ListingPreviewPaneView,
+  ListingQualityMeterView,
+  PropertyTypeSelectorView,
+} from '../controls/listing-editor';
+import type { OfferingBadgeView } from '../controls/offering-badge';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -657,7 +663,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ListingCardView>, Of<'listingCard'>>,
       Same<MethodsOf<ListingCardGridView>, Of<'listingCardGrid'>>,
       Same<MethodsOf<WishlistCardView>, Of<'wishlistCard'>>,
+      Same<MethodsOf<ListingPreviewPaneView>, Of<'listingPreviewPane'>>,
+      Same<MethodsOf<ListingQualityMeterView>, Of<'listingQualityMeter'>>,
+      Same<MethodsOf<PropertyTypeSelectorView>, Of<'propertyTypeSelector'>>,
+      Same<MethodsOf<OfferingBadgeView>, Of<'offeringBadge'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

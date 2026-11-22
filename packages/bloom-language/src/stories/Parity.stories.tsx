@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';
 
 import type { ParityCase } from '../../parity/support/cases';
+import { LISTING_EDITOR_CASES } from '../../parity/listing-editor.cases';
 import { LISTING_CARD_CASES } from '../../parity/listing-card.cases';
 import { LISTING_ACTION_CASES } from '../../parity/listing-actions.cases';
 import { AGENT_AVATAR_CASES } from '../../parity/agent-avatar.cases';
@@ -117,3 +118,4 @@ export const Booking: Story = { args: { cases: BOOKING_CASES } };
 export const HomeSearch: Story = { args: { cases: HOME_SEARCH_CASES } };
 export const ListingActions: Story = { args: { cases: LISTING_ACTION_CASES } };
 export const ListingCards: Story = { args: { cases: LISTING_CARD_CASES } };
+export const ListingEditor: Story = { args: { cases: LISTING_EDITOR_CASES } };

@@ -994,3 +994,22 @@ fn the_listing_cards_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_listing_editor_and_the_offering_badge_are_checked() {
+    let imports = "import { ListingPreviewPane, ListingQualityMeter, OfferingBadge, PropertyTypeSelector, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (l, i, t) => VStack(ListingPreviewPane(l), ListingQualityMeter(i).label('Quality'), PropertyTypeSelector(t).columns(3).disabled(), OfferingBadge('sale').size('sm').style('onMedia'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("OfferingBadge('sale').size('lg')", "Unknown offeringBadgeSize token 'lg' for .size()"),
+        ("OfferingBadge('sale').style('solid')", "Unknown offeringBadgeStyle token 'solid' for .style()"),
+        ("ListingQualityMeter(i).disabled()", "ListingQualityMeter has no modifier .disabled()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (i) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

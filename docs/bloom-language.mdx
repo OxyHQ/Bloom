@@ -1664,6 +1664,25 @@ keyed by `.id()`), `.density()` its columns (`default` is Bloom's `results`).
 `WishlistCard(name, photos, options?)`: `.tint(role)` its colour, its `empty`
 a child, `.onPress()` its own.
 
+### Listing editor and offering badge
+
+```ts
+ListingPreviewPane(draft, { renderPage: (listing) => ListingPage({ listing }) })
+ListingQualityMeter(checklist, { title: 'Listing quality' })
+PropertyTypeSelector([type, setType], { error }).columns(3)
+OfferingBadge('sale').size('sm').style('onMedia')
+```
+
+Bloom's `listing-editor`: `ListingPreviewPane(listing, options?)` shows the
+draft as a card or a page (its `mode` and handler Bloom's), its `renderPage`
+a function of the listing returning a view; `ListingQualityMeter(items,
+options?)` takes Bloom's items; `PropertyTypeSelector(type, options?)` writes
+the type its binding holds, `.columns(n)` and `.disabled()`. Bloom's
+`listingQualityScore` and `DEFAULT_PROPERTY_TYPES` stay Bloom's.
+`OfferingBadge(offering, options?)` is Bloom's `offering-badge`: `.size('sm' |
+'md')` (by default the nearest appearance scope's), `.style('tinted' |
+'onMedia')`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

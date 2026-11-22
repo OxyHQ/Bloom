@@ -20,6 +20,8 @@ import type { AvatarAccount, AvatarProps as BloomAvatarProps } from '@oxy.so/blo
 import type { AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 
 import type { AgentAvatarKind } from './controls/agent-avatar';
+import type { OfferingBadgeKind } from './controls/offering-badge';
+import type { ListingEditorKind } from './controls/listing-editor';
 import type { ListingCardKind } from './controls/listing-card';
 import type { ListingActionKind } from './controls/listing-actions';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
@@ -91,6 +93,8 @@ import {
   type BadgeStyle,
   type LoadingStyle,
   type AgentMood,
+  type OfferingBadgeSize,
+  type OfferingBadgeStyle,
   type ListingCardLayout,
   type MortgageLayout,
   type ShelfLayout,
@@ -516,7 +520,9 @@ export type Modifier =
         | FilterTriggerSize
         | GuestPickerSize
         | DirectionsDensity
-        | NoteToolbarSize;
+        | NoteToolbarSize
+        | FollowButtonSize
+        | OfferingBadgeSize;
     }
   | {
       readonly kind: 'style';
@@ -555,7 +561,8 @@ export type Modifier =
         | TripCardOrientation
         | SearchModeTabsStyle
         | MortgageLayout
-        | ListingCardLayout;
+        | ListingCardLayout
+        | OfferingBadgeStyle;
     }
   | {
       readonly kind: 'shape';
@@ -742,7 +749,9 @@ export type NodeKind =
   | BookingKind
   | HomeSearchKind
   | ListingActionKind
-  | ListingCardKind;
+  | ListingCardKind
+  | ListingEditorKind
+  | OfferingBadgeKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1061,7 +1070,8 @@ export class Node {
       | FilterTriggerSize
       | GuestPickerSize
       | DirectionsDensity
-      | NoteToolbarSize,
+      | NoteToolbarSize
+      | OfferingBadgeSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1098,7 +1108,8 @@ export class Node {
       | TripCardOrientation
       | SearchModeTabsStyle
       | MortgageLayout
-      | ListingCardLayout,
+      | ListingCardLayout
+      | OfferingBadgeStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
