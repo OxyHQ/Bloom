@@ -84,7 +84,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("fontFamily", &["mono"]),
     ("cornerExtra", &["concentric", "infinite"]),
     ("cornerCurve", &["round", "smooth"]),
-    ("cornerSide", &["all", "top", "bottom", "leading", "trailing", "top-leading", "top-trailing", "bottom-leading", "bottom-trailing"]),
+    ("cornerSide", &["all", "top", "bottom", "leading", "trailing", "top-leading", "top-trailing", "bottom-leading", "bottom-trailing", "left", "right", "top-left", "top-right", "bottom-left", "bottom-right"]),
     ("dividerStyle", &["single", "double", "fill"]),
     ("dialogPlacement", &["center", "left", "right", "start", "end", "bottom"]),
     ("alertDefault", &["confirm", "cancel"]),

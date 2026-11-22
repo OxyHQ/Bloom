@@ -47,9 +47,11 @@ does not keeps the element JSX. Each class goes through the className table
   CSS the later rule wins, in the language two paddings add.
 - A text style on a `View` is a reason: NativeWind does not hand it to the
   `Text` inside, and the language's environment would.
-- A physical corner (`rounded-l-lg`) and `text-left`/`text-right` are
-  reasons: the language has no physical corner, and React Native and
-  react-native-web flip a text alignment right to left differently.
+- `text-left`/`text-right` are reasons: React Native and react-native-web
+  flip a text alignment right to left differently.
+- Two corner classes of one corner (`rounded-t-3xl rounded-tl-lg`) are a
+  reason (`corner-overlap`): which wins is Tailwind's rule order on the web
+  and React Native's own precedence on native.
 - A class the app's own stylesheet draws differently from Bloom's (an app
   `@theme` or `:root` that redefines `--radius-lg`) is a reason (`app-theme`).
   The codemod compiles the app's CSS entry and Bloom's with Tailwind and

@@ -68,6 +68,9 @@ describe('resolveClassName', () => {
     ['mt-2 my-2', 'margin-overlap'],
     ['bg-card bg-surface', 'conflict'],
     ['text-left', 'physical-edge'],
+    ['rounded-t-3xl rounded-tl-lg', 'corner-overlap'],
+    ['rounded-l-full rounded-tl-lg', 'corner-overlap'],
+    ['md:space-y-2', 'child-spacing-variant'],
     ['mx-auto', 'annotated'],
     ['text-sm', 'text-on-view'],
     ['hover:bg-card', 'state-off-pressable'],
@@ -76,6 +79,14 @@ describe('resolveClassName', () => {
     ['not-a-class', 'unknown'],
   ])('keeps %s as JSX (%s)', (className, code) => {
     expect(codes(className)).toContain(code);
+  });
+  it('maps physical corners, an infinite corner and a child spacing exactly', () => {
+    const result = resolveClassName('rounded-l-full rounded-br-lg space-y-2', 'view', table);
+    expect(result.ok && result.value.mods.map((m) => [m.name, ...m.args])).toEqual([
+      ['corner', 'infinite', 'left'],
+      ['corner', 'sm', 'bottom-right'],
+      ['childSpacing', 'vertical', 'sm'],
+    ]);
   });
   it('takes a state variant on a Pressable', () => {
     expect(codes('active:opacity-70', 'pressable')).toEqual([]);

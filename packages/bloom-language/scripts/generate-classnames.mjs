@@ -241,17 +241,18 @@ function fontSize(name) {
 }
 
 /** Tailwind's corner sides: `t` is the top two, `tl` one; `l`/`r` lead and trail, as the edges do. */
+/** Tailwind's corner sides: `l`/`r` (and `tl`…) are physical, `s`/`e` (and `ss`…) follow the reading direction. */
 const CORNER_SIDE = {
   t: 'top',
   b: 'bottom',
-  l: 'leading',
-  r: 'trailing',
+  l: 'left',
+  r: 'right',
   s: 'leading',
   e: 'trailing',
-  tl: 'top-leading',
-  tr: 'top-trailing',
-  bl: 'bottom-leading',
-  br: 'bottom-trailing',
+  tl: 'top-left',
+  tr: 'top-right',
+  bl: 'bottom-left',
+  br: 'bottom-right',
   ss: 'top-leading',
   se: 'top-trailing',
   es: 'bottom-leading',
