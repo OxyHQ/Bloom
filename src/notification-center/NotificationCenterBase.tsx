@@ -147,7 +147,7 @@ function NotificationVisual({
   );
 }
 
-/** `Avatar size="lg" className="size-10"`: 40px, 18/24 semibold initials. */
+/** A 40px avatar with 18/24 semibold initials. */
 function PersonAvatar({
   avatar,
   palette,
