@@ -1216,6 +1216,7 @@
     "environment": ["value", "value"],
     "controlSize": ["controlSize"],
     "buttonStyle": ["buttonStyle"],
+    "modifier": ["value", "children"],
     "drag": ["motionValue", "value?"],
     "swipe": ["swipeDirection", "value"],
     "pinch": ["motionValue", "value?"],
@@ -1749,7 +1750,8 @@
     "disabled",
     "environment",
     "controlSize",
-    "buttonStyle"
+    "buttonStyle",
+    "modifier"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
