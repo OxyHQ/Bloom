@@ -119,16 +119,15 @@ const players: ParityCase[] = [
           duration: 214,
           buffered: 120,
           onSeek: set,
-          lyricsActive: true,
-          onLyricsChange: set,
-          onQueueChange: set,
           deviceName: 'Living Room Speaker',
           onDevicePress: press,
           onFullscreenPress: press,
         })
           .liked([true, set])
           .volume([0.6, set])
-          .muted([false, set]),
+          .muted([false, set])
+          .lyricsActive([true, set])
+          .queueActive([false, set]),
       ),
     bloom: () => (
       <NowPlayingBar
@@ -142,6 +141,7 @@ const players: ParityCase[] = [
         onLikedChange={set}
         lyricsActive
         onLyricsChange={set}
+        queueActive={false}
         onQueueChange={set}
         deviceName="Living Room Speaker"
         onDevicePress={press}

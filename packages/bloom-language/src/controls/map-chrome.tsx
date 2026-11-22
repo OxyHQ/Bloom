@@ -18,6 +18,7 @@ import {
 } from '@oxy.so/bloom/navigation-banner';
 import type { DirectionsManeuver } from '@oxy.so/bloom/directions';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Axis, LocationPuckMode, MapAttributionStyle, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -35,7 +36,7 @@ export type MapScaleBarOptions = Omit<MapScaleBarProps, Drawn | 'scales' | 'vari
  */
 export type MapControlsOptions = Omit<
   MapControlsProps,
-  Drawn | 'orientation' | 'align' | 'children'
+  Drawn | 'orientation' | 'align' | 'children' | 'tilted' | 'onTiltChange'
 > & { readonly islands?: Child };
 /** Bloom `LocationPuck`'s fix and heading; its cone's reach is a space token. */
 export type LocationPuckOptions = Omit<LocationPuckProps, Drawn | 'mode' | 'coneLength'> & {
@@ -56,6 +57,8 @@ export interface MapControlsView extends ViewModifiers<MapControlsView> {
   axis(value: Axis): MapControlsView;
   /** The edge the stack hugs: `end` (default) or `start`. */
   align(value: MapControlsAlign): MapControlsView;
+  /** The map, tilted: a binding; bound, the tilt button draws and writes it. */
+  tilted(value: Bound<MapControlsProps, 'tilted'>): MapControlsView;
 }
 export interface LocationPuckView extends ViewModifiers<LocationPuckView> {
   /** What the map does: `following` (default), `compass` or `navigating` (a chevron). */
@@ -94,6 +97,7 @@ export function NavigationBanner(
 export const MAP_CHROME: Record<MapChromeKind, ControlRenderer> = {
   mapScaleBar: product(BloomMapScaleBar, { own: (d) => ({ variant: d.own('style')?.value }) }),
   mapControls: product(BloomMapControls, {
+    bindings: { tilted: ['tilted', 'onTiltChange'] },
     own: (d) => ({ orientation: d.own('axis')?.value, align: d.own('align')?.value }),
   }),
   locationPuck: product(BloomLocationPuck, {
