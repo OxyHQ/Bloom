@@ -6,9 +6,10 @@ import {
 } from '@oxy.so/bloom/calendar';
 import { Text } from '@oxy.so/bloom/typography';
 
+import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const press = () => {};
 const pick = (_date: Date) => {};
@@ -44,7 +45,7 @@ export const CALENDAR_CASES: ParityCase[] = [
     language: () => toElement(L.CalendarView(EVENTS, { month: MONTH, locale: 'en-US' })),
     bloom: () => <CalendarView events={EVENTS} month={MONTH} locale="en-US" />,
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.calendarView.map((density) => ({
     name: `CalendarView ${density}, its header's parts`,
     language: () =>
       toElement(
@@ -110,7 +111,7 @@ export const CALENDAR_CASES: ParityCase[] = [
       />
     ),
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.calendarViewMonthGrid.map((density) => ({
     name: `CalendarViewMonthGrid ${density}, no details panel`,
     language: () =>
       toElement(

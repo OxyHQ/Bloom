@@ -15,7 +15,7 @@ import {
 } from '@oxy.so/bloom/tenancy';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDensity, RentOutstandingTone, TenancyLayout } from '../tokens';
+import type { Density, RentOutstandingTone, TenancyLayout } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -44,8 +44,8 @@ export type DocumentListOptions = Omit<DocumentListProps, Drawn | 'documents' | 
 
 /** Bloom `TenancyTimeline`: what happened in a tenancy and what comes next; `.label()` names it. */
 export interface TenancyTimelineView extends ViewModifiers<TenancyTimelineView> {
-  /** `default` (Bloom's comfortable rows) or `compact`. */
-  density(value: ControlDensity): TenancyTimelineView;
+  /** `comfortable` or `compact` rows. */
+  density(value: Density<'tenancyTimeline'>): TenancyTimelineView;
 }
 /** Bloom `LeaseSummaryCard`: a lease at a glance. */
 export interface LeaseSummaryCardView extends ViewModifiers<LeaseSummaryCardView> {
@@ -99,11 +99,7 @@ export function DocumentList(
 
 export const TENANCY: Record<TenancyKind, ControlRenderer> = {
   tenancyTimeline: product(BloomTenancyTimeline, {
-    own: (d) => {
-      const density = d.own('density')?.value;
-      // Bloom names the language's default density `comfortable`.
-      return { density: density === 'default' ? 'comfortable' : density };
-    },
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   leaseSummaryCard: product(BloomLeaseSummaryCard, {
     slots: ['actions'],

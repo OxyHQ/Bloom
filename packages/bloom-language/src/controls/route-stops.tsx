@@ -5,9 +5,9 @@ import {
 } from '@oxy.so/bloom/route-stops';
 
 import { Node, type ViewModifiers } from '../node';
-import type { ControlDensity } from '../tokens';
+import type { Density } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** An origin, a destination and the stops between them. */
 export type RouteStopsKind = 'routeStops';
@@ -24,8 +24,8 @@ export type RouteStopsOptions = Omit<
 
 /** Bloom `RouteStops`; `.label()` names the list. */
 export interface RouteStopsView extends ViewModifiers<RouteStopsView> {
-  /** `default` (comfortable) or `compact`. */
-  density(value: ControlDensity): RouteStopsView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'routeStops'>): RouteStopsView;
 }
 
 export function RouteStops(
@@ -36,5 +36,5 @@ export function RouteStops(
 }
 
 export const ROUTE_STOPS: Record<RouteStopsKind, ControlRenderer> = {
-  routeStops: product(BloomRouteStops, { own: (d) => ({ density: rowDensity(d) }) }),
+  routeStops: product(BloomRouteStops, { own: (d) => ({ density: d.own('density')?.value }) }),
 };

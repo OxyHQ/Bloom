@@ -9,9 +9,9 @@ import {
 } from '@oxy.so/bloom/payment-method';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ChoiceListStyle, ControlDensity } from '../tokens';
+import type { ChoiceListStyle, Density } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** A way to pay: its mark, a row, and a list to read or to choose one from. */
 export type PaymentMethodsKind = 'paymentMethodMark' | 'paymentMethodRow' | 'paymentMethodList';
@@ -39,18 +39,18 @@ export type PaymentMethodListOptions = Omit<
 > & { readonly empty?: Child };
 
 export interface PaymentMethodMarkView extends ViewModifiers<PaymentMethodMarkView> {
-  /** `default` (comfortable) or `compact`. */
-  density(value: ControlDensity): PaymentMethodMarkView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'paymentMethodMark'>): PaymentMethodMarkView;
 }
 /** Bloom `PaymentMethodRow`; `.onPress()` is its own. */
 export interface PaymentMethodRowView extends ViewModifiers<PaymentMethodRowView> {
-  density(value: ControlDensity): PaymentMethodRowView;
+  density(value: Density<'paymentMethodRow'>): PaymentMethodRowView;
   disabled(value?: boolean): PaymentMethodRowView;
 }
 export interface PaymentMethodListView extends ViewModifiers<PaymentMethodListView> {
   /** `list` (default), read; or `picker`, one chosen. */
   style(value: ChoiceListStyle): PaymentMethodListView;
-  density(value: ControlDensity): PaymentMethodListView;
+  density(value: Density<'paymentMethodList'>): PaymentMethodListView;
   disabled(value?: boolean): PaymentMethodListView;
   /** Placeholder rows instead of the methods. */
   loading(value?: boolean): PaymentMethodListView;
@@ -72,18 +72,18 @@ export function PaymentMethodList(
 export const PAYMENT_METHODS: Record<PaymentMethodsKind, ControlRenderer> = {
   paymentMethodMark: product(BloomPaymentMethodMark, {
     slots: ['image'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   paymentMethodRow: product(BloomPaymentMethodRow, {
     press: true,
     slots: ['image', 'leading', 'action'],
-    own: (d) => ({ density: rowDensity(d), disabled: d.own('disabled')?.value }),
+    own: (d) => ({ density: d.own('density')?.value, disabled: d.own('disabled')?.value }),
   }),
   paymentMethodList: product(BloomPaymentMethodList, {
     slots: ['empty'],
     own: (d) => ({
       variant: d.own('style')?.value,
-      density: rowDensity(d),
+      density: d.own('density')?.value,
       disabled: d.own('disabled')?.value,
       loading: d.own('loading')?.value,
     }),

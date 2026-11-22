@@ -1,10 +1,10 @@
 import { ActivityFeed, type ActivityFeedEntry } from '@oxy.so/bloom/activity-feed';
 import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const ENTRIES: ActivityFeedEntry[] = [
   {
@@ -41,7 +41,6 @@ const ENTRIES: ActivityFeedEntry[] = [
   },
 ];
 
-const DENSITY = { default: 'comfortable', compact: 'compact' } as const;
 const loggedBy = (name: string) => `Recorded by ${name}`;
 
 export const ACTIVITY_FEED_CASES: ParityCase[] = [
@@ -51,12 +50,10 @@ export const ACTIVITY_FEED_CASES: ParityCase[] = [
     bloom: () => <ActivityFeed entries={ENTRIES} />,
   },
   ...ENUMS.activityFeedGrouping.flatMap((grouping) =>
-    CONTROL_DENSITIES.map((density) => ({
+    NODE_DENSITIES.activityFeed.map((density) => ({
       name: `ActivityFeed ${grouping}, ${density}`,
       language: () => toElement(L.ActivityFeed(ENTRIES).style(grouping).density(density)),
-      bloom: () => (
-        <ActivityFeed entries={ENTRIES} grouping={grouping} density={DENSITY[density]} />
-      ),
+      bloom: () => <ActivityFeed entries={ENTRIES} grouping={grouping} density={density} />,
     })),
   ),
   ...[0, 1].map((lines) => ({

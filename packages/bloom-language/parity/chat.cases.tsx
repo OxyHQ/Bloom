@@ -30,10 +30,10 @@ import {
 import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase, Themed, ThemedRgb } from './support/cases';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -235,7 +235,7 @@ const screen: ParityCase[] = [
       ),
     })),
   ),
-  ...CONTROL_DENSITIES.flatMap((density) =>
+  ...NODE_DENSITIES.chatHeader.flatMap((density) =>
     [true, false].map((divider) => ({
       name: `ChatHeader bar, ${density}, ${divider ? 'a divider' : 'no divider'}`,
       language: () =>

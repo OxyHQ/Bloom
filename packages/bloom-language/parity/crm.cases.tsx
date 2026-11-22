@@ -10,6 +10,7 @@ import {
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
+import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
@@ -67,17 +68,12 @@ const STAGES: PipelineStage[] = [
 ];
 
 export const CRM_CASES: ParityCase[] = [
-  ...(['default', 'compact'] as const).map((density) => ({
+  ...NODE_DENSITIES.contactProfileCard.map((density) => ({
     name: `ContactProfileCard ${density}`,
     language: () =>
       toElement(L.ContactProfileCard('Nora Vance', CONTACT).density(density).onPress(press)),
     bloom: () => (
-      <ContactProfileCard
-        name="Nora Vance"
-        {...CONTACT}
-        density={density === 'compact' ? 'compact' : 'comfortable'}
-        onPress={press}
-      />
+      <ContactProfileCard name="Nora Vance" {...CONTACT} density={density} onPress={press} />
     ),
   })),
   {

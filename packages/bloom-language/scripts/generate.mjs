@@ -88,7 +88,13 @@ spec.layers.forEach((kinds, rank) => {
 
 const nodeModifiers = {};
 const constructors = {};
+/** Each node's own densities (a node that takes `.density()` lists Bloom's names for them). */
+const nodeDensities = {};
 for (const [kind, node] of Object.entries(nodes)) {
+  const takesDensity = node.modifiers.includes('density');
+  if (takesDensity !== Array.isArray(node.densities))
+    throw new Error(`nodes.${kind}: a node lists densities exactly when it takes density()`);
+  if (takesDensity) nodeDensities[kind] = node.densities;
   nodeModifiers[kind] =
     node.universal === false ? [...node.modifiers] : [...spec.universal, ...node.modifiers];
   for (const name of node.constructors) constructors[name] = kind;
@@ -166,6 +172,9 @@ export const MODIFIERS = ${ts(modifiers)} as const;
 
 /** The modifiers each node kind takes. */
 export const NODE_MODIFIERS = ${ts(nodeModifiers)} as const;
+
+/** The densities each node kind's \`.density()\` takes: its Bloom component's own names. */
+export const NODE_DENSITIES = ${ts(nodeDensities)} as const;
 
 /** The constructor functions, by the node kind they make. */
 export const CONSTRUCTORS = ${ts(constructors)} as const;
@@ -422,12 +431,14 @@ const rust = `//! ${HEADER}
 //! The names the compiler checks a chain against. Values are the runtime's;
 //! the compiler never resolves a token, it only proves one is valid.
 
-/// A node kind: the constructors that make it, every modifier it takes, and the
-/// token sets its \`size()\`, \`tint()\`, \`style()\` and \`shape()\` read.
+/// A node kind: the constructors that make it, every modifier it takes, the
+/// densities its \`density()\` takes, and the token sets its \`size()\`,
+/// \`tint()\`, \`style()\` and \`shape()\` read.
 pub struct NodeSpec {
     pub kind: &'static str,
     pub constructors: &'static [&'static str],
     pub modifiers: &'static [&'static str],
+    pub densities: &'static [&'static str],
     pub size: Option<&'static str>,
     pub tint: Option<&'static str>,
     pub style: Option<&'static str>,
@@ -455,7 +466,7 @@ pub const NODES: &[NodeSpec] = &[
 ${Object.entries(nodes)
   .map(
     ([kind, node]) =>
-      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)} },`,
+      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, densities: ${rustList(node.densities ?? [])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)} },`,
   )
   .join('\n')}
 ];

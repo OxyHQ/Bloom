@@ -7,9 +7,9 @@ import {
 } from '@oxy.so/bloom/menu-item';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ControlDensity } from '../tokens';
+import type { Density } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** A dish in a menu, and the choices made before it goes in the basket. */
 export type MenuItemKind = 'menuItemRow' | 'menuItemOptions';
@@ -29,8 +29,8 @@ export type MenuItemOptionsOptions = Omit<
 
 /** Bloom `MenuItemRow`; `.onPress()` is its own (it opens the dish). */
 export interface MenuItemRowView extends ViewModifiers<MenuItemRowView> {
-  /** `default` (comfortable) or `compact`. */
-  density(value: ControlDensity): MenuItemRowView;
+  /** `comfortable` or `compact`. */
+  density(value: Density<'menuItemRow'>): MenuItemRowView;
 }
 export interface MenuItemOptionsView extends ViewModifiers<MenuItemOptionsView> {
   disabled(value?: boolean): MenuItemOptionsView;
@@ -49,7 +49,7 @@ export function MenuItemOptions(
 export const MENU_ITEMS: Record<MenuItemKind, ControlRenderer> = {
   menuItemRow: product(BloomMenuItemRow, {
     press: true,
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   menuItemOptions: product(BloomMenuItemOptions, {
     slots: ['header'],

@@ -22,9 +22,9 @@ import {
 } from '@oxy.so/bloom/track-list';
 
 import { Node, type ViewModifiers } from '../node';
-import type { ColorToken, ControlDensity, SelectionBarPlacement, SpaceToken } from '../tokens';
+import type { ColorToken, Density, SelectionBarPlacement, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
-import { product, rowDensity } from './product';
+import { product } from './product';
 
 /** The table of tracks, its parts, the bar for a selection, and podcast episodes. */
 export type TrackListKind =
@@ -74,22 +74,22 @@ export type EpisodeListOptions = Omit<EpisodeListProps, Drawn | 'episodes' | 'wi
 
 /** Bloom `TrackList`; `.label()` names the grid. */
 export interface TrackListView extends ViewModifiers<TrackListView> {
-  /** `default` (Bloom's comfortable rows, 56 tall) or `compact` (40). */
-  density(value: ControlDensity): TrackListView;
+  /** `comfortable` rows (56 tall) or `compact` (40). */
+  density(value: Density<'trackList'>): TrackListView;
   /** The header's background, so rows scrolling under it are covered (Bloom's: the page's). */
   tint(value: ColorToken): TrackListView;
 }
 export interface TrackListHeaderView extends ViewModifiers<TrackListHeaderView> {
-  density(value: ControlDensity): TrackListHeaderView;
+  density(value: Density<'trackListHeader'>): TrackListHeaderView;
   /** The header's background. */
   tint(value: ColorToken): TrackListHeaderView;
 }
 /** Bloom `TrackRow`; `.onPress()` is its own (Bloom hands it the track, its index and the press). */
 export interface TrackRowView extends ViewModifiers<TrackRowView> {
-  density(value: ControlDensity): TrackRowView;
+  density(value: Density<'trackRow'>): TrackRowView;
 }
 export interface TrackRowSkeletonView extends ViewModifiers<TrackRowSkeletonView> {
-  density(value: ControlDensity): TrackRowSkeletonView;
+  density(value: Density<'trackRowSkeleton'>): TrackRowSkeletonView;
 }
 export type TrackListEmptyView = ViewModifiers<TrackListEmptyView>;
 export interface SelectionBarView extends ViewModifiers<SelectionBarView> {
@@ -146,22 +146,22 @@ const tinted = (prop: string) => (d: Parameters<ControlRenderer>[0]) => ({
 export const TRACK_LISTS: Record<TrackListKind, ControlRenderer> = {
   trackList: product(BloomTrackList, {
     lengths: ['width', 'stickyHeaderOffset'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
     colors: tinted('headerBackground'),
   }),
   trackListHeader: product(BloomTrackListHeader, {
     lengths: ['stickyOffset'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
     colors: tinted('background'),
   }),
   trackRow: product(BloomTrackRow, {
     press: true,
     lengths: ['width'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   trackRowSkeleton: product(BloomTrackRowSkeleton, {
     lengths: ['width'],
-    own: (d) => ({ density: rowDensity(d) }),
+    own: (d) => ({ density: d.own('density')?.value }),
   }),
   trackListEmpty: product(BloomTrackListEmpty),
   selectionBar: product(BloomSelectionBar, {

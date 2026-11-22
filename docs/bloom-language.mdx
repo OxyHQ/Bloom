@@ -302,6 +302,16 @@ Each node type exposes only the modifiers that apply to it, so the editor
 completes `Text(...).` with text modifiers and rejects `HStack().lines(2)`,
 `.padding(12)` and `.foreground('#f00')` at compile time.
 
+**Densities.** `.density()` is a node's own: each node in the spec lists its
+Bloom component's names for its densities, and the types and the compiler
+check a node's density against its own list. A button's are Bloom's control
+densities (`default`, `compact`), a row's, a list's and the product rows'
+Bloom's content ones (`comfortable`, `compact`), a listing grid's `results`
+and `compact`; a component whose compactness is a flag (a chat header, a
+calendar) takes `default` and `compact`. So a name means one Bloom value
+wherever it is accepted: `Row('Ana').density('default')` and
+`Button(...).density('comfortable')` are compile errors.
+
 **App tokens.** When a screen being ported uses a measurement that Bloom's scales
 lack, the app names it once with `defineTokens`. It is still a name at each call
 site:
@@ -1844,7 +1854,7 @@ Bloom's `ListItem`, `List`, `VirtualList` and `ListSelectionBar`.
 `ListItem(title?)` is the one row: a title (a string in the row's type, or a
 view), `.supporting()` and `.supportingLines(1 | 2 | 3 | 'adaptive')`, the
 slots `.prefix()` (what leads it), `.trailing()`, `.content()` (a body of its
-own), `.footnote()` (under the text) and `.attachments()`; `.density('compact')`
+own), `.footnote()` (under the text) and `.attachments()`; `.density('comfortable' | 'compact')`
 and `.compactPadding()`, `.active()`, `.disabled()`, `.link(href)`,
 `.onPrefetch()`, its press and long press, `.label()` (its full name);
 selection with `.checkable([checked, set])`, `.selecting()` and
@@ -2915,7 +2925,7 @@ Bloom's `tenancy`: `TenancyTimeline(events, options?)`, `LeaseSummaryCard(option
 `DocumentList(documents, options?)`, each taking Bloom's own data. A card's,
 list's or document list's layout is `.style('auto' | 'wide' | 'narrow')`; the
 outstanding amount's tone `.tint('default' | 'error')`; the timeline's rows
-`.density('default' | 'compact')` (Bloom's `comfortable` is the default). The
+`.density('comfortable' | 'compact')`. The
 lease's and the request's `actions` are language children.
 
 ### Evictions and place reviews
@@ -2971,8 +2981,8 @@ ActivityFeed(entries, { emptyLabel: t('empty') }).style('none').density('compact
 Bloom's `activity-feed`: `ActivityFeed(entries, options?)` takes Bloom's
 `ActivityFeedEntry`s (a title, context, content or action inside one is a
 React element: `toElement(view)`). `.style('day' | 'none')` groups the entries
-under day headings or none, `.density('default' | 'compact')` is its rhythm
-(Bloom's `comfortable` or `compact`), `.lines(n)` the lines a body clamps to.
+under day headings or none, `.density('comfortable' | 'compact')` is its
+rhythm, `.lines(n)` the lines a body clamps to.
 
 ### Call screens
 
@@ -3206,10 +3216,10 @@ WishlistCard(list.name, list.covers, { icon: HeartIcon, empty: Text('Nothing sav
 Bloom's `listing-card`: `ListingCard(title, photos, options?)` takes a
 listing's words, price, facts, offerings and favourite as Bloom does, its
 `badge` a language child; `.style('vertical' | 'horizontal')` is its layout,
-`.density('default' | 'compact')` its density (`default` is Bloom's
-`comfortable`), `.loading()` its skeleton; `.onPress()`, `.onLongPress()` and
+`.density('comfortable' | 'compact')` its density, `.loading()` its
+skeleton; `.onPress()`, `.onLongPress()` and
 `.label()` are its own. `ListingCardGrid(cards)` lays the cards out (a list
-keyed by `.id()`), `.density()` its columns (`default` is Bloom's `results`).
+keyed by `.id()`), `.density('results' | 'compact')` its columns.
 `WishlistCard(name, photos, options?)`: `.tint(role)` its colour, its `empty`
 a child, `.onPress()` its own.
 
@@ -3280,8 +3290,8 @@ Bloom's `order-status`: `OrderStatusBar(status, options?)` is the live strip
 views), `.style('surface' | 'plain')` its look and `.tint()` its tone, one of
 Bloom's accent tones. `OrderStatusTimeline(steps, options?)` takes Bloom's
 `OrderStatusStep`s (a step's own tone is its data); `.axis()` lays them out
-(`vertical` by default) and `.density('default' | 'compact')` is Bloom's
-`comfortable` or `compact`.
+(`vertical` by default) and `.density('comfortable' | 'compact')` its
+rhythm.
 
 ### Lockup
 
@@ -3360,8 +3370,7 @@ and `PaymentMethodList(methods, options?)` (its `empty` a child). The options
 are Bloom's data as it is: the selection (`selected`, `selectedId`,
 `onSelect`), a row's `role`, the words.
 
-- `.density('default' | 'compact')` is the family's density (`default` its
-  comfortable one); a list's `.style('list' | 'picker')` is whether it is read
+- `.density('comfortable' | 'compact')` is the family's density; a list's `.style('list' | 'picker')` is whether it is read
   or one entry chosen; an address's `.size()` a control size. `.disabled()`
   and a list's `.loading()` (its placeholder rows).
 - The rows take `.onPress()` themselves.
@@ -3404,7 +3413,7 @@ options)` (its price, photo, diets, heat, quantity and handlers) and
 `onValueChange`, are data as Bloom takes them; its `header` a child).
 Bloom's `vendor-card`: `VendorCard(name, options?)`.
 
-- `.density('default' | 'compact')` on a cart line, the cart, a menu row and
+- `.density('comfortable' | 'compact')` on a cart line, the cart, a menu row and
   a vendor card; `.disabled()` on the promo field, the tip picker and the
   options; a vendor card's `.loading()` its placeholder.
 - A menu row and a vendor card take `.onPress()` themselves. A vendor card's
@@ -3451,8 +3460,8 @@ ShipmentRequestForm(route, [load, setLoad], { options, price, footer: Button(Tex
 
 Bloom's logistics families: `CarrierQuoteCard(quote, options?)` and
 `CarrierQuoteList(quotes, options?)`, `JobCard(job, options?)` and
-`JobBoard(jobs, options?)` (`.density('default' | 'compact')`, `default`
-being Bloom's comfortable; a card `.disabled()`, a list or board `.loading()`
+`JobBoard(jobs, options?)` (`.density('comfortable' | 'compact')`; a card
+`.disabled()`, a list or board `.loading()`
 for its skeletons; a card's `actions` and a list's `emptyAction` are
 children); `EarningsSummary(periods, options?)` (its `payoutAction` a child,
 `chartHeight` a space token), `EarningsBreakdown(lines, options?)` and
@@ -3609,7 +3618,7 @@ EpisodeList(show.episodes, { currentEpisodeId, onPlay: play, onPress: open })
 
 Bloom's `track-list`: `TrackList(tracks, options?)` (its columns, groups,
 the loaded track, its selection controlled when given, reordering and its
-handlers; `.density('default' | 'compact')`, `default` its comfortable rows;
+handlers; `.density('comfortable' | 'compact')`, its rows;
 `.tint()` its header's background, a role; `.label()` names the grid),
 `TrackListHeader(columns, options?)` (`.density()`, `.tint()` its
 background), `TrackRow(track, index, options?)` (`.density()`; `.onPress()`
@@ -3632,8 +3641,8 @@ LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}
 PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
 ```
 
-Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('default'
-| 'compact')`, `default` being Bloom's comfortable; its `actions` a child; it
+Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('comfortable'
+| 'compact')`; its `actions` a child; it
 takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
 `.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
 child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
@@ -3668,8 +3677,8 @@ ShareSheet({ title: 'Send to', search, people, onPersonPress: send, targets }).s
 
 Bloom's `route-stops`, `note-card` and `share-sheet`. `RouteStops(stops,
 options?)` takes Bloom's stops (a stop's `badge` and `action` are React
-elements, as they are data) and its handlers; `.density('default' |
-'compact')`, `default` being its comfortable one; `.label()` names the list.
+elements, as they are data) and its handlers; `.density('comfortable' |
+'compact')`; `.label()` names the list.
 `NoteCard(title, options?)`: `.style('grid' | 'row')` its arrangement (Bloom's
 `density`), `.tint()` an accent tone (its wash), `.loading()` its skeleton;
 `.onPress()` and `.onLongPress()` are its own, and its selection
@@ -4233,7 +4242,7 @@ and `@oxy.so/bloom-data` beside it.
   `RecentHiresCard`); `RouteStops`, `NoteCard`, `ShareSheet`; and the generic
   components (`ConnectionDots`, `OutlineNav`, `Pagination`,
   `ProgressiveBlur`, `RowActions`, `SwipeRow` on Gesture Handler,
-  `ThemeToggle`). A comfortable or compact density is `.density()`.
+  `ThemeToggle`).
 
 **Not built**
 

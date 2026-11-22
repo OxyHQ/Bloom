@@ -1,10 +1,10 @@
 import { Button } from '@oxy.so/bloom/button';
 import { RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const onPress = () => {};
 
@@ -182,7 +182,7 @@ const leftovers: ParityCase[] = [
       </Button>
     ),
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.button.map((density) => ({
     name: `density ${density}`,
     language: () => toElement(L.Button(L.Text('Edit')).density(density)),
     bloom: () => <Button density={density}>Edit</Button>,

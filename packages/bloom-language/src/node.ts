@@ -237,8 +237,8 @@ import {
   type ZIndexName,
   type ButtonLinkTone,
   type ButtonShape,
-  type ContentDensity,
-  type ControlDensity,
+  type AnyDensity,
+  type Density,
   type ContentFit,
   type DurationName,
   type Edge,
@@ -691,7 +691,7 @@ export interface ValueModifiers {
   colors: readonly [ColorToken, ColorToken];
   linkTone: ButtonLinkTone;
   inverted: boolean;
-  density: ControlDensity | ContentDensity;
+  density: AnyDensity;
   dividers: boolean;
   separated: boolean;
   columns: number;
@@ -2643,7 +2643,7 @@ export class Node {
   inverted(value = true): Node {
     return this.with({ kind: 'inverted', key: `inverted:${value}`, value });
   }
-  density(value: ControlDensity | ContentDensity): Node {
+  density(value: AnyDensity): Node {
     return this.with({ kind: 'density', key: `density:${value}`, value });
   }
   dividers(value = true): Node {
@@ -4134,7 +4134,7 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
   /** The theme's background and foreground swapped: a high-contrast action. */
   inverted(value?: boolean): ButtonView;
   /** The control's geometry over the nearest Bloom scope's: `default` or `compact`. */
-  density(value: ControlDensity): ButtonView;
+  density(value: Density<'button'>): ButtonView;
 }
 /** What a shape's image draws: a bundled asset, or a URI descriptor (Bloom `shapes`' `ImageSource`). */
 export type ShapeImageSource =

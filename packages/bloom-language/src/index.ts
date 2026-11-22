@@ -256,7 +256,7 @@ export type {
   WeightName,
 } from './tokens';
 export type { Binding } from './binding';
-export type { ContentDensity } from './tokens';
+export type { AnyDensity, Density, DensityNode } from './tokens';
 export {
   SettingsDateField,
   SettingsSection,

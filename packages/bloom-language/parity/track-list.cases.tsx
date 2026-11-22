@@ -10,10 +10,10 @@ import {
   TrackRowSkeleton,
 } from '@oxy.so/bloom/track-list';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -163,7 +163,7 @@ export const TRACK_LIST_CASES: ParityCase[] = [
       />
     ),
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.trackListHeader.map((density) => ({
     name: `TrackListHeader ${density}`,
     language: () =>
       toElement(
@@ -174,13 +174,7 @@ export const TRACK_LIST_CASES: ParityCase[] = [
         }).density(density),
       ),
     bloom: () => (
-      <TrackListHeader
-        columns={[...COLUMNS]}
-        reorderable
-        likeable
-        hasMenu
-        density={density === 'compact' ? 'compact' : 'comfortable'}
-      />
+      <TrackListHeader columns={[...COLUMNS]} reorderable likeable hasMenu density={density} />
     ),
   })),
   {

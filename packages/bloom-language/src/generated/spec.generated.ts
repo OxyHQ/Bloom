@@ -959,11 +959,6 @@ export const ENUMS = {
     "secondary",
     "text"
   ],
-  "density": [
-    "default",
-    "compact",
-    "comfortable"
-  ],
   "appearance": [
     "solid",
     "subtle",
@@ -41540,6 +41535,142 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover"
+  ]
+} as const;
+
+/** The densities each node kind's `.density()` takes: its Bloom component's own names. */
+export const NODE_DENSITIES = {
+  "button": [
+    "default",
+    "compact"
+  ],
+  "row": [
+    "comfortable",
+    "compact"
+  ],
+  "groupedSection": [
+    "comfortable",
+    "compact"
+  ],
+  "selectionCard": [
+    "comfortable",
+    "compact"
+  ],
+  "listItem": [
+    "comfortable",
+    "compact"
+  ],
+  "chatHeader": [
+    "default",
+    "compact"
+  ],
+  "tenancyTimeline": [
+    "comfortable",
+    "compact"
+  ],
+  "listingCard": [
+    "comfortable",
+    "compact"
+  ],
+  "listingCardGrid": [
+    "results",
+    "compact"
+  ],
+  "activityFeed": [
+    "comfortable",
+    "compact"
+  ],
+  "orderStatusTimeline": [
+    "comfortable",
+    "compact"
+  ],
+  "calendarView": [
+    "default",
+    "compact"
+  ],
+  "calendarViewMonthGrid": [
+    "default",
+    "compact"
+  ],
+  "routeStops": [
+    "comfortable",
+    "compact"
+  ],
+  "addressRow": [
+    "comfortable",
+    "compact"
+  ],
+  "addressList": [
+    "comfortable",
+    "compact"
+  ],
+  "paymentMethodMark": [
+    "comfortable",
+    "compact"
+  ],
+  "paymentMethodRow": [
+    "comfortable",
+    "compact"
+  ],
+  "paymentMethodList": [
+    "comfortable",
+    "compact"
+  ],
+  "contactProfileCard": [
+    "comfortable",
+    "compact"
+  ],
+  "cartLine": [
+    "comfortable",
+    "compact"
+  ],
+  "cartPanel": [
+    "comfortable",
+    "compact"
+  ],
+  "menuItemRow": [
+    "comfortable",
+    "compact"
+  ],
+  "vendorCard": [
+    "comfortable",
+    "compact"
+  ],
+  "orderConfirmation": [
+    "comfortable",
+    "compact"
+  ],
+  "carrierQuoteCard": [
+    "comfortable",
+    "compact"
+  ],
+  "carrierQuoteList": [
+    "comfortable",
+    "compact"
+  ],
+  "jobCard": [
+    "comfortable",
+    "compact"
+  ],
+  "jobBoard": [
+    "comfortable",
+    "compact"
+  ],
+  "trackList": [
+    "comfortable",
+    "compact"
+  ],
+  "trackListHeader": [
+    "comfortable",
+    "compact"
+  ],
+  "trackRow": [
+    "comfortable",
+    "compact"
+  ],
+  "trackRowSkeleton": [
+    "comfortable",
+    "compact"
   ]
 } as const;
 

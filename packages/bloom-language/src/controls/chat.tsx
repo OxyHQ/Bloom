@@ -73,7 +73,7 @@ import type {
   ChatStatusTone,
   ColorToken,
   InkToken,
-  ControlDensity,
+  Density,
   DismissIcon,
   FileMessageStyle,
   MessageTone,
@@ -276,7 +276,7 @@ export interface ChatHeaderView extends ViewModifiers<ChatHeaderView> {
   /** The title as text (`plain`, default) or in a `capsule`. */
   titleAppearance(value: TitleAppearance): ChatHeaderView;
   /** `compact` gutters, or `default`; with neither, the window's width decides. */
-  density(value: ControlDensity): ChatHeaderView;
+  density(value: Density<'chatHeader'>): ChatHeaderView;
   /** The bar presentation's bottom hairline: drawn by default. */
   dividers(value?: boolean): ChatHeaderView;
 }

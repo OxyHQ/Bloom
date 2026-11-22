@@ -8,10 +8,10 @@ import {
 } from '@oxy.so/bloom/tenancy';
 import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const press = () => {};
 
@@ -131,7 +131,7 @@ export const TENANCY_CASES: ParityCase[] = [
     language: () => toElement(L.TenancyTimeline(EVENTS)),
     bloom: () => <TenancyTimeline events={EVENTS} />,
   },
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.tenancyTimeline.map((density) => ({
     name: `TenancyTimeline ${density}, named, its state words`,
     language: () =>
       toElement(
@@ -143,7 +143,7 @@ export const TENANCY_CASES: ParityCase[] = [
       <TenancyTimeline
         events={EVENTS}
         stateLabels={{ current: 'Now' }}
-        density={density === 'default' ? 'comfortable' : density}
+        density={density}
         accessibilityLabel="Tenancy history"
       />
     ),

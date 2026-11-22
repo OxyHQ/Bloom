@@ -5,10 +5,10 @@ import { RouteStops } from '@oxy.so/bloom/route-stops';
 import { ShareSheet } from '@oxy.so/bloom/share-sheet';
 import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS } from '../src/generated/spec.generated';
+import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const press = () => {};
 const pick = (_id: string) => {};
@@ -21,7 +21,7 @@ const STOPS = [
 const TWO = STOPS.slice(0, 2);
 
 const routes: ParityCase[] = [
-  ...CONTROL_DENSITIES.map((density) => ({
+  ...NODE_DENSITIES.routeStops.map((density) => ({
     name: `RouteStops ${density}`,
     language: () =>
       toElement(
@@ -41,7 +41,7 @@ const routes: ParityCase[] = [
         onAddStop={press}
         onRemoveStop={pick}
         canAddStop={false}
-        density={density === 'compact' ? 'compact' : 'comfortable'}
+        density={density}
         accessibilityLabel="Trip"
       />
     ),
