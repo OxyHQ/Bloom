@@ -88,6 +88,9 @@ import { CALENDAR_VIEWS } from './calendar';
 import { TASK_LISTS } from './task-list';
 import { WEB_SEARCHES } from './web-search';
 import { VOICES } from './voice';
+import { AGENT_CREATORS } from './agent-creator';
+import { AGENT_REPLIES } from './agent-reply';
+import { AI_PROFILE_CARDS } from './ai-profile-card';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -183,4 +186,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...TASK_LISTS,
   ...WEB_SEARCHES,
   ...VOICES,
+  ...AGENT_CREATORS,
+  ...AGENT_REPLIES,
+  ...AI_PROFILE_CARDS,
 };

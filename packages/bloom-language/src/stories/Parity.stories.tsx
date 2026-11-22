@@ -170,3 +170,4 @@ export const Engagement: Story = { args: { family: 'engagement' } };
 export const TaskLists: Story = { args: { family: 'taskList' } };
 export const WebSearches: Story = { args: { family: 'webSearch' } };
 export const VoiceControls: Story = { args: { family: 'voice' } };
+export const AgentEditor: Story = { args: { family: 'agentEditor' } };
