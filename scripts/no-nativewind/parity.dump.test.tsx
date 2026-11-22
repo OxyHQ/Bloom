@@ -45,7 +45,10 @@ function normalize(node: ReactTestRendererJSON | string): HostTree | string {
   const props: Record<string, unknown> = {};
   for (const key of Object.keys(node.props).sort()) {
     if (key === 'ref') continue;
-    const prop = node.props[key];
+    let prop = node.props[key];
+    // A Pressable's style function, at rest (the test renderer's Pressable never calls it).
+    if (typeof prop === 'function' && /^style$|Style$/.test(key))
+      prop = prop({ pressed: false, hovered: false, focused: false });
     if (prop === undefined) continue;
     // Every style prop (`style`, `contentContainerStyle`, …) flattened: an array and
     // the object it merges to are the same paint.
