@@ -157,6 +157,12 @@ export type ContentFit = (typeof ENUMS.contentFit)[number];
 export type TitleDisplay = (typeof ENUMS.titleDisplay)[number];
 export type ScrollEdge = (typeof ENUMS.scrollEdge)[number];
 export type HeaderPresentation = (typeof ENUMS.headerPresentation)[number];
+/** A page header's text over media (`onImage`: light), or the page's (`default`). */
+export type HeaderTone = (typeof ENUMS.headerTone)[number];
+/** How a page header's scrim fades: `smooth` holds behind its chrome, `linear` fades across it. */
+export type ScrimFalloff = (typeof ENUMS.scrimFalloff)[number];
+/** When a page header's title shows: Bloom's `titleReveal`. */
+export type TitleReveal = (typeof ENUMS.titleReveal)[number];
 export type ScreenKind = (typeof ENUMS.screenKind)[number];
 export type ScreenScroll = (typeof ENUMS.screenScroll)[number];
 export type ChromePlacement = (typeof ENUMS.chromePlacement)[number];

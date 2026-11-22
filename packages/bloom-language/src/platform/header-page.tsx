@@ -1,13 +1,25 @@
 /**
  * A `Header` as Bloom's `PageHeader`: Android and OxyOS, the web, and iOS
- * outside a native stack. On Android a floating header's controls take the
- * lens (Bloom gives its islands the lens material); on the web, Bloom's
- * frosted islands.
+ * outside a native stack (or `.inPage()`). On Android a floating header's
+ * controls take the lens (Bloom gives its islands the lens material); on the
+ * web, Bloom's frosted islands.
  */
+import type { ComponentType } from 'react';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 
 import type { Child, HeadingLevel, Node, ScrollOffset } from '../node';
-import type { HeaderPresentation, ScrollEdge, TitleDisplay } from '../tokens';
+import { type Paint, Painted } from '../paint';
+import { role } from '../style';
+import type {
+  ColorToken,
+  HeaderPresentation,
+  HeaderTone,
+  ScrimFalloff,
+  ScrollEdge,
+  TitleAlign,
+  TitleDisplay,
+  TitleReveal,
+} from '../tokens';
 import { valuesOf } from './values';
 import type { NodeHostProps } from './host.types';
 
@@ -29,25 +41,61 @@ export function readHeader(node: Node) {
     scrollY: values.scrollY as ScrollOffset | undefined,
     presentation: values.presentation as HeaderPresentation | undefined,
     testID: values.testID as string | undefined,
+    inPage: values.inPage as boolean | undefined,
+    safeArea: values.safeArea as boolean | undefined,
+    titleAlign: values.titleAlign as TitleAlign | undefined,
+    accessory: values.accessory as Child | undefined,
+    tone: values.tone as HeaderTone | undefined,
+    scrimColor: values.scrimColor as ColorToken | undefined,
+    scrimFalloff: values.scrimFalloff as ScrimFalloff | undefined,
+    titleReveal: values.titleReveal as TitleReveal | undefined,
   };
+}
+
+/** `PageHeader` as a `Painted` host (which types its host's props loosely). */
+const PAINTED_HEADER = PageHeader as unknown as ComponentType<Record<string, unknown>>;
+
+const scrimPaints = new Map<ColorToken, Paint>();
+
+/** A scrim colour painted from its role, from the theme: one paint per token. */
+function scrimPaint(color: ColorToken): Paint {
+  let paint = scrimPaints.get(color);
+  if (paint === undefined) {
+    const { role: name, opacity } = role(color);
+    paint = {
+      style: undefined,
+      styleRoles: [],
+      propRoles: [opacity === undefined ? ['scrimColor', name] : ['scrimColor', name, opacity]],
+    };
+    scrimPaints.set(color, paint);
+  }
+  return paint;
 }
 
 export function PageHeaderHost({ node, render }: NodeHostProps) {
   const header = readHeader(node);
-  return (
-    <PageHeader
-      title={header.title}
-      titleVariant={header.display === 'large' ? LARGE_TITLE : undefined}
-      subtitle={header.subtitle}
-      presentation={header.presentation}
-      scrim={header.scrollEdge}
-      scrollY={header.scrollY}
-      onBack={header.onBack}
-      backLabel={header.backLabel}
-      headingLevel={header.headingLevel}
-      leading={header.leading.length > 0 ? render(header.leading) : undefined}
-      actions={header.toolbar.length > 0 ? render(header.toolbar) : undefined}
-      testID={header.testID}
-    />
-  );
+  const props = {
+    title: header.title,
+    titleVariant: header.display === 'large' ? LARGE_TITLE : undefined,
+    subtitle: header.subtitle,
+    presentation: header.presentation,
+    scrim: header.scrollEdge,
+    scrollY: header.scrollY,
+    onBack: header.onBack,
+    backLabel: header.backLabel,
+    headingLevel: header.headingLevel,
+    leading: header.leading.length > 0 ? render(header.leading) : undefined,
+    actions: header.toolbar.length > 0 ? render(header.toolbar) : undefined,
+    safeArea: header.safeArea,
+    titleAlign: header.titleAlign,
+    accessory: header.accessory === undefined ? undefined : render(header.accessory),
+    tone: header.tone,
+    scrimFalloff: header.scrimFalloff,
+    titleReveal: header.titleReveal,
+    testID: header.testID,
+  };
+  if (header.scrimColor !== undefined) {
+    return <Painted host={PAINTED_HEADER} paint={scrimPaint(header.scrimColor)} {...props} />;
+  }
+  return <PageHeader {...props} />;
 }
