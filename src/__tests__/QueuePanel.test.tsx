@@ -170,7 +170,7 @@ describe('QueuePanel structure', () => {
     expect(normalise(el.style.backgroundColor)).toBe('rgba(0, 0, 0, 0)');
     expect(
       el
-        .querySelector<HTMLElement>('.bloom-surface-paint')
+        .querySelector<HTMLElement>('[data-bloom-surface-paint]')
         ?.style.getPropertyValue('--bloom-surface-paint-fill'),
     ).toBe(resolveSurfaceTint(paint.surface));
   });

@@ -838,7 +838,7 @@ describe('every source file that paints the material is checked', () => {
   });
 
   it('finds the material hosts through the selectors the material registers', () => {
-    expect(materialHostSelector()).toContain('.bloom-surface-paint');
+    expect(materialHostSelector()).toContain('[data-bloom-surface-paint]');
     expect(materialHostSelector()).toContain('.bloom-btn--surface');
   });
 });

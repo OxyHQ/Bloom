@@ -951,7 +951,7 @@ describe('EmojiPicker', () => {
         </div>
       </Surface>,
     );
-    expect(container.querySelectorAll('.bloom-surface')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-bloom-surface]')).toHaveLength(1);
     expect(maybe('e-grid')).toBeNull();
     expect(byTestId('e-flow')).toBeDefined();
     const owners = [...container.querySelectorAll<HTMLElement>('*')].filter((node) =>
@@ -1004,7 +1004,7 @@ describe('EmojiPicker', () => {
       />,
     );
     expect(byTestId('upload-content').parentElement?.style.height).toBe('');
-    expect(container.querySelectorAll('.bloom-surface')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-bloom-surface]')).toHaveLength(0);
     expect(maybe('e-grid')).toBeNull();
     mount(
       <EmojiPicker
