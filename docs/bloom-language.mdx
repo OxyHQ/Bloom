@@ -3656,7 +3656,10 @@ Bloom's `media-player`: `TransportControls(playing, options)` takes
 and `.disabled()`, its `trailing` a language child. `NowPlayingBar(track,
 options)` (its `devicePicker` a child), `MiniPlayer(track, options)` and
 `FullScreenPlayer(track, options)` (its `aboutArtist` a child) take the
-transport, position and duration as Bloom's data; a bar's `.liked()`,
+transport, position and duration as Bloom's data; the transport's shuffle,
+repeat and rate are the player's `.shuffle()`, `.repeat()` and
+`.playbackRate()` (on a bar and a full-screen player), bindings drawn into its
+`transport` as `TransportControls` takes them; a bar's `.liked()`,
 `.muted()`, `.volume()`, `.devicePickerOpen()`, `.lyricsActive()` and
 `.queueActive()` are bindings (a bound lyrics or queue toggle draws its
 button); a mini player's `.onPress()` is its own. `PlaybackSpeedMenu(rate)`
@@ -3734,7 +3737,7 @@ its panel's `width` a space token), `QueuePanelRow(track, options?)` (its
 
 ```ts
 TrackList(album.tracks, { currentTrackId, isPlaying, onPlay: play, menuItems }).density('compact').label(album.title)
-TrackRow(track, index, { current, playing, onPlay: play }).onPress(select)
+TrackRow(track, index, { current, playing, onPlay: play }).liked([liked, setLiked]).onPress(select)
 SelectionBar(selected.length, actions, { onClear: clear }).style('inline')
 EpisodeList(show.episodes, { currentEpisodeId, onPlay: play, onPress: open })
 ```
@@ -3745,12 +3748,17 @@ handlers; `.density('comfortable' | 'compact')`, its rows;
 `.tint()` its header's background, a role; `.label()` names the grid),
 `TrackListHeader(columns, options?)` (`.density()`, `.tint()` its
 background), `TrackRow(track, index, options?)` (`.density()`; `.onPress()`
-its own, Bloom handing it the track, its index and the press),
+its own, Bloom handing it the track, its index and the press; its like is
+`.liked([liked, setLiked])`, a binding drawn into its track, its button drawn
+when bound),
 `TrackRowSkeleton(options?)` (`.density()`), `TrackListEmpty(title,
 options?)`, `SelectionBar(count, actions, options)` (`.style('floating' |
 'inline')`), `EpisodeRow(episode, options?)` (`.onPress()` its own: it opens
-the episode) and `EpisodeList(episodes, options?)` (`.label()` names it).
+the episode; `.saved()` and `.downloaded()` bindings drawn into its episode,
+each toggle drawn when bound) and `EpisodeList(episodes, options?)` (`.label()` names it).
 The width each lays out for, and a sticky header's offset, are space tokens.
+A `TrackList`'s and an `EpisodeList`'s rows are Bloom's data: a row's like,
+save and download stay its item's, with the list's handler.
 
 - The now-playing bars loop while a track plays: a playing list or row is
   compared by Jest as it mounts, not in Chrome, where two side by side are

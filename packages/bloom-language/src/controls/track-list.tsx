@@ -21,10 +21,10 @@ import {
   type TrackRowSkeletonProps,
 } from '@oxy.so/bloom/track-list';
 
-import type { Bound } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { ColorToken, Density, SelectionBarPlacement, SpaceToken } from '../tokens';
-import type { ControlRenderer } from './draw';
+import type { ControlDraw, ControlRenderer } from './draw';
 import { product } from './product';
 
 /** The table of tracks, its parts, the bar for a selection, and podcast episodes. */
@@ -60,10 +60,12 @@ export type TrackListHeaderOptions = Omit<
   TrackListHeaderProps,
   Drawn | 'columns' | 'density' | 'background' | 'stickyOffset'
 > & { readonly stickyOffset?: SpaceToken };
+/** A track row's track: Bloom's `Track`, but its like, which is the row's `.liked()`. */
+export type TrackRowData = Omit<Track, 'liked'>;
 /** Bloom `TrackRow`'s data; the width it lays out for is a space token. */
 export type TrackRowOptions = Omit<
   TrackRowProps,
-  Drawn | 'track' | 'index' | 'density' | 'width' | 'onPress'
+  Drawn | 'track' | 'index' | 'density' | 'width' | 'onPress' | 'onLikedChange'
 > & { readonly width?: SpaceToken };
 export type TrackRowSkeletonOptions = Omit<TrackRowSkeletonProps, Drawn | 'density' | 'width'> & {
   readonly width?: SpaceToken;
@@ -73,7 +75,12 @@ export type SelectionBarOptions = Omit<
   SelectionBarProps,
   Drawn | 'count' | 'actions' | 'placement' | 'width'
 > & { readonly width?: SpaceToken };
-export type EpisodeRowOptions = Omit<EpisodeRowProps, Drawn | 'episode' | 'onPress' | 'width'> & {
+/** An episode row's episode: Bloom's `Episode`, but its save and download, which are the row's `.saved()` and `.downloaded()`. */
+export type EpisodeRowData = Omit<Episode, 'saved' | 'downloaded'>;
+export type EpisodeRowOptions = Omit<
+  EpisodeRowProps,
+  Drawn | 'episode' | 'onPress' | 'width' | 'onSavedChange' | 'onDownloadedChange'
+> & {
   readonly width?: SpaceToken;
 };
 export type EpisodeListOptions = Omit<EpisodeListProps, Drawn | 'episodes' | 'width'> & {
@@ -97,6 +104,8 @@ export interface TrackListHeaderView extends ViewModifiers<TrackListHeaderView> 
 /** Bloom `TrackRow`; `.onPress()` is its own (Bloom hands it the track, its index and the press). */
 export interface TrackRowView extends ViewModifiers<TrackRowView> {
   density(value: Density<'trackRow'>): TrackRowView;
+  /** Liked: a binding; bound, its like button draws and writes it. */
+  liked(value: Binding<boolean>): TrackRowView;
 }
 export interface TrackRowSkeletonView extends ViewModifiers<TrackRowSkeletonView> {
   density(value: Density<'trackRowSkeleton'>): TrackRowSkeletonView;
@@ -107,7 +116,12 @@ export interface SelectionBarView extends ViewModifiers<SelectionBarView> {
   style(value: SelectionBarPlacement): SelectionBarView;
 }
 /** Bloom `EpisodeRow`; `.onPress()` is its own: it opens the episode. */
-export type EpisodeRowView = ViewModifiers<EpisodeRowView>;
+export interface EpisodeRowView extends ViewModifiers<EpisodeRowView> {
+  /** Saved: a binding; bound, its save toggle draws and writes it. */
+  saved(value: Binding<boolean>): EpisodeRowView;
+  /** Downloaded: a binding; bound, its download toggle draws and writes it. */
+  downloaded(value: Binding<boolean>): EpisodeRowView;
+}
 /** Bloom `EpisodeList`; `.label()` names it. */
 export type EpisodeListView = ViewModifiers<EpisodeListView>;
 
@@ -120,7 +134,12 @@ export function TrackListHeader(
 ): TrackListHeaderView {
   return new Node('trackListHeader', { columns, options }, []);
 }
-export function TrackRow(track: Track, index: number, options: TrackRowOptions = {}): TrackRowView {
+/** Bloom `TrackRow` of `track`, at `index`; its like is its `.liked()`. */
+export function TrackRow(
+  track: TrackRowData,
+  index: number,
+  options: TrackRowOptions = {},
+): TrackRowView {
   return new Node('trackRow', { track, index, options }, []);
 }
 export function TrackRowSkeleton(options: TrackRowSkeletonOptions = {}): TrackRowSkeletonView {
@@ -139,7 +158,11 @@ export function SelectionBar(
 ): SelectionBarView {
   return new Node('selectionBar', { count, actions, options }, []);
 }
-export function EpisodeRow(episode: Episode, options: EpisodeRowOptions = {}): EpisodeRowView {
+/** Bloom `EpisodeRow` of `episode`; its save and download are its `.saved()` and `.downloaded()`. */
+export function EpisodeRow(
+  episode: EpisodeRowData,
+  options: EpisodeRowOptions = {},
+): EpisodeRowView {
   return new Node('episodeRow', { episode, options }, []);
 }
 export function EpisodeList(
@@ -152,6 +175,30 @@ export function EpisodeList(
 const tinted = (prop: string) => (d: Parameters<ControlRenderer>[0]) => ({
   [prop]: d.own('tint')?.value as ColorToken | undefined,
 });
+
+/**
+ * A row's toggles held in its item's data, as Bloom takes them: each bound
+ * one's value drawn into the item (`key`), and its handler (`set`, which Bloom
+ * calls with the item and the new value) writing the binding. One not bound
+ * draws neither, so Bloom draws no toggle for it.
+ */
+function toggles(
+  d: ControlDraw,
+  item: 'track' | 'episode',
+  bound: Readonly<Record<string, string>>,
+): Record<string, unknown> {
+  const data = { ...(d.node.props as Record<string, object>)[item] } as Record<string, unknown>;
+  const props: Record<string, unknown> = {};
+  for (const [key, set] of Object.entries(bound)) {
+    const binding = d.own(key as 'liked' | 'saved' | 'downloaded')?.value as
+      | Binding<boolean>
+      | undefined;
+    if (binding === undefined) continue;
+    data[key] = binding[0];
+    props[set] = (_item: unknown, value: boolean) => binding[1](value);
+  }
+  return Object.keys(props).length === 0 ? {} : { ...props, [item]: data };
+}
 
 export const TRACK_LISTS: Record<TrackListKind, ControlRenderer> = {
   trackList: product(BloomTrackList, {
@@ -168,7 +215,10 @@ export const TRACK_LISTS: Record<TrackListKind, ControlRenderer> = {
   trackRow: product(BloomTrackRow, {
     press: true,
     lengths: ['width'],
-    own: (d) => ({ density: d.own('density')?.value }),
+    own: (d) => ({
+      density: d.own('density')?.value,
+      ...toggles(d, 'track', { liked: 'onLikedChange' }),
+    }),
   }),
   trackRowSkeleton: product(BloomTrackRowSkeleton, {
     lengths: ['width'],
@@ -179,6 +229,10 @@ export const TRACK_LISTS: Record<TrackListKind, ControlRenderer> = {
     lengths: ['width'],
     own: (d) => ({ placement: d.own('style')?.value }),
   }),
-  episodeRow: product(BloomEpisodeRow, { press: true, lengths: ['width'] }),
+  episodeRow: product(BloomEpisodeRow, {
+    press: true,
+    lengths: ['width'],
+    own: (d) => toggles(d, 'episode', { saved: 'onSavedChange', downloaded: 'onDownloadedChange' }),
+  }),
   episodeList: product(BloomEpisodeList, { lengths: ['width'] }),
 };

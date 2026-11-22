@@ -43,6 +43,8 @@ const TRANSPORT = {
   repeat: 'one' as const,
   onRepeatChange: set,
 };
+/** The same transport in the language: its data, its shuffle and repeat the player's bindings. */
+const TRANSPORT_DATA = { playing: true, onPlayPause: press, onPrevious: press, onNext: press };
 
 const transport: ParityCase[] = ENUMS.transportStyle.flatMap((variant) =>
   ENUMS.transportSize.map((size) => ({
@@ -114,7 +116,7 @@ const players: ParityCase[] = [
     language: () =>
       toElement(
         L.NowPlayingBar(TRACK, {
-          transport: TRANSPORT,
+          transport: TRANSPORT_DATA,
           position: 42,
           duration: 214,
           buffered: 120,
@@ -126,6 +128,8 @@ const players: ParityCase[] = [
           .liked([true, set])
           .volume([0.6, set])
           .muted([false, set])
+          .shuffle([true, set])
+          .repeat(['one', set])
           .lyricsActive([true, set])
           .queueActive([false, set]),
       ),
@@ -218,7 +222,7 @@ const players: ParityCase[] = [
           contextName: 'Night drive',
           onCollapse: press,
           onMore: press,
-          transport: TRANSPORT,
+          transport: TRANSPORT_DATA,
           position: 42,
           duration: 214,
           onSeek: set,
@@ -228,7 +232,10 @@ const players: ParityCase[] = [
           onQueuePress: press,
           lyrics: { lines: ['The road hums low', 'and the lights go by'], activeIndex: 0 },
           aboutArtist: L.Text('Marlow Vance writes at night.'),
-        }).liked([true, set]),
+        })
+          .liked([true, set])
+          .shuffle([true, set])
+          .repeat(['one', set]),
       ),
     bloom: () => (
       <FullScreenPlayer

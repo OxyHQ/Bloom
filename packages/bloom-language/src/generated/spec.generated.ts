@@ -4152,6 +4152,12 @@ export const MODIFIERS = {
   "selectedIds": [
     "value"
   ],
+  "saved": [
+    "value"
+  ],
+  "downloaded": [
+    "value"
+  ],
   "tilted": [
     "value"
   ],
@@ -40378,7 +40384,10 @@ export const NODE_MODIFIERS = {
     "devicePickerOpen",
     "volume",
     "lyricsActive",
-    "queueActive"
+    "queueActive",
+    "shuffle",
+    "repeat",
+    "playbackRate"
   ],
   "miniPlayer": [
     "padding",
@@ -40548,7 +40557,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "liked"
+    "liked",
+    "shuffle",
+    "repeat",
+    "playbackRate"
   ],
   "playbackSpeedMenu": [
     "padding",
@@ -43462,7 +43474,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "density"
+    "density",
+    "liked"
   ],
   "trackRowSkeleton": [
     "padding",
@@ -43800,7 +43813,9 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "saved",
+    "downloaded"
   ],
   "episodeList": [
     "padding",

@@ -1624,6 +1624,8 @@
     "view": ["value"],
     "date": ["value"],
     "selectedIds": ["value"],
+    "saved": ["value"],
+    "downloaded": ["value"],
     "tilted": ["value"],
     "lyricsActive": ["value"],
     "queueActive": ["value"],
@@ -4249,10 +4251,23 @@
     },
     "nowPlayingBar": {
       "constructors": ["NowPlayingBar"],
-      "modifiers": ["muted", "liked", "devicePickerOpen", "volume", "lyricsActive", "queueActive"]
+      "modifiers": [
+        "muted",
+        "liked",
+        "devicePickerOpen",
+        "volume",
+        "lyricsActive",
+        "queueActive",
+        "shuffle",
+        "repeat",
+        "playbackRate"
+      ]
     },
     "miniPlayer": { "constructors": ["MiniPlayer"], "modifiers": ["liked"] },
-    "fullScreenPlayer": { "constructors": ["FullScreenPlayer"], "modifiers": ["liked"] },
+    "fullScreenPlayer": {
+      "constructors": ["FullScreenPlayer"],
+      "modifiers": ["liked", "shuffle", "repeat", "playbackRate"]
+    },
     "playbackSpeedMenu": {
       "constructors": ["PlaybackSpeedMenu"],
       "modifiers": ["size", "disabled", "presented"],
@@ -4355,7 +4370,7 @@
     },
     "trackRow": {
       "constructors": ["TrackRow"],
-      "modifiers": ["density"],
+      "modifiers": ["density", "liked"],
       "densities": ["comfortable", "compact"]
     },
     "trackRowSkeleton": {
@@ -4369,7 +4384,7 @@
       "modifiers": ["style"],
       "style": "selectionBarPlacement"
     },
-    "episodeRow": { "constructors": ["EpisodeRow"], "modifiers": [] },
+    "episodeRow": { "constructors": ["EpisodeRow"], "modifiers": ["saved", "downloaded"] },
     "episodeList": { "constructors": ["EpisodeList"], "modifiers": [] }
   },
   "sfSymbols": {
