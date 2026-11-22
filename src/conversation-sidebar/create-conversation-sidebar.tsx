@@ -1,6 +1,7 @@
 import { AvatarGroup } from '../avatar-group';
 import type React from 'react';
-import { View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '../button';
 import type * as DropdownMenuModule from '../dropdown-menu';
@@ -11,8 +12,9 @@ import { RiStore2Line } from '../icons/remix/RiStore2Line';
 import { useMessages } from '../locale/messages';
 import { MULTI_AGENT_CHAT_MESSAGES } from '../multi-agent-chat/messages';
 import { Sidebar, SidebarToolbar } from '../sidebar';
-import { StyledView } from '../styles/styled-primitives';
-import { Text } from '../typography';
+import { IS_WEB } from '../styles/platform';
+import { createTokenStyles, useColorTokens } from '../theme/color-tokens';
+import { TYPE_SCALE, Text } from '../typography';
 import type { ConversationSidebarProps } from './types';
 
 interface ConversationSidebarComponents {
@@ -20,8 +22,40 @@ interface ConversationSidebarComponents {
   List: typeof import('../list/List')['List'];
 }
 
-const TOOL_BUTTON_CLASS =
-  'w-full min-w-0 rounded-full border-0 bg-background-tertiary-default text-foreground-icon-secondary shadow-none hover:bg-background-tertiary-hover active:bg-background-tertiary-hover';
+/** `text-text-white`: white whatever the theme. */
+const WHITE = '#fff';
+
+const styles = StyleSheet.create({
+  toolButton: { borderWidth: 0, borderRadius: 999, width: '100%', minWidth: 0 },
+  createButton: { height: 36, width: '100%', minWidth: 0, borderRadius: 999 },
+  createMenu: { width: 323, borderRadius: 20, padding: 6 },
+  // Longhands: a desktop row's own geometry is longhand, and a shorthand loses to it.
+  createRow: { borderRadius: 14, paddingTop: 8, paddingRight: 8, paddingBottom: 8, paddingLeft: 8 },
+  createCopy: { flex: 1, minWidth: 0, flexDirection: 'column' },
+  noShadow: { boxShadow: 'none' },
+});
+
+const useStyles = createTokenStyles((t) => ({
+  // Native: what the tool buttons' classes put on the Button's host.
+  toolHost: {
+    backgroundColor: t.popover,
+    borderStyle: 'solid',
+    boxShadow: [],
+    color: t.mutedForeground,
+  },
+  toolHostPressed: { backgroundColor: t.accent },
+  createHost: { backgroundColor: t.primary, color: WHITE },
+  createLabel: { ...TYPE_SCALE['body-medium'], color: t.foreground },
+  createDescription: { ...TYPE_SCALE['body-2-medium'], color: t.mutedForeground },
+  // The class's 14px size lost to Text's own; its line height and weight held.
+  empty: {
+    paddingInline: 8,
+    paddingBlock: 24,
+    lineHeight: 20,
+    fontWeight: 400,
+    color: t.mutedForeground,
+  },
+}));
 
 /**
  * `ConversationSidebar` for a platform: `Dropdown` and `ContextMenu` are platform-forked, so the
@@ -47,6 +81,34 @@ export function createConversationSidebar({ Dropdown: D, List }: ConversationSid
     ...sidebar
   }: ConversationSidebarProps) {
     const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
+    const t = useColorTokens();
+    const themed = useStyles();
+    const [toolPressed, setToolPressed] = useState(false);
+    // The buttons' old classes painted the Button's host on native (its own paint still inside)
+    // and the button itself on the web, so each platform keeps what it drew.
+    const toolPaint = IS_WEB
+      ? {
+          fill: t.popover,
+          hoverFill: t.accent,
+          color: t.mutedForeground,
+          hoverColor: t.mutedForeground,
+          style: [styles.toolButton, styles.noShadow],
+        }
+      : {
+          style: [styles.toolButton, themed.toolHost, toolPressed && themed.toolHostPressed],
+          onPressIn: () => setToolPressed(true),
+          onPressOut: () => setToolPressed(false),
+        };
+    // The "+" keeps its fill and white glyph in every state.
+    const createPaint = IS_WEB
+      ? {
+          fill: t.primary,
+          hoverFill: t.primary,
+          color: WHITE,
+          hoverColor: WHITE,
+          style: styles.createButton,
+        }
+      : { style: [styles.createButton, themed.createHost] };
     const l = {
       conversations: messages.conversations,
       search: messages.searchConversations,
@@ -81,8 +143,7 @@ export function createConversationSidebar({ Dropdown: D, List }: ConversationSid
           iconOnly
           leadingIcon={RiStore2Line}
           accessibilityLabel={l.marketplace}
-          className={TOOL_BUTTON_CLASS}
-          style={{ borderWidth: 0, borderRadius: 999, width: '100%' }}
+          {...toolPaint}
           onPress={onMarketplace}
         />
       ) : null,
@@ -93,33 +154,24 @@ export function createConversationSidebar({ Dropdown: D, List }: ConversationSid
               iconOnly
               leadingIcon={RiAddLine}
               accessibilityLabel={l.create}
-              className="flex w-full min-w-0 items-center justify-center rounded-full bg-button-primary text-text-white"
-              style={{ height: 36, width: '100%', borderRadius: 999 }}
+              {...createPaint}
             />
           </D.DropdownMenuTrigger>
-          <D.DropdownMenuContent
-            label={l.createMenu}
-            align="start"
-            className="w-[323px] rounded-[20px] p-1.5"
-            style={{ width: 323, borderRadius: 20, padding: 6 }}
-          >
+          <D.DropdownMenuContent label={l.createMenu} align="start" style={styles.createMenu}>
             {createOptions.map((option) => (
               <D.DropdownMenuItem
                 key={option.key}
                 onPress={option.onPress}
                 accessibilityLabel={option.label}
-                className="rounded-[14px] p-2"
-                style={{ borderRadius: 14, padding: 8 }}
+                style={styles.createRow}
                 leading={option.leading}
               >
-                <StyledView className="flex min-w-0 flex-1 flex-col">
-                  <Text className="text-body-medium text-text-primary">{option.label}</Text>
+                <View style={styles.createCopy}>
+                  <Text style={themed.createLabel}>{option.label}</Text>
                   {option.description ? (
-                    <Text className="text-body-2-medium text-text-tertiary">
-                      {option.description}
-                    </Text>
+                    <Text style={themed.createDescription}>{option.description}</Text>
                   ) : null}
-                </StyledView>
+                </View>
               </D.DropdownMenuItem>
             ))}
           </D.DropdownMenuContent>
@@ -130,8 +182,7 @@ export function createConversationSidebar({ Dropdown: D, List }: ConversationSid
           iconOnly
           leadingIcon={RiAddLine}
           accessibilityLabel={l.create}
-          className="flex w-full min-w-0 items-center justify-center rounded-full bg-button-primary text-text-white"
-          style={{ height: 36, width: '100%', borderRadius: 999 }}
+          {...createPaint}
           onPress={onCreate}
         />
       ) : null,
@@ -212,11 +263,7 @@ export function createConversationSidebar({ Dropdown: D, List }: ConversationSid
                 })),
               },
             ]}
-            empty={
-              !after && l.empty ? (
-                <Text className="px-2 py-6 text-body-regular text-text-secondary">{l.empty}</Text>
-              ) : undefined
-            }
+            empty={!after && l.empty ? <Text style={themed.empty}>{l.empty}</Text> : undefined}
             footer={after}
           />
         }
