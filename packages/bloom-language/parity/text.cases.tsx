@@ -528,7 +528,45 @@ const tracked: ParityCase[] = [
   },
 ];
 
+/** React Native's own Text, as a screen moved from it draws it: only what the chain names. */
+const raw: ParityCase[] = [
+  {
+    name: 'RawText, bare',
+    language: () => toElement(L.RawText('Raw')),
+    bloom: () => <RN.Text>Raw</RN.Text>,
+  },
+  {
+    name: 'RawText, a size, a line height, a weight and an ink',
+    language: () =>
+      toElement(L.RawText('Raw').font('14').leading('20px').weight('semibold').foreground('muted')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.Text
+            style={{ fontSize: 14, lineHeight: 20, fontWeight: '600', color: c[paint('muted')] }}
+          >
+            Raw
+          </RN.Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'RawText in a stack, with a span',
+    language: () =>
+      toElement(L.VStack(L.RawText('a ', L.RawText('b').weight('bold')).lines(2)).padding('sm')),
+    bloom: () => (
+      <RN.View style={{ paddingTop: 8, paddingBottom: 8, paddingStart: 8, paddingEnd: 8 }}>
+        <RN.Text numberOfLines={2} ellipsizeMode="tail">
+          a <RN.Text style={{ fontWeight: '700' }}>b</RN.Text>
+        </RN.Text>
+      </RN.View>
+    ),
+  },
+];
+
 export const TEXT_CASES: ParityCase[] = [
+  ...raw,
   ...named,
   ...tracked,
   ...translucent,

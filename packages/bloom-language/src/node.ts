@@ -1749,6 +1749,8 @@ export interface StackProps {
 }
 export interface TextProps {
   readonly runs: readonly TextRun[];
+  /** React Native's own Text (`RawText`): it writes only what its chain names, as a span does. */
+  readonly raw?: boolean;
 }
 export interface IconProps {
   readonly icon: IconComponent;

@@ -1691,7 +1691,7 @@
       "modifiers": []
     },
     "text": {
-      "constructors": ["Text"],
+      "constructors": ["Text", "RawText"],
       "modifiers": [
         "lines",
         "noWrap",

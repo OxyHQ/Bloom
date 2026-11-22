@@ -134,6 +134,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 | `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers) |
 | `Spacer` | `View` with `flex: 1` |
 | `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
+| `RawText` | React Native's own `Text`: only what its chain names (no Bloom family, size or ink), as a span. What a screen moved from React Native's `Text` draws; new screens use `Text`. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
 | `Avatar` | Bloom `Avatar` (with a presence, `AvatarPresence`) |
 | `AvatarGroup` / `Badge` / `IconCircle` / `Loading` | Bloom `AvatarGroup` / `Badge` / `IconCircle` / `Loading` |

@@ -55,6 +55,7 @@ export {
   Spacer,
   Submenu,
   Tab,
+  RawText,
   Text,
   VStack,
   ZStack,

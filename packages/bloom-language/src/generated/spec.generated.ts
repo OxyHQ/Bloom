@@ -43347,6 +43347,7 @@ export const CONSTRUCTORS = {
   "ZStack": "stack",
   "Spacer": "spacer",
   "Text": "text",
+  "RawText": "text",
   "Icon": "icon",
   "Avatar": "avatar",
   "AvatarGroup": "avatarGroup",
