@@ -1,5 +1,138 @@
 [
  {
+  "name": "components/Components.tsx:25",
+  "before": "<SettingsSection\n      label={'⟨0⟩'}\n      description={'⟨11⟩'}\n    >\n      <GroupedSection title={'⟨9⟩'} footer={'⟨10⟩'} variant=\"filled\">\n        <GroupedSectionItem\n          title={'⟨1⟩'}\n          description={'⟨2⟩'}\n          rightElement={<Switch checked={true} onCheckedChange={() => {}} />}\n        />\n        <GroupedSectionItem title=\"Language\" value=\"English\" onPress={() => {}} />\n        <GroupedSectionItem\n          title={'⟨6⟩'}\n          destructive\n          showChevron={false}\n          onPress={() => {}}\n        />\n        <GroupedSectionItem title={'⟨8⟩'} titleNumberOfLines={0} disabled />\n      </GroupedSection>\n    </SettingsSection>",
+  "after": "toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨8⟩').lines(0).disabled()).title('⟨9⟩').caption('⟨10⟩').style('filled')).description('⟨11⟩'))",
+  "bindings": {
+   "SettingsSection": {
+    "module": "@oxy.so/bloom/settings-modal",
+    "imported": "SettingsSection"
+   },
+   "GroupedSection": {
+    "module": "@oxy.so/bloom/grouped-section",
+    "imported": "GroupedSection"
+   },
+   "GroupedSectionItem": {
+    "module": "@oxy.so/bloom/grouped-section",
+    "imported": "GroupedSectionItem"
+   },
+   "Switch": {
+    "module": "@oxy.so/bloom/switch",
+    "imported": "Switch"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection"
+  ],
+  "classes": [],
+  "inScreen": false
+ },
+ {
+  "name": "components/Components.tsx:50",
+  "before": "<SettingsSection>\n      <Card appearance=\"outline\" radius=\"radius-16\" border=\"thin\" elevation=\"none\">\n        <SettingsValueField icon={RiSmartphoneLine}>Pixel 9</SettingsValueField>\n      </Card>\n    </SettingsSection>",
+  "after": "toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))",
+  "bindings": {
+   "SettingsSection": {
+    "module": "@oxy.so/bloom/settings-modal",
+    "imported": "SettingsSection"
+   },
+   "Card": {
+    "module": "@oxy.so/bloom/card",
+    "imported": "Card"
+   },
+   "SettingsValueField": {
+    "module": "@oxy.so/bloom/settings-modal",
+    "imported": "SettingsValueField"
+   },
+   "RiSmartphoneLine": {
+    "module": "@oxy.so/bloom/icons/RiSmartphoneLine",
+    "imported": "RiSmartphoneLine"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard"
+  ],
+  "classes": [],
+  "inScreen": false
+ },
+ {
+  "name": "components/Components.tsx:68",
+  "before": "<ScreenScrollView keyboardShouldPersistTaps=\"handled\">\n      <View className=\"gap-4 p-4\">\n        <TextFieldInput\n          label={'⟨2⟩'}\n          value={'⟨0⟩'}\n          onChangeText={() => {}}\n          placeholder={'⟨3⟩'}\n          maxLength={50}\n          autoCapitalize=\"words\"\n          autoCorrect={false}\n          returnKeyType=\"done\"\n          onSubmitEditing={() => {}}\n        />\n      </View>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(VStack(TextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "TextFieldInput": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextFieldInput"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField",
+   "ScrollView"
+  ],
+  "classes": [
+   "gap-4",
+   "p-4"
+  ],
+  "inScreen": true
+ },
+ {
+  "name": "components/Components.tsx:88",
+  "before": "<ChatEmptyState\n      title={'⟨0⟩'}\n      description={'⟨1⟩'}\n      action={<Button onPress={() => {}}>{'⟨2⟩'}</Button>}\n    />",
+  "after": "toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(Text('⟨2⟩')).onPress(() => {}) }))",
+  "bindings": {
+   "ChatEmptyState": {
+    "module": "@oxy.so/bloom/chat-screen",
+    "imported": "ChatEmptyState"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField",
+   "ScrollView",
+   "Text",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState"
+  ],
+  "classes": [],
+  "inScreen": false
+ },
+ {
   "name": "components/Rows.tsx:19",
   "before": "<Pressable onPress={() => {}} className=\"flex-row items-center gap-3 px-4 py-3 active:opacity-70\">\n      <RiHeart3Line size=\"sm\" />\n      <View className=\"gap-1\">\n        <Text variant=\"body-semibold\" numberOfLines={1}>\n          {'⟨0⟩'}\n        </Text>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨1⟩'} likes</Text>\n      </View>\n    </Pressable>",
   "after": "toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))",
@@ -37,7 +170,8 @@
    "gap-1",
    "text-sm",
    "text-muted-foreground"
-  ]
+  ],
+  "inScreen": false
  },
  {
   "name": "components/Rows.tsx:41",
@@ -85,7 +219,8 @@
    "md:p-6",
    "font-semibold",
    "text-foreground"
-  ]
+  ],
+  "inScreen": false
  },
  {
   "name": "components/Rows.tsx:54",
@@ -117,7 +252,8 @@
    "bg-muted",
    "h-px",
    "bg-border"
-  ]
+  ],
+  "inScreen": false
  },
  {
   "name": "components/Rows.tsx:58",
@@ -150,7 +286,8 @@
    "uppercase",
    "tracking-wide",
    "text-muted-foreground"
-  ]
+  ],
+  "inScreen": false
  },
  {
   "name": "components/Rows.tsx:68",
@@ -185,6 +322,7 @@
    "flex-1",
    "mt-2",
    "text-sm"
-  ]
+  ],
+  "inScreen": false
  }
 ]
