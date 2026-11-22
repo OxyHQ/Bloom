@@ -176,6 +176,20 @@ its Bloom 22 upgrade.
 
 Beside the rules: an icon's `fill` read from Bloom's `useTheme()` is
 `.foreground(role)` and a `width` and `height` of one number its `.size()`;
+a static hex `fill` (`fill="#fff"`, or a module constant
+`const LIKE = '#FF3040'` the file declares) is an app colour,
+`.foreground(appColors.color.hexfff)`, from one `defineTokens({ color })`
+table the codemod declares after the imports and the constants it reads
+(`{ LIKE, hexfff: '#fff' }`: a constant by its own name, a literal as `hex`
+and its digits). The hex is the glyph's fill as written, in both schemes; the
+corpus declares the same table and the before side reads the constant's hex.
+A fill stays JSX when it is no hex (`white`, an `rgba()`, `currentColor`:
+`icon-fill:not-hex`), a theme colour no role paints (`textTertiary`:
+`icon-fill:no-role`), a theme handed in as a prop (`icon-fill:theme-handed-in`:
+read where the parent called `useTheme()`, which may be outside a colour scope
+the icon is drawn in), a theme colour read outside a `BloomColorScope` around
+the icon (`icon-fill:color-scope`), or set at runtime or imported
+(`icon-fill`);
 `accessibilityRole` is `.role()`; a static `style` (an object literal, a
 module `StyleSheet`'s style, or a list of them) is read as the Tailwind
 utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
