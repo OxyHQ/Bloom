@@ -14,8 +14,8 @@
  *   and submenus, each with its icon's SF Symbol (none when it has none);
  * - anything else is Bloom's own view, in the bar.
  *
- * Outside a native stack (a tab page, a panel), or without expo-router,
- * Bloom's PageHeader.
+ * Outside a native stack (a tab page, a panel), without expo-router, or
+ * `.inPage()`, Bloom's PageHeader.
  *
  * NOT VERIFIED: written without an iOS build (no Mac on this machine).
  */
@@ -85,7 +85,9 @@ export function useSystemBar(): boolean {
 export function HeaderHost(props: NodeHostProps) {
   const system = useSystemBar();
   const loaded = loadRouter();
-  if (!system || !loaded) return <PageHeaderHost {...props} />;
+  if (!system || !loaded || valuesOf(props.node).inPage === true) {
+    return <PageHeaderHost {...props} />;
+  }
   return <SystemBar {...props} Stack={loaded.Stack} />;
 }
 
