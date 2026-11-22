@@ -4,7 +4,7 @@ import {
   type SocialBrandConfig,
 } from '@oxy.so/bloom/social-button';
 
-import { ENUMS } from '../generated/spec.generated';
+import type { ENUMS } from '../generated/spec.generated';
 import { Node, type ViewModifiers } from '../node';
 import type { ControlRenderer } from './draw';
 

@@ -186,7 +186,7 @@ import {
   type Role,
   type TextStyleName,
 } from './tokens';
-import { deriveEnv, EnvContext, type Env } from './env';
+import { deriveEnv, EnvContext, ROOT_ENV, type Env } from './env';
 import type { TextTraits } from './style';
 import { adoptLanguageSheet } from './web-sheet';
 import {
@@ -506,6 +506,11 @@ function plan(node: Node): Plan {
     // A card's corner curve is its own (Bloom's `cornerCurve`, beside its `radius`), not its box's.
     if (node.kind === 'card' && modifier.kind === 'cornerCurve') {
       result.own.set('cornerCurve', modifier);
+      continue;
+    }
+    // A card's clip is its own (Bloom's `clipContent`), not a box around it.
+    if (node.kind === 'card' && modifier.kind === 'clipped') {
+      result.own.set('clipped', modifier);
       continue;
     }
     if (isLayerModifier(modifier)) {
@@ -2584,9 +2589,11 @@ function drawText(
   key: string | number | undefined,
   outermost: Outermost | undefined,
 ): ReactElement {
-  const traits = ctx.env.text;
-  // A span, and React Native's own Text (RawText), write only what their own chain names.
-  const span = ctx.inText || (node.props as TextProps).raw === true ? spanTraits(p) : undefined;
+  const raw = (node.props as TextProps).raw === true;
+  // React Native's own Text (RawText) inherits nothing of the language's environment
+  // (no family, size or ink); a span, and RawText, write only what their own chain names.
+  const traits = raw ? deriveEnv(ROOT_ENV, p.env).text : ctx.env.text;
+  const span = ctx.inText || raw ? spanTraits(p) : undefined;
   const link = ownValue(p, 'link')?.value;
   const look = {
     noWrap: ownValue(p, 'noWrap') !== undefined,
