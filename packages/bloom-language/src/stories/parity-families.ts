@@ -96,6 +96,7 @@ import { ACTIVITY_FEED_CASES } from '../../parity/activity-feed.cases';
 import { ORDER_STATUS_CASES } from '../../parity/order-status.cases';
 import { LOCKUP_CASES } from '../../parity/lockup.cases';
 import { CALENDAR_CASES } from '../../parity/calendar.cases';
+import { ENGAGEMENT_CASES } from '../../parity/engagement.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -197,6 +198,7 @@ export const FAMILIES = {
   orderStatus: ORDER_STATUS_CASES,
   lockup: LOCKUP_CASES,
   calendar: CALENDAR_CASES,
+  engagement: ENGAGEMENT_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

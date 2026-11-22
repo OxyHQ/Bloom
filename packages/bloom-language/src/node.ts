@@ -261,6 +261,7 @@ import {
   type TripCardOrientation,
   type ActivityFeedGrouping,
   type OrderStatusBarStyle,
+  type EngagementBarTone,
   type LockupSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
@@ -1009,6 +1010,8 @@ export interface ValueModifiers {
   senderTint: ColorToken;
   // A product component's hairline (a lockup's)
   divider: boolean;
+  // An action bar's zero counts
+  showZeroCounts: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1250,7 +1253,8 @@ export type Modifier =
         | ChatStatusTone
         | MessageTone
         | RentOutstandingTone
-        | AccentTone;
+        | AccentTone
+        | EngagementBarTone;
     }
   | {
       readonly kind: 'count';
@@ -1919,7 +1923,8 @@ export class Node {
       | ChatStatusTone
       | MessageTone
       | RentOutstandingTone
-      | AccentTone,
+      | AccentTone
+      | EngagementBarTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
@@ -3473,6 +3478,9 @@ export class Node {
   divider(value = true): Node {
     return this.set('divider', value);
   }
+  showZeroCounts(value = true): Node {
+    return this.set('showZeroCounts', value);
+  }
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
@@ -4076,6 +4084,12 @@ export interface ActionBarView extends ViewModifiers<ActionBarView> {
   trailing(...value: Child[]): ActionBarView;
   countFormat(value: (count: number) => string): ActionBarView;
   size(value: BloomSize): ActionBarView;
+  /** `horizontal` (default), or `vertical`: a video's column of actions. */
+  axis(value: Axis): ActionBarView;
+  /** `default`, or `onImage`: legible over artwork. */
+  tint(value: EngagementBarTone): ActionBarView;
+  /** Draws a count of 0 (a video's actions); by default a zero count is hidden. */
+  showZeroCounts(value?: boolean): ActionBarView;
 }
 export type ActionGroupView = ViewModifiers<ActionGroupView>;
 export type SpacerView = ViewModifiers<SpacerView>;
