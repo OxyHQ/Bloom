@@ -4,6 +4,7 @@ import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { ConcentricView } from '../concentric';
 import { useSurfacePresenceRef } from '../surface/use-surface-presence-ref';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { IS_WEB } from '../styles/platform';
 import { surfacePresenceStyle } from '../surface/use-surface-presence';
 import { ConcentricProvider } from '../concentric/ConcentricProvider';
 import { useConcentricGeometry } from '../concentric/use-concentric-geometry';
@@ -143,8 +144,13 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
         borderWidth: borderRole === 'none' ? 0 : BORDER_PX[borderRole],
       },
     });
+    // On the web a Card with no corner of its own (no `radius`, no `borderRadius`)
+    // draws the concentric corner geometry: its host corners from its own rung, its
+    // paint shaped by what its parent leaves it. Native draws the rung alone. The two
+    // differ on purpose, kept exactly as apps draw them today (docs/card.mdx).
+    const webConcentric = IS_WEB && radius === undefined && callerStyle?.borderRadius === undefined;
     const resolvedGeometry =
-      radius === 'concentric'
+      radius === 'concentric' || webConcentric
         ? {
             radius: undefined,
             shape: {
@@ -274,7 +280,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
             >
               {clipContent ? (
                 <ConcentricView
-                  radius={radius === 'concentric' ? 'concentric' : undefined}
+                  radius={radius === 'concentric' || webConcentric ? 'concentric' : undefined}
                   testID={testID ? `${testID}-clip` : undefined}
                   style={[
                     contentStyle,
