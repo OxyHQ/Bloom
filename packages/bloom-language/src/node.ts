@@ -642,6 +642,11 @@ export interface ValueModifiers {
   peek: boolean;
   barHeight: SpaceToken;
   collapsedHeight: SpaceToken;
+  band: InkToken;
+  peekDelay: DurationName;
+  unpeekDelay: DurationName;
+  hideMotion: MotionToken;
+  showMotion: MotionToken;
   thickness: SpaceToken;
   onResizeStart: () => void;
   onResizeEnd: () => void;
@@ -783,7 +788,7 @@ export interface ValueModifiers {
   reorderable: boolean;
   dragTranslation: MotionValue;
   indicator: SelectionIndicator | Child;
-  fade: ColorName;
+  fade: InkToken;
   ringInset: SpaceToken;
   nativeID: string;
   describedBy: string;
@@ -2696,6 +2701,21 @@ export class Node {
   collapsedHeight(value: SpaceToken): Node {
     return this.set('collapsedHeight', value);
   }
+  band(value: InkToken): Node {
+    return this.set('band', value);
+  }
+  peekDelay(value: DurationName): Node {
+    return this.set('peekDelay', value);
+  }
+  unpeekDelay(value: DurationName): Node {
+    return this.set('unpeekDelay', value);
+  }
+  hideMotion(value: MotionToken): Node {
+    return this.set('hideMotion', value);
+  }
+  showMotion(value: MotionToken): Node {
+    return this.set('showMotion', value);
+  }
   thickness(value: SpaceToken): Node {
     return this.set('thickness', value);
   }
@@ -3171,7 +3191,7 @@ export class Node {
   indicator(value: SelectionIndicator | Child): Node {
     return this.set('indicator', value);
   }
-  fade(value: ColorName): Node {
+  fade(value: InkToken): Node {
     return this.set('fade', value);
   }
   ringInset(value: SpaceToken): Node {
@@ -4965,6 +4985,8 @@ export interface ScrollSurfaceView extends ScrollAreaModifiers<ScrollSurfaceView
   fadeHeight(value: SpaceToken): ScrollSurfaceView;
   /** Whether its foot fades too (it does by default). */
   fadeBottom(value?: boolean): ScrollSurfaceView;
+  /** The colour its ends fade into: a role or an app's own (the surface's by default). */
+  fade(value: InkToken): ScrollSurfaceView;
   /** The fade takes the paint of the nearest material, not the surface's colour. */
   matchSurfacePaint(value?: boolean): ScrollSurfaceView;
   /** The surface it sits on: `primary` (default), `secondary` or `full`. */
@@ -4989,6 +5011,16 @@ export interface AutoHideBarView extends ViewNode {
   barHeight(value: SpaceToken): AutoHideBarView;
   /** The strip's height (20 by default). */
   collapsedHeight(value: SpaceToken): AutoHideBarView;
+  /** The band behind the bar: a role or an app's own (the fill of the surface it sits on by default). */
+  band(value: InkToken): AutoHideBarView;
+  /** How long the pointer rests on the strip before the bar peeks: a duration token (`fast` by default). */
+  peekDelay(value: DurationName): AutoHideBarView;
+  /** How long after the pointer leaves a peeked bar it collapses again: a duration token (`'250'` by default). */
+  unpeekDelay(value: DurationName): AutoHideBarView;
+  /** How it collapses: a motion token (Bloom's own ease-out over 150ms by default). */
+  hideMotion(value: MotionToken): AutoHideBarView;
+  /** How it comes back, revealed or peeked: a motion token (Bloom's own ease-out over 200ms by default). */
+  showMotion(value: MotionToken): AutoHideBarView;
   /** Names the strip's button. */
   label(value: string | undefined): AutoHideBarView;
   testID(value: string): AutoHideBarView;

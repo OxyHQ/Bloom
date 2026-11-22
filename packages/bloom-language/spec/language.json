@@ -268,12 +268,13 @@
       "2xl": 1536
     },
     "duration": {
-      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration), then exact durations, each named by its milliseconds ('2500' is 2500 ms; '0' stills a count-up or opens at once): the ones apps write, and the waits Bloom's own components default to (a hover card opens after '400', a desktop tooltip after '1000', a connection status says it is reconnecting after '3000') or that its stories and parity cases write ('4000'). An image's cross-fade, a motion's delay and a component's waits take them; no app writes a Tailwind delay-* (codemod/classname-usage.json).",
+      "$comment": "Milliseconds: Bloom's own durations (tokens.animation.duration), then exact durations, each named by its milliseconds ('2500' is 2500 ms; '0' stills a count-up or opens at once): the ones apps write, and the waits Bloom's own components default to (an auto-hiding bar collapses again '250' after the pointer leaves, a hover card opens after '400', a desktop tooltip after '1000', a connection status says it is reconnecting after '3000') or that its stories and parity cases write ('4000'). An image's cross-fade, a motion's delay and a component's waits take them; no app writes a Tailwind delay-* (codemod/classname-usage.json).",
       "instant": 100,
       "fast": 150,
       "normal": 200,
       "slow": 300,
       "0": 0,
+      "250": 250,
       "400": 400,
       "800": 800,
       "1000": 1000,
@@ -1333,6 +1334,11 @@
     "onReveal": ["value"],
     "peek": ["value?"],
     "barHeight": ["space"],
+    "band": ["color"],
+    "peekDelay": ["duration"],
+    "unpeekDelay": ["duration"],
+    "hideMotion": ["motion"],
+    "showMotion": ["motion"],
     "collapsedHeight": ["space"],
     "thickness": ["space"],
     "onResizeStart": ["value"],
@@ -2575,6 +2581,7 @@
         "stickyFooter",
         "fadeHeight",
         "fadeBottom",
+        "fade",
         "matchSurfacePaint",
         "style"
       ],
@@ -2591,6 +2598,11 @@
         "peek",
         "barHeight",
         "collapsedHeight",
+        "band",
+        "peekDelay",
+        "unpeekDelay",
+        "hideMotion",
+        "showMotion",
         "label",
         "testID"
       ]
