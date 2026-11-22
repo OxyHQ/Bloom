@@ -598,7 +598,10 @@
       "color",
       "luminosity",
       "plus-lighter"
-    ]
+    ],
+    "buttonMaterial": ["surface", "flat", "shared", "lens"],
+    "radarLegend": ["bottom", "top", "overlay"],
+    "methodTitleAlign": ["left", "center"]
   },
   "glass": {
     "$comment": [
@@ -909,7 +912,19 @@
     "teamPlacement": ["teamPlacement"],
     "textVariant": ["typeRamp"],
     "blend": ["blend"],
-    "bloomOnly": ["value?"]
+    "bloomOnly": ["value?"],
+    "material": ["buttonMaterial"],
+    "iconOnly": ["value?"],
+    "round": ["value?"],
+    "eyebrow": ["value?"],
+    "sidebarScrollbarSide": ["scrollbarSide"],
+    "floatingChrome": ["value?"],
+    "legend": ["radarLegend"],
+    "filled": ["value?"],
+    "mono": ["value?"],
+    "frosted": ["value?"],
+    "methodTitleAlign": ["methodTitleAlign"],
+    "methodTitleVariant": ["typeRamp"]
   },
   "universal": [
     "padding",
@@ -1288,7 +1303,11 @@
       "style": "areaVariant",
       "shape": "chartShape"
     },
-    "barListCard": { "constructors": ["BarListCard"], "modifiers": ["tint"], "tint": "color" },
+    "barListCard": {
+      "constructors": ["BarListCard"],
+      "modifiers": ["tint", "mono"],
+      "tint": "color"
+    },
     "chartCardSurface": { "constructors": ["ChartCardSurface"], "modifiers": ["spacing"] },
     "chartHeadline": { "constructors": ["ChartHeadline"], "modifiers": [] },
     "chartStatTiles": { "constructors": ["ChartStatTiles"], "modifiers": [] },
@@ -1310,12 +1329,17 @@
     },
     "radarChartCard": {
       "constructors": ["RadarChartCard"],
-      "modifiers": ["style"],
+      "modifiers": ["style", "legend"],
       "style": "radarVariant"
     },
     "sleepScoreCard": { "constructors": ["SleepScoreCard"], "modifiers": [] },
-    "sparkline": { "constructors": ["Sparkline"], "modifiers": ["tint"], "tint": "sparklineTone" },
-    "stageBarsCard": { "constructors": ["StageBarsCard"], "modifiers": [] },
+    "sparkline": {
+      "constructors": ["Sparkline"],
+      "modifiers": ["tint", "shape", "filled"],
+      "tint": "sparklineTone",
+      "shape": "chartShape"
+    },
+    "stageBarsCard": { "constructors": ["StageBarsCard"], "modifiers": ["mono"] },
     "stepsCard": {
       "constructors": ["StepsCard"],
       "modifiers": ["tint", "activeTint"],
@@ -1327,10 +1351,19 @@
       "tint": "color"
     },
     "composerPanel": { "constructors": ["ComposerPanel"], "modifiers": ["disabled"] },
-    "composerPill": { "constructors": ["ComposerPill"], "modifiers": ["disabled", "surface"] },
+    "composerPill": {
+      "constructors": ["ComposerPill"],
+      "modifiers": ["disabled", "surface", "frosted"]
+    },
     "composerPanelStatusTab": { "constructors": ["ComposerPanelStatusTab"], "modifiers": [] },
-    "aiChatShell": { "constructors": ["AiChatShell"], "modifiers": [] },
-    "aiChatContainer": { "constructors": ["AiChatContainer"], "modifiers": [] },
+    "aiChatShell": {
+      "constructors": ["AiChatShell"],
+      "modifiers": ["sidebarSurface", "sidebarScrollbarSide", "surface"]
+    },
+    "aiChatContainer": {
+      "constructors": ["AiChatContainer"],
+      "modifiers": ["surface", "floatingChrome"]
+    },
     "aiChatThread": { "constructors": ["AiChatThread"], "modifiers": [] },
     "aiChatUserMessage": { "constructors": ["AiChatUserMessage"], "modifiers": [] },
     "aiChatAssistantMessage": { "constructors": ["AiChatAssistantMessage"], "modifiers": [] },
@@ -1498,7 +1531,7 @@
       "modifiers": ["size"],
       "size": "listingHeaderSize"
     },
-    "listingHeaderAction": { "constructors": ["ListingHeaderAction"], "modifiers": [] },
+    "listingHeaderAction": { "constructors": ["ListingHeaderAction"], "modifiers": ["iconOnly"] },
     "listingPhotoGrid": {
       "constructors": ["ListingPhotoGrid"],
       "modifiers": ["style"],
@@ -1519,7 +1552,7 @@
     "mapSearchAreaButton": { "constructors": ["MapSearchAreaButton"], "modifiers": ["disabled"] },
     "followButton": {
       "constructors": ["FollowButton"],
-      "modifiers": ["style", "tint", "size", "loading"],
+      "modifiers": ["style", "tint", "size", "loading", "material", "iconOnly"],
       "style": "appearance",
       "tint": "tone",
       "size": "followButtonSize"
@@ -1531,7 +1564,7 @@
     },
     "shelfSkeleton": {
       "constructors": ["ShelfSkeleton"],
-      "modifiers": ["style", "spacing"],
+      "modifiers": ["style", "spacing", "round", "eyebrow"],
       "style": "shelfLayout"
     },
     "subscriptionPlans": { "constructors": ["SubscriptionPlans"], "modifiers": [] },
@@ -1541,7 +1574,10 @@
     "cardFormCountry": { "constructors": ["CardFormCountry"], "modifiers": ["disabled"] },
     "cardFormPostcode": { "constructors": ["CardFormPostcode"], "modifiers": ["disabled"] },
     "cardFormHostedField": { "constructors": ["CardFormHostedField"], "modifiers": ["disabled"] },
-    "checkoutSheet": { "constructors": ["CheckoutSheet"], "modifiers": [] },
+    "checkoutSheet": {
+      "constructors": ["CheckoutSheet"],
+      "modifiers": ["methodTitleAlign", "methodTitleVariant"]
+    },
     "filterSection": { "constructors": ["FilterSection"], "modifiers": ["dividers"] },
     "priceRangeFilter": {
       "constructors": ["PriceRangeFilter"],

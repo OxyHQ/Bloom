@@ -1550,6 +1550,21 @@ export const ENUMS = {
     "color",
     "luminosity",
     "plus-lighter"
+  ],
+  "buttonMaterial": [
+    "surface",
+    "flat",
+    "shared",
+    "lens"
+  ],
+  "radarLegend": [
+    "bottom",
+    "top",
+    "overlay"
+  ],
+  "methodTitleAlign": [
+    "left",
+    "center"
   ]
 } as const;
 
@@ -2177,6 +2192,42 @@ export const MODIFIERS = {
   ],
   "bloomOnly": [
     "value?"
+  ],
+  "material": [
+    "buttonMaterial"
+  ],
+  "iconOnly": [
+    "value?"
+  ],
+  "round": [
+    "value?"
+  ],
+  "eyebrow": [
+    "value?"
+  ],
+  "sidebarScrollbarSide": [
+    "scrollbarSide"
+  ],
+  "floatingChrome": [
+    "value?"
+  ],
+  "legend": [
+    "radarLegend"
+  ],
+  "filled": [
+    "value?"
+  ],
+  "mono": [
+    "value?"
+  ],
+  "frosted": [
+    "value?"
+  ],
+  "methodTitleAlign": [
+    "methodTitleAlign"
+  ],
+  "methodTitleVariant": [
+    "typeRamp"
   ]
 } as const;
 
@@ -4845,7 +4896,8 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "tint"
+    "tint",
+    "mono"
   ],
   "chartCardSurface": [
     "padding",
@@ -5287,7 +5339,8 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "style"
+    "style",
+    "legend"
   ],
   "sleepScoreCard": [
     "padding",
@@ -5412,7 +5465,9 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "tint"
+    "tint",
+    "shape",
+    "filled"
   ],
   "stageBarsCard": [
     "padding",
@@ -5474,7 +5529,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "mono"
   ],
   "stepsCard": [
     "padding",
@@ -5729,7 +5785,8 @@ export const NODE_MODIFIERS = {
     "drag",
     "swipe",
     "disabled",
-    "surface"
+    "surface",
+    "frosted"
   ],
   "composerPanelStatusTab": [
     "padding",
@@ -5853,7 +5910,10 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "sidebarSurface",
+    "sidebarScrollbarSide",
+    "surface"
   ],
   "aiChatContainer": [
     "padding",
@@ -5915,7 +5975,9 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "surface",
+    "floatingChrome"
   ],
   "aiChatThread": [
     "padding",
@@ -9284,7 +9346,8 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "iconOnly"
   ],
   "listingPhotoGrid": [
     "padding",
@@ -9666,7 +9729,9 @@ export const NODE_MODIFIERS = {
     "style",
     "tint",
     "size",
-    "loading"
+    "loading",
+    "material",
+    "iconOnly"
   ],
   "shelf": [
     "padding",
@@ -9794,7 +9859,9 @@ export const NODE_MODIFIERS = {
     "drag",
     "swipe",
     "style",
-    "spacing"
+    "spacing",
+    "round",
+    "eyebrow"
   ],
   "subscriptionPlans": [
     "padding",
@@ -10294,7 +10361,9 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "methodTitleAlign",
+    "methodTitleVariant"
   ],
   "filterSection": [
     "padding",
