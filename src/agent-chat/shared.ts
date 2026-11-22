@@ -114,9 +114,6 @@ export const CONFIRM_MS = 1600;
 /** Window width at which the rail shows (`xl`). */
 export const HISTORY_BREAKPOINT = BREAKPOINTS.xl;
 
-/** Rows in a `DropdownItem className="px-2 py-1.5"`: 32 tall. */
-export const DENSE_ROW_CLASS = 'py-1.5';
-
 // ---------------------------------------------------------------------------
 //  Formatting
 // ---------------------------------------------------------------------------
