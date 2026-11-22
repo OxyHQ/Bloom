@@ -92,12 +92,15 @@ export const B = () => <ChatEmptyState title="None" illustration={<Art />} />;
   it('keeps a prop it cannot map, and a kept component, with their reasons', () => {
     const result = run(`import { GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
 import { Screen } from '@oxy.so/bloom/screen';
+import { DropdownMenu } from '@oxy.so/bloom/dropdown-menu';
 export const A = () => <Screen><GroupedSectionItem title="B" leftInset={8} /></Screen>;
+export const B = () => <DropdownMenu />;
 `);
     expect(result.changed).toBe(false);
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
       'kept:Screen',
       'GroupedSectionItem:leftInset',
+      'kept:DropdownMenu',
     ]);
   });
   it('keeps an input that reads an enclosing shell’s context', () => {
