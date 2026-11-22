@@ -46,8 +46,8 @@ siblings of the radio, never children of its decorative label.
 | `transition` | `{ duration, easing? }`, milliseconds and cubic-bezier coordinates, for the height and the fade alike. Defaults to 300ms and `[.42, 0, .58, 1]`. Duration is clamped non-negative; invalid values use the standard motion defaults. |
 | `keepMounted` | Default `true`: children stay mounted while shut. `false` unmounts them once the exit finishes and mounts them again on opening, for a closed branch that should cost nothing (a large tree, an empty attachment strip). |
 | `returnFocusRef` | DOM or native focusable host to receive focus only when closing content owned it. Accepts `RadioOptionState.controlRef` directly. |
-| `className`, `style` | Outer frame, the node its parent lays out. Height clipping and opacity are animated by Bloom. |
-| `contentClassName`, `contentStyle` | Natural body; place padding/gaps and content decoration here. |
+| `style` | Outer frame, the node its parent lays out. Height clipping and opacity are animated by Bloom. |
+| `contentStyle` | Natural body; place padding/gaps and content decoration here. |
 | `nativeID`, `testID` | Outer host identity. No role or labelled-by relationship is invented. |
 
 Standalone web reveals use a CSS Grid row from `0fr` to `1fr`, so content and width
