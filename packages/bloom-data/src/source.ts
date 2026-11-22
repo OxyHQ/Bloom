@@ -122,6 +122,13 @@ interface BaseSource<A extends unknown[]> {
   fetch(...args: A): Promise<void>;
   /** Reads the key again, superseding a read in flight. Never rejects. */
   refresh(...args: A): Promise<void>;
+  /**
+   * Marks the key stale in the store in scope, whatever its `stale` age: read
+   * again now when it is observed (or being read), else when next observed.
+   */
+  invalidate(...args: A): void;
+  /** `invalidate` for every key of this source in the store in scope. */
+  invalidateAll(): void;
   state(...args: A): SourceState;
   /** @internal The hooks' subscription. */
   observe(store: Store, args: A): () => void;
@@ -156,6 +163,8 @@ interface Query {
   epoch: number;
   gcTimer: ReturnType<typeof setTimeout> | undefined;
   diskTried: boolean;
+  /** Stale whatever its age, until a read started since then answers. */
+  invalid: boolean;
 }
 
 let nextSourceId = 1;
@@ -193,6 +202,7 @@ export function source(
         epoch: 0,
         gcTimer: undefined,
         diskTried: false,
+        invalid: false,
       };
       store.queries.set(key, query);
       connect(store);
@@ -227,7 +237,8 @@ export function source(
     isList ? Boolean(listOf(store, args)?.state) : idIn(store, args) !== undefined;
 
   const isStale = (store: Store, query: Query): boolean => {
-    if (!hasData(store, query.args) || query.state.origin !== 'network') return true;
+    if (query.invalid || !hasData(store, query.args) || query.state.origin !== 'network')
+      return true;
     const stale = options.stale ?? 0;
     if (typeof stale === 'number') return Date.now() - query.state.updatedAt >= stale;
     return stale(
@@ -367,6 +378,7 @@ export function source(
         }
         if (!live()) return;
         apply(store, query, mode, answer);
+        query.invalid = false;
         setState(query, {
           status: 'success',
           fetchStatus: 'idle',
@@ -426,26 +438,40 @@ export function source(
     }, reportError);
   };
 
+  /** This source's keys held in `store`. */
+  const queriesIn = (store: Store): Query[] => {
+    const out: Query[] = [];
+    for (const [key, value] of store.queries) {
+      if (key.startsWith(`${id}\u0000`)) out.push(value as Query);
+    }
+    return out;
+  };
+
   const connect = (store: Store) => {
     if (store.sources.has(id)) return;
     store.sources.add(id);
     const stop = environment.subscribe((event) => {
       if (event === 'focus' ? !refetchOnFocus : event !== 'online' || !refetchOnReconnect) return;
-      for (const [key, value] of store.queries) {
-        if (!key.startsWith(`${id}\u0000`)) continue;
-        const query = value as Query;
+      for (const query of queriesIn(store)) {
         if (query.observers > 0 && isStale(store, query)) void run(store, query, 'first', false);
       }
     });
     store.cleanups.add(() => {
       stop();
-      for (const [key, value] of store.queries) {
-        if (!key.startsWith(`${id}\u0000`)) continue;
-        const query = value as Query;
+      for (const query of queriesIn(store)) {
         query.inflight?.controller.abort();
         if (query.gcTimer !== undefined) clearTimeout(query.gcTimer);
       }
     });
+  };
+
+  /**
+   * Marks a key stale. A key observed reads again now; so does one being read,
+   * since that read started before the change it must see.
+   */
+  const invalidateIn = (store: Store, query: Query) => {
+    query.invalid = true;
+    if (query.observers > 0 || query.inflight) void run(store, query, 'first', true);
   };
 
   const fetchIn = (store: Store, args: unknown[]): Promise<void> => {
@@ -467,6 +493,16 @@ export function source(
       const query = queryOf(store, args);
       query.args = args;
       return run(store, query, 'first', true);
+    },
+    invalidate: (...args) => {
+      const store = currentStore();
+      // A key never read in this store has nothing to mark: its first read reads.
+      const query = store.queries.get(`${id}\u0000${options.key(...args)}`) as Query | undefined;
+      if (query) invalidateIn(store, query);
+    },
+    invalidateAll: () => {
+      const store = currentStore();
+      for (const query of queriesIn(store)) invalidateIn(store, query);
     },
     state: (...args) => queryOf(currentStore(), args).state,
     stateIn: (store, args) => queryOf(store, args).state,
