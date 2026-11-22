@@ -801,7 +801,8 @@ const glassGroups: ParityCase[] = [
   },
   {
     name: 'identity glass draws no material and keeps the box',
-    language: () => toElement(L.VStack(L.Text('Plain')).padding('md').glass(identity).corner('xl').clipped()),
+    language: () =>
+      toElement(L.VStack(L.Text('Plain')).padding('md').glass(identity).corner('xl').clipped()),
     bloom: () => (
       <RN.View style={{ ...padding(space.md), borderRadius: borderRadius.xl, overflow: 'hidden' }}>
         <Text>Plain</Text>

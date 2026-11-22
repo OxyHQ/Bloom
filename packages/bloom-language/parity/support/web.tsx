@@ -283,6 +283,28 @@ export function webTree(element: ReactNode, scheme: Scheme = 'light', prepaint =
   return tree;
 }
 
+/**
+ * Whether `element` draws inside the box it is placed in. One that draws only
+ * through a portal (an open dialog) leaves its Chrome table cell empty, so
+ * its case must be `isolated` (drawn alone in a frame) to be compared there.
+ */
+export function drawsInPlace(element: ReactNode): boolean {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  act(() => {
+    root.render(
+      <BloomThemeProvider fonts={false} mode="light">
+        <div {...{ [MARK]: '' }}>{element}</div>
+      </BloomThemeProvider>,
+    );
+  });
+  const drawn = (container.querySelector(`[${MARK}]`) as Element).children.length > 0;
+  act(() => root.unmount());
+  container.remove();
+  return drawn;
+}
+
 /** Every case, in both schemes: the language draws exactly the DOM and CSS Bloom's element does. */
 export function describeWebParity(title: string, cases: readonly ParityCase[]): void {
   describe(title, () => {
