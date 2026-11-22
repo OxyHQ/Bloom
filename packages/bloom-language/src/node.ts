@@ -633,7 +633,6 @@ export type Modifier =
         | ListingCardLayout
         | OfferingBadgeStyle
         | ActivityFeedGrouping
-        | ActivityFeedGrouping
         | OrderStatusBarStyle
         | SidebarVariant;
     }
@@ -1194,7 +1193,6 @@ export class Node {
       | MortgageLayout
       | ListingCardLayout
       | OfferingBadgeStyle
-      | ActivityFeedGrouping
       | ActivityFeedGrouping
       | OrderStatusBarStyle
       | SidebarVariant,
