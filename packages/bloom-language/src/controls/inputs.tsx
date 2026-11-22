@@ -290,6 +290,8 @@ export interface SearchView extends ViewModifiers<SearchView>, TextInputModifier
   tokens(value: Binding<readonly SearchToken[]>): SearchView;
   submitLabel(value: SubmitLabel): SearchView;
   onSubmit(value: () => void): SearchView;
+  /** Called when the clear button is pressed: the screen empties its text (and, with tokens, its tokens). */
+  onClearText(value: () => void): SearchView;
   /** The collapsed search's button: a `Button`'s style, tint, size and test id (Search owns its glyph and name). */
   trigger(value: ButtonView): SearchView;
   /** An action at the field's end (a voice search). */
@@ -802,6 +804,7 @@ const search: ControlRenderer = (d) => {
         tokens === undefined
           ? undefined
           : (key: string) => tokens[1](tokens[0].filter((token) => token.key !== key)),
+      onClearText: d.own('onClearText')?.value,
       triggerProps: trigger === undefined ? undefined : triggerProps(trigger),
       trailing: slot(d, d.own('trailing')?.value),
       testID: d.testID,
