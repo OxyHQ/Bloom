@@ -69,7 +69,7 @@ it('maps inherited, nested and explicit size onto the web trigger and content', 
       act(() => root.render(<Subject {...props} />));
     const measure = () => {
       const trigger = host.querySelector<HTMLButtonElement>('.bloom-accordion-trigger');
-      const content = host.querySelector<HTMLElement>('.bloom-accordion-body');
+      const content = host.querySelector<HTMLElement>('.bloom-collapsible-content');
       if (!trigger || !content) throw new Error('Accordion trigger or content did not render');
       return {
         trigger: {
@@ -78,9 +78,7 @@ it('maps inherited, nested and explicit size onto the web trigger and content', 
           gap: trigger.style.getPropertyValue('--bloom-accordion-gap'),
           minHeight: trigger.style.getPropertyValue('--bloom-accordion-min-height'),
         },
-        contentRecipe: Array.from(content.classList).find((name) =>
-          name.startsWith('bloom-accordion-body--'),
-        ),
+        contentPaddingBottom: content.style.paddingBottom,
       };
     };
 
@@ -88,22 +86,22 @@ it('maps inherited, nested and explicit size onto the web trigger and content', 
     const defaultSize = measure();
     expect(defaultSize).toEqual({
       trigger: { fontSize: '15px', paddingY: '12px', gap: '8px', minHeight: '0px' },
-      contentRecipe: 'bloom-accordion-body--md',
+      contentPaddingBottom: '12px',
     });
     renderSubject({ outerSize: 'xs' });
     expect(measure()).toEqual({
       trigger: { fontSize: '12px', paddingY: '8px', gap: '6px', minHeight: '0px' },
-      contentRecipe: 'bloom-accordion-body--xs',
+      contentPaddingBottom: '8px',
     });
     renderSubject({ nested: true });
     expect(measure()).toEqual({
       trigger: { fontSize: '17px', paddingY: '14px', gap: '10px', minHeight: '0px' },
-      contentRecipe: 'bloom-accordion-body--lg',
+      contentPaddingBottom: '14px',
     });
     renderSubject({ outerSize: 'lg', size: 'sm' });
     expect(measure()).toEqual({
       trigger: { fontSize: '13px', paddingY: '10px', gap: '8px', minHeight: '0px' },
-      contentRecipe: 'bloom-accordion-body--sm',
+      contentPaddingBottom: '10px',
     });
   } finally {
     act(() => root.unmount());
