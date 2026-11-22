@@ -1184,6 +1184,7 @@
     "toggle": ["value"],
     "onClose": ["value", "value?"],
     "hue": ["chipHue"],
+    "color": ["accentTone"],
     "media": ["emptyStateMedia"],
     "secondaryAction": ["value"],
     "message": ["value"],
@@ -1779,7 +1780,7 @@
     },
     "badge": {
       "constructors": ["Badge"],
-      "modifiers": ["style", "tint", "size", "icon", "dot", "max", "placement"],
+      "modifiers": ["style", "tint", "color", "size", "icon", "dot", "max", "placement"],
       "style": "badgeStyle",
       "tint": "tone",
       "size": "badgeSize"
