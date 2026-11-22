@@ -1469,6 +1469,10 @@ export const ENUMS = {
     "sm",
     "md",
     "lg"
+  ],
+  "engagementBarTone": [
+    "default",
+    "onImage"
   ]
 } as const;
 
@@ -2047,6 +2051,9 @@ export const MODIFIERS = {
     "color"
   ],
   "divider": [
+    "value?"
+  ],
+  "showZeroCounts": [
     "value?"
   ]
 } as const;
@@ -3625,7 +3632,10 @@ export const NODE_MODIFIERS = {
     "swipe",
     "trailing",
     "countFormat",
-    "size"
+    "size",
+    "axis",
+    "tint",
+    "showZeroCounts"
   ],
   "actionGroup": [
     "padding",
