@@ -79,16 +79,7 @@ const TRACKED = new Set(
  * Table mappings the parity corpus measured drawing otherwise, each with what
  * differs. They stay JSX until the language or the table changes.
  */
-function measuredDifference(
-  utility: string,
-  mods: readonly Mod[],
-  conditions: readonly string[],
-): string | undefined {
-  if (
-    conditions.some((c) => !HELD.has(c)) &&
-    mods.some((m) => m.args.some((a) => typeof a === 'string' && /^[a-zA-Z]\w*\/\w+$/.test(a)))
-  )
-    return 'a colour at an opacity under a live condition: a web variant is a class of the generated sheet, which has none for it';
+function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
   const font = mods.find((m) => m.name === 'font');
   if (font && /^text-/.test(utility) && TRACKED.has(font.args[0] as string))
     return `.font('${font.args[0]}') brings the ramp’s letter spacing, which ${utility} does not write`;
@@ -309,7 +300,7 @@ export function resolveClassName(
       fail(token, 'unknown', 'not in the className table');
       continue;
     }
-    const different = measuredDifference(utility, entry.mods ?? [], conditions);
+    const different = measuredDifference(utility, entry.mods ?? []);
     if (different) {
       fail(token, 'measured-difference', different);
       continue;
