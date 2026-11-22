@@ -81,6 +81,7 @@ import { TENANCY_CASES } from '../../parity/tenancy.cases';
 import { EVICTION_CASES } from '../../parity/eviction.cases';
 import { CALL_UI_CASES } from '../../parity/call-ui.cases';
 import { CHAT_PEOPLE_CASES } from '../../parity/chat-people.cases';
+import { MESSAGE_BUBBLE_CASES } from '../../parity/message-bubble.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -167,6 +168,7 @@ export const FAMILIES = {
   eviction: EVICTION_CASES,
   callUi: CALL_UI_CASES,
   chatPeople: CHAT_PEOPLE_CASES,
+  messageBubble: MESSAGE_BUBBLE_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

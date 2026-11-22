@@ -151,3 +151,4 @@ export const Tenancy: Story = { args: { family: 'tenancy' } };
 export const EvictionsAndReviews: Story = { args: { family: 'eviction' } };
 export const CallScreens: Story = { args: { family: 'callUi' } };
 export const ChatPeople: Story = { args: { family: 'chatPeople' } };
+export const MessageBubbles: Story = { args: { family: 'messageBubble' } };

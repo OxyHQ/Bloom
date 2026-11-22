@@ -109,6 +109,7 @@ import type { EvictionKind } from './controls/eviction';
 import type { PlaceReviewKind } from './controls/place-reviews';
 import type { CallUiKind } from './controls/call-ui';
 import type { ChatPeopleKind } from './controls/chat-people';
+import type { MessageBubbleKind } from './controls/message-bubble';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -228,6 +229,8 @@ import {
   type GroupCallLayout,
   type IncomingCallAnswer,
   type SelectedChipsLayout,
+  type MessagePosition,
+  type MessageMediaFit,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -966,6 +969,13 @@ export interface ValueModifiers {
 
   // Call screens (controls/call-ui.tsx)
   answerStyle: IncomingCallAnswer;
+
+  // Message bubbles (controls/message-bubble.tsx)
+  groupPosition: MessagePosition;
+  mediaFit: MessageMediaFit;
+  tail: boolean;
+  metaOverlay: boolean;
+  senderTint: ColorToken;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1440,7 +1450,8 @@ export type NodeKind =
   | EvictionKind
   | PlaceReviewKind
   | CallUiKind
-  | ChatPeopleKind;
+  | ChatPeopleKind
+  | MessageBubbleKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -3353,6 +3364,23 @@ export class Node {
   // Call screens (controls/call-ui.tsx)
   answerStyle(value: IncomingCallAnswer): Node {
     return this.set('answerStyle', value);
+  }
+
+  // Message bubbles (controls/message-bubble.tsx)
+  groupPosition(value: MessagePosition): Node {
+    return this.set('groupPosition', value);
+  }
+  mediaFit(value: MessageMediaFit): Node {
+    return this.set('mediaFit', value);
+  }
+  tail(value = true): Node {
+    return this.set('tail', value);
+  }
+  metaOverlay(value = true): Node {
+    return this.set('metaOverlay', value);
+  }
+  senderTint(value: ColorToken): Node {
+    return this.set('senderTint', value);
   }
 }
 
