@@ -152,11 +152,10 @@ export function ScrollViewHost({ node, room, children, contentView, style }: Scr
   const props: { -readonly [K in keyof ScreenScrollViewProps]: ScreenScrollViewProps[K] } = {};
   const container = withRoom(containerStyle(node, values.spacing as SpaceToken | undefined), room);
   if (contentView) {
-    // Bloom lays a content class out in a view of its own inside the content
-    // container, styled by the class and then by `contentContainerStyle`. The
-    // empty class asks for that view; the content view's style is its class's
-    // part, the margins and spacing its `contentContainerStyle`.
-    props.contentContainerClassName = '';
+    // Bloom lays the content out in a view of its own inside the content
+    // container (`contentView`), styled by `contentContainerStyle`: the content
+    // view's own style, then its margins and spacing.
+    props.contentView = true;
     props.contentContainerStyle = container ? [style, container] : style;
   } else if (container) props.contentContainerStyle = container;
   const dismiss = values.scrollDismissesKeyboard as KeyboardDismiss | undefined;
