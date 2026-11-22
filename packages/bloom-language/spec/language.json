@@ -550,7 +550,9 @@
     "releaseCardLayout": ["grid", "row"],
     "releaseStatusBadgeSize": ["sm", "md"],
     "transportSize": ["sm", "md", "lg"],
-    "transportStyle": ["music", "podcast"]
+    "transportStyle": ["music", "podcast"],
+    "rowActionStyle": ["plain", "outline"],
+    "themeToggleStyle": ["sidebar", "segmented", "sidebar-segmented", "bare-segmented"]
   },
   "glass": {
     "$comment": [
@@ -1688,7 +1690,23 @@
     "vehiclePicker": { "constructors": ["VehiclePicker"], "modifiers": ["disabled"] },
     "shipmentLoadPicker": { "constructors": ["ShipmentLoadPicker"], "modifiers": ["disabled"] },
     "shipmentOptionsList": { "constructors": ["ShipmentOptionsList"], "modifiers": ["disabled"] },
-    "shipmentRequestForm": { "constructors": ["ShipmentRequestForm"], "modifiers": ["disabled"] }
+    "shipmentRequestForm": { "constructors": ["ShipmentRequestForm"], "modifiers": ["disabled"] },
+    "rowActions": {
+      "constructors": ["RowActions"],
+      "modifiers": ["style"],
+      "style": "rowActionStyle"
+    },
+    "rowActionButton": {
+      "constructors": ["RowActionButton"],
+      "modifiers": ["style", "active", "disabled"],
+      "style": "rowActionStyle"
+    },
+    "swipeRow": { "constructors": ["SwipeRow"], "modifiers": ["tint"], "tint": "color" },
+    "themeToggle": {
+      "constructors": ["ThemeToggle"],
+      "modifiers": ["style", "collapsed"],
+      "style": "themeToggleStyle"
+    }
   },
   "sfSymbols": {
     "$comment": [
