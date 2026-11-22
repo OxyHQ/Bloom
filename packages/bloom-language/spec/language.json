@@ -1626,7 +1626,9 @@
     "downloadedOnly": ["value"],
     "view": ["value"],
     "date": ["value"],
-    "selectedIds": ["value"]
+    "selectedIds": ["value"],
+    "stage": ["value"],
+    "destination": ["value"]
   },
   "universal": [
     "padding",
@@ -3378,7 +3380,7 @@
     },
     "chartCardSurface": { "constructors": ["ChartCardSurface"], "modifiers": ["spacing"] },
     "chartHeadline": { "constructors": ["ChartHeadline"], "modifiers": [] },
-    "chartStatTiles": { "constructors": ["ChartStatTiles"], "modifiers": [] },
+    "chartStatTiles": { "constructors": ["ChartStatTiles"], "modifiers": ["activeIndex"] },
     "contributionsCard": {
       "constructors": ["ContributionsCard"],
       "modifiers": ["tint", "activeCell"],
@@ -3510,7 +3512,8 @@
         "mode",
         "collapsed",
         "searchQuery",
-        "searchOpen"
+        "searchOpen",
+        "destination"
       ],
       "size": "sidebarSize",
       "style": "sidebarVariant"
@@ -3948,8 +3951,14 @@
     },
     "selectedAgentPreview": { "constructors": ["SelectedAgentPreview"], "modifiers": [] },
     "multiAgentChat": { "constructors": ["MultiAgentChat"], "modifiers": [] },
-    "agentChatHistory": { "constructors": ["AgentChatHistory"], "modifiers": ["surface", "query"] },
-    "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign", "value"] },
+    "agentChatHistory": {
+      "constructors": ["AgentChatHistory"],
+      "modifiers": ["surface", "query", "selection"]
+    },
+    "agentChat": {
+      "constructors": ["AgentChat"],
+      "modifiers": ["titleAlign", "value", "selection"]
+    },
     "routeStops": {
       "constructors": ["RouteStops"],
       "modifiers": ["density"],
@@ -4034,7 +4043,7 @@
     "pipelineColumn": { "constructors": ["PipelineColumn"], "modifiers": [] },
     "pipelineBoard": {
       "constructors": ["PipelineBoard"],
-      "modifiers": ["style"],
+      "modifiers": ["style", "stage"],
       "style": "pipelineLayout"
     },
     "importantAlertsCard": { "constructors": ["ImportantAlertsCard"], "modifiers": [] },

@@ -39,7 +39,8 @@ import {
 } from '@oxy.so/bloom/questionnaire';
 import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/usage-card';
 
-import type { Bound } from '../binding';
+import type { Binding, Bound } from '../binding';
+import { selectionOf } from '../chrome/sidebar-host';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   AgentThinkingStyle,
@@ -147,6 +148,12 @@ export type ConversationSidebarOptions = Omit<
   | 'onSearchQueryChange'
   | 'searchOpen'
   | 'onSearchOpenChange'
+  | 'activeId'
+  | 'onSelect'
+  | 'selected'
+  | 'selectedTreeItem'
+  | 'onNavigate'
+  | 'onTreeItemPress'
 > & { readonly after?: Child };
 export type QuestionnaireOptions = Omit<
   QuestionnaireProps,
@@ -207,6 +214,11 @@ export interface ComposerLoaderView extends ViewModifiers<ComposerLoaderView> {
 }
 /** Bloom `ConversationSidebar`: an agent app's conversations. */
 export interface ConversationSidebarView extends ViewModifiers<ConversationSidebarView> {
+  /**
+   * The id of the selected destination or tree row (the sidebar's own rows,
+   * not a conversation): a binding, as a `Sidebar`'s `.selection()`.
+   */
+  destination(value: Binding<string>): ConversationSidebarView;
   query(value: Bound<ConversationSidebarProps, 'query'>): ConversationSidebarView;
   mode(value: Bound<ConversationSidebarProps, 'mode'>): ConversationSidebarView;
   collapsed(value: Bound<ConversationSidebarProps, 'collapsed'>): ConversationSidebarView;
@@ -293,11 +305,13 @@ export function ComposerLoader(
 ): ComposerLoaderView {
   return new Node('composerLoader', { options }, [content]);
 }
+/** Bloom `ConversationSidebar` of `conversations`; `active` holds the open one's id, a press writing it. */
 export function ConversationSidebar(
   conversations: readonly ConversationSidebarItem[],
-  options: ConversationSidebarOptions,
+  active: Bound<ConversationSidebarProps, 'activeId'>,
+  options: ConversationSidebarOptions = {},
 ): ConversationSidebarView {
-  return new Node('conversationSidebar', { conversations, options }, []);
+  return new Node('conversationSidebar', { conversations, binding: active, options }, []);
 }
 export function Questionnaire(
   questions: readonly QuestionnaireQuestion[],
@@ -371,6 +385,7 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
     }),
   }),
   conversationSidebar: product(BloomConversationSidebar, {
+    binding: ['activeId', 'onSelect'],
     bindings: {
       query: ['query', 'onQueryChange'],
       mode: ['mode', 'onModeChange'],
@@ -390,6 +405,7 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
       modesPresentation: d.own('modesPresentation')?.value,
       scrollbarSide: d.own('scrollbarSide')?.value,
       teamPlacement: d.own('teamPlacement')?.value,
+      ...selectionOf(d.own('destination')?.value as Binding<string> | undefined),
     }),
   }),
   questionnaire: product(BloomQuestionnaire, {

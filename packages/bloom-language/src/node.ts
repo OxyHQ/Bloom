@@ -1168,6 +1168,8 @@ export interface ValueModifiers {
   view: AnyBinding;
   date: AnyBinding;
   selectedIds: AnyBinding;
+  stage: AnyBinding;
+  destination: AnyBinding;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -2389,6 +2391,12 @@ export class Node {
   }
   selectedIds(value: AnyBinding): Node {
     return this.set('selectedIds', value);
+  }
+  stage(value: AnyBinding): Node {
+    return this.set('stage', value);
+  }
+  destination(value: AnyBinding): Node {
+    return this.set('destination', value);
   }
   disabled(value = true): Node {
     return this.set('disabled', value);

@@ -280,8 +280,8 @@ const pieces: ParityCase[] = [
   },
   {
     name: 'ChartStatTiles',
-    language: () => toElement(L.ChartStatTiles(STATS, { activeIndex: 1 })),
-    bloom: () => <ChartStatTiles items={STATS} activeIndex={1} />,
+    language: () => toElement(L.ChartStatTiles(STATS).activeIndex([1, set])),
+    bloom: () => <ChartStatTiles items={STATS} activeIndex={1} onActiveChange={set} />,
   },
   {
     name: 'Sparkline',

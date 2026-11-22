@@ -80,7 +80,10 @@ export type ChartCardSurfaceOptions = Omit<
   Drawn | 'children' | 'gap' | 'height' | 'radius'
 > & { readonly height?: SpaceToken | 'auto'; readonly radius?: CardRadius };
 export type ChartHeadlineOptions = Omit<ChartHeadlineProps, Drawn | 'label'>;
-export type ChartStatTilesOptions = Omit<ChartStatTilesProps, Drawn | 'items'>;
+export type ChartStatTilesOptions = Omit<
+  ChartStatTilesProps,
+  Drawn | 'items' | 'activeIndex' | 'onActiveChange'
+>;
 export type ContributionsCardOptions = Omit<
   ContributionsCardProps,
   Drawn | Inks | 'activeCell' | 'onActiveCellChange'
@@ -151,7 +154,10 @@ export interface ChartCardSurfaceView extends ViewModifiers<ChartCardSurfaceView
 /** Bloom `ChartHeadline`: a chart's label, figure and change. */
 export type ChartHeadlineView = ViewModifiers<ChartHeadlineView>;
 /** Bloom `ChartStatTiles`: the readings under a chart. */
-export type ChartStatTilesView = ViewModifiers<ChartStatTilesView>;
+export interface ChartStatTilesView extends ViewModifiers<ChartStatTilesView> {
+  /** The hovered or pressed tile's index (`null`: none): a binding, the pointer writing it. */
+  activeIndex(value: Bound<ChartStatTilesProps, 'activeIndex'>): ChartStatTilesView;
+}
 /** Bloom `ContributionsCard`: a year of activity as a grid of cells. */
 export interface ContributionsCardView extends ViewModifiers<ContributionsCardView> {
   activeCell(value: Bound<ContributionsCardProps, 'activeCell'>): ContributionsCardView;
@@ -302,7 +308,9 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
     },
   }),
   chartHeadline: product(BloomChartHeadline),
-  chartStatTiles: product(BloomChartStatTiles),
+  chartStatTiles: product(BloomChartStatTiles, {
+    bindings: { activeIndex: ['activeIndex', 'onActiveChange'] },
+  }),
   contributionsCard: product(BloomContributionsCard, {
     bindings: { activeCell: ['activeCell', 'onActiveCellChange'] },
     colors: inks,
