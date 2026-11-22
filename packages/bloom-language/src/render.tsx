@@ -1,11 +1,4 @@
-import {
-  createElement,
-  Fragment,
-  useContext,
-  type ComponentType,
-  type ReactElement,
-  type ReactNode,
-} from 'react';
+import { createElement, Fragment, useContext, type ReactElement, type ReactNode } from 'react';
 import {
   Platform,
   Pressable,
@@ -13,7 +6,6 @@ import {
   View,
   type GestureResponderEvent,
 } from 'react-native';
-import { styled } from 'react-native-css';
 import { Avatar as BloomAvatar } from '@oxy.so/bloom/avatar';
 import { AvatarGroup as BloomAvatarGroup } from '@oxy.so/bloom/avatar-group';
 import { Badge as BloomBadge } from '@oxy.so/bloom/badge';
@@ -21,7 +13,7 @@ import { AvatarPresence } from '@oxy.so/bloom/chat-indicators';
 import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
 import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
 import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
-import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
+import { hoverGroupProps, SubtleHover } from '@oxy.so/bloom/subtle-hover';
 import { Button as BloomButton } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
@@ -192,23 +184,11 @@ import { PRESS_HOST_STYLE } from '@oxy.so/bloom/styles';
 
 const IS_WEB = Platform.OS === 'web';
 
-/**
- * The web host for a hover group: the `group` class, so a descendant's
- * `group-hover:` utilities (Bloom `SubtleHover`) answer the pointer over this
- * view. Native has no hover group and keeps the plain host.
- */
-const HoverGroupPressable = styled(Pressable as ComponentType<{ style?: unknown }>, {
-  className: 'style',
-}) as ComponentType<Record<string, unknown>>;
-const HoverGroupView = styled(View as ComponentType<{ style?: unknown }>, {
-  className: 'style',
-}) as ComponentType<Record<string, unknown>>;
-
 /** A host or Bloom component, as `draw` takes it. */
 type Host = unknown;
 
 /** The language's own pressable hosts. */
-const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable, HoverGroupPressable]);
+const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable]);
 const pressHostOuts = new WeakMap<StyleOut, StyleOut>();
 
 /**
@@ -681,7 +661,8 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
   if (p.onHoverOut) props.onHoverOut = p.onHoverOut;
-  if (IS_WEB && p.hoverGroup) props.className = 'group';
+  // A hover group's marker, so a descendant `SubtleHover` answers the pointer over it.
+  if (IS_WEB && p.hoverGroup) Object.assign(props, hoverGroupProps);
   if (p.pressable && p.own.get('disabled')?.kind === 'disabled') {
     const disabled = ownValue(p, 'disabled')?.value;
     if (disabled) props.disabled = true;
@@ -1483,10 +1464,9 @@ function propPaint(
   ) as Paint;
 }
 
-/** The outermost box's host: pressable when the view takes presses or hovers, a hover group's class host on the web. */
+/** The outermost box's host: pressable when the view takes presses or hovers. */
 function hostFor(p: Plan): Host {
-  if (p.pressable) return IS_WEB && p.hoverGroup ? HoverGroupPressable : Pressable;
-  return IS_WEB && p.hoverGroup ? HoverGroupView : View;
+  return p.pressable ? Pressable : View;
 }
 
 function hostProps(
