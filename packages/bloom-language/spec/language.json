@@ -548,7 +548,9 @@
     "mediaCardLayout": ["tile", "row"],
     "lyricsSize": ["large", "medium", "small"],
     "releaseCardLayout": ["grid", "row"],
-    "releaseStatusBadgeSize": ["sm", "md"]
+    "releaseStatusBadgeSize": ["sm", "md"],
+    "transportSize": ["sm", "md", "lg"],
+    "transportStyle": ["music", "podcast"]
   },
   "glass": {
     "$comment": [
@@ -1639,7 +1641,28 @@
       "modifiers": ["disabled", "loading", "tint"],
       "tint": "color"
     },
-    "orderConfirmation": { "constructors": ["OrderConfirmation"], "modifiers": ["density"] }
+    "orderConfirmation": { "constructors": ["OrderConfirmation"], "modifiers": ["density"] },
+    "transportControls": {
+      "constructors": ["TransportControls"],
+      "modifiers": ["size", "style", "loading", "disabled"],
+      "size": "transportSize",
+      "style": "transportStyle"
+    },
+    "nowPlayingBar": { "constructors": ["NowPlayingBar"], "modifiers": [] },
+    "miniPlayer": { "constructors": ["MiniPlayer"], "modifiers": [] },
+    "fullScreenPlayer": { "constructors": ["FullScreenPlayer"], "modifiers": [] },
+    "playbackSpeedMenu": {
+      "constructors": ["PlaybackSpeedMenu"],
+      "modifiers": ["size", "disabled"],
+      "size": "transportSize"
+    },
+    "sleepTimerMenu": {
+      "constructors": ["SleepTimerMenu"],
+      "modifiers": ["size", "disabled"],
+      "size": "transportSize"
+    },
+    "devicePicker": { "constructors": ["DevicePicker"], "modifiers": [] },
+    "connectBanner": { "constructors": ["ConnectBanner"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
