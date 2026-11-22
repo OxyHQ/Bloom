@@ -107,6 +107,7 @@ import { CARTS } from './cart-panel';
 import { MENU_ITEMS } from './menu-item';
 import { VENDOR_CARDS } from './vendor-card';
 import { MEDIA_CARDS } from './media-cards';
+import { LYRICS } from './lyrics';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -221,4 +222,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MENU_ITEMS,
   ...VENDOR_CARDS,
   ...MEDIA_CARDS,
+  ...LYRICS,
 };

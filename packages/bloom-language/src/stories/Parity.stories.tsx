@@ -180,3 +180,4 @@ export const Crm: Story = { args: { family: 'crm' } };
 export const DashboardCards: Story = { args: { family: 'dashboardCard' } };
 export const CartMenuItemsAndVendors: Story = { args: { family: 'cartMenuVendor' } };
 export const MediaCards: Story = { args: { family: 'mediaCard' } };
+export const Lyrics: Story = { args: { family: 'lyrics' } };
