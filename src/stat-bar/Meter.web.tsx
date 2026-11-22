@@ -42,8 +42,7 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
     style,
     testID,
     fillTestID = testID ? `${testID}-fill` : undefined,
-    className,
-    fillClassName,
+    fillStyle,
   } = props;
   const motion = useMeterReveal(meterFraction(value, max), reveal);
   useEffect(() => {
@@ -62,21 +61,24 @@ export const Meter = memo(function Meter(props: AnyMeterProps) {
   } as React.CSSProperties;
   const contents = indeterminate ? (
     <div
-      className={['bloom-meter-fill', fillClassName].filter(Boolean).join(' ')}
+      className="bloom-meter-fill"
       data-bloom-meter-sweep=""
       data-testid={fillTestID}
-      style={{ width: sharePercent(METER_SWEEP_SHARE) }}
+      style={{ ...resolveNativeWebStyle(fillStyle), width: sharePercent(METER_SWEEP_SHARE) }}
     />
   ) : (
     <div
-      className={['bloom-meter-fill', fillClassName].filter(Boolean).join(' ')}
+      className="bloom-meter-fill"
       data-transition={(reveal ? motion.duration : transitionMs) > 0 ? '' : undefined}
       data-testid={fillTestID}
-      style={{ width: `${reveal ? motion.fraction * 100 : meterFraction(value, max) * 100}%` }}
+      style={{
+        ...resolveNativeWebStyle(fillStyle),
+        width: `${reveal ? motion.fraction * 100 : meterFraction(value, max) * 100}%`,
+      }}
     />
   );
   const root = {
-    className: ['bloom-meter-track', className].filter(Boolean).join(' '),
+    className: 'bloom-meter-track',
     style: { ...vars, ...resolveNativeWebStyle(style) },
     'data-testid': testID,
   };
