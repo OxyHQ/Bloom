@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import type { ViewStyle } from 'react-native';
+import type React from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { View, type ViewStyle } from 'react-native';
 
-import { StyledView } from '../styles/styled-primitives';
 import { SQRT2, STEPS_PER_SEGMENT, VIEWBOX } from './morph/constants';
 import { getMorphFrames, morphPathD } from './morph/frames';
 
 interface SpinnerIconProps {
   size?: number;
   color?: string;
-  className?: string;
   style?: ViewStyle;
 }
 
@@ -32,7 +31,6 @@ const CANVAS_MIN = (VIEWBOX - CANVAS_VIEWBOX) / 2;
 export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   color = 'currentColor',
   size = 26,
-  className,
   style,
 }) => {
   const boxRef = useRef<HTMLElement | null>(null);
@@ -68,9 +66,8 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   }, []);
 
   return (
-    <StyledView
+    <View
       ref={boxRef as React.Ref<never>}
-      className={className}
       style={[{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}
     >
       <svg
@@ -82,7 +79,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
       >
         <path ref={pathRef} d={initialD} fill={color} />
       </svg>
-    </StyledView>
+    </View>
   );
 };
 
