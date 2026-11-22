@@ -1,4 +1,5 @@
 // Bloom components as apps write them, each one a rule of the codemod's (src/components.ts).
+import { Admonition } from '@oxy.so/bloom/admonition';
 import { Avatar } from '@oxy.so/bloom/avatar';
 import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
@@ -281,4 +282,8 @@ export function Speed({
       onSlidingComplete={save}
     />
   );
+}
+
+export function Notice() {
+  return <Admonition type="info">{t('post.privateMentions')}</Admonition>;
 }

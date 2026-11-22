@@ -512,6 +512,15 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       ...NAMED,
     },
   },
+  // parity/containers.cases.tsx, Admonition: its text as a `Text`, which it draws as its AdmonitionText.
+  '@oxy.so/bloom/admonition#Admonition': {
+    node: 'Admonition',
+    params: [{ label: {} }],
+    props: {
+      type: p('style', 'token', tokens('admonitionStyle')),
+      size: p('size', 'token', tokens('controlSize')),
+    },
+  },
   // parity/slider.cases.tsx.
   '@oxy.so/bloom/slider#Slider': {
     node: 'Slider',
