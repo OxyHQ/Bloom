@@ -686,6 +686,7 @@
       "src/icons/social/LikeFillIcon.tsx#LikeFillIcon",
       "src/icons/social/LikeIcon.tsx#LikeIcon",
       "src/icons/social/MediaAttachmentIcon.tsx#MediaAttachmentIcon",
+      "src/icons/social/MenuIcon.tsx#MenuIcon",
       "src/icons/social/ReplyIcon.tsx#ReplyIcon",
       "src/icons/social/RepostIcon.tsx#RepostIcon",
       "src/icons/social/ShareIcon.tsx#ShareIcon"
