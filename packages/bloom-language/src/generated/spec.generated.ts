@@ -11800,6 +11800,8 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
+    "pinch",
+    "onDoubleTap",
     "screenKind",
     "screenScroll",
     "documentScroll",
