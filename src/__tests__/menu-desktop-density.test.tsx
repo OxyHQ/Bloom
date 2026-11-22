@@ -51,10 +51,6 @@ function renderMenu(adapter: PlatformSurfaceAdapter | null, rows: React.ReactNod
   );
 }
 
-/** The row's classes, which react-native-css carries in its style as `{ $$css, className }`. */
-const classesOf = (screen: ReturnType<typeof render>, label: string) =>
-  JSON.stringify(screen.getByLabelText(label).props.style);
-
 const rowStyle = (screen: ReturnType<typeof render>, label: string) =>
   resolvedStyle(screen.getByLabelText(label).props.style);
 
@@ -89,8 +85,8 @@ describe('desktop menu density', () => {
       rowRadius: null,
       gutter: 36,
       minWidth: 266,
-      panelClass: 'p-[6px]',
-      separatorClass: '-mx-[6px] my-[2px] h-px',
+      panelStyle: { padding: 6 },
+      separatorStyle: { marginInline: -6, marginBlock: 2, height: 1 },
     });
     expect(md.rowType).toEqual(TYPE_SCALE['body-regular']);
     expect(resolveMenuDensity('md', true).height).toBe(44);
@@ -129,8 +125,6 @@ describe('desktop menu rows', () => {
     expect(row.paddingRight).toBe(8);
     expect(row.borderRadius).toBe(5);
     expect(row.cursor).toBe('auto');
-    expect(classesOf(screen, 'Rename')).toContain('cursor-default');
-    expect(classesOf(screen, 'Rename')).not.toContain('cursor-pointer');
     const label = resolvedStyle(screen.getByText('Rename').props.style);
     expect(label).toMatchObject({ fontSize: 13, lineHeight: 16, letterSpacing: -0.08 });
     // The label counts at its own width, so a panel sized by its rows never cuts it:
@@ -138,8 +132,7 @@ describe('desktop menu rows', () => {
     expect(label).toMatchObject({ flexGrow: 1, flexShrink: 1 });
     expect(label.flex).toBeUndefined();
     expect(label.flexBasis).toBeUndefined();
-    expect(String(label.className)).not.toMatch(/\bflex-1\b/);
-    expect(String(label.className)).toMatch(/\bmin-w-0\b/);
+    expect(label.minWidth).toBe(0);
   });
 
   it('paints the hovered row with the accent and its foreground on label and shortcut', () => {
@@ -206,16 +199,17 @@ describe('desktop menu rows', () => {
     const screen = renderMenu(null, <DropdownMenuItem>Rename</DropdownMenuItem>);
     const row = rowStyle(screen, 'Rename');
     expect(row.minHeight).toBe(44);
-    expect(row.borderRadius).toBeUndefined();
+    expect(row.borderRadius).toBe(10);
     expect(row.cursor).toBeUndefined();
-    expect(classesOf(screen, 'Rename')).toContain('cursor-pointer');
     fireEvent(screen.getByLabelText('Rename'), 'hoverIn');
     expect(rowStyle(screen, 'Rename').backgroundColor).toBe(theme.colors.backgroundSecondary);
     expect(resolvedStyle(screen.getByText('Rename').props.style).fontSize).toBe(14);
-    expect(resolvedStyle(screen.getByText('Rename').props.style).flexGrow).toBeUndefined();
-    expect(String(resolvedStyle(screen.getByText('Rename').props.style).className)).toMatch(
-      /\bflex-1\b/,
-    );
+    expect(resolvedStyle(screen.getByText('Rename').props.style)).toMatchObject({
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: '0%',
+      minWidth: 0,
+    });
   });
 });
 

@@ -46,20 +46,18 @@ import { View } from 'react-native';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { surfacePresenceTargets } from '../surface/use-surface-presence';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
-import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
-import { MENU_SUB_PANEL_CLASS, MENU_SUB_SIDE_OFFSET } from './constants';
+import { MENU_SUB_SIDE_OFFSET, MENU_WIDTH } from './constants';
 import { useMenuSurface } from './context';
 import { pushFloatingEscape } from './escape-stack';
 import { FloatingPanel } from './FloatingPanel';
 import { hostElement, MENU_ROW_SELECTOR, useMenuPanelKeys } from './menu-keyboard';
 import {
-  cx,
   MenuRowChevron,
   MenuRowGlyph,
   MenuRowShell,
   splitChildren,
-  SUB_TRIGGER_CLASS,
+  SUB_TRIGGER_STYLE,
 } from './shared';
 import { MenuRowAlignmentScope, useMenuRowsAligned } from './menu-row-alignment';
 import type {
@@ -281,7 +279,7 @@ function focusFirstItem(node: DomNode | null): void {
  *
  * Taking the horizontal axis off the panel also makes {@link MENU_SUB_SIDE_OFFSET}
  * mean the gap you actually see, with no dependence on the panel's inset: change
- * `MENU_PANEL_CLASS`'s padding and the gap does not move.
+ * the panel's padding and the gap does not move.
  *
  * The panel is found with `closest`, so a sub-menu nested inside a sub-menu
  * anchors to ITS parent rather than to the root. If there is no panel ancestor
@@ -581,7 +579,6 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     inset = false,
     leading,
     accessibilityLabel,
-    className,
     style,
     testID,
   }: MenuSubTriggerProps) {
@@ -666,8 +663,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
           // can shut it again, and a touch-web user can reach it at all.
           onPress={() => (sub.open ? sub.closeAndRefocus() : sub.keepOpen())}
           accessibilityLabel={accessibilityLabel}
-          className={cx(SUB_TRIGGER_CLASS, className)}
-          style={style}
+          style={[SUB_TRIGGER_STYLE, style]}
           testID={testID}
         >
           {body}
@@ -687,7 +683,6 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     minWidth,
     maxWidth,
     alignRows,
-    className,
     style,
     testID,
   }: MenuSubContentProps) {
@@ -818,10 +813,9 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         surface="menu"
         minWidth={minWidth}
         maxWidth={maxWidth}
-        // `min-w-[266px]` — the root menu's floor, sized to its rows above it
-        // and capped at the viewport, so a long label with a shortcut is not
-        // cut off.
-        className={cx(MENU_SUB_PANEL_CLASS, className)}
+        // The root menu's floor, sized to its rows above it and capped at the
+        // viewport, so a long label with a shortcut is not cut off.
+        defaultMinWidth={MENU_WIDTH}
         style={style}
         testID={testID}
       >

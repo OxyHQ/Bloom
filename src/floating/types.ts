@@ -152,11 +152,10 @@ export interface FloatingPanelProps extends FloatingPositionProps {
   minWidth?: number;
   maxWidth?: number;
   /**
-   * Utility classes APPENDED to the panel's own chrome (radius, border,
-   * background, inset, elevation) — never substituted for it. A surface that
-   * needs a different width or inset says so here.
+   * The family's own width floor, under `minWidth`, a desktop platform's floor
+   * and the caller's `style`: a menu's 266px.
    */
-  className?: string;
+  defaultMinWidth?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children?: React.ReactNode;
@@ -272,11 +271,6 @@ export interface OverlayTriggerProps {
   disabled?: boolean;
   /** Accessible name. Ignored when the `asChild` child carries its own. */
   label?: string;
-  /**
-   * Bare triggers apply this to the measured anchor wrapper; families whose
-   * trigger owns chrome append it to that chrome instead.
-   */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -294,8 +288,6 @@ export interface OverlaySurfaceProps extends FloatingPositionProps {
   dismissible?: boolean;
   minWidth?: number;
   maxWidth?: number;
-  /** Appended to the surface's own chrome — see {@link FloatingPanelProps.className}. */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -362,13 +354,6 @@ export interface MenuRowProps {
    * type-ahead for it to feed.
    */
   accessibilityLabel?: string;
-  /**
-   * Utility classes APPENDED to the row's own — never substituted for them, so a
-   * single layout class cannot strip the chrome. Two utilities for one property
-   * are then resolved by Tailwind's own emission order, exactly as they are in
-   * any shadcn consumer; `style` remains the unambiguous override.
-   */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -446,8 +431,6 @@ export interface MenuSwatchRowProps {
   disabled?: boolean;
   /** The row's name as a group ("Tags"), for assistive technology. */
   accessibilityLabel?: string;
-  /** Appended to the row's own classes — see {@link MenuRowProps.className}. */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   /** The row's; each swatch's is `${testID}-${key}`. */
   testID?: string;
@@ -456,21 +439,16 @@ export interface MenuSwatchRowProps {
 export interface MenuLabelProps {
   children?: React.ReactNode;
   inset?: boolean;
-  /** Appended to the label's own classes — see {@link MenuRowProps.className}. */
-  className?: string;
   style?: StyleProp<TextStyle>;
 }
 
 export interface MenuShortcutProps {
   children?: React.ReactNode;
-  /** Appended to the shortcut's own classes — see {@link MenuRowProps.className}. */
-  className?: string;
   style?: StyleProp<TextStyle>;
 }
 
 export interface MenuGroupProps {
   children?: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -483,8 +461,6 @@ export interface MenuSubTriggerProps {
   leading?: React.ReactNode;
   /** The row's accessible name, when `children` is not a plain string. */
   accessibilityLabel?: string;
-  /** Appended to the row's own classes — see {@link MenuRowProps.className}. */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -513,8 +489,6 @@ export interface MenuSubContentProps {
    * parent's column, which aligns it with the parent.
    */
   alignRows?: boolean;
-  /** Appended to the sub panel's own classes — see {@link MenuRowProps.className}. */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

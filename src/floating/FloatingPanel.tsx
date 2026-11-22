@@ -24,12 +24,11 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
  *    `pointer-events: none` and the property inherits.
  *  - Placement goes through `overlay/dropdown-placement`, which fits, flips and
  *    clamps on the axis `side` names and aligns-then-clamps on the other one.
- *  - The menu surfaces' geometry — radius, border width, inset — is a class
- *    string (`MENU_PANEL_CLASS`, `LISTBOX_PANEL_CLASS`) and their colours are
+ *  - The menu surfaces' geometry — radius, border width, inset — is
+ *    `MENU_PANEL_CHROME` plus the density's padding, and their colours are
  *    inline from `menu-palette.ts`. The `popover` surface carries NO chrome of
- *    its own here: `popover/surface.ts` resolves the whole panel inline and
- *    hands it over as `style`, so a caller's `className` can still override
- *    any one piece of it (see that module).
+ *    its own here: `popover/surface.ts` resolves the whole panel and hands it
+ *    over as `style` (see that module).
  *
  * `alignOffset` is applied by SHIFTING THE ANCHOR before resolving, not by
  * nudging the result: the resolver's own clamp then still owns the align axis,
@@ -93,23 +92,21 @@ import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
-import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
+import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import {
   DEFAULT_ALIGN_OFFSET,
   DEFAULT_SIDE_OFFSET,
-  LISTBOX_PANEL_CLASS,
   MENU_MOTION_BLUR,
   MENU_MOTION_DURATION,
   MENU_MOTION_EASING,
   MENU_MOTION_SCALE_FROM,
-  MENU_PANEL_CLASS,
   VIEWPORT_GUTTER,
 } from './constants';
 import { parseRgba } from '../theme/color-utils';
 import { useMenuPalette } from './menu-palette';
 import { pushFloatingEscape } from './escape-stack';
 import { FloatingTreeProvider, useFloatingTree } from './floating-tree';
-import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 import { rectOf } from './use-anchor-rect';
 import { useFrameThrottle } from './use-frame-throttle';
@@ -117,14 +114,18 @@ import { useCommonMessages } from '../locale/common-messages';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
 /**
- * The one node: the panel's own chrome, the caller's classes, the computed
+ * The one node: the panel's own chrome, the caller's style, the computed
  * position and the motion transform all land on it. Built once at module scope,
  * because an element type constructed during render remounts its subtree every
  * time. Same pattern, and the same reason, as `button/Button.tsx`.
  */
 const PANEL_CURVE = surfaceStyle({ curve: SURFACE_SHAPES.menu.curve });
 
+/** `StyledView` for its `listbox` role, which React Native's `Role` lacks. */
 const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
+
+/** The hook the surface material's stylesheet paints the panel through (`useSurfaceMaterial`). */
+const MATERIAL_HOOK = webDataSet({ 'bloom-floating-surface': '' });
 
 /** Tailwind v4 `ease-out`, the menu curve. */
 const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
@@ -145,16 +146,26 @@ const MENU_MOTION = {
 } as const;
 
 /**
- * The per-surface chrome. `menu` and `listbox` use the menu recipe
- * (`constants.ts`'s `MENU_PANEL_CLASS` / `LISTBOX_PANEL_CLASS`) with colours
- * from `menu-palette.ts`; `popover` carries NO chrome of its own here, because
- * `popover/surface.ts` resolves the whole panel inline and hands it over as
- * `style` so a caller's `className` can still override any one piece of it.
+ * The menu and listbox panel chrome: a 16px corner and a 1px border, clipped
+ * (`overflow: clip` with a 1px margin, so the border's antialiased edge is not
+ * cut), and never wider than the viewport less 16px a side. Density supplies the
+ * padding; colours come from `menu-palette.ts`. `popover` carries NO chrome of
+ * its own here, because `popover/surface.ts` resolves the whole panel and hands
+ * it over as `style`.
  */
+const MENU_PANEL_CHROME: WebCssStyle & { overflowClipMargin: string } = {
+  overflow: WEB_OVERFLOW_CLIP,
+  overflowClipMargin: '1px',
+  borderRadius: 16,
+  borderStyle: 'solid',
+  borderWidth: 1,
+  maxWidth: 'calc(100vw - 32px)' as WebCssStyle['maxWidth'],
+};
+
 const SURFACE = {
-  popover: { ...MENU_MOTION, className: '' },
-  menu: { ...MENU_MOTION, className: MENU_PANEL_CLASS },
-  listbox: { ...MENU_MOTION, className: LISTBOX_PANEL_CLASS },
+  popover: { ...MENU_MOTION, panel: null },
+  menu: { ...MENU_MOTION, panel: MENU_PANEL_CHROME },
+  listbox: { ...MENU_MOTION, panel: MENU_PANEL_CHROME },
 } as const;
 
 /**
@@ -224,11 +235,11 @@ export function FloatingPanel({
   role,
   minWidth,
   maxWidth,
+  defaultMinWidth,
   maxHeight,
   scroll = 'auto',
   onPointerEnter,
   onPointerLeave,
-  className,
   style,
   testID,
   children,
@@ -249,9 +260,6 @@ export function FloatingPanel({
       typeof callerStyle?.maxHeight === 'number' ? callerStyle.maxHeight : Infinity,
     ),
   );
-  const panelClass = [chrome.className, surface !== 'popover' ? density.panelClass : '']
-    .filter(Boolean)
-    .join(' ');
   const isMenuSurface = surface !== 'popover';
   const palette = useMenuPalette();
   const ownFill = StyleSheet.flatten(style)?.backgroundColor ?? palette.surface;
@@ -265,7 +273,7 @@ export function FloatingPanel({
         }).publishedFill
       : undefined;
   const materialStyle = useSurfaceMaterial(
-    '.bloom-floating-surface',
+    '[data-bloom-floating-surface]',
     'bloom-floating-surface-css',
     typeof ownFill === 'string' ? ownFill : 'transparent',
     surfaceMaterial !== 'flat',
@@ -613,12 +621,12 @@ export function FloatingPanel({
           testID={testID}
           onPointerEnter={onPointerEnter}
           onPointerLeave={onPointerLeave}
-          className={cx(
-            surfaceMaterial !== 'flat' && 'bloom-floating-surface',
-            panelClass,
-            className,
-          )}
+          {...(surfaceMaterial !== 'flat' ? MATERIAL_HOOK : null)}
           style={[
+            chrome.panel,
+            isMenuSurface ? density.panelStyle : null,
+            // The family's floor, under everything that sets a width.
+            defaultMinWidth === undefined ? null : { minWidth: defaultMinWidth },
             styles.panel,
             PANEL_CURVE,
             surfaceFillVars(publishedFill),
@@ -727,9 +735,7 @@ const styles = StyleSheet.create({
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },
-  // Only what a class cannot say: `position: fixed` has no Tailwind counterpart
-  // react-native-web would honour on a `View`, and it belongs with the `left` /
-  // `top` the resolver computes anyway.
+  // `position: fixed`, with the `left` / `top` the resolver computes.
   panel: {
     position: WEB_POSITION_FIXED,
   },
