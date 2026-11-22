@@ -172,3 +172,7 @@ export const PropertyTypeSelector = 'PropertyTypeSelector';
 export const OfferingBadge = 'OfferingBadge';
 export const PriceEstimate = 'PriceEstimate';
 export const PricePerAreaComparison = 'PricePerAreaComparison';
+export const ProjectBoard = 'ProjectBoard';
+export const ProjectBoardCardContent = 'ProjectBoardCardContent';
+export const BoardDragHandle = 'BoardDragHandle';
+export const ActivityFeed = 'ActivityFeed';

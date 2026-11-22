@@ -161,3 +161,5 @@ export const ListingActions: Story = { args: { family: 'listingAction' } };
 export const ListingCards: Story = { args: { family: 'listingCard' } };
 export const ListingEditor: Story = { args: { family: 'listingEditor' } };
 export const PropertyInsights: Story = { args: { family: 'propertyInsight' } };
+export const ProjectBoards: Story = { args: { family: 'projectBoard' } };
+export const ActivityFeeds: Story = { args: { family: 'activityFeed' } };
