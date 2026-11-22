@@ -2,8 +2,7 @@
  * The machine-readable form of every Bloom design token, in W3C Design Tokens
  * (DTCG) format.
  *
- * The CSS artifacts next to this file (`theme.css`, `bloomThemeCss()`) are the
- * ALIAS layer and only make sense to a browser. A consumer that is not a
+ * The theme's CSS variables only make sense to a browser. A consumer that is not a
  * browser — Astro codegens `SkColor` tables for Chromium's native UI so the
  * toolbar and the WebUI pages cannot disagree about what "primary" is — needs
  * the RESOLVED values, for every preset and both schemes, in a format it can

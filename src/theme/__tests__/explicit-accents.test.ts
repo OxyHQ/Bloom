@@ -121,8 +121,6 @@ describe('explicit accent pinning — arbitrary-seed scope path', () => {
     expect(pinnedVars['--secondary']).toBeDefined();
     expect(hueDistance(hueOf(pinnedVars['--secondary'] ?? ''), yellowHue)).toBeLessThan(20);
     expect(hueDistance(hueOf(pinnedVars['--tertiary'] ?? ''), pinkHue)).toBeLessThan(20);
-    // The scoped `--color-*` alias tracks the pinned value too (web utility contract).
-    expect(pinnedVars['--color-secondary']).toBe(pinnedVars['--secondary']);
     // Primary token is unchanged vs the derived scope.
     expect(pinnedVars['--primary']).toBe(derivedVars['--primary']);
     // Derived secondary differs from the pinned one.

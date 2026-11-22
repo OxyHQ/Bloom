@@ -1,6 +1,6 @@
 /**
  * Generate the static `src/design-tokens/tokens.json` artifact from the SAME
- * source as `getPresetVars()` / `theme.css` — Bloom's colour engine — so the
+ * source as `getPresetVars()` — Bloom's colour engine — so the
  * machine-readable token export and the runtime palette can never drift.
  *
  * Consumers that are not browsers read this instead of the CSS:
