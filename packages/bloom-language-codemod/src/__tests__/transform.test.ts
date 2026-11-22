@@ -277,6 +277,52 @@ export const A = () => <View className="gap-2">{/* head */}<View className="p-2"
       "VStack(/* head */ VStack().padding('all', 'sm') /* end */).spacing('sm')",
     );
   });
+  it('converts a compound element with its parts as one node, a `.map()` of parts included', () => {
+    const result = run(`import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '@oxy.so/bloom/segmented-control';
+export const A = () => (
+  <Tabs value={tab} onValueChange={setTab} variant="underline">
+    {TABS.map((item) => <TabsTrigger key={item.id} value={item.id} label={item.label} count={item.count} />)}
+  </Tabs>
+);
+export const B = () => (
+  <SegmentedControl label="Range" type="tabs" value={v} onChange={setV}>
+    <SegmentedControlItem value="day"><SegmentedControlItemText>{t('day')}</SegmentedControlItemText></SegmentedControlItem>
+    <SegmentedControlItem value="week" disabled><SegmentedControlItemText>Week</SegmentedControlItemText></SegmentedControlItem>
+  </SegmentedControl>
+);
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LTabs([tab, setTab], TABS.map((item) => TabItem(item.id, item.label).count(item.count))).style('underline'))",
+    );
+    expect(flat(result.code)).toContain(
+      "toElement(Segmented([v, setV], Option('day', t('day')), Option('week', 'Week').disabled()).label('Range').tabs())",
+    );
+    expect(result.converted).toBe(5);
+    expect(result.fixtures[0]?.before).toContain('{ITEMS.map((item) => <TabsTrigger key={');
+    expect(result.fixtures[0]?.after).toContain("ITEMS.map((item) => TabItem('⟨");
+  });
+  it('keeps a compound element whose parts do not all map, and its parts with it', () => {
+    const result = run(`import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
+export const A = () => (
+  <Tabs value={tab} onValueChange={setTab} pressOpenTab="reselect"><TabsTrigger value="a" label="A" /></Tabs>
+);
+export const B = () => (
+  <Tabs value={tab} onValueChange={setTab}><TabsTrigger value="a" label="A" textStyle={s} /><Extra /></Tabs>
+);
+`);
+    expect(result.changed).toBe(false);
+    expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([
+      ['Tabs:pressOpenTab'],
+      ['TabItem:part'],
+      ['TabItem:textStyle', 'not-a-part'],
+      ['TabItem:part'],
+    ]);
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');

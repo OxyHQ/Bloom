@@ -96,7 +96,8 @@ interface Carried {
     | 'boolean'
     | 'element'
     | 'condition'
-    | 'key';
+    | 'key'
+    | 'items';
   /** For a key: its attribute, which a fixture's root leaves out (a key is no part of what draws). */
   readonly attribute?: AnyNode;
 }
@@ -130,6 +131,8 @@ type Ir =
       args: Value[];
       props: PropMod[];
       key: Carried | null;
+      /** A part of a compound node: the language keys it itself, so its key is not printed. */
+      part?: boolean;
     }
   | {
       type: 'button';
@@ -144,7 +147,9 @@ type Ir =
   | { type: 'screen'; content: Ir; props: PropMod[] }
   /** A JSX comment among children, carried into the chain as the same block comment. */
   | { type: 'comment'; text: string }
-  | { type: 'cond'; test: Carried; then: Ir | null; otherwise: Ir | null };
+  | { type: 'cond'; test: Carried; then: Ir | null; otherwise: Ir | null }
+  /** `items.map((item) => …)`: its array carried, its function's parameters as written, the view it returns. */
+  | { type: 'map'; items: Carried; params: readonly AnyNode[]; body: Ir };
 
 /**
  * A className that is one of two by a condition: `mods` is what the other
@@ -738,6 +743,17 @@ export function transformSource(source: string, options: TransformOptions): File
     if (kind === 'component') {
       const source = sources.get(local) as Source;
       const rule = ruleFor(source.module, source.imported) as ComponentRule;
+      // A part converts with its compound element (`convertParts`), never alone.
+      if (rule.partOf)
+        return {
+          reasons: [
+            {
+              subject: local,
+              code: `${rule.node}:part`,
+              why: `a part of \`${rule.partOf.split('#')[1]}\`, converted only with it, which stays JSX here`,
+            },
+          ],
+        };
       return rule.shell ? convertShell(node, rule, rule.shell) : convertComponent(node, rule);
     }
     const reasons: Reason[] = [];
@@ -1297,7 +1313,9 @@ export function transformSource(source: string, options: TransformOptions): File
         if (trailing) args.push(trailing);
       } else if ('text' in param) {
         textChildren = true;
-        const text = textOf(node.children);
+        const children =
+          param.text === true ? node.children : innerChildren(node.children, param.text);
+        const text = children && textOf(children);
         if (text === undefined) unmapped('children');
         else args.push(text);
       } else {
@@ -1330,6 +1348,14 @@ export function transformSource(source: string, options: TransformOptions): File
         else unmapped(name);
         continue;
       }
+      if (prop?.marks) {
+        // A static string naming the bare modifier, or none.
+        const text = staticString(value);
+        const mark = text === undefined ? undefined : prop.marks[text];
+        if (mark === undefined) unmapped(name);
+        else if (mark) props.push({ name: prop.modifier, args: [] });
+        continue;
+      }
       const values = prop ? valuesOf(prop.form, value, prop.map) : undefined;
       if (!prop || !values) {
         unmapped(name);
@@ -1346,7 +1372,13 @@ export function transformSource(source: string, options: TransformOptions): File
     for (const [name, prop] of Object.entries(rule.props ?? {}))
       if (prop.with && given.has(prop.with[0]) && !given.has(name)) unmapped(prop.with[0]);
 
-    if (rule.children) {
+    /** Its parts, each converted with it. */
+    const parts = new Map<AnyNode, Ir>();
+    if (rule.parts) {
+      const converted = convertParts(node.children, rule.parts, parts);
+      if ('reasons' in converted) reasons.push(...converted.reasons);
+      else args.push(...converted.views.map((view): Value => ({ $: 'view', view })));
+    } else if (rule.children) {
       for (const child of node.children) {
         const view = childView(child);
         if (view === null) continue;
@@ -1362,6 +1394,7 @@ export function transformSource(source: string, options: TransformOptions): File
     // An optional argument left out at the end (children included) is no argument.
     while (args.length > 0 && isAbsent(args[args.length - 1] as Value)) args.pop();
     if (reasons.length) return { reasons };
+    for (const [element, ir] of parts) results.set(element, { ir });
     return {
       ir: {
         type: 'component',
@@ -1372,6 +1405,107 @@ export function transformSource(source: string, options: TransformOptions): File
         key,
       },
     };
+  }
+
+  /**
+   * The children of a compound element as its parts (`module#export`), each
+   * by its own rule: an element, a comment, or a `.map()` whose function
+   * returns one (its array carried). Each part converted is added to `converted`.
+   */
+  function convertParts(
+    children: AnyNode[],
+    parts: readonly string[],
+    converted: Map<AnyNode, Ir>,
+  ): { views: Ir[] } | { reasons: Reason[] } {
+    const reasons: Reason[] = [];
+    const views: Ir[] = [];
+    const names = parts.map((part) => `\`${part.split('#')[1]}\``).join(', ');
+    const part = (element: AnyNode): Ir | undefined => {
+      const local = n.JSXElement.check(element) ? jsxName(element) : undefined;
+      const source = local ? sources.get(local) : undefined;
+      const rule =
+        source && parts.includes(`${source.module}#${source.imported}`)
+          ? ruleFor(source.module, source.imported)
+          : undefined;
+      if (!rule) {
+        reasons.push({
+          subject: local ?? 'children',
+          code: 'not-a-part',
+          why: `a child that is none of its parts (${names})`,
+        });
+        return undefined;
+      }
+      if (!counted.has(element)) {
+        counted.add(element);
+        candidates++;
+      }
+      const result = convertComponent(element, rule);
+      if (!('ir' in result) || result.ir.type !== 'component') {
+        if ('reasons' in result) reasons.push(...result.reasons);
+        return undefined;
+      }
+      const ir: Ir = { ...result.ir, part: true };
+      converted.set(element, ir);
+      return ir;
+    };
+    for (const child of children) {
+      if (n.JSXText.check(child) && !cleanJsxText(child.value)) continue;
+      const expression = n.JSXExpressionContainer.check(child) ? child.expression : undefined;
+      if (expression && n.JSXEmptyExpression.check(expression)) {
+        const comment = commentOf(child);
+        if (comment) views.push(comment);
+        else
+          reasons.push({
+            subject: '{/* */}',
+            code: 'comment',
+            why: 'a line comment in JSX (only a block comment moves)',
+          });
+        continue;
+      }
+      const map = expression ? mapOf(expression) : undefined;
+      const body = part(map ? map.body : expression ? undefined : child);
+      if (!body) continue;
+      views.push(
+        map
+          ? { type: 'map', items: { node: map.items, hole: 'items' }, params: map.params, body }
+          : body,
+      );
+    }
+    return reasons.length ? { reasons } : { views };
+  }
+
+  /** `items.map((item) => <Element />)`: its array (no JSX), its function's parameters and the element it returns. */
+  function mapOf(
+    expression: AnyNode,
+  ): { items: AnyNode; params: AnyNode[]; body: AnyNode } | undefined {
+    if (!n.CallExpression.check(expression) || expression.arguments.length !== 1) return undefined;
+    const { callee } = expression;
+    const fn = expression.arguments[0];
+    if (
+      !n.MemberExpression.check(callee) ||
+      callee.computed ||
+      !n.Identifier.check(callee.property) ||
+      callee.property.name !== 'map' ||
+      hasJsx(callee.object) ||
+      !n.ArrowFunctionExpression.check(fn) ||
+      !n.JSXElement.check(fn.body)
+    )
+      return undefined;
+    return { items: callee.object, params: fn.params, body: fn.body };
+  }
+
+  /** The children of an element's one child, when it is `component` (`module#export`) with no props. */
+  function innerChildren(children: AnyNode[], component: string): AnyNode[] | undefined {
+    const given = children.filter(
+      (c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''),
+    );
+    const only: AnyNode = given.length === 1 && n.JSXElement.check(given[0]) ? given[0] : null;
+    const source = only ? sources.get(jsxName(only) ?? '') : undefined;
+    return source &&
+      `${source.module}#${source.imported}` === component &&
+      only.openingElement.attributes.length === 0
+      ? only.children
+      : undefined;
   }
 
   /**
@@ -1460,6 +1594,10 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       case 'refresh':
         return refreshOf(expression);
+      case 'items':
+        return hasJsx(expression) || n.StringLiteral.check(expression)
+          ? undefined
+          : [{ node: expression, hole: 'items' }];
     }
   }
 
@@ -1755,6 +1893,8 @@ export function transformSource(source: string, options: TransformOptions): File
         return `${print(ir.content, carry)}${ir.props.map((p) => printProp(p, carry)).join('')}`;
       case 'cond':
         return `${carry(ir.test)} ? ${ir.then ? print(ir.then, carry) : 'null'} : ${ir.otherwise ? print(ir.otherwise, carry) : 'null'}`;
+      case 'map':
+        return `${carry(ir.items)}.map((${ir.params.map((param) => recast.print(param).code).join(', ')}) => ${print(ir.body, carry)})`;
       case 'icon':
         return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       case 'component': {
@@ -1772,7 +1912,7 @@ export function transformSource(source: string, options: TransformOptions): File
             : views.map((a) => printValue(a, carry))),
         ].join(', ');
         const tail = ir.props.map((p) => printProp(p, carry)).join('');
-        return `${lang(ir.node)}(${args})${tail}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
+        return `${lang(ir.node)}(${args})${tail}${ir.key && !root && !ir.part ? `.id(${carry(ir.key)})` : ''}`;
       }
       case 'button': {
         const parts: string[] = [];
@@ -1883,6 +2023,8 @@ export function transformSource(source: string, options: TransformOptions): File
     switch (ir.type) {
       case 'cond':
         return [ir.then, ir.otherwise].filter((branch): branch is Ir => branch !== null);
+      case 'map':
+        return [ir.body];
       case 'component':
         return [...ir.args.flatMap(viewsOfValue), ...props];
       case 'text':
@@ -1915,6 +2057,10 @@ export function transformSource(source: string, options: TransformOptions): File
         out.push(ir.test);
         if (ir.then) carriedOf(ir.then, out);
         if (ir.otherwise) carriedOf(ir.otherwise, out);
+        break;
+      case 'map':
+        out.push(ir.items);
+        carriedOf(ir.body, out);
         break;
       case 'icon':
         if (ir.key) out.push(ir.key);
@@ -1959,6 +2105,8 @@ export function transformSource(source: string, options: TransformOptions): File
     handler: () => '() => {}',
     action: () => '(() => {})',
     element: (i: number) => `<Hole n="${i}" />`,
+    // The corpus's sample items (`corpus.ts`), the same array on both sides.
+    items: () => 'ITEMS',
   } as const;
 
   /**
@@ -1984,6 +2132,15 @@ export function transformSource(source: string, options: TransformOptions): File
       text: hole(c),
     }));
     if (removed) spans.push({ start: removed.start, end: removed.end, text: '' });
+    // An element's type arguments (`<SegmentedControl<Cadence>`) draw nothing, and name the app's types.
+    recast.visit(node, {
+      visitJSXOpeningElement(path) {
+        const opening: AnyNode = path.node;
+        const types = opening.typeParameters ?? opening.typeArguments;
+        if (types) spans.push({ start: types.start, end: types.end, text: '' });
+        this.traverse(path);
+      },
+    });
     // A StyleSheet's style is its object literal on the before side.
     for (const [read, literal] of styleLiterals)
       if (read.start >= node.start && read.end <= node.end)

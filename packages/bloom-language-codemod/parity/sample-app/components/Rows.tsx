@@ -72,13 +72,25 @@ export function Unconverted() {
   );
 }
 
-export function Tab({ label, active, onSelect }: { label: string; active: boolean; onSelect: () => void }) {
+export function Tab({
+  label,
+  active,
+  onSelect,
+}: {
+  label: string;
+  active: boolean;
+  onSelect: () => void;
+}) {
   return (
     <Pressable
       onPress={onSelect}
-      className={active ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'}
+      className={
+        active ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'
+      }
     >
-      <Text className={`text-sm ${active ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}>
+      <Text
+        className={`text-sm ${active ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}
+      >
         {label}
       </Text>
     </Pressable>
