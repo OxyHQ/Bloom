@@ -61,9 +61,13 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
       .map((local) => `}</${local}>`)
       .reverse()
       .join('');
+    // A before side that reads the theme is a component, so it reads it where it is drawn.
+    const before = fixture.themed
+      ? `function Before() { const parityTheme = useParityTheme(); ${bindings} return (${fixture.before}); } return (${open}<Before />${close});`
+      : `${bindings} return (${open}${fixture.before}${close});`;
     return `  {
     name: ${JSON.stringify(fixture.name)},
-    before: () => { ${bindings} return (${open}${fixture.before}${close}); },
+    before: () => { ${before} },
     after: () => { ${bindings} ${language} return (${open}${fixture.after}${close}); },
   },`;
   });
@@ -72,6 +76,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as RN from 'react-native';",
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
+    "import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';",
     ...[...imports].map(([key, local]) => {
       const [module, name] = key.split('#');
       return `import { ${name} as ${local} } from '${module}';`;
