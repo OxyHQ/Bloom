@@ -179,9 +179,11 @@
       "opaque": 1
     },
     "borderWidth": {
+      "$comment": "A line's width: a border, a ring, a shape's outline, a signature's stroke. Bloom's rungs, then exact widths named by their value: '3' (the 3px ring), '4' (border-4), '2.5' (Bloom's own signature stroke).",
       "hairline": "hairline",
       "thin": 1,
       "thick": 2,
+      "2.5": 2.5,
       "3": 3,
       "4": 4
     },
@@ -1446,6 +1448,7 @@
     "cellSize": ["space"],
     "onPressDay": ["value"],
     "openDelay": ["duration"],
+    "strokeWidth": ["borderWidth"],
     "collapses": [],
     "allowsCreate": ["value"],
     "onMaxReached": ["value"],
@@ -4220,7 +4223,7 @@
     },
     "signaturePad": {
       "constructors": ["SignaturePad"],
-      "modifiers": ["tint", "disabled", "value"],
+      "modifiers": ["tint", "strokeWidth", "disabled", "value"],
       "tint": "color"
     },
     "proofOfDelivery": {

@@ -2608,18 +2608,23 @@ fn the_logistics_families_are_checked() {
     let imports = "import { CarrierQuoteCard, JobBoard, SignaturePad, ProofOfDelivery, VehiclePicker, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (q, j, v) => VStack(CarrierQuoteCard(q).density('compact').disabled(), JobBoard(j).loading(), SignaturePad().tint('primary'), ProofOfDelivery().loading().disabled(), VehiclePicker(v).disabled());\n",
+        "export const x = (q, j, v) => VStack(CarrierQuoteCard(q).density('compact').disabled(), JobBoard(j).loading(), SignaturePad().tint('primary').strokeWidth('2.5'), SignaturePad().strokeWidth('thick'), ProofOfDelivery().loading().disabled(), VehiclePicker(v).disabled());\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("CarrierQuoteCard(q).density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("SignaturePad().tint('ink')", "Unknown color token 'ink' for .tint()"),
+        ("SignaturePad().strokeWidth('2')", "Unknown borderWidth token '2' for .strokeWidth()"),
         ("JobBoard(q).style('grid')", "JobBoard has no modifier .style()"),
+        ("ProofOfDelivery().strokeWidth('thin')", "ProofOfDelivery has no modifier .strokeWidth()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (q) => {chain};\n"));
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
+    // A signature's stroke is a line width: a near miss names the width it meant.
+    let output = check("export const x = SignaturePad().strokeWidth('thickk');\n");
+    assert!(output.diagnostics[0].help.as_deref().unwrap().starts_with("did you mean 'thick'?"));
 }
 
 #[test]

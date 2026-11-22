@@ -178,7 +178,8 @@ export const BORDER_WIDTH = {
   "4": 4,
   "hairline": "hairline",
   "thin": 1,
-  "thick": 2
+  "thick": 2,
+  "2.5": 2.5
 } as const;
 export const HIT_SLOP = {
   "sm": 6,
@@ -3623,6 +3624,9 @@ export const MODIFIERS = {
   ],
   "openDelay": [
     "duration"
+  ],
+  "strokeWidth": [
+    "borderWidth"
   ],
   "collapses": [],
   "allowsCreate": [
@@ -41387,6 +41391,7 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "tint",
+    "strokeWidth",
     "disabled",
     "value"
   ],
