@@ -363,6 +363,7 @@
     "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black, transparent) gives the colour itself for the web.",
     "foreground": ["text", "foreground"],
     "muted": ["textSecondary", "muted-foreground"],
+    "textTertiary": ["textTertiary", "muted-foreground"],
     "primary": ["primary", "primary"],
     "primaryText": ["primarySubtleForeground", "primary-text"],
     "onPrimary": ["primaryForeground", "primary-foreground"],
