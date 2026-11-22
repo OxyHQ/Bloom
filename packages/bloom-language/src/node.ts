@@ -138,6 +138,7 @@ import type { OrderStatusKind } from './controls/order-status';
 import type { LockupKind } from './controls/lockup';
 import type { AmbientPhotoKind } from './controls/ambient-photo';
 import type { CalendarViewKind } from './controls/calendar';
+import type { MediaPlayerKind } from './controls/media-player';
 import type { LyricsKind } from './controls/lyrics';
 import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
@@ -312,6 +313,8 @@ import {
   type RadarLegend,
   type MethodTitleAlign,
   type TypeRampStep,
+  type TransportStyle,
+  type TransportSize,
   type LyricsSize,
   type MediaCardLayout,
   type MediaCardSize,
@@ -1272,7 +1275,8 @@ export type Modifier =
         | ShareSheetSize
         | MediaCardSize
         | LyricsSize
-        | ReleaseStatusBadgeSize;
+        | ReleaseStatusBadgeSize
+        | TransportSize;
     }
   | {
       readonly kind: 'style';
@@ -1332,7 +1336,8 @@ export type Modifier =
         | PaymentStatusStyle
         | PipelineLayout
         | MediaCardLayout
-        | ReleaseCardLayout;
+        | ReleaseCardLayout
+        | TransportStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1653,7 +1658,8 @@ export type NodeKind =
   | CreatorStudioKind
   | CheckoutSummaryKind
   | DeliverySlotKind
-  | OrderConfirmationKind;
+  | OrderConfirmationKind
+  | MediaPlayerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1981,7 +1987,8 @@ export class Node {
       | ShareSheetSize
       | MediaCardSize
       | LyricsSize
-      | ReleaseStatusBadgeSize,
+      | ReleaseStatusBadgeSize
+      | TransportSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -2041,7 +2048,8 @@ export class Node {
       | PaymentStatusStyle
       | PipelineLayout
       | MediaCardLayout
-      | ReleaseCardLayout,
+      | ReleaseCardLayout
+      | TransportStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

@@ -308,6 +308,16 @@ import type {
 } from '../controls/delivery-slot';
 import type { OrderConfirmationView } from '../controls/order-confirmation';
 import type {
+  TransportControlsView,
+  NowPlayingBarView,
+  MiniPlayerView,
+  FullScreenPlayerView,
+  PlaybackSpeedMenuView,
+  SleepTimerMenuView,
+  DevicePickerView,
+  ConnectBannerView,
+} from '../controls/media-player';
+import type {
   FilterSectionView,
   PriceRangeFilterView,
   CountFilterView,
@@ -1134,7 +1144,23 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<DeliverySlotOptionView>, Of<'deliverySlotOption'>>,
       Same<MethodsOf<DeliverySlotPickerView>, Of<'deliverySlotPicker'>>,
       Same<MethodsOf<OrderConfirmationView>, Of<'orderConfirmation'>>,
+      Same<MethodsOf<TransportControlsView>, Of<'transportControls'>>,
+      Same<MethodsOf<NowPlayingBarView>, Of<'nowPlayingBar'>>,
+      Same<MethodsOf<MiniPlayerView>, Of<'miniPlayer'>>,
+      Same<MethodsOf<FullScreenPlayerView>, Of<'fullScreenPlayer'>>,
+      Same<MethodsOf<PlaybackSpeedMenuView>, Of<'playbackSpeedMenu'>>,
+      Same<MethodsOf<SleepTimerMenuView>, Of<'sleepTimerMenu'>>,
+      Same<MethodsOf<DevicePickerView>, Of<'devicePicker'>>,
+      Same<MethodsOf<ConnectBannerView>, Of<'connectBanner'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

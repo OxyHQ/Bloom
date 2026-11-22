@@ -112,6 +112,7 @@ import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
 import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
 import { LYRICS_CASES } from '../../parity/lyrics.cases';
 import { CREATOR_STUDIO_CASES } from '../../parity/creator-studio.cases';
+import { MEDIA_PLAYER_CASES } from '../../parity/media-player.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -229,6 +230,7 @@ export const FAMILIES = {
   mediaCard: MEDIA_CARD_CASES,
   lyrics: LYRICS_CASES,
   creatorStudio: CREATOR_STUDIO_CASES,
+  mediaPlayer: MEDIA_PLAYER_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
