@@ -105,14 +105,14 @@ a `progressbar` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
 ```tsx
 <Rating value={4.5} variant="stars" showValue={false} starSize={20} />
 <RatingBar label="5" value={0.75} max={1} display="75%" labelWidth={16}
-  className="gap-2" labelClassName="text-xs font-semibold"
-  displayClassName="text-xs" trackClassName="h-2 rounded-full"
-  fillClassName="bg-foreground" />
+  style={{ gap: 8 }} labelStyle={{ fontSize: 10, fontWeight: '600' }}
+  displayStyle={{ fontSize: 10 }} trackStyle={{ height: 8, borderRadius: 9999 }}
+  fillStyle={{ backgroundColor: theme.colors.text }} />
 ```
 
-`className` styles the row; `labelClassName` and `displayClassName` style the two
-labels. `trackClassName` and `fillClassName` are owned and resolved by `Meter`.
-Their defaults remain unchanged when classes are absent. Classes may customize
+`style` styles the row; `labelStyle` and `displayStyle` style the two
+labels. `trackStyle` and `fillStyle` are owned and resolved by `Meter`.
+Their defaults remain unchanged when styles are absent. Styles may customize
 paint and geometry, but the filled fraction stays derived from `value / max`.
 The bar remains one named progressbar; its visual labels are not announced twice.
 
