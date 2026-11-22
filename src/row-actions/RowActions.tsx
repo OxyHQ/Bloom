@@ -22,7 +22,7 @@ const MENU_PADDING = { paddingTop: 8, paddingBottom: 8, paddingLeft: 8, paddingR
 /**
  * The actions a row ends with: its icon buttons (`RowActionButton`, each under a 200ms tooltip),
  * then the "⋮" trigger of a `DropdownMenu` — end-aligned under the trigger, 220px wide with 8px
- * padding, entries `px-2 py-1.5` leading with an 18px secondary glyph. The trigger paints its
+ * padding, entries leading with an 18px secondary glyph. The trigger paints its
  * pressed state while the menu is open and is named `` `${menuLabel} for ${name}` ``.
  */
 export function RowActions({
@@ -86,7 +86,6 @@ export function RowActions({
                 <DropdownMenuItem
                   key={label}
                   accessibilityLabel={accessibilityLabel ?? label}
-                  className="px-2 py-1.5"
                   onPress={onPress}
                   leading={
                     Icon ? (
