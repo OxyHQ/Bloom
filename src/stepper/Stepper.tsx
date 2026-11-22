@@ -73,8 +73,10 @@ function stepperClamp(raw: number, min: number, max: number | undefined, step: n
 }
 
 const STYLE_ID = 'bloom-stepper-web-css';
-const OUTLINE_ACTION = '.bloom-stepper-outline-action';
+const OUTLINE_ACTION = '[data-bloom-stepper-action]';
 const VALUE = '[data-bloom-stepper-value]';
+/** The web outline action's hook for the sheet below. */
+const STEPPER_ACTION_HOOK = { bloomStepperAction: '' };
 const BLOOM_STEPPER_CSS =
   interactiveWebCss({
     selector: VALUE,
@@ -149,7 +151,7 @@ function OutlineAction({ size, ...props }: ButtonProps) {
   // union element type must accept the INTERSECTION of both prop types, and
   // plain `Button` takes no animated style.
   return IS_WEB ? (
-    <Button {...shared} className="bloom-stepper-outline-action" style={actionStyle} />
+    <Button {...shared} dataSet={STEPPER_ACTION_HOOK} style={actionStyle} />
   ) : (
     <AnimatedButton {...shared} style={[actionStyle, animated]} />
   );
