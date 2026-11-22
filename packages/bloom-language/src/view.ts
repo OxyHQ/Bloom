@@ -2,6 +2,7 @@ import { memo, useContext, type ComponentType, type ReactNode } from 'react';
 
 import { Node, type Child, type ComposedView } from './node';
 import { EnvContext } from './env';
+import { AnimationContext } from './motion/motion-node';
 import { renderBody } from './render';
 
 const NO_CHILDREN: readonly Child[] = [];
@@ -40,7 +41,7 @@ export function view<P extends object = Record<string, never>>(
   // module scope, never inside a render.
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
-    return renderBody(body(props), useContext(EnvContext));
+    return renderBody(body(props), useContext(EnvContext), useContext(AnimationContext));
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost) as unknown as ComponentType<object>;

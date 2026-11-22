@@ -1,4 +1,5 @@
 import {
+  cloneElement,
   createElement,
   Fragment,
   useContext,
@@ -211,10 +212,12 @@ import {
   type Transform,
 } from '@oxy.so/bloom/motion';
 import {
+  AnimationContext,
   GestureMotionNode,
   MotionNode,
   PressMotionNode,
   ThemedMotion,
+  scopeOf,
   type AnimationScope,
   type MotionPlan,
   type Outer,
@@ -442,11 +445,7 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
       case 'animation':
         // What its box draws changes with the motion: the box is animated from the first render.
         if (changesBox(node.modifiers)) motion.stable = true;
-        motion.animation = {
-          motion: modifier.motion,
-          value: modifier.value,
-          gated: modifier.gated,
-        };
+        motion.animation = scopeOf(modifier.motion, modifier.value, modifier.gated);
         break;
       case 'animatesColors':
         // Its colours play with the animation in scope: the box is animated from the first render.
@@ -820,8 +819,10 @@ interface Context {
   inText?: boolean;
   /** A child of an `HStack`: a `Divider` here runs top to bottom. */
   inRow?: boolean;
-  /** The `.animation()` in scope, from this view or above it in the same body. */
+  /** The `.animation()` in scope, from this view or above it, across `view()` bodies. */
   animation: AnimationScope | undefined;
+  /** The scope `AnimationContext` holds at this point of the React tree. */
+  scoped: AnimationScope | undefined;
 }
 
 /**
@@ -907,6 +908,7 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     last.env === ctx.env &&
     last.provided === ctx.provided &&
     last.animation === ctx.animation &&
+    last.scoped === ctx.scoped &&
     last.key === key &&
     last.inText === ctx.inText &&
     last.inRow === ctx.inRow
@@ -921,6 +923,7 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     env: ctx.env,
     provided: ctx.provided,
     animation: ctx.animation,
+    scoped: ctx.scoped,
     key,
     inText: ctx.inText,
     inRow: ctx.inRow,
@@ -1054,7 +1057,7 @@ function drawNode(
   const inner: Context =
     env === ctx.env && animation === ctx.animation && !ctx.inRow
       ? ctx
-      : { env, provided: ctx.provided, animation, inText: ctx.inText };
+      : { env, provided: ctx.provided, animation, scoped: ctx.scoped, inText: ctx.inText };
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   const layers = p.layers;
@@ -2579,21 +2582,17 @@ function renderHost(
 /**
  * A `view()` node: its component with the props it was called with, under
  * an `EnvContext` provider only when the environment here differs from the
- * one already provided.
+ * one already provided, and an `AnimationContext` one only when the
+ * animation scope does.
  */
 function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
   const { component, props } = node.props as ViewNodeProps;
-  if (ctx.env === ctx.provided) {
-    return draw(
-      component,
-      key === undefined ? (props as Record<string, unknown>) : { ...props, key },
-    );
-  }
-  return draw(
-    EnvContext.Provider,
-    { value: ctx.env, key },
-    draw(component, props as Record<string, unknown>),
-  );
+  let element: ReactElement = draw(component, props as Record<string, unknown>);
+  if (ctx.env !== ctx.provided) element = draw(EnvContext.Provider, { value: ctx.env }, element);
+  // The `.animation()` in scope reaches the body, as it reaches the nodes of this one.
+  if (ctx.animation !== ctx.scoped)
+    element = draw(AnimationContext.Provider, { value: ctx.animation }, element);
+  return key === undefined ? element : cloneElement(element, { key });
 }
 
 /**
@@ -3035,7 +3034,8 @@ interface RootProps {
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
 function LanguageRoot({ node }: RootProps): ReactNode {
   const env = useContext(EnvContext);
-  return renderChild(node, { env, provided: env, animation: undefined }, undefined);
+  const animation = useContext(AnimationContext);
+  return renderChild(node, { env, provided: env, animation, scoped: animation }, undefined);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 
@@ -3055,9 +3055,13 @@ export function toElement(node: Child, key?: string | number): ReactElement {
   return draw(LanguageRoot, { node, key });
 }
 
-/** What a `view()` component renders: its body, under the environment it is placed in. */
-export function renderBody(body: Child, env: Env): ReactNode {
-  return renderChild(body, { env, provided: env, animation: undefined }, undefined);
+/** What a `view()` component renders: its body, under the environment and animation scope it is placed in. */
+export function renderBody(
+  body: Child,
+  env: Env,
+  animation: AnimationScope | undefined,
+): ReactNode {
+  return renderChild(body, { env, provided: env, animation, scoped: animation }, undefined);
 }
 
 interface LottieHostProps {

@@ -9,6 +9,7 @@ import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { runtime } from './support/bloom-runtime';
 import { HStack, Icon, Image, Lottie, Text, VStack, ZStack } from '../primitives';
 import { toElement } from '../render';
+import { view } from '../view';
 import { defineKeyframes } from '../motion/keyframes';
 import { asymmetric, move, opacity, scale } from '../motion/transition';
 import type { Namespace } from '../motion/namespace';
@@ -200,6 +201,40 @@ describe('geometry and .animation()', () => {
       transitionDuration: 200,
       transitionTimingFunction: { cubicBezier: [0.25, 0.1, 0.25, 1] },
     });
+  });
+
+  it('an .animation() scope reaches the body of a view() inside it, as SwiftUI’s transaction does', () => {
+    const Dot = view(function Dot({ size }: { size: 'full' | 'swell' }) {
+      return VStack().scale(size).testID('dot');
+    });
+    const chain = (value: number, size: 'full' | 'swell') =>
+      HStack(Dot({ size })).animation('pop', value);
+    const dot = (r: ReactTestRenderer) =>
+      flat(all(r, 'Animated.View').find((box) => box.props.testID === 'dot')?.props.style);
+    const r = mount(chain(1, 'full'));
+    expect(dot(r).transitionDuration).toBeUndefined();
+    update(r, chain(2, 'swell'));
+    expect(dot(r)).toMatchObject({ transitionDuration: 300, transform: [{ scale: 1.2 }] });
+    // Outside any scope the body's change is at once.
+    const bare = (size: 'full' | 'swell') => HStack(Dot({ size }));
+    const plain = mount(bare('full'));
+    update(plain, bare('swell'));
+    expect(all(plain, 'Animated.View')).toHaveLength(0);
+  });
+
+  it('one scope object while its value holds, so a view() under it is not re-rendered for nothing', () => {
+    let runs = 0;
+    const Leaf = view(function Leaf() {
+      runs += 1;
+      return Text('leaf');
+    });
+    const chain = (value: number, label: string) =>
+      VStack(Text(label), Leaf()).animation('pop', value);
+    const r = mount(chain(1, 'a'));
+    update(r, chain(1, 'b'));
+    expect(runs).toBe(1);
+    update(r, chain(2, 'b'));
+    expect(runs).toBe(2);
   });
 
   it('a gated animation plays only on a render where its value changed', () => {
