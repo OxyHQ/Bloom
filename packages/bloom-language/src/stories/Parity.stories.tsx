@@ -149,3 +149,4 @@ export const StayFilters: Story = { args: { family: 'stayFilter' } };
 export const StaySearch: Story = { args: { family: 'staySearch' } };
 export const Tenancy: Story = { args: { family: 'tenancy' } };
 export const EvictionsAndReviews: Story = { args: { family: 'eviction' } };
+export const CallScreens: Story = { args: { family: 'callUi' } };

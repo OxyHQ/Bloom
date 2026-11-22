@@ -79,6 +79,7 @@ import { STAY_FILTER_CASES } from '../../parity/stay-filters.cases';
 import { STAY_SEARCH_CASES } from '../../parity/stay-search.cases';
 import { TENANCY_CASES } from '../../parity/tenancy.cases';
 import { EVICTION_CASES } from '../../parity/eviction.cases';
+import { CALL_UI_CASES } from '../../parity/call-ui.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -163,6 +164,7 @@ export const FAMILIES = {
   staySearch: STAY_SEARCH_CASES,
   tenancy: TENANCY_CASES,
   eviction: EVICTION_CASES,
+  callUi: CALL_UI_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
