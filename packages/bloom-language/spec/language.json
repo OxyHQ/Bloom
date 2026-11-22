@@ -2918,7 +2918,9 @@
         "footerContent",
         "emptyState",
         "loading",
-        "loadingRows"
+        "loadingRows",
+        "safeAreaInset",
+        "safeAreaBar"
       ]
     },
     "virtualList": {

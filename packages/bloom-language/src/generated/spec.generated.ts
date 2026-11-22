@@ -13032,7 +13032,9 @@ export const NODE_MODIFIERS = {
     "footerContent",
     "emptyState",
     "loading",
-    "loadingRows"
+    "loadingRows",
+    "safeAreaInset",
+    "safeAreaBar"
   ],
   "virtualList": [
     "padding",
