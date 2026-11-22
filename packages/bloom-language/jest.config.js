@@ -24,7 +24,6 @@ module.exports = {
   // stand-ins: what reaches them is the prop contract under test.
   moduleNameMapper: {
     '^react-native$': `${support}/react-native.ts`,
-    '^react-native-css$': `${support}/react-native-css.ts`,
     '^@oxy.so/bloom/styles$': `${support}/bloom-styles.ts`,
     '^@oxy.so/bloom/typography$': `${support}/bloom-typography.ts`,
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
