@@ -42,6 +42,5 @@ export interface CompactComposerProps extends ViewStyleProp {
   /** Additional application permission; empty or over-limit drafts still cannot submit. */
   canSubmit?: boolean;
   labels?: Partial<CompactComposerLabels>;
-  className?: string;
   testID?: string;
 }
