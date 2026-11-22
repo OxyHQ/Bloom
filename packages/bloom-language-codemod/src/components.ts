@@ -212,6 +212,22 @@ const NAMED = {
   testID: p('testID', 'string'),
 } as const;
 
+/** parity/settings.cases.tsx, SettingsSelect: its label, the selection and its choices. */
+const SETTINGS_SELECT: ComponentRule = {
+  node: 'SettingsSelect',
+  params: [
+    { prop: 'label', form: 'string' },
+    { binding: ['value', 'onChange'], hole: 'string' },
+    { prop: 'items', form: 'items' },
+  ],
+  props: {
+    compact: p('compact', 'flag'),
+    size: p('size', 'token', tokens('controlSize')),
+    disabled: p('disabled', 'flag'),
+    testID: p('testID', 'string'),
+  },
+};
+
 /** `module#export` to its rule. */
 export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   // parity/inputs.cases.tsx, Toggle (Switch).
@@ -678,6 +694,45 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       { text: '@oxy.so/bloom/segmented-control#SegmentedControlItemText' },
     ],
     props: { disabled: p('disabled', 'flag'), testID: p('testID', 'string') },
+  },
+  // parity/settings.cases.tsx: the settings row's select, from either entry.
+  '@oxy.so/bloom/settings-modal#SettingsSelect': SETTINGS_SELECT,
+  '@oxy.so/bloom/settings-modal/select#SettingsSelect': SETTINGS_SELECT,
+  // parity/avatar.cases.tsx, AvatarGroup.
+  '@oxy.so/bloom/avatar-group#AvatarGroup': {
+    node: 'AvatarGroup',
+    params: [{ prop: 'items', form: 'items' }],
+    props: {
+      layout: p('layout', 'token', tokens('avatarLayout')),
+      size: p('size', 'token', AVATAR_SIZE),
+      shape: p('shape', 'token', tokens('shapeName')),
+      max: p('max', 'number'),
+      total: p('total', 'number'),
+      spacing: p('spacing', 'token', SPACE),
+      overflow: p('overflow', 'token', tokens('avatarOverflow')),
+      showInitials: p('initials', 'mark'),
+      onPressItem: p('onPressItem', 'handler'),
+      hoverCard: p('hoverCard', 'flag'),
+      accessibilityLabel: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/list.cases.tsx, List: its rows from data.
+  '@oxy.so/bloom/list#List': {
+    node: 'List',
+    params: [{ prop: 'items', form: 'items' }],
+    props: {
+      separator: p('separator', 'token', tokens('listSeparator')),
+      scrollable: p('scrollable', 'flag'),
+      stickyHeaders: p('stickyHeaders', 'flag'),
+      header: p('headerContent', 'view'),
+      footer: p('footerContent', 'view'),
+      empty: p('emptyState', 'view'),
+      loading: p('loading', 'flag'),
+      loadingCount: p('loadingRows', 'number'),
+      accessibilityLabel: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
   },
 };
 

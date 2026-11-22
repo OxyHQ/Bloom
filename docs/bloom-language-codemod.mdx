@@ -80,8 +80,9 @@ modifiers by Bloom prop, and its children. Each value has a form: a static
 token (checked against the spec's enum or the node's densities, or a scale
 turned round, `radius="radius-16"` to `'lg'`, `spacing={12}` to `'md'`), a
 string or number (any expression without JSX, carried as it is), a flag, a
-handler, a Bloom icon, or a view (an element converted where it can be, else
-`Embed`). A prop the rule does not name, or a value in another form, keeps
+handler, a Bloom icon, a view (an element converted where it can be, else
+`Embed`), or an array of data (`items`, any expression without JSX, carried as
+it is). A prop the rule does not name, or a value in another form, keeps
 the element JSX with the reason `Node:prop`.
 
 | Bloom | Language |
@@ -97,6 +98,7 @@ the element JSX with the reason `Node:prop`.
 | `PageHeader`, `SpinnerIcon`, `Slider`, `Admonition` | `Header(title).inPage()`, `SpinnerIcon()`, `Slider([value, set], label).bounds(min, max)`, `Admonition(Text(…)).style(type)` |
 | `Tabs` with its `TabsTrigger`s | `Tabs([value, set], TabItem(value, label).count(n)…).style(variant)` |
 | `SegmentedControl` with its `SegmentedControlItem`s (each its `SegmentedControlItemText`) | `Segmented([value, set], Option(value, text)…)`, `type="tabs"` its `.tabs()` |
+| `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads

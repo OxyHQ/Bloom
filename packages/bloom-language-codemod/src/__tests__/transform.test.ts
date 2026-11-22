@@ -323,6 +323,30 @@ export const B = () => (
       ['TabItem:part'],
     ]);
   });
+  it('carries an array of data as it is, its parity drawn with the sample items', () => {
+    const result = run(`import { SettingsSelect } from '@oxy.so/bloom/settings-modal/select';
+import { AvatarGroup } from '@oxy.so/bloom/avatar-group';
+import { List } from '@oxy.so/bloom/list';
+export const A = () => (
+  <SettingsSelect label={t('a')} value={mode} onChange={setMode} items={[{ value: 'x', label: t('x') }]} />
+);
+export const B = () => <AvatarGroup items={members} size={32} showInitials total={count} />;
+export const C = () => <List items={rows} separator="none" empty={<Empty />} />;
+export const D = () => <AvatarGroup items={members} size={56} />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LSettingsSelect(t('a'), [mode, setMode], [{ value: 'x', label: t('x') }]))",
+    );
+    expect(result.code).toContain(
+      "toElement(LAvatarGroup(members).size('md').initials().total(count))",
+    );
+    expect(result.code).toContain(
+      "toElement(LList(rows).separator('none').emptyState(Embed(<Empty />)))",
+    );
+    expect(result.fixtures[0]?.before).toContain('items={ITEMS}');
+    expect(result.fixtures[0]?.after).toContain("['⟨1⟩', () => {}], ITEMS)");
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['AvatarGroup:size']);
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');
