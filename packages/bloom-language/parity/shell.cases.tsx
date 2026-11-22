@@ -45,8 +45,7 @@ export const SHELL_CASES: ParityCase[] = [
             Panel('details', L.Text('details'))
               .panelRole('inspector')
               .label('Details')
-              .presented(true)
-              .onPresentedChange(change),
+              .presented([true, change]),
           ),
       ),
     bloom: () => (

@@ -2515,9 +2515,6 @@ export const MODIFIERS = {
   "ignoresSafeArea": [
     "value?"
   ],
-  "onPresentedChange": [
-    "value"
-  ],
   "query": [
     "value",
     "value"
@@ -7426,7 +7423,6 @@ export const NODE_MODIFIERS = {
   ],
   "command": [
     "presented",
-    "onPresentedChange",
     "placeholder",
     "emptyLabel",
     "query",
@@ -7445,7 +7441,6 @@ export const NODE_MODIFIERS = {
   "commandGroup": [],
   "settings": [
     "presented",
-    "onPresentedChange",
     "selection",
     "onSelect",
     "initialView",
@@ -7473,7 +7468,6 @@ export const NODE_MODIFIERS = {
     "hidden",
     "keepMounted",
     "presented",
-    "onPresentedChange",
     "testID"
   ],
   "destination": [

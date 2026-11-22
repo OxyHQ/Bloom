@@ -25,8 +25,7 @@ const commands: ParityCase[] = [
             L.CommandItem('Archive').disabled(),
           ),
         )
-          .presented(true)
-          .onPresentedChange(change)
+          .presented([true, change])
           .placeholder('Search')
           .emptyLabel('Nothing')
           .testID('palette'),
@@ -89,8 +88,7 @@ const settings: ParityCase[] = [
             L.SettingsItem('Sign out', RiLogoutBoxRLine).onPress(noop),
           ),
         )
-          .presented(true)
-          .onPresentedChange(change)
+          .presented([true, change])
           .selection('profile')
           .onSelect(noop)
           .initialView('page')
@@ -132,7 +130,7 @@ const settings: ParityCase[] = [
               .fullBleed(),
           ).id('general'),
         )
-          .presented(true)
+          .presented([true, change])
           .presentation('floating'),
       ),
     bloom: () => (

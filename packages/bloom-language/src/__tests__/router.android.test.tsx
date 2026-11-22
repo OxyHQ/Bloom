@@ -162,8 +162,7 @@ describe('AppLayout on Android', () => {
           Panel('details', Text('details'))
             .panelRole('inspector')
             .label('Details')
-            .presented(true)
-            .onPresentedChange(open)
+            .presented([true, open])
             .width('320')
             .minWidth('280')
             .resizable(),

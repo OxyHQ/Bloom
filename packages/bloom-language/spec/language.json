@@ -1108,7 +1108,6 @@
     "width": ["space"],
     "pinning": ["footerPinning"],
     "ignoresSafeArea": ["value?"],
-    "onPresentedChange": ["value"],
     "query": ["value", "value"],
     "filter": ["value"],
     "keywords": ["children"],
@@ -2012,15 +2011,7 @@
     "command": {
       "constructors": ["Command"],
       "universal": false,
-      "modifiers": [
-        "presented",
-        "onPresentedChange",
-        "placeholder",
-        "emptyLabel",
-        "query",
-        "filter",
-        "testID"
-      ]
+      "modifiers": ["presented", "placeholder", "emptyLabel", "query", "filter", "testID"]
     },
     "commandItem": {
       "constructors": ["CommandItem"],
@@ -2035,15 +2026,7 @@
     "settings": {
       "constructors": ["SettingsModal"],
       "universal": false,
-      "modifiers": [
-        "presented",
-        "onPresentedChange",
-        "selection",
-        "onSelect",
-        "initialView",
-        "presentation",
-        "testID"
-      ]
+      "modifiers": ["presented", "selection", "onSelect", "initialView", "presentation", "testID"]
     },
     "settingsGroup": {
       "constructors": ["SettingsGroup"],
@@ -2068,7 +2051,6 @@
         "hidden",
         "keepMounted",
         "presented",
-        "onPresentedChange",
         "testID"
       ]
     },

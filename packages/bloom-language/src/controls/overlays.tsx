@@ -296,7 +296,7 @@ function drawDialog(
       onClose: () => setOpen(false),
       header: own.header as DialogHeaderConfig | undefined,
       footer: one(render, footer),
-      frame: own.page,
+      frame: own.page as DialogScreenFrame | undefined,
       width: space(own.frame?.width as SpaceToken | undefined),
       maxWidth: space(own.frame?.maxWidth as SpaceToken | undefined),
       contentPadding: space(own.padding),

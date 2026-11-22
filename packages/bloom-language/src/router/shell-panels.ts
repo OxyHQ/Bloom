@@ -4,6 +4,7 @@
  * navigator) and its destinations, as the plain data `AppShell` and
  * `TabPagerProvider` read. Pure, so the parity suite draws the shell from it.
  */
+import type { Binding } from '../binding';
 import type { ReactNode } from 'react';
 import type { AppShellPanelDefinition, AppShellProps } from '@oxy.so/bloom/app-shell';
 import type { AppDestination } from '@oxy.so/bloom/tab-pager';
@@ -39,8 +40,8 @@ function panelOf(node: Node, navigator: ReactNode): AppShellPanelDefinition {
     resizable: values.resizable as boolean | undefined,
     visible: hidden === undefined ? undefined : !hidden,
     keepMounted: values.keepMounted as boolean | undefined,
-    open: values.presented as boolean | undefined,
-    onOpenChange: values.onPresentedChange as ((open: boolean) => void) | undefined,
+    open: (values.presented as Binding<boolean> | undefined)?.[0],
+    onOpenChange: (values.presented as Binding<boolean> | undefined)?.[1],
     testID: values.testID as string | undefined,
   });
 }

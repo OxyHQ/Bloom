@@ -52,7 +52,13 @@ import {
   type ViewNode,
 } from '../node';
 import { Painted, type Paint } from '../paint';
-import { type ColorName, type ContentDensity, resolveSpace, type SpaceToken } from '../tokens';
+import {
+  type ColorName,
+  type ContentDensity,
+  type KeyboardTaps,
+  resolveSpace,
+  type SpaceToken,
+} from '../tokens';
 import { type ControlDraw, type ControlRenderer, lastOf, nodesOf, slot } from './draw';
 
 /** Containers: cards, rows, grouped sections, chips and notices. */
@@ -117,8 +123,6 @@ export type BoundaryFallback = (context: ErrorBoundaryFallbackContext) => Child;
 export type ChipStyle = (typeof ENUMS.chipStyle)[number];
 /** A grouped-section icon's disc: one of Bloom's accent tones. */
 export type AccentTone = (typeof ENUMS.accentTone)[number];
-/** Whether a tap on a chip reaches it while the software keyboard is open (React Native's `keyboardShouldPersistTaps`). */
-export type KeyboardTaps = (typeof ENUMS.keyboardTaps)[number];
 /** A selection card's mark: a `check` (several chosen) or a `radio` (one). */
 export type SelectionIndicator = (typeof ENUMS.selectionIndicator)[number];
 /** The box modifiers a component with a box but no press of the language's own takes. */

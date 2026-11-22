@@ -624,7 +624,7 @@ fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
 #[test]
 fn the_command_palette_and_the_settings_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented(open).onPresentedChange(set).placeholder('Search').emptyLabel('None').query(q, onQ).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented(open).onPresentedChange(set).selection('p').initialView('page').presentation('floating')];\n",
+        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented([open, set]).placeholder('Search').emptyLabel('None').query(q, onQ).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented([open, set]).selection('p').initialView('page').presentation('floating')];\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let view = chrome("export const S = () => SettingsModal().initialView('list');\n");
@@ -636,7 +636,7 @@ fn the_command_palette_and_the_settings_are_checked_against_the_spec() {
 #[test]
 fn the_app_layout_panels_and_destinations_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const A = (open, set, Icon, again) => AppLayout(Stack()).shellLayout('deck').shellPresentation('floating').panels(Panel('main').panelRole('main'), Panel('details', Text('d')).panelRole('inspector').label('Details').presented(open).onPresentedChange(set).width('320').minWidth('280').maxWidth('448').resizable().hidden().keepMounted()).destinations(Destination('index', '/').label('Home').icon(Icon).activeIcon(Icon).badge(2).bar().page().preload().sidebar(false).sidebarAfter('x')).onReselect(again);\n",
+        "export const A = (open, set, Icon, again) => AppLayout(Stack()).shellLayout('deck').shellPresentation('floating').panels(Panel('main').panelRole('main'), Panel('details', Text('d')).panelRole('inspector').label('Details').presented([open, set]).width('320').minWidth('280').maxWidth('448').resizable().hidden().keepMounted()).destinations(Destination('index', '/').label('Home').icon(Icon).activeIcon(Icon).badge(2).bar().page().preload().sidebar(false).sidebarAfter('x')).onReselect(again);\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let layout = chrome("export const A = () => AppLayout(Stack()).shellLayout('grid');\n");

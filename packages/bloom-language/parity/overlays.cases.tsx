@@ -292,11 +292,15 @@ const popovers: ParityCase[] = [
 const feedback: ParityCase[] = [
   {
     name: 'connection status',
+    // Online, the toasts draw nothing on the web: no toast is up.
+    drawsNothing: ['web'],
     language: () => toElement(O.ConnectionStatus()),
     bloom: () => <ConnectionStatusToasts />,
   },
   {
     name: 'connection status in its own words and timings',
+    // Online, the toasts draw nothing on the web: no toast is up.
+    drawsNothing: ['web'],
     language: () =>
       toElement(
         O.ConnectionStatus()
