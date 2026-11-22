@@ -264,12 +264,11 @@ export const Placements: Story = {
 };
 
 /**
- * A caller's `className` still reaches the panel: every chrome property its
- * utilities name drops the matching inline default — `w-[200px] p-2` here,
- * which is the shape a row-list popover asks for: a narrower panel and a
- * tighter inset than a panel holding prose.
+ * A caller's `style` goes over the panel's chrome — a 200px panel with an 8px
+ * inset here, which is the shape a row-list popover asks for: a narrower panel
+ * and a tighter inset than a panel holding prose.
  */
-export const ClassNameOverride: Story = {
+export const StyleOverride: Story = {
   parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
@@ -282,8 +281,8 @@ export const ClassNameOverride: Story = {
         <PopoverContent
           label="More actions"
           align="start"
-          className="w-[200px] p-2"
-          testID="popover-classname"
+          style={{ width: 200, paddingTop: 8, paddingBottom: 8, paddingLeft: 8, paddingRight: 8 }}
+          testID="popover-style"
         >
           <PanelRow icon={RiSettings3Line} label="Settings" />
           <PanelRow icon={RiLogoutBoxRLine} label="Sign out" />
