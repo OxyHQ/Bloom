@@ -84,7 +84,14 @@ pub fn compile(source: &str, filename: &str) -> Output {
         problems
             .into_iter()
             .map(|problem| {
-                Diagnostic::with_severity(severity, source, filename, problem.span, problem.message, problem.help)
+                Diagnostic::with_severity(
+                    severity,
+                    source,
+                    filename,
+                    problem.span,
+                    problem.message,
+                    problem.help,
+                )
             })
             .collect()
     };

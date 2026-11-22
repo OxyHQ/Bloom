@@ -562,6 +562,7 @@ import type { ViewportView } from '../controls/viewport';
 import type { GlassGroupView } from '../controls/glass-group';
 import type { ConfirmationDialogView } from '../controls/confirmation-dialog';
 import type { ToolbarGroupView, ToolbarSpacerView } from '../controls/toolbar-group';
+import type { ViewThatFitsView } from '../controls/view-that-fits';
 import { resolveCardRadius } from '../tokens';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
@@ -939,6 +940,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ConfirmationDialogView>, Of<'confirmationDialog'>>,
       Same<MethodsOf<ToolbarGroupView>, Of<'toolbarGroup'>>,
       Same<MethodsOf<ToolbarSpacerView>, Of<'toolbarSpacer'>>,
+      Same<MethodsOf<ViewThatFitsView>, Of<'viewThatFits'>>,
       Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
       Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
       Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
@@ -1258,6 +1260,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<EpisodeRowView>, Of<'episodeRow'>>,
       Same<MethodsOf<EpisodeListView>, Of<'episodeList'>>,
     ] = [
+      true,
       true,
       true,
       true,

@@ -2903,7 +2903,10 @@ fn glass_on_glass_is_an_error() {
 fn glass_in_scrolling_content_is_a_warning_unless_it_says_so() {
     let output = glass("export const x = () => ScrollView(HStack(Text('a')).glass());\n");
     assert!(output.diagnostics.is_empty());
-    assert_eq!(messages(&output.warnings), ["glass in scrolling content: glass belongs to the navigation layer"]);
+    assert_eq!(
+        messages(&output.warnings),
+        ["glass in scrolling content: glass belongs to the navigation layer"]
+    );
     assert!(output.warnings[0].rendered.starts_with("warning[bloom]"));
     let opted = glass("export const x = () => ScrollView(HStack(Text('a')).glass().inContent());\n");
     assert!(opted.warnings.is_empty());
@@ -2937,14 +2940,17 @@ fn an_icon_only_control_needs_a_label() {
 
 #[test]
 fn a_glass_value_is_checked_through_its_methods_and_hoists() {
-    let output = glass("export function X() {\n  return HStack(Text('a')).glass(regular.interactive(false).tint('primary', 'subtle'));\n}\n");
+    let output = glass(
+        "export function X() {\n  return HStack(Text('a')).glass(regular.interactive(false).tint('primary', 'subtle'));\n}\n",
+    );
     assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
     assert_eq!(output.hoisted, 1);
     let wrong = glass("export const x = () => HStack().glass(regular.interactive(false).tint('blue'));\n");
     assert_eq!(messages(&wrong.diagnostics), ["Unknown color token 'blue' for .tint()"]);
 }
 
-const ENVIRONMENT_IMPORTS: &str = "import { Button, HStack, Text, VStack, defineEnvironment } from '@oxy.so/bloom-language';
+const ENVIRONMENT_IMPORTS: &str =
+    "import { Button, HStack, Text, VStack, defineEnvironment } from '@oxy.so/bloom-language';
 ";
 
 fn environment(body: &str) -> crate::Output {
@@ -2991,7 +2997,8 @@ fn an_environment_key_is_static() {
     assert_eq!(output.hoisted, 1);
 }
 
-const MODIFIER_IMPORTS: &str = "import { HStack, Text, VStack, defineModifier } from '@oxy.so/bloom-language';
+const MODIFIER_IMPORTS: &str =
+    "import { HStack, Text, VStack, defineModifier } from '@oxy.so/bloom-language';
 ";
 
 fn modifier(body: &str) -> crate::Output {
@@ -3017,10 +3024,15 @@ fn a_chain_that_applies_a_custom_modifier_hoists_like_the_chain_it_stands_for() 
     );
     assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
     assert_eq!(output.hoisted, 1);
-    assert!(output.code.contains("const _bloomStatic0 = VStack(Text(\"Storage\")).modifier(card);"), "{}", output.code);
+    assert!(
+        output.code.contains("const _bloomStatic0 = VStack(Text(\"Storage\")).modifier(card);"),
+        "{}",
+        output.code
+    );
 }
 
-const TOOLBAR_IMPORTS: &str = "import { Button, Header, Icon, Text, ToolbarGroup, ToolbarSpacer } from '@oxy.so/bloom-language';
+const TOOLBAR_IMPORTS: &str =
+    "import { Button, Header, Icon, Text, ToolbarGroup, ToolbarSpacer } from '@oxy.so/bloom-language';
 import { RiShareLine } from '@oxy.so/bloom/icons/RiShareLine';
 ";
 
@@ -3070,4 +3082,21 @@ fn keyframe_tracks_are_static() {
         "const bounce = defineKeyframes({ y: [{ to: '-lg', motion: 'pop' }, { to: 'none', motion: 'select' }], scale: [{ to: 1.2, ms: 120 }, { to: 1, ms: 180 }] });\nexport function X({ n }) {\n  return Text('a').keyframes(bounce, n);\n}\n",
     );
     assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
+}
+
+#[test]
+fn view_that_fits_measures_few_candidates() {
+    let imports = "import { Text, ViewThatFits } from '@oxy.so/bloom-language';\n";
+    let few = compile(
+        &format!("{imports}export const x = () => ViewThatFits('horizontal', Text('a'), Text('b'));\n"),
+        "fits.tsx",
+    );
+    assert!(few.warnings.is_empty());
+    let many = compile(
+        &format!(
+            "{imports}export const x = () => ViewThatFits('horizontal', Text('a'), Text('b'), Text('c'), Text('d'));\n"
+        ),
+        "fits.tsx",
+    );
+    assert_eq!(messages(&many.warnings), ["ViewThatFits measures 4 candidates"]);
 }
