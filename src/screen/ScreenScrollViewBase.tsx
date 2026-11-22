@@ -27,7 +27,6 @@ import Animated, {
   useComposedEventHandler,
 } from 'react-native-reanimated';
 import type { ScrollBarProps } from '../layout/types';
-import { StyledView } from '../styles/styled-primitives';
 import { useScreen } from './context';
 import { useScreenViewport } from './context';
 import { useIntrinsicContentHeight } from './use-intrinsic-content-height';
@@ -87,7 +86,6 @@ export function createScreenScrollView(
     handler,
     restoration,
     contentContainerStyle,
-    contentContainerClassName,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     onLayout,
@@ -145,11 +143,7 @@ export function createScreenScrollView(
         // not its natural content extent. Keep that case explicitly unknown.
         if (publishIntrinsic) {
           const flat = StyleSheet.flatten(contentContainerStyle);
-          publishIntrinsic(
-            contentContainerClassName != null || flat?.flexGrow || flat?.flex || flat?.minHeight
-              ? -1
-              : height,
-          );
+          publishIntrinsic(flat?.flexGrow || flat?.flex || flat?.minHeight ? -1 : height);
         }
         onContentSizeChange?.(width, height);
       },
@@ -160,27 +154,17 @@ export function createScreenScrollView(
         viewport,
         publishIntrinsic,
         contentContainerStyle,
-        contentContainerClassName,
       ],
     );
-    // A class's padding cannot be read back to add the chrome footprint to it, and
-    // an inline padding would override it — so with a class the footprint pads
-    // the scroll content and the class lays out an inner container.
-    const classed = contentContainerClassName != null;
-    const contentStyle = classed ? undefined : StyleSheet.flatten(contentContainerStyle);
-    const insetStyle: StyleProp<ViewStyle> = classed
-      ? {
-          flexGrow: 1,
-          paddingTop: scroll.contentInsets.top,
-          paddingBottom: scroll.contentInsets.bottom,
-        }
-      : [
-          contentContainerStyle,
-          {
-            paddingTop: scroll.contentInsets.top + paddingEdge(contentStyle, 'paddingTop'),
-            paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
-          },
-        ];
+    // The chrome footprint adds to the content's own top and bottom padding.
+    const contentStyle = StyleSheet.flatten(contentContainerStyle);
+    const insetStyle: StyleProp<ViewStyle> = [
+      contentContainerStyle,
+      {
+        paddingTop: scroll.contentInsets.top + paddingEdge(contentStyle, 'paddingTop'),
+        paddingBottom: scroll.contentInsets.bottom + paddingEdge(contentStyle, 'paddingBottom'),
+      },
+    ];
     const ScrollContainer =
       screen.keyboardFollow && getKeyboardComponents
         ? KeyboardFollowScrollView
@@ -218,13 +202,7 @@ export function createScreenScrollView(
         automaticallyAdjustContentInsets={false}
         contentContainerStyle={insetStyle}
       >
-        {classed ? (
-          <StyledView className={contentContainerClassName} style={contentContainerStyle}>
-            {children}
-          </StyledView>
-        ) : (
-          children
-        )}
+        {children}
       </ScrollContainer>
     );
     return Platform.OS === 'web' ? (
@@ -347,7 +325,6 @@ export function createScreenScrollView(
     handler: _handler,
     restoration,
     contentContainerStyle,
-    contentContainerClassName,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     onLayout,
@@ -491,17 +468,12 @@ export function createScreenScrollView(
           restoration?.restorePending ? { opacity: 0 } : null,
         ]}
       >
-        <StyledView
-          ref={contentRef}
-          className={contentContainerClassName}
-          style={contentContainerStyle}
-          onLayout={handleContentLayout}
-        >
+        <View ref={contentRef} style={contentContainerStyle} onLayout={handleContentLayout}>
           {children}
           {tracksEnd ? (
             <View ref={endRef} pointerEvents="none" aria-hidden style={END_SENTINEL_STYLE} />
           ) : null}
-        </StyledView>
+        </View>
       </View>
     );
   }

@@ -94,8 +94,6 @@ export interface ScreenScrollViewProps
     Omit<ScreenScrollOptions, 'scrollToOffset'> {
   /** Observes the existing screen viewport on both platforms; creates no scroll owner. */
   onScroll?: ScrollViewProps['onScroll'];
-  /** Utilities for the content container, resolved by Bloom's own interop. */
-  contentContainerClassName?: string;
   /**
    * Called once each time the end of the content comes within
    * `onEndReachedThreshold` viewports — on native from the scroll view, in a web

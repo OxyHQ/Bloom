@@ -205,7 +205,7 @@ describe('onEndReached in document flow', () => {
     return wrap(
       <Screen scroll="content" documentScroll>
         <ScreenScrollView
-          contentContainerClassName="gap-4 p-4"
+          contentContainerStyle={{ gap: 16, padding: 16 }}
           onEndReached={onEndReached}
           onEndReachedThreshold={threshold}
         >
