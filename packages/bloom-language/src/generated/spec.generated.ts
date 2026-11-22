@@ -1201,6 +1201,20 @@ export const ENUMS = {
     "bar",
     "navigation"
   ],
+  "headerTone": [
+    "default",
+    "onImage"
+  ],
+  "scrimFalloff": [
+    "smooth",
+    "linear"
+  ],
+  "titleReveal": [
+    "auto",
+    "always",
+    "onScroll",
+    "onDock"
+  ],
   "titleDisplay": [
     "large",
     "inline"
@@ -2965,6 +2979,24 @@ export const MODIFIERS = {
   ],
   "backLabel": [
     "value"
+  ],
+  "inPage": [
+    "value?"
+  ],
+  "safeArea": [
+    "value?"
+  ],
+  "tone": [
+    "headerTone"
+  ],
+  "scrimColor": [
+    "color"
+  ],
+  "scrimFalloff": [
+    "scrimFalloff"
+  ],
+  "titleReveal": [
+    "titleReveal"
   ],
   "textStyle": [
     "textStyle"
@@ -6928,7 +6960,15 @@ export const NODE_MODIFIERS = {
     "presentation",
     "testID",
     "headingLevel",
-    "backLabel"
+    "backLabel",
+    "inPage",
+    "safeArea",
+    "titleAlign",
+    "accessory",
+    "tone",
+    "scrimColor",
+    "scrimFalloff",
+    "titleReveal"
   ],
   "bottomBar": [
     "selection",

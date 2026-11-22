@@ -1346,7 +1346,14 @@ its `Stack.Toolbar`: a `Button` whose glyph has an SF Symbol (or a text label)
 is a bar button, a `Menu` of plain or tagged rows opened from one is a bar
 menu, anything else Bloom's own view in the bar. The system back button pops
 the stack (a custom `onBack` is not called; `null` hides it). Outside a native
-stack (a tab page without a stack of its own, a panel), Bloom's PageHeader.
+stack (a tab page without a stack of its own, a panel), or with `.inPage()`,
+Bloom's PageHeader. The PageHeader's own props are modifiers of the same
+name: `.safeArea(on?)`, `.titleAlign('start' | 'center')`, `.accessory(view)`
+(full-width chrome under the title row), `.tone('default' | 'onImage')`,
+`.scrimColor(role)` (the opaque colour the scrim fades from, painted from the
+theme), `.scrimFalloff('smooth' | 'linear')` and `.titleReveal('auto' |
+'always' | 'onScroll' | 'onDock')`. The system bar has none of them: a header
+that needs them on iOS in a native stack is `.inPage()`.
 
 **Toolbar groups.** `ToolbarGroup(...items)` is SwiftUI's `ToolbarItemGroup`:
 items that share one background. `ToolbarSpacer('fixed' | 'flexible')` is
