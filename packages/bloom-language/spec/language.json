@@ -1051,6 +1051,7 @@
     "tracking": ["tracking"],
     "spacing": ["space"],
     "align": ["alignment"],
+    "alignment": ["overlayAlignment"],
     "justify": ["justify"],
     "wrap": ["value?"],
     "axis": ["axis"],
@@ -1713,7 +1714,7 @@
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
     "stack": {
-      "constructors": ["HStack", "VStack", "ZStack"],
+      "constructors": ["HStack", "VStack"],
       "modifiers": [
         "spacing",
         "align",
@@ -1724,6 +1725,10 @@
         "hoverHighlight",
         "listMarker"
       ]
+    },
+    "zstack": {
+      "constructors": ["ZStack"],
+      "modifiers": ["alignment", "disabled", "hoverHighlight"]
     },
     "spacer": {
       "constructors": ["Spacer"],
