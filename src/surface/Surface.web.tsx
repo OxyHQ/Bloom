@@ -15,6 +15,7 @@ import { resolveSurfaceMaterial } from './resolve-surface-material';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { borderRadius } from '../styles/tokens';
 import { StyledView } from '../styles/styled-primitives';
+import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { resolveSurfaceOptics, surfaceContrastEdge, surfaceOpticsVars } from './shared';
@@ -24,14 +25,14 @@ import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
 const CSS = `
-.bloom-surface {
+[data-bloom-surface] {
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
 }
-.bloom-surface { overflow: hidden; }
-.bloom-surface--material { overflow: clip; overflow-clip-margin: 1px; }
-${surfaceMaterialCss('.bloom-surface--material', 'var(--bloom-surface-fill)')}
+[data-bloom-surface] { overflow: hidden; }
+[data-bloom-surface-material] { overflow: clip; overflow-clip-margin: 1px; }
+${surfaceMaterialCss('[data-bloom-surface-material]', 'var(--bloom-surface-fill)')}
 `;
 
 const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
@@ -45,7 +46,6 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
       style,
-      className,
       accessibilityLabel,
       testID,
       ...hostProps
@@ -62,8 +62,6 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       cornerCurve,
     );
     const concentric = useConcentricGeometry({
-      allowClassRadius: radius === undefined,
-      webClasses: Boolean(className) && resolvedStyle?.borderRadius === undefined,
       radius:
         radius === 'concentric'
           ? 'concentric'
@@ -73,12 +71,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       style: resolvedStyle ?? undefined,
     });
     const geometry =
-      radius === 'concentric' || concentric.hasClassRadius
+      radius === 'concentric'
         ? {
             radius: undefined,
             shape: {
               radius: concentric.radii,
-              curve: radius === 'concentric' ? ('round' as const) : cornerCurve,
+              curve: 'round' as const,
             },
             style: concentric.radiusStyle,
           }
@@ -135,9 +133,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         <StyledView
           {...hostProps}
           ref={hostRef}
-          className={['bloom-surface', material.painted ? 'bloom-surface--material' : '', className]
-            .filter(Boolean)
-            .join(' ')}
+          // The surface's own hooks join a caller's (`webDataSet`), as one `dataSet`.
+          {...webDataSet({
+            ...(hostProps as { dataSet?: Record<string, string> }).dataSet,
+            bloomSurface: '',
+            ...(material.painted ? { bloomSurfaceMaterial: '' } : null),
+          })}
           accessibilityLabel={accessibilityLabel}
           testID={testID}
           style={[

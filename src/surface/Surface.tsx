@@ -29,7 +29,6 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
       style,
-      className,
       accessibilityLabel,
       testID,
       ...hostProps
@@ -44,8 +43,6 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       cornerCurve,
     );
     const concentric = useConcentricGeometry({
-      allowClassRadius: radius === undefined,
-      webClasses: Boolean(className) && resolvedStyle?.borderRadius === undefined,
       radius:
         radius === 'concentric'
           ? 'concentric'
@@ -55,12 +52,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       style: resolvedStyle ?? undefined,
     });
     const geometry =
-      radius === 'concentric' || concentric.hasClassRadius
+      radius === 'concentric'
         ? {
             radius: undefined,
             shape: {
               radius: concentric.radii,
-              curve: radius === 'concentric' ? ('round' as const) : cornerCurve,
+              curve: 'round' as const,
             },
             style: concentric.radiusStyle,
           }
@@ -77,7 +74,6 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       <StyledView
         {...hostProps}
         ref={ref}
-        className={className}
         accessibilityLabel={accessibilityLabel}
         testID={testID}
         style={[
@@ -120,14 +116,5 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
   },
 );
 
-// Only these two props participate in the interop map; traversing ViewProps'
-// event/ref graph exceeds styled()'s dot-path union (TS2590). Runtime forwarding
-// still belongs to the original component, including its host ref.
-const NativeSurface = styled(
-  SurfaceComponent as React.ComponentType<Pick<SurfaceProps, 'className' | 'style'>>,
-  { className: 'style' },
-) as typeof SurfaceComponent;
-export const Surface: MemoRefComponent<SurfaceProps> = memo(
-  Platform.OS === 'web' ? SurfaceComponent : NativeSurface,
-);
+export const Surface: MemoRefComponent<SurfaceProps> = memo(SurfaceComponent);
 Surface.displayName = 'Surface';

@@ -228,7 +228,7 @@ describe('the channels are LABELLED actions, not glyphs', () => {
     expect(control.tagName).toBe('BUTTON');
     const style = getComputedStyle(control);
     // The shared Button keeps paint on its material layer, not its layout host.
-    const material = control.querySelector<HTMLElement>('.bloom-surface-paint');
+    const material = control.querySelector<HTMLElement>('[data-bloom-surface-paint]');
     const fill =
       control.style.getPropertyValue('--bloom-btn-bg') ||
       material?.style.getPropertyValue('--bloom-surface-paint-fill');
@@ -426,7 +426,7 @@ describe('one component, two densities', () => {
     expect(queryTestId('c-chips')).not.toBeNull();
     expect(queryTestId('c-owner')).not.toBeNull();
     expect(queryTestId('c-footer')).not.toBeNull();
-    const material = byTestId('c').querySelector<HTMLElement>('.bloom-surface-paint');
+    const material = byTestId('c').querySelector<HTMLElement>('[data-bloom-surface-paint]');
     expect(material).not.toBeNull();
     expect(material!.style.getPropertyValue('--bloom-surface-paint-fill')).toBe(
       resolveSurfaceTint(theme.colors.card),
@@ -482,7 +482,7 @@ it('shares the nested custom backing with its material, published fill and stat 
   );
   const expected = 'rgb(128, 0, 128)';
   const card = byTestId('nested');
-  const material = card.querySelector<HTMLElement>('.bloom-surface-paint');
+  const material = card.querySelector<HTMLElement>('[data-bloom-surface-paint]');
   expect(material?.style.getPropertyValue('--bloom-surface-paint-fill')).toBe('rgba(255,0,0,.5)');
   expect(card.style.getPropertyValue('--bloom-surface')).toBe(expected);
   const paint = resolveContactPaint(theme, expected);

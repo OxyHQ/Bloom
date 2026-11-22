@@ -141,7 +141,7 @@ describe('BookingCard', () => {
     expect(s.paddingTop).toBe('24px');
     expect(s.paddingLeft).toBe('24px');
     expect(s.borderTopWidth).toBe('0px');
-    expect(byTestId('card').querySelector('.bloom-surface-paint')).not.toBeNull();
+    expect(byTestId('card').querySelector('[data-bloom-surface-paint]')).not.toBeNull();
   });
 
   it('without dates: placeholders, "Check availability", no note', () => {

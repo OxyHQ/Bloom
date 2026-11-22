@@ -33,8 +33,8 @@ import { useTheme } from '../theme/use-theme';
 const useCompositeBacking = Platform.OS === 'web' ? useSurfaceFill : () => 'transparent';
 
 const WEB_PAINT_CSS = `
-.bloom-surface-paint { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
-${surfaceMaterialCss('.bloom-surface-paint', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, background-color 0s)')}
+[data-bloom-surface-paint] { isolation: isolate; overflow: clip; overflow-clip-margin: 1px; }
+${surfaceMaterialCss('[data-bloom-surface-paint]', 'var(--bloom-surface-paint-fill)', 'var(--bloom-surface-paint-transition, background-color 0s)')}
 `;
 
 /**
@@ -184,9 +184,9 @@ export const SurfacePaint = memo(function SurfacePaint({
           // the layer mark lets the baked material find its host.
           {...webDataSet({
             bloomPaintLayer: '',
+            bloomSurfacePaint: '',
             ...(fill === undefined ? null : { bloomSurfaceFill: fill }),
           })}
-          className="bloom-surface-paint"
           style={[paintStyle, pointerEventsStyle('none')]}
         />
       </>

@@ -141,8 +141,6 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
     const appearance = appearanceProp ?? 'solid';
     const borderRole = border ?? VARIANT_DEFAULTS[appearance].border;
     const concentric = useConcentricGeometry({
-      allowClassRadius: radius === undefined,
-      webClasses: Boolean(classes || className) && callerStyle?.borderRadius === undefined,
       radius:
         radius === 'concentric'
           ? 'concentric'
@@ -155,7 +153,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
       },
     });
     const resolvedGeometry =
-      radius === 'concentric' || concentric.hasClassRadius
+      radius === 'concentric'
         ? {
             radius: undefined,
             shape: {
@@ -285,9 +283,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
             >
               {clipContent ? (
                 <ConcentricView
-                  radius={
-                    radius === 'concentric' || concentric.hasClassRadius ? 'concentric' : undefined
-                  }
+                  radius={radius === 'concentric' ? 'concentric' : undefined}
                   testID={testID ? `${testID}-clip` : undefined}
                   style={[
                     contentStyle,

@@ -61,12 +61,12 @@ describe('what is behind a host', () => {
   };
   const host = (parent: HTMLElement) => {
     const el = document.createElement('div');
-    el.className = 'bloom-surface--material';
+    el.setAttribute('data-bloom-surface-material', '');
     parent.append(el);
     return el;
   };
   // The selector registry only knows hosts whose CSS was built.
-  surfaceMaterialCss('.bloom-surface--material', 'var(--bloom-surface-fill)');
+  surfaceMaterialCss('[data-bloom-surface-material]', 'var(--bloom-surface-fill)');
 
   it('bakes on the first opaque, flat background up the tree', () => {
     const root = page();
@@ -111,7 +111,7 @@ describe('what is behind a host', () => {
     root.append(card);
     const layer = document.createElement('div');
     layer.setAttribute(PAINT_LAYER_ATTRIBUTE, '');
-    layer.className = 'bloom-surface-paint';
+    layer.setAttribute('data-bloom-surface-paint', '');
     layer.style.position = 'absolute';
     card.append(layer);
     // The layer is absolute by construction: its host is what sits in the page.
