@@ -559,9 +559,9 @@ fn loops_delays_and_anchors_are_tokens() {
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
     let output = motion("export const x = () => Text('t').delay('slow').repeatForever('pulse');\n");
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
-    // A delay is one of Bloom's durations: no app writes Tailwind's others (delay-75 … delay-1000).
-    let output = motion("export const x = () => Text('t').delay('1000');\n");
-    assert_eq!(output.diagnostics[0].message, "Unknown duration token '1000' for .delay()");
+    // A delay is one of Bloom's durations: no app writes Tailwind's others (delay-75, delay-700…).
+    let output = motion("export const x = () => Text('t').delay('700');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown duration token '700' for .delay()");
     let output = motion("export const x = () => Text('t').repeatForever('spinn');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown loop token 'spinn' for .repeatForever()");
     assert!(output.diagnostics[0].help.as_deref().unwrap().starts_with("did you mean 'spin'?"));
@@ -1053,7 +1053,7 @@ fn tooltips_breadcrumbs_and_heatmaps_are_checked() {
     let imports = "import { Tooltip, Breadcrumb, BreadcrumbItem, ActivityHeatmap, Text, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (open, icon, data, f, menu) => VStack(Tooltip(Text('i'), 'About').presented(open).side('top').openDelay(0).size('md'), Breadcrumb(BreadcrumbItem('Home').link('/').icon(icon).prefix(Text('a')).active(true).disabled().hoverMenu(menu).size('sm')).size('sm').collapses().separatorView(Text('/')).labels({}), ActivityHeatmap(data).days(56).endDate('2026-11-21').levels([1]).emptyTint('mutedFill').cellSize('10').spacing('2xs').weekStart(1).labels({}).onPressDay(f));\n",
+        "export const x = (open, icon, data, f, menu) => VStack(Tooltip(Text('i'), 'About').presented(open).side('top').openDelay('0').size('md'), Breadcrumb(BreadcrumbItem('Home').link('/').icon(icon).prefix(Text('a')).active(true).disabled().hoverMenu(menu).size('sm')).size('sm').collapses().separatorView(Text('/')).labels({}), ActivityHeatmap(data).days(56).endDate('2026-11-21').levels([1]).emptyTint('mutedFill').cellSize('10').spacing('2xs').weekStart(1).labels({}).onPressDay(f));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -1292,7 +1292,7 @@ fn hover_cards_are_checked() {
     let imports = "import { HoverCard, Text } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (open) => HoverCard(Text('@nate'), Text('Card')).presented(open).openDelay(0).closeDelay(300).side('top').align('end').padded(false).disabled().label('Nate').padding('xs');\n",
+        "export const x = (open) => HoverCard(Text('@nate'), Text('Card')).presented(open).openDelay('0').closeDelay('slow').side('top').align('end').padded(false).disabled().label('Nate').padding('xs');\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -1302,6 +1302,58 @@ fn hover_cards_are_checked() {
     for (chain, message) in cases {
         let output = check(&format!("export const x = (t) => {chain};\n"));
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
+
+#[test]
+fn a_components_waits_are_duration_tokens() {
+    let imports = "import { ConnectionStatus, HoverCard, Notification, Text, Tooltip } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = [HoverCard(Text('a'), Text('b')).openDelay('400').closeDelay('fast'), Tooltip(Text('i'), 'About').openDelay('1000'), Notification('a').autoDismiss('4000').introDelay('0'), ConnectionStatus().reconnectingDelay('3000').restoredDuration('2500')];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        (
+            "HoverCard(Text('a'), Text('b')).openDelay('later')",
+            "Unknown duration token 'later' for .openDelay()",
+            None,
+        ),
+        (
+            "HoverCard(Text('a'), Text('b')).closeDelay('fats')",
+            "Unknown duration token 'fats' for .closeDelay()",
+            Some("fast"),
+        ),
+        (
+            "Tooltip(Text('i'), 'a').openDelay('1200')",
+            "Unknown duration token '1200' for .openDelay()",
+            Some("1000"),
+        ),
+        (
+            "Notification('a').autoDismiss('40000')",
+            "Unknown duration token '40000' for .autoDismiss()",
+            Some("4000"),
+        ),
+        ("Notification('a').introDelay('0.2')", "Unknown duration token '0.2' for .introDelay()", Some("0")),
+        (
+            "ConnectionStatus().reconnectingDelay('slower')",
+            "Unknown duration token 'slower' for .reconnectingDelay()",
+            Some("slow"),
+        ),
+        (
+            "ConnectionStatus().restoredDuration('25000')",
+            "Unknown duration token '25000' for .restoredDuration()",
+            Some("2500"),
+        ),
+    ];
+    for (chain, message, suggestion) in cases {
+        let output = check(&format!("export const x = {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+        let help = output.diagnostics[0].help.as_deref().unwrap();
+        match suggestion {
+            Some(token) => assert!(help.starts_with(&format!("did you mean '{token}'?")), "{help}"),
+            None => assert!(help.starts_with("duration tokens: 0, 400,"), "{help}"),
+        }
     }
 }
 
@@ -1469,7 +1521,7 @@ fn notifications_are_checked() {
     let imports = "import { Notification } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (f, icon, who) => Notification('Saved').description('3 files').timestamp('2m').status('success').icon(icon).avatar(who).buttons([]).dismissible(false).onDismiss(f).autoDismiss(4000).introDelay(0.2).liveRole('alert').labels({});\n",
+        "export const x = (f, icon, who) => Notification('Saved').description('3 files').timestamp('2m').status('success').icon(icon).avatar(who).buttons([]).dismissible(false).onDismiss(f).autoDismiss('4000').introDelay('normal').liveRole('alert').labels({});\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [

@@ -86,7 +86,7 @@ export const NOTIFICATION_CASES: readonly ParityCase[] = [
 export const NOTIFICATION_CASES_TIMED: readonly ParityCase[] = [
   {
     name: 'a notification that dismisses itself, after its entrance',
-    language: () => toElement(L.Notification('Copied').autoDismiss(4000).introDelay(0.2)),
+    language: () => toElement(L.Notification('Copied').autoDismiss('4000').introDelay('normal')),
     bloom: () => <Notification title="Copied" autoDismissDuration={4000} introDelay={0.2} />,
   },
 ];

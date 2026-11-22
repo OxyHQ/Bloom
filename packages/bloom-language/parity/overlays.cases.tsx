@@ -307,8 +307,8 @@ const feedback: ParityCase[] = [
           .offlineMessage('No network')
           .reconnectingMessage('Trying again')
           .restoredMessage('Back online')
-          .reconnectingDelay(1000)
-          .restoredDuration(4000),
+          .reconnectingDelay('1000')
+          .restoredDuration('4000'),
       ),
     bloom: () => (
       <ConnectionStatusToasts

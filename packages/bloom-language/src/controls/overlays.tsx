@@ -22,7 +22,13 @@ import {
   type ViewModifiers,
   type ViewNode,
 } from '../node';
-import { type PaddingToken, resolveSpace, type SpaceToken } from '../tokens';
+import {
+  type DurationName,
+  type PaddingToken,
+  resolveDuration,
+  resolveSpace,
+  type SpaceToken,
+} from '../tokens';
 import { lastOf } from './draw';
 import type { ControlRenderer } from './draw';
 import { type Cover, drawCover } from './zoomable-media-gallery';
@@ -147,10 +153,10 @@ export interface ConnectionStatusView extends ViewNode {
   offlineMessage(value: string): ConnectionStatusView;
   reconnectingMessage(value: string): ConnectionStatusView;
   restoredMessage(value: string): ConnectionStatusView;
-  /** How long an outage lasts before the reconnecting toast shows, in milliseconds. */
-  reconnectingDelay(ms: number): ConnectionStatusView;
-  /** How long the restored toast stays, in milliseconds. */
-  restoredDuration(ms: number): ConnectionStatusView;
+  /** How long an outage lasts before the reconnecting toast shows: a duration token (`'3000'` by default). */
+  reconnectingDelay(value: DurationName): ConnectionStatusView;
+  /** How long the restored toast stays: a duration token (`'2500'` by default). */
+  restoredDuration(value: DurationName): ConnectionStatusView;
 }
 
 const NO_CHILDREN: readonly Child[] = [];
@@ -196,8 +202,8 @@ export const OVERLAYS: Partial<Record<OverlayKind, ControlRenderer>> = {
       offlineMessage: d.own('offlineMessage')?.value,
       reconnectingMessage: d.own('reconnectingMessage')?.value,
       restoredMessage: d.own('restoredMessage')?.value,
-      reconnectingDelayMs: d.own('reconnectingDelay')?.value,
-      restoredDurationMs: d.own('restoredDuration')?.value,
+      reconnectingDelayMs: resolveDuration(d.own('reconnectingDelay')?.value),
+      restoredDurationMs: resolveDuration(d.own('restoredDuration')?.value),
     }),
 };
 

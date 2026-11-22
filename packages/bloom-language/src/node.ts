@@ -744,8 +744,8 @@ export interface ValueModifiers {
   offlineMessage: string;
   reconnectingMessage: string;
   restoredMessage: string;
-  reconnectingDelay: number;
-  restoredDuration: number;
+  reconnectingDelay: DurationName;
+  restoredDuration: DurationName;
   dismissOnBackdrop: boolean;
   side: { readonly side: FloatingSide; readonly align: FloatingAlign | undefined };
 
@@ -905,7 +905,7 @@ export interface ValueModifiers {
   onRemove: (() => void) | ((id: string) => void);
 
   // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
-  openDelay: number;
+  openDelay: DurationName;
   collapses: true;
   separatorView: Child;
   hoverMenu: BreadcrumbHoverMenu;
@@ -990,8 +990,8 @@ export interface ValueModifiers {
   status: NotificationStatus;
   avatar: NotificationAvatar;
   onDismiss: () => void;
-  autoDismiss: number;
-  introDelay: number;
+  autoDismiss: DurationName;
+  introDelay: DurationName;
   liveRole: LiveRole;
 
   // Link previews (controls/link-preview.tsx)
@@ -1034,7 +1034,7 @@ export interface ValueModifiers {
   presentedAt: Binding<ContextMenuAnchor | null>;
 
   // Hover cards (controls/hover-card.tsx)
-  closeDelay: number;
+  closeDelay: DurationName;
   padded: boolean;
 
   // Menubars (controls/menubar.tsx)
@@ -3063,11 +3063,11 @@ export class Node {
   restoredMessage(value: string): Node {
     return this.set('restoredMessage', value);
   }
-  reconnectingDelay(ms: number): Node {
-    return this.set('reconnectingDelay', ms);
+  reconnectingDelay(value: DurationName): Node {
+    return this.set('reconnectingDelay', value);
   }
-  restoredDuration(ms: number): Node {
-    return this.set('restoredDuration', ms);
+  restoredDuration(value: DurationName): Node {
+    return this.set('restoredDuration', value);
   }
   dismissOnBackdrop(value: boolean): Node {
     return this.set('dismissOnBackdrop', value);
@@ -3483,7 +3483,7 @@ export class Node {
   }
 
   // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
-  openDelay(value: number): Node {
+  openDelay(value: DurationName): Node {
     return this.set('openDelay', value);
   }
   collapses(): Node {
@@ -3686,10 +3686,10 @@ export class Node {
   onDismiss(value: () => void): Node {
     return this.set('onDismiss', value);
   }
-  autoDismiss(value: number): Node {
+  autoDismiss(value: DurationName): Node {
     return this.set('autoDismiss', value);
   }
-  introDelay(value: number): Node {
+  introDelay(value: DurationName): Node {
     return this.set('introDelay', value);
   }
   liveRole(value: LiveRole): Node {
@@ -3781,7 +3781,7 @@ export class Node {
   }
 
   // Hover cards (controls/hover-card.tsx)
-  closeDelay(value: number): Node {
+  closeDelay(value: DurationName): Node {
     return this.set('closeDelay', value);
   }
   padded(value: boolean): Node {
