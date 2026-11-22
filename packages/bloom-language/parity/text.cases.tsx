@@ -42,6 +42,14 @@ import { BaseFontText } from './support/base-font';
 /** Web CSS react-native-web passes through, which React Native's style types do not name. */
 const webCss = (style: Record<string, string>) => style as RN.TextStyle;
 
+/**
+ * A leading or tracking that is a ratio of the size, as an app's class draws
+ * it: on native NativeWind's compiler writes it rounded to two decimals
+ * (`leading-[1.375]` at 15px is 20.63), the browser computes the exact product.
+ */
+const ofSize = (size: number, ratio: number) =>
+  RN.Platform.OS === 'web' ? size * ratio : Math.round(size * ratio * 100) / 100;
+
 const paint = (role: ColorName) => COLORS[role].paint;
 
 /** Every step of Bloom's type ramp, as `.font(family).weight(weight)`. */
@@ -74,7 +82,7 @@ const sizes: ParityCase[] = (Object.keys(FONT_SIZE) as FontSizeName[]).flatMap((
         style={{
           fontSize: FONT_SIZE[size],
           fontWeight: '700',
-          lineHeight: FONT_SIZE[size] * LEADING.relaxed,
+          lineHeight: ofSize(FONT_SIZE[size], LEADING.relaxed),
         }}
       >
         Size
@@ -387,7 +395,9 @@ const named: ParityCase[] = [
   ...(['close', 'easy'] as const).map((leading) => ({
     name: `size md, leading ${leading}`,
     language: () => L.Text('Lines').font('md').leading(leading),
-    bloom: () => <Text style={{ fontSize: 15, lineHeight: 15 * LEADING[leading] }}>Lines</Text>,
+    bloom: () => (
+      <Text style={{ fontSize: 15, lineHeight: ofSize(15, LEADING[leading]) }}>Lines</Text>
+    ),
   })),
   // Tailwind's `text-base` (16/24), `text-lg` (18/28) and `text-[11px]`, as apps set them.
   {
@@ -454,7 +464,7 @@ const tracked: ParityCase[] = [
     name: `size md, tracking ${tracking}`,
     language: () => toElement(L.Text('Track').font('md').tracking(tracking)),
     bloom: () => (
-      <Text style={{ fontSize: 15, letterSpacing: 15 * TRACKING[tracking] }}>Track</Text>
+      <Text style={{ fontSize: 15, letterSpacing: ofSize(15, TRACKING[tracking]) }}>Track</Text>
     ),
   })),
   ...(Object.keys(TRACKING_PX) as (keyof typeof TRACKING_PX)[]).map((tracking) => ({
@@ -471,7 +481,7 @@ const tracked: ParityCase[] = [
     name: 'caption-1, tracking wider (uppercase labels)',
     language: () => toElement(L.Text('Label').font('caption-1').tracking('wider')),
     bloom: () => (
-      <Text variant="caption-1-regular" style={{ letterSpacing: 12 * 0.05 }}>
+      <Text variant="caption-1-regular" style={{ letterSpacing: ofSize(12, 0.05) }}>
         Label
       </Text>
     ),
@@ -481,7 +491,12 @@ const tracked: ParityCase[] = [
     name: 'no font, leading relaxed and tracking wide',
     language: () => toElement(L.Text('Default').leading('relaxed').tracking('wide')),
     bloom: () => (
-      <Text style={{ lineHeight: 13 * LEADING.relaxed, letterSpacing: 13 * TRACKING.wide }}>
+      <Text
+        style={{
+          lineHeight: ofSize(13, LEADING.relaxed),
+          letterSpacing: ofSize(13, TRACKING.wide),
+        }}
+      >
         Default
       </Text>
     ),
@@ -491,7 +506,7 @@ const tracked: ParityCase[] = [
     language: () => toElement(L.VStack(L.Text('Default')).leading('close')),
     bloom: () => (
       <RN.View>
-        <Text style={{ lineHeight: 13 * LEADING.close }}>Default</Text>
+        <Text style={{ lineHeight: ofSize(13, LEADING.close) }}>Default</Text>
       </RN.View>
     ),
   },
