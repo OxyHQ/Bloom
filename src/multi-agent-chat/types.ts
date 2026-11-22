@@ -47,7 +47,6 @@ export interface MultiAgentChatProps {
   team?: SidebarTeam;
   voices?: readonly AgentVoice[];
   onPreviewVoice?: (text: string, preferences: AgentPreferences) => void;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
