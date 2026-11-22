@@ -609,8 +609,9 @@ const more: ParityCase[] = [
 const presentedDialogs: ParityCase[] = [
   ...([false, true] as const).map((open) => ({
     name: `presented dialog ${open ? 'open' : 'closed'}`,
-    // Closed, Bloom's Dialog draws nothing on the web: the claim is that the node draws nothing too.
-    ...(open ? {} : { drawsNothing: ['web'] as const }),
+    // Open, it portals to the page: in Chrome each side is drawn alone. Closed,
+    // Bloom's Dialog draws nothing on the web: the claim is that the node draws nothing too.
+    ...(open ? { isolated: true } : { drawsNothing: ['web'] as const }),
     language: () =>
       toElement(O.Dialog(L.Text('Body')).title('Edit profile').presented([open, setOpen])),
     bloom: () => (
@@ -621,6 +622,7 @@ const presentedDialogs: ParityCase[] = [
   })),
   {
     name: 'presented dialog with its width, padding, placement and actions: none a box',
+    isolated: true,
     language: () =>
       toElement(
         O.Dialog(L.Text('Body'))
