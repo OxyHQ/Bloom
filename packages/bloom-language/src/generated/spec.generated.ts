@@ -1094,6 +1094,10 @@ export const ENUMS = {
     "top",
     "bottom"
   ],
+  "toolbarSpacer": [
+    "fixed",
+    "flexible"
+  ],
   "contentFit": [
     "cover",
     "contain",
@@ -18932,6 +18936,8 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "blend"
   ],
+  "toolbarGroup": [],
+  "toolbarSpacer": [],
   "confirmationDialog": [
     "message",
     "titleVisibility",
@@ -50013,6 +50019,8 @@ export const CONSTRUCTORS = {
   "SortableChip": "sortableChip",
   "Viewport": "viewport",
   "GlassGroup": "glassGroup",
+  "ToolbarGroup": "toolbarGroup",
+  "ToolbarSpacer": "toolbarSpacer",
   "ConfirmationDialog": "confirmationDialog",
   "AgentAvatar": "agentAvatar",
   "ChatComposer": "chatComposer",
