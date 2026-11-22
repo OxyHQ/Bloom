@@ -27,7 +27,10 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `contentStyle`: a static content container style of paddings and a gap, as
  *   `.contentMargins(edge, token)` and `.spacing(token)`;
  * - `embed`: an element, or a `const` holding one, drawn as it is (`Embed`), never converted;
- * - `items`: an array of data (any expression without JSX), carried as it is.
+ * - `items`: an array of data (any expression without JSX), carried as it is;
+ * - `element`: a JSX element or fragment only, as a view (a name may be a component);
+ * - `row`: FlashList's `renderItem` as an arrow of `{ item, index }` returning an
+ *   element, the node's row `(item, index) => view`.
  */
 export type Form =
   | 'string'
@@ -43,7 +46,9 @@ export type Form =
   | 'refresh'
   | 'contentStyle'
   | 'embed'
-  | 'items';
+  | 'items'
+  | 'element'
+  | 'row';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -731,6 +736,26 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       loading: p('loading', 'flag'),
       loadingCount: p('loadingRows', 'number'),
       accessibilityLabel: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/list.cases.tsx, VirtualList: its data and the row each item draws.
+  '@oxy.so/bloom/list#VirtualList': {
+    node: 'VirtualList',
+    params: [
+      { prop: 'data', form: 'items' },
+      { prop: 'renderItem', form: 'row' },
+    ],
+    props: {
+      keyExtractor: p('itemKey', 'handler'),
+      getItemType: p('itemType', 'handler'),
+      estimatedItemSize: p('estimatedItemSize', 'number'),
+      numColumns: p('columns', 'number'),
+      onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
+      restorationKey: p('restorationKey', 'string'),
+      ListHeaderComponent: p('headerContent', 'element'),
+      ListFooterComponent: p('footerContent', 'element'),
+      ListEmptyComponent: p('emptyState', 'element'),
       testID: p('testID', 'string'),
     },
   },
