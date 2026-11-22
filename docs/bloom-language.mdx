@@ -1416,6 +1416,38 @@ Bloom's `vendor-card`: `VendorCard(name, options?)`.
 - A menu row and a vendor card take `.onPress()` themselves. A vendor card's
   promo tone keeps Bloom's name (`promoTone`) in its options.
 
+### Media cards
+
+```ts
+AlbumCard(album.title, { artist, year, artwork, onPlay: play, menuItems }).size('small').onPress(open)
+SongCard(track.title, { artists, duration, liked, onLikedChange }).style('row').loading(buffering)
+MediaCard(item.title, { subtitle: Text(item.by), footer: Text(item.left), artworkSize: '96' }).style('row')
+```
+
+Bloom's `media-card`, every card a music or audio app shows, each taking
+its title (an artist's or a profile's name, a recap's value) first and
+Bloom's data as options: `MediaCard`, `SongCard`, `AlbumCard`, `ArtistCard`,
+`PlaylistCard`, `MixCard`, `PodcastCard`, `EpisodeCard`, `AudiobookCard`,
+`EventCard` and `ProfileCard` take `.size('large' | 'medium' | 'small')`,
+`.style('tile' | 'row')` and `.loading()`; `GenreCard` takes `.size()`,
+`QuickAccessTile` `.loading()`; `FriendActivityCard`, `RecapCard` and
+`ShareCard` none of their own.
+
+- A card opens its item itself: `.onPress()` is its own, and `.label()`
+  replaces its composed name. `RecapCard` and `ShareCard` take no press.
+- A card's `menu`, an episode's `actions`, an event's and a profile's
+  `action`, a share card's `footer` and a media card's slots
+  (`artworkOverlay`, `titleAccessory`, `titleLeading`, `trailing`,
+  `footer`) are language children; a media card's `subtitle` is text or a
+  child, and its `renderArtwork` a function of the cover's box that returns
+  one. Its `artworkSize` is a space token and its `artworkRadius` a corner
+  rung.
+- The playing state (`playing`, `current`, `selected`, `skeleton`, the play
+  button's `playButton`) and the artwork's colour from the backend stay
+  Bloom's data in the options.
+- A friend listening live draws bars that move on the JS thread: compared by
+  Jest as it mounts, not in Chrome.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

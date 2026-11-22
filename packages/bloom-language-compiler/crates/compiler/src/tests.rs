@@ -867,3 +867,23 @@ fn the_cart_menu_items_and_vendor_card_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_media_cards_are_checked() {
+    let imports = "import { AlbumCard, GenreCard, MediaCard, QuickAccessTile, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (o) => VStack(MediaCard('a', o).size('small').style('row').loading(), AlbumCard('a').size('large').style('tile'), GenreCard('a').size('medium'), QuickAccessTile('a').loading());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("MediaCard('a').size('xl')", "Unknown mediaCardSize token 'xl' for .size()"),
+        ("AlbumCard('a').style('grid')", "Unknown mediaCardLayout token 'grid' for .style()"),
+        ("GenreCard('a').style('row')", "GenreCard has no modifier .style()"),
+        ("QuickAccessTile('a').size('small')", "QuickAccessTile has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

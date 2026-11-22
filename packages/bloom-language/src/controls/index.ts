@@ -3,6 +3,7 @@ import { DASHBOARD_CARDS } from './dashboard-cards';
 import { CRM } from './crm';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
+import { MEDIA_CARDS } from './media-cards';
 import { PAYMENT_METHODS } from './payment-method';
 import { ADDRESSES } from './address';
 import { VENDOR_CARDS } from './vendor-card';
@@ -64,4 +65,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CARTS,
   ...MENU_ITEMS,
   ...VENDOR_CARDS,
+  ...MEDIA_CARDS,
 };
