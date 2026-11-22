@@ -248,6 +248,11 @@ import type {
   PipelineBoardView,
 } from '../controls/crm';
 import type {
+  ImportantAlertsCardView,
+  PatientInfoCardView,
+  RecentHiresCardView,
+} from '../controls/dashboard-cards';
+import type {
   FilterSectionView,
   PriceRangeFilterView,
   CountFilterView,
@@ -1024,7 +1029,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<DealCardView>, Of<'dealCard'>>,
       Same<MethodsOf<PipelineColumnView>, Of<'pipelineColumn'>>,
       Same<MethodsOf<PipelineBoardView>, Of<'pipelineBoard'>>,
+      Same<MethodsOf<ImportantAlertsCardView>, Of<'importantAlertsCard'>>,
+      Same<MethodsOf<PatientInfoCardView>, Of<'patientInfoCard'>>,
+      Same<MethodsOf<RecentHiresCardView>, Of<'recentHiresCard'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

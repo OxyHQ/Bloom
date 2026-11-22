@@ -219,3 +219,6 @@ export const LeadScoreCard = 'LeadScoreCard';
 export const DealCard = 'DealCard';
 export const PipelineColumn = 'PipelineColumn';
 export const PipelineBoard = 'PipelineBoard';
+export const ImportantAlertsCard = 'ImportantAlertsCard';
+export const PatientInfoCard = 'PatientInfoCard';
+export const RecentHiresCard = 'RecentHiresCard';

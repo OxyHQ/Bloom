@@ -147,6 +147,7 @@ import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
 import type { ChatKind } from './controls/chat';
 import type { CrmKind } from './controls/crm';
+import type { DashboardCardKind } from './controls/dashboard-cards';
 import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
 import type { StatCardKind } from './controls/stat-cards';
@@ -1623,7 +1624,8 @@ export type NodeKind =
   | PaymentMethodsKind
   | PriceBreakdownKind
   | PaymentStatusKind
-  | CrmKind;
+  | CrmKind
+  | DashboardCardKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
