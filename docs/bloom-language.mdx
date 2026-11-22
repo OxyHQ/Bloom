@@ -685,18 +685,19 @@ HStack(Icon(RiRepeat2Line), Text('Reposted')).foreground('muted')
 
 Bloom's material is the glass: the platform's own (the lens, Liquid Glass) or
 Bloom's `Surface` and its blur where the platform has none (see
-[Glass](#glass)). The rest of the material family are modifiers on any view
-and three nodes.
+[Glass](#glass)). Glass is for the navigation layer (bars, toolbars, floating
+controls), never for content such as this card (see
+[Liquid Glass rules](#liquid-glass-rules)). The rest of the material family
+are modifiers on any view and three nodes.
 
 ```ts
-VStack(
+Card(
   Text('Storage').font('headline'),
   Divider(),
   Grid(...usage.map((item) => UsageCard({ item }))).columns(3).spacing('md'),
   VStack(AspectRatio(16 / 9, Image(cover))).corner('concentric'),
 )
   .padding('md')
-  .glass()
   .corner('2xl')
   .cornerCurve('smooth')
 ```
@@ -986,6 +987,94 @@ ink, size and name (Bloom's `material="shared"`); the glass draws its fill.
 An untinted glass under a solid control takes the control's fill (the spec's
 `toneRole`: `accent` is `primary`, `action` is `tertiary`…), so the ink still
 reads. A `FAB` is always on glass.
+
+**Interactive and identity glass.** `regular.interactive(on?)` says whether the
+glass answers touch (SwiftUI's `Glass.interactive`), and `identity` is no glass
+at all (SwiftUI's `Glass.identity`): the chain keeps its shape, so a value can
+turn the glass off (`.glass(editing ? regular : identity)`).
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `interactive()` unsaid | the base springs under a press | interactive under a press or a control | Surface |
+| `interactive(false)` | the engine's jelly off (`jelly: 0`) | `GlassView isInteractive={false}` | Surface (it never reacts) |
+| `interactive(true)` | the base springs | `isInteractive` | Surface; press feedback is `.pressScale()` |
+| `identity` | no lens | no `GlassView` | no Surface |
+
+An unsaid `interactive` keeps each platform's default, so no existing glass
+changes; saying it is what makes the platforms agree.
+
+### Glass groups
+
+`GlassGroup(...)` is SwiftUI's `GlassEffectContainer`: the glasses inside it
+render together. Apple's rule is to put nearby glass in one container, and the
+compiler warns when two glasses sit side by side in a stack outside one (see
+[Liquid Glass rules](#liquid-glass-rules)).
+
+```ts
+const ns = useNamespace();
+GlassGroup(
+  HStack(
+    Button(Icon(PencilIcon)).label('Draw').glass().glassID('pencil', ns),
+    erasing ? Button(Icon(EraserIcon)).label('Erase').glass().glassID('eraser', ns) : null,
+  ).spacing('xl'),
+)
+  .blend('xl')
+  .animation('expand', erasing)
+Badge(count).glass().glassID('badge', ns).glassTransition('materialize')
+```
+
+- **`.blend(space)`** is the container's spacing: glasses closer than it blend
+  into one shape. (A stack's gap stays `.spacing()`; on a composer loader
+  `.blend()` is its blend mode, a token set of its own.)
+- **`.glassID(id, ns)`** is a glass's identity in its group: one that arrives
+  grows out of where the glass with its id was, and one that leaves goes back
+  into it. **`.glassTransition('matchedGeometry' | 'materialize')`** chooses:
+  `matchedGeometry` (the default) is the motion engine's matched geometry with
+  that id, `materialize` the engine's fade where the glass is (a
+  `.transition()` or `.matchedGeometry()` the chain names itself wins).
+- **`.glassUnion(id, ns)`**: the glasses of one group with the same id are one
+  shape (see the table for what each platform draws).
+
+| | Android, OxyOS | iOS (not verified) | Web |
+| --- | --- | --- | --- |
+| `GlassGroup` | one lens base: one lens over the whole group, and a menu from anything in it grows out of the whole group | UIKit's glass container (`expo-glass-effect`'s `GlassContainer spacing={blend}`) around the `GlassView`s | a view; each glass is its own `Surface` |
+| a glass inside | no lens of its own (`useInLensBase`): the base draws it | its `GlassView` | its `Surface` |
+| `.blend()` | not read: the engine blends no separate shapes at rest | the container's `spacing` | not read |
+| `.glassUnion()` | the base is already one shape | the container's merge within `blend` | each `Surface` on its own |
+| `.glassID()` | the engine's matched geometry of the view | the motion engine's matched geometry (SwiftUI's `glassEffectID` needs a SwiftUI host) | matched geometry (the Web Animations API) |
+
+The web's glass is a blurred `Surface` with no refraction and no shared
+sampling, so shapes there never blend; that is Bloom's measured rule (no SVG
+filters, masks or clip paths on a material host), and the owner's direction
+that the web may differ.
+
+### Liquid Glass rules
+
+Apple's Liquid Glass guidance, as the compiler holds it within one expression
+(a chain inside another's children; a `view()`'s own body is checked where it
+is written):
+
+| Rule | Apple | Compiler |
+| --- | --- | --- |
+| No glass on glass | "avoid overcrowding or layering Liquid Glass elements on top of each other" | **error**: a glass (`.glass()` other than `identity`, a glass button style, a `FAB`) in another glass's children |
+| Glass belongs to the navigation layer | "Don't use Liquid Glass in the content layer" | **warning**: a glass in the children of a `ScrollView`, `ScrollArea`, `ScrollSurface`, `List`, `VirtualList` or `Card` |
+| Nearby glass shares one container | "use `GlassEffectContainer` when applying Liquid Glass effects on multiple views" | **warning**: two or more glasses side by side in a stack outside a `GlassGroup` |
+| Every icon-only control has a label | "Provide an accessibility label for every icon" | **error**: a `Button` or `FAB` whose content is only `Icon`s, with no `.label()` |
+
+A warning is printed (`warning[bloom]`, `console.warn` in Metro and Jest) and
+the module compiles; an error fails it, as every other check does.
+
+**The one exception to the navigation layer** is a row's control that becomes
+its menu: Mention's feed ⋯ on Android draws a resting lens in the scroll
+(`restBackdrop`) so the button itself grows into the menu. A glass that is in
+the content on purpose says so with `.inContent()`, which silences the warning:
+
+```ts
+Menu(Button(Icon(RiMoreFill)).label('More').glass().inContent(), ...rows)
+```
+
+Android also holds glass on glass at run time: nothing inside a lens base
+draws a lens of its own.
 
 ## Platform components
 
