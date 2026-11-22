@@ -61,8 +61,8 @@ export {
 } from './primitives';
 export type { SidebarRow, TreeRow } from './primitives';
 export { view } from './view';
-export { clear, regular, GlassValue } from './glass';
-export type { GlassMaterial } from './glass';
+export { clear, identity, regular, GlassValue } from './glass';
+export type { GlassMaterial, GlassTransition } from './glass';
 export { LanguageStyles, toElement } from './render';
 export { defineKeyframes } from './motion/keyframes';
 export type { KeyframesValue } from './motion/keyframes';
@@ -605,6 +605,8 @@ export type { SortableChipRowView, SortableChipView } from './controls/sortable-
 
 // Viewports (controls/viewport.tsx)
 export { Viewport } from './controls/viewport';
+export { GlassGroup } from './controls/glass-group';
+export type { GlassGroupView } from './controls/glass-group';
 export type { ViewportView } from './controls/viewport';
 
 // Animated checks (controls/animated-check.tsx)

@@ -89,7 +89,9 @@ import {
   type ViewNodeProps,
 } from './node';
 import { ENVIRONMENT, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
-import { regular, type GlassValue } from './glass';
+import { regular, type GlassTransition, type GlassValue } from './glass';
+import type { Namespace } from './motion/namespace';
+import { opacity } from './motion/transition';
 import { getPlatformGlass } from './platform/glass-host';
 import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
@@ -362,6 +364,8 @@ const MOTION_KINDS: ReadonlySet<string> = new Set([
   'delay',
   'anchor',
   'matchedGeometry',
+  'glassID',
+  'glassTransition',
   'pressScale',
   'drag',
   'swipe',
@@ -404,6 +408,8 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
   let translateY = 0;
   let rotate = 0;
   let scale = 1;
+  let glassID: { id: string; namespace: Namespace } | undefined;
+  let glassTransition: GlassTransition | undefined;
   for (const modifier of node.modifiers) {
     switch (modifier.kind) {
       case 'opacity':
@@ -473,11 +479,27 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         motion.stable = true;
         motion.matched = { id: modifier.id, namespace: modifier.namespace };
         break;
+      case 'glassID':
+        glassID = { id: modifier.id, namespace: modifier.namespace };
+        break;
+      case 'glassTransition':
+        glassTransition = modifier.value;
+        break;
       case 'pressScale':
         motion.stable = true;
         motion.pressScale = true;
         break;
     }
+  }
+  // A glass's identity is the engine's own motion: `materialize` fades the glass
+  // in and out where it is, `matchedGeometry` (the default) grows it out of the
+  // glass with its id. A transition or matched geometry the chain names wins.
+  if (glassTransition === 'materialize') {
+    motion.stable = true;
+    motion.transition ??= opacity;
+  } else if (glassID !== undefined) {
+    motion.stable = true;
+    motion.matched ??= glassID;
   }
   if (Object.keys(bound).length > 0 || motion.swipe !== undefined) {
     // Bound geometry: the one mapper writes the whole transform, the tokens as
@@ -575,6 +597,8 @@ function plan(node: Node): Plan {
       moving = true;
       continue;
     }
+    // `identity` draws no glass: the chain keeps its shape without a material.
+    if (modifier.kind === 'glass' && !modifier.value.drawn) continue;
     // A button group's glass is its own material (Bloom's `material="lens"`), not a layer around it.
     if (node.kind === 'buttonGroup' && modifier.kind === 'glass') {
       result.own.set('glass', modifier);
@@ -1351,7 +1375,7 @@ function wrapLayer(
         glass,
         radius,
         fallbackTint: p.control?.tint,
-        interactive: p.pressable || p.control !== undefined,
+        interactive: glass.interactiveSaid ?? (p.pressable || p.control !== undefined),
         key: ownKey,
       };
       // A fill that varies is the glass's tint, the token as the platform's glass takes it.

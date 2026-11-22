@@ -48,6 +48,7 @@ import { SOCIAL_BUTTONS } from './social-button';
 import { DATA_TABLES } from './data-table';
 import { SORTABLE_CHIP_ROWS } from './sortable-chip-row';
 import { VIEWPORTS } from './viewport';
+import { GLASS_GROUPS } from './glass-group';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHAT_COMPOSERS } from './chat-composer';
 import { CHART_CARDS } from './chart-cards';
@@ -172,6 +173,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...DATA_TABLES,
   ...SORTABLE_CHIP_ROWS,
   ...VIEWPORTS,
+  ...GLASS_GROUPS,
   ...AGENT_AVATARS,
   ...CHAT_COMPOSERS,
   ...CHART_CARDS,

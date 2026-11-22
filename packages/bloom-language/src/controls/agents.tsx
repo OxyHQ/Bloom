@@ -379,7 +379,7 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
     corners: ['radius'],
     colors: (d) => ({ colors: d.own('gradient')?.value }),
     own: (d) => ({
-      blend: d.own('blend')?.value,
+      blend: d.own('blend')?.value as Blend | undefined,
       bloomOnly: d.own('bloomOnly')?.value,
       surface: d.own('surface')?.value,
     }),

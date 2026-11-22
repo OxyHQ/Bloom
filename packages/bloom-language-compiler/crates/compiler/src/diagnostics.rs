@@ -2,8 +2,16 @@
 
 use oxc_span::Span;
 
+/// An error fails the build; a warning is reported and the build goes on.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Severity {
+    Error,
+    Warning,
+}
+
 #[derive(Debug, Clone)]
 pub struct Diagnostic {
+    pub severity: Severity,
     pub message: String,
     pub help: Option<String>,
     /// 1-based line and column of the offending span's start.
@@ -15,6 +23,17 @@ pub struct Diagnostic {
 
 impl Diagnostic {
     pub fn new(source: &str, filename: &str, span: Span, message: String, help: Option<String>) -> Self {
+        Self::with_severity(Severity::Error, source, filename, span, message, help)
+    }
+
+    pub fn with_severity(
+        severity: Severity,
+        source: &str,
+        filename: &str,
+        span: Span,
+        message: String,
+        help: Option<String>,
+    ) -> Self {
         let start = span.start as usize;
         let line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
         let line_end = source[start..].find('\n').map_or(source.len(), |i| start + i);
@@ -25,15 +44,19 @@ impl Diagnostic {
 
         let gutter = line.to_string().len();
         let pad = " ".repeat(gutter);
+        let label = match severity {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
+        };
         let mut rendered = format!(
-            "error[bloom]: {message}\n{pad}--> {filename}:{line}:{column}\n{pad} |\n{line} | {text}\n{pad} | {}{}",
+            "{label}[bloom]: {message}\n{pad}--> {filename}:{line}:{column}\n{pad} |\n{line} | {text}\n{pad} | {}{}",
             " ".repeat(column as usize - 1),
             "^".repeat(width),
         );
         if let Some(help) = &help {
             rendered.push_str(&format!("\n{pad} = help: {help}"));
         }
-        Self { message, help, line, column, rendered }
+        Self { severity, message, help, line, column, rendered }
     }
 }
 

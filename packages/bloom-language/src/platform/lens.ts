@@ -38,6 +38,8 @@ export interface LensTriggerConfig {
   tintOpacity?: number;
   /** The engine's frost, a multiplier of its own. */
   blur?: number;
+  /** The press spring, a multiplier of the engine's own: `0` for a glass that is not interactive. */
+  jelly?: number;
 }
 
 /** The panel's tint and the rows' ink; a missing colour keeps the engine's own. */

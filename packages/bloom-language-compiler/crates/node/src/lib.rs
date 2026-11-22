@@ -19,19 +19,15 @@ pub struct Output {
     pub changed: bool,
     pub hoisted: u32,
     pub diagnostics: Vec<Diagnostic>,
+    pub warnings: Vec<Diagnostic>,
 }
 
 /// Compile one module. The output is the same on every platform.
 #[napi]
 pub fn compile(source: String, filename: String) -> Output {
     let output = bloom_language_compiler::compile(&source, &filename);
-    Output {
-        code: output.code,
-        map: output.map,
-        changed: output.changed,
-        hoisted: output.hoisted,
-        diagnostics: output
-            .diagnostics
+    let convert = |diagnostics: Vec<bloom_language_compiler::Diagnostic>| -> Vec<Diagnostic> {
+        diagnostics
             .into_iter()
             .map(|d| Diagnostic {
                 message: d.message,
@@ -40,6 +36,14 @@ pub fn compile(source: String, filename: String) -> Output {
                 column: d.column,
                 rendered: d.rendered,
             })
-            .collect(),
+            .collect()
+    };
+    Output {
+        code: output.code,
+        map: output.map,
+        changed: output.changed,
+        hoisted: output.hoisted,
+        diagnostics: convert(output.diagnostics),
+        warnings: convert(output.warnings),
     }
 }
