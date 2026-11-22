@@ -2,6 +2,7 @@ import { RiHeart3Line, RiHotelBedLine } from '@oxy.so/bloom/icons';
 import { ListingCard, ListingCardGrid, WishlistCard } from '@oxy.so/bloom/listing-card';
 import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
+import { View } from 'react-native';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
@@ -23,7 +24,19 @@ const HOME = {
   offerings: ['long_term_rent', 'sale'] as const,
 };
 
-export const LISTING_CARD_CASES: ParityCase[] = [
+/**
+ * A card in a column of its own width, as an app lays one out: the vertical
+ * card's photo is the column's full width, which the table's content-sized
+ * cell leaves unbounded.
+ */
+const COLUMN = { width: 320 } as const;
+const inColumn = (c: ParityCase): ParityCase => ({
+  ...c,
+  language: () => <View style={COLUMN}>{c.language()}</View>,
+  bloom: () => <View style={COLUMN}>{c.bloom()}</View>,
+});
+
+const cards: ParityCase[] = [
   {
     name: 'ListingCard',
     language: () => toElement(L.ListingCard('Harbour flat', PHOTOS, HOME).onPress(press)),
@@ -80,6 +93,10 @@ export const LISTING_CARD_CASES: ParityCase[] = [
     language: () => toElement(L.ListingCard('Harbour flat', PHOTOS).loading()),
     bloom: () => <ListingCard title="Harbour flat" photos={PHOTOS} loading />,
   },
+];
+
+export const LISTING_CARD_CASES: ParityCase[] = [
+  ...cards.map(inColumn),
   ...ENUMS.density.map((density) => ({
     name: `ListingCardGrid ${density}`,
     language: () =>
