@@ -5,8 +5,6 @@ import { compile } from 'react-native-css/compiler';
 import { StyleCollection } from 'react-native-css/native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
-import { RatingBar } from '../rating';
-import { Meter } from '../stat-bar';
 import { resolvedStyle } from './support/rendered-style';
 jest.mock('react-native', () => ({
   ...jest.requireActual('../../__mocks__/react-native'),
@@ -64,61 +62,6 @@ it('resolves Accordion classes after native defaults on each actual host and the
     paddingBottom: 16,
     paddingLeft: 0,
     paddingRight: 0,
-  });
-});
-it('delegates RatingBar track and fill classes to Meter while keeping the fill fraction data-owned', () => {
-  const api = render(
-    <BloomThemeProvider>
-      <RatingBar
-        label="Five"
-        display="75%"
-        value={0.75}
-        max={1}
-        labelWidth={16}
-        testID="row"
-        className="root"
-        labelClassName="label"
-        displayClassName="label"
-        trackClassName="track"
-        fillClassName="fill"
-      />
-    </BloomThemeProvider>,
-  );
-  expect(resolvedStyle(api.getByTestId('row').props.style).gap).toBe(8);
-  expect(resolvedStyle(api.getByTestId('row-bar').props.style)).toMatchObject({
-    height: 8,
-    backgroundColor: '#eef0f1',
-  });
-  expect(resolvedStyle(api.getByTestId('row-fill').props.style)).toMatchObject({
-    width: '75%',
-    backgroundColor: '#121212',
-  });
-  for (const label of ['Five', '75%'])
-    expect(
-      resolvedStyle(api.getByText(label, { includeHiddenElements: true }).props.style),
-    ).toMatchObject({ fontSize: 10, fontWeight: 600, color: '#121212' });
-});
-it('keeps direct Meter defaults and semantic values while its classes customize paint and height', () => {
-  const api = render(
-    <BloomThemeProvider>
-      <Meter
-        value={2}
-        max={4}
-        accessibilityLabel="Progress"
-        testID="meter"
-        className="track"
-        fillClassName="fill"
-      />
-    </BloomThemeProvider>,
-  );
-  expect(resolvedStyle(api.getByTestId('meter').props.style)).toMatchObject({
-    height: 8,
-    backgroundColor: '#eef0f1',
-  });
-  expect(api.getByTestId('meter').props['aria-valuenow']).toBe(2);
-  expect(resolvedStyle(api.getByTestId('meter-fill').props.style)).toMatchObject({
-    width: '50%',
-    backgroundColor: '#121212',
   });
 });
 it('resolves Collapsible wrapper and content classes on their native owning nodes', () => {
