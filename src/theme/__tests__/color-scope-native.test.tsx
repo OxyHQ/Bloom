@@ -1,43 +1,22 @@
-import React, { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Platform, Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../BloomThemeProvider';
 import { BloomColorScope } from '../color-scope/ColorScope';
 import { useTheme } from '../use-theme';
+import { useColorTokens } from '../color-tokens';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { Portal, PortalOutlet, PortalProvider } from '../../portal/Portal';
 
-jest.mock('nativewind', () => {
-  const React = jest.requireActual('react') as typeof import('react');
-  const Context = React.createContext<Record<string, string>>({});
-  return {
-    vars: (value: Record<string, string>) => value,
-    VariableContextProvider: ({
-      value,
-      children,
-    }: React.PropsWithChildren<{ value: Record<string, string> }>) => {
-      const parent = React.useContext(Context);
-      return <Context.Provider value={{ ...parent, ...value }}>{children}</Context.Provider>;
-    },
-    __variableContext: Context,
-  };
-});
-// The peer boundary is mocked; native file imports are explicit. This checks
-// propagation and identity, not native color rendering or device layout.
-const variables = (
-  jest.requireMock('nativewind') as {
-    __variableContext: React.Context<Record<string, string>>;
-  }
-).__variableContext;
 let mounts = 0;
 function Probe({ id }: { id: string }) {
   const theme = useTheme();
-  const vars = useContext(variables);
+  const tokens = useColorTokens();
   useEffect(() => {
     mounts++;
   }, []);
-  return <Text testID={id}>{JSON.stringify({ theme, vars })}</Text>;
+  return <Text testID={id}>{JSON.stringify({ theme, tokens })}</Text>;
 }
 const originalOS = Platform.OS;
 beforeEach(() => {
@@ -66,28 +45,28 @@ function Fixture({ color }: { color?: string }) {
     </BloomThemeProvider>
   );
 }
-it('provides exact native variables and JS theme through a plain scope and an external portal outlet', () => {
+it('provides exact colour tokens and JS theme through a plain scope and an external portal outlet', () => {
   const { getByTestId, rerender } = render(<Fixture color="#5433eb" />);
   const read = (id: string) => JSON.parse(getByTestId(id).props.children as string);
   for (const id of ['inside', 'portal']) {
     expect(read(id).theme.colors.background).toBe('#5433eb');
     expect(read(id).theme.mode).toBe('dark');
-    expect(read(id).vars['--background']).toBe('#5433eb');
-    expect(read(id).vars['--color-text']).toBe('#fff');
+    expect(read(id).tokens.background).toBe('#5433eb');
+    expect(read(id).tokens.foreground).toBe('#fff');
   }
   expect(read('outside').theme.mode).toBe('light');
-  expect(read('outside').vars['--background']).not.toBe('#5433eb');
+  expect(read('outside').tokens.background).not.toBe('#5433eb');
   expect(mounts).toBe(3);
   rerender(<Fixture color="#abcdef" />);
   expect(read('portal').theme.colors.background).toBe('#abcdef');
-  expect(read('portal').vars['--background']).toBe('#abcdef');
+  expect(read('portal').tokens.background).toBe('#abcdef');
   expect(mounts).toBe(3);
   rerender(<Fixture />);
   expect(read('portal')).toEqual(read('outside'));
   expect(mounts).toBe(3);
 });
 
-it('publishes the same exact seed through native variables and theme without remounting', () => {
+it('publishes the same exact seed through colour tokens and theme without remounting', () => {
   function SeedFixture({ seed }: { seed?: string }) {
     return (
       <BloomThemeProvider colorPreset="blue" mode="dark" fonts={false}>
@@ -102,8 +81,8 @@ it('publishes the same exact seed through native variables and theme without rem
   const result = JSON.parse(getByTestId('seed').props.children as string);
   const expected = buildThemeFromSeed('#123456', 'dark');
   expect(result.theme.colors).toEqual(expected.colors);
-  expect(result.vars['--background']).toBe(expected.colors.background);
-  expect(result.vars['--color-primary']).toBe(expected.colors.primary);
+  expect(result.tokens.background).toBe(expected.colors.background);
+  expect(result.tokens.primary).toBe(expected.colors.primary);
   expect(mounts).toBe(1);
 });
 
