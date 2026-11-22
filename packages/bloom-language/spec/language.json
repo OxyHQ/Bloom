@@ -536,7 +536,9 @@
     "callControlSize": ["sm", "md", "lg"],
     "groupCallLayout": ["grid", "spotlight"],
     "incomingCallAnswer": ["buttons", "slide"],
-    "selectedChipsLayout": ["scroll", "wrap"]
+    "selectedChipsLayout": ["scroll", "wrap"],
+    "messagePosition": ["single", "first", "middle", "last"],
+    "messageMediaFit": ["bleed", "inset", "bare"]
   },
   "glass": {
     "$comment": [
@@ -825,7 +827,12 @@
     "contentTint": ["color"],
     "placeholderTint": ["color"],
     "gradient": ["colors"],
-    "answerStyle": ["incomingCallAnswer"]
+    "answerStyle": ["incomingCallAnswer"],
+    "groupPosition": ["messagePosition"],
+    "mediaFit": ["messageMediaFit"],
+    "tail": ["value?"],
+    "metaOverlay": ["value?"],
+    "senderTint": ["color"]
   },
   "universal": [
     "padding",
@@ -1521,7 +1528,13 @@
       "modifiers": ["style"],
       "style": "selectedChipsLayout"
     },
-    "newGroupForm": { "constructors": ["NewGroupForm"], "modifiers": [] }
+    "newGroupForm": { "constructors": ["NewGroupForm"], "modifiers": [] },
+    "messageBubble": {
+      "constructors": ["MessageBubble"],
+      "modifiers": ["groupPosition", "mediaFit", "tail", "metaOverlay", "senderTint"]
+    },
+    "typingBubble": { "constructors": ["TypingBubble"], "modifiers": [] },
+    "messageList": { "constructors": ["MessageList"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
