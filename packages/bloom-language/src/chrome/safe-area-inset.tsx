@@ -1,7 +1,8 @@
-import { type ReactElement, type ReactNode, useState } from 'react';
+import { type ReactElement, type ReactNode, useContext, useState } from 'react';
 import { type LayoutChangeEvent, StyleSheet, View, type ViewStyle } from 'react-native';
 import { EdgeScrim, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
 import { useSurfaceFill } from '@oxy.so/bloom/styles';
+import { type EdgeInsets, SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import type { Child, Modifier, Node } from '../node';
 import { type InsetEdge, resolveSpace } from '../tokens';
@@ -13,6 +14,8 @@ export interface InsetRoom {
   readonly top: number;
   readonly bottom: number;
 }
+
+export const NO_INSETS: readonly Inset[] = Object.freeze([]);
 
 /** A scroll's `safeAreaInset`s and `safeAreaBar`s, in the order chained. */
 export function insetsOf(node: Node): readonly Inset[] {
@@ -42,7 +45,10 @@ export function withRoom(
  * `safeAreaBar`): each pinned view is measured, the scroll's content gets
  * that much room (and its spacing) at the edge, so it scrolls clear of it,
  * and a bar has Bloom's scroll edge scrim under it. Insets at one edge stack
- * outward in the order chained. One mechanism on every platform: an absolute
+ * outward in the order chained. What the content reads of the safe area is
+ * raised by the same room (SwiftUI: "its safe area increased by the same
+ * amount"), so a view inside that keeps clear of the device's edges keeps
+ * clear of the pinned views too. One mechanism on every platform: an absolute
  * view in a box the scroll fills, its height from its own layout.
  */
 export function SafeAreaInsets({
@@ -56,6 +62,7 @@ export function SafeAreaInsets({
 }) {
   const [heights, setHeights] = useState<readonly number[]>(() => insets.map(() => 0));
   const fill = useSurfaceFill();
+  const around = useContext(SafeAreaInsetsContext) ?? NO_EDGES;
   const measure = (index: number) => (event: LayoutChangeEvent) => {
     const height = event.nativeEvent.layout.height;
     setHeights((last) =>
@@ -93,13 +100,22 @@ export function SafeAreaInsets({
       </View>,
     );
   });
+  const raised: EdgeInsets = {
+    ...around,
+    top: around.top + room.top,
+    bottom: around.bottom + room.bottom,
+  };
   return (
     <View style={styles.box}>
-      {scroller(room)}
+      <SafeAreaInsetsContext.Provider value={raised}>
+        {scroller(room)}
+      </SafeAreaInsetsContext.Provider>
       {pinned}
     </View>
   );
 }
+
+const NO_EDGES: EdgeInsets = { top: 0, bottom: 0, left: 0, right: 0 };
 
 function edgeAt(edge: InsetEdge, at: number): ViewStyle {
   return edge === 'top' ? { top: at } : { bottom: at };

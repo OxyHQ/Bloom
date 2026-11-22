@@ -1553,7 +1553,8 @@ export default screen(function Feed() {
 ```
 
 **Insets on any scroll.** `.safeAreaInset(edge, view, spacing?)` is SwiftUI's
-`safeAreaInset`, on a `ScrollView`, a `ScrollArea` or a `ScrollSurface`: the
+`safeAreaInset`, on a `ScrollView`, a `ScrollArea`, a `ScrollSurface` or a
+`VirtualList`: the
 view is pinned at the scroll's `top` or `bottom`, measured, and the content
 gets that much room at the edge (and the spacing), so it scrolls clear of it
 (a filter bar over a list, a mini-player above the bar). `.safeAreaBar(edge,
@@ -1569,10 +1570,13 @@ ScrollArea(...rows).safeAreaInset('top', FilterChips(), 'sm')
 It is one mechanism on every platform: a box the scroll fills, the view
 absolute at its edge with its height from its own layout, the room added to
 the content container's padding over its `contentMargins`. Insets at one edge
-stack outward in the order chained. Not built: raising the safe-area insets
-that views inside the content read (React Native's `SafeAreaInsetsContext`),
-since the content's own padding already makes the room; and a `List` or
-`VirtualList`, whose content is Bloom's own.
+stack outward in the order chained. What the content reads of the safe area
+(react-native-safe-area-context's `SafeAreaInsetsContext`) is raised by the
+same room, as SwiftUI raises the safe area of what is under an inset, so a view
+inside that keeps clear of the device's edges keeps clear of the pinned views
+too. A `VirtualList`'s room is its `contentContainerStyle`'s padding. Not
+built: a `List` that scrolls (Bloom's `List` takes no content style for its
+scroller; it needs that prop first).
 
 `ScrollView(...children)` is Bloom's `ScreenScrollView`, the screen's
 scroller: it binds the header's scroll-edge fade, the bottom bar's fold, the
@@ -4843,8 +4847,8 @@ with its reason. Nothing else is missing.
   one base; the engine's field blends two shapes, so a `glassID` morph between
   siblings is engine work) and on the web (no shared sampling); SwiftUI's own
   `glassEffectID` morph on iOS (it needs a SwiftUI host for the glass's
-  content); a `.glassUnion()` drawn as one shape on iOS and the web; raising
-  the safe-area insets content reads; the Liquid Glass rules across a
+  content); a `.glassUnion()` drawn as one shape on iOS and the web; the
+  insets of a scrolling `List`; the Liquid Glass rules across a
   `view()`'s boundary (the compiler sees one expression). iOS is type-checked
   and held against stand-ins, not run.
 - **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,

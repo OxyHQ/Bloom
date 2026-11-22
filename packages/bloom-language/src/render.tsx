@@ -94,7 +94,7 @@ import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
 import { getPlatformGlass } from './platform/glass-host';
 import { ConfirmationHost } from './platform/confirmation-host';
-import { type InsetRoom, insetsOf, SafeAreaInsets } from './chrome/safe-area-inset';
+import { type InsetRoom, insetsOf, NO_INSETS, SafeAreaInsets } from './chrome/safe-area-inset';
 import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
@@ -155,7 +155,7 @@ import {
 } from './style';
 import { Reporting, ReportedState, StateHost } from './state-host';
 import { CONTROLS } from './controls';
-import type { ControlRenderer } from './controls/draw';
+import type { ControlDraw, ControlRenderer } from './controls/draw';
 import { presentAround } from './controls/overlays';
 import {
   STATES,
@@ -1916,6 +1916,9 @@ function iconGlyph(
 }
 
 /** The language's scrolls, each Bloom's own: the screen's, a scroll of its own, and one on a surface. */
+/** The lists whose content makes room for views pinned at their edges. */
+const INSET_LISTS: ReadonlySet<string> = new Set(['virtualList']);
+
 const SCROLL_HOSTS = {
   scrollView: ScrollViewHost,
   scrollArea: ScrollAreaHost,
@@ -2633,7 +2636,7 @@ function renderHost(
     default: {
       const control: ControlRenderer | undefined = CONTROLS[node.kind as NodeKind];
       if (control === undefined) throw new Error(`bloom-language: no renderer for ${node.kind}`);
-      return control({
+      const controlDraw: ControlDraw = {
         node,
         own: (kind) => ownValue(p, kind),
         label: p.label,
@@ -2686,6 +2689,15 @@ function renderHost(
         children: (children) => renderChildren(children, ctx),
         press: (value) => pressOf(value, ctx.env),
         role: p.role,
+      };
+      // Views pinned at a list's edges: the list makes room for them (SwiftUI's safe area insets).
+      const insets = INSET_LISTS.has(node.kind) ? insetsOf(node) : NO_INSETS;
+      if (insets.length === 0) return control(controlDraw);
+      return draw(SafeAreaInsets, {
+        key,
+        insets,
+        render: controlDraw.render,
+        scroller: (room: InsetRoom) => control({ ...controlDraw, room }),
       });
     }
   }

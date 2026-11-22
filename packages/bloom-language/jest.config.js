@@ -25,6 +25,8 @@ module.exports = {
   moduleNameMapper: {
     '^react-native$': `${support}/react-native.ts`,
     '^react-native-css$': `${support}/react-native-css.ts`,
+    // The repository's own stand-in: a real context, null where no provider is.
+    '^react-native-safe-area-context$': `${__dirname}/../../__mocks__/react-native-safe-area-context.ts`,
     '^@oxy.so/bloom/styles$': `${support}/bloom-styles.ts`,
     '^@oxy.so/bloom/typography$': `${support}/bloom-typography.ts`,
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
