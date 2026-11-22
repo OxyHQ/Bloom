@@ -25,8 +25,14 @@ import { PageHeader } from '@oxy.so/bloom/page-header';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
 import { Slider } from '@oxy.so/bloom/slider';
 import { Search } from '@oxy.so/bloom/search';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '@oxy.so/bloom/segmented-control';
 import { SettingsSection, SettingsValueField } from '@oxy.so/bloom/settings-modal';
 import { Switch } from '@oxy.so/bloom/switch';
+import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
 import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
 import { useTheme } from '@oxy.so/bloom/theme';
@@ -339,5 +345,90 @@ export function Inbox({
     >
       {children}
     </ScreenScrollView>
+  );
+}
+
+export function FeedTabs({
+  tab,
+  setTab,
+  tabs,
+}: {
+  tab: string;
+  setTab: (tab: string) => void;
+  tabs: { id: string; label: string; count?: number }[];
+}) {
+  return (
+    <Tabs value={tab} onValueChange={setTab} variant="underline">
+      {tabs.map((item: { id: string; label: string; count?: number }) => (
+        <TabsTrigger key={item.id} value={item.id} label={item.label} count={item.count} />
+      ))}
+    </Tabs>
+  );
+}
+
+export function ProfileTabs({ tab, setTab }: { tab: string; setTab: (tab: string) => void }) {
+  return (
+    <Tabs value={tab} onValueChange={setTab} fullWidth label={t('profile.sections')}>
+      <TabsTrigger value="posts" label={t('profile.posts')} leadingIcon={RiStarLine} />
+      {/* Likes are private. */}
+      <TabsTrigger value="likes" label={t('profile.likes')} leadingIcon={RiHeart3Line} iconOnly />
+    </Tabs>
+  );
+}
+
+export function Range({
+  range,
+  setRange,
+  ranges,
+}: {
+  range: string;
+  setRange: (range: string) => void;
+  ranges: { value: string; label: string }[];
+}) {
+  return (
+    <View className="gap-2">
+      <SegmentedControl
+        label={t('stats.range')}
+        type="radio"
+        size="sm"
+        value={range}
+        onChange={setRange}
+      >
+        <SegmentedControlItem value="24h">
+          <SegmentedControlItemText>{t('stats.day')}</SegmentedControlItemText>
+        </SegmentedControlItem>
+        <SegmentedControlItem value="7d" disabled={ranges.length === 0}>
+          <SegmentedControlItemText>{t('stats.week')}</SegmentedControlItemText>
+        </SegmentedControlItem>
+      </SegmentedControl>
+      <SegmentedControl type="tabs" variant="plain" value={range} onValueChange={setRange}>
+        {ranges.map((item) => (
+          <SegmentedControlItem key={item.value} value={item.value}>
+            <SegmentedControlItemText>{item.label}</SegmentedControlItemText>
+          </SegmentedControlItem>
+        ))}
+      </SegmentedControl>
+    </View>
+  );
+}
+
+export function Cadence({
+  cadence,
+  setCadence,
+}: {
+  cadence: string;
+  setCadence: (c: string) => void;
+}) {
+  return (
+    <Field label={t('plus.cadence')}>
+      <SegmentedControl type="radio" value={cadence} onValueChange={setCadence}>
+        <SegmentedControlItem value="month">
+          <SegmentedControlItemText>{t('plus.month')}</SegmentedControlItemText>
+        </SegmentedControlItem>
+        <SegmentedControlItem value="year">
+          <SegmentedControlItemText>{t('plus.year')}</SegmentedControlItemText>
+        </SegmentedControlItem>
+      </SegmentedControl>
+    </Field>
   );
 }

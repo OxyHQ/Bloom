@@ -95,6 +95,8 @@ the element JSX with the reason `Node:prop`.
 | `Divider`, `Loading`, `Badge`, `IconCircle`, `Avatar`, `EngagementAction` | `Divider()`, `Loading()`, `Badge(content)`, `IconCircle(icon)`, `Avatar(source, { variant, name })`, `Action(icon, label, { activeIcon, pop })` |
 | `ChatEmptyState` | `ChatEmptyState({ title, description, illustration, action })` |
 | `PageHeader`, `SpinnerIcon`, `Slider`, `Admonition` | `Header(title).inPage()`, `SpinnerIcon()`, `Slider([value, set], label).bounds(min, max)`, `Admonition(Text(…)).style(type)` |
+| `Tabs` with its `TabsTrigger`s | `Tabs([value, set], TabItem(value, label).count(n)…).style(variant)` |
+| `SegmentedControl` with its `SegmentedControlItem`s (each its `SegmentedControlItemText`) | `Segmented([value, set], Option(value, text)…)`, `type="tabs"` its `.tabs()` |
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads
@@ -126,6 +128,16 @@ A `contentContainerClassName` stays JSX: Bloom lays a class out in a view of
 its own inside a content container that grows to the viewport (and reports no
 intrinsic height to a content-sized screen), where the margins pad the content
 container itself. A prop a rule names in `differs` is kept with that reason.
+
+A compound element converts whole, with its parts (`parts` and `partOf` in a
+rule), as the language's parity cases draw it: each child is one of its parts
+by the part's own rule, a block comment, or a `.map()` whose arrow function
+returns a part (`tabs.map((tab) => <TabsTrigger … />)` is
+`tabs.map((tab) => TabItem(…))`, its array carried as it is). Anything else
+among the children, or a part that does not map, keeps the whole element JSX;
+a part is never converted alone (`TabItem:part`). The language keys a part by
+its value, so a part's `key` is not carried. The parity draws an array a
+region carries as the corpus's sample items (`ITEMS`), the same on both sides.
 
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).
@@ -218,8 +230,9 @@ and dark:
   with the preset's `inlineRem: 16`, and in the jsdom document on the web.
 - **After:** the chain the codemod wrote.
 - **Holes:** every value carried over (a handler, a text run, an embedded
-  element, a condition) is the same stand-in on both sides, so a region is
-  rendered without the app around it.
+  element, a condition, an array of data) is the same stand-in on both
+  sides, so a region is rendered without the app around it. An element's type
+  arguments (`<SegmentedControl<Cadence>`) draw nothing and are left out.
   A region with a condition is rendered twice more, every condition `false`
   (`name (false)`), so both branches of what it chooses are proven.
 
