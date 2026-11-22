@@ -187,7 +187,7 @@ try {
   await page.getByRole('button', { name: 'Open flat popover' }).click();
   const popover = page.getByTestId('flat-popover');
   await popover.waitFor();
-  await expect(popover).not.toHaveClass(/bloom-floating-surface/);
+  await expect(popover).not.toHaveAttribute('data-bloom-floating-surface');
   await expect
     .poll(() => popover.evaluate((el) => getComputedStyle(el).backgroundColor))
     .toBe('rgb(243, 215, 182)');
