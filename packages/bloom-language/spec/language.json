@@ -548,7 +548,9 @@
     "tripCardOrientation": ["auto", "horizontal", "vertical"],
     "searchModeTabsStyle": ["tabs", "segmented"],
     "mortgageLayout": ["auto", "stacked", "split"],
-    "listingCardLayout": ["vertical", "horizontal"]
+    "listingCardLayout": ["vertical", "horizontal"],
+    "offeringBadgeSize": ["sm", "md"],
+    "offeringBadgeStyle": ["tinted", "onMedia"]
   },
   "glass": {
     "$comment": [
@@ -1633,7 +1635,19 @@
       "style": "listingCardLayout"
     },
     "listingCardGrid": { "constructors": ["ListingCardGrid"], "modifiers": ["density"] },
-    "wishlistCard": { "constructors": ["WishlistCard"], "modifiers": ["tint"], "tint": "color" }
+    "wishlistCard": { "constructors": ["WishlistCard"], "modifiers": ["tint"], "tint": "color" },
+    "listingPreviewPane": { "constructors": ["ListingPreviewPane"], "modifiers": [] },
+    "listingQualityMeter": { "constructors": ["ListingQualityMeter"], "modifiers": [] },
+    "propertyTypeSelector": {
+      "constructors": ["PropertyTypeSelector"],
+      "modifiers": ["columns", "disabled"]
+    },
+    "offeringBadge": {
+      "constructors": ["OfferingBadge"],
+      "modifiers": ["size", "style"],
+      "size": "offeringBadgeSize",
+      "style": "offeringBadgeStyle"
+    }
   },
   "sfSymbols": {
     "$comment": [
