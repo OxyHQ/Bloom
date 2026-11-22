@@ -35,12 +35,11 @@ import {
   useState,
   type ComponentRef,
 } from 'react';
-import { Platform, type View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
 import { useAppForeground } from '../hooks/use-app-state';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useMessages } from '../locale/messages';
-import { StyledText, StyledView } from '../styles/styled-primitives';
 import { resolveAvatarCharacter } from './character';
 import {
   AVATAR_ACCESSORIES,
@@ -486,9 +485,8 @@ function AnimatedVectorCharacterAvatar(props: Props) {
     state.current.targetPitch = Math.max(-0.45, Math.min(0.45, y / height - 0.5));
   };
   return (
-    <StyledView
+    <View
       ref={host}
-      className={props.className}
       style={[{ width: size, height: size }, props.style]}
       accessible={props.accessibilityLabel !== ''}
       accessibilityRole="image"
@@ -542,9 +540,9 @@ function AnimatedVectorCharacterAvatar(props: Props) {
       }}
     >
       {failed ? (
-        <StyledText numberOfLines={2} style={{ fontSize: 10 }}>
+        <Text numberOfLines={2} style={{ fontSize: 10 }}>
           {messages.unavailable}
-        </StyledText>
+        </Text>
       ) : display ? (
         <Svg
           ref={svg}
@@ -599,6 +597,6 @@ function AnimatedVectorCharacterAvatar(props: Props) {
           </G>
         </Svg>
       ) : null}
-    </StyledView>
+    </View>
   );
 }

@@ -45,7 +45,6 @@ export type AgentAvatarProps = {
   onLoadingChange?: (loading: boolean) => void;
   /** The vector assets to draw from, overriding the provider's. See `createVectorAssetLoader`. */
   catalog?: VectorAssetLoader;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;
