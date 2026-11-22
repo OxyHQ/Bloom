@@ -23,6 +23,7 @@ import { Screen } from 'react-native-screens';
 import { animateMotion } from '../../motion/recipes';
 import { ScreenActivity } from '../../screen/ScreenActivity';
 import { valueAtPage, type PageModel } from '../pages';
+import { TabPageContentContext, type TabPageContentHold } from '../page-content';
 import type { ViewRef } from '../../styles/native-refs';
 import type { TabBackPreview } from './back-preview';
 import { PredictiveBackHost, isPredictiveBackAvailable } from './PredictiveBackHost';
@@ -212,6 +213,22 @@ export function TabPager({
     [pages, keyForPage],
   );
 
+  // Pages still painting their first content (`useTabPageContentPainted`): their
+  // neighbours wait.
+  const [painting, setPainting] = useState<ReadonlySet<string>>(() => new Set());
+  const contentHold = useCallback(
+    (key: string): TabPageContentHold => ({
+      hold: () => setPainting((current) => new Set(current).add(key)),
+      release: () =>
+        setPainting((current) => {
+          const next = new Set(current);
+          next.delete(key);
+          return next;
+        }),
+    }),
+    [],
+  );
+
   const onPageScroll = usePageScrollHandler(
     (event) => {
       'worklet';
@@ -273,20 +290,18 @@ export function TabPager({
     barPositions,
   ]);
 
-  // Warm the neighbours of the resting page once the JS thread is idle after it
-  // settled: never on the frame that is already rendering the destination, and
-  // at launch not while the first page is still mounting its content (a
-  // neighbour mounted then competes with the first page's first paint). A swipe
-  // admits them at once (below). Without idle callbacks, the frame after.
+  // Warm the neighbours of the resting page on the frame AFTER it settled, never
+  // on the frame that is already rendering the destination, and only once that
+  // page has painted its first content: at launch a neighbour mounted earlier
+  // competes with the first page's first paint (Mention: the Videos tab, its reel
+  // and its player, next to Home). A swipe admits them at once (below).
+  const settledKey = keyForPage(settledPage);
+  const settledPainting = settledKey !== undefined && painting.has(settledKey);
   useEffect(() => {
-    const warm = () => admit(neighbourKeys(settledPage));
-    if (typeof requestIdleCallback === 'function') {
-      const idle = requestIdleCallback(warm);
-      return () => cancelIdleCallback(idle);
-    }
-    const frame = requestAnimationFrame(warm);
+    if (settledPainting) return;
+    const frame = requestAnimationFrame(() => admit(neighbourKeys(settledPage)));
     return () => cancelAnimationFrame(frame);
-  }, [settledPage, admit, neighbourKeys]);
+  }, [settledPage, settledPainting, admit, neighbourKeys]);
 
   const onPageScrollStateChanged = useCallback(
     (event: { nativeEvent: { pageScrollState: PageScrollState } }) => {
@@ -341,7 +356,9 @@ export function TabPager({
             shouldFreeze={!reachable}
             style={styles.page}
           >
-            <ScreenActivity active={focused}>{descriptor.render()}</ScreenActivity>
+            <PageContentScope pageKey={route.key} contentHold={contentHold}>
+              <ScreenActivity active={focused}>{descriptor.render()}</ScreenActivity>
+            </PageContentScope>
           </Screen>
         ) : null}
       </View>
@@ -400,6 +417,20 @@ export function TabPager({
       </Animated.View>
     </PredictiveBackHost>
   );
+}
+
+/** Gives a page its hold on its neighbours (`useTabPageContentPainted`). */
+function PageContentScope({
+  pageKey,
+  contentHold,
+  children,
+}: {
+  pageKey: string;
+  contentHold: (key: string) => TabPageContentHold;
+  children: ReactNode;
+}) {
+  const value = useMemo(() => contentHold(pageKey), [contentHold, pageKey]);
+  return <TabPageContentContext.Provider value={value}>{children}</TabPageContentContext.Provider>;
 }
 
 /** Material's fade-through: out fast, in from a slight scale. */
