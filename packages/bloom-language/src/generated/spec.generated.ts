@@ -142,6 +142,19 @@ export const WEIGHT = {
   "extrabold": "800"
 } as const;
 export const ICON_SIZE = {
+  "10": 10,
+  "11": 11,
+  "13": 13,
+  "14": 14,
+  "15": 15,
+  "17": 17,
+  "18": 18,
+  "21": 21,
+  "22": 22,
+  "40": 40,
+  "44": 44,
+  "64": 64,
+  "96": 96,
   "2xs": 8,
   "xs": 12,
   "sm": 16,
@@ -1248,6 +1261,16 @@ export const ENUMS = {
     "idle",
     "busy",
     "offline"
+  ],
+  "iconCircleSize": [
+    "2xs",
+    "xs",
+    "sm",
+    "md",
+    "lg",
+    "xl",
+    "2xl",
+    "3xl"
   ],
   "avatarLayout": [
     "stack",

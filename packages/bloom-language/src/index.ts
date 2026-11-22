@@ -242,6 +242,7 @@ export type {
   GlassOpacityName,
   TypeFamily,
   HitSlopName,
+  IconCircleSize,
   IconSizeName,
   IconSizeToken,
   LeadingName,
