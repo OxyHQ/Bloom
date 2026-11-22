@@ -48,6 +48,21 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'agent-creator/EmotionPicker.tsx': {
+    count: 1,
+    reason:
+      "`CHIP_MOTION` is Reanimated 4's CSS transition (`transitionProperty`/`Duration`/`TimingFunction`) on an animated host, native only: the keys Reanimated reads are not on RN's `ViewStyle`. It keeps the 150ms colour ease the old `transition-colors` class gave the chip on native.",
+  },
+  'agent-creator/ShapeArc.tsx': {
+    count: 1,
+    reason:
+      "`SLOT_MOTION` is the same Reanimated 4 CSS transition as `EmotionPicker`'s, on the arc's animated slots (native only).",
+  },
+  'agent-creator/AgentPreferencesPanel.tsx': {
+    count: 1,
+    reason:
+      "The preview Button's native host style carries `color`, which the old class put on that host and Button hands to its label; `color` is a `TextStyle` key, so the literal is cast once.",
+  },
   'styles/rounded-full.ts': {
     count: 1,
     reason:
