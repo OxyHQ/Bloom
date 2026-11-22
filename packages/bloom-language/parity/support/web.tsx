@@ -197,14 +197,14 @@ function ancestorScope(element: Element, rules: CSSStyleRule[]): Record<string, 
 }
 
 /**
- * React's `useId` counts across roots, and Bloom counts six SVG ids with a
+ * React's `useId` counts across roots, and Bloom counts seven SVG ids with a
  * module counter of its own (`bloom-stat-tile3`, `bloom-story-ring-2`: the
  * `IdCounter++` in its source); an id is compared by its order in the tree,
  * not its count.
  */
 const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
 const BLOOM_ID =
-  /\bbloom-(?:alerts-fade|heading-cone|stat-tile|story-ring-|call-stage-|call-scrim-)\d+\b/g;
+  /\bbloom-(?:alerts-fade|heading-cone|stat-tile|story-ring-|call-stage-|call-scrim-|story-scrim-)\d+\b/g;
 let ids: Map<string, string> = new Map();
 function byOrder(id: string): string {
   let seen = ids.get(id);
