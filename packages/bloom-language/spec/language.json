@@ -1624,7 +1624,22 @@
     "creditsEditor": { "constructors": ["CreditsEditor"], "modifiers": ["disabled"] },
     "artworkUploader": { "constructors": ["ArtworkUploader"], "modifiers": ["disabled"] },
     "payoutSummaryCard": { "constructors": ["PayoutSummaryCard"], "modifiers": [] },
-    "pitchCard": { "constructors": ["PitchCard"], "modifiers": [] }
+    "pitchCard": { "constructors": ["PitchCard"], "modifiers": [] },
+    "checkoutSummaryRow": { "constructors": ["CheckoutSummaryRow"], "modifiers": ["disabled"] },
+    "checkoutSummary": { "constructors": ["CheckoutSummary"], "modifiers": [] },
+    "checkoutConfirm": { "constructors": ["CheckoutConfirm"], "modifiers": ["disabled", "loading"] },
+    "deliverySlotDays": {
+      "constructors": ["DeliverySlotDays"],
+      "modifiers": ["disabled", "tint"],
+      "tint": "color"
+    },
+    "deliverySlotOption": { "constructors": ["DeliverySlotOption"], "modifiers": ["disabled"] },
+    "deliverySlotPicker": {
+      "constructors": ["DeliverySlotPicker"],
+      "modifiers": ["disabled", "loading", "tint"],
+      "tint": "color"
+    },
+    "orderConfirmation": { "constructors": ["OrderConfirmation"], "modifiers": ["density"] }
   },
   "sfSymbols": {
     "$comment": [
