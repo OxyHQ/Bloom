@@ -547,7 +547,8 @@
     "noteToolbarSize": ["md", "sm"],
     "tripCardOrientation": ["auto", "horizontal", "vertical"],
     "searchModeTabsStyle": ["tabs", "segmented"],
-    "mortgageLayout": ["auto", "stacked", "split"]
+    "mortgageLayout": ["auto", "stacked", "split"],
+    "listingCardLayout": ["vertical", "horizontal"]
   },
   "glass": {
     "$comment": [
@@ -1625,7 +1626,14 @@
       "style": "mortgageLayout"
     },
     "rentalActionCard": { "constructors": ["RentalActionCard"], "modifiers": ["loading"] },
-    "saleActionCard": { "constructors": ["SaleActionCard"], "modifiers": ["loading"] }
+    "saleActionCard": { "constructors": ["SaleActionCard"], "modifiers": ["loading"] },
+    "listingCard": {
+      "constructors": ["ListingCard"],
+      "modifiers": ["style", "density", "loading"],
+      "style": "listingCardLayout"
+    },
+    "listingCardGrid": { "constructors": ["ListingCardGrid"], "modifiers": ["density"] },
+    "wishlistCard": { "constructors": ["WishlistCard"], "modifiers": ["tint"], "tint": "color" }
   },
   "sfSymbols": {
     "$comment": [
