@@ -24,9 +24,9 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1039 | 46966 | 87.4% |
+| Maps to a modifier and a token | 1040 | 46970 | 87.4% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
-| Redundant in the language | 32 | 513 | 1.0% |
+| Redundant in the language | 31 | 509 | 0.9% |
 | Needs a named token (raw value) | 278 | 671 | 1.2% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 9 | 105 | 0.2% |
@@ -365,7 +365,7 @@ when the fill is a role's colour.
 | `ring-0` | .ring('none') | 13 | 4 |
 | `rounded-[6px]` | .corner('6') | 13 | 4 |
 | `rounded-sm` | .corner('2xs') | 13 | 6 |
-| `truncate` | .lines(1) | 13 | 2 |
+| `truncate` | .noWrap().clipped().truncation('tail') | 13 | 2 |
 | `w-24` | .frame({ width: '96' }) | 13 | 7 |
 | `w-32` | .frame({ width: '128' }) | 13 | 5 |
 | `w-5` | .frame({ width: 'xl' }) | 13 | 9 |
@@ -584,6 +584,7 @@ when the fill is a role's colour.
 | `w-[260px]` | .frame({ width: '260' }) | 4 | 4 |
 | `w-[2px]` | .frame({ width: '2xs' }) | 4 | 4 |
 | `z-[60]` | .zIndex('60') | 4 | 2 |
+| `z-auto` | .zIndex('auto') | 4 | 2 |
 | `-ml-1` | .margin('left', '-xs') | 3 | 2 |
 | `-ml-3` | .margin('left', '-md') | 3 | 2 |
 | `-mx-4` | .margin('horizontal', '-lg') | 3 | 2 |
@@ -752,7 +753,6 @@ when the fill is a role's colour.
 | `h-auto` | a view’s size is its content’s unless a frame says otherwise | 7 | 4 |
 | `inline-block` | display: views are boxes | 6 | 2 |
 | `w-auto` | a view’s size is its content’s unless a frame says otherwise | 6 | 3 |
-| `z-auto` | a view stacks in its order unless it says otherwise | 4 | 2 |
 | `border-b-0` | no border is the default | 3 | 2 |
 | `border-r-0` | no border is the default | 3 | 2 |
 

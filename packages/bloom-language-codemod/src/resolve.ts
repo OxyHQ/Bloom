@@ -71,10 +71,6 @@ const TRACKED = new Set(
  * with what differs. They stay JSX until the language or the table changes.
  */
 function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
-  if (utility === 'z-auto')
-    return 'z-index: auto, over react-native-web’s z-index 0 for a view; the language writes nothing';
-  if (utility === 'truncate')
-    return 'truncate is white-space: nowrap and an ellipsis on the web; .lines(1) is a line clamp';
   if (utility === 'tabular-nums')
     return 'NativeWind writes no fontVariant on native; .monospacedDigit() does';
   const fixed = /^(?:text|bg|border)-(white|black)\/(\d+)$/.exec(utility);

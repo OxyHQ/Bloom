@@ -433,6 +433,17 @@ function tailwindClass(name: string, rule: string): RN.ViewStyle {
 }
 const tailwind: ParityCase[] = [
   {
+    name: 'z-auto: the web’s z-index auto, nothing on native',
+    language: () => toElement(L.VStack(L.Text('a')).zIndex('auto')),
+    bloom: () => (
+      <RN.View
+        style={RN.Platform.OS === 'web' ? { zIndex: 'auto' as unknown as number } : undefined}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'physical corners (rounded-l, rounded-br)',
     language: () =>
       toElement(L.VStack(L.Text('a')).corner('lg', 'left').corner('sm', 'bottom-right')),

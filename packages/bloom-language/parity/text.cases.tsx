@@ -585,6 +585,26 @@ const raw: ParityCase[] = [
     ),
   },
   {
+    name: 'truncate: no wrap, clipped, an ellipsis where cut (no line limit)',
+    language: () => toElement(L.Text('a').noWrap().clipped().truncation('tail')),
+    bloom: () => (
+      <Text
+        ellipsizeMode="tail"
+        style={
+          RN.Platform.OS === 'web'
+            ? ({
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+              } as RN.TextStyle)
+            : { overflow: 'hidden' }
+        }
+      >
+        a
+      </Text>
+    ),
+  },
+  {
     name: 'RawText in a family of its own',
     language: () => toElement(L.RawText('Raw').font('mono')),
     bloom: () => <BaseFontText style={fontFamilyStyle('mono')}>Raw</BaseFontText>,

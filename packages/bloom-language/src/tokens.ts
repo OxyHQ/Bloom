@@ -99,7 +99,8 @@ export type LengthName = keyof typeof LENGTH;
  * Bloom's stacking levels (`Z_INDEX`): `base`, `raised`, `floating`, `dropdown`;
  * or Tailwind's own `'20'`, `'30'`, `'50'`, each its value.
  */
-export type ZIndexName = keyof typeof Z_INDEX;
+/** A stacking level: Bloom's, or `auto` (Tailwind's `z-auto`, as NativeWind writes it: the web's `z-index: auto`, nothing on native). */
+export type ZIndexName = keyof typeof Z_INDEX | (typeof ENUMS.zIndexExtra)[number];
 /**
  * Bloom's elevation roles: `s` (cards, chips), `m` (menus, dialogs), `floating`
  * (a translucent pane); or one of Tailwind's own shadows, named by its exact

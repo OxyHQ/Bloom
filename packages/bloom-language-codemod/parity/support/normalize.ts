@@ -15,7 +15,8 @@
  *   `position` relative, a Text's `ellipsizeMode` tail.
  * - A span's text prop equal to what the Text around it gives it is what it
  *   inherits, so it is left out.
- * - A hex colour is its six-digit lowercase form (`#fff` is `#ffffff`); a
+ * - A hex colour is its long lowercase form (`#fff` is `#ffffff`, `#fff9`
+ *   `#ffffff99`); a
  *   colour with an alpha is compared at the 8 bits of alpha a device draws.
  * - A corner of the reading direction is its physical corner left to right.
  * - A number is compared to 12 significant digits: `12 * 0.025` is
@@ -103,15 +104,14 @@ function foldStyle(
   for (const [key, value] of Object.entries(style)) {
     if (typeof value === 'number') style[key] = Number(value.toPrecision(12));
     if (typeof value !== 'string') continue;
-    const hex = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(value);
-    if (hex)
-      style[key] = `#${hex
-        .slice(1)
-        .map((c) => c + c)
-        .join('')}`.toLowerCase();
-    else if (/^#[0-9a-f]{6}$/i.test(value)) style[key] = value.toLowerCase();
+    // A short hex colour is its long form: `#fff` is `#ffffff`, `#fff9` is `#ffffff99`.
+    const short = /^#([0-9a-f]{3,4})$/i.exec(value);
+    const long = short
+      ? `#${[...(short[1] as string)].map((c) => c + c).join('')}`.toLowerCase()
+      : value;
+    if (/^#[0-9a-f]{6}$/i.test(long)) style[key] = long.toLowerCase();
     // A colour with an alpha, as the 8 bits a device draws it with (`#ffffffb3` is white at 179/255).
-    const hex8 = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(value);
+    const hex8 = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(long);
     const rgba = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/.exec(value);
     if (hex8)
       style[key] =

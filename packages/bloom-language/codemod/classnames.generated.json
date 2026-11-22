@@ -2153,7 +2153,7 @@
    "count": 13,
    "apps": 2,
    "status": "mapped",
-   "language": ".lines(1)"
+   "language": ".noWrap().clipped().truncation('tail')"
   },
   "w-24": {
    "count": 13,
@@ -4736,8 +4736,8 @@
   "z-auto": {
    "count": 4,
    "apps": 2,
-   "status": "drop",
-   "language": "a view stacks in its order unless it says otherwise"
+   "status": "mapped",
+   "language": ".zIndex('auto')"
   },
   "-ml-1": {
    "count": 3,

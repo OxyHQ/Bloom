@@ -576,7 +576,8 @@ function resolve(utility) {
   if (utility === 'italic') return mapped('.italic()');
   if (utility === 'underline') return mapped('.underline()');
   if (utility === 'line-through') return mapped('.strikethrough()');
-  if (utility === 'truncate') return mapped('.lines(1)');
+  // Tailwind's truncate: no wrap, clipped, an ellipsis where it is cut (no line limit: NativeWind writes only the clip on native).
+  if (utility === 'truncate') return mapped(".noWrap().clipped().truncation('tail')");
   if ((m = /^line-clamp-(\d+)$/.exec(utility))) return mapped(`.lines(${m[1]})`);
   if (utility === 'whitespace-nowrap') return mapped('.noWrap()');
   if (utility === 'select-none') return mapped('.selectable(false)');
@@ -647,7 +648,7 @@ function resolve(utility) {
     return color(value, (r) => `.ring(${r})`) ?? undefined;
   }
   if ((m = /^z-(.+)$/.exec(utility))) {
-    if (m[1] === 'auto') return drop('a view stacks in its order unless it says otherwise');
+    if (m[1] === 'auto') return mapped(".zIndex('auto')");
     const level = Number(m[1].replace(/^\[(\d+)\]$/, '$1'));
     const name = rung(scales.zIndex, level);
     return name ? mapped(`.zIndex('${name}')`) : token('zIndex', `${level}`, '.zIndex(…)');

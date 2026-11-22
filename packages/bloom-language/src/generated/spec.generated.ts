@@ -1142,6 +1142,9 @@ export const ENUMS = {
     "concentric",
     "infinite"
   ],
+  "zIndexExtra": [
+    "auto"
+  ],
   "cornerCurve": [
     "round",
     "smooth"
