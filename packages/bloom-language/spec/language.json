@@ -1647,7 +1647,9 @@
       "modifiers": ["size", "style"],
       "size": "offeringBadgeSize",
       "style": "offeringBadgeStyle"
-    }
+    },
+    "priceEstimate": { "constructors": ["PriceEstimate"], "modifiers": [] },
+    "pricePerAreaComparison": { "constructors": ["PricePerAreaComparison"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
