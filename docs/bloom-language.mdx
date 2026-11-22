@@ -16,7 +16,10 @@ existing components and tokens, so a screen written in it looks the same as the
 JSX it replaces. A build-time compiler (`packages/bloom-language-compiler`)
 optimises it; the runtime stays complete without it. One spec
 (`packages/bloom-language/spec/language.json`) defines the vocabulary both use.
-Native renderers come later (see [Built and not built](#built-and-not-built)).
+On a device the nodes are React Native's native views, and where the platform
+has a component of its own the language draws that one: SwiftUI and the system
+components on iOS, the lens on Android and OxyOS (see
+[Platform components](#platform-components)).
 
 ## Syntax
 
@@ -330,11 +333,12 @@ An app's brand colour is an app token too: `defineTokens({ color: { blue:
 '#1877f2' } })` declares a hex (checked when it is declared), the same in both
 schemes, and `.background()`, `.foreground()` (text and glyphs), `.border()`
 and `.ring()` take it where they take a role. It paints as its hex on every
-platform (inline on the web: no class names it). It does not vary: a live
-`when()` keeps its roles only and says so once in development, since the web
-would need a class for it. The paints that are props of a Bloom component
-(`.tint()`, `.fill()`, `.stroke()`, a button's `.colors()`, a glass tint) take
-roles only.
+platform (inline on the web: no class names it). It varies as a role does:
+under `when()` it is the colour while the condition holds, on the web through
+the view's JS-picked style (see [Variants](#variants), a value with no class).
+The paints that are props of a Bloom component (`.tint()`, `.fill()`,
+`.stroke()`, a button's `.colors()`, a glass tint, at rest and in a variant)
+take roles only: a material or a control computes its look from a role.
 
 ## Layout
 
@@ -459,9 +463,14 @@ inside; a stack's layout to its host; a placement to its outermost box.
   and 69 to 186 KB each. A breakpoint's rule has the base's specificity and
   comes after it (a wider breakpoint after a narrower); the scheme's selector
   is one class stronger and a state's two, so a state beats the scheme and a
-  press beats a hover. A value with no class (an app token, an offset)
-  cannot vary on a language host on the web: it is left out, said once in
-  development.
+  press beats a hover.
+- **A value with no class** (an app token: a brand colour, an app's space or
+  length) cannot vary in CSS. A view whose variants hold one is varied on the
+  web the way a Bloom component is (below): its style is an object a
+  `Conditioned` leaf picks from the breakpoint, the scheme and its state, its
+  outermost box tracks its press, hover and focus in JavaScript, and that box
+  still carries the anchor and press host classes, so the CSS of the views
+  inside it answers it as before. Native is unchanged: every leaf picks.
 - **No build step.** The compiler checks every variant (its condition, its
   modifiers, each value) but emits no CSS: which classes a variant draws
   depends on where it lands (the text traits a font, weight or leading
@@ -510,16 +519,18 @@ inside; a stack's layout to its host; a placement to its outermost box.
   one's): the selector is the anchor in that state with no pressable in
   the same state inside it (`:has()`), and no anchor between it and the
   class (the spec's `variants.selectors`; the `:where()` parts add no
-  specificity). A pressable is what react-native-web draws as one, and on
-  the web it carries Bloom's press host class (`blsp`, `PRESS_HOST_CLASS`
-  in `@oxy.so/bloom/styles`): every pressable host of the language, and
-  Bloom's Avatar and EngagementAction, whose press is their own
-  `Pressable`. Bloom's web Button and FAB are DOM buttons, which
-  react-native-web does not keep a hover from, so a hover of one is the
-  stack's too, as it is in Bloom JSX. So a pressable inside another, a
-  Bloom one included, answers only its own press and hover, on every
-  platform (the parity cases, held in Chrome by `verify-parity-web.mjs`,
-  which holds every anchor and pressable). A text trait a variant sets
+  specificity). A pressable is what react-native-web draws as one: an
+  element with Bloom's press host class (`blsp`, `PRESS_HOST_CLASS` in
+  `@oxy.so/bloom/styles`: every pressable host of the language, and Bloom's
+  Avatar and EngagementAction), or any element react-native-web makes
+  focusable (`tabindex="0"`: each Pressable it draws that is not disabled,
+  an `Embed`'s or another Bloom component's included). Bloom's web Button
+  and FAB are DOM buttons, which react-native-web does not keep a hover
+  from, so a hover of one is the stack's too, as it is in Bloom JSX. So a
+  pressable inside another, a Bloom one or an embedded one included,
+  answers only its own press and hover, on every platform (the parity
+  cases, held in Chrome by `verify-parity-web.mjs`, which holds every
+  anchor, press host and focusable element). A text trait a variant sets
   above a nested pressable answers that nearest one on both platforms.
 - **Icons** follow a varied foreground. On the web the glyph paints
   `currentColor` and its colour is a class under each condition (CSS answers
@@ -527,19 +538,25 @@ inside; a stack's layout to its host; a placement to its outermost box.
   `Conditioned` one that fills it from the environment.
 - **A material's variants.** A glass, an island or a concentric box is a
   Bloom material drawn from its own props. A varied padding of one is a view
-  just inside it, the same room, which takes the variant. A glass also varies
-  its frame and border (the material's own style), its corner (the radius it
-  clips to: one radius, so a corner of some sides or a concentric one is left
-  out) and its fill (`.background(token)`: Surface's `fill`, the lens's tint,
-  Liquid Glass's `tintColor`, over the glass's own tint while it holds). They
-  reach the material as its props, picked by a `Conditioned` leaf from the
-  breakpoint, the scheme and the state, built once per palette and set of
-  holding variants (nothing is resolved per render); a state the material
-  answers is tracked by the box around the glass, which is also the anchor
-  of the CSS of the views inside it. A material is never faded (an opacity
-  under `when()` is left out: an opacity on a material host or its ancestor
-  takes its backdrop blur away), and an island's or a concentric box's other
-  variants are left out too, each said once in development.
+  just inside it, the same room, which takes the variant. Each also varies
+  its frame and border (the material's own style; an island takes no border
+  width, as `BlurIsland` draws its own edge), its corner (the radius a glass
+  or an island clips to: one radius, so a corner of some sides is left out;
+  a concentric box's corner is its parent's less the inset, so it has none
+  to vary) and its fill (a glass's `.background(token)` is Surface's `fill`,
+  the lens's tint, Liquid Glass's `tintColor`, a role over the glass's own
+  tint while it holds; an island's and a concentric box's is their
+  `backgroundColor`). They reach the material as its style and props,
+  picked by a `Conditioned` leaf from the breakpoint, the scheme and the
+  state, built once per palette and set of holding variants (nothing is
+  resolved per render); a state the material answers is tracked by the box
+  around it, which is also the anchor of the CSS of the views inside it.
+  Under a Button or FAB the control takes the press, so the control reports
+  the states its glass answers (`Reporting`, beside its own handlers) to a
+  box around the glass (`ReportedState`), whose state the glass's leaf
+  reads. A material is never faded (an opacity under `when()` is left out:
+  an opacity on a material host or its ancestor takes its backdrop blur
+  away), said once in development.
 - **Variants nest.** `when('md', (v) => v.when('hovered', (h) => h.padding('lg')))`
   holds while both do (`md:hover:`): native reads both; the web writes the
   widest breakpoint's query around the other terms' selectors, each state's
@@ -684,8 +701,11 @@ VStack(
   `.background(role)` in the layer is its fill, painted from the theme on
   every platform (the island composites its tint for what sits on it). It
   sits in the fill's layer, as `.glass()` does: `.padding('sm').blur()` is
-  one island, `.blur().padding('sm')` pads outside it. A `Button` inside
-  keeps its own material (see [Built and not built](#built-and-not-built)).
+  one island, `.blur().padding('sm')` pads outside it. A `Button` or `FAB`
+  inside it paints with the island's shared material (Bloom's
+  `material="shared"`, as Bloom's own controls in a `BlurIsland` do), across
+  a `view()` too: the environment carries the island, and a glass inside it
+  ends it.
 
   ```ts
   HStack(Icon(RiFilterLine), Text('Filters')).spacing('xs').padding('sm').blur()
@@ -3729,8 +3749,14 @@ elements, as they are data) and its handlers; `.density('comfortable' |
 takes `.style()` and `.lines(n)`. `ShareSheet(options?)`: `.size('sm' | 'md'
 | 'lg')`; `peopleEmpty` is a language child.
 
-`mail-list` exports no component, only its helpers, constants and types,
-so it has no node.
+`@oxy.so/bloom/mail-list` is live code with no component of its own: the
+mail row's shared pieces. Its helpers, constants and types (`mailStrings`,
+`groupMailByDay`, `resolveMailPaint`, `MAIL_ROW_GEOMETRY`, `MailSummary`…) are
+what `List`'s mail recipe (`ListMail`), the mail thread, the composer and the
+selection bar draw with, and its parts (`MailStar`, `MailGlyphButton`) are
+inside those. The row is a node already, `MailRow(mail)` (Bloom's `ListItem`
+mail recipe), and an app imports the helpers as plain functions (see
+[Interop](#interop)).
 
 ## Generic components
 
@@ -3791,6 +3817,14 @@ environment as their host elements, so `asChild`, hover cards and slot props
 receive a `Text` or `View` (on native, through its `Painted` leaf, which passes
 every prop, `ref` included, to the host). An embed with box modifiers gets one `View`
 around it.
+
+**Bloom's helpers and constants.** What Bloom exports that draws nothing
+(`computeMortgage`, `listingQualityScore`, `messageEntities`,
+`DEFAULT_PROPERTY_TYPES`, `groupMailByDay`, a formatter or a table) is a plain
+function or value, imported from its Bloom subpath and called in a view body
+or a hook, as in JSX: `Text(money(computeMortgage(input).monthlyPayment))`. The
+language makes nodes, so it adds no second name for them; their results are
+what goes into a node's arguments and options.
 
 **The language inside JSX.** `toElement(node)` returns a React element. A bare
 `view()` node mounts its component directly. Anything else mounts under one
@@ -4157,6 +4191,18 @@ about what a token means, and its output is the same program on every platform.
 `packages/bloom-language-compiler/fixtures` interpreted and compiled, on native
 and web, and compares the committed trees on mount, after a re-render, and after
 a theme switch; each fixture also pins how many chains the compiler hoists.
+
+**Distribution.** Installing the compiler needs no Rust. CI (the `Language
+compiler binaries` workflow) builds the addon with napi-rs for linux x64 and
+arm64 (glibc), darwin x64 and arm64 and win32 x64, and a `wasm32-wasip1-threads`
+build; packs each as a platform package beside the compiler
+(`@oxy.so/bloom-language-compiler-<platform>`, its optional dependencies, by
+`scripts/pack-prebuilt.mjs`); and installs the packs on each platform with no
+cargo on PATH, where the addon and the WASI build compile every fixture alike
+(`scripts/verify-prebuilt.cjs`). The loader (`js/native.js`) takes a build from
+the checkout, else the platform's package, else the WASI build (a musl Linux,
+or a platform with no addon). Nothing is published: the packs are the run's
+artifacts, ready for the release workflow.
 
 ## Built and not built
 
