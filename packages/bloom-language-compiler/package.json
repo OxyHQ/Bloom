@@ -18,7 +18,6 @@
   },
   "files": [
     "js",
-    "bloom-language-compiler.node",
     "LICENSE"
   ],
   "scripts": {
@@ -26,7 +25,9 @@
     "typescript": "tsc --noEmit -p .",
     "test": "cargo test --locked && node --test test/adapter.test.cjs && jest",
     "lint:rust": "cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
-    "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock"
+    "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
+    "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
+    "pack:prebuilt": "node scripts/pack-prebuilt.mjs"
   },
   "dependencies": {
     "@jridgewell/trace-mapping": "0.3.31"
@@ -34,5 +35,24 @@
   "peerDependencies": {
     "metro-source-map": ">=0.83.0"
   },
-  "packageManager": "bun@1.4.3"
+  "packageManager": "bun@1.4.3",
+  "devDependencies": {
+    "@emnapi/core": "2.0.0-beta.3",
+    "@emnapi/runtime": "2.0.0-beta.3",
+    "@napi-rs/cli": "3.10.12",
+    "@napi-rs/wasm-runtime": "1.2.7",
+    "emnapi": "2.0.0-beta.3"
+  },
+  "napi": {
+    "binaryName": "bloom-language-compiler",
+    "packageName": "@oxy.so/bloom-language-compiler",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc",
+      "wasm32-wasip1-threads"
+    ]
+  }
 }
