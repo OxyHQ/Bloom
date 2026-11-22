@@ -1137,7 +1137,8 @@ export const ENUMS = {
     "mono"
   ],
   "cornerExtra": [
-    "concentric"
+    "concentric",
+    "infinite"
   ],
   "cornerCurve": [
     "round",

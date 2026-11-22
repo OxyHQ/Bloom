@@ -58,8 +58,6 @@ does not keeps the element JSX. Each class goes through the className table
 Measured on the corpus and kept as reasons (`measuredDifference` and
 `rounding` in `src/resolve.ts`):
 
-- `rounded-full`: NativeWind writes 9007199254740000 on native and
-  `calc(infinity * 1px)` on the web; the language's `full` is 9999.
 - `space-x-*`/`space-y-*`: Tailwind spaces children with margins on each of
   them; `.spacing()` is a gap.
 - `z-auto`: `z-index: auto` over react-native-web's 0; the language writes nothing.
