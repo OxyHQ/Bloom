@@ -74,9 +74,9 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
       'cssRadius narrows a web-only CSS length expression to RN borderRadius at the geometry owner boundary. Native returns numeric corners before this branch; no style object or unsupported key is cast.',
   },
   'styles/web-view-style.ts': {
-    count: 8,
+    count: 9,
     reason:
-      "`cssLength` (the existing EdgeDock adapter relocated here), `WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
+      "`WEB_DISPLAY_GRID`, `cssLength` (the existing EdgeDock adapter relocated here), `WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
   },
   'skeleton/Skeleton.tsx': {
     count: 1,
