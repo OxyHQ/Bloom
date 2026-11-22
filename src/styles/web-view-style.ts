@@ -1,4 +1,4 @@
-import type { ViewStyle } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
 
 /**
  * `position: fixed`, typed for React Native's `ViewStyle`.
@@ -114,6 +114,8 @@ export interface WebCssStyle extends ViewStyle {
   overscrollBehavior?: 'auto' | 'contain' | 'none';
   /** RN declares this on `TextStyle`, not `ViewStyle`. */
   userSelect?: 'auto' | 'none' | 'text' | 'contain' | 'all';
+  /** Inherited by a host's DOM descendants on the web (a utility on a View did this). */
+  textAlign?: TextStyle['textAlign'];
   /** One axis's overflow, as a utility wrote it (`overflow-x-auto`). */
   overflowX?: 'visible' | 'hidden' | 'clip' | 'scroll' | 'auto';
   overflowY?: 'visible' | 'hidden' | 'clip' | 'scroll' | 'auto';
