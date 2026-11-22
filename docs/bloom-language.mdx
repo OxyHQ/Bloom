@@ -1522,6 +1522,28 @@ export default screen(function Feed() {
 });
 ```
 
+**Insets on any scroll.** `.safeAreaInset(edge, view, spacing?)` is SwiftUI's
+`safeAreaInset`, on a `ScrollView`, a `ScrollArea` or a `ScrollSurface`: the
+view is pinned at the scroll's `top` or `bottom`, measured, and the content
+gets that much room at the edge (and the spacing), so it scrolls clear of it
+(a filter bar over a list, a mini-player above the bar). `.safeAreaBar(edge,
+view)` is SwiftUI's `safeAreaBar`: the same, with Bloom's scroll edge scrim
+(`EdgeScrim`, the header's own ramp) under the bar, so the content fades as it
+passes beneath, as Apple asks of a custom bar over scrolling content.
+
+```ts
+ScrollView(...messages).safeAreaBar('bottom', Composer())
+ScrollArea(...rows).safeAreaInset('top', FilterChips(), 'sm')
+```
+
+It is one mechanism on every platform: a box the scroll fills, the view
+absolute at its edge with its height from its own layout, the room added to
+the content container's padding over its `contentMargins`. Insets at one edge
+stack outward in the order chained. Not built: raising the safe-area insets
+that views inside the content read (React Native's `SafeAreaInsetsContext`),
+since the content's own padding already makes the room; and a `List` or
+`VirtualList`, whose content is Bloom's own.
+
 `ScrollView(...children)` is Bloom's `ScreenScrollView`, the screen's
 scroller: it binds the header's scroll-edge fade, the bottom bar's fold, the
 screen's reselect and, under a footer that follows the keyboard, keeps the
@@ -1535,6 +1557,7 @@ inside a screen, as Bloom's is.
 | `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden')` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator` |
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
+| `.safeAreaInset(edge, view, spacing?)`, `.safeAreaBar(edge, view)` | a view pinned at the `top` or `bottom` and the content padded by its height (see below) |
 | `.keyboardTaps('never' \| 'always' \| 'handled')` | `keyboardShouldPersistTaps` |
 
 Only what the chain names reaches the scroll view, so Bloom's own defaults

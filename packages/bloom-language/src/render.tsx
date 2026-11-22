@@ -94,6 +94,7 @@ import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
 import { getPlatformGlass } from './platform/glass-host';
 import { ConfirmationHost } from './platform/confirmation-host';
+import { type InsetRoom, insetsOf, SafeAreaInsets } from './chrome/safe-area-inset';
 import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
@@ -2331,16 +2332,31 @@ function renderHost(
     case 'scrollArea':
     case 'scrollSurface': {
       // The content's children keep their places as a stack's do.
-      const scroller = draw(
-        SCROLL_HOSTS[node.kind],
-        {
-          key: boxed ? undefined : key,
-          node,
-          render: (child: Child) => renderChild(child, ctx, undefined),
-          press: (value: Press | undefined) => pressOf(value, ctx.env),
-        },
-        ...renderChildren(node.children, ctx),
-      );
+      const render = (child: Child) => renderChild(child, ctx, undefined);
+      const host = SCROLL_HOSTS[node.kind];
+      const scroll = (room?: InsetRoom) =>
+        draw(
+          host,
+          {
+            key: boxed ? undefined : key,
+            node,
+            room,
+            render,
+            press: (value: Press | undefined) => pressOf(value, ctx.env),
+          },
+          ...renderChildren(node.children, ctx),
+        );
+      // Views pinned at its edges: the content makes room for them (SwiftUI's safe area insets).
+      const insets = insetsOf(node);
+      const scroller =
+        insets.length === 0
+          ? scroll()
+          : draw(SafeAreaInsets, {
+              key: boxed ? undefined : key,
+              insets,
+              render,
+              scroller: scroll,
+            });
       // Box modifiers are a view around the scroller, as SwiftUI's.
       if (!boxed) return scroller;
       return drawHost(View, boxOf('host', 'SV'), hostProps(undefined, key), scroller);
