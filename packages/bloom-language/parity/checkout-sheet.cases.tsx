@@ -55,12 +55,16 @@ export const CHECKOUT_SHEET_CASES: ParityCase[] = [
   },
   ...STEPS.map((step) => ({
     name: `CheckoutSheet ${step}`,
+    // Presented: it draws into the page's portal root, so each side has a page of its own.
+    isolated: true as const,
     language: () =>
       toElement(L.CheckoutSheet({ ...SHEET, open: true, step, cardEntry: L.Text('Card fields') })),
     bloom: () => <CheckoutSheet {...SHEET} open step={step} cardEntry={<Text>Card fields</Text>} />,
   })),
   ...ENUMS.methodTitleAlign.map((align) => ({
     name: `CheckoutSheet method, its title ${align}, title-2-bold`,
+    // Presented: it draws into the page's portal root, so each side has a page of its own.
+    isolated: true as const,
     language: () =>
       toElement(
         L.CheckoutSheet({ ...SHEET, open: true, step: 'method' })
