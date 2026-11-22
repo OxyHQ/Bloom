@@ -91,10 +91,10 @@ export const Fallbacks: Story = {
 
 /**
  * Weights, on the body family. Consuming apps must NOT set `fontFamily`
- * themselves — `BloomThemeProvider` installs the family as `Text.defaultProps`,
- * and an app that also names a face by hand overrides it with a name that may
- * not match the loaded asset. The failure is a silent fallback: text that looks
- * almost right.
+ * themselves — Bloom's `Text` names the family, and a raw text gets it from the
+ * app's `react-native` module (`@oxy.so/app-preset`); an app that also names a
+ * face by hand overrides it with a name that may not match the loaded asset.
+ * The failure is a silent fallback: text that looks almost right.
  */
 export const Weights: Story = {
   parameters: { controls: { disable: true } },

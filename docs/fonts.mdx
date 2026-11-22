@@ -58,10 +58,20 @@ import { fontFamilies, fontCssVars, FONT_ASSETS, applyFontFaces, FontLoader } fr
 | `fontFamilies.mono` | **JetBrains Mono** (variable, 100–800) | `Code`, `Pre` and `CodeBlock` |
 | `fontFamilies.display` | **BlomusModernus** (400, 700) | Oxy's brand face, for **every big title**: `H1`–`H4`, the `large-title` and `display-1` … `display-4` variants of `Text`, and a `Text` sized `text-3xl` or up (or marked `font-display`). See [Big titles](#big-titles) |
 
-On native, `FontLoader` prepends `{ fontFamily: 'Inter' }` to
-`Text.defaultProps.style` once the assets report loaded, so every `<Text>` in
-the app inherits it — an app setting its own `fontFamily` is overriding Bloom
-rather than complementing it.
+Bloom's `Text` names its family itself. A raw React Native `Text` or
+`TextInput` that names none draws Inter too, through `@oxy.so/app-preset`'s
+Metro config (`metro/base-font/`): it bundles NativeWind's `Text` and
+`TextInput` over a host that puts the base face FIRST in the style, so a
+`font-*` utility, an inline `fontFamily` and a parent text's family (for a
+nested text) still win. On native the base face is `Inter`; on the web it is
+`font-family: inherit`, the document's Inter (`--font-sans`), which
+react-native-web's own `font: 14px System` would otherwise replace with the
+system stack. An app setting its own `fontFamily` is overriding Bloom rather
+than complementing it.
+
+`Text.defaultProps` is not the way: React 19 applies `defaultProps` to class
+components only and `Text` is a function component, so a default set there
+never reaches a text. `FontLoader` set one until 22.1.10, to no effect.
 
 The assets ship in `src/fonts/assets/`: `InterVariable` (48,256 bytes as
 `.woff2`, 879,708 as `.ttf`), `JetBrainsMono-Variable` (40,404 / 187,208) and
