@@ -36,7 +36,7 @@ choice control.
 
 `children` renders below the selectable header, outside its pressable element.
 Use that slot for associated fields without nesting one control inside another.
-`className` lays out the outer card. `compact` is content density, independent of
+`style` lays out the outer card. `compact` is content density, independent of
 BloomScope's control size.
 
 ## Card surface
@@ -142,13 +142,11 @@ iOS continuous curves, and circular corners on Android and unsupported browsers.
 Both layers use the same curve; the inner radius accounts for the border width.
 Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and BlurIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.
 
-## `className` and `style` together
+## What `style` can change
 
-`className` resolves to classes and `style` stays inline, side by side on the
-host: `<Card className="p-6" style={{ maxWidth: 372, gap: 20 }} />` keeps both.
-Card reads only inline values (a `backgroundColor` for the surface paint, a
-`borderRadius` when `radius` is unset); a class cannot change what Card paints
-inline — its fill, radius, border and shadow — so use the props for those.
+Card reads two values from `style`: a `backgroundColor` for the surface paint,
+and a `borderRadius` when `radius` is unset. Its fill, radius, border and shadow
+are otherwise the props', so use the props for those.
 
 ## Parts
 

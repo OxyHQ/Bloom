@@ -31,7 +31,7 @@ afterEach(() => {
   container.remove();
 });
 
-it('keeps both the class and the inline style, without a styleq error', () => {
+it('keeps the inline style, without a styleq error', () => {
   const errors = jest.spyOn(console, 'error').mockImplementation(() => undefined);
   const warnings = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
   act(() =>
@@ -39,7 +39,6 @@ it('keeps both the class and the inline style, without a styleq error', () => {
       <BloomThemeProvider fonts={false}>
         <Card
           testID="card"
-          className="p-6"
           style={{ maxWidth: 372, gap: 20 }}
           radius="radius-16"
           appearance="outline"
@@ -52,7 +51,6 @@ it('keeps both the class and the inline style, without a styleq error', () => {
   warnings.mockRestore();
   expect(logged.filter((line) => line.includes('styleq'))).toEqual([]);
   const card = container.querySelector('[data-testid="card"]') as HTMLElement;
-  expect(card.classList.contains('p-6')).toBe(true);
   expect(card.style.maxWidth).toBe('372px');
   expect(card.style.gap).toBe('20px');
   expect(card.style.borderTopLeftRadius || card.style.borderRadius).toBe('16px');
