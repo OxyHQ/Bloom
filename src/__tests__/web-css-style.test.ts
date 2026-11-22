@@ -48,6 +48,11 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'styles/rounded-full.ts': {
+    count: 1,
+    reason:
+      "`ROUNDED_FULL` is the radius `rounded-full` drew: `'calc(infinity * 1px)'` on the web, a number on native. A VALUE-level cast like `Rail`'s `100vh`, typed once so every pill reads one constant.",
+  },
   'app-shell/AppShellMenuButton.tsx': {
     count: 1,
     reason:
