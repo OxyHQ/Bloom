@@ -70,7 +70,6 @@ describe('resolveClassName', () => {
     ['rounded-t-3xl rounded-tl-lg', 'corner-overlap'],
     ['rounded-l-full rounded-tl-lg', 'corner-overlap'],
     ['md:space-y-2', 'not-varied'],
-    ['web:whitespace-nowrap', 'not-varied'],
     ['mx-auto', 'annotated'],
     ['text-sm', 'text-on-view'],
     ['hover:bg-card', 'state-off-pressable'],
@@ -86,6 +85,18 @@ describe('resolveClassName', () => {
       ['corner', 'infinite', 'left'],
       ['corner', 'sm', 'bottom-right'],
       ['childSpacing', 'vertical', 'sm'],
+    ]);
+  });
+  it('keeps what no variant changes under a platform, and tabular-nums on the web only', () => {
+    const result = resolveClassName('web:whitespace-nowrap tabular-nums', 'text', table);
+    expect(result.ok && result.value.variants).toEqual([
+      {
+        conditions: ['web'],
+        mods: [
+          { name: 'noWrap', args: [] },
+          { name: 'monospacedDigit', args: [] },
+        ],
+      },
     ]);
   });
   it('takes a state variant on a Pressable', () => {
