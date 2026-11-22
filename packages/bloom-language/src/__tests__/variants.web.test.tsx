@@ -97,8 +97,9 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
       $$css: true,
       flexDirection: WEB_CLASS['flexDirection:row'],
     });
+    // A pressable is that class, or what react-native-web makes focusable (an Embed's Pressable).
     for (const state of ['hovered', 'pressed'] as const)
-      expect(VARIANT_SELECTORS[state]).toContain(`:not(:has(.${PRESS_HOST_CLASS}:`);
+      expect(VARIANT_SELECTORS[state]).toContain(`:not(:has(:is(.${PRESS_HOST_CLASS}, [tabindex="0"]):`);
   });
 
   it('a variant sheet puts each class under its condition’s CSS', () => {
@@ -111,7 +112,7 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
       `${VARIANT_SELECTORS.hovered.replaceAll('&', `.${name}-hovered`)}{padding-top:16px;}`,
     );
     expect(VARIANT_SELECTORS.hovered).toBe(
-      '&:is(.blsg:hover:where(:not(:has(.blsp:hover))), .blsg:hover:where(:not(:has(.blsp:hover))) *):where(:not(.blsg:hover:where(:not(:has(.blsp:hover))) .blsg, .blsg:hover:where(:not(:has(.blsp:hover))) .blsg *))',
+      '&:is(.blsg:hover:where(:not(:has(:is(.blsp, [tabindex="0"]):hover))), .blsg:hover:where(:not(:has(:is(.blsp, [tabindex="0"]):hover))) *):where(:not(.blsg:hover:where(:not(:has(:is(.blsp, [tabindex="0"]):hover))) .blsg, .blsg:hover:where(:not(:has(:is(.blsp, [tabindex="0"]):hover))) .blsg *))',
     );
   });
 
