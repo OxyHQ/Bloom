@@ -1420,6 +1420,7 @@ toast.success('Saved')
 | `.alert(isPresented, Alert(title))` | Bloom `AlertDialog` beside the view (`open`, `onOpenChange`) |
 | `.dialog(isPresented, Dialog(...content))` | Bloom `Dialog` beside the view (`open`, `onClose`), its content the children |
 | `.popover(isPresented, Popover(...content))` | Bloom `Popover`: the view is its `PopoverTrigger asChild`, the content its `PopoverContent` |
+| `.confirmationDialog(isPresented, ConfirmationDialog(title, ...rows))` | the lens menu grown out of the view (Android, OxyOS), SwiftUI's `confirmationDialog` (iOS), Bloom `Dialog` (the web) |
 | `ConnectionStatus()` | Bloom `ConnectionStatusToasts` |
 | `toast(…)` | Bloom's `toast` |
 
@@ -1449,6 +1450,28 @@ toast.success('Saved')
   `.alignOffset(space)` (a shift along the side, negatives included),
   `.frame({ minWidth, maxWidth, maxHeight })`, `.testID()`. Pressing the view opens it, as
   Bloom's trigger does, through the binding.
+- **ConfirmationDialog.** SwiftUI's `confirmationDialog`, and Apple's rule
+  that an action sheet "originates from the element that initiates the
+  action": the rows are menu rows (`Item`, tagged with `.actions()` as a
+  `Menu`'s, or with their handlers), `.message()` the text under the title,
+  `.titleVisibility('automatic' | 'visible' | 'hidden')`, `.cancelLabel()` an
+  explicit cancel row where the platform draws none of its own. Every row
+  dismisses it, and dismissing it is its cancel.
+
+  ```ts
+  Button(Text('Delete')).style('subtle').tint('danger').onPress(() => setAsking(true))
+    .confirmationDialog(
+      [asking, setAsking],
+      ConfirmationDialog('Delete this post?', Item('Delete').destructive().onPress(remove),
+        Item('Archive instead').onPress(archive)).message('It cannot be undone.'),
+    )
+  ```
+
+  | | Android, OxyOS | iOS (not verified) | Web |
+  | --- | --- | --- | --- |
+  | Drawn as | the lens menu, grown out of the view: the nearest lens base, or a base of its own around the view with no resting lens (`lens={false}`); the title and message are its headings | `@expo/ui`'s `ConfirmationDialog`, its trigger the view (`RNHostView`): an action sheet from it, a popover in regular width | Bloom `Dialog`, from the bottom and centred from `md`, its rows a column of actions (a destructive row in the destructive colour) |
+  | Cancel | outside and back | the system's own row | the backdrop and Escape |
+  | Without the platform's | Bloom's dialog | Bloom's dialog | |
 - **Not views.** `Alert`, `Dialog` and `Popover` are what a view presents; the
   types keep them out of a stack. An alert and a dialog are drawn beside the
   view that presents them (each portals itself over the screen), as an app
