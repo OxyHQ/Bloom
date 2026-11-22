@@ -10,8 +10,7 @@ import { RADIUS, SPACING } from '../design-tokens/scales';
  * without one — but only ONE of them may own the numbers, or they disagree. They
  * did: `borderRadius.full` was 999 against `radius-max` 9999, `borderRadius` had
  * no 28 and `RADIUS` had no 16, and each file's own comments claimed to match the
- * other. `scales.ts` is the authority (the Tailwind preset, `theme.css` and
- * `tokens.json` are generated from it); everything below reads it by reference,
+ * other. `scales.ts` is the authority (`tokens.json` is generated from it); everything below reads it by reference,
  * so a rung cannot exist in one spelling and not the other.
  *
  * `fontSize`, `lineHeight`, `animation` and `gradients` stay declared here: the

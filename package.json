@@ -261,20 +261,6 @@
         "default": "./lib/commonjs/design-tokens/index.js"
       }
     },
-    "./tailwind-preset": {
-      "react-native": {
-        "types": "./lib/typescript/module/design-tokens/tailwind-preset.d.ts",
-        "default": "./src/design-tokens/tailwind-preset.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/design-tokens/tailwind-preset.d.ts",
-        "default": "./lib/module/design-tokens/tailwind-preset.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/design-tokens/tailwind-preset.d.ts",
-        "default": "./lib/commonjs/design-tokens/tailwind-preset.js"
-      }
-    },
     "./portal": {
       "react-native": {
         "types": "./lib/typescript/module/portal/index.d.ts",
@@ -4414,7 +4400,6 @@
         "default": "./lib/commonjs/expandable-text/index.js"
       }
     },
-    "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./design-tokens/tokens.json": "./src/design-tokens/tokens.json",
     "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js"
@@ -4524,12 +4509,11 @@
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
-    "generate:theme-css": "bun scripts/generate-theme-css.ts",
     "generate:theme-golden": "bun scripts/generate-theme-golden.ts",
     "generate:preset-accent-hues": "bun scripts/generate-preset-accent-hues.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
-    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts && node scripts/generate-task-catalog.mjs",
+    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-design-tokens-json.ts && node scripts/generate-task-catalog.mjs",
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree && bun run verify:task-catalog",
     "verify:package": "node scripts/verify-package.mjs",
@@ -4783,9 +4767,6 @@
       ],
       "design-tokens": [
         "./lib/typescript/module/design-tokens/index.d.ts"
-      ],
-      "tailwind-preset": [
-        "./lib/typescript/module/design-tokens/tailwind-preset.d.ts"
       ],
       "portal": [
         "./lib/typescript/module/portal/index.d.ts"

@@ -69,15 +69,16 @@ function render({
     ),
   );
 }
-it('preserves exact colors in every alias and JS consumer, including the portal, without changing the app', () => {
+it('preserves exact colors in every token and JS consumer, including the portal, without changing the app', () => {
   render({ mode: 'dark', values: tokens });
   const scope = document.querySelector<HTMLElement>('[data-testid="scope"]')!;
   const portal = document.querySelector<HTMLElement>('[data-testid="portal"]')!.parentElement!;
   for (const node of [scope, portal]) {
     expect(node.style.getPropertyValue('--background')).toBe('#5433eb');
-    expect(node.style.getPropertyValue('--color-background')).toBe('#5433eb');
-    expect(node.style.getPropertyValue('--color-text')).toBe('#ffffff');
-    expect(node.style.getPropertyValue('--color-fill')).toBe(tokens.card);
+    expect(node.style.getPropertyValue('--foreground')).toBe('#ffffff');
+    expect(node.style.getPropertyValue('--card')).toBe(tokens.card);
+    // Tokens only: no Tailwind `--color-*` alias layer.
+    expect(node.style.getPropertyValue('--color-background')).toBe('');
   }
   for (const id of ['inside', 'portal']) {
     expect(read(id).colors).toMatchObject({

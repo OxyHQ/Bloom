@@ -65,8 +65,8 @@ function buildColorsFromPreset(
       textSecondary: g('muted-foreground'),
       // ONE quiet-text colour, not two spellings of a role that disagreed.
       //
-      // `--color-text-tertiary` has always aliased `--muted-foreground` in
-      // `design-tokens/theme.css`, so `className="text-tertiary"` rendered at
+      // `--color-text-tertiary` always aliased `--muted-foreground` in Bloom's
+      // old Tailwind theme, so `className="text-tertiary"` rendered at
       // 8.42:1 in light / 11.33:1 in dark, while this field read `r.outline` and
       // rendered the SAME named role at 4.04:1 / 6.12:1 — below AA for body text
       // in light. One name, two colours, and only the JS side failed.

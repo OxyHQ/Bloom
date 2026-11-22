@@ -1,17 +1,10 @@
 /**
  * Numeric design-token scales for the Oxy Unified Design Language.
  *
- * These are platform-agnostic plain numbers / CSS strings consumed by the Bloom
- * Tailwind preset (`tailwind-preset.ts`). The SAME keys produce the SAME utility
- * class names on Tailwind (web) and NativeWind (native):
- *   - spacing  → `p-space-8`, `gap-space-20`, `px-screen-margin`, `m-space-16`
- *   - radius   → `rounded-radius-20`
- *   - type     → `font-body` (family/weight) + `text-body` (size/lineHeight)
- *   - shadow   → `shadow-s`, `shadow-m`
- *
- * ADDITIVE: every key is namespaced (`space-*`, `radius-*`, the typography role
- * names, `shadow-s/m`) and does not collide with Tailwind's built-in numeric
- * scale (`p-4`, `rounded-lg`, `text-sm`) — those keep working unchanged.
+ * Platform-agnostic plain numbers and CSS strings: the authority Bloom's style
+ * tokens (`styles/tokens.ts`), `tokens.json` and the Bloom language's spec read.
+ * Keys are namespaced (`space-*`, `radius-*`, the typography role names,
+ * `shadow-s/m`).
  */
 
 /* -------------------------------------------------------------------------- */
@@ -58,9 +51,8 @@ export const SPACING = {
  * `radius-max` is 9999 and not 999. Both render identically everywhere Bloom can
  * reach — a corner radius is clamped to half the element's SMALLER dimension, so
  * the two only diverge on a control at least 1998px tall AND wide — but one
- * number had to win, this file is the authority the Tailwind preset and the CSS
- * layer are already built from, and 9999 is the idiom the `rounded-radius-max`
- * utility has been publishing all along.
+ * number had to win, this file is the authority, and 9999 is the idiom the old
+ * `rounded-radius-max` utility published all along.
  */
 export const RADIUS = {
   'radius-0': 0,
@@ -97,11 +89,8 @@ export const BORDER_WIDTH = {
  * string; `family` selects the Bloom font CSS var (`sans` = body/UI,
  * `display` = headings/serif).
  *
- * The Tailwind preset splits each role into TWO utilities so a consumer can
- * apply the size/leading and the family/weight independently or together:
- *   - `text-<role>`  → `fontSize` + `lineHeight`   (via theme.fontSize)
- *   - `font-<role>`  → `fontFamily` + `fontWeight` (via theme.fontFamily, which
- *                       maps a key to a [family, { fontWeight }] tuple)
+ * Each role is a size and leading plus a family and weight, applied together
+ * or apart.
  */
 export interface TypeRole {
   /** Font size in px. */
