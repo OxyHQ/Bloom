@@ -1,7 +1,6 @@
 import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { ScrollArea } from '../layout/ScrollArea';
-import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
 import type React from 'react';
@@ -187,9 +186,19 @@ function Scroller({
 
 /** A route Screen's own clearance beyond the occupied bottom edge (Screen's default). */
 const PAGE_CLEARANCE = 16;
-const AnimatedLayoutView = Animated.createAnimatedComponent(StyledView);
-const READING_TRANSITION =
-  'web:transition-[width,flex-basis,max-width,flex-grow] web:duration-[380ms] web:ease-in-out web:motion-reduce:transition-none';
+const AnimatedLayoutView = Animated.createAnimatedComponent(View);
+/** The reading column eases its width on the web (`ease-in-out`), unless motion is reduced. */
+const READING_TRANSITION = {
+  transitionProperty: 'width,flex-basis,max-width,flex-grow',
+  transitionDuration: '380ms',
+  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+} as unknown as ViewStyle;
+/** `flex: 1` with `minHeight: 0`, as the classes computed it. */
+const FLEX_FILL_BOUNDED: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: '0%', minHeight: 0 };
+const READING_TRANSITION_REDUCED = {
+  ...(READING_TRANSITION as object),
+  transitionProperty: 'none',
+} as unknown as ViewStyle;
 
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
@@ -1605,13 +1614,19 @@ export function createAppShellEngine() {
       : plainFrame || railNav
         ? { paddingTop: gutter, paddingBottom: gutter }
         : {};
+    const readingTransition =
+      Platform.OS === 'web'
+        ? reducedMotion
+          ? READING_TRANSITION_REDUCED
+          : READING_TRANSITION
+        : undefined;
     const centredBody = (
       <AnimatedLayoutView
-        className={READING_TRANSITION}
         {...(Platform.OS === 'web'
           ? { dataSet: { bloomReadingEnvelope: cssScope ?? 'legacy' } }
           : {})}
         style={[
+          readingTransition,
           {
             flexGrow: 1,
             flexShrink: 1,
@@ -1638,12 +1653,12 @@ export function createAppShellEngine() {
         ]}
       >
         <AnimatedLayoutView
-          className={READING_TRANSITION}
           {...(Platform.OS === 'web'
             ? { dataSet: { bloomReadingContent: cssScope ?? 'legacy' } }
             : {})}
           testID={testID ? `${testID}-content` : undefined}
           style={[
+            readingTransition,
             // `flexBasis` is the reading width and `flexShrink: 1` is what keeps a
             // 600px column inside a 360px phone — a `width` would overflow.
             {
@@ -1998,7 +2013,7 @@ export function createAppShellEngine() {
                   style={{ ...(doc ? { flexGrow: 1 } : flexFill), minHeight: 0, minWidth: 0 }}
                 >
                   {topBarNode}
-                  <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
+                  <View style={doc ? undefined : FLEX_FILL_BOUNDED}>
                     <View
                       {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
                       style={[
@@ -2009,7 +2024,7 @@ export function createAppShellEngine() {
                       {navRegion}
                       {body}
                     </View>
-                  </StyledView>
+                  </View>
                 </View>
                 <Animated.View
                   pointerEvents={isOpen ? 'auto' : 'none'}
@@ -2064,10 +2079,13 @@ export function createAppShellEngine() {
               >
                 {bars}
                 {isOpen && (
-                  <StyledView
+                  <View
                     pointerEvents="none"
-                    className="absolute bottom-0 left-0 right-0"
                     style={{
+                      position: 'absolute',
+                      right: 0,
+                      bottom: 0,
+                      left: 0,
                       height: contentReserve,
                       backgroundColor: theme.isDark
                         ? 'rgba(255, 255, 255, 0.05)'

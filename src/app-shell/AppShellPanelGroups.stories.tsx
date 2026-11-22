@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { StyledView as View } from '../styles/styled-primitives';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button';
 import { PageHeader } from '../page-header';
@@ -40,7 +40,7 @@ function ReadingPanel({
           title={title}
           actions={
             onOpen ? (
-              <View className="flex-row gap-2">
+              <View style={{ flexDirection: 'row', gap: 8 }}>
                 <Button
                   testID="groups-open"
                   accessibilityLabel={`Likes; completed exits ${exitCount}; resize commits ${resizeCommits}`}
@@ -60,12 +60,12 @@ function ReadingPanel({
       }
     >
       <ScreenScrollView>
-        <View className="gap-4 p-4">
+        <View style={{ gap: 16, padding: 16 }}>
           <Button testID={`groups-${title.toLowerCase()}-saved`} onPress={() => setSaved(!saved)}>
             {saved ? 'Saved' : 'Save'}
           </Button>
           {Array.from({ length: short ? 2 : 35 }, (_, index) => (
-            <Text key={index} className="py-4">
+            <Text key={index} style={{ paddingBlock: 16 }}>
               {title} paragraph {index + 1}. Each panel keeps its own reading position.
             </Text>
           ))}
@@ -210,7 +210,7 @@ function PercentHeightHost({ children }: { children: ReactNode }) {
           min-height: 0 !important;
         }
       `}</style>
-      <View testID="groups-percent-host" className="h-full">
+      <View testID="groups-percent-host" style={{ height: '100%' }}>
         {children}
       </View>
     </>
@@ -269,7 +269,7 @@ export const EmailFlow: Story = {
             id: `email-${index}`,
             testID: `flow-email-${index}`,
             content: (
-              <View className="gap-4 p-6">
+              <View style={{ gap: 16, padding: 24 }}>
                 <Text>Email {index + 1}</Text>
                 {Array.from({ length: index % 2 === 0 ? 5 : 8 }, (_, paragraph) => (
                   <Text key={paragraph}>
