@@ -1,24 +1,93 @@
 import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiEqualizerLine } from '../icons/remix/RiEqualizerLine';
+import { RiSideBarLine } from '../icons/remix/RiSideBarLine';
+import { RiSortDesc } from '../icons/remix/RiSortDesc';
 import { useMessages } from '../locale/messages';
+import { IS_WEB } from '../styles/platform';
+import { ROUNDED_FULL } from '../styles/rounded-full';
+import { webDataSet } from '../styles/web-data';
+import { createTokenStyles } from '../theme/color-tokens';
+import { Text } from '../typography';
 import { BoardTooltip } from './BoardTooltip';
-import { PRIORITIES, cx } from './constants';
+import { PRIORITIES } from './constants';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
-import {
-  SourcePressable as Pressable,
-  RiCheckLine,
-  RiEqualizerLine,
-  RiSideBarLine,
-  RiSortDesc,
-  SourceText as Text,
-  SourceView as View,
-} from './SourcePrimitives';
+import { TAILWIND_SHADOW, TYPE, useBoardText } from './styles';
+import { useProjectBoardWebCss } from './web-css';
 import type { BoardSort, TicketPriority } from './types';
 export { PRIORITIES } from './constants';
-const TRIGGER =
-  'relative flex size-9 shrink-0 items-center justify-center rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-primary shadow-xs transition-colors hover:border-border-button-hover hover:bg-background-primary-hover';
-const MENU = 'w-[220px] rounded-[14px] p-1';
-const ROW = 'rounded-2lg px-2 py-1.5 text-body-medium';
+
+const styles = StyleSheet.create({
+  controls: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  /**
+   * A menu panel's width. Its `rounded-[14px] p-1` lost to the panel's own
+   * chrome, and the panel keeps its own width on the web.
+   */
+  menu: { width: 220 },
+  // A menu or select row (`rounded-2lg px-2 text-body-medium`); its `py-1.5`
+  // lost to the row's own 4px.
+  row: { borderRadius: 10, paddingInline: 8, ...TYPE.body },
+  option: { paddingInline: 8, ...TYPE.body },
+  rowLabel: { flexGrow: 1, flexShrink: 1, flexBasis: '0%' },
+  check: { width: 16, height: 16 },
+  icon: { width: 20, height: 20 },
+  section: { paddingInline: 8, paddingTop: 8, paddingBottom: 4 },
+});
+
+const useStyles = createTokenStyles((t) => ({
+  /** The 36px bordered square of a control menu; its web fill and hover are the sheet's. */
+  trigger: {
+    position: 'relative',
+    flexDirection: 'row',
+    width: 36,
+    height: 36,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: t.border,
+    color: t.foreground,
+    ...(IS_WEB
+      ? null
+      : {
+          backgroundColor: t.card,
+          boxShadow: [
+            { offsetX: 0, offsetY: 1, blurRadius: 2, spreadDistance: 0, color: '#0000000d' },
+          ],
+        }),
+  },
+  /** The accent dot on an active control, ringed in the page's fill. */
+  dot: {
+    position: 'absolute',
+    insetInlineEnd: -2,
+    top: -2,
+    width: 8,
+    height: 8,
+    borderRadius: ROUNDED_FULL,
+    backgroundColor: t.primary,
+    boxShadow: IS_WEB
+      ? TAILWIND_SHADOW(`0 0 0 2px ${t.background}`, '0 0 #0000')
+      : [{ offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 2, color: t.background }],
+  },
+  /** A property's value as a borderless select trigger (`bg-transparent`, `shadow-none`). */
+  property: {
+    width: 'auto',
+    justifyContent: 'flex-start',
+    borderRadius: 6,
+    borderStyle: 'solid',
+    borderWidth: 0,
+    ...TYPE.body,
+    ...(IS_WEB
+      ? { boxShadow: TAILWIND_SHADOW('0 0 #0000', '0 0 #0000') }
+      : { backgroundColor: '#0000', boxShadow: [] }),
+  },
+  propertyCreate: { padding: 0, color: t.mutedForeground },
+  propertyEdit: { minWidth: 0, padding: 4, color: t.foreground },
+}));
 export function PropertySelect({
   label,
   value,
@@ -52,38 +121,35 @@ export function PropertySelect({
     SelectItemText,
     SelectItemIndicator,
   } = useProjectBoardPlatform();
+  useProjectBoardWebCss();
+  const own = useStyles();
   return (
     <Select size="sm" value={value} onValueChange={onChange}>
       <SelectTrigger asChild label={label}>
         <Pressable
           accessibilityLabel={label}
-          className={
-            create
-              ? 'w-auto justify-start rounded-md border-0 bg-transparent p-0 text-body-medium text-text-secondary shadow-none hover:bg-background-primary-hover [&>svg]:hidden'
-              : cx(
-                  'w-auto min-w-0 justify-start rounded-md border-0 bg-transparent p-1 text-body-medium text-text-primary shadow-none [&>svg]:hidden',
-                  chip
-                    ? 'group/priority hover:bg-transparent'
-                    : 'hover:bg-background-primary-hover',
-                )
-          }
-          style={{
-            flexShrink: 0,
-            flexDirection: 'row',
-            margin: create ? 0 : -4,
-          }}
+          // A pill's own fill answers a hover; any other value takes the row's.
+          {...webDataSet({ bloomBoardProperty: chip ? 'chip' : '' })}
+          style={[
+            own.property,
+            create ? own.propertyCreate : own.propertyEdit,
+            {
+              flexShrink: 0,
+              flexDirection: 'row',
+              margin: create ? 0 : -4,
+            },
+          ]}
         >
           {renderValue ?? <SelectValue leading={leading} placeholder={label} />}
         </Pressable>
       </SelectTrigger>
       <SelectContent
         label={label}
-        className={create ? 'z-[110] w-[220px]' : 'z-[120] w-[220px] rounded-[14px] p-1'}
         items={options}
         valueExtractor={(item) => item.id}
         width={220}
         renderItem={(item) => (
-          <SelectItem value={item.id} label={item.label} className="px-2 py-1.5 text-body-medium">
+          <SelectItem value={item.id} label={item.label} style={styles.option}>
             {item.icon}
             {!item.hideLabel && <SelectItemText>{item.label}</SelectItemText>}
             <SelectItemIndicator />
@@ -126,30 +192,35 @@ export function ProjectBoardControls({
     DropdownMenuItem,
     DropdownMenuCheckboxItem,
   } = useProjectBoardPlatform();
+  useProjectBoardWebCss();
+  const own = useStyles();
+  const text = useBoardText();
   const filtered = priority !== 'all' || project !== 'all';
   const trigger = (label: string, icon: ReactNode, active = false) => (
     <BoardTooltip label={label}>
       <DropdownMenuTrigger asChild>
-        <Pressable accessibilityLabel={label} className={TRIGGER}>
+        <Pressable
+          accessibilityLabel={label}
+          style={own.trigger}
+          {...webDataSet({ bloomBoardTrigger: '' })}
+        >
           {icon}
-          {active && (
-            <View className="absolute -top-0.5 -end-0.5 size-2 rounded-full bg-accent-500 ring-2 ring-background-full" />
-          )}
+          {active && <View style={own.dot} />}
         </Pressable>
       </DropdownMenuTrigger>
     </BoardTooltip>
   );
   const option = (label: string, selected: boolean, run: () => void, key: string) => (
-    <DropdownMenuItem key={key} onPress={run} className={ROW}>
-      <Text className="flex-1 text-body-medium text-text-primary">{label}</Text>
-      {selected && <RiCheckLine className="size-4" />}
+    <DropdownMenuItem key={key} onPress={run} style={styles.row}>
+      <Text style={[styles.rowLabel, text.body]}>{label}</Text>
+      {selected && <RiCheckLine style={styles.check} />}
     </DropdownMenuItem>
   );
   return (
-    <View className="flex items-center gap-2" accessibilityLabel={m.controls}>
+    <View style={styles.controls} accessibilityLabel={m.controls}>
       <DropdownMenu>
-        {trigger(m.sortTickets, <RiSortDesc className="size-5" />, sort !== 'manual')}
-        <DropdownMenuContent label={m.sortTickets} className={MENU} style={{ width: 220 }}>
+        {trigger(m.sortTickets, <RiSortDesc style={styles.icon} />, sort !== 'manual')}
+        <DropdownMenuContent label={m.sortTickets} style={styles.menu}>
           {(
             [
               { id: 'manual', label: m.manualOrder },
@@ -160,9 +231,9 @@ export function ProjectBoardControls({
         </DropdownMenuContent>
       </DropdownMenu>
       <DropdownMenu>
-        {trigger(m.filterTickets, <RiEqualizerLine className="size-5" />, filtered)}
-        <DropdownMenuContent label={m.filterTickets} className={MENU} style={{ width: 220 }}>
-          <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">{m.priority}</Text>
+        {trigger(m.filterTickets, <RiEqualizerLine style={styles.icon} />, filtered)}
+        <DropdownMenuContent label={m.filterTickets} style={styles.menu}>
+          <Text style={[styles.section, text.captionMuted]}>{m.priority}</Text>
           {(['all', ...PRIORITIES] as const).map((v) =>
             option(
               v === 'all' ? m.allPriorities : m.priorityLabels[v],
@@ -171,13 +242,13 @@ export function ProjectBoardControls({
               v,
             ),
           )}
-          <Text className="px-2 pt-2 pb-1 text-body-2-medium text-text-tertiary">{m.project}</Text>
+          <Text style={[styles.section, text.captionMuted]}>{m.project}</Text>
           {['all', ...projects].map((v) =>
             option(v === 'all' ? m.allProjects : v, project === v, () => onProject(v), v),
           )}
           {filtered && (
             <DropdownMenuItem
-              className={ROW}
+              style={styles.row}
               onPress={() => {
                 onPriority('all');
                 onProject('all');
@@ -189,13 +260,17 @@ export function ProjectBoardControls({
         </DropdownMenuContent>
       </DropdownMenu>
       <DropdownMenu>
-        {trigger(m.displayOptions, <RiSideBarLine className="size-5" />)}
-        <DropdownMenuContent label={m.displayOptions} className={MENU} style={{ width: 220 }}>
-          <DropdownMenuCheckboxItem className={ROW} checked={showDone} onCheckedChange={onShowDone}>
+        {trigger(m.displayOptions, <RiSideBarLine style={styles.icon} />)}
+        <DropdownMenuContent label={m.displayOptions} style={styles.menu}>
+          <DropdownMenuCheckboxItem
+            style={styles.row}
+            checked={showDone}
+            onCheckedChange={onShowDone}
+          >
             {m.showDone}
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
-            className={ROW}
+            style={styles.row}
             checked={fillColumns}
             onCheckedChange={onFillColumns}
           >

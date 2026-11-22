@@ -1,6 +1,26 @@
 import type { ReactNode } from 'react';
-import { StyledView } from '../styles/styled-primitives';
-import { cx } from './constants';
+import { View } from 'react-native';
+import { IS_WEB } from '../styles/platform';
+import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
+import { createTokenStyles } from '../theme/color-tokens';
+import { useTheme } from '../theme/use-theme';
+import { CARD_SHADOW } from './styles';
+import { useProjectBoardWebCss } from './web-css';
+
+const useStyles = createTokenStyles((t) => ({
+  card: {
+    position: 'relative',
+    width: '100%',
+    flexDirection: 'column',
+    borderRadius: 12,
+    backgroundColor: t.card,
+    // The web's shadow and its hover are the adopted sheet's.
+    ...(IS_WEB ? null : { boxShadow: [CARD_SHADOW] }),
+  },
+  /** The lifted card's `dark:backdrop-blur-[12px]` (web). */
+  darkOverlayWeb: { backdropFilter: 'blur(12px)' } as WebCssStyle,
+}));
 
 /** ProjectBoard's original card material, shared by ticket and product-owned content. */
 export function ProjectBoardCardSurface({
@@ -12,18 +32,21 @@ export function ProjectBoardCardSurface({
   overlay?: boolean;
   wholeCardDrag?: boolean;
 }) {
+  useProjectBoardWebCss();
+  const styles = useStyles();
+  const { isDark } = useTheme();
+  const dark = IS_WEB && isDark;
   return (
-    <StyledView
-      className={cx(
-        'relative flex w-full flex-col rounded-xl bg-background-primary-default text-start shadow-[0_1px_1px_rgb(0_0_0/0.05)] dark:bg-background-primary-default/60',
-        'ring-[2.5px] ring-transparent transition-[box-shadow,opacity] duration-200 ease-out motion-reduce:transition-none',
-        overlay
-          ? 'cursor-grabbing dark:backdrop-blur-[12px]'
-          : 'hover:shadow-sm hover:ring-border-button-hover',
-        !overlay && wholeCardDrag && 'cursor-grab active:cursor-grabbing',
-      )}
+    <View
+      style={[styles.card, dark && overlay && styles.darkOverlayWeb]}
+      {...webDataSet({
+        bloomBoardCard: overlay ? 'overlay' : wholeCardDrag ? 'drag' : 'handle',
+        // `dark:bg-background-primary-default/60`, a `color-mix()` the sheet
+        // draws. Native drew it opaque: its fallback is the unmixed token.
+        ...(dark ? { bloomBoardCardDark: '' } : null),
+      })}
     >
       {children}
-    </StyledView>
+    </View>
   );
 }

@@ -121,7 +121,7 @@ export function TicketGenieSurface({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <svg width="0" height="0" aria-hidden className="pointer-events-none absolute">
+      <svg width="0" height="0" aria-hidden style={{ pointerEvents: 'none', position: 'absolute' }}>
         <defs>
           <filter
             id={id}
