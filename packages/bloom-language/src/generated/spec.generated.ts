@@ -2799,6 +2799,12 @@ export const MODIFIERS = {
   "chevron": [
     "value?"
   ],
+  "wrapControl": [
+    "value?"
+  ],
+  "descriptionLines": [
+    "value"
+  ],
   "toggle": [
     "value"
   ],
@@ -6941,6 +6947,8 @@ export const NODE_MODIFIERS = {
     "trailing",
     "chevron",
     "lines",
+    "wrapControl",
+    "descriptionLines",
     "destructive",
     "disabled",
     "onPress",
