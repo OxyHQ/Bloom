@@ -130,6 +130,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   tone: toneProp,
   style,
   labelStyle,
+  bare = false,
   accessibilityLabel,
   nativeID,
   testID,
@@ -184,7 +185,10 @@ const RadioComponent = function Radio<Value extends string = string>({
     <RadioHost
       {...spaceKey}
       {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
-      style={[rowStyle, style]}
+      style={[
+        bare ? { '--bloom-radio-ring': rowStyle['--bloom-radio-ring'], ...ringOffset } : rowStyle,
+        style,
+      ]}
       onPress={handlePress}
       disabled={isDisabled}
       nativeID={field.nativeID}
@@ -237,8 +241,9 @@ const RadioComponent = function Radio<Value extends string = string>({
           ) : (
             label && (
               <RadioLabel
+                bare={bare}
                 variant={sizeConfig.label}
-                style={[{ color: theme.colors.text }, labelStyle]}
+                style={[!bare && { color: theme.colors.text }, labelStyle]}
               >
                 {label}
               </RadioLabel>
@@ -286,6 +291,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     style,
     labelStyle,
     optionStyle,
+    bareOptions = false,
     appearance,
     renderOption,
     variant = 'default',
@@ -294,7 +300,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
   const [value, setValue] = useControllableState<Value | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    controlled: Object.hasOwn(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },
@@ -435,6 +441,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 disabled={optionDisabled}
                 size={size}
                 style={ownStyle}
+                bare={bareOptions}
                 testID={option.testID}
               />
             ) : variant === 'chip' ? (
@@ -452,6 +459,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 tone={tone}
                 appearance={appearance}
                 style={ownStyle}
+                bare={bareOptions}
                 labelStyle={labelStyle}
                 testID={option.testID}
               />
@@ -468,6 +476,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 disabled={optionDisabled}
                 tone={tone}
                 style={ownStyle}
+                bare={bareOptions}
                 labelStyle={labelStyle}
                 testID={option.testID}
               />
@@ -486,6 +495,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 tone={tone}
                 labelStyle={labelStyle}
                 style={ownStyle}
+                bare={bareOptions}
                 testID={option.testID}
               />
             );

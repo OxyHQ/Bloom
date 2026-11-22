@@ -33,6 +33,11 @@ export interface RadioProps<Value extends string = string> {
   disabled?: boolean;
   /** Colour of the checked indicator. Uses the theme primary by default. */
   tone?: BloomTone;
+  /**
+   * Draw no default layout, paint or label type: `style` and `labelStyle`
+   * style the option and its label. The checked semantics stay Bloom's.
+   */
+  bare?: boolean;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -118,6 +123,8 @@ export interface RadioGroupProps<Value extends string = string> {
   tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
+  /** Every owned option is `bare`: `optionStyle` and `labelStyle` style it. */
+  bareOptions?: boolean;
   /** Selected chip paint; used with variant="chip". Defaults to outline. */
   appearance?: BloomAppearance;
   /**
@@ -156,6 +163,11 @@ export interface RadioCardProps<Value extends string = string> {
   disabled?: boolean;
   /** Accent for the checked dot. Uses the theme primary by default. */
   tone?: BloomTone;
+  /**
+   * Draw no default layout, paint or label type: `style` and `labelStyle`
+   * style the option and its label. The checked semantics stay Bloom's.
+   */
+  bare?: boolean;
   labelStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
