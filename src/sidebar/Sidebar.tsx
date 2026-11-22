@@ -51,7 +51,6 @@ import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiSideBarFill } from '../icons/remix/RiSideBarFill';
 import { Kbd } from '../kbd';
 import { borderRadius } from '../styles/tokens';
-import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { ThemeToggle } from '../theme-toggle';
 import { Text, TYPE_SCALE } from '../typography';
@@ -118,7 +117,7 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  */
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
+const AnimatedPanelView = Animated.createAnimatedComponent(View);
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
 
@@ -198,7 +197,6 @@ function SearchField({
 }
 
 const SidebarPanel: React.FC<SidebarProps> = ({
-  className,
   header,
   toolbar,
   contentPadding,
@@ -556,7 +554,6 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         key={item.key}
         icon={item.icon}
         label={item.label}
-        className={item.className}
         style={collapsed ? undefined : item.style}
         href={item.href}
         selected={isSelected}
@@ -1109,10 +1106,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     <SidebarSizeProvider value={size}>
       <SidebarGeometryProvider value={geometry}>
         <CollapseProvider value={progress}>
-          <AnimatedStyledView
+          <AnimatedPanelView
             collapsable={false}
             {...dirProps}
-            className={className}
             role="complementary"
             accessibilityLabel={accessibilityLabel}
             onLayout={onPanelLayout}
@@ -1274,7 +1270,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
                 ) : null}
               </View>
             </SidebarScrollArea>
-          </AnimatedStyledView>
+          </AnimatedPanelView>
         </CollapseProvider>
       </SidebarGeometryProvider>
     </SidebarSizeProvider>

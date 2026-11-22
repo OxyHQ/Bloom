@@ -403,7 +403,7 @@ interface SidebarTreeDrop {
 ### Rows that take drops
 
 A row's `drop` (`SidebarTreeItemDrop`: `DropZone`'s props but its style,
-`className`, children and `testID`) makes it a drop zone for what is dragged
+children and `testID`) makes it a drop zone for what is dragged
 from any application, as a Finder sidebar place takes files: what it accepts,
 its actions, the `folder` its files go into, and its callbacks
 (`docs/drop-zone.mdx`). It works for a section's rows, at any depth, and for a
@@ -653,11 +653,11 @@ header, including with `contentAlignment="center"`. An explicit
 
 Card and docked sidebar surfaces paint the shared Surface material ([Surface](./surface.mdx)) beneath their contents; plain surfaces and the navigation rail retain their existing fill. The current logo, modes, scoped sizes, tree, custom content, RTL layout, safe edges and scroll behavior are unchanged. Storybook: **Blocks / Sidebar / Glass Panel**.
 
-`header` replaces the account/logo header inside the shared viewport’s sticky header. A render function receives `{ collapsed }`. `contentPadding` changes the expanded inset and the measured width of app-owned content together; omit it to preserve the size's default inset. `className` reaches the panel's animated layout node. Navigation rows also accept `style` and `className`; collapsed rows retain the sidebar's square geometry.
+`header` replaces the account/logo header inside the shared viewport’s sticky header. A render function receives `{ collapsed }`. `contentPadding` changes the expanded inset and the measured width of app-owned content together; omit it to preserve the size's default inset. Navigation rows also accept `style`; collapsed rows retain the sidebar's square geometry.
 
 `SidebarToolbar` lays out a controlled `search` (`value`, `onValueChange`, `open`, `onOpenChange`, optional names and placeholder) and its `actions` in one row of equal slots 8 apart, however many actions there are (with none, the search is the whole row): the closed search is the first slot and each action fills its own (`width: '100%'`). Opening search expands it across those slots, focuses its input and removes hidden actions from interaction, accessibility and web tab order. Close and Escape clear the query and restore the search trigger. Leaving the field (blur) closes an empty search too; with text in it, it stays open so the filter is never hidden. The 300ms width and 200ms action fade/transform respect reduced motion. Buttons and fields reuse Bloom's existing bases.
 
-`SidebarItem` accepts `leading` in place of an icon, a secondary `description`, and `selectedAppearance="neutral"` for a tertiary surface instead of the default accent selection. Descriptive rows constrain both text lines for ellipsis and collapse them together. `labelClassName` and `descriptionClassName` reach the text nodes; existing icon-only rows and default selection retain their previous recipe. Press events, native holds, trigger ARIA props and refs reach the host for `asChild` menu composition.
+`SidebarItem` accepts `leading` in place of an icon, a secondary `description`, and `selectedAppearance="neutral"` for a tertiary surface instead of the default accent selection. Descriptive rows constrain both text lines for ellipsis and collapse them together. Existing icon-only rows and default selection retain their previous recipe. Press events, native holds, trigger ARIA props and refs reach the host for `asChild` menu composition.
 
 Multi Agent Chat uses these pieces with one sidebar scroll owner. Chrome measured its panel at 260×876px, toolbar at 244×36px, conversation rows at 244×54px and footer actions at 36px. Real pointer checks cover search filtering, close, right-click actions and renaming. Native context-menu hold composition is covered by Jest; device rendering and motion remain separate verification.
 
