@@ -178,7 +178,16 @@ if (stories.length === 0) {
 }
 const browser = await puppeteer.launch({
   executablePath: findChrome(),
-  args: ['--no-sandbox', `--window-size=${WIDTH},900`, '--force-color-profile=srgb'],
+  // Both pages draw at full speed: a backgrounded page's throttled frames read as a
+  // slow device, and Bloom then bakes its surface material.
+  args: [
+    '--no-sandbox',
+    `--window-size=${WIDTH},900`,
+    '--force-color-profile=srgb',
+    '--disable-background-timer-throttling',
+    '--disable-renderer-backgrounding',
+    '--disable-backgrounding-occluded-windows',
+  ],
   defaultViewport: { width: WIDTH, height: 900 },
 });
 const [left, right] = [await browser.newPage(), await browser.newPage()];
