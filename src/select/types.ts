@@ -38,20 +38,15 @@ export type SelectTriggerProps = {
    */
   label?: string;
   /**
-   * Utility classes APPENDED to the part's own — never substituted for them, so
-   * a single layout class cannot strip the chrome.
-   *
-   * Never pin a HEIGHT here (`h-8`). The value's line box is 20 × the system
-   * font scale, and on native Yoga measures the text at most as tall as the
-   * space left inside the field: a fixed height cuts the glyphs in half on
-   * Android (OxyHQ/Mention#1126 — `h-8` is 28dp there, leaving 15.5dp for a
-   * 20dp line). Size a compact trigger with its padding (`fieldStyle`) so the
-   * text sets the height.
-   */
-  className?: string;
-  /**
    * Style for the TRIGGER BOX (the slot around the field). To restyle the
    * bordered field itself, use `fieldStyle`.
+   *
+   * Never pin a HEIGHT on the field. The value's line box is 20 × the system
+   * font scale, and on native Yoga measures the text at most as tall as the
+   * space left inside the field: a fixed height cuts the glyphs in half on
+   * Android (OxyHQ/Mention#1126 — a 28dp field left 15.5dp for a 20dp line).
+   * Size a compact trigger with its padding (`fieldStyle`) so the text sets the
+   * height.
    */
   style?: StyleProp<ViewStyle>;
   /**
@@ -87,7 +82,6 @@ export type SelectValueProps<T = unknown> = {
    */
   leading?: React.ReactNode | ((item: T | undefined) => React.ReactNode);
   placeholder?: string;
-  className?: string;
   style?: TextStyle;
 };
 
@@ -120,30 +114,25 @@ export type SelectContentProps<T> = {
    */
   maxHeight?: number;
   /**
-   * A FIXED width for the web dropdown (`popoverClassName="w-[220px]"`). By
+   * A FIXED width for the web dropdown (`width={220}`). By
    * default the panel is at least 266px and at least the trigger's width.
    * The native sheet sizes itself and ignores it.
    */
   width?: number;
-  /** Appended to the dropdown panel's own chrome. */
-  className?: string;
 };
 
 export type SelectGroupProps = {
   children?: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
 export type SelectLabelProps = {
   children?: React.ReactNode;
-  className?: string;
   style?: StyleProp<TextStyle>;
 };
 
 export type SelectScrollButtonProps = {
   direction: 'up' | 'down';
-  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -156,13 +145,11 @@ export type SelectItemProps = {
   /** A node before the option's content — a status dot, an icon — 8px from it. */
   leading?: React.ReactNode;
   children: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
 export type SelectItemTextProps = {
   children: React.ReactNode;
-  className?: string;
   style?: TextStyle;
 };
 

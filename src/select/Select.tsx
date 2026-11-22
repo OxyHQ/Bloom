@@ -17,7 +17,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, Text as RNText, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -25,22 +25,18 @@ import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import {
   SELECT_CHEVRON_SIZE,
-  SELECT_ITEM_CLASS,
-  SELECT_TRIGGER_CLASS,
+  SELECT_ITEM_STYLE,
   SELECT_TRIGGER_FIELD_STYLE,
   SELECT_TRIGGER_POPUP,
-  SELECT_TRIGGER_SIZE_CLASS,
   SELECT_TRIGGER_SIZE_STYLE,
-  SELECT_VALUE_CLASS,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
-import { menuType, menuTypeClass } from '../floating/menu-type';
-import { cx } from '../floating/shared';
+import { menuType } from '../floating/menu-type';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
-import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
@@ -184,7 +180,6 @@ export function SelectTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   fieldStyle,
   testID,
@@ -210,13 +205,10 @@ export function SelectTrigger({
   // what a select trigger looks like even though only one of them opens an
   // anchored list. No hover or focus ring here: native has neither.
   const field = (
-    <StyledView
-      className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[size], className)}
+    <View
       style={[
-        // The geometry inline, not only as classes: with nothing but the
-        // classes the pill drew its value flush against both ends on Android.
-        className ? null : SELECT_TRIGGER_FIELD_STYLE,
-        className ? null : SELECT_TRIGGER_SIZE_STYLE[size],
+        SELECT_TRIGGER_FIELD_STYLE,
+        SELECT_TRIGGER_SIZE_STYLE[size],
         {
           ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,
@@ -231,7 +223,7 @@ export function SelectTrigger({
         radius={selectTriggerPaintRadius(fieldStyle)}
       />
       {children}
-    </StyledView>
+    </View>
   );
 
   const triggerState = useMemo(
@@ -290,7 +282,6 @@ export function SelectValue<T = unknown>({
   placeholder,
   children: extractLabel = defaultExtractLabel,
   leading,
-  className,
   style,
 }: SelectValueProps<T>) {
   const { value } = useSelectContext();
@@ -314,7 +305,7 @@ export function SelectValue<T = unknown>({
   }, [tell, spoken]);
   useEffect(() => () => tell?.(undefined), [tell]);
   // Same colours as the web fork: `text-primary`, `text-placeholder`, and the
-  // disabled trigger's `text-tertiary`. Inline only without a caller className.
+  // disabled trigger's `text-tertiary`.
   const color = trigger.disabled
     ? palette.trigger.disabledForeground
     : hasValue
@@ -322,23 +313,12 @@ export function SelectValue<T = unknown>({
       : palette.textPlaceholder;
 
   const text = (
-    <StyledText
+    <RNText
       numberOfLines={1}
-      className={cx(
-        SELECT_VALUE_CLASS[trigger.size],
-        menuTypeClass(VALUE_TYPE[trigger.size], className),
-        className && (hasValue ? 'text-foreground' : 'text-muted-foreground'),
-        className,
-      )}
-      style={[
-        styles.valueText,
-        menuType(VALUE_TYPE[trigger.size], className),
-        className ? null : { color },
-        style,
-      ]}
+      style={[styles.valueText, menuType(VALUE_TYPE[trigger.size]), { color }, style]}
     >
       {display}
-    </StyledText>
+    </RNText>
   );
   if (leading === undefined) return text;
   return (
@@ -452,11 +432,11 @@ function SelectContentInner<T>({
       control={control}
       label={label}
       header={
-        <StyledView className="pt-space-24 pb-space-8 px-space-16">
+        <View style={styles.sheetHeader}>
           <Text variant="title-2-semibold" style={{ color: theme.colors.text }}>
             {label}
           </Text>
-        </StyledView>
+        </View>
       }
     >
       <SelectContext.Provider value={ctx}>
@@ -514,7 +494,6 @@ export function SelectItem({
   label,
   disabled = false,
   leading,
-  className,
   style,
 }: SelectItemProps) {
   const density = useMenuDensity();
@@ -553,8 +532,9 @@ export function SelectItem({
       onBlur={onBlur}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={onPressOut}
-      className={cx(SELECT_ITEM_CLASS, density.rowClass, className)}
       style={[
+        SELECT_ITEM_STYLE,
+        density.rowStyle,
         {
           backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
           paddingRight: density.gutter,
@@ -602,12 +582,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
     maxWidth: '100%',
   },
-  // Inline as well as `SELECT_VALUE_CLASS`: the value must give way to the
-  // chevron even where the className pipeline is not wired.
+  // The value gives way to the chevron.
   valueText: {
     flexShrink: 1,
     minWidth: 0,
   },
+  sheetHeader: { paddingInline: 16, paddingTop: 24, paddingBottom: 8 },
   flatList: {
     flexGrow: 0,
   },
