@@ -1,4 +1,4 @@
-import type { ViewStyle } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
 import { IS_WEB } from '../styles/platform';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { createTokenStyles } from '../theme/color-tokens';
@@ -23,9 +23,9 @@ export const BOARD_CHIP: ViewStyle = {
 };
 
 /** A card's pill, `text-body-2-medium` (the type sits on the box as the class set it). */
-export const CARD_CHIP = { ...BOARD_CHIP, ...TYPE.caption };
+export const CARD_CHIP: TextStyle = { ...BOARD_CHIP, ...TYPE.caption };
 /** A dialog's pill: 7px sides, `text-body-medium`. */
-export const DIALOG_CHIP = { ...BOARD_CHIP, paddingInline: 7, ...TYPE.body };
+export const DIALOG_CHIP: TextStyle = { ...BOARD_CHIP, paddingInline: 7, ...TYPE.body };
 
 /** The detail dialog's priority pill fades its colours instead (`duration-200` outranked its `duration-150`). */
 export const COLOR_TRANSITION: ViewStyle | undefined = IS_WEB
