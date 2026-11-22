@@ -79,10 +79,4 @@ an avatar goes through the resolver, an OG image does not.
 
 ## The chrome is `Card`'s
 
-`outlined` at the `radius-20` rung. It used to be `bg-card` / `border-border`
-classes, which are **inert on web until the consumer wires the Tailwind
-pipeline** — the card then drew as an unbordered transparent block with no
-error anywhere. As resolved inline tokens it paints either way.
-
-The text inside is still className-first, and those class strings must stay
-literal so a consumer's Tailwind content scan over `lib/` can see them.
+`outlined` at the `radius-20` rung, painted from the theme's tokens.

@@ -56,8 +56,6 @@ export interface LinkPreviewCardProps {
   coverFill?: boolean;
   /** Press handler. When omitted, the card opens `url` with `openExternal`. */
   onPress?: () => void;
-  /** Extra NativeWind utilities merged onto the card surface. */
-  className?: string;
   /** Extra style merged onto the card surface. */
   style?: StyleProp<ViewStyle>;
 }
