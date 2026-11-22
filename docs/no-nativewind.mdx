@@ -104,14 +104,17 @@ the authority.
   `rounded-concentric` utilities are gone: Bloom's concentric geometry comes from
   `radius` and `style`.
 - Added exports (`@oxy.so/bloom/theme`): `useColorTokens`, `createTokenStyles`,
-  `tokenAlpha`, `ColorToken`, `ColorTokens`.
+  `tokenAlpha`, `ColorToken`, `ColorTokens`, `ColorScopeLayerContext`,
+  `ColorScopeLayer`.
 - Peers removed: `nativewind`, `react-native-css`.
 - Apps no longer need NativeWind, react-native-css, Tailwind or
   `@oxy.so/app-preset/base.css` for Bloom. An app keeps them only for its own
   `className`, until the codemod moves it; `theme.css` and the preset keep its
   classes on Bloom's tokens meanwhile. On native, Bloom no longer publishes its
-  tokens to react-native-css, so an app with classes left mounts app-preset's
-  `BloomNativeWindTheme` once inside `BloomProvider`.
+  tokens to react-native-css, so an app with classes left wraps its tree in
+  app-preset's `BloomNativeWindTheme` once, inside `BloomProvider`: it publishes
+  the theme's tokens and, through Bloom's generic `ColorScopeLayerContext`, each
+  colour scope's tokens to NativeWind, so classes inside a scope follow it.
 
 ## App side
 
