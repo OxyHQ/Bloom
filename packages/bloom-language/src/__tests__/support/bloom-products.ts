@@ -193,3 +193,7 @@ export const AgentCreatorSection = 'AgentCreatorSection';
 export const AgentProfile = 'AgentProfile';
 export const AgentReplyIdentity = 'AgentReplyIdentity';
 export const AiProfileCard = 'AiProfileCard';
+export const SelectedAgentPreview = 'SelectedAgentPreview';
+export const MultiAgentChat = 'MultiAgentChat';
+export const AgentChatHistory = 'AgentChatHistory';
+export const AgentChat = 'AgentChat';
