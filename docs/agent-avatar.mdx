@@ -143,6 +143,22 @@ must ship all vector assets; no consumer can depend on the extractor's filesyste
 ends by packing the assets (shared payloads in `vector-assets/blobs/`, one `catalog/<kind>-<id>.ts`
 module per asset); do not edit those files by hand.
 
+A payload (pack format 3) is a JSON module whose header fields are plain values and whose numbers
+are integers in one base64 `data` string, losslessly. The extracted numbers are decimals of at most
+six places, so an array keeps its `decimals` and each number is an integer N with
+`N / 10 ** decimals` exactly the double `JSON.parse` gave. Each column of an array (x, y, z of a
+point or a face; each element of a channel's sample) keeps its smallest N and how many
+little-endian bytes, 0 to 4, hold the rest: points, faces and blink deltas are
+`{ rows, decimals, columns }`, a channel's samples `{ samples, decimals, columns }`; a channel's
+short `value` stays JSON. Bundlers turn a JSON module into an object literal, so loading one parses
+no JSON string: `decodeBlob` in `vector-pack.ts` decodes the base64 with a table and rebuilds the
+`number[][]` rows and `number[]` samples the renderer reads. The packer fails on a number it cannot
+give back exactly (more than 4 bytes of range, `-0`, not finite) and checks every payload decodes
+to its data; packing the packed data again rewrites every file byte for byte
+(`scripts/test-avatar-vector-pack.mjs`), and `vector-pack.test.ts` reads every shipped number
+against its bytes. Format 2 kept each payload as a JSON string parsed on load; `readVectorAsset`
+still reads it, to repack.
+
 `renderer`, including its historical `'webgl'` value, is a deprecated compatibility
 prop and no longer selects another renderer. `AgentAvatarProvider.runtimeUrl`,
 `AgentAvatarProvider.stillStorage` and `BloomProvider.characterRuntimeUrl` are also
@@ -153,18 +169,34 @@ only a bounded capability map, not an offscreen rendering queue.
 ## Choosing which assets an app ships
 
 Bloom ships 70 vector assets (shapes, eyes, eyewear, accessories and authored templates), about
-30 MB of JSON before compression. Each is a lazy module, so none is in an app's first paint, but
-a bundler that sees an `import()` emits the file, and Metro and `expo export` link every one of
-them. The default build therefore ships all of them, whether the app draws one character or all.
+11 MB before compression (pack format 3; 30 MB as JSON before it). Each is a lazy module, so none is
+in an app's first paint, but a bundler that sees an `import()` emits the file, and Metro and
+`expo export` link every one of them. The default build therefore ships all of them, whether the
+app draws one character or all.
 
-Three things keep that bounded:
+These keep that bounded:
 
 - **One copy of every payload.** Assets share most of their geometry and many animation tracks.
   Each distinct payload is stored once under `vector-assets/blobs/<hash>.json`; an asset file keeps
-  only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`, lossless:
-  `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became 30 MB with no
-  app change.
-- **Only the clips that are drawn are fetched.** An asset (pack format 2) keeps each part's tracks
+  only its small metadata and the hashes (`scripts/avatar-vector/pack-assets.mjs`; sharing is
+  lossless: `scripts/test-avatar-vector-pack.mjs` and the manifest gate check it). 58 MB became
+  30 MB with no app change.
+- **Numbers are integers, not text.** Pack format 3 (see
+  [Assets and packaging](#assets-and-packaging)) holds the same numbers in fewer bytes: the 855
+  payloads went from 28.7 MB to 11.0 MB raw and from 6.42 MB to 5.46 MB gzip (level 9), but from
+  4.27 MB to 4.78 MB brotli (quality 11): base64 hides the byte structure that brotli found in the
+  JSON digits. Built through `verify-avatar-bundle-size.mjs`, the default web export went from
+  29.95 to 13.08 MiB of JavaScript (6.96 to 5.99 MiB gzip) and the Metro iOS bundle from 32.22 to
+  15.24 MiB; the opt-out (three assets) from 4.15 to 2.97 MiB (0.96 to 0.90 MiB gzip) and from
+  6.41 to 5.23 MiB. Every asset reads back strictly equal to the format 2 data, and every preset,
+  Alia, two bots and a composed character draw the same 1,333 paths over 15 idle, reaction and work
+  frames, vertex for vertex (`vector-pack-frames.test.ts`, with `BLOOM_AVATAR_REFERENCE_PACK`).
+  Decoding Alia's rest payloads (20, from `six_lobed_flower`, `sleepy_lids` and `circle`) in Node
+  takes 1.9 ms warm against 2.9 ms for `JSON.parse` of format 2, but 19 ms against 3 ms with the
+  JIT off (`--jitless`), which is closer to Hermes: measure on a device before relying on it.
+  A 16-bit quantized format (13.2 MB) was tried first and rejected: 201 outlines changed their
+  vertex count, and some frames changed visibly.
+- **Only the clips that are drawn are fetched.** An asset (pack format 2 on) keeps each part's tracks
   per clip, `tracks[i] = { idle, reaction, work }`, each its own payload. An avatar first loads its
   character at rest (`VECTOR_REST_CLIPS`, `['idle']`): the idle tracks and the geometry they draw.
   A mood (`mood="sad"`, the empty state's gemie shaking its head "no") is drawn on the idle clip
@@ -226,7 +258,8 @@ template still renders, retargeted from its parts, without its authored animatio
 
 Without any of this nothing changes: the default is the full catalog, loaded lazily on first use,
 and apps that do nothing keep working. `scripts/verify-avatar-bundle-size.mjs` bundles the built
-package both ways and fails CI past its budgets.
+package both ways and fails CI past its budgets (since pack format 3: 13.8 / 6.3 MiB web default,
+3.15 / 0.95 MiB web opt-out, 16.0 and 5.5 MiB native).
 
 ### Measured (19.3.1 against this change)
 
@@ -318,12 +351,90 @@ across all 23 templates, plus interrupted exits; endpoint-only counts missed thi
 
 Other instances retain independent clocks. `interactive` enables pointer and drag input;
 otherwise deterministic gaze wandering, breathing and blinking provide idle motion.
-Paused, portrait, reduced-motion, background and offscreen instances stop advancing.
+Paused, portrait, reduced-motion, background and offscreen instances stop advancing, and so do
+instances on a screen that is not in front (a covered stack scene, another tab page): they hold
+their last frame and draw none until the screen is back.
 Composition donors remain immutable and loaded assets are cached. There are no WebGL
 contexts or shared instanced GPU scenes in the production avatar path.
 
 Browser checks do not establish native crowd performance. Native device verification is
 still required; the shared numeric renderer alone does not prove native SVG drawing speed.
+
+### The rest loop
+
+A frame is expensive: every one projects the meshes, rasterises a 322 × 322 depth buffer for the
+occlusion masks and traces their contours, whatever size the avatar is drawn at. On Hermes that
+was about 95 ms for Alia, so on a Pixel 8a the "Ask Alia" icon on Mention's Home kept the JS thread
+at 94 % and still only reached about 10 frames a second.
+
+At rest, though, a character repeats itself. With no gesture, pointer, mood or transition, and no
+reference face (the `bot_*` shapes, see below), its frame depends only on where it is in its idle
+clip. So the idle clip is drawn once, on a grid of about 30 frames a second (`vector-loop.ts`), and
+every avatar with the same geometry and paint shares those frames: the loop. Each grid frame is
+painted in turn, computed the first time and remembered after. The web replays the remembered
+frames itself. The loops kept are bounded by `VECTOR_LOOP_CACHE_CHARACTERS` (Alia's loop is about
+2 M path characters, the largest preset's 10 M).
+
+### The native surface (Android)
+
+On Android every frame is drawn by Bloom's own view, `BloomAvatarSurfaceV1`
+(`android/.../AvatarSurface.kt`, `VectorNativeSurface.tsx`), not by `react-native-svg`: JS hands it
+the frame's outlines, clips and paint as one prop, and it draws them on the hardware canvas with
+the paint `react-native-svg` used (alpha rounding, miter limit, one layer for the entrance
+opacity). At rest it does more: a complete loop is handed to it once and it plays the loop itself,
+its paths parsed once, on its own `Choreographer` clock (waking only when the next loop frame is
+due). Nothing goes through the shadow tree, no bitmap is drawn and no layout event is sent per
+frame, and the JS thread does nothing.
+
+Loops are named by `vectorLoopKey`: a hash of the character, its idle clip's tracks and its first
+frame as drawn, so a change to the assets, the paint or the renderer names a different loop. The
+surface keeps the loops in memory and in the app's cache directory (`bloom-avatar-loops`, 48 MB at
+most). At rest the avatar asks its surface for the loop of that name (`loopKey`, answered by
+`onLoop`); a surface that has it, from this start or an earlier one, plays it straight away, so a
+cold start draws only the frame on screen and the first frame. One that has not got it is handed
+the loop once it is complete (`loopTracks`). Playing is `loopClock`: at `epoch`, a
+`performance.now()` reading, the loop is `time` seconds in; Android's `performance.now()` and the
+`Choreographer` frame time are the same monotonic clock, so JS knows exactly which frame is on
+screen. A gesture, a mood, the pointer or the screen going out of view takes the drawing back:
+the JS clock moves on by the time played, the gesture blends from that frame's pose, and the
+surface keeps the frame on screen until JS draws one. `capture` answers the avatar flights'
+snapshot with a PNG. A binary without the view (a JS-only update, an older build) keeps
+`react-native-svg`.
+
+iOS: `ios/BloomAvatarSurface.swift` is the same view on Core Animation and `CADisplayLink`. It
+has never been compiled (it was written without a Mac), so it is neither linked
+(`react-native.config.js` keeps `ios: null`) nor packed, and iOS draws with `react-native-svg` and
+replays the remembered frames on the JS thread, as the web does. Link it only after building it
+and checking it on a device.
+
+The `bot_*` shapes cannot be played as a loop. Their gaze wanders by a sum of sines at unrelated
+frequencies (`vector-motion.ts`), and their blink repeats every 23 s on top of an 8.8 s idle clip,
+so their motion never repeats and every frame is a new projection: about a third of Alia's frame
+cost (Bun: 1.3 to 2 ms against 5.7 ms). The surface still draws their frames, but the JS cost stays
+until their motion is made periodic, which would change it.
+
+Measured on the Pixel 8a, Mention release build, idle on Home with the "Ask Alia" avatar
+(`vector-rest-loop.test.tsx` pins the hand-off, that the surface is handed exactly the JS thread's
+frames, the clock hand-back and a cold start with a kept loop; `AvatarLoopsTest.kt` the native
+path parser, file format and clock):
+
+| | JS thread | UI thread | RenderThread | process | window frames/s | cold start, JS |
+| --- | --- | --- | --- | --- | --- | --- |
+| SVG, every frame computed | 94 % | 9 % | 9 % | 118 % | about 10 | busy throughout |
+| rest loop on the UI thread (Reanimated) | 5 % | 35 % | 28 % | 77 % | 51 | 15.7 s of JS, busy 17 s |
+| native surface | 1 % | 21 % | 24 % | 53 % | 32 | 2.7 s of JS, busy 5 s (loop kept); 17.3 s, busy 20 s (first start) |
+
+(2026-11-20, two runs each, back to back; the first row is the earlier measurement. A screen
+recording confirms 30 distinct avatar frames a second.) The first start after installing, or after
+the loop's assets, paint or renderer change, still computes the loop once.
+
+What remains is not the avatar's drawing but the window's: a profile of the native-surface build
+puts the avatar's paths at about 3 % of the RenderThread and its `onDraw` at about 4 % of the UI
+thread. The rest is Android redrawing Mention's whole window 30 times a second (`prepareTree` over
+every view, replaying every display list, submitting the buffer) and React Native's per-frame
+callbacks, which any view animating in that window costs. With the avatar still, the process idles
+at about 9 %. Going lower needs the avatar off the window's surface (its own `SurfaceView`), which
+draws above every view of the window, sheets and menus included.
 
 `style` applies to the outer layout node. `label` defaults to the
 translated “Agent avatar”; `locale` overrides the scope and `accessibilityLabel`

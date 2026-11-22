@@ -95,7 +95,12 @@ VideoPlaybackContext.displayName = 'VideoPlaybackContext';
  * `null` means no owner at all, the only case that resolves to visible.
  */
 export type ViewabilitySource =
-  | { kind: 'keys'; order: ValueStore<ReadonlyMap<string, number>> }
+  | {
+      kind: 'keys';
+      order: ValueStore<ReadonlyMap<string, number>>;
+      /** The on-screen keys plus the list's preload window: who may hold a loaded player. */
+      near: ValueStore<ReadonlySet<string>>;
+    }
   | { kind: 'scope'; visible: boolean; order: number };
 
 export const VideoViewabilityContext = createContext<ViewabilitySource | null>(null);
@@ -113,6 +118,23 @@ export function useKeyRank(
   const read = (): number | undefined =>
     order === null || key === undefined ? undefined : order.get().get(key);
   return useSyncExternalStore(order === null ? subscribeNothing : order.subscribe, read, read);
+}
+
+/**
+ * Whether `key` is on screen or inside the preload window of the nearest key
+ * source, subscribed to that one answer: a row entering or leaving the window
+ * re-renders that row alone. With no viewability owner it is near (a screen
+ * with no list shows what it mounts); under a scope it is near exactly while
+ * the scope is visible.
+ */
+export function useKeyNear(source: ViewabilitySource | null, key: string | undefined): boolean {
+  const near = source?.kind === 'keys' ? source.near : null;
+  const read = (): boolean => {
+    if (source === null) return true;
+    if (source.kind === 'scope') return source.visible;
+    return key !== undefined && (near?.get().has(key) ?? false);
+  };
+  return useSyncExternalStore(near === null ? subscribeNothing : near.subscribe, read, read);
 }
 
 /**
@@ -150,6 +172,16 @@ function sameKeys(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
   return true;
 }
 
+/** Compared as SETS: the preload window carries no ranking. */
+function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
+  if (a === b) return true;
+  if (a.size !== b.size) return false;
+  for (const key of a) {
+    if (!b.has(key)) return false;
+  }
+  return true;
+}
+
 const NO_VIEWABLE_KEYS: ReadonlySet<string> = new Set<string>();
 
 /** The source behind each store, kept off the public object so it stays `publish` only. */
@@ -165,15 +197,20 @@ export function createViewableKeysStore(
   initial: ReadonlySet<string> = NO_VIEWABLE_KEYS,
 ): ViewableKeysStore {
   const order = createValueStore(rankKeys(initial));
+  const near = createValueStore<ReadonlySet<string>>(initial);
   let published = initial;
+  let publishedNear: ReadonlySet<string> = NO_VIEWABLE_KEYS;
   const store: ViewableKeysStore = {
-    publish: (keys) => {
-      if (sameKeys(published, keys)) return;
+    publish: (keys, nearKeys = NO_VIEWABLE_KEYS) => {
+      const keysChanged = !sameKeys(published, keys);
+      if (!keysChanged && sameMembers(publishedNear, nearKeys)) return;
       published = keys;
-      order.set(rankKeys(keys));
+      publishedNear = nearKeys;
+      if (keysChanged) order.set(rankKeys(keys));
+      near.set(new Set([...keys, ...nearKeys]));
     },
   };
-  SOURCES.set(store, { kind: 'keys', order });
+  SOURCES.set(store, { kind: 'keys', order, near });
   return store;
 }
 

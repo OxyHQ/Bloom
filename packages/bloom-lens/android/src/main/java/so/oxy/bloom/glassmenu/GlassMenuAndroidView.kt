@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import com.facebook.react.R
+import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
 import so.oxy.bloom.glassmenu.motion.GlassJelly
 import so.oxy.bloom.glassmenu.overlay.GlassDevGuard
 import so.oxy.bloom.glassmenu.overlay.GlassMenuOverlay
@@ -23,13 +24,14 @@ import so.oxy.bloom.glassmenu.records.GlassMenuItemRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
 import so.oxy.bloom.glassmenu.render.GlassRenderer
 import so.oxy.bloom.glassmenu.render.GlassSurfaceState
+import so.oxy.bloom.glassmenu.render.SharedStills
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 import kotlin.math.abs
 import kotlin.math.min
 
-class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(context, appContext), GlassBackdrop.OffPage {
   private val onItemSelect by EventDispatcher<Map<String, Any?>>()
   private val onMenuOpenChange by EventDispatcher<Map<String, Any?>>()
   private val onMenuClosed by EventDispatcher<Map<String, Any?>>()
@@ -98,8 +100,9 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
       overlay?.invalidate()
     }
   // The colour the trigger sits on. Set, the view draws its own lens at rest, in its place in the view hierarchy (so
-  // a trigger in a scroll is clipped and stacked as the content it belongs to, under the bars), against that colour,
-  // and keeps it in a compositing layer (no lens is redrawn while the page scrolls). The window overlay draws the
+  // a trigger in a scroll is clipped and stacked as the content it belongs to, under the bars), against that colour:
+  // at rest the shared still of its look (SharedStills: one texture for every trigger that looks the same, no layer
+  // of its own), and while pressed its live lens in a compositing layer. The window overlay draws the
   // lens only while the menu is open: the session starts from the same base. A live lens inside the hierarchy cannot
   // sample the window backdrop (the backdrop records the page, which would hold the lens: a RenderNode cycle).
   internal var restBackdrop: Int? = null
@@ -113,6 +116,8 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   private var restNode: Any? = null
   private var restBackdropNode: Any? = null
   private var restRecorded = false
+  // The look of the resting lens, the key of its shared still.
+  private var restLook: RestLook? = null
   private val restRect = RectF()
   private val restLimits = Rect()
   // A tap on the view opens its menu right there, on the UI thread, with no round trip to JS: the menu is the view's
@@ -131,6 +136,9 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   internal val drawsGlass get() = glass && supportsGlass
 
   private val overlayDrawsChildren get() = supportsGlass && overlay != null && ((glass && !inPlace) || menuActive)
+
+  // Drawn by the overlay, the view's lens and content are not part of the page the glass samples.
+  override val offPage get() = overlayDrawsChildren
 
   // The lens this view draws in its own place: at rest, when it sits in the hierarchy (restBackdrop).
   private val drawsRestInPlace get() = inPlace && drawsGlass && !menuActive
@@ -179,6 +187,8 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     restNode = null
     (restBackdropNode as? RenderNode)?.discardDisplayList()
     restBackdropNode = null
+    restLook?.let { SharedStills.release(it) }
+    restLook = null
     restRecorded = false
     (contentNode as? RenderNode)?.discardDisplayList()
     contentNode = null
@@ -203,55 +213,106 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   }
 
   // The resting lens, as the overlay draws a resting trigger (drawRestingAnchor), in this view's coordinates and
-  // against the colour it sits on. Recorded into a compositing layer, again only when its shape, colour or press changes.
+  // against the colour it sits on. At rest the shared still of its look; pressed, recorded into a compositing layer,
+  // again only when its shape, colour or press changes.
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   private fun drawRestInPlace(canvas: Canvas) {
     if (width == 0 || height == 0) return
+    val renderer = restRenderer as? GlassRenderer ?: newRenderer(density).also { restRenderer = it }
+    if (jelly.isSettled && drawRestStill(canvas, renderer)) return
     val node = restNode as? RenderNode ?: RenderNode("GlassMenu.restInPlace").also {
       it.setUseCompositingLayer(true, null)
       restNode = it
     }
     if (!restRecorded) {
-      val pad = (RestCaptureMargin + RestGuard) * density
-      restLimits.set(-pad.toInt(), -pad.toInt(), width + pad.toInt(), height + pad.toInt())
-      val backdrop = restBackdropNode as? RenderNode ?: RenderNode("GlassMenu.restBackdrop").also { restBackdropNode = it }
-      backdrop.setPosition(restLimits)
-      val fill = backdrop.beginRecording(restLimits.width(), restLimits.height())
-      fill.drawColor(restBackdrop ?: 0)
-      backdrop.endRecording()
-
-      val state = surfaceState
-      restRect.set(0f, 0f, width.toFloat(), height.toFloat())
-      state.incoming.set(restRect)
-      state.captureBounds.set(restRect)
-      state.captureBounds.inset(-RestCaptureMargin * density, -RestCaptureMargin * density)
-      state.lockedFieldStep = 0f
-      jelly.deformControl(state.incoming, density, triggerConfig.jelly)
-      val radius = cornerRadiusPx(state.incoming)
-      state.radiusX = radius
-      state.radiusY = radius
-      state.hasSource = false
-      state.smoothing = 0f
-      state.lensHeight = 0f
-      state.lensAmount = 0f
-      state.materialProgress = 0f
-      state.surfaceOpacity = 1f
-      state.dark = isDark()
-      state.config = config
-      state.trigger = triggerConfig
-      applyLight(state, restRect, 1f)
-      val renderer = restRenderer as? GlassRenderer ?: newRenderer(density).also { restRenderer = it }
+      val backdrop = prepareRest()
       node.setPosition(restLimits)
       val recording = node.beginRecording(restLimits.width(), restLimits.height())
       recording.translate(-restLimits.left.toFloat(), -restLimits.top.toFloat())
-      renderer.prepare(state)
-      renderer.drawGlass(recording, backdrop, state, restLimits)
+      renderer.prepare(surfaceState)
+      renderer.drawGlass(recording, backdrop, surfaceState, restLimits)
       node.endRecording()
       restRecorded = !renderer.warmPipelines(canvas)
       if (!restRecorded) postInvalidateOnAnimation()
     }
     canvas.drawRenderNode(node)
   }
+
+  // The settled lens: the still of its look, shared with every trigger that looks the same. False until it has
+  // arrived (the view is invalidated then); the live lens is drawn meanwhile.
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun drawRestStill(canvas: Canvas, renderer: GlassRenderer): Boolean {
+    val backdrop = prepareRest()
+    val state = surfaceState
+    val look = RestLook(
+      restLimits.width(), restLimits.height(), state.radiusX, restBackdrop ?: 0, state.dark, density,
+      config.blur, config.tintColor?.toArgb(), config.tintOpacity, config.saturation, config.refraction, config.rim,
+      triggerConfig.blur, triggerConfig.tintColor?.toArgb(), triggerConfig.tintOpacity, triggerConfig.saturation,
+      triggerConfig.refraction, triggerConfig.rim,
+    )
+    if (look != restLook) {
+      restLook?.let { SharedStills.release(it) }
+      restLook = look
+      val limits = Rect(restLimits)
+      SharedStills.acquire(look, limits.width(), limits.height()) { recording ->
+        recording.translate(-limits.left.toFloat(), -limits.top.toFloat())
+        renderer.prepare(state)
+        renderer.drawGlass(recording, backdrop, state, limits)
+      }
+    }
+    val still = SharedStills.bitmap(look, this) ?: return false
+    if (restNode != null) {
+      (restNode as RenderNode).discardDisplayList()
+      restNode = null
+      restRecorded = false
+    }
+    canvas.drawBitmap(still, restLimits.left.toFloat(), restLimits.top.toFloat(), null)
+    if (renderer.warmPipelines(canvas)) postInvalidateOnAnimation()
+    return true
+  }
+
+  // The resting lens's limits and state, in this view's coordinates, and the fill it samples.
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun prepareRest(): RenderNode {
+    val pad = (RestCaptureMargin + RestGuard) * density
+    restLimits.set(-pad.toInt(), -pad.toInt(), width + pad.toInt(), height + pad.toInt())
+    val backdrop = restBackdropNode as? RenderNode ?: RenderNode("GlassMenu.restBackdrop").also { restBackdropNode = it }
+    backdrop.setPosition(restLimits)
+    val fill = backdrop.beginRecording(restLimits.width(), restLimits.height())
+    fill.drawColor(restBackdrop ?: 0)
+    backdrop.endRecording()
+
+    val state = surfaceState
+    restRect.set(0f, 0f, width.toFloat(), height.toFloat())
+    state.incoming.set(restRect)
+    state.captureBounds.set(restRect)
+    state.captureBounds.inset(-RestCaptureMargin * density, -RestCaptureMargin * density)
+    state.lockedFieldStep = 0f
+    jelly.deformControl(state.incoming, density, triggerConfig.jelly)
+    val radius = cornerRadiusPx(state.incoming)
+    state.radiusX = radius
+    state.radiusY = radius
+    state.hasSource = false
+    state.smoothing = 0f
+    state.lensHeight = 0f
+    state.lensAmount = 0f
+    state.materialProgress = 0f
+    state.surfaceOpacity = 1f
+    state.dark = isDark()
+    state.config = config
+    state.trigger = triggerConfig
+    applyLight(state, restRect, 1f)
+    return backdrop
+  }
+
+  // What the resting lens drawn in place looks like: its size, shape, fill, scheme and material. Triggers that agree
+  // on all of it draw the same pixels, so they share one still.
+  private data class RestLook(
+    val width: Int, val height: Int, val radius: Float, val fill: Int, val dark: Boolean, val density: Float,
+    val blur: Float, val tint: Int?, val tintOpacity: Float?, val saturation: Float, val refraction: Float, val rim: Float,
+    val triggerBlur: Float, val triggerTint: Int?, val triggerTintOpacity: Float?, val triggerSaturation: Float,
+    val triggerRefraction: Float, val triggerRim: Float,
+  )
 
   override fun dispatchTouchEvent(event: MotionEvent): Boolean {
     when (event.actionMasked) {
@@ -335,6 +396,17 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     canvas.scale(shape.width() / width, shape.height() / height)
     super.dispatchDraw(canvas)
     canvas.restoreToCount(save)
+  }
+
+  // The content again, into the node the overlay already draws, with the node's placement kept: content that redrew
+  // (a trigger drawn by the overlay keeps it out of the page, dispatchDraw) reaches the screen without the overlay
+  // recording anything else.
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  internal fun refreshContent() {
+    val node = contentNode as? RenderNode ?: return
+    val recording = node.beginRecording(width, height)
+    super.dispatchDraw(recording)
+    node.endRecording()
   }
 
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)

@@ -1,12 +1,14 @@
 import {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ComponentType,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { findNodeHandle, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -23,6 +25,7 @@ import { Screen } from 'react-native-screens';
 import { animateMotion } from '../../motion/recipes';
 import { ScreenActivity } from '../../screen/ScreenActivity';
 import { valueAtPage, type PageModel } from '../pages';
+import { TabPageContentContext, type TabPageContentHold } from '../page-content';
 import type { ViewRef } from '../../styles/native-refs';
 import type { TabBackPreview } from './back-preview';
 import { PredictiveBackHost, isPredictiveBackAvailable } from './PredictiveBackHost';
@@ -35,8 +38,18 @@ import {
 } from './pager-view-module';
 import { usePrefersReducedMotion } from '../../hooks/use-prefers-reduced-motion';
 
+/** What the layout drives the pager with. */
+export interface TabPagerHandle {
+  /**
+   * A tap selected this page: start moving now, before the route change that
+   * follows has rendered.
+   */
+  select: (name: string) => void;
+}
+
 export interface TabPagerProps {
   model: PageModel;
+  handle?: Ref<TabPagerHandle>;
   /** The tabs navigator's state. Pages reach their route BY NAME: expo-router sorts its routes. */
   state: { index: number; routes: readonly { key: string; name: string }[] };
   descriptors: Record<string, { render: () => ReactNode }>;
@@ -99,10 +112,19 @@ function usePageScrollHandler(handler: (event: PageScrollEvent) => void, deps: u
  * a Pixel 10 Pro), so the highlight is sprung from here instead. Reduced
  * motion cuts.
  *
+ * A TAP MOVES AT ONCE. The layout hands the tap to `select` before it
+ * navigates, so the pager starts on the press, not once the route change has
+ * rendered (that render is the whole app's, and takes a while): the slide
+ * next door runs on the platform's pager from the first frame, and further
+ * away the highlight springs and the page in front fades out while the
+ * destination renders. The route change that follows finds the pager already
+ * there.
+ *
  * Without `react-native-pager-view` the same pages render as a tap-only stack.
  */
 export function TabPager({
   model,
+  handle,
   state,
   descriptors,
   progress,
@@ -212,6 +234,22 @@ export function TabPager({
     [pages, keyForPage],
   );
 
+  // Pages still painting their first content (`useTabPageContentPainted`): their
+  // neighbours wait.
+  const [painting, setPainting] = useState<ReadonlySet<string>>(() => new Set());
+  const contentHold = useCallback(
+    (key: string): TabPageContentHold => ({
+      hold: () => setPainting((current) => new Set(current).add(key)),
+      release: () =>
+        setPainting((current) => {
+          const next = new Set(current);
+          next.delete(key);
+          return next;
+        }),
+    }),
+    [],
+  );
+
   const onPageScroll = usePageScrollHandler(
     (event) => {
       'worklet';
@@ -227,6 +265,16 @@ export function TabPager({
   const cutTo = useCallback((page: number) => {
     pagerRef.current?.setPageWithoutAnimation(page);
   }, []);
+  // The fade-through's second half: the cut and the fade-in, from this thread,
+  // so the destination fades in only once it is there (a tap fades the page
+  // in front out while the destination is still rendering).
+  const reveal = useCallback(
+    (page: number) => {
+      cutTo(page);
+      fade.value = withTiming(1, FADE_IN);
+    },
+    [cutTo, fade],
+  );
   // Commit the already-previewed destination before paint, without the normal
   // tap animation or visiting pages between two nonadjacent history entries.
   useLayoutEffect(() => {
@@ -241,44 +289,52 @@ export function TabPager({
   useEffect(() => {
     if (previewPage >= 0) admit([keyForPage(previewPage)]);
   }, [previewPage, admit, keyForPage]);
-  useEffect(() => {
-    const from = pageRef.current;
-    if (focusedPage === from) return;
-    pageRef.current = focusedPage;
-    admit([keyForPage(focusedPage)]);
-    if (!PagerView) {
-      setSettledPage(focusedPage);
-    } else if (!reducedMotion && Math.abs(focusedPage - from) === 1) {
-      pagerRef.current?.setPage(focusedPage);
-      return;
-    } else if (!reducedMotion) {
-      fade.value = withTiming(0, FADE_OUT, (finished) => {
-        if (!finished) return;
-        runOnJS(cutTo)(focusedPage);
-        fade.value = withTiming(1, FADE_IN);
-      });
-    } else {
-      cutTo(focusedPage);
-    }
-    animateMotion(progress, barPositions[focusedPage] ?? 0, 'select');
-  }, [
-    focusedPage,
-    keyForPage,
-    admit,
-    PagerView,
-    reducedMotion,
-    fade,
-    cutTo,
-    progress,
-    barPositions,
-  ]);
+  const moveTo = useCallback(
+    (page: number) => {
+      const from = pageRef.current;
+      if (page === from) return;
+      pageRef.current = page;
+      admit([keyForPage(page)]);
+      if (!PagerView) {
+        setSettledPage(page);
+      } else if (!reducedMotion && Math.abs(page - from) === 1) {
+        pagerRef.current?.setPage(page);
+        return;
+      } else if (!reducedMotion) {
+        fade.value = withTiming(0, FADE_OUT, (finished) => {
+          if (finished) runOnJS(reveal)(page);
+        });
+      } else {
+        cutTo(page);
+      }
+      animateMotion(progress, barPositions[page] ?? 0, 'select');
+    },
+    [keyForPage, admit, PagerView, reducedMotion, fade, cutTo, reveal, progress, barPositions],
+  );
+  useEffect(() => moveTo(focusedPage), [focusedPage, moveTo]);
+  useImperativeHandle(
+    handle,
+    () => ({
+      select: (name: string) => {
+        const page = model.indexOf(name);
+        if (page >= 0) moveTo(page);
+      },
+    }),
+    [model, moveTo],
+  );
 
-  // Warm the neighbours of the resting page on the frame AFTER it settled,
-  // never on the frame that is already rendering the destination.
+  // Warm the neighbours of the resting page on the frame AFTER it settled, never
+  // on the frame that is already rendering the destination, and only once that
+  // page has painted its first content: at launch a neighbour mounted earlier
+  // competes with the first page's first paint (Mention: the Videos tab, its reel
+  // and its player, next to Home). A swipe admits them at once (below).
+  const settledKey = keyForPage(settledPage);
+  const settledPainting = settledKey !== undefined && painting.has(settledKey);
   useEffect(() => {
+    if (settledPainting) return;
     const frame = requestAnimationFrame(() => admit(neighbourKeys(settledPage)));
     return () => cancelAnimationFrame(frame);
-  }, [settledPage, admit, neighbourKeys]);
+  }, [settledPage, settledPainting, admit, neighbourKeys]);
 
   const onPageScrollStateChanged = useCallback(
     (event: { nativeEvent: { pageScrollState: PageScrollState } }) => {
@@ -309,6 +365,9 @@ export function TabPager({
     const route = routeByName.get(page.name);
     const descriptor = route ? descriptors[route.key] : undefined;
     const focused = index === focusedPage;
+    // A page the finger can bring into view: the one in front, the predictive-back
+    // destination and the resting page's neighbours.
+    const reachable = focused || index === previewPage || Math.abs(index - settledPage) <= 1;
     return (
       <View
         key={page.name}
@@ -319,22 +378,20 @@ export function TabPager({
         {route && descriptor && loaded.has(route.key) ? (
           // 2 drives the page in front; 1 keeps a page laid out and painted so
           // it is real under the finger or one tap away (every preloading bar
-          // page, and the resting page's neighbours); 0 parks the rest.
-          // Leaving 0 re-renders a frozen tree, so it is kept off the tap path.
+          // page, and the reachable ones); 0 parks the rest.
+          // A page out of reach is also frozen where the app enables freezing
+          // (`enableFreeze`): it keeps its state and its last picture but does
+          // not re-render until it is reachable again. A reachable page stays
+          // live, so a swipe never reveals one that stopped updating.
           <Screen
             enabled
-            activityState={
-              focused
-                ? 2
-                : index === previewPage ||
-                    (page.bar && page.preload) ||
-                    Math.abs(index - settledPage) <= 1
-                  ? 1
-                  : 0
-            }
+            activityState={focused ? 2 : reachable || (page.bar && page.preload) ? 1 : 0}
+            shouldFreeze={!reachable}
             style={styles.page}
           >
-            <ScreenActivity active={focused}>{descriptor.render()}</ScreenActivity>
+            <PageContentScope pageKey={route.key} contentHold={contentHold}>
+              <ScreenActivity active={focused}>{descriptor.render()}</ScreenActivity>
+            </PageContentScope>
           </Screen>
         ) : null}
       </View>
@@ -393,6 +450,20 @@ export function TabPager({
       </Animated.View>
     </PredictiveBackHost>
   );
+}
+
+/** Gives a page its hold on its neighbours (`useTabPageContentPainted`). */
+function PageContentScope({
+  pageKey,
+  contentHold,
+  children,
+}: {
+  pageKey: string;
+  contentHold: (key: string) => TabPageContentHold;
+  children: ReactNode;
+}) {
+  const value = useMemo(() => contentHold(pageKey), [contentHold, pageKey]);
+  return <TabPageContentContext.Provider value={value}>{children}</TabPageContentContext.Provider>;
 }
 
 /** Material's fade-through: out fast, in from a slight scale. */

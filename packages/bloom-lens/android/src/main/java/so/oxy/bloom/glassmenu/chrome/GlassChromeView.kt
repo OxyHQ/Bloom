@@ -273,12 +273,12 @@ class GlassChromeView(context: Context) : FrameLayout(context) {
   ) {
     val barState = glassState(tabs, search, ChromeGeometry.layerFor("bar", rest), ox, oy)
     barRenderer.prepare(barState)
-    barRenderer.drawGlass(canvas, provider.node, barState, limits)
+    barRenderer.drawGlass(canvas, provider, barState, limits)
     // The create circle shrinks to nothing as the search opens: skip it when it has no area left.
     if (fab.x1 - fab.x0 >= 1f) {
       val fabState = glassState(fab, null, ChromeGeometry.layerFor("fab", rest), ox, oy)
       fabRenderer.prepare(fabState)
-      fabRenderer.drawGlass(canvas, provider.node, fabState, limits)
+      fabRenderer.drawGlass(canvas, provider, fabState, limits)
     }
   }
 

@@ -265,7 +265,7 @@ class SurfaceNodesView(context: Context) : FrameLayout(context) {
         if (rect.width() < 1f || rect.height() < 1f) continue
         val state = glassStateFor(track, rect, ox, oy)
         track.renderer.prepare(state)
-        track.renderer.drawGlass(canvas, provider.node, state, limits)
+        track.renderer.drawGlass(canvas, provider, state, limits)
       }
       canvas.restore()
     }

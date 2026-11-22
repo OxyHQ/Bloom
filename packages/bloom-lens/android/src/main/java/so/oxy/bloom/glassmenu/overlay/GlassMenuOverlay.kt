@@ -50,6 +50,9 @@ internal class GlassMenuOverlay private constructor(
   private var backCallback: Any? = null
   private var animationScale = 1f
   private var startupFrames = 0
+  // What the overlay draws (the resting lenses and the open menu), in a node of its own: a frame of the page that moves
+  // a trigger or redraws its content records it again from the pre-draw, without invalidating the overlay.
+  private var drawing: Any? = null
 
   init {
     setWillNotDraw(false)
@@ -91,26 +94,33 @@ internal class GlassMenuOverlay private constructor(
     viewTreeObserver.removeOnPreDrawListener(this)
     Choreographer.getInstance().removeFrameCallback(this)
     framePending = false
+    if (supportsGlass) (drawing as? RenderNode)?.discardDisplayList()
+    drawing = null
     super.onDetachedFromWindow()
   }
 
+  // The page behind the glass reaches it through the backdrop's node (GlassBackdrop): what is drawn here is recorded
+  // again only for a trigger that moved or faded, and from here, into the node onDraw draws, unless the overlay is
+  // already invalidated for this frame. An invalidation from a pre-draw would schedule another frame. A trigger whose
+  // content redrew records only that content, into the node this overlay already draws (an animated avatar in a
+  // header trigger records no glass).
   override fun onPreDraw(): Boolean {
-    if (backdropChanged() or anchorsMoved()) invalidate()
+    if (!supportsGlass || !isHardwareAccelerated) return true
+    if (anchorsMoved()) {
+      if (!isDirty) recordGlass()
+    } else if (!isDirty) {
+      for (anchor in anchors) if (drawnHere(anchor) && anchor.isDirty) anchor.refreshContent()
+    }
     return true
   }
 
-  private fun backdropChanged(): Boolean {
-    for (index in 0 until root.childCount) {
-      val child = root.getChildAt(index)
-      if (child !== this && child.isDirty) return true
-    }
-    return false
-  }
+  private fun drawnHere(anchor: GlassMenuAndroidView): Boolean =
+    (anchor.drawsGlass && !anchor.inPlace) || session?.anchor === anchor
 
   private fun anchorsMoved(): Boolean {
     var moved = false
     for (anchor in anchors) {
-      if ((!anchor.drawsGlass || anchor.inPlace) && session?.anchor !== anchor) continue
+      if (!drawnHere(anchor)) continue
       anchorRect(anchor, probe)
       val alpha = if (anchor.isShown) anchor.effectiveAlpha() else 0f
       if (probe != anchor.placement || alpha != anchor.placementAlpha) {
@@ -123,28 +133,41 @@ internal class GlassMenuOverlay private constructor(
   }
 
   override fun onDraw(canvas: Canvas) {
-    limits.set(0, 0, width, height)
-    val active = session
     if (!supportsGlass || !canvas.isHardwareAccelerated) {
-      active?.drawFallback(canvas)
+      session?.drawFallback(canvas)
       return
     }
-    drawGlass(canvas, active)
+    canvas.drawRenderNode(recordGlass() ?: return)
+  }
+
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun recordGlass(): RenderNode? {
+    if (width <= 0 || height <= 0) return null
+    val node = drawing as? RenderNode ?: RenderNode("GlassMenuOverlay").also { drawing = it }
+    node.setPosition(0, 0, width, height)
+    val canvas = node.beginRecording(width, height)
+    try {
+      drawGlass(canvas, session)
+    } finally {
+      node.endRecording()
+    }
+    return node
   }
 
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   private fun drawGlass(canvas: Canvas, active: GlassMenuSession?) {
-    val node = backdropProvider?.node ?: return
+    val page = backdropProvider ?: return
+    limits.set(0, 0, width, height)
 
     for (anchor in anchors) {
       // A trigger that draws its lens in place (restBackdrop) is drawn here only while its menu is open.
-      if (anchor !== active?.anchor && anchor.drawsGlass && !anchor.inPlace) drawRestingAnchor(canvas, node, anchor)
+      if (anchor !== active?.anchor && anchor.drawsGlass && !anchor.inPlace) drawRestingAnchor(canvas, page, anchor)
     }
-    active?.draw(canvas, node, limits)
+    active?.draw(canvas, page, limits)
   }
 
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-  private fun drawRestingAnchor(canvas: Canvas, node: RenderNode, anchor: GlassMenuAndroidView) {
+  private fun drawRestingAnchor(canvas: Canvas, page: GlassBackdrop, anchor: GlassMenuAndroidView) {
     if (!anchor.isShown || anchor.width == 0 || anchor.height == 0) return
     val opacity = anchor.effectiveAlpha()
     if (opacity <= 0f) return
@@ -170,7 +193,7 @@ internal class GlassMenuOverlay private constructor(
     anchor.applyLight(state, restRect, 1f)
     val renderer = anchor.renderer(density)
     renderer.prepare(state)
-    renderer.drawGlass(canvas, node, state, limits)
+    renderer.drawGlass(canvas, page, state, limits)
     if (renderer.warmPipelines(canvas)) post { invalidate() }
     val content = anchor.recordContent()
     content.alpha = opacity

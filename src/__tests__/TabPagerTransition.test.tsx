@@ -1,9 +1,14 @@
+import { createRef } from 'react';
 import type React from 'react';
 import { View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { makeMutable } from 'react-native-reanimated';
 
-import { TabPager, type TabPagerProps } from '../tab-pager/expo-router/TabPager';
+import {
+  TabPager,
+  type TabPagerHandle,
+  type TabPagerProps,
+} from '../tab-pager/expo-router/TabPager';
 import type { PredictiveBackHostProps } from '../tab-pager/expo-router/PredictiveBackHost';
 import { Screen, useScreen } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -83,6 +88,19 @@ it('fades through to a page further away instead of scrolling past the pages bet
   tree.rerender(pager(3));
   expect(mockSetPage).not.toHaveBeenCalled();
   expect(mockCut).toHaveBeenCalledWith(3);
+});
+
+it('moves on the tap itself, and the route change that follows finds it there', () => {
+  const handle = createRef<TabPagerHandle>();
+  const tree = render(pager(0, { handle }));
+  act(() => handle.current?.select('b'));
+  expect(mockSetPage).toHaveBeenCalledWith(1);
+  tree.rerender(pager(1, { handle }));
+  act(() => handle.current?.select('d'));
+  expect(mockCut).toHaveBeenCalledWith(3);
+  tree.rerender(pager(3, { handle }));
+  expect(mockSetPage).toHaveBeenCalledTimes(1);
+  expect(mockCut).toHaveBeenCalledTimes(1);
 });
 
 function completeBack(gestureId: number, sessionKey = 'visit-1') {

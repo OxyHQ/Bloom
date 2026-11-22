@@ -1,0 +1,103 @@
+package so.oxy.bloom.glassmenu.backdrop
+
+import android.graphics.Bitmap
+import android.graphics.Rect
+import android.graphics.RenderNode
+import android.os.Build
+import android.os.SystemClock
+import androidx.annotation.RequiresApi
+import so.oxy.bloom.glassmenu.render.GlassStill
+
+// What one glass surface samples of the page: the page itself, by reference, while anything behind the surface
+// changes, and a still of the region behind it once that region has been quiet for a moment (StillAfterMs).
+//
+// Android draws a RenderNode reached from a second parent in the same frame as fully damaged: every glass that holds
+// the page re-renders on every frame the window draws, for an animation anywhere on screen, and the page's tree is
+// prepared once more for each of them. A lens that shows its still does not hold the page: its glass is not drawn
+// again, and the page is prepared once. The still is the same pixels: the region of the same nodes (GlassStill).
+//
+// The backdrop tells each lens, before every frame, which window rects change in it (GlassBackdrop.onPreDraw); a lens
+// whose region is touched shows the page again in that same frame. The region is the one the glass samples.
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+internal class GlassLens(val page: GlassBackdrop) {
+  val node = RenderNode("GlassLens")
+  private val region = Rect()
+  private var showsStill = false
+  private var recorded = false
+  private var quietSince = 0L
+  // Bumped whenever the page is shown again: a still asked before then is dropped when it arrives.
+  private var generation = 0
+  private var askedGeneration = -1
+  private var still: GlassStill? = null
+
+  // The node the glass draws for [area] (window px): the region's still, or the page.
+  fun sample(area: Rect): RenderNode {
+    if (area != region || !recorded) {
+      region.set(area)
+      showPage(SystemClock.uptimeMillis())
+    }
+    return node
+  }
+
+  // Before a frame: [dirt] are the window rects that change in it (null: the whole page changed).
+  fun frame(dirt: List<Rect>?, now: Long) {
+    if (!recorded || region.isEmpty) return
+    if (dirt == null || dirt.any { Rect.intersects(it, region) }) {
+      showPage(now)
+    } else if (!showsStill && still == null && now - quietSince >= StillAfterMs) {
+      askStill()
+    }
+  }
+
+  // The page again, and the still let go: a lens holds a still only while it shows it (a menu's large region, a
+  // region that changes now and then, would otherwise keep buffers it does not draw).
+  private fun showPage(now: Long) {
+    quietSince = now
+    generation += 1
+    still?.release()
+    still = null
+    if (!showsStill && recorded && node.left == region.left && node.top == region.top &&
+      node.width == region.width() && node.height == region.height()) return
+    node.setPosition(region)
+    val canvas = node.beginRecording(region.width(), region.height())
+    canvas.translate(-region.left.toFloat(), -region.top.toFloat())
+    canvas.drawRenderNode(page.node)
+    node.endRecording()
+    showsStill = false
+    recorded = true
+  }
+
+  private fun askStill() {
+    val target = GlassStill(region.width(), region.height(), ::showStill).also { still = it }
+    askedGeneration = generation
+    val left = region.left.toFloat()
+    val top = region.top.toFloat()
+    target.render { canvas ->
+      canvas.translate(-left, -top)
+      canvas.drawRenderNode(page.node)
+    }
+  }
+
+  private fun showStill(bitmap: Bitmap) {
+    if (askedGeneration != generation || bitmap.width != region.width() || bitmap.height != region.height()) return
+    node.setPosition(region)
+    val canvas = node.beginRecording(region.width(), region.height())
+    canvas.drawBitmap(bitmap, 0f, 0f, null)
+    node.endRecording()
+    showsStill = true
+  }
+
+  fun release() {
+    page.drop(this)
+    still?.release()
+    still = null
+    node.discardDisplayList()
+    recorded = false
+    showsStill = false
+  }
+
+  private companion object {
+    // Longer than the gap between two frames of a video and than a press: a region that changes keeps the page.
+    const val StillAfterMs = 500L
+  }
+}

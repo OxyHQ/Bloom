@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useContext, useMemo, useState, useCallback } from 'react';
 import type { AgentAvatarProviderProps } from './types';
 import {
   type CharacterCapabilities,
@@ -14,6 +14,8 @@ function sameRecord<T>(left: Record<string, T>, right: Record<string, T>) {
 
 /** Shares SVG catalog capabilities; no hosted module or hidden render surface. */
 export function AgentAvatarProvider({ catalog, children }: AgentAvatarProviderProps) {
+  // A provider without a catalog of its own (a library's, round one avatar) keeps the app's.
+  const outerCatalog = useContext(VectorCatalogContext);
   const [capabilitiesByKey, setCapabilities] = useState<ReadonlyMap<string, CharacterCapabilities>>(
     () => new Map(),
   );
@@ -38,7 +40,9 @@ export function AgentAvatarProvider({ catalog, children }: AgentAvatarProviderPr
   return (
     <CharacterRuntimeContext.Provider value={value}>
       <CharacterCapabilitiesContext.Provider value={capabilities}>
-        <VectorCatalogContext.Provider value={catalog}>{children}</VectorCatalogContext.Provider>
+        <VectorCatalogContext.Provider value={catalog ?? outerCatalog}>
+          {children}
+        </VectorCatalogContext.Provider>
       </CharacterCapabilitiesContext.Provider>
     </CharacterRuntimeContext.Provider>
   );

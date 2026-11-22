@@ -237,3 +237,13 @@ describe('the ladder is anchored on what Bloom already painted', () => {
     expect(resolveSurfaceLevel(theme, 0).border).toBe(hairlineOn(theme, page));
   });
 });
+
+describe('resolveSurfaceLevel is computed once per theme', () => {
+  it('returns the same paint for the same theme and rung, and its own for each', () => {
+    const theme = buildTheme('teal', 'dark');
+    const card = resolveSurfaceLevel(theme, 1);
+    expect(resolveSurfaceLevel(theme, 1)).toBe(card);
+    expect(resolveSurfaceLevel(theme, 2)).not.toBe(card);
+    expect(resolveSurfaceLevel(buildTheme('teal', 'dark'), 1)).toEqual(card);
+  });
+});
