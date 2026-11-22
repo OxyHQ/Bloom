@@ -2,7 +2,20 @@ import { DetailDialogSection } from '../dialog/DetailDialogSection';
 import { RiStarLine } from '../icons/remix/RiStarLine';
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Pressable, StyleSheet, type TextStyle, View } from 'react-native';
+import { Avatar } from '../avatar';
+import { Chip } from '../chip';
+import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiCheckboxCircleLine } from '../icons/remix/RiCheckboxCircleLine';
+import { RiEditLine } from '../icons/remix/RiEditLine';
+import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
+import { RiFolder6Line } from '../icons/remix/RiFolder6Line';
+import { RiLinkM } from '../icons/remix/RiLinkM';
+import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
+import { IS_WEB } from '../styles/platform';
+import { webDataSet } from '../styles/web-data';
+import { Text } from '../typography';
 import { writeClipboardText } from '../hooks/clipboard';
 import { openExternal } from '../hooks/link-activation';
 import { TicketTokenChart } from './TicketTokenChart';
@@ -12,40 +25,87 @@ import { Textarea } from '../textarea';
 import { useColorTokens } from '../theme/color-tokens';
 import { BoardTooltip } from './BoardTooltip';
 import { MemberAvatars } from './MemberAvatars';
-import { cx } from './constants';
+import { COLOR_TRANSITION, DIALOG_CHIP, useChipFills, useChipLabels } from './chips';
+import { createTokenStyles } from '../theme/color-tokens';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
 import { PRIORITIES, PropertySelect } from './ProjectBoardControls';
 import { TicketAssigneeIcon, TicketStatusIcon } from './ProjectBoardIcons';
+import { RiRestartLine } from './RiRestartLine';
 import {
-  SourceAvatar as Avatar,
-  SourceChip as Chip,
-  SourcePressable as Pressable,
-  RiArrowUpLine,
-  RiCheckLine,
-  RiCheckboxCircleLine,
-  RiEditLine,
-  RiFileCopyLine,
-  RiFolder6Line,
-  RiLinkM,
-  RiMore2Fill,
-  RiRestartLine,
-  SourceText as Text,
-  SourceView as View,
-} from './SourcePrimitives';
+  ELLIPSIS,
+  NOWRAP,
+  PRE_WRAP_ANYWHERE,
+  TYPE,
+  WRAP_ANYWHERE,
+  useBoardText,
+  useIconFill,
+} from './styles';
+import { useProjectBoardWebCss } from './web-css';
 import type { ProjectColumn, ProjectMember, ProjectTicket, TicketPriority } from './types';
-const PRIORITY_STYLES = {
-  Low: 'bg-ticket-detail-low-background text-ticket-detail-low-text',
-  Medium: 'bg-status-yellow-background text-status-yellow-text',
-  High: 'bg-status-orange-background text-status-orange-text',
-  Urgent: 'bg-status-rose-background text-status-rose-text',
-};
-const PRIORITY_HOVERS = {
-  Low: 'group-hover/priority:bg-ticket-detail-low-hover',
-  Medium: 'group-hover/priority:bg-ticket-detail-medium-hover',
-  High: 'group-hover/priority:bg-ticket-detail-high-hover',
-  Urgent: 'group-hover/priority:bg-ticket-detail-urgent-hover',
-};
+
+const styles = StyleSheet.create({
+  // A menu row's `px-2` (its `py-1.5` lost to the row's own 4px).
+  action: { paddingInline: 8 },
+  actionIcon: { width: 18, height: 18, flexShrink: 0 },
+  actionLabel: { overflow: 'hidden', lineHeight: TYPE.body.lineHeight, fontWeight: 500 },
+  // `z-[120] rounded-[14px] p-1` lost to the menu panel's own chrome.
+  menu: { width: 220 },
+  column: { flexDirection: 'column' },
+  comment: { position: 'relative', flexDirection: 'column', gap: 3, borderRadius: 16, padding: 12 },
+  connector: { position: 'absolute', insetInlineStart: 23.5, top: 36, bottom: -12, width: 1 },
+  author: { flexDirection: 'row', minWidth: 0, alignItems: 'center', gap: 8 },
+  face: { width: 24, height: 24 },
+  byline: {
+    flexDirection: 'row',
+    minWidth: 0,
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: 8,
+  },
+  truncate: { overflow: 'hidden' },
+  noShrink: { flexShrink: 0 },
+  body: { paddingInlineStart: 29, fontSize: 14 },
+  composer: { position: 'relative' },
+  send: { width: 13.333, height: 13.333 },
+  srOnly: {
+    borderWidth: 0,
+    width: 1,
+    height: 1,
+    margin: -1,
+    padding: 0,
+    position: 'absolute',
+    overflow: 'hidden',
+  },
+  details: { flexDirection: 'column', gap: 12 },
+  creator: { flexDirection: 'row', alignItems: 'center', gap: 13, ...TYPE.body },
+  glyph: { width: 18, height: 18 },
+  copy: { flexDirection: 'column', gap: 6 },
+  editor: { flexDirection: 'column', gap: 12 },
+  editorActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
+  value: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  menuRow: { borderRadius: 10, paddingInline: 8 },
+  member: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  link: { borderRadius: 6 },
+});
+const useStyles = createTokenStyles((t) => ({
+  // The colour (and type) sit on these rows as their classes set them.
+  person: { flexDirection: 'row', alignItems: 'center', gap: 6, color: t.foreground },
+  assignees: {
+    margin: -4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 6,
+    padding: 4,
+    ...TYPE.body,
+    color: t.foreground,
+  },
+}));
+/** `sr-only`'s clip and nowrap, which only the web has. */
+const SR_ONLY_WEB = IS_WEB
+  ? ({ clipPath: 'inset(50%)', whiteSpace: 'nowrap' } as TextStyle)
+  : undefined;
 export function TicketDetailDialog({
   title: boardTitle,
   ticket,
@@ -75,6 +135,12 @@ export function TicketDetailDialog({
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   const tokens = useColorTokens();
+  useProjectBoardWebCss();
+  const text = useBoardText();
+  const fills = useChipFills();
+  const labels = useChipLabels();
+  const own = useStyles();
+  const iconFill = useIconFill();
   const {
     Button,
     DetailDialog,
@@ -139,9 +205,9 @@ export function TicketDetailDialog({
     setComment('');
   }
   const action = (label: string, Icon: typeof RiEditLine, run: () => void) => (
-    <DropdownMenuItem className="px-2 py-1.5" onPress={run}>
-      <Icon className="size-[18px] shrink-0 text-foreground-icon-secondary" />
-      <Text className="truncate text-body-medium whitespace-nowrap">{label}</Text>
+    <DropdownMenuItem style={styles.action} onPress={run}>
+      <Icon fill={iconFill} style={[styles.actionIcon, text.icon]} />
+      <Text style={[styles.actionLabel, ELLIPSIS]}>{label}</Text>
     </DropdownMenuItem>
   );
   return (
@@ -178,11 +244,7 @@ export function TicketDetailDialog({
             <DropdownMenuTrigger asChild>
               <Button iconOnly icon={<RiMore2Fill />} accessibilityLabel={m.actions} />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              label={m.actions}
-              className="z-[120] w-[220px] rounded-[14px] p-1"
-              style={{ width: 220 }}
-            >
+            <DropdownMenuContent label={m.actions} style={styles.menu}>
               {action(m.editDescription, RiEditLine, () => {
                 setDraft(ticket.description ?? '');
                 setEditingDescription(true);
@@ -201,48 +263,42 @@ export function TicketDetailDialog({
       }
       scrollFooter={
         <View accessibilityLabel={m.comments}>
-          <View className="flex flex-col" accessibilityLiveRegion="polite">
+          <View style={styles.column} accessibilityLiveRegion="polite">
             {(ticket.comments ?? []).map((entry, index) => {
               const author = Object.values(members).find((p) => p.name === entry.author);
               const authorName = entry.author ?? m.you;
               return (
                 <View
                   key={entry.id}
-                  className="relative flex flex-col gap-[3px] rounded-2xl p-3 after:pointer-events-none after:absolute after:top-9 after:-bottom-3 after:start-[23.5px] after:w-px after:bg-border-button-default last:after:hidden"
+                  style={styles.comment}
+                  // The web draws the thread's connector as the entry's `::after`.
+                  {...webDataSet({ bloomBoardComment: '' })}
                 >
                   {Platform.OS !== 'web' && index < (ticket.comments?.length ?? 0) - 1 && (
-                    <View
-                      pointerEvents="none"
-                      className="absolute top-9 -bottom-3 start-[23.5px] w-px bg-border-button-default"
-                    />
+                    <View pointerEvents="none" style={[styles.connector, text.connector]} />
                   )}
-                  <View className="flex min-w-0 items-center gap-2">
-                    <Avatar
-                      source={author?.avatar}
-                      initials={author?.initials}
-                      name={authorName}
-                      color="neutral"
-                      alt={authorName}
-                      className="size-6"
-                      size={24}
-                    />
-                    <View className="flex min-w-0 flex-wrap items-center gap-x-2">
-                      <Text className="truncate text-body-medium text-text-primary">
-                        {authorName}
-                      </Text>
-                      <Text className="shrink-0 text-body-2-medium text-text-tertiary">
-                        {entry.time}
-                      </Text>
+                  <View style={styles.author}>
+                    <View style={styles.face}>
+                      <Avatar
+                        source={author?.avatar}
+                        initials={author?.initials}
+                        name={authorName}
+                        color="neutral"
+                        alt={authorName}
+                        size={24}
+                      />
+                    </View>
+                    <View style={styles.byline}>
+                      <Text style={[styles.truncate, text.body, ELLIPSIS]}>{authorName}</Text>
+                      <Text style={[styles.noShrink, text.captionMuted]}>{entry.time}</Text>
                     </View>
                   </View>
-                  <Text className="ps-[29px] whitespace-pre-wrap text-body-medium text-text-secondary wrap-anywhere">
-                    {entry.body}
-                  </Text>
+                  <Text style={[styles.body, text.bodyMuted, PRE_WRAP_ANYWHERE]}>{entry.body}</Text>
                 </View>
               );
             })}
           </View>
-          <View className="relative">
+          <View style={styles.composer}>
             <Textarea
               accessibilityLabel={m.addComment}
               placeholder={m.enterComment}
@@ -266,10 +322,12 @@ export function TicketDetailDialog({
               accessibilityLabel={m.postComment}
               size="sm"
               disabled={!comment.trim()}
-              className="absolute end-2 bottom-2 size-6 rounded-full p-0"
               style={{
                 position: 'absolute',
                 bottom: 8,
+                // `end-2 p-0`, as the class set them, beside the physical side.
+                insetInlineEnd: 8,
+                padding: 0,
                 [rtl ? 'left' : 'right']: 8,
                 width: 24,
                 height: 24,
@@ -280,40 +338,39 @@ export function TicketDetailDialog({
               }}
               onPress={postComment}
               iconOnly
-              icon={<RiArrowUpLine className="size-[13.333px]" />}
+              icon={<RiArrowUpLine style={styles.send} />}
             />
           </View>
         </View>
       }
     >
-      <Text className="sr-only" accessibilityLiveRegion="polite">
+      <Text style={[styles.srOnly, SR_ONLY_WEB]} accessibilityLiveRegion="polite">
         {copyMessage}
       </Text>
 
-      <View className="flex flex-col gap-3" accessibilityLabel={m.description}>
+      <View style={styles.details} accessibilityLabel={m.description}>
         {creator && (
-          <View className="flex items-center gap-[13px] text-body-medium">
-            <Text className="text-body-medium text-text-secondary">{m.createdBy}</Text>
-            <View className="flex items-center gap-1.5 text-text-primary">
-              <Avatar
-                source={creator.avatar}
-                initials={creator.initials}
-                alt={creator.name}
-                className="size-[18px]"
-              />
-              <Text className="text-body-medium text-text-primary">{creator.name}</Text>
+          <View style={styles.creator}>
+            <Text style={text.bodyMuted}>{m.createdBy}</Text>
+            <View style={own.person}>
+              <View style={styles.glyph}>
+                <Avatar
+                  source={creator.avatar}
+                  initials={creator.initials}
+                  alt={creator.name}
+                  size={18}
+                />
+              </View>
+              <Text style={text.body}>{creator.name}</Text>
             </View>
           </View>
         )}
-        <View className="flex flex-col gap-1.5">
-          <Text
-            accessibilityRole="header"
-            className="text-headline-medium text-text-primary wrap-anywhere"
-          >
+        <View style={styles.copy}>
+          <Text accessibilityRole="header" style={[text.headline, WRAP_ANYWHERE]}>
             {ticket.title}
           </Text>
           {editingDescription ? (
-            <View className="flex flex-col gap-3">
+            <View style={styles.editor}>
               <Textarea
                 accessibilityLabel={m.ticketDescription}
                 value={draft}
@@ -322,7 +379,7 @@ export function TicketDetailDialog({
                 maxLength={5000}
                 autoFocus
               />
-              <View className="flex justify-end gap-2">
+              <View style={styles.editorActions}>
                 <Button
                   appearance="outline"
                   tone="neutral"
@@ -344,7 +401,7 @@ export function TicketDetailDialog({
               </View>
             </View>
           ) : (
-            <Text className="whitespace-pre-wrap text-body-regular text-text-secondary wrap-anywhere">
+            <Text style={[text.bodyRegularMuted, PRE_WRAP_ANYWHERE]}>
               {ticket.description ?? ''}
             </Text>
           )}
@@ -357,13 +414,13 @@ export function TicketDetailDialog({
           options={columns.map((c) => ({
             id: c.id,
             label: c.title,
-            icon: <TicketStatusIcon status={c.id} className="text-foreground-icon-secondary" />,
+            icon: <TicketStatusIcon status={c.id} style={text.icon} />,
           }))}
           onChange={onMove}
           renderValue={
-            <View className="flex items-center gap-1.5">
-              <TicketStatusIcon status={column.id} className="text-foreground-icon-secondary" />
-              <Text className="text-body-medium text-text-primary">{column.title}</Text>
+            <View style={styles.value}>
+              <TicketStatusIcon status={column.id} style={text.icon} />
+              <Text style={text.body}>{column.title}</Text>
             </View>
           }
         />
@@ -374,12 +431,11 @@ export function TicketDetailDialog({
           options={PRIORITIES.map((p) => ({ id: p, label: m.priorityLabels[p] }))}
           onChange={(p) => onUpdate({ priority: p as TicketPriority })}
           renderValue={
+            // Its hover fills (`ticket-detail-*-hover`) are the same tokens as its rest.
             <Chip
-              className={cx(
-                'px-[7px] py-0.5 text-body-medium transition-colors duration-150',
-                PRIORITY_HOVERS[ticket.priority],
-                PRIORITY_STYLES[ticket.priority],
-              )}
+              bare
+              style={[DIALOG_CHIP, COLOR_TRANSITION, fills[ticket.priority]]}
+              textStyle={[labels[ticket.priority], NOWRAP]}
             >
               {m.priorityLabels[ticket.priority]}
             </Chip>
@@ -389,33 +445,30 @@ export function TicketDetailDialog({
           <DropdownMenuTrigger asChild>
             <Pressable
               accessibilityLabel={m.editAssignees}
-              className="-m-1 flex items-center gap-1.5 rounded-md p-1 text-body-medium text-text-primary hover:bg-background-primary-hover"
+              style={own.assignees}
+              {...webDataSet({ bloomBoardProperty: '' })}
             >
               {ticket.assignees.length ? (
                 <>
                   <MemberAvatars ids={ticket.assignees.slice(0, 3)} members={members} size={18} />
-                  <Text className="text-body-medium text-text-primary">
+                  <Text style={text.body}>
                     {owner?.name ?? ticket.assignees[0]}
                     {ticket.assignees.length > 1 ? ` +${ticket.assignees.length - 1}` : ''}
                   </Text>
                 </>
               ) : (
                 <>
-                  <TicketAssigneeIcon className="size-[18px] text-foreground-icon-tertiary" />
-                  <Text className="text-body-medium text-text-tertiary">{m.assignee}</Text>
+                  <TicketAssigneeIcon style={[styles.glyph, text.icon]} />
+                  <Text style={text.bodyMuted}>{m.assignee}</Text>
                 </>
               )}
             </Pressable>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            label={m.editAssignees}
-            className="z-[120] w-[220px] rounded-[14px] p-1"
-            style={{ width: 220 }}
-          >
+          <DropdownMenuContent label={m.editAssignees} style={styles.menu}>
             {Object.values(members).map((p) => (
               <DropdownMenuCheckboxItem
                 key={p.id}
-                className="rounded-2lg px-2 py-1.5 hover:bg-background-secondary-hover"
+                style={styles.menuRow}
                 checked={ticket.assignees.includes(p.id)}
                 onCheckedChange={(selected) =>
                   onUpdate({
@@ -425,9 +478,11 @@ export function TicketDetailDialog({
                   })
                 }
               >
-                <View className="flex items-center gap-2">
-                  <Avatar className="size-[18px]" source={p.avatar} initials={p.initials} />
-                  <Text className="text-body-medium text-text-primary">{p.name}</Text>
+                <View style={styles.member}>
+                  <View style={styles.glyph}>
+                    <Avatar source={p.avatar} initials={p.initials} size={18} />
+                  </View>
+                  <Text style={text.body}>{p.name}</Text>
                 </View>
               </DropdownMenuCheckboxItem>
             ))}
@@ -439,9 +494,9 @@ export function TicketDetailDialog({
           options={projects.map((p) => ({ id: p, label: p }))}
           onChange={(project) => onUpdate({ project })}
           renderValue={
-            <View className="flex items-center gap-1.5">
-              <RiFolder6Line className="size-[18px] text-foreground-icon-secondary" />
-              <Text className="text-body-medium text-text-primary">{ticket.project}</Text>
+            <View style={styles.value}>
+              <RiFolder6Line fill={iconFill} style={[styles.glyph, text.icon]} />
+              <Text style={text.body}>{ticket.project}</Text>
             </View>
           }
         />
@@ -453,13 +508,13 @@ export function TicketDetailDialog({
               key={r.href}
               accessibilityRole="link"
               accessibilityLabel={r.label}
-              href={r.href}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              {...({ href: r.href, target: '_blank', rel: 'noreferrer' } as object)}
+              style={styles.link}
+              {...webDataSet({ bloomBoardLink: '' })}
               onPress={Platform.OS === 'web' ? undefined : () => openExternal(r.href)}
             >
-              <Chip className="bg-ticket-detail-resource-background px-[7px] py-0.5 text-body-medium text-ticket-detail-resource-text">
+              {/* `ticket-detail-resource-*`: the info pair, as Low's. */}
+              <Chip bare style={[DIALOG_CHIP, fills.Low]} textStyle={[labels.Low, NOWRAP]}>
                 {r.label}
               </Chip>
             </Pressable>
