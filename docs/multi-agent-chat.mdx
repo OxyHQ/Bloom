@@ -75,8 +75,8 @@ or connect external accounts. Supply real integrations through the host.
 
 The React Native layout and state are shared across platforms. Thin bindings pick
 Bloom's existing web/native AppShell, Dialog, ComposerPanel and AgentCreator implementations.
-Layout utilities require the consumer NativeWind/Tailwind source scanning described
-in `docs/styles.mdx`. Theme colours come from Bloom's provider.
+Its styles are React Native styles and Bloom's colour tokens; theme colours
+come from Bloom's provider. No NativeWind or Tailwind is needed.
 
 The workspace uses AppShell’s `sidebar` navigation and stable `conversation`
 and `editor` descriptors. Minimum widths, retained visibility and resizing resolve
@@ -128,12 +128,7 @@ Marketplace links use the `marketplace` URL parameter on web. A recognized item
 opens directly in its detail view. Notifications render in the shared portal and
 overlay layer without moving the conversation or composer.
 
-The generated Bloom theme fixes numeric spacing to a 4px grid and emits radii
-and container widths in pixels. This preserves the same utility classes and
-geometry on web and native. NativeWind’s default 14px rem otherwise compiles
-`gap-2.5` to 8.75px rather than 10px; the installed preview also drops Metro’s
-`inlineRem` option on one export path. No consumer rem workaround is required
-for these component utilities: import Bloom’s generated theme/preset.
+Spacing and radii are pixel values on both platforms.
 
 Browser checks for header alignment, keyboard editing, long names and sidebar
 search transitions: `node scripts/verify-chat-interactions.mjs` against Storybook
