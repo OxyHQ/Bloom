@@ -800,6 +800,8 @@ export interface ValueModifiers {
   separator: GroupedSeparator | ListSeparator;
   value: string | AnyBinding;
   chevron: boolean;
+  wrapControl: boolean;
+  descriptionLines: number;
   toggle: Binding<boolean>;
   onClose: { readonly action: () => void; readonly label: string | undefined };
   hue: ChipHue;
@@ -3372,6 +3374,12 @@ export class Node {
   }
   chevron(value = true): Node {
     return this.set('chevron', value);
+  }
+  wrapControl(value = true): Node {
+    return this.set('wrapControl', value);
+  }
+  descriptionLines(value: number): Node {
+    return this.set('descriptionLines', value);
   }
   toggle(value: Binding<boolean>): Node {
     return this.set('toggle', value);
