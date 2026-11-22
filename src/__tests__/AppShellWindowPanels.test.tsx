@@ -261,7 +261,7 @@ describe('full screen', () => {
     expect(screen.queryByTestId('shell-window-controls')).toBeNull();
     // Full screen is laid out as without windows: the frame and the bars as before.
     expect(style(screen, 'shell')).toMatchObject({ padding: 16 });
-    expect(style(screen, 'inbox-bar-bar').minHeight).toBeUndefined();
+    expect(style(screen, 'inbox-bar-bar').minHeight).toBe(56);
     expect(barStart(screen, 'inbox')).toBe(12);
     expect(moves(screen, 'inbox')).toBe(false);
     expect(moves(screen, 'detail')).toBe(false);
@@ -324,7 +324,7 @@ describe('other panel shapes', () => {
     // Only the top pane touches the window's top: its toolbar and corners are
     // the window's; the one below keeps its own bar and corners.
     expect(titleRowCentre(screen, 'inbox')).toBe(CONTROLS_CENTRE);
-    expect(style(screen, 'detail-bar-bar').minHeight).toBeUndefined();
+    expect(style(screen, 'detail-bar-bar').minHeight).toBe(56);
     const [, , bottom] = corners(screen, 'inbox');
     expect(corners(screen, 'inbox')).toEqual([16, 16, bottom, bottom]);
     expect(corners(screen, 'detail')).toEqual([bottom, bottom, bottom, bottom]);
@@ -459,7 +459,7 @@ describe('panes beside a sidebar flush to the window', () => {
     setWidth(1100);
     const drawer = shell(fakeWindow().adapter, { ...DESKTOP, navFrom: 'lg', sidebar: FLUSH });
     expect(moves(drawer, 'inbox')).toBe(false);
-    expect(style(drawer, 'inbox-bar-bar').minHeight).toBeUndefined();
+    expect(style(drawer, 'inbox-bar-bar').minHeight).toBe(56);
     drawer.unmount();
     const card = shell(fakeWindow().adapter, {
       ...DESKTOP,

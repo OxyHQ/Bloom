@@ -324,10 +324,10 @@ describe('navigation convenience with document layout on web', () => {
     const panel = screen.UNSAFE_root.findByType(
       (ContentPanel as unknown as { type: React.ComponentType }).type,
     );
-    expect(panel.props.surfaceStyle.minHeight).toBe(
+    expect(resolvedStyle(panel.props.surfaceStyle).minHeight).toBe(
       width < 700 ? 'calc(100dvh - 0px)' : 'calc(100dvh - 16px)',
     );
-    expect(panel.props.surfaceStyle.height).toBeUndefined();
+    expect(resolvedStyle(panel.props.surfaceStyle).height).toBeUndefined();
   });
   it('subtracts a measured external header once, but keeps an internal header inside the minimum', () => {
     setWidth(1440);
@@ -353,7 +353,7 @@ describe('navigation convenience with document layout on web', () => {
     const panel = screen.UNSAFE_root.findByType(
       (ContentPanel as unknown as { type: React.ComponentType }).type,
     );
-    expect(panel.props.surfaceStyle.minHeight).toBe('calc(100dvh - 76px)');
+    expect(resolvedStyle(panel.props.surfaceStyle).minHeight).toBe('calc(100dvh - 76px)');
     expect(panel.props.overlayInset).toEqual({ top: 68, bottom: 8 });
   });
 
