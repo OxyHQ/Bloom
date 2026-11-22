@@ -3,6 +3,7 @@ import { defineKeyframes as defineBloomKeyframes, type KeyframesValue } from '@o
 import { LOOPS } from '../generated/spec.generated';
 import { resolveSpace, type PaddingToken } from '../tokens';
 import type { EasingName, LoopName, MotionToken } from './tokens';
+import { type Tracks, tracksKeyframes } from './tracks';
 
 export type { KeyframesValue };
 
@@ -42,7 +43,29 @@ const px = (value: number | PaddingToken | undefined) =>
  * Icon(LikeFillIcon).keyframes(pop, pressed);
  * ```
  */
-export function defineKeyframes(frames: readonly Frame[], motion?: MotionToken): KeyframesValue {
+export function defineKeyframes(frames: readonly Frame[], motion?: MotionToken): KeyframesValue;
+/**
+ * Keyframe tracks (SwiftUI's `KeyframeTrack`): each property its own timeline
+ * of steps, each with its own motion or length, sampled into one keyframes
+ * value (see `tracksKeyframes`).
+ *
+ * ```ts
+ * const bounce = defineKeyframes({
+ *   y: [{ to: '-lg', motion: 'pop' }, { to: 'none', motion: 'select' }],
+ *   scale: [{ to: 1.2, ms: 120 }, { to: 1, ms: 180 }],
+ * });
+ * ```
+ */
+export function defineKeyframes(tracks: Tracks): KeyframesValue;
+export function defineKeyframes(
+  frames: readonly Frame[] | Tracks,
+  motion?: MotionToken,
+): KeyframesValue {
+  return Array.isArray(frames) ? defineFrames(frames, motion) : tracksKeyframes(frames as Tracks);
+}
+
+/** Frames as Bloom's engine takes them, distances resolved from space tokens. */
+export function defineFrames(frames: readonly Frame[], motion?: MotionToken): KeyframesValue {
   return defineBloomKeyframes(
     frames.map((frame) => ({
       ...frame,

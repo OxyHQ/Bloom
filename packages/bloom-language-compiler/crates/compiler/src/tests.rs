@@ -3043,3 +3043,31 @@ fn toolbar_groups_follow_apples_limits() {
     );
     assert_eq!(messages(&mixed.warnings), ["a toolbar group mixes text and icon buttons"]);
 }
+
+const PHASE_IMPORTS: &str = "import { HStack, Icon, Text, defineKeyframes } from '@oxy.so/bloom-language';
+import { RiShareLine } from '@oxy.so/bloom/icons/RiShareLine';
+";
+
+fn phases(body: &str) -> crate::Output {
+    compile(&format!("{PHASE_IMPORTS}{body}"), "phases.tsx")
+}
+
+#[test]
+fn a_phase_sets_geometry_and_opacity_only() {
+    let fine = phases(
+        "export const x = (n) => Icon(RiShareLine).phases(['rest', 'lift'], n, (v, p) => v.offset({ y: p === 'lift' ? '-sm' : 'none' }).scale('swell'), (p) => (p === 'lift' ? 'pop' : 'select'));\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", messages(&fine.diagnostics));
+    let padded = phases("export const x = (n) => Text('a').phases(['a', 'b'], n, (v) => v.padding('md'));\n");
+    assert_eq!(messages(&padded.diagnostics), ["A phase cannot change .padding()"]);
+    let token = phases("export const x = (n) => Text('a').phases(['a', 'b'], n, (v) => v.scale('huge'));\n");
+    assert_eq!(messages(&token.diagnostics), ["Unknown scale token 'huge' for .scale()"]);
+}
+
+#[test]
+fn keyframe_tracks_are_static() {
+    let output = phases(
+        "const bounce = defineKeyframes({ y: [{ to: '-lg', motion: 'pop' }, { to: 'none', motion: 'select' }], scale: [{ to: 1.2, ms: 120 }, { to: 1, ms: 180 }] });\nexport function X({ n }) {\n  return Text('a').keyframes(bounce, n);\n}\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
+}

@@ -233,6 +233,10 @@ import type {
   TimedMotionToken,
 } from './motion/tokens';
 import { motionKey } from './motion/tokens';
+import { phaseKeyframes, poseOf } from './motion/phases';
+
+/** The motion a step into a phase plays with when `.phases()` names none: SwiftUI's default spring, Bloom's `select`. */
+const PHASE_MOTION: MotionToken = 'select';
 import type { TransitionValue } from './motion/transition';
 import {
   tokenKey,
@@ -3049,6 +3053,20 @@ export class Node {
   anchor(value: AnchorName): Node {
     return this.with({ kind: 'anchor', key: `anchor:${value}`, value });
   }
+  phases<P>(
+    phases: readonly P[],
+    trigger: unknown,
+    build: (view: Node, phase: P) => Node,
+    motion?: (phase: P) => MotionToken,
+  ): Node {
+    const blank = new Node(this.kind, undefined, []);
+    const keyframes = phaseKeyframes(
+      phases.map((phase) => poseOf(build(blank, phase).modifiers)),
+      phases.map((phase) => motion?.(phase) ?? PHASE_MOTION),
+    );
+    const [rest] = phases;
+    return (rest === undefined ? this : build(this, rest)).keyframes(keyframes, trigger);
+  }
   matchedGeometry(id: string, namespace: Namespace): Node {
     return this.with({ kind: 'matchedGeometry', key: 'matchedGeometry', id, namespace });
   }
@@ -4394,6 +4412,20 @@ export interface ViewModifiers<Self> extends ViewNode {
    * left and right: a transform never mirrors.
    */
   anchor(value: AnchorName): Self;
+  /**
+   * SwiftUI's `phaseAnimator`: the view rests in the first phase and, each
+   * time `trigger` changes to a truthy value, moves through every next phase
+   * and back. `build` sets a phase's geometry and opacity (`.offset()`,
+   * `.scale()`, `.rotation()`, `.opacity()`, tokens), and `motion` the motion
+   * a step into a phase plays with (Bloom's `select` spring by default). It
+   * compiles into one keyframes value, played by the engine with no JS per frame.
+   */
+  phases<P>(
+    phases: readonly P[],
+    trigger: unknown,
+    build: (view: Self, phase: P) => Self,
+    motion?: (phase: P) => MotionToken,
+  ): Self;
   /** SwiftUI's `matchedGeometryEffect`: moves from where the view with this id last was. */
   matchedGeometry(id: string, namespace: Namespace): Self;
   /**

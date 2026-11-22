@@ -17,6 +17,8 @@ export {
   animateWithSpec,
   isSpringSpec,
   motionCss,
+  motionDurationMs,
+  motionProgressAt,
   springProgressAt,
   springSettleMs,
 } from '../../../../../src/motion/spec';

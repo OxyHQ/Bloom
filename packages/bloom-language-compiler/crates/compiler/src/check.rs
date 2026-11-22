@@ -106,6 +106,9 @@ impl<'a> Visit<'a> for Checker<'_> {
     }
 }
 
+/// What a phase of `.phases()` sets: what the motion engine plays.
+const PHASE_MODIFIERS: &[&str] = &["offset", "scale", "rotation", "opacity"];
+
 /// Nodes whose children are content: they scroll, or they are a card of it.
 const CONTENT_KINDS: &[&str] = &["scrollView", "scrollArea", "scrollSurface", "list", "virtualList", "card"];
 
@@ -578,6 +581,8 @@ fn check_value(
     match param {
         "value" | "children" | "namespace" => Ok(()),
         "variant" => check_variant(value, spec, module, scoping),
+        // A phase's build: the chain on its view sets geometry and opacity only.
+        "phaseBuild" => check_on_parameter(value, spec, Some(("phase", PHASE_MODIFIERS)), module, scoping),
         "scale" | "rotation" if motion_value => Ok(()),
         "transition" | "keyframes" => match value.without_parentheses() {
             Expression::StringLiteral(literal) => Err(Problem {
@@ -688,7 +693,7 @@ fn check_variant(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
-    check_on_parameter(value, spec, Some(VARIANT_MODIFIERS), module, scoping)
+    check_on_parameter(value, spec, Some(("variant", VARIANT_MODIFIERS)), module, scoping)
 }
 
 /// `defineModifier((v, …) => v…)`: the chain on its view takes the universal
@@ -708,7 +713,7 @@ fn check_define_modifier(expression: &Expression, module: &Module, scoping: &Sco
 fn check_on_parameter(
     value: &Expression,
     spec: &NodeSpec,
-    only: Option<&[&str]>,
+    only: Option<(&str, &[&str])>,
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
@@ -759,14 +764,15 @@ fn check_on_parameter(
             check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
             continue;
         };
+        let (what, only) = only;
         if !only.contains(&modifier) || !spec.modifiers.contains(&modifier) {
             let varies: Vec<&str> = only.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
             return Err(Problem {
                 span,
-                message: format!("A variant cannot change .{modifier}()"),
+                message: format!("A {what} cannot change .{modifier}()"),
                 help: Some(with_suggestion(
                     suggest(modifier, &varies),
-                    format!("a variant changes: {}", varies.join(", ")),
+                    format!("a {what} changes: {}", varies.join(", ")),
                 )),
             });
         }
