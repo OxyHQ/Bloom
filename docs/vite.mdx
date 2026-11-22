@@ -29,19 +29,12 @@ through the matching SDK's installer and validation.
   production tree shaking; mixed ESM/CommonJS conversion preserves RNW imports.
 - `global` maps to `globalThis`; development flags follow Vite's command. The
   recipe does not force production into development mode.
-- The stylesheet imports Tailwind and Bloom's token theme and explicitly scans
-  the application source and Bloom's **module** tree. If using Services, scan
-  its installed module tree too. Paths are relative to the stylesheet. Scanning
-  every CommonJS/type/source copy is unnecessary; the original discovery fixture
-  became unresponsive scanning the whole 255 MB package tree.
-- Standalone Tailwind needs Bloom's `web:` utility variant registered in the
-  stylesheet. Without it, panel material's grid overlay classes disappear and
-  bounded desktop panels can collapse to zero height while compact layouts work.
-  The Vite recipe defines the variant with a browser capability query.
-- Utilities are intentionally unlayered so React Native Web's unlayered reset
-  cannot override them. A layered Tailwind import left the measured Text at
-  14 px with 0 padding despite its `text-2xl p-4` classes; the recipe yields
-  24 px and 16 px. This is a CSS cascade requirement, not a theme-color issue.
+- Bloom needs no stylesheet pipeline ([Bloom without NativeWind](./no-nativewind.mdx)).
+  The packaged example pins Bloom 17.23.0, which still styled with classes, so
+  its `style.css` imports Tailwind and Bloom's then token theme and scans
+  Bloom's module tree; with a Bloom that no longer uses NativeWind, drop
+  `tailwindcss`, `@tailwindcss/vite` and those imports, and keep only the root
+  sizing rules.
 - RN-SVG's Buffer import uses the explicit browser `buffer` package. The host
   defines the inspected Jest and Expo platform flags without replacing all
   `process.env` values or exposing environment secrets.
