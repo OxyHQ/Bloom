@@ -620,3 +620,14 @@ export type {
   PipelineColumnOptions,
   PipelineColumnView,
 } from './controls/crm';
+
+// Dashboard cards (controls/dashboard-cards.tsx)
+export { ImportantAlertsCard, PatientInfoCard, RecentHiresCard } from './controls/dashboard-cards';
+export type {
+  ImportantAlertsCardOptions,
+  ImportantAlertsCardView,
+  PatientInfoCardOptions,
+  PatientInfoCardView,
+  RecentHiresCardOptions,
+  RecentHiresCardView,
+} from './controls/dashboard-cards';

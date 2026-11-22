@@ -220,6 +220,11 @@ import type {
   PipelineColumnView,
   PipelineBoardView,
 } from '../controls/crm';
+import type {
+  ImportantAlertsCardView,
+  PatientInfoCardView,
+  RecentHiresCardView,
+} from '../controls/dashboard-cards';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -539,7 +544,13 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<DealCardView>, Of<'dealCard'>>,
       Same<MethodsOf<PipelineColumnView>, Of<'pipelineColumn'>>,
       Same<MethodsOf<PipelineBoardView>, Of<'pipelineBoard'>>,
+      Same<MethodsOf<ImportantAlertsCardView>, Of<'importantAlertsCard'>>,
+      Same<MethodsOf<PatientInfoCardView>, Of<'patientInfoCard'>>,
+      Same<MethodsOf<RecentHiresCardView>, Of<'recentHiresCard'>>,
     ] = [
+      true,
+      true,
+      true,
       true,
       true,
       true,

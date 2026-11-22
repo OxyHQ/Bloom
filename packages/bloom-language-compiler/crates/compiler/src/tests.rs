@@ -838,3 +838,13 @@ fn the_crm_families_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_dashboard_cards_are_checked() {
+    let imports = "import { ImportantAlertsCard, RecentHiresCard } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check("export const x = (a, h) => RecentHiresCard(h, 4).padding('md');\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (a) => ImportantAlertsCard(a, 2).style('rose');\n");
+    assert_eq!(output.diagnostics[0].message, "ImportantAlertsCard has no modifier .style()");
+}

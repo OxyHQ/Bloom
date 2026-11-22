@@ -1455,6 +1455,19 @@ language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
 and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
 Bloom's accent tones, kept in the options as data.
 
+### Dashboard cards
+
+```ts
+ImportantAlertsCard(alerts, alerts.length, { rangeLabel: 'This week' })
+RecentHiresCard(hires, total, { teamLabel: team.name, onTeamPress: pickTeam, height: 'auto' })
+```
+
+Bloom's fixed-height dashboard cards: `ImportantAlertsCard(alerts, count,
+options?)`, `PatientInfoCard(name, details, options?)` and
+`RecentHiresCard(hires, count, options?)`. Their data is Bloom's (an alert's
+tone and its `iconBackground` stay in the alert); a `height` is a space token
+(`auto` too, for the recent hires).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

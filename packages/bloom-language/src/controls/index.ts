@@ -1,4 +1,5 @@
 import type { NodeKind } from '../node';
+import { DASHBOARD_CARDS } from './dashboard-cards';
 import { CRM } from './crm';
 import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
@@ -56,4 +57,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...PRICE_BREAKDOWNS,
   ...PAYMENT_STATUSES,
   ...CRM,
+  ...DASHBOARD_CARDS,
 };
