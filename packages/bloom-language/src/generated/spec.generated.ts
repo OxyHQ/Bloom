@@ -2009,6 +2009,10 @@ export const ENUMS = {
     "sm",
     "md",
     "lg"
+  ],
+  "engagementBarTone": [
+    "default",
+    "onImage"
   ]
 } as const;
 
@@ -3654,6 +3658,9 @@ export const MODIFIERS = {
   ],
   "senderTint": [
     "color"
+  ],
+  "showZeroCounts": [
+    "value?"
   ]
 } as const;
 
@@ -5691,7 +5698,10 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "trailing",
     "countFormat",
-    "size"
+    "size",
+    "axis",
+    "tint",
+    "showZeroCounts"
   ],
   "actionGroup": [
     "padding",

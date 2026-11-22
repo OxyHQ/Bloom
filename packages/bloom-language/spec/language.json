@@ -803,7 +803,8 @@
       "error",
       "info"
     ],
-    "lockupSize": ["sm", "md", "lg"]
+    "lockupSize": ["sm", "md", "lg"],
+    "engagementBarTone": ["default", "onImage"]
   },
   "glass": {
     "$comment": [
@@ -1456,7 +1457,8 @@
     "tail": ["value?"],
     "metaOverlay": ["value?"],
     "senderTint": ["color"],
-    "divider": ["value?"]
+    "divider": ["value?"],
+    "showZeroCounts": ["value?"]
   },
   "universal": [
     "padding",
@@ -1822,8 +1824,9 @@
     },
     "actionBar": {
       "constructors": ["ActionBar"],
-      "modifiers": ["trailing", "countFormat", "size"],
-      "size": "controlSize"
+      "modifiers": ["trailing", "countFormat", "size", "axis", "tint", "showZeroCounts"],
+      "size": "controlSize",
+      "tint": "engagementBarTone"
     },
     "actionGroup": {
       "constructors": ["ActionGroup"],
