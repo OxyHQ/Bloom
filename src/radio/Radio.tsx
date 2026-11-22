@@ -300,7 +300,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
   const [value, setValue] = useControllableState<Value | undefined>({
     value: valueProp,
     defaultValue,
-    controlled: Object.hasOwn(props, 'value'),
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
     onChange: (next) => {
       if (next !== undefined) onValueChangeProp?.(next);
     },
