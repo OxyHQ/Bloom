@@ -217,6 +217,7 @@ export type OtpCharacters = (typeof ENUMS.otpCharacters)[number];
 export type ColumnWidthToken = SpaceToken | (typeof ENUMS.columnWidthExtra)[number];
 /** How an agent's character feels: Bloom `AgentAvatar`'s moods. */
 export type AgentMood = (typeof ENUMS.agentMood)[number];
+export type MortgageLayout = (typeof ENUMS.mortgageLayout)[number];
 export type FollowButtonSize = (typeof ENUMS.followButtonSize)[number];
 export type ShelfLayout = (typeof ENUMS.shelfLayout)[number];
 /** A call's medium: `voice` or `video`. */
