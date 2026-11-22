@@ -54,6 +54,7 @@ import {
   type LeadingToken,
   type ShrinkPriority,
   type FlexName,
+  type HitTesting,
   type PaddingToken,
   type SpaceToken,
   type TextAlignment,
@@ -739,7 +740,7 @@ export interface Placement {
   flex: FlexName | undefined;
   /** Margins, in order: a later one of a side replaces an earlier one. */
   margin: readonly (readonly [Edge, PaddingToken])[];
-  allowsHitTesting: boolean | undefined;
+  allowsHitTesting: HitTesting | undefined;
   accessibilityOnly: boolean;
   /**
    * Its geometry (`motionPlan`'s, by component) and the point it turns about,
@@ -945,6 +946,14 @@ export function flexOnly(place: Placement): Resolved {
  * `grow` nor `shrink` lowers the minimum width; a view that must shrink below
  * its content says so with `.frame({ minWidth: 'none' })`.
  */
+/** React Native's `pointerEvents` for each hit testing. */
+const POINTER_EVENTS = {
+  true: 'auto',
+  false: 'none',
+  children: 'box-none',
+  self: 'box-only',
+} as const satisfies Record<`${HitTesting}`, string>;
+
 export function placeStyle(place: Placement): Resolved {
   const style: Resolved = {};
   if (place.grow) style.flex = 1;
@@ -969,7 +978,7 @@ export function placeStyle(place: Placement): Resolved {
   } else if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)
-    style.pointerEvents = place.allowsHitTesting ? 'auto' : 'none';
+    style.pointerEvents = POINTER_EVENTS[`${place.allowsHitTesting}`];
   for (const [condition, modifier] of place.variants) {
     if (condition === null) Object.assign(style, placeStyle(placementOf([modifier])));
   }

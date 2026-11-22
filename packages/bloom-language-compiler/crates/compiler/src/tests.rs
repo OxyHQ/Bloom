@@ -200,6 +200,13 @@ fn placement_keys_and_tokens_are_checked() {
     assert_eq!(output.diagnostics[0].message, "Unknown justify token 'middle' for .justify()");
     let output = compiled("export const x = () => Text('a').justify('center');\n");
     assert_eq!(output.diagnostics[0].message, "Text has no modifier .justify()");
+    // Hit testing is a boolean, or what alone takes touches: the content or the view.
+    let output = compiled(
+        "export const x = () => HStack().allowsHitTesting(false).when('md', (v) => v.allowsHitTesting('children'));\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let output = compiled("export const x = () => HStack().allowsHitTesting('box-none');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown hitTesting token 'box-none' for .allowsHitTesting()");
 }
 
 #[test]

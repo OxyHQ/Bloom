@@ -184,6 +184,13 @@ interface AppColor {
 }
 
 /** What `defineTokens` takes as a colour: a hex of 3, 4, 6 or 8 digits. */
+/** React Native's `pointerEvents` as the language's hit testing (`auto` is the default, left as JSX). */
+const HIT_TESTING: Record<string, boolean | string> = {
+  none: false,
+  'box-none': 'children',
+  'box-only': 'self',
+};
+
 const HEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 /** Bloom's colour scope: inside it, a theme read outside it is another scheme's colour. */
 const COLOR_SCOPE = '@oxy.so/bloom/theme#BloomColorScope';
@@ -989,15 +996,11 @@ export function transformSource(source: string, options: TransformOptions): File
         else fail(style.subject, 'style', style.why);
         continue;
       }
-      // `none` lets touches through the view and all inside it, SwiftUI's `allowsHitTesting(false)`.
+      // What takes touches: `none` nothing (SwiftUI's `allowsHitTesting(false)`), `box-none` what is inside only, `box-only` the view only.
       if (name === 'pointerEvents' && (kind === 'view' || kind === 'pressable')) {
-        if (staticString(value) === 'none') props.push({ name: 'allowsHitTesting', args: [false] });
-        else
-          fail(
-            name,
-            'prop:pointerEvents',
-            'a pointerEvents other than a static `none` (`box-none` and `box-only` have no modifier)',
-          );
+        const hitTesting = HIT_TESTING[staticString(value) ?? ''];
+        if (hitTesting !== undefined) props.push({ name: 'allowsHitTesting', args: [hitTesting] });
+        else fail(name, 'prop:pointerEvents', 'a pointerEvents set at runtime');
         continue;
       }
       if (name === 'accessibilityRole' && kind !== 'icon') {

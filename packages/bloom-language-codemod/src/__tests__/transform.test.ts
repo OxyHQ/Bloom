@@ -439,14 +439,18 @@ export const C = () => <VirtualList data={posts} renderItem={({ item }) => <Post
       'VirtualList:ListHeaderComponent',
     ]);
   });
-  it('lets touches through a view of pointerEvents none, and keeps box-none', () => {
+  it('lets touches through a view of pointerEvents none, box-none and box-only', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View pointerEvents="none" className="p-2" />;
 export const B = () => <View pointerEvents="box-none" />;
+export const C = () => <View pointerEvents="box-only" />;
+export const D = () => <View pointerEvents={mode} />;
 `);
     expect(result.code).toContain(
       "toElement(VStack().padding('all', 'sm').allowsHitTesting(false))",
     );
+    expect(result.code).toContain("toElement(VStack().allowsHitTesting('children'))");
+    expect(result.code).toContain("toElement(VStack().allowsHitTesting('self'))");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:pointerEvents']);
   });
   it('follows React’s rule for JSX text', () => {

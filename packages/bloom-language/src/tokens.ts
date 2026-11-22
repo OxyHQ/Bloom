@@ -178,6 +178,12 @@ export type ColorPreset = (typeof ENUMS.colorPreset)[number];
 export type ActionPlacement = (typeof ENUMS.actionPlacement)[number];
 export type ScrollIndicators = (typeof ENUMS.scrollIndicators)[number];
 export type KeyboardDismiss = (typeof ENUMS.keyboardDismiss)[number];
+/**
+ * What takes touches in a view: `true` the view and its content, `false`
+ * neither, `'children'` only what is inside it (React Native's `box-none`),
+ * `'self'` only the view itself (`box-only`).
+ */
+export type HitTesting = boolean | (typeof ENUMS.hitTesting)[number];
 export type KeyboardTaps = (typeof ENUMS.keyboardTaps)[number];
 export type ScrollbarVisibility = (typeof ENUMS.scrollbarVisibility)[number];
 /** The side a scroll area's bar is drawn on, in the reading direction. */
