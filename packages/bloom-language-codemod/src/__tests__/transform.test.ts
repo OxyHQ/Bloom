@@ -324,6 +324,22 @@ export const B = ({ go }) => <PressableScale onPress={go} targetScale={0.9} />;
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:targetScale']);
   });
+  it('draws ChatSearchField as its node, and keeps an AppShell as a layout route’s', () => {
+    const result = run(`import { ChatSearchField } from '@oxy.so/bloom/chat-list';
+import { AppShell, AppShellPanel } from '@oxy.so/bloom/app-shell';
+export const A = ({ q, setQ }) => (
+  <ChatSearchField value={q} onChangeText={setQ} onClear={() => setQ('')} placeholder="Search" autoFocus />
+);
+export const B = () => <AppShell><AppShellPanel id="list" /></AppShell>;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LChatSearchField([q, setQ], { placeholder: 'Search', onClear: () => setQ(''), autoFocus: true }))",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'kept:AppShell',
+      'kept:AppShellPanel',
+    ]);
+  });
   it('carries a JSX comment into the chain where it is', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View className="gap-2">{/* head */}<View className="p-2" />{/* end */}</View>;

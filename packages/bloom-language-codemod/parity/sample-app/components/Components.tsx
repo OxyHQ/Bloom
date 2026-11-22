@@ -5,6 +5,7 @@ import { AvatarGroup, type AvatarGroupItem } from '@oxy.so/bloom/avatar-group';
 import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
 import { Card } from '@oxy.so/bloom/card';
+import { ChatSearchField } from '@oxy.so/bloom/chat-list';
 import { ChatEmptyState } from '@oxy.so/bloom/chat-screen';
 import { Checkbox } from '@oxy.so/bloom/checkbox';
 import { Chip } from '@oxy.so/bloom/chip';
@@ -518,5 +519,24 @@ export function Compose({ compose }: { compose: () => void }) {
     >
       <Muted>{t('compose.prompt')}</Muted>
     </PressableScale>
+  );
+}
+
+export function FindChat({
+  query,
+  setQuery,
+}: {
+  query: string;
+  setQuery: (query: string) => void;
+}) {
+  return (
+    <ChatSearchField
+      value={query}
+      onChangeText={setQuery}
+      onClear={() => setQuery('')}
+      placeholder={t('chats.search')}
+      accessibilityLabel={t('chats.search')}
+      clearLabel={t('chats.clear')}
+    />
   );
 }
