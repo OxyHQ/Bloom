@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { StyledView } from '../styles/styled-primitives';
+import { View } from 'react-native';
 import { useProjectBoardPlatform } from './context';
 /** Source's 200ms hover delay, composed on Bloom's existing tooltip surface. */
 export function BoardTooltip({ label, children }: { label: string; children: ReactNode }) {
@@ -20,14 +20,14 @@ export function BoardTooltip({ label, children }: { label: string; children: Rea
   return (
     <Tooltip visible={visible} onVisibleChange={setVisible} position="bottom">
       <TooltipTrigger>
-        <StyledView
+        <View
           onPointerEnter={() => {
             timer.current = setTimeout(() => setVisible(true), 200);
           }}
           onPointerLeave={leave}
         >
           {children}
-        </StyledView>
+        </View>
       </TooltipTrigger>
       <TooltipContent label={label}>{label}</TooltipContent>
     </Tooltip>
