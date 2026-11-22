@@ -5,7 +5,7 @@ import type { TextInputInstance } from 'react-native';
 import { CompactComposer } from './CompactComposer';
 import { Button } from '../button';
 import { Avatar } from '../avatar';
-import { StyledView as View } from '../styles/styled-primitives';
+import { View } from 'react-native';
 import { Text } from '../typography';
 import { MediaAttachmentIcon } from '../icons/social/MediaAttachmentIcon';
 import { GifAttachmentIcon } from '../icons/social/GifAttachmentIcon';
@@ -24,8 +24,8 @@ function Example() {
   const [submitted, setSubmitted] = useState(0);
   const input = useRef<TextInputInstance>(null);
   return (
-    <View className="gap-4 p-2" style={{ maxWidth: 600, width: '100%' }}>
-      <View className="flex-row flex-wrap gap-2">
+    <View style={{ gap: 16, padding: 8, maxWidth: 600, width: '100%' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         <Button onPress={() => setValue('Line\n'.repeat(60))}>Load long draft</Button>
         <Button onPress={() => setValue('')}>Clear draft</Button>
         <Button onPress={() => setBusy((v) => !v)}>Toggle busy</Button>
