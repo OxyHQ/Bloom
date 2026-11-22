@@ -593,6 +593,10 @@ export type {
 export { SortableChip, SortableChipRow } from './controls/sortable-chip-row';
 export type { SortableChipRowView, SortableChipView } from './controls/sortable-chip-row';
 
+// Viewports (controls/viewport.tsx)
+export { Viewport } from './controls/viewport';
+export type { ViewportView } from './controls/viewport';
+
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
 export type { AnimatedCheckView } from './controls/animated-check';

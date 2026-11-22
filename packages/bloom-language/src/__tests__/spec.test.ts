@@ -189,6 +189,7 @@ import type { MenubarMenuView, MenubarView } from '../controls/menubar';
   DataTableSelectView,
 } from '../controls/data-table';
 import type { SortableChipRowView, SortableChipView } from '../controls/sortable-chip-row';
+import type { ViewportView } from '../controls/viewport';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -516,10 +517,12 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<DataColumnView>, Of<'dataColumn'>>,
       Same<MethodsOf<SortableChipRowView>, Of<'sortableChipRow'>>,
       Same<MethodsOf<SortableChipView>, Of<'sortableChip'>>,
+      Same<MethodsOf<ViewportView>, Of<'viewport'>>,
       Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
       Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
       Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
     ] = [
+      true,
       true,
       true,
       true,

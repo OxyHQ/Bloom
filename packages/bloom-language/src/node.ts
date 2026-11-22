@@ -55,6 +55,7 @@ import type { VideoSurfaceType } from '@oxy.so/bloom/media-flight';
 import type { MediaFlightKind } from './controls/media-flight';
 import type { DataTableKind, DataTableStyle } from './controls/data-table';
 import type { SortableChipRowKind } from './controls/sortable-chip-row';
+import type { ViewportKind } from './controls/viewport';
 import type { DataTableCellContext, DataTableSize, DataTableSort } from '@oxy.so/bloom/data-table';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
@@ -901,6 +902,9 @@ export interface ValueModifiers {
   onReorder: (keys: string[]) => void;
   onDragChange: (dragging: boolean) => void;
 
+  // Viewports (controls/viewport.tsx)
+  root: true;
+
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
 
@@ -1325,6 +1329,7 @@ export type NodeKind =
   | MenubarKind
   | DataTableKind
   | SortableChipRowKind
+  | ViewportKind
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind
@@ -3211,6 +3216,11 @@ export class Node {
   }
   onDragChange(value: (dragging: boolean) => void): Node {
     return this.set('onDragChange', value);
+  }
+
+  // Viewports (controls/viewport.tsx)
+  root(): Node {
+    return this.set('root', true);
   }
 
   // Context menus (controls/context-menu.tsx)
