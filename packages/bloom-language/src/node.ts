@@ -1349,6 +1349,12 @@ export type Modifier =
       readonly modifiers: readonly Modifier[];
     }
   | {
+      readonly kind: 'contentView';
+      readonly key: string;
+      /** The content view's own modifiers, as its build function chains them. */
+      readonly modifiers: readonly Modifier[];
+    }
+  | {
       readonly kind: 'ring';
       readonly key: string;
       readonly value: InkToken | 'none';
@@ -2098,6 +2104,11 @@ export class Node {
     const { modifiers } = build(new Node(this.kind, undefined, []));
     const key = `when:${condition}(${modifiers.map((modifier) => modifier.key).join(';')})`;
     return this.with({ kind: 'when', key, condition, modifiers });
+  }
+  contentView(build: (view: Node) => Node): Node {
+    const { modifiers } = build(new Node('stack', { axis: 'vertical' } satisfies StackProps, []));
+    const key = `contentView(${modifiers.map((modifier) => modifier.key).join(';')})`;
+    return this.with({ kind: 'contentView', key, modifiers });
   }
   ring(value: InkToken | 'none', width: BorderWidthName = 'thin', offset?: SpaceToken): Node {
     const key = `ring:${tokenKey(value)}:${width}:${offset === undefined ? '' : tokenKey(offset)}`;
@@ -5120,6 +5131,35 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   scrollDismissesKeyboard(value: KeyboardDismiss): ScrollViewNode;
   /** Whether a tap with the keyboard up reaches the content: `handled` by a control, `always`, or `never` (default). */
   keyboardTaps(value: KeyboardTaps): ScrollViewNode;
+  /**
+   * The content laid out in a view of its own inside the content container,
+   * as Bloom's `contentContainerClassName` lays it out: `build` sets that
+   * view's layout (`.contentView((v) => v.padding('horizontal', 'lg').spacing('md'))`).
+   * The content container then grows to the viewport and pads only the
+   * screen's chrome; the content margins and spacing go on the view, after its own.
+   */
+  contentView(build: (view: ScrollContentView) => ScrollContentView): ScrollViewNode;
+}
+
+/**
+ * A scroll view's content view (`.contentView()`): the layout of one view,
+ * Bloom's inside the content container (the spec's `contentView.modifiers`).
+ */
+export interface ScrollContentView
+  extends Pick<
+    ViewModifiers<ScrollContentView>,
+    'padding' | 'frame' | 'flex' | 'grow' | 'shrink' | 'basis' | 'alignSelf'
+  > {
+  /** The gap between the content's children. */
+  spacing(value: SpaceToken): ScrollContentView;
+  /** The children's place across the axis. */
+  align(value: Alignment): ScrollContentView;
+  /** How the children spread along the axis. */
+  justify(value: Justify): ScrollContentView;
+  /** Children that do not fit flow onto further lines. */
+  wrap(value?: boolean): ScrollContentView;
+  /** Lays the children out along `horizontal` (a row) or `vertical` (the default). */
+  axis(value: Axis): ScrollContentView;
 }
 
 /**

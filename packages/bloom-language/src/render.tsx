@@ -64,7 +64,7 @@ import {
 import {
   isNode,
   Navigation,
-  type Node,
+  Node,
   type NodeKind,
   type ActionProps,
   type AvatarGroupProps,
@@ -201,6 +201,7 @@ import {
   type AvatarSizeName,
   type ColorName,
   type ColorToken,
+  type ListMarker,
   type IconSizeToken,
   type InkToken,
   type Role,
@@ -1964,6 +1965,68 @@ function iconGlyph(
   return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
 }
 
+/** A stack's style: its layout, then its box (the innermost layer and its flex), with their variants. */
+function stackOut(
+  p: Plan,
+  axis: StackProps['axis'],
+  layer: Layer | undefined,
+  flex: string,
+  marker: ListMarker | undefined,
+): StyleOut {
+  const layout = {
+    spacing: ownValue(p, 'spacing')?.value,
+    childSpacing: ownValue(p, 'childSpacing')?.value,
+    align: ownValue(p, 'align')?.value,
+    justify: ownValue(p, 'justify')?.value,
+    wrap: ownValue(p, 'wrap')?.value,
+    axis: ownValue(p, 'axis')?.value,
+  };
+  const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layer?.key ?? ''}|${flex}`;
+  return cachedStyle(
+    'host',
+    styleKey,
+    () => {
+      // A layout variant that holds is the layout's own value.
+      for (const [condition, modifier] of p.hostVariants) {
+        if (condition === null)
+          for (const [key, value] of Object.entries(layoutOf([modifier])))
+            if (value !== undefined) (layout as Record<string, unknown>)[key] = value;
+      }
+      const style = Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p));
+      if (marker !== undefined) style.listStyleType = marker;
+      return style;
+    },
+    () => joinVariants(hostVariants(p), boxVariants(layer, flex, p)),
+  );
+}
+
+/**
+ * A scroll view whose content is laid out in a view of its own
+ * (`.contentView()`): Bloom's view inside the content container, styled as a
+ * vertical stack of the content view's modifiers is (`stackOut`), which the
+ * scroll view hands Bloom as that view's style.
+ */
+function drawScrollContent(
+  modifiers: readonly Modifier[],
+  props: Record<string, unknown>,
+  children: readonly Child[],
+  ctx: Context,
+): ReactElement {
+  const content = plan(new Node('stack', CONTENT_VIEW, children, modifiers));
+  if (content.layers.length > 1)
+    throw new Error(
+      'bloom-language: a scroll view’s content view is one view; give its modifiers in layer order (padding before frame)',
+    );
+  const out = stackOut(content, 'vertical', content.layers[0], flexKey(content), undefined);
+  return drawHost(
+    ScrollViewHost,
+    out,
+    { ...props, contentView: true },
+    ...renderChildren(children, ctx),
+  );
+}
+const CONTENT_VIEW: StackProps = { axis: 'vertical' };
+
 /** The language's scrolls, each Bloom's own: the screen's, a scroll of its own, and one on a surface. */
 /** The lists whose content makes room for views pinned at their edges. */
 const INSET_LISTS: ReadonlySet<string> = new Set(['list', 'virtualList']);
@@ -2022,33 +2085,9 @@ function renderHost(
   switch (node.kind) {
     case 'stack': {
       const { axis } = node.props as StackProps;
-      const layout = {
-        spacing: ownValue(p, 'spacing')?.value,
-        childSpacing: ownValue(p, 'childSpacing')?.value,
-        align: ownValue(p, 'align')?.value,
-        justify: ownValue(p, 'justify')?.value,
-        wrap: ownValue(p, 'wrap')?.value,
-        axis: ownValue(p, 'axis')?.value,
-      };
       // Web: an HTML list, each child a row behind the marker. Native has no markers.
       const marker = IS_WEB ? ownValue(p, 'listMarker')?.value : undefined;
-      const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layerKey}|${flex}`;
-      const out = cachedStyle(
-        'host',
-        styleKey,
-        () => {
-          // A layout variant that holds is the layout's own value.
-          for (const [condition, modifier] of p.hostVariants) {
-            if (condition === null)
-              for (const [key, value] of Object.entries(layoutOf([modifier])))
-                if (value !== undefined) (layout as Record<string, unknown>)[key] = value;
-          }
-          const style = Object.assign(stackStyle(axis, layout), boxStyle(layer, flex, p));
-          if (marker !== undefined) style.listStyleType = marker;
-          return style;
-        },
-        () => joinVariants(hostVariants(p), boxVariants(layer, flex, p)),
-      );
+      const out = stackOut(p, axis, layer, flex, marker);
       const row: Context = axis === 'horizontal' ? { ...ctx, inRow: true } : ctx;
       let children = renderChildren(node.children, row);
       if (marker !== undefined)
@@ -2386,21 +2425,18 @@ function renderHost(
     case 'scrollView':
     case 'scrollArea':
     case 'scrollSurface': {
+      const props = {
+        key: boxed ? undefined : key,
+        node,
+        render: (child: Child) => renderChild(child, ctx, undefined),
+        press: (value: Press | undefined) => pressOf(value, ctx.env),
+      };
+      const content = node.kind === 'scrollView' ? ownValue(p, 'contentView') : undefined;
       // The content's children keep their places as a stack's do.
-      const render = (child: Child) => renderChild(child, ctx, undefined);
-      const host = SCROLL_HOSTS[node.kind];
       const scroll = (room?: InsetRoom) =>
-        draw(
-          host,
-          {
-            key: boxed ? undefined : key,
-            node,
-            room,
-            render,
-            press: (value: Press | undefined) => pressOf(value, ctx.env),
-          },
-          ...renderChildren(node.children, ctx),
-        );
+        content === undefined
+          ? draw(SCROLL_HOSTS[node.kind], { ...props, room }, ...renderChildren(node.children, ctx))
+          : drawScrollContent(content.modifiers, { ...props, room }, node.children, ctx);
       // Views pinned at its edges: the content makes room for them (SwiftUI's safe area insets).
       const insets = insetsOf(node);
       const scroller =
@@ -2409,7 +2445,7 @@ function renderHost(
           : draw(SafeAreaInsets, {
               key: boxed ? undefined : key,
               insets,
-              render,
+              render: props.render,
               scroller: scroll,
             });
       // Box modifiers are a view around the scroller, as SwiftUI's.

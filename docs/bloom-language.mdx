@@ -1689,6 +1689,7 @@ inside a screen, as Bloom's is.
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
 | `.safeAreaInset(edge, view, spacing?)`, `.safeAreaBar(edge, view)` | a view pinned at the `top` or `bottom` and the content padded by its height (see below) |
 | `.keyboardTaps('never' \| 'always' \| 'handled')` | `keyboardShouldPersistTaps` |
+| `.contentView((v) => v…)` | `contentContainerClassName`'s view: the content laid out in a view of its own inside the content container, which then grows to the viewport and pads only the screen's chrome (a content-sized screen reads no intrinsic height from it, as with a class). `v` takes the layout of one view: `padding`, `spacing`, `align`, `justify`, `wrap`, `axis`, `frame`, `flex`, `grow`, `shrink`, `basis`, `alignSelf` (the spec's `contentView.modifiers`), drawn as a vertical stack of them is, in layer order (a frame after its padding: one view); the content margins and spacing go on that view after its own, as Bloom draws `contentContainerStyle` after the class |
 
 Only what the chain names reaches the scroll view, so Bloom's own defaults
 hold (`keyboardShouldPersistTaps="handled"` among them). Box modifiers

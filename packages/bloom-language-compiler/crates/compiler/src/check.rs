@@ -13,7 +13,9 @@ use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
 use crate::module::{Binding, Literal, Module};
-use crate::spec::{FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS};
+use crate::spec::{
+    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS,
+};
 
 pub struct Problem {
     pub span: Span,
@@ -730,7 +732,8 @@ fn check_value(
         "value" | "children" | "namespace" => Ok(()),
         "variant" => check_variant(value, spec, module, scoping),
         // A phase's build: the chain on its view sets geometry and opacity only.
-        "phaseBuild" => check_on_parameter(value, spec, Some(("phase", PHASE_MODIFIERS)), module, scoping),
+        "phaseBuild" => check_phase(value, spec, module, scoping),
+        "contentView" => check_content_view(value, module, scoping),
         "scale" | "rotation" if motion_value => Ok(()),
         "transition" | "keyframes" => match value.without_parentheses() {
             Expression::StringLiteral(literal) => Err(Problem {
@@ -841,7 +844,27 @@ fn check_variant(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
-    check_on_parameter(value, spec, Some(("variant", VARIANT_MODIFIERS)), module, scoping)
+    let varies = only_taken(VARIANT_MODIFIERS, spec);
+    let build = Build {
+        allowed: &varies,
+        refused: &|modifier| format!("A variant cannot change .{modifier}()"),
+        takes: "a variant changes",
+        tokens_only: true,
+    };
+    check_built(value, spec, &build, module, scoping)
+}
+
+/// A phase's build (`phaseAnimator(…, (v, phase) => v…)`): the chain on its
+/// view sets geometry and opacity only, each one the node takes.
+fn check_phase(value: &Expression, spec: &NodeSpec, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let changes = only_taken(PHASE_MODIFIERS, spec);
+    let build = Build {
+        allowed: &changes,
+        refused: &|modifier| format!("A phase cannot change .{modifier}()"),
+        takes: "a phase changes",
+        tokens_only: true,
+    };
+    check_built(value, spec, &build, module, scoping)
 }
 
 /// `defineModifier((v, …) => v…)`: the chain on its view takes the universal
@@ -853,15 +876,53 @@ fn check_define_modifier(expression: &Expression, module: &Module, scoping: &Sco
         return Ok(());
     }
     let Some(body) = call.arguments.first().and_then(Argument::as_expression) else { return Ok(()) };
-    check_on_parameter(body, node("view"), None, module, scoping)
+    let view = node("view");
+    let build = Build {
+        allowed: view.modifiers,
+        refused: &|modifier| format!("A modifier cannot chain .{modifier}(): it applies to any view"),
+        takes: "a modifier chains the universal modifiers",
+        tokens_only: false,
+    };
+    check_built(body, view, &build, module, scoping)
 }
 
-/// The chain an arrow returns on its first parameter: each modifier one the
-/// node takes (and, for a variant, one a variant changes), with valid arguments.
-fn check_on_parameter(
+/// A scroll view's content view (`contentView((v) => v.padding('lg'))`): the
+/// chain the arrow returns takes only the content view's modifiers (the layout
+/// of one view), each checked as a stack's.
+fn check_content_view(value: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let build = Build {
+        allowed: CONTENT_VIEW_MODIFIERS,
+        refused: &|modifier| format!("A content view cannot take .{modifier}()"),
+        takes: "a content view takes",
+        tokens_only: false,
+    };
+    check_built(value, node("stack"), &build, module, scoping)
+}
+
+/// Those of `names` the node takes.
+fn only_taken(names: &[&'static str], spec: &NodeSpec) -> Vec<&'static str> {
+    names.iter().copied().filter(|name| spec.modifiers.contains(name)).collect()
+}
+
+/// What a build function's chain may set, and how a refusal reads.
+struct Build<'a> {
+    /// The modifiers it may set (each one the node takes too).
+    allowed: &'a [&'a str],
+    /// The refusal of a modifier it may not set.
+    refused: &'a dyn Fn(&str) -> String,
+    /// The help's lead, before the modifiers it may set.
+    takes: &'a str,
+    /// Geometry by token only (a variant's, a phase's): a MotionValue moves the view itself.
+    tokens_only: bool,
+}
+
+/// The chain a build function (`(v) => v…`) returns on its first parameter:
+/// each modifier one `build` allows, with valid arguments for `spec`. A
+/// function written any other way (declared elsewhere) is the runtime's.
+fn check_built(
     value: &Expression,
     spec: &NodeSpec,
-    only: Option<(&str, &[&str])>,
+    build: &Build,
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
@@ -898,30 +959,13 @@ fn check_on_parameter(
         return Ok(());
     }
     for (modifier, span, arguments, call_span) in modifiers.into_iter().rev() {
-        let Some(only) = only else {
-            if !spec.modifiers.contains(&modifier) {
-                return Err(Problem {
-                    span,
-                    message: format!("A modifier cannot chain .{modifier}(): it applies to any view"),
-                    help: Some(with_suggestion(
-                        suggest(modifier, spec.modifiers),
-                        format!("a modifier chains the universal modifiers: {}", spec.modifiers.join(", ")),
-                    )),
-                });
-            }
-            check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
-            continue;
-        };
-        let (what, only) = only;
-        if !only.contains(&modifier) || !spec.modifiers.contains(&modifier) {
-            let varies: Vec<&str> =
-                only.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
+        if !build.allowed.contains(&modifier) || !spec.modifiers.contains(&modifier) {
             return Err(Problem {
                 span,
-                message: format!("A {what} cannot change .{modifier}()"),
+                message: (build.refused)(modifier),
                 help: Some(with_suggestion(
-                    suggest(modifier, &varies),
-                    format!("a {what} changes: {}", varies.join(", ")),
+                    suggest(modifier, build.allowed),
+                    format!("{}: {}", build.takes, build.allowed.join(", ")),
                 )),
             });
         }
@@ -929,7 +973,7 @@ fn check_on_parameter(
         if let Some(value) = arguments
             .iter()
             .filter_map(Argument::as_expression)
-            .find(|value| follows_motion_value(value, module, scoping))
+            .find(|value| build.tokens_only && follows_motion_value(value, module, scoping))
         {
             return Err(Problem {
                 span: value.span(),
