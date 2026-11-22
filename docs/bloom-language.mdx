@@ -1529,6 +1529,7 @@ toast.success('Saved')
 | --- | --- |
 | `.alert(isPresented, Alert(title))` | Bloom `AlertDialog` beside the view (`open`, `onOpenChange`) |
 | `.dialog(isPresented, Dialog(...content))` | Bloom `Dialog` beside the view (`open`, `onClose`), its content the children |
+| `Dialog(...content).presented(isPresented)` | the same Bloom `Dialog`, as a view of its own in place |
 | `.popover(isPresented, Popover(...content))` | Bloom `Popover`: the view is its `PopoverTrigger asChild`, the content its `PopoverContent` |
 | `.confirmationDialog(isPresented, ConfirmationDialog(title, ...rows))` | the lens menu grown out of the view (Android, OxyOS), SwiftUI's `confirmationDialog` (iOS), Bloom `Dialog` (the web) |
 | `ConnectionStatus()` | Bloom `ConnectionStatusToasts` |
@@ -1587,6 +1588,19 @@ toast.success('Saved')
   view that presents them (each portals itself over the screen), as an app
   writes them next to the control that opens them; their content is in the
   view's environment.
+- **A dialog as a view.** A component that is a dialog, opened by its caller,
+  returns `Dialog(...).presented(isPresented)`: the binding handed in
+  (`[open, () => onClose()]` from an `open` and `onClose` pair), the dialog drawn
+  where the view is, by the same code `.dialog()` draws it with. `.presented()`
+  ends the chain (it is a view, with no modifier of its own); every modifier
+  before it is the dialog's, so `.frame()` and `.padding()` are its width and
+  `contentPadding`, never a box around it.
+
+```ts
+const PublishAs = view(({ open, onClose }: { open: boolean; onClose: () => void }) =>
+  Dialog(AccountRows()).title(t('publishAs')).presented([open, () => onClose()]),
+);
+```
 - **Toast.** A toast is an event, not a view: `toast`, `toast.success`
   `.error` `.warning` `.info` `.loading`, `.promise`, `.dismiss` and
   `.wiggle` are Bloom's own calls, made from a press or an effect, and Bloom's
@@ -1601,7 +1615,8 @@ toast.success('Saved')
   root.
 
 Parity (`parity/overlays.cases.tsx`) covers every alert, dialog placement and
-tier, and popover side, open and closed, and toasts. Native compares the
+tier, and popover side, open and closed, a presented dialog alone and in a
+stack, and toasts. Native compares the
 committed trees; the web also compares what a case portals into the document's
 body, so an open overlay's DOM and CSS and a toast's row are held equal. The
 Chrome check compares each cell in place: the presenting view (an overlay's
@@ -4990,7 +5005,8 @@ with its reason. Nothing else is missing.
   binding holds (Bloom's `AlertDialog`, `Dialog` and `Popover`, the view as
   the popover's trigger), with an alert's icon, a dialog's header, footer,
   page, size, padding and every tier's placement, and a popover's offsets
-  and sizes; `ConnectionStatus` with its own words and timings; `toast` as
+  and sizes; a dialog as a view of its own (`Dialog(...).presented(binding)`);
+  `ConnectionStatus` with its own words and timings; `toast` as
   Bloom's imperative call with a title or a language view, and
   `toast.custom`. **Decided:** a `.sheet()` whose content is not a
   `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
