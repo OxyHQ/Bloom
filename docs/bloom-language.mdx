@@ -254,8 +254,16 @@ stacking levels `'2'` and `'60'` (`z-[2]`, `z-[60]`), the 4px border (`'4'`,
 places: `'240'` `'300'` `'380'` `'400'` `'420'` `'440'` `'480'` `'512'` `'560'`
 `'720'`. Durations are in milliseconds: Bloom's `instant` 100, `fast` 150,
 `normal` 200 and `slow` 300, then the exact durations apps write, `'800'` and
-`'2500'` (Willo's photo fades), and `'0'`, which stills a count-up. Anything
-else stays an app's `defineTokens`. A raw hex colour is an app's
+`'2500'` (Willo's photo fades), and `'0'`, which stills a count-up or opens at
+once; then the waits Bloom's own components default to, so a screen can name
+them: `'400'` (a hover card opens), `'1000'` (a desktop tooltip opens) and
+`'3000'` (a connection status says it is reconnecting); and `'4000'`, the
+countdown and restored toast the parity cases write. A component's waits take
+these tokens, never milliseconds: a hover card's and a tooltip's
+`.openDelay()`, a hover card's `.closeDelay()`, a notification's
+`.autoDismiss()` and `.introDelay()`, a connection status's
+`.reconnectingDelay()` and `.restoredDuration()`. Anything else stays an app's
+`defineTokens`. A raw hex colour is an app's
 brand colour: the app's own token, never a Bloom one (see [className](#classname)).
 
 The vocabulary is closed. Every value is a name from the spec, whose every rung
@@ -1230,9 +1238,10 @@ toast.success('Saved')
   and `toast.custom(view)` is Bloom's `toast.custom`.
 - **ConnectionStatus.** Bloom's offline, reconnecting and restored toasts:
   Bloom's localized words and timings, or `.offlineMessage()`,
-  `.reconnectingMessage()`, `.restoredMessage()`, `.reconnectingDelay(ms)` and
-  `.restoredDuration(ms)`. It draws nothing in place: place it once, near the
-  app's root.
+  `.reconnectingMessage()`, `.restoredMessage()`, `.reconnectingDelay(duration)`
+  and `.restoredDuration(duration)` (duration tokens; Bloom's waits are `'3000'`
+  and `'2500'`). It draws nothing in place: place it once, near the app's
+  root.
 
 Parity (`parity/overlays.cases.tsx`) covers every alert, dialog placement and
 tier, and popover side, open and closed, and toasts. Native compares the
@@ -2037,7 +2046,8 @@ Tooltip(Button(Icon(RiInformationLine)).shape('circle').label('About'), 'About t
 Bloom's `Tooltip`, controlled, because what opens it differs by platform (a
 resting pointer, a long press). `Tooltip(trigger, content)`: the content is a
 string (also its accessible text) or a view named with `.label()`. It takes
-`.presented([visible, set])`, `.side('top' | 'bottom')`, `.openDelay(ms)` and
+`.presented([visible, set])`, `.side('top' | 'bottom')`, `.openDelay(duration)`
+(a duration token; a desktop waits `'1000'` by default, `'0'` opens at once) and
 `.size('sm' | 'md')`; the trigger carries its own box.
 
 ### Breadcrumbs
@@ -2356,7 +2366,8 @@ HoverCard(Text(`@${user.handle}`), UserCard(user)).align('start').label(user.nam
 Bloom's `HoverCard`: the card a resting pointer or focus opens on the web,
 and a long press on native. `HoverCard(trigger, content)`: the trigger carries
 the view's box, `.label()` names the card. It takes `.presented([open, set])`
-(when the screen owns it), `.openDelay(ms)`, `.closeDelay(ms)`, `.side('top' |
+(when the screen owns it), `.openDelay(duration)` and `.closeDelay(duration)`
+(duration tokens: Bloom's web waits are `'400'` and `fast`), `.side('top' |
 'bottom')`, `.align('start' | 'center' | 'end')`, `.padded(false)` (a card
 whose content paints its own surface) and `.disabled()`.
 
@@ -2465,7 +2476,7 @@ and `.flush()` (no padding of its own, for a control with its own hit area).
 ```ts
 Notification('Deployed').description('Build 412 is live').timestamp('2m ago')
   .status('success').buttons([{ label: 'View', onPress: openBuild }]).onDismiss(clear)
-Notification('Ana replied').avatar({ name: 'Ana Ruiz', presence: 'online' }).autoDismiss(5000)
+Notification('Ana replied').avatar({ name: 'Ana Ruiz', presence: 'online' }).autoDismiss('4000')
 ```
 
 Bloom's `Notification`, the one notification card. Its title is a string or a
@@ -2473,8 +2484,10 @@ view; it takes `.description()`, `.timestamp()`,
 `.status('neutral' | 'information' | 'success' | 'warning' | 'error')` (its
 disc's colour and glyph), `.icon()`, `.avatar()` (Bloom's avatar and its
 presence, in place of the disc), `.buttons([...])` (Bloom's actions),
-`.dismissible(false)`, `.onDismiss()`, `.autoDismiss(ms)` (with its countdown
-bar), `.introDelay(seconds)`, `.liveRole('alert' | 'status')` and
+`.dismissible(false)`, `.onDismiss()`, `.autoDismiss(duration)` (with its
+countdown bar), `.introDelay(duration)` (its entrance after that wait, `'0'` at
+once: a duration token in milliseconds, which the renderer hands Bloom in the
+seconds its prop takes), `.liveRole('alert' | 'status')` and
 `.labels({ close })`. A self-dismissing notification is compared by Jest only:
 in a browser two side by side are caught at different moments of their
 countdowns.
@@ -3830,7 +3843,7 @@ Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 | `.transition(t)` | Insertion and removal: `opacity`, `scale('dip')`, `move(edge, distance)`, `t.combined(u)`, `asymmetric(insert, remove)`, `t.animation(motion)`. A half may be keyframes of the app's own. |
 | `.keyframes(k, trigger)` | `keyframeAnimator`: plays `k` each time `trigger` changes to a truthy value (a boolean turning on, or a counter such as a press id). |
 | `.repeatForever(loop)` | `keyframeAnimator(repeating: true)`: plays a loop again and again while the view is on screen: `'spin'` (a turn, 1 s linear: `animate-spin`), `'pulse'` (half opacity at the midpoint, 2 s: `animate-pulse`), frame for frame, or keyframes of the app's own. It plays when nothing else does, after an insertion ends; never under reduced motion. |
-| `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): one of Bloom's durations `instant` 100, `fast` 150, `normal` 200, `slow` 300 (ms). No app writes another delay (the className scan has no `delay-*`), so the scale has no other. A delayed playing holds its first frame while it waits. |
+| `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): a duration token: Bloom's `instant` 100, `fast` 150, `normal` 200, `slow` 300 (ms), or an exact one the scale holds (`'0'`, `'800'`…). No app writes a Tailwind delay (the className scan has no `delay-*`). A delayed playing holds its first frame while it waits. |
 | `.anchor(a)` | The point its scale and rotation (and its keyframes' and transition's) turn about; see [Modifiers](#modifiers). |
 | `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()`. |
 | `.contentTransition('roll', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change of the text inside an animation rolls the old text out and the new one in (Bloom's `rollKeyframes`, as `RollingText` rolls), up when `direction` rose and down when it fell. |

@@ -1,10 +1,14 @@
 import { createElement, type ReactElement } from 'react';
 import { act } from 'react-test-renderer';
 
+import { HoverCard } from '../controls/hover-card';
 import { ListItem, VirtualList } from '../controls/list';
 import { ReviewCard } from '../controls/listings';
 import { MenuItemOptions } from '../controls/menu-item';
+import { Notification } from '../controls/notification';
+import { Tooltip } from '../controls/tooltip';
 import type { Child } from '../node';
+import { Text } from '../primitives';
 import { toElement } from '../render';
 import { LIGHT, PaintContext } from './support/bloom-theme';
 import { mount, only, quietRenderer } from './support/mount';
@@ -68,5 +72,44 @@ describe('a node’s other editable values', () => {
     expect(options.props.value).toEqual({ size: ['l'] });
     options.props.onValueChange('extra', ['basil']);
     expect(setChosen).toHaveBeenCalledWith({ size: ['l'], extra: ['basil'] });
+  });
+});
+
+describe('a component’s waits are duration tokens', () => {
+  it('each is Bloom’s milliseconds, its own default named by its value', () => {
+    const card = only(
+      mount(toElement(HoverCard(Text('@ana'), Text('Ana')).openDelay('400').closeDelay('fast'))),
+      'HoverCard',
+    );
+    expect(card.props.openDelay).toBe(400);
+    expect(card.props.closeDelay).toBe(150);
+    const tooltip = only(
+      mount(
+        toElement(
+          Tooltip(Text('i'), 'About')
+            .presented([false, () => {}])
+            .openDelay('1000'),
+        ),
+      ),
+      'Tooltip',
+    );
+    expect(tooltip.props.delay).toBe(1000);
+  });
+
+  it('none chained hands Bloom none, so its own waits hold', () => {
+    const card = only(mount(toElement(HoverCard(Text('@ana'), Text('Ana')))), 'HoverCard');
+    expect(card.props.openDelay).toBeUndefined();
+    expect(card.props.closeDelay).toBeUndefined();
+  });
+
+  it('a notification’s entrance wait is in Bloom’s seconds, divided exactly', () => {
+    const notification = only(
+      mount(toElement(Notification('Copied').autoDismiss('4000').introDelay('normal'))),
+      'Notification',
+    );
+    expect(notification.props.autoDismissDuration).toBe(4000);
+    expect(notification.props.introDelay).toBe(0.2);
+    const atOnce = only(mount(toElement(Notification('Copied').introDelay('0'))), 'Notification');
+    expect(atOnce.props.introDelay).toBe(0);
   });
 });

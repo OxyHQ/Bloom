@@ -356,6 +356,11 @@ export {
   Z_INDEX,
 };
 
+/** A duration token's milliseconds, what Bloom's timing props take; none when the chain names none. */
+export function resolveDuration(token: DurationName | undefined): number | undefined {
+  return token === undefined ? undefined : DURATION[token];
+}
+
 /** `hairline` is the platform's hairline (`StyleSheet.hairlineWidth`), the width a row separator uses. */
 export function resolveBorderWidth(width: BorderWidthName): number {
   const value = BORDER_WIDTH[width];

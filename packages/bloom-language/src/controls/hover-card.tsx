@@ -6,7 +6,7 @@ import {
 
 import type { Binding } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
-import type { TooltipSide } from '../tokens';
+import { type DurationName, resolveDuration, type TooltipSide } from '../tokens';
 import type { ControlRenderer } from './draw';
 
 /** A preview card a resting pointer, focus or a long press opens on a view (Bloom `hover-card`). */
@@ -20,10 +20,10 @@ export type HoverCardKind = 'hoverCard';
 export interface HoverCardView extends ViewModifiers<HoverCardView> {
   /** Whether the card shows, and what showing and hiding it set. */
   presented(value: Binding<boolean>): HoverCardView;
-  /** How long the pointer rests before it opens, in ms (400 by default; the web's). */
-  openDelay(value: number): HoverCardView;
-  /** How long it stays after the pointer leaves, in ms (150 by default; the web's). */
-  closeDelay(value: number): HoverCardView;
+  /** How long the pointer rests before it opens: a duration token (`'400'` by default; the web's). */
+  openDelay(value: DurationName): HoverCardView;
+  /** How long it stays after the pointer leaves: a duration token (`fast` by default; the web's). */
+  closeDelay(value: DurationName): HoverCardView;
   /** The side of the trigger: `bottom` (default) or `top`. */
   side(value: TooltipSide): HoverCardView;
   /** How the card lines up with the trigger along that side. */
@@ -48,8 +48,8 @@ export const HOVER_CARDS: Record<HoverCardKind, ControlRenderer> = {
         key={d.key}
         open={presented?.[0]}
         onOpenChange={presented?.[1]}
-        openDelay={d.own('openDelay')?.value}
-        closeDelay={d.own('closeDelay')?.value}
+        openDelay={resolveDuration(d.own('openDelay')?.value)}
+        closeDelay={resolveDuration(d.own('closeDelay')?.value)}
       >
         {d.component(
           HoverCardTrigger,

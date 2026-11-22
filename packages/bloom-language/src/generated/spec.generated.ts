@@ -204,8 +204,12 @@ export const GLASS_OPACITY = {
 } as const;
 export const DURATION = {
   "0": 0,
+  "400": 400,
   "800": 800,
+  "1000": 1000,
   "2500": 2500,
+  "3000": 3000,
+  "4000": 4000,
   "instant": 100,
   "fast": 150,
   "normal": 200,
@@ -2999,10 +3003,10 @@ export const MODIFIERS = {
     "value"
   ],
   "reconnectingDelay": [
-    "value"
+    "duration"
   ],
   "restoredDuration": [
-    "value"
+    "duration"
   ],
   "contentInset": [
     "space"
@@ -3618,7 +3622,7 @@ export const MODIFIERS = {
     "value"
   ],
   "openDelay": [
-    "value"
+    "duration"
   ],
   "collapses": [],
   "allowsCreate": [
@@ -3728,7 +3732,7 @@ export const MODIFIERS = {
     "value"
   ],
   "closeDelay": [
-    "value"
+    "duration"
   ],
   "padded": [
     "value"
@@ -3777,10 +3781,10 @@ export const MODIFIERS = {
     "value"
   ],
   "autoDismiss": [
-    "value"
+    "duration"
   ],
   "introDelay": [
-    "value"
+    "duration"
   ],
   "liveRole": [
     "liveRole"

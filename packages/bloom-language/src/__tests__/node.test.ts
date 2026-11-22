@@ -1,5 +1,6 @@
 import { HStack, Text, VStack, Spacer, Icon } from '../primitives';
 import { Node } from '../node';
+import { Tooltip } from '../controls/tooltip';
 
 const Glyph = () => null;
 
@@ -63,8 +64,10 @@ describe('the typed vocabulary', () => {
     HStack('loose text');
     // @ts-expect-error `count && Text(count)` leaves 0 in the tree; write `count ? Text(count) : null`
     HStack(0 && Text('0'));
-    // @ts-expect-error a delay is one of Bloom's durations; no app writes Tailwind's delay-1000
-    Text('x').delay('1000');
+    // @ts-expect-error a delay is one of Bloom's durations; no app writes Tailwind's delay-700
+    Text('x').delay('700');
+    // @ts-expect-error a component's wait is a duration token, not milliseconds
+    Tooltip(Text('i'), 'About').openDelay(1000);
     // @ts-expect-error colours opt in by name, with no argument
     Text('x').animatesColors(true);
     expect(true).toBe(true);
