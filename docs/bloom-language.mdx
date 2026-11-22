@@ -4828,6 +4828,21 @@ with its reason. Nothing else is missing.
   components). **Decided:** on iPad the sidebar is Bloom's `AppShell`
   sidebar; an iOS sheet's title is an accessibility name (the system sheet
   has no title bar).
+- **From SwiftUI** (each with its spec, compiler checks and docs above): glass
+  groups (`GlassGroup`, `.glassID()`, `.glassTransition()`, `.glassUnion()`),
+  `interactive` and `identity` glass, the environment (`.disabled()`,
+  `.controlSize()`, `.buttonStyle()`, `defineEnvironment`), the glass button
+  styles, `confirmationDialog`, custom modifiers, `.safeAreaInset()` and
+  `.safeAreaBar()`, `ToolbarGroup` and `ToolbarSpacer`, `.phases()` and
+  keyframe tracks, `ViewThatFits`, and the Liquid Glass rules in the compiler.
+  **Not built:** separate glass shapes that blend at rest on Android (a group is
+  one base; the engine's field blends two shapes, so a `glassID` morph between
+  siblings is engine work) and on the web (no shared sampling); SwiftUI's own
+  `glassEffectID` morph on iOS (it needs a SwiftUI host for the glass's
+  content); a `.glassUnion()` drawn as one shape on iOS and the web; raising
+  the safe-area insets content reads; the Liquid Glass rules across a
+  `view()`'s boundary (the compiler sees one expression). iOS is type-checked
+  and held against stand-ins, not run.
 - **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,
   `.animation()` (geometry and opacity; its scope reaches the `view()` bodies
   inside it), `.animatesColors()` (colours, opt-in: `transition-colors`; a
