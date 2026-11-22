@@ -1868,10 +1868,10 @@ fn the_chat_composer_family_is_checked() {
 
 #[test]
 fn chart_cards_are_checked() {
-    let imports = "import { AreaChartCard, BarListCard, ChartCardSurface, LineChartCard, RadarChartCard, Sparkline, StepsCard, VStack } from '@oxy.so/bloom-language';\n";
+    let imports = "import { AreaChartCard, BarListCard, ChartCardSurface, ChartStatTiles, LineChartCard, RadarChartCard, Sparkline, StepsCard, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (d) => VStack(AreaChartCard({ data: d }).style('percent').shape('sharp'), BarListCard().tint('success'), ChartCardSurface(d).spacing('sm'), LineChartCard().shape('curved').tint('primary').activeTint('error/half'), RadarChartCard().style('score'), Sparkline(d).tint('negative'), StepsCard(d).tint('info').activeTint('primary'));\n",
+        "export const x = (d) => VStack(AreaChartCard({ data: d }).style('percent').shape('sharp'), BarListCard().tint('success'), ChartCardSurface(d).spacing('sm'), LineChartCard().shape('curved').tint('primary').activeTint('error/half'), RadarChartCard().style('score'), Sparkline(d).tint('negative'), StepsCard(d).tint('info').activeTint('primary'), ChartStatTiles(d).activeIndex([1, d]));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -2423,7 +2423,7 @@ fn the_agent_families_secondary_looks_are_checked() {
     let imports = "import { AgentProgressLoadingText, ComposerLoader, ConversationSidebar, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (c, s) => VStack(AgentProgressLoadingText('Searching').textVariant('caption-1-medium'), ComposerLoader(c).blend('screen').bloomOnly().surface(false), ConversationSidebar(s, {}).style('rail').size('sm').sidebarSurface('docked').contentAlignment('center').primaryActionPlacement('top').railLabels('hidden').railSelection('icon').modesPresentation('toggle').scrollbarSide('start').teamPlacement('header'));\n",
+        "export const x = (c, s) => VStack(AgentProgressLoadingText('Searching').textVariant('caption-1-medium'), ComposerLoader(c).blend('screen').bloomOnly().surface(false), ConversationSidebar(s, [c, s], {}).destination([c, s]).style('rail').size('sm').sidebarSurface('docked').contentAlignment('center').primaryActionPlacement('top').railLabels('hidden').railSelection('icon').modesPresentation('toggle').scrollbarSide('start').teamPlacement('header'));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -2516,7 +2516,7 @@ fn the_agent_chats_are_checked() {
     let imports = "import { AgentChat, AgentChatHistory, MultiAgentChat, SelectedAgentPreview } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (m, t, a, f) => [AgentChat(m).titleAlign('center'), AgentChatHistory(t).surface(false), MultiAgentChat(), SelectedAgentPreview(a, { flights: f, anchor: 'p' })];\n",
+        "export const x = (m, t, a, f) => [AgentChat(m).titleAlign('center').selection([a, f]), AgentChatHistory(t).surface(false).selection([a, f]), MultiAgentChat(), SelectedAgentPreview(a, { flights: f, anchor: 'p' })];\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let output = check("export const x = (m) => AgentChat(m).titleAlign('end');\n");
@@ -2610,13 +2610,14 @@ fn the_crm_families_are_checked() {
         "import { ContactProfileCard, DealCard, PipelineBoard, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (s, r) => VStack(ContactProfileCard('a').density('compact'), DealCard('b'), PipelineBoard(s, r).style('single'));\n",
+        "export const x = (s, r) => VStack(ContactProfileCard('a').density('compact'), DealCard('b'), PipelineBoard(s, r).style('single').stage([s, r]));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("PipelineBoard(s, r).style('kanban')", "Unknown pipelineLayout token 'kanban' for .style()"),
         ("ContactProfileCard('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("DealCard('a').size('sm')", "DealCard has no modifier .size()"),
+        ("DealCard('a').stage([s, r])", "DealCard has no modifier .stage()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (s, r) => {chain};\n"));

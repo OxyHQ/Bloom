@@ -4,6 +4,8 @@ import { act } from 'react-test-renderer';
 import { MOTION } from '@oxy.so/bloom/motion';
 
 import { Accordion } from '../controls/accordion';
+import { AgentChatHistory } from '../controls/agent-chat';
+import { ConversationSidebar } from '../controls/agents';
 import { Collapsible } from '../controls/collapsible';
 import { HoverCard } from '../controls/hover-card';
 import { ListItem, VirtualList } from '../controls/list';
@@ -181,5 +183,44 @@ describe('a reveal takes a timed motion token', () => {
     // A motion with no reveal reveals nothing: the bar fills as it always does.
     const plain = only(mount(toElement(Meter(0.5).revealMotion('enter').label('a'))), 'Meter');
     expect(plain.props.reveal).toBeUndefined();
+  });
+});
+
+describe('a selection a press reports', () => {
+  it('is a binding: its id selects, a press writes it', () => {
+    const select = jest.fn();
+    const history = only(
+      mount(toElement(AgentChatHistory([]).selection(['t1', select]))),
+      'AgentChatHistory',
+    );
+    expect(history.props.activeId).toBe('t1');
+    expect(history.props.onSelect).toBe(select);
+  });
+
+  it('a conversation sidebar’s open conversation is its binding, its destination a sidebar’s selection', () => {
+    const open = jest.fn();
+    const go = jest.fn();
+    const sidebar = only(
+      mount(toElement(ConversationSidebar([], ['c1', open]).destination(['home', go]))),
+      'ConversationSidebar',
+    );
+    expect(sidebar.props).toMatchObject({
+      activeId: 'c1',
+      onSelect: open,
+      selected: 'home',
+      selectedTreeItem: 'home',
+    });
+    sidebar.props.onNavigate({ key: 'search', label: 'Search' });
+    sidebar.props.onTreeItemPress({ key: 'q1', label: 'Q1' });
+    expect(go.mock.calls).toEqual([['search'], ['q1']]);
+  });
+
+  it('a conversation sidebar with no destination bound draws no sidebar selection', () => {
+    const sidebar = only(
+      mount(toElement(ConversationSidebar([], ['c1', jest.fn()]))),
+      'ConversationSidebar',
+    );
+    for (const prop of ['selected', 'selectedTreeItem', 'onNavigate', 'onTreeItemPress'])
+      expect(prop in sidebar.props).toBe(false);
   });
 });

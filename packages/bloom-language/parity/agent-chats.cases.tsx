@@ -77,7 +77,7 @@ const history: ParityCase[] = [
   {
     name: 'AgentChatHistory',
     language: () =>
-      toElement(L.AgentChatHistory(THREADS, { activeId: 't1', onSelect: press, formatAge: age })),
+      toElement(L.AgentChatHistory(THREADS, { formatAge: age }).selection(['t1', press])),
     bloom: () => (
       <AgentChatHistory threads={THREADS} activeId="t1" onSelect={press} formatAge={age} />
     ),
@@ -149,11 +149,9 @@ const chats: ParityCase[] = [
       toElement(
         L.AgentChat(MESSAGES, {
           threads: THREADS,
-          activeThreadId: 't1',
-          onSelectThread: press,
           showHistory: true,
           historyProps: { formatAge: age },
-        }),
+        }).selection(['t1', press]),
       ),
     bloom: () => (
       <AgentChat

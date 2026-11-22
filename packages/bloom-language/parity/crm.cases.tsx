@@ -162,7 +162,9 @@ export const CRM_CASES: ParityCase[] = [
           (stage) =>
             stage.id === 'qualified' ? L.DealCard('Fleet telematics rollout', DEAL) : L.Text('—'),
           { columnWidth: '256' },
-        ).style(layout),
+        )
+          .style(layout)
+          .stage(['qualified', press]),
       ),
     bloom: () => (
       <PipelineBoard
@@ -176,6 +178,8 @@ export const CRM_CASES: ParityCase[] = [
         }
         columnWidth={256}
         layout={layout}
+        stageId="qualified"
+        onStageChange={press}
       />
     ),
   })),

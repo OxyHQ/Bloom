@@ -19,7 +19,15 @@ export type AgentChatKind = 'agentChatHistory' | 'agentChat';
 /** Bloom `AgentChatHistory`'s data and handlers; `after` is a language child. */
 export type AgentChatHistoryOptions = Omit<
   AgentChatHistoryProps,
-  'threads' | 'after' | 'framed' | 'style' | 'testID' | 'query' | 'onQueryChange'
+  | 'threads'
+  | 'after'
+  | 'framed'
+  | 'style'
+  | 'testID'
+  | 'query'
+  | 'onQueryChange'
+  | 'activeId'
+  | 'onSelect'
 > & { readonly after?: Child };
 
 type ChatSlots = 'emptyState' | 'headerLeading' | 'headerIdentity';
@@ -30,18 +38,30 @@ type ChatSlots = 'emptyState' | 'headerLeading' | 'headerIdentity';
  */
 export type AgentChatOptions = Omit<
   AgentChatProps,
-  'messages' | 'headerTitleAlign' | 'style' | 'testID' | ChatSlots | 'value' | 'onValueChange'
+  | 'messages'
+  | 'headerTitleAlign'
+  | 'style'
+  | 'testID'
+  | ChatSlots
+  | 'value'
+  | 'onValueChange'
+  | 'activeThreadId'
+  | 'onSelectThread'
 > & { readonly [K in ChatSlots]?: Child };
 
 /** Bloom `AgentChatHistory`: the threads, search and account rail. */
 export interface AgentChatHistoryView extends ViewModifiers<AgentChatHistoryView> {
   query(value: Bound<AgentChatHistoryProps, 'query'>): AgentChatHistoryView;
+  /** The open thread's id: a binding, a thread's press writing it. */
+  selection(value: Bound<AgentChatHistoryProps, 'activeId'>): AgentChatHistoryView;
   /** `.surface(false)`: drawn on a surface of the host's (Bloom's `framed={false}`). */
   surface(value?: boolean): AgentChatHistoryView;
 }
 /** Bloom `AgentChat`. */
 export interface AgentChatView extends ViewModifiers<AgentChatView> {
   value(value: Bound<AgentChatProps, 'value'>): AgentChatView;
+  /** The open thread's id in its history: a binding, a thread's press writing it. */
+  selection(value: Bound<AgentChatProps, 'activeThreadId'>): AgentChatView;
   /** The header's title: `start` or `center`. */
   titleAlign(value: TitleAlign): AgentChatView;
 }
@@ -63,12 +83,15 @@ export function AgentChat(
 
 export const AGENT_CHATS: Record<AgentChatKind, ControlRenderer> = {
   agentChatHistory: product(BloomAgentChatHistory, {
-    bindings: { query: ['query', 'onQueryChange'] },
+    bindings: { query: ['query', 'onQueryChange'], selection: ['activeId', 'onSelect'] },
     slots: ['after'],
     own: (d) => ({ framed: d.own('surface')?.value }),
   }),
   agentChat: product(BloomAgentChat, {
-    bindings: { value: ['value', 'onValueChange'] },
+    bindings: {
+      value: ['value', 'onValueChange'],
+      selection: ['activeThreadId', 'onSelectThread'],
+    },
     slots: ['emptyState', 'headerLeading', 'headerIdentity'],
     own: (d) => ({ headerTitleAlign: d.own('titleAlign')?.value }),
   }),

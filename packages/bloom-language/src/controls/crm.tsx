@@ -16,6 +16,7 @@ import {
   type PipelineStage,
 } from '@oxy.so/bloom/pipeline';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density, PipelineLayout, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -50,7 +51,14 @@ export type PipelineColumnOptions = Omit<
 /** Bloom `PipelineBoard`'s data; a stage's column is a language view, its widths space tokens. */
 export type PipelineBoardOptions = Omit<
   PipelineBoardProps,
-  Drawn | 'stages' | 'renderStage' | 'layout' | 'columnWidth' | 'singleMaxWidth'
+  | Drawn
+  | 'stages'
+  | 'renderStage'
+  | 'layout'
+  | 'columnWidth'
+  | 'singleMaxWidth'
+  | 'stageId'
+  | 'onStageChange'
 > & { readonly columnWidth?: SpaceToken; readonly singleMaxWidth?: SpaceToken };
 
 /** Bloom `ContactProfileCard`; `.onPress()` opens the record. */
@@ -65,6 +73,8 @@ export type PipelineColumnView = ViewModifiers<PipelineColumnView>;
 export interface PipelineBoardView extends ViewModifiers<PipelineBoardView> {
   /** `auto` (default), `board` or `single`. */
   style(value: PipelineLayout): PipelineBoardView;
+  /** The stage the `single` layout shows: a binding, its stage switcher writing it. */
+  stage(value: Bound<PipelineBoardProps, 'stageId'>): PipelineBoardView;
 }
 
 export function ContactProfileCard(
@@ -110,6 +120,7 @@ export const CRM: Record<CrmKind, ControlRenderer> = {
   dealCard: product(BloomDealCard, { press: true, slots: ['actions'] }),
   pipelineColumn: product(BloomPipelineColumn, { lengths: ['width'] }),
   pipelineBoard: product(BloomPipelineBoard, {
+    bindings: { stage: ['stageId', 'onStageChange'] },
     lengths: ['columnWidth', 'singleMaxWidth'],
     own: (d: ControlDraw) => {
       const { renderStage } = d.node.props as {

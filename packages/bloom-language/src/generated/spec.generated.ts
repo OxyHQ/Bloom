@@ -4162,6 +4162,12 @@ export const MODIFIERS = {
   ],
   "selectedIds": [
     "value"
+  ],
+  "stage": [
+    "value"
+  ],
+  "destination": [
+    "value"
   ]
 } as const;
 
@@ -18527,7 +18533,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "activeIndex"
   ],
   "contributionsCard": [
     "padding",
@@ -21882,7 +21889,8 @@ export const NODE_MODIFIERS = {
     "mode",
     "collapsed",
     "searchQuery",
-    "searchOpen"
+    "searchOpen",
+    "destination"
   ],
   "questionnaire": [
     "padding",
@@ -34570,7 +34578,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "surface",
-    "query"
+    "query",
+    "selection"
   ],
   "agentChat": [
     "padding",
@@ -34658,7 +34667,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "titleAlign",
-    "value"
+    "value",
+    "selection"
   ],
   "routeStops": [
     "padding",
@@ -36579,7 +36589,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "style"
+    "style",
+    "stage"
   ],
   "importantAlertsCard": [
     "padding",
