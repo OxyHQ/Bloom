@@ -1832,7 +1832,11 @@
     "agentCreatorSection": { "constructors": ["AgentCreatorSection"], "modifiers": [] },
     "agentProfile": { "constructors": ["AgentProfile"], "modifiers": [] },
     "agentReplyIdentity": { "constructors": ["AgentReplyIdentity"], "modifiers": [] },
-    "aiProfileCard": { "constructors": ["AiProfileCard"], "modifiers": ["tint"], "tint": "color" }
+    "aiProfileCard": { "constructors": ["AiProfileCard"], "modifiers": ["tint"], "tint": "color" },
+    "selectedAgentPreview": { "constructors": ["SelectedAgentPreview"], "modifiers": [] },
+    "multiAgentChat": { "constructors": ["MultiAgentChat"], "modifiers": [] },
+    "agentChatHistory": { "constructors": ["AgentChatHistory"], "modifiers": ["surface"] },
+    "agentChat": { "constructors": ["AgentChat"], "modifiers": ["titleAlign"] }
   },
   "sfSymbols": {
     "$comment": [
