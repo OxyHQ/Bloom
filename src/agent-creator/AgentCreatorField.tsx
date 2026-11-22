@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import { StyledView } from '../styles/styled-primitives';
+import { StyleSheet, View } from 'react-native';
+import { IS_WEB } from '../styles/platform';
+import { createTokenStyles } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
@@ -28,25 +30,57 @@ export function AgentCreatorField({
   divider = true,
 }: AgentCreatorFieldProps) {
   const { colors } = useTheme();
+  const tokens = useTokenStyles();
   return (
-    <StyledView
-      className={`grid grid-cols-[96px_minmax(0,1fr)] flex-row pe-2.5 ${
-        multiline ? 'min-h-[82px] items-start py-2.5' : 'h-[52px] items-center'
-      } ${divider ? 'border-t border-border-button-default dark:border-border-button-default/35' : ''}`}
-      style={{
-        flexDirection: 'row',
-        alignContent: 'stretch',
-        ...(divider ? { borderColor: colors.border } : null),
-      }}
+    <View
+      style={[
+        styles.row,
+        multiline ? styles.tall : styles.single,
+        divider && styles.divider,
+        {
+          flexDirection: 'row',
+          alignContent: 'stretch',
+          ...(divider ? { borderColor: colors.border } : null),
+        },
+      ]}
     >
       <Text
         variant="body-regular"
-        className={`text-body-regular text-text-primary ${multiline ? 'pt-1' : ''}`}
-        style={{ width: 96, ...(multiline ? { paddingTop: 4 } : null) }}
+        style={[
+          tokens.label,
+          multiline && styles.labelTall,
+          { width: 96, ...(multiline ? { paddingTop: 4 } : null) },
+        ]}
       >
         {label}
       </Text>
-      <StyledView className="min-w-0 flex-1">{children}</StyledView>
-    </StyledView>
+      <View style={styles.control}>{children}</View>
+    </View>
   );
 }
+
+/** The label column, shared with the character rows. */
+export const useAgentCreatorLabelStyles = createTokenStyles((t) => ({
+  label: {
+    fontSize: 14,
+    color: t.foreground,
+    lineHeight: 20,
+    fontWeight: '400',
+    ...(IS_WEB ? { letterSpacing: 0 } : null),
+  },
+}));
+const useTokenStyles = useAgentCreatorLabelStyles;
+
+const styles = StyleSheet.create({
+  // The web lays the row out as a grid of the label column and the control.
+  row: {
+    flexDirection: 'row',
+    paddingInlineEnd: 10,
+    ...(IS_WEB ? ({ display: 'grid', gridTemplateColumns: '96px minmax(0,1fr)' } as object) : null),
+  },
+  single: { height: 52, alignItems: 'center' },
+  tall: { minHeight: 82, alignItems: 'flex-start', paddingBlock: 10 },
+  divider: { borderTopStyle: 'solid', borderTopWidth: 1 } as object,
+  labelTall: { paddingTop: 4 },
+  control: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%' },
+});
