@@ -140,6 +140,8 @@ import type { AmbientPhotoKind } from './controls/ambient-photo';
 import type { CalendarViewKind } from './controls/calendar';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
+import type { PaymentStatusKind } from './controls/payment-status';
+import type { PriceBreakdownKind } from './controls/price-breakdown';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -300,6 +302,8 @@ import {
   type MethodTitleAlign,
   type TypeRampStep,
   type ChoiceListStyle,
+  type PaymentStatusStyle,
+  type PriceLineTone,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1304,7 +1308,8 @@ export type Modifier =
         | SidebarVariant
         | NoteCardLayout
         | OutlineNavStyle
-        | ChoiceListStyle;
+        | ChoiceListStyle
+        | PaymentStatusStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1328,7 +1333,7 @@ export type Modifier =
         | MessageTone
         | RentOutstandingTone
         | AccentTone
-        | EngagementBarTone;
+        | EngagementBarTone | PriceLineTone;
     }
   | {
       readonly kind: 'count';
@@ -1612,7 +1617,9 @@ export type NodeKind =
   | ShareSheetKind
   | GenericKind
   | AddressesKind
-  | PaymentMethodsKind;
+  | PaymentMethodsKind
+  | PriceBreakdownKind
+  | PaymentStatusKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1993,7 +2000,8 @@ export class Node {
       | SidebarVariant,
       | NoteCardLayout
       | OutlineNavStyle
-      | ChoiceListStyle,
+      | ChoiceListStyle
+      | PaymentStatusStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -2016,7 +2024,7 @@ export class Node {
       | RentOutstandingTone
       | AccentTone
       | EngagementBarTone,
-      | AccentTone,
+      | PriceLineTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }

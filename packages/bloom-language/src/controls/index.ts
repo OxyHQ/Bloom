@@ -99,6 +99,8 @@ import { SHARE_SHEETS } from './share-sheet';
 import { GENERIC } from './generic';
 import { ADDRESSES } from './address';
 import { PAYMENT_METHODS } from './payment-method';
+import { PRICE_BREAKDOWNS } from './price-breakdown';
+import { PAYMENT_STATUSES } from './payment-status';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -205,4 +207,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...GENERIC,
   ...ADDRESSES,
   ...PAYMENT_METHODS,
+  ...PRICE_BREAKDOWNS,
+  ...PAYMENT_STATUSES,
 };

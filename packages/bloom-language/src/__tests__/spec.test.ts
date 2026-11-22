@@ -238,6 +238,8 @@ import type {
   PaymentMethodRowView,
   PaymentMethodListView,
 } from '../controls/payment-method';
+import type { PriceSummaryView, PriceSummaryLineView } from '../controls/price-breakdown';
+import type { PaymentStatusBarView, PaymentStatusBlockView } from '../controls/payment-status';
 import type {
   FilterSectionView,
   PriceRangeFilterView,
@@ -1006,7 +1008,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<PaymentMethodMarkView>, Of<'paymentMethodMark'>>,
       Same<MethodsOf<PaymentMethodRowView>, Of<'paymentMethodRow'>>,
       Same<MethodsOf<PaymentMethodListView>, Of<'paymentMethodList'>>,
+      Same<MethodsOf<PriceSummaryView>, Of<'priceSummary'>>,
+      Same<MethodsOf<PriceSummaryLineView>, Of<'priceSummaryLine'>>,
+      Same<MethodsOf<PaymentStatusBarView>, Of<'paymentStatusBar'>>,
+      Same<MethodsOf<PaymentStatusBlockView>, Of<'paymentStatusBlock'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
