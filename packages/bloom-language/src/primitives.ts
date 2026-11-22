@@ -108,6 +108,15 @@ export function Text(...runs: TextRun[]): TextView {
   return new Node('text', { runs }, NO_CHILDREN);
 }
 
+/**
+ * React Native's own `Text`: what its chain names and nothing else, no Bloom
+ * family, size or ink, as a span is. It is what a screen moved from React
+ * Native's `Text` draws, so the move changes no pixel; new screens use `Text`.
+ */
+export function RawText(...runs: TextRun[]): TextView {
+  return new Node('text', { runs, raw: true }, NO_CHILDREN);
+}
+
 /** A Bloom icon component (`RiHeartLine`, `ReplyIcon`…), drawn at a size token in the current foreground. */
 export function Icon(icon: IconComponent): IconView {
   return new Node('icon', { icon }, NO_CHILDREN);

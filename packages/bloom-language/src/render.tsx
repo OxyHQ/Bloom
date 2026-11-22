@@ -2937,7 +2937,8 @@ function drawText(
   outermost: Outermost | undefined,
 ): ReactElement {
   const traits = ctx.env.text;
-  const span = ctx.inText ? spanTraits(p) : undefined;
+  // A span, and React Native's own Text (RawText), write only what their own chain names.
+  const span = ctx.inText || (node.props as TextProps).raw === true ? spanTraits(p) : undefined;
   const link = ownValue(p, 'link')?.value;
   const look = {
     noWrap: ownValue(p, 'noWrap') !== undefined,
