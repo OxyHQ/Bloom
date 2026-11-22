@@ -74,8 +74,8 @@
  },
  {
   "name": "components/Components.tsx:98",
-  "before": "<ScreenScrollView keyboardShouldPersistTaps=\"handled\">\n      <View className=\"gap-4 p-4\">\n        <TextFieldInput\n          label={'⟨2⟩'}\n          value={'⟨0⟩'}\n          onChangeText={() => {}}\n          placeholder={'⟨3⟩'}\n          maxLength={50}\n          autoCapitalize=\"words\"\n          autoCorrect={false}\n          returnKeyType=\"done\"\n          onSubmitEditing={() => {}}\n        />\n      </View>\n    </ScreenScrollView>",
-  "after": "toElement(ScrollView(VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))",
+  "before": "<ScreenScrollView keyboardShouldPersistTaps=\"handled\">\n      {/* The profile's own fields */}\n      <View className=\"gap-4 p-4\">\n        <TextFieldInput\n          label={'⟨2⟩'}\n          value={'⟨0⟩'}\n          onChangeText={() => {}}\n          placeholder={'⟨3⟩'}\n          maxLength={50}\n          autoCapitalize=\"words\"\n          autoCorrect={false}\n          returnKeyType=\"done\"\n          onSubmitEditing={() => {}}\n        />\n      </View>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))",
   "bindings": {
    "ScreenScrollView": {
     "module": "@oxy.so/bloom/screen",
@@ -113,7 +113,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:118",
+  "name": "components/Components.tsx:119",
   "before": "<ChatEmptyState\n      title={'⟨0⟩'}\n      description={'⟨1⟩'}\n      action={<Button onPress={() => {}}>{'⟨2⟩'}</Button>}\n    />",
   "after": "toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(Text('⟨2⟩')).onPress(() => {}) }))",
   "bindings": {
@@ -147,7 +147,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:140",
+  "name": "components/Components.tsx:141",
   "before": "<ScreenScrollView onEndReached={() => {}} onEndReachedThreshold={0.5}>\n      <Search\n        label={'⟨2⟩'}\n        value={'⟨0⟩'}\n        onChangeText={() => {}}\n        autoCorrect={false}\n      />\n      <Muted numberOfLines={2}>{'⟨3⟩'}</Muted>\n      <Divider spacing={12} />\n      {<Hole n=\"4\" />}\n      <Loading size=\"sm\" variant=\"inline\" />\n    </ScreenScrollView>",
   "after": "toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), Text('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n=\"4\" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))",
   "bindings": {
@@ -199,7 +199,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:150",
+  "name": "components/Components.tsx:151",
   "before": "<Item\n          \n          title={'⟨0⟩'}\n          subtitle={'⟨1⟩'}\n          leading={<Avatar source={'⟨2⟩'} variant={'⟨3⟩'} size={36} />}\n          trailing={<Badge content={'⟨4⟩'} variant=\"subtle\" size=\"sm\" />}\n          onPress={() => {}}\n        />",
   "after": "toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))",
   "bindings": {
@@ -244,7 +244,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:176",
+  "name": "components/Components.tsx:177",
   "before": "<ResponsiveGrid maxColumns={2} gap={16} testID=\"about\">\n      <Field label={'⟨0⟩'} description={'⟨4⟩'}>\n        <Checkbox checked={true} onCheckedChange={() => {}} label={'⟨3⟩'} />\n      </Field>\n      <Textarea\n        value={'⟨5⟩'}\n        onChangeText={() => {}}\n        placeholder={'⟨7⟩'}\n        rows={4}\n        autoResize\n        maxRows={8}\n        showCount\n        maxLength={500}\n      />\n      <IconCircle icon={RiStarLine} size=\"lg\" />\n    </ResponsiveGrid>",
   "after": "toElement(Grid(LField('⟨0⟩', LCheckbox([true, () => {}], '⟨3⟩')).description('⟨4⟩'), TextEditor(['⟨5⟩', () => {}]).placeholder('⟨7⟩').rows(4).autoResize(8).showCount().maxLength(500), LIconCircle(RiStarLine).size('lg')).columns(2).spacing('lg').testID('about'))",
   "bindings": {
@@ -306,7 +306,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:211",
+  "name": "components/Components.tsx:212",
   "before": "<View className=\"flex-row items-center gap-2\">\n      <Chip size=\"xl\" appearance=\"subtle\" selected={true} onPress={() => {}}>\n        {'⟨0⟩'}\n      </Chip>\n      <Chip leadingIcon={RiHeart3Line} trailingIcon={RiCloseLine} disabled>\n        Liked\n      </Chip>\n      <EngagementAction\n        icon={RiHeart3Line}\n        activeIcon={RiHeart3Fill}\n        accessibilityLabel={'⟨3⟩'}\n        onPress={() => {}}\n        active={true}\n        count={2}\n        tone=\"error\"\n        popOnActivate\n      />\n    </View>",
   "after": "toElement(HStack(LChip(Text('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), Text('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))",
   "bindings": {
@@ -378,7 +378,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:234",
+  "name": "components/Components.tsx:235",
   "before": "<TextField size=\"lg\" disabled>\n      <TextFieldIcon icon={RiMailLine} />\n      <TextFieldInput\n        label={'⟨2⟩'}\n        value={'⟨0⟩'}\n        onChangeText={() => {}}\n        keyboardType=\"email-address\"\n      />\n    </TextField>",
   "after": "toElement(LTextField(['⟨0⟩', () => {}], '⟨2⟩').keyboard('email-address').size('lg').disabled().icon(RiMailLine))",
   "bindings": {
@@ -436,7 +436,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:250",
+  "name": "components/Components.tsx:251",
   "before": "<View className=\"flex-row gap-2\" accessibilityRole=\"header\">\n      <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />\n      <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />\n      <RiStarLine fill={parityTheme.colors.error} />\n    </View>",
   "after": "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error')).spacing('sm').role('header'))",
   "bindings": {
@@ -497,7 +497,7 @@
   "themed": true
  },
  {
-  "name": "components/Components.tsx:260",
+  "name": "components/Components.tsx:261",
   "before": "<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>\n      <View style={{ flexGrow: 1, gap: 12 }}>{<Hole n=\"0\" />}</View>\n      <View style={[{ width: 24, height: 24 }, { marginLeft: 8 }]} />\n    </View>",
   "after": "toElement(HStack(VStack(Embed(<Hole n=\"0\" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))",
   "bindings": {
@@ -543,7 +543,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:282",
+  "name": "components/Components.tsx:283",
   "before": "<Slider\n      value={2}\n      onValueChange={() => {}}\n      label={'⟨2⟩'}\n      min={0.5}\n      max={2}\n      step={0.25}\n      formatValue={() => {}}\n      onSlidingComplete={() => {}}\n    />",
   "after": "toElement(LSlider([2, () => {}], '⟨2⟩').bounds(0.5, 2).step(0.25).valueFormat(() => {}).onCommit(() => {}))",
   "bindings": {
@@ -590,7 +590,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:296",
+  "name": "components/Components.tsx:297",
   "before": "<Admonition type=\"info\">{'⟨0⟩'}</Admonition>",
   "after": "toElement(LAdmonition(Text('⟨0⟩')).style('info'))",
   "bindings": {
@@ -638,7 +638,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:301",
+  "name": "components/Components.tsx:302",
   "before": "<PageHeader\n      title={'⟨0⟩'}\n      backLabel={'⟨1⟩'}\n      onBack={() => {}}\n      titleAlign=\"center\"\n      safeArea={false}\n      actions={<Button onPress={() => {}}>{'⟨3⟩'}</Button>}\n    />",
   "after": "toElement(LHeader('⟨0⟩').backLabel('⟨1⟩').onBack(() => {}).titleAlign('center').safeArea(false).toolbar(LButton(Text('⟨3⟩')).onPress(() => {})).inPage())",
   "bindings": {
@@ -691,7 +691,7 @@
   "themed": false
  },
  {
-  "name": "components/Components.tsx:313",
+  "name": "components/Components.tsx:314",
   "before": "<PageHeader title={'⟨0⟩'} onBack={null} presentation=\"floating\" />",
   "after": "toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())",
   "bindings": {
