@@ -963,3 +963,22 @@ fn the_media_player_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_logistics_families_are_checked() {
+    let imports = "import { CarrierQuoteCard, JobBoard, SignaturePad, ProofOfDelivery, VehiclePicker, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (q, j, v) => VStack(CarrierQuoteCard(q).density('compact').disabled(), JobBoard(j).loading(), SignaturePad().tint('primary'), ProofOfDelivery().loading().disabled(), VehiclePicker(v).disabled());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("CarrierQuoteCard(q).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("SignaturePad().tint('ink')", "Unknown color token 'ink' for .tint()"),
+        ("JobBoard(q).style('grid')", "JobBoard has no modifier .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (q) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

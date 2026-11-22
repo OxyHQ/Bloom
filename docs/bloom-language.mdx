@@ -1445,6 +1445,35 @@ data).
   role their scrolling edges fade into (Bloom's `fadeColor`); a confirmation's
   `.density()` is Bloom's comfortable or compact `variant`.
 
+### Logistics
+
+```ts
+CarrierQuoteList(quotes, { onAccept: accept, sort, onSortChange: setSort }).density('compact')
+JobCard(job, { onTake: take, onPass: pass, route: true }).disabled(job.state !== 'open')
+EarningsSummary(periods, { period, onPeriodChange, payoutAction: Button(Text('Cash out')).onPress(cashOut) })
+ProofOfDelivery({ required: ['signature', 'code'], onSubmit: deliver, onAddPhoto: addPhoto }).loading(sending)
+ShipmentRequestForm(route, [load, setLoad], { options, price, footer: Button(Text('Request quotes')).onPress(send) })
+```
+
+Bloom's logistics families: `CarrierQuoteCard(quote, options?)` and
+`CarrierQuoteList(quotes, options?)`, `JobCard(job, options?)` and
+`JobBoard(jobs, options?)` (`.density('default' | 'compact')`, `default`
+being Bloom's comfortable; a card `.disabled()`, a list or board `.loading()`
+for its skeletons; a card's `actions` and a list's `emptyAction` are
+children); `EarningsSummary(periods, options?)` (its `payoutAction` a child,
+`chartHeight` a space token), `EarningsBreakdown(lines, options?)` and
+`EarningsPayoutRow(payout, options?)` (its `action` a child; `.onPress()` its
+own); `SignaturePad(options?)` (its value controlled or not, as Bloom's;
+`.tint()` its ink, a colour role; `height` a space token) and
+`ProofOfDelivery(options?)` (`.loading()` while it submits, `actions` a
+child, `signatureHeight` a space token), both `.disabled()`;
+`VehiclePicker(vehicle, options?)` and `ShipmentLoadPicker(load, options?)`
+write their binding; `ShipmentOptionsList(options?)` keeps its three choices
+in the options, as Bloom's; `ShipmentRequestForm(route, load, options?)` (its
+route Bloom's `RouteStops` data, its load a binding, its `footer` a child);
+each takes `.disabled()`. A pad's stroke width stays a number in the options
+(a line's weight, not a length on the space scale).
+
 ### Media cards
 
 ```ts
@@ -1539,6 +1568,38 @@ a space token; `.disabled()`), `PayoutSummaryCard(estimated, options)` and
 tags, pitch and status). `.label()` names a chart's plot, the table and the
 timeline. The words, formats and labels stay in the options, as Bloom's.
 
+### CRM
+
+```ts
+ContactProfileCard(contact.name, { role, company, channels, stats, actions: Button(Text('Open')) }).density('compact').onPress(open)
+LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}`)
+PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
+```
+
+Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('default'
+| 'compact')`, `default` being Bloom's comfortable; its `actions` a child; it
+takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
+`.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
+child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
+stage's data; its deals the content, its `width` a space token) and
+`PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
+language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
+and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
+Bloom's accent tones, kept in the options as data.
+
+### Dashboard cards
+
+```ts
+ImportantAlertsCard(alerts, alerts.length, { rangeLabel: 'This week' })
+RecentHiresCard(hires, total, { teamLabel: team.name, onTeamPress: pickTeam, height: 'auto' })
+```
+
+Bloom's fixed-height dashboard cards: `ImportantAlertsCard(alerts, count,
+options?)`, `PatientInfoCard(name, details, options?)` and
+`RecentHiresCard(hires, count, options?)`. Their data is Bloom's (an alert's
+tone and its `iconBackground` stay in the alert); a `height` is a space token
+(`auto` too, for the recent hires).
+
 ### Route stops, note cards and the share sheet
 
 ```ts
@@ -1585,38 +1646,6 @@ options?)` (`activeId`, `onSelect`, `progress`, `hideProgress`, `title`,
 `ProgressiveBlur(options?)` (`direction` `top` or `bottom`, `intensity`) is
 placed and sized by the view's own modifiers. Each is named with `.label()`
 where Bloom takes a name.
-
-### CRM
-
-```ts
-ContactProfileCard(contact.name, { role, company, channels, stats, actions: Button(Text('Open')) }).density('compact').onPress(open)
-LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}`)
-PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
-```
-
-Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('default'
-| 'compact')`, `default` being Bloom's comfortable; its `actions` a child; it
-takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
-`.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
-child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
-stage's data; its deals the content, its `width` a space token) and
-`PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
-language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
-and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
-Bloom's accent tones, kept in the options as data.
-
-### Dashboard cards
-
-```ts
-ImportantAlertsCard(alerts, alerts.length, { rangeLabel: 'This week' })
-RecentHiresCard(hires, total, { teamLabel: team.name, onTeamPress: pickTeam, height: 'auto' })
-```
-
-Bloom's fixed-height dashboard cards: `ImportantAlertsCard(alerts, count,
-options?)`, `PatientInfoCard(name, details, options?)` and
-`RecentHiresCard(hires, count, options?)`. Their data is Bloom's (an alert's
-tone and its `iconBackground` stay in the alert); a `height` is a space token
-(`auto` too, for the recent hires).
 
 ## Interop
 

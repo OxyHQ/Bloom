@@ -21,6 +21,7 @@ import { CHECKOUT_DELIVERY_ORDER_CASES } from '../../parity/checkout-delivery-or
 import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
 import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
+import { LOGISTICS_CASES } from '../../parity/logistics.cases';
 import { CRM_CASES } from '../../parity/crm.cases';
 import { COMPOSER_PANEL_CASES } from '../../parity/composer-panel.cases';
 import { CREATOR_STUDIO_CASES } from '../../parity/creator-studio.cases';
@@ -115,3 +116,4 @@ export const CheckoutSummaryDeliveryAndOrders: Story = {
   args: { cases: CHECKOUT_DELIVERY_ORDER_CASES },
 };
 export const MediaPlayer: Story = { args: { cases: MEDIA_PLAYER_CASES } };
+export const Logistics: Story = { args: { cases: LOGISTICS_CASES } };
