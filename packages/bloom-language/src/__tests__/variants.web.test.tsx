@@ -100,6 +100,15 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
       expect(VARIANT_SELECTORS[state]).toContain(`:not(:has(.${PRESS_HOST_CLASS}:`);
   });
 
+  it('a child spacing’s variant keeps its rule inside :where(), as Tailwind’s md:space-y does', () => {
+    const name = WEB_CLASS['childSpacingY:8'] as string;
+    const rule =
+      '{--tw-space-y-reverse:0;margin-block-start:calc(8px * var(--tw-space-y-reverse));margin-block-end:calc(8px * calc(1 - var(--tw-space-y-reverse)));}';
+    expect(WEB_SHEET).toContain(`:where(.${name} > :not(:last-child))${rule}`);
+    expect(variantSheet('md', [name])).toBe(
+      `@media (min-width: 768px){:where(.${name}-md > :not(:last-child))${rule}}`,
+    );
+  });
   it('a variant sheet puts each class under its condition’s CSS', () => {
     const name = WEB_CLASS['paddingTop:16'] as string;
     expect(variantSheet('md', [name])).toBe(

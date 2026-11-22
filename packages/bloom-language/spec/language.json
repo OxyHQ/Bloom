@@ -950,6 +950,7 @@
       "weight",
       "leading",
       "spacing",
+      "childSpacing",
       "align",
       "justify",
       "wrap",
