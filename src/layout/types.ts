@@ -25,12 +25,6 @@ export interface ScrollAreaProps extends ScrollViewProps {
   viewportOverlay?: ReactNode;
   /** Reanimated scroll handler, composed on the UI thread with Bloom metrics. onScroll remains a plain JS observer. */
   animatedHandler?: ScrollHandlerProcessed<Record<string, unknown>>;
-  /** Utilities for the scrolling viewport, resolved by Bloom's own interop. */
-  className?: string;
-  /** Utilities for the outer sized area on web; shares the viewport on native. */
-  containerClassName?: string;
-  /** Utilities for the inner content container. */
-  contentContainerClassName?: string;
   /** When the scrollbar shows. Default `'scroll'`. */
   scrollbar?: ScrollAreaScrollbar;
   /** The bar's thickness: `sm` 4px (default) or `md` 6px, each growing 2px under the pointer. */
@@ -108,7 +102,6 @@ export interface ScrollSurfaceProps extends ScrollAreaProps {
   matchSurfacePaint?: boolean;
   /** Depth of each scroll-edge fade, in pixels. Defaults to 24. */
   fadeHeight?: number;
-  contentClassName?: string;
   surface?: 'primary' | 'secondary' | 'full';
   scrollRef?: Ref<ComponentRef<typeof ScrollView>>;
   label?: string;
@@ -124,7 +117,6 @@ export interface ToolbarProps {
   /** A summary or secondary row below the tools. */
   accessory?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   testID?: string;
 }
 
