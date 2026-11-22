@@ -113,6 +113,7 @@ export function createCompactComposer({
       <Surface ref={capsule} radius={28} style={[styles.capsule, style]} testID={testID}>
         <ScrollArea
           style={{ maxHeight: wide ? 320 : 256 }}
+          viewportStyle={{ maxHeight: wide ? 320 : 256 }}
           contentContainerStyle={{ paddingInline: 12, paddingBlock: 6 }}
           scrollbar="always"
           keyboardShouldPersistTaps="handled"

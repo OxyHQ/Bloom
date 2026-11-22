@@ -460,7 +460,7 @@ mirrors the position and can be dragged, and a click on the bare track jumps the
 | `size` | `'sm' \| 'md'` | `'sm'` | The bar's thickness. |
 | `horizontal` | `boolean` | `false` | The bar lies along the bottom edge. |
 
-On web the outer `View` takes `style` and `testID` (give it the size: `flex: 1`, a height). The content takes `contentContainerStyle`; `ref` is the actual `ScrollView`.
+On web the outer `View` takes `style` and `testID` (give it the size: `flex: 1`, a height) and the scroller inside it takes `viewportStyle`; on native both style the one scroller. The content takes `contentContainerStyle`; `ref` is the actual `ScrollView`.
 On native the system's indicator already floats and hides itself, so `scrollbar` maps onto what
 the platform has (`never` hides it, `always` keeps it on Android), `indicatorStyle` follows the
 theme on iOS, and `size` does nothing. The thumb's size and place are written to its element on
