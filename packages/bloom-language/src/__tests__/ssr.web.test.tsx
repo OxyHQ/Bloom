@@ -6,7 +6,9 @@ import { ServerStyleContext } from '../../../../src/styles/context';
 import { LIGHT, PaintContext } from './support/bloom-theme';
 import { HStack, Text, VStack } from '../primitives';
 import { LanguageStyles, toElement } from '../render';
-import { WEB_SHEET } from '../generated/web-sheet.generated';
+import { COLORS } from '../generated/spec.generated';
+import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
+import { adoptInk, inkClass, languageSheets } from '../web-sheet';
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
@@ -52,6 +54,20 @@ describe('server-rendered HTML', () => {
     expect(ids).toEqual(['bloom-language', 'bloom-language-md', 'bloom-language-hovered']);
     expect(html.indexOf('data-bloom-server-style')).toBeGreaterThan(html.indexOf('>b<'));
     expect(html).toContain(WEB_SHEET.slice(0, 200));
+  });
+
+  it('holds the ink classes and the inks drawn, the inks last', () => {
+    const base = WEB_CLASS['backgroundColor:@primary'] as string;
+    const ink = 'var(--bl-primary-50)';
+    expect(inkClass(base, 'primary/50', COLORS.primary.web, ink)).toBe(`${base}-primary-50`);
+    adoptInk('--bl-primary-50', `color-mix(in srgb, ${COLORS.primary.web} 50%, transparent)`);
+    // The variant sheets an earlier render drew sit between them.
+    const sheets = languageSheets();
+    const ids = sheets.map(([id]) => id);
+    expect(ids.slice(0, 2)).toEqual(['bloom-language', 'bloom-language-ink-classes']);
+    expect(ids.at(-1)).toBe('bloom-language-ink');
+    expect(sheets[1]?.[1]).toContain(`.${base}-primary-50`);
+    expect(sheets.at(-1)?.[1]).toContain('--bl-primary-50:color-mix(');
   });
 
   it('one inside another writes nothing, and no policy writes nothing', () => {

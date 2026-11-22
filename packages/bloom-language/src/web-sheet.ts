@@ -152,17 +152,20 @@ export function adoptVariantClasses(condition: LiveCondition, names: readonly st
 
 /**
  * The language's sheets as server-rendered HTML takes them, in the order
- * they are adopted: the generated sheet, then each live condition's variant
- * sheet that has drawn a class (the same ids `adoptVariantClasses` adopts).
+ * they are adopted: the generated sheet and the ink classes drawn, then each
+ * live condition's variant sheet that has drawn a class (the same ids
+ * `adoptVariantClasses` adopts), then the inks those classes paint.
  */
 export function languageSheets(): (readonly [id: string, css: string])[] {
   const sheets: (readonly [string, string])[] = [['bloom-language', WEB_SHEET]];
+  if (inkSheet) sheets.push(['bloom-language-ink-classes', inkSheet]);
   for (const live of LIVE_ORDER) {
     const css = drawn.get(live)?.css;
     if (css) sheets.push([`bloom-language-${live}`, css]);
   }
   for (const [joined, { css }] of drawn)
     if (joined.includes('+') && css) sheets.push([`bloom-language-${variantSuffix(joined)}`, css]);
+  if (inks.size > 0) sheets.push(['bloom-language-ink', inkDeclarations()]);
   return sheets;
 }
 
@@ -233,7 +236,12 @@ const inks = new Map<string, string>();
 export function adoptInk(name: string, value: string): void {
   if (Platform.OS !== 'web' || inks.get(name) === value) return;
   inks.set(name, value);
+  adoptStyleSheet('bloom-language-ink', inkDeclarations());
+}
+
+/** The ink sheet: every ink drawn so far, declared on every element. */
+function inkDeclarations(): string {
   let declarations = '';
   for (const [ink, mix] of inks) declarations += `${ink}:${mix};`;
-  adoptStyleSheet('bloom-language-ink', `*{${declarations}}`);
+  return `*{${declarations}}`;
 }
