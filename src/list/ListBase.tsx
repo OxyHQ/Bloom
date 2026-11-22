@@ -30,6 +30,7 @@ export function createList({
     separator = 'none',
     height,
     scrollable,
+    contentContainerStyle,
     sectionIndex,
     stickyHeaders: stickyProp,
   }: ListProps) {
@@ -143,6 +144,7 @@ export function createList({
           <ScrollArea
             ref={scroller}
             style={{ height, paddingRight: sectionIndex ? 22 : 0 }}
+            contentContainerStyle={contentContainerStyle}
             stickyHeaderIndices={stickyIndices.length ? stickyIndices : undefined}
             testID={testID ? `${testID}-scroll` : undefined}
           >
