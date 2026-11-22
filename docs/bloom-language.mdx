@@ -3919,7 +3919,7 @@ Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 | `.repeatForever(loop)` | `keyframeAnimator(repeating: true)`: plays a loop again and again while the view is on screen: `'spin'` (a turn, 1 s linear: `animate-spin`), `'pulse'` (half opacity at the midpoint, 2 s: `animate-pulse`), frame for frame, or keyframes of the app's own. It plays when nothing else does, after an insertion ends; never under reduced motion. |
 | `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): a duration token: Bloom's `instant` 100, `fast` 150, `normal` 200, `slow` 300 (ms), or an exact one the scale holds (`'0'`, `'800'`…). No app writes a Tailwind delay (the className scan has no `delay-*`). A delayed playing holds its first frame while it waits. |
 | `.anchor(a)` | The point its scale and rotation (and its keyframes' and transition's) turn about; see [Modifiers](#modifiers). |
-| `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()`. |
+| `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()` within one tree; between screens, a namespace declared once at module scope, `const photos = transitionNamespace()` (SwiftUI's `matchedTransitionSource` beside a navigation transition): see How it runs. |
 | `.contentTransition('roll', direction?)` | `Text` only: a change of the text inside an animation rolls the old text out and the new one in (Bloom's `rollKeyframes`, as `RollingText` rolls), up when `direction` rose and down when it fell. |
 | `.contentTransition('numeric', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change inside an animation rolls each character that changed (the same `rollKeyframes`, each place its own pair on the engine) while the others stay put, matched from the end so a count gaining a digit keeps its units in place; a new character rolls in, a lost one rolls out beside the next. At rest it is the plain text; while it plays, a row with the text's box holds the pieces in its type, named by the whole text. |
 | `.pressScale()` | Press feedback (`PressableScale`): eases to `pressed` while a finger holds the view. Off for a mouse on the web and under reduced motion. |
@@ -4019,6 +4019,31 @@ one playing at a time, so it starts once an insertion ends and gives way to
 keyframes; reduced motion stops it. A delay is the timing's own
 (`transitionDelay`/`animationDelay`, the Web Animations delay), and a delayed
 playing fills backwards.
+
+**Matched geometry between screens.** A view matched in a
+`transitionNamespace()` that arrives on a screen while another view with its
+id is on the screen under it (a pushed screen: the list stays mounted beneath
+the detail), or that replaces a screen the other just left (the web's routes
+in place), flies from that view's frame to its own: Bloom's own flight, as the
+avatar and media flights fly, on the engine. Its copy (the same node, drawn
+again) is drawn in Bloom's `Portal` under an `OverlayRoot`, the layer over every
+screen, at the view's frame, and plays the matched move there (the `moveFrom`
+keyframes the in-tree move plays: Reanimated's CSS animation on native,
+`element.animate()` on the web); the view itself waits, unseen, until the copy
+lands. When the arriving view leaves (back) and the other is still on screen,
+that one flies home from the leaving one's frame; if none is on screen, the
+frame it left is kept for the next view with the id, once. The source is
+measured when the flight starts (it may have scrolled since it laid out), and
+the leaving view as it leaves, before its host is removed. It plays with the
+arriving view's `.animation()` (none: no flight), never under reduced motion.
+Reanimated's shared-element transitions (`sharedTransitionTag`) were not used:
+in Reanimated 4 they sit behind a static feature flag the app must set, work
+only between react-native-screens' native-stack screens (not Bloom's Android
+scenes, not the web's routes in place), and the web cannot run Reanimated's
+layout animations at all, so they would be a second mechanism for one
+platform. The flight is measured, not run: no device was used here, and on a
+pushed native screen the view's frame is taken where the stack lays it out,
+which is where it lands.
 
 **Scopes across `view()`s.** A `view()` placed inside an `.animation()` takes
 the scope through a React context (`AnimationContext`), provided only where the
