@@ -1169,6 +1169,8 @@ export interface ValueModifiers {
   view: AnyBinding;
   date: AnyBinding;
   selectedIds: AnyBinding;
+  saved: AnyBinding;
+  downloaded: AnyBinding;
   tilted: AnyBinding;
   lyricsActive: AnyBinding;
   queueActive: AnyBinding;
@@ -2402,6 +2404,12 @@ export class Node {
   }
   selectedIds(value: AnyBinding): Node {
     return this.set('selectedIds', value);
+  }
+  saved(value: AnyBinding): Node {
+    return this.set('saved', value);
+  }
+  downloaded(value: AnyBinding): Node {
+    return this.set('downloaded', value);
   }
   tilted(value: AnyBinding): Node {
     return this.set('tilted', value);

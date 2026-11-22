@@ -2855,10 +2855,10 @@ fn the_track_list_is_checked() {
 
 #[test]
 fn values_inside_blooms_own_data_are_bindings() {
-    let imports = "import { CallScreen, CartPanel, ListItem, MailRow, MapControls, NowPlayingBar, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
+    let imports = "import { CallScreen, CartPanel, EpisodeRow, FullScreenPlayer, ListItem, MailRow, MapControls, NowPlayingBar, ShareSheet, TrackRow, TrackRowSkeleton, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]), NowPlayingBar(d, {}).lyricsActive([v, s]).queueActive([v, s]));\n",
+        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]), NowPlayingBar(d, {}).lyricsActive([v, s]).queueActive([v, s]).shuffle([v, s]).repeat([v, s]).playbackRate([v, s]), FullScreenPlayer(d, {}).shuffle([v, s]), TrackRow(d, 0).liked([v, s]), EpisodeRow(d).saved([v, s]).downloaded([v, s]));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -2866,6 +2866,7 @@ fn values_inside_blooms_own_data_are_bindings() {
         ("CartPanel('a', c).promo([v, s])", ".promo() takes 2 argument(s), not 1"),
         ("ListItem('a').starred([v, s])", "ListItem has no modifier .starred()"),
         ("ShareSheet().query([v, s])", "ShareSheet has no modifier .query()"),
+        ("TrackRowSkeleton().liked([v, s])", "TrackRowSkeleton has no modifier .liked()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (v, s, c) => {chain};\n"));

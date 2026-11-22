@@ -185,14 +185,15 @@ export const TRACK_LIST_CASES: ParityCase[] = [
           current: true,
           playing: false,
           onPlay: press,
-          onLikedChange: set,
           menuItems: MENU,
           width: '768',
-        }).onPress(press),
+        })
+          .liked([false, set])
+          .onPress(press),
       ),
     bloom: () => (
       <TrackRow
-        track={TRACK}
+        track={{ ...TRACK, liked: false }}
         index={0}
         columns={[...COLUMNS]}
         current
@@ -302,16 +303,17 @@ export const TRACK_LIST_CASES: ParityCase[] = [
           current: true,
           playing: false,
           onPlay: press,
-          onSavedChange: set,
-          onDownloadedChange: set,
           menuItems: MENU,
           divider: true,
           width: '768',
-        }).onPress(press),
+        })
+          .saved([true, set])
+          .downloaded([false, set])
+          .onPress(press),
       ),
     bloom: () => (
       <EpisodeRow
-        episode={EPISODE}
+        episode={{ ...EPISODE, downloaded: false }}
         index={0}
         current
         playing={false}
@@ -403,14 +405,15 @@ export const TRACK_LIST_CASES_MOVING: ParityCase[] = [
           current: true,
           playing: true,
           onPlay: press,
-          onLikedChange: set,
           menuItems: MENU,
           width: '768',
-        }).onPress(press),
+        })
+          .liked([false, set])
+          .onPress(press),
       ),
     bloom: () => (
       <TrackRow
-        track={TRACK}
+        track={{ ...TRACK, liked: false }}
         index={0}
         columns={[...COLUMNS]}
         current
