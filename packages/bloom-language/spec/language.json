@@ -1662,7 +1662,33 @@
       "size": "transportSize"
     },
     "devicePicker": { "constructors": ["DevicePicker"], "modifiers": [] },
-    "connectBanner": { "constructors": ["ConnectBanner"], "modifiers": [] }
+    "connectBanner": { "constructors": ["ConnectBanner"], "modifiers": [] },
+    "carrierQuoteCard": {
+      "constructors": ["CarrierQuoteCard"],
+      "modifiers": ["density", "disabled"]
+    },
+    "carrierQuoteList": {
+      "constructors": ["CarrierQuoteList"],
+      "modifiers": ["density", "loading"]
+    },
+    "earningsSummary": { "constructors": ["EarningsSummary"], "modifiers": [] },
+    "earningsBreakdown": { "constructors": ["EarningsBreakdown"], "modifiers": [] },
+    "earningsPayoutRow": { "constructors": ["EarningsPayoutRow"], "modifiers": [] },
+    "jobCard": { "constructors": ["JobCard"], "modifiers": ["density", "disabled"] },
+    "jobBoard": { "constructors": ["JobBoard"], "modifiers": ["density", "loading"] },
+    "signaturePad": {
+      "constructors": ["SignaturePad"],
+      "modifiers": ["tint", "disabled"],
+      "tint": "color"
+    },
+    "proofOfDelivery": {
+      "constructors": ["ProofOfDelivery"],
+      "modifiers": ["loading", "disabled"]
+    },
+    "vehiclePicker": { "constructors": ["VehiclePicker"], "modifiers": ["disabled"] },
+    "shipmentLoadPicker": { "constructors": ["ShipmentLoadPicker"], "modifiers": ["disabled"] },
+    "shipmentOptionsList": { "constructors": ["ShipmentOptionsList"], "modifiers": ["disabled"] },
+    "shipmentRequestForm": { "constructors": ["ShipmentRequestForm"], "modifiers": ["disabled"] }
   },
   "sfSymbols": {
     "$comment": [
