@@ -417,7 +417,11 @@
       "tab",
       "radiogroup",
       "tablist",
-      "list"
+      "list",
+      "alert",
+      "progressbar",
+      "imagebutton",
+      "summary"
     ],
     "buttonShape": ["circle", "pill", "fit"],
     "linkTone": ["primary", "secondary", "text"],

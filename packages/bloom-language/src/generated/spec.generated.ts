@@ -995,7 +995,11 @@ export const ENUMS = {
     "tab",
     "radiogroup",
     "tablist",
-    "list"
+    "list",
+    "alert",
+    "progressbar",
+    "imagebutton",
+    "summary"
   ],
   "buttonShape": [
     "circle",
