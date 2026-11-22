@@ -1469,3 +1469,22 @@ fn inline_markdown_is_checked() {
     let output = check("export const x = (s) => InlineMarkdown(s).codeBlock(s);\n");
     assert_eq!(output.diagnostics[0].message, "InlineMarkdown has no modifier .codeBlock()");
 }
+
+#[test]
+fn data_tables_are_checked() {
+    let imports = "import { DataTable, DataColumn, DataTableFilter, DataTableSearch, DataTableSelect, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (rows, id, f, v, s, p, o) => DataTable(rows, id, DataColumn('a', 'A', f).label('A').width('160').share(2).minWidth('96').basis('120').align('end').cell(() => DataTableSelect(v, 'S', o, '120').size('sm').disabled()).sortable(false).sortsDescendingFirst()).title('T').summary('3').toolbar(DataTableFilter(v, 'F', o).disabled(), DataTableSearch(v, 'Q').placeholder('Search')).sorting(s).rowSelection(s).pageSize(8).page(p).size('sm').sizeToggle(s).bordered(false).emptyState('None').minWidth('640').style('inset').labels({});\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("DataTable(r, i).style('grid')", "Unknown dataTableStyle token 'grid' for .style()"),
+        ("DataTable(r, i).size('lg')", "Unknown tableSize token 'lg' for .size()"),
+        ("DataTableSearch(r, 'Q').disabled()", "DataTableSearch has no modifier .disabled()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (r, i) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

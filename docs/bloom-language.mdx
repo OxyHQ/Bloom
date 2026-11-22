@@ -2457,6 +2457,33 @@ Google", in the app's language). It takes `.size('md' | 'sm')`,
 `.link(href)` (an OAuth start is a navigation), `.onPress()` and
 `.disabled()`.
 
+### Data tables
+
+```ts
+DataTable(customers, (c) => c.id,
+  DataColumn('name', 'Customer', (c) => c.name).share(2),
+  DataColumn('price', 'Price', (c) => c.price).align('end').cell(({ row }) => Text(money(row.price))),
+)
+  .title('Total Results').summary(`${customers.length} customers`)
+  .toolbar(DataTableFilter([region, setRegion], 'Region', regions), DataTableSearch([q, setQ], 'Search'))
+  .sorting([sort, setSort]).rowSelection([selected, setSelected]).page([page, setPage])
+  .sizeToggle([size, setSize]).label('Customers')
+```
+
+Bloom's `DataTable`: every row (filtered by the screen), each named by its id
+function, in its `DataColumn`s; Bloom sorts, selects and pages them.
+`DataColumn(id, header, value?)`: the value is what it sorts by and shows; it
+takes `.cell(context => view)`, `.width()`, `.share()`, `.minWidth()`,
+`.basis()`, `.align()`, `.sortable(false)`, `.sortsDescendingFirst()` and
+`.label()` (its header's name). The table takes `.title()`, `.summary()`,
+`.toolbar(...)`, `.sorting([sort, set])`, `.rowSelection([ids, set])`,
+`.pageSize()`, `.page([page, set])`, `.size('sm' | 'md')`,
+`.sizeToggle([size, set])` (the Normal / Compact control), `.bordered(false)`,
+`.emptyState()`, `.minWidth()`, `.style('table' | 'inset')` and `.labels()`.
+The toolbar's `DataTableFilter([value, set], label, options)` and
+`DataTableSearch([text, set], label)`, and a cell's
+`DataTableSelect([value, set], label, options, width)`, are Bloom's own.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2913,7 +2940,8 @@ and `@oxy.so/bloom-data` beside it.
   notifications,
   link previews,
   social buttons,
-  media galleries.
+  media galleries,
+  data tables.
 
 **Not built**
 

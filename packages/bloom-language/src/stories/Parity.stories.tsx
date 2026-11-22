@@ -130,3 +130,4 @@ export const Notifications: Story = { args: { family: 'notification' } };
 export const LinkPreviews: Story = { args: { family: 'linkPreview' } };
 export const SocialButtons: Story = { args: { family: 'socialButton' } };
 export const MediaGalleries: Story = { args: { family: 'gallery' } };
+export const DataTables: Story = { args: { family: 'dataTable' } };
