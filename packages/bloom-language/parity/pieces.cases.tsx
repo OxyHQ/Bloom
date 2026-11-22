@@ -98,6 +98,41 @@ const loading: ParityCase[] = [
     ),
   },
   {
+    // Every box modifier is the loader's `style`, as an app writes it.
+    name: 'Loading with padding, a frame, a fill, a corner, a margin and a flex',
+    language: () =>
+      toElement(
+        L.Loading()
+          .padding('lg')
+          .frame({ height: '5xl' })
+          .background('surface')
+          .corner('md')
+          .margin('bottom', 'xs')
+          .flex('1'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Loading
+            style={{
+              paddingTop: 16,
+              paddingBottom: 16,
+              paddingStart: 16,
+              paddingEnd: 16,
+              height: 60,
+              backgroundColor: c.backgroundSecondary,
+              borderRadius: 12,
+              marginBottom: 4,
+              flexGrow: 1,
+              flexShrink: 1,
+              flexBasis: '0%',
+            }}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'Loading inline with text',
     language: () => toElement(L.Loading(L.Text('Saving')).style('inline')),
     bloom: () => <Loading variant="inline" text="Saving" />,
