@@ -10641,12 +10641,9 @@ export const NODE_MODIFIERS = {
     "scrollIndicators",
     "scrollDismissesKeyboard",
     "keyboardTaps",
-<<<<<<< HEAD
+    "contentView",
     "safeAreaInset",
     "safeAreaBar"
-=======
-    "contentView"
->>>>>>> d2a76287c (feat(language): a scroll view's content view, Bloom's contentContainerClassName view)
   ],
   "bottomSheet": [
     "detached",
@@ -13753,15 +13750,12 @@ export const NODE_MODIFIERS = {
     "footerContent",
     "emptyState",
     "tuning",
-<<<<<<< HEAD
-    "safeAreaInset",
-    "safeAreaBar"
-=======
     "screen",
     "scrollbar",
     "scrollDismissesKeyboard",
-    "keyboardTaps"
->>>>>>> f93ce2911 (feat(language): a VirtualList bound to its screen, its scrollbar and keyboard, and its row handed FlashList's argument)
+    "keyboardTaps",
+    "safeAreaInset",
+    "safeAreaBar"
   ],
   "listSelectionBar": [
     "padding",
