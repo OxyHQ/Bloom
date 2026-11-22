@@ -48,6 +48,11 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'project-board/ProjectBoardCanvas.tsx': {
+    count: 1,
+    reason:
+      '`COLUMN_RING` is the never-showing ring stack the old `ring-2 ring-inset ring-transparent` class computed: a web box-shadow string list on one side and `[]` on native, as one VALUE-level cast.',
+  },
   'agent-creator/EmotionPicker.tsx': {
     count: 1,
     reason:

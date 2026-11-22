@@ -1567,6 +1567,7 @@
       "src/theme/BloomThemeProvider.tsx#BloomThemeProvider",
       "src/theme/ThemeBootstrap.tsx#BloomThemeHead",
       "src/theme/color-scope/ColorScope.tsx#BloomColorScope",
+      "src/theme/color-scope/layer.tsx#ColorScopeLayerContext",
       "src/theme/seed-scope/SeedScope.tsx#BloomSeedScope",
       "src/toast/ToastOutlet.tsx#ToastOutlet",
       "src/toast/Toaster.tsx#Toaster",
