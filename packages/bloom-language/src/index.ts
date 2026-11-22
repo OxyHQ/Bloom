@@ -615,6 +615,12 @@ export type { SortableChipRowView, SortableChipView } from './controls/sortable-
 export { Viewport } from './controls/viewport';
 export { GlassGroup } from './controls/glass-group';
 export { ConfirmationDialog } from './controls/confirmation-dialog';
+export { ToolbarGroup, ToolbarSpacer } from './controls/toolbar-group';
+export type {
+  ToolbarGroupView,
+  ToolbarSpacerKind,
+  ToolbarSpacerView,
+} from './controls/toolbar-group';
 export type { ConfirmationDialogView, TitleVisibility } from './controls/confirmation-dialog';
 export type { GlassGroupView } from './controls/glass-group';
 export type { ViewportView } from './controls/viewport';

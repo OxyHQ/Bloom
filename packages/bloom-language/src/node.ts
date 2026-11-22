@@ -57,6 +57,7 @@ import type { DataTableKind, DataTableStyle } from './controls/data-table';
 import type { SortableChipRowKind } from './controls/sortable-chip-row';
 import type { ViewportKind } from './controls/viewport';
 import type { GlassGroupKind } from './controls/glass-group';
+import type { ToolbarGroupKind } from './controls/toolbar-group';
 import type {
   ConfirmationDialogKind,
   ConfirmationDialogView,
@@ -1734,6 +1735,7 @@ export type NodeKind =
   | SortableChipRowKind
   | ViewportKind
   | GlassGroupKind
+  | ToolbarGroupKind
   | ConfirmationDialogKind
   | AnimatedCheckKind
   | FactStripKind

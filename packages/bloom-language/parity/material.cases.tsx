@@ -18,6 +18,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { GLASS_OPACITY } from '../src/generated/spec.generated';
 import { clear, identity, regular } from '../src/glass';
 import { GlassGroup } from '../src/controls/glass-group';
+import { ToolbarGroup, ToolbarSpacer } from '../src/controls/toolbar-group';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { defineTokens } from '../src/tokens';
@@ -772,9 +773,41 @@ const glassGroups: ParityCase[] = [
   },
 ];
 
+/** Toolbar groups: one glass around their items; a fixed spacer a small gap, a flexible one the free space. */
+const toolbarGroups: ParityCase[] = [
+  {
+    name: 'a toolbar group is one glass around its items',
+    language: () => toElement(ToolbarGroup(L.Text('Share'), L.Text('Like'))),
+    bloom: () => (
+      <Surface>
+        <RN.View style={{ flexDirection: 'row' }}>
+          <Text>Share</Text>
+          <Text>Like</Text>
+        </RN.View>
+      </Surface>
+    ),
+  },
+  {
+    name: 'toolbar spacers: fixed and flexible',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'), ToolbarSpacer('fixed'), L.Text('b'), ToolbarSpacer('flexible')),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <RN.View style={{ width: space.sm }} />
+        <Text>b</Text>
+        <RN.View style={{ flex: 1 }} />
+      </RN.View>
+    ),
+  },
+];
+
 export const MATERIAL_CASES: ParityCase[] = [
   ...surface,
   ...glassGroups,
+  ...toolbarGroups,
   ...islands,
   ...dividers,
   ...boxes,

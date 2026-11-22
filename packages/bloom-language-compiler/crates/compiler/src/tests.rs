@@ -3019,3 +3019,27 @@ fn a_chain_that_applies_a_custom_modifier_hoists_like_the_chain_it_stands_for() 
     assert_eq!(output.hoisted, 1);
     assert!(output.code.contains("const _bloomStatic0 = VStack(Text(\"Storage\")).modifier(card);"), "{}", output.code);
 }
+
+const TOOLBAR_IMPORTS: &str = "import { Button, Header, Icon, Text, ToolbarGroup, ToolbarSpacer } from '@oxy.so/bloom-language';
+import { RiShareLine } from '@oxy.so/bloom/icons/RiShareLine';
+";
+
+fn toolbar(body: &str) -> crate::Output {
+    compile(&format!("{TOOLBAR_IMPORTS}{body}"), "toolbar.tsx")
+}
+
+#[test]
+fn toolbar_groups_follow_apples_limits() {
+    let fine = toolbar(
+        "const S = Button(Icon(RiShareLine)).label('Share');\nexport const x = () => Header('Edit').toolbar(ToolbarGroup(S, S), ToolbarSpacer('fixed'), ToolbarGroup(S), ToolbarSpacer(), Button(Text('Done')).style('glassProminent'));\n",
+    );
+    assert!(fine.diagnostics.is_empty() && fine.warnings.is_empty(), "{:?}", messages(&fine.warnings));
+    let many = toolbar(
+        "const S = Button(Icon(RiShareLine)).label('Share');\nexport const x = () => Header('Edit').toolbar(ToolbarGroup(S), ToolbarGroup(S), ToolbarGroup(S), ToolbarGroup(S));\n",
+    );
+    assert_eq!(messages(&many.warnings), ["4 toolbar groups: a toolbar has at most three"]);
+    let mixed = toolbar(
+        "export const x = () => ToolbarGroup(Button(Icon(RiShareLine)).label('Share'), Button(Text('Done')));\n",
+    );
+    assert_eq!(messages(&mixed.warnings), ["a toolbar group mixes text and icon buttons"]);
+}
