@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useSheetKeyboardHeight } from '../bottom-sheet/context';
 import { useTheme } from '../theme/use-theme';
-import { StyledView } from '../styles/styled-primitives';
 import { Context } from './context';
 import { DialogBody } from './DialogContent';
 import {
@@ -78,9 +77,7 @@ export function DialogBottomSheet({
   morph,
   style,
   panelStyle,
-  panelClassName,
   containerStyle,
-  containerClassName,
   label,
   children,
 }: DialogBottomSheetProps) {
@@ -347,7 +344,7 @@ export function DialogBottomSheet({
       style={sheetStyle}
     >
       <Context.Provider value={context}>
-        <StyledView
+        <View
           testID={testID}
           accessibilityLabel={Platform.OS === 'web' ? undefined : label}
           aria-labelledby={Platform.OS === 'web' ? undefined : title ? titleId : undefined}
@@ -355,11 +352,6 @@ export function DialogBottomSheet({
             Platform.OS === 'web' ? undefined : description ? descriptionId : undefined
           }
           accessibilityHint={Platform.OS === 'web' ? undefined : descriptionHint}
-          // Bottom placement renders ONE node for both, so the two classes are
-          // joined rather than spread twice — the second spread used to
-          // overwrite the first, so `containerClassName` was silently dropped on
-          // this branch and the cast type-checked it anyway.
-          className={[containerClassName, panelClassName].filter(Boolean).join(' ') || undefined}
           style={[
             // Nav-header mode: the large title + screens own their padding, so the
             // wrapper adds none. Otherwise the Dialog's uniform content padding.
@@ -378,9 +370,8 @@ export function DialogBottomSheet({
             panelStyle,
           ]}
         >
-          {/* The morph layer is its own node INSIDE the class-name'd container:
-              a className'd component's `onLayout` never fires on web, and this
-              one has to measure the incoming frame. */}
+          {/* The morph layer is its own node INSIDE the container: it has to
+              measure the incoming frame. */}
           <DialogMorphContent
             morph={morphState}
             style={scrollableResolved ? undefined : FILL_BOUNDED}
@@ -399,7 +390,7 @@ export function DialogBottomSheet({
           {!hasFooter && !detached && bottomInset > 0 ? (
             <SafeAreaSpacer testID={SAFE_AREA_SPACER_TESTID} inset={bottomInset} />
           ) : null}
-        </StyledView>
+        </View>
       </Context.Provider>
     </BottomSheet>
   );
@@ -461,9 +452,7 @@ export type DialogBottomSheetProps = DialogPresentationLifecycle &
     | 'morph'
     | 'style'
     | 'panelStyle'
-    | 'panelClassName'
     | 'containerStyle'
-    | 'containerClassName'
     | 'label'
     | 'children'
   >;

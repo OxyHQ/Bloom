@@ -4,7 +4,7 @@ import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { useCommonMessages } from '../locale/common-messages';
 import { useTopEdgeInset } from '../layout/top-edge';
 import { useTheme } from '../theme/use-theme';
-import { Platform, useWindowDimensions } from 'react-native';
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import {
   SafeAreaConsumedContext,
@@ -14,7 +14,8 @@ import {
 import type { Button } from '../button';
 import type { Screen, ScreenScrollView } from '../screen';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { StyledView } from '../styles/styled-primitives';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
+import { IS_WEB } from '../styles/platform';
 import { DetailDialogSectionGroup } from './DetailDialogSection';
 import { useDialogContext } from './context';
 import type { DetailDialogProps, DialogProps } from './types';
@@ -46,7 +47,7 @@ export function createDetailDialog({
   }) {
     const top = useTopEdgeInset();
     return (
-      <StyledView className="relative min-h-0 flex-1">
+      <View style={styles.viewport}>
         {scrollable ? (
           <ScreenScrollView
             testID={`${testID}-scroll`}
@@ -58,7 +59,7 @@ export function createDetailDialog({
         ) : (
           body
         )}
-      </StyledView>
+      </View>
     );
   }
   function DetailContent({
@@ -77,20 +78,20 @@ export function createDetailDialog({
     const { close } = useDialogContext();
     const { colors } = useTheme();
     const common = useCommonMessages();
+    // Below `sm` the body's inset steps in from 24px to 16px.
+    const compact = useWindowBreakpoint() === 'base';
     const body = (
-      <StyledView style={{ flexGrow: 1, ...(scrollable ? {} : { flex: 1, minHeight: 0 }) }}>
-        <StyledView
-          className="px-6 max-sm:px-4"
-          style={scrollable ? undefined : { flex: 1, minHeight: 0 }}
+      <View style={{ flexGrow: 1, ...(scrollable ? {} : { flex: 1, minHeight: 0 }) }}>
+        <View
+          style={[
+            compact ? styles.bodyCompact : styles.body,
+            scrollable ? undefined : { flex: 1, minHeight: 0 },
+          ]}
         >
           {scrollable ? <DetailDialogSectionGroup>{children}</DetailDialogSectionGroup> : children}
-        </StyledView>
-        {scrollFooter != null && (
-          <StyledView className="mt-auto flex flex-col gap-2.5 px-3 pb-3">
-            {scrollFooter}
-          </StyledView>
-        )}
-      </StyledView>
+        </View>
+        {scrollFooter != null && <View style={styles.scrollFooter}>{scrollFooter}</View>}
+      </View>
     );
     return (
       <Motion>
@@ -170,8 +171,9 @@ export function createDetailDialog({
         contentPadding={0}
         scrollable={false}
         morph={false}
-        containerClassName="fixed inset-0 z-100 flex items-stretch justify-end overflow-hidden p-3 max-sm:p-2"
         containerStyle={{
+          inset: 0,
+          overflow: 'hidden',
           alignItems: centered ? 'center' : 'flex-end',
           justifyContent: centered ? 'center' : 'flex-start',
           padding: compact ? 8 : 12,
@@ -188,17 +190,36 @@ export function createDetailDialog({
               }
         }
       >
-        <StyledView
-          className="h-full w-full max-w-[609px] outline-none"
-          style={{ flex: 1, minHeight: 0 }}
-        >
+        <View style={styles.frame}>
           <SafeAreaConsumedContext.Provider value={native ? physical : NO_CONSUMED_SAFE_AREA}>
             <DetailContent {...props} />
           </SafeAreaConsumedContext.Provider>
-        </StyledView>
+        </View>
       </Dialog>
     );
   }
   DetailDialog.displayName = 'DetailDialog';
   return DetailDialog;
 }
+
+const styles = StyleSheet.create({
+  viewport: { position: 'relative', minHeight: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%' },
+  body: { paddingInline: 24 },
+  bodyCompact: { paddingInline: 16 },
+  scrollFooter: {
+    marginTop: 'auto',
+    flexDirection: 'column',
+    gap: 10,
+    paddingInline: 12,
+    paddingBottom: 12,
+  },
+  // The dialog's 609px column, filling the panel; no focus outline on the web.
+  frame: {
+    height: '100%',
+    width: '100%',
+    maxWidth: 609,
+    ...(IS_WEB ? { outlineStyle: 'none' as never } : null),
+    flex: 1,
+    minHeight: 0,
+  },
+});
