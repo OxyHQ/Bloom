@@ -6,7 +6,7 @@ import { Loading } from '@oxy.so/bloom/loading';
 import { PressableScale } from '@oxy.so/bloom/pressable-scale';
 import * as Skeleton from '@oxy.so/bloom/skeleton';
 import { tokens } from '@oxy.so/bloom/styles';
-import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
+import { hoverGroupProps, SubtleHover } from '@oxy.so/bloom/subtle-hover';
 import { Text, TYPE_SCALE } from '@oxy.so/bloom/typography';
 
 import { ENUMS, ICON_SIZE } from '../src/generated/spec.generated';
@@ -165,7 +165,7 @@ const presses: ParityCase[] = [
     name: 'a hover wash',
     language: () => toElement(L.HStack(L.Text('Row')).hoverHighlight()),
     bloom: () => (
-      <RN.View style={{ flexDirection: 'row' }}>
+      <RN.View {...hoverGroupProps} style={{ flexDirection: 'row' }}>
         <SubtleHover />
         <Text>Row</Text>
       </RN.View>
