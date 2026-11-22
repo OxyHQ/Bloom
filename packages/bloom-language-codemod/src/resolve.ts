@@ -74,7 +74,14 @@ function measuredDifference(utility: string, mods: readonly Mod[]): string | und
   if (/^-?space-[xy]-/.test(utility))
     return 'Tailwind spaces children with margins on each of them (`> * + *`); .spacing() is a gap';
   if (utility === 'z-auto')
-    return 'z-index: auto makes no stacking context; .zIndex() writes a number';
+    return 'z-index: auto, over react-native-web’s z-index 0 for a view; the language writes nothing';
+  if (utility === 'truncate')
+    return 'truncate is white-space: nowrap and an ellipsis on the web; .lines(1) is a line clamp';
+  if (utility === 'tabular-nums')
+    return 'NativeWind writes no fontVariant on native; .monospacedDigit() does';
+  const fixed = /^(?:text|bg|border)-(white|black)\/(\d+)$/.exec(utility);
+  if (fixed && !Number.isInteger((Number(fixed[2]) * 255) / 100))
+    return `NativeWind writes ${fixed[1]} at ${fixed[2]}% as an 8-bit hex alpha (rounded down); the language writes ${Number(fixed[2]) / 100}`;
   if (utility === 'rounded-full' || /^rounded-[a-z]+-full$/.test(utility))
     return 'NativeWind writes 9007199254740000 on native and calc(infinity * 1px) on the web; the language’s full is 9999';
   const font = mods.find((m) => m.name === 'font');
@@ -274,15 +281,15 @@ export function resolveClassName(
       fail(token, 'unknown', 'not in the className table');
       continue;
     }
+    const different = measuredDifference(utility, entry.mods ?? []);
+    if (different) {
+      fail(token, 'measured-difference', different);
+      continue;
+    }
     const into = group(conditions);
     switch (entry.status) {
       case 'mapped': {
         if (entry.mods) {
-          const different = measuredDifference(utility, entry.mods);
-          if (different) {
-            fail(token, 'measured-difference', different);
-            break;
-          }
           for (const mod of entry.mods) {
             into.mods.push(mod);
             into.subjects.set(mod, token);
