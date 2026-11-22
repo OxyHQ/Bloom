@@ -775,6 +775,8 @@ export const REMOVED: Readonly<Record<string, string>> = {
 export const KEPT: Readonly<Record<string, string>> = {
   '@oxy.so/bloom/dialog#Dialog':
     'the language presents a dialog from the view that owns it (`.dialog(isPresented, Dialog(...))`), not as an element in place',
+  '@oxy.so/bloom/dropdown-menu#DropdownMenu':
+    'the language’s `Menu` is the platform’s menu (the lens menu on Android, SwiftUI’s on iOS), Bloom’s DropdownMenu only on the web and as a fallback; no parity case pairs it with a DropdownMenu and its parts',
   '@oxy.so/bloom/screen#Screen':
     'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root: only a default-exported function component whose every return is a Screen converts (`SCREEN`)',
 };
