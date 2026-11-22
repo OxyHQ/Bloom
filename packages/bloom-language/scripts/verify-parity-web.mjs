@@ -227,20 +227,27 @@ async function describeSides(sides) {
 }
 
 /**
- * Waits until what a page that draws one side alone stops changing: a sheet or
- * a dialog it presents plays its entrance first (by CSS or by JS), and the
- * table's comparison is of what rests. Gives up after 10s; a motion that never
- * ends (a spinner) then shows as a difference, not a pass.
+ * Waits until what a page draws stops changing (`read`, an expression the page
+ * evaluates to it): a sheet or a dialog it presents plays its entrance first
+ * (by CSS or by JS), and a sticker's still gives way to its animation, or
+ * stays when the animation fails, once its file answers; the comparison is of
+ * what rests. Gives up after 10s; a motion that never ends (a spinner) then
+ * shows as a difference, not a pass.
  */
-async function atRest(page) {
+async function atRest(page, read) {
   let last = '';
   for (let tries = 0; tries < 40; tries++) {
-    const now = JSON.stringify(await page.evaluate(describeInPage, 'parity-frame', true));
+    const now = JSON.stringify(await page.evaluate(read));
     if (now === last) return;
     last = now;
     await new Promise((done) => setTimeout(done, 250));
   }
 }
+
+/** What a table page draws: every cell, each side of each row. */
+const TABLE = `(${rowsInPage})().flatMap(({ index }) => ['bloom', 'language'].map((side) => (${describeInPage})(side + '-' + index, false)))`;
+/** What a page that draws one side alone draws, with what it presents. */
+const FRAME = `(${describeInPage})('parity-frame', true)`;
 
 /** Waits for what a page draws: its first cell, its fonts, then the transitions it starts. */
 async function settle(page, testid) {
@@ -315,6 +322,7 @@ try {
       await page.bringToFront();
       await page.goto(`${BASE}/iframe.html?id=${id}&viewMode=story&globals=theme:${theme}`);
       await settle(page, 'language-0');
+      await atRest(page, TABLE);
       const rows = await page.evaluate(rowsInPage);
       const differences = [];
       const held = [];
@@ -334,7 +342,7 @@ try {
               `${BASE}/iframe.html?id=language-parity-frame--one-side&viewMode=story&args=${frame};side:${side}&globals=theme:${theme}`,
             );
             await settle(framePage, 'parity-frame');
-            await atRest(framePage);
+            await atRest(framePage, FRAME);
             sides.push({ page: framePage, testid: 'parity-frame' });
           }
         }
