@@ -302,10 +302,13 @@ the engine's error role fills; `error` is the policy's status colour),
 `black` and `transparent`, the same in every theme). A role at an opacity is one token, `'role/opacity'`,
 with an `opacity` token for the amount: `text-muted-foreground/70` is
 `.foreground('muted/70')`, `bg-primary/10` `.background('primary/10')`.
-Native paints the role's colour at that alpha; the web writes the mix
-Tailwind writes for the class (`color-mix(in oklab, var(--muted-foreground)
-70%, transparent)`), inline, as no class exists for each pair; an icon's fill
-is painted at that alpha from the theme.
+Native paints the role's colour at that alpha; the web paints an ink, a
+custom property declared in the language's ink sheet as the role mixed with
+transparent in sRGB (`--bl-muted-70: color-mix(in srgb, var(--muted-foreground)
+70%, transparent)`), exactly the role's colour at that alpha, as Bloom's
+`withAlpha` draws it (Tailwind's own mix is in oklab, which paints the same
+pixels); a class made from the role's class paints it, so a variant can
+override it. An icon's fill is painted at that alpha from the theme.
 
 **Named rungs and numeric tokens.** A scale has two kinds of token, one
 mechanism each:

@@ -102,8 +102,10 @@ export function role(token: ColorToken): RoleRef {
 
 /**
  * A role's web paint: its CSS variable (or fixed colour), and at an opacity a
- * custom property holding the mix Tailwind writes for `/70` (`--bl-primary-70`),
- * so the web draws what the class drew. react-native-web drops a colour it
+ * custom property holding the role mixed with transparent in sRGB
+ * (`--bl-primary-70`): exactly the role's colour at that alpha, as Bloom's
+ * `withAlpha` draws it (Tailwind's `/70` mixes in oklab, which paints the same
+ * pixels and computes as `oklab()`). react-native-web drops a colour it
  * cannot parse unless it is a `var()` (its `normalizeColor`), so the mix itself
  * is declared in the language's ink sheet (web-sheet.ts) and the style names it.
  */
@@ -113,7 +115,7 @@ export function webInk(ref: RoleRef): string {
   const name = `--bl-${ref.token.replace('/', '-')}`;
   adoptInk(
     name,
-    `color-mix(in oklab, ${web} ${Number((ref.opacity * 100).toFixed(4))}%, transparent)`,
+    `color-mix(in srgb, ${web} ${Number((ref.opacity * 100).toFixed(4))}%, transparent)`,
   );
   return `var(${name})`;
 }
