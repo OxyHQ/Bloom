@@ -140,6 +140,9 @@ import type { AmbientPhotoKind } from './controls/ambient-photo';
 import type { CalendarViewKind } from './controls/calendar';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
+import type { VendorCardKind } from './controls/vendor-card';
+import type { MenuItemKind } from './controls/menu-item';
+import type { CartKind } from './controls/cart-panel';
 import type { PaymentStatusKind } from './controls/payment-status';
 import type { PriceBreakdownKind } from './controls/price-breakdown';
 import type { CardFormKind } from './controls/card-form';
@@ -1625,7 +1628,10 @@ export type NodeKind =
   | PriceBreakdownKind
   | PaymentStatusKind
   | CrmKind
-  | DashboardCardKind;
+  | DashboardCardKind
+  | CartKind
+  | MenuItemKind
+  | VendorCardKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
