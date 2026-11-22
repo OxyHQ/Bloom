@@ -84,7 +84,8 @@ function chromeOf(root: Child): ScreenChrome {
   if (header === false) return chrome;
   if (header !== undefined && typeof header !== 'string') {
     chrome.header = header as Node;
-    chrome.custom = header.kind !== 'header';
+    // A Header is the system bar on iOS in a native stack; `.inPage()` keeps it the Screen's own.
+    chrome.custom = header.kind !== 'header' || valuesOf(header as Node).inPage === true;
     return chrome;
   }
   let composed = Header(values.title as string | undefined).presentation(header ?? 'floating');
