@@ -37,7 +37,10 @@ import {
   SettingsTextField,
   SettingsValue,
 } from '../controls/settings';
+import { MOTION } from '@oxy.so/bloom/motion';
 import { toElement } from '../render';
+import { defineTokens } from '../tokens';
+import { LIGHT } from './support/bloom-theme';
 
 quietRenderer();
 
@@ -415,6 +418,53 @@ describe('the layout family', () => {
     expect(only(mount(toElement(AutoHideBar(Text('bar')))), 'AutoHideBar').props.collapsed).toBe(
       false,
     );
+  });
+
+  it('a fade and a band are colour roles, painted from the theme, or an app’s own colour', () => {
+    const brand = defineTokens({ color: { ink: '#101820' } });
+    const fade = only(
+      mount(toElement(ScrollSurface(Text('a')).fade('background'))),
+      'ScrollSurface',
+    );
+    expect(fade.props.fadeColor).toBe(LIGHT.background);
+    const band = only(mount(toElement(AutoHideBar(Text('bar')).band('primary'))), 'AutoHideBar');
+    expect(band.props.background).toBe(LIGHT.primary);
+    const branded = only(
+      mount(toElement(AutoHideBar(Text('bar')).band(brand.color.ink))),
+      'AutoHideBar',
+    );
+    expect(branded.props.background).toBe('#101820');
+    // None chained: Bloom paints its own (the surface's fill).
+    const plain = only(mount(toElement(AutoHideBar(Text('bar')))), 'AutoHideBar').props;
+    expect('background' in plain).toBe(false);
+    expect(
+      'fadeColor' in only(mount(toElement(ScrollSurface(Text('a')))), 'ScrollSurface').props,
+    ).toBe(false);
+  });
+
+  it('an auto-hiding bar’s timings are duration and motion tokens, Bloom’s own with none', () => {
+    const bar = only(
+      mount(
+        toElement(
+          AutoHideBar(Text('bar'))
+            .peekDelay('fast')
+            .unpeekDelay('250')
+            .hideMotion('dismiss')
+            .showMotion('expand'),
+        ),
+      ),
+      'AutoHideBar',
+    ).props;
+    expect(bar.peekDelay).toBe(150);
+    expect(bar.unpeekDelay).toBe(250);
+    expect(bar.motion).toEqual({ hide: MOTION.dismiss, show: MOTION.expand });
+    const shown = only(
+      mount(toElement(AutoHideBar(Text('bar')).showMotion('slide'))),
+      'AutoHideBar',
+    );
+    expect(shown.props.motion).toEqual({ show: MOTION.slide });
+    const plain = only(mount(toElement(AutoHideBar(Text('bar')))), 'AutoHideBar').props;
+    for (const name of ['peekDelay', 'unpeekDelay', 'motion']) expect(name in plain).toBe(false);
   });
 
   it('a resize handle reports its drag', () => {

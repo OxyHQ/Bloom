@@ -51,11 +51,11 @@ import {
   type ViewModifiers,
   type ViewNode,
 } from '../node';
-import { Painted, type Paint } from '../paint';
+import { paintedHost } from '../painted-host';
 import {
   type CardRadius,
-  type ColorName,
   type Density,
+  type InkToken,
   type KeyboardTaps,
   resolveCardRadius,
   resolveSpace,
@@ -254,8 +254,8 @@ export interface ChipRowView extends ViewModifiers<ChipRowView> {
   contentInset(value: SpaceToken): ChipRowView;
   /** The whole row disabled, to assistive technology. */
   disabled(value?: boolean): ChipRowView;
-  /** The colour its edges fade into on the web (the surface behind it by default). */
-  fade(value: ColorName): ChipRowView;
+  /** The colour its edges fade into on the web: a role or an app's own (the surface behind it by default). */
+  fade(value: InkToken): ChipRowView;
   /** The room kept on every side for a chip's focus ring (4 by default). */
   ringInset(value: SpaceToken): ChipRowView;
   /** Whether a tap on a chip reaches it while the keyboard is open (`handled` by default). */
@@ -681,23 +681,10 @@ function chip(d: ControlDraw): ReactElement {
   );
 }
 
-const fadedRows = new Map<ColorName, (props: Record<string, unknown>) => ReactElement>();
-
-/** Bloom's `ChipRow` with its `fadeColor` painted from a colour role, by the language's one theme reader. */
-function fadedChipRow(role: ColorName): (props: Record<string, unknown>) => ReactElement {
-  let host = fadedRows.get(role);
-  if (host === undefined) {
-    const paint: Paint = { style: undefined, styleRoles: [], propRoles: [['fadeColor', role]] };
-    host = (props) => createElement(Painted, { ...props, host: BloomChipRow, paint });
-    fadedRows.set(role, host);
-  }
-  return host;
-}
-
 function chipRow(d: ControlDraw): ReactElement {
   const fade = d.own('fade')?.value;
   return d.component(
-    fade === undefined ? BloomChipRow : fadedChipRow(fade),
+    fade === undefined ? BloomChipRow : paintedHost(BloomChipRow, 'fadeColor', fade),
     {
       ...roled(d),
       gap: space(d.own('spacing')?.value as SpaceToken | undefined),

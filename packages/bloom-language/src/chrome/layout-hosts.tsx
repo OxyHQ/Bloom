@@ -8,6 +8,7 @@
  */
 import type { ReactNode } from 'react';
 import type { BloomSize } from '@oxy.so/bloom/appearance';
+import type { MotionSpec } from '@oxy.so/bloom/motion';
 import {
   AutoHideBar,
   ResizeHandle,
@@ -26,8 +27,11 @@ import type { Child, Node } from '../node';
 import { valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
 import {
+  resolveDuration,
   resolveSpace,
   type Axis,
+  type DurationName,
+  type InkToken,
   type KeyboardDismiss,
   type KeyboardTaps,
   type ResizeHandleStyle,
@@ -37,6 +41,8 @@ import {
   type ScrollSurfaceStyle,
   type SpaceToken,
 } from '../tokens';
+import { resolveMotion, type MotionToken } from '../motion/tokens';
+import { paintedHost } from '../painted-host';
 import { defined } from './defined';
 import { containerStyle, DISMISS_MODE } from './scroll-view-host';
 
@@ -86,8 +92,14 @@ export function ScrollAreaHost({ node, children }: HostProps) {
   return <ScrollArea {...scrollAreaProps(node)}>{children}</ScrollArea>;
 }
 
+/** A motion token as Bloom's spec; none when the chain names none. */
+function motion(value: unknown): MotionSpec | undefined {
+  return value === undefined ? undefined : resolveMotion(value as MotionToken);
+}
+
 export function ScrollSurfaceHost({ node, render, children }: HostProps) {
   const values = valuesOf(node);
+  const fade = values.fade as InkToken | undefined;
   const header = values.stickyHeader as Child;
   const footer = values.stickyFooter as Child;
   const props: ScrollSurfaceProps = {
@@ -102,12 +114,16 @@ export function ScrollSurfaceHost({ node, render, children }: HostProps) {
       label: values.label as string | undefined,
     }),
   };
-  return <ScrollSurface {...props}>{children}</ScrollSurface>;
+  const Host = fade === undefined ? ScrollSurface : paintedHost(ScrollSurface, 'fadeColor', fade);
+  return <Host {...props}>{children}</Host>;
 }
 
 export function AutoHideBarHost({ node, render, children }: HostProps) {
   const values = valuesOf(node);
   const summary = values.summary as Child | string;
+  const band = values.band as InkToken | undefined;
+  const hide = motion(values.hideMotion);
+  const show = motion(values.showMotion);
   const props: AutoHideBarProps = {
     bar: render((node.props as { bar: Child }).bar),
     collapsed: values.collapsed === true,
@@ -117,11 +133,15 @@ export function AutoHideBarHost({ node, render, children }: HostProps) {
       peek: values.peek as boolean | undefined,
       height: space(values.barHeight),
       collapsedHeight: space(values.collapsedHeight),
+      peekDelay: resolveDuration(values.peekDelay as DurationName | undefined),
+      unpeekDelay: resolveDuration(values.unpeekDelay as DurationName | undefined),
+      motion: hide === undefined && show === undefined ? undefined : defined({ hide, show }),
       revealLabel: values.label as string | undefined,
       testID: values.testID as string | undefined,
     }),
   };
-  return <AutoHideBar {...props}>{children}</AutoHideBar>;
+  const Host = band === undefined ? AutoHideBar : paintedHost(AutoHideBar, 'background', band);
+  return <Host {...props}>{children}</Host>;
 }
 
 export function ResizeHandleHost({ node }: HostProps) {

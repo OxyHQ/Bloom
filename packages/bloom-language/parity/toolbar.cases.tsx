@@ -7,16 +7,19 @@ import {
   StickySection,
   Toolbar,
 } from '@oxy.so/bloom/layout';
+import { MOTION } from '@oxy.so/bloom/motion';
 import { tokens } from '@oxy.so/bloom/styles';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { defineTokens } from '../src/tokens';
+import { type ParityCase, Themed } from './support/cases';
 
 const { space } = tokens;
 const noop = () => {};
+const brand = defineTokens({ color: { night: '#101820' } });
 const resize = (_distance: number) => {};
 
 export const TOOLBAR_CASES: ParityCase[] = [
@@ -173,6 +176,60 @@ export const TOOLBAR_CASES: ParityCase[] = [
         height={44}
         collapsedHeight={space._2xl}
       >
+        <Text>body</Text>
+      </AutoHideBar>
+    ),
+  },
+  {
+    name: 'a scroll surface fading into a colour role',
+    language: () =>
+      toElement(L.ScrollSurface(L.Text('body')).fade('background').fadeBottom().testID('faded')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ScrollSurface fadeColor={c.background} fadeBottom testID="faded">
+            <Text>body</Text>
+          </ScrollSurface>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an auto-hiding bar: its band a colour role, its waits and motions tokens',
+    language: () =>
+      toElement(
+        L.AutoHideBar(L.Text('bar'), L.Text('body'))
+          .collapsed()
+          .band('card')
+          .peekDelay('fast')
+          .unpeekDelay('250')
+          .hideMotion('dismiss')
+          .showMotion('slide')
+          .testID('banded'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <AutoHideBar
+            bar={<Text>bar</Text>}
+            collapsed
+            background={c.card}
+            peekDelay={150}
+            unpeekDelay={250}
+            motion={{ hide: MOTION.dismiss, show: MOTION.slide }}
+            testID="banded"
+          >
+            <Text>body</Text>
+          </AutoHideBar>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an auto-hiding bar banded in an app’s own colour',
+    language: () => toElement(L.AutoHideBar(L.Text('bar'), L.Text('body')).band(brand.color.night)),
+    bloom: () => (
+      <AutoHideBar bar={<Text>bar</Text>} collapsed={false} background="#101820">
         <Text>body</Text>
       </AutoHideBar>
     ),
