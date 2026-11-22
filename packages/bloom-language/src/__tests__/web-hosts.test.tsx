@@ -42,9 +42,8 @@ describe('glass on the web is Bloom’s frosted Surface', () => {
   it('a paint that is a CSS variable (Bloom’s prepaint) is mixed by the browser', () => {
     const prepainted = { ...LIGHT, primary: 'var(--bloom-paint-primary)' };
     const r = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))), prepainted);
-    expect(only(r, 'Surface').props.fill).toBe(
-      'color-mix(in srgb, var(--bloom-paint-primary) 24%, transparent)',
-    );
+    // The mix is the ink sheet's custom property, a var() react-native-web keeps in a style.
+    expect(only(r, 'Surface').props.fill).toBe('var(--bl-bloom-paint-primary-24)');
   });
 });
 
