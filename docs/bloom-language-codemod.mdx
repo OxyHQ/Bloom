@@ -21,13 +21,14 @@ is `toElement`'s second argument, a child's `.id()`).
 | React Native `View` | `VStack(…)`, or `HStack(…)` with `flex-row` |
 | React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()` |
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
+| React Native `Text` | `RawText(…runs)`: React Native's own Text, only what its chain names |
 | Bloom `Button` (`@oxy.so/bloom/button`) | `Button(Icon(lead), Text(label), Icon(trail))` with `.style()`, `.tint()`, `.size()`, `.shape()`… as the language's Button parity cases draw it |
-| a Bloom icon (`<RiHeart3Line size="sm" />`) | `Icon(RiHeart3Line).size('sm').foreground('primary')` (a bare Bloom icon paints primary) |
+| a Bloom icon (`<RiHeart3Line size="sm" />`, or `size={16}`, a rung's points) | `Icon(RiHeart3Line).size('sm').foreground('primary')` (a bare Bloom icon paints primary) |
 | `className` | modifiers through the className table, in the language's layer order |
 | `md:`, `dark:`, `web:`… and, on a `Pressable`, `hover:`, `active:`, `focus-visible:` | `.when(condition, (v) => …)` |
 | `testID`, `accessibilityLabel`, `accessibilityHint` | `.testID()`, `.label()`, `.hint()` |
 | `{cond ? <A/> : <B/>}`, `{isX && <A/>}` (a boolean by its form) | the branches as nodes |
-| any other child (`{items.map(…)}`, a component, a React Native `Text`) | `Embed(…)`, its own regions converted inside it |
+| any other child (`{items.map(…)}`, a component) | `Embed(…)`, its own regions converted inside it |
 
 A className converts only when **every** class lands exactly. One class that
 does not keeps the element JSX. Each class goes through the className table
@@ -36,33 +37,28 @@ does not keeps the element JSX. Each class goes through the className table
 - A width class and a colour class (`border-b border-border`) are one
   `.border(role, width, edge)`; `absolute` and its insets are one
   `.position({…})`; frames join one object.
-- The table's words (`mt-2` is "a padding outside the fill"), its tokens,
-  app classes, motion and missing modifiers are reasons, never guesses.
+- A margin is `.margin()`, `flex-1` is `.flex('1')` (Tailwind's grow 1,
+  shrink 1, basis 0%), `overflow-hidden` is `.clipped()` (a corner alone
+  does not clip), and `pl-4`/`left-0`/`border-l` are the physical `left`
+  side.
+- The table's words (`mx-auto` is "centred in a column"), its tokens, app
+  classes, motion and missing modifiers are reasons, never guesses.
 - Two classes setting one thing (`p-4 px-2`, two colours) are a conflict: in
   CSS the later rule wins, in the language two paddings add.
 - A text style on a `View` is a reason: NativeWind does not hand it to the
   `Text` inside, and the language's environment would.
-- A physical side (`pl-4`, `left-0`, `text-left`) is a reason: the table
-  writes it as the reading direction's side, which is another side in a
-  right-to-left layout.
+- A physical corner (`rounded-l-lg`) and `text-left`/`text-right` are
+  reasons: the language has no physical corner, and React Native and
+  react-native-web flip a text alignment right to left differently.
 - A class the app's own stylesheet draws differently from Bloom's (an app
   `@theme` or `:root` that redefines `--radius-lg`) is a reason (`app-theme`).
   The codemod compiles the app's CSS entry and Bloom's with Tailwind and
   compares every class's declarations, variables resolved.
 
-Measured on the corpus and kept as reasons until the language or the table
-changes (`measuredDifference` in `src/resolve.ts`):
-
-- `.grow()` (`flex-1`, `grow`): NativeWind writes `flexGrow: 1, flexShrink: 1,
-  flexBasis: '0%'`; the language writes React Native's `flex: 1`, whose shrink
-  is 0 on native.
-- A text size whose ramp step has its own tracking (`text-xs` is
-  `caption-1`, 0.15): the ramp brings a letter spacing the class does not.
-- A corner without `overflow-hidden`: the language's corner clips.
-- React Native's `Text` and `Image`: the language's `Text` is Bloom's (its
-  family, size and ink), its `Image` is `BloomImage`.
-- A Bloom icon's numeric `size` (`size={16}`): Bloom's icon takes a rung name
-  and draws a number as `NaN`.
+Measured on the corpus and kept as reasons (`measuredDifference` in
+`src/resolve.ts`): a text size class that would land on a ramp step with its
+own tracking (the table now maps sizes to a size and a line height, so none
+does today).
 
 ## Running it on an app
 
@@ -121,11 +117,18 @@ longhands, a border side with no width as no side, React Native's defaults
 where nothing inherits them, rem at 16px, `calc()` evaluated, lengths at
 Chrome's 1/64 px, a third as `33.3333%`.
 
-Known limits of the jsdom side: a colour at an opacity
-(`.background('mutedFill/30')`) is written inline as a `color-mix()` the
-harness's probe drops, so it fails on the web though the browser draws it;
-the Chrome check (`packages/bloom-language/scripts/verify-parity-web.mjs`) is
-the next step for those.
+A colour at an opacity (`.background('mutedFill/30')`) is written inline as a
+`color-mix()` of a variable, which jsdom's style probe drops, so the web suite
+cannot compare it. Chrome does:
+
+```bash
+node scripts/verify-colors-chrome.mjs /tmp/mention-codemod
+```
+
+It renders each such class the corpus converted, Tailwind's rule beside the
+language's inline mix, under the theme's variables in both schemes (written
+by the web suite as `theme-variables.json`), and compares the computed
+colours (`parity-chrome-colors.json`).
 
 ## Reviewing a run
 

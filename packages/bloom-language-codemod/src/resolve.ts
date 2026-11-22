@@ -42,6 +42,7 @@ export type Resolution =
   | { readonly ok: false; readonly reasons: readonly Reason[] };
 
 interface Spec {
+  scales: Record<string, Record<string, number | string>>;
   typeRamp: Record<string, [number, number, number, string] | string>;
   layers: string[][];
   environment: { traits: string[] };
@@ -70,9 +71,50 @@ const TRACKED = new Set(
  * with what differs. They stay JSX until the language or the table changes.
  */
 function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
+  if (/^-?space-[xy]-/.test(utility))
+    return 'Tailwind spaces children with margins on each of them (`> * + *`); .spacing() is a gap';
+  if (utility === 'z-auto')
+    return 'z-index: auto makes no stacking context; .zIndex() writes a number';
+  if (utility === 'rounded-full' || /^rounded-[a-z]+-full$/.test(utility))
+    return 'NativeWind writes 9007199254740000 on native and calc(infinity * 1px) on the web; the language’s full is 9999';
   const font = mods.find((m) => m.name === 'font');
   if (font && /^text-/.test(utility) && TRACKED.has(font.args[0] as string))
     return `.font('${font.args[0]}') brings the ramp’s letter spacing, which ${utility} does not write`;
+  return undefined;
+}
+
+/** A text's size in points from its `.font()` token, if the chain says one. */
+function fontSizeOf(token: string): number | undefined {
+  const size = spec.scales.fontSize?.[token];
+  if (typeof size === 'number') return size;
+  const step = spec.typeRamp[`${token}-regular`];
+  return Array.isArray(step) ? step[0] : undefined;
+}
+
+/**
+ * NativeWind's compiler rounds a length it computes (a line height as a ratio
+ * of the size, a letter spacing in em) to two decimals; the language keeps
+ * the exact product. Where the two differ the class stays JSX.
+ */
+function rounding(mods: readonly Mod[]): string | undefined {
+  const font = mods.find((m) => m.name === 'font' && fontSizeOf(m.args[0] as string) !== undefined);
+  const size = font ? fontSizeOf(font.args[0] as string) : undefined;
+  for (const mod of mods) {
+    const token = mod.args[0] as string;
+    const ratio =
+      mod.name === 'leading'
+        ? spec.scales.leading?.[token]
+        : mod.name === 'tracking'
+          ? (spec.scales.tracking?.[token] ??
+            (/^-?[\d.]+em$/.test(token) ? Number(token.slice(0, -2)) : undefined))
+          : undefined;
+    if (typeof ratio !== 'number') continue;
+    if (size === undefined)
+      return `.${mod.name}('${token}') measures from a size this element does not set`;
+    const value = size * ratio;
+    if (Math.abs(value * 100 - Math.round(value * 100)) > 1e-9)
+      return `.${mod.name}('${token}') at ${size}pt is ${value}; NativeWind rounds it to ${Math.round(value * 100) / 100}`;
+  }
   return undefined;
 }
 
@@ -381,6 +423,17 @@ function finish(
       fail(`${subject(prior)} ${subject(mod)}`, 'conflict', `two classes set .${mod.name}()`);
     seen.set(mod.name, mod);
   }
+
+  const rounded = kind === 'text' ? rounding(mods) : undefined;
+  if (rounded)
+    fail(
+      mods
+        .filter((m) => m.name === 'leading' || m.name === 'tracking')
+        .map(subject)
+        .join(' '),
+      'nativewind-rounding',
+      rounded,
+    );
 
   for (const mod of mods) {
     if (kind !== 'text' && (TRAITS.has(mod.name) || TEXT_ONLY.has(mod.name)))
