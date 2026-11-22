@@ -267,8 +267,8 @@ const STRIP_GAP = 4;
 //
 //  A trigger is a react-native-web `Pressable`, so no inline style can carry
 //  `:focus-visible` or a transition keyed to a state change. The hook is a
-//  `data-*` attribute through `dataSet` because a class never reaches the DOM
-//  (react-native-css consumes `className`). `base` puts the LAYOUT half of the
+//  `data-*` attribute through `dataSet` because react-native-web puts no class
+//  of ours on the DOM. `base` puts the LAYOUT half of the
 //  shared reset back, which is written for a raw `<button>`.
 // ---------------------------------------------------------------------------
 
