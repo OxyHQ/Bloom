@@ -401,7 +401,17 @@
     "infoText": ["infoSubtleForeground", "info-text"]
   },
   "enums": {
-    "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing", "left", "right"],
+    "edge": [
+      "all",
+      "horizontal",
+      "vertical",
+      "top",
+      "bottom",
+      "leading",
+      "trailing",
+      "left",
+      "right"
+    ],
     "borderEdge": ["all", "top", "bottom", "leading", "trailing", "left", "right"],
     "role": [
       "button",
@@ -931,7 +941,10 @@
       "keys": ["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"],
       "tokens": "length"
     },
-    "edges": { "keys": ["top", "bottom", "leading", "trailing", "left", "right"], "tokens": "padding" },
+    "edges": {
+      "keys": ["top", "bottom", "leading", "trailing", "left", "right"],
+      "tokens": "padding"
+    },
     "offset": { "keys": ["x", "y"], "tokens": "padding" },
     "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" },
     "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
@@ -1060,7 +1073,6 @@
     "basis": ["length"],
     "flex": ["flex"],
     "margin": ["edge?", "padding"],
-    "clipped": [],
     "scale": ["scale"],
     "allowsHitTesting": ["value"],
     "accessibilityOnly": [],
