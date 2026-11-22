@@ -1831,6 +1831,38 @@
   "appColors": null
  },
  {
+  "name": "components/Rows.tsx:101",
+  "before": "<View pointerEvents=\"none\" className=\"h-10 w-full rounded-lg bg-muted\" />",
+  "after": "toElement(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting(false))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "h-10",
+   "w-full",
+   "rounded-lg",
+   "bg-muted"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/SettingsRoute.tsx:13",
   "before": "<Screen header={<PageHeader title={'⟨1⟩'} />}>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨0⟩'}</Text>\n      </Screen>",
   "after": "LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())",

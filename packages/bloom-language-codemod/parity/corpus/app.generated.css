@@ -13,6 +13,7 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --tracking-wide: 0.025em;
+    --radius-lg: 8px;
     --radius-xl: 12px;
     --radius-2xl: 16px;
     --default-font-family: var(--font-sans);
@@ -220,6 +221,9 @@
 .rounded-full {
   border-radius: calc(infinity * 1px);
 }
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
 .rounded-xl {
   border-radius: var(--radius-xl);
 }
@@ -350,6 +354,27 @@
   --bloom-cx-rauto-bottomRight: 0;
   --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
   --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+.rounded-lg {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: var(--radius-lg);
+  --bloom-cx-rradius-topLeft: var(--radius-lg);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: var(--radius-lg);
+  --bloom-cx-rradius-topRight: var(--radius-lg);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: var(--radius-lg);
+  --bloom-cx-rradius-bottomRight: var(--radius-lg);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: var(--radius-lg);
+  --bloom-cx-rradius-bottomLeft: var(--radius-lg);
   --bloom-cx-auto-bottomLeft: 0;
   --bloom-cx-rauto-bottomLeft: 0;
 }

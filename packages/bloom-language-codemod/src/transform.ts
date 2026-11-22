@@ -989,6 +989,17 @@ export function transformSource(source: string, options: TransformOptions): File
         else fail(style.subject, 'style', style.why);
         continue;
       }
+      // `none` lets touches through the view and all inside it, SwiftUI's `allowsHitTesting(false)`.
+      if (name === 'pointerEvents' && (kind === 'view' || kind === 'pressable')) {
+        if (staticString(value) === 'none') props.push({ name: 'allowsHitTesting', args: [false] });
+        else
+          fail(
+            name,
+            'prop:pointerEvents',
+            'a pointerEvents other than a static `none` (`box-none` and `box-only` have no modifier)',
+          );
+        continue;
+      }
       if (name === 'accessibilityRole' && kind !== 'icon') {
         const role = staticString(value);
         if (role !== undefined && ROLES.has(role)) props.push({ name: 'role', args: [role] });
