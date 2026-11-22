@@ -241,6 +241,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./icons/BookmarkIcon', 'icons/social/BookmarkIcon.tsx'],
   ['./icons/BookmarkFillIcon', 'icons/social/BookmarkFillIcon.tsx'],
   ['./icons/ShareIcon', 'icons/social/ShareIcon.tsx'],
+  ['./icons/MenuIcon', 'icons/social/MenuIcon.tsx'],
   ['./typography', 'typography/index.ts'],
   ['./skeleton', 'skeleton/index.ts'],
   ['./grid', 'grid/index.ts'],

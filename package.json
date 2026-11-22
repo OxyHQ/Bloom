@@ -1971,6 +1971,20 @@
         "default": "./lib/commonjs/icons/social/ShareIcon.js"
       }
     },
+    "./icons/MenuIcon": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/social/MenuIcon.d.ts",
+        "default": "./src/icons/social/MenuIcon.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/social/MenuIcon.d.ts",
+        "default": "./lib/module/icons/social/MenuIcon.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/social/MenuIcon.d.ts",
+        "default": "./lib/commonjs/icons/social/MenuIcon.js"
+      }
+    },
     "./typography": {
       "react-native": {
         "types": "./lib/typescript/module/typography/index.d.ts",
@@ -5117,6 +5131,9 @@
       ],
       "icons/ShareIcon": [
         "./lib/typescript/module/icons/social/ShareIcon.d.ts"
+      ],
+      "icons/MenuIcon": [
+        "./lib/typescript/module/icons/social/MenuIcon.d.ts"
       ],
       "typography": [
         "./lib/typescript/module/typography/index.d.ts"
