@@ -70,6 +70,10 @@ export type NowPlayingBarOptions = Omit<
   | 'onDevicePickerOpenChange'
   | 'volume'
   | 'onVolumeChange'
+  | 'lyricsActive'
+  | 'onLyricsChange'
+  | 'queueActive'
+  | 'onQueueChange'
 > & {
   readonly devicePicker?: Child;
 };
@@ -86,7 +90,16 @@ export type FullScreenPlayerOptions = Omit<
 /** A menu's data; its `trigger` (Bloom's children) is a language child. */
 type MenuOptions<P> = Omit<
   P,
-  'testID' | 'size' | 'disabled' | 'children' | 'rate' | 'onRateChange' | 'value' | 'onValueChange'
+  | 'testID'
+  | 'size'
+  | 'disabled'
+  | 'children'
+  | 'rate'
+  | 'onRateChange'
+  | 'value'
+  | 'onValueChange'
+  | 'open'
+  | 'onOpenChange'
 > & { readonly trigger?: Child };
 export type PlaybackSpeedMenuOptions = MenuOptions<PlaybackSpeedMenuProps>;
 export type SleepTimerMenuOptions = MenuOptions<SleepTimerMenuProps>;
@@ -113,6 +126,10 @@ export interface NowPlayingBarView extends ViewModifiers<NowPlayingBarView> {
   liked(value: Bound<NowPlayingBarProps, 'liked'>): NowPlayingBarView;
   devicePickerOpen(value: Bound<NowPlayingBarProps, 'devicePickerOpen'>): NowPlayingBarView;
   volume(value: Bound<NowPlayingBarProps, 'volume'>): NowPlayingBarView;
+  /** The lyrics, shown: a binding; bound, the lyrics button draws and writes it. */
+  lyricsActive(value: Bound<NowPlayingBarProps, 'lyricsActive'>): NowPlayingBarView;
+  /** The queue, shown: a binding; bound, the queue button draws and writes it. */
+  queueActive(value: Bound<NowPlayingBarProps, 'queueActive'>): NowPlayingBarView;
 }
 export interface MiniPlayerView extends ViewModifiers<MiniPlayerView> {
   liked(value: Bound<MiniPlayerProps, 'liked'>): MiniPlayerView;
@@ -215,6 +232,8 @@ export const MEDIA_PLAYERS: Record<MediaPlayerKind, ControlRenderer> = {
       liked: ['liked', 'onLikedChange'],
       devicePickerOpen: ['devicePickerOpen', 'onDevicePickerOpenChange'],
       volume: ['volume', 'onVolumeChange'],
+      lyricsActive: ['lyricsActive', 'onLyricsChange'],
+      queueActive: ['queueActive', 'onQueueChange'],
     },
     slots: ['devicePicker'],
   }),

@@ -1624,6 +1624,9 @@
     "view": ["value"],
     "date": ["value"],
     "selectedIds": ["value"],
+    "tilted": ["value"],
+    "lyricsActive": ["value"],
+    "queueActive": ["value"],
     "speaker": ["value"],
     "videoOn": ["value"],
     "screenSharing": ["value"],
@@ -3811,7 +3814,7 @@
       "modifiers": ["style"],
       "style": "mapAttributionStyle"
     },
-    "mapControls": { "constructors": ["MapControls"], "modifiers": ["axis", "align"] },
+    "mapControls": { "constructors": ["MapControls"], "modifiers": ["axis", "align", "tilted"] },
     "locationPuck": {
       "constructors": ["LocationPuck"],
       "modifiers": ["style"],
@@ -4246,7 +4249,7 @@
     },
     "nowPlayingBar": {
       "constructors": ["NowPlayingBar"],
-      "modifiers": ["muted", "liked", "devicePickerOpen", "volume"]
+      "modifiers": ["muted", "liked", "devicePickerOpen", "volume", "lyricsActive", "queueActive"]
     },
     "miniPlayer": { "constructors": ["MiniPlayer"], "modifiers": ["liked"] },
     "fullScreenPlayer": { "constructors": ["FullScreenPlayer"], "modifiers": ["liked"] },

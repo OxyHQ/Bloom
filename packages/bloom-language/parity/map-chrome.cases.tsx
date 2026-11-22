@@ -35,9 +35,8 @@ const HANDLERS = {
   onZoomIn: press,
   onZoomOut: press,
   canZoomOut: false,
-  onTiltChange: tilt,
-  tilted: false,
 };
+const TILT = { onTiltChange: tilt, tilted: false };
 
 const scale: ParityCase[] = [
   {
@@ -69,8 +68,9 @@ const controls: ParityCase[] = [
   ...ENUMS.axis.flatMap((orientation) =>
     (['start', 'end'] as const).map((align) => ({
       name: `MapControls ${orientation}, ${align}`,
-      language: () => toElement(L.MapControls(HANDLERS).axis(orientation).align(align)),
-      bloom: () => <MapControls {...HANDLERS} orientation={orientation} align={align} />,
+      language: () =>
+        toElement(L.MapControls(HANDLERS).tilted([false, tilt]).axis(orientation).align(align)),
+      bloom: () => <MapControls {...HANDLERS} {...TILT} orientation={orientation} align={align} />,
     })),
   ),
   {

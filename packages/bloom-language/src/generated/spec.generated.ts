@@ -4152,6 +4152,15 @@ export const MODIFIERS = {
   "selectedIds": [
     "value"
   ],
+  "tilted": [
+    "value"
+  ],
+  "lyricsActive": [
+    "value"
+  ],
+  "queueActive": [
+    "value"
+  ],
   "speaker": [
     "value"
   ],
@@ -28738,7 +28747,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "axis",
-    "align"
+    "align",
+    "tilted"
   ],
   "locationPuck": [
     "padding",
@@ -40366,7 +40376,9 @@ export const NODE_MODIFIERS = {
     "muted",
     "liked",
     "devicePickerOpen",
-    "volume"
+    "volume",
+    "lyricsActive",
+    "queueActive"
   ],
   "miniPlayer": [
     "padding",
