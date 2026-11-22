@@ -408,7 +408,7 @@ export {
   TimeField,
 } from './controls/date-picker';
 export type {
-  CalendarView,
+  CalendarPanelView,
   DatePickerView,
   DateRangePickerView,
   MeetingSchedulerView,

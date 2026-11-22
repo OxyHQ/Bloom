@@ -71,11 +71,16 @@ export interface DateRangePickerView
   quickSelect(value: boolean): DateRangePickerView;
   labels(value: DateRangePickerLabels): DateRangePickerView;
 }
-/** Bloom `Calendar`: one month, a day chosen by pressing it. */
-export interface CalendarView extends ViewModifiers<CalendarView>, DateConstraints<CalendarView> {
+/**
+ * Bloom `Calendar`: one month, a day chosen by pressing it. Its view is named
+ * for the date picker's month panel; `CalendarView` is Bloom's events calendar.
+ */
+export interface CalendarPanelView
+  extends ViewModifiers<CalendarPanelView>,
+    DateConstraints<CalendarPanelView> {
   /** The month shown first; the chosen day's, else today's, by default. */
-  initialMonth(value: Date): CalendarView;
-  labels(value: CalendarLabels): CalendarView;
+  initialMonth(value: Date): CalendarPanelView;
+  labels(value: CalendarLabels): CalendarPanelView;
 }
 /** Bloom `RangeCalendar`: a range chosen with two presses, in either order. */
 export interface RangeCalendarView
@@ -127,7 +132,7 @@ export function DateRangePicker(selection: Binding<DateRange | null>): DateRange
   return new Node('dateRangePicker', { selection }, []);
 }
 /** Bloom `Calendar`: the day the binding holds, set when a day is pressed. */
-export function Calendar(selection: Binding<Date | null>): CalendarView {
+export function Calendar(selection: Binding<Date | null>): CalendarPanelView {
   return new Node('calendar', { selection }, []);
 }
 /** Bloom `RangeCalendar`: the range the binding holds, set when a range is completed. */
