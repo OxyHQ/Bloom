@@ -53,7 +53,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("loop", &["spin", "pulse"]),
     ("edge", &["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing", "left", "right"]),
     ("borderEdge", &["all", "top", "bottom", "leading", "trailing", "left", "right"]),
-    ("role", &["button", "link", "header", "image", "text", "none", "checkbox", "radio", "tab", "radiogroup", "tablist", "list"]),
+    ("role", &["button", "link", "header", "image", "text", "none", "checkbox", "radio", "tab", "radiogroup", "tablist", "list", "alert", "progressbar", "imagebutton", "summary"]),
     ("buttonShape", &["circle", "pill", "fit"]),
     ("linkTone", &["primary", "secondary", "text"]),
     ("appearance", &["solid", "subtle", "outline", "plain"]),

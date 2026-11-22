@@ -593,7 +593,19 @@ const tailwind: ParityCase[] = [
   },
 ];
 
+/** `.role()`: React Native's accessibilityRole of the same name, on the view's host. */
+const roles: ParityCase[] = ENUMS.role.map((role) => ({
+  name: `role ${role}`,
+  language: () => toElement(L.VStack(L.Text('a')).role(role)),
+  bloom: () => (
+    <RN.View accessibilityRole={role}>
+      <Text>a</Text>
+    </RN.View>
+  ),
+}));
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...roles,
   ...tailwind,
   ...distribution,
   ...placement,
