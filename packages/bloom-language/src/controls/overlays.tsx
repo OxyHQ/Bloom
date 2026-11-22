@@ -130,6 +130,12 @@ export interface DialogView extends PresentedNode {
   /** Its content scrolls when it is taller than the dialog. */
   scrollable(value?: boolean): DialogView;
   testID(value: string): DialogView;
+  /**
+   * The dialog as a view of its own, shown while `isPresented` holds; dismissing
+   * it sets it false. It ends the chain: what a component that is a dialog
+   * returns, its binding handed in by the caller.
+   */
+  presented(isPresented: Binding<boolean>): ViewNode;
 }
 
 /** Bloom `Popover`: content anchored on the view that presents it. */
@@ -170,9 +176,9 @@ export function Alert(title: string): AlertView {
 }
 
 /**
- * A dialog of `content`, presented with `.dialog(isPresented, Dialog(...))`:
- * Bloom's `Dialog`, from the bottom and centred from `md` as it places itself,
- * or where `.presentAt()` says.
+ * A dialog of `content`, presented with `.dialog(isPresented, Dialog(...))`, or
+ * a view of its own with `.presented(isPresented)`: Bloom's `Dialog`, from the
+ * bottom and centred from `md` as it places itself, or where `.presentAt()` says.
  */
 export function Dialog(...content: Child[]): DialogView {
   return new Node('dialog', null, content);
@@ -263,7 +269,7 @@ export function presentAround(
     { key },
     anchored,
     alert === undefined ? null : drawAlert(alert, render),
-    dialog === undefined ? null : drawDialog(dialog, render),
+    dialog === undefined ? null : drawDialog(dialog, render, undefined),
     cover === undefined ? null : drawCover(cover, (child) => render([child])),
   );
 }
@@ -291,9 +297,15 @@ function drawAlert(
   });
 }
 
-function drawDialog(
+/**
+ * Bloom's `Dialog` while the binding holds: what `.dialog()` draws beside the
+ * view that presents it, and what a `Dialog(...).presented(binding)` draws in
+ * place (`key` its React key there).
+ */
+export function drawDialog(
   { isPresented: [open, setOpen], content }: Presentation,
   render: (children: readonly Child[]) => ReactNode[],
+  key: string | number | undefined,
 ): ReactElement {
   const own = values(content);
   const at = own.presentAt;
@@ -301,6 +313,7 @@ function drawDialog(
   return createElement(
     BloomDialog,
     {
+      key,
       open,
       onClose: () => setOpen(false),
       header: own.header as DialogHeaderConfig | undefined,

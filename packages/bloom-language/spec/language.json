@@ -2215,7 +2215,8 @@
         "frame",
         "padding",
         "sideGutter",
-        "maxHeightRatio"
+        "maxHeightRatio",
+        "presented"
       ]
     },
     "popover": {
