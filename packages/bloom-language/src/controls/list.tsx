@@ -22,7 +22,7 @@ import { resolveSpace, type Density, type ListSeparator, type SpaceToken } from 
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
-export type ListKind = 'listItem' | 'list' | 'virtualList' | 'listSelectionBar';
+export type ListKind = 'listItem' | 'mailRow' | 'list' | 'virtualList' | 'listSelectionBar';
 
 /** How many lines a row's supporting text takes: 1 to 3, or `adaptive` to the row's width. */
 export type SupportingLines = 1 | 2 | 3 | 'adaptive';
@@ -34,7 +34,7 @@ type Recipe =
   | { readonly recipe: 'person'; readonly data: ListPersonData }
   | { readonly recipe: 'call'; readonly data: ListCallData }
   | { readonly recipe: 'conversation'; readonly data: ListConversationData }
-  | { readonly recipe: 'mail'; readonly data: ListMailData };
+  | { readonly recipe: 'mail'; readonly data: MailRowData };
 export type ListItemProps =
   | { readonly recipe: 'row'; readonly title: ListText | undefined }
   | Recipe;
@@ -56,47 +56,57 @@ export type VirtualListTuning = Pick<
   | 'scrollbar'
 >;
 
-/** Bloom `ListItem`: the one row, its slots and its selection, actions and swipes. */
-export interface ListItemView extends ViewModifiers<ListItemView> {
+/** A mail row's data: Bloom's `ListMailData`, but its star, which is its `.starred()`. */
+export type MailRowData = Omit<ListMailData, 'starred' | 'onStarredChange'>;
+
+/** A `ListItem`'s modifiers: the one row, its slots and its selection, actions and swipes. */
+export interface ListRowModifiers<Self> extends ViewModifiers<Self> {
   /** The line under the title. */
-  supporting(value: ListText): ListItemView;
+  supporting(value: ListText): Self;
   /** How many lines it takes: 1 to 3, or `adaptive` to the row's width. */
-  supportingLines(value: SupportingLines): ListItemView;
+  supportingLines(value: SupportingLines): Self;
   /** What leads the row (an avatar, an icon). */
-  prefix(value: Child): ListItemView;
+  prefix(value: Child): Self;
   /** What ends the row (a time, a chevron). */
-  trailing(value: Child): ListItemView;
+  trailing(value: Child): Self;
   /** A body of its own in place of the title and supporting line, in the row's geometry. */
-  content(value: Child): ListItemView;
+  content(value: Child): Self;
   /** What sits under the text (a progress, chips). */
-  footnote(value: Child): ListItemView;
+  footnote(value: Child): Self;
   /** Media under the row's text. */
-  attachments(value: Child): ListItemView;
+  attachments(value: Child): Self;
   /** `comfortable` or `compact` rows. */
-  density(value: Density<'listItem'>): ListItemView;
+  density(value: Density<'listItem'>): Self;
   /** A compact row's own vertical padding. */
-  compactPadding(value: SpaceToken): ListItemView;
+  compactPadding(value: SpaceToken): Self;
   /** The current row (the open conversation). */
-  active(value: boolean | undefined): ListItemView;
-  disabled(value?: boolean): ListItemView;
+  active(value: boolean | undefined): Self;
+  disabled(value?: boolean): Self;
   /** A link: an anchor on the web, opened on native unless `.onPress` is set. */
-  link(href: string): ListItemView;
+  link(href: string): Self;
   /** Warm what the row opens (on hover, on press in). */
-  onPrefetch(value: () => void): ListItemView;
+  onPrefetch(value: () => void): Self;
   /** A checkbox that selects the row. */
-  checkable(value: Binding<boolean>): ListItemView;
+  checkable(value: Binding<boolean>): Self;
   /** Selection mode: every row shows its checkbox. */
-  selecting(value: boolean): ListItemView;
+  selecting(value: boolean): Self;
   /** The checkbox's name. */
-  selectionLabel(value: string): ListItemView;
+  selectionLabel(value: string): Self;
   /** The row's trailing action buttons, and what choosing one does (by key). */
-  rowActions(actions: readonly ListAction[], onAction: (key: string) => void): ListItemView;
+  rowActions(actions: readonly ListAction[], onAction: (key: string) => void): Self;
   /** Actions revealed by a swipe, and the one a full swipe runs. */
-  swipeActions(actions: SwipeRowActions, full?: SwipeRowProps['fullSwipeAction']): ListItemView;
+  swipeActions(actions: SwipeRowActions, full?: SwipeRowProps['fullSwipeAction']): Self;
   /** `false` keeps the row's swipe actions from a swipe (they stay in its menu). */
-  swipeEnabled(value: boolean): ListItemView;
+  swipeEnabled(value: boolean): Self;
   /** The menu a right-click or a long press opens on the row. */
-  contextMenu(value: Child): ListItemView;
+  contextMenu(value: Child): Self;
+}
+/** Bloom `ListItem`: the one row, its slots and its selection, actions and swipes. */
+export type ListItemView = ListRowModifiers<ListItemView>;
+/** Bloom `ListItem`'s mail recipe: a row, and its star (a node of its own, for its star). */
+export interface MailRowView extends ListRowModifiers<MailRowView> {
+  /** Starred: a binding; bound, its star is a button writing it. */
+  starred(value: Binding<boolean>): MailRowView;
 }
 /** Bloom `List`: rows from data, in sections or not, with its header, footer and empty state. */
 export interface ListView extends ViewModifiers<ListView> {
@@ -170,9 +180,9 @@ export function CallRow(data: ListCallData): ListItemView {
 export function ConversationRow(data: ListConversationData): ListItemView {
   return new Node('listItem', { recipe: 'conversation', data } satisfies ListItemProps, []);
 }
-/** Bloom `ListItem`'s mail recipe: the inbox's row. */
-export function MailRow(data: ListMailData): ListItemView {
-  return new Node('listItem', { recipe: 'mail', data } satisfies ListItemProps, []);
+/** Bloom `ListItem`'s mail recipe: the inbox's row; its star is its `.starred()`. */
+export function MailRow(data: MailRowData): MailRowView {
+  return new Node('mailRow', { recipe: 'mail', data } satisfies ListItemProps, []);
 }
 /** Bloom `List`: its rows (Bloom's `ListEntry` data, an `id` each), or `sections` of them. */
 export function List(items: readonly ListEntry[]): ListView {
@@ -245,37 +255,45 @@ function LanguageVirtualList({ row, render, ...props }: LanguageVirtualListProps
   return createElement(BloomVirtualList as never, { ...props, renderItem });
 }
 
+/** A row: Bloom `ListItem`, titled or a recipe of its data (a mail row's star its binding). */
+const listItem: ControlRenderer = (d) => {
+  const own = d.node.props as ListItemProps;
+  const props = rowProps(d);
+  if (own.recipe === 'row') props.title = text(d, own.title);
+  else props[own.recipe] = own.data;
+  // A mail row's star is its binding, drawn into its data as Bloom takes it.
+  const starred = d.own('starred')?.value as Binding<boolean> | undefined;
+  if (own.recipe === 'mail' && starred !== undefined)
+    props.mail = { ...own.data, starred: starred[0], onStarredChange: starred[1] };
+  const checkable = d.own('checkable')?.value;
+  const swipe = d.own('swipeActions')?.value;
+  const trailing = d.own('trailing')?.value;
+  Object.assign(props, {
+    supporting: text(d, d.own('supporting')?.value),
+    supportingLines: d.own('supportingLines')?.value,
+    leading: slot(d, d.own('prefix')?.value as Child | undefined),
+    trailing: trailing === undefined ? undefined : d.render(trailing[0]),
+    content: slot(d, d.own('content')?.value as Child | undefined),
+    footer: slot(d, d.own('footnote')?.value),
+    attachments: slot(d, d.own('attachments')?.value),
+    density: d.own('density')?.value,
+    compactPadding: space(d.own('compactPadding')?.value),
+    active: d.own('active')?.value,
+    disabled: d.own('disabled')?.value,
+    href: d.own('link')?.value,
+    onPrefetch: d.own('onPrefetch')?.value,
+    selectionLabel: d.own('selectionLabel')?.value,
+    swipeEnabled: d.own('swipeEnabled')?.value,
+    contextMenu: slot(d, d.own('contextMenu')?.value),
+  });
+  if (checkable !== undefined) [props.checked, props.onCheckedChange] = checkable;
+  if (swipe !== undefined) [props.swipeActions, props.fullSwipeAction] = swipe;
+  return d.component(BloomListItem, props);
+};
+
 export const LISTS: Record<ListKind, ControlRenderer> = {
-  listItem: (d) => {
-    const own = d.node.props as ListItemProps;
-    const props = rowProps(d);
-    if (own.recipe === 'row') props.title = text(d, own.title);
-    else props[own.recipe] = own.data;
-    const checkable = d.own('checkable')?.value;
-    const swipe = d.own('swipeActions')?.value;
-    const trailing = d.own('trailing')?.value;
-    Object.assign(props, {
-      supporting: text(d, d.own('supporting')?.value),
-      supportingLines: d.own('supportingLines')?.value,
-      leading: slot(d, d.own('prefix')?.value as Child | undefined),
-      trailing: trailing === undefined ? undefined : d.render(trailing[0]),
-      content: slot(d, d.own('content')?.value as Child | undefined),
-      footer: slot(d, d.own('footnote')?.value),
-      attachments: slot(d, d.own('attachments')?.value),
-      density: d.own('density')?.value,
-      compactPadding: space(d.own('compactPadding')?.value),
-      active: d.own('active')?.value,
-      disabled: d.own('disabled')?.value,
-      href: d.own('link')?.value,
-      onPrefetch: d.own('onPrefetch')?.value,
-      selectionLabel: d.own('selectionLabel')?.value,
-      swipeEnabled: d.own('swipeEnabled')?.value,
-      contextMenu: slot(d, d.own('contextMenu')?.value),
-    });
-    if (checkable !== undefined) [props.checked, props.onCheckedChange] = checkable;
-    if (swipe !== undefined) [props.swipeActions, props.fullSwipeAction] = swipe;
-    return d.component(BloomListItem, props);
-  },
+  listItem,
+  mailRow: listItem,
   list: (d) => {
     const props = d.props();
     Object.assign(props, d.node.props as object, {

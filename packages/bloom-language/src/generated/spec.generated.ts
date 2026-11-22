@@ -4152,6 +4152,31 @@ export const MODIFIERS = {
   "selectedIds": [
     "value"
   ],
+  "speaker": [
+    "value"
+  ],
+  "videoOn": [
+    "value"
+  ],
+  "screenSharing": [
+    "value"
+  ],
+  "localVideoCorner": [
+    "value"
+  ],
+  "tip": [
+    "value",
+    "value",
+    "value?"
+  ],
+  "promo": [
+    "value",
+    "value"
+  ],
+  "search": [
+    "value",
+    "value?"
+  ],
   "stage": [
     "value"
   ],
@@ -11437,6 +11462,111 @@ export const NODE_MODIFIERS = {
     "swipeActions",
     "swipeEnabled",
     "contextMenu"
+  ],
+  "mailRow": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "animatesColors",
+    "transition",
+    "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
+    "supporting",
+    "supportingLines",
+    "prefix",
+    "trailing",
+    "content",
+    "footnote",
+    "attachments",
+    "density",
+    "compactPadding",
+    "active",
+    "disabled",
+    "link",
+    "onPrefetch",
+    "checkable",
+    "selecting",
+    "selectionLabel",
+    "rowActions",
+    "swipeActions",
+    "swipeEnabled",
+    "contextMenu",
+    "starred"
   ],
   "list": [
     "padding",
@@ -27572,7 +27702,12 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "style",
     "tint",
-    "size"
+    "size",
+    "muted",
+    "speaker",
+    "videoOn",
+    "screenSharing",
+    "localVideoCorner"
   ],
   "callMinimisedPill": [
     "padding",
@@ -34240,7 +34375,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "size"
+    "size",
+    "search"
   ],
   "connectionDots": [
     "padding",
@@ -36197,7 +36333,9 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "density"
+    "density",
+    "tip",
+    "promo"
   ],
   "cartPromoField": [
     "padding",
@@ -43760,6 +43898,10 @@ export const NODE_DENSITIES = {
     "comfortable",
     "compact"
   ],
+  "mailRow": [
+    "comfortable",
+    "compact"
+  ],
   "chatHeader": [
     "default",
     "compact"
@@ -44009,7 +44151,7 @@ export const CONSTRUCTORS = {
   "PersonRow": "listItem",
   "CallRow": "listItem",
   "ConversationRow": "listItem",
-  "MailRow": "listItem",
+  "MailRow": "mailRow",
   "List": "list",
   "SectionedList": "list",
   "VirtualList": "virtualList",

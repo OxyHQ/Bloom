@@ -6,14 +6,17 @@ import { MOTION } from '@oxy.so/bloom/motion';
 import { Accordion } from '../controls/accordion';
 import { AgentChatHistory } from '../controls/agent-chat';
 import { ConversationSidebar } from '../controls/agents';
+import { CallScreen } from '../controls/call-ui';
+import { CartPanel } from '../controls/cart-panel';
 import { Collapsible } from '../controls/collapsible';
 import { HoverCard } from '../controls/hover-card';
-import { ListItem, VirtualList } from '../controls/list';
+import { ListItem, MailRow, VirtualList } from '../controls/list';
 import { ReviewCard } from '../controls/listings';
 import { SignaturePad } from '../controls/logistics';
 import { MenuItemOptions } from '../controls/menu-item';
 import { Notification } from '../controls/notification';
 import { RatingBar } from '../controls/rating';
+import { ShareSheet } from '../controls/share-sheet';
 import { Meter } from '../controls/stat-bar';
 import { Tooltip } from '../controls/tooltip';
 import type { Child } from '../node';
@@ -222,5 +225,80 @@ describe('a selection a press reports', () => {
     );
     for (const prop of ['selected', 'selectedTreeItem', 'onNavigate', 'onTreeItemPress'])
       expect(prop in sidebar.props).toBe(false);
+  });
+});
+
+describe('a value inside Bloom’s own data', () => {
+  it('a cart panel’s tip and promo are bindings, drawn into Bloom’s tip and promo', () => {
+    const setTip = jest.fn();
+    const setCode = jest.fn();
+    const apply = jest.fn();
+    const tips = [{ id: '10', label: '10%' }];
+    const panel = only(
+      mount(
+        toElement(
+          CartPanel('Forno', [])
+            .tip(['10', setTip], tips, { label: 'Tip' })
+            .promo(['SPRING', setCode], { onApply: apply }),
+        ),
+      ),
+      'CartPanel',
+    );
+    expect(panel.props.tip).toEqual({
+      label: 'Tip',
+      options: tips,
+      value: '10',
+      onValueChange: setTip,
+    });
+    expect(panel.props.promo).toEqual({ onApply: apply, value: 'SPRING', onChangeText: setCode });
+  });
+
+  it('a cart panel with neither draws no tip or promo row', () => {
+    const panel = only(mount(toElement(CartPanel('Forno', []))), 'CartPanel');
+    expect(panel.props.tip).toBeUndefined();
+    expect(panel.props.promo).toBeUndefined();
+  });
+
+  it('a share sheet’s search is a binding, drawn into Bloom’s search', () => {
+    const setQuery = jest.fn();
+    const submit = jest.fn();
+    const sheet = only(
+      mount(toElement(ShareSheet().search(['an', setQuery], { onSubmit: submit }))),
+      'ShareSheet',
+    );
+    expect(sheet.props.search).toEqual({ onSubmit: submit, value: 'an', onValueChange: setQuery });
+    expect(only(mount(toElement(ShareSheet())), 'ShareSheet').props.search).toBeUndefined();
+  });
+
+  it('a call screen’s toggles are bindings, each drawing its button into the bar', () => {
+    const mute = jest.fn();
+    const end = jest.fn();
+    const screen = only(
+      mount(
+        toElement(
+          CallScreen('Ana', 'active', { controls: { onEndCall: end } })
+            .muted([true, mute])
+            .size('lg'),
+        ),
+      ),
+      'CallScreen',
+    );
+    expect(screen.props.controls).toEqual({
+      onEndCall: end,
+      muted: true,
+      onMutedChange: mute,
+      size: 'lg',
+      children: undefined,
+    });
+    const bare = only(mount(toElement(CallScreen('Ana', 'active'))), 'CallScreen');
+    expect(bare.props.controls).toBeUndefined();
+  });
+
+  it('a mail row’s star is a binding, drawn into its data', () => {
+    const star = jest.fn();
+    const data = { sender: { name: 'Ana' }, subject: 'Hi' };
+    const row = only(mount(toElement(MailRow(data).starred([false, star]))), 'ListItem');
+    expect(row.props.mail).toEqual({ ...data, starred: false, onStarredChange: star });
+    expect(only(mount(toElement(MailRow(data))), 'ListItem').props.mail).toBe(data);
   });
 });

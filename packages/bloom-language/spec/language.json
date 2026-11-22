@@ -1624,6 +1624,13 @@
     "view": ["value"],
     "date": ["value"],
     "selectedIds": ["value"],
+    "speaker": ["value"],
+    "videoOn": ["value"],
+    "screenSharing": ["value"],
+    "localVideoCorner": ["value"],
+    "tip": ["value", "value", "value?"],
+    "promo": ["value", "value"],
+    "search": ["value", "value?"],
     "stage": ["value"],
     "destination": ["value"]
   },
@@ -2790,7 +2797,7 @@
       "modifiers": ["width", "share", "minWidth", "align"]
     },
     "listItem": {
-      "constructors": ["ListItem", "PersonRow", "CallRow", "ConversationRow", "MailRow"],
+      "constructors": ["ListItem", "PersonRow", "CallRow", "ConversationRow"],
       "modifiers": [
         "supporting",
         "supportingLines",
@@ -2812,6 +2819,33 @@
         "swipeActions",
         "swipeEnabled",
         "contextMenu"
+      ],
+      "densities": ["comfortable", "compact"]
+    },
+    "mailRow": {
+      "constructors": ["MailRow"],
+      "modifiers": [
+        "supporting",
+        "supportingLines",
+        "prefix",
+        "trailing",
+        "content",
+        "footnote",
+        "attachments",
+        "density",
+        "compactPadding",
+        "active",
+        "disabled",
+        "link",
+        "onPrefetch",
+        "checkable",
+        "selecting",
+        "selectionLabel",
+        "rowActions",
+        "swipeActions",
+        "swipeEnabled",
+        "contextMenu",
+        "starred"
       ],
       "densities": ["comfortable", "compact"]
     },
@@ -3722,7 +3756,16 @@
     "writeReviewPrompt": { "constructors": ["WriteReviewPrompt"], "modifiers": [] },
     "callScreen": {
       "constructors": ["CallScreen"],
-      "modifiers": ["style", "tint", "size"],
+      "modifiers": [
+        "style",
+        "tint",
+        "size",
+        "muted",
+        "speaker",
+        "videoOn",
+        "screenSharing",
+        "localVideoCorner"
+      ],
       "style": "callMode",
       "tint": "color",
       "size": "callControlSize"
@@ -3968,7 +4011,7 @@
     },
     "shareSheet": {
       "constructors": ["ShareSheet"],
-      "modifiers": ["size"],
+      "modifiers": ["size", "search"],
       "size": "shareSheetSize"
     },
     "connectionDots": { "constructors": ["ConnectionDots"], "modifiers": [] },
@@ -4047,7 +4090,7 @@
     },
     "cartPanel": {
       "constructors": ["CartPanel"],
-      "modifiers": ["density"],
+      "modifiers": ["density", "tip", "promo"],
       "densities": ["comfortable", "compact"]
     },
     "cartPromoField": { "constructors": ["CartPromoField"], "modifiers": ["disabled"] },

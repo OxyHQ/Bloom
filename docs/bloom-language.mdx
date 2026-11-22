@@ -1937,7 +1937,11 @@ and `.compactPadding()`, `.active()`, `.disabled()`, `.link(href)`,
 selection with `.checkable([checked, set])`, `.selecting()` and
 `.selectionLabel()`; `.rowActions(actions, onAction)`, `.swipeActions(actions,
 full?)`, `.swipeEnabled()` and `.contextMenu(view)`. `PersonRow`, `CallRow`,
-`ConversationRow` and `MailRow` are its recipes, over Bloom's data.
+`ConversationRow` and `MailRow` are its recipes, over Bloom's data. A mail
+row's star is `.starred([starred, setStarred])`, a binding drawn into its data
+(Bloom's `starred` and `onStarredChange`; bound, the star is a button), so
+`MailRow` is a node of its own (`mailRow`) with the row's modifiers and that
+one; a `List`'s entries stay Bloom's data, each entry's star with it.
 
 `List(entries)` and `SectionedList(sections)` take Bloom's `ListEntry` data:
 `.separator('none' | 'line' | 'inset')`, `.scrollable()`, `.scrollHeight()`,
@@ -3080,7 +3084,7 @@ rhythm, `.lines(n)` the lines a body clamps to.
 ### Call screens
 
 ```ts
-CallScreen(peer.name, call.status, { duration, avatar: peer.avatar, controls: { muted, onMutedChange: setMuted, onEndCall: end } }).style('video').tint('primary')
+CallScreen(peer.name, call.status, { duration, avatar: peer.avatar, controls: { onEndCall: end } }).muted([muted, setMuted]).style('video').tint('primary')
 CallMinimisedPill(peer.name, { duration, onExpand: expand, onEndCall: end }).style(call.mode)
 GroupCallGrid(participants, { formatMuted }).style('spotlight').columns(2).spacing('xs').aspectRatio(16 / 9)
 IncomingCallScreen(peer.name, { onAccept: answer, onDecline: decline }).answerStyle('slide')
@@ -3092,15 +3096,21 @@ its stage is washed with `.tint(role)` (the theme's accent by default), on
 `CallScreen(name, status, options?)`, `CallMinimisedPill(name?, options?)`,
 `IncomingCallScreen(name, options?)` and `IncomingCallBanner(name, options?)`.
 The options are the call's data as Bloom takes it: its pre-formatted time,
-words, handlers and controlled state (a minimised screen, the
-picture-in-picture's corner).
+words, handlers and a minimised screen; what the screen edits is a binding
+(the toggles, the picture-in-picture's corner).
 
 - `CallScreen`: its video frames (`remoteVideo`, `localVideo`), a control bar
   of the app's own (`controlsSlot`), the top bar's extra chrome (`topBarSlot`)
   and `content` (drawn over the stage) are language children; its end-to-end
   line is a string or a view; the picture-in-picture's width is a space token.
-  `controls` is Bloom's control bar's data, its buttons sized by the screen's
-  `.size('sm' | 'md' | 'lg')`, its extra buttons `extra` (children).
+  `controls` is Bloom's control bar's actions, order and words, its buttons
+  sized by the screen's `.size('sm' | 'md' | 'lg')`, its extra buttons
+  `extra` (children). Its toggles are the screen's bindings, `.muted()`,
+  `.speaker()`, `.videoOn()` and `.screenSharing()`, drawn into the bar as
+  Bloom's value and handler (a bound toggle draws its button, as a handler
+  does in Bloom); with neither `controls` nor a toggle there is no bar.
+  `.localVideoCorner([corner, setCorner])` is the picture-in-picture's corner
+  (Bloom's `localVideoCorner`, and its `onMoveLocal` writing the next).
 - `GroupCallGrid(participants, options?)`: `.style('grid' | 'spotlight')`,
   `.columns(n)`, `.spacing()` its gutter, `.aspectRatio()` a tile's; a fixed
   `width` is a space token. A participant's colour and video are its data's.
@@ -3495,7 +3505,7 @@ tile), each `.style('surface' | 'plain')`.
 ### Cart, menu items and vendor card
 
 ```ts
-CartPanel(vendor.name, basket.lines, { summary, tip, promo, onCheckout }).density('compact')
+CartPanel(vendor.name, basket.lines, { summary, onCheckout }).tip([tip, setTip], TIPS, { label: 'Tip' }).promo([code, setCode], { onApply: apply }).density('compact')
 CartPromoField([code, setCode], { onApply: apply, applied: basket.promo })
 CartTipPicker([tip, setTip], TIPS, { label: 'Tip' })
 MenuItemRow(dish.name, { price: dish.price, diets: dish.diets, onAdd: add }).onPress(open)
@@ -3504,10 +3514,15 @@ VendorCard(shop.name, { cuisines, rating, deliveryTime }).density('compact').onP
 
 Bloom's `cart-panel`: `CartLine(name, options)` (its price, quantity and
 handlers), `CartPanel(vendorName, lines, options?)` (the vendor, the line
-handlers, the minimum order, tip, promo and summary as Bloom's data; its
-`empty` a child), `CartPromoField(code, options)` (its binding the code
-typed) and `CartTipPicker(tip, choices, options?)` (its binding the chosen
-tip, the choices Bloom's `options`). Bloom's `menu-item`: `MenuItemRow(name,
+handlers, the minimum order and summary as Bloom's data; its `empty` a child;
+`.tip(tip, choices, options?)` its tip row and `.promo(code, options)` its
+promo row, each a binding as `CartTipPicker` and `CartPromoField` take it,
+drawn into Bloom's `tip` and `promo`; without one, no row),
+`CartPromoField(code, options)` (its binding the code typed) and
+`CartTipPicker(tip, choices, options?)` (its binding the chosen tip, the
+choices Bloom's `options`). A line's quantity in the panel stays Bloom's data
+(`onLineQuantityChange(id, quantity)`): it belongs to an entry of `lines`, a
+list Bloom owns. Bloom's `menu-item`: `MenuItemRow(name,
 options)` (its price, photo, diets, heat, quantity and handlers) and
 `MenuItemOptions(groups, options)` (the choices made are `.value([chosen,
 setChosen])`, every group's in one record, which Bloom requires: a group's new
@@ -3777,7 +3792,7 @@ tone and its `iconBackground` stay in the alert); a `height` is a space token
 ```ts
 RouteStops(trip.stops, { onPressStop: edit, onAddStop: add, onRemoveStop: remove }).density('compact')
 NoteCard(note.title, { excerpt: note.preview, tags: note.tags, meta }).style('row').tint('warning').onPress(open)
-ShareSheet({ title: 'Send to', search, people, onPersonPress: send, targets }).size('lg')
+ShareSheet({ title: 'Send to', people, onPersonPress: send, targets }).search([query, setQuery], { placeholder: 'Search' }).size('lg')
 ```
 
 Bloom's `route-stops`, `note-card` and `share-sheet`. `RouteStops(stops,
@@ -3789,7 +3804,9 @@ elements, as they are data) and its handlers; `.density('comfortable' |
 `.onPress()` and `.onLongPress()` are its own, and its selection is
 `.selected([selected, setSelected])` beside Bloom's `selectable`. `NoteCardSkeleton()`
 takes `.style()` and `.lines(n)`. `ShareSheet(options?)`: `.size('sm' | 'md'
-| 'lg')`; `peopleEmpty` is a language child.
+| 'lg')`; `peopleEmpty` is a language child; `.search([text, setText],
+options?)` its search field, a binding drawn into Bloom's `search` (its
+`placeholder` and `onSubmit` the options; without it, no field).
 
 `@oxy.so/bloom/mail-list` is live code with no component of its own: the
 mail row's shared pieces. Its helpers, constants and types (`mailStrings`,

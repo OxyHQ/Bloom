@@ -131,12 +131,13 @@ const cart: ParityCase[] = [
             message: 'Add €5.00 to reach the minimum',
             progress: { value: 30, max: 35, accessibilityLabel: 'Minimum order' },
           },
-          tip: { options: TIPS, value: '10', onValueChange: set, label: 'Tip' },
-          promo: { value: '', onChangeText: set, onApply: press, label: 'Promo code' },
           summary: SUMMARY,
           onCheckout: press,
           checkoutLabel: 'Checkout',
-        }).density(density),
+        })
+          .tip(['10', set], TIPS, { label: 'Tip' })
+          .promo(['', set], { onApply: press, label: 'Promo code' })
+          .density(density),
       ),
     bloom: () => (
       <CartPanel

@@ -238,6 +238,27 @@ const recipes: ParityCase[] = [
       />
     ),
   },
+  {
+    name: 'a mail, starred',
+    language: () =>
+      toElement(
+        L.MailRow({ sender: { name: 'Mireia' }, subject: 'Roof survey', time: '09:12' }).starred([
+          true,
+          set,
+        ]),
+      ),
+    bloom: () => (
+      <ListItem
+        mail={{
+          sender: { name: 'Mireia' },
+          subject: 'Roof survey',
+          time: '09:12',
+          starred: true,
+          onStarredChange: set,
+        }}
+      />
+    ),
+  },
 ];
 
 const lists: ParityCase[] = [

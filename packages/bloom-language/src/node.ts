@@ -114,7 +114,8 @@ import type { AgentChatKind } from './controls/agent-chat';
 import type { WebSearchKind } from './controls/web-search';
 import type { TaskListKind } from './controls/task-list';
 import type { GenericKind } from './controls/generic';
-import type { ShareSheetKind } from './controls/share-sheet';
+import type { ShareSheetKind, ShareSheetSearchOptions } from './controls/share-sheet';
+import type { CartTipOption } from '@oxy.so/bloom/cart-panel';
 import type { NoteCardKind } from './controls/note-card';
 import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
@@ -147,7 +148,7 @@ import type { DeliverySlotKind } from './controls/delivery-slot';
 import type { CheckoutSummaryKind } from './controls/checkout-summary';
 import type { VendorCardKind } from './controls/vendor-card';
 import type { MenuItemKind } from './controls/menu-item';
-import type { CartKind } from './controls/cart-panel';
+import type { CartKind, CartPanelPromoOptions, CartPanelTipOptions } from './controls/cart-panel';
 import type { PaymentStatusKind } from './controls/payment-status';
 import type { PriceBreakdownKind } from './controls/price-breakdown';
 import type { CreatorStudioKind } from './controls/creator-studio';
@@ -1168,6 +1169,13 @@ export interface ValueModifiers {
   view: AnyBinding;
   date: AnyBinding;
   selectedIds: AnyBinding;
+  speaker: AnyBinding;
+  videoOn: AnyBinding;
+  screenSharing: AnyBinding;
+  localVideoCorner: AnyBinding;
+  tip: readonly [tip: AnyBinding, choices: readonly CartTipOption[], options?: CartPanelTipOptions];
+  promo: readonly [code: AnyBinding, options: CartPanelPromoOptions];
+  search: readonly [text: AnyBinding, options?: ShareSheetSearchOptions];
   stage: AnyBinding;
   destination: AnyBinding;
 }
@@ -2367,6 +2375,27 @@ export class Node {
   }
   selectedIds(value: AnyBinding): Node {
     return this.set('selectedIds', value);
+  }
+  speaker(value: AnyBinding): Node {
+    return this.set('speaker', value);
+  }
+  videoOn(value: AnyBinding): Node {
+    return this.set('videoOn', value);
+  }
+  screenSharing(value: AnyBinding): Node {
+    return this.set('screenSharing', value);
+  }
+  localVideoCorner(value: AnyBinding): Node {
+    return this.set('localVideoCorner', value);
+  }
+  tip(value: AnyBinding, choices: readonly CartTipOption[], options?: CartPanelTipOptions): Node {
+    return this.set('tip', [value, choices, options]);
+  }
+  promo(value: AnyBinding, options: CartPanelPromoOptions): Node {
+    return this.set('promo', [value, options]);
+  }
+  search(value: AnyBinding, options?: ShareSheetSearchOptions): Node {
+    return this.set('search', [value, options]);
   }
   stage(value: AnyBinding): Node {
     return this.set('stage', value);

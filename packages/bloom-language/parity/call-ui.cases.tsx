@@ -30,6 +30,8 @@ const CONTROLS = {
   onSpeakerChange: set,
   onEndCall: press,
 };
+/** The same bar in the language: its actions as data, its toggles bindings. */
+const ACTIONS = { onEndCall: press };
 /** A screen's stage, at a phone's size: Bloom fills its parent. */
 const STAGE = { width: 360, height: 640 } as const;
 const frame = { width: '360', height: '640' } as const;
@@ -43,8 +45,10 @@ const screens: ParityCase[] = [
         L.CallScreen('Ana Restrepo', 'active', {
           duration: '00:42',
           subtitle: 'Mobile',
-          controls: CONTROLS,
+          controls: ACTIONS,
         })
+          .muted([true, set])
+          .speaker([false, set])
           .style(mode)
           .frame(frame),
       ),
@@ -65,8 +69,10 @@ const screens: ParityCase[] = [
     language: () =>
       toElement(
         L.CallScreen('Ana Restrepo', 'active', {
-          controls: { ...CONTROLS, extra: L.Text('Hold') },
+          controls: { ...ACTIONS, extra: L.Text('Hold') },
         })
+          .muted([true, set])
+          .speaker([false, set])
           .size(size)
           .frame(frame),
       ),
@@ -87,8 +93,6 @@ const screens: ParityCase[] = [
           duration: '01:04',
           remoteVideo: L.Embed(<View style={{ flex: 1 }} />),
           localVideo: L.Embed(<Frame />),
-          localVideoCorner: 'bottom-left',
-          onMoveLocal: set,
           localVideoWidth: '120',
           topBarSlot: L.Text('HD'),
           onMinimise: press,
@@ -97,6 +101,7 @@ const screens: ParityCase[] = [
           participantCount: 3,
           content: L.Text('Poor connection'),
         })
+          .localVideoCorner(['bottom-left', set])
           .style('video')
           .frame(frame),
       ),
@@ -166,6 +171,31 @@ const screens: ParityCase[] = [
     ),
   },
   {
+    name: 'CallScreen a bar of its toggles alone, the camera and the screen',
+    language: () =>
+      toElement(
+        L.CallScreen('Ana Restrepo', 'active')
+          .videoOn([true, set])
+          .screenSharing([false, set])
+          .style('video')
+          .frame(frame),
+      ),
+    bloom: () => (
+      <CallScreen
+        name="Ana Restrepo"
+        status="active"
+        controls={{
+          videoOn: true,
+          onVideoChange: set,
+          screenSharing: false,
+          onScreenShareChange: set,
+        }}
+        mode="video"
+        style={STAGE}
+      />
+    ),
+  },
+  {
     name: 'CallScreen minimised',
     language: () =>
       toElement(
@@ -173,8 +203,11 @@ const screens: ParityCase[] = [
           duration: '00:42',
           minimised: true,
           onMinimise: press,
-          controls: CONTROLS,
-        }).tint('success'),
+          controls: ACTIONS,
+        })
+          .muted([true, set])
+          .speaker([false, set])
+          .tint('success'),
       ),
     bloom: () => (
       <Themed>
