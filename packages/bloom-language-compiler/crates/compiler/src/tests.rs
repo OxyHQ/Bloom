@@ -703,9 +703,17 @@ fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     // A scroll view's own modifiers stay on it.
     let stack = chrome("export const S = () => Text('a').keyboardTaps('handled');\n");
     assert_eq!(first_message(&stack), Some("Text has no modifier .keyboardTaps()"));
-    // Pull to refresh is one binding, not a value and a handler.
-    let pair = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(false, r);\n");
-    assert_eq!(first_message(&pair), Some(".refreshable() takes 1 argument(s), not 2"));
+    // Pull to refresh is one binding and an optional tint, a colour token.
+    let tinted = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, 'primary');\n");
+    assert!(tinted.diagnostics.is_empty(), "{:?}", first_message(&tinted));
+    let tint = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, 'red');\n");
+    assert_eq!(first_message(&tint), Some("Unknown color token 'red' for .refreshable()"));
+    let three = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(false, r, 'primary');\n");
+    assert_eq!(first_message(&three), Some(".refreshable() takes 1 to 2 argument(s), not 3"));
+    // Scroll indicators on one axis.
+    let axis =
+        chrome("export const S = () => ScrollView(Text('a')).scrollIndicators('hidden', 'sideways');\n");
+    assert_eq!(first_message(&axis), Some("Unknown axis token 'sideways' for .scrollIndicators()"));
 }
 
 #[test]
