@@ -201,14 +201,13 @@ brand tone. Description is an accessibility hint; use a row/card for visible
 secondary descriptions. `labelContent` stays decorative and requires `label` or
 `accessibilityLabel` for its name.
 
-`optionClassName` and `optionLabelClassName` accept a string or a function of
-`{ checked, disabled, controlRef }`, on all three group variants. The option
-class replaces its standard layout and paint; the label class replaces the
-built-in string label typography/color. The group `className` replaces its
-default layout. Explicit `optionStyle`, `labelStyle` and `style` remain last.
-The semantic disabled state and group keyboard handling stay owned by Bloom.
-Standalone `RadioChip` accepts the corresponding `className` and
-`labelClassName` props and the same `checked`/`onValueChange` contract as `Radio`.
+`optionStyle` accepts a style or a function of `{ checked, disabled,
+controlRef }`, on every group variant, over each option's standard layout and
+paint; `labelStyle` sits over the built-in string label's typography and colour,
+and `style` over the group's layout. The semantic disabled state and group
+keyboard handling stay owned by Bloom. Standalone `RadioChip` takes the same
+`style` and `labelStyle` and the same `checked`/`onValueChange` contract as
+`Radio`.
 
 ## Colour swatches
 

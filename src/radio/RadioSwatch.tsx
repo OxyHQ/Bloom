@@ -52,7 +52,6 @@ function RadioSwatchComponent<Value extends string = string>({
   nativeID,
   disabled: disabledProp = false,
   size: sizeProp,
-  className,
   style,
   testID,
 }: RadioSwatchProps<Value>) {
@@ -78,18 +77,14 @@ function RadioSwatchComponent<Value extends string = string>({
   }, [checked, disabled, onValueChange, value]);
   const groupItem = useRadioGroupItem(value, disabled, activate);
   const discStyle: WebCssStyle = {
-    ...(!className
-      ? ({
-          width: disc,
-          height: disc,
-          borderRadius: disc / 2,
-          backgroundColor: color,
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          opacity: disabled ? DISABLED_OPACITY : 1,
-        } as const)
-      : {}),
+    width: disc,
+    height: disc,
+    borderRadius: disc / 2,
+    backgroundColor: color,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-radio-swatch-ring': theme.colors.primary,
     ...ringOffset,
   };
@@ -97,7 +92,6 @@ function RadioSwatchComponent<Value extends string = string>({
     <RadioHost
       {...groupItem}
       {...webDataSet({ bloomRadioSwatch: '' })}
-      className={className}
       style={[discStyle, style]}
       onPress={activate}
       disabled={disabled}
