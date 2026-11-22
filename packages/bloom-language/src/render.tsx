@@ -137,6 +137,7 @@ import {
   overlayStyle,
   placeStyle,
   placeVariants,
+  rawBaseFont,
   stackStyle,
   textStyle,
   textVariant,
@@ -2943,7 +2944,8 @@ function drawText(
 ): ReactElement {
   const raw = (node.props as TextProps).raw === true;
   // React Native's own Text (RawText) inherits nothing of the language's environment
-  // (no family, size or ink); a span, and RawText, write only what their own chain names.
+  // (no family, size or ink); a span, and RawText, write only what their own chain
+  // names, RawText over the base face an app's React Native Text draws (`rawBaseFont`).
   const traits = raw ? deriveEnv(ROOT_ENV, p.env).text : ctx.env.text;
   const span = ctx.inText || raw ? spanTraits(p) : undefined;
   const link = ownValue(p, 'link')?.value;
@@ -2999,8 +3001,14 @@ function drawText(
   const host = span !== undefined ? RNText : textStyleName ? TEXT_HOSTS[textStyleName] : BloomText;
   const out = cachedStyle(
     'host',
-    `T|${ctx.env.key}|${span === undefined ? '' : `s:${spanKey}`}|${lookKey}|${layerKey}|${flex}`,
-    () => Object.assign(textStyle(traits, look, span), box()),
+    `T|${ctx.env.key}|${span === undefined ? '' : `s:${spanKey}`}|${raw ? (ctx.inText ? 'r:in' : 'r') : ''}|${lookKey}|${layerKey}|${flex}`,
+    () =>
+      Object.assign(
+        {},
+        raw ? rawBaseFont(ctx.inText === true) : undefined,
+        textStyle(traits, look, span),
+        box(),
+      ),
     () => joinVariants(textVariants(traits), boxVaried()),
   );
   const roll = ownValue(p, 'contentTransition');
