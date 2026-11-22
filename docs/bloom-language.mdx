@@ -1864,6 +1864,24 @@ Bloom's named tint, its data) and handlers; `breadcrumb` and `actions` are
 views, the month switcher's width a space token, and `.density('compact')`
 the short day rows of an embedded preview. A highlighted day pulses on a
 timer: compared by Jest, not in Chrome.
+### Agent chats
+
+```ts
+AgentChat(messages, { title, status, onSubmit: send, threads, showHistory: true, headerLeading: Back() }).titleAlign('center')
+AgentChatHistory(threads, { activeId, onSelect: open, after: Help() }).surface(false)
+SelectedAgentPreview(chosen, { flights, anchor: 'picker', caption: true })
+MultiAgentChat({ onRespond: reply, storageKey: 'workspace' })
+```
+
+Bloom's `agent-chat` (Astro's) and `multi-agent-chat` (Gemies' preview, the
+site's workspace). `AgentChat(messages, options?)` takes its state, draft,
+handlers, history and words as Bloom does; `emptyState`, `headerLeading` and
+`headerIdentity` are language children; `.titleAlign('start' | 'center')` its
+header's title. `AgentChatHistory(threads, options?)`: `after` a child,
+`.surface(false)` on a surface of the host's (Bloom's `framed={false}`).
+`SelectedAgentPreview(agents, options)` takes the app's avatar flights
+(`useAvatarFlights()`) and the name its avatars fly by;
+`MultiAgentChat(options?)` the whole workspace's data, storage and handlers.
 
 ## Interop
 

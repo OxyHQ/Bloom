@@ -323,6 +323,8 @@ import type {
 } from '../controls/agent-creator';
 import type { AgentProfileView, AgentReplyIdentityView } from '../controls/agent-reply';
 import type { AiProfileCardView } from '../controls/ai-profile-card';
+import type { MultiAgentChatView, SelectedAgentPreviewView } from '../controls/multi-agent-chat';
+import type { AgentChatView, AgentChatHistoryView } from '../controls/agent-chat';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -723,7 +725,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AgentProfileView>, Of<'agentProfile'>>,
       Same<MethodsOf<AgentReplyIdentityView>, Of<'agentReplyIdentity'>>,
       Same<MethodsOf<AiProfileCardView>, Of<'aiProfileCard'>>,
+      Same<MethodsOf<SelectedAgentPreviewView>, Of<'selectedAgentPreview'>>,
+      Same<MethodsOf<MultiAgentChatView>, Of<'multiAgentChat'>>,
+      Same<MethodsOf<AgentChatHistoryView>, Of<'agentChatHistory'>>,
+      Same<MethodsOf<AgentChatView>, Of<'agentChat'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

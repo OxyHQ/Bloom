@@ -50,8 +50,7 @@ module.exports = {
     '^@oxy.so/bloom/(booking|home-search|listing-actions|listing-card|listing-editor|offering-badge|property-insights)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(project-board|activity-feed)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(project-board|activity-feed|order-status|lockup|ambient-photo|calendar)$': `${support}/bloom-products.ts`,
-    '^@oxy.so/bloom/(task-list|web-search|voice)$': `${support}/bloom-products.ts`,
-    '^@oxy.so/bloom/(task-list|web-search|voice|agent-creator|agent-reply|ai-profile-card)$': `${support}/bloom-products.ts`,
+    '^@oxy.so/bloom/(task-list|web-search|voice|agent-creator|agent-reply|ai-profile-card|multi-agent-chat|multi-agent-chat/selected-agent-preview|agent-chat)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,

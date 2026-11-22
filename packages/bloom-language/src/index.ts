@@ -920,3 +920,21 @@ export type {
 // AI profile card (controls/ai-profile-card.tsx)
 export { AiProfileCard } from './controls/ai-profile-card';
 export type { AiProfileCardOptions, AiProfileCardView } from './controls/ai-profile-card';
+
+// Multi-agent chat (controls/multi-agent-chat.tsx)
+export { MultiAgentChat, SelectedAgentPreview } from './controls/multi-agent-chat';
+export type {
+  MultiAgentChatOptions,
+  MultiAgentChatView,
+  SelectedAgentPreviewOptions,
+  SelectedAgentPreviewView,
+} from './controls/multi-agent-chat';
+
+// Agent chat (controls/agent-chat.tsx)
+export { AgentChat, AgentChatHistory } from './controls/agent-chat';
+export type {
+  AgentChatHistoryOptions,
+  AgentChatHistoryView,
+  AgentChatOptions,
+  AgentChatView,
+} from './controls/agent-chat';

@@ -29,6 +29,8 @@ import type { VoiceKind } from './controls/voice';
 import type { AgentCreatorKind } from './controls/agent-creator';
 import type { AgentReplyKind } from './controls/agent-reply';
 import type { AiProfileCardKind } from './controls/ai-profile-card';
+import type { MultiAgentChatKind } from './controls/multi-agent-chat';
+import type { AgentChatKind } from './controls/agent-chat';
 import type { WebSearchKind } from './controls/web-search';
 import type { TaskListKind } from './controls/task-list';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
@@ -846,7 +848,9 @@ export type NodeKind =
   | VoiceKind
   | AgentCreatorKind
   | AgentReplyKind
-  | AiProfileCardKind;
+  | AiProfileCardKind
+  | MultiAgentChatKind
+  | AgentChatKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {

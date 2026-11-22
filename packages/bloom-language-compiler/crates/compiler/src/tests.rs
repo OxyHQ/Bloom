@@ -1210,3 +1210,17 @@ fn the_agent_editor_identity_and_profile_card_are_checked() {
     let output = check("export const x = (a) => AgentProfile(a).multiline();\n");
     assert_eq!(output.diagnostics[0].message, "AgentProfile has no modifier .multiline()");
 }
+
+#[test]
+fn the_agent_chats_are_checked() {
+    let imports = "import { AgentChat, AgentChatHistory, MultiAgentChat, SelectedAgentPreview } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (m, t, a, f) => [AgentChat(m).titleAlign('center'), AgentChatHistory(t).surface(false), MultiAgentChat(), SelectedAgentPreview(a, { flights: f, anchor: 'p' })];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (m) => AgentChat(m).titleAlign('end');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown titleAlign token 'end' for .titleAlign()");
+    let output = check("export const x = (t) => AgentChatHistory(t).titleAlign('start');\n");
+    assert_eq!(output.diagnostics[0].message, "AgentChatHistory has no modifier .titleAlign()");
+}
