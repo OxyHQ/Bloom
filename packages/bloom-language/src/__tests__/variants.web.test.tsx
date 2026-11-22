@@ -9,6 +9,7 @@ import { LIGHT, PaintContext } from './support/bloom-theme';
 import { Avatar, Button, HStack, Icon, Text, VStack } from '../primitives';
 import { COLORS, VARIANT_SELECTORS } from '../generated/spec.generated';
 import { toElement } from '../render';
+import { defineTokens } from '../tokens';
 import type { Child } from '../node';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import { adoptVariantClasses, variantSheet } from '../web-sheet';
@@ -294,6 +295,43 @@ describe('on the web an icon’s varied ink is CSS', () => {
       $$css: true,
       color: WEB_CLASS['color:@muted'],
       'color@hovered': `${WEB_CLASS['color:@primary']}-hovered`,
+    });
+  });
+});
+
+describe('on the web, a variant value with no class is picked in JS', () => {
+  it('an app colour under when(): the box tracks its state and paints it, anchoring the CSS inside', () => {
+    const brand = defineTokens({ color: { brand: '#1877f2' } }).color.brand;
+    const r = mount(
+      HStack(
+        Text('a'),
+        VStack(Text('b'))
+          .onPress(() => {})
+          .when('hovered', (v) => v.background('surface')),
+      )
+        .onPress(() => {})
+        .background('surface')
+        .when('pressed', (v) => v.background(brand)),
+    );
+    const outer = () => r.root.findAllByType('Pressable' as never)[0] as ReactTestInstance;
+    const flat = (style: unknown) => [style].flat(4).filter(Boolean) as Record<string, unknown>[];
+    const painted = () => Object.assign({}, ...flat(outer().props.style).filter((s) => !s.$$css));
+    // At rest its fill is the role's variable; the anchor and the press host's class come with it.
+    expect(painted().backgroundColor).toBe(COLORS.surface.web);
+    expect(flat(outer().props.style)).toEqual(
+      expect.arrayContaining([
+        { $$css: true, blStateAnchor: 'blsg' },
+        { $$css: true, bloomPressHost: PRESS_HOST_CLASS },
+      ]),
+    );
+    act(() => outer().props.onPressIn());
+    expect(painted().backgroundColor).toBe('#1877f2');
+    act(() => outer().props.onPressOut());
+    expect(painted().backgroundColor).toBe(COLORS.surface.web);
+    // The pressable inside keeps its own classes: its hover is CSS under the outer anchor.
+    const inner = r.root.findAllByType('Pressable' as never)[1] as ReactTestInstance;
+    expect(flat(inner.props.style)[0]).toMatchObject({
+      'backgroundColor@hovered': `${WEB_CLASS['backgroundColor:@surface']}-hovered`,
     });
   });
 });

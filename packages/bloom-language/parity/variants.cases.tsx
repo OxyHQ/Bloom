@@ -11,6 +11,7 @@ import { RiHeart3Line } from '@oxy.so/bloom/icons';
 
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
+import { defineTokens } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
 
 const { space } = tokens;
@@ -35,6 +36,9 @@ function Schemed({ children }: { children: (dark: boolean) => ReactNode }) {
 }
 
 const onPress = () => {};
+
+/** An app's own colour (`defineTokens({ color })`). */
+const BRAND = defineTokens({ color: { brand: '#1877f2' } }).color.brand;
 
 /** What a press host the language tracks takes on native: a handler for each state its variants answer. */
 const TRACKED =
@@ -164,6 +168,37 @@ export const VARIANT_CASES: ParityCase[] = [
               RN.Platform.OS === 'web'
                 ? stated(colors.backgroundSecondary, 0.7)
                 : { flexDirection: 'row' }
+            }
+          >
+            <Text>a</Text>
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an app colour under a pressed variant (the press host tracks it)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .onPress(onPress)
+          .background('surface')
+          .when('pressed', (v) => v.background(BRAND)),
+      ),
+    // An app colour has no class: on the web too the box tracks its press in JS.
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...(RN.Platform.OS === 'web' ? null : { onPressIn: onPress, onPressOut: onPress })}
+            style={
+              RN.Platform.OS === 'web'
+                ? ({ pressed }: { pressed: boolean }) => ({
+                    flexDirection: 'row',
+                    backgroundColor: pressed ? BRAND.value : colors.backgroundSecondary,
+                  })
+                : { flexDirection: 'row', backgroundColor: colors.backgroundSecondary }
             }
           >
             <Text>a</Text>

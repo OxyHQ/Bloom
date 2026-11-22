@@ -16,7 +16,7 @@ import {
   type Paint,
   type PaintVariant,
 } from './paint';
-import { compareLive, warnNoClass, type LiveCondition, type Planned } from './variants';
+import { compareLive, type LiveCondition, type Planned } from './variants';
 import { adoptVariantClasses, variantSuffix } from './web-sheet';
 import {
   ALIGNMENT,
@@ -230,8 +230,22 @@ function serialize(resolved: Resolved, target: Target, variants: VariantStyles):
     return { ...out, object: true };
   }
   if (keys.length === 0 && variants.length === 0) return NO_STYLE;
-  if (IS_WEB && target !== 'material')
+  if (IS_WEB && target !== 'material') {
+    // A variant value with no class (an app's own token: its brand colour, its
+    // space) cannot vary in CSS. The view's variants are then picked in JS, as
+    // a Bloom component's are: a `Conditioned` leaf, its box tracking its state
+    // and anchoring the CSS of the views inside it.
+    if (variants.some(([, styled]) => Object.keys(styled).some((key) => !hasClass(key, styled))))
+      return {
+        ...paintOut(
+          inked(resolved),
+          variants.map(([condition, styled]) => [condition, inked(styled)] as const),
+        ),
+        object: true,
+        anchor: true,
+      };
     return { style: webStyle(resolved, keys, variants), paint: undefined };
+  }
   return paintOut(resolved, variants);
 }
 
@@ -285,6 +299,9 @@ const GEOMETRY_UNIT: Readonly<Record<GeometryKey, string>> = {
 const classOf = (key: string, value: StyleValue): string | undefined =>
   WEB_CLASS[isRole(value) ? `${key}:@${value.token}` : `${key}:${String(value)}`];
 
+const hasClass = (key: string, styled: Resolved): boolean =>
+  classOf(key, styled[key] as StyleValue) !== undefined;
+
 function webStyle(resolved: Resolved, keys: string[], variants: VariantStyles): unknown {
   let classes: Record<string, string | boolean> | undefined;
   let inline: Record<string, StyleValue> | undefined;
@@ -316,11 +333,8 @@ function webStyle(resolved: Resolved, keys: string[], variants: VariantStyles): 
   for (const [condition, styled] of variants) {
     const names: string[] = [];
     for (const key of Object.keys(styled)) {
-      const name = classOf(key, styled[key] as StyleValue);
-      if (name === undefined) {
-        warnNoClass(key);
-        continue;
-      }
+      // Every value has a class here (`serialize` sends the rest to a JS-picked style).
+      const name = classOf(key, styled[key] as StyleValue) as string;
       names.push(name);
       classes ??= { $$css: true };
       classes[`${key}@${condition}`] = `${name}-${variantSuffix(condition)}`;

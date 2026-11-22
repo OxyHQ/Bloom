@@ -147,7 +147,7 @@ import {
   type Target,
   type VariantStyles,
 } from './style';
-import { StateHost } from './state-host';
+import { Reporting, ReportedState, StateHost } from './state-host';
 import { CONTROLS } from './controls';
 import type { ControlRenderer } from './controls/draw';
 import { presentAround } from './controls/overlays';
@@ -334,8 +334,12 @@ interface Plan {
   testID: string | undefined;
   id: string | number | undefined;
   own: Map<Modifier['kind'], Modifier>;
-  /** A Button or FAB on glass: the glass draws its fill, tinted `controlTint` when the glass has no tint. */
-  control: { tint: ColorName | undefined } | undefined;
+  /**
+   * A Button or FAB on glass: the glass draws its fill, tinted `controlTint`
+   * when the glass has no tint. `reports`: the states the glass's variants
+   * answer, which the control reports to the box around the glass.
+   */
+  control: { tint: ColorName | undefined; reports: readonly LiveCondition[] } | undefined;
   /** Present when the node has a motion modifier: it is then drawn by `MotionNode`. */
   motion: MotionPlan | undefined;
 }
@@ -639,7 +643,10 @@ function plan(node: Node): Plan {
   if (result.own.has('hoverHighlight') && ownValue(result, 'hoverHighlight')?.value === undefined)
     result.hoverGroup = true;
   if ((node.kind === 'button' || node.kind === 'fab') && result.layers.some((l) => l.glass)) {
-    result.control = { tint: controlTint(node.kind, result) };
+    result.control = {
+      tint: controlTint(node.kind, result),
+      reports: glassStates(result.layers),
+    };
   }
   // A view whose geometry varies is moving: its box draws the geometry (see `renderNode`).
   if (moving || result.place.variants.some(([, modifier]) => GEOMETRY_KINDS.has(modifier.kind)))
@@ -678,14 +685,6 @@ function planVariant(
       warnOnce(
         'value-variant',
         '[Bloom language] a variant varies geometry by token: a MotionValue inside when() is left out.',
-      );
-      continue;
-    }
-    if (condition !== null && 'value' in modifier && isAppColor(modifier.value)) {
-      // An app's colour has no class to vary on the web, so it varies nowhere.
-      warnOnce(
-        'app-color-variant',
-        '[Bloom language] an app colour (defineTokens({ color })) does not vary: a live variant keeps its roles only.',
       );
       continue;
     }
@@ -827,13 +826,14 @@ function drawHost(
     const { [STATEFUL]: states, ...rest } = props;
     return draw(StateHost, { ...rest, host, out, states }, ...children);
   }
+  // A moving box's motion style (`Outer`) comes after its own (a painted leaf
+  // merges both after what it paints).
+  if (out.style !== undefined)
+    props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
   if (out.paint?.variants !== undefined)
     return draw(Conditioned, { ...props, host, paint: out.paint }, ...children);
   if (out.paint !== undefined)
     return draw(Painted, { ...props, host, paint: out.paint }, ...children);
-  // A moving box's motion style (`Outer`) comes after its own.
-  if (out.style !== undefined)
-    props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
   return draw(host, props, ...children);
 }
 
@@ -1220,7 +1220,15 @@ function glassVariants(layer: Layer): GlassVariants {
         continue;
       }
       props.set(condition, { ...props.get(condition), radius: resolveCorner(modifier.value) });
-    } else if (modifier.kind === 'background' && !isAppColor(modifier.value)) {
+    } else if (modifier.kind === 'background') {
+      if (isAppColor(modifier.value)) {
+        // A glass is tinted by a role, at rest and in a variant: the platforms' glasses take one.
+        warnOnce(
+          'glass-app-color-variant',
+          '[Bloom language] a glass’s tint is a colour role: an app colour is left out of when().',
+        );
+        continue;
+      }
       props.set(condition, { ...props.get(condition), fill: modifier.value });
     }
   }
@@ -1324,6 +1332,7 @@ function wrapLayer(
         ]),
       );
       const drawn = drawHost(PlatformGlass, paint ? painted(out, paint) : out, props, ...children);
+      if (p.control?.reports.length) return draw(ReportedState, { key }, drawn);
       return behaviour && p.pressable
         ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, drawn)
         : drawn;
@@ -1361,6 +1370,8 @@ function wrapLayer(
         ]),
     );
     const surface = drawHost(Surface, paint ? painted(out, paint) : out, props, ...children);
+    // A control's glass varies with the control's state, which it reports to a box around the glass.
+    if (p.control?.reports.length) return draw(ReportedState, { key }, surface);
     return behaviour && p.pressable
       ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, surface)
       : surface;
@@ -1694,13 +1705,10 @@ function iconGlyph(
   key: string | number | undefined,
 ): ReactElement {
   const color = foregroundOf(env.text);
-  // In the order they apply, as every other host's variants are. (A variant's
-  // ink is a role: an app's own colour does not vary, `planVariant`.)
+  // In the order they apply, as every other host's variants are.
   const live = (env.text.variants ?? [])
     .flatMap(([condition, changed]) =>
-      changed.foreground === undefined
-        ? []
-        : [[condition, changed.foreground as ColorToken] as const],
+      changed.foreground === undefined ? [] : [[condition, changed.foreground] as const],
     )
     .sort(([a], [b]) => compareLive(a, b));
   // An app's own colour is the glyph's fill as it is, on every platform.
@@ -1720,15 +1728,17 @@ function iconGlyph(
       'host',
       `IC|${env.key}`,
       () => ({ color: ink(color) }),
-      () => joinVariants(live.map(([condition, varied]) => [condition, { color: role(varied) }])),
+      () => joinVariants(live.map(([condition, varied]) => [condition, { color: ink(varied) }])),
     );
     return drawHost(icon, out, { fill: 'currentColor', width: size, height: size, key });
   }
   let paint = iconVariantPaints.get(env.key);
   if (paint === undefined) {
-    const fill = (varied: ColorToken): readonly [string, ColorName, number?] => {
+    // A variant's ink is a role the leaf paints, or an app's own colour as it is.
+    const fill = (varied: InkToken): Pick<PaintVariant, 'propRoles' | 'props'> => {
+      if (isAppColor(varied)) return { props: { fill: varied.value } };
       const { role: name, opacity } = role(varied);
-      return opacity === undefined ? ['fill', name] : ['fill', name, opacity];
+      return { propRoles: [opacity === undefined ? ['fill', name] : ['fill', name, opacity]] };
     };
     paint = {
       ...(own === undefined
@@ -1738,7 +1748,7 @@ function iconGlyph(
         condition,
         style: {},
         styleRoles: [],
-        propRoles: [fill(varied)],
+        ...fill(varied),
       })),
     };
     iconVariantPaints.set(env.key, paint);
@@ -1755,6 +1765,28 @@ const SCROLL_HOSTS = {
   scrollArea: ScrollAreaHost,
   scrollSurface: ScrollSurfaceHost,
 } as const;
+/** The states a control's glass varies with (`hovered`, `focused`, `pressed`), in no order. */
+function glassStates(layers: readonly Layer[]): LiveCondition[] {
+  const states = new Set<LiveCondition>();
+  for (const layer of layers) {
+    if (layer.glass === undefined) continue;
+    for (const [condition, modifier] of layer.variants) {
+      if (condition === null || !GLASS_VARIES.has(modifier.kind)) continue;
+      for (const term of termsOf(condition))
+        if (STATES.has(term)) states.add(term as LiveCondition);
+    }
+  }
+  return [...states];
+}
+
+/** A Button and a FAB on a glass that varies with their state: each reports it to the box around the glass. */
+function ReportingButton(props: Record<string, unknown>): ReactElement {
+  return draw(Reporting, { host: BloomButton, ...props });
+}
+function ReportingFab(props: Record<string, unknown>): ReactElement {
+  return draw(Reporting, { host: BloomFab, ...props });
+}
+
 function renderHost(
   node: Node,
   p: Plan,
@@ -2039,8 +2071,10 @@ function renderHost(
           props,
         );
       }
-      if (!boxed) return draw(BloomButton, props);
-      return drawHost(BloomButton, boxOf('component', 'B'), props);
+      const button = p.control?.reports.length ? ReportingButton : BloomButton;
+      if (button === ReportingButton) props.reports = p.control?.reports;
+      if (!boxed) return draw(button, props);
+      return drawHost(button, boxOf('component', 'B'), props);
     }
     case 'shape': {
       // A silhouette at a fixed side takes no style: its box is a view around it.
@@ -2082,8 +2116,10 @@ function renderHost(
         collapsed: ownValue(p, 'collapsed')?.value,
         material: p.control ? 'shared' : undefined,
       });
-      if (!boxed) return draw(BloomFab, props);
-      return drawHost(BloomFab, boxOf('component', 'F'), props);
+      const fab = p.control?.reports.length ? ReportingFab : BloomFab;
+      if (fab === ReportingFab) props.reports = p.control?.reports;
+      if (!boxed) return draw(fab, props);
+      return drawHost(fab, boxOf('component', 'F'), props);
     }
     case 'menu': {
       const menu = draw(MenuHost, {
