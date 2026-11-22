@@ -116,6 +116,7 @@ describe('web position: fixed', () => {
       'WEB_VIEWPORT_HEIGHT',
       'webViewportHeightMinus',
       'WEB_OVERFLOW_CLIP',
+      'WEB_DISPLAY_GRID',
       'webSurfaceStickyTopPlus',
       'cssLength',
     ]);
@@ -126,6 +127,7 @@ describe('web position: fixed', () => {
       { owner: 'WEB_VIEWPORT_HEIGHT', type: "ViewStyle['height']" },
       { owner: 'webViewportHeightMinus', type: "ViewStyle['height']" },
       { owner: 'WEB_OVERFLOW_CLIP', type: "ViewStyle['overflow']" },
+      { owner: 'WEB_DISPLAY_GRID', type: "ViewStyle['display']" },
       { owner: 'webSurfaceStickyTopPlus', type: "ViewStyle['top']" },
       { owner: 'cssLength', type: "ViewStyle['width']" },
     ]);
