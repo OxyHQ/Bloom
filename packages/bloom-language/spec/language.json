@@ -1887,7 +1887,7 @@
       "densities": ["default", "compact"],
       "size": "controlSize",
       "tint": "tone",
-      "style": "appearance",
+      "style": "buttonStyle",
       "shape": "buttonShape"
     },
     "shape": {
