@@ -173,9 +173,7 @@ Drop the declarative props entirely — `children` owns every pixel.
 | `showHandle?` | `boolean` | `true` | Show drag handle in bottom-sheet mode. |
 | `dismissOnBackdrop?` | `boolean` | `true` | Let the user dismiss: backdrop tap, Escape, Android Back, and dragging down the bottom sheet or the native centred card. |
 | `panelStyle?` | `StyleProp<ViewStyle>` | — | Style for the panel surface. |
-| `panelClassName?` | `string` | — | NativeWind class for the panel surface. |
 | `containerStyle?` | `StyleProp<ViewStyle>` | — | Style for the root overlay (e.g. rail offset, theme-var scope). |
-| `containerClassName?` | `string` | — | NativeWind class for the root overlay. |
 | `label?` | `string` | — | Accessibility label. |
 | `testID?` | `string` | — | RN testing ID. |
 
@@ -404,11 +402,13 @@ const [busy, setBusy] = useState(false);
 Bottom-sheet on small screens, left drawer on `md` and wider:
 
 ```tsx
+const wide = !['base', 'sm'].includes(useWindowBreakpoint());
+
 <Dialog
   placement={{ base: 'bottom', md: 'left' }}
   control={control}
   title="Store settings"
-  containerClassName="md:left-[4.75rem]"
+  containerStyle={wide ? { left: 76 } : undefined}
 >
   <SettingsPanel />
 </Dialog>
