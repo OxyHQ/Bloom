@@ -112,6 +112,7 @@ import type { ChatPeopleKind } from './controls/chat-people';
 import type { MessageBubbleKind } from './controls/message-bubble';
 import type { MapChromeKind } from './controls/map-chrome';
 import type { PlaceKind } from './controls/places';
+import type { MailKind } from './controls/mail';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -237,6 +238,8 @@ import {
   type LocationPuckMode,
   type PlaceCardStyle,
   type DirectionsDensity,
+  type MailComposeStyle,
+  type NoteToolbarSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1141,7 +1144,8 @@ export type Modifier =
         | FollowButtonSize
         | FilterTriggerSize
         | GuestPickerSize
-        | DirectionsDensity;
+        | DirectionsDensity
+        | NoteToolbarSize;
     }
   | {
       readonly kind: 'style';
@@ -1185,7 +1189,8 @@ export type Modifier =
         | SelectedChipsLayout
         | MapAttributionStyle
         | LocationPuckMode
-        | PlaceCardStyle;
+        | PlaceCardStyle
+        | MailComposeStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1463,7 +1468,8 @@ export type NodeKind =
   | ChatPeopleKind
   | MessageBubbleKind
   | MapChromeKind
-  | PlaceKind;
+  | PlaceKind
+  | MailKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1783,7 +1789,8 @@ export class Node {
       | FollowButtonSize
       | FilterTriggerSize
       | GuestPickerSize
-      | DirectionsDensity,
+      | DirectionsDensity
+      | NoteToolbarSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1827,7 +1834,8 @@ export class Node {
       | SelectedChipsLayout
       | MapAttributionStyle
       | LocationPuckMode
-      | PlaceCardStyle,
+      | PlaceCardStyle
+      | MailComposeStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

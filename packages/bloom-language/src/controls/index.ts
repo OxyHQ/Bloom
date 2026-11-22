@@ -71,6 +71,7 @@ import { CHAT_PEOPLE } from './chat-people';
 import { MESSAGE_BUBBLES } from './message-bubble';
 import { MAP_CHROME } from './map-chrome';
 import { PLACES } from './places';
+import { MAILS } from './mail';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -149,4 +150,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MESSAGE_BUBBLES,
   ...MAP_CHROME,
   ...PLACES,
+  ...MAILS,
 };
