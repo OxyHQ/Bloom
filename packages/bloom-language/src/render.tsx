@@ -2449,6 +2449,7 @@ function badgeProps(node: Node, p: Plan): Record<string, unknown> {
     content: (node.props as BadgeNodeProps).content,
     variant: ownValue(p, 'style')?.value,
     tone: ownValue(p, 'tint')?.value,
+    color: ownValue(p, 'color')?.value,
     size: ownValue(p, 'size')?.value,
     icon: ownValue(p, 'icon')?.value,
     dot: ownValue(p, 'dot') === undefined ? undefined : true,

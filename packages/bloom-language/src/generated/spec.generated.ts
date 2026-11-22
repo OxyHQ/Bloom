@@ -2814,6 +2814,9 @@ export const MODIFIERS = {
   "hue": [
     "chipHue"
   ],
+  "color": [
+    "accentTone"
+  ],
   "media": [
     "emptyStateMedia"
   ],
@@ -4762,6 +4765,7 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "style",
     "tint",
+    "color",
     "size",
     "icon",
     "dot",
