@@ -56,6 +56,11 @@ type TMenuConfig = {
   morphBlur?: number;
   tintColor?: string;
   tintOpacity?: number;
+  // Bloom: the rows' ink (the engine's patch); a missing colour keeps the engine's own.
+  textColor?: string;
+  mutedColor?: string;
+  destructiveColor?: string;
+  separatorColor?: string;
   saturation?: number;
   refraction?: number;
   rim?: number;

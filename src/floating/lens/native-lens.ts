@@ -10,7 +10,7 @@
  * The `require`s are direct statements of a `try` block so Metro treats `expo` and the module as
  * optional dependencies (see `media-flight/expo-video-module.ts`).
  */
-import type { ComponentType, ReactNode, Ref } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
 /** A row as the lens menu takes it (`lensRows` turns them into the menu's own parts). */
@@ -32,7 +32,7 @@ export type LensRow =
   | { kind: 'heading'; id: string; title: string }
   | { kind: 'separator'; id: string };
 
-/** The menu's handle: open (from a point's box, or the trigger) and close. */
+/** What a menu inside a base calls: open (out of a press point's box when given) and close. */
 export interface LensHandle {
   open: (from?: { x: number; y: number; width: number; height: number }) => void;
   close: () => void;
@@ -47,49 +47,37 @@ export interface LensMenuConfig {
   separatorColor?: string;
 }
 
-/** The trigger's lens: its tint, and how it takes its menu back. */
+/** The base's lens: its tint, how far it springs, and how it takes its menu back. */
 export interface LensTriggerConfig {
   tintColor?: string;
   tintOpacity?: number;
   /** How far the press and the drag deform the lens, a multiplier of the engine's own (1). */
   jelly?: number;
-  absorb?: { duration?: number; damping?: number };
 }
 
-type LensMenuComponent = ComponentType<{
-  ref?: Ref<LensHandle>;
-  colorScheme?: 'light' | 'dark' | 'auto';
+/** A menu as a base opens it. */
+export interface LensMenu {
+  rows: readonly LensRow[];
+  config?: LensMenuConfig;
+  fontFamily?: string;
   onOpenChange?: (open: boolean) => void;
-  children?: ReactNode;
-}> & {
-  Trigger: ComponentType<{
-    /** Draw the trigger's lens: its base, which the menu grows out of. */
+  onClosed?: () => void;
+}
+
+export interface Lens {
+  /** The one glass base of Bloom's controls (the upstream app's glass trigger). */
+  LensBase: ComponentType<{
     lens?: boolean;
+    colorScheme?: 'light' | 'dark';
     cornerRadius?: number;
     config?: LensTriggerConfig;
-    /** The trigger opens its menu on a press (its own press layer over the content). */
-    openOnPress?: boolean;
-    /** The rows arrive only as the menu opens: the view opens itself with them. */
-    openWithItems?: boolean;
-    /** The menu has finished closing. */
-    onMenuClosed?: () => void;
+    restBackdrop?: string;
     style?: StyleProp<ViewStyle>;
     children?: ReactNode;
   }>;
-  Content: ComponentType<{
-    fontFamily?: string;
-    config?: LensMenuConfig;
-    children?: ReactNode;
-  }>;
-};
-
-export interface Lens {
-  Menu: LensMenuComponent;
-  lensRows: (rows: readonly LensRow[]) => ReactNode[];
+  useInLensBase: () => boolean;
+  useLensBaseMenu: (menu: LensMenu | null) => LensHandle | null;
 }
-
-/** A lens trigger takes its menu back over 0.48 s, as the upstream app's trigger does. */
-export const LENS_TRIGGER_CONFIG = { absorb: { duration: 0.48 } } as const;
 
 const MIN_ANDROID_API = 33;
 
@@ -111,4 +99,17 @@ export function getNativeLens(): Lens | null {
     resolved = null;
   }
   return resolved;
+}
+
+const NO_BASE = () => false;
+const NO_BASE_MENU = () => null;
+
+/** Whether a view is inside a lens base: it then draws no lens of its own. */
+export function useInLensBase(): boolean {
+  return (getNativeLens()?.useInLensBase ?? NO_BASE)();
+}
+
+/** A menu inside the nearest lens base (see `@oxy.so/bloom-lens`); `null` outside one. */
+export function useLensBaseMenu(menu: LensMenu | null): LensHandle | null {
+  return (getNativeLens()?.useLensBaseMenu ?? NO_BASE_MENU)(menu);
 }

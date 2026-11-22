@@ -1,6 +1,6 @@
 /**
- * The lens (`@oxy.so/bloom-lens`): the upstream app's menu component (its `Menu`, `Menu.Trigger`
- * and `Menu.Content`, verbatim) on Bloom's lens engine. Android 13+ in a binary built with the
+ * The lens (`@oxy.so/bloom-lens`): the upstream app's menu component (verbatim) on Bloom's lens
+ * engine, and the lens base built from its glass trigger. Android 13+ in a binary built with the
  * module, and OxyOS, which takes the Android files. Bloom's menus and controls on glass adapt to
  * it: they give it their rows, their shape and Bloom's colours, and it draws, presses and opens.
  *
@@ -11,7 +11,7 @@
  *
  * The `require`s are direct statements of a `try` block, so Metro treats both modules as optional.
  */
-import type { ComponentType, ReactNode, Ref } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
 /** A row as the lens menu takes it (`lensRows` turns them into the menu's own parts). */
@@ -38,7 +38,6 @@ export interface LensTriggerConfig {
   tintOpacity?: number;
   /** The engine's frost, a multiplier of its own. */
   blur?: number;
-  absorb?: { duration?: number; damping?: number };
 }
 
 /** The panel's tint and the rows' ink; a missing colour keeps the engine's own. */
@@ -50,51 +49,36 @@ export interface LensMenuConfig {
   separatorColor?: string;
 }
 
+/** What a menu inside a lens base calls. */
 export interface LensHandle {
   open: () => void;
   close: () => void;
 }
 
-type LensMenuComponent = ComponentType<{
-  ref?: Ref<LensHandle>;
-  colorScheme?: 'light' | 'dark' | 'auto';
-  onOpenChange?: (open: boolean) => void;
-  children?: ReactNode;
-}> & {
-  Trigger: ComponentType<{
-    /** Draw the trigger's lens: its base, which the menu grows out of. */
+/** A menu as a lens base opens it. */
+export interface LensMenu {
+  rows: readonly LensRow[];
+  config?: LensMenuConfig;
+  fontFamily?: string;
+  onClosed?: () => void;
+}
+
+export interface Lens {
+  /** The one glass base (the upstream app's glass trigger): a control on glass, a group, a menu's trigger. */
+  LensBase: ComponentType<{
     lens?: boolean;
-    morph?: boolean;
+    colorScheme?: 'light' | 'dark';
     /** The corner radius in points; `undefined` is a capsule. */
     cornerRadius?: number;
     config?: LensTriggerConfig;
-    /** The trigger opens its menu on a press (its own press layer over the content). */
-    openOnPress?: boolean;
-    /** The rows arrive only as the menu opens: the view opens itself with them. */
-    openWithItems?: boolean;
-    /** The menu has finished closing. */
-    onMenuClosed?: () => void;
-    /**
-     * The colour the trigger sits on: the trigger draws its lens at rest in its own place in the
-     * view hierarchy, against it (a trigger in a scroll); the overlay draws it only while open.
-     */
+    /** The colour the base sits on: its lens is drawn in its place in the page (a base in a scroll). */
     restBackdrop?: string;
-    accessibilityLabel?: string;
     style?: StyleProp<ViewStyle>;
     children?: ReactNode;
   }>;
-  Content: ComponentType<{
-    fontFamily?: string;
-    alignment?: 'auto' | 'start' | 'center' | 'end';
-    width?: number;
-    config?: LensMenuConfig;
-    children?: ReactNode;
-  }>;
-};
-
-export interface Lens {
-  Menu: LensMenuComponent;
-  lensRows: (rows: readonly LensRow[]) => ReactNode[];
+  useInLensBase: () => boolean;
+  /** A menu inside the nearest base; `null` outside one. */
+  useLensBaseMenu: (menu: LensMenu | null) => LensHandle | null;
 }
 
 const MIN_ANDROID_API = 33;

@@ -867,26 +867,28 @@ Menu(MORE, PostMenu({ post }))
 - *Android:* the lens menu is the upstream app's menu component itself
   (`@oxy.so/bloom-lens`: its `Menu`, `Menu.Trigger` and `Menu.Content`,
   copied verbatim by `sync-from-upstream.sh`), and this host only adapts the
-  `Menu` to it. Every trigger is the upstream app's glass trigger: its lens is
-  the trigger's base, and that base itself becomes the menu (it squishes under
-  the press, flows into the panel and takes it back, with the upstream app's
-  trigger config, `absorb` over 0.48 s). A trigger on `.glass()` (the fixed
-  layer: a header's, a bar's) is drawn as upstream, by the window, with the
-  glass's tint and frost. Any other (a feed row's ⋯) draws its lens at rest in
-  its own place in the page (`restBackdrop`, the engine's Bloom patch), against
-  the fill of the surface it sits on: it scrolls, clips and stacks with the
-  page, under the bars, and a layer keeps it, so a scroll redraws no lens. The
-  window draws it only while its menu is open, from that same base. The
-  trigger's `.corner()` is the base's radius (a capsule without one). The
-  trigger's press layer opens the menu
-  natively (a trigger's own press is left out); press-and-drag across the open
-  panel, submenus, haptics and predictive back are the component's own. Rows
-  given as they are (tagged, or with handlers) become its `Menu.Item`,
-  `Menu.Submenu`, `Menu.Label` and `Menu.Separator`, a glyph a view in the row's
-  ink (a submenu takes none; a disabled one is a disabled row). A `menu()`
-  content is built by the trigger's own press: the view opens itself as its
-  rows arrive (`openWithItems`) and lets them go once the menu has closed
-  (`onMenuClosed`). Bloom gives only the colours (the panel's tint and the
+  `Menu` to it. The glass of every Bloom control is one **lens base**, the
+  upstream app's glass trigger (`LensBase` in `@oxy.so/bloom-lens`): a button
+  on glass, a `ButtonGroup` on glass, a header's action group, the bottom bar.
+  A menu opened from anything inside a base is that base's, and the whole base
+  becomes the menu and takes it back, as the upstream app's toolbar pill does
+  (`absorb` over 0.48 s, the base's own config); a press anywhere on it springs
+  the whole base, and nothing inside a base draws a lens of its own. A menu
+  outside any base is a base of its own: on `.glass()` (the fixed layer) drawn
+  by the window, with the glass's tint and frost; anywhere else (a feed row's
+  ⋯) its lens is drawn in its own place in the page (`restBackdrop`, the
+  engine's Bloom patch), against the fill of the surface it sits on, so it
+  scrolls, clips and stacks with the page, and a layer keeps it, so a scroll
+  redraws no lens. The window draws it only while its menu is open, from that
+  same base. The trigger's `.corner()` is the base's radius (a capsule
+  without one). The trigger's press opens the menu natively;
+  press-and-drag across the open panel, submenus, haptics and predictive back
+  are the component's own. Rows given as they are (tagged, or with handlers)
+  become its `Menu.Item`, `Menu.Submenu`, `Menu.Label` and `Menu.Separator`, a
+  glyph a view in the row's ink (a submenu takes none; a disabled one is a
+  disabled row), held by the base before it opens. A `menu()` content is built
+  by the trigger's press: the base opens with its rows as they arrive
+  (`openWithItems`) and lets them go once the menu has closed. Bloom gives only the colours (the panel's tint and the
   rows' ink from its menu palette, the theme's scheme) and the face (Inter);
   every other value is the upstream app's. A row's `.subtitle` is drawn only
   here. Without the lens, Bloom's menu.

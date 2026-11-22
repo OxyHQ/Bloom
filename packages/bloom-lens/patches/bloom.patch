@@ -50,28 +50,26 @@
  
    private var overlay: GlassMenuOverlay? = null
    private var glassRenderer: Any? = null
-@@ -55,8 +57,20 @@
-   internal var items: List<GlassMenuItemRecord> = emptyList()
+@@ -56,7 +58,18 @@
      set(value) {
        field = value
-+      // Emptied, a view that opens with its rows opens again with the next ones.
-+      if (value.isEmpty()) openedWithItems = false
        overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
 +      openWhenReady()
      }
-+  // The owner gives this view its rows only as its menu opens (rows built by the press that opens it, or a view
-+  // mounted with its menu open): it opens itself as soon as it has rows and is laid out, since nothing can call
-+  // `open` with rows it does not have yet. Its rows emptied once the menu has closed, the next ones open it again.
++  // An open the owner asks for together with the rows it opens with (rows built by the press that opens it, or rows
++  // swapped in for it): while set, the view opens itself, once, as soon as it has rows and is laid out, since a call
++  // to `open` could arrive before the rows do. Set false, it opens again the next time it is set.
 +  internal var openWithItems = false
 +    set(value) {
 +      field = value
++      if (!value) openedWithItems = false
 +      openWhenReady()
 +    }
 +  private var openedWithItems = false
    internal var glass = true
      set(value) {
        field = value
-@@ -81,6 +95,24 @@
+@@ -81,6 +94,24 @@
        field = value
        overlay?.invalidate()
      }
@@ -96,7 +94,7 @@
    internal var menuWidth: Float? = null
    internal var fontFamily: String? = null
    internal var alignment = "auto"
-@@ -89,7 +121,10 @@
+@@ -89,7 +120,10 @@
  
    internal val drawsGlass get() = glass && supportsGlass
  
@@ -108,7 +106,7 @@
  
    init {
      setWillNotDraw(false)
-@@ -99,8 +134,22 @@
+@@ -99,8 +133,22 @@
      super.onAttachedToWindow()
      val root = rootView as? ViewGroup ?: return
      overlay = GlassMenuOverlay.obtain(root).also { it.register(this) }
@@ -132,7 +130,7 @@
    }
  
    override fun onDetachedFromWindow() {
-@@ -115,15 +164,86 @@
+@@ -115,15 +163,86 @@
    private fun releaseGraphics() {
      (glassRenderer as? GlassRenderer)?.release()
      glassRenderer = null
@@ -219,7 +217,7 @@
    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
      if (event.actionMasked == MotionEvent.ACTION_DOWN) {
        pressX = event.x
-@@ -182,7 +302,17 @@
+@@ -182,7 +301,17 @@
  
    override fun dispatchDraw(canvas: Canvas) {
      if (overlayDrawsChildren) return
@@ -237,7 +235,7 @@
    }
  
    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@@ -275,11 +405,12 @@
+@@ -275,11 +404,12 @@
    internal fun onSessionFinished() {
      menuActive = false
      invalidate()
@@ -251,7 +249,7 @@
      const val PressMemory = 1000L
      const val MorphFromPress = "press"
      const val PressRadius = 22f
-@@ -287,5 +418,8 @@
+@@ -287,5 +417,8 @@
      const val LightLift = .055f
      const val LightPool = .07f
      const val LightRimLift = .3f

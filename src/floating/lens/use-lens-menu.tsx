@@ -22,20 +22,20 @@ import {
 import { useTheme } from '../../theme/use-theme';
 import { useMenuPalette } from '../menu-palette';
 import { MENU_FONT_FAMILY } from '../menu-type';
-import { LENS_TRIGGER_CONFIG, type LensHandle, type LensRow, getNativeLens } from './native-lens';
+import {
+  type LensHandle,
+  type LensRow,
+  getNativeLens,
+  useInLensBase,
+  useLensBaseMenu,
+} from './native-lens';
 import type { ParsedLensMenu } from './parse-lens-menu';
 import { useLensTint } from './use-lens-tint';
 
 /** A menu's rows, read as data for the native lens menu. */
 export interface MenuLens extends ParsedLensMenu {
+  /** The menu in its lens base: what opens and closes it. */
   nativeRef: RefObject<LensHandle | null>;
-  /** Whether the menu was open as these rows arrived: a native view mounted now opens itself. */
-  open: boolean;
-  /**
-   * The rows arrive only as the menu opens (a `Content` the owner mounts only while it is open):
-   * the native view, mounted with the trigger, opens itself as they arrive.
-   */
-  deferred: boolean;
   /** The native menu opened or closed itself. */
   openChange: (open: boolean) => void;
   /** The native menu has finished closing. */
@@ -163,34 +163,27 @@ export function useLensMenu({
     [setOpen],
   );
 
-  // An open or close the owner makes through its own state reaches the native menu here; the
-  // native menu's own opens and closes arrive through `openChange` first and find nothing to do.
-  // A native view that mounts with the menu open opens itself (`MenuLens.open`): it cannot take
-  // a call before it is mounted.
+  // An open or close the owner makes through its own state reaches the native menu here (rows
+  // that arrive only as it opens open it as they arrive); the native menu's own opens and closes
+  // arrive through `openChange` first and find nothing to do.
   const present = rows != null;
-  const mounted = useRef(false);
   useEffect(() => {
     if (!present) {
-      mounted.current = false;
       nativeOpen.current = false;
       return;
     }
-    const mounting = !mounted.current;
-    mounted.current = true;
     if (open === nativeOpen.current) return;
     nativeOpen.current = open;
-    if (mounting) return;
-    void (open ? nativeRef.current?.open() : nativeRef.current?.close());
+    if (open) nativeRef.current?.open();
+    else nativeRef.current?.close();
   }, [present, open]);
 
-  // A `Content` the root cannot see brings its rows as the menu opens; the view waits for them.
+  // A `Content` the root cannot see brings its rows as the menu opens: the trigger is the lens
+  // base's all the same, waiting for them.
   const deferred = available && !element;
   const host = useMemo(
-    () =>
-      rows || deferred
-        ? { rows: rows ?? NO_ROWS, nativeRef, open, deferred, openChange, closed }
-        : undefined,
-    [rows, deferred, open, openChange, closed],
+    () => (rows || deferred ? { rows: rows ?? NO_ROWS, nativeRef, openChange, closed } : undefined),
+    [rows, deferred, openChange, closed],
   );
   return {
     lens: rows ? host : undefined,
@@ -247,65 +240,68 @@ interface LensTriggerProps {
 }
 
 /**
- * The native lens view around a trigger. It reads the theme, so it is a component of its own:
- * only a menu the native lens menu presents mounts it, and every other menu stays free of the
- * theme (as the sheet always was).
+ * The trigger of a menu the native lens presents: inside a lens base (a lens group, a bar) the
+ * menu is that base's and grows out of it; anywhere else the trigger is a base of its own. It
+ * reads the theme, so it is a component of its own: only a menu the lens presents mounts it.
  */
 export function LensTrigger({ lens, triggerLens, tone, tint, children }: LensTriggerProps) {
   const native = getNativeLens();
+  const inBase = useInLensBase();
   const dark = useTheme().isDark;
   const primary = useLensTint().color;
-  const { surface, border, text, textSecondary, destructive } = useMenuPalette();
-  // Bloom's menu palette colours the lens: its surface tints the panel (at the engine's own
-  // transparency, as its upstream app draws it), its ink draws the rows.
-  const config = useMemo(
-    () => ({
-      tintColor: surface,
-      textColor: text,
-      mutedColor: textSecondary,
-      destructiveColor: destructive,
-      separatorColor: border,
-    }),
-    [surface, border, text, textSecondary, destructive],
-  );
   const [origin, setOrigin] = useState<LensOrigin | null>(null);
-  // Read once: a view that mounts with the menu open opens itself.
-  const [openAtMount] = useState(lens.open);
   // A coloured trigger (a tint, the primary tone, a filled Button) morphs out of its own colour;
-  // any other out of the untinted lens, as the engine's upstream app does. A lens trigger takes
-  // its menu back as the upstream app's trigger does.
+  // any other out of the untinted lens, as the engine's upstream app does.
   const fill = tint ?? (tone === 'primary' ? primary : origin?.tint);
   const triggerConfig = useMemo(
-    () =>
-      fill || triggerLens
-        ? {
-            ...(fill ? { tintColor: fill, tintOpacity: 0.96 } : null),
-            ...(triggerLens ? LENS_TRIGGER_CONFIG : null),
-          }
-        : undefined,
-    [fill, triggerLens],
+    () => (fill ? { tintColor: fill, tintOpacity: 0.96 } : undefined),
+    [fill],
   );
   if (!native) return <>{children}</>;
-  const { Menu, lensRows } = native;
-  // The family's trigger handles its press (and opens through `nativeRef`): no press layer.
+  const opener = <LensOpener lens={lens}>{children}</LensOpener>;
+  if (inBase) return opener;
+  const { LensBase } = native;
   return (
-    <Menu ref={lens.nativeRef} colorScheme={dark ? 'dark' : 'light'} onOpenChange={lens.openChange}>
-      <Menu.Trigger
-        lens={triggerLens}
-        cornerRadius={origin?.radius}
-        config={triggerConfig}
-        openOnPress={false}
-        openWithItems={lens.deferred || openAtMount}
-        onMenuClosed={lens.closed}
-        style={TRIGGER_STYLE}
-      >
-        <LensOriginContext.Provider value={setOrigin}>{children}</LensOriginContext.Provider>
-      </Menu.Trigger>
-      <Menu.Content fontFamily={MENU_FONT_FAMILY.fontFamily} config={config}>
-        {lensRows(lens.rows)}
-      </Menu.Content>
-    </Menu>
+    <LensBase
+      lens={triggerLens}
+      colorScheme={dark ? 'dark' : 'light'}
+      cornerRadius={origin?.radius}
+      config={triggerConfig}
+      style={TRIGGER_STYLE}
+    >
+      <LensOriginContext.Provider value={setOrigin}>{opener}</LensOriginContext.Provider>
+    </LensBase>
   );
+}
+
+/** The menu in the nearest base: Bloom's menu palette colours the panel and inks the rows. */
+function LensOpener({ lens, children }: { lens: MenuLens; children: ReactNode }) {
+  const { surface, border, text, textSecondary, destructive } = useMenuPalette();
+  const { rows, openChange, closed } = lens;
+  const menu = useMemo(
+    () =>
+      rows.length > 0
+        ? {
+            rows,
+            config: {
+              tintColor: surface,
+              textColor: text,
+              mutedColor: textSecondary,
+              destructiveColor: destructive,
+              separatorColor: border,
+            },
+            fontFamily: MENU_FONT_FAMILY.fontFamily,
+            onOpenChange: openChange,
+            onClosed: closed,
+          }
+        : null,
+    [rows, surface, border, text, textSecondary, destructive, openChange, closed],
+  );
+  const handle = useLensBaseMenu(menu);
+  useLayoutEffect(() => {
+    lens.nativeRef.current = handle;
+  }, [lens.nativeRef, handle]);
+  return <>{children}</>;
 }
 
 const TRIGGER_STYLE = { alignSelf: 'flex-start' } as const;
