@@ -155,3 +155,7 @@ export const TripCard = 'TripCard';
 export const BookingCard = 'BookingCard';
 export const BookingBar = 'BookingBar';
 export const PriceBreakdown = 'PriceBreakdown';
+export const HomeSearchBar = 'HomeSearchBar';
+export const SearchModeTabs = 'SearchModeTabs';
+export const PropertyTypePicker = 'PropertyTypePicker';
+export const SavedSearchCard = 'SavedSearchCard';
