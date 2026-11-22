@@ -1,3 +1,5 @@
+import normalizeColor from '@react-native/normalize-colors';
+
 /**
  * Native host trees in one spelling, so two trees compare on what React
  * Native draws and not on how a style was written. Each fold is a rule React
@@ -26,7 +28,54 @@
  * - A percentage is compared to 4 decimals: NativeWind writes a third as
  *   `33.3333%`, the language as `33.333333%`; Yoga rounds a layout to the
  *   device's pixels, where 1e-6 of a percent cannot move one.
+ * - A `boxShadow` is the list React Native draws, parsed as its
+ *   `processBoxShadow` parses one (the same splits and lengths, each colour
+ *   through its `normalizeColor`): NativeWind writes Tailwind's `shadow-sm` as
+ *   a parsed list (`#0000001a`), the language as its CSS string
+ *   (`rgb(0 0 0 / 0.1)`), and React Native draws both as the same list.
  */
+
+/** React Native's own splits and length rule (`Libraries/StyleSheet/processBoxShadow`). */
+const SHADOW_SPLIT = /,(?![^()]*\))/;
+const SHADOW_ARGS = /\s+(?![^(]*\))/;
+const SHADOW_LENGTH = /^([+-]?\d*\.?\d+)(px)?$/;
+
+type Shadow = Record<string, unknown>;
+
+/** One shadow as React Native draws it: lengths in points, the colour normalised, the defaults it fills. */
+function drawnShadow(shadow: Shadow): Shadow {
+  const length = (value: unknown) =>
+    typeof value === 'string' ? Number(SHADOW_LENGTH.exec(value)?.[1]) : (value ?? 0);
+  return {
+    offsetX: length(shadow.offsetX),
+    offsetY: length(shadow.offsetY),
+    blurRadius: length(shadow.blurRadius),
+    spreadDistance: length(shadow.spreadDistance),
+    color: normalizeColor(shadow.color as string),
+    inset: shadow.inset === true,
+  };
+}
+
+/** A box shadow, a CSS string or a list, as the list React Native draws. */
+function drawnShadows(value: unknown): Shadow[] {
+  if (Array.isArray(value)) return value.map((shadow: Shadow) => drawnShadow(shadow));
+  return String(value)
+    .split(SHADOW_SPLIT)
+    .map((part) => part.trim())
+    .filter((part) => part !== '')
+    .map((part) => {
+      const shadow: Shadow = {};
+      const lengths: string[] = [];
+      for (const arg of part.split(SHADOW_ARGS)) {
+        if (arg === 'inset') shadow.inset = true;
+        else if (normalizeColor(arg) !== null) shadow.color = arg;
+        else lengths.push(arg);
+      }
+      [shadow.offsetX, shadow.offsetY, shadow.blurRadius, shadow.spreadDistance] = lengths;
+      return drawnShadow(shadow);
+    });
+}
+
 interface Host {
   type: string;
   props: Record<string, unknown>;
@@ -92,6 +141,7 @@ function foldStyle(
   foldBox(style, 'margin');
   foldBorders(style);
   if (style.fontWeight !== undefined) style.fontWeight = String(style.fontWeight);
+  if (style.boxShadow !== undefined) style.boxShadow = drawnShadows(style.boxShadow);
   // A corner of the reading direction is its physical corner left to right (the web harness folds them alike).
   for (const [logical, physical] of [
     ['borderTopStartRadius', 'borderTopLeftRadius'],

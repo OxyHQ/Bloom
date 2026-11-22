@@ -128,3 +128,7 @@ export function Divided({
     </View>
   );
 }
+
+export function Raised() {
+  return <View className="rounded-lg p-4 shadow-sm" />;
+}
