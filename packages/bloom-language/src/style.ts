@@ -17,7 +17,7 @@ import {
   type PaintVariant,
 } from './paint';
 import { compareLive, type LiveCondition, type Planned } from './variants';
-import { adoptVariantClasses, variantSuffix } from './web-sheet';
+import { adoptInk, adoptVariantClasses, variantSuffix } from './web-sheet';
 import {
   ALIGNMENT,
   OPACITY,
@@ -100,13 +100,21 @@ export function role(token: ColorToken): RoleRef {
 }
 
 /**
- * A role's web paint: its CSS variable (or fixed colour), and at an opacity the
- * mix Tailwind writes for `/70`, so the web draws what the class drew.
+ * A role's web paint: its CSS variable (or fixed colour), and at an opacity a
+ * custom property holding the mix Tailwind writes for `/70` (`--bl-primary-70`),
+ * so the web draws what the class drew. react-native-web drops a colour it
+ * cannot parse unless it is a `var()` (its `normalizeColor`), so the mix itself
+ * is declared in the language's ink sheet (web-sheet.ts) and the style names it.
  */
 export function webInk(ref: RoleRef): string {
   const web = COLORS[ref.role].web;
   if (ref.opacity === undefined) return web;
-  return `color-mix(in oklab, ${web} ${Number((ref.opacity * 100).toFixed(4))}%, transparent)`;
+  const name = `--bl-${ref.token.replace('/', '-')}`;
+  adoptInk(
+    name,
+    `color-mix(in oklab, ${web} ${Number((ref.opacity * 100).toFixed(4))}%, transparent)`,
+  );
+  return `var(${name})`;
 }
 
 /** A value a resolved style holds: a number, a string, a role, or a structured value (a shadow's offset, a transform). */

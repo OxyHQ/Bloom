@@ -36,7 +36,7 @@ import {
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
-import { type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
 import { BaseFontText } from './support/base-font';
 
 /** Web CSS react-native-web passes through, which React Native's style types do not name. */
@@ -430,32 +430,21 @@ const named: ParityCase[] = [
 
 /**
  * A role at a named opacity, as an app draws `text-muted-foreground/70` today:
- * the mix Tailwind writes on the web, the colour at that alpha on native.
+ * the colour at that alpha (on the web Tailwind's mix with transparent, which
+ * the browser draws as the colour at the mix's alpha; react-native-web takes
+ * no `color-mix()` inline, so this side writes the colour).
  */
 const translucent: ParityCase[] = (
   [
-    ['muted/70', 'textSecondary', 'muted-foreground', 0.7],
-    ['primary/30', 'primary', 'primary', 0.3],
-    ['destructive/10', 'destructive', 'destructive', 0.1],
+    ['muted/70', 'textSecondary', 0.7],
+    ['primary/30', 'primary', 0.3],
+    ['destructive/10', 'destructive', 0.1],
   ] as const
-).map(([token, key, variable, amount]) => ({
+).map(([token, key, amount]) => ({
   name: `foreground ${token}`,
   language: () => toElement(L.Text('Ink').foreground(token)),
   bloom: () => (
-    <Themed>
-      {(c) => (
-        <Text
-          style={{
-            color:
-              RN.Platform.OS === 'web'
-                ? `color-mix(in oklab, var(--${variable}) ${amount * 100}%, transparent)`
-                : withAlpha(c[key], amount),
-          }}
-        >
-          Ink
-        </Text>
-      )}
-    </Themed>
+    <ThemedRgb>{(c) => <Text style={{ color: withAlpha(c[key], amount) }}>Ink</Text>}</ThemedRgb>
   ),
 }));
 
