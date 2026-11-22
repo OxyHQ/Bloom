@@ -186,3 +186,4 @@ export const MediaPlayer: Story = { args: { family: 'mediaPlayer' } };
 export const Logistics: Story = { args: { family: 'logistics' } };
 export const MusicLibrary: Story = { args: { family: 'musicLibrary' } };
 export const QueuePanels: Story = { args: { family: 'queuePanel' } };
+export const TrackLists: Story = { args: { family: 'trackList' } };
