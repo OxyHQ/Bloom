@@ -10,7 +10,7 @@ import { Z_INDEX } from '../styles/z-index';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PlatformSurfaceProvider } from '../platform-surface/context';
 import type { PlatformSurfaceAdapter } from '../platform-surface/types';
-import { classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
 
 /**
  * `BottomSheet` draws a decorative drag handle by default; `SheetShell` draws
@@ -43,10 +43,10 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 function OpenSheetShell({
-  contentClassName,
+  contentStyle,
   contentTestID,
 }: {
-  contentClassName?: string;
+  contentStyle?: { minWidth: number };
   contentTestID?: string;
 } = {}) {
   const control = useDialogControl();
@@ -57,7 +57,7 @@ function OpenSheetShell({
     <SheetShell
       control={control}
       label="Menu"
-      contentClassName={contentClassName}
+      contentStyle={contentStyle}
       contentTestID={contentTestID}
     >
       <Text>Row</Text>
@@ -78,14 +78,14 @@ describe('SheetShell drag handle', () => {
     expect(sheetHandles(UNSAFE_root)).toHaveLength(0);
   });
 
-  it('forwards content classes and testID to the sheet body', () => {
+  it('forwards the content style and testID to the sheet body', () => {
     const { getByTestId } = renderWithTheme(
-      <OpenSheetShell contentClassName="min-w-[224px]" contentTestID="menu-content" />,
+      <OpenSheetShell contentStyle={{ minWidth: 224 }} contentTestID="menu-content" />,
     );
     act(() => {});
 
     const body = getByTestId('menu-content');
-    expect(classNamesOn(body.props.style)).toContain('min-w-[224px]');
+    expect(resolvedStyle(body.props.style).minWidth).toBe(224);
   });
 
   describe('control case', () => {
