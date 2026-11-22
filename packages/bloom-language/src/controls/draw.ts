@@ -8,8 +8,10 @@ import {
 
 import { type Child, isNode, type Modifier, type Node, type Press } from '../node';
 import type { TextTraits } from '../style';
-import type { ColorToken, Role } from '../tokens';
-import type { ColorToken } from '../tokens';
+import type { ColorToken, InkToken, Role } from '../tokens';
+
+/** What a product component's colour prop is painted from: a role, or a list of colours. */
+export type ProductColor = ColorToken | readonly InkToken[];
 
 /**
  * What a control's renderer is handed (see `controls/index.ts`): its node, its
@@ -45,13 +47,14 @@ export interface ControlDraw {
   component(host: unknown, props: Record<string, unknown>, ...children: ReactNode[]): ReactElement;
   /**
    * Draws a Bloom component as `component` does, with the props `colors` names
-   * painted from their colour roles (a role at an opacity included; a list of
-   * them for a list prop, a scale), read from the theme in the leaf that draws it.
+   * painted from their colour roles (a role at an opacity included), read from
+   * the theme in the leaf that draws it. A prop given a list of colours (each a
+   * role or an app's own colour) is painted as a list.
    */
   painted(
     host: unknown,
     props: Record<string, unknown>,
-    colors: Readonly<Record<string, ColorToken | readonly ColorToken[] | undefined>>,
+    colors: Readonly<Record<string, ProductColor | undefined>>,
     ...children: ReactNode[]
   ): ReactElement;
   /**

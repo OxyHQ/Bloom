@@ -159,7 +159,7 @@ import {
   type LiveCondition,
   type Planned,
 } from './variants';
-import { Conditioned, Painted, type Paint, type PaintVariant, type PropRole } from './paint';
+import { Conditioned, type ListColor, Painted, type Paint, type PaintVariant } from './paint';
 import {
   DURATION,
   HIT_SLOP,
@@ -182,6 +182,7 @@ import {
   type ColorName,
   type ColorToken,
   type IconSizeToken,
+  type InkToken,
   type Role,
   type TextStyleName,
 } from './tokens';
@@ -1451,6 +1452,13 @@ function propRole(prop: string, token: ColorToken): readonly [string, ColorName,
   return opacity === undefined ? [prop, name] : [prop, name, opacity];
 }
 
+/** One colour of a painted list: a role (at an opacity), or an app's own colour. */
+function listColor(token: InkToken): ListColor {
+  const ref = ink(token);
+  if (typeof ref === 'string') return ref;
+  return ref.opacity === undefined ? [ref.role] : [ref.role, ref.opacity];
+}
+
 const NO_ROLES: Paint['propRoles'] = Object.freeze([]);
 
 /** What a variant changes of a component's props: values as they are, and props painted from roles. */
@@ -1473,11 +1481,12 @@ function variedPaint(
   out: StyleOut,
   propRoles: Paint['propRoles'],
   variants: () => readonly (readonly [LiveCondition, VariedProps])[],
+  propLists?: Paint['propLists'],
 ): Paint | undefined {
   let paint = variedPaints.get(id);
   if (paint === undefined) {
     const varied = variants();
-    if (propRoles.length === 0 && varied.length === 0) paint = null;
+    if (propRoles.length === 0 && varied.length === 0 && propLists === undefined) paint = null;
     else {
       const base = out.paint ?? {
         style: out.style as object | undefined,
@@ -1500,6 +1509,7 @@ function variedPaint(
         styleRoles: base.styleRoles,
         propRoles,
         ...(list.length > 0 ? { variants: list } : null),
+        ...(propLists === undefined ? null : { propLists }),
       };
     }
     variedPaints.set(id, paint);
@@ -2294,21 +2304,24 @@ function renderHost(
             ? drawHost(host, boxOf('component', node.kind), props, ...children)
             : draw(host, props, ...children),
         painted: (host, props, colors, ...children) => {
-          const roles: PropRole[] = [];
+          const roles: (readonly [string, ColorName, number?])[] = [];
+          const lists: (readonly [string, readonly ListColor[]])[] = [];
+          const listKeys: string[] = [];
           for (const [prop, token] of Object.entries(colors)) {
+            if (token === undefined) continue;
             if (typeof token === 'string') roles.push(propRole(prop, token));
-            else if (token !== undefined)
-              token.forEach((each, index) => {
-                const [, role, opacity] = propRole(prop, each);
-                roles.push([prop, role, opacity, index]);
-              });
+            else {
+              lists.push([prop, token.map(listColor)]);
+              listKeys.push(`${prop}:${token.map(tokenKey).join('+')}`);
+            }
           }
           const out = boxed ? boxOf('component', node.kind) : NO_STYLE_OUT;
           const paint = variedPaint(
-            `C|${node.kind}|${boxed ? `${layerKey}|${flex}` : ''}|${roles.map((r) => r.join(':')).join(',')}`,
+            `C|${node.kind}|${boxed ? `${layerKey}|${flex}` : ''}|${roles.map((r) => r.join(':')).join(',')}|${listKeys.join(',')}`,
             out,
             roles,
             NO_VARIANTS,
+            lists.length === 0 ? undefined : lists,
           );
           return drawHost(
             host,

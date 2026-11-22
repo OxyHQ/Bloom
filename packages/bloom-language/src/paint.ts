@@ -21,12 +21,6 @@ import type { ColorName } from './tokens';
 import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './variants';
 
 /**
- * A prop painted from a colour role, at an opacity or not; with an index, the
- * element of a list prop it paints (a scale of colours).
- */
-export type PropRole = readonly [prop: string, role: ColorName, opacity?: number, index?: number];
-
-/**
  * What a `Painted` leaf fills from the theme: style properties painted from
  * colour roles (native; the web paints style roles with CSS variables), and
  * props painted from roles, optionally at an opacity (an icon's `fill`, a
@@ -35,10 +29,15 @@ export type PropRole = readonly [prop: string, role: ColorName, opacity?: number
 export interface Paint {
   readonly style: object | undefined;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
-  readonly propRoles: readonly PropRole[];
+  readonly propRoles: readonly (readonly [string, ColorName, number?])[];
   /** Native: what live variants override, in the order they apply (a `Conditioned` leaf draws them). */
   readonly variants?: readonly PaintVariant[];
+  /** Props painted as a list of colours (a loader's four, a gradient's stops): see `listProps`. */
+  readonly propLists?: readonly (readonly [string, readonly ListColor[]])[];
 }
+
+/** One colour of a painted list: a role (at an opacity), or an app's own colour as it is. */
+export type ListColor = readonly [ColorName, number?] | string;
 
 /**
  * One live variant of a native style: its values, the properties painted from
@@ -49,7 +48,7 @@ export interface PaintVariant {
   readonly condition: LiveCondition;
   readonly style: object;
   readonly styleRoles: readonly (readonly [string, ColorName, number?])[];
-  readonly propRoles?: readonly PropRole[];
+  readonly propRoles?: readonly (readonly [string, ColorName, number?])[];
   readonly props?: Readonly<Record<string, unknown>>;
 }
 
@@ -66,22 +65,6 @@ function atOpacity(color: string, opacity: number): string {
   return !IS_WEB || parseRgb(color) !== null
     ? withAlpha(color, opacity)
     : `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`;
-}
-
-/** Sets a painted prop: the prop itself, or one element of its list (a new list each time). */
-function setProp(
-  props: Record<string, unknown>,
-  key: string,
-  color: string,
-  index: number | undefined,
-): void {
-  if (index === undefined) {
-    props[key] = color;
-    return;
-  }
-  const list = [...((props[key] as readonly string[] | undefined) ?? [])];
-  list[index] = color;
-  props[key] = list;
 }
 
 /** The props a paint resolves to under one palette, built once per palette and reused. */
@@ -104,10 +87,44 @@ function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> 
     } else if (paint.style !== undefined) {
       props.style = paint.style;
     }
-    for (const [key, role, opacity, index] of paint.propRoles) {
+    for (const [key, role, opacity] of paint.propRoles) {
       const color = colors[COLORS[role].paint];
-      setProp(props, key, opacity === undefined ? color : atOpacity(color, opacity), index);
+      props[key] = opacity === undefined ? color : atOpacity(color, opacity);
     }
+    Object.freeze(props);
+    byPaint.set(paint, props);
+  }
+  return props;
+}
+
+const listed = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>>>();
+
+/**
+ * The props a paint's lists resolve to under one palette, built once per
+ * palette and reused: `undefined` when it paints none. A list is what Bloom
+ * blends (a composer loader's midpoint, a gradient's stops), so its roles are
+ * the theme's RGB colours (`useTheme().colors`), which an app hands Bloom for
+ * colour math, not the paint palette (a CSS variable on the web).
+ */
+function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> | undefined {
+  if (paint.propLists === undefined) return undefined;
+  let byPaint = listed.get(colors);
+  if (byPaint === undefined) {
+    byPaint = new WeakMap();
+    listed.set(colors, byPaint);
+  }
+  let props = byPaint.get(paint);
+  if (props === undefined) {
+    props = {};
+    for (const [key, list] of paint.propLists)
+      props[key] = Object.freeze(
+        list.map((color) => {
+          if (typeof color === 'string') return color;
+          const [role, opacity] = color;
+          const rgb = colors[COLORS[role].paint];
+          return opacity === undefined ? rgb : withAlpha(rgb, opacity);
+        }),
+      );
     Object.freeze(props);
     byPaint.set(paint, props);
   }
@@ -129,11 +146,17 @@ interface PaintedProps {
  */
 export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
   const painted = paintProps(useThemePaint(), paint);
+  const lists = listProps(useTheme().colors, paint);
   // A moving host's motion style (`Outer`) comes after the painted one.
   if (props.style !== undefined && painted.style !== undefined) {
-    return createElement(host, { ...props, ...painted, style: [painted.style, props.style] });
+    return createElement(host, {
+      ...props,
+      ...painted,
+      ...lists,
+      style: [painted.style, props.style],
+    });
   }
-  return createElement(host, { ...props, ...painted });
+  return createElement(host, { ...props, ...painted, ...lists });
 }
 Painted.displayName = 'BloomPaint';
 
@@ -204,8 +227,8 @@ function conditionedProps(
       Object.assign(style, variant.style);
       Object.assign(next, variant.props);
       for (const [key, role, opacity] of variant.styleRoles) style[key] = paintColor(role, opacity);
-      for (const [key, role, opacity, index] of variant.propRoles ?? [])
-        setProp(next, key, paintColor(role, opacity), index);
+      for (const [key, role, opacity] of variant.propRoles ?? [])
+        next[key] = paintColor(role, opacity);
     });
     // A paint of props alone (an icon's fill) gains no style.
     if (base.style !== undefined || Object.keys(style).length > 0)
@@ -224,13 +247,17 @@ function conditionedProps(
  */
 export function Conditioned({ host, paint, ...props }: PaintedProps): ReactElement {
   const colors = useThemePaint();
-  const { isDark } = useTheme();
+  const theme = useTheme();
   const tier = useWindowBreakpoint();
   const state = useContext(InteractionContext);
   let holding = 0;
   (paint.variants ?? []).forEach((variant, index) => {
-    if (holds(variant.condition, tier, isDark, state)) holding |= 1 << index;
+    if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
   });
-  return createElement(host, { ...props, ...conditionedProps(colors, paint, holding) });
+  return createElement(host, {
+    ...props,
+    ...conditionedProps(colors, paint, holding),
+    ...listProps(theme.colors, paint),
+  });
 }
 Conditioned.displayName = 'BloomConditioned';
