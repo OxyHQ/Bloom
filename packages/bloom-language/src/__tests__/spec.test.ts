@@ -1727,8 +1727,13 @@ describe('the spec drives the rules', () => {
   it('every generated class is in the sheet once', () => {
     const names = Object.values(WEB_CLASS);
     expect(new Set(names).size).toBe(names.length);
+    // A class's own rule, or a child spacing's, which is all inside `:where()` (web-sheet.ts).
     for (const name of names) {
-      expect(WEB_SHEET.split('\n').filter((rule) => rule.startsWith(`.${name}{`))).toHaveLength(1);
+      expect(
+        WEB_SHEET.split('\n').filter(
+          (rule) => rule.startsWith(`.${name}{`) || rule.startsWith(`:where(.${name} `),
+        ),
+      ).toHaveLength(1);
     }
   });
 
