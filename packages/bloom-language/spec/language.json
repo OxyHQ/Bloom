@@ -545,7 +545,8 @@
     "paymentStatusStyle": ["surface", "plain"],
     "pipelineLayout": ["auto", "board", "single"],
     "mediaCardSize": ["large", "medium", "small"],
-    "mediaCardLayout": ["tile", "row"]
+    "mediaCardLayout": ["tile", "row"],
+    "lyricsSize": ["large", "medium", "small"]
   },
   "glass": {
     "$comment": [
@@ -1592,7 +1593,13 @@
     "friendActivityCard": { "constructors": ["FriendActivityCard"], "modifiers": [] },
     "quickAccessTile": { "constructors": ["QuickAccessTile"], "modifiers": ["loading"] },
     "recapCard": { "constructors": ["RecapCard"], "modifiers": [] },
-    "shareCard": { "constructors": ["ShareCard"], "modifiers": [] }
+    "shareCard": { "constructors": ["ShareCard"], "modifiers": [] },
+    "lyricsView": {
+      "constructors": ["LyricsView"],
+      "modifiers": ["size"],
+      "size": "lyricsSize"
+    },
+    "lyricsPreviewCard": { "constructors": ["LyricsPreviewCard"], "modifiers": ["lines"] }
   },
   "sfSymbols": {
     "$comment": [
