@@ -3350,6 +3350,12 @@ export const MODIFIERS = {
   ],
   "bordered": [
     "value"
+  ],
+  "onReorder": [
+    "value"
+  ],
+  "onDragChange": [
+    "value"
   ]
 } as const;
 
@@ -15208,7 +15214,75 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "size",
     "disabled"
-  ]
+  ],
+  "sortableChipRow": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "transition",
+    "keyframes",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "fullScreenCover",
+    "onReorder",
+    "onDragChange",
+    "trailing",
+    "disabled"
+  ],
+  "sortableChip": []
 } as const;
 
 /** The constructor functions, by the node kind they make. */
@@ -15414,5 +15488,7 @@ export const CONSTRUCTORS = {
   "DataColumn": "dataColumn",
   "DataTableFilter": "dataTableFilter",
   "DataTableSearch": "dataTableSearch",
-  "DataTableSelect": "dataTableSelect"
+  "DataTableSelect": "dataTableSelect",
+  "SortableChipRow": "sortableChipRow",
+  "SortableChip": "sortableChip"
 } as const;
