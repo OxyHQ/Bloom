@@ -251,16 +251,17 @@ function reactIds(text: string): string {
 const MARK = 'data-parity-subject';
 
 /**
- * What `element` draws in the document, under Bloom's provider in `scheme`: its
- * own elements, then what it portals into the document's body.
+ * What `element` draws in the document, under Bloom's provider in `scheme`
+ * (with `prepaint`, its web prepaint: theme colours as Bloom's paint
+ * variables): its own elements, then what it portals into the document's body.
  */
-export function webTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
+export function webTree(element: ReactNode, scheme: Scheme = 'light', prepaint = false): unknown {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   act(() => {
     root.render(
-      <BloomThemeProvider fonts={false} mode={scheme}>
+      <BloomThemeProvider fonts={false} mode={scheme} prepaintTheme={prepaint ? {} : undefined}>
         <div {...{ [MARK]: '' }}>{element}</div>
       </BloomThemeProvider>,
     );
