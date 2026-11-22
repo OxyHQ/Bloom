@@ -57,6 +57,7 @@
       },
       "peerDependencies": {
         "@lottiefiles/dotlottie-react": ">=0.13.0",
+        "@oxy.so/bloom-lens": "*",
         "@react-native-community/netinfo": ">=11.1.0",
         "@shopify/flash-list": ">=2.0.0",
         "expo": "*",
@@ -85,6 +86,7 @@
       },
       "optionalPeers": [
         "@lottiefiles/dotlottie-react",
+        "@oxy.so/bloom-lens",
         "@react-native-community/netinfo",
         "@shopify/flash-list",
         "expo",
@@ -170,6 +172,7 @@
       "version": "0.1.0",
       "peerDependencies": {
         "expo": "*",
+        "react": "*",
         "react-native": "*",
       },
     },
