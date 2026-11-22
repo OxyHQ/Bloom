@@ -31,6 +31,10 @@ pub enum Binding {
     View,
     /// The language's `defineTokens`.
     DefineTokens,
+    /// The language's `defineEnvironment`.
+    DefineEnvironment,
+    /// The language's `defineModifier`.
+    DefineModifier,
     /// `regular` or `clear`.
     Glass,
     /// `identity`: a glass value that draws no glass.
@@ -49,11 +53,52 @@ pub enum Binding {
     Const { at: usize },
     /// A module-scope `const` holding a frozen `defineTokens` table.
     Tokens { at: usize },
+    /// A module-scope `const X = defineEnvironment('name', default)`, and the
+    /// kind of its default (`None` when it is not a literal, or is `null`).
+    EnvironmentKey { at: usize, kind: Option<Literal> },
+    /// A module-scope `const X = defineModifier((v, …) => v…)`: a pure recipe of
+    /// modifiers, the same value at every use, so a chain that applies it is static.
+    ModifierConst { at: usize },
     /// A module-scope `const X = view(…)`: calling it makes a view node.
     ViewConstructor { at: usize },
     /// A module-scope `const` holding a static transition or keyframes value,
     /// and whether it changes opacity.
     MotionConst { at: usize, fades: bool },
+}
+
+/// The kind of a literal value, as an environment value's type is checked.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Literal {
+    Boolean,
+    Number,
+    String,
+}
+
+impl Literal {
+    /// The kind of `expression` when it is a boolean, number or string literal.
+    pub fn of(expression: &Expression) -> Option<Self> {
+        match expression.without_parentheses() {
+            Expression::BooleanLiteral(_) => Some(Self::Boolean),
+            Expression::NumericLiteral(_) => Some(Self::Number),
+            Expression::StringLiteral(_) => Some(Self::String),
+            Expression::TemplateLiteral(template) if template.expressions.is_empty() => Some(Self::String),
+            Expression::UnaryExpression(unary)
+                if unary.operator == UnaryOperator::UnaryNegation
+                    && matches!(unary.argument.without_parentheses(), Expression::NumericLiteral(_)) =>
+            {
+                Some(Self::Number)
+            }
+            _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Boolean => "boolean",
+            Self::Number => "number",
+            Self::String => "string",
+        }
+    }
 }
 
 pub struct Module {
@@ -147,6 +192,12 @@ impl Module {
             };
             let binding = match self.callee(init, scoping) {
                 Some(Binding::DefineTokens) => Some(Binding::Tokens { at: index }),
+                Some(Binding::DefineEnvironment) => {
+                    let Expression::CallExpression(call) = init.without_parentheses() else { continue };
+                    let default = call.arguments.get(1).and_then(Argument::as_expression);
+                    Some(Binding::EnvironmentKey { at: index, kind: default.and_then(Literal::of) })
+                }
+                Some(Binding::DefineModifier) => Some(Binding::ModifierConst { at: index }),
                 Some(Binding::View) => Some(Binding::ViewConstructor { at: index }),
                 _ if self.is_motion_value(init, scoping) => self.static_after(init, scoping).map(|_| {
                     Binding::MotionConst { at: index, fades: crate::check::fades(init, self, scoping) }
@@ -195,6 +246,8 @@ impl Module {
                     Binding::Const { at }
                     | Binding::Tokens { at }
                     | Binding::ViewConstructor { at }
+                    | Binding::EnvironmentKey { at, .. }
+                    | Binding::ModifierConst { at }
                     | Binding::MotionConst { at, .. },
                 ) => Some((at + 1).max(floor)),
                 Some(_) => Some(floor),
@@ -335,6 +388,8 @@ fn language_export(name: &str) -> Binding {
     match name {
         "view" => Binding::View,
         "defineTokens" => Binding::DefineTokens,
+        "defineEnvironment" => Binding::DefineEnvironment,
+        "defineModifier" => Binding::DefineModifier,
         "regular" | "clear" => Binding::Glass,
         "identity" => Binding::GlassIdentity,
         "opacity" => Binding::Fade,

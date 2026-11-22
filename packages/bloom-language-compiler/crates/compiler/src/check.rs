@@ -12,7 +12,7 @@ use oxc_semantic::Scoping;
 use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
-use crate::module::{Binding, Module};
+use crate::module::{Binding, Literal, Module};
 use crate::spec::{FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS};
 
 pub struct Problem {
@@ -67,6 +67,11 @@ struct Checker<'m> {
 impl<'a> Visit<'a> for Checker<'_> {
     fn visit_expression(&mut self, expression: &Expression<'a>) {
         if !self.module.is_chain(expression, self.scoping) {
+            if let Err(problem) = check_define_environment(expression, self.module, self.scoping)
+                .and_then(|()| check_define_modifier(expression, self.module, self.scoping))
+            {
+                self.checked.errors.push(problem);
+            }
             walk::walk_expression(self, expression);
             return;
         }
@@ -294,6 +299,9 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
             });
         }
         check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
+        if modifier == "environment" {
+            check_environment(arguments, module, scoping)?;
+        }
         if holds_glass && fades_view(modifier, arguments, module, scoping) {
             return Err(Problem {
                 span: call_span,
@@ -307,6 +315,57 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
         }
     }
     Ok(())
+}
+
+/// `defineEnvironment('name', default)`: a literal name, and a literal default
+/// whose kind every `.environment(key, value)` is held to.
+fn check_define_environment(expression: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let Expression::CallExpression(call) = expression.without_parentheses() else { return Ok(()) };
+    if module.resolve(&call.callee, scoping) != Some(Binding::DefineEnvironment) {
+        return Ok(());
+    }
+    let mut arguments = call.arguments.iter().filter_map(Argument::as_expression);
+    match arguments.next().map(Expression::without_parentheses) {
+        Some(Expression::StringLiteral(_)) => {}
+        _ => {
+            return Err(Problem {
+                span: call.span,
+                message: "defineEnvironment() takes its name as a string literal".into(),
+                help: Some("const Compact = defineEnvironment('compact', false)".into()),
+            });
+        }
+    }
+    let default = arguments.next();
+    let literal = default.is_some_and(|value| {
+        Literal::of(value).is_some()
+            || matches!(value.without_parentheses(), Expression::NullLiteral(_))
+            || matches!(value.without_parentheses(), Expression::Identifier(id) if id.name == "undefined")
+    });
+    if literal {
+        return Ok(());
+    }
+    Err(Problem {
+        span: default.map_or(call.span, GetSpan::span),
+        message: "defineEnvironment() takes a literal default: a string, a number, a boolean, null or undefined".into(),
+        help: Some("an environment value is a token or a plain value, never a style or an object".into()),
+    })
+}
+
+/// `.environment(key, value)`: a literal value has the kind of the key's default.
+fn check_environment(arguments: &[Argument], module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let mut values = arguments.iter().filter_map(Argument::as_expression);
+    let (Some(key), Some(value)) = (values.next(), values.next()) else { return Ok(()) };
+    let Some(Binding::EnvironmentKey { kind: Some(expected), .. }) = module.resolve(key, scoping) else {
+        return Ok(());
+    };
+    match Literal::of(value) {
+        Some(found) if found != expected => Err(Problem {
+            span: value.span(),
+            message: format!(".environment() sets a {} value to a {}", expected.name(), found.name()),
+            help: Some("the value has the type of the key's default (defineEnvironment)".into()),
+        }),
+        _ => Ok(()),
+    }
 }
 
 /// Whether this modifier makes the view less than opaque: an opacity below
@@ -577,8 +636,32 @@ fn check_variant(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
+    check_on_parameter(value, spec, Some(VARIANT_MODIFIERS), module, scoping)
+}
+
+/// `defineModifier((v, …) => v…)`: the chain on its view takes the universal
+/// modifiers (it applies to any view), each with valid arguments. A body
+/// written any other way is the runtime's.
+fn check_define_modifier(expression: &Expression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let Expression::CallExpression(call) = expression.without_parentheses() else { return Ok(()) };
+    if module.resolve(&call.callee, scoping) != Some(Binding::DefineModifier) {
+        return Ok(());
+    }
+    let Some(body) = call.arguments.first().and_then(Argument::as_expression) else { return Ok(()) };
+    check_on_parameter(body, node("view"), None, module, scoping)
+}
+
+/// The chain an arrow returns on its first parameter: each modifier one the
+/// node takes (and, for a variant, one a variant changes), with valid arguments.
+fn check_on_parameter(
+    value: &Expression,
+    spec: &NodeSpec,
+    only: Option<&[&str]>,
+    module: &Module,
+    scoping: &Scoping,
+) -> Result<(), Problem> {
     let Expression::ArrowFunctionExpression(arrow) = value.without_parentheses() else { return Ok(()) };
-    let [param] = arrow.params.items.as_slice() else { return Ok(()) };
+    let Some(param) = arrow.params.items.first() else { return Ok(()) };
     let BindingPattern::BindingIdentifier(param) = &param.pattern else { return Ok(()) };
     let body = match &arrow.body {
         ArrowFunctionBody::FunctionBody(body) => match body.statements.as_slice() {
@@ -610,9 +693,22 @@ fn check_variant(
         return Ok(());
     }
     for (modifier, span, arguments, call_span) in modifiers.into_iter().rev() {
-        if !VARIANT_MODIFIERS.contains(&modifier) || !spec.modifiers.contains(&modifier) {
-            let varies: Vec<&str> =
-                VARIANT_MODIFIERS.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
+        let Some(only) = only else {
+            if !spec.modifiers.contains(&modifier) {
+                return Err(Problem {
+                    span,
+                    message: format!("A modifier cannot chain .{modifier}(): it applies to any view"),
+                    help: Some(with_suggestion(
+                        suggest(modifier, spec.modifiers),
+                        format!("a modifier chains the universal modifiers: {}", spec.modifiers.join(", ")),
+                    )),
+                });
+            }
+            check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
+            continue;
+        };
+        if !only.contains(&modifier) || !spec.modifiers.contains(&modifier) {
+            let varies: Vec<&str> = only.iter().copied().filter(|name| spec.modifiers.contains(name)).collect();
             return Err(Problem {
                 span,
                 message: format!("A variant cannot change .{modifier}()"),
