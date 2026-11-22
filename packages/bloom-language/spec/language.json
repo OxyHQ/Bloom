@@ -542,7 +542,9 @@
     "mapAttributionStyle": ["island", "inline"],
     "locationPuckMode": ["following", "compass", "navigating"],
     "placeCardStyle": ["row", "detail"],
-    "directionsDensity": ["comfortable", "compact"]
+    "directionsDensity": ["comfortable", "compact"],
+    "mailComposeStyle": ["sheet", "docked"],
+    "noteToolbarSize": ["md", "sm"]
   },
   "glass": {
     "$comment": [
@@ -1570,6 +1572,20 @@
       "constructors": ["PlacePicker"],
       "modifiers": ["size", "disabled"],
       "size": "controlSize"
+    },
+    "mailComposeSurface": {
+      "constructors": ["MailComposeSurface"],
+      "modifiers": ["style", "loading"],
+      "style": "mailComposeStyle"
+    },
+    "mailRecipientField": { "constructors": ["MailRecipientField"], "modifiers": ["disabled"] },
+    "mailMessage": { "constructors": ["MailMessage"], "modifiers": [] },
+    "mailThread": { "constructors": ["MailThread"], "modifiers": [] },
+    "mailQuoteToggle": { "constructors": ["MailQuoteToggle"], "modifiers": [] },
+    "noteEditorToolbar": {
+      "constructors": ["NoteEditorToolbar"],
+      "modifiers": ["size", "disabled"],
+      "size": "noteToolbarSize"
     }
   },
   "sfSymbols": {
