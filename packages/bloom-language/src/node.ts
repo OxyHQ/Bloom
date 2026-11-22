@@ -743,6 +743,7 @@ export interface ValueModifiers {
   contentType: ContentType;
   submitLabel: SubmitLabel;
   onSubmit: () => void;
+  onClearText: () => void;
   autoFocus: true;
   maxLength: number;
   description: string | AnyBinding;
@@ -3216,6 +3217,9 @@ export class Node {
   }
   onSubmit(value: () => void): Node {
     return this.set('onSubmit', value);
+  }
+  onClearText(value: () => void): Node {
+    return this.set('onClearText', value);
   }
   autoFocus(): Node {
     return this.set('autoFocus', true);

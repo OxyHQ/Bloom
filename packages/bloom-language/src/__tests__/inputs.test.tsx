@@ -143,6 +143,12 @@ describe('inputs', () => {
     expect(setTokens).toHaveBeenCalledWith([{ key: 'mine', label: 'Mine' }]);
   });
 
+  it('a search’s clear action is its onClearText', () => {
+    const clear = jest.fn();
+    const renderer = mount(toElement(Search(['bloom', () => {}]).onClearText(clear)));
+    expect(renderer.root.findByType('Search' as never).props.onClearText).toBe(clear);
+  });
+
   it('focus is a binding: focusing writes it, and setting it focuses the input', () => {
     let setFocused!: (value: boolean) => void;
     const Screen = view(function Screen() {
