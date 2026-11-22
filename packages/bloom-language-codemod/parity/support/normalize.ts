@@ -13,7 +13,11 @@
  *   `fontWeight` 400 and `letterSpacing` 0 on a Text that is no span of
  *   another, `borderStyle` solid, a View's `flexDirection` column and
  *   `position` relative, a Text's `ellipsizeMode` tail.
- * - A hex colour is its six-digit lowercase form (`#fff` is `#ffffff`).
+ * - A span's text prop equal to what the Text around it gives it is what it
+ *   inherits, so it is left out.
+ * - A hex colour is its six-digit lowercase form (`#fff` is `#ffffff`); a
+ *   colour with an alpha is compared at the 8 bits of alpha a device draws.
+ * - A corner of the reading direction is its physical corner left to right.
  * - A number is compared to 12 significant digits: `12 * 0.025` is
  *   `0.30000000000000004` in JavaScript and `0.3` in NativeWind's compiler.
  * - A percentage is compared to 4 decimals: NativeWind writes a third as
@@ -85,6 +89,17 @@ function foldStyle(
   foldBox(style, 'margin');
   foldBorders(style);
   if (style.fontWeight !== undefined) style.fontWeight = String(style.fontWeight);
+  // A corner of the reading direction is its physical corner left to right (the web harness folds them alike).
+  for (const [logical, physical] of [
+    ['borderTopStartRadius', 'borderTopLeftRadius'],
+    ['borderTopEndRadius', 'borderTopRightRadius'],
+    ['borderBottomStartRadius', 'borderBottomLeftRadius'],
+    ['borderBottomEndRadius', 'borderBottomRightRadius'],
+  ] as const) {
+    if (style[logical] === undefined) continue;
+    style[physical] = style[logical];
+    delete style[logical];
+  }
   for (const [key, value] of Object.entries(style)) {
     if (typeof value === 'number') style[key] = Number(value.toPrecision(12));
     if (typeof value !== 'string') continue;
@@ -95,6 +110,15 @@ function foldStyle(
         .map((c) => c + c)
         .join('')}`.toLowerCase();
     else if (/^#[0-9a-f]{6}$/i.test(value)) style[key] = value.toLowerCase();
+    // A colour with an alpha, as the 8 bits a device draws it with (`#ffffffb3` is white at 179/255).
+    const hex8 = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(value);
+    const rgba = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/.exec(value);
+    if (hex8)
+      style[key] =
+        `rgba(${[1, 2, 3].map((i) => Number.parseInt(hex8[i] as string, 16)).join(', ')}, ${Number.parseInt(hex8[4] as string, 16)}/255)`;
+    else if (rgba)
+      style[key] =
+        `rgba(${rgba[1]}, ${rgba[2]}, ${rgba[3]}, ${Math.round(Number(rgba[4]) * 255)}/255)`;
     const percent = /^(-?[\d.]+)%$/.exec(value);
     if (percent) style[key] = `${Number(Number(percent[1]).toFixed(4))}%`;
   }
@@ -109,7 +133,22 @@ function foldStyle(
   return Object.fromEntries(Object.entries(style).sort(([a], [b]) => (a < b ? -1 : 1)));
 }
 
-function fold(node: Host | string, inText: boolean): Host | string {
+/** The text props a span inherits from the Text around it. */
+const INHERITED = [
+  'fontSize',
+  'lineHeight',
+  'fontWeight',
+  'fontFamily',
+  'letterSpacing',
+  'color',
+  'fontStyle',
+];
+
+function fold(
+  node: Host | string,
+  inText: boolean,
+  around: Record<string, unknown> = {},
+): Host | string {
   if (typeof node === 'string') return node;
   const text = node.type === 'Text';
   const props = { ...node.props };
@@ -118,7 +157,26 @@ function fold(node: Host | string, inText: boolean): Host | string {
     props.style = foldStyle(props.style as Record<string, unknown>, text, inText);
     if (Object.keys(props.style as object).length === 0) delete props.style;
   }
-  return { type: node.type, props, children: node.children.map((c) => fold(c, inText || text)) };
+  // A span writing what the Text around it already gives it draws what it inherits.
+  const style = (props.style ?? {}) as Record<string, unknown>;
+  if (text && inText) {
+    for (const key of INHERITED)
+      if (style[key] !== undefined && style[key] === around[key]) delete style[key];
+    if (props.style && Object.keys(style).length === 0) delete props.style;
+  }
+  const next = text
+    ? {
+        ...around,
+        ...Object.fromEntries(
+          INHERITED.filter((k) => style[k] !== undefined).map((k) => [k, style[k]]),
+        ),
+      }
+    : around;
+  return {
+    type: node.type,
+    props,
+    children: node.children.map((c) => fold(c, inText || text, text ? next : around)),
+  };
 }
 
 export function normalizeNative(tree: unknown): unknown {

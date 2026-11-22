@@ -25,7 +25,8 @@
  * `font-weight: normal` is 400; an em letter-spacing is px of the element's
  * size; a colour mixed with transparent is that colour at the mix's alpha;
  * and `letter-spacing` 0 or `font-weight` 400 written where no ancestor
- * declares either is the initial value it would inherit.
+ * declares either is the initial value it would inherit; an inherited text
+ * property declared at the value its parent gives it is what it inherits.
  */
 import { transform } from 'lightningcss';
 import postcss from 'postcss';
@@ -152,7 +153,20 @@ const LOGICAL: Record<string, string[]> = {
 interface Inherited {
   letterSpacing: boolean;
   fontWeight: boolean;
+  /** The nearest declared value of each inherited text property. */
+  values: Record<string, string>;
 }
+
+/** CSS properties a child inherits: one declared at the value it inherits draws the same. */
+const INHERITED = [
+  'font-size',
+  'line-height',
+  'font-weight',
+  'font-family',
+  'letter-spacing',
+  'color',
+  'font-style',
+];
 
 function fold(node: Dom | string, inherited: Inherited): Dom | string {
   if (typeof node === 'string') return node;
@@ -216,6 +230,10 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
     letterSpacing: css['letter-spacing'] !== undefined,
     fontWeight: css['font-weight'] !== undefined,
   };
+  const values = { ...inherited.values };
+  for (const name of INHERITED) if (css[name] !== undefined) values[name] = css[name] as string;
+  for (const name of INHERITED)
+    if (css[name] !== undefined && css[name] === inherited.values[name]) delete css[name];
   // The initial value written out is the initial value.
   if (
     !inherited.letterSpacing &&
@@ -226,12 +244,13 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
   const next = {
     letterSpacing: inherited.letterSpacing || own.letterSpacing,
     fontWeight: inherited.fontWeight || own.fontWeight,
+    values,
   };
   return { ...node, css, children: node.children.map((child) => fold(child, next)) };
 }
 
 export function normalizeWeb(tree: unknown): unknown {
   return (tree as (Dom | string)[]).map((node) =>
-    fold(node, { letterSpacing: false, fontWeight: false }),
+    fold(node, { letterSpacing: false, fontWeight: false, values: {} }),
   );
 }
