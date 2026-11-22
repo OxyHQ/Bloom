@@ -38,6 +38,11 @@ export interface PropRule {
   readonly modifier: string;
   readonly form: Form;
   readonly map?: Readonly<Record<string, string>>;
+  /**
+   * A second prop that is the modifier's next argument (`onEndReachedThreshold`
+   * to `.onEndReached(action, threshold)`); given without this prop, it is a reason.
+   */
+  readonly with?: readonly [prop: string, form: Form];
 }
 
 /**
@@ -45,7 +50,10 @@ export interface PropRule {
  * - a prop (`optional` ones are `undefined` when absent);
  * - a binding: a value prop and its setter, `[value, setValue]`;
  * - the element's text children, as one string;
- * - an options object: each prop given, under its key (none given, no argument).
+ * - an options object: each prop given, under its own name or the key named
+ *   beside its form (none given, no argument);
+ * - the label and glyphs of a chip or a button: its text children as a `Text`,
+ *   the props naming its glyphs as an `Icon` before and after it.
  */
 export type Param =
   | { readonly prop: string; readonly form: Form; readonly optional?: boolean }
@@ -55,7 +63,8 @@ export type Param =
       readonly hole: 'boolean' | 'string' | 'number';
     }
   | { readonly text: true }
-  | { readonly options: Readonly<Record<string, Form>> };
+  | { readonly options: Readonly<Record<string, Form | readonly [key: string, form: Form]>> }
+  | { readonly label: { readonly leading?: string; readonly trailing?: string } };
 
 export interface ComponentRule {
   /** The language constructor. */
@@ -64,12 +73,25 @@ export interface ComponentRule {
   readonly props?: Readonly<Record<string, PropRule>>;
   /** The element's children as the constructor's rest arguments, each a view. */
   readonly children?: boolean;
-  /** Drawn only inside a Bloom `Screen` (a screen's scroll view): its parity is drawn in one. */
-  readonly inScreen?: boolean;
+  /**
+   * A Bloom component (`module#export`) it is drawn only inside (a screen's
+   * scroll view in a `Screen`): its parity draws both sides in one.
+   */
+  readonly within?: string;
+  /**
+   * Components (`module#export`) whose context the Bloom component reads and
+   * the language's node does not: inside one (in the file), the element stays JSX.
+   */
+  readonly outside?: readonly string[];
 }
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
-  scales: { corner: Record<string, number> };
+  scales: {
+    corner: Record<string, number>;
+    space: Record<string, number>;
+    avatarSize: Record<string, number>;
+    iconSize: Record<string, number>;
+  };
   enums: Record<string, readonly string[]>;
   nodes: Record<string, { densities?: readonly string[] }>;
 };
@@ -103,6 +125,40 @@ const p = (modifier: string, form: Form, map?: Readonly<Record<string, string>>)
   form,
   map,
 });
+
+/** Bloom's spacing in points (`12`) as the language's space token (`md`), the spec's scale turned round. */
+const SPACE: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(spec.scales.space)
+    .filter(([name]) => !name.startsWith('$'))
+    .map(([name, value]) => [String(value), name]),
+);
+/** An avatar's diameter in points as its rung. */
+const AVATAR_SIZE: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(spec.scales.avatarSize)
+    .filter(([name]) => !name.startsWith('$'))
+    .map(([name, value]) => [String(value), name]),
+);
+/** An icon's size in points as its rung. */
+const ICON_SIZE: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(spec.scales.iconSize)
+    .filter(([name]) => !name.startsWith('$'))
+    .flatMap(([name, value]) => [
+      [String(value), name],
+      [name, name],
+    ]),
+);
+
+/** The text input modifiers every field takes (`textInputProps` in the language's inputs). */
+const TEXT_INPUT = {
+  keyboardType: p('keyboard', 'token', tokens('keyboard')),
+  autoCapitalize: p('autocapitalize', 'token', tokens('autocapitalize')),
+  autoCorrect: p('autocorrect', 'boolean'),
+  autoComplete: p('contentType', 'token', tokens('contentType')),
+  returnKeyType: p('submitLabel', 'token', tokens('submitLabel')),
+  onSubmitEditing: p('onSubmit', 'handler'),
+  autoFocus: p('autoFocus', 'mark'),
+  maxLength: p('maxLength', 'number'),
+} as const;
 
 /** The props a node takes from its press and name (`d.props()`). */
 const NAMED = {
@@ -159,9 +215,10 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   '@oxy.so/bloom/screen#ScreenScrollView': {
     node: 'ScrollView',
     children: true,
-    inScreen: true,
+    within: '@oxy.so/bloom/screen#Screen',
     props: {
       keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),
+      onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
       testID: p('testID', 'string'),
     },
   },
@@ -192,20 +249,15 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       { binding: ['value', ['onValueChange', 'onChangeText']], hole: 'string' },
       { prop: 'label', form: 'string' },
     ],
+    // A bare input draws its own shell, with the enclosing Field's state; the node draws its shell as it is.
+    outside: ['@oxy.so/bloom/text-field#TextField', '@oxy.so/bloom/field#Field'],
     props: {
       placeholder: p('placeholder', 'string'),
       size: p('size', 'token', tokens('controlSize')),
       invalid: p('invalid', 'flag'),
       disabled: p('disabled', 'flag'),
       floatingLabel: p('floatingLabel', 'mark'),
-      keyboardType: p('keyboard', 'token', tokens('keyboard')),
-      autoCapitalize: p('autocapitalize', 'token', tokens('autocapitalize')),
-      autoCorrect: p('autocorrect', 'boolean'),
-      autoComplete: p('contentType', 'token', tokens('contentType')),
-      returnKeyType: p('submitLabel', 'token', tokens('submitLabel')),
-      onSubmitEditing: p('onSubmit', 'handler'),
-      autoFocus: p('autoFocus', 'mark'),
-      maxLength: p('maxLength', 'number'),
+      ...TEXT_INPUT,
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
     },
@@ -242,6 +294,226 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     ],
     props: { testID: p('testID', 'string') },
   },
+  // parity/list.cases.tsx, Row (Bloom Item).
+  '@oxy.so/bloom/item#Item': {
+    node: 'Row',
+    params: [{ prop: 'title', form: 'string', optional: true }],
+    props: {
+      subtitle: p('subtitle', 'string'),
+      leading: p('leadingView', 'view'),
+      trailing: p('trailing', 'view'),
+      size: p('size', 'token', tokens('controlSize')),
+      titleNumberOfLines: p('lines', 'number'),
+      disabled: p('disabled', 'flag'),
+      destructive: p('destructive', 'mark'),
+      selected: p('selected', 'flag'),
+      active: p('active', 'boolean'),
+      highlighted: p('highlighted', 'flag'),
+      contentDensity: p('density', 'token', densities('row')),
+      onPress: p('onPress', 'handler'),
+      onLongPress: p('onLongPress', 'handler'),
+      ...NAMED,
+    },
+  },
+  // parity/inputs.cases.tsx, Field.
+  '@oxy.so/bloom/field#Field': {
+    node: 'Field',
+    params: [{ prop: 'label', form: 'string', optional: true }],
+    children: true,
+    props: {
+      description: p('description', 'string'),
+      error: p('error', 'string'),
+      required: p('required', 'flag'),
+      disabled: p('disabled', 'flag'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/inputs.cases.tsx, TextEditor (Textarea).
+  '@oxy.so/bloom/textarea#Textarea': {
+    node: 'TextEditor',
+    params: [
+      { binding: ['value', ['onValueChange', 'onChangeText']], hole: 'string' },
+      { prop: 'label', form: 'string', optional: true },
+    ],
+    // Inside a Field, Bloom's Textarea takes the field's state.
+    outside: ['@oxy.so/bloom/field#Field'],
+    props: {
+      placeholder: p('placeholder', 'string'),
+      hint: p('description', 'string'),
+      size: p('size', 'token', tokens('controlSize')),
+      disabled: p('disabled', 'flag'),
+      invalid: p('invalid', 'flag'),
+      required: p('required', 'flag'),
+      rows: p('rows', 'number'),
+      autoResize: { ...p('autoResize', 'mark'), with: ['maxRows', 'number'] },
+      resize: p('resize', 'token', tokens('textareaResize')),
+      showCount: p('showCount', 'mark'),
+      ...TEXT_INPUT,
+      accessibilityHint: p('hint', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/inputs.cases.tsx, Search.
+  '@oxy.so/bloom/search#Search': {
+    node: 'Search',
+    params: [{ binding: ['value', ['onValueChange', 'onChangeText']], hole: 'string' }],
+    outside: ['@oxy.so/bloom/field#Field'],
+    props: {
+      label: p('label', 'string'),
+      placeholder: p('placeholder', 'string'),
+      size: p('size', 'token', tokens('controlSize')),
+      disabled: p('disabled', 'flag'),
+      ...TEXT_INPUT,
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/inputs.cases.tsx, Checkbox.
+  '@oxy.so/bloom/checkbox#Checkbox': {
+    node: 'Checkbox',
+    params: [
+      { binding: ['checked', 'onCheckedChange'], hole: 'boolean' },
+      { prop: 'label', form: 'string', optional: true },
+    ],
+    props: {
+      description: p('description', 'string'),
+      size: p('size', 'token', tokens('controlSize')),
+      tone: p('tint', 'token', tokens('tone')),
+      disabled: p('disabled', 'flag'),
+      readOnly: p('readOnly', 'mark'),
+      indeterminate: p('indeterminate', 'flag'),
+      accessibilityLabel: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/pieces.cases.tsx and material.cases.tsx: the small pieces.
+  '@oxy.so/bloom/divider#Divider': {
+    node: 'Divider',
+    props: {
+      variant: p('lineStyle', 'token', tokens('dividerStyle')),
+      spacing: p('spacing', 'token', SPACE),
+      ...NAMED,
+    },
+  },
+  '@oxy.so/bloom/loading#Loading': {
+    node: 'Loading',
+    props: {
+      variant: p('style', 'token', tokens('loadingStyle')),
+      size: p('size', 'token', tokens('controlSize')),
+      tone: p('tint', 'token', tokens('tone')),
+      ...NAMED,
+    },
+  },
+  '@oxy.so/bloom/badge#Badge': {
+    node: 'Badge',
+    params: [{ prop: 'content', form: 'string', optional: true }],
+    props: {
+      variant: p('style', 'token', tokens('badgeStyle')),
+      tone: p('tint', 'token', tokens('tone')),
+      size: p('size', 'token', tokens('badgeSize')),
+      icon: p('icon', 'icon'),
+      dot: p('dot', 'mark'),
+      max: p('max', 'number'),
+      placement: p('placement', 'token', tokens('badgePlacement')),
+      ...NAMED,
+    },
+  },
+  '@oxy.so/bloom/icon-circle#IconCircle': {
+    node: 'IconCircle',
+    params: [{ prop: 'icon', form: 'icon' }],
+    props: { size: p('size', 'token', ICON_SIZE), ...NAMED },
+  },
+  // parity/avatar.cases.tsx.
+  '@oxy.so/bloom/avatar#Avatar': {
+    node: 'Avatar',
+    params: [
+      { prop: 'source', form: 'string', optional: true },
+      { options: { variant: 'string', name: 'string', initials: 'string' } },
+    ],
+    props: {
+      size: p('size', 'token', AVATAR_SIZE),
+      shape: p('shape', 'token', tokens('shapeName')),
+      verified: p('verified', 'flag'),
+      live: p('live', 'flag'),
+      alt: p('label', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/material.cases.tsx, Grid (ResponsiveGrid).
+  '@oxy.so/bloom/grid#ResponsiveGrid': {
+    node: 'Grid',
+    children: true,
+    props: {
+      maxColumns: p('columns', 'number'),
+      minItemWidth: p('minCellWidth', 'token', SPACE),
+      gap: p('spacing', 'token', SPACE),
+      flow: p('flow', 'token', tokens('gridFlow')),
+      ...NAMED,
+    },
+  },
+  // parity/engagement.cases.tsx, Action (EngagementAction).
+  '@oxy.so/bloom/engagement-bar#EngagementAction': {
+    node: 'Action',
+    within: '@oxy.so/bloom/engagement-bar#EngagementBar',
+    params: [
+      { prop: 'icon', form: 'icon' },
+      { prop: 'accessibilityLabel', form: 'string' },
+      {
+        options: {
+          activeIcon: 'icon',
+          popOnActivate: ['pop', 'boolean'],
+          rollCount: 'boolean',
+          busy: 'boolean',
+        },
+      },
+    ],
+    props: {
+      count: p('count', 'number'),
+      active: p('active', 'boolean'),
+      tone: p('tint', 'token', tokens('engagementTone')),
+      onPress: p('onPress', 'handler'),
+      onLongPress: p('onLongPress', 'handler'),
+      accessibilityHint: p('hint', 'string'),
+      testID: p('testID', 'string'),
+    },
+  },
+  // parity/containers.cases.tsx, Chip: an `Icon` before its `Text` leads it, one after trails it.
+  '@oxy.so/bloom/chip#Chip': {
+    node: 'Chip',
+    params: [{ label: { leading: 'leadingIcon', trailing: 'trailingIcon' } }],
+    props: {
+      // `inverted` is Bloom's chip variant; the appearances are its `appearance`.
+      variant: p('style', 'token', { inverted: 'inverted' }),
+      appearance: p('style', 'token', tokens('appearance')),
+      tone: p('tint', 'token', tokens('tone')),
+      size: p('size', 'token', tokens('chipSize')),
+      hue: p('hue', 'token', tokens('chipHue')),
+      selected: p('selected', 'flag'),
+      disabled: p('disabled', 'flag'),
+      onPress: p('onPress', 'handler'),
+      onLongPress: p('onLongPress', 'handler'),
+      ...NAMED,
+    },
+  },
+};
+
+/**
+ * Bloom's typography components, each its Text in a text style
+ * (parity/text.cases.tsx, `textStyle`). `Blockquote` is a View around its Text.
+ */
+export const TEXT_STYLES: Readonly<Record<string, string>> = {
+  Title: 'title',
+  Subtitle: 'subtitle',
+  H1: 'h1',
+  H2: 'h2',
+  H3: 'h3',
+  H4: 'h4',
+  H5: 'h5',
+  H6: 'h6',
+  P: 'paragraph',
+  Lead: 'lead',
+  Large: 'large',
+  Small: 'small',
+  Muted: 'muted',
 };
 
 /**
@@ -249,6 +521,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
  * draws them, but not as a node a region can hold in their place.
  */
 export const KEPT: Readonly<Record<string, string>> = {
+  '@oxy.so/bloom/dialog#Dialog':
+    'the language presents a dialog from the view that owns it (`.dialog(isPresented, Dialog(...))`), not as an element in place',
   '@oxy.so/bloom/screen#Screen':
     'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root; no node a region holds draws one',
   '@oxy.so/bloom/page-header#PageHeader':
