@@ -1,10 +1,9 @@
-import { StyledPressable } from '../styles/styled-primitives';
 import { useCallback, useMemo, useRef } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS, type SharedValue } from 'react-native-reanimated';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useRingOffsetStyle } from '../styles/surface-levels';
-import { Platform, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { RiDraggable } from '../icons/remix/RiDraggable';
 import { useTheme } from '../theme/use-theme';
 import { useMessages } from '../locale/messages';
@@ -81,9 +80,8 @@ export function PanelReorderHandle({
   return (
     <GestureDetector gesture={gesture} touchAction="none">
       <View collapsable={false}>
-        <StyledPressable
+        <Pressable
           role="button"
-          className="w-7 h-8 items-center justify-center rounded-md"
           accessibilityLabel={messages.reorderPanel(label)}
           accessibilityHint={messages.reorderHint}
           accessibilityActions={[
@@ -98,13 +96,18 @@ export function PanelReorderHandle({
           hitSlop={4}
           style={
             {
+              width: 28,
+              height: 32,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 6,
               '--bloom-panel-reorder-ring': colors.primary,
               ...ringOffset,
             } as WebCssStyle
           }
         >
           <RiDraggable width={18} height={18} fill={colors.textSecondary} />
-        </StyledPressable>
+        </Pressable>
       </View>
     </GestureDetector>
   );
