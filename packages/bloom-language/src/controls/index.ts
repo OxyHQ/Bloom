@@ -75,6 +75,7 @@ import { MAILS } from './mail';
 import { BOOKINGS } from './booking';
 import { HOME_SEARCHES } from './home-search';
 import { LISTING_ACTIONS } from './listing-actions';
+import { LISTING_CARDS } from './listing-card';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -157,4 +158,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...BOOKINGS,
   ...HOME_SEARCHES,
   ...LISTING_ACTIONS,
+  ...LISTING_CARDS,
 };
