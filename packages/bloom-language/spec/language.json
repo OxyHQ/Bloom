@@ -535,7 +535,8 @@
     "callMode": ["voice", "video"],
     "callControlSize": ["sm", "md", "lg"],
     "groupCallLayout": ["grid", "spotlight"],
-    "incomingCallAnswer": ["buttons", "slide"]
+    "incomingCallAnswer": ["buttons", "slide"],
+    "selectedChipsLayout": ["scroll", "wrap"]
   },
   "glass": {
     "$comment": [
@@ -1513,7 +1514,14 @@
       "modifiers": ["style", "tint"],
       "style": "callMode",
       "tint": "color"
-    }
+    },
+    "storyViewer": { "constructors": ["StoryViewer"], "modifiers": [] },
+    "selectedChipsRow": {
+      "constructors": ["SelectedChipsRow"],
+      "modifiers": ["style"],
+      "style": "selectedChipsLayout"
+    },
+    "newGroupForm": { "constructors": ["NewGroupForm"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
