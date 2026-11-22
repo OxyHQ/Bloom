@@ -102,9 +102,28 @@ export const A = () => <Screen><GroupedSectionItem title="B" wrapControl /></Scr
   });
   it('keeps an input that reads an enclosing shell’s context', () => {
     const result = run(`import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
-export const A = () => <TextField><TextFieldInput label="A" value={a} onChangeText={setA} /></TextField>;
+export const A = () => <TextField style={s}><TextFieldInput label="A" value={a} onChangeText={setA} /></TextField>;
 `);
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'TextField:style',
+      'TextField:inside-TextField',
+    ]);
+  });
+  it('draws a shell and its input as the input’s node', () => {
+    const result =
+      run(`import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-field';
+import { RiMailLine } from '@oxy.so/bloom/icons';
+export const A = () => (
+  <TextField size="sm"><TextFieldIcon icon={RiMailLine} /><TextFieldInput label="A" value={a} onChangeText={setA} /></TextField>
+);
+export const B = () => <TextField disabled><TextFieldInput label="B" value={b} onChangeText={setB} /></TextField>;
+`);
+    expect(flat(result.code)).toContain(
+      'toElement(LTextField([a, setA], "A").size("sm").icon(RiMailLine))',
+    );
+    expect(result.converted).toBe(2);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'TextField:disabled',
       'TextField:inside-TextField',
     ]);
   });

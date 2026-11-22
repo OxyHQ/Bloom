@@ -443,7 +443,8 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     if (kind === 'component') {
       const source = sources.get(local) as Source;
-      return convertComponent(node, ruleFor(source.module, source.imported) as ComponentRule);
+      const rule = ruleFor(source.module, source.imported) as ComponentRule;
+      return rule.shell ? convertShell(node, rule, rule.shell) : convertComponent(node, rule);
     }
     const reasons: Reason[] = [];
     const fail = (subject: string, code: string, why: string) =>
@@ -652,10 +653,90 @@ export function transformSource(source: string, options: TransformOptions): File
     return { ir: { type: 'stack', resolved: resolution.value, props, key, children } };
   }
 
+  /**
+   * A shell around one input, as the input's node: the input by its own rule
+   * (its shell is this one, so its context is), the glyphs beside it as the
+   * node's `icon` and `trailingIcon`, and the shell's props joined to the input's.
+   */
+  function convertShell(
+    node: AnyNode,
+    rule: ComponentRule,
+    shell: NonNullable<ComponentRule['shell']>,
+  ): { ir: Ir } | { reasons: Reason[] } {
+    const fail = (subject: string, why: string): { reasons: Reason[] } => ({
+      reasons: [{ subject, code: `${rule.node}:${subject}`, why }],
+    });
+    const named = (child: AnyNode) => {
+      const local = n.JSXElement.check(child) ? jsxName(child) : undefined;
+      const source = local ? sources.get(local) : undefined;
+      return source ? `${source.module}#${source.imported}` : undefined;
+    };
+    const children = node.children.filter(
+      (c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''),
+    );
+    const at = children.findIndex((child: AnyNode) => named(child) === shell.input);
+    const input = children[at];
+    const [inputSource] = shell.input.split('#') as [string];
+    const inputRule = ruleFor(inputSource, shell.input.slice(inputSource.length + 1));
+    if (!input || !inputRule || at > 1 || children.length > at + 2)
+      return fail('children', 'a shell holds its input, a glyph before it and one after');
+    // The shell's own props and its key.
+    const own: PropMod[] = [];
+    let key: Carried | null = null;
+    for (const attribute of node.openingElement.attributes) {
+      if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+        return fail('{...spread}', 'spread props: the codemod cannot see what they set');
+      const name = attribute.name.name as string;
+      if (name === 'key' && attribute.value) {
+        key = { node: attributeExpression(attribute.value), hole: 'key', attribute };
+        continue;
+      }
+      const prop = rule.props?.[name];
+      const values = prop ? valuesOf(prop.form, attribute.value ?? null, prop.map) : undefined;
+      if (!prop || !values)
+        return fail(name, `the shell's \`${name}\` (or its form here) has no mapping`);
+      own.push({ name: prop.modifier, args: values });
+    }
+    // Its glyphs: a TextFieldIcon before the input is the node's icon, one after its trailing icon.
+    for (const [index, child] of children.entries()) {
+      if (index === at) continue;
+      if (named(child) !== shell.icon) return fail('children', 'a shell child that is no glyph');
+      const position = index < at ? 'leading' : 'trailing';
+      let icon: Value | undefined;
+      for (const attribute of child.openingElement.attributes) {
+        const plain = n.JSXAttribute.check(attribute) && n.JSXIdentifier.check(attribute.name);
+        const name = plain ? (attribute.name.name as string) : '{...spread}';
+        const value = plain ? attribute.value : null;
+        if (name === 'icon') icon = valuesOf('icon', value)?.[0];
+        else if (name !== 'position' || staticString(value) !== position)
+          return fail(name, `a glyph's \`${name}\` (or its form here) has no mapping`);
+      }
+      if (!icon) return fail('icon', 'a glyph that is no Bloom icon');
+      own.push({ name: position === 'leading' ? 'icon' : 'trailingIcon', args: [icon] });
+    }
+    // The input by its own rule: its shell is this one, so the shell's context is its own.
+    const inner = convertComponent(input, inputRule, false);
+    if (!('ir' in inner) || inner.ir.type !== 'component') return inner;
+    const props = inner.ir.props;
+    const twice = own.find((prop) => props.some((p) => p.name === prop.name));
+    if (twice) return fail(twice.name, 'set on the shell and on its input');
+    if (inner.ir.key) return fail('key', 'a key on the input inside a shell');
+    // The input converts with its shell, as one node.
+    if (!counted.has(input)) {
+      counted.add(input);
+      candidates++;
+    }
+    const ir: Ir = { ...inner.ir, props: [...props, ...own], key };
+    results.set(input, { ir });
+    return { ir };
+  }
+
   /** A Bloom component the language draws as a node of its own, by its rule (`components.ts`). */
   function convertComponent(
     node: AnyNode,
     rule: ComponentRule,
+    /** Whether the rule's `outside` applies: not to an input converted with its own shell. */
+    checkOutside = true,
   ): { ir: Ir } | { reasons: Reason[] } {
     const reasons: Reason[] = [];
     const unmapped = (name: string) =>
@@ -664,7 +745,7 @@ export function transformSource(source: string, options: TransformOptions): File
         code: `${rule.node}:${name}`,
         why: `${rule.node}'s \`${name}\` (or its form here) has no mapping`,
       });
-    const around = rule.outside ? insideOf(node, rule.outside) : undefined;
+    const around = rule.outside && checkOutside ? insideOf(node, rule.outside) : undefined;
     if (around)
       reasons.push({
         subject: around,

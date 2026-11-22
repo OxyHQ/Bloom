@@ -21,6 +21,8 @@ is `toElement`'s second argument, a child's `.id()`).
 | React Native `View` | `VStack(…)`, or `HStack(…)` with `flex-row` |
 | React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()` |
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
+| Bloom's typography components (`Muted`, `H2`, `Small`…), without a `className` | `Text(…runs).textStyle('muted')` |
+| a Bloom component with a rule (`src/components.ts`, below) | its node, prop by prop |
 | React Native `Text` | `RawText(…runs)`: React Native's own Text in the app preset's base face, then only what its chain names |
 | Bloom `Button` (`@oxy.so/bloom/button`) | `Button(Icon(lead), Text(label), Icon(trail))` with `.style()`, `.tint()`, `.size()`, `.shape()`… as the language's Button parity cases draw it |
 | a Bloom icon (`<RiHeart3Line size="sm" />`, or `size={16}`, a rung's points) | `Icon(RiHeart3Line).size('sm').foreground('primary')` (a bare Bloom icon paints primary) |
@@ -67,6 +69,49 @@ Measured on the corpus and kept as reasons (`measuredDifference` and
   as an 8-bit hex alpha, rounded down (`#ffffffb2`), where `0.7` is 178.5/255.
 - A line height as a ratio or a letter spacing in em whose product has more
   than two decimals: NativeWind rounds it (`20.625` to `20.63`).
+
+## Bloom components
+
+Each rule in `src/components.ts` names the node a Bloom component is, as the
+language's parity cases pair them (`packages/bloom-language/parity/*.cases.tsx`):
+its constructor's arguments (a prop, a `Binding` of a value prop and its
+setter, the text children, an options object, a chip's label and glyphs), its
+modifiers by Bloom prop, and its children. Each value has a form: a static
+token (checked against the spec's enum or the node's densities, or a scale
+turned round, `radius="radius-16"` to `'lg'`, `spacing={12}` to `'md'`), a
+string or number (any expression without JSX, carried as it is), a flag, a
+handler, a Bloom icon, or a view (an element converted where it can be, else
+`Embed`). A prop the rule does not name, or a value in another form, keeps
+the element JSX with the reason `Node:prop`.
+
+| Bloom | Language |
+| --- | --- |
+| `Switch` | `Toggle([checked, onCheckedChange])` |
+| `GroupedSection`, `GroupedSectionItem` | `GroupedSection(...rows).title().caption()`, `GroupedSectionItem(title).leadingView().trailing().value()` |
+| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold)` |
+| `SettingsSection`, `SettingsValueField` | `SettingsSection(label, ...children).trailing()`, `SettingsValue(text)` |
+| `TextFieldInput` (bare, or in a `TextField` shell with its `TextFieldIcon`s), `Textarea`, `Search`, `Checkbox`, `Field` | `TextField([value, set], label)`, `TextEditor([value, set], label)`, `Search([value, set])`, `Checkbox([checked, set], label)`, `Field(label, ...children)` |
+| `Card`, `Item`, `Chip`, `ResponsiveGrid` | `Card(...children)`, `Row(title)`, `Chip(Icon, Text, Icon)`, `Grid(...cells)` |
+| `Divider`, `Loading`, `Badge`, `IconCircle`, `Avatar`, `EngagementAction` | `Divider()`, `Loading()`, `Badge(content)`, `IconCircle(icon)`, `Avatar(source, { variant, name })`, `Action(icon, label, { activeIcon, pop })` |
+| `ChatEmptyState` | `ChatEmptyState({ title, description, illustration, action })` |
+
+A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
+both given is a reason. Some rules hold only where the Bloom component reads
+nothing around it:
+
+- A bare `TextFieldInput` draws its own shell with the enclosing `Field`'s
+  state, and the `TextField` node draws its shell as it is; an input inside a
+  `TextField` or a `Field` in the file stays JSX (a `Textarea` or `Search`
+  inside a `Field` too). A shell around it from another file is not seen. A
+  `TextField` holding one input and its glyphs converts with it, as one node
+  (`.icon()`, `.trailingIcon()`, the shell's `size` and `invalid`).
+- A node drawn only inside a Bloom component (a `ScrollView` in a `Screen`, an
+  `Action` in an `EngagementBar`) has both sides of its parity drawn in one.
+
+Kept as JSX with their reason (`KEPT`): `Screen` (a route's `screen()` body in
+the language, its chrome the body's modifiers), `PageHeader` (the `Header` node
+is the system navigation bar on iOS in a native stack) and `Dialog` (presented
+from the view that owns it, `.dialog(isPresented, Dialog(...))`).
 
 ## Running it on an app
 
