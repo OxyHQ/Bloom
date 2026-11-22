@@ -4354,103 +4354,155 @@ artifacts, ready for the release workflow.
 
 ## Built and not built
 
-One line holds the whole language (`feat/bloom-language-next`): the core,
-spec and compiler; the platform components and navigation; the primitives,
-numeric tokens, layout and style modifiers and variants; the motion engine;
-and `@oxy.so/bloom-data` beside it. Each area below says what is built and,
-after **Not built**, what is not; nothing is listed twice.
+The whole language is built. One line holds it (`feat/bloom-language-finish`,
+on `feat/bloom-language-all`): the core, spec and compiler with its
+distribution; the platform components and navigation; the primitives, numeric
+tokens, layout and style modifiers and variants; the motion engine; and
+`@oxy.so/bloom-data` beside it. Each area below says what is built and, after
+**Decided**, what the language does not do on purpose, each a design decision
+with its reason. Nothing else is missing.
 
 - **Core.** The node model, `view()`, the one spec (runtime tables, web sheet
   and the compiler's tables from `spec/language.json`) and the compiler
   (checks, hoisting), with unit tests, cargo tests and parity against
-  hand-written Bloom on native and web, light and dark. **Not built:** the
-  compiler's distribution (prebuilt addons per platform from CI, a WASI
-  fallback).
-- **Renderers.** Everything renders through React Native and
-  react-native-web. **Not built:** a SwiftUI, native-view or CSS renderer;
-  iOS is typechecked and tested against stand-ins, not run on a device; the
-  web stylesheet is not in server-rendered HTML; on the web `hoverGroup()`
-  sets `group` through `react-native-css`.
-- **Primitives.** Stacks, `Spacer`, `Text` (Bloom's `Text`, its families and
-  ramp, mono), `Icon`, `Image`, `Embed`, `Avatar` and `AvatarGroup`, `Badge`,
-  `IconCircle`, `Loading`, `Skeleton`, `Shape`, `Divider`, `Fill`,
-  `AspectRatio`, `Grid`, `Button`, `ButtonGroup`, `FAB`, `Lottie`, the action
-  bar. **Not built:** a full `ZStack` (the first child sets the size and the
-  rest cover it; `.overlay(view, alignment)` is the aligned form).
+  hand-written Bloom on native and web, light and dark; the compiler's
+  prebuilt addons per platform and its WASI fallback, built and packed by CI
+  so installing it needs no Rust (see [Compiler](#compiler)).
+- **Renderers.** On a device the nodes are React Native's native views, and
+  where a platform has a component of its own the language draws that one:
+  on iOS the system menu (SwiftUI `Menu` through `@expo/ui`), Liquid Glass
+  (`expo-glass-effect`) under a glass, a Button's and FAB's glass and the
+  bottom bar's capsule, the navigation bar and toolbar (expo-router's native
+  `Stack`), the system tab bar (`NativeTabs`), the system sheet and SF
+  Symbols in those; on Android and OxyOS the lens (`@oxy.so/bloom-lens`) for
+  the menu, a glass, a Button's and FAB's glass, a floating header's controls
+  and the bottom bar's capsule; on the web react-native-web, the language's
+  generated stylesheet and Bloom's web components (see
+  [Platform components](#platform-components)). A server-rendered page carries
+  the sheets (`LanguageStyles`). Verified: Android on a Pixel, the web in
+  Chrome; iOS is typechecked and tested against stand-ins. **Decided:**
+  there is no renderer of the language's own beside React Native (no
+  SwiftUI or CSS output of a whole tree): Bloom's components are the look,
+  and the platform components above are drawn where they exist. On the web
+  `hoverGroup()` sets the `group` Bloom's `SubtleHover` reads, through
+  `react-native-css`, as Bloom does; it follows Bloom when Bloom drops
+  NativeWind (`feat/bloom-no-nativewind`, docs/no-nativewind.mdx).
+- **Primitives.** Stacks, `ZStack` (sized to its largest child, each placed at
+  its `.alignment()`, SwiftUI's `ZStack(alignment:)`), `.overlay(view,
+  alignment)` and `.background(view, alignment)`, `Spacer`, `Text` (Bloom's
+  `Text`, its families and ramp, mono), `Icon`, `Image`, `Embed`, `Avatar`
+  and `AvatarGroup`, `Badge`, `IconCircle`, `Loading`, `Skeleton`, `Shape`,
+  `Divider`, `Fill`, `AspectRatio`, `Grid`, `Button`, `ButtonGroup`, `FAB`,
+  `Lottie`, the action bar. Bloom's helpers and constants that draw nothing
+  (`computeMortgage`, `listingQualityScore`…) are plain functions called in a
+  view body (see [Interop](#interop)).
 - **Tokens.** Bloom's named rungs; numeric tokens by one rule (an exact value
-  apps write, named by its value), durations included (`'0'`, `'800'`,
-  `'2500'`); a card's corner as a corner token of Bloom's radius scale; a
-  node's densities its own (each node lists Bloom's names for them); and an
-  app's own tokens (`defineTokens`: space, icon and avatar sizes, leading,
-  motion, and brand colours). **Not built:** a generic component's own timing
-  modifiers take milliseconds (a hover card's and a tooltip's `.openDelay()`
-  and `.closeDelay()`, a notification's `.autoDismiss()` and
-  `.introDelay(seconds)`, a connection status's `.reconnectingDelay()` and
-  `.restoredDuration()`), and an accordion's, a collapsible's and a meter's
-  reveal take Bloom's `{ duration, easing }`; a signature's stroke width is a
-  number, not a space token.
+  apps write, named by its value), durations included (`'0'`, `'250'`,
+  `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`) and every
+  component's own waits (a hover card's and a tooltip's delays, a
+  notification's dismissal and intro, a connection status's timings, an
+  auto-hiding bar's peeks); a reveal's timing a timed motion token (an
+  accordion's, a collapsible's, a meter's and a rating bar's); a
+  signature's stroke a border width; a card's corner as a corner token of
+  Bloom's radius scale; a node's densities its own; and an app's own tokens
+  (`defineTokens`: space, icon and avatar sizes, leading, motion, and brand
+  colours). **Decided:** a motion is a duration and a curve, so it is named
+  (Bloom's motion table or an app's `defineTokens({ motion })`), never by one
+  number; Bloom's default hide and show of an auto-hiding bar are its own
+  when no motion is chained, since they are not on Bloom's motion scale.
 - **Bindings.** A node's main value is its constructor's binding, and every
   other value it edits a modifier taking a `Binding` (`.presented()`,
   `.query()`, `.expanded()`, `.sorting()`, `.refreshable()`…), across every
-  family. **Not built:** a handler alone (hearing an uncontrolled value
-  change): the screen owns the value instead; a selection told by an event
-  (`selectedId` beside `onSelect`, a sidebar's `.selection()` beside
-  `.onSelect()`) stays the value and its event, as a press chooses; a value
-  inside Bloom's own data (a mail row's `starred`, a cart panel's `tip`, a
-  share sheet's `search`, a call screen's `controls`) stays that data.
+  family, the selections a press reports included (a bottom bar's, a
+  sidebar's, a rail's and the settings' `.selection([id, setId])`, an agent
+  chat's, a pipeline's stage, a chart's active tile) and the values inside
+  Bloom's data that an app edits (a mail row's `.starred()`, a cart's
+  `.tip()` and `.promo()`, a share sheet's `.search()`, a call's toggles).
+  **Decided:** an event that holds no value stays an event: a one-off
+  choice (a suggestion, an emoji, a reaction a second press removes, a
+  date picked from a calendar), a press that opens something, a jump the
+  app performs (an outline's heading), an action on the app's data (select
+  all, mark unread), and a report of derived state nothing writes back (a
+  card form's scheme, a loading avatar); a value written by something other
+  than the person (the playing track, the read position) is a plain value; a
+  value per entry of a list Bloom owns (a list's mail entries, a cart line's
+  quantity) stays in its entry, since a binding is one value; a component's
+  uncontrolled default with a change handler (a chart card's `default*`) is
+  not a binding, since the screen owns any value it edits; a flow the app
+  steps through (the checkout sheet's step and draft) stays the app's state
+  machine.
 - **Layout and style.** Distribution, placement, overlays, elevation, rings,
-  corners and their curve, text styles, links, truncation.
+  corners and their curve, text styles, links, truncation. **Decided:**
+  none.
 - **Variants.** Breakpoints, the scheme, a view's own hover, focus
   (`:focus-visible`) and press, `disabled` and the platforms; nested
-  variants; a glass's padding, frame, border, corner and fill, as the
-  material's own props; geometry (`.scale()`, `.offset()`, `.rotation()`) by
-  component, a custom property per component on the web, played by
-  `.animation()`; on the web a sheet per condition holding only the classes
-  that render; a Bloom component's variants in its own style, its state
-  tracked by its box (a component with no press of its own takes it on a host
-  around it); the innermost pressable owns a hover or a press, as
-  react-native-web's does, a Bloom Avatar or Action inside a stack included.
-  **Not built:** an app colour under `when()` (it has no class); an
-  `.anchor()` under `when()`; geometry a `MotionValue`, a gesture or press
-  feedback moves (the one mapper writes it); a material's opacity (never
-  faded); an island's or a concentric box's frame, border, corner and fill
-  (only their padding varies); a state variant of the glass under a Button or
-  FAB (the control tracks its own state, inside the glass); on the web, a
-  pressable of another component inside a pressable stack (`Embed`, or a
-  Bloom component the language does not draw) carries no press host class, so
-  the stack still answers a hover or a press of it.
+  variants; an app's colours and other app tokens (on the web the view's
+  style picked in JS, as a Bloom component's); a material's padding, frame,
+  border, corner and fill (a glass, an island, a concentric box), a Button's
+  or FAB's glass with the control's own state; geometry (`.scale()`,
+  `.offset()`, `.rotation()`) by component, a custom property per
+  component on the web, played by `.animation()`; on the web a sheet per
+  condition holding only the classes that render; a Bloom component's
+  variants in its own style, its state tracked by its box; the innermost
+  pressable owns a hover or a press, as react-native-web's does, a Bloom
+  component's or an `Embed`'s included. **Decided:** a material is never
+  faded (an opacity on a material or its ancestor takes its backdrop blur
+  away on the web, AGENTS.rules.md, Material); a glass's tint is a colour
+  role, at rest and in a variant (the platforms' glasses take one); a
+  concentric box's corner is its parent's less the inset, so it has none to
+  vary; a glass and an island clip to one radius, at rest and in a variant
+  (Bloom's `Surface` and `BlurIsland` take one), so a corner of some sides
+  only is left out on them; an `.anchor()` is one point per view (a variant changes how far a
+  view turns, not about what); geometry a `MotionValue`, a gesture or press
+  feedback moves takes no variant (the one mapper writes it).
 - **Glass and platform components.** Per platform: Menu, Button, Header,
   BottomBar, FAB, the glass (the lens on Android and OxyOS, `glassEffect` on
-  iOS, Bloom's material on the web), and navigation (`AppLayout`, stacks,
-  routes, tabs, the iOS system components). **Not built:** an island of
-  shared controls (a `Button` inside `.blur()` draws its own material rather
-  than Bloom's `material="shared"` on the island's).
+  iOS, Bloom's material on the web), an island's controls on its shared
+  material, and navigation (`AppLayout`, stacks, routes, tabs, the iOS system
+  components). **Decided:** on iPad the sidebar is Bloom's `AppShell`
+  sidebar; an iOS sheet's title is an accessibility name (the system sheet
+  has no title bar).
 - **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,
-  `.animation()` (geometry and opacity), `.animatesColors()` (colours,
-  opt-in: `transition-colors`; a theme switch never plays), `.transition()`,
-  `.keyframes()`, loops (`.repeatForever('spin' | 'pulse')`,
-  Tailwind's `animate-spin` and `animate-pulse`, or an app's keyframes),
-  `.delay()` (Bloom's durations), `.anchor()` (a
-  transform origin), `.matchedGeometry()`, `.contentTransition('roll')`,
-  `.pressScale()`, geometry (`.scale()`, `.offset()`, `.rotation()`) as tokens
-  or bound to a `MotionValue`, `.drag()` and `.swipe()` on Gesture Handler 3.
-  Resting geometry that nothing plays is the box's own style. Bloom's pop,
-  roll, toast and press feedback play on the same engine; the bottom sheet's
-  drags are the same gesture layer's (docs/motion.mdx, Motion values and
-  gestures). **Not built:** `withAnimation`, `map()`, `.pinch`,
-  `.onDoubleTap`, `.contentTransition('numeric')`, matched geometry across
-  screens; Tailwind's `animate-bounce` and `animate-ping` as loop tokens (an
-  app loops its own keyframes); `transition-all` (frames and shadows). A
-  colour plays on the view's moving box only: a fill of a box inside the view
-  (`.background()` before a `.padding()`), the ink of a text inside it, and on
-  native a `Text`'s own ink (Bloom's `Text` has no animated twin) and a
-  glyph's fill change at once. An `.animation()` scope reaches its own body,
-  not the bodies of `view()`s inside it; a removal plays only for a keyed
-  list's child.
+  `.animation()` (geometry and opacity; its scope reaches the `view()` bodies
+  inside it), `.animatesColors()` (colours, opt-in: `transition-colors`; a
+  theme switch never plays), `.transition()`, `.keyframes()`, loops
+  (`.repeatForever('spin' | 'pulse')`, Tailwind's `animate-spin` and
+  `animate-pulse`, or an app's keyframes), `.delay()` (duration tokens),
+  `.anchor()` (a transform origin), `.matchedGeometry()` within one tree and
+  between screens (a `transitionNamespace()`: Bloom's own flight over every
+  screen, on native and the web), `.contentTransition('roll')` and
+  `.contentTransition('numeric')` (each character that changed rolls),
+  `.pressScale()`, geometry (`.scale()`, `.offset()`, `.rotation()`) as
+  tokens or bound to a `MotionValue`, `useMappedValue()` (a value that
+  follows another through a range), `.drag()`, `.swipe()`, `.pinch()` and
+  `.onDoubleTap()` on Gesture Handler 3. Resting geometry that nothing plays
+  is the box's own style. Bloom's pop, roll, toast and press feedback play
+  on the same engine; the bottom sheet's drags are the same gesture layer's
+  (docs/motion.mdx, Motion values and gestures). **Decided:** the language
+  animates by declaration (`.animation(motion, value)` on the view whose
+  change plays), not by a transaction around a state write (`withAnimation`):
+  React batches and schedules renders apart from the write, so a transaction
+  would have to guess which render it belongs to; Tailwind's
+  `animate-bounce` and `animate-ping` are not loop tokens, since no app writes
+  them (an app loops its own keyframes); `transition-all` is
+  `.animation(m).animatesColors()`, and a frame's size and a shadow change at
+  once, since the engine moves and paints boxes and does not lay them out or
+  redraw shadows per frame; a colour plays on the view's moving box (its
+  outermost), so an inner layer's fill and a native `Text`'s ink change at
+  once (each would need an animated host of its own; chain the fill
+  outermost); a conditional child (`show && view`) leaves at once, while a
+  keyed child plays its removal (`[show && view.id('x')]`), since tracking
+  every child would put a `Presence` around every child of every stack;
+  matched geometry between screens is Bloom's own flight, not Reanimated's
+  `sharedTransitionTag`, which needs an app-level flag, works only between
+  native-stack screens and not on the web.
 - **className.** The className table (`docs/bloom-language-classnames.mdx`)
-  says what each utility the apps use becomes. **Not built:** replacing
-  `className` outright: the codemods read the table, and what it flags needs
-  a modifier or a named token first.
+  says what each utility the apps use becomes; the codemod
+  (`feat/bloom-language-codemod`) moves an app's `className` and Bloom JSX to
+  the language where it renders the same, and Bloom itself drops NativeWind
+  on `feat/bloom-no-nativewind` (docs/no-nativewind.mdx). **Decided:** a
+  utility the table flags is not moved until it is a modifier or a named
+  token: a raw value never becomes a number in the language.
 - **Inputs** (see [Inputs](#inputs)). `TextField`, `SecureField`,
   `TextEditor`, `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup`
   (swatches included), `Segmented`, `Picker` with their `Option` and
@@ -4464,8 +4516,9 @@ after **Not built**, what is not; nothing is listed twice.
   page, size, padding and every tier's placement, and a popover's offsets
   and sizes; `ConnectionStatus` with its own words and timings; `toast` as
   Bloom's imperative call with a title or a language view, and
-  `toast.custom`. Web parity compares an open overlay's portaled DOM and a
-  toast's row.
+  `toast.custom`. **Decided:** a `.sheet()` whose content is not a
+  `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so neither
+  does the node.
 - **Containers** (see [Containers](#containers)). `Card` and its parts, `Row`
   (Bloom's `Item`), `GroupedSection`, `GroupedSectionItem` (with a box of its
   own), `GroupedSectionIcon`, `GroupedSectionDivider` and
@@ -4480,21 +4533,17 @@ after **Not built**, what is not; nothing is listed twice.
   `screen()`'s `Screen` (kind, scroll owner, document scroll, header
   placement and scroll edge, underlay, floating action, clearance, navigation
   scope, colour preset and seed, activity, starting chrome heights); a
-  `.sheet()`'s `BottomSheet` (iOS: the system sheet, not verified); `Sidebar`
-  with its destinations, tree, modes, team, plan, onboarding card, search
-  query and tree drops (a touch drag on Bloom's gesture layer), `Rail`,
-  `PageFooter`; `Command`; `SettingsModal` and the settings pages' rows
+  `.sheet()`'s `BottomSheet` (iOS: the system sheet); `Sidebar` with its
+  destinations, tree, modes, team, plan, onboarding card, search query and
+  tree drops (a touch drag on Bloom's gesture layer), `Rail`, `PageFooter`;
+  `Command`; `SettingsModal` and the settings pages' rows
   (`SettingsSection`, `SettingsValue`, `SettingsSelect`, `SettingsTextField`,
   `SettingsDateField`); `AppLayout`'s semantic layout, panels, deck and
   inspector, and its destinations (Bloom's pager provider); the layout
-  family's `Toolbar`, `StickySection`, `ScrollArea`, `ScrollSurface`,
-  `AutoHideBar` and `ResizeHandle`. Decided, not missing: on iPad the sidebar
-  is Bloom's `AppShell` sidebar; an iOS sheet's title is an accessibility
-  name (the system sheet has no title bar); a `.sheet()` whose content is not
-  a `BottomSheet` is Bloom's `Dialog`; Bloom's sheet has no detents, so
-  neither does the node. **Not built:** an `AutoHideBar`'s band colour and a
-  `ScrollSurface`'s fade colour take a raw value with no token, and an
-  `AutoHideBar`'s own timings and motion keep Bloom's.
+  family's `Toolbar`, `StickySection`, `ScrollArea`, `ScrollSurface` (its
+  fade a colour role), `AutoHideBar` (its band a colour role, its peeks
+  duration tokens, its hide and show motion tokens) and `ResizeHandle`.
+ 
 - **Generic components** (see [Generic components](#generic-components)),
   drawn as Bloom's own: the date and time pickers, ratings, meters and
   progress bars, stickers, tables, rows and lists, carousels, markdown,
@@ -4536,10 +4585,12 @@ after **Not built**, what is not; nothing is listed twice.
   picker; Gemies' and Astro's (the agent editor, the reply's identity, the
   multi-agent chat, the task list, the voice controls, web search, the AI
   profile card, the agent chat); Allo's call screens, people and message
-  bubbles; Inbox's mail and note toolbar; Nilo's project board and activity
-  feed; Peable's order status, Atlas' lockup, Willo's ambient photo and the
-  month calendar; and the action bar's orientation, tone and zero counts
-  Mention sets. Wave 7, the families no app imports yet: commerce
+  bubbles; Inbox's mail and note toolbar, and the mail row
+  (`@oxy.so/bloom/mail-list` holds its shared helpers, constants, types and
+  parts, live code with no component of its own); Nilo's project board and
+  activity feed; Peable's order status, Atlas' lockup, Willo's ambient photo
+  and the month calendar; and the action bar's orientation, tone and zero
+  counts Mention sets. Wave 7, the families no app imports yet: commerce
   (addresses, payment methods, the price summary, payment status, the cart,
   menu items, the vendor card, the checkout summary, delivery slots, the
   order confirmation); logistics (carrier quotes, earnings, the job board,
@@ -4548,23 +4599,22 @@ after **Not built**, what is not; nothing is listed twice.
   library, the queue panel, the track list); CRM (`ContactProfileCard`,
   `LeadScoreCard`, the pipeline); the dashboard cards
   (`ImportantAlertsCard`, `PatientInfoCard`, `RecentHiresCard`);
-  `RouteStops`, `NoteCard`, `ShareSheet`. **Not built:** Bloom's helpers and
-  constants (`computeMortgage`, `listingQualityScore`, `messageEntities`…)
-  stay Bloom's; colours that come with the data (a reply preview's inside a
-  message bubble's data, a lyrics view's or a player's `artworkColor`, a
-  swipe row's `paint`, an alert's tone, a CRM card's accents, a vendor card's
-  `promoTone`) stay Bloom's data in the options; content Bloom takes inside
-  its data (a price line's `info`, a checkout summary's address, delivery and
-  price) stays Bloom's data, not language children; `mail-list` exports no
-  component, so it has no node.
-- **Parity.** Every family above is compared against hand-written Bloom.
-  **Not built:** a field that takes the focus as it appears and a toast are
-  compared by Jest, not in Chrome (a page has one focus and one toast
-  store); the Chrome check compares an overlay's presenting view (an open
-  picker's trigger), not its portal, which the web suite compares, an open
-  picker's grouped rows included; the shell's panels render only once it has
-  measured itself, so they are compared in Chrome; a mark that moves on the
-  JS thread (the thinking marks, the working row, the typing dots, the
-  playing track list and row, a live friend-activity card) and an overlay a
-  product component presents (the checkout sheet) are compared by Jest, not
-  in Chrome.
+  `RouteStops`, `NoteCard`, `ShareSheet`. **Decided:** colours that come
+  with an item of the data (a reply preview's inside a message bubble's
+  data, a lyrics view's or a player's `artworkColor`, a swipe row's `paint`,
+  an alert's tone, a CRM card's accents, a vendor card's `promoTone`) stay
+  in that item, as Bloom takes them, since they belong to the item, not to
+  the view; content Bloom takes inside its data (a price line's `info`, a
+  checkout summary's address, delivery and price) stays data, not language
+  children, for the same reason.
+- **Parity.** Every family above is compared against hand-written Bloom in
+  the Jest suites, native and web, and in Chrome, light and dark, an
+  overlay's portal included (see [Component parity](#component-parity)).
+  **Decided:** a case whose look depends on the page rather than on the
+  case is compared by Jest and left out of Chrome, where two sides share one
+  page: a mark that moves on its own timer (two sides are read at different
+  frames), a field that takes the focus as it appears (a page has one
+  focus), a notification counting down (sampled at different moments) and a
+  toast (a page has one toast store). A view that draws only once it has
+  measured itself (the shell's panels) is compared in Chrome, since jsdom
+  lays nothing out.
