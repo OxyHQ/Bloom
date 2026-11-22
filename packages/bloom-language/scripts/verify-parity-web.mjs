@@ -357,6 +357,10 @@ try {
             );
             await settle(framePage, 'parity-frame');
             await atRest(framePage, FRAME);
+            // Whether a focus a case takes as it opens (an alert's action) draws
+            // its ring depends on the page's last input, which the holds of the
+            // cases before it set: each side's page is read with nothing focused.
+            await framePage.evaluate(() => document.activeElement?.blur?.());
             sides.push({ page: framePage, testid: 'parity-frame' });
           }
         }
