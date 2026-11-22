@@ -153,6 +153,7 @@ export type ScrollIndicators = (typeof ENUMS.scrollIndicators)[number];
 export type KeyboardDismiss = (typeof ENUMS.keyboardDismiss)[number];
 export type KeyboardTaps = (typeof ENUMS.keyboardTaps)[number];
 export type ScrollbarVisibility = (typeof ENUMS.scrollbarVisibility)[number];
+/** The side a scroll area's bar is drawn on, in the reading direction. */
 export type ScrollbarSide = (typeof ENUMS.scrollbarSide)[number];
 export type ScrollbarSize = (typeof ENUMS.scrollbarSize)[number];
 export type ScrollSurfaceStyle = (typeof ENUMS.scrollSurfaceStyle)[number];
@@ -162,7 +163,9 @@ export type TeamPlacement = (typeof ENUMS.teamPlacement)[number];
 export type DragIndicator = (typeof ENUMS.dragIndicator)[number];
 export type SheetMaterial = (typeof ENUMS.sheetMaterial)[number];
 export type SheetSizing = (typeof ENUMS.sheetSizing)[number];
+/** A sidebar's form: a `panel`, or a `rail` of icons. */
 export type SidebarVariant = (typeof ENUMS.sidebarVariant)[number];
+/** A sidebar's edge: a `card`, `plain` (flush) or `docked`. */
 export type SidebarSurface = (typeof ENUMS.sidebarSurface)[number];
 export type SidebarSize = (typeof ENUMS.sidebarSize)[number];
 export type FooterPinning = (typeof ENUMS.footerPinning)[number];
@@ -260,19 +263,11 @@ export type TitleLayout = (typeof ENUMS.titleLayout)[number];
 export type TitleAppearance = (typeof ENUMS.titleAppearance)[number];
 /** What a pinned bar's dismiss button does: `close` the bar or `unpin`. */
 export type DismissIcon = (typeof ENUMS.dismissIcon)[number];
-/** A sidebar's form: a `panel`, or a `rail` of icons. */
-export type SidebarVariant = (typeof ENUMS.sidebarVariant)[number];
-export type SidebarSize = (typeof ENUMS.sidebarSize)[number];
-/** A sidebar's edge: a `card`, `plain` (flush) or `docked`. */
-export type SidebarSurface = (typeof ENUMS.sidebarSurface)[number];
 export type ContentAlignment = (typeof ENUMS.contentAlignment)[number];
 export type PrimaryActionPlacement = (typeof ENUMS.primaryActionPlacement)[number];
 export type RailLabels = (typeof ENUMS.railLabels)[number];
 export type RailSelection = (typeof ENUMS.railSelection)[number];
 export type ModesPresentation = (typeof ENUMS.modesPresentation)[number];
-/** The side a scroll area's bar is drawn on, in the reading direction. */
-export type ScrollbarSide = (typeof ENUMS.scrollbarSide)[number];
-export type TeamPlacement = (typeof ENUMS.teamPlacement)[number];
 /** How a light composites over what is beneath it: CSS's blend modes. */
 export type Blend = (typeof ENUMS.blend)[number];
 /** A Bloom Button's material: its `surface` (default), `flat`, the `shared` island's, or the `lens`. */
@@ -295,8 +290,6 @@ export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
 export type MapPriceMarkerSize = (typeof ENUMS.mapPriceMarkerSize)[number];
 /** A note card's arrangement (Bloom `NoteCard`'s `density`): a board's `grid` or a list's `row`. */
 export type NoteCardLayout = (typeof ENUMS.noteCardLayout)[number];
-/** Bloom's accent tones (`AccentTone`): a note's wash. */
-export type AccentTone = (typeof ENUMS.accentTone)[number];
 export type ShareSheetSize = (typeof ENUMS.shareSheetSize)[number];
 /** Bloom `OutlineNav`'s forms: every heading, or the compact one that drops the deep levels. */
 export type OutlineNavStyle = (typeof ENUMS.outlineNavStyle)[number];

@@ -304,16 +304,11 @@ import {
   type TitleLayout,
   type TitleAppearance,
   type DismissIcon,
-  type SidebarVariant,
-  type SidebarSize,
-  type SidebarSurface,
   type ContentAlignment,
   type PrimaryActionPlacement,
   type RailLabels,
   type RailSelection,
   type ModesPresentation,
-  type ScrollbarSide,
-  type TeamPlacement,
   type Blend,
   type ButtonMaterial,
   type RadarLegend,
@@ -587,7 +582,7 @@ export interface ValueModifiers {
   keyboardTaps: KeyboardTaps;
   detached: boolean;
   dragIndicator: DragIndicator;
-  material: SheetMaterial;
+  material: SheetMaterial | ButtonMaterial;
   scrollable: boolean;
   sizing: SheetSizing;
   interactiveDismissDisabled: boolean;
@@ -602,7 +597,7 @@ export interface ValueModifiers {
   error: string | null | undefined;
   meta: string | undefined;
   variant: SidebarVariant;
-  surface: SidebarSurface;
+  surface: SidebarSurface | boolean;
   onCollapsedChange: (collapsed: boolean) => void;
   searchable: boolean;
   themeToggle: boolean;
@@ -784,7 +779,6 @@ export interface ValueModifiers {
   suggestionsLabel: string;
   onReorder: ((fromValue: string, toValue: string) => void) | ((keys: string[]) => void);
   reorderable: boolean;
-  iconOnly: true;
   dragTranslation: MotionValue;
   indicator: SelectionIndicator | Child;
   fade: ColorName;
@@ -1056,7 +1050,6 @@ export interface ValueModifiers {
 
   // Chat composer (controls/chat-composer.tsx)
   iconSize: IconSizeToken;
-  surface: boolean;
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint: ColorToken;
@@ -1079,7 +1072,6 @@ export interface ValueModifiers {
   metaOverlay: boolean;
   senderTint: ColorToken;
   // A product component's hairline (a lockup's)
-  divider: boolean;
   // An action bar's zero counts
   showZeroCounts: boolean;
 
@@ -1096,14 +1088,11 @@ export interface ValueModifiers {
   railLabels: RailLabels;
   railSelection: RailSelection;
   modesPresentation: ModesPresentation;
-  scrollbarSide: ScrollbarSide;
-  teamPlacement: TeamPlacement;
   textVariant: TypeRampStep;
   blend: Blend;
   bloomOnly: boolean;
 
   // The other product components' secondary looks
-  material: ButtonMaterial;
   iconOnly: boolean;
   round: boolean;
   eyebrow: boolean;
@@ -1375,7 +1364,8 @@ export type Modifier =
         | MessageTone
         | RentOutstandingTone
         | AccentTone
-        | EngagementBarTone | PriceLineTone;
+        | EngagementBarTone
+        | PriceLineTone;
     }
   | {
       readonly kind: 'count';
@@ -2001,7 +1991,7 @@ export class Node {
       | NoteToolbarSize
       | OfferingBadgeSize
       | LockupSize
-      | SidebarSize,
+      | SidebarSize
       | ShareSheetSize
       | MediaCardSize
       | LyricsSize
@@ -2059,7 +2049,7 @@ export class Node {
       | OfferingBadgeStyle
       | ActivityFeedGrouping
       | OrderStatusBarStyle
-      | SidebarVariant,
+      | SidebarVariant
       | NoteCardLayout
       | OutlineNavStyle
       | ChoiceListStyle
@@ -2094,7 +2084,7 @@ export class Node {
       | MessageTone
       | RentOutstandingTone
       | AccentTone
-      | EngagementBarTone,
+      | EngagementBarTone
       | PriceLineTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
@@ -2316,7 +2306,7 @@ export class Node {
   dragIndicator(value: DragIndicator): Node {
     return this.set('dragIndicator', value);
   }
-  material(value: SheetMaterial): Node {
+  material(value: SheetMaterial | ButtonMaterial): Node {
     return this.set('material', value);
   }
   scrollable(value = true): Node {
@@ -2361,7 +2351,7 @@ export class Node {
   variant(value: SidebarVariant): Node {
     return this.set('variant', value);
   }
-  surface(value: SidebarSurface): Node {
+  surface(value: SidebarSurface | boolean = true): Node {
     return this.set('surface', value);
   }
   onCollapsedChange(value: (collapsed: boolean) => void): Node {
@@ -2945,9 +2935,6 @@ export class Node {
   }
   reorderable(value = true): Node {
     return this.set('reorderable', value);
-  }
-  iconOnly(): Node {
-    return this.set('iconOnly', true);
   }
   dragTranslation(value: MotionValue): Node {
     return this.set('dragTranslation', value);
@@ -3600,9 +3587,6 @@ export class Node {
   iconSize(value: IconSizeToken): Node {
     return this.set('iconSize', value);
   }
-  surface(value = true): Node {
-    return this.set('surface', value);
-  }
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint(value: ColorToken): Node {
@@ -3646,9 +3630,6 @@ export class Node {
   senderTint(value: ColorToken): Node {
     return this.set('senderTint', value);
   }
-  divider(value = true): Node {
-    return this.set('divider', value);
-  }
   showZeroCounts(value = true): Node {
     return this.set('showZeroCounts', value);
   }
@@ -3686,12 +3667,6 @@ export class Node {
   modesPresentation(value: ModesPresentation): Node {
     return this.set('modesPresentation', value);
   }
-  scrollbarSide(value: ScrollbarSide): Node {
-    return this.set('scrollbarSide', value);
-  }
-  teamPlacement(value: TeamPlacement): Node {
-    return this.set('teamPlacement', value);
-  }
   textVariant(value: TypeRampStep): Node {
     return this.set('textVariant', value);
   }
@@ -3703,9 +3678,6 @@ export class Node {
   }
 
   // The other product components' secondary looks
-  material(value: ButtonMaterial): Node {
-    return this.set('material', value);
-  }
   iconOnly(value = true): Node {
     return this.set('iconOnly', value);
   }

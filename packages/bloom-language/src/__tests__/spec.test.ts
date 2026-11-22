@@ -470,7 +470,7 @@ import type { ActivityFeedView } from '../controls/activity-feed';
 import type {
   DatePickerView,
   DateRangePickerView,
-  CalendarView,
+  CalendarPanelView,
   RangeCalendarView,
   TimeFieldView,
   MeetingSchedulerView,
@@ -572,7 +572,7 @@ import type {
   CalendarViewMonthGridView,
   CalendarViewView,
 } from '../controls/calendar';
-import type { AccentTone, ContentFit } from '../tokens';
+import type { AccentTone } from '../tokens';
 import type { VoiceControlsView } from '../controls/voice';
 import type { WebSearchView } from '../controls/web-search';
 import type { TaskListView } from '../controls/task-list';
@@ -828,7 +828,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ScrollViewNode>, Of<'scrollView'>>,
       Same<MethodsOf<DatePickerView>, Of<'datePicker'>>,
       Same<MethodsOf<DateRangePickerView>, Of<'dateRangePicker'>>,
-      Same<MethodsOf<CalendarView>, Of<'calendar'>>,
+      Same<MethodsOf<CalendarPanelView>, Of<'calendar'>>,
       Same<MethodsOf<RangeCalendarView>, Of<'rangeCalendar'>>,
       Same<MethodsOf<TimeFieldView>, Of<'timeField'>>,
       Same<MethodsOf<MeetingSchedulerView>, Of<'meetingScheduler'>>,
