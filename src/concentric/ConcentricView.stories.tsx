@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Surface } from '../surface';
 import { Card } from '../card';
-import { StyledView } from '../styles/styled-primitives';
+import { View } from 'react-native';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
 import { useTheme } from '../theme/use-theme';
 import { ConcentricView } from './ConcentricView';
 
@@ -14,24 +15,30 @@ export default meta;
 type Story = StoryObj<typeof ConcentricView>;
 function Examples() {
   const { colors } = useTheme();
+  const tier = useWindowBreakpoint();
+  const wide = tier !== 'base' && tier !== 'sm';
   return (
-    <StyledView style={{ padding: 24, gap: 20, maxWidth: 760 }}>
+    <View style={{ padding: 24, gap: 20, maxWidth: 760 }}>
       <ConcentricView
-        className="rounded-[32px] p-3 md:p-5 border-2"
-        style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}
-        testID="class-parent"
+        radius={32}
+        style={{
+          padding: wide ? 20 : 12,
+          borderWidth: 2,
+          backgroundColor: colors.backgroundSecondary,
+          borderColor: colors.border,
+        }}
+        testID="padded-parent"
       >
-        <StyledView
-          className="rounded-concentric"
+        <ConcentricView
+          radius="concentric"
           style={{ height: 80, backgroundColor: colors.background }}
-          testID="class-child"
+          testID="padded-child"
         />
-        <ConcentricView className="p-1">
-          <ConcentricView className="p-2">
+        <ConcentricView style={{ padding: 4 }}>
+          <ConcentricView style={{ padding: 8 }}>
             <ConcentricView
               radius="concentric"
-              className="-m-1"
-              style={{ height: 80, backgroundColor: colors.background }}
+              style={{ margin: -4, height: 80, backgroundColor: colors.background }}
               testID="wrapped-child"
             />
           </ConcentricView>
@@ -39,25 +46,30 @@ function Examples() {
       </ConcentricView>
       <ConcentricView
         radius={32}
-        className="ps-6 pe-2 pt-4 pb-1"
-        style={{ backgroundColor: colors.backgroundSecondary }}
+        style={{
+          paddingStart: 24,
+          paddingEnd: 8,
+          paddingTop: 16,
+          paddingBottom: 4,
+          backgroundColor: colors.backgroundSecondary,
+        }}
       >
-        <StyledView
-          className="rounded-s-concentric"
+        <ConcentricView
+          radius="concentric"
           style={{ height: 50, backgroundColor: colors.background }}
-          testID="logical-start"
+          testID="logical-padding"
         />
       </ConcentricView>
-      <ConcentricView radius={32} className="p-2 border-2">
-        <ConcentricView className="rounded-concentric m-1 p-1" testID="owner-class">
+      <ConcentricView radius={32} style={{ padding: 8, borderWidth: 2 }}>
+        <ConcentricView radius="concentric" style={{ margin: 4, padding: 4 }} testID="owner">
           <ConcentricView radius="concentric" style={{ height: 30 }} testID="owner-child" />
         </ConcentricView>
-        <Surface className="rounded-concentric m-1" testID="surface-class" style={{ height: 50 }} />
+        <Surface radius="concentric" testID="surface-owner" style={{ margin: 4, height: 50 }} />
         <Card
-          className="rounded-concentric m-1"
+          radius="concentric"
           border="none"
-          testID="card-class"
-          style={{ height: 50 }}
+          testID="card-owner"
+          style={{ margin: 4, height: 50 }}
         />
       </ConcentricView>
       <Surface
@@ -106,7 +118,7 @@ function Examples() {
           style={{ height: 60, backgroundColor: colors.background }}
         />
       </ConcentricView>
-    </StyledView>
+    </View>
   );
 }
 export const Nested: Story = { render: () => <Examples /> };
