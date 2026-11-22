@@ -614,6 +614,8 @@ export type { SortableChipRowView, SortableChipView } from './controls/sortable-
 // Viewports (controls/viewport.tsx)
 export { Viewport } from './controls/viewport';
 export { GlassGroup } from './controls/glass-group';
+export { ConfirmationDialog } from './controls/confirmation-dialog';
+export type { ConfirmationDialogView, TitleVisibility } from './controls/confirmation-dialog';
 export type { GlassGroupView } from './controls/glass-group';
 export type { ViewportView } from './controls/viewport';
 

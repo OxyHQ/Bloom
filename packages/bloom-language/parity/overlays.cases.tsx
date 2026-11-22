@@ -12,6 +12,7 @@ import { View } from 'react-native';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as O from '../src/controls/overlays';
+import { ConfirmationDialog } from '../src/controls/confirmation-dialog';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { toast } from '../src/toast';
@@ -137,6 +138,72 @@ const alerts: ParityCase[] = [
           title="Update required"
           dismissible={false}
           testID="update-alert"
+        />
+      </>
+    ),
+  },
+];
+
+/**
+ * Confirmation dialogs where the platform has no grown-out sheet of its own (the
+ * web; native without the lens): Bloom's Dialog beside the view, its rows a
+ * column of actions, from the bottom and centred from md.
+ */
+const confirmations: ParityCase[] = [
+  ...([false, true] as const).map((open) => ({
+    name: `confirmation dialog ${open ? 'open' : 'closed'}`,
+    language: () =>
+      toElement(
+        OPEN.confirmationDialog(
+          [open, setOpen],
+          ConfirmationDialog(
+            'Delete this post?',
+            L.Item('Delete').destructive().onPress(confirm),
+            L.Item('Archive instead').onPress(cancel),
+          ).message('It cannot be undone.'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open={open}
+          onClose={() => setOpen()}
+          title="Delete this post?"
+          label="Delete this post?"
+          description="It cannot be undone."
+          actions={[
+            { label: 'Delete', onPress: confirm, color: 'destructive' },
+            { label: 'Archive instead', onPress: cancel, color: 'default' },
+          ]}
+          placement={{ base: 'bottom', md: 'center' }}
+        />
+      </>
+    ),
+  })),
+  {
+    name: 'confirmation dialog with its title hidden and a cancel row',
+    language: () =>
+      toElement(
+        OPEN.confirmationDialog(
+          [true, setOpen],
+          ConfirmationDialog('Leave the call?', L.Item('Leave').destructive().onPress(confirm))
+            .titleVisibility('hidden')
+            .cancelLabel('Stay'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          label="Leave the call?"
+          actions={[
+            { label: 'Leave', onPress: confirm, color: 'destructive' },
+            { label: 'Stay', color: 'cancel' },
+          ]}
+          placement={{ base: 'bottom', md: 'center' }}
         />
       </>
     ),
@@ -537,6 +604,7 @@ const more: ParityCase[] = [
 export const OVERLAY_CASES: ParityCase[] = [
   ...alerts,
   ...dialogs,
+  ...confirmations,
   ...popovers,
   ...feedback,
   ...more,

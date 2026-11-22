@@ -93,6 +93,7 @@ import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
 import { getPlatformGlass } from './platform/glass-host';
+import { ConfirmationHost } from './platform/confirmation-host';
 import { MenuHost } from './platform/menu-host';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
@@ -1222,6 +1223,16 @@ function drawNode(
       element,
     );
   }
+  // A confirmation dialog grows out of the view where the platform can: its host is around it.
+  const confirmation = ownValue(p, 'confirmationDialog')?.value;
+  if (confirmation !== undefined)
+    element = draw(ConfirmationHost, {
+      key: reactKey,
+      presenting: element,
+      isPresented: confirmation.isPresented,
+      dialog: confirmation.content,
+      render: (child: Child) => renderChild(child, inner, undefined),
+    });
   const alert = ownValue(p, 'alert')?.value;
   const dialog = ownValue(p, 'dialog')?.value;
   const popover = ownValue(p, 'popover')?.value;

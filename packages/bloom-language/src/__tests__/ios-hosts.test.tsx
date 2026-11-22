@@ -7,13 +7,17 @@ import { createContext, createElement, type ReactNode } from 'react';
 import { DARK, LIGHT, withAlpha } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
 import { Button, Header, HStack, Icon, Item, Menu, menu, Section, Text } from '../primitives';
-import { clear } from '../glass';
+import { clear, regular } from '../glass';
+import { GlassGroup } from '../controls/glass-group';
+import { ConfirmationDialog } from '../controls/confirmation-dialog';
+import { resolveSpace } from '../tokens';
 import { toElement } from '../render';
 
 const host = (name: string) => (props: { children?: ReactNode }) =>
   createElement(name, props, props.children);
 jest.mock('expo-glass-effect', () => ({
   GlassView: 'GlassView',
+  GlassContainer: 'GlassContainer',
   isLiquidGlassAvailable: () => true,
 }));
 jest.mock('@expo/ui/swift-ui', () => ({
@@ -25,6 +29,12 @@ jest.mock('@expo/ui/swift-ui', () => ({
   Section: host('SwiftSection'),
   Divider: 'SwiftDivider',
   RNHostView: host('RNHostView'),
+  ConfirmationDialog: Object.assign(host('SwiftConfirmationDialog'), {
+    Trigger: host('SwiftConfirmationTrigger'),
+    Actions: host('SwiftConfirmationActions'),
+    Message: host('SwiftConfirmationMessage'),
+  }),
+  Text: host('SwiftText'),
 }));
 jest.mock('@expo/ui/swift-ui/modifiers', () => ({
   disabled: (value?: boolean) => ({ disabled: value }),
@@ -146,5 +156,56 @@ describe('the header is the navigation bar', () => {
     expect(only(r, 'ToolbarView')).toBeTruthy();
     expect(hosts(r, 'BloomButton')).toHaveLength(1);
     expect(hosts(r, 'PageHeader')).toHaveLength(0);
+  });
+});
+
+describe('glass groups and glass styles on iOS', () => {
+  it('a glass group is UIKit’s glass container, its spacing the blend', () => {
+    const r = mount(
+      toElement(
+        GlassGroup(HStack(HStack(Text('a')).glass(), HStack(Text('b')).glass())).blend('xl'),
+      ),
+    );
+    expect(only(r, 'GlassContainer').props.spacing).toBe(resolveSpace('xl'));
+    expect(hosts(r, 'GlassView')).toHaveLength(2);
+  });
+
+  it('a glass that says it is not interactive is not, even under a control', () => {
+    const r = mount(
+      toElement(Button(Icon(Glyph)).shape('circle').label('Add').glass(regular.interactive(false))),
+    );
+    expect(only(r, 'GlassView').props.isInteractive).toBe(false);
+  });
+
+  it('a prominent glass button in the system bar is the bar’s prominent item', () => {
+    const r = mount(
+      toElement(Header('Edit').toolbar(Button(Text('Done')).style('glassProminent'))),
+    );
+    expect(only(r, 'ToolbarButton').props.variant).toBe('prominent');
+  });
+});
+
+describe('a confirmation dialog is SwiftUI’s', () => {
+  it('presented from the view, its rows SwiftUI buttons, its message under the title', () => {
+    const remove = jest.fn();
+    const setOpen = jest.fn();
+    const r = mount(
+      toElement(
+        Button(Text('Delete')).confirmationDialog(
+          [true, setOpen],
+          ConfirmationDialog('Delete this post?', Item('Delete').destructive().onPress(remove))
+            .message('It cannot be undone.')
+            .titleVisibility('visible'),
+        ),
+      ),
+    );
+    expect(only(r, 'SwiftConfirmationDialog').props).toMatchObject({
+      title: 'Delete this post?',
+      isPresented: true,
+      titleVisibility: 'visible',
+    });
+    expect(only(r, 'SwiftButton').props).toMatchObject({ label: 'Delete', role: 'destructive' });
+    expect(hosts(r, 'SwiftText')).toHaveLength(1);
+    expect(hosts(r, 'RNHostView')).toHaveLength(1);
   });
 });
