@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import type { FrameSpec, GlassValue, Modifier, PositionEdges } from './node';
+import type { ChildSpacing, FrameSpec, GlassValue, Modifier, PositionEdges } from './node';
 import { SHADOW_BOX, bloomShadowStyle, type ShadowRole } from '@oxy.so/bloom/design-tokens';
 import { surfaceStyle } from '@oxy.so/bloom/shapes';
 import { fontFamilyStyle, type TypeScaleVariant } from '@oxy.so/bloom/typography';
@@ -947,6 +947,8 @@ export function placeStyle(place: Placement): Resolved {
 /** A stack's own layout: what its constructor and its stack modifiers say. */
 export interface StackLayout {
   spacing: SpaceToken | undefined;
+  /** `.childSpacing()`: a margin after each child but the last; the web's only (see `layoutStyle`). */
+  childSpacing: ChildSpacing | undefined;
   align: Alignment | undefined;
   justify: Justify | undefined;
   wrap: boolean | undefined;
@@ -966,10 +968,11 @@ const JUSTIFY: Record<Justify, string> = {
 /** The stack modifiers. */
 export type StackModifier = Extract<
   Modifier,
-  { kind: 'spacing' | 'align' | 'justify' | 'wrap' | 'axis' }
+  { kind: 'spacing' | 'childSpacing' | 'align' | 'justify' | 'wrap' | 'axis' }
 >;
 export const STACK_KINDS: ReadonlySet<string> = new Set([
   'spacing',
+  'childSpacing',
   'align',
   'justify',
   'wrap',
@@ -980,6 +983,7 @@ export const STACK_KINDS: ReadonlySet<string> = new Set([
 export function layoutOf(modifiers: readonly StackModifier[]): StackLayout {
   const layout: StackLayout = {
     spacing: undefined,
+    childSpacing: undefined,
     align: undefined,
     justify: undefined,
     wrap: undefined,
@@ -998,6 +1002,12 @@ export function layoutStyle(layout: StackLayout): Resolved {
     style.flexDirection = layout.axis === 'horizontal' ? 'row' : 'column';
   if (layout.justify !== undefined) style.justifyContent = JUSTIFY[layout.justify];
   if (layout.spacing !== undefined) style.gap = resolveSpace(layout.spacing);
+  // Tailwind's space-x/space-y: on the web its rule for the children (a class of the
+  // language's sheet, `childSpacingX` / `childSpacingY`); NativeWind writes none on native.
+  if (layout.childSpacing !== undefined && IS_WEB) {
+    const { axis, space } = layout.childSpacing;
+    style[axis === 'horizontal' ? 'childSpacingX' : 'childSpacingY'] = resolveSpace(space);
+  }
   if (layout.align !== undefined) style.alignItems = ALIGNMENT[layout.align];
   if (layout.wrap !== undefined) style.flexWrap = layout.wrap ? 'wrap' : 'nowrap';
   return style;

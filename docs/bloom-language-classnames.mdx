@@ -30,8 +30,8 @@ Alia `841e8843a`, Allo `ba28b38`, Astro `8ae8386`, Atlas `037990e`, Authenticato
 | Needs a named token (raw value) | 278 | 671 | 1.2% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
-| Needs a modifier the language lacks | 26 | 63 | 0.1% |
-| An app’s own class | 449 | 1750 | 3.3% |
+| Needs a modifier the language lacks | 42 | 179 | 0.3% |
+| An app’s own class | 433 | 1634 | 3.0% |
 
 53720 uses of 1920 utilities. Variant prefixes are `when(condition, …)`
 over the utility they prefix; 1739 of their 2061 uses (84.4%) have a
@@ -218,7 +218,7 @@ when the fill is a role's colour.
 | `left-0` | .position({ left: 'none' }) | 42 | 13 |
 | `mt-8` | .margin('top', '3xl') | 42 | 11 |
 | `right-0` | .position({ right: 'none' }) | 42 | 14 |
-| `space-y-2` | .spacing('sm') | 42 | 4 |
+| `space-y-2` | .childSpacing('vertical', 'sm') | 42 | 4 |
 | `border-primary` | .border('primary') | 41 | 9 |
 | `outline-none` | .ring('none') | 41 | 7 |
 | `pb-1` | .padding('bottom', 'xs') | 40 | 14 |
@@ -267,18 +267,18 @@ when the fill is a role's colour.
 | `leading-[18px]` | .leading('18px') | 28 | 7 |
 | `py-12` | .padding('vertical', '48') | 28 | 13 |
 | `mb-5` | .margin('bottom', 'xl') | 27 | 9 |
-| `space-y-3` | .spacing('md') | 27 | 2 |
+| `space-y-3` | .childSpacing('vertical', 'md') | 27 | 2 |
 | `w-16` | .frame({ width: '64' }) | 27 | 10 |
 | `w-11` | .frame({ width: '44' }) | 26 | 7 |
 | `mr-2` | .margin('right', 'sm') | 25 | 5 |
 | `pt-6` | .padding('top', '2xl') | 25 | 7 |
 | `rounded-[24px]` | .corner('2xl') | 25 | 6 |
 | `rounded-radius-12` | .corner('md') | 25 | 3 |
-| `space-y-4` | .spacing('lg') | 25 | 2 |
+| `space-y-4` | .childSpacing('vertical', 'lg') | 25 | 2 |
 | `w-56` | .frame({ width: '224' }) | 25 | 5 |
 | `py-space-4` | .padding('vertical', 'xs') | 24 | 3 |
 | `select-none` | .selectable(false) | 24 | 6 |
-| `space-y-1` | .spacing('xs') | 24 | 2 |
+| `space-y-1` | .childSpacing('vertical', 'xs') | 24 | 2 |
 | `text-error-text` | .foreground('errorText') | 24 | 2 |
 | `text-right` | .textAlign('end') | 24 | 8 |
 | `p-space-12` | .padding('all', 'md') | 23 | 3 |
@@ -410,7 +410,7 @@ when the fill is a role's colour.
 | `min-w-72` | .frame({ minWidth: '288' }) | 10 | 2 |
 | `ring-1` | .ring(role, 'thin') | 10 | 4 |
 | `rounded-[8px]` | .corner('sm') | 10 | 4 |
-| `space-y-6` | .spacing('2xl') | 10 | 2 |
+| `space-y-6` | .childSpacing('vertical', '2xl') | 10 | 2 |
 | `text-sectionTitle` | .font('xl').leading('snug') | 10 | 2 |
 | `top-3` | .position({ top: 'md' }) | 10 | 6 |
 | `w-18` | .frame({ width: '72' }) | 10 | 2 |
@@ -576,7 +576,7 @@ when the fill is a role's colour.
 | `px-12` | .padding('horizontal', '48') | 4 | 2 |
 | `py-space-32` | .padding('vertical', '3xl') | 4 | 2 |
 | `size-12` | .frame({ width: '48', height: '48' }) | 4 | 2 |
-| `space-y-1.5` | .spacing('6') | 4 | 2 |
+| `space-y-1.5` | .childSpacing('vertical', '6') | 4 | 2 |
 | `text-white/90` | .foreground('white/90') | 4 | 3 |
 | `tracking-widest` | .tracking('widest') | 4 | 4 |
 | `w-0.5` | .frame({ width: '2xs' }) | 4 | 4 |
@@ -873,16 +873,24 @@ bounce or a ping) is under *Needs a modifier the language lacks*.
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
+| `gap-x-4` | one spacing per axis (gap-x, gap-y) | 37 | 9 |
+| `gap-y-1` | one spacing per axis (gap-x, gap-y) | 29 | 8 |
+| `gap-y-2` | one spacing per axis (gap-x, gap-y) | 11 | 7 |
+| `gap-x-3` | one spacing per axis (gap-x, gap-y) | 8 | 3 |
 | `transition-all` | a transition of every property: .animation(motion).animatesColors() plays colours, opacity and geometry, not a frame or a shadow | 7 | 4 |
+| `gap-y-3` | one spacing per axis (gap-x, gap-y) | 5 | 4 |
 | `ring-offset-background` | a ring’s gap colour (ring-offset-<colour>) | 5 | 3 |
 | `align-middle` | `align` (no modifier) | 4 | 2 |
 | `border-y` | a border on two sides | 3 | 3 |
 | `content-start` | the alignment of wrapped lines (align-content) | 3 | 2 |
 | `fill-foreground` | `fill` (no modifier) | 3 | 3 |
+| `gap-x-6` | one spacing per axis (gap-x, gap-y) | 3 | 2 |
 | `isolate` | `isolate` (no modifier) | 3 | 2 |
 | `origin-(--radix-dropdown-menu-content-transform-origin)` | a transform origin a library measures (a popover’s anchor): the language’s anchors are named points | 3 | 2 |
 | `origin-(--radix-tooltip-content-transform-origin)` | a transform origin a library measures (a popover’s anchor): the language’s anchors are named points | 3 | 3 |
 | `backdrop-blur-md` | `backdrop` (no modifier) | 2 | 2 |
+| `gap-x-2` | one spacing per axis (gap-x, gap-y) | 2 | 2 |
+| `gap-x-8` | one spacing per axis (gap-x, gap-y) | 2 | 2 |
 | `resize-none` | `resize` (no modifier) | 2 | 2 |
 | `text-balance` | text wrapping (balance, pretty) | 2 | 2 |
 | `transition-[width]` | a layout transition (a frame’s width): the motion engine moves views, not frames | 2 | 2 |
@@ -930,9 +938,7 @@ a Bloom role: it becomes the app's own token, declared once with
 
 | Utility | Language | Uses | Apps |
 | --- | --- | ---: | ---: |
-| `gap-x-4` | not a Bloom or Tailwind utility (an app’s own class) | 37 | 9 |
 | `border-dashed` | not a Bloom or Tailwind utility (an app’s own class) | 33 | 11 |
-| `gap-y-1` | not a Bloom or Tailwind utility (an app’s own class) | 29 | 8 |
 | `cursor-not-allowed` | not a Bloom or Tailwind utility (an app’s own class) | 22 | 6 |
 | `fixed` | not a Bloom or Tailwind utility (an app’s own class) | 21 | 8 |
 | `sticky` | not a Bloom or Tailwind utility (an app’s own class) | 20 | 7 |
@@ -940,8 +946,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `rounded-radius-lg` | not a Bloom or Tailwind utility (an app’s own class) | 16 | 2 |
 | `cursor-default` | not a Bloom or Tailwind utility (an app’s own class) | 12 | 4 |
 | `text-error-primary` | not a Bloom or Tailwind utility (an app’s own class) | 12 | 3 |
-| `gap-y-2` | not a Bloom or Tailwind utility (an app’s own class) | 11 | 7 |
-| `gap-x-3` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 3 |
 | `inset-y-0` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 2 |
 | `w-(--sidebar-width)` | not a Bloom or Tailwind utility (an app’s own class) | 8 | 2 |
 | `border-[1.5px]` | not a Bloom or Tailwind utility (an app’s own class) | 6 | 5 |
@@ -950,7 +954,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `flex-[2]` | not a Bloom or Tailwind utility (an app’s own class) | 6 | 3 |
 | `right` | not a Bloom or Tailwind utility (an app’s own class) | 6 | 2 |
 | `error` | not a Bloom or Tailwind utility (an app’s own class) | 5 | 4 |
-| `gap-y-3` | not a Bloom or Tailwind utility (an app’s own class) | 5 | 4 |
 | `aspect-[5/3]` | not a Bloom or Tailwind utility (an app’s own class) | 4 | 2 |
 | `data-[inset]:pl-8` | not a Bloom or Tailwind utility (an app’s own class) | 4 | 2 |
 | `flex-col-reverse` | not a Bloom or Tailwind utility (an app’s own class) | 4 | 3 |
@@ -963,7 +966,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `:` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 3 |
 | `border-t-transparent` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `bottom` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 3 |
-| `gap-x-6` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `left` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `peer` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
 | `pt-safe` | not a Bloom or Tailwind utility (an app’s own class) | 3 | 2 |
@@ -975,8 +977,6 @@ a Bloom role: it becomes the app's own token, declared once with
 | `down` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `field-sizing-content` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `flex-row-reverse` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
-| `gap-x-2` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
-| `gap-x-8` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `group-focus-within/menu-item:opacity-100` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `group-hover/menu-item:opacity-100` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `group/input-group` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
@@ -990,3 +990,8 @@ a Bloom role: it becomes the app's own token, declared once with
 | `pb-safe` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `pb-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
 | `pt-safe-offset-6` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `rounded-[inherit]` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `text-8xl` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `touch-none` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `up` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |
+| `w-(--radix-dropdown-menu-trigger-width)` | not a Bloom or Tailwind utility (an app’s own class) | 2 | 2 |

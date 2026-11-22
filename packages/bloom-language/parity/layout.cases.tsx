@@ -515,7 +515,32 @@ const depth: ParityCase[] = [
 
 /** Tailwind's own values, as NativeWind writes them on each platform. */
 const INFINITE = RN.Platform.OS === 'web' ? 'calc(infinity * 1px)' : 9007199254740000;
+/**
+ * Tailwind's own `space-y-2` rule (its spacing at 8px), in the document, and the
+ * class NativeWind's web runtime hands react-native-web for it.
+ */
+const SPACE_Y_2 =
+  ':where(.space-y-2 > :not(:last-child)){--tw-space-y-reverse:0;margin-block-start:calc(8px * var(--tw-space-y-reverse));margin-block-end:calc(8px * calc(1 - var(--tw-space-y-reverse)));}';
+function tailwindClass(name: string, rule: string): RN.ViewStyle {
+  if (typeof document !== 'undefined' && !document.getElementById(`tw-${name}`)) {
+    const style = document.createElement('style');
+    style.id = `tw-${name}`;
+    style.textContent = rule;
+    document.head.appendChild(style);
+  }
+  return { $$css: true, [name]: name } as unknown as RN.ViewStyle;
+}
 const tailwind: ParityCase[] = [
+  {
+    name: 'children spaced as Tailwind’s space-y (nothing on native, as NativeWind)',
+    language: () => toElement(L.VStack(L.Text('a'), L.Text('b')).childSpacing('vertical', 'sm')),
+    bloom: () => (
+      <RN.View style={RN.Platform.OS === 'web' ? tailwindClass('space-y-2', SPACE_Y_2) : undefined}>
+        <Text>a</Text>
+        <Text>b</Text>
+      </RN.View>
+    ),
+  },
   {
     name: 'an infinite corner (rounded-full)',
     language: () => toElement(L.VStack(L.Text('a')).corner('infinite').clipped()),
