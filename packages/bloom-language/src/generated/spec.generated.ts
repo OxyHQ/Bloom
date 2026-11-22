@@ -1090,6 +1090,10 @@ export const ENUMS = {
     "visible",
     "hidden"
   ],
+  "insetEdge": [
+    "top",
+    "bottom"
+  ],
   "contentFit": [
     "cover",
     "contain",
@@ -3111,6 +3115,15 @@ export const MODIFIERS = {
   ],
   "titleVisibility": [
     "titleVisibility"
+  ],
+  "safeAreaInset": [
+    "insetEdge",
+    "value",
+    "space?"
+  ],
+  "safeAreaBar": [
+    "insetEdge",
+    "value"
   ],
   "drag": [
     "motionValue",
@@ -10038,7 +10051,9 @@ export const NODE_MODIFIERS = {
     "onEndReached",
     "scrollIndicators",
     "scrollDismissesKeyboard",
-    "keyboardTaps"
+    "keyboardTaps",
+    "safeAreaInset",
+    "safeAreaBar"
   ],
   "bottomSheet": [
     "detached",
@@ -10309,7 +10324,9 @@ export const NODE_MODIFIERS = {
     "scrollbarSide",
     "size",
     "scrollDismissesKeyboard",
-    "keyboardTaps"
+    "keyboardTaps",
+    "safeAreaInset",
+    "safeAreaBar"
   ],
   "scrollSurface": [
     "padding",
@@ -10420,7 +10437,9 @@ export const NODE_MODIFIERS = {
     "fadeBottom",
     "fade",
     "matchSurfacePaint",
-    "style"
+    "style",
+    "safeAreaInset",
+    "safeAreaBar"
   ],
   "autoHideBar": [
     "summary",
