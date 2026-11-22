@@ -52,6 +52,7 @@ function RadioSwatchComponent<Value extends string = string>({
   nativeID,
   disabled: disabledProp = false,
   size: sizeProp,
+  bare = false,
   style,
   testID,
 }: RadioSwatchProps<Value>) {
@@ -77,14 +78,18 @@ function RadioSwatchComponent<Value extends string = string>({
   }, [checked, disabled, onValueChange, value]);
   const groupItem = useRadioGroupItem(value, disabled, activate);
   const discStyle: WebCssStyle = {
-    width: disc,
-    height: disc,
-    borderRadius: disc / 2,
-    backgroundColor: color,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    ...(bare
+      ? null
+      : ({
+          width: disc,
+          height: disc,
+          borderRadius: disc / 2,
+          backgroundColor: color,
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          opacity: disabled ? DISABLED_OPACITY : 1,
+        } as const)),
     '--bloom-radio-swatch-ring': theme.colors.primary,
     ...ringOffset,
   };

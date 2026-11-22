@@ -340,6 +340,7 @@ export const Chips: Story = {
           label="Authored choices"
           variant="chip"
           defaultValue="a"
+          bareOptions
           optionStyle={({ checked }) => ({
             minHeight: 48,
             paddingTop: 10,

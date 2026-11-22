@@ -174,11 +174,14 @@ export function RadioGroupHost(props: LayoutProps) {
 }
 
 export function RadioLabel({
+  bare = false,
   style,
   variant,
   children,
   numberOfLines,
 }: {
+  /** No default typography on the web: `style` sets the label's type. */
+  bare?: boolean;
   style?: StyleProp<TextStyle>;
   variant: TypeScaleVariant;
   children?: ReactNode;
@@ -197,7 +200,7 @@ export function RadioLabel({
         ...(numberOfLines === 1
           ? { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
           : {}),
-        ...resolveNativeWebStyle([TYPE_SCALE[variant], style]),
+        ...resolveNativeWebStyle([!bare && TYPE_SCALE[variant], style]),
       }}
     >
       {children}
