@@ -100,6 +100,25 @@ export const A = () => <Screen><GroupedSectionItem title="B" wrapControl /></Scr
       'GroupedSectionItem:wrapControl',
     ]);
   });
+  it('keeps an input that reads an enclosing shell’s context', () => {
+    const result = run(`import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
+export const A = () => <TextField><TextFieldInput label="A" value={a} onChangeText={setA} /></TextField>;
+`);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'TextField:inside-TextField',
+    ]);
+  });
+  it('reads a second prop as a modifier’s next argument, and a typography component as a text style', () => {
+    const result = run(`import { Textarea } from '@oxy.so/bloom/textarea';
+import { Muted } from '@oxy.so/bloom/typography';
+export const A = () => <Textarea value={a} onValueChange={setA} autoResize maxRows={6} />;
+export const B = () => <Muted numberOfLines={1}>{note}</Muted>;
+export const C = () => <Textarea value={a} onValueChange={setA} maxRows={6} />;
+`);
+    expect(result.code).toContain('toElement(TextEditor([a, setA]).autoResize(6))');
+    expect(result.code).toContain('toElement(Text(note).textStyle("muted").lines(1))');
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['TextEditor:maxRows']);
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');

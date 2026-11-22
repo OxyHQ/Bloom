@@ -18,7 +18,14 @@ import { parseExpression } from '@babel/parser';
 import * as recast from 'recast';
 import * as babelTs from 'recast/parsers/babel-ts';
 
-import { type ComponentRule, type Form, KEPT, type PropRule, ruleFor } from './components';
+import {
+  type ComponentRule,
+  type Form,
+  KEPT,
+  type PropRule,
+  ruleFor,
+  TEXT_STYLES,
+} from './components';
 import { type HostKind, type Reason, type Resolved, resolveClassName } from './resolve';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
@@ -88,8 +95,8 @@ type Ir =
   | {
       type: 'component';
       node: string;
-      /** Drawn only inside a Bloom `Screen`. */
-      inScreen: boolean;
+      /** The Bloom component (`module#export`) it is drawn only inside. */
+      within: string | undefined;
       /** The constructor's arguments, its children last. */
       args: Value[];
       props: PropMod[];
@@ -167,8 +174,8 @@ export interface Fixture {
   readonly bindings: Readonly<Record<string, Source>>;
   readonly language: readonly string[];
   readonly classes: readonly string[];
-  /** Both sides are drawn inside a Bloom `Screen` (the region holds a screen's scroll view). */
-  readonly inScreen: boolean;
+  /** Bloom components (`module#export`) both sides are drawn inside, as the region's nodes are only drawn in them. */
+  readonly within: readonly string[];
 }
 
 export interface FileResult {
@@ -206,7 +213,10 @@ function kindOf(source: Source | undefined): Kind | undefined {
     if (source.imported === 'Image') return 'rnImage';
     return undefined;
   }
-  if (source.module === '@oxy.so/bloom/typography' && source.imported === 'Text')
+  if (
+    source.module === '@oxy.so/bloom/typography' &&
+    (source.imported === 'Text' || TEXT_STYLES[source.imported])
+  )
     return 'bloomText';
   if (source.module === '@oxy.so/bloom/button' && source.imported === 'Button') return 'button';
   if (ruleFor(source.module, source.imported)) return 'component';
@@ -340,6 +350,27 @@ export function transformSource(source: string, options: TransformOptions): File
     return local;
   };
 
+  /** Each element's nearest enclosing element in the file. */
+  const enclosing = new Map<AnyNode, AnyNode>();
+  recast.visit(ast, {
+    visitJSXElement(path) {
+      let at = path.parent;
+      while (at && !n.JSXElement.check(at.node)) at = at.parent;
+      if (at) enclosing.set(path.node, at.node);
+      this.traverse(path);
+    },
+  });
+
+  /** The first element around `node` (in the file) drawn by one of `components` (`module#export`). */
+  function insideOf(node: AnyNode, components: readonly string[]): string | undefined {
+    for (let at = enclosing.get(node); at; at = enclosing.get(at)) {
+      const local = jsxName(at);
+      const source = local ? sources.get(local) : undefined;
+      if (source && components.includes(`${source.module}#${source.imported}`)) return local;
+    }
+    return undefined;
+  }
+
   const results = new Map<AnyNode, { ir: Ir } | { reasons: Reason[] }>();
   const classes = new Set<string>();
   let candidates = 0;
@@ -347,6 +378,12 @@ export function transformSource(source: string, options: TransformOptions): File
   const unconverted: Unconverted[] = [];
   const convertedNodes = new Set<AnyNode>();
   const convertedLocals = new Set<string>();
+
+  /** The text style a Bloom typography component draws its Text in. */
+  function textStyleOf(local: string): string | undefined {
+    const source = sources.get(local);
+    return source?.module === '@oxy.so/bloom/typography' ? TEXT_STYLES[source.imported] : undefined;
+  }
 
   function elementOf(node: AnyNode): { kind: Kind; local: string } | undefined {
     const local = jsxName(node);
@@ -511,6 +548,14 @@ export function transformSource(source: string, options: TransformOptions): File
     }
 
     const isText = kind === 'bloomText' || kind === 'rnText';
+    // Bloom's typography components (`Muted`, `H2`) are its Text in a text style.
+    const textStyle = textStyleOf(local);
+    if (textStyle && className)
+      fail(
+        'className',
+        'text-style-className',
+        'a className on a typography component drops its own style',
+      );
     const host: HostKind = isText ? 'text' : (kind as HostKind);
     const resolution = resolveClassName(className, host, options.table, {
       overridden: options.overridden,
@@ -533,7 +578,9 @@ export function transformSource(source: string, options: TransformOptions): File
           const inner = convert(child);
           const innerKind = elementOf(child)?.kind;
           // A span is the same Text as its parent: Bloom's in Bloom's, React Native's in React Native's.
-          if ('ir' in inner && innerKind === kind) runs.push(inner.ir);
+          const span = jsxName(child);
+          if ('ir' in inner && innerKind === kind && !(span && textStyleOf(span)))
+            runs.push(inner.ir);
           else
             fail(
               jsxName(child) ?? 'element',
@@ -544,7 +591,7 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       if (!resolution.ok || reasons.length) return { reasons };
       const resolved = resolution.value;
-      const fontMods: Mod[] = [];
+      const fontMods: Mod[] = textStyle ? [{ name: 'textStyle', args: [textStyle] }] : [];
       if (variant) {
         if (resolved.mods.some((m) => m.name === 'font' || m.name === 'weight'))
           return {
@@ -617,6 +664,13 @@ export function transformSource(source: string, options: TransformOptions): File
         code: `${rule.node}:${name}`,
         why: `${rule.node}'s \`${name}\` (or its form here) has no mapping`,
       });
+    const around = rule.outside ? insideOf(node, rule.outside) : undefined;
+    if (around)
+      reasons.push({
+        subject: around,
+        code: `${rule.node}:inside-${around}`,
+        why: `inside a ${around}, whose context the Bloom component reads and the language's node does not`,
+      });
     let key: Carried | null = null;
     /** Each prop's attribute value (`null` when it is bare). */
     const given = new Map<string, AnyNode>();
@@ -659,17 +713,57 @@ export function transformSource(source: string, options: TransformOptions): File
           });
       } else if ('options' in param) {
         const entries: [string, Value][] = [];
-        for (const [name, form] of Object.entries(param.options)) {
+        for (const [name, entry] of Object.entries(param.options)) {
           consumed.add(name);
           if (!given.has(name)) continue;
+          const [key, form] = typeof entry === 'string' ? [name, entry] : entry;
           const value = valuesOf(form, given.get(name));
           // A bare flag is `true` in an object.
           if (value?.length === 0 && (form === 'flag' || form === 'mark'))
-            entries.push([name, true]);
+            entries.push([key, true]);
           else if (value?.length !== 1) unmapped(name);
-          else entries.push([name, value[0] as Value]);
+          else entries.push([key, value[0] as Value]);
         }
         args.push(entries.length ? { $: 'options', entries } : { $: 'absent' });
+      } else if ('label' in param) {
+        // Its glyphs and its label, as the node reads them from its content.
+        textChildren = true;
+        const glyph = (prop: string | undefined): Value | null => {
+          if (!prop || !given.has(prop)) return null;
+          consumed.add(prop);
+          const value = valuesOf('icon', given.get(prop));
+          if (value?.length !== 1) {
+            unmapped(prop);
+            return null;
+          }
+          const { name } = value[0] as { name: string };
+          return { $: 'view', view: { type: 'icon', component: name, mods: [], key: null } };
+        };
+        const leading = glyph(param.label.leading);
+        const text = textOf(node.children);
+        const trailing = glyph(param.label.trailing);
+        if (leading) args.push(leading);
+        if (text !== undefined)
+          args.push({
+            $: 'view',
+            view: {
+              type: 'text',
+              raw: false,
+              resolved: { axis: 'column', mods: [], variants: [] },
+              props: [],
+              key: null,
+              runs: [
+                typeof text === 'string'
+                  ? { type: 'string', value: text }
+                  : { type: 'expr', value: text as Carried },
+              ],
+            },
+          });
+        else if (
+          node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''))
+        )
+          unmapped('children');
+        if (trailing) args.push(trailing);
       } else if ('text' in param) {
         textChildren = true;
         const text = textOf(node.children);
@@ -688,13 +782,27 @@ export function transformSource(source: string, options: TransformOptions): File
       }
     }
     const props: PropMod[] = [];
+    // A prop that is another's modifier's next argument is read with it.
+    for (const prop of Object.values(rule.props ?? {}))
+      if (prop.with && given.has(prop.with[0])) consumed.add(prop.with[0]);
     for (const [name, value] of given) {
       if (consumed.has(name)) continue;
       const prop: PropRule | undefined = rule.props?.[name];
       const values = prop ? valuesOf(prop.form, value, prop.map) : undefined;
-      if (!prop || !values) unmapped(name);
-      else props.push({ name: prop.modifier, args: values });
+      if (!prop || !values) {
+        unmapped(name);
+        continue;
+      }
+      if (prop.with && given.has(prop.with[0])) {
+        const next = valuesOf(prop.with[1], given.get(prop.with[0]));
+        if (next?.length !== 1) unmapped(prop.with[0]);
+        else values.push(next[0] as Value);
+      }
+      props.push({ name: prop.modifier, args: values });
     }
+    // A next argument given without its modifier's prop.
+    for (const [name, prop] of Object.entries(rule.props ?? {}))
+      if (prop.with && given.has(prop.with[0]) && !given.has(name)) unmapped(prop.with[0]);
 
     if (rule.children) {
       for (const child of node.children) {
@@ -715,7 +823,7 @@ export function transformSource(source: string, options: TransformOptions): File
       ir: {
         type: 'component',
         node: rule.node,
-        inScreen: rule.inScreen === true,
+        within: rule.within,
         args,
         props,
         key,
@@ -744,7 +852,9 @@ export function transformSource(source: string, options: TransformOptions): File
         return hasJsx(expression) ? undefined : [{ node: expression, hole: 'string' }];
       }
       case 'token': {
-        const text = staticString(value);
+        // A token is a static string, or a static number of points (`spacing={12}`).
+        const number = staticNumber(value);
+        const text = staticString(value) ?? (number === undefined ? undefined : String(number));
         if (text === undefined) return undefined;
         const token = map ? map[text] : text;
         return token === undefined ? undefined : [token];
@@ -1183,19 +1293,19 @@ export function transformSource(source: string, options: TransformOptions): File
         name === local ? name : `${name}: ${local}`,
       ),
       classes: [...regionClasses],
-      inScreen: inScreen(ir),
+      within: withinOf(ir),
     });
   }
 
-  /** Whether a region holds a node that is drawn only inside a Bloom `Screen`. */
-  function inScreen(ir: Ir): boolean {
-    let found = false;
+  /** The Bloom components the region's nodes are drawn only inside. */
+  function withinOf(ir: Ir): string[] {
+    const found = new Set<string>();
     const visit = (at: Ir) => {
-      if (at.type === 'component' && at.inScreen) found = true;
+      if (at.type === 'component' && at.within) found.add(at.within);
       for (const child of childrenOf(at)) visit(child);
     };
     visit(ir);
-    return found;
+    return [...found];
   }
 
   // ── the walk ─────────────────────────────────────────────────────────
