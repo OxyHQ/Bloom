@@ -1,5 +1,4 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { styled } from 'react-native-css';
 import { Animated, Easing, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { webDataSet } from '../styles/web-data';
@@ -114,7 +113,7 @@ function MeterSweep({
  * A bar that is one SEGMENT of a larger meter passes `decorative` and gets no
  * role at all — two nested meters announce the measurement twice.
  */
-function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle> }) {
+function MeterComponent(props: AnyMeterProps) {
   const theme = useTheme();
   const locale = useResolvedBloomLocale();
   const defaults = useMemo(() => resolveMeterColors(theme), [theme]);
@@ -210,7 +209,5 @@ function MeterComponent(props: AnyMeterProps & { fillStyle?: StyleProp<ViewStyle
   );
 }
 
-export const Meter = memo(
-  styled(MeterComponent, { className: 'style', fillClassName: 'fillStyle' }),
-);
+export const Meter = memo(MeterComponent);
 Meter.displayName = 'Meter';

@@ -85,10 +85,8 @@ export interface MeterReveal {
 interface MeterGeometryProps {
   /** Animate only the fill from empty when visible; reduced motion displays the real value immediately. */
   reveal?: MeterReveal;
-  /** Classes on the track. Unclaimed properties retain the normal Meter defaults. */
-  className?: string;
-  /** Classes on the fill. Width continues to represent value/max. */
-  fillClassName?: string;
+  /** The fill's style, over its defaults. Its width continues to represent value/max. */
+  fillStyle?: StyleProp<ViewStyle>;
   /** Current value. Clamped into `[0, max]`; `NaN` reads as empty. */
   value: number;
   /**
