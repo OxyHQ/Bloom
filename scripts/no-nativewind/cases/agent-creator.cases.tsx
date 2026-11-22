@@ -6,11 +6,6 @@ import { GlossArt } from '@bloom/agent-creator/GlossArt';
 import type { AgentCreatorAgent } from '@bloom/agent-creator/types';
 import type { Cases } from '../support/cases';
 
-// Reanimated exports `createAnimatedComponent` by name, which react-native-css calls for a
-// class with a transition; Bloom's Jest mock has it on the default export only.
-const reanimated = require('react-native-reanimated');
-reanimated.createAnimatedComponent ??= reanimated.default.createAnimatedComponent;
-
 const noop = () => {};
 const plain: AgentCreatorAgent = {
   id: 'a',
