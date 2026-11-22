@@ -54,19 +54,39 @@ uniform float2 secondaryCenter;
 uniform float2 secondaryHalfSize;
 uniform float2 secondaryRadii;
 uniform float smoothing;
+uniform float memberCount;
+uniform float memberBlend;
+uniform float4 members[7];
+uniform float memberRadii[7];
 uniform shader smoothedField;
 uniform float smoothedFieldEnabled;
 uniform float2 fieldCoordinateScale;
 uniform float2 fieldCoordinateOffset;
 uniform float2 fieldExtent;
-float3 liquidAnalyticFieldGradient(float2 point) {
-    float3 a = nativeGlassRoundedField(point - center, halfSize, cornerRadii, 0.5);
-    if (secondaryEnabled < 0.5) return a;
-    float3 b = nativeGlassRoundedField(point - secondaryCenter, secondaryHalfSize, secondaryRadii, 0.5);
-    float k = smoothing * clamp(0.5 - 0.5 * dot(a.yz, b.yz), 0.0, 1.0);
+float3 nativeGlassSmoothUnion(float3 a, float3 b, float blend) {
+    float k = blend * clamp(0.5 - 0.5 * dot(a.yz, b.yz), 0.0, 1.0);
     if (k <= 0.000001) return a.x < b.x ? a : b;
     float h = clamp(0.5 + 0.5 * (a.x - b.x) / k, 0.0, 1.0);
     return float3(mix(a.x, b.x, h) - k * h * (1.0 - h), mix(a.yz, b.yz, h));
+}
+// A trigger of several shapes (a group of glasses): its other shapes (center, half size; radius), blended into its first.
+// 7: GlassShapes.Capacity less the first.
+float3 liquidMemberField(float2 point, float3 first) {
+    for (int i = 0; i < 7; i++) {
+        if (float(i) >= memberCount) break;
+        float3 member = nativeGlassRoundedField(point - members[i].xy, members[i].zw, float2(memberRadii[i]), 0.5);
+        first = nativeGlassSmoothUnion(first, member, memberBlend);
+    }
+    return first;
+}
+// The glass's field: the incoming shape, and in a morph the trigger it grows out of (the secondary shape). The
+// trigger's other shapes, if it has any, are drawn where the trigger is: the secondary in a morph, else the incoming.
+float3 liquidAnalyticFieldGradient(float2 point) {
+    float3 a = nativeGlassRoundedField(point - center, halfSize, cornerRadii, 0.5);
+    if (secondaryEnabled < 0.5) return liquidMemberField(point, a);
+    float3 b = liquidMemberField(point,
+        nativeGlassRoundedField(point - secondaryCenter, secondaryHalfSize, secondaryRadii, 0.5));
+    return nativeGlassSmoothUnion(a, b, smoothing);
 }
 float3 smoothedFieldSample(float2 pixel) {
     float2 st = pixel - 0.5;

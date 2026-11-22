@@ -116,6 +116,15 @@ interface IMenu {
   children?: ReactNode;
 }
 
+// Bloom: a glass of a group on one trigger. Views with one key are one shape around them all (a union).
+type TMenuGroupMember = {
+  key: string;
+  // The corner radius in points; unset is a capsule.
+  cornerRadius?: number;
+  // How it arrives and leaves: out of and into the nearest glass (default), or where it is.
+  transition?: "matchedGeometry" | "materialize";
+};
+
 interface IMenuTrigger {
   lens?: boolean;
   // Morph from the trigger when it has no glass (lens={false}): the panel grows out of the trigger's rectangle,
@@ -133,6 +142,10 @@ interface IMenuTrigger {
   restBackdrop?: string;
   // Bloom: a tap on the trigger opens the menu natively, with no round trip to JS.
   openOnTap?: boolean;
+  // Bloom: the trigger is a group of glasses: it draws each member's glass (found by the nativeID of its views), not its
+  // own rect, and they blend within `blend` points.
+  members?: readonly TMenuGroupMember[];
+  blend?: number;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
@@ -203,6 +216,7 @@ export {
   type TMenuColorScheme,
   type TMenuConfig,
   type TMenuEntry,
+  type TMenuGroupMember,
   type TMenuIconName,
   type TMenuItemIconState,
   type TMenuMorphOrigin,

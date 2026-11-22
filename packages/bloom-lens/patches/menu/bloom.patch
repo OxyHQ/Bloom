@@ -1,7 +1,15 @@
 diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/interface.ts
 --- a/components/menu-trigger/interface.ts
 +++ b/components/menu-trigger/interface.ts
-@@ -18,7 +18,7 @@
+@@ -8,6 +8,7 @@
+ import type {
+   TMenuAlignment,
+   TMenuConfig,
++  TMenuGroupMember,
+   TMenuScheme,
+   TMenuSelectEvent,
+   TMenuTriggerConfig,
+@@ -18,7 +19,7 @@
    items: TNativeMenuItem[];
    onItemSelect?: (event: { nativeEvent: TMenuSelectEvent }) => void;
    onMenuOpenChange?: (event: { nativeEvent: { open: boolean } }) => void;
@@ -10,13 +18,15 @@ diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/inter
    morph?: boolean;
    cornerRadius?: number;
    colorScheme?: TMenuScheme;
-@@ -27,6 +27,10 @@
+@@ -27,6 +28,12 @@
    alignment?: TMenuAlignment;
    config?: TMenuConfig;
    triggerConfig?: TMenuTriggerConfig;
 +  openWithItems?: boolean;
 +  restBackdrop?: string;
 +  openOnTap?: boolean;
++  members?: readonly TMenuGroupMember[];
++  blend?: number;
 +  onMenuClosed?: () => void;
    style?: StyleProp<ViewStyle>;
    children?: ReactNode;
@@ -24,7 +34,7 @@ diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/inter
 diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-trigger/menu-trigger.android.tsx
 --- a/components/menu-trigger/menu-trigger.android.tsx
 +++ b/components/menu-trigger/menu-trigger.android.tsx
-@@ -8,11 +8,15 @@
+@@ -8,11 +8,17 @@
  import { NativeMenu } from "./native-menu.android";
  
  const MenuTriggerBase: FC<IMenuTrigger> = ({
@@ -38,10 +48,12 @@ diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-t
 +  onMenuClosed,
 +  restBackdrop,
 +  openOnTap,
++  members,
++  blend,
    accessibilityLabel,
    style,
    children,
-@@ -30,10 +34,14 @@
+@@ -30,10 +36,16 @@
        fontFamily={menu?.content.fontFamily}
        alignment={menu?.content.alignment}
        config={menu?.content.config}
@@ -54,6 +66,8 @@ diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-t
 +      onMenuClosed={onMenuClosed}
 +      restBackdrop={restBackdrop}
 +      openOnTap={openOnTap}
++      members={members}
++      blend={blend}
        style={style}
        onItemSelect={(event: { nativeEvent: TMenuSelectEvent }): void =>
          menu?.select(event.nativeEvent)
@@ -85,9 +99,19 @@ diff -ruN a/interface.ts b/interface.ts
    saturation?: number;
    refraction?: number;
    rim?: number;
-@@ -112,13 +117,22 @@
+@@ -111,14 +116,36 @@
+   children?: ReactNode;
  }
  
++// Bloom: a glass of a group on one trigger. Views with one key are one shape around them all (a union).
++type TMenuGroupMember = {
++  key: string;
++  // The corner radius in points; unset is a capsule.
++  cornerRadius?: number;
++  // How it arrives and leaves: out of and into the nearest glass (default), or where it is.
++  transition?: "matchedGeometry" | "materialize";
++};
++
  interface IMenuTrigger {
 -  glass?: boolean;
 -  // Morph from the trigger when it has no glass (glass={false}): the panel grows out of the trigger's rectangle,
@@ -107,6 +131,18 @@ diff -ruN a/interface.ts b/interface.ts
 +  restBackdrop?: string;
 +  // Bloom: a tap on the trigger opens the menu natively, with no round trip to JS.
 +  openOnTap?: boolean;
++  // Bloom: the trigger is a group of glasses: it draws each member's glass (found by the nativeID of its views), not its
++  // own rect, and they blend within `blend` points.
++  members?: readonly TMenuGroupMember[];
++  blend?: number;
    accessibilityLabel?: string;
    style?: StyleProp<ViewStyle>;
    children?: ReactNode;
+@@ -189,6 +216,7 @@
+   type TMenuColorScheme,
+   type TMenuConfig,
+   type TMenuEntry,
++  type TMenuGroupMember,
+   type TMenuIconName,
+   type TMenuItemIconState,
+   type TMenuMorphOrigin,

@@ -319,6 +319,9 @@ internal class GlassMenuSession(
     // A plain trigger keeps its own corner radius (cornerRadius), not the capsule of a glass lobe.
     state.sourceRadius = if (anchor.glass) min(state.source.width(), state.source.height()) / 2f
       else anchor.cornerRadiusPx(state.source)
+    // A group's glasses are its lobe: they follow it as its content does, scaled into it.
+    if (anchor.morphs) anchor.group.place(state.members, state.source, anchor.width, anchor.height, density)
+    else state.members.clear()
     state.smoothing = frame.smoothing
     state.lensHeight = frame.lensHeight
     state.lensAmount = frame.lensAmount
