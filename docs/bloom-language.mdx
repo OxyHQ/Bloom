@@ -1143,6 +1143,16 @@ the group keyed by its ids, so a button that arrives grows out of its
 neighbour as Apple's `glassEffectID` does. Any other group stays UIKit's
 container around Bloom's views.
 
+**Why Android's group is one shape.** The lens engine draws a base as one
+rounded rectangle, and its field and shader hold exactly two shapes: the
+trigger and the panel a menu morphs between (`GlassGaussianField`'s incoming
+and outgoing rects, the shader's primary and `secondary` uniforms). Separate
+shapes that blend at rest, a `glassID` morph between siblings and a union of
+some members need an N-shape field and shader, each member's rect measured
+from JavaScript into the base, and the overlay drawing a base as several
+shapes: a change to the engine's renderer, not a patch on it, so it is not
+built.
+
 The web's glass is a blurred `Surface` with no refraction and no shared
 sampling, so shapes there never blend; that is Bloom's measured rule (no SVG
 filters, masks or clip paths on a material host), and the owner's direction
@@ -4854,7 +4864,7 @@ with its reason. Nothing else is missing.
   keyframe tracks, `ViewThatFits`, and the Liquid Glass rules in the compiler.
   **Not built:** separate glass shapes that blend at rest on Android (a group is
   one base; the engine's field blends two shapes, so a `glassID` morph between
-  siblings is engine work: see below) and on the web (no shared sampling);
+  siblings is engine work: see Glass groups) and on the web (no shared sampling);
   SwiftUI's own `glassEffectID` for a group of anything but glass icon
   buttons; a `.glassUnion()` drawn as one shape on iOS and the web; the
   insets of a scrolling `List`; the Liquid Glass rules across a
