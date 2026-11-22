@@ -1491,6 +1491,27 @@ Bloom's `lyrics`: `LyricsView(lines, options?)` follows playback (its
 `.label()` names its region. `LyricsPreviewCard(lines, options?)` is the
 card under a player; `.lines(4 | 5)` is how many lines it shows.
 
+### Media player
+
+```ts
+TransportControls(playing, { onPlayPause: toggle, onNext, onPrevious, repeat, onRepeatChange }).size('lg').style('podcast')
+MiniPlayer(track, { playing, onPlayPause: toggle, position, duration }).onPress(expand)
+PlaybackSpeedMenu([rate, setRate]).size('sm')
+SleepTimerMenu([timer, setTimer], { remaining })
+```
+
+Bloom's `media-player`: `TransportControls(playing, options)` takes
+`.size('sm' | 'md' | 'lg')`, `.style('music' | 'podcast')`, `.loading()`
+and `.disabled()`, its `trailing` a language child. `NowPlayingBar(track,
+options)` (its `devicePicker` a child), `MiniPlayer(track, options)` and
+`FullScreenPlayer(track, options)` (its `aboutArtist` a child) take the
+transport, position and duration as Bloom's data; a mini player's
+`.onPress()` is its own. `PlaybackSpeedMenu(rate)` and `SleepTimerMenu(value)`
+write their binding, take the transport's `.size()` and `.disabled()`, and
+their `trigger` (Bloom's children) is a language child.
+`DevicePicker(current, devices, options)` and `ConnectBanner(deviceName,
+options?)` (`.onPress()` its own) complete it.
+
 ### Creator studio
 
 ```ts

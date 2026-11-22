@@ -414,3 +414,5 @@ export function resolveFont(
   return style;
 }
 export type LyricsSize = (typeof ENUMS.lyricsSize)[number];
+export type TransportSize = (typeof ENUMS.transportSize)[number];
+export type TransportStyle = (typeof ENUMS.transportStyle)[number];

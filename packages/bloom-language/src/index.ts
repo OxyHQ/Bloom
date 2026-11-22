@@ -803,3 +803,33 @@ export type {
   OrderConfirmationOptions,
   OrderConfirmationView,
 } from './controls/order-confirmation';
+
+// Media player (controls/media-player.tsx)
+export {
+  TransportControls,
+  NowPlayingBar,
+  MiniPlayer,
+  FullScreenPlayer,
+  PlaybackSpeedMenu,
+  SleepTimerMenu,
+  DevicePicker,
+  ConnectBanner,
+} from './controls/media-player';
+export type {
+  TransportControlsOptions,
+  NowPlayingBarOptions,
+  MiniPlayerOptions,
+  FullScreenPlayerOptions,
+  PlaybackSpeedMenuOptions,
+  SleepTimerMenuOptions,
+  DevicePickerOptions,
+  ConnectBannerOptions,
+  TransportControlsView,
+  NowPlayingBarView,
+  MiniPlayerView,
+  FullScreenPlayerView,
+  PlaybackSpeedMenuView,
+  SleepTimerMenuView,
+  DevicePickerView,
+  ConnectBannerView,
+} from './controls/media-player';

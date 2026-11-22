@@ -11,6 +11,7 @@ import { CHART_CARD_CASES } from '../../parity/chart-cards.cases';
 import { CHAT_CASES } from '../../parity/chat.cases';
 import { CHAT_COMPOSER_CASES } from '../../parity/chat-composer.cases';
 import { CHECKOUT_SHEET_CASES } from '../../parity/checkout-sheet.cases';
+import { MEDIA_PLAYER_CASES } from '../../parity/media-player.cases';
 import { LYRICS_CASES } from '../../parity/lyrics.cases';
 import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
 import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
@@ -113,3 +114,4 @@ export const CreatorStudio: Story = { args: { cases: CREATOR_STUDIO_CASES } };
 export const CheckoutSummaryDeliveryAndOrders: Story = {
   args: { cases: CHECKOUT_DELIVERY_ORDER_CASES },
 };
+export const MediaPlayer: Story = { args: { cases: MEDIA_PLAYER_CASES } };

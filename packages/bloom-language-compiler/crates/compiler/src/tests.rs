@@ -943,3 +943,23 @@ fn the_checkout_summary_delivery_slots_and_order_confirmation_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_media_player_is_checked() {
+    let imports = "import { MiniPlayer, PlaybackSpeedMenu, SleepTimerMenu, TransportControls, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (o, r) => VStack(TransportControls(true, o).size('lg').style('podcast').loading().disabled(), PlaybackSpeedMenu(r).size('sm').disabled(), SleepTimerMenu(r).size('md'), MiniPlayer(o, o).onPress(o));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("TransportControls(true, b).size('xl')", "Unknown transportSize token 'xl' for .size()"),
+        ("TransportControls(true, b).style('video')", "Unknown transportStyle token 'video' for .style()"),
+        ("PlaybackSpeedMenu(b).style('music')", "PlaybackSpeedMenu has no modifier .style()"),
+        ("MiniPlayer(b, b).size('sm')", "MiniPlayer has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

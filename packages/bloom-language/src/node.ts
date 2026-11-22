@@ -25,6 +25,7 @@ import type { ShareSheetKind } from './controls/share-sheet';
 import type { NoteCardKind } from './controls/note-card';
 import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
+import type { MediaPlayerKind } from './controls/media-player';
 import type { LyricsKind } from './controls/lyrics';
 import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
@@ -99,6 +100,8 @@ import {
   type NoteCardLayout,
   type ShareSheetSize,
   type ShelfLayout,
+  type TransportStyle,
+  type TransportSize,
   type LyricsSize,
   type MediaCardLayout,
   type MediaCardSize,
@@ -497,7 +500,8 @@ export type Modifier =
         | ShareSheetSize
         | MediaCardSize
         | LyricsSize
-        | ReleaseStatusBadgeSize;
+        | ReleaseStatusBadgeSize
+        | TransportSize;
     }
   | {
       readonly kind: 'style';
@@ -527,7 +531,8 @@ export type Modifier =
         | PaymentStatusStyle
         | PipelineLayout
         | MediaCardLayout
-        | ReleaseCardLayout;
+        | ReleaseCardLayout
+        | TransportStyle;
     }
   | {
       readonly kind: 'shape';
@@ -717,7 +722,8 @@ export type NodeKind =
   | CreatorStudioKind
   | CheckoutSummaryKind
   | DeliverySlotKind
-  | OrderConfirmationKind;
+  | OrderConfirmationKind
+  | MediaPlayerKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1036,7 +1042,8 @@ export class Node {
       | ShareSheetSize
       | MediaCardSize
       | LyricsSize
-      | ReleaseStatusBadgeSize,
+      | ReleaseStatusBadgeSize
+      | TransportSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1066,7 +1073,8 @@ export class Node {
       | PaymentStatusStyle
       | PipelineLayout
       | MediaCardLayout
-      | ReleaseCardLayout,
+      | ReleaseCardLayout
+      | TransportStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
