@@ -167,3 +167,6 @@ export const OrderStatus: Story = { args: { family: 'orderStatus' } };
 export const Lockups: Story = { args: { family: 'lockup' } };
 export const Calendars: Story = { args: { family: 'calendar' } };
 export const Engagement: Story = { args: { family: 'engagement' } };
+export const TaskLists: Story = { args: { family: 'taskList' } };
+export const WebSearches: Story = { args: { family: 'webSearch' } };
+export const VoiceControls: Story = { args: { family: 'voice' } };
