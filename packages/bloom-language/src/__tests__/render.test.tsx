@@ -547,3 +547,26 @@ describe('glass', () => {
     expect(regular.key).not.toBe(clear.key);
   });
 });
+
+describe('an island’s controls share its material', () => {
+  const Row = view(function Row() {
+    return HStack(Button(Text('In a view')).onPress(() => {}));
+  });
+
+  it('a Button or FAB inside .blur() is Bloom’s shared material, across a view(); a glass ends it', () => {
+    const r = mount(
+      toElement(
+        HStack(
+          Button(Text('Here')).onPress(() => {}),
+          Row({}),
+          VStack(Button(Text('On glass')).onPress(() => {})).glass(),
+        ).blur(),
+      ),
+    );
+    const buttons = hosts(r, 'BloomButton');
+    expect(buttons.map((b) => b.props.material)).toEqual(['shared', 'shared', undefined]);
+    // Outside an island a button draws its own material.
+    const plain = mount(toElement(HStack(Button(Text('Plain')).onPress(() => {}))));
+    expect(hosts(plain, 'BloomButton')[0]?.props.material).toBeUndefined();
+  });
+});
