@@ -925,7 +925,8 @@
     "mono": ["value?"],
     "frosted": ["value?"],
     "methodTitleAlign": ["methodTitleAlign"],
-    "methodTitleVariant": ["typeRamp"]
+    "methodTitleVariant": ["typeRamp"],
+    "multiline": ["value?"]
   },
   "universal": [
     "padding",
@@ -1822,7 +1823,16 @@
       "constructors": ["VoiceControls"],
       "modifiers": ["size", "disabled"],
       "size": "voiceSize"
-    }
+    },
+    "agentCreator": { "constructors": ["AgentCreator"], "modifiers": [] },
+    "agentCreatorField": {
+      "constructors": ["AgentCreatorField"],
+      "modifiers": ["multiline", "divider"]
+    },
+    "agentCreatorSection": { "constructors": ["AgentCreatorSection"], "modifiers": [] },
+    "agentProfile": { "constructors": ["AgentProfile"], "modifiers": [] },
+    "agentReplyIdentity": { "constructors": ["AgentReplyIdentity"], "modifiers": [] },
+    "aiProfileCard": { "constructors": ["AiProfileCard"], "modifiers": ["tint"], "tint": "color" }
   },
   "sfSymbols": {
     "$comment": [
