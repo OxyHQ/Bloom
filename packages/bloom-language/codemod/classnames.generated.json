@@ -117,7 +117,7 @@
    "count": 542,
    "apps": 21,
    "status": "mapped",
-   "language": ".corner('full')"
+   "language": ".corner('infinite')"
   },
   "text-base": {
    "count": 501,
@@ -11089,13 +11089,13 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('full', 'leading')"
+   "language": ".corner('infinite', 'leading')"
   },
   "rounded-r-full": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('full', 'trailing')"
+   "language": ".corner('infinite', 'trailing')"
   },
   "rounded-r-md": {
    "count": 1,

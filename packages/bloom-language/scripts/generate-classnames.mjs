@@ -96,7 +96,18 @@ const TW_TEXT = {
   '5xl': [48, 48],
   '6xl': [60, 60],
 };
-const TW_RADIUS = { none: 0, sm: 2, '': 4, md: 6, lg: 8, xl: 12, '2xl': 16, '3xl': 24, full: 9999 };
+/** Tailwind v4's radii; `full` is `calc(infinity * 1px)`, the language's `infinite`. */
+const TW_RADIUS = {
+  none: 0,
+  sm: 2,
+  '': 4,
+  md: 6,
+  lg: 8,
+  xl: 12,
+  '2xl': 16,
+  '3xl': 24,
+  full: Infinity,
+};
 const TW_LEADING = { none: 1, tight: 1.25, snug: 1.375, normal: 1.5, relaxed: 1.625, loose: 2 };
 const TW_WEIGHT = {
   thin: '100',
@@ -252,7 +263,8 @@ function corner(name, side) {
     name === '' ? TW_RADIUS[''] : (presetRadius[name] ?? TW_RADIUS[name] ?? spaceValue(name));
   if (value === undefined) return deadKey(name, 'radius');
   const sideArg = side ? `, '${side}'` : '';
-  if (value >= 9999) return mapped(`.corner('full'${sideArg})`);
+  if (value === Infinity) return mapped(`.corner('infinite'${sideArg})`);
+  if (value === 9999) return mapped(`.corner('full'${sideArg})`);
   const name2 = rung(scales.corner, value);
   return name2
     ? mapped(`.corner('${name2}'${sideArg})`)
