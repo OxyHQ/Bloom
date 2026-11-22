@@ -68,3 +68,23 @@ test('the Jest transformer hands the compiled module to the transformer it wraps
   const other = transformer.getCacheKey(ROW, 'row.tsx', {});
   assert.equal(typeof other, 'string');
 });
+
+test('a warning is said and the module still compiles', () => {
+  const source = `import { ScrollView, Text, VStack } from '@oxy.so/bloom-language';
+
+export function Feed() {
+  return ScrollView(VStack(Text('Pinned')).glass());
+}
+`;
+  const said = [];
+  const warn = console.warn;
+  console.warn = (message) => said.push(message);
+  try {
+    const output = compileModule(source, 'feed.tsx');
+    assert.ok(output === null || typeof output.code === 'string');
+  } finally {
+    console.warn = warn;
+  }
+  assert.equal(said.length, 1);
+  assert.match(said[0], /^warning\[bloom\]: glass in scrolling content/);
+});
