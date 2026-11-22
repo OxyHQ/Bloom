@@ -474,7 +474,7 @@ export const CASES = [
       drawDistance={400}
       maxItemsInRecyclePool={24}
     />}</I11>); },
-    after: () => { const VirtualList = I48; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (<I11>{toElement(LVirtualList(ITEMS, (info) => Embed(((info) => <Hole n={'1-' + info.index} />)(info))).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))}</I11>); },
+    after: () => { const VirtualList = I48; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (<I11>{toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))}</I11>); },
   },
   {
     name: "components/Components.tsx:601",
@@ -679,6 +679,11 @@ export const CASES = [
       />
     </View>); },
     after: () => { const View = I9; const Text = I52; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(true), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(true), (v) => v.border('primary', 'thin')).when(!true, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(true, (v) => v.border('border', 'thin', 'top')))); },
+  },
+  {
+    name: "components/Rows.tsx:133",
+    before: () => { const View = I9; return (<View className="rounded-lg p-4 shadow-sm" />); },
+    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().padding('all', 'lg').corner('sm').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'))); },
   },
   {
     name: "components/SettingsRoute.tsx:13",

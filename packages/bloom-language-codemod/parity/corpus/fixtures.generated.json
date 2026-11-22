@@ -1578,7 +1578,7 @@
  {
   "name": "components/Components.tsx:574",
   "before": "<VirtualList\n      data={ITEMS}\n      renderItem={((info) => <Hole n={'1-' + info.index} />)}\n      screen={{}}\n      scrollbar=\"never\"\n      keyboardShouldPersistTaps=\"handled\"\n      keyboardDismissMode=\"on-drag\"\n      overscan={2}\n      removeClippedSubviews\n      maxToRenderPerBatch={10}\n      windowSize={10}\n      initialNumToRender={10}\n      recycleItems\n      maintainVisibleContentPosition={false}\n      drawDistance={400}\n      maxItemsInRecyclePool={24}\n    />",
-  "after": "toElement(LVirtualList(ITEMS, (info) => Embed(((info) => <Hole n={'1-' + info.index} />)(info))).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
+  "after": "toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
   "bindings": {
    "VirtualList": {
     "module": "@oxy.so/bloom/list",
@@ -2483,6 +2483,37 @@
    "border",
    "border-primary",
    "opacity-70"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:133",
+  "before": "<View className=\"rounded-lg p-4 shadow-sm\" />",
+  "after": "toElement(VStack().padding('all', 'lg').corner('sm').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "rounded-lg",
+   "p-4",
+   "shadow-sm"
   ],
   "within": [],
   "themed": false,

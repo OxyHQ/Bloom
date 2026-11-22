@@ -244,12 +244,6 @@
 .border {
   border-style: var(--tw-border-style);
   border-width: 1px;
-  --bloom-cx-border-top: 1px;
-  --bloom-cx-border-right: 1px;
-  --bloom-cx-rborder-right: 1px;
-  --bloom-cx-border-bottom: 1px;
-  --bloom-cx-border-left: 1px;
-  --bloom-cx-rborder-left: 1px;
 }
 .border-t {
   border-top-style: var(--tw-border-style);
@@ -279,22 +273,6 @@
 }
 .bg-surface {
   background-color: var(--color-surface);
-}
-.p-2 {
-  --bloom-cx-padding-top: calc(4px * 2);
-  --bloom-cx-padding-right: calc(4px * 2);
-  --bloom-cx-rpadding-right: calc(4px * 2);
-  --bloom-cx-padding-bottom: calc(4px * 2);
-  --bloom-cx-padding-left: calc(4px * 2);
-  --bloom-cx-rpadding-left: calc(4px * 2);
-}
-.p-4 {
-  --bloom-cx-padding-top: calc(4px * 4);
-  --bloom-cx-padding-right: calc(4px * 4);
-  --bloom-cx-rpadding-right: calc(4px * 4);
-  --bloom-cx-padding-bottom: calc(4px * 4);
-  --bloom-cx-padding-left: calc(4px * 4);
-  --bloom-cx-rpadding-left: calc(4px * 4);
 }
 .p-2 {
   padding: calc(4px * 2);
@@ -380,165 +358,15 @@
 .opacity-70 {
   opacity: 70%;
 }
-.rounded-2xl {
-  --bloom-cx-publisher: 0px;
-  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
-  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
-  --bloom-cx-radius-topLeft: var(--radius-2xl);
-  --bloom-cx-rradius-topLeft: var(--radius-2xl);
-  --bloom-cx-auto-topLeft: 0;
-  --bloom-cx-rauto-topLeft: 0;
-  --bloom-cx-radius-topRight: var(--radius-2xl);
-  --bloom-cx-rradius-topRight: var(--radius-2xl);
-  --bloom-cx-auto-topRight: 0;
-  --bloom-cx-rauto-topRight: 0;
-  --bloom-cx-radius-bottomRight: var(--radius-2xl);
-  --bloom-cx-rradius-bottomRight: var(--radius-2xl);
-  --bloom-cx-auto-bottomRight: 0;
-  --bloom-cx-rauto-bottomRight: 0;
-  --bloom-cx-radius-bottomLeft: var(--radius-2xl);
-  --bloom-cx-rradius-bottomLeft: var(--radius-2xl);
-  --bloom-cx-auto-bottomLeft: 0;
-  --bloom-cx-rauto-bottomLeft: 0;
-}
-.rounded-full {
-  --bloom-cx-publisher: 0px;
-  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
-  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
-  --bloom-cx-radius-topLeft: calc(infinity * 1px);
-  --bloom-cx-rradius-topLeft: calc(infinity * 1px);
-  --bloom-cx-auto-topLeft: 0;
-  --bloom-cx-rauto-topLeft: 0;
-  --bloom-cx-radius-topRight: calc(infinity * 1px);
-  --bloom-cx-rradius-topRight: calc(infinity * 1px);
-  --bloom-cx-auto-topRight: 0;
-  --bloom-cx-rauto-topRight: 0;
-  --bloom-cx-radius-bottomRight: calc(infinity * 1px);
-  --bloom-cx-rradius-bottomRight: calc(infinity * 1px);
-  --bloom-cx-auto-bottomRight: 0;
-  --bloom-cx-rauto-bottomRight: 0;
-  --bloom-cx-radius-bottomLeft: calc(infinity * 1px);
-  --bloom-cx-rradius-bottomLeft: calc(infinity * 1px);
-  --bloom-cx-auto-bottomLeft: 0;
-  --bloom-cx-rauto-bottomLeft: 0;
-}
-.rounded-lg {
-  --bloom-cx-publisher: 0px;
-  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
-  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
-  --bloom-cx-radius-topLeft: var(--radius-lg);
-  --bloom-cx-rradius-topLeft: var(--radius-lg);
-  --bloom-cx-auto-topLeft: 0;
-  --bloom-cx-rauto-topLeft: 0;
-  --bloom-cx-radius-topRight: var(--radius-lg);
-  --bloom-cx-rradius-topRight: var(--radius-lg);
-  --bloom-cx-auto-topRight: 0;
-  --bloom-cx-rauto-topRight: 0;
-  --bloom-cx-radius-bottomRight: var(--radius-lg);
-  --bloom-cx-rradius-bottomRight: var(--radius-lg);
-  --bloom-cx-auto-bottomRight: 0;
-  --bloom-cx-rauto-bottomRight: 0;
-  --bloom-cx-radius-bottomLeft: var(--radius-lg);
-  --bloom-cx-rradius-bottomLeft: var(--radius-lg);
-  --bloom-cx-auto-bottomLeft: 0;
-  --bloom-cx-rauto-bottomLeft: 0;
-}
-.rounded-xl {
-  --bloom-cx-publisher: 0px;
-  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
-  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
-  --bloom-cx-radius-topLeft: var(--radius-xl);
-  --bloom-cx-rradius-topLeft: var(--radius-xl);
-  --bloom-cx-auto-topLeft: 0;
-  --bloom-cx-rauto-topLeft: 0;
-  --bloom-cx-radius-topRight: var(--radius-xl);
-  --bloom-cx-rradius-topRight: var(--radius-xl);
-  --bloom-cx-auto-topRight: 0;
-  --bloom-cx-rauto-topRight: 0;
-  --bloom-cx-radius-bottomRight: var(--radius-xl);
-  --bloom-cx-rradius-bottomRight: var(--radius-xl);
-  --bloom-cx-auto-bottomRight: 0;
-  --bloom-cx-rauto-bottomRight: 0;
-  --bloom-cx-radius-bottomLeft: var(--radius-xl);
-  --bloom-cx-rradius-bottomLeft: var(--radius-xl);
-  --bloom-cx-auto-bottomLeft: 0;
-  --bloom-cx-rauto-bottomLeft: 0;
-}
-.px-1 {
-  --bloom-cx-padding-left: calc(4px * 1);
-  --bloom-cx-rpadding-left: calc(4px * 1);
-  --bloom-cx-padding-right: calc(4px * 1);
-  --bloom-cx-rpadding-right: calc(4px * 1);
-}
-.px-3 {
-  --bloom-cx-padding-left: calc(4px * 3);
-  --bloom-cx-rpadding-left: calc(4px * 3);
-  --bloom-cx-padding-right: calc(4px * 3);
-  --bloom-cx-rpadding-right: calc(4px * 3);
-}
-.px-4 {
-  --bloom-cx-padding-left: calc(4px * 4);
-  --bloom-cx-rpadding-left: calc(4px * 4);
-  --bloom-cx-padding-right: calc(4px * 4);
-  --bloom-cx-rpadding-right: calc(4px * 4);
-}
-.px-5 {
-  --bloom-cx-padding-left: calc(4px * 5);
-  --bloom-cx-rpadding-left: calc(4px * 5);
-  --bloom-cx-padding-right: calc(4px * 5);
-  --bloom-cx-rpadding-right: calc(4px * 5);
-}
-.px-8 {
-  --bloom-cx-padding-left: calc(4px * 8);
-  --bloom-cx-rpadding-left: calc(4px * 8);
-  --bloom-cx-padding-right: calc(4px * 8);
-  --bloom-cx-rpadding-right: calc(4px * 8);
-}
-.py-1 {
-  --bloom-cx-padding-top: calc(4px * 1);
-  --bloom-cx-padding-bottom: calc(4px * 1);
-}
-.py-1\.5 {
-  --bloom-cx-padding-top: calc(4px * 1.5);
-  --bloom-cx-padding-bottom: calc(4px * 1.5);
-}
-.py-2 {
-  --bloom-cx-padding-top: calc(4px * 2);
-  --bloom-cx-padding-bottom: calc(4px * 2);
-}
-.py-3 {
-  --bloom-cx-padding-top: calc(4px * 3);
-  --bloom-cx-padding-bottom: calc(4px * 3);
-}
-.border-b {
-  --bloom-cx-border-bottom: 1px;
-}
-.border-t {
-  --bloom-cx-border-top: 1px;
-}
-.mt-2 {
-  --bloom-cx-margin-top: calc(4px * 2);
-}
-.pb-3 {
-  --bloom-cx-padding-bottom: calc(4px * 3);
-}
-.pb-6 {
-  --bloom-cx-padding-bottom: calc(4px * 6);
-}
-.pb-8 {
-  --bloom-cx-padding-bottom: calc(4px * 8);
+.shadow-sm {
+  --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
 }
 .active\:opacity-70:active {
   opacity: 70%;
 }
 @media (width >= 48rem) {
   .md\:p-6 {
-    --bloom-cx-padding-top: calc(4px * 6);
-    --bloom-cx-padding-right: calc(4px * 6);
-    --bloom-cx-rpadding-right: calc(4px * 6);
-    --bloom-cx-padding-bottom: calc(4px * 6);
-    --bloom-cx-padding-left: calc(4px * 6);
-    --bloom-cx-rpadding-left: calc(4px * 6);
     padding: calc(4px * 6);
   }
 }
@@ -562,214 +390,6 @@
     --font-mono: monospace;
   }
 }
-@property --bloom-cx-publisher {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-auto-mask {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-rauto-mask {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-radius-topLeft {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-rradius-topLeft {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-topLeft {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-auto-topLeft {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-rauto-topLeft {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-radius-topRight {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-rradius-topRight {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-topRight {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-auto-topRight {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-rauto-topRight {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-radius-bottomRight {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-rradius-bottomRight {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-bottomRight {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-auto-bottomRight {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-rauto-bottomRight {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-radius-bottomLeft {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-rradius-bottomLeft {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-bottomLeft {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-auto-bottomLeft {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-rauto-bottomLeft {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0;
-}
-@property --bloom-cx-padding-top {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-padding-right {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-rpadding-right {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-padding-bottom {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-padding-left {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-rpadding-left {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-border-top {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-border-right {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-rborder-right {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-border-bottom {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-border-left {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-rborder-left {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-margin-top {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-margin-right {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-rmargin-right {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-margin-bottom {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-margin-left {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-rmargin-left {
-  syntax: "*";
-  inherits: false;
-  initial-value: 0px;
-}
-@property --bloom-cx-self-ss {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-se {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-es {
-  syntax: "*";
-  inherits: false;
-}
-@property --bloom-cx-self-ee {
-  syntax: "*";
-  inherits: false;
-}
 @property --tw-border-style {
   syntax: "*";
   inherits: false;
@@ -783,57 +403,91 @@
   syntax: "*";
   inherits: false;
 }
+@property --tw-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-inset-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-inset-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-inset-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-ring-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ring-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-inset-ring-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-inset-ring-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-ring-inset {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ring-offset-width {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --tw-ring-offset-color {
+  syntax: "*";
+  inherits: false;
+  initial-value: #fff;
+}
+@property --tw-ring-offset-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
       --tw-border-style: solid;
       --tw-font-weight: initial;
       --tw-tracking: initial;
-      --bloom-cx-publisher: initial;
-      --bloom-cx-auto-mask: 0;
-      --bloom-cx-rauto-mask: 0;
-      --bloom-cx-radius-topLeft: initial;
-      --bloom-cx-rradius-topLeft: initial;
-      --bloom-cx-self-topLeft: initial;
-      --bloom-cx-auto-topLeft: 0;
-      --bloom-cx-rauto-topLeft: 0;
-      --bloom-cx-radius-topRight: initial;
-      --bloom-cx-rradius-topRight: initial;
-      --bloom-cx-self-topRight: initial;
-      --bloom-cx-auto-topRight: 0;
-      --bloom-cx-rauto-topRight: 0;
-      --bloom-cx-radius-bottomRight: initial;
-      --bloom-cx-rradius-bottomRight: initial;
-      --bloom-cx-self-bottomRight: initial;
-      --bloom-cx-auto-bottomRight: 0;
-      --bloom-cx-rauto-bottomRight: 0;
-      --bloom-cx-radius-bottomLeft: initial;
-      --bloom-cx-rradius-bottomLeft: initial;
-      --bloom-cx-self-bottomLeft: initial;
-      --bloom-cx-auto-bottomLeft: 0;
-      --bloom-cx-rauto-bottomLeft: 0;
-      --bloom-cx-padding-top: 0px;
-      --bloom-cx-padding-right: 0px;
-      --bloom-cx-rpadding-right: 0px;
-      --bloom-cx-padding-bottom: 0px;
-      --bloom-cx-padding-left: 0px;
-      --bloom-cx-rpadding-left: 0px;
-      --bloom-cx-border-top: 0px;
-      --bloom-cx-border-right: 0px;
-      --bloom-cx-rborder-right: 0px;
-      --bloom-cx-border-bottom: 0px;
-      --bloom-cx-border-left: 0px;
-      --bloom-cx-rborder-left: 0px;
-      --bloom-cx-margin-top: 0px;
-      --bloom-cx-margin-right: 0px;
-      --bloom-cx-rmargin-right: 0px;
-      --bloom-cx-margin-bottom: 0px;
-      --bloom-cx-margin-left: 0px;
-      --bloom-cx-rmargin-left: 0px;
-      --bloom-cx-self-ss: initial;
-      --bloom-cx-self-se: initial;
-      --bloom-cx-self-es: initial;
-      --bloom-cx-self-ee: initial;
+      --tw-shadow: 0 0 #0000;
+      --tw-shadow-color: initial;
+      --tw-shadow-alpha: 100%;
+      --tw-inset-shadow: 0 0 #0000;
+      --tw-inset-shadow-color: initial;
+      --tw-inset-shadow-alpha: 100%;
+      --tw-ring-color: initial;
+      --tw-ring-shadow: 0 0 #0000;
+      --tw-inset-ring-color: initial;
+      --tw-inset-ring-shadow: 0 0 #0000;
+      --tw-ring-inset: initial;
+      --tw-ring-offset-width: 0px;
+      --tw-ring-offset-color: #fff;
+      --tw-ring-offset-shadow: 0 0 #0000;
     }
   }
 }
