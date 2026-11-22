@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import { sizes } from '../icons/shared';
+import { iconSide } from '../icons/shared';
 import type { IconCircleProps } from './types';
 
 const IconCircleComponent = function IconCircle({
@@ -18,8 +18,8 @@ const IconCircleComponent = function IconCircle({
   // existing style passthrough for richer glyphs (including native ColorValue
   // objects, which those glyphs resolve from style rather than a string fill).
   const iconProps = {
-    width: sizes[size],
-    height: sizes[size],
+    width: iconSide(size),
+    height: iconSide(size),
     fill: typeof color === 'string' ? color : undefined,
     style: [{ color: colors.primary }, iconStyle],
   };
