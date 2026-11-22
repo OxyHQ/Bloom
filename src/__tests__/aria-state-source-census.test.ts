@@ -489,12 +489,15 @@ describe('the census can see', () => {
       'AnimatedChrome',
       'AnimatedLayoutView',
       'AnimatedPanel',
+      // The sidebar's panel host.
+      'AnimatedPanelView',
       'AnimatedPressable',
       // HeaderActions preserves the real View host while its width changes.
       'AnimatedRoot',
-      'AnimatedStyledView',
       // ReplyRow and SelectedAgentPreview wrap the same StyledView host.
       'AnimatedView',
+      // layout/ScrollViewport: the animated ScrollView itself.
+      'AnimatedViewport',
       // media-header/StickyMediaTopBar: the fade and the aria-hidden share one node.
       'FadeView',
     ]);
