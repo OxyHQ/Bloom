@@ -17,7 +17,7 @@ export const A = () => <View className="flex-row gap-2"><Text variant="body-semi
       "import { HStack, Text as LText, toElement } from '@oxy.so/bloom-language';",
     );
     expect(result.code).toContain(
-      'toElement(HStack(LText("Hi ", name).font("body").weight("semibold")).spacing("sm"))',
+      "toElement(HStack(LText('Hi ', name).font('body').weight('semibold')).spacing('sm'))",
     );
     expect(result.code).not.toContain("from 'react-native'");
     expect(result.converted).toBe(2);
@@ -34,7 +34,7 @@ export const A = () => <View className="p-4"><Image source={s} /><Foo /></View>;
 export const A = () => <Text className="text-sm">a <Text className="font-bold">b</Text></Text>;
 `);
     expect(result.code).toContain(
-      'RawText("a ", RawText("b").weight("bold")).font("14").leading("20px")',
+      "RawText('a ', RawText('b').weight('bold')).font('14').leading('20px')",
     );
   });
   it('leaves an element with an unmapped prop as it is', () => {
@@ -73,7 +73,7 @@ export const A = () => (
 );
 `);
     expect(flat(result.code)).toContain(
-      'toElement(LSettingsSection(undefined, LGroupedSection(LGroupedSectionItem("B").trailing(Toggle([on, setOn]))).title(t("a"))))',
+      "toElement(LSettingsSection(undefined, LGroupedSection(LGroupedSectionItem('B').trailing(Toggle([on, setOn]))).title(t('a'))))",
     );
   });
   it('takes a binding from either setter Bloom reads, and an options object', () => {
@@ -83,10 +83,10 @@ export const A = () => <TextFieldInput label="Name" value={name} onChangeText={s
 export const B = () => <ChatEmptyState title="None" illustration={<Art />} />;
 `);
     expect(result.code).toContain(
-      'toElement(TextField([name, setName], "Name").autocorrect(true))',
+      "toElement(TextField([name, setName], 'Name').autocorrect(true))",
     );
     expect(flat(result.code)).toContain(
-      'toElement(LChatEmptyState({ title: "None", illustration: Embed(<Art />) }))',
+      "toElement(LChatEmptyState({ title: 'None', illustration: Embed(<Art />) }))",
     );
   });
   it('keeps a prop it cannot map, and a kept component, with their reasons', () => {
@@ -119,7 +119,7 @@ export const A = () => (
 export const B = () => <TextField style={s}><TextFieldInput label="B" value={b} onChangeText={setB} /></TextField>;
 `);
     expect(flat(result.code)).toContain(
-      'toElement(LTextField([a, setA], "A").size("sm").icon(RiMailLine))',
+      "toElement(LTextField([a, setA], 'A').size('sm').icon(RiMailLine))",
     );
     expect(result.converted).toBe(2);
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
@@ -135,7 +135,7 @@ export const B = () => <Muted numberOfLines={1}>{note}</Muted>;
 export const C = () => <Textarea value={a} onValueChange={setA} maxRows={6} />;
 `);
     expect(result.code).toContain('toElement(TextEditor([a, setA]).autoResize(6))');
-    expect(result.code).toContain('toElement(Text(note).textStyle("muted").lines(1))');
+    expect(result.code).toContain("toElement(Text(note).textStyle('muted').lines(1))");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['TextEditor:maxRows']);
   });
   it('reads an icon’s theme fill and side, a role, and a static style', () => {
@@ -154,13 +154,21 @@ export function B({ theme }) { return <RiHeart3Line fill={theme.colors.text} />;
 const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
 `);
     expect(flat(result.code)).toContain(
-      'toElement(HStack(Icon(RiHeart3Line).size("md").foreground("muted")).spacing("sm").role("header"))',
+      "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted')).spacing('sm').role('header'))",
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['icon-fill']);
     expect(result.fixtures[0]?.before).toContain(
       '<View style={{ flexDirection: \'row\', gap: 8 }} accessibilityRole="header">',
     );
     expect(result.fixtures[0]?.before).toContain('fill={parityTheme.colors.textSecondary}');
+  });
+  it('carries a JSX comment into the chain where it is', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = () => <View className="gap-2">{/* head */}<View className="p-2" />{/* end */}</View>;
+`);
+    expect(result.code).toContain(
+      "VStack(/* head */ VStack().padding('all', 'sm') /* end */).spacing('sm')",
+    );
   });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');

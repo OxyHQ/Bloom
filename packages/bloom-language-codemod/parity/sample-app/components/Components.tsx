@@ -96,6 +96,7 @@ export function Profile({
 }) {
   return (
     <ScreenScrollView keyboardShouldPersistTaps="handled">
+      {/* The profile's own fields */}
       <View className="gap-4 p-4">
         <TextFieldInput
           label={t('profile.name')}
