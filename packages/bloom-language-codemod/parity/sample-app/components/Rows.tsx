@@ -96,3 +96,7 @@ export function Tab({
     </Pressable>
   );
 }
+
+export function Scrim() {
+  return <View pointerEvents="none" className="h-10 w-full rounded-lg bg-muted" />;
+}

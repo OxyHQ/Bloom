@@ -197,7 +197,8 @@ read where the parent called `useTheme()`, which may be outside a colour scope
 the icon is drawn in), a theme colour read outside a `BloomColorScope` around
 the icon (`icon-fill:color-scope`), or set at runtime or imported
 (`icon-fill`);
-`accessibilityRole` is `.role()`; a static `style` (an object literal, a
+`accessibilityRole` is `.role()`; a View's or Pressable's `pointerEvents="none"`
+is `.allowsHitTesting(false)` (`box-none` and `box-only` have no modifier); a static `style` (an object literal, a
 module `StyleSheet`'s style, or a list of them) is read as the Tailwind
 utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
 through the className table. React Native's `flex: 1` is no utility (Tailwind's

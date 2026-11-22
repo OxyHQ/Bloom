@@ -19,6 +19,8 @@
  *   `#ffffff99`); a
  *   colour with an alpha is compared at the 8 bits of alpha a device draws.
  * - A corner of the reading direction is its physical corner left to right.
+ * - A style's `pointerEvents` is the view's `pointerEvents` prop: React Native
+ *   sends that style attribute to the view as its prop.
  * - A number is compared to 12 significant digits: `12 * 0.025` is
  *   `0.30000000000000004` in JavaScript and `0.3` in NativeWind's compiler.
  * - A percentage is compared to 4 decimals: NativeWind writes a third as
@@ -154,6 +156,12 @@ function fold(
   const props = { ...node.props };
   if (text && props.ellipsizeMode === 'tail') delete props.ellipsizeMode;
   if (props.style && typeof props.style === 'object') {
+    // `pointerEvents` is a style attribute React Native sends as the view's own prop.
+    const { pointerEvents, ...rest } = props.style as Record<string, unknown>;
+    if (pointerEvents !== undefined && props.pointerEvents === undefined) {
+      props.pointerEvents = pointerEvents;
+      props.style = rest;
+    }
     props.style = foldStyle(props.style as Record<string, unknown>, text, inText);
     if (Object.keys(props.style as object).length === 0) delete props.style;
   }
