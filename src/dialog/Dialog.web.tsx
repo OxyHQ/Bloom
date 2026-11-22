@@ -59,7 +59,6 @@ import { ScrollArea } from '../layout/ScrollArea.web';
 
 import { Backdrop, OverlayRoot } from '../overlay';
 import { ModalKeyboard } from '../overlay/ModalKeyboard';
-import { StyledView } from '../styles/styled-primitives';
 import { Portal } from '../portal/index.web';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
@@ -254,9 +253,7 @@ function CenterOrSideDialog({
   morph,
   style,
   panelStyle,
-  panelClassName,
   containerStyle,
-  containerClassName,
   label,
   children,
   footer,
@@ -420,7 +417,7 @@ function CenterOrSideDialog({
                 the app's lifetime. `modal` makes the app's
                 `OverlayInertBoundary` take the page out of the tab order and
                 the accessibility tree while it is open. */}
-            <OverlayRoot modal style={containerStyle} className={containerClassName}>
+            <OverlayRoot modal style={containerStyle}>
               <ModalKeyboard
                 panelRef={panelRef}
                 closing={isClosing}
@@ -514,9 +511,7 @@ function CenterOrSideDialog({
             contentPadding={contentPadding}
             onDismiss={close}
             panelStyle={panelStyle}
-            panelClassName={panelClassName}
             containerStyle={containerStyle}
-            containerClassName={containerClassName}
             style={style}
           >
             {children}
@@ -819,9 +814,7 @@ function SheetSurface({
   contentPadding,
   onDismiss,
   panelStyle,
-  panelClassName,
   containerStyle,
-  containerClassName,
   style,
   children,
   footer,
@@ -847,9 +840,7 @@ function SheetSurface({
   contentPadding: number;
   onDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
-  panelClassName?: string;
   containerStyle?: StyleProp<ViewStyle>;
-  containerClassName?: string;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   footer?: React.ReactNode;
@@ -964,7 +955,7 @@ function SheetSurface({
   const surfaceChildren = <>{children}</>;
 
   return (
-    <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName} modal>
+    <OverlayRoot style={[sheetStyles.root, containerStyle]} modal>
       <ModalKeyboard
         panelRef={panelRef}
         closing={!shown}
@@ -986,7 +977,7 @@ function SheetSurface({
         style={[sheetStyles.backdrop, { opacity: visible ? 1 : 0 }]}
       />
 
-      <StyledView
+      <View
         ref={panelRef}
         role="dialog"
         aria-modal
@@ -999,7 +990,6 @@ function SheetSurface({
         onStartShouldSetResponder={() => true}
         onResponderRelease={stopPropagation}
         {...({ onClick: stopPropagation } as Record<string, unknown>)}
-        className={panelClassName}
         style={[
           sheetStyles.panel,
           material.vars,
@@ -1110,7 +1100,7 @@ function SheetSurface({
           )}
           {footer != null && <View style={{ flexShrink: 0 }}>{footer}</View>}
         </SurfaceLevelProvider>
-      </StyledView>
+      </View>
     </OverlayRoot>
   );
 }

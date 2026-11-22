@@ -25,7 +25,6 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { usePlatformKeyboard } from '../platform-surface/context';
-import { StyledView } from '../styles/styled-primitives';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { CenteredCard } from './CenteredCard';
@@ -40,8 +39,6 @@ export interface SheetShellProps {
   label?: string;
   header?: React.ReactNode;
   onClose?: () => void;
-  /** Classes applied to the inner padded content container. */
-  contentClassName?: string;
   /** Style overrides applied to the inner padded content container. */
   contentStyle?: StyleProp<ViewStyle>;
   contentTestID?: string;
@@ -66,7 +63,6 @@ export function SheetShell({
   label,
   header,
   onClose,
-  contentClassName,
   contentStyle,
   contentTestID,
   anchored = false,
@@ -146,7 +142,7 @@ export function SheetShell({
     <Context.Provider value={context}>
       {desktop ? null : <SheetHandle onPress={() => close()} />}
       {header}
-      <StyledView
+      <View
         // Deliberately NOT `accessible`: collapsing the body into one
         // accessibility element would make its rows unreachable, and the
         // focus move below would land on the group instead of the first row.
@@ -158,12 +154,11 @@ export function SheetShell({
         // sheet is an RN `<Modal>`, whose `onRequestClose` it fires.
         onAccessibilityEscape={() => close()}
         accessibilityLabel={label}
-        className={contentClassName}
         testID={contentTestID}
         style={[styles.body, { backgroundColor: 'transparent' }, contentStyle]}
       >
         {children}
-      </StyledView>
+      </View>
     </Context.Provider>
   );
 
