@@ -966,6 +966,9 @@ function drawNode(
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   if (node.kind === 'dialog') return drawPresentedDialog(node, p, inner, reactKey);
+  // A group draws no view of its own: its children, where it is, as if they were there.
+  if (node.kind === 'group')
+    return draw(Fragment, { key: reactKey }, ...renderChildren(node.children, ctx));
   const layers = p.layers;
   // A Bloom component's hit testing on the web is a view of its own around it:
   // react-native-web drops an inline `pointerEvents`. (Its variants are its own

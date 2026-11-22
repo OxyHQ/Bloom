@@ -46,7 +46,8 @@ export function layout(body: () => Child): ComponentType {
 }
 
 /**
- * A screen: its body's root view is the screen's content, and the root's
+ * A screen: its body's root view is the screen's content (a `Group` of several
+ * views is several of the Screen's children), and the root's
  * screen modifiers are its chrome (`title`, `titleDisplay`, `subtitle`,
  * `header`, `toolbar`, `toolbarLeading`, `onBack`, `backLabel`,
  * `headingLevel`, `footer`, `sheet`, `onReselect`); the root's `testID` names

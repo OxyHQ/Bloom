@@ -2332,6 +2332,40 @@
       "constructors": ["Embed"],
       "modifiers": []
     },
+    "group": {
+      "constructors": ["Group"],
+      "universal": false,
+      "modifiers": [
+        "id",
+        "testID",
+        "title",
+        "titleDisplay",
+        "subtitle",
+        "header",
+        "toolbar",
+        "toolbarLeading",
+        "onBack",
+        "backLabel",
+        "headingLevel",
+        "footer",
+        "sheet",
+        "onReselect",
+        "screenKind",
+        "screenScroll",
+        "documentScroll",
+        "headerPlacement",
+        "scrollEdge",
+        "underlay",
+        "floatingAction",
+        "contentClearance",
+        "navigationScope",
+        "colorPreset",
+        "seed",
+        "screenActive",
+        "initialHeaderHeight",
+        "initialFooterHeight"
+      ]
+    },
     "view": {
       "constructors": [],
       "modifiers": []

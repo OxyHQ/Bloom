@@ -1600,6 +1600,7 @@ export type NodeKind =
   | 'actionBar'
   | 'actionGroup'
   | 'embed'
+  | 'group'
   | 'view'
   | 'fab'
   | 'menu'
@@ -4033,7 +4034,83 @@ function objectKey<T extends object>(value: T, keys: readonly string[]): string 
 // ── The typed surface: which modifiers each kind accepts ─────────
 
 /** Modifiers every view takes. `Self` is the view's own type, so a chain keeps its kind. */
-export interface ViewModifiers<Self> extends ViewNode {
+/** The screen's chrome: read from the root of a router `screen()` body, nothing elsewhere. */
+export interface ScreenModifiers<Self> {
+  /** The screen's title: the navigation bar's on iOS, the page header's elsewhere. */
+  title(value: string): Self;
+  /** `large`: the large title that folds into the bar as the page scrolls; `inline` (default). */
+  titleDisplay(value: TitleDisplay): Self;
+  subtitle(value: string | undefined): Self;
+  /**
+   * The screen's header: a presentation of its title and toolbar (`floating`,
+   * the default, `bar` or `navigation`), `false` for none, or a header node of
+   * its own (drawn in the page on every platform).
+   */
+  header(value: ScreenHeader): Self;
+  /** The header's trailing items, in reading order. */
+  toolbar(...value: Child[]): Self;
+  /** The header's leading items, after the back button. */
+  toolbarLeading(...value: Child[]): Self;
+  /** The back button's action; `null` shows none (a top-level destination). */
+  onBack(value: (() => void) | null | undefined): Self;
+  /** The back button's name for assistive technology; Bloom's "Back" by default. */
+  backLabel(value: string | undefined): Self;
+  /** The title's heading level (the web's `aria-level`); 1 by default. */
+  headingLevel(value: HeadingLevel): Self;
+  /** The screen's own bar at its foot (a reply composer), over or under its content. */
+  footer(content: Child, options?: ScreenFooter): Self;
+  /** A sheet over the screen while `open`: Bloom's Dialog, from the bottom and centred from `md`. */
+  sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
+  /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
+  onReselect(value: (() => void) | undefined): Self;
+  /**
+   * What the screen's body is (Bloom `Screen`'s `kind`): `document`, `form`,
+   * `collection`, `table` or `canvas`. A collection or a table scrolls by its
+   * own list (`content`), a canvas does not scroll (`none`).
+   */
+  screenKind(value: ScreenKind): Self;
+  /**
+   * Who scrolls the screen: `auto` (default) its own viewport, `content` the
+   * list in it (a `ScrollView`), `none` a bounded canvas the chrome sits around.
+   */
+  screenScroll(value: ScreenScroll): Self;
+  /** Web: the window scrolls the page, and the chrome stays sticky in its column. */
+  documentScroll(value?: boolean): Self;
+  /** `overlay`: the header paints over the content and reserves no room; `inset` by default. */
+  headerPlacement(value: ChromePlacement): Self;
+  /** How the screen's header meets the content scrolled under it: `auto` fades it in as the page scrolls. */
+  scrollEdge(value: ScrollEdge): Self;
+  /** A layer behind the whole screen, header and footer included, never interactive (a wallpaper). */
+  underlay(value: Child): Self;
+  /** The screen's own floating action (a `FAB`): the content pads its end clear of it, and the shell's steps aside. */
+  floatingAction(content: Child, options?: FloatingActionOptions): Self;
+  /** The room the content keeps above the screen's bottom chrome; Bloom's 16 by default. */
+  contentClearance(value: SpaceToken): Self;
+  /** `isolated` keeps the shell's collapse and navigation motion out of a modal screen; `inherit` by default. */
+  navigationScope(value: NavigationScope): Self;
+  /**
+   * The screen's own colour recipe, one of Bloom's presets (Bloom `Screen`'s
+   * `colorPreset`): its content, its panel and the shell around it, restored
+   * when it leaves.
+   */
+  colorPreset(value: ColorPreset): Self;
+  /**
+   * The screen's colours from one RGB seed (`#rrggbb`, Bloom `Screen`'s `seed`,
+   * a colour the person chose): over `colorPreset`, the roles from Bloom's colour engine.
+   */
+  seed(value: string): Self;
+  /**
+   * Whether the screen is in front (Bloom `Screen`'s `active`): a retained
+   * screen (`false`) drives no scroll, chrome or reselect. `true` by default.
+   */
+  screenActive(value?: boolean): Self;
+  /** The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included). */
+  initialHeaderHeight(value: SpaceToken): Self;
+  /** The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included). */
+  initialFooterHeight(value: SpaceToken): Self;
+}
+
+export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   padding(value: PaddingToken): Self;
   padding(edge: Edge, value: PaddingToken): Self;
   frame(value: FrameSpec): Self;
@@ -4148,85 +4225,12 @@ export interface ViewModifiers<Self> extends ViewNode {
   /** What the binding presents over the screen while it is true (a `Gallery`); dismissing it clears the binding. */
   fullScreenCover(isPresented: Binding<boolean>, content: GalleryView): Self;
   id(value: string | number): Self;
-  // The screen's chrome: read from the root of a router `screen()` body, nothing elsewhere.
-  /** The screen's title: the navigation bar's on iOS, the page header's elsewhere. */
-  title(value: string): Self;
-  /** `large`: the large title that folds into the bar as the page scrolls; `inline` (default). */
-  titleDisplay(value: TitleDisplay): Self;
-  subtitle(value: string | undefined): Self;
-  /**
-   * The screen's header: a presentation of its title and toolbar (`floating`,
-   * the default, `bar` or `navigation`), `false` for none, or a header node of
-   * its own (drawn in the page on every platform).
-   */
-  header(value: ScreenHeader): Self;
-  /** The header's trailing items, in reading order. */
-  toolbar(...value: Child[]): Self;
-  /** The header's leading items, after the back button. */
-  toolbarLeading(...value: Child[]): Self;
-  /** The back button's action; `null` shows none (a top-level destination). */
-  onBack(value: (() => void) | null | undefined): Self;
-  /** The back button's name for assistive technology; Bloom's "Back" by default. */
-  backLabel(value: string | undefined): Self;
-  /** The title's heading level (the web's `aria-level`); 1 by default. */
-  headingLevel(value: HeadingLevel): Self;
-  /** The screen's own bar at its foot (a reply composer), over or under its content. */
-  footer(content: Child, options?: ScreenFooter): Self;
-  /** A sheet over the screen while `open`: Bloom's Dialog, from the bottom and centred from `md`. */
-  sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
   /** An alert while `isPresented` holds (Bloom's `AlertDialog`); dismissing it sets it false. */
   alert(isPresented: Binding<boolean>, alert: AlertView): Self;
   /** A dialog while `isPresented` holds (Bloom's `Dialog`); dismissing it sets it false. */
   dialog(isPresented: Binding<boolean>, dialog: DialogView): Self;
   /** A popover anchored on this view while `isPresented` holds (Bloom's `Popover`); pressing the view opens it. */
   popover(isPresented: Binding<boolean>, popover: PopoverView): Self;
-  /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
-  onReselect(value: (() => void) | undefined): Self;
-  /**
-   * What the screen's body is (Bloom `Screen`'s `kind`): `document`, `form`,
-   * `collection`, `table` or `canvas`. A collection or a table scrolls by its
-   * own list (`content`), a canvas does not scroll (`none`).
-   */
-  screenKind(value: ScreenKind): Self;
-  /**
-   * Who scrolls the screen: `auto` (default) its own viewport, `content` the
-   * list in it (a `ScrollView`), `none` a bounded canvas the chrome sits around.
-   */
-  screenScroll(value: ScreenScroll): Self;
-  /** Web: the window scrolls the page, and the chrome stays sticky in its column. */
-  documentScroll(value?: boolean): Self;
-  /** `overlay`: the header paints over the content and reserves no room; `inset` by default. */
-  headerPlacement(value: ChromePlacement): Self;
-  /** How the screen's header meets the content scrolled under it: `auto` fades it in as the page scrolls. */
-  scrollEdge(value: ScrollEdge): Self;
-  /** A layer behind the whole screen, header and footer included, never interactive (a wallpaper). */
-  underlay(value: Child): Self;
-  /** The screen's own floating action (a `FAB`): the content pads its end clear of it, and the shell's steps aside. */
-  floatingAction(content: Child, options?: FloatingActionOptions): Self;
-  /** The room the content keeps above the screen's bottom chrome; Bloom's 16 by default. */
-  contentClearance(value: SpaceToken): Self;
-  /** `isolated` keeps the shell's collapse and navigation motion out of a modal screen; `inherit` by default. */
-  navigationScope(value: NavigationScope): Self;
-  /**
-   * The screen's own colour recipe, one of Bloom's presets (Bloom `Screen`'s
-   * `colorPreset`): its content, its panel and the shell around it, restored
-   * when it leaves.
-   */
-  colorPreset(value: ColorPreset): Self;
-  /**
-   * The screen's colours from one RGB seed (`#rrggbb`, Bloom `Screen`'s `seed`,
-   * a colour the person chose): over `colorPreset`, the roles from Bloom's colour engine.
-   */
-  seed(value: string): Self;
-  /**
-   * Whether the screen is in front (Bloom `Screen`'s `active`): a retained
-   * screen (`false`) drives no scroll, chrome or reselect. `true` by default.
-   */
-  screenActive(value?: boolean): Self;
-  /** The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included). */
-  initialHeaderHeight(value: SpaceToken): Self;
-  /** The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included). */
-  initialFooterHeight(value: SpaceToken): Self;
   rotation(value: RotationName | MotionValue): Self;
   /**
    * SwiftUI's `.animation(_:value:)`: changes to this view's scale, offset,
@@ -4674,6 +4678,16 @@ export interface ActionBarView extends ViewModifiers<ActionBarView> {
 export type ActionGroupView = ViewModifiers<ActionGroupView>;
 export type SpacerView = ViewModifiers<SpacerView>;
 export type EmbedView = ViewModifiers<EmbedView>;
+/**
+ * Several views as one, with no view of its own (React's fragment): each child
+ * is drawn where the group is, as if it were there. A `screen()` body's root
+ * that holds several views: its screen modifiers are the screen's chrome.
+ */
+export interface GroupView extends ViewNode, ScreenModifiers<GroupView> {
+  id(value: string | number): GroupView;
+  /** On a `screen()` body's root, the screen's own name; elsewhere it names nothing. */
+  testID(value: string): GroupView;
+}
 /** A `view()` component placed in a tree. Its modifiers apply around its body. */
 export type ComposedView = ViewModifiers<ComposedView>;
 

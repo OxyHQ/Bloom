@@ -1,4 +1,4 @@
-import { RefreshControl } from 'react-native';
+import { RefreshControl, View } from 'react-native';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
 import { tokens } from '@oxy.so/bloom/styles';
@@ -413,4 +413,81 @@ const screens: ParityCase[] = [
   },
 ];
 
-export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...pageHeaders, ...screens];
+/** A screen of several views: the body's root a `Group`, each child one of the Screen's. */
+const groups: ParityCase[] = [
+  {
+    name: 'a screen of two views, titled',
+    language: () => (
+      <ScreenHost root={L.Group(L.Text('a'), L.VStack(L.Text('b')).padding('lg')).title('Home')} />
+    ),
+    bloom: () => (
+      <Screen header={<PageHeader title="Home" presentation="floating" />}>
+        <Text>a</Text>
+        <View
+          style={{
+            paddingTop: space.lg,
+            paddingBottom: space.lg,
+            paddingStart: space.lg,
+            paddingEnd: space.lg,
+          }}
+        >
+          <Text>b</Text>
+        </View>
+      </Screen>
+    ),
+  },
+  ...([false, true] as const).map((shown) => ({
+    name: `a screen of a view and one ${shown ? 'shown' : 'hidden'}, with a footer`,
+    language: () => (
+      <ScreenHost
+        root={L.Group(L.Text('a'), shown ? L.Text('b') : null)
+          .header(false)
+          .footer(L.Text('reply'), { placement: 'overlay', keyboard: 'follow' })
+          .testID('thread')}
+      />
+    ),
+    bloom: () => (
+      <Screen
+        testID="thread"
+        bottomBar={<Text>reply</Text>}
+        bottomBarPlacement="overlay"
+        bottomBarKeyboardBehavior="follow"
+      >
+        <Text>a</Text>
+        {shown ? <Text>b</Text> : null}
+      </Screen>
+    ),
+  })),
+  {
+    name: 'a screen of a scroll view and a view under it',
+    language: () => (
+      <ScreenHost
+        root={L.Group(L.ScrollView(L.Text('a')), L.Text('b'))
+          .header(false)
+          .screenScroll('content')}
+      />
+    ),
+    bloom: () => (
+      <Screen scroll="content">
+        <ScreenScrollView>
+          <Text>a</Text>
+        </ScreenScrollView>
+        <Text>b</Text>
+      </Screen>
+    ),
+  },
+  {
+    name: 'a group in a stack: its views the stack’s own children',
+    language: () =>
+      toElement(L.HStack(L.Text('a'), L.Group(L.Text('b'), L.Text('c'))).spacing('sm')),
+    bloom: () => (
+      <View style={{ flexDirection: 'row', gap: space.sm }}>
+        <Text>a</Text>
+        <Text>b</Text>
+        <Text>c</Text>
+      </View>
+    ),
+  },
+];
+
+export const SCREEN_CASES: ParityCase[] = [...scrollViews, ...pageHeaders, ...screens, ...groups];
