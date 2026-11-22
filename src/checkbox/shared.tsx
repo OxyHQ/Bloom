@@ -131,9 +131,8 @@ function gradientStyle([top, bottom]: readonly [string, string]): WebCssStyle {
 //
 //  react-native-web makes the row focusable and no inline style can carry a
 //  `:focus-visible` rule. The hooks are `data-*` attributes through `dataSet` —
-//  a class never reaches the DOM here (react-native-css consumes `className`
-//  into `style`) — and `adoptStyleSheet` no-ops without a `document`, so the
-//  file stays universal.
+//  react-native-web puts no class of ours on the DOM — and `adoptStyleSheet`
+//  no-ops without a `document`, so the file stays universal.
 //
 //  The focusable element is the row (or card), but the ring is drawn on the BOX
 //  — so the row's own outline is suppressed and the ring is drawn on the glyph's ring
