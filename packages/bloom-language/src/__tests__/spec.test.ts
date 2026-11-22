@@ -254,6 +254,14 @@ import type {
   PlacePickerView,
 } from '../controls/places';
 import type {
+  MailComposeSurfaceView,
+  MailRecipientFieldView,
+  MailMessageView,
+  MailThreadView,
+  MailQuoteToggleView,
+  NoteEditorToolbarView,
+} from '../controls/mail';
+import type {
   MapScaleBarView,
   MapControlsView,
   LocationPuckView,
@@ -605,7 +613,19 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<PlaceListView>, Of<'placeList'>>,
       Same<MethodsOf<DirectionsStepsView>, Of<'directionsSteps'>>,
       Same<MethodsOf<PlacePickerView>, Of<'placePicker'>>,
+      Same<MethodsOf<MailComposeSurfaceView>, Of<'mailComposeSurface'>>,
+      Same<MethodsOf<MailRecipientFieldView>, Of<'mailRecipientField'>>,
+      Same<MethodsOf<MailMessageView>, Of<'mailMessage'>>,
+      Same<MethodsOf<MailThreadView>, Of<'mailThread'>>,
+      Same<MethodsOf<MailQuoteToggleView>, Of<'mailQuoteToggle'>>,
+      Same<MethodsOf<NoteEditorToolbarView>, Of<'noteEditorToolbar'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

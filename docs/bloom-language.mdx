@@ -1566,6 +1566,29 @@ bindings (`.size()` a control size, `.disabled()`). The card and the list card
 take `.onPress()` themselves. A transit line's colour is the operator's, so it
 stays the line's data.
 
+### Mail and notes
+
+```ts
+MailComposeSurface(Editor(), { title: 'New message', onSend: send, header: Recipients() }).style('sheet').loading(sending)
+MailRecipientField([to, setTo], { label: 'To', value: query, onChangeText: setQuery, suggestions })
+MailThread(messages, { subject, labels, collapseAfter: 3, messageGap: 'md', quickReply: Reply() })
+MailMessage(message.sender, Body(), { date, preview, trimmed: Quote() })
+NoteEditorToolbar('Formatting', actions).size('sm')
+```
+
+Bloom's mail and note pieces: `MailComposeSurface(body?, options?)` round the
+message's editor (`.style('docked' | 'sheet')`, `.loading()` while it sends;
+its `header`, `toolbar` and `footer` language children),
+`MailRecipientField(recipients, options?)`, which edits the recipients its
+binding holds (`.disabled()`; its `trailing` a child), `MailThread(messages,
+options?)` (its `quickReply` and `header` children, its `messageGap` a space
+token; a message's own body inside the data is a React element, as Bloom takes
+it), `MailMessage(sender, body?, options?)` (its `trimmed` quote, which it folds
+behind its own toggle, and its `menu` are children), `MailQuoteToggle(quote?,
+options?)` (a quote folded anywhere else) and `NoteEditorToolbar(label,
+actions, options?)`, named as Bloom requires (`.size('md' | 'sm')`,
+`.disabled()`).
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

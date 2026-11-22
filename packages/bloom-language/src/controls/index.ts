@@ -25,6 +25,7 @@ import type { ControlRenderer } from './draw';
 import { INPUTS } from './inputs';
 import { OVERLAYS } from './overlays';
 import { PLACES } from './places';
+import { MAILS } from './mail';
 import { MAP_CHROME } from './map-chrome';
 
 /**
@@ -58,4 +59,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MESSAGE_BUBBLES,
   ...MAP_CHROME,
   ...PLACES,
+  ...MAILS,
 };

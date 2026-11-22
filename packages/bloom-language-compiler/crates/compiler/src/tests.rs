@@ -900,3 +900,20 @@ fn the_places_are_checked() {
     let output = check("export const x = (p, q, o) => PlacePicker('Address', p, q, o).style('plain');\n");
     assert_eq!(output.diagnostics[0].message, "PlacePicker has no modifier .style()");
 }
+
+#[test]
+fn mail_and_the_note_toolbar_are_checked() {
+    let imports = "import { MailComposeSurface, MailRecipientField, NoteEditorToolbar } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (b, r, a) => [MailComposeSurface(b).style('sheet').loading(), \
+         MailRecipientField(r).disabled(), NoteEditorToolbar('Formatting', a).size('sm').disabled()];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (b) => MailComposeSurface(b).style('floating');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown mailComposeStyle token 'floating' for .style()");
+    let output = check("export const x = (a) => NoteEditorToolbar('Formatting', a).size('lg');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown noteToolbarSize token 'lg' for .size()");
+    let output = check("export const x = (r) => MailRecipientField(r).size('sm');\n");
+    assert_eq!(output.diagnostics[0].message, "MailRecipientField has no modifier .size()");
+}
