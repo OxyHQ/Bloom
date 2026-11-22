@@ -147,7 +147,12 @@ describe('Carousel', () => {
   it('forwards the arrow visual recipe while retaining navigation ownership', () => {
     const api = renderWithTheme(
       gallery({
-        arrowButtonProps: { material: 'flat', size: 'sm', iconSize: 20, className: 'rounded-full' },
+        arrowButtonProps: {
+          material: 'flat',
+          size: 'sm',
+          iconSize: 20,
+          style: { borderRadius: 999 },
+        },
       }),
     );
     layOut(api);
@@ -158,7 +163,7 @@ describe('Carousel', () => {
       material: 'flat',
       size: 'sm',
       iconSize: 20,
-      className: 'rounded-full',
+      style: { borderRadius: 999 },
       disabled: false,
     });
     fireEvent.press(api.getByLabelText('Next slide'));
