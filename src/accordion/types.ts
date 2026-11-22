@@ -26,7 +26,6 @@ export interface AccordionProps {
   transition?: AccordionTransition;
   /** Accordion items. */
   children: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -38,7 +37,6 @@ export interface AccordionItemProps {
   children: React.ReactNode;
   /** Whether this item is disabled. */
   disabled?: boolean;
-  className?: string;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -47,16 +45,15 @@ export interface AccordionTriggerProps {
   children: React.ReactNode;
   /** Icon to show on the left side. */
   icon?: React.ReactNode;
-  className?: string;
-  style?: StyleProp<ViewStyle>;
+  /** The trigger's style; its text keys (colour, font, line height) reach the label. */
+  style?: StyleProp<TextStyle>;
   textStyle?: StyleProp<TextStyle>;
 }
 
 export interface AccordionContentProps {
-  /** Classes for the measured body, including its default content padding. */
-  contentClassName?: string;
+  /** The measured body's style, over its default content padding. */
+  contentStyle?: StyleProp<ViewStyle>;
   /** Content to show when expanded. */
   children: React.ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
 }
