@@ -125,6 +125,53 @@ export function Profile({
   );
 }
 
+// Content classes as apps write them: each laid out in Bloom's view inside the content container.
+export function Account({ save }: { save: () => void }) {
+  return (
+    <ScreenScrollView contentContainerClassName="gap-4 px-4 pb-8">
+      <Muted>{t('account.intro')}</Muted>
+      <Button onPress={save}>{t('account.save')}</Button>
+    </ScreenScrollView>
+  );
+}
+
+export function Empty() {
+  return (
+    <ScreenScrollView contentContainerClassName="flex-1 items-center justify-center gap-3 px-8">
+      <Muted>{t('empty.title')}</Muted>
+      <Muted>{t('empty.hint')}</Muted>
+    </ScreenScrollView>
+  );
+}
+
+export function Reading() {
+  return (
+    <ScreenScrollView
+      contentContainerClassName="p-4 gap-4 max-w-2xl w-full self-center"
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
+      <Muted>{t('reading.body')}</Muted>
+    </ScreenScrollView>
+  );
+}
+
+export function Pills() {
+  return (
+    <ScreenScrollView contentContainerClassName="flex-row gap-2 px-1 py-1">
+      <Muted>{t('pills.a')}</Muted>
+      <Muted>{t('pills.b')}</Muted>
+    </ScreenScrollView>
+  );
+}
+
+export function Grows() {
+  return (
+    <ScreenScrollView contentContainerClassName="grow pb-6">
+      <Muted>{t('grows.body')}</Muted>
+    </ScreenScrollView>
+  );
+}
+
 export function NoChats({ start }: { start: () => void }) {
   return (
     <ChatEmptyState
