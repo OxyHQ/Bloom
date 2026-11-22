@@ -80,7 +80,7 @@ on document direction alone silently places the wrong corner.
 The surface resolver does not add background, border, shadow or overflow.
 Those responsibilities remain with the component. Keep a shadow outside the
 content clip. Card opts into an inner clip with `clipContent`, with child
-layout in `contentStyle` and parent layout on the outer `style`/`className`.
+layout in `contentStyle` and parent layout on the outer `style`.
 
 `Border` is always inside its silhouette. It doubles the SVG stroke and clips
 it with the same outline, producing the requested width at both cardinal and
