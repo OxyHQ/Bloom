@@ -99,6 +99,7 @@ the element JSX with the reason `Node:prop`.
 | `Tabs` with its `TabsTrigger`s | `Tabs([value, set], TabItem(value, label).count(n)…).style(variant)` |
 | `SegmentedControl` with its `SegmentedControlItem`s (each its `SegmentedControlItemText`) | `Segmented([value, set], Option(value, text)…)`, `type="tabs"` its `.tabs()` |
 | `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
+| `VirtualList` | `VirtualList(data, (item, index) => row).itemKey().onEndReached(action, threshold)` |
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads
@@ -140,6 +141,12 @@ among the children, or a part that does not map, keeps the whole element JSX;
 a part is never converted alone (`TabItem:part`). The language keys a part by
 its value, so a part's `key` is not carried. The parity draws an array a
 region carries as the corpus's sample items (`ITEMS`), the same on both sides.
+
+A `VirtualList`'s `renderItem` is its row only as an arrow that reads its item
+and index (`({ item }) => <Post post={item} />` is `(item) => Embed(<Post post={item} />)`,
+its element converted where it can be); a named function may read the rest of
+FlashList's argument, so it is a reason. Its header, footer and empty state are
+JSX elements only: a name there may be a component, which the node does not draw.
 
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).

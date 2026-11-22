@@ -52,10 +52,11 @@ import { SegmentedControlItemText as I44 } from '@oxy.so/bloom/segmented-control
 import { SettingsSelect as I45 } from '@oxy.so/bloom/settings-modal/select';
 import { AvatarGroup as I46 } from '@oxy.so/bloom/avatar-group';
 import { List as I47 } from '@oxy.so/bloom/list';
-import { Pressable as I48 } from 'react-native-css/components/Pressable';
-import { Text as I49 } from '@oxy.so/bloom/typography';
-import { RiArrowRightLine as I50 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I51 } from '../support/app-text';
+import { VirtualList as I48 } from '@oxy.so/bloom/list';
+import { Pressable as I49 } from 'react-native-css/components/Pressable';
+import { Text as I50 } from '@oxy.so/bloom/typography';
+import { RiArrowRightLine as I51 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I52 } from '../support/app-text';
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -387,8 +388,25 @@ export const CASES = [
     after: () => { const View = I9; const List = I47; const Muted = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList } = L; return (toElement(VStack(LList(ITEMS).separator('line').headerContent(Text('⟨1⟩').textStyle('muted')).emptyState(Text('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))); },
   },
   {
+    name: "components/Components.tsx:491",
+    before: () => { const VirtualList = I48; const Pressable = I49; const Muted = I15; return (<VirtualList
+      data={ITEMS}
+      keyExtractor={() => {}}
+      renderItem={({ item, index }) => (
+        <Pressable onPress={() => {}} className="px-4 py-3">
+          <Muted numberOfLines={2}>{'⟨1⟩'}</Muted>
+        </Pressable>
+      )}
+      estimatedItemSize={56}
+      onEndReached={() => {}}
+      onEndReachedThreshold={0.5}
+      ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}
+    />); },
+    after: () => { const VirtualList = I48; const Pressable = I49; const Muted = I15; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L; return (toElement(LVirtualList(ITEMS, (item, index) => VStack(Text('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(Text('⟨6⟩').textStyle('muted')))); },
+  },
+  {
     name: "components/Rows.tsx:19",
-    before: () => { const Pressable = I48; const RiHeart3Line = I29; const View = I9; const Text = I49; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
+    before: () => { const Pressable = I49; const RiHeart3Line = I29; const View = I9; const Text = I50; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
         <Text variant="body-semibold" numberOfLines={1}>
@@ -397,11 +415,11 @@ export const CASES = [
         <Text className="text-sm text-muted-foreground">{'⟨1⟩'} likes</Text>
       </View>
     </Pressable>); },
-    after: () => { const Pressable = I48; const RiHeart3Line = I29; const View = I9; const Text = I49; const { HStack, Icon, VStack, Text: LText } = L; return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
+    after: () => { const Pressable = I49; const RiHeart3Line = I29; const View = I9; const Text = I50; const { HStack, Icon, VStack, Text: LText } = L; return (toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:41",
-    before: () => { const View = I9; const Text = I49; const Switch = I3; const Button = I13; const RiArrowRightLine = I50; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I9; const Text = I50; const Switch = I3; const Button = I13; const RiArrowRightLine = I51; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -409,7 +427,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I9; const Text = I49; const Switch = I3; const Button = I13; const RiArrowRightLine = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I9; const Text = I50; const Switch = I3; const Button = I13; const RiArrowRightLine = I51; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
@@ -431,22 +449,22 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:58",
-    before: () => { const View = I9; const Text = I49; return (<View  className="flex-row justify-between">
+    before: () => { const View = I9; const Text = I50; return (<View  className="flex-row justify-between">
           <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I9; const Text = I49; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
+    after: () => { const View = I9; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return (toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))); },
   },
   {
     name: "components/Rows.tsx:68",
-    before: () => { const View = I9; const NativeText = I51; const Text = I49; return (<View className="flex-1 mt-2">
+    before: () => { const View = I9; const NativeText = I52; const Text = I50; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I9; const NativeText = I51; const Text = I49; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I9; const NativeText = I52; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
   {
     name: "components/Rows.tsx:85 (false)",
-    before: () => { const Pressable = I48; const Text = I49; return (<Pressable
+    before: () => { const Pressable = I49; const Text = I50; return (<Pressable
       onPress={() => {}}
       className={
         false ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'
@@ -458,11 +476,11 @@ export const CASES = [
         {'⟨0⟩'}
       </Text>
     </Pressable>); },
-    after: () => { const Pressable = I48; const Text = I49; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+    after: () => { const Pressable = I49; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
     name: "components/Rows.tsx:85",
-    before: () => { const Pressable = I48; const Text = I49; return (<Pressable
+    before: () => { const Pressable = I49; const Text = I50; return (<Pressable
       onPress={() => {}}
       className={
         true ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'
@@ -474,14 +492,14 @@ export const CASES = [
         {'⟨0⟩'}
       </Text>
     </Pressable>); },
-    after: () => { const Pressable = I48; const Text = I49; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
+    after: () => { const Pressable = I49; const Text = I50; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
     name: "components/SettingsRoute.tsx:13",
-    before: () => { const Screen = I11; const Text = I49; return (<Screen>
+    before: () => { const Screen = I11; const Text = I50; return (<Screen>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
       </Screen>); },
-    after: () => { const Screen = I11; const Text = I49; const { Text: LText } = L; return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)} />); },
+    after: () => { const Screen = I11; const Text = I50; const { Text: LText } = L; return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)} />); },
   },
   {
     name: "components/SettingsRoute.tsx:17",
@@ -490,11 +508,11 @@ export const CASES = [
   },
   {
     name: "components/SettingsRoute.tsx:19",
-    before: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I49; return (<Screen header={<Hole n="1" />} scroll="content">
+    before: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I50; return (<Screen header={<Hole n="1" />} scroll="content">
       <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         <Text className="text-sm">{'⟨0⟩'}</Text>
       </ScreenScrollView>
     </Screen>); },
-    after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I49; const { Text: LText, Header, toElement, ScrollView, Embed } = L; return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
+    after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I50; const { Text: LText, Header, toElement, ScrollView, Embed } = L; return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
   },
 ];

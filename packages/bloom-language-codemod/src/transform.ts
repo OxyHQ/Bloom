@@ -174,6 +174,8 @@ type Tagged =
   | { readonly $: 'binding'; readonly binding: readonly [Carried, Carried] }
   | { readonly $: 'icon'; readonly name: string }
   | { readonly $: 'options'; readonly entries: readonly (readonly [string, Value])[] }
+  /** A list's row: its parameters (the item's name, and the index's) and the view it returns. */
+  | { readonly $: 'row'; readonly params: readonly string[]; readonly view: Ir }
   | { readonly $: 'absent' }
   | { readonly $: 'null' };
 
@@ -1598,6 +1600,15 @@ export function transformSource(source: string, options: TransformOptions): File
         return hasJsx(expression) || n.StringLiteral.check(expression)
           ? undefined
           : [{ node: expression, hole: 'items' }];
+      case 'element':
+        if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
+        return n.JSXFragment.check(expression)
+          ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
+          : undefined;
+      case 'row': {
+        const row = rowOf(expression);
+        return row === undefined ? undefined : [row];
+      }
     }
   }
 
@@ -1676,6 +1687,34 @@ export function transformSource(source: string, options: TransformOptions): File
     return tint && only && !others.length && themeRoles.get(only) === tint
       ? [binding, tint]
       : undefined;
+  }
+
+  /** `({ item, index }) => <Row />`, FlashList's `renderItem` reading only its item and index, as a row. */
+  function rowOf(expression: AnyNode): Value | undefined {
+    if (!n.ArrowFunctionExpression.check(expression) || expression.params.length !== 1)
+      return undefined;
+    const [param] = expression.params;
+    if (!n.ObjectPattern.check(param) || !n.JSXElement.check(expression.body)) return undefined;
+    const names = new Map<string, string>();
+    for (const property of param.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key) ||
+        !['item', 'index'].includes(property.key.name) ||
+        !n.Identifier.check(property.value)
+      )
+        return undefined;
+      names.set(property.key.name, property.value.name);
+    }
+    const item = names.get('item');
+    if (!item) return undefined;
+    const index = names.get('index');
+    return {
+      $: 'row',
+      params: index ? [item, index] : [item],
+      view: elementView(expression.body),
+    };
   }
 
   /** An element as a view: converted when it can be, else embedded. */
@@ -1987,6 +2026,8 @@ export function transformSource(source: string, options: TransformOptions): File
           return value.name;
         case 'options':
           return `{ ${value.entries.map(([key, v]) => `${key}: ${printValue(v, carry)}`).join(', ')} }`;
+        case 'row':
+          return `(${value.params.join(', ')}) => ${print(value.view, carry)}`;
         case 'absent':
           return 'undefined';
         case 'null':
@@ -2003,7 +2044,7 @@ export function transformSource(source: string, options: TransformOptions): File
   function carriedOfValue(value: Value, out: Carried[]): void {
     if (isCarried(value)) out.push(value);
     else if (isTagged(value)) {
-      if (value.$ === 'view') carriedOf(value.view, out);
+      if (value.$ === 'view' || value.$ === 'row') carriedOf(value.view, out);
       else if (value.$ === 'binding') out.push(...value.binding);
       else if (value.$ === 'options') for (const [, v] of value.entries) carriedOfValue(v, out);
     }
@@ -2012,7 +2053,7 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The views a value holds. */
   function viewsOfValue(value: Value): Ir[] {
     if (!isTagged(value)) return [];
-    if (value.$ === 'view') return [value.view];
+    if (value.$ === 'view' || value.$ === 'row') return [value.view];
     if (value.$ === 'options') return value.entries.flatMap(([, v]) => viewsOfValue(v));
     return [];
   }
