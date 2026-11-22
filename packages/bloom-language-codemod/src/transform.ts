@@ -27,6 +27,7 @@ import {
   TEXT_STYLES,
 } from './components';
 import { type HostKind, type Reason, type Resolved, resolveClassName } from './resolve';
+import { styleUtilities } from './style';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
@@ -37,7 +38,16 @@ const n = recast.types.namedTypes;
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
   scales: { iconSize: Record<string, number> };
   typeRamp: Record<string, unknown>;
+  colors: Record<string, [themeKey: string, css: string] | string>;
+  enums: { role: readonly string[] };
 };
+/** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
+const ROLES = new Set(spec.enums.role);
+/** A Bloom theme colour (`theme.colors.textSecondary`) as the role painted from it (`muted`). */
+const ROLE_OF_THEME_COLOR = new Map<string, string>();
+for (const [role, entry] of Object.entries(spec.colors))
+  if (Array.isArray(entry) && !ROLE_OF_THEME_COLOR.has(entry[0]))
+    ROLE_OF_THEME_COLOR.set(entry[0], role);
 const ICON_SIZES = Object.entries(spec.scales.iconSize);
 const RAMP = new Set(Object.keys(spec.typeRamp).filter((k) => !k.startsWith('$')));
 
@@ -176,6 +186,8 @@ export interface Fixture {
   readonly classes: readonly string[];
   /** Bloom components (`module#export`) both sides are drawn inside, as the region's nodes are only drawn in them. */
   readonly within: readonly string[];
+  /** The before side reads Bloom's theme (`parityTheme`, its `useTheme()`): a fill the chain names by role. */
+  readonly themed: boolean;
 }
 
 export interface FileResult {
@@ -350,6 +362,152 @@ export function transformSource(source: string, options: TransformOptions): File
     return local;
   };
 
+  /** Module-level `const styles = StyleSheet.create({...})`, by name: each style's object literal. */
+  const styleSheets = new Map<string, Map<string, AnyNode>>();
+  const styleSheetLocal = [...sources].find(
+    ([, s]) => s.module === 'react-native' && s.imported === 'StyleSheet',
+  )?.[0];
+  for (const statement of ast.program.body as AnyNode[]) {
+    const declaration = n.ExportNamedDeclaration.check(statement)
+      ? statement.declaration
+      : statement;
+    if (!n.VariableDeclaration.check(declaration) || declaration.kind !== 'const') continue;
+    for (const declarator of declaration.declarations as AnyNode[]) {
+      const init = declarator.init;
+      if (
+        !styleSheetLocal ||
+        !n.Identifier.check(declarator.id) ||
+        !n.CallExpression.check(init) ||
+        !n.MemberExpression.check(init.callee) ||
+        !n.Identifier.check(init.callee.object) ||
+        init.callee.object.name !== styleSheetLocal ||
+        !n.Identifier.check(init.callee.property) ||
+        init.callee.property.name !== 'create' ||
+        !n.ObjectExpression.check(init.arguments[0])
+      )
+        continue;
+      const sheet = new Map<string, AnyNode>();
+      for (const property of init.arguments[0].properties)
+        if (
+          (n.ObjectProperty.check(property) || n.Property.check(property)) &&
+          n.Identifier.check(property.key)
+        )
+          sheet.set(property.key.name, property.value);
+      styleSheets.set(declarator.id.name, sheet);
+    }
+  }
+  /**
+   * Each `theme.colors.key` (`theme` from Bloom's `useTheme()`) and `colors.key`
+   * (`const { colors } = useTheme()`) in the file, as the role painted from that
+   * theme colour, resolved through the scope it is read in.
+   */
+  const themeRoles = new Map<AnyNode, string>();
+  const useThemeLocals = new Set(
+    [...sources]
+      .filter(([, s]) => s.module === '@oxy.so/bloom/theme' && s.imported === 'useTheme')
+      .map(([local]) => local),
+  );
+  /** What `name` is bound to where `path` reads it: Bloom's theme, its colours, or neither. */
+  const boundTo = (path: AnyNode, name: string): 'theme' | 'colors' | undefined => {
+    const scope = path.scope?.lookup(name);
+    const bindings = scope?.getBindings()[name];
+    if (bindings?.length !== 1) return undefined;
+    // `const theme = useTheme()`, or `const { colors } = useTheme()` (the property's value is the binding).
+    let at = bindings[0];
+    while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+    const init = at?.node.init;
+    if (
+      !init ||
+      !n.CallExpression.check(init) ||
+      !n.Identifier.check(init.callee) ||
+      !useThemeLocals.has(init.callee.name) ||
+      at.parent?.node.kind !== 'const'
+    )
+      return undefined;
+    if (n.Identifier.check(at.node.id) && at.node.id.name === name) return 'theme';
+    if (
+      n.ObjectPattern.check(at.node.id) &&
+      at.node.id.properties.some(
+        (p: AnyNode) =>
+          (n.ObjectProperty.check(p) || n.Property.check(p)) &&
+          !p.computed &&
+          n.Identifier.check(p.key) &&
+          p.key.name === 'colors' &&
+          n.Identifier.check(p.value) &&
+          p.value.name === name,
+      )
+    )
+      return 'colors';
+    return undefined;
+  };
+  /** Each `styles.x` read where `styles` is the module's StyleSheet (not a name that shadows it). */
+  const moduleStyleReads = new Set<AnyNode>();
+  if (useThemeLocals.size > 0 || styleSheets.size > 0)
+    recast.visit(ast, {
+      visitMemberExpression(path) {
+        const { object, property, computed } = path.node;
+        if (
+          n.Identifier.check(object) &&
+          styleSheets.has(object.name) &&
+          path.scope?.lookup(object.name)?.isGlobal
+        )
+          moduleStyleReads.add(path.node);
+        if (!computed && n.Identifier.check(property)) {
+          const role = ROLE_OF_THEME_COLOR.get(property.name);
+          const colorsOf =
+            n.MemberExpression.check(object) &&
+            !object.computed &&
+            n.Identifier.check(object.property) &&
+            object.property.name === 'colors' &&
+            n.Identifier.check(object.object) &&
+            boundTo(path, object.object.name) === 'theme';
+          const colors = n.Identifier.check(object) && boundTo(path, object.name) === 'colors';
+          if (role && (colorsOf || colors)) themeRoles.set(path.node, role);
+        }
+        this.traverse(path);
+      },
+    });
+
+  /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
+  const styleLiterals = new Map<AnyNode, string>();
+
+  /** A static style (an object literal, a module StyleSheet's style, or a list of them) as utilities. */
+  function staticStyle(
+    expression: AnyNode,
+  ): { ok: true; classes: string[] } | { ok: false; subject: string; why: string } {
+    const parts = n.ArrayExpression.check(expression) ? expression.elements : [expression];
+    const classes: string[] = [];
+    const literals: string[] = [];
+    let referenced = false;
+    for (const part of parts) {
+      let object = part;
+      if (
+        n.MemberExpression.check(part) &&
+        !part.computed &&
+        n.Identifier.check(part.object) &&
+        n.Identifier.check(part.property)
+      ) {
+        object = moduleStyleReads.has(part)
+          ? styleSheets.get(part.object.name)?.get(part.property.name)
+          : undefined;
+        referenced = true;
+      }
+      const style = object ? styleUtilities(object) : undefined;
+      if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
+      if (!style.ok) return style;
+      classes.push(...style.classes);
+      literals.push(style.literal);
+    }
+    if (referenced)
+      styleLiterals.set(
+        expression,
+        literals.length === 1 && parts.length === 1
+          ? (literals[0] as string)
+          : `[${literals.join(', ')}]`,
+      );
+    return { ok: true, classes };
+  }
+
   /** Each element's nearest enclosing element in the file. */
   const enclosing = new Map<AnyNode, AnyNode>();
   recast.visit(ast, {
@@ -455,6 +613,10 @@ export function transformSource(source: string, options: TransformOptions): File
     let numberOfLines: Arg | Carried | undefined;
     let variant: string | undefined;
     let size: AnyNode;
+    /** The utilities a static `style` writes, read with the className. */
+    const styleClasses: string[] = [];
+    /** An icon's `width`, `height` and `fill`. */
+    const iconProps = new Map<string, AnyNode>();
     for (const attribute of node.openingElement.attributes) {
       if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
         fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
@@ -519,18 +681,44 @@ export function transformSource(source: string, options: TransformOptions): File
         else variant = text;
         continue;
       }
+      if (name === 'style' && kind !== 'icon') {
+        const style = staticStyle(expression);
+        if (style.ok) styleClasses.push(...style.classes);
+        else fail(style.subject, 'style', style.why);
+        continue;
+      }
+      if (name === 'accessibilityRole' && kind !== 'icon') {
+        const role = staticString(value);
+        if (role !== undefined && ROLES.has(role)) props.push({ name: 'role', args: [role] });
+        else fail(name, 'role', 'a role the language does not take, or set at runtime');
+        continue;
+      }
       if (kind === 'icon' && name === 'size') {
         size = value;
+        continue;
+      }
+      if (kind === 'icon' && (name === 'width' || name === 'height' || name === 'fill')) {
+        iconProps.set(name, value);
         continue;
       }
       fail(name, `prop:${name}`, `the prop \`${name}\` has no mapping`);
     }
 
     for (const token of className.split(/\s+/).filter(Boolean)) classes.add(token);
+    if (styleClasses.length) className = [className, ...styleClasses].filter(Boolean).join(' ');
 
     if (kind === 'icon') {
       if (className) fail('className', 'icon-className', 'a className on an icon');
       const mods: Mod[] = [];
+      // A width and a height of one number are the glyph's side, as `size` is.
+      const width = iconProps.get('width');
+      const height = iconProps.get('height');
+      if (width !== undefined || height !== undefined) {
+        const side = staticNumber(width);
+        if (size !== undefined || side === undefined || staticNumber(height) !== side)
+          fail('width', 'icon-size', 'a width and a height that are not one static side');
+        else size = width;
+      }
       if (size !== undefined) {
         // A rung by name, or a number of points that is a rung's (Bloom draws a number as its side).
         const named = staticString(size);
@@ -542,8 +730,16 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
         fail('children', 'icon-children', 'an icon with children');
-      // A bare Bloom icon paints primary; Icon(X) paints the ink around it.
-      mods.push(...options.table.bareIcon);
+      const fill = iconProps.get('fill');
+      if (fill !== undefined) {
+        // A theme colour is the role painted from it, in every theme.
+        const role = themeRoles.get(attributeExpression(fill));
+        if (role) mods.push({ name: 'foreground', args: [role] });
+        else fail('fill', 'icon-fill', 'a fill that is no colour of the Bloom theme');
+      } else {
+        // A bare Bloom icon paints primary; Icon(X) paints the ink around it.
+        mods.push(...options.table.bareIcon);
+      }
       if (reasons.length) return { reasons };
       return { ir: { type: 'icon', component: local, mods, key } };
     }
@@ -1346,6 +1542,21 @@ export function transformSource(source: string, options: TransformOptions): File
       text: HOLE[c.hole](index.get(c) ?? 0),
     }));
     if (removed) spans.push({ start: removed.start, end: removed.end, text: '' });
+    // A StyleSheet's style is its object literal on the before side.
+    for (const [read, literal] of styleLiterals)
+      if (read.start >= node.start && read.end <= node.end)
+        spans.push({ start: read.start, end: read.end, text: literal });
+    // A theme colour the chain names by its role is read from the theme the before side is drawn in.
+    let themed = false;
+    for (const [read] of themeRoles)
+      if (read.start >= node.start && read.end <= node.end) {
+        themed = true;
+        spans.push({
+          start: read.start,
+          end: read.end,
+          text: `parityTheme.colors.${read.property.name}`,
+        });
+      }
     spans.sort((a, b) => a.start - b.start);
     for (const span of spans) {
       if (span.start < at) continue;
@@ -1375,6 +1586,7 @@ export function transformSource(source: string, options: TransformOptions): File
       ),
       classes: [...regionClasses],
       within: withinOf(ir),
+      themed,
     });
   }
 

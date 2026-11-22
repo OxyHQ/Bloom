@@ -2,35 +2,14 @@
   "app": "parity/sample-app",
   "files": 2,
   "changedFiles": 2,
-  "candidates": 51,
-  "converted": 50,
-  "regions": 14,
-  "rate": 98,
+  "candidates": 58,
+  "converted": 58,
+  "regions": 16,
+  "rate": 100,
   "overridden": [],
   "bloomComponents": {
     "@oxy.so/bloom/text-field#TextFieldIcon": 1
   },
-  "patterns": [
-    {
-      "code": "prop:style",
-      "elements": 1,
-      "top": {
-        "style": 1
-      }
-    }
-  ],
-  "unconverted": [
-    {
-      "file": "components/Rows.tsx",
-      "line": 70,
-      "element": "View",
-      "reasons": [
-        {
-          "subject": "style",
-          "code": "prop:style",
-          "why": "the prop `style` has no mapping"
-        }
-      ]
-    }
-  ]
+  "patterns": [],
+  "unconverted": []
 }

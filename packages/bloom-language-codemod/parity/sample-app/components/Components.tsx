@@ -26,8 +26,9 @@ import { SettingsSection, SettingsValueField } from '@oxy.so/bloom/settings-moda
 import { Switch } from '@oxy.so/bloom/switch';
 import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
+import { useTheme } from '@oxy.so/bloom/theme';
 import { Muted } from '@oxy.so/bloom/typography';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 declare const t: (key: string) => string;
 
@@ -231,3 +232,29 @@ export function Email({ email, setEmail }: { email: string; setEmail: (email: st
     </TextField>
   );
 }
+
+export function Glyphs() {
+  const theme = useTheme();
+  const { colors } = useTheme();
+  return (
+    <View className="flex-row gap-2" accessibilityRole="header">
+      <RiHeart3Line width={20} height={20} fill={theme.colors.textSecondary} />
+      <RiMailLine width={16} height={16} fill={colors.primary} />
+      <RiStarLine fill={theme.colors.error} />
+    </View>
+  );
+}
+
+export function Styled({ children }: { children: React.ReactNode }) {
+  return (
+    <View style={styles.row}>
+      <View style={{ flexGrow: 1, gap: 12 }}>{children}</View>
+      <View style={[styles.badge, { marginLeft: 8 }]} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
+  badge: { width: 24, height: 24 },
+});
