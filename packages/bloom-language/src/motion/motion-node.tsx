@@ -1,6 +1,7 @@
 import {
   createContext,
   createElement,
+  Fragment,
   useContext,
   useLayoutEffect,
   useMemo,
@@ -14,6 +15,7 @@ import {
   useCompetingGestures,
   useSimultaneousGestures,
 } from 'react-native-gesture-handler';
+import { View } from 'react-native';
 import { mergeRefs, usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 import {
   COLOR_TRANSITION_PROPS,
@@ -39,11 +41,13 @@ import {
   type Transform,
   type TransitionValue,
 } from '@oxy.so/bloom/motion';
+import { OverlayRoot } from '@oxy.so/bloom/overlay';
+import { Portal } from '@oxy.so/bloom/portal';
 import { useThemePaint } from '@oxy.so/bloom/theme';
 
 import type { DragSpec, PinchSpec, SwipeDirection } from '../node';
 import type { Geometry } from '../paint';
-import type { Frame, Namespace } from './namespace';
+import type { Frame, Lander, Namespace } from './namespace';
 import { motionKey, resolveMotion, type MotionToken } from './tokens';
 
 /**
@@ -168,6 +172,8 @@ export interface MotionNodeProps {
 }
 
 const ORIGIN_TOP_LEFT = { transformOrigin: 'left top' };
+/** A view whose copy is flying to it between screens: there, but not seen until it lands. */
+const AWAITING = { opacity: 0 };
 /** A loop's playing: one id of its own, so it starts over after any other. */
 const LOOP_ID = -2;
 
@@ -226,7 +232,7 @@ function measure(node: unknown): Frame | undefined {
  * playing holds its first frame while it waits.
  */
 function useMotion(
-  { motion, scope, theme }: MotionNodeProps,
+  { motion, scope, theme, content }: MotionNodeProps,
   press: { style: readonly unknown[]; ownsTransform: boolean; bound?: boolean },
 ) {
   const reduced = usePrefersReducedMotion();
@@ -351,7 +357,7 @@ function useMotion(
   useLayoutEffect(() => {
     committed.current = { value: own?.value, transformKey: motion.transformKey, timing, theme };
     if (switched) replay((count) => count + 1);
-    if (matched === undefined) return;
+    if (matched === undefined || matched.namespace.landers !== undefined) return;
     const frame = measure(ref.current);
     if (frame === undefined) return;
     const { frames } = matched.namespace;
@@ -363,7 +369,96 @@ function useMotion(
     if (move !== undefined) setMoved((state) => ({ id: (state?.id ?? 0) + 1, frames: move }));
   });
 
+  // Between screens (`transitionNamespace()`): a copy of the view flies over
+  // every screen from where the other view with its id is, while it waits.
+  const [flight, setFlight] = useState<{ id: number; from: Frame; to: Frame } | undefined>();
+  const latest = useRef({ own, reduced });
+  latest.current = { own, reduced };
+  const matchedId = matched?.id;
+  const namespace = matched?.namespace;
+  useLayoutEffect(() => {
+    const landers = namespace?.landers;
+    if (matchedId === undefined || namespace === undefined || landers === undefined) return;
+    const lander: Lander = {
+      measure: () => measure(ref.current),
+      land: (from) => {
+        const to = measure(ref.current);
+        if (to === undefined || latest.current.reduced || latest.current.own === undefined) return;
+        if (moveFrom(from, to) === undefined) return;
+        setFlight((state) => ({ id: (state?.id ?? 0) + 1, from, to }));
+      },
+    };
+    let here = landers.get(matchedId);
+    if (here === undefined) {
+      here = new Set();
+      landers.set(matchedId, here);
+    }
+    // From another view with the id on screen now (the screen under this one),
+    // else from the one that left as this one came (the screen it replaced).
+    let from: Frame | undefined;
+    for (const other of here) from ??= other.measure();
+    from ??= namespace.frames.get(matchedId)?.frame;
+    namespace.frames.delete(matchedId);
+    here.add(lander);
+    if (from !== undefined) lander.land(from);
+    const others = here;
+    return () => {
+      others.delete(lander);
+      const frame = measure(ref.current);
+      if (frame === undefined) return;
+      // The one still on screen flies back from here; else the next to come does.
+      if (others.size > 0) for (const other of others) other.land(frame);
+      else namespace.frames.set(matchedId, { frame, value: undefined });
+    };
+  }, [matchedId, namespace]);
+  const copyRef = useRef<unknown>(null);
+  const flown = usePlay(
+    copyRef,
+    flight === undefined || own === undefined
+      ? undefined
+      : {
+          id: flight.id,
+          keyframes: moveFrom(flight.from, flight.to) as KeyframesValue,
+          timing: withDelay(timingOf(resolveMotion(own.motion)), motion.delay),
+          fill: 'forwards',
+          material: motion.glass,
+          onEnd: () => setFlight((state) => (state?.id === flight.id ? undefined : state)),
+        },
+  );
+  const flying =
+    flight === undefined
+      ? null
+      : createElement(
+          Portal,
+          null,
+          createElement(
+            OverlayRoot,
+            null,
+            createElement(
+              View,
+              {
+                pointerEvents: 'none',
+                style: {
+                  position: 'absolute',
+                  left: flight.to.x,
+                  top: flight.to.y,
+                  width: flight.to.width,
+                  height: flight.to.height,
+                },
+              },
+              content({
+                ref: copyRef,
+                style: [ORIGIN_TOP_LEFT, flown.style],
+                props: { ref: copyRef, ...flown.props },
+                active: true,
+                playId: flight.id,
+              }),
+            ),
+          ),
+        );
+
   const style: unknown[] = [];
+  if (flight !== undefined) style.push(AWAITING);
   if (motion.transform.length > 0 && !press.ownsTransform)
     style.push({ transform: motion.transform });
   if (motion.anchor !== undefined) style.push(anchorStyle(motion.anchor));
@@ -388,15 +483,19 @@ function useMotion(
         matched.namespace.frames.set(matched.id, { frame, value: own?.value });
     };
   }
-  return { style, props, play };
+  return { style, props, play, flying };
 }
 
-/** A leaver's leaving is its own: what is inside it does not leave with it. */
-function leaverOnly(motion: MotionPlan, node: ReactNode): ReactNode {
+/**
+ * A leaver's leaving is its own: what is inside it does not leave with it.
+ * A copy flying to it between screens is drawn beside it.
+ */
+function leaverOnly(motion: MotionPlan, node: ReactNode, flying: ReactNode): ReactNode {
+  const drawn = flying === null ? node : createElement(Fragment, null, node, flying);
   return motion.transition === undefined ? (
-    node
+    drawn
   ) : (
-    <LeavingContext.Provider value={undefined}>{node}</LeavingContext.Provider>
+    <LeavingContext.Provider value={undefined}>{drawn}</LeavingContext.Provider>
   );
 }
 
@@ -416,7 +515,7 @@ export function ThemedMotion({
 ThemedMotion.displayName = 'BloomThemedMotion';
 
 export function MotionNode(props: MotionNodeProps): ReactNode {
-  const { style, props: hostProps, play } = useMotion(props, NO_PRESS);
+  const { style, props: hostProps, play, flying } = useMotion(props, NO_PRESS);
   return leaverOnly(
     props.motion,
     props.content({
@@ -426,6 +525,7 @@ export function MotionNode(props: MotionNodeProps): ReactNode {
       active: props.motion.stable || play !== undefined,
       playId: play?.id,
     }),
+    flying,
   );
 }
 MotionNode.displayName = 'BloomMotion';
@@ -440,6 +540,7 @@ export function PressMotionNode(props: MotionNodeProps): ReactNode {
     style,
     props: hostProps,
     play,
+    flying,
   } = useMotion(props, { style: [press.style], ownsTransform: press.onPressIn !== undefined });
   if (press.onPressIn !== undefined) {
     hostProps.onPressIn = press.onPressIn;
@@ -454,6 +555,7 @@ export function PressMotionNode(props: MotionNodeProps): ReactNode {
       active: true,
       playId: play?.id,
     }),
+    flying,
   );
 }
 PressMotionNode.displayName = 'BloomPressMotion';
@@ -513,6 +615,7 @@ export function GestureMotionNode(props: MotionNodeProps): ReactNode {
     style,
     props: hostProps,
     play,
+    flying,
   } = useMotion(props, { style: [mapped.style], ownsTransform: true, bound: true });
   const own = hostProps.ref as RefObject<unknown>;
   const ref = useMemo(() => mergeRefs([own, mapped.ref]), [own, mapped.ref]);
@@ -522,6 +625,7 @@ export function GestureMotionNode(props: MotionNodeProps): ReactNode {
     <GestureDetector gesture={gesture}>
       {props.content({ ref: own, style, props: hostProps, active: true, playId: play?.id })}
     </GestureDetector>,
+    flying,
   );
 }
 GestureMotionNode.displayName = 'BloomGestureMotion';

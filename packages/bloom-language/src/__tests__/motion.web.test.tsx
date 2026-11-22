@@ -13,6 +13,7 @@ import { asymmetric, move, opacity } from '../motion/transition';
 import { defineKeyframes } from '../motion/keyframes';
 import { regular } from '../glass';
 import type { Child } from '../node';
+import { transitionNamespace } from '../motion/namespace';
 import { useMappedValue, useMotionValue } from '../motion/values';
 import { getMotionValue, setMotionValue, type MotionValue } from './support/bloom-motion.web';
 
@@ -319,5 +320,41 @@ describe('on the web, a mapped value follows its value as it is written', () => 
     expect(box.style.transform).toContain('scale(0.95');
     act(() => setMotionValue(y, 600));
     expect(getMotionValue(s)).toBeCloseTo(0.9);
+  });
+});
+
+describe('on the web, a matched view between screens flies with element.animate()', () => {
+  it('the copy over every screen plays the move from the other view’s frame', () => {
+    const photos = transitionNamespace();
+    const rects: Record<string, { x: number; y: number; width: number; height: number }> = {
+      thumb: { x: 10, y: 100, width: 40, height: 40 },
+      hero: { x: 0, y: 0, width: 320, height: 160 },
+    };
+    const measured = (node: ReactElement) => {
+      const { testID } = node.props as { testID?: string };
+      return { ...element(testID ?? 'box'), getBoundingClientRect: () => rects[testID ?? ''] };
+    };
+    const at = (testID: string) =>
+      VStack().testID(testID).matchedGeometry('p', photos).animation('expand');
+    const open = (node: Child) => {
+      let renderer!: ReactTestRenderer;
+      act(() => {
+        renderer = TestRenderer.create(
+          createElement(PaintContext.Provider, { value: LIGHT }, toElement(node)),
+          { createNodeMock: measured },
+        );
+      });
+      return renderer;
+    };
+    open(at('thumb'));
+    played.length = 0;
+    const detail = open(at('hero'));
+    expect(detail.root.findAllByType('Portal' as never)).toHaveLength(1);
+    const flight = played.find((animation) => animation.target === 'hero');
+    expect(flight?.options).toMatchObject({ fill: 'forwards' });
+    expect((flight?.frames as Record<string, unknown>[])[0]).toMatchObject({
+      offset: 0,
+      transform: 'translateX(10px) translateY(100px) scaleX(0.125) scaleY(0.25)',
+    });
   });
 });

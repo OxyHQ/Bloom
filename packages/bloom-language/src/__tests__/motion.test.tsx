@@ -12,7 +12,7 @@ import { toElement } from '../render';
 import { view } from '../view';
 import { defineKeyframes } from '../motion/keyframes';
 import { asymmetric, move, opacity, scale } from '../motion/transition';
-import type { Namespace } from '../motion/namespace';
+import { transitionNamespace, type Namespace } from '../motion/namespace';
 import { regular } from '../glass';
 import type { Child } from '../node';
 import { getMotionValue, type MotionValue } from './support/bloom-motion';
@@ -659,6 +659,102 @@ describe('transition values', () => {
       { at: 1, scale: 1 },
     ]);
     expect(() => a.merged(b)).toThrow('same points');
+  });
+});
+
+describe('.matchedGeometry() between screens', () => {
+  const photos = transitionNamespace();
+  const thumb = () =>
+    VStack()
+      .frame({ width: '5xl', height: '5xl' })
+      .testID('thumb')
+      .matchedGeometry('p', photos)
+      .animation('expand');
+  const hero = () =>
+    VStack()
+      .frame({ width: 'full', height: '5xl' })
+      .testID('hero')
+      .matchedGeometry('p', photos)
+      .animation('expand');
+  const copyIn = (r: ReactTestRenderer) => {
+    const [portal] = all(r, 'Portal');
+    if (portal === undefined) return undefined;
+    const [layer] = portal.findAll((node) => node.type === ('View' as never));
+    const box = portal.findAll((node) => node.type === ('Animated.View' as never))[0];
+    return { layer, box };
+  };
+  beforeEach(() => {
+    frames.thumb = { x: 20, y: 300, width: 50, height: 50 };
+    frames.hero = { x: 0, y: 0, width: 400, height: 200 };
+  });
+
+  it('the view that arrives on the screen over another flies from it, over every screen, then shows', () => {
+    const list = mount(thumb());
+    expect(all(list, 'Portal')).toHaveLength(0);
+    const detail = mount(hero());
+    const copy = copyIn(detail);
+    expect(copy?.layer?.props).toMatchObject({
+      pointerEvents: 'none',
+      style: { position: 'absolute', left: 0, top: 0, width: 400, height: 200 },
+    });
+    expect(flat(copy?.box?.props.style)).toMatchObject({
+      transformOrigin: 'left top',
+      animationName: {
+        keyframes: {
+          '0%': {
+            transform: [
+              { translateX: 20 },
+              { translateY: 300 },
+              { scaleX: 0.125 },
+              { scaleY: 0.25 },
+            ],
+          },
+        },
+      },
+    });
+    // The view itself waits, unseen, until the copy lands.
+    const waiting = all(detail, 'Animated.View').find(
+      (view) => view.props.testID === 'hero' && flat(view.props.style).opacity === 0,
+    );
+    expect(waiting).toBeDefined();
+    act(() => copy?.box?.props.onCSSAnimationEnd());
+    expect(all(detail, 'Portal')).toHaveLength(0);
+    expect(all(detail, 'Animated.View').every((view) => flat(view.props.style).opacity !== 0)).toBe(
+      true,
+    );
+    // When it leaves, the view still on screen flies back from it.
+    act(() => detail.unmount());
+    expect(flat(copyIn(list)?.box?.props.style).animationName.keyframes['0%']).toEqual({
+      transform: [{ translateX: -20 }, { translateY: -300 }, { scaleX: 8 }, { scaleY: 4 }],
+    });
+    act(() => list.unmount());
+  });
+
+  it('a screen that replaces another in place flies from the frame the other left', () => {
+    const List = view(function List() {
+      return thumb();
+    });
+    const Detail = view(function Detail() {
+      return hero();
+    });
+    const r = mount(List());
+    update(r, Detail());
+    expect(flat(copyIn(r)?.box?.props.style).animationName.keyframes['0%'].transform).toEqual([
+      { translateX: 20 },
+      { translateY: 300 },
+      { scaleX: 0.125 },
+      { scaleY: 0.25 },
+    ]);
+    act(() => copyIn(r)?.box?.props.onCSSAnimationEnd());
+    // Back: the list replaces the detail, and its view flies home from the detail's frame.
+    update(r, List());
+    expect(flat(copyIn(r)?.box?.props.style).animationName.keyframes['0%'].transform).toEqual([
+      { translateX: -20 },
+      { translateY: -300 },
+      { scaleX: 8 },
+      { scaleY: 4 },
+    ]);
+    act(() => r.unmount());
   });
 });
 
