@@ -68,15 +68,22 @@ export function useColorTokens(): ColorTokens {
 /**
  * A token at an opacity: the colour with its alpha scaled on native, a
  * `color-mix()` of the variable on the web, as a `/50` opacity modifier was.
+ *
+ * react-native-web keeps a colour only when it can parse it or it starts with
+ * `var(` (`isWebColor`), so the web form is the mix as the fallback of a custom
+ * property nothing sets: the browser paints the mix, and the style reaches it.
  */
 export function tokenAlpha(color: string, opacity: number): string {
   if (IS_WEB) {
-    return `color-mix(in oklab, ${color} ${Math.round(opacity * 1000) / 10}%, transparent)`;
+    return `var(${UNSET_COLOR}, color-mix(in oklab, ${color} ${Math.round(opacity * 1000) / 10}%, transparent))`;
   }
   const rgba = parseRgba(color);
   if (!rgba) return color;
   return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${Math.round(rgba.a * opacity * 1000) / 1000})`;
 }
+
+/** Never declared: `tokenAlpha`'s web form always takes its fallback. */
+const UNSET_COLOR = '--bloom-unset-color';
 
 /**
  * A component's styles from the colour tokens: `build` runs once per palette
