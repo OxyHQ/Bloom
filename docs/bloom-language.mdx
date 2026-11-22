@@ -2521,8 +2521,9 @@ is an `Embed`.
 
 ## Product components
 
-The product families apps share (agents, chat, dashboards, media) are Bloom's
-own components drawn as nodes. A node takes its content first and its data as
+The product families apps share (agents, chat, dashboards, media), and those
+no app imports yet (commerce, logistics, music, CRM, the dashboard cards and
+a few more), are Bloom's own components drawn as nodes. A node takes its content first and its data as
 an options object, as the Bloom component takes them: a slot is a language
 child, a handler a function, and the data is Bloom's own type, so Bloom's
 constants and an app's existing data fit as they are (a node inside data, a
@@ -3554,40 +3555,6 @@ a space token; `.disabled()`), `PayoutSummaryCard(estimated, options)` and
 tags, pitch and status). `.label()` names a chart's plot, the table and the
 timeline. The words, formats and labels stay in the options, as Bloom's.
 
-### CRM
-
-```ts
-ContactProfileCard(contact.name, { role, company, channels, stats, actions: Button(Text('Open')) }).density('compact').onPress(open)
-LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}`)
-PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
-```
-
-Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('default'
-| 'compact')`, `default` being Bloom's comfortable; its `actions` a child; it
-takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
-`.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
-child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
-stage's data; its deals the content, its `width` a space token) and
-`PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
-language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
-and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
-Bloom's accent tones, kept in the options as data.
-
-### Dashboard cards
-
-```ts
-ImportantAlertsCard(alerts, alerts.length, { rangeLabel: 'This week' })
-RecentHiresCard(hires, total, { teamLabel: team.name, onTeamPress: pickTeam, height: 'auto' })
-```
-
-Bloom's fixed-height dashboard cards: `ImportantAlertsCard(alerts, count,
-options?)`, `PatientInfoCard(name, details, options?)` and
-`RecentHiresCard(hires, count, options?)`. Their data is Bloom's (an alert's
-tone and its `iconBackground` stay in the alert); a `height` is a space token
-(`auto` too, for the recent hires).
-
-
-
 ### Music library
 
 ```ts
@@ -3649,6 +3616,40 @@ The width each lays out for, and a sticky header's offset, are space tokens.
 - The now-playing bars loop while a track plays: a playing list or row is
   compared by Jest as it mounts, not in Chrome, where two side by side are
   read at different frames.
+
+### CRM
+
+```ts
+ContactProfileCard(contact.name, { role, company, channels, stats, actions: Button(Text('Open')) }).density('compact').onPress(open)
+LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}`)
+PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
+```
+
+Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('default'
+| 'compact')`, `default` being Bloom's comfortable; its `actions` a child; it
+takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
+`.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
+child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
+stage's data; its deals the content, its `width` a space token) and
+`PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
+language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
+and `singleMaxWidth` space tokens). A cover's and a last touch's tones are
+Bloom's accent tones, kept in the options as data.
+
+### Dashboard cards
+
+```ts
+ImportantAlertsCard(alerts, alerts.length, { rangeLabel: 'This week' })
+RecentHiresCard(hires, total, { teamLabel: team.name, onTeamPress: pickTeam, height: 'auto' })
+```
+
+Bloom's fixed-height dashboard cards: `ImportantAlertsCard(alerts, count,
+options?)`, `PatientInfoCard(name, details, options?)` and
+`RecentHiresCard(hires, count, options?)`. Their data is Bloom's (an alert's
+tone and its `iconBackground` stay in the alert); a `height` is a space token
+(`auto` too, for the recent hires).
+
+
 
 ### Route stops, note cards and the share sheet
 
@@ -4213,6 +4214,19 @@ and `@oxy.so/bloom-data` beside it.
   and activity feed; Peable's order status, Atlas' lockup, Willo's ambient
   photo and the month calendar; and the action bar's orientation, tone and
   zero counts Mention sets.
+- The families no app imports yet (wave 7), each Bloom's own with parity on
+  native, web and Chrome: commerce (addresses, payment methods, the price
+  summary, payment status, the cart, menu items, the vendor card, the
+  checkout summary, delivery slots, the order confirmation); logistics
+  (carrier quotes, earnings, the job board, proof of delivery, the shipment
+  request, the vehicle picker); music (the media cards, lyrics, the media
+  player, the creator studio, the music library, the queue panel, the track
+  list); CRM (`ContactProfileCard`, `LeadScoreCard`, the pipeline); the
+  dashboard cards (`ImportantAlertsCard`, `PatientInfoCard`,
+  `RecentHiresCard`); `RouteStops`, `NoteCard`, `ShareSheet`; and the generic
+  components (`ConnectionDots`, `OutlineNav`, `Pagination`,
+  `ProgressiveBlur`, `RowActions`, `SwipeRow` on Gesture Handler,
+  `ThemeToggle`). A comfortable or compact density is `.density()`.
 
 **Not built**
 
@@ -4263,3 +4277,15 @@ and `@oxy.so/bloom-data` beside it.
   bubble's data and an ambient photo's fade and drift timings stay Bloom's
   values; the radii `UsageCard` and `ChartCardSurface` take by Bloom's own
   names stay options.
+- Wave 7's families: colours that come with the data (a lyrics view's or a
+  player's `artworkColor`, a swipe row's `paint`, an alert's tone, a CRM
+  card's accents, a vendor card's `promoTone`) stay Bloom's data in the
+  options; content Bloom takes inside its data (a price line's `info`, a
+  checkout summary's address, delivery and price) stays Bloom's data, not
+  language children; a value some components keep controlled or not (a
+  signature pad, proof of delivery, shipment options, menu item options)
+  stays Bloom's `value` and handler in the options rather than a binding; a
+  signature's stroke width is a number, not a space token. The playing track
+  list and row, and a live friend-activity card, move on the JS thread:
+  compared by Jest, not in Chrome. `mail-list` exports no component, so it
+  has no node.
