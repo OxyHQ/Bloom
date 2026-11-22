@@ -47,10 +47,13 @@ function normalize(node: ReactTestRendererJSON | string): HostTree | string {
     if (key === 'ref') continue;
     const prop = node.props[key];
     if (prop === undefined) continue;
-    props[key] = key === 'style' ? value(StyleSheet.flatten(prop) ?? {}) : value(prop);
+    // Every style prop (`style`, `contentContainerStyle`, …) flattened: an array and
+    // the object it merges to are the same paint.
+    props[key] = /^style$|Style$/.test(key) ? value(StyleSheet.flatten(prop) ?? {}) : value(prop);
   }
-  if (props.style !== undefined && Object.keys(props.style as object).length === 0)
-    delete props.style;
+  for (const key of Object.keys(props))
+    if (/^style$|Style$/.test(key) && Object.keys(props[key] as object).length === 0)
+      delete props[key];
   return { type: node.type, props, children: (node.children ?? []).map(normalize) };
 }
 
