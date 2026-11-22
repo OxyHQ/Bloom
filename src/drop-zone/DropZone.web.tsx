@@ -56,7 +56,6 @@ export function DropZone({
   onDragLeave,
   onDrop,
   style,
-  className,
   testID,
   children,
 }: DropZoneProps) {
@@ -189,7 +188,7 @@ export function DropZone({
   }, []);
 
   return (
-    <View ref={ref} style={style} className={className} testID={testID}>
+    <View ref={ref} style={style} testID={testID}>
       {children}
     </View>
   );
