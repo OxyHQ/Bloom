@@ -95,10 +95,8 @@ function readFace(style: unknown, face: Face): void {
 /**
  * NATIVE ONLY. Draw display text in the cut its weight selects.
  *
- * Reads the style a text node is finally given, after `react-native-css` has
- * resolved its className, so a weight from a variant, a heading's scale, a
- * `font-semibold`/`font-bold` utility (at any breakpoint or state) or an inline
- * `fontWeight` all count, exactly as the web's cascade counts them. Only text
+ * Reads the style a text node is finally given, so a weight from a variant, a
+ * heading's scale or an inline `fontWeight` all count, exactly as the web's cascade counts them. Only text
  * whose resolved family is the Regular display family changes; every other
  * style is returned as it came.
  */
