@@ -49,7 +49,6 @@ export interface ControlledProjectBoardProps<Item> {
   columnWidth?: number;
   columnStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   accessibilityLabel?: string;
   testID?: string;
 }
@@ -60,7 +59,6 @@ export interface BoardDragHandleProps {
   children: ReactNode;
   accessibilityLabel: string;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   testID?: string;
 }
 
@@ -160,7 +158,6 @@ export interface ProjectBoardTemplateProps {
   onCopyTicketId?: (code: string) => void | Promise<void>;
   initialTicketId?: string;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   accessibilityLabel?: string;
   testID?: string;
 }

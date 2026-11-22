@@ -1,9 +1,8 @@
 import type { ComponentType, ReactNode } from 'react';
-import type { ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { OverlayRoot } from '../overlay';
-import { StyledView } from '../styles/styled-primitives';
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 export function BoardOverlay({
   Portal,

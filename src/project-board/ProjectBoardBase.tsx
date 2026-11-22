@@ -1,34 +1,35 @@
 import { ProjectBoardCardContent } from './ProjectBoardCardContent';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { Avatar } from '../avatar';
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { RiAddLine } from '../icons/remix/RiAddLine';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
+import { RiFolder6Line } from '../icons/remix/RiFolder6Line';
 import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
 import { RiKanbanView2 } from '../icons/remix/RiKanbanView2';
 import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { useMessages } from '../locale/messages';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { Chip } from '../chip';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { fontFamilyStyle } from '../typography/Typography';
 import { CreateTicketDialog } from './CreateTicketDialog';
 import { ProjectBoardControls } from './ProjectBoardControls';
 import { MemberAvatars } from './MemberAvatars';
 import { ProjectBoardEmptyState } from './ProjectBoardEmptyState';
-import {
-  RiMoreLine,
-  RiArrowRightSLine as SourceArrow,
-  SourceChip,
-  RiFolder6Line as SourceFolder,
-  SourceText,
-  SourceView,
-} from './SourcePrimitives';
+import { RiMoreLine } from './RiMoreLine';
 import { TicketDetailDialog } from './TicketDetailDialog';
 import { ProjectBoardCanvas } from './ProjectBoardCanvas';
 import { useBoardEngine } from './use-board-engine';
 import { projectBoardMove } from './board-engine';
-import { cx, PRIORITY_STYLES } from './constants';
+import { CARD_CHIP, useChipFills, useChipLabels, useProjectChip } from './chips';
+import { ELLIPSIS, NOWRAP, TYPE, useBoardText, useIconFill } from './styles';
+import { createTokenStyles } from '../theme/color-tokens';
+import { useProjectBoardWebCss } from './web-css';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
 import { cloneColumns, moveTicket, sortColumns, updateTicket } from './shared';
@@ -51,6 +52,54 @@ const getTicketLabel = (ticket: ProjectTicket) => ticket.code;
 const EMPTY_COLUMNS: readonly ProjectColumn[] = [];
 const EMPTY_MEMBERS: Readonly<Record<string, ProjectMember>> = {};
 
+const styles = StyleSheet.create({
+  assignees: { flexDirection: 'row', alignItems: 'center', paddingInlineStart: 4 },
+  noShrink: { flexShrink: 0 },
+  arrow: { width: 15, height: 15, flexShrink: 0 },
+  flip: { transform: [{ rotate: '180deg' }] },
+  truncate: { overflow: 'hidden' },
+  folder: { width: 13, height: 13, flexShrink: 0, opacity: 0.3 },
+  lanes: { flex: 1, minHeight: 0, minWidth: 0 },
+  laneHeader: { flexDirection: 'row', alignItems: 'center' },
+  root: { flex: 1, minHeight: 0, width: '100%', flexDirection: 'column', gap: 10 },
+  header: { width: '100%', flexShrink: 0, flexDirection: 'column' },
+  titleRow: {
+    flexDirection: 'row',
+    width: '100%',
+    flexWrap: 'wrap',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  titleGroup: { flexDirection: 'row', minWidth: 0, alignItems: 'center', gap: 6 },
+  title: { paddingInline: 4 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 },
+  columnTitle: { minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  columnActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  iconButton: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+  },
+  icon: { width: 20, height: 20 },
+});
+const useCardStyles = createTokenStyles((t) => ({
+  // The crumbs' type and colour sit on the row as the class set them.
+  crumbs: {
+    flexDirection: 'row',
+    minWidth: 0,
+    alignItems: 'center',
+    ...TYPE.caption,
+    color: t.mutedForeground,
+  },
+}));
+/** `text-title-*` set the title in the display face. */
+const DISPLAY_FACE = fontFamilyStyle('display');
+/** `rtl:rotate-180`: the web's `rotate`, a transform on native. */
+const FLIP = Platform.OS === 'web' ? ({ rotate: '180deg' } as object) : styles.flip;
+
 function TicketAssignees({
   ids,
   members,
@@ -59,15 +108,15 @@ function TicketAssignees({
   members: Readonly<Record<string, ProjectMember>>;
 }) {
   return (
-    <SourceView
-      className="flex items-center ps-1"
+    <View
+      style={styles.assignees}
       accessibilityLabel={ids
         .map((id) => members[id]?.name)
         .filter(Boolean)
         .join(', ')}
     >
       <MemberAvatars ids={ids} members={members} size={22} />
-    </SourceView>
+    </View>
   );
 }
 function TicketCard({
@@ -78,32 +127,37 @@ function TicketCard({
   members: Readonly<Record<string, ProjectMember>>;
 }) {
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
+  const text = useBoardText();
+  const fills = useChipFills();
+  const labels = useChipLabels();
+  const project = useProjectChip();
+  const own = useCardStyles();
+  const iconFill = useIconFill();
+  const rtl = useIsRtl();
   return (
     <ProjectBoardCardContent
       header={
-        <SourceView className="flex min-w-0 items-center text-body-2-medium text-text-secondary">
-          <SourceText className="shrink-0 text-body-2-medium text-text-secondary">
-            {ticket.code}
-          </SourceText>
-          <SourceArrow className="size-[15px] shrink-0 text-foreground-icon-tertiary rtl:rotate-180" />
-          <SourceText className="truncate text-body-2-medium text-text-secondary">
-            {ticket.area}
-          </SourceText>
-        </SourceView>
+        <View style={own.crumbs}>
+          <Text style={[styles.noShrink, text.captionMuted]}>{ticket.code}</Text>
+          <RiArrowRightSLine fill={iconFill} style={[styles.arrow, text.icon, rtl && FLIP]} />
+          <Text style={[styles.truncate, text.captionMuted, ELLIPSIS]}>{ticket.area}</Text>
+        </View>
       }
       actions={<TicketAssignees ids={ticket.assignees} members={members} />}
       badges={
         <>
           {' '}
-          <SourceChip className={cx('text-body-2-medium', PRIORITY_STYLES[ticket.priority])}>
+          <Chip
+            bare
+            style={[CARD_CHIP, fills[ticket.priority]]}
+            textStyle={[labels[ticket.priority], NOWRAP]}
+          >
             {m.priorityLabels[ticket.priority]}
-          </SourceChip>
-          <SourceChip className="gap-1 bg-background-primary-default text-body-2-medium text-text-primary ring-1 ring-inset ring-border-button-default">
-            <SourceFolder className="size-[13px] shrink-0 opacity-30" />
-            <SourceText className="text-body-2-medium text-text-secondary">
-              {ticket.project}
-            </SourceText>
-          </SourceChip>
+          </Chip>
+          <Chip bare style={[CARD_CHIP, project.chip]}>
+            <RiFolder6Line style={styles.folder} />
+            <Text style={text.captionMuted}>{ticket.project}</Text>
+          </Chip>
         </>
       }
       title={ticket.title}
@@ -130,7 +184,6 @@ function GroupedProjectBoard<Item>({
   onMove,
   onColumnOrderChange,
   style,
-  className,
   testID = 'project-board',
   ...props
 }: GroupedProjectBoardProps<Item>) {
@@ -138,9 +191,8 @@ function GroupedProjectBoard<Item>({
     useProjectBoardPlatform();
   const [viewportHeight, setViewportHeight] = useState(0);
   return (
-    <StyledView
-      style={[{ flex: 1, minHeight: 0, minWidth: 0 }, style]}
-      className={className}
+    <View
+      style={[styles.lanes, style]}
       testID={testID}
       onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
     >
@@ -159,14 +211,14 @@ function GroupedProjectBoard<Item>({
           >
             {lanes.map((lane) => (
               <AccordionItem key={lane.id} value={lane.id}>
-                <StyledView className="flex-row items-center">
+                <View style={styles.laneHeader}>
                   <AccordionTrigger style={{ flex: 1 }}>
                     {renderLaneHeader?.(lane) ?? lane.title}
                   </AccordionTrigger>
                   {renderLaneActions?.(lane)}
-                </StyledView>
+                </View>
                 <AccordionContent contentStyle={{ padding: 0 }}>
-                  <StyledView style={{ height: viewportHeight, minWidth: 0 }}>
+                  <View style={{ height: viewportHeight, minWidth: 0 }}>
                     {viewportHeight > 0 && (
                       <ControlledProjectBoard
                         {...props}
@@ -186,14 +238,14 @@ function GroupedProjectBoard<Item>({
                         }
                       />
                     )}
-                  </StyledView>
+                  </View>
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </ScreenScrollView>
       </Screen>
-    </StyledView>
+    </View>
   );
 }
 
@@ -219,11 +271,15 @@ function TicketProjectBoard({
   onCopyTicketId,
   initialTicketId,
   style,
-  className,
   accessibilityLabel,
   testID = 'project-board',
 }: ProjectBoardTemplateProps) {
   const { colors } = useTheme();
+  const text = useBoardText();
+  const breakpoint = useWindowBreakpoint();
+  const sm = breakpoint !== 'base';
+  const lg = breakpoint === 'lg' || breakpoint === 'xl' || breakpoint === '2xl';
+  useProjectBoardWebCss();
   const { messages: m } = useMessages(PROJECT_BOARD_MESSAGES);
   const title = titleProp ?? m.defaultTitle;
   const teamName = teamNameProp ?? m.defaultTeam;
@@ -364,23 +420,12 @@ function TicketProjectBoard({
     });
   }
   return (
-    <StyledView
-      className={className}
-      style={[
-        {
-          direction,
-          flex: 1,
-          minHeight: 0,
-          width: '100%',
-          flexDirection: 'column',
-          gap: 10,
-        },
-        style,
-      ]}
+    <View
+      style={[styles.root, { direction }, style]}
       accessibilityLabel={accessibilityLabel ?? m.board}
       testID={testID}
     >
-      <SourceView className="flex w-full shrink-0 flex-col gap-2 sm:gap-0">
+      <View style={[styles.header, { gap: sm ? 0 : 8 }]}>
         <Breadcrumb>
           <BreadcrumbItem leading={<Avatar size="xs" color="blue" initials={teamName[0]} />}>
             {teamName}
@@ -394,8 +439,8 @@ function TicketProjectBoard({
             {m.board}
           </BreadcrumbItem>
         </Breadcrumb>
-        <SourceView className="flex w-full flex-wrap items-end justify-between gap-2">
-          <SourceView className="flex min-w-0 items-center gap-1.5">
+        <View style={styles.titleRow}>
+          <View style={styles.titleGroup}>
             {onMenuClick && (
               <Button
                 appearance="plain"
@@ -404,14 +449,19 @@ function TicketProjectBoard({
                 size="md"
                 accessibilityLabel={m.navigation}
                 onPress={onMenuClick}
-                className="lg:hidden"
+                style={lg ? { display: 'none' } : undefined}
               />
             )}
-            <SourceText className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">
-              {title}
-            </SourceText>
-          </SourceView>
-          <SourceView className="flex w-full flex-wrap items-center justify-start gap-2.5 sm:w-auto sm:justify-end">
+            <Text style={[styles.title, text.title, DISPLAY_FACE, NOWRAP]}>{title}</Text>
+          </View>
+          <View
+            style={[
+              styles.actions,
+              sm
+                ? { width: 'auto', justifyContent: 'flex-end' }
+                : { width: '100%', justifyContent: 'flex-start' },
+            ]}
+          >
             {headerActions}
             <Button
               appearance="plain"
@@ -445,9 +495,9 @@ function TicketProjectBoard({
             >
               {m.newTicket}
             </Button>
-          </SourceView>
-        </SourceView>
-      </SourceView>
+          </View>
+        </View>
+      </View>
       <ProjectBoardCanvas
         engine={engine}
         variant="template"
@@ -472,23 +522,24 @@ function TicketProjectBoard({
         renderCard={(ticket) => <TicketCard ticket={ticket} members={members} />}
         renderEmptyColumn={() => <ProjectBoardEmptyState />}
         renderColumnHeader={(column) => (
-          <StyledView className="flex min-w-0 flex-row items-center gap-1.5">
+          <View style={styles.columnTitle}>
             <Text variant="body-medium">{column.title}</Text>
             <Text variant="body-medium" style={{ color: colors.textSecondary }}>
               {column.items.length}/{columns.find((source) => source.id === column.id)?.limit}
             </Text>
-          </StyledView>
+          </View>
         )}
         renderColumnActions={(column) => (
-          <StyledView className="flex flex-row items-center gap-1">
+          <View style={styles.columnActions}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <StyledPressable
+                <Pressable
                   accessibilityLabel={`${m.actions}: ${column.title}`}
-                  className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  style={styles.iconButton}
+                  {...webDataSet({ bloomBoardIconButton: '' })}
                 >
-                  <RiMoreLine className="size-5" />
-                </StyledPressable>
+                  <RiMoreLine style={styles.icon} />
+                </Pressable>
               </DropdownMenuTrigger>
               <DropdownMenuContent label={`${m.actions}: ${column.title}`}>
                 <DropdownMenuItem onPress={() => setCreate({ columnId: column.id })}>
@@ -504,15 +555,16 @@ function TicketProjectBoard({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <StyledPressable
+            <Pressable
               accessibilityRole="button"
               accessibilityLabel={m.addTicketTo(column.title)}
               onPress={() => setCreate({ columnId: column.id })}
-              className="flex size-5 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              style={styles.iconButton}
+              {...webDataSet({ bloomBoardIconButton: '' })}
             >
               <RiAddLine width={20} height={20} fill={colors.icon} />
-            </StyledPressable>
-          </StyledView>
+            </Pressable>
+          </View>
         )}
       />
       {create && (
@@ -547,6 +599,6 @@ function TicketProjectBoard({
           onCopyTicketId={onCopyTicketId}
         />
       )}
-    </StyledView>
+    </View>
   );
 }
