@@ -138,6 +138,7 @@ import type { OrderStatusKind } from './controls/order-status';
 import type { LockupKind } from './controls/lockup';
 import type { AmbientPhotoKind } from './controls/ambient-photo';
 import type { CalendarViewKind } from './controls/calendar';
+import type { LyricsKind } from './controls/lyrics';
 import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
@@ -307,6 +308,7 @@ import {
   type RadarLegend,
   type MethodTitleAlign,
   type TypeRampStep,
+  type LyricsSize,
   type MediaCardLayout,
   type MediaCardSize,
   type ChoiceListStyle,
@@ -1262,7 +1264,8 @@ export type Modifier =
         | LockupSize
         | SidebarSize
         | ShareSheetSize
-        | MediaCardSize;
+        | MediaCardSize
+        | LyricsSize;
     }
   | {
       readonly kind: 'style';
@@ -1637,7 +1640,8 @@ export type NodeKind =
   | CartKind
   | MenuItemKind
   | VendorCardKind
-  | MediaCardKind;
+  | MediaCardKind
+  | LyricsKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1963,7 +1967,8 @@ export class Node {
       | LockupSize
       | SidebarSize,
       | ShareSheetSize
-      | MediaCardSize,
+      | MediaCardSize
+      | LyricsSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }

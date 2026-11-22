@@ -278,6 +278,7 @@ import type {
   RecapCardView,
   ShareCardView,
 } from '../controls/media-cards';
+import type { LyricsViewView, LyricsPreviewCardView } from '../controls/lyrics';
 import type {
   FilterSectionView,
   PriceRangeFilterView,
@@ -1081,7 +1082,11 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<QuickAccessTileView>, Of<'quickAccessTile'>>,
       Same<MethodsOf<RecapCardView>, Of<'recapCard'>>,
       Same<MethodsOf<ShareCardView>, Of<'shareCard'>>,
+      Same<MethodsOf<LyricsViewView>, Of<'lyricsView'>>,
+      Same<MethodsOf<LyricsPreviewCardView>, Of<'lyricsPreviewCard'>>,
     ] = [
+      true,
+      true,
       true,
       true,
       true,
