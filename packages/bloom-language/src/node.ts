@@ -804,6 +804,7 @@ export interface ValueModifiers {
   toggle: Binding<boolean>;
   onClose: { readonly action: () => void; readonly label: string | undefined };
   hue: ChipHue;
+  color: AccentTone;
   media: EmptyStateMedia;
   secondaryAction: ViewNode;
   retryLabel: string;
@@ -3403,6 +3404,9 @@ export class Node {
   onClose(action: () => void, label?: string): Node {
     return this.set('onClose', { action, label });
   }
+  color(value: AccentTone): Node {
+    return this.set('color', value);
+  }
   hue(value: ChipHue): Node {
     return this.set('hue', value);
   }
@@ -4721,6 +4725,8 @@ export interface AvatarGroupView extends ViewModifiers<AvatarGroupView> {
 export interface BadgeView extends ViewModifiers<BadgeView> {
   style(value: BadgeStyle): BadgeView;
   tint(value: BloomTone): BadgeView;
+  /** Bloom's semantic colour (`color`): one of its accent tones, the tone when no `tint()` is set. */
+  color(value: AccentTone): BadgeView;
   size(value: BadgeSize): BadgeView;
   /** A glyph before the label, at the rung's size, in the label's ink. */
   icon(value: IconComponent): BadgeView;

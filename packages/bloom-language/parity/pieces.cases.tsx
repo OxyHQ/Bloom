@@ -29,6 +29,16 @@ const badges: ParityCase[] = [
     language: () => toElement(L.Badge(3).tint(tone)),
     bloom: () => <Badge content={3} tone={tone} />,
   })),
+  ...ENUMS.accentTone.map((color) => ({
+    name: `a badge coloured ${color}`,
+    language: () => toElement(L.Badge(3).color(color).style('subtle')),
+    bloom: () => <Badge content={3} color={color} variant="subtle" />,
+  })),
+  {
+    name: 'a badge with a tint over its colour',
+    language: () => toElement(L.Badge(3).color('success').tint('info')),
+    bloom: () => <Badge content={3} color="success" tone="info" />,
+  },
   ...ENUMS.badgeSize.map((size) => ({
     name: `size ${size}`,
     language: () => toElement(L.Badge('Beta').size(size)),

@@ -946,7 +946,9 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
 ## Small pieces
 
 - **`Badge(content?)`**: `.style('solid' | 'subtle' | 'outlined' | 'onMedia')`,
-  `.tint(tone)`, `.size()` (the counters `xs`…`lg`, the labels `label-small`
+  `.tint(tone)`, `.color(accentTone)` (Bloom's `color`: `default` `primary`
+  `vivid` `secondary` `tertiary` `success` `warning` `error` `info`, its tone
+  when no `.tint()` is set), `.size()` (the counters `xs`…`lg`, the labels `label-small`
   and `label-medium`), `.icon(X)`, `.dot()`, `.max(n)`, and `.placement()` when
   attached. `view.badge(Badge(…))` attaches it to any view.
 - **`IconCircle(icon)`**: an icon on Bloom's tinted disc; `.size()` an icon rung.
