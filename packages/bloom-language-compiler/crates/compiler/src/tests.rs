@@ -412,6 +412,22 @@ fn a_shape_is_checked() {
     assert_eq!(output.diagnostics[0].message, "Shape has no modifier .tint()");
 }
 
+#[test]
+fn a_zstack_takes_an_alignment_and_only_a_zstack_does() {
+    let check = |body: &str| {
+        compile(&format!("import {{ HStack, Text, ZStack }} from '@oxy.so/bloom-language';\n{body}"), "z.tsx")
+    };
+    let ok = check("export const x = () => ZStack(Text('a'), Text('b')).alignment('top-leading').padding('md');\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = () => ZStack(Text('a')).alignment('top-left');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown overlayAlignment token 'top-left' for .alignment()");
+    let output = check("export const x = () => HStack(Text('a')).alignment('top');\n");
+    assert_eq!(output.diagnostics[0].message, "HStack has no modifier .alignment()");
+    // A ZStack has no axis to space or justify along.
+    let output = check("export const x = () => ZStack(Text('a')).spacing('md');\n");
+    assert_eq!(output.diagnostics[0].message, "ZStack has no modifier .spacing()");
+}
+
 const MOTION_IMPORTS: &str = "import { HStack, Text, VStack, opacity, move, asymmetric, defineKeyframes, regular } from '@oxy.so/bloom-language';
 ";
 

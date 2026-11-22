@@ -220,6 +220,7 @@ import {
   type Outer,
 } from './motion/motion-node';
 import { TextRoll } from './motion/text-roll';
+import { DepthStack } from './depth-stack';
 import { resolveAnchor, resolveDelay, resolveRotation, resolveScale } from './motion/tokens';
 import { PRESS_HOST_STYLE } from '@oxy.so/bloom/styles';
 
@@ -300,6 +301,7 @@ const NO_OUT: StyleOut = Object.freeze({ style: undefined, paint: undefined });
 /** The nodes the language draws with React Native's own hosts; every other kind is a Bloom component. */
 const DRAWN_BY_HOSTS: ReadonlySet<string> = new Set([
   'stack',
+  'zstack',
   'spacer',
   'text',
   'icon',
@@ -1877,10 +1879,7 @@ function renderHost(
         () => joinVariants(hostVariants(p), boxVariants(layer, flex, p)),
       );
       const row: Context = axis === 'horizontal' ? { ...ctx, inRow: true } : ctx;
-      let children =
-        axis === 'depth'
-          ? renderDepthChildren(node.children, ctx)
-          : renderChildren(node.children, row);
+      let children = renderChildren(node.children, row);
       if (marker !== undefined)
         children = children.map((child) =>
           Array.isArray(child) ? child.map(listItem) : listItem(child),
@@ -1896,6 +1895,33 @@ function renderHost(
       const props = hostProps(behaviour, key);
       if (marker !== undefined) props.role = 'list';
       return drawOutermost(box, host, out, props, ...children);
+    }
+    case 'zstack': {
+      const out = cachedStyle(
+        'host',
+        `Z|${layerKey}|${flex}`,
+        () => Object.assign({ position: 'relative' }, boxStyle(layer, flex, p)),
+        () => boxVariants(layer, flex, p),
+      );
+      const children: ReactNode[] = [
+        draw(DepthStack, {
+          alignment: ownValue(p, 'alignment')?.value ?? 'center',
+          children: renderChildren(node.children, ctx),
+        }),
+      ];
+      const wash = ownValue(p, 'hoverHighlight');
+      if (wash !== undefined) {
+        children.unshift(
+          draw(SubtleHover, wash.value === undefined ? {} : { active: wash.value, native: true }),
+        );
+      }
+      return drawOutermost(
+        box,
+        behaviour ? hostFor(p) : View,
+        out,
+        hostProps(behaviour, key),
+        ...children,
+      );
     }
     case 'spacer': {
       const out = cachedStyle(
@@ -2923,24 +2949,6 @@ function renderList(children: readonly Child[], ctx: Context): ReactNode[] {
     else if (isNode(child)) out.push(renderNode(child, ctx, i));
   }
   return out;
-}
-
-const DEPTH_LAYER = (): Resolved => ({
-  position: 'absolute',
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: 0,
-});
-
-/** A ZStack: the first child sets the size; each later one covers it, in order. */
-function renderDepthChildren(children: readonly Child[], ctx: Context): ReactNode[] {
-  const out = cachedStyle('host', 'Z', DEPTH_LAYER);
-  return renderChildren(children, ctx).map((child, index) =>
-    index === 0 || child === null
-      ? child
-      : drawHost(View, out, { pointerEvents: 'box-none' }, child),
-  );
 }
 
 function renderRuns(runs: readonly TextRun[], ctx: Context): ReactNode[] {

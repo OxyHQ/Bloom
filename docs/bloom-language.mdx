@@ -133,7 +133,7 @@ be preserved"), so keep the controller in a custom hook (`usePostRowModel`).
 
 | Node | Draws |
 | --- | --- |
-| `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers) |
+| `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers); a `ZStack`'s children in one box of slots (see [Layout](#layout)) |
 | `Spacer` | `View` with `flex: 1` |
 | `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
@@ -371,6 +371,22 @@ VStack(...).background('surface').corner('xl').shadow('m')
 - **Lengths.** A frame takes a length of its parent (`full` is `100%`, `1/2` is
   `50%`) besides space rungs. `w-full` is `.frame({ width: 'full' })`: the same
   value, not SwiftUI's `maxWidth: .infinity`, so no rendered size moves.
+- **Depth.** `ZStack(...)` is SwiftUI's: its children over one another, later
+  ones on top, the stack as big as its largest child, and each child at
+  `.alignment(a)` (`ZStack(alignment:)`: `center` by default, `top-leading`,
+  `bottom` and the rest of the overlay alignments). A child pinned to its
+  parent (`Fill()`, `MediaInsetBorder()`, `.position()`) covers the whole stack
+  and takes no part in its size, as a flexible view fills SwiftUI's. React
+  Native's layout has no box sized by the largest of overlapping children, so
+  each child is in a slot of the stack's width (the stack is as wide as the
+  widest child, and the slot places it across) and the slots share one line:
+  each slot's margins take back its own height, so none moves another, and the
+  stack's box is as tall as the tallest slot, measured as it lays out (a layout
+  effect, applied before the first paint on the web and on the New
+  Architecture) and again when a slot's layout changes. A slot is `static`, so
+  a pinned child is pinned to the stack. A child that should span the stack
+  says so (`.frame({ width: 'full' })`). A `ZStack` takes no `spacing`,
+  `align` or `justify`: it has no axis.
 - **Overlays.** `.overlay(view, alignment)` draws a view over this one, as
   SwiftUI's `overlay(alignment:)` does: a box the size of the view as drawn so
   far (its padding and frame before the overlay included), the view placed at
