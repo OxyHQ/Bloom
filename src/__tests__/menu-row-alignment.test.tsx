@@ -91,7 +91,13 @@ describe('alignRows', () => {
     );
     expect(leadingSlots(screen, 'Favourite')).toBe(1);
     expect(leadingSlots(screen, 'Search')).toBe(1);
-    expect(paddingLeftOf(screen, 'Search')).toBe(paddingLeftOf(screen, 'Favourite'));
+    // The leading inset each row lays out with: its own `paddingLeft`, else the
+    // density's `paddingInline`.
+    const insetOf = (label: string) => {
+      const style = resolvedStyle(screen.getByLabelText(label).props.style);
+      return style.paddingLeft ?? style.paddingInline;
+    };
+    expect(insetOf('Search')).toBe(insetOf('Favourite'));
   });
 
   it('adds nothing when no row draws at its leading edge', () => {

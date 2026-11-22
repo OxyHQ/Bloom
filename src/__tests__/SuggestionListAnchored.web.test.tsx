@@ -127,7 +127,7 @@ it('owns one menu-material surface and scroller, preserves focus, and links stab
     node('suggestions-row-heading/1'),
   );
   expect(node('suggestions').querySelectorAll('[data-bloom-scroll-area]')).toHaveLength(1);
-  expect(node('suggestions').className).toContain('bloom-floating-surface');
+  expect(node('suggestions').hasAttribute('data-bloom-floating-surface')).toBe(true);
   expect(node('custom-icon')).not.toBeNull();
   expect(node('suggestions').textContent).toContain('Text');
   expect(node('suggestions').textContent).toContain('Data');

@@ -32,7 +32,7 @@ import {
 } from '../dropdown-menu';
 import { MenuSurfaceProvider } from '../floating/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
 
 const SRC = path.resolve(__dirname, '..');
 
@@ -96,7 +96,7 @@ describe('the native sub-menu is an inline disclosure', () => {
     expect(queryByText('Email')).toBeTruthy();
   });
 
-  it('forwards className and testID while native coherently ignores flyout placement', () => {
+  it('forwards style and testID while native coherently ignores flyout placement', () => {
     const { getByTestId } = renderSub(
       <DropdownMenuSub defaultOpen>
         <DropdownMenuSubTrigger>Send to…</DropdownMenuSubTrigger>
@@ -105,7 +105,7 @@ describe('the native sub-menu is an inline disclosure', () => {
           align="end"
           sideOffset={12}
           alignOffset={4}
-          className="min-w-[150px]"
+          style={{ minWidth: 150 }}
           testID="submenu-content"
         >
           <DropdownMenuItem>Email</DropdownMenuItem>
@@ -113,10 +113,12 @@ describe('the native sub-menu is an inline disclosure', () => {
       </DropdownMenuSub>,
     );
 
-    expect(classNamesOn(getByTestId('submenu-content').props.style)).toContain(
-      // The inline sub's own indent and shared md 2px row gap, then the caller's class.
-      'pl-space-16 gap-[2px] min-w-[150px]',
-    );
+    // The inline sub's own indent and shared md 2px row gap, then the caller's style.
+    expect(resolvedStyle(getByTestId('submenu-content').props.style)).toMatchObject({
+      paddingLeft: 16,
+      gap: 2,
+      minWidth: 150,
+    });
   });
 });
 

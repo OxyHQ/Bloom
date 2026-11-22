@@ -35,7 +35,6 @@ import { useTouchInput } from '../styles/pointer';
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import { RiArrowUpSLine as ChevronTopIcon } from '../icons/remix/RiArrowUpSLine';
-import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
 import { MENU_SUB_SIDE_OFFSET } from './constants';
 import { MenuSubProvider, useMenuSub } from './context';
@@ -44,14 +43,16 @@ import { MenuRowAlignmentScope, useMenuRowsAligned } from './menu-row-alignment'
 import { type PopupSubmenu, PopupSubmenuScope, usePopupKeys } from './popup-navigation';
 import { POPUP_PANEL_BORDER, PopupPanelChrome, usePanelPopupSurface } from './PopupPanel';
 import {
-  cx,
   MenuRowChevron,
   MenuRowGlyph,
   MenuRowShell,
   splitChildren,
-  SUB_TRIGGER_CLASS,
+  SUB_TRIGGER_STYLE,
 } from './shared';
 import type { MenuSubContentProps, MenuSubParts, MenuSubProps, MenuSubTriggerProps } from './types';
+
+/** An inline disclosure's rows, indented 16px under their trigger. */
+const INLINE_INDENT = { paddingLeft: 16 } as const;
 
 /** Whether a submenu here flies out: inside a platform popup, with a pointer. */
 function useFlyout(): boolean {
@@ -91,7 +92,6 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
     inset = false,
     leading,
     accessibilityLabel,
-    className,
     style,
     testID,
   }: MenuSubTriggerProps) {
@@ -123,8 +123,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
         onPress={() => sub.setOpen(!sub.open)}
         submenu={sub.navigation}
         accessibilityLabel={accessibilityLabel}
-        className={cx(SUB_TRIGGER_CLASS, className)}
-        style={style}
+        style={[SUB_TRIGGER_STYLE, style]}
         testID={testID}
       >
         {body}
@@ -151,18 +150,17 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
 }
 
 /** Indented under its trigger, which is the whole visual statement an inline disclosure makes. */
-function InlineContent({ children, label, className, style, testID }: MenuSubContentProps) {
+function InlineContent({ children, label, style, testID }: MenuSubContentProps) {
   const sub = useMenuSub();
   const density = useMenuDensity();
   return (
-    <StyledView
+    <View
       accessibilityLabel={label}
-      className={cx('pl-space-16', density.groupClass, className)}
-      style={style}
+      style={[INLINE_INDENT, density.groupStyle, style]}
       testID={testID}
     >
       <PopupSubmenuScope submenu={sub.navigation}>{children}</PopupSubmenuScope>
-    </StyledView>
+    </View>
   );
 }
 
@@ -183,7 +181,6 @@ function FlyoutContent({
   minWidth,
   maxWidth,
   alignRows,
-  className,
   style,
   testID,
 }: MenuSubContentProps) {
@@ -209,7 +206,7 @@ function FlyoutContent({
       onKey={parentKeys ?? undefined}
       testID={testID}
     >
-      <PopupPanelChrome minWidth={minWidth} maxWidth={maxWidth} className={className} style={style}>
+      <PopupPanelChrome minWidth={minWidth} maxWidth={maxWidth} style={style}>
         <MenuRowAlignmentScope enabled={alignRows ?? parentAlignsRows}>
           <PopupSubmenuScope submenu={sub.navigation}>{children}</PopupSubmenuScope>
         </MenuRowAlignmentScope>

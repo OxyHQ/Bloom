@@ -32,7 +32,7 @@
  * unless `keepOpen`.
  */
 import { type ComponentRef, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Platform, type View } from 'react-native';
+import { AccessibilityInfo, Platform, Text, View } from 'react-native';
 
 import { FOCUS_SETTLE_MS } from '../hooks/use-accessibility-focus';
 import { useIsRtl } from '../hooks/use-is-rtl';
@@ -41,20 +41,22 @@ import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { RiCloseLine as RemoveIcon } from '../icons/remix/RiCloseLine';
 import { RiSubtractLine as MixedIcon } from '../icons/remix/RiSubtractLine';
 import { AA_LARGE_TEXT_CONTRAST, contrastRatio, mixColors } from '../styles/color-contrast';
-import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 import { parseRgba } from '../theme/color-utils';
 import { useTheme } from '../theme/use-theme';
-import { ROW_DISABLED_CLASS, ROW_ENABLED_CLASS } from './constants';
 import { useMenuSurface } from './context';
 import { useMenuPalette } from './menu-palette';
 import { useMenuRowAlignment } from './menu-row-alignment';
 import { menuType } from './menu-type';
-import { cx } from './shared';
+import { ROW_CURSOR } from './shared';
 import { type PopupRowAcross, usePopupNavigationRow } from './popup-navigation';
 import type { MenuSwatch, MenuSwatchRowProps } from './types';
 import { useMenuDensity } from './use-menu-density';
 
 const NO_ROW_TRAITS = { gutter: false, leading: false } as const;
+
+/** The row's 10px corner, a row's own. */
+const SWATCH_ROW_CORNER = { borderRadius: 10 } as const;
 
 /**
  * The swatch's geometry: the pressable box, the circle at rest, the circle lit
@@ -179,7 +181,6 @@ function Swatch({
       aria-checked={swatchChecked(swatch.state)}
       disabled={disabled}
       {...(Platform.OS === 'web' && entry ? { dataSet: { bloomMenuEntry: 'true' } } : null)}
-      className={disabled ? ROW_DISABLED_CLASS : ROW_ENABLED_CLASS}
       onPress={disabled ? undefined : onPress}
       onPressIn={disabled ? undefined : () => setPressed(true)}
       onPressOut={disabled ? undefined : () => setPressed(false)}
@@ -187,16 +188,19 @@ function Swatch({
       onHoverOut={disabled ? undefined : onDim}
       onFocus={disabled ? undefined : onLight}
       onBlur={disabled ? undefined : onDim}
-      style={{
-        width: geometry.box,
-        height: geometry.box,
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: disabled ? 0.5 : 1,
-      }}
+      style={[
+        disabled ? ROW_CURSOR.disabled : ROW_CURSOR.enabled,
+        {
+          width: geometry.box,
+          height: geometry.box,
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: disabled ? 0.5 : 1,
+        },
+      ]}
       testID={testID}
     >
-      <StyledView
+      <View
         pointerEvents="none"
         style={{
           width: size,
@@ -210,7 +214,7 @@ function Swatch({
         }}
       >
         {Glyph ? <Glyph width={glyphSize} height={glyphSize} fill={paint.glyph} /> : null}
-      </StyledView>
+      </View>
     </StyledPressable>
   );
 }
@@ -225,7 +229,6 @@ export function MenuSwatchRow({
   keepOpen = false,
   disabled = false,
   accessibilityLabel,
-  className,
   style,
   testID,
 }: MenuSwatchRowProps) {
@@ -316,14 +319,14 @@ export function MenuSwatchRow({
   const captionType = 'caption-1-medium';
 
   return (
-    <StyledView
+    <View
       ref={rowRef}
       collapsable={false}
       role="group"
       accessibilityLabel={accessibilityLabel}
       {...(Platform.OS === 'web' ? { dataSet: { bloomMenuRowGroup: 'swatches' } } : null)}
-      className={cx('rounded-[10px]', className)}
       style={[
+        SWATCH_ROW_CORNER,
         {
           paddingInlineStart: column.gutter ? density.gutter : 8,
           paddingInlineEnd: 8,
@@ -334,7 +337,7 @@ export function MenuSwatchRow({
       ]}
       testID={testID}
     >
-      <StyledView
+      <View
         style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
@@ -365,11 +368,11 @@ export function MenuSwatchRow({
             testID={testID ? `${testID}-${swatch.key}` : undefined}
           />
         ))}
-      </StyledView>
+      </View>
       {hasCaptions ? (
         // One line, kept while empty so the menu does not change height under the pointer.
         // Hidden from assistive technology: each swatch's name and checked state say it.
-        <StyledText
+        <Text
           aria-hidden
           numberOfLines={1}
           style={[
@@ -378,8 +381,8 @@ export function MenuSwatchRow({
           ]}
         >
           {caption ?? ''}
-        </StyledText>
+        </Text>
       ) : null}
-    </StyledView>
+    </View>
   );
 }
