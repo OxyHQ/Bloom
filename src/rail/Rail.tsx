@@ -43,10 +43,11 @@ import { ScrollArea } from '../layout/ScrollArea';
  */
 import type React from 'react';
 import { memo } from 'react';
-import { Platform, type ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { ROUNDED_FULL } from '../styles/rounded-full';
 import { WEB_POSITION_STICKY } from '../styles/web-view-style';
+import { createTokenStyles } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { RailProps } from './types';
 
@@ -63,6 +64,36 @@ const webStickyStyle: ViewStyle | undefined =
 
 const DEFAULT_WIDTH = 80;
 
+const styles = StyleSheet.create({
+  root: { height: '100%', flexShrink: 0 },
+  header: { alignItems: 'center', paddingInline: 8, paddingTop: 16 },
+  footer: { alignItems: 'center', paddingInline: 8, paddingBottom: 16 },
+  item: {
+    minHeight: 64,
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingBlock: 8,
+    flexDirection: 'column',
+    gap: 5,
+    paddingHorizontal: 0,
+  },
+  itemPressed: { opacity: 0.6 },
+  well: {
+    height: 32,
+    width: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: ROUNDED_FULL,
+  },
+  label: { maxWidth: '100%', textAlign: 'center', fontSize: 10 },
+});
+
+const useStyles = createTokenStyles((t) => ({
+  wellActive: { backgroundColor: t.primarySubtle },
+  labelActive: { fontWeight: 500, color: t.primaryText },
+  labelIdle: { color: t.mutedForeground },
+}));
+
 const RailComponent: React.FC<RailProps> = ({
   items,
   activeId,
@@ -73,13 +104,10 @@ const RailComponent: React.FC<RailProps> = ({
   style,
   testID,
 }) => {
+  const themed = useStyles();
   return (
-    <StyledView
-      testID={testID}
-      className="h-full shrink-0"
-      style={[webStickyStyle, { width }, style]}
-    >
-      {header ? <StyledView className="items-center px-2 pt-4">{header}</StyledView> : null}
+    <View testID={testID} style={[styles.root, webStickyStyle, { width }, style]}>
+      {header ? <View style={styles.header}>{header}</View> : null}
       <ScrollArea
         style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="never"
@@ -95,7 +123,7 @@ const RailComponent: React.FC<RailProps> = ({
         {items.map((item) => {
           const active = item.id === activeId;
           return (
-            <StyledPressable
+            <Pressable
               key={item.id}
               accessibilityRole="tab"
               accessibilityLabel={item.label}
@@ -106,25 +134,20 @@ const RailComponent: React.FC<RailProps> = ({
               // `TabBarButtonBody` uses. Gate: `aria-state-source-census.test.ts`.
               aria-selected={active}
               onPress={() => onSelect(item.id)}
-              className="min-h-[64px] items-center rounded-[20px] py-2 active:opacity-60"
-              style={{ flexDirection: 'column', gap: 5, paddingHorizontal: 0 }}
+              style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
             >
-              <StyledView
-                className={`h-8 w-12 items-center justify-center rounded-full ${active ? 'bg-primary-subtle' : ''}`}
-              >
+              <View style={[styles.well, active && themed.wellActive]}>
                 {active ? (item.activeIcon ?? item.icon) : item.icon}
-              </StyledView>
-              <Text
-                className={`max-w-full text-center text-[10px] ${active ? 'font-medium text-primary-text' : 'text-muted-foreground'}`}
-              >
+              </View>
+              <Text style={[styles.label, active ? themed.labelActive : themed.labelIdle]}>
                 {item.label}
               </Text>
-            </StyledPressable>
+            </Pressable>
           );
         })}
       </ScrollArea>
-      {footer ? <StyledView className="items-center px-2 pb-4">{footer}</StyledView> : null}
-    </StyledView>
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
+    </View>
   );
 };
 
