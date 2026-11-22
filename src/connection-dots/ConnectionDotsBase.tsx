@@ -1,17 +1,13 @@
-import React from 'react';
+import type React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { atoms as a, tokens } from '../styles';
-import { StyledView } from '../styles/styled-primitives';
 import type { ConnectionDotsProps } from './types';
 import { useMessages } from '../locale/messages';
 import { CONNECTION_DOTS_MESSAGES } from './messages';
 
 export interface ConnectionDotsBaseProps
-  extends Pick<
-    ConnectionDotsProps,
-    'left' | 'right' | 'accessibilityLabel' | 'className' | 'style'
-  > {
+  extends Pick<ConnectionDotsProps, 'left' | 'right' | 'accessibilityLabel' | 'style'> {
   /** The platform-specific animated dots row (built by the native/web fork). */
   dots: React.ReactNode;
 }
@@ -31,7 +27,6 @@ export function ConnectionDotsBase({
   right,
   dots,
   accessibilityLabel: accessibilityLabelProp,
-  className,
   style,
 }: ConnectionDotsBaseProps) {
   const { messages } = useMessages(CONNECTION_DOTS_MESSAGES);
@@ -45,7 +40,7 @@ export function ConnectionDotsBase({
   ];
 
   return (
-    <StyledView className={className} style={rowStyle}>
+    <View style={rowStyle}>
       <View style={[a.align_center, a.justify_center]}>{left}</View>
 
       {/* The dots are decorative; the whole cluster carries ONE a11y label
@@ -61,6 +56,6 @@ export function ConnectionDotsBase({
       </View>
 
       <View style={[a.align_center, a.justify_center]}>{right}</View>
-    </StyledView>
+    </View>
   );
 }
