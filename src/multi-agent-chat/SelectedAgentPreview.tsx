@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,13 +11,12 @@ import { AvatarSnapshotObserver } from '../agent-avatar/context';
 import type { AvatarFlights } from '../avatar-flight';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { useMessages, formatMessage } from '../locale/messages';
-import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { agentCharacter, type Agent } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 /** The selected-preview composition: one large avatar, a trio, or a ring from four up. */
 export function previewAvatarGeometry(count: number, index: number) {
@@ -107,8 +107,8 @@ export function SelectedAgentPreview({
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
   const { colors } = useTheme();
   return (
-    <StyledView className="shrink-0 items-center gap-2" style={{ paddingBottom: caption ? 20 : 0 }}>
-      <StyledView
+    <View style={[styles.preview, { paddingBottom: caption ? 20 : 0 }]}>
+      <View
         role="img"
         accessibilityLabel={
           agents.length
@@ -118,9 +118,9 @@ export function SelectedAgentPreview({
         style={{ position: 'relative', width: 160, height: 112 }}
       >
         {!agents.length && (
-          <StyledView className="h-full items-center justify-center">
+          <View style={styles.empty}>
             <RiGroupLine size="3xl" fill={colors.textTertiary} />
-          </StyledView>
+          </View>
         )}
         {agents.map((agent, index) => (
           <PreviewAvatar
@@ -132,12 +132,17 @@ export function SelectedAgentPreview({
             anchor={anchor}
           />
         ))}
-      </StyledView>
+      </View>
       {caption && (
         <Text variant="body-regular" style={{ color: colors.textSecondary }}>
           {messages.chooseWhoSJoiningTheConversation}
         </Text>
       )}
-    </StyledView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  preview: { flexShrink: 0, alignItems: 'center', gap: 8 },
+  empty: { height: '100%', alignItems: 'center', justifyContent: 'center' },
+});
