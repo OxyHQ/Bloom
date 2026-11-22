@@ -12,6 +12,7 @@ import { MENU_ITEMS } from './menu-item';
 import { CARTS } from './cart-panel';
 import { PAYMENT_STATUSES } from './payment-status';
 import { PRICE_BREAKDOWNS } from './price-breakdown';
+import { CREATOR_STUDIO } from './creator-studio';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -68,4 +69,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...VENDOR_CARDS,
   ...MEDIA_CARDS,
   ...LYRICS,
+  ...CREATOR_STUDIO,
 };

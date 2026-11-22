@@ -21,6 +21,7 @@ import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.ca
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
 import { CRM_CASES } from '../../parity/crm.cases';
 import { COMPOSER_PANEL_CASES } from '../../parity/composer-panel.cases';
+import { CREATOR_STUDIO_CASES } from '../../parity/creator-studio.cases';
 import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
 import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
 import { STAT_CARD_CASES } from '../../parity/stat-cards.cases';
@@ -107,3 +108,4 @@ export const DashboardCards: Story = { args: { cases: DASHBOARD_CARD_CASES } };
 export const CartMenuItemsAndVendors: Story = { args: { cases: CART_MENU_VENDOR_CASES } };
 export const MediaCards: Story = { args: { cases: MEDIA_CARD_CASES } };
 export const Lyrics: Story = { args: { cases: LYRICS_CASES } };
+export const CreatorStudio: Story = { args: { cases: CREATOR_STUDIO_CASES } };

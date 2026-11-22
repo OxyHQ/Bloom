@@ -1462,6 +1462,33 @@ Bloom's `lyrics`: `LyricsView(lines, options?)` follows playback (its
 `.label()` names its region. `LyricsPreviewCard(lines, options?)` is the
 card under a player; `.lines(4 | 5)` is how many lines it shows.
 
+### Creator studio
+
+```ts
+AudienceOverview(metrics, [period, setPeriod], { caption: 'Against the last 28 days' })
+ReleaseCard(release, { actions }).style('row').onPress(() => open(release.id))
+TrackMetadataForm([metadata, setMetadata], { genres, languages, errors })
+ArtistChipsInput('Primary artists', [artists, setArtists], { max: 3 }).disabled(saving)
+```
+
+Bloom's `creator-studio`, each its own: `AudienceOverview(metrics, period,
+options?)` (its binding the selected period), `StreamsChart(metrics,
+options?)` (its `height` a space token), `TopTracksTable(tracks, options?)`
+(its `summary` and `toolbar` children), `AudienceBreakdown(options)`,
+`ReleaseCard(release, options?)` (`.style('grid' | 'row')` its layout; it
+takes `.onPress()` itself), `ReleaseStatusBadge(status, options?)`
+(`.size('sm' | 'md')`; its `label` the badge's own words),
+`ReleaseTimeline(steps, options?)` (`.axis()` its orientation),
+`TrackUploadRow(fileName, status, options)` (its `size` in bytes or words),
+`TrackMetadataForm(metadata, options)`, `ArtistChipsInput(label, names,
+options?)`, `IsrcField(code, options?)` and `CreditsEditor(credits,
+options?)` (each writes its binding; `.disabled()`),
+`ArtworkUploader(artwork, options?)` (`null` draws the drop zone; its `size`
+a space token; `.disabled()`), `PayoutSummaryCard(estimated, options)` and
+`PitchCard(options)`, controlled by the app as Bloom's is (its release,
+tags, pitch and status). `.label()` names a chart's plot, the table and the
+timeline. The words, formats and labels stay in the options, as Bloom's.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

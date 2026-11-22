@@ -905,3 +905,22 @@ fn the_lyrics_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_creator_studio_is_checked() {
+    let imports = "import { ArtworkUploader, IsrcField, ReleaseCard, ReleaseStatusBadge, ReleaseTimeline, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (r, b) => VStack(ReleaseCard(r).style('row'), ReleaseStatusBadge('live').size('sm'), ReleaseTimeline(r).axis('horizontal'), IsrcField(b).disabled(), ArtworkUploader(null).disabled());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ReleaseCard(b).style('list')", "Unknown releaseCardLayout token 'list' for .style()"),
+        ("ReleaseStatusBadge('live').size('lg')", "Unknown releaseStatusBadgeSize token 'lg' for .size()"),
+        ("IsrcField(b).size('sm')", "IsrcField has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
