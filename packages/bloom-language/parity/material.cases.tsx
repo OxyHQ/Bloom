@@ -23,7 +23,7 @@ import { ViewThatFits } from '../src/controls/view-that-fits';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { defineTokens } from '../src/tokens';
-import { type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
 
 const { space, borderRadius } = tokens;
 const TIERS = ['base', 'sm', 'md', 'lg', 'xl', '2xl'];
@@ -575,26 +575,20 @@ const named: ParityCase[] = [
   {
     name: 'a fill and a border at a named opacity',
     language: () => toElement(L.VStack().background('primary/10').border('border/60', 'thin')),
+    // The colour at that alpha: on the web Tailwind's mix with transparent, which the
+    // browser draws as the colour at the mix's alpha (react-native-web takes no mix inline).
     bloom: () => (
-      <Themed>
+      <ThemedRgb>
         {(c) => (
           <RN.View
-            style={
-              RN.Platform.OS === 'web'
-                ? {
-                    backgroundColor: 'color-mix(in oklab, var(--primary) 10%, transparent)',
-                    borderWidth: 1,
-                    borderColor: 'color-mix(in oklab, var(--border) 60%, transparent)',
-                  }
-                : {
-                    backgroundColor: withAlpha(c.primary, 0.1),
-                    borderWidth: 1,
-                    borderColor: withAlpha(c.border, 0.6),
-                  }
-            }
+            style={{
+              backgroundColor: withAlpha(c.primary, 0.1),
+              borderWidth: 1,
+              borderColor: withAlpha(c.border, 0.6),
+            }}
           />
         )}
-      </Themed>
+      </ThemedRgb>
     ),
   },
   ...(
