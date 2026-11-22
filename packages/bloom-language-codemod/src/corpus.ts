@@ -51,8 +51,16 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
       .map(([local, source]) => `const ${local} = ${alias(source)};`)
       .join(' ');
     const language = fixture.language.length ? `const { ${fixture.language.join(', ')} } = L;` : '';
-    // A screen's scroll view is drawn inside a Bloom Screen, on both sides, as the app draws it.
-    const [open, close] = fixture.inScreen ? ['<ParityScreen>{', '}</ParityScreen>'] : ['', ''];
+    // A node drawn only inside a Bloom component (a screen's scroll view in a Screen) is, on both sides.
+    const within = fixture.within.map((key) => {
+      const [module, imported] = key.split('#') as [string, string];
+      return alias({ module, imported });
+    });
+    const open = within.map((local) => `<${local}>{`).join('');
+    const close = within
+      .map((local) => `}</${local}>`)
+      .reverse()
+      .join('');
     return `  {
     name: ${JSON.stringify(fixture.name)},
     before: () => { ${bindings} return (${open}${fixture.before}${close}); },
@@ -64,7 +72,6 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as RN from 'react-native';",
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
-    "import { Screen as ParityScreen } from '@oxy.so/bloom/screen';",
     ...[...imports].map(([key, local]) => {
       const [module, name] = key.split('#');
       return `import { ${name} as ${local} } from '${module}';`;

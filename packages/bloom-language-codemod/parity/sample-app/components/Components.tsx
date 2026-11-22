@@ -1,13 +1,31 @@
 // Bloom components as apps write them, each one a rule of the codemod's (src/components.ts).
+import { Avatar } from '@oxy.so/bloom/avatar';
+import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
 import { Card } from '@oxy.so/bloom/card';
 import { ChatEmptyState } from '@oxy.so/bloom/chat-screen';
+import { Checkbox } from '@oxy.so/bloom/checkbox';
+import { Chip } from '@oxy.so/bloom/chip';
+import { Divider } from '@oxy.so/bloom/divider';
+import { EngagementAction } from '@oxy.so/bloom/engagement-bar';
+import { Field } from '@oxy.so/bloom/field';
+import { ResponsiveGrid } from '@oxy.so/bloom/grid';
 import { GroupedSection, GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
+import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';
+import { RiHeart3Fill } from '@oxy.so/bloom/icons/RiHeart3Fill';
+import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line';
 import { RiSmartphoneLine } from '@oxy.so/bloom/icons/RiSmartphoneLine';
+import { RiStarLine } from '@oxy.so/bloom/icons/RiStarLine';
+import { IconCircle } from '@oxy.so/bloom/icon-circle';
+import { Item } from '@oxy.so/bloom/item';
+import { Loading } from '@oxy.so/bloom/loading';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
+import { Search } from '@oxy.so/bloom/search';
 import { SettingsSection, SettingsValueField } from '@oxy.so/bloom/settings-modal';
 import { Switch } from '@oxy.so/bloom/switch';
 import { TextFieldInput } from '@oxy.so/bloom/text-field';
+import { Textarea } from '@oxy.so/bloom/textarea';
+import { Muted } from '@oxy.so/bloom/typography';
 import { View } from 'react-native';
 
 declare const t: (key: string) => string;
@@ -90,5 +108,111 @@ export function NoChats({ start }: { start: () => void }) {
       description={t('chats.emptyHint')}
       action={<Button onPress={start}>{t('chats.start')}</Button>}
     />
+  );
+}
+
+export function People({
+  people,
+  query,
+  setQuery,
+  open,
+  more,
+}: {
+  people: { id: string; name: string; handle: string; avatar: string; variant: string }[];
+  query: string;
+  setQuery: (query: string) => void;
+  open: (id: string) => void;
+  more: () => void;
+}) {
+  return (
+    <ScreenScrollView onEndReached={more} onEndReachedThreshold={0.5}>
+      <Search
+        label={t('people.search')}
+        value={query}
+        onChangeText={setQuery}
+        autoCorrect={false}
+      />
+      <Muted numberOfLines={2}>{t('people.hint')}</Muted>
+      <Divider spacing={12} />
+      {people.map((person) => (
+        <Item
+          key={person.id}
+          title={person.name}
+          subtitle={person.handle}
+          leading={<Avatar source={person.avatar} variant={person.variant} size={36} />}
+          trailing={<Badge content={t('people.new')} variant="subtle" size="sm" />}
+          onPress={() => open(person.id)}
+        />
+      ))}
+      <Loading size="sm" variant="inline" />
+    </ScreenScrollView>
+  );
+}
+
+export function About({
+  bio,
+  setBio,
+  agreed,
+  setAgreed,
+}: {
+  bio: string;
+  setBio: (bio: string) => void;
+  agreed: boolean;
+  setAgreed: (agreed: boolean) => void;
+}) {
+  return (
+    <ResponsiveGrid maxColumns={2} gap={16} testID="about">
+      <Field label={t('about.bio')} description={t('about.bioHint')}>
+        <Checkbox checked={agreed} onCheckedChange={setAgreed} label={t('about.agree')} />
+      </Field>
+      <Textarea
+        value={bio}
+        onChangeText={setBio}
+        placeholder={t('about.placeholder')}
+        rows={4}
+        autoResize
+        maxRows={8}
+        showCount
+        maxLength={500}
+      />
+      <IconCircle icon={RiStarLine} size="lg" />
+    </ResponsiveGrid>
+  );
+}
+
+export function Filters({
+  topic,
+  chosen,
+  choose,
+  liked,
+  likes,
+  like,
+}: {
+  topic: string;
+  chosen: boolean;
+  choose: () => void;
+  liked: boolean;
+  likes: number;
+  like: () => void;
+}) {
+  return (
+    <View className="flex-row items-center gap-2">
+      <Chip size="xl" appearance="subtle" selected={chosen} onPress={choose}>
+        {topic}
+      </Chip>
+      <Chip leadingIcon={RiHeart3Line} trailingIcon={RiCloseLine} disabled>
+        Liked
+      </Chip>
+      <EngagementAction
+        icon={RiHeart3Line}
+        activeIcon={RiHeart3Fill}
+        accessibilityLabel={t('post.like')}
+        onPress={like}
+        active={liked}
+        count={likes}
+        tone="error"
+        popOnActivate
+      />
+    </View>
   );
 }
