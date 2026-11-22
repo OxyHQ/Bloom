@@ -226,6 +226,7 @@ Text('Beta').modifier(tag, 'primary/10')
 | `Divider` | Bloom `Divider` (in a menu, the line between rows) |
 | `Fill` / `AspectRatio` / `Grid` | Bloom `Fill` / `AspectRatio` / `ResponsiveGrid` |
 | `Embed` | the React element as given |
+| `Group` | nothing of its own: its children, where it is (React's `Fragment`) |
 
 **Styles are theme-free.** A style resolves once per modifier key into numbers
 and colour *roles*, and one cache serves every theme. Each role is painted where
@@ -1719,6 +1720,23 @@ pads its ends clear of both. The keyboard is the footer's
 (`.footer(content, { keyboard })`: `hide`, `visible`, or `follow`, which rides
 the keyboard and keeps the focused field above it) and the scroll view's
 (`scrollDismissesKeyboard`, `keyboardTaps`).
+
+A screen of several views returns them in a `Group(...views)`, as Bloom's
+`Screen` takes several children: the group draws no view of its own (React's
+fragment, SwiftUI's `Group`), so each view is one of the Screen's children, laid
+out as the Screen lays them out, and the group's screen modifiers are the
+screen's chrome. A group takes only those (and `.id()`): it has no box to pad
+or paint. Placed anywhere else, its views are its parent's children where the
+group is (in a `ZStack` the group is one layer).
+
+```ts
+export default screen(function Thread() {
+  return Group(Embed(<Seo title={title} />), ScrollView(...messages))
+    .title(title)
+    .screenScroll('content')
+    .footer(Composer(), { placement: 'overlay', keyboard: 'follow' });
+});
+```
 
 A seed is the one colour a screen takes as a value rather than a token: it
 is data (what the person picked), as an image's source is. `screenActive`
@@ -5024,7 +5042,8 @@ with its reason. Nothing else is missing.
   with parity on native, the web and Chrome: `ScrollView` and all of
   `screen()`'s `Screen` (kind, scroll owner, document scroll, header
   placement and scroll edge, underlay, floating action, clearance, navigation
-  scope, colour preset and seed, activity, starting chrome heights); a
+  scope, colour preset and seed, activity, starting chrome heights, several
+  views in a `Group`); a
   `.sheet()`'s `BottomSheet` (iOS: the system sheet); `Sidebar` with its
   destinations, tree, modes, team, plan, onboarding card, search query and
   tree drops (a touch drag on Bloom's gesture layer), `Rail`, `PageFooter`;
