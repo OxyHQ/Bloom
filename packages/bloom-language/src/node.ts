@@ -1072,6 +1072,9 @@ export interface ValueModifiers {
   // An action bar's zero counts
   showZeroCounts: boolean;
 
+  // Signature pads (controls/logistics.tsx)
+  strokeWidth: BorderWidthName;
+
   // The chat screen's secondary looks (controls/chat.tsx)
   titleAlign: TitleAlign;
   titleLayout: TitleLayout;
@@ -3783,6 +3786,9 @@ export class Node {
   // Hover cards (controls/hover-card.tsx)
   closeDelay(value: DurationName): Node {
     return this.set('closeDelay', value);
+  }
+  strokeWidth(value: BorderWidthName): Node {
+    return this.set('strokeWidth', value);
   }
   padded(value: boolean): Node {
     return this.set('padded', value);
