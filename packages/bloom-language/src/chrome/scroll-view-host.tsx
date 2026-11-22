@@ -24,6 +24,8 @@ const EDGE_PADDING: Record<Edge, keyof ViewStyle> = {
   bottom: 'paddingBottom',
   leading: 'paddingStart',
   trailing: 'paddingEnd',
+  left: 'paddingLeft',
+  right: 'paddingRight',
 };
 
 /** SwiftUI's keyboard dismissal, as React Native's `keyboardDismissMode`. */
