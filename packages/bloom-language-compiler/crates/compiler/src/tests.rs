@@ -974,3 +974,23 @@ fn the_listing_actions_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_listing_cards_are_checked() {
+    let imports =
+        "import { ListingCard, ListingCardGrid, WishlistCard, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (p, c) => VStack(ListingCard('Flat', p).style('horizontal').density('compact').loading(), ListingCardGrid(c).density('default'), WishlistCard('Summer', p).tint('primary/half'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ListingCard('a', p).style('grid')", "Unknown listingCardLayout token 'grid' for .style()"),
+        ("ListingCardGrid(c).density('results')", "Unknown density token 'results' for .density()"),
+        ("WishlistCard('a', p).tint('pink')", "Unknown color token 'pink' for .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (p, c) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

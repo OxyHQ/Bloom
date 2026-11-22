@@ -1644,6 +1644,26 @@ their defaults, as Bloom's does; `.style('auto' | 'stacked' | 'split')` is its
 layout, its `disclaimer` a child, its `maxWidth` a space token. Bloom's
 `computeMortgage` stays Bloom's.
 
+### Listing cards
+
+```ts
+ListingCardGrid(homes.map((home) =>
+  ListingCard(home.title, home.photos, { subtitle: home.area, price: home.price, priceUnit: 'month', facts: home.facts })
+    .style('vertical').onPress(() => open(home.id)).id(home.id),
+)).density('compact')
+WishlistCard(list.name, list.covers, { icon: HeartIcon, empty: Text('Nothing saved yet') }).tint('primary').onPress(openList)
+```
+
+Bloom's `listing-card`: `ListingCard(title, photos, options?)` takes a
+listing's words, price, facts, offerings and favourite as Bloom does, its
+`badge` a language child; `.style('vertical' | 'horizontal')` is its layout,
+`.density('default' | 'compact')` its density (`default` is Bloom's
+`comfortable`), `.loading()` its skeleton; `.onPress()`, `.onLongPress()` and
+`.label()` are its own. `ListingCardGrid(cards)` lays the cards out (a list
+keyed by `.id()`), `.density()` its columns (`default` is Bloom's `results`).
+`WishlistCard(name, photos, options?)`: `.tint(role)` its colour, its `empty`
+a child, `.onPress()` its own.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
