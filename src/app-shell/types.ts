@@ -606,9 +606,9 @@ export interface AppShellPanelProps {
   appearance?: ContentPanelProps['appearance'];
   /** `ContentPanel`'s edge while framed. */
   chrome?: ContentPanelChrome;
-  /** ContentPanel surface utilities; use with chrome="none" for a flat custom fill. */
-  surfaceClassName?: ContentPanelProps['surfaceClassName'];
-  /** Publish the color painted by surfaceClassName to descendant chrome. */
+  /** ContentPanel surface style; use with chrome="none" for a flat custom fill. */
+  surfaceStyle?: ContentPanelProps['surfaceStyle'];
+  /** Publish the color painted by surfaceStyle to descendant chrome. */
   surfaceColor?: ContentPanelProps['surfaceColor'];
   /** Theme only this panel; navigation, aside and framing keep the app theme. */
   colorPreset?: AppColorName;
@@ -659,5 +659,4 @@ export interface AppShellPanelsProps {
 /** Responsive presentation only; hidden content remains mounted. */
 export interface AppShellPanelVisibilityProps extends ViewProps {
   when: 'alone' | 'multiple';
-  className?: string;
 }

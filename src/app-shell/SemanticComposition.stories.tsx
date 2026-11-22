@@ -50,7 +50,7 @@ function DraftScreen({ name, registered = false }: { name: string; registered?: 
             onChangeText={setDraft}
           />
           {Array.from({ length: 24 }, (_, index) => (
-            <Text key={index} className="py-4">
+            <Text key={index} style={{ paddingBlock: 16 }}>
               Paragraph {index + 1}. This body follows the space of its own region.
             </Text>
           ))}
