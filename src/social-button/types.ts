@@ -64,7 +64,6 @@ export interface SocialButtonProps {
   style?: StyleProp<ViewStyle>;
   /** Label text style override. */
   textStyle?: StyleProp<TextStyle>;
-  className?: string;
   /**
    * Overrides the accessible name. Defaults to the visible label, or to the
    * `action` phrase (`"Continue with <Brand>"`) when `iconOnly`.

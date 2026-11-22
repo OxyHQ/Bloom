@@ -96,7 +96,6 @@ export function createSocialButton(Button: ComponentType<ButtonProps>) {
     disabled = false,
     style,
     textStyle,
-    className,
     accessibilityLabel,
     accessibilityHint,
     testID,
@@ -188,7 +187,6 @@ export function createSocialButton(Button: ComponentType<ButtonProps>) {
         disabled={disabled}
         onPress={handlePress}
         href={href}
-        className={className}
         accessibilityLabel={accessibilityLabel ?? (iconOnly ? phrase : undefined)}
         accessibilityHint={accessibilityHint}
         testID={testID}
