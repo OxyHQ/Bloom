@@ -300,6 +300,12 @@ import type {
   PriceBreakdownView,
 } from '../controls/booking';
 import type {
+  HomeSearchBarView,
+  SearchModeTabsView,
+  PropertyTypePickerView,
+  SavedSearchCardView,
+} from '../controls/home-search';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -877,7 +883,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<BookingCardView>, Of<'bookingCard'>>,
       Same<MethodsOf<BookingBarView>, Of<'bookingBar'>>,
       Same<MethodsOf<PriceBreakdownView>, Of<'priceBreakdown'>>,
+      Same<MethodsOf<HomeSearchBarView>, Of<'homeSearchBar'>>,
+      Same<MethodsOf<SearchModeTabsView>, Of<'searchModeTabs'>>,
+      Same<MethodsOf<PropertyTypePickerView>, Of<'propertyTypePicker'>>,
+      Same<MethodsOf<SavedSearchCardView>, Of<'savedSearchCard'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
