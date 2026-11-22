@@ -20,6 +20,7 @@ is `toElement`'s second argument, a child's `.id()`).
 | --- | --- |
 | React Native `View` | `VStack(…)`, or `HStack(…)` with `flex-row` |
 | React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()` |
+| Bloom `PressableScale` (`@oxy.so/bloom/pressable-scale`), as a `Pressable` | the same stack with `.pressScale()`; its `targetScale` is a reason |
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
 | Bloom's typography components (`Muted`, `H2`, `Small`…), without a `className` | `Text(…runs).textStyle('muted')` |
 | a Bloom component with a rule (`src/components.ts`, below) | its node, prop by prop |
