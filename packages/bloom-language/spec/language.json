@@ -426,6 +426,7 @@
     "glassMaterial": ["regular", "clear"],
     "glassTransition": ["matchedGeometry", "materialize"],
     "buttonStyle": ["solid", "subtle", "outline", "plain", "glass", "glassProminent"],
+    "titleVisibility": ["automatic", "visible", "hidden"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
@@ -1217,6 +1218,8 @@
     "controlSize": ["controlSize"],
     "buttonStyle": ["buttonStyle"],
     "modifier": ["value", "children"],
+    "confirmationDialog": ["value", "value"],
+    "titleVisibility": ["titleVisibility"],
     "drag": ["motionValue", "value?"],
     "swipe": ["swipeDirection", "value"],
     "pinch": ["motionValue", "value?"],
@@ -1751,7 +1754,8 @@
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
@@ -3392,6 +3396,11 @@
     "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
     "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] },
     "glassGroup": { "constructors": ["GlassGroup"], "modifiers": ["blend"], "blend": "space" },
+    "confirmationDialog": {
+      "constructors": ["ConfirmationDialog"],
+      "universal": false,
+      "modifiers": ["message", "titleVisibility", "actions", "cancelLabel", "testID"]
+    },
     "agentAvatar": {
       "constructors": ["AgentAvatar"],
       "modifiers": ["size", "mood", "paused", "interactive", "portrait"],
