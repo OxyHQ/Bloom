@@ -3,7 +3,9 @@ import { Card } from '../card';
 import React, { useRef, useState, type ReactNode } from 'react';
 import {
   Platform,
+  StyleSheet,
   useWindowDimensions,
+  View,
   type StyleProp,
   type TextInput,
   type ViewStyle,
@@ -24,12 +26,16 @@ import { useMessages, formatMessage } from '../locale/messages';
 import { SettingsSectionLabel } from '../settings-modal';
 import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
 import { ColorLogo } from '../social-button/SocialButtonBase';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { IS_WEB } from '../styles/platform';
+import { ROUNDED_FULL } from '../styles/rounded-full';
+import { StyledPressable } from '../styles/styled-primitives';
+import type { WebCssStyle } from '../styles/web-view-style';
 import { Tabs, TabsTrigger } from '../tabs';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
+import { createTokenStyles, useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
+import { fontFamilyStyle, Text } from '../typography';
 import { useWindowBreakpoint } from '../hooks/use-width-class';
-import { Text } from '../typography';
 import type { Agent } from './data';
 import {
   filterMarketplace,
@@ -42,9 +48,14 @@ import { MarketplaceSettings } from './MarketplaceSettings';
 import { MULTI_AGENT_CHAT_MESSAGES, type MultiAgentChatMessages } from './messages';
 import { useChatComponents } from './context';
 import { BREAKPOINTS } from '../styles/breakpoints';
-const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
-const focus = 'outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring';
-type View = 'discover' | 'plugin' | 'bot' | 'installed';
+import {
+  MARKETPLACE_HOOKS,
+  useMultiAgentChatWebCss,
+  WEB_TRANSITION_COLORS,
+  stepLineHeight,
+} from './web-css';
+
+type Category = 'discover' | 'plugin' | 'bot' | 'installed';
 const categories = (messages: MultiAgentChatMessages) =>
   [
     { id: 'discover', label: messages.discover },
@@ -53,42 +64,53 @@ const categories = (messages: MultiAgentChatMessages) =>
     { id: 'installed', label: messages.installed },
   ] as const;
 
-/** CSS grid keeps its authored classes; native supplies the equivalent measured tracks. */
+/**
+ * A CSS grid on the web (`compactColumns` tracks, `columns` from `sm`); native
+ * supplies the equivalent measured tracks. `wideLast` spans the last cell over
+ * both tracks of the compact grid, on its own row.
+ */
 function CatalogGrid({
   children,
-  className,
   columns = 2,
   compactColumns = 1,
   gap = 12,
+  fill = false,
+  wideLast = false,
+  style,
 }: {
   children: ReactNode;
-  className: string;
   columns?: number;
   compactColumns?: number;
   gap?: number;
+  /** As wide as its parent (`w-full`). */
+  fill?: boolean;
+  wideLast?: boolean;
+  style?: StyleProp<ViewStyle>;
 }) {
   const { width: viewportWidth } = useWindowDimensions();
   const [width, setWidth] = useState(0),
     count = viewportWidth >= BREAKPOINTS.sm ? columns : compactColumns;
   const native = Platform.OS !== 'web';
+  const last = React.Children.count(children) - 1;
   return (
-    <StyledView
-      className={className}
+    <View
+      {...MARKETPLACE_HOOKS.grid(compactColumns, columns)}
       onLayout={native ? (event) => setWidth(event.nativeEvent.layout.width) : undefined}
-      style={native ? { flexDirection: 'row', flexWrap: 'wrap', gap } : undefined}
+      style={[
+        fill && styles.fill,
+        native ? { flexDirection: 'row', flexWrap: 'wrap', gap } : { gap },
+        style,
+      ]}
     >
       {native
-        ? React.Children.map(children, (child) =>
-            React.isValidElement<{
-              style?: StyleProp<ViewStyle>;
-              className?: string;
-            }>(child)
+        ? React.Children.map(children, (child, index) =>
+            React.isValidElement<{ style?: StyleProp<ViewStyle> }>(child)
               ? React.cloneElement(child, {
                   style: [
                     child.props.style,
                     {
                       width:
-                        count === 2 && child.props.className?.includes('col-span-2')
+                        count === 2 && wideLast && index === last
                           ? '100%'
                           : width
                             ? Math.max(0, (width - gap * (count - 1)) / count)
@@ -99,30 +121,28 @@ function CatalogGrid({
               : child,
           )
         : children}
-    </StyledView>
+    </View>
   );
 }
 
 function ItemIcon({ item, size = 44 }: { item: MarketplaceItem; size?: number }) {
   const { isDark } = useTheme();
+  const tokens = useTokenStyles();
   if (item.avatar)
     return (
-      <StyledView className="shrink-0">
+      <View style={styles.shrink}>
         <AgentAvatar
           character={avatarCharacterInColor(item.avatar, item.color)}
           size={size}
           label={item.name}
         />
-      </StyledView>
+      </View>
     );
   const key = item.logo!,
     logo = MARKETPLACE_LOGOS[key as keyof typeof MARKETPLACE_LOGOS],
     social = SOCIAL_COLOR_LOGOS[key as keyof typeof SOCIAL_COLOR_LOGOS];
   return (
-    <StyledView
-      style={{ width: size, height: size, borderRadius: size * 0.28 }}
-      className="flex shrink-0 items-center justify-center border border-separator-border bg-background-secondary-default flex-row"
-    >
+    <View style={[tokens.logo, { width: size, height: size, borderRadius: size * 0.28 }]}>
       {logo ? (
         <SvgXml
           width={size * 0.6}
@@ -136,7 +156,7 @@ function ItemIcon({ item, size = 44 }: { item: MarketplaceItem; size?: number })
           inverted={isDark && ['apple', 'github', 'x'].includes(key)}
         />
       ) : null}
-    </StyledView>
+    </View>
   );
 }
 
@@ -150,30 +170,44 @@ function Section({
   onViewAll?: () => void;
 }) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
+  const tokens = useTokenStyles();
+  const quietButton = useQuietButton();
 
   return (
-    <StyledView className="flex flex-col gap-1">
-      <StyledView className="flex h-8 items-center justify-between px-2 flex-row">
-        <Text className="text-body-medium text-text-primary">{title}</Text>
+    <View style={styles.stack4}>
+      <View style={styles.sectionHeader}>
+        <Text style={tokens.bodyMedium}>{title}</Text>
         {onViewAll && (
           <Button
             appearance="plain"
             size="sm"
-            className="bg-transparent text-text-secondary hover:bg-background-secondary-default active:bg-background-tertiary-default"
+            {...quietButton}
             trailingIcon={RiArrowRightSLine}
             onPress={onViewAll}
           >
             {messages.viewAll}
           </Button>
         )}
-      </StyledView>
+      </View>
       {children}
-    </StyledView>
+    </View>
   );
 }
 
 /** A skill or app row: icon beside its text. */
 const SKILL_CARD = { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 } as const;
+
+/**
+ * A quiet text button (`bg-transparent text-text-secondary`, hover
+ * `background-secondary-default`, pressed `background-tertiary-default`).
+ */
+function useQuietButton() {
+  const t = useColorTokens();
+  return { color: t.mutedForeground, fill: '#0000', hoverFill: t.popover } as const;
+}
+
+/** The detail card's `text-center`: what inherits it on the web (its texts set their own). */
+const DETAIL_CARD_WEB: WebCssStyle = { textAlign: 'center' };
 
 /** `flex: 1`, as the CSS shorthand computes it. */
 const FLEX_FILL = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' } as const;
@@ -201,10 +235,13 @@ export function Marketplace({
 }) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
   const { ScrollSurface } = useChatComponents();
+  const tokens = useTokenStyles();
+  const quietButton = useQuietButton();
+  useMultiAgentChatWebCss();
   const narrow = useWindowBreakpoint() === 'base';
 
   const [query, setQuery] = useState('');
-  const [view, setView] = useState<View>('discover');
+  const [view, setView] = useState<Category>('discover');
   const [detail, setDetail] = useState<MarketplaceItem | null>(
     () => MARKETPLACE_ITEMS.find((item) => item.id === initialItem) ?? null,
   );
@@ -221,7 +258,7 @@ export function Marketplace({
   const openDetail = (item: MarketplaceItem) => {
     setDetail(item);
   };
-  const browse = (next: View) => {
+  const browse = (next: Category) => {
     setView(next);
     setQuery('');
   };
@@ -237,27 +274,30 @@ export function Marketplace({
     onCopy(url.toString(), messages.marketplaceLinkCopied);
   };
   const grid = (items: MarketplaceItem[]) => (
-    <CatalogGrid className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <CatalogGrid>
       {items.map((item) => (
-        <Card key={item.id} style={{ minWidth: 0, gap: 12, padding: 12 }}>
+        <Card key={item.id} style={[styles.listing, IS_WEB && WEB_TRANSITION_COLORS]}>
           <StyledPressable
+            {...MARKETPLACE_HOOKS.item}
             accessibilityRole="button"
             accessibilityLabel={formatMessage(messages.viewItem, item.name)}
             onPress={() => openDetail(item)}
-            className={cx('flex min-w-0 items-center gap-3 rounded-xl text-start flex-row', focus)}
+            style={styles.listingHead}
           >
             <ItemIcon item={item} size={36} />
-            <StyledView className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <Text className="truncate text-body-medium text-text-primary">{item.name}</Text>
-              <Text className="text-caption-1-regular text-text-tertiary">{item.category}</Text>
-            </StyledView>
+            <View style={styles.listingTitle}>
+              <Text {...MARKETPLACE_HOOKS.truncate} style={[tokens.bodyMedium, styles.truncate]}>
+                {item.name}
+              </Text>
+              <Text style={tokens.caption}>{item.category}</Text>
+            </View>
           </StyledPressable>
-          <Text className="text-body-2-regular text-text-secondary">{item.description}</Text>
+          <Text style={tokens.body2}>{item.description}</Text>
           <Button
             size="sm"
             appearance="subtle"
             tone="neutral"
-            className="mt-auto w-full shrink-0 rounded-full"
+            style={styles.listingAction}
             accessibilityLabel={
               isAdded(item)
                 ? formatMessage(messages.viewAdded, item.name)
@@ -273,30 +313,23 @@ export function Marketplace({
     </CatalogGrid>
   );
   const botStrip = (
-    <CatalogGrid
-      columns={4}
-      compactColumns={2}
-      gap={8}
-      className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-    >
+    <CatalogGrid columns={4} compactColumns={2} gap={8}>
       {MARKETPLACE_ITEMS.filter((item) => item.kind === 'bot')
         .slice(0, 4)
         .map((item) => (
           <StyledPressable
+            {...MARKETPLACE_HOOKS.tile}
             key={item.id}
             accessibilityRole="button"
             accessibilityLabel={formatMessage(messages.viewItem, item.name)}
             onPress={() => openDetail(item)}
-            className={cx(
-              'flex min-w-0 flex-col items-center gap-2 rounded-2xl bg-background-secondary-default px-2 py-4 text-center transition-colors hover:bg-background-tertiary-default',
-              focus,
-            )}
+            style={[styles.tile, tokens.tile]}
           >
             <ItemIcon item={item} size={52} />
-            <StyledView className="flex flex-col gap-1">
-              <Text className="text-body-2-medium text-text-primary">{item.name}</Text>
-              <Text className="text-caption-1-regular text-text-secondary">{item.category}</Text>
-            </StyledView>
+            <View style={styles.stack4}>
+              <Text style={tokens.body2Medium}>{item.name}</Text>
+              <Text style={tokens.caption}>{item.category}</Text>
+            </View>
           </StyledPressable>
         ))}
     </CatalogGrid>
@@ -308,13 +341,13 @@ export function Marketplace({
       defaultPage={defaultPage}
       marketplace={({ onBack, backLabel }) => (
         <>
-          <StyledView className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 pt-8 sm:px-8 flex-row">
-            <StyledView className="flex min-w-0 items-center gap-2 flex-row">
+          <View style={[styles.header, !narrow && styles.wideInset]}>
+            <View style={styles.headerTitle}>
               {(detail || onBack) && (
                 <Button
                   appearance="plain"
                   size="sm"
-                  className="bg-transparent text-text-secondary hover:bg-background-secondary-default active:bg-background-tertiary-default"
+                  {...quietButton}
                   iconOnly
                   leadingIcon={RiArrowLeftLine}
                   accessibilityLabel={detail ? messages.backToMarketplace : backLabel}
@@ -326,8 +359,8 @@ export function Marketplace({
                   }}
                 />
               )}
-              <Text className="text-title-3-medium text-text-primary">{messages.marketplace}</Text>
-            </StyledView>
+              <Text style={tokens.title}>{messages.marketplace}</Text>
+            </View>
             <Button
               appearance="outline"
               tone="neutral"
@@ -337,7 +370,7 @@ export function Marketplace({
               size={24}
               onPress={onClose}
             />
-          </StyledView>
+          </View>
           {detail ? (
             <ScrollSurface
               key={detail.id}
@@ -346,49 +379,40 @@ export function Marketplace({
               contentContainerStyle={{ paddingInline: narrow ? 20 : 32, paddingBottom: 32 }}
               label={formatMessage(messages.itemDetails, detail.name)}
             >
-              <StyledView className="flex flex-col gap-5 pt-1">
+              <View style={styles.page}>
                 <Card
-                  style={{
-                    alignItems: 'center',
-                    gap: 16,
-                    padding: 20,
-                    paddingLeft: 20,
-                    paddingRight: 20,
-                    paddingTop: 20,
-                    paddingBottom: 20,
-                  }}
+                  style={[
+                    {
+                      alignItems: 'center',
+                      gap: 16,
+                      padding: 20,
+                      paddingLeft: 20,
+                      paddingRight: 20,
+                      paddingTop: 20,
+                      paddingBottom: 20,
+                    },
+                    IS_WEB && DETAIL_CARD_WEB,
+                  ]}
                 >
                   <ItemIcon item={detail} size={72} />
-                  <StyledView className="flex flex-col items-center gap-1">
-                    <Text className="text-title-3-semibold text-text-primary outline-none">
-                      {detail.name}
-                    </Text>
-                    <Text className="text-body-2-regular text-text-secondary">
+                  <View style={styles.detailTitle}>
+                    <Text style={tokens.titleSemibold}>{detail.name}</Text>
+                    <Text style={tokens.body2}>
                       {formatMessage(messages.by, detail.category, detail.developer)}
                     </Text>
-                  </StyledView>
-                  <Text
-                    className="max-w-md text-body-regular text-text-secondary"
-                    style={{ textAlign: 'center' }}
-                  >
-                    {detail.detail}
-                  </Text>
-                  <CatalogGrid
-                    columns={3}
-                    compactColumns={2}
-                    gap={8}
-                    className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3"
-                  >
+                  </View>
+                  <Text style={[tokens.body, styles.blurb]}>{detail.detail}</Text>
+                  <CatalogGrid columns={3} compactColumns={2} gap={8} fill wideLast>
                     {detail.kind === 'bot' && isAdded(detail) ? (
                       <Button
-                        className="w-full rounded-full"
+                        style={styles.pill}
                         onPress={() => onChat(marketplaceAgentId(detail.id))}
                       >
                         {messages.startChat}
                       </Button>
                     ) : (
                       <Button
-                        className="w-full rounded-full"
+                        style={styles.pill}
                         appearance={isAdded(detail) ? 'subtle' : 'solid'}
                         tone={isAdded(detail) ? 'neutral' : 'accent'}
                         leadingIcon={isAdded(detail) ? RiCheckLine : undefined}
@@ -400,7 +424,7 @@ export function Marketplace({
                     <Button
                       appearance="subtle"
                       tone="neutral"
-                      className="w-full rounded-full"
+                      style={styles.pill}
                       leadingIcon={RiLinkM}
                       onPress={() => share(detail)}
                     >
@@ -412,58 +436,49 @@ export function Marketplace({
                       rel="noreferrer"
                       appearance="subtle"
                       tone="neutral"
-                      className="col-span-2 row-start-2 w-full rounded-full sm:col-span-1 sm:row-start-auto"
+                      dataSet={MARKETPLACE_HOOKS.wide}
+                      style={styles.pill}
                       leadingIcon={RiGlobalLine}
                     >
                       {messages.website}
                     </Button>
                   </CatalogGrid>
                 </Card>
-                <StyledView className="flex flex-col gap-1">
+                <View style={styles.stack4}>
                   <SettingsSectionLabel>
                     {formatMessage(messages.skills2, detail.skills.length)}
                   </SettingsSectionLabel>
-                  <StyledView className="flex flex-col gap-2">
+                  <View style={styles.stack8}>
                     {detail.skills.map((skill) => (
                       <Card key={skill.name} style={SKILL_CARD}>
-                        <RiCodeSSlashLine
-                          className="size-5 shrink-0 text-foreground-icon-secondary"
-                          aria-hidden
-                        />
-                        <StyledView className="flex min-w-0 flex-col gap-1">
-                          <Text className="text-body-medium text-text-primary">{skill.name}</Text>
-                          <Text className="text-body-2-regular text-text-secondary">
-                            {skill.description}
-                          </Text>
-                        </StyledView>
+                        <RiCodeSSlashLine style={tokens.rowIcon} aria-hidden />
+                        <View style={styles.rowText}>
+                          <Text style={tokens.bodyMedium}>{skill.name}</Text>
+                          <Text style={tokens.body2}>{skill.description}</Text>
+                        </View>
                       </Card>
                     ))}
-                  </StyledView>
-                </StyledView>
+                  </View>
+                </View>
                 {!!detail.apps.length && (
-                  <StyledView className="flex flex-col gap-1">
+                  <View style={styles.stack4}>
                     <SettingsSectionLabel>
                       {formatMessage(messages.apps, detail.apps.length)}
                     </SettingsSectionLabel>
-                    <CatalogGrid gap={8} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <CatalogGrid gap={8}>
                       {detail.apps.map((app) => (
                         <Card key={app} style={SKILL_CARD}>
-                          <RiPlugLine
-                            className="size-5 shrink-0 text-foreground-icon-secondary"
-                            aria-hidden
-                          />
-                          <StyledView className="min-w-0">
-                            <Text className="text-body-medium text-text-primary">{app}</Text>
-                            <Text className="text-caption-1-regular text-text-secondary">
-                              {messages.connector}
-                            </Text>
-                          </StyledView>
+                          <RiPlugLine style={tokens.rowIcon} aria-hidden />
+                          <View style={styles.minW0}>
+                            <Text style={tokens.bodyMedium}>{app}</Text>
+                            <Text style={tokens.caption}>{messages.connector}</Text>
+                          </View>
                         </Card>
                       ))}
                     </CatalogGrid>
-                  </StyledView>
+                  </View>
                 )}
-                <StyledView className="flex flex-col gap-1">
+                <View style={styles.stack4}>
                   <SettingsSectionLabel>{messages.details}</SettingsSectionLabel>
                   <Card
                     style={{
@@ -475,11 +490,7 @@ export function Marketplace({
                       paddingBottom: 16,
                     }}
                   >
-                    <CatalogGrid
-                      compactColumns={2}
-                      gap={16}
-                      className="grid grid-cols-2 gap-x-4 gap-y-4"
-                    >
+                    <CatalogGrid compactColumns={2} gap={16} style={styles.axisGaps}>
                       {[
                         [messages.developer, detail.developer],
                         [messages.category, detail.category],
@@ -489,27 +500,25 @@ export function Marketplace({
                         ],
                         [messages.availability, messages.public],
                       ].map(([label, value]) => (
-                        <StyledView key={label} className="flex min-w-0 flex-col gap-1">
-                          <Text className="text-caption-1-regular text-text-secondary">
-                            {label}
-                          </Text>
-                          <Text className="text-body-medium text-text-primary">{value}</Text>
-                        </StyledView>
+                        <View key={label} style={styles.rowText}>
+                          <Text style={tokens.caption}>{label}</Text>
+                          <Text style={tokens.bodyMedium}>{value}</Text>
+                        </View>
                       ))}
                     </CatalogGrid>
                   </Card>
-                </StyledView>
+                </View>
                 {detail.kind === 'plugin' && (
-                  <Text className="px-3 text-caption-1-regular text-text-tertiary">
+                  <Text style={[tokens.caption, styles.note]}>
                     {messages.demoIntegrationAddingSavesItToThis}
                   </Text>
                 )}
-              </StyledView>
+              </View>
             </ScrollSurface>
           ) : (
-            <StyledView className="flex min-h-0 flex-1 flex-row">
-              <StyledView className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <StyledView className="flex shrink-0 flex-col gap-3 px-4 pb-4 sm:px-8">
+            <View style={styles.browse}>
+              <View style={styles.browseColumn}>
+                <View style={[styles.search, !narrow && styles.wideInset]}>
                   <TextField style={{ borderRadius: 12 }}>
                     <TextFieldIcon icon={RiSearchLine} />
                     <TextFieldInput
@@ -523,13 +532,13 @@ export function Marketplace({
                   <Tabs
                     variant="filled"
                     value={view}
-                    onValueChange={(value) => browse(value as View)}
+                    onValueChange={(value) => browse(value as Category)}
                   >
                     {categories(messages).map(({ id, label }) => (
                       <TabsTrigger key={id} value={id} label={label} />
                     ))}
                   </Tabs>
-                </StyledView>
+                </View>
                 <ScrollSurface
                   key={`${view}-${query}`}
                   surface="full"
@@ -537,7 +546,7 @@ export function Marketplace({
                   contentContainerStyle={{ paddingInline: narrow ? 16 : 32, paddingBottom: 24 }}
                   label={messages.marketplaceListings}
                 >
-                  <StyledView className="flex flex-col gap-5 pt-1">
+                  <View style={styles.page}>
                     {query.trim() || view !== 'discover' ? (
                       <Section
                         title={
@@ -553,14 +562,14 @@ export function Marketplace({
                         {results.length ? (
                           grid(results)
                         ) : (
-                          <StyledView className="flex flex-col items-center gap-2 py-16 text-center">
-                            <RiStore2Line className="mb-2 size-8 text-foreground-icon-tertiary" />
-                            <Text className="text-body-medium text-text-primary">
+                          <View {...MARKETPLACE_HOOKS.center} style={styles.empty}>
+                            <RiStore2Line style={tokens.emptyIcon} />
+                            <Text style={tokens.bodyMedium}>
                               {view === 'installed' && !query
                                 ? messages.aLittleRoomForSomethingNew
                                 : messages.noMatchesYet}
                             </Text>
-                            <Text className="text-body-regular text-text-secondary">
+                            <Text style={tokens.body}>
                               {view === 'installed' && !query
                                 ? messages.explorePluginsAndBotsToBuildYour
                                 : messages.tryAnotherNameCategoryOrKeyword}
@@ -575,7 +584,7 @@ export function Marketplace({
                             >
                               {messages.exploreMarketplace}
                             </Button>
-                          </StyledView>
+                          </View>
                         )}
                       </Section>
                     ) : (
@@ -597,13 +606,140 @@ export function Marketplace({
                         </Section>
                       </>
                     )}
-                  </StyledView>
+                  </View>
                 </ScrollSurface>
-              </StyledView>
-            </StyledView>
+              </View>
+            </View>
           )}
         </>
       )}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  fill: { width: '100%' },
+  /** `gap-x-4 gap-y-4`. */
+  axisGaps: { columnGap: 16, rowGap: 16 },
+  shrink: { flexShrink: 0 },
+  minW0: { minWidth: 0 },
+  truncate: { overflow: 'hidden' },
+  stack4: { flexDirection: 'column', gap: 4 },
+  stack8: { flexDirection: 'column', gap: 8 },
+  sectionHeader: {
+    height: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingInline: 8,
+  },
+  listing: { minWidth: 0, gap: 12, padding: 12 },
+  listingAction: { marginTop: 'auto', width: '100%', flexShrink: 0, borderRadius: ROUNDED_FULL },
+  pill: { width: '100%', borderRadius: ROUNDED_FULL },
+  listingHead: {
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 12,
+  },
+  listingTitle: {
+    minWidth: 0,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: '0%',
+    flexDirection: 'column',
+    gap: 2,
+  },
+  tile: {
+    minWidth: 0,
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 16,
+    paddingInline: 8,
+    paddingBlock: 16,
+  },
+  header: {
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingInline: 16,
+    paddingTop: 32,
+    paddingBottom: 16,
+  },
+  /** `sm:px-8`. */
+  wideInset: { paddingInline: 32 },
+  headerTitle: { minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  page: { flexDirection: 'column', gap: 20, paddingTop: 4 },
+  detailTitle: { flexDirection: 'column', alignItems: 'center', gap: 4 },
+  blurb: { maxWidth: 448, textAlign: 'center' },
+  rowText: { minWidth: 0, flexDirection: 'column', gap: 4 },
+  note: { paddingInline: 12 },
+  browse: { minHeight: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%', flexDirection: 'row' },
+  browseColumn: {
+    minHeight: 0,
+    minWidth: 0,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: '0%',
+    flexDirection: 'column',
+  },
+  search: {
+    flexShrink: 0,
+    flexDirection: 'column',
+    gap: 12,
+    paddingInline: 16,
+    paddingBottom: 16,
+  },
+  empty: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+    paddingBlock: 64,
+  },
+});
+
+const useTokenStyles = createTokenStyles((t) => ({
+  logo: {
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: t.border,
+    backgroundColor: t.surface,
+  },
+  // The web paints the tile from its sheet, so its hover fill can replace it.
+  tile: IS_WEB ? {} : { backgroundColor: t.surface },
+  title: {
+    ...fontFamilyStyle('display'),
+    fontSize: 18,
+    color: t.foreground,
+    lineHeight: stepLineHeight(26, 18),
+    fontWeight: 500,
+  },
+  titleSemibold: {
+    ...fontFamilyStyle('display'),
+    fontSize: 18,
+    color: t.foreground,
+    lineHeight: stepLineHeight(26, 18),
+    fontWeight: 600,
+  },
+  bodyMedium: { color: t.foreground, lineHeight: stepLineHeight(20, 14), fontWeight: 500 },
+  body: { color: t.mutedForeground, lineHeight: stepLineHeight(20, 14), fontWeight: 400 },
+  body2: { color: t.mutedForeground, lineHeight: stepLineHeight(18, 13), fontWeight: 400 },
+  body2Medium: { color: t.foreground, lineHeight: stepLineHeight(18, 13), fontWeight: 500 },
+  caption: {
+    color: t.mutedForeground,
+    lineHeight: stepLineHeight(16, 12),
+    letterSpacing: 0.15,
+    fontWeight: 400,
+  },
+  // The icons' classes reached only the web's <svg>: their box and colour (`size-5 shrink-0`, `mb-2 size-8`).
+  rowIcon: IS_WEB ? { flexShrink: 0, color: t.mutedForeground } : {},
+  emptyIcon: IS_WEB ? { marginBottom: 8, width: 32, height: 32, color: t.mutedForeground } : {},
+}));
