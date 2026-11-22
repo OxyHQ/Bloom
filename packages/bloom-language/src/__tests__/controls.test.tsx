@@ -14,11 +14,13 @@ import { ListItem, MailRow, VirtualList } from '../controls/list';
 import { ReviewCard } from '../controls/listings';
 import { SignaturePad } from '../controls/logistics';
 import { MenuItemOptions } from '../controls/menu-item';
+import { NowPlayingBar } from '../controls/media-player';
 import { Notification } from '../controls/notification';
 import { RatingBar } from '../controls/rating';
 import { ShareSheet } from '../controls/share-sheet';
 import { Meter } from '../controls/stat-bar';
 import { Tooltip } from '../controls/tooltip';
+import { EpisodeRow, TrackRow } from '../controls/track-list';
 import type { Child } from '../node';
 import { Text } from '../primitives';
 import { defineTokens } from '../tokens';
@@ -300,5 +302,52 @@ describe('a value inside Bloom’s own data', () => {
     const row = only(mount(toElement(MailRow(data).starred([false, star]))), 'ListItem');
     expect(row.props.mail).toEqual({ ...data, starred: false, onStarredChange: star });
     expect(only(mount(toElement(MailRow(data))), 'ListItem').props.mail).toBe(data);
+  });
+
+  it('a track row’s like and an episode row’s save and download are bindings, drawn into the item', () => {
+    const like = jest.fn();
+    const track = { id: 'a', title: 'A', artists: [], duration: 1 };
+    const row = only(mount(toElement(TrackRow(track, 0).liked([true, like]))), 'TrackRow');
+    expect(row.props.track).toEqual({ ...track, liked: true });
+    row.props.onLikedChange(row.props.track, false);
+    expect(like).toHaveBeenCalledWith(false);
+    const plain = only(mount(toElement(TrackRow(track, 0))), 'TrackRow');
+    expect(plain.props.track).toBe(track);
+    expect('onLikedChange' in plain.props).toBe(false);
+
+    const save = jest.fn();
+    const episode = { id: 'e', title: 'E', duration: 1 };
+    const episodeRow = only(
+      mount(toElement(EpisodeRow(episode).saved([false, save]))),
+      'EpisodeRow',
+    );
+    expect(episodeRow.props.episode).toEqual({ ...episode, saved: false });
+    episodeRow.props.onSavedChange(episodeRow.props.episode, true);
+    expect(save).toHaveBeenCalledWith(true);
+    expect('onDownloadedChange' in episodeRow.props).toBe(false);
+  });
+
+  it('a player’s shuffle, repeat and rate are bindings, drawn into its transport', () => {
+    const shuffle = jest.fn();
+    const pause = jest.fn();
+    const track = { id: 'a', title: 'A', artists: [] };
+    const bar = only(
+      mount(
+        toElement(
+          NowPlayingBar(track, {
+            transport: { playing: true, onPlayPause: pause },
+            position: 0,
+            duration: 1,
+          }).shuffle([true, shuffle]),
+        ),
+      ),
+      'NowPlayingBar',
+    );
+    expect(bar.props.transport).toEqual({
+      playing: true,
+      onPlayPause: pause,
+      shuffle: true,
+      onShuffleChange: shuffle,
+    });
   });
 });

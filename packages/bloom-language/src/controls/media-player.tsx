@@ -24,7 +24,7 @@ import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { TransportSize, TransportStyle } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { product, slot } from './product';
+import { bound, product, slot } from './product';
 
 /** The transport row, the players, the speed and sleep-timer menus, the device picker and its banner. */
 export type MediaPlayerKind =
@@ -56,6 +56,25 @@ export type TransportControlsOptions = Omit<
   | 'playbackRate'
   | 'onPlaybackRateChange'
 > & { readonly trailing?: Child };
+/** What a transport's bindings edit: shuffle, repeat and rate, each its value and its handler. */
+const TRANSPORT = {
+  shuffle: ['shuffle', 'onShuffleChange'],
+  repeat: ['repeat', 'onRepeatChange'],
+  playbackRate: ['playbackRate', 'onPlaybackRateChange'],
+} as const;
+type TransportBound = (typeof TRANSPORT)[keyof typeof TRANSPORT][number];
+/**
+ * A player's transport: Bloom's `transport` data (its play/pause handler and
+ * the skips), but what the player's `.shuffle()`, `.repeat()` and
+ * `.playbackRate()` bind.
+ */
+export type PlayerTransport = Omit<NowPlayingBarProps['transport'], TransportBound>;
+/** A player's transport as Bloom takes it: its data, and its bindings drawn in. */
+function transportOf(d: ControlDraw) {
+  const { transport } = (d.node.props as { options: { transport: PlayerTransport } }).options;
+  return { transport: { ...transport, ...bound(d, TRANSPORT) } };
+}
+
 /** Bloom `NowPlayingBar`'s data (its transport, position and duration); its `devicePicker` is a language child. */
 export type NowPlayingBarOptions = Omit<
   NowPlayingBarProps,
@@ -74,7 +93,9 @@ export type NowPlayingBarOptions = Omit<
   | 'onLyricsChange'
   | 'queueActive'
   | 'onQueueChange'
+  | 'transport'
 > & {
+  readonly transport: PlayerTransport;
   readonly devicePicker?: Child;
 };
 /** Bloom `MiniPlayer`'s data; `.onPress()` opens the full player. */
@@ -85,8 +106,8 @@ export type MiniPlayerOptions = Omit<
 /** Bloom `FullScreenPlayer`'s data; its `aboutArtist` is a language child. */
 export type FullScreenPlayerOptions = Omit<
   FullScreenPlayerProps,
-  Drawn | 'track' | 'aboutArtist' | 'liked' | 'onLikedChange'
-> & { readonly aboutArtist?: Child };
+  Drawn | 'track' | 'aboutArtist' | 'liked' | 'onLikedChange' | 'transport'
+> & { readonly transport: PlayerTransport; readonly aboutArtist?: Child };
 /** A menu's data; its `trigger` (Bloom's children) is a language child. */
 type MenuOptions<P> = Omit<
   P,
@@ -130,12 +151,24 @@ export interface NowPlayingBarView extends ViewModifiers<NowPlayingBarView> {
   lyricsActive(value: Bound<NowPlayingBarProps, 'lyricsActive'>): NowPlayingBarView;
   /** The queue, shown: a binding; bound, the queue button draws and writes it. */
   queueActive(value: Bound<NowPlayingBarProps, 'queueActive'>): NowPlayingBarView;
+  /** The transport's shuffle: a binding; bound, its toggle draws and writes it. */
+  shuffle(value: Bound<TransportControlsProps, 'shuffle'>): NowPlayingBarView;
+  /** The transport's repeat: a binding; bound, its button draws and writes it. */
+  repeat(value: Bound<TransportControlsProps, 'repeat'>): NowPlayingBarView;
+  /** The transport's rate: a binding. */
+  playbackRate(value: Bound<TransportControlsProps, 'playbackRate'>): NowPlayingBarView;
 }
 export interface MiniPlayerView extends ViewModifiers<MiniPlayerView> {
   liked(value: Bound<MiniPlayerProps, 'liked'>): MiniPlayerView;
 }
 export interface FullScreenPlayerView extends ViewModifiers<FullScreenPlayerView> {
   liked(value: Bound<FullScreenPlayerProps, 'liked'>): FullScreenPlayerView;
+  /** The transport's shuffle: a binding; bound, its toggle draws and writes it. */
+  shuffle(value: Bound<TransportControlsProps, 'shuffle'>): FullScreenPlayerView;
+  /** The transport's repeat: a binding; bound, its button draws and writes it. */
+  repeat(value: Bound<TransportControlsProps, 'repeat'>): FullScreenPlayerView;
+  /** The transport's rate: a binding. */
+  playbackRate(value: Bound<TransportControlsProps, 'playbackRate'>): FullScreenPlayerView;
 }
 export interface PlaybackSpeedMenuView extends Sized<PlaybackSpeedMenuView> {
   presented(value: Bound<PlaybackSpeedMenuProps, 'open'>): PlaybackSpeedMenuView;
@@ -236,6 +269,7 @@ export const MEDIA_PLAYERS: Record<MediaPlayerKind, ControlRenderer> = {
       queueActive: ['queueActive', 'onQueueChange'],
     },
     slots: ['devicePicker'],
+    own: transportOf,
   }),
   miniPlayer: product(BloomMiniPlayer, {
     bindings: { liked: ['liked', 'onLikedChange'] },
@@ -244,6 +278,7 @@ export const MEDIA_PLAYERS: Record<MediaPlayerKind, ControlRenderer> = {
   fullScreenPlayer: product(BloomFullScreenPlayer, {
     bindings: { liked: ['liked', 'onLikedChange'] },
     slots: ['aboutArtist'],
+    own: transportOf,
   }),
   playbackSpeedMenu: menu(BloomPlaybackSpeedMenu, ['rate', 'onRateChange']),
   sleepTimerMenu: menu(BloomSleepTimerMenu, ['value', 'onValueChange']),
