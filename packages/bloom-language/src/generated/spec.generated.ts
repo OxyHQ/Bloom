@@ -1073,6 +1073,10 @@ export const ENUMS = {
     "regular",
     "clear"
   ],
+  "glassTransition": [
+    "matchedGeometry",
+    "materialize"
+  ],
   "contentFit": [
     "cover",
     "contain",
@@ -2895,6 +2899,18 @@ export const MODIFIERS = {
     "value",
     "namespace"
   ],
+  "glassID": [
+    "value",
+    "namespace"
+  ],
+  "glassUnion": [
+    "value",
+    "namespace"
+  ],
+  "glassTransition": [
+    "glassTransition"
+  ],
+  "inContent": [],
   "drag": [
     "motionValue",
     "value?"
@@ -4298,6 +4314,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing",
     "align",
     "justify",
@@ -4392,6 +4412,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "alignment",
     "disabled",
     "hoverHighlight"
@@ -4480,7 +4504,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "text": [
     "padding",
@@ -4567,6 +4595,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lines",
     "noWrap",
     "truncation",
@@ -4667,6 +4699,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "avatar": [
@@ -4754,6 +4790,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "tint",
     "shape",
@@ -4847,6 +4887,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "layout",
     "size",
     "shape",
@@ -4943,6 +4987,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "size",
@@ -5036,6 +5084,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "loading": [
@@ -5123,6 +5175,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size",
     "tint"
@@ -5211,7 +5267,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "skeletonGroup": [
     "padding",
@@ -5297,7 +5357,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "image": [
     "padding",
@@ -5384,6 +5448,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -5475,7 +5543,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "ratio": [
     "padding",
@@ -5561,7 +5633,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "grid": [
     "padding",
@@ -5648,6 +5724,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "columns",
     "minCellWidth",
     "spacing",
@@ -5738,6 +5818,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "shape",
     "size",
@@ -5838,6 +5922,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "fill",
     "stroke",
@@ -5928,6 +6016,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "axis",
     "size",
     "dividers",
@@ -6018,6 +6110,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size",
     "tint",
@@ -6109,6 +6205,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "actions"
   ],
   "menuItem": [
@@ -6216,6 +6316,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lineStyle",
     "align",
     "spacing",
@@ -6380,6 +6484,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "count",
     "active",
     "tint"
@@ -6469,6 +6577,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "trailing",
     "countFormat",
     "size",
@@ -6560,7 +6672,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "lottie": [
     "padding",
@@ -6647,6 +6763,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loop",
     "paused",
     "fallback",
@@ -6737,6 +6857,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "radius",
@@ -6829,7 +6953,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "cardBody": [
     "padding",
@@ -6915,7 +7043,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "cardFooter": [
     "padding",
@@ -7001,7 +7133,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "cardTitle": [
     "lines"
@@ -7094,6 +7230,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "subtitle",
     "leadingView",
@@ -7191,6 +7331,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "title",
     "caption",
     "style",
@@ -7306,6 +7450,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "size",
@@ -7400,6 +7548,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "icon",
     "description",
     "media",
@@ -7496,6 +7648,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size"
   ],
@@ -7584,6 +7740,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "fullWidth",
     "onReorder",
@@ -7684,6 +7844,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "errorBoundary": [
@@ -7788,7 +7952,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "view": [
     "padding",
@@ -7874,7 +8042,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "appLayout": [
     "primaryAction",
@@ -7975,6 +8147,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "placeholder",
     "size",
     "disabled",
@@ -8081,6 +8257,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "placeholder",
     "description",
     "size",
@@ -8183,6 +8363,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "description",
     "error",
     "required",
@@ -8273,6 +8457,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "required",
     "disabled"
@@ -8362,6 +8550,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "tint",
     "disabled"
@@ -8451,6 +8643,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "description",
     "size",
     "tint",
@@ -8543,6 +8739,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size",
     "tint",
@@ -8633,6 +8833,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size",
     "disabled",
@@ -8723,6 +8927,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "placeholder",
     "size",
     "disabled",
@@ -8821,6 +9029,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "placeholder",
     "size",
     "disabled",
@@ -8923,6 +9135,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing",
     "contentInset",
     "disabled",
@@ -9015,6 +9231,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing",
     "lines"
   ],
@@ -9112,7 +9332,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "selectionCard": [
     "padding",
@@ -9199,6 +9423,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "toggle",
     "selected",
     "description",
@@ -9296,6 +9524,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentMargins",
     "spacing",
     "refreshable",
@@ -9556,6 +9788,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentMargins",
     "spacing",
     "axis",
@@ -9650,6 +9886,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentMargins",
     "spacing",
     "axis",
@@ -9780,6 +10020,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "description",
     "trailing",
     "inset"
@@ -9869,6 +10113,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "icon",
     "muted"
   ],
@@ -9957,6 +10205,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "compact",
     "size",
     "disabled",
@@ -10063,6 +10315,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10157,6 +10413,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10252,6 +10512,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10344,6 +10608,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10437,6 +10705,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "step",
     "hourFormat",
@@ -10529,6 +10801,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "count",
     "countStyle",
     "size",
@@ -10627,6 +10903,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "max",
     "size",
     "disabled",
@@ -10717,6 +10997,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "max",
     "valueLabel",
     "labelWidth",
@@ -10808,6 +11092,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "labels"
   ],
   "meter": [
@@ -10895,6 +11183,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "valueText",
     "indeterminate",
     "decorative",
@@ -10991,6 +11283,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11090,6 +11386,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "trackTint",
     "thickness",
@@ -11181,6 +11481,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "minWidth"
   ],
@@ -11268,7 +11572,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "tableColumn": [
     "padding",
@@ -11355,6 +11663,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "width",
     "share",
     "minWidth",
@@ -11447,6 +11759,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "emptyState"
   ],
   "tableRow": [
@@ -11534,6 +11850,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "selected"
   ],
   "tableCell": [
@@ -11621,6 +11941,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "width",
     "share",
     "minWidth",
@@ -11711,6 +12035,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "supporting",
     "supportingLines",
     "prefix",
@@ -11817,6 +12145,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "supporting",
     "supportingLines",
     "prefix",
@@ -11924,6 +12256,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "separator",
     "scrollable",
     "scrollHeight",
@@ -12020,6 +12356,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "itemKey",
     "itemType",
     "estimatedItemSize",
@@ -12118,6 +12458,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "selecting",
     "onSelectAll",
     "onClear",
@@ -12209,6 +12553,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "headerContent",
     "footerContent",
     "loop",
@@ -12309,6 +12657,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "width"
   ],
   "carouselDots": [
@@ -12396,6 +12748,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "shape",
     "style",
     "max",
@@ -12486,6 +12842,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "streaming",
     "size",
     "onLinkPress",
@@ -12576,6 +12936,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "tint",
     "bounds",
@@ -12676,6 +13040,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "tint",
     "bounds",
@@ -12777,6 +13145,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "allowsMultiple",
     "revealMotion"
@@ -12866,6 +13238,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "accordionTrigger": [
@@ -12953,6 +13329,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "indicator"
   ],
   "accordionContent": [
@@ -13039,7 +13419,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "code": [
     "padding",
@@ -13125,7 +13509,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "pre": [
     "padding",
@@ -13212,6 +13600,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "language",
     "lineNumbers"
   ],
@@ -13300,6 +13692,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "language",
     "lineNumbers",
     "highlight",
@@ -13391,6 +13787,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "language",
     "lineNumbers",
     "highlight",
@@ -13488,6 +13888,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "step",
     "disabled",
@@ -13582,6 +13986,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "step",
     "disabled",
@@ -13678,6 +14086,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "presented",
     "side",
     "openDelay",
@@ -13768,6 +14180,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "collapses",
     "separatorView",
@@ -13858,6 +14274,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "icon",
     "prefix",
@@ -13951,6 +14371,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "days",
     "endDate",
     "levels",
@@ -14047,6 +14471,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "placeholder",
     "tagSuggestions",
     "allowsCreate",
@@ -14145,6 +14573,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "file",
     "uploadProgress",
     "onFileSelected",
@@ -14242,6 +14674,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
@@ -14331,6 +14767,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "length",
     "characters",
     "onComplete",
@@ -14424,6 +14864,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "labels",
     "size",
     "disabled"
@@ -14513,6 +14957,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "tint"
   ],
@@ -14601,6 +15049,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "actions",
     "presentedAt",
     "disabled"
@@ -14690,6 +15142,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
@@ -14779,6 +15235,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "fileTypes",
     "dragActions",
     "folder",
@@ -14872,6 +15332,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "opaque",
     "mediaCorner"
   ],
@@ -14960,6 +15424,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "minItemWidth",
     "contentInset"
   ],
@@ -15054,6 +15522,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "onRemove",
     "onRetry",
     "onAdd",
@@ -15149,6 +15621,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "axis",
     "spacing",
     "optionBox",
@@ -15244,6 +15720,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "presented",
     "openDelay",
     "closeDelay",
@@ -15337,6 +15817,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lines",
     "style",
     "labels"
@@ -15426,6 +15910,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "trailing",
     "spacing",
     "backdrop",
@@ -15516,6 +16004,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "openMenu",
     "actions"
   ],
@@ -15609,6 +16101,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "readoutFormat"
   ],
   "phoneInput": [
@@ -15696,6 +16192,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "country",
     "countries",
     "placeholder",
@@ -15794,6 +16294,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -15885,6 +16389,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -15976,6 +16484,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "contentFit"
   ],
   "emptyMediaSurface": [
@@ -16062,7 +16574,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "avatarAnchor": [
     "padding",
@@ -16148,7 +16664,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "avatarFlightLayer": [],
   "inputGroup": [
@@ -16236,6 +16756,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "invalid",
     "disabled"
@@ -16325,6 +16849,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "divider",
     "flush"
   ],
@@ -16413,6 +16941,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "description",
     "timestamp",
     "status",
@@ -16511,6 +17043,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "coverFill"
   ],
   "socialButton": [
@@ -16598,6 +17134,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "iconOnly",
@@ -16701,6 +17241,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "bounds",
     "unavailable",
     "weekStart",
@@ -16798,6 +17342,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "streaming",
     "onLinkPress",
     "plainRun",
@@ -16889,6 +17437,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "title",
     "summary",
     "toolbar",
@@ -17000,6 +17552,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "dataTableSearch": [
@@ -17087,6 +17643,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "placeholder"
   ],
   "dataTableSelect": [
@@ -17174,6 +17734,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled"
   ],
@@ -17262,6 +17826,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "onReorder",
     "onDragChange",
     "trailing",
@@ -17270,6 +17838,97 @@ export const NODE_MODIFIERS = {
   "sortableChip": [],
   "viewport": [
     "root"
+  ],
+  "glassGroup": [
+    "padding",
+    "frame",
+    "grow",
+    "shrink",
+    "alignSelf",
+    "position",
+    "offset",
+    "zIndex",
+    "hidden",
+    "basis",
+    "scale",
+    "allowsHitTesting",
+    "accessibilityOnly",
+    "background",
+    "overlay",
+    "border",
+    "ring",
+    "corner",
+    "cornerCurve",
+    "opacity",
+    "shadow",
+    "glass",
+    "blur",
+    "foreground",
+    "font",
+    "weight",
+    "leading",
+    "tracking",
+    "onPress",
+    "onLongPress",
+    "onHover",
+    "hoverGroup",
+    "pressScale",
+    "label",
+    "hint",
+    "role",
+    "hitSlop",
+    "testID",
+    "badge",
+    "id",
+    "title",
+    "titleDisplay",
+    "subtitle",
+    "header",
+    "toolbar",
+    "toolbarLeading",
+    "onBack",
+    "backLabel",
+    "headingLevel",
+    "footer",
+    "sheet",
+    "alert",
+    "dialog",
+    "popover",
+    "onReselect",
+    "when",
+    "rotation",
+    "animation",
+    "animatesColors",
+    "transition",
+    "keyframes",
+    "repeatForever",
+    "delay",
+    "anchor",
+    "matchedGeometry",
+    "drag",
+    "swipe",
+    "pinch",
+    "onDoubleTap",
+    "screenKind",
+    "screenScroll",
+    "documentScroll",
+    "headerPlacement",
+    "scrollEdge",
+    "underlay",
+    "floatingAction",
+    "contentClearance",
+    "navigationScope",
+    "colorPreset",
+    "seed",
+    "screenActive",
+    "initialHeaderHeight",
+    "initialFooterHeight",
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
+    "blend"
   ],
   "agentAvatar": [
     "padding",
@@ -17356,6 +18015,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "mood",
     "paused",
@@ -17447,6 +18110,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "activeIndex"
   ],
@@ -17535,6 +18202,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "composerBanner": [
@@ -17622,6 +18293,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint"
   ],
   "composerIconButton": [
@@ -17709,6 +18384,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "size",
     "iconSize",
@@ -17799,6 +18478,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "loading",
     "presented",
@@ -17888,7 +18571,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "attachmentMenu": [
     "padding",
@@ -17975,6 +18662,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "columns",
     "presented"
@@ -18064,6 +18755,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "activeGroup",
     "query",
@@ -18155,6 +18850,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "surface"
   ],
@@ -18243,6 +18942,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "presented"
   ],
   "areaChartCard": [
@@ -18330,6 +19033,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "shape",
     "activeIndex",
@@ -18420,6 +19127,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "mono"
   ],
@@ -18508,6 +19219,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing"
   ],
   "chartHeadline": [
@@ -18594,7 +19309,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "chartStatTiles": [
     "padding",
@@ -18681,6 +19400,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "activeIndex"
   ],
   "contributionsCard": [
@@ -18768,6 +19491,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "activeCell"
   ],
@@ -18856,6 +19583,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "activeTint",
     "range",
@@ -18946,6 +19677,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "shape",
     "tint",
     "activeTint",
@@ -19036,6 +19771,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "legend",
     "activeIndex",
@@ -19126,6 +19865,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "activeIndex"
   ],
   "sparkline": [
@@ -19213,6 +19956,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "shape",
     "filled"
@@ -19302,6 +20049,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "mono",
     "activeIndex",
     "range"
@@ -19391,6 +20142,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "activeTint",
     "activeIndex"
@@ -19480,6 +20235,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "activeTint",
     "activeIndex"
@@ -19569,6 +20328,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "model",
     "effort",
@@ -19660,6 +20423,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "surface",
     "frosted",
@@ -19752,7 +20519,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiChatShell": [
     "padding",
@@ -19839,6 +20610,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "sidebarSurface",
     "sidebarScrollbarSide",
     "surface",
@@ -19930,6 +20705,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "surface",
     "floatingChrome"
   ],
@@ -20017,7 +20796,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiChatUserMessage": [
     "padding",
@@ -20103,7 +20886,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiChatAssistantMessage": [
     "padding",
@@ -20189,7 +20976,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiChatMessageLine": [
     "padding",
@@ -20276,6 +21067,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "selectable"
   ],
@@ -20363,7 +21158,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiChatMobileHeader": [
     "padding",
@@ -20449,7 +21248,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiChatCodePanel": [
     "padding",
@@ -20536,6 +21339,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tab"
   ],
   "aiChatGalleryPanel": [
@@ -20623,6 +21430,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tab"
   ],
   "statCard": [
@@ -20710,6 +21521,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "statCards": [
@@ -20797,6 +21612,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "columns"
   ],
@@ -20885,6 +21704,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading",
@@ -20975,6 +21798,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "disabled"
   ],
@@ -21063,6 +21890,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "usageCard": [
@@ -21150,6 +21981,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "agentThinking": [
@@ -21237,6 +22072,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "presented"
@@ -21326,6 +22165,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "minimized"
   ],
   "agentProgressLoadingText": [
@@ -21413,6 +22256,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lines",
     "textVariant"
   ],
@@ -21500,7 +22347,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentLogShimmerText": [
     "padding",
@@ -21586,7 +22437,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentLogToolCall": [
     "padding",
@@ -21673,6 +22528,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "agentLogToolCalls": [
@@ -21759,7 +22618,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentLogWorkingRow": [
     "padding",
@@ -21845,7 +22708,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "composerLoader": [
     "padding",
@@ -21932,6 +22799,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "gradient",
     "blend",
     "bloomOnly",
@@ -22022,6 +22893,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size",
     "sidebarSurface",
@@ -22124,6 +22999,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "step",
     "answers"
   ],
@@ -22212,6 +23091,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "gradient"
@@ -22301,6 +23184,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "chatEmptyState": [
@@ -22387,7 +23274,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "chatHeader": [
     "padding",
@@ -22474,6 +23365,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "presentation",
     "titleAlign",
@@ -22567,6 +23462,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tab",
     "memberQuery"
@@ -22656,6 +23555,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "dismissIcon"
   ],
   "scrollToBottomButton": [
@@ -22742,7 +23645,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "chatFolderTabs": [
     "padding",
@@ -22829,6 +23736,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing",
     "dividers",
     "value"
@@ -22917,7 +23828,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "chatSearchResults": [
     "padding",
@@ -23003,7 +23918,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "storiesRow": [
     "padding",
@@ -23090,6 +24009,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing"
   ],
   "storyRing": [
@@ -23177,6 +24100,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "gradient"
   ],
   "typingDots": [
@@ -23264,6 +24191,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint"
   ],
   "contactMessage": [
@@ -23351,6 +24282,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -23440,6 +24375,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "dividers"
   ],
   "fileMessage": [
@@ -23527,6 +24466,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "bubbleTint",
@@ -23617,6 +24560,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -23707,6 +24654,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -23797,6 +24748,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -23886,6 +24841,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -23975,6 +24934,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "columns",
     "spacing"
   ],
@@ -24063,6 +25026,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -24152,6 +25119,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "bubbleTint",
@@ -24243,6 +25214,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -24333,7 +25308,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "hostCard": [
     "padding",
@@ -24419,7 +25398,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "listingHeader": [
     "padding",
@@ -24506,6 +25489,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "listingHeaderAction": [
@@ -24593,6 +25580,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "iconOnly"
   ],
   "listingPhotoGrid": [
@@ -24680,6 +25671,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "reviewCard": [
@@ -24767,6 +25762,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lines",
     "expanded"
   ],
@@ -24855,6 +25854,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "mapPriceMarker": [
@@ -24942,6 +25945,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "size"
   ],
@@ -25030,6 +26037,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "followButton": [
@@ -25117,6 +26128,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "size",
@@ -25209,6 +26224,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "spacing"
   ],
@@ -25297,6 +26316,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "spacing",
     "round",
@@ -25386,7 +26409,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "subscriptionPrice": [
     "padding",
@@ -25472,7 +26499,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "userHoverCard": [
     "padding",
@@ -25558,7 +26589,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "cardForm": [
     "padding",
@@ -25645,6 +26680,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "cardFormCountry": [
@@ -25732,6 +26771,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "cardFormPostcode": [
@@ -25819,6 +26862,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "cardFormHostedField": [
@@ -25906,6 +26953,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "checkoutSheet": [
@@ -25993,6 +27044,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "methodTitleAlign",
     "methodTitleVariant"
   ],
@@ -26081,6 +27136,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "dividers"
   ],
   "priceRangeFilter": [
@@ -26168,6 +27227,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "disabled"
   ],
@@ -26256,6 +27319,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "toggleChipGroup": [
@@ -26343,6 +27410,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "amenityFilter": [
@@ -26430,6 +27501,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "switchFilterRow": [
@@ -26517,6 +27592,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "filterFooter": [
@@ -26604,6 +27683,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading"
   ],
   "filterTriggerButton": [
@@ -26691,6 +27774,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled"
   ],
@@ -26779,6 +27866,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "availabilityFilter": [
@@ -26866,6 +27957,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "date"
   ],
@@ -26954,6 +28049,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "disabled"
   ],
@@ -27042,6 +28141,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "staySearchCompact": [
@@ -27128,7 +28231,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "staySearchPanel": [
     "padding",
@@ -27214,7 +28321,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "staySearchStep": [
     "padding",
@@ -27300,7 +28411,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "destinationSuggestions": [
     "padding",
@@ -27387,6 +28502,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "highlightedIndex"
   ],
   "guestPicker": [
@@ -27474,6 +28593,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "tenancyTimeline": [
@@ -27561,6 +28684,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "leaseSummaryCard": [
@@ -27648,6 +28775,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "rentPaymentList": [
@@ -27735,6 +28866,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint"
   ],
@@ -27822,7 +28957,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "documentList": [
     "padding",
@@ -27909,6 +29048,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "evictionReportCard": [
@@ -27996,6 +29139,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lines"
   ],
   "evictionTimeline": [
@@ -28082,7 +29229,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "placeReviewSummary": [
     "padding",
@@ -28168,7 +29319,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "writeReviewPrompt": [
     "padding",
@@ -28254,7 +29409,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "callScreen": [
     "padding",
@@ -28341,6 +29500,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "size",
@@ -28435,6 +29598,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "muted"
@@ -28524,6 +29691,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "columns",
     "spacing",
@@ -28614,6 +29785,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "answerStyle"
@@ -28703,6 +29878,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint"
   ],
@@ -28791,6 +29970,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "muted"
   ],
   "selectedChipsRow": [
@@ -28878,6 +30061,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "newGroupForm": [
@@ -28965,6 +30152,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "description"
   ],
   "messageBubble": [
@@ -29052,6 +30243,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "groupPosition",
     "mediaFit",
     "tail",
@@ -29142,7 +30337,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "messageList": [
     "padding",
@@ -29228,7 +30427,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "mapScaleBar": [
     "padding",
@@ -29315,6 +30518,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "mapControls": [
@@ -29402,6 +30609,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "axis",
     "align",
     "tilted"
@@ -29491,6 +30702,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "navigationBanner": [
@@ -29577,7 +30792,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "placeCard": [
     "padding",
@@ -29664,6 +30883,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "loading",
     "favorite"
@@ -29753,6 +30976,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "placeInfoList": [
@@ -29839,7 +31066,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "placeTransit": [
     "padding",
@@ -29925,7 +31156,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "placeListCard": [
     "padding",
@@ -30012,6 +31247,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint"
   ],
   "placeList": [
@@ -30099,6 +31338,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "directionsSteps": [
@@ -30186,6 +31429,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "placePicker": [
@@ -30273,6 +31520,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled",
     "query"
@@ -30362,6 +31613,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "loading",
     "minimized"
@@ -30451,6 +31706,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "query"
   ],
@@ -30539,6 +31798,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded",
     "starred"
   ],
@@ -30627,6 +31890,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "starred",
     "expandedIds"
   ],
@@ -30715,6 +31982,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "noteEditorToolbar": [
@@ -30802,6 +32073,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled"
   ],
@@ -30890,6 +32165,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "bookingCard": [
@@ -30977,6 +32256,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading",
     "disabled",
     "guestsOpen"
@@ -31066,6 +32349,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading",
     "disabled"
   ],
@@ -31153,7 +32440,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "homeSearchBar": [
     "padding",
@@ -31240,6 +32531,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "query"
   ],
   "searchModeTabs": [
@@ -31327,6 +32622,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "propertyTypePicker": [
@@ -31414,6 +32713,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "columns",
     "disabled"
   ],
@@ -31501,7 +32804,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "listingActionBar": [
     "padding",
@@ -31588,6 +32895,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading",
     "disabled"
   ],
@@ -31676,6 +32987,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "price",
     "downPayment",
@@ -31767,6 +33082,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading"
   ],
   "saleActionCard": [
@@ -31854,6 +33173,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading"
   ],
   "listingCard": [
@@ -31941,6 +33264,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "density",
     "loading",
@@ -32031,6 +33358,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "wishlistCard": [
@@ -32118,6 +33449,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint"
   ],
   "listingPreviewPane": [
@@ -32205,6 +33540,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "mode"
   ],
   "listingQualityMeter": [
@@ -32291,7 +33630,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "propertyTypeSelector": [
     "padding",
@@ -32378,6 +33721,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "columns",
     "disabled"
   ],
@@ -32466,6 +33813,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style"
   ],
@@ -32554,6 +33905,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "pricePerAreaComparison": [
@@ -32640,7 +33995,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "projectBoard": [
     "padding",
@@ -32726,7 +34085,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "projectBoardCardContent": [
     "padding",
@@ -32812,7 +34175,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "boardDragHandle": [
     "padding",
@@ -32898,7 +34265,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "activityFeed": [
     "padding",
@@ -32985,6 +34356,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "density",
     "lines"
@@ -33074,6 +34449,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint"
   ],
@@ -33162,6 +34541,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "axis",
     "density"
   ],
@@ -33250,6 +34633,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "shape",
     "divider",
@@ -33340,6 +34727,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "divider"
   ],
@@ -33427,7 +34818,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "calendarView": [
     "padding",
@@ -33514,6 +34909,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "month"
   ],
@@ -33601,7 +35000,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "calendarViewMonthGrid": [
     "padding",
@@ -33688,6 +35091,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "taskList": [
@@ -33774,7 +35181,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "webSearch": [
     "padding",
@@ -33860,7 +35271,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "voiceControls": [
     "padding",
@@ -33947,6 +35362,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled",
     "muted",
@@ -34036,7 +35455,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentCreatorField": [
     "padding",
@@ -34123,6 +35546,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "multiline",
     "divider"
   ],
@@ -34210,7 +35637,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentProfile": [
     "padding",
@@ -34296,7 +35727,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentReplyIdentity": [
     "padding",
@@ -34382,7 +35817,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "aiProfileCard": [
     "padding",
@@ -34469,6 +35908,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "period",
     "activeCell"
@@ -34557,7 +36000,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "multiAgentChat": [
     "padding",
@@ -34643,7 +36090,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "agentChatHistory": [
     "padding",
@@ -34730,6 +36181,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "surface",
     "query",
     "selection"
@@ -34819,6 +36274,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "titleAlign",
     "value",
     "selection"
@@ -34908,6 +36367,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "noteCard": [
@@ -34995,6 +36458,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tint",
     "loading",
@@ -35085,6 +36552,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "lines"
   ],
@@ -35173,6 +36644,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "search"
   ],
@@ -35260,7 +36735,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "outlineNav": [
     "padding",
@@ -35347,6 +36826,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "pagination": [
@@ -35433,7 +36916,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "progressiveBlur": [
     "padding",
@@ -35519,7 +37006,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "addressRow": [
     "padding",
@@ -35606,6 +37097,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "density",
     "disabled"
@@ -35695,6 +37190,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "density",
@@ -35785,6 +37284,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "paymentMethodRow": [
@@ -35872,6 +37375,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "disabled"
   ],
@@ -35960,6 +37467,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "density",
     "disabled",
@@ -36050,6 +37561,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "expanded"
   ],
   "priceSummaryLine": [
@@ -36137,6 +37652,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint"
   ],
   "paymentStatusBar": [
@@ -36224,6 +37743,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "paymentStatusBlock": [
@@ -36311,6 +37834,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "contactProfileCard": [
@@ -36398,6 +37925,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "leadScoreCard": [
@@ -36484,7 +38015,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "dealCard": [
     "padding",
@@ -36570,7 +38105,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "pipelineColumn": [
     "padding",
@@ -36656,7 +38195,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "pipelineBoard": [
     "padding",
@@ -36743,6 +38286,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "stage"
   ],
@@ -36830,7 +38377,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "patientInfoCard": [
     "padding",
@@ -36916,7 +38467,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "recentHiresCard": [
     "padding",
@@ -37002,7 +38557,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "cartLine": [
     "padding",
@@ -37089,6 +38648,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "quantity"
   ],
@@ -37177,6 +38740,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "tip",
     "promo"
@@ -37266,6 +38833,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "cartTipPicker": [
@@ -37353,6 +38924,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "menuItemRow": [
@@ -37440,6 +39015,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "quantity"
   ],
@@ -37528,6 +39107,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "value",
     "quantity"
@@ -37617,6 +39200,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "loading",
     "favorite"
@@ -37706,6 +39293,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -37795,6 +39386,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading",
@@ -37885,6 +39480,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -37974,6 +39573,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38063,6 +39666,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38152,6 +39759,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38241,6 +39852,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38330,6 +39945,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38419,6 +40038,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38508,6 +40131,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38597,6 +40224,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading"
@@ -38686,6 +40317,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "friendActivityCard": [
@@ -38772,7 +40407,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "quickAccessTile": [
     "padding",
@@ -38859,6 +40498,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading"
   ],
   "recapCard": [
@@ -38945,7 +40588,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "shareCard": [
     "padding",
@@ -39031,7 +40678,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "lyricsView": [
     "padding",
@@ -39118,6 +40769,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "lyricsPreviewCard": [
@@ -39205,6 +40860,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "lines"
   ],
   "audienceOverview": [
@@ -39291,7 +40950,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "streamsChart": [
     "padding",
@@ -39378,6 +41041,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "metric"
   ],
   "topTracksTable": [
@@ -39464,7 +41131,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "audienceBreakdown": [
     "padding",
@@ -39550,7 +41221,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "releaseCard": [
     "padding",
@@ -39637,6 +41312,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "releaseStatusBadge": [
@@ -39724,6 +41403,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size"
   ],
   "releaseTimeline": [
@@ -39811,6 +41494,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "axis"
   ],
   "trackUploadRow": [
@@ -39897,7 +41584,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "trackMetadataForm": [
     "padding",
@@ -39984,6 +41675,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "artistChipsInput": [
@@ -40071,6 +41766,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "isrcField": [
@@ -40158,6 +41857,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "creditsEditor": [
@@ -40245,6 +41948,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "artworkUploader": [
@@ -40332,6 +42039,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "payoutSummaryCard": [
@@ -40418,7 +42129,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "pitchCard": [
     "padding",
@@ -40505,6 +42220,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "release",
     "selectedMoods",
     "selectedGenres",
@@ -40595,6 +42314,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "checkoutSummary": [
@@ -40681,7 +42404,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "checkoutConfirm": [
     "padding",
@@ -40768,6 +42495,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "loading"
   ],
@@ -40856,6 +42587,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "tint"
   ],
@@ -40944,6 +42679,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "deliverySlotPicker": [
@@ -41031,6 +42770,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "loading",
     "tint",
@@ -41121,6 +42864,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "transportControls": [
@@ -41208,6 +42955,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "style",
     "loading",
@@ -41301,6 +43052,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "muted",
     "liked",
     "devicePickerOpen",
@@ -41396,6 +43151,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "liked"
   ],
   "fullScreenPlayer": [
@@ -41483,6 +43242,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "liked",
     "shuffle",
     "repeat",
@@ -41573,6 +43336,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled",
     "presented"
@@ -41662,6 +43429,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "size",
     "disabled",
     "presented"
@@ -41750,7 +43521,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "connectBanner": [
     "padding",
@@ -41836,7 +43611,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "carrierQuoteCard": [
     "padding",
@@ -41923,6 +43702,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "disabled"
   ],
@@ -42011,6 +43794,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "loading",
     "sorting"
@@ -42100,6 +43887,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "period"
   ],
   "earningsBreakdown": [
@@ -42186,7 +43977,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "earningsPayoutRow": [
     "padding",
@@ -42272,7 +44067,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "jobCard": [
     "padding",
@@ -42359,6 +44158,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "disabled"
   ],
@@ -42447,6 +44250,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "loading",
     "sorting",
@@ -42538,6 +44345,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint",
     "strokeWidth",
     "disabled",
@@ -42628,6 +44439,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "loading",
     "disabled",
     "value"
@@ -42717,6 +44532,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "shipmentLoadPicker": [
@@ -42804,6 +44623,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "shipmentOptionsList": [
@@ -42891,6 +44714,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled",
     "selectedExtras",
     "access",
@@ -42981,6 +44808,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "disabled"
   ],
   "rowActions": [
@@ -43068,6 +44899,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "rowActionButton": [
@@ -43155,6 +44990,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "active",
     "disabled",
@@ -43245,6 +45084,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "tint"
   ],
   "themeToggle": [
@@ -43332,6 +45175,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "collapsed"
   ],
@@ -43420,6 +45267,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "query",
     "expanded",
     "collapsed",
@@ -43513,6 +45364,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "searchField": [
@@ -43599,7 +45454,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "topResultCard": [
     "padding",
@@ -43685,7 +45544,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "searchResultTabs": [
     "padding",
@@ -43771,7 +45634,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "recentSearches": [
     "padding",
@@ -43857,7 +45724,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "browseGrid": [
     "padding",
@@ -43944,6 +45815,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "spacing"
   ],
   "queuePanel": [
@@ -44031,6 +45906,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style",
     "tab"
   ],
@@ -44118,7 +45997,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "recentlyPlayedList": [
     "padding",
@@ -44204,7 +46087,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "trackList": [
     "padding",
@@ -44291,6 +46178,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "tint",
     "selectedIds"
@@ -44380,6 +46271,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "tint"
   ],
@@ -44468,6 +46363,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density",
     "liked"
   ],
@@ -44556,6 +46455,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "density"
   ],
   "trackListEmpty": [
@@ -44642,7 +46545,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ],
   "selectionBar": [
     "padding",
@@ -44729,6 +46636,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "style"
   ],
   "episodeRow": [
@@ -44816,6 +46727,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent",
     "saved",
     "downloaded"
   ],
@@ -44903,7 +46818,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "glassID",
+    "glassUnion",
+    "glassTransition",
+    "inContent"
   ]
 } as const;
 
@@ -45254,6 +47173,7 @@ export const CONSTRUCTORS = {
   "SortableChipRow": "sortableChipRow",
   "SortableChip": "sortableChip",
   "Viewport": "viewport",
+  "GlassGroup": "glassGroup",
   "AgentAvatar": "agentAvatar",
   "ChatComposer": "chatComposer",
   "CompactComposer": "compactComposer",
