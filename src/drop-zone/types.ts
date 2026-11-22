@@ -51,7 +51,6 @@ export interface DropZoneProps {
   /** Dropped on it: the action and the content, of the kinds it accepts. */
   onDrop: (event: DropTargetDropEvent) => void;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   testID?: string;
   children?: ReactNode;
 }
