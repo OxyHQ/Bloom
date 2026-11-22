@@ -1508,7 +1508,14 @@
     },
     "importantAlertsCard": { "constructors": ["ImportantAlertsCard"], "modifiers": [] },
     "patientInfoCard": { "constructors": ["PatientInfoCard"], "modifiers": [] },
-    "recentHiresCard": { "constructors": ["RecentHiresCard"], "modifiers": [] }
+    "recentHiresCard": { "constructors": ["RecentHiresCard"], "modifiers": [] },
+    "cartLine": { "constructors": ["CartLine"], "modifiers": ["density"] },
+    "cartPanel": { "constructors": ["CartPanel"], "modifiers": ["density"] },
+    "cartPromoField": { "constructors": ["CartPromoField"], "modifiers": ["disabled"] },
+    "cartTipPicker": { "constructors": ["CartTipPicker"], "modifiers": ["disabled"] },
+    "menuItemRow": { "constructors": ["MenuItemRow"], "modifiers": ["density"] },
+    "menuItemOptions": { "constructors": ["MenuItemOptions"], "modifiers": ["disabled"] },
+    "vendorCard": { "constructors": ["VendorCard"], "modifiers": ["density", "loading"] }
   },
   "sfSymbols": {
     "$comment": [
