@@ -1235,7 +1235,6 @@ export type Modifier =
         | GuestPickerSize
         | DirectionsDensity
         | NoteToolbarSize
-        | FollowButtonSize
         | OfferingBadgeSize
         | LockupSize
         | SidebarSize;
@@ -1284,8 +1283,6 @@ export type Modifier =
         | LocationPuckMode
         | PlaceCardStyle
         | MailComposeStyle
-        | ShelfLayout
-        | TripCardOrientation
         | TripCardOrientation
         | SearchModeTabsStyle
         | MortgageLayout
@@ -1575,8 +1572,6 @@ export type NodeKind =
   | MapChromeKind
   | PlaceKind
   | MailKind
-  | CheckoutSheetKind
-  | BookingKind
   | BookingKind
   | HomeSearchKind
   | ListingActionKind
