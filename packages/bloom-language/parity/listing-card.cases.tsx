@@ -7,7 +7,7 @@ import { View } from 'react-native';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -43,7 +43,7 @@ const cards: ParityCase[] = [
     bloom: () => <ListingCard title="Harbour flat" photos={PHOTOS} {...HOME} onPress={press} />,
   },
   ...ENUMS.listingCardLayout.flatMap((layout) =>
-    ENUMS.density.map((density) => ({
+    CONTROL_DENSITIES.map((density) => ({
       name: `ListingCard ${layout}, ${density}`,
       language: () =>
         toElement(L.ListingCard('Harbour flat', PHOTOS, HOME).style(layout).density(density)),
@@ -97,7 +97,7 @@ const cards: ParityCase[] = [
 
 export const LISTING_CARD_CASES: ParityCase[] = [
   ...cards.map(inColumn),
-  ...ENUMS.density.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `ListingCardGrid ${density}`,
     language: () =>
       toElement(

@@ -1806,7 +1806,7 @@ fn the_tenancy_eviction_and_review_families_are_checked() {
     for (call, message) in [
         ("LeaseSummaryCard(o).style('grid')", "Unknown tenancyLayout token 'grid' for .style()"),
         ("RentPaymentList(o).tint('warning')", "Unknown rentOutstandingTone token 'warning' for .tint()"),
-        ("TenancyTimeline(o).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("TenancyTimeline(o).density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("EvictionReportCard(o).style('solid')", "EvictionReportCard has no modifier .style()"),
     ] {
         let output = check(&format!("export const x = (o) => {call};\n"));
@@ -2276,7 +2276,7 @@ fn addresses_and_payment_methods_are_checked() {
     let cases = [
         ("AddressList(s).style('grid')", "Unknown choiceListStyle token 'grid' for .style()"),
         ("PaymentMethodList(s).style('menu')", "Unknown choiceListStyle token 'menu' for .style()"),
-        ("AddressRow('a').density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("AddressRow('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("AddressRow('a').tint('accent')", "AddressRow has no modifier .tint()"),
     ];
     for (chain, message) in cases {
@@ -2315,10 +2315,7 @@ fn the_crm_families_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("PipelineBoard(s, r).style('kanban')", "Unknown pipelineLayout token 'kanban' for .style()"),
-        (
-            "ContactProfileCard('a').density('comfortable')",
-            "Unknown density token 'comfortable' for .density()",
-        ),
+        ("ContactProfileCard('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("DealCard('a').size('sm')", "DealCard has no modifier .size()"),
     ];
     for (chain, message) in cases {
@@ -2346,7 +2343,7 @@ fn the_cart_menu_items_and_vendor_card_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("CartLine('a', o).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("CartLine('a', o).density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("CartPanel('a', o).disabled()", "CartPanel has no modifier .disabled()"),
         ("VendorCard('a').tint('success')", "VendorCard has no modifier .tint()"),
     ];
@@ -2423,7 +2420,7 @@ fn the_checkout_summary_delivery_slots_and_order_confirmation_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("DeliverySlotDays(b, d).tint('teal')", "Unknown color token 'teal' for .tint()"),
-        ("OrderConfirmation().density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("OrderConfirmation().density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("CheckoutSummary().disabled()", "CheckoutSummary has no modifier .disabled()"),
     ];
     for (chain, message) in cases {
@@ -2461,7 +2458,7 @@ fn the_logistics_families_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("CarrierQuoteCard(q).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("CarrierQuoteCard(q).density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("SignaturePad().tint('ink')", "Unknown color token 'ink' for .tint()"),
         ("JobBoard(q).style('grid')", "JobBoard has no modifier .style()"),
     ];
@@ -2541,7 +2538,7 @@ fn the_track_list_is_checked() {
             "SelectionBar(1, a, {}).style('docked')",
             "Unknown selectionBarPlacement token 'docked' for .style()",
         ),
-        ("TrackList(a).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("TrackList(a).density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("TrackRow(a, 0).tint('surface')", "TrackRow has no modifier .tint()"),
     ];
     for (chain, message) in cases {

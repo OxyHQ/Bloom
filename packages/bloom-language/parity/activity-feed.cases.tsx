@@ -4,7 +4,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
 
 const ENTRIES: ActivityFeedEntry[] = [
   {
@@ -51,7 +51,7 @@ export const ACTIVITY_FEED_CASES: ParityCase[] = [
     bloom: () => <ActivityFeed entries={ENTRIES} />,
   },
   ...ENUMS.activityFeedGrouping.flatMap((grouping) =>
-    ENUMS.density.map((density) => ({
+    CONTROL_DENSITIES.map((density) => ({
       name: `ActivityFeed ${grouping}, ${density}`,
       language: () => toElement(L.ActivityFeed(ENTRIES).style(grouping).density(density)),
       bloom: () => (

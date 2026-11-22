@@ -1,7 +1,15 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useTheme, useThemePaint, type ThemeColors } from '@oxy.so/bloom/theme';
 
+import { ENUMS } from '../../src/generated/spec.generated';
+import type { ControlDensity } from '../../src/tokens';
+
 export type Scheme = 'light' | 'dark';
+
+/** A control's densities (`default`, `compact`): the spec's, without a content list's `comfortable`. */
+export const CONTROL_DENSITIES = ENUMS.density.filter(
+  (density): density is ControlDensity => density !== 'comfortable',
+);
 
 /** One comparison: a language tree and what an app draws with Bloom today. */
 export interface ParityCase {

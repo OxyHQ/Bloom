@@ -13,7 +13,7 @@ import {
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -163,7 +163,7 @@ export const TRACK_LIST_CASES: ParityCase[] = [
       />
     ),
   },
-  ...ENUMS.density.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `TrackListHeader ${density}`,
     language: () =>
       toElement(
