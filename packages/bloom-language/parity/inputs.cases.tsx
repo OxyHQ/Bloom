@@ -607,6 +607,11 @@ const searches: ParityCase[] = [
     bloom: () => <Search value="" onValueChange={set} size={size} />,
   })),
   {
+    name: 'Search with a clear action',
+    language: () => toElement(L.Search(['bloom', set]).onClearText(set)),
+    bloom: () => <Search value="bloom" onValueChange={set} onClearText={set} />,
+  },
+  {
     name: 'Search disabled',
     language: () => toElement(L.Search(empty).disabled()),
     bloom: () => <Search value="" onValueChange={set} disabled />,

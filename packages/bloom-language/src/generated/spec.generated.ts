@@ -2941,6 +2941,9 @@ export const MODIFIERS = {
   "onSubmit": [
     "value"
   ],
+  "onClearText": [
+    "value"
+  ],
   "autoFocus": [],
   "maxLength": [
     "value"
@@ -8526,6 +8529,7 @@ export const NODE_MODIFIERS = {
     "autocorrect",
     "submitLabel",
     "onSubmit",
+    "onClearText",
     "autoFocus",
     "trigger",
     "trailing",
