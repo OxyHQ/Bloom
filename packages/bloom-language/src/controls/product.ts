@@ -2,7 +2,14 @@ import type { ReactNode } from 'react';
 
 import type { Binding } from '../binding';
 import type { Child } from '../node';
-import { type CornerName, resolveCorner, resolveSpace, type SpaceToken } from '../tokens';
+import {
+  type CornerName,
+  DURATION,
+  type DurationName,
+  resolveCorner,
+  resolveSpace,
+  type SpaceToken,
+} from '../tokens';
 import type { ControlDraw, ControlRenderer, ProductColor } from './draw';
 
 /**
@@ -64,6 +71,8 @@ export interface ProductSpec {
   readonly lengths?: readonly string[];
   /** Options that are corner tokens, where Bloom takes a radius. */
   readonly corners?: readonly string[];
+  /** Options that are duration tokens, where Bloom takes milliseconds. */
+  readonly durations?: readonly string[];
   /** The component takes `.onPress()` and its name itself, rather than a host around it. */
   readonly press?: true;
   /** Props from the node's own modifiers (a variant, a size, a tone). */
@@ -100,6 +109,10 @@ export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer 
     for (const key of spec.corners ?? []) {
       const corner = options?.[key] as CornerToken | undefined;
       props[key] = corner === undefined ? undefined : resolveCorner(corner);
+    }
+    for (const key of spec.durations ?? []) {
+      const duration = options?.[key] as DurationName | undefined;
+      props[key] = duration === undefined ? undefined : DURATION[duration];
     }
     Object.assign(props, spec.own?.(d));
     const child = d.node.children[0];

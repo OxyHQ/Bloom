@@ -4,14 +4,21 @@ import {
 } from '@oxy.so/bloom/ambient-photo';
 
 import { Node, type ViewModifiers } from '../node';
+import type { DurationName } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
 /** An ambient display's photo. */
 export type AmbientPhotoKind = 'ambientPhoto';
 
-/** Bloom `AmbientPhoto`'s timing (its cross-fade and drift) and its report of each photo shown. */
-export type AmbientPhotoOptions = Omit<AmbientPhotoProps, 'source' | 'style' | 'testID'>;
+/**
+ * Bloom `AmbientPhoto`'s timing (its cross-fade and drift, duration tokens) and
+ * its report of each photo shown.
+ */
+export type AmbientPhotoOptions = Omit<
+  AmbientPhotoProps,
+  'source' | 'style' | 'testID' | 'fadeMs' | 'driftMs'
+> & { readonly fadeMs?: DurationName; readonly driftMs?: DurationName };
 
 /** Bloom `AmbientPhoto`: it fills its box. */
 export type AmbientPhotoView = ViewModifiers<AmbientPhotoView>;
@@ -28,5 +35,5 @@ export function AmbientPhoto(
 }
 
 export const AMBIENT_PHOTOS: Record<AmbientPhotoKind, ControlRenderer> = {
-  ambientPhoto: product(BloomAmbientPhoto),
+  ambientPhoto: product(BloomAmbientPhoto, { durations: ['fadeMs', 'driftMs'] }),
 };

@@ -7,7 +7,7 @@ import {
 } from '@oxy.so/bloom/lyrics';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { LyricsSize } from '../tokens';
+import type { DurationName, LyricsSize } from '../tokens';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -17,12 +17,13 @@ export type LyricsKind = 'lyricsView' | 'lyricsPreviewCard';
 /**
  * Bloom `LyricsView`'s data: the playback position, the seek handler, the
  * artwork's colour from the backend, plain `text` when there are no lines,
- * its words; its `footer` is a language child.
+ * its words; its `footer` is a language child, its `resumeDelay` a duration
+ * token.
  */
 export type LyricsViewOptions = Omit<
   LyricsViewProps,
-  'style' | 'testID' | 'accessibilityLabel' | 'lines' | 'size' | 'footer'
-> & { readonly footer?: Child };
+  'style' | 'testID' | 'accessibilityLabel' | 'lines' | 'size' | 'footer' | 'resumeDelay'
+> & { readonly footer?: Child; readonly resumeDelay?: DurationName };
 export type LyricsPreviewCardOptions = Omit<
   LyricsPreviewCardProps,
   'style' | 'testID' | 'lines' | 'visibleLines'
@@ -54,6 +55,7 @@ export function LyricsPreviewCard(
 export const LYRICS: Record<LyricsKind, ControlRenderer> = {
   lyricsView: product(BloomLyricsView, {
     slots: ['footer'],
+    durations: ['resumeDelay'],
     own: (d) => ({ size: d.own('size')?.value }),
   }),
   lyricsPreviewCard: product(BloomLyricsPreviewCard, {

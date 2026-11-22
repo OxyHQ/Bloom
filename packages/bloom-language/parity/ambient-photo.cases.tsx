@@ -22,7 +22,7 @@ export const AMBIENT_PHOTO_CASES_MOVING: ParityCase[] = [
     name: 'AmbientPhoto no drift, a short fade, reporting, framed',
     language: () =>
       toElement(
-        L.AmbientPhoto(PHOTO, { drift: false, fadeMs: 800, onShown: shown }).frame({
+        L.AmbientPhoto(PHOTO, { drift: false, fadeMs: '800', onShown: shown }).frame({
           width: '64',
           height: '64',
         }),
@@ -38,8 +38,9 @@ export const AMBIENT_PHOTO_CASES_MOVING: ParityCase[] = [
     ),
   },
   {
-    name: 'AmbientPhoto none yet',
-    language: () => toElement(L.AmbientPhoto(null, { driftMs: 30000, driftScale: 1.02 })),
-    bloom: () => <AmbientPhoto source={null} driftMs={30000} driftScale={1.02} />,
+    name: 'AmbientPhoto none yet, its fade and drift as duration tokens',
+    language: () =>
+      toElement(L.AmbientPhoto(null, { fadeMs: '2500', driftMs: 'slow', driftScale: 1.02 })),
+    bloom: () => <AmbientPhoto source={null} fadeMs={2500} driftMs={300} driftScale={1.02} />,
   },
 ];
