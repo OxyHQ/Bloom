@@ -13,13 +13,21 @@ import java.util.WeakHashMap
 // Consumers call register(view, baseColor) and unregister(view). A registered view that is a direct child of the root
 // (the menu overlay) is left out of the recording. Surfaces that live inside the page skip their own drawing while
 // `recording` is true (dispatchDraw / onDraw check it), so they are not recorded into the backdrop.
-internal class GlassBackdrop private constructor(private val root: ViewGroup) : ViewTreeObserver.OnPreDrawListener {
+//
+// The recording holds the page by reference: drawing a child of the root draws each of its children as that view's own
+// RenderNode, so whatever redraws in the page (a scroll, a video, an animation) reaches every glass surface through
+// those nodes, and no surface records again for it. The recording itself changes only with the window's layout (its
+// size and children), the registered surfaces and the base colour. Recorded again for any redraw in the page, it would
+// make every surface record again too, at the page's frame rate, for an animation nowhere near the glass.
+internal class GlassBackdrop private constructor(private val root: ViewGroup) :
+  ViewTreeObserver.OnPreDrawListener, ViewTreeObserver.OnGlobalLayoutListener {
   val node = RenderNode("GlassBackdrop")
 
   private val excluded = HashSet<View>()
   private var baseColor: () -> Int = { android.graphics.Color.BLACK }
   private var users = 0
-  private var recorded = false
+  private var stale = true
+  private var recordedColor = 0
 
   // Bumped each time the page is recorded: consumers that cache the backdrop regenerate when it changes.
   var version: Int = 0
@@ -29,30 +37,37 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) : 
     excluded.add(view)
     baseColor = color
     users += 1
-    if (users == 1) root.viewTreeObserver.addOnPreDrawListener(this)
+    stale = true
+    if (users == 1) {
+      root.viewTreeObserver.addOnPreDrawListener(this)
+      root.viewTreeObserver.addOnGlobalLayoutListener(this)
+    }
   }
 
   fun unregister(view: View) {
     excluded.remove(view)
     users -= 1
+    stale = true
     if (users <= 0) {
       users = 0
-      if (root.viewTreeObserver.isAlive) root.viewTreeObserver.removeOnPreDrawListener(this)
-      recorded = false
+      if (root.viewTreeObserver.isAlive) {
+        root.viewTreeObserver.removeOnPreDrawListener(this)
+        root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+      }
     }
   }
 
+  override fun onGlobalLayout() {
+    stale = true
+  }
+
   override fun onPreDraw(): Boolean {
-    if (!recorded || anyChildDirty()) record()
+    val color = baseColor()
+    if (stale || color != recordedColor) record(color)
     return true
   }
 
-  private fun anyChildDirty(): Boolean {
-    for (index in 0 until root.childCount) if (root.getChildAt(index).isDirty) return true
-    return false
-  }
-
-  private fun record() {
+  private fun record(color: Int) {
     val width = root.width
     val height = root.height
     if (width <= 0 || height <= 0) return
@@ -70,7 +85,7 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) : 
     recording = true
     try {
       val canvas = node.beginRecording(width, height)
-      canvas.drawColor(baseColor())
+      canvas.drawColor(color)
       root.background?.draw(canvas)
       for (index in 0 until root.childCount) {
         val child = root.getChildAt(index)
@@ -83,7 +98,8 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) : 
       recording = false
       for (view in hidden) view.visibility = View.VISIBLE
     }
-    recorded = true
+    stale = false
+    recordedColor = color
     version += 1
   }
 
