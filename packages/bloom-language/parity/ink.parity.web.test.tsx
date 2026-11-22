@@ -6,7 +6,7 @@
  * under a live variant too, and as a prop a Bloom component draws as a style
  * under Bloom's prepaint (its colours `var(--bloom-paint-…)`).
  */
-import type { Node } from '../src/node';
+import type { ViewNode } from '../src/node';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { LISTING_CARD_CASES } from './listing-card.cases';
@@ -16,7 +16,7 @@ import { STAT_BAR_CASES } from './stat-bar.cases';
 import { type DomTree, webTree } from './support/web';
 
 type Scheme = 'light' | 'dark';
-const css = (view: Node, scheme: Scheme) =>
+const css = (view: ViewNode, scheme: Scheme) =>
   (webTree(toElement(view), scheme) as DomTree[])[0]?.css ?? {};
 
 /** A role's colour in `scheme`, at `alpha`. */
