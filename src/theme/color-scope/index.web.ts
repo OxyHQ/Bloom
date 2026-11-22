@@ -3,6 +3,6 @@
 // Re-run `bun run generate:exports` (or any `bun run build`) after
 // changing that barrel or the set of web-forked subpaths.
 
-export { BloomColorScope, useColorScopeStyle } from './ColorScope.web';
+export { BloomColorScope } from './ColorScope.web';
 export type { BloomColorScopeProps } from './ColorScope.web';
 export type { BloomColorScopeTokens } from './types';

@@ -31,9 +31,7 @@ const ConcentricViewComponent = forwardRef<ComponentRef<typeof View>, Concentric
           geometry.variables,
         ]}
       >
-        <ConcentricProvider value={geometry.context} variables={geometry.nativeVariables}>
-          {children}
-        </ConcentricProvider>
+        <ConcentricProvider value={geometry.context}>{children}</ConcentricProvider>
       </StyledView>
     );
   },

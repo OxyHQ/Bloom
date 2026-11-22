@@ -269,7 +269,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
             rim={borderRole === 'none'}
           />
         ) : null}
-        <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
+        <ConcentricProvider value={concentric.context}>
           <SurfaceLevelProvider
             level={material.level}
             fill={publishedFill}

@@ -1,9 +1,9 @@
-import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import type React from 'react';
+import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
-import { getVariableContextProvider } from '../color-scope/style-builder';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import type { SchemeVariant } from '../color-engine';
 import { ThemeScopeContext, type ScopeState } from '../color-scope/context';
@@ -67,21 +67,6 @@ export function BloomSeedScope({
   const parent = useContext(BloomThemeContext);
   const resolvedMode = parent?.theme.mode ?? 'light';
 
-  const nativeVars = useMemo<Record<string, string> | null>(
-    () =>
-      seed
-        ? buildSeedScopeVars({
-            seed,
-            mode: resolvedMode,
-            variant,
-            contrastLevel,
-            secondarySeed,
-            tertiarySeed,
-          })
-        : null,
-    [seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed],
-  );
-
   const contextValue = useMemo<BloomThemeContextValue | null>(() => {
     if (!parent || !seed) return null;
     const theme = buildThemeFromSeed(seed, resolvedMode, variant, contrastLevel, {
@@ -107,9 +92,7 @@ export function BloomSeedScope({
     throw new Error('BloomSeedScope must be used within a <BloomThemeProvider>');
   }
   // `seed` undefined => no-op; children inherit the parent scope.
-  if (!nativeVars || !contextValue) return <>{children}</>;
-
-  const VariableProvider = getVariableContextProvider();
+  if (!scopeState || !contextValue) return <>{children}</>;
 
   let content: React.ReactNode;
   if (asChild) {
@@ -126,15 +109,9 @@ export function BloomSeedScope({
     content = <View style={[{ flex: 1 }, style]}>{children}</View>;
   }
 
-  const scoped = VariableProvider ? (
-    <VariableProvider value={nativeVars}>{content}</VariableProvider>
-  ) : (
-    content
-  );
-
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      <ThemeScopeContext.Provider value={scopeState}>{scoped}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={scopeState}>{content}</ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }
