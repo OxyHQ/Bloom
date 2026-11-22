@@ -1,6 +1,6 @@
 ---
 title: App conventions
-description: The rules an Oxy app follows when it composes Bloom - Bloom first, Tailwind and NativeWind CSS contracts, and Expo Router pitfalls.
+description: The rules an Oxy app follows when it composes Bloom - Bloom first, styles and tokens, and Expo Router pitfalls.
 ---
 
 # App conventions
@@ -25,7 +25,8 @@ An app composes Bloom. It does not build UI of its own.
 - **No app-local reimplementations.** Shared UI goes to Bloom; data goes through
   React Query and the Oxy packages (`@oxy.so/services`, `@oxy.so/contracts`).
   If two apps need the same thing, it moves to the shared owner, it is not copied.
-- Layout is NativeWind classes on the Bloom component's own node. No JS
+- Layout is the Bloom component's own `style` (or the Bloom language's
+  modifiers). Bloom takes no `className`. No JS
   measuring (`onLayout` plus state, effect tricks) to size things CSS can size;
   only per-item data, such as an aspect ratio, belongs inline.
 - Keep `md` as the normal control size ([UI architecture](./ui-architecture.mdx)).
@@ -47,48 +48,29 @@ Register one `ImageResolverProvider` at the app root and pass bare file ids to
 Bloom (`<Avatar source={id}>`). Never build a media URL in the app, hardcode a
 CDN host, or add a per-app URL helper. See [ImageResolver](./image-resolver.mdx).
 
-## CSS and tokens
+## Styles and tokens
 
+- **Bloom needs no NativeWind, react-native-css or Tailwind** ([Bloom without
+  NativeWind](./no-nativewind.mdx)). An app that still writes its own
+  `className` keeps NativeWind for that code until the className codemod moves
+  it ([className table](./bloom-language-classnames.mdx)); then it drops the
+  dependency and app-preset applies no NativeWind wrapper.
+- **Colours are tokens.** Read them with `useColorTokens()` or
+  `createTokenStyles((t) => …)` from `@oxy.so/bloom/theme`: the scope's value
+  on native, the token's CSS variable on the web. A hardcoded hex cannot follow
+  light/dark mode, a preset or a colour scope.
 - **Consume Bloom base tokens as `var(--x)`, never `hsl(var(--x))`.** The values
   are full colors; wrapping them again resolves to transparent. A static check
   of built CSS does not catch it: inspect live computed styles.
-- **Import Bloom's theme, do not restate it.** Tailwind v4 apps add
-  `@import "@oxy.so/bloom/design-tokens/theme.css";` (see
-  [Design tokens](./design-tokens.mdx)). Bloom's components read those custom
-  properties, so an app that redeclares one is not duplicating it, it is
-  re-skinning Bloom from the inside: nothing errors, and type sizes, surfaces
-  and borders quietly stop being Bloom's. Keep only app-local seeds in
-  `global.css`. A hardcoded hex cannot follow light/dark mode or a preset at all.
-- **Find restatements by comparing, not by reading.** Build the CSS, read the
-  computed value of each token back, and diff it against Bloom's `theme.css`.
-  Normalise notation first (`hsl(0 0% 100%)` and `#ffffff` are the same color)
-  or the count is inflated.
-- **The CSS `@theme` block is the live layer.** Tailwind v4 does not load a
-  `tailwind.config.js` without an `@config` directive, so a JS config or preset
-  with no `@config` is dead code on web and native alike. Dead is not harmless:
-  adding the `@config` line later brings the whole stale layer back. Delete the
-  config when you trim the CSS.
-- **Diagnose by building the CSS and reading the value back.** Process
-  `global.css` with `@tailwindcss/postcss` and grep the output for the custom
-  property. Change one variable at a time, and make sure the file you edit is the
-  file you build. Use `@tailwindcss/postcss`, not `@tailwindcss/cli`: the CLI
-  auto-detects extra sources and can disagree on identical input. Name the
-  instrument next to every number you report.
-- **Native compiles the same way.** NativeWind delegates to `react-native-css`,
-  which has no Tailwind dependency; Expo's Metro config runs the app's
-  `postcss.config` over CSS. So the one `@tailwindcss/postcss` plugin that builds
-  the web CSS also builds the native styles. This holds only while Expo routes
-  CSS through PostCSS; if that changes, re-derive it.
-- **Web `className` layout is inert without the Tailwind pipeline and an
-  `@source` scan** of the installed `@oxy.so/bloom` and `@oxy.so/services`
-  `lib/` output. Colors still work (they are inline styles), which masks the
-  gap. Wiring: [Getting started](./getting-started.mdx#expo--metro-css).
+- **Never restate a token.** Bloom's components read the theme's custom
+  properties, so an app that redeclares one re-skins Bloom from the inside:
+  nothing errors, and surfaces and borders quietly stop being Bloom's.
 - **Bloom web forks inject their own CSS** with a constructed `CSSStyleSheet`
   and `adoptedStyleSheets`, not a `<style>` element, so it is CSP-safe. An app
   never copies Bloom CSS by hand ([Provider](./provider.mdx) covers SSR).
-- **Theme with className.** No custom color props, wrapper components or
-  Reanimated color workarounds. `BloomColorScope` emits scoped `--color-*`
-  aliases. Never replace brand colors with theme colors.
+- **Theme a subtree with `BloomColorScope`.** No custom color props, wrapper
+  components or Reanimated color workarounds. Never replace brand colors with
+  theme colors.
 
 ## Platform forks and types
 
@@ -101,10 +83,6 @@ CDN host, or add a per-app URL helper. See [ImageResolver](./image-resolver.mdx)
 - **`useTheme` throws outside `<BloomThemeProvider>`.** Mount the provider above
   any splash or loading branch in `app/_layout.tsx`. This is runtime-only;
   verify it on a real cold start.
-- **`className` on `ScrollView` and `FlatList`** in a published React Native
-  package needs the heritage-free `declare module 'react-native'` augmentation
-  (Bloom's `src/react-native-className.d.ts`), pulled in with
-  `/// <reference path>`. Never `as any`.
 
 ## Expo Router
 
