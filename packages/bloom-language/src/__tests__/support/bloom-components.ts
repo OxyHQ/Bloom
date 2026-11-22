@@ -37,6 +37,8 @@ export const IconCircle = 'IconCircle';
 export const Loading = 'Loading';
 export const PressableScale = 'PressableScale';
 export const SubtleHover = 'SubtleHover';
+/** The hover group's marker: a web `data-*` attribute (the stand-in names it). */
+export const hoverGroupProps = { dataSet: { bloomHoverGroup: '' } };
 // Bloom's skeleton shapes (`@oxy.so/bloom/skeleton`).
 export const Region = 'SkeletonRegion';
 export const Text = 'SkeletonText';
