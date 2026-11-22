@@ -30,7 +30,7 @@ import { mount, only, quietRenderer } from './support/mount';
 
 quietRenderer();
 
-const row = (name: string): Child => ListItem(name);
+const row = ({ item }: { item: string }): Child => ListItem(item);
 /** The same tree `mount` draws, for an update. */
 const themed = (element: ReactElement) =>
   createElement(PaintContext.Provider, { value: LIGHT }, element);
@@ -47,10 +47,35 @@ describe('VirtualList()', () => {
 
   it('draws each item with the latest row function', () => {
     const r = mount(toElement(VirtualList(['Ana'], row)));
-    const other = (name: string): Child => ListItem(`${name}!`);
+    const other = ({ item, index }: { item: string; index: number }): Child =>
+      ListItem(`${item}!${index}`);
     act(() => r.update(themed(toElement(VirtualList(['Ana'], other)))));
     const drawn = only(r, 'VirtualList').props.renderItem({ item: 'Ana', index: 0 });
-    expect(drawn.props.title).toBe('Ana!');
+    expect(drawn.props.title).toBe('Ana!0');
+  });
+
+  it('hands Bloom its screen, scrollbar, keyboard and tuning props as they are', () => {
+    const list = only(
+      mount(
+        toElement(
+          VirtualList(['Ana'], row)
+            .screen()
+            .scrollbar('never')
+            .keyboardTaps('handled')
+            .scrollDismissesKeyboard('immediately')
+            .tuning({ overscan: 4, windowSize: 10 }),
+        ),
+      ),
+      'VirtualList',
+    );
+    expect(list.props).toMatchObject({
+      screen: {},
+      scrollbar: 'never',
+      keyboardShouldPersistTaps: 'handled',
+      keyboardDismissMode: 'on-drag',
+      overscan: 4,
+      windowSize: 10,
+    });
   });
 });
 

@@ -14,6 +14,7 @@ import {
   type ListPersonData,
   type ListSection,
   type VirtualListProps,
+  type VirtualListRenderItemInfo,
 } from '@oxy.so/bloom/list';
 import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
@@ -24,9 +25,13 @@ import {
   resolveSpace,
   type Density,
   type InsetEdge,
+  type KeyboardDismiss,
+  type KeyboardTaps,
   type ListSeparator,
+  type ScrollbarVisibility,
   type SpaceToken,
 } from '../tokens';
+import { DISMISS_MODE } from '../chrome/scroll-view-host';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
@@ -47,7 +52,7 @@ export type ListItemProps =
   | { readonly recipe: 'row'; readonly title: ListText | undefined }
   | Recipe;
 
-/** The engine's own tuning knobs, as Bloom's `VirtualList` takes them (FlashList's, FlatList's). */
+/** The engine's own tuning knobs, as Bloom's `VirtualList` takes them (FlashList's, FlatList's, the web virtualizer's overscan). */
 export type VirtualListTuning = Pick<
   VirtualListProps<unknown>,
   | 'overscan'
@@ -59,10 +64,13 @@ export type VirtualListTuning = Pick<
   | 'maintainVisibleContentPosition'
   | 'drawDistance'
   | 'maxItemsInRecyclePool'
-  | 'keyboardShouldPersistTaps'
-  | 'keyboardDismissMode'
-  | 'scrollbar'
 >;
+
+/** How a list binds to its screen, as Bloom's `VirtualList` takes its `screen` (`ScreenScrollOptions`). */
+export type VirtualListScreen = NonNullable<VirtualListProps<unknown>['screen']>;
+
+/** What a list's row is handed: FlashList's `renderItem` argument as Bloom passes it, the item and its index. */
+export type VirtualListRow<T> = VirtualListRenderItemInfo<T>;
 
 /** A mail row's data: Bloom's `ListMailData`, but its star, which is its `.starred()`. */
 export type MailRowData = Omit<ListMailData, 'starred' | 'onStarredChange'>;
@@ -169,6 +177,18 @@ export interface VirtualListView extends ViewModifiers<VirtualListView> {
   emptyState(value: Child): VirtualListView;
   /** The engine's tuning knobs, honoured by the engine that knows them. */
   tuning(value: VirtualListTuning): VirtualListView;
+  /**
+   * The list is its screen's scroller, without a `ScrollView` around it: the
+   * header's fade, the bottom bar's fold, the reselect and the insets bind to
+   * it (Bloom's `screen`, `{}` by default). It must be inside a screen.
+   */
+  screen(options?: VirtualListScreen): VirtualListView;
+  /** When the native scroll indicator shows (`never` hides it); on the web the screen's scroller owns the bar. */
+  scrollbar(value: ScrollbarVisibility): VirtualListView;
+  /** A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default. */
+  scrollDismissesKeyboard(value: KeyboardDismiss): VirtualListView;
+  /** Whether a tap with the keyboard up reaches the row: `handled` by a control, `always`, or `never` (default). */
+  keyboardTaps(value: KeyboardTaps): VirtualListView;
 }
 /** Bloom `ListSelectionBar`: the count selected, select all, clear and the bulk actions. */
 export interface ListSelectionBarView extends ViewModifiers<ListSelectionBarView> {
@@ -208,10 +228,13 @@ export function List(items: readonly ListEntry[]): ListView {
 export function SectionedList(sections: readonly ListSection[]): ListView {
   return new Node('list', { sections }, []);
 }
-/** Bloom `VirtualList`: `row` draws each item; keep it stable (module scope, or a `useCallback`). */
+/**
+ * Bloom `VirtualList`: `row` draws each item from FlashList's `renderItem`
+ * argument (`{ item, index }`); keep it stable (module scope, or a `useCallback`).
+ */
 export function VirtualList<T>(
   data: readonly T[] | null | undefined,
-  row: (item: T, index: number) => Child,
+  row: (info: VirtualListRow<T>) => Child,
 ): VirtualListView {
   return new Node('virtualList', { data, row }, []);
 }
@@ -250,7 +273,7 @@ function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
 }
 
 interface LanguageVirtualListProps {
-  readonly row: (item: unknown, index: number) => Child;
+  readonly row: (info: VirtualListRow<unknown>) => Child;
   readonly render: (child: Child) => ReactNode;
   readonly [prop: string]: unknown;
 }
@@ -264,8 +287,7 @@ function LanguageVirtualList({ row, render, ...props }: LanguageVirtualListProps
   const latest = useRef(render);
   latest.current = render;
   const renderItem = useCallback(
-    ({ item, index }: { item: unknown; index: number }) =>
-      latest.current(row(item, index)) as ReactElement | null,
+    (info: VirtualListRow<unknown>) => latest.current(row(info)) as ReactElement | null,
     [row],
   );
   return createElement(BloomVirtualList as never, { ...props, renderItem });
@@ -329,7 +351,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
   virtualList: (d) => {
     const { data, row } = d.node.props as {
       data: readonly unknown[] | null | undefined;
-      row: (item: unknown, index: number) => Child;
+      row: (info: VirtualListRow<unknown>) => Child;
     };
     const props = d.props();
     const header = d.own('headerContent')?.value;
@@ -337,6 +359,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     const empty = d.own('emptyState')?.value as Child | undefined;
     const end = d.own('onEndReached');
     const refresh = d.own('refreshable')?.value;
+    const dismiss = d.own('scrollDismissesKeyboard')?.value;
     Object.assign(props, d.own('tuning')?.value, {
       data,
       keyExtractor: d.own('itemKey')?.value,
@@ -345,6 +368,10 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       numColumns: d.own('columns')?.value,
       stickyHeaderIndices: d.own('stickyIndices')?.value,
       restorationKey: d.own('restorationKey')?.value,
+      screen: d.own('screen')?.value,
+      scrollbar: d.own('scrollbar')?.value,
+      keyboardShouldPersistTaps: d.own('keyboardTaps')?.value,
+      keyboardDismissMode: dismiss === undefined ? undefined : DISMISS_MODE[dismiss],
       ListHeaderComponent: header === undefined ? undefined : (d.render(header) as ReactElement),
       ListFooterComponent: footer === undefined ? undefined : (d.render(footer) as ReactElement),
       ListEmptyComponent: empty === undefined ? undefined : (d.render(empty) as ReactElement),

@@ -496,6 +496,8 @@ export type {
   ListText,
   ListView,
   SupportingLines,
+  VirtualListRow,
+  VirtualListScreen,
   VirtualListTuning,
   VirtualListView,
 } from './controls/list';
