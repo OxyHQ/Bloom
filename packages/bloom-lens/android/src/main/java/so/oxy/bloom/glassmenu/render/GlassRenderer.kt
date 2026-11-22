@@ -13,6 +13,8 @@ import android.graphics.Shader
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.util.concurrent.atomic.AtomicBoolean
+import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
+import so.oxy.bloom.glassmenu.backdrop.GlassLens
 import so.oxy.bloom.glassmenu.field.GlassFieldTexture
 import so.oxy.bloom.glassmenu.field.GlassGaussianField
 import kotlin.math.ceil
@@ -36,6 +38,13 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   private val texture = GlassFieldTexture()
   private val nodeRect = Rect()
   private val union = RectF()
+  // This surface's view of the window page (GlassLens): the page while the region behind it changes, else its still.
+  private var lens: GlassLens? = null
+  private val signature = FloatArray(SignatureSize)
+  private val recorded = FloatArray(SignatureSize)
+  private var recordedSource: RenderNode? = null
+  private var recordedConfig: Any? = null
+  private var recordedTrigger: Any? = null
 
   init {
     // The warm-ups prime what every renderer shares (the field code, the GPU pipelines), so they run once per
@@ -116,7 +125,11 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     texture.bind(shader)
   }
 
-  fun drawGlass(canvas: Canvas, backdrop: RenderNode, state: GlassSurfaceState, limits: Rect) {
+  // The glass over the window page, sampled through this renderer's lens.
+  fun drawGlass(canvas: Canvas, page: GlassBackdrop, state: GlassSurfaceState, limits: Rect) =
+    drawGlass(canvas, page.node, state, limits, page)
+
+  fun drawGlass(canvas: Canvas, backdrop: RenderNode, state: GlassSurfaceState, limits: Rect, page: GlassBackdrop? = null) {
     union.set(state.incoming)
     if (state.hasSource) union.union(state.source)
     val t = state.materialProgress.coerceIn(0f, 1f)
@@ -139,6 +152,13 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     if (nodeRect.isEmpty) return
     val width = nodeRect.width()
     val height = nodeRect.height()
+    // A surface drawn again as it was keeps its recording: its layer is not rendered again (a resting lens while a
+    // menu opens beside it). What it samples may still change behind it, through the source node.
+    val source = if (page != null) lensOn(page).sample(nodeRect) else backdrop
+    if (sameAsRecorded(state, source)) {
+      canvas.drawRenderNode(glassNode)
+      return
+    }
 
     val control = if (state.dark) GlassRecipe.ControlDark else GlassRecipe.ControlLight
     val menu = if (state.dark) GlassRecipe.MenuDark else GlassRecipe.MenuLight
@@ -195,9 +215,37 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     glassNode.setPosition(nodeRect)
     val recording = glassNode.beginRecording(width, height)
     recording.translate(-nodeRect.left.toFloat(), -nodeRect.top.toFloat())
-    recording.drawRenderNode(backdrop)
+    recording.drawRenderNode(source)
     glassNode.endRecording()
     canvas.drawRenderNode(glassNode)
+  }
+
+  // Every value the glass is recorded from, against the last recording; the field texture follows the same state.
+  private fun sameAsRecorded(state: GlassSurfaceState, source: RenderNode): Boolean {
+    val values = signature
+    var index = 0
+    fun put(value: Float) {
+      values[index++] = value
+    }
+    fun put(rect: RectF) {
+      put(rect.left); put(rect.top); put(rect.right); put(rect.bottom)
+    }
+    put(state.incoming); put(state.source); put(state.captureBounds)
+    put(nodeRect.left.toFloat()); put(nodeRect.top.toFloat()); put(nodeRect.right.toFloat()); put(nodeRect.bottom.toFloat())
+    put(if (state.hasSource) 1f else 0f); put(if (state.dark) 1f else 0f)
+    put(state.radiusX); put(state.radiusY); put(state.sourceRadius); put(state.smoothing); put(state.lockedFieldStep)
+    put(state.lensHeight); put(state.lensAmount); put(state.lensBand); put(state.materialProgress)
+    put(state.surfaceOpacity); put(state.refractionScale); put(state.magnify)
+    put(state.pressX); put(state.pressY); put(state.pressRadius); put(state.poolGain); put(state.pressLift); put(state.rimLift)
+    val same = recordedSource === source && recordedConfig === state.config && recordedTrigger === state.trigger &&
+      values.contentEquals(recorded)
+    if (!same) {
+      values.copyInto(recorded)
+      recordedSource = source
+      recordedConfig = state.config
+      recordedTrigger = state.trigger
+    }
+    return same
   }
 
   fun drawForeground(
@@ -236,7 +284,16 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     )
   }
 
+  private fun lensOn(page: GlassBackdrop): GlassLens =
+    lens?.takeIf { it.page === page } ?: page.lens().also {
+      lens?.release()
+      lens = it
+    }
+
   fun release() {
+    lens?.release()
+    lens = null
+    recordedSource = null
     glassNode.discardDisplayList()
     foregroundNode.discardDisplayList()
   }
@@ -245,6 +302,7 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     val fieldWarmed = AtomicBoolean(false)
     val pipelinesWarmed = AtomicBoolean(false)
     const val MorphBlur = 1.2f
+    const val SignatureSize = 36
     const val BlurReach = 2f
     const val PortalReach = 28f
     const val WarmRounds = 40
