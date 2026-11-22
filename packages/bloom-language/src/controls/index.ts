@@ -16,6 +16,8 @@ import { STAY_SEARCH } from './stay-search';
 import { TENANCY } from './tenancy';
 import { EVICTION } from './eviction';
 import { PLACE_REVIEWS } from './place-reviews';
+import { PROJECT_BOARDS } from './project-board';
+import { ACTIVITY_FEEDS } from './activity-feed';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -74,4 +76,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LISTING_EDITORS,
   ...OFFERING_BADGES,
   ...PROPERTY_INSIGHTS,
+  ...PROJECT_BOARDS,
+  ...ACTIVITY_FEEDS,
 };

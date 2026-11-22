@@ -1444,6 +1444,47 @@ Bloom's `eviction`: `EvictionReportCard(options)` (whether one attends is its
 options)` (its `media` a language child). `PlaceReviewCard`, which no app
 imports, is not drawn.
 
+### Project board
+
+```ts
+ProjectBoard(columns, { getItemId: (row) => row.id, dragMode: 'handle', onMove: move,
+  renderCard: (row) => ProjectBoardCardContent(undefined, {
+    header: BoardDragHandle(Text(row.title)).label(`Move ${row.title}`).onPress(() => open(row)).grow(),
+    description: row.summary,
+  }),
+  columnWidth: '256' }).label(view.name)
+GroupedProjectBoard(lanes, { getItemId, onLaneCollapsedChange, renderLaneHeader: (lane) => Text(lane.title) })
+ProjectBoardTemplate({ title: 'Launch', initialColumns, members, headerActions: Inbox() })
+```
+
+Bloom's `project-board`: one board, three ways of holding it.
+`ProjectBoard(columns, options)` is Bloom's embedded board (the app owns its
+items and their moves), `GroupedProjectBoard(lanes, options)` stacks boards in
+collapsible lanes, and `ProjectBoardTemplate(options)` is the ticket board with
+its own header, tickets and dialogs. The options are Bloom's data as it takes
+it (how an item is read, its moves, `readOnly`, `dragMode`); a render prop
+(`renderCard`, `renderColumnHeader`…, `renderLaneHeader`) returns a view, and
+`columnWidth` is a space token.
+
+- `ProjectBoardCardContent(content, options?)`: a card's body in the board's
+  card geometry; `preview`, `actions`, `badges` and `footer` are views, and
+  `header`, `title` and `description` a string (drawn in the card's own text
+  style) or a view.
+- `BoardDragHandle(content)`: what a card is dragged by in `dragMode:
+  'handle'`; `.label()` names it, `.onPress()` opens the card.
+
+### Activity feed
+
+```ts
+ActivityFeed(entries, { emptyLabel: t('empty') }).style('none').density('compact').label('Updates')
+```
+
+Bloom's `activity-feed`: `ActivityFeed(entries, options?)` takes Bloom's
+`ActivityFeedEntry`s (a title, context, content or action inside one is a
+React element: `toElement(view)`). `.style('day' | 'none')` groups the entries
+under day headings or none, `.density('default' | 'compact')` is its rhythm
+(Bloom's `comfortable` or `compact`), `.lines(n)` the lines a body clamps to.
+
 ### Call screens
 
 ```ts

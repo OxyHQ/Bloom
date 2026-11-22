@@ -814,6 +814,21 @@ fn the_tenancy_eviction_and_review_families_are_checked() {
 }
 
 #[test]
+fn the_project_board_and_the_activity_feed_are_checked() {
+    let imports =
+        "import { ProjectBoard, BoardDragHandle, ActivityFeed, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c, o, e) => [ProjectBoard(c, o).label('Board'), BoardDragHandle(Text('Move')).onPress(() => {}), ActivityFeed(e).style('none').density('compact').lines(2)];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (e) => ActivityFeed(e).style('week');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown activityFeedGrouping token 'week' for .style()");
+    let output = check("export const x = (c, o) => ProjectBoard(c, o).size('sm');\n");
+    assert_eq!(output.diagnostics[0].message, "ProjectBoard has no modifier .size()");
+}
+
+#[test]
 fn the_call_screens_are_checked() {
     let imports = "import { CallScreen, IncomingCallScreen } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");

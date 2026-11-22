@@ -834,3 +834,24 @@ export type {
   PriceEstimateView,
   PricePerAreaComparisonView,
 } from './controls/property-insights';
+// Project board (controls/project-board.tsx)
+export {
+  BoardDragHandle,
+  GroupedProjectBoard,
+  ProjectBoard,
+  ProjectBoardCardContent,
+  ProjectBoardTemplate,
+} from './controls/project-board';
+export type {
+  BoardDragHandleView,
+  GroupedProjectBoardOptions,
+  ProjectBoardCardContentOptions,
+  ProjectBoardCardContentView,
+  ProjectBoardOptions,
+  ProjectBoardTemplateOptions,
+  ProjectBoardView,
+} from './controls/project-board';
+
+// Activity feed (controls/activity-feed.tsx)
+export { ActivityFeed } from './controls/activity-feed';
+export type { ActivityFeedOptions, ActivityFeedView } from './controls/activity-feed';

@@ -8,11 +8,15 @@ import type { ControlDraw, ControlRenderer, ProductColor } from './draw';
 /**
  * A product component's slot: a language child drawn where the component puts
  * it, or `undefined` when none is given (so the component's own default, which
- * an absent prop draws, stays).
+ * an absent prop draws, stays). A string is the component's own: a slot that
+ * takes one draws it in its own text style.
  */
-export function slot(d: ControlDraw, child: Child | undefined): ReactNode {
-  return child === undefined ? undefined : d.render(child);
+export function slot(d: ControlDraw, child: string | Child | undefined): ReactNode {
+  return child === undefined || typeof child === 'string' ? child : d.render(child);
 }
+
+/** A slot that is a string the component draws in its own text style, or a view. */
+export type TextSlot = string | Child;
 
 /** A length a product component takes as a number, given as a space token. */
 export function length(token: SpaceToken | undefined): number | undefined {
@@ -31,6 +35,12 @@ export interface ProductSpec {
   readonly binding?: readonly [value: string, set: string];
   /** Options that are language children, where Bloom takes a node. */
   readonly slots?: readonly string[];
+  /**
+   * Options that are functions returning a language child, where Bloom takes
+   * a function returning a node (a board's `renderCard`): the same arguments,
+   * the view drawn. Set only when given, as Bloom reads some by their presence.
+   */
+  readonly renders?: readonly string[];
   /** Options that are space tokens, where Bloom takes a number. */
   readonly lengths?: readonly string[];
   /** Options that are corner tokens, where Bloom takes a radius. */
@@ -46,7 +56,7 @@ export interface ProductSpec {
 /**
  * A product node's renderer: its Bloom component with the node's content props
  * and options as Bloom takes them, its binding as the value and its setter, its slots drawn, its lengths resolved and
- * its own modifiers; its content (the node's child, a list keyed by `.id()`)
+ * its render functions drawing views, and its own modifiers; its content (the node's child, a list keyed by `.id()`)
  * as Bloom's children. A press goes on a host around it, unless the component
  * takes it itself (`press`).
  */
@@ -62,6 +72,10 @@ export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer 
       props[spec.binding[1]] = binding[1];
     }
     for (const key of spec.slots ?? []) props[key] = slot(d, options?.[key] as Child | undefined);
+    for (const key of spec.renders ?? []) {
+      const render = options?.[key] as ((...args: unknown[]) => Child) | undefined;
+      if (render !== undefined) props[key] = (...args: unknown[]) => d.render(render(...args));
+    }
     for (const key of spec.lengths ?? [])
       props[key] = length(options?.[key] as SpaceToken | undefined);
     for (const key of spec.corners ?? []) {

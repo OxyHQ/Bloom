@@ -190,6 +190,8 @@ export type MailComposeStyle = (typeof ENUMS.mailComposeStyle)[number];
 export type NoteToolbarSize = (typeof ENUMS.noteToolbarSize)[number];
 export type SearchModeTabsStyle = (typeof ENUMS.searchModeTabsStyle)[number];
 export type TripCardOrientation = (typeof ENUMS.tripCardOrientation)[number];
+/** How an activity feed groups its entries: under day headings, or none. */
+export type ActivityFeedGrouping = (typeof ENUMS.activityFeedGrouping)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
