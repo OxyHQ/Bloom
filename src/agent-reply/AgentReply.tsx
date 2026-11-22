@@ -1,14 +1,33 @@
 import { type ComponentRef, useEffect, useRef, useState } from 'react';
-import { Platform, type View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useTrackEvents } from '../agent-creator/use-track-events';
 import { Collapsible } from '../collapsible';
-import { StyledView } from '../styles/styled-primitives';
 import type { AgentReplyProps } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { webDataSet } from '../styles/web-data';
+import { useAgentReplyWebCss } from './web-css';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+const replyHook = webDataSet({ bloomAgentReply: '' });
+
+const styles = StyleSheet.create({
+  root: {
+    marginHorizontal: 12,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+    // The web's column and type are its sheet's (`web-css.ts`); native keeps the body type the
+    // class put on the row, which nothing reads.
+    ...Platform.select({
+      web: {},
+      default: { maxWidth: '94%', fontSize: 14, lineHeight: 20, fontWeight: 400 },
+    }),
+  },
+  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  actions: { flexShrink: 0 },
+} as const);
 
 /**
  * One reply of an agent: the reply on top, and under it who answered (start) and what can be
@@ -16,6 +35,7 @@ const AnimatedView = Animated.createAnimatedComponent(StyledView);
  */
 export function AgentReply({ children, identity, actions, style }: AgentReplyProps) {
   const ref = useRef<ComponentRef<typeof View>>(null);
+  useAgentReplyWebCss();
   const reduced = usePrefersReducedMotion();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const [focused, setFocused] = useState(false);
@@ -27,29 +47,19 @@ export function AgentReply({ children, identity, actions, style }: AgentReplyPro
   }, [show, reduced, opacity]);
   const animated = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
   return (
-    <StyledView
+    <View
+      {...replyHook}
       ref={ref}
       onPointerEnter={onHoverIn}
       onPointerLeave={onHoverOut}
-      className="group/reply w-fit max-w-[min(520px,calc(100%-24px))] text-body-regular"
-      style={[
-        {
-          marginHorizontal: 12,
-          marginTop: 12,
-          maxWidth: Platform.OS === 'web' ? undefined : '94%',
-          alignSelf: 'flex-start',
-        },
-        style,
-      ]}
+      style={[styles.root, style]}
     >
       {/* The reply opens up as it arrives (a thinking agent has none yet): no jump of height. */}
       <Collapsible open={children != null && children !== false}>{children}</Collapsible>
-      <StyledView className="flex items-center justify-between gap-2 flex-row">
+      <View style={styles.footer}>
         {identity}
-        {actions ? (
-          <AnimatedView style={[{ flexShrink: 0 }, animated]}>{actions}</AnimatedView>
-        ) : null}
-      </StyledView>
-    </StyledView>
+        {actions ? <AnimatedView style={[styles.actions, animated]}>{actions}</AnimatedView> : null}
+      </View>
+    </View>
   );
 }

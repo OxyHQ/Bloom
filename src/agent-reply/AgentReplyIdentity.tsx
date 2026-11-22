@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -12,14 +12,35 @@ import { ThinkingReasoning } from '../agent-thinking/ThinkingReasoning';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { useIsRtl } from '../hooks/use-is-rtl';
 import { formatMessage, useMessages } from '../locale/messages';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { webDataSet } from '../styles/web-data';
+import { createTokenStyles } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { AGENT_REPLY_MESSAGES } from './messages';
 import type { AgentReplyIdentityProps } from './types';
+import { useAgentReplyWebCss } from './web-css';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+const useStyles = createTokenStyles((t) => ({
+  // The row's text is the body-2 medium line, in the secondary text colour.
+  row: {
+    marginBlock: 4,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 8,
+    fontSize: 13,
+    fontWeight: 500,
+    color: t.mutedForeground,
+    // The web's line height is a ratio its text inherits (`web-css.ts`).
+    ...Platform.select({ web: {}, default: { lineHeight: 18 } }),
+  },
+}));
+
+const identityHook = webDataSet({ bloomAgentReplyIdentity: '' });
 
 /**
  * Who answered, under their reply: the agent's 3D avatar and name. While the agent works the
@@ -40,6 +61,8 @@ export function AgentReplyIdentity({
 }: AgentReplyIdentityProps) {
   const { messages } = useMessages(AGENT_REPLY_MESSAGES);
   const { colors } = useTheme();
+  const themed = useStyles();
+  useAgentReplyWebCss();
   const reduced = usePrefersReducedMotion();
   const rtl = useIsRtl();
   // Fixed on the first render: a reply that is already thinking starts its working animation
@@ -93,7 +116,8 @@ export function AgentReplyIdentity({
   }, [reasoning]);
   const shownReasoning = reasoning ?? lastReasoning;
   const row = (
-    <StyledPressable
+    <Pressable
+      {...identityHook}
       accessibilityRole={actionable ? 'button' : undefined}
       accessibilityLabel={
         thinking ? formatMessage(messages.agentThinking, name) : (pressLabel ?? name)
@@ -101,7 +125,7 @@ export function AgentReplyIdentity({
       aria-expanded={folds ? open : undefined}
       disabled={!actionable}
       onPress={folds ? () => setOpen((current) => !current) : onPress}
-      className="my-1 min-w-0 flex-row items-center gap-1 rounded-lg text-start text-body-2-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+      style={themed.row}
     >
       <AnimatedView
         ref={avatarRef}
@@ -130,7 +154,7 @@ export function AgentReplyIdentity({
           />
         </AnimatedView>
       </AnimatedView>
-      <StyledView style={{ opacity: avatarHidden ? 0 : 1 }}>
+      <View style={{ opacity: avatarHidden ? 0 : 1 }}>
         <AnimatedView
           aria-hidden={!thinking}
           role={thinking ? 'status' : undefined}
@@ -149,7 +173,7 @@ export function AgentReplyIdentity({
             {name}
           </Text>
         </AnimatedView>
-      </StyledView>
+      </View>
       {folds ? (
         <AnimatedView aria-hidden style={status}>
           <RiArrowDownSLine
@@ -160,7 +184,7 @@ export function AgentReplyIdentity({
           />
         </AnimatedView>
       ) : null}
-    </StyledPressable>
+    </Pressable>
   );
   return shownReasoning == null ? (
     row
