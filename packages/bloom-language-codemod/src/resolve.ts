@@ -139,11 +139,10 @@ const STATES = new Set(['hovered', 'pressed', 'focused']);
 
 /**
  * Utilities on one physical side the language has no physical form for yet:
- * a corner (`rounded-l`), text alignment (`text-left`; React Native and
- * react-native-web flip it right to left differently), scroll snapping.
+ * text alignment (`text-left`; React Native and react-native-web flip it
+ * right to left differently), scroll snapping.
  */
-const PHYSICAL =
-  /^-?(rounded-[lr]|rounded-[tb][lr]|text-(left|right)|scroll-[mp][lr]|space-x-reverse)(-|$)/;
+const PHYSICAL = /^-?(text-(left|right)|scroll-[mp][lr]|space-x-reverse)(-|$)/;
 
 /** The sides an edge writes: `s`/`e` follow the reading direction, `l`/`r` are physical. */
 const SIDES: Record<string, string> = {
@@ -157,6 +156,36 @@ const SIDES: Record<string, string> = {
   left: 'l',
   right: 'r',
 };
+
+/** The corners a `corner()` side rounds: `t`/`b` and `s`/`e` (reading direction) or `l`/`r` (physical). */
+const CORNERS: Record<string, string[]> = {
+  top: ['ts', 'te'],
+  bottom: ['bs', 'be'],
+  leading: ['ts', 'bs'],
+  trailing: ['te', 'be'],
+  'top-leading': ['ts'],
+  'top-trailing': ['te'],
+  'bottom-leading': ['bs'],
+  'bottom-trailing': ['be'],
+  left: ['tl', 'bl'],
+  right: ['tr', 'br'],
+  'top-left': ['tl'],
+  'top-right': ['tr'],
+  'bottom-left': ['bl'],
+  'bottom-right': ['br'],
+};
+
+/** Whether two corner sides round one corner: a physical corner meets either reading-direction one of its row right to left. */
+export function cornersMeet(a: string, b: string): boolean {
+  const x = CORNERS[a] ?? [];
+  const y = CORNERS[b] ?? [];
+  return x.some((p) =>
+    y.some(
+      (q) =>
+        p === q || (p[0] === q[0] && /[se]/.test(p[1] as string) !== /[se]/.test(q[1] as string)),
+    ),
+  );
+}
 
 /** Whether two edges write one side: a physical side meets either reading-direction side right to left. */
 export function edgesMeet(a: string, b: string): boolean {
@@ -424,6 +453,18 @@ function finish(
       seen.push(mod);
     }
   }
+
+  // Two corners of one corner: which wins is Tailwind's rule order on the web and
+  // React Native's own precedence on native. (A corner of all sides is `borderRadius`,
+  // which a corner of some sides overrides everywhere.)
+  const sided = mods.filter((m) => m.name === 'corner' && m.args.length === 2);
+  sided.forEach((mod, i) => {
+    const prior = sided
+      .slice(0, i)
+      .find((p) => cornersMeet(p.args[1] as string, mod.args[1] as string));
+    if (prior)
+      fail(`${subject(prior)} ${subject(mod)}`, 'corner-overlap', 'two corners of one corner');
+  });
 
   // Any other modifier twice is decided by Tailwind's rule order.
   const seen = new Map<string, Mod>();

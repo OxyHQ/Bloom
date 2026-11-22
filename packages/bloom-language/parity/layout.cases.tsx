@@ -433,6 +433,22 @@ function tailwindClass(name: string, rule: string): RN.ViewStyle {
 }
 const tailwind: ParityCase[] = [
   {
+    name: 'physical corners (rounded-l, rounded-br)',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).corner('lg', 'left').corner('sm', 'bottom-right')),
+    bloom: () => (
+      <RN.View
+        style={{
+          borderTopLeftRadius: borderRadius.lg,
+          borderBottomLeftRadius: borderRadius.lg,
+          borderBottomRightRadius: borderRadius.sm,
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'children spaced as Tailwind’s space-y (nothing on native, as NativeWind)',
     language: () => toElement(L.VStack(L.Text('a'), L.Text('b')).childSpacing('vertical', 'sm')),
     bloom: () => (

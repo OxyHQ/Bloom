@@ -7167,7 +7167,7 @@
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('6', 'top-trailing')"
+   "language": ".corner('6', 'top-right')"
   },
   "row-span-2": {
    "count": 2,
@@ -11069,7 +11069,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('sm', 'bottom-leading')"
+   "language": ".corner('sm', 'bottom-left')"
   },
   "rounded-br-[5px]": {
    "count": 1,
@@ -11077,31 +11077,31 @@
    "status": "token",
    "scale": "corner",
    "value": "5px",
-   "language": ".corner(…, 'bottom-trailing')"
+   "language": ".corner(…, 'bottom-right')"
   },
   "rounded-br-lg": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('sm', 'bottom-trailing')"
+   "language": ".corner('sm', 'bottom-right')"
   },
   "rounded-l-full": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('infinite', 'leading')"
+   "language": ".corner('infinite', 'left')"
   },
   "rounded-r-full": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('infinite', 'trailing')"
+   "language": ".corner('infinite', 'right')"
   },
   "rounded-r-md": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('6', 'trailing')"
+   "language": ".corner('6', 'right')"
   },
   "rounded-t-2xl": {
    "count": 1,
@@ -11133,13 +11133,13 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('sm', 'top-leading')"
+   "language": ".corner('sm', 'top-left')"
   },
   "rounded-tr-lg": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".corner('sm', 'top-trailing')"
+   "language": ".corner('sm', 'top-right')"
   },
   "rounded-xs": {
    "count": 1,

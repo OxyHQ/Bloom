@@ -291,8 +291,17 @@ for (const property of objects.frame.keys)
 // `infinite` is Tailwind's rounded-full, on the web `calc(infinity * 1px)` (tokens.ts, INFINITE_RADIUS).
 for (const value of [...numbers(scales.corner), 'calc(infinity * 1px)']) {
   valueClass('borderRadius', value);
-  // A corner per side (style.ts, corner): logical, as the edges are.
-  for (const corner of ['TopStart', 'TopEnd', 'BottomStart', 'BottomEnd'])
+  // A corner per side (style.ts, corner): logical, as the edges are, and physical.
+  for (const corner of [
+    'TopStart',
+    'TopEnd',
+    'BottomStart',
+    'BottomEnd',
+    'TopLeft',
+    'TopRight',
+    'BottomLeft',
+    'BottomRight',
+  ])
     valueClass(`border${corner}Radius`, value);
 }
 valueClass('overflow', 'hidden');

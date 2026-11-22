@@ -343,7 +343,12 @@ export interface Layer {
 
 type CornerModifier = Extract<Modifier, { kind: 'corner' }>;
 
-/** Each corner a `corner()` side rounds, a bit each: top-leading, top-trailing, bottom-leading, bottom-trailing. */
+/**
+ * Each corner a `corner()` side rounds, a bit each: top-leading, top-trailing,
+ * bottom-leading, bottom-trailing, which follow the reading direction, then
+ * top-left, top-right, bottom-left, bottom-right, which do not (Tailwind's
+ * `rounded-l`, `rounded-tl`…, as NativeWind writes them).
+ */
 const CORNER_BITS: Record<CornerSide, number> = {
   all: 0b1111,
   top: 0b0011,
@@ -354,14 +359,24 @@ const CORNER_BITS: Record<CornerSide, number> = {
   'top-trailing': 0b0010,
   'bottom-leading': 0b0100,
   'bottom-trailing': 0b1000,
+  left: 0b1010000,
+  right: 0b10100000,
+  'top-left': 0b10000,
+  'top-right': 0b100000,
+  'bottom-left': 0b1000000,
+  'bottom-right': 0b10000000,
 };
 
-/** Each corner's radius, logical as the edges are: leading and trailing follow the reading direction. */
+/** Each corner's radius: leading and trailing follow the reading direction, left and right are physical. */
 const CORNER_RADIUS: readonly (readonly [number, string])[] = [
   [0b0001, 'borderTopStartRadius'],
   [0b0010, 'borderTopEndRadius'],
   [0b0100, 'borderBottomStartRadius'],
   [0b1000, 'borderBottomEndRadius'],
+  [0b10000, 'borderTopLeftRadius'],
+  [0b100000, 'borderTopRightRadius'],
+  [0b1000000, 'borderBottomLeftRadius'],
+  [0b10000000, 'borderBottomRightRadius'],
 ];
 
 /** The radius a corner writes: one `borderRadius`, or a radius per corner it rounds. */
