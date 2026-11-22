@@ -4440,7 +4440,10 @@ with its reason. Nothing else is missing.
   `Divider`, `Fill`, `AspectRatio`, `Grid`, `Button`, `ButtonGroup`, `FAB`,
   `Lottie`, the action bar. Bloom's helpers and constants that draw nothing
   (`computeMortgage`, `listingQualityScore`…) are plain functions called in a
-  view body (see [Interop](#interop)).
+  view body (see [Interop](#interop)). **Decided:** a `ZStack` sizes itself
+  from its children's reported heights, since React Native's layout cannot
+  size a box by the largest of children drawn over each other; until they
+  report (one layout pass) they sit in their slots one under another.
 - **Tokens.** Bloom's named rungs; numeric tokens by one rule (an exact value
   apps write, named by its value), durations included (`'0'`, `'250'`,
   `'400'`, `'800'`, `'1000'`, `'2500'`, `'3000'`, `'4000'`) and every
