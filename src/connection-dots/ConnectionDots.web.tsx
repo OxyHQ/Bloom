@@ -1,4 +1,5 @@
-import React, { memo, useEffect } from 'react';
+import type React from 'react';
+import { memo, useEffect } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -51,7 +52,6 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
   dotCount = DEFAULT_DOT_COUNT,
   dotSize = DEFAULT_DOT_SIZE,
   accessibilityLabel,
-  className,
   style,
   reducedMotion,
 }) => {
@@ -102,7 +102,6 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
       right={right}
       dots={dots}
       accessibilityLabel={accessibilityLabel}
-      className={className}
       style={style}
     />
   );
