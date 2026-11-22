@@ -17,7 +17,6 @@ import {
 import {
   AgentProgress as BloomAgentProgress,
   AgentProgressLoadingText as BloomAgentProgressLoadingText,
-  type AgentProgressLoadingTextProps,
   type AgentProgressProps,
 } from '@oxy.so/bloom/agent-progress';
 import {
@@ -41,7 +40,24 @@ import {
 import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/usage-card';
 
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { AgentThinkingStyle, AgentThinkingTone, InkToken, SpaceToken } from '../tokens';
+import type {
+  AgentThinkingStyle,
+  AgentThinkingTone,
+  Blend,
+  ContentAlignment,
+  InkToken,
+  ModesPresentation,
+  PrimaryActionPlacement,
+  RailLabels,
+  RailSelection,
+  ScrollbarSide,
+  SidebarSize,
+  SidebarSurface,
+  SidebarVariant,
+  SpaceToken,
+  TeamPlacement,
+  TypeRampStep,
+} from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -73,8 +89,6 @@ export type AgentThinkingOptions = Omit<
   Drawn | 'children' | 'variant' | 'tone'
 >;
 export type AgentProgressOptions = Omit<AgentProgressProps, Drawn>;
-/** Bloom `AgentProgressLoadingText`'s step of Bloom's type ramp (`body-regular` by default). */
-export type AgentProgressLoadingTextOptions = Pick<AgentProgressLoadingTextProps, 'variant'>;
 export type AgentLogRowOptions = Omit<AgentLogRowProps, Drawn | 'children'>;
 /** Bloom `AgentLogToolCall`'s data; `content` is what it shows expanded (Bloom's children). */
 export type AgentLogToolCallOptions = Omit<
@@ -89,11 +103,23 @@ export type AgentLogWorkingRowOptions = Omit<AgentLogWorkingRowProps, Drawn | 'l
 /** Bloom `ComposerLoader`'s motion and phase; its lengths are space tokens. */
 export type ComposerLoaderOptions = Omit<
   ComposerLoaderProps,
-  Drawn | 'children' | 'colors' | 'radius' | 'line' | 'offset'
+  Drawn | 'children' | 'colors' | 'radius' | 'line' | 'offset' | 'blend' | 'bloomOnly' | 'surface'
 > & { readonly radius?: SpaceToken; readonly line?: SpaceToken; readonly offset?: SpaceToken };
+/** What a conversation sidebar leaves to modifiers: its look. */
+type SidebarLook =
+  | 'variant'
+  | 'size'
+  | 'surface'
+  | 'contentAlignment'
+  | 'primaryActionPlacement'
+  | 'railLabels'
+  | 'railSelection'
+  | 'modesPresentation'
+  | 'scrollbarSide'
+  | 'teamPlacement';
 export type ConversationSidebarOptions = Omit<
   ConversationSidebarProps,
-  Drawn | 'conversations' | 'after'
+  Drawn | 'conversations' | 'after' | SidebarLook
 > & { readonly after?: Child };
 export type QuestionnaireOptions = Omit<QuestionnaireProps, Drawn | 'questions'>;
 
@@ -114,6 +140,8 @@ export type AgentProgressView = ViewModifiers<AgentProgressView>;
 export interface AgentProgressLoadingTextView extends ViewModifiers<AgentProgressLoadingTextView> {
   /** At most this many lines. */
   lines(value: number): AgentProgressLoadingTextView;
+  /** Its step of Bloom's type ramp: `body-regular` by default. */
+  textVariant(value: TypeRampStep): AgentProgressLoadingTextView;
 }
 /** Bloom `AgentLogRow`: a row of an agent's log, on its timeline. */
 export type AgentLogRowView = ViewModifiers<AgentLogRowView>;
@@ -129,9 +157,36 @@ export type AgentLogWorkingRowView = ViewModifiers<AgentLogWorkingRowView>;
 export interface ComposerLoaderView extends ViewModifiers<ComposerLoaderView> {
   /** Its four colours, left to right: colour roles or an app's own colours. */
   gradient(colors: readonly [InkToken, InkToken, InkToken, InkToken]): ComposerLoaderView;
+  /** How the light composites over what is beneath it (`screen` reads as light on a surface). */
+  blend(value: Blend): ComposerLoaderView;
+  /** The wide bloom alone, with no line or tight glow. */
+  bloomOnly(value?: boolean): ComposerLoaderView;
+  /** The pill's surface (and its shadow) behind the light: drawn by default. */
+  surface(value?: boolean): ComposerLoaderView;
 }
 /** Bloom `ConversationSidebar`: an agent app's conversations. */
-export type ConversationSidebarView = ViewModifiers<ConversationSidebarView>;
+export interface ConversationSidebarView extends ViewModifiers<ConversationSidebarView> {
+  /** A `panel` (default), or a `rail` of icons. */
+  style(value: SidebarVariant): ConversationSidebarView;
+  /** Its rows, and the panel's width with them: `md` by default. */
+  size(value: SidebarSize): ConversationSidebarView;
+  /** Its edge: a `card` (default), `plain` or `docked`. */
+  sidebarSurface(value: SidebarSurface): ConversationSidebarView;
+  /** `start` (default) pins the logo at the top; `center` groups the parts. */
+  contentAlignment(value: ContentAlignment): ConversationSidebarView;
+  /** The primary action at the `bottom` (default) or the `top`. */
+  primaryActionPlacement(value: PrimaryActionPlacement): ConversationSidebarView;
+  /** A rail's captions: `visible` or `hidden`. */
+  railLabels(value: RailLabels): ConversationSidebarView;
+  /** A rail's selection: an accent `pill` (default), or the `icon` alone. */
+  railSelection(value: RailSelection): ConversationSidebarView;
+  /** Its modes as a `segmented` control (default) or a two-mode `toggle`. */
+  modesPresentation(value: ModesPresentation): ConversationSidebarView;
+  /** The web scrollbar's side: `end` (default) or `start`. */
+  scrollbarSide(value: ScrollbarSide): ConversationSidebarView;
+  /** The team switcher in the `footer` (default) or the `header`. */
+  teamPlacement(value: TeamPlacement): ConversationSidebarView;
+}
 /** Bloom `Questionnaire`: questions asked one at a time. */
 export type QuestionnaireView = ViewModifiers<QuestionnaireView>;
 
@@ -151,11 +206,8 @@ export function AgentThinking(
 export function AgentProgress(options: AgentProgressOptions = {}): AgentProgressView {
   return new Node('agentProgress', { options }, []);
 }
-export function AgentProgressLoadingText(
-  text: string,
-  options: AgentProgressLoadingTextOptions = {},
-): AgentProgressLoadingTextView {
-  return new Node('agentProgressLoadingText', { text, options }, []);
+export function AgentProgressLoadingText(text: string): AgentProgressLoadingTextView {
+  return new Node('agentProgressLoadingText', { text }, []);
 }
 /** Bloom `AgentLogRow` around `content`; `first` and `last` place it on the timeline. */
 export function AgentLogRow(content: Child, options: AgentLogRowOptions): AgentLogRowView {
@@ -224,6 +276,7 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
   agentProgress: product(BloomAgentProgress),
   agentProgressLoadingText: text(BloomAgentProgressLoadingText, (d) => ({
     numberOfLines: d.own('lines')?.value,
+    variant: d.own('textVariant')?.value,
   })),
   agentLogRow: product(BloomAgentLogRow),
   agentLogShimmerText: text(BloomAgentLogShimmerText),
@@ -245,7 +298,26 @@ export const AGENTS: Record<AgentKind, ControlRenderer> = {
   composerLoader: product(BloomComposerLoader, {
     lengths: ['radius', 'line', 'offset'],
     colors: (d) => ({ colors: d.own('gradient')?.value }),
+    own: (d) => ({
+      blend: d.own('blend')?.value,
+      bloomOnly: d.own('bloomOnly')?.value,
+      surface: d.own('surface')?.value,
+    }),
   }),
-  conversationSidebar: product(BloomConversationSidebar, { slots: ['after'] }),
+  conversationSidebar: product(BloomConversationSidebar, {
+    slots: ['after'],
+    own: (d) => ({
+      variant: d.own('style')?.value,
+      size: d.own('size')?.value,
+      surface: d.own('sidebarSurface')?.value,
+      contentAlignment: d.own('contentAlignment')?.value,
+      primaryActionPlacement: d.own('primaryActionPlacement')?.value,
+      railLabels: d.own('railLabels')?.value,
+      railSelection: d.own('railSelection')?.value,
+      modesPresentation: d.own('modesPresentation')?.value,
+      scrollbarSide: d.own('scrollbarSide')?.value,
+      teamPlacement: d.own('teamPlacement')?.value,
+    }),
+  }),
   questionnaire: product(BloomQuestionnaire),
 };

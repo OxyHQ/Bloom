@@ -73,10 +73,16 @@ import type {
   ChatStatusTone,
   ColorToken,
   InkToken,
+  ControlDensity,
+  DismissIcon,
   FileMessageStyle,
   MessageTone,
   OpacityName,
   SpaceToken,
+  HeaderPresentation,
+  TitleAlign,
+  TitleAppearance,
+  TitleLayout,
   VideoMessageStyle,
 } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -130,8 +136,17 @@ export type ChatEmptyStateOptions = Omit<ChatEmptyStateProps, Drawn | 'illustrat
   readonly action?: Child;
 };
 type ChatHeaderSlots = 'avatar' | 'accessory' | 'actions' | 'selectionActions';
+/** What a chat header leaves to modifiers: its look. */
+type ChatHeaderLook =
+  | 'statusTone'
+  | 'presentation'
+  | 'titleAlign'
+  | 'titleLayout'
+  | 'titleAppearance'
+  | 'compact'
+  | 'divider';
 export type ChatHeaderOptions = Tokens<
-  Omit<ChatHeaderProps, Drawn | 'title' | 'statusTone' | ChatHeaderSlots>,
+  Omit<ChatHeaderProps, Drawn | 'title' | ChatHeaderLook | ChatHeaderSlots>,
   'avatarSize'
 > & { readonly [K in ChatHeaderSlots]?: Child };
 type ChatInfoSlots = 'headerActions' | 'cover' | 'avatar' | 'settings';
@@ -140,13 +155,13 @@ export type ChatInfoPanelOptions = Tokens<
   Omit<ChatInfoPanelProps, Drawn | 'contentStyle' | 'variant' | 'children' | ChatInfoSlots>,
   'width' | 'coverHeight' | 'avatarSize'
 > & { readonly [K in ChatInfoSlots]?: Child } & { readonly content?: Child };
-export type PinnedMessageBarOptions = Omit<PinnedMessageBarProps, Drawn | 'pins'>;
+export type PinnedMessageBarOptions = Omit<PinnedMessageBarProps, Drawn | 'pins' | 'dismissIcon'>;
 export type ScrollToBottomButtonOptions = Tokens<
   Omit<ScrollToBottomButtonProps, Drawn | 'onPress'>,
   'size'
 >;
 export type ChatFolderTabsOptions = Tokens<
-  Omit<ChatFolderTabsProps, Drawn | 'folders' | 'gap'>,
+  Omit<ChatFolderTabsProps, Drawn | 'folders' | 'gap' | 'divider'>,
   'paddingHorizontal'
 >;
 export type ChatSearchFieldOptions = Omit<
@@ -177,7 +192,7 @@ export type ContactMessageOptions = Tokens<
   'width',
   'radius'
 >;
-export type DocumentGridOptions = Omit<DocumentGridProps, Drawn | 'items'>;
+export type DocumentGridOptions = Omit<DocumentGridProps, Drawn | 'items' | 'divider'>;
 export type FileMessageOptions = Tokens<
   Omit<FileMessageProps, Drawn | Bubble | 'name' | 'variant'>,
   'width',
@@ -252,15 +267,32 @@ export type ChatEmptyStateView = ViewModifiers<ChatEmptyStateView>;
 export interface ChatHeaderView extends ViewModifiers<ChatHeaderView> {
   /** The status line's tone: `muted` (default) or `accent`. */
   tint(value: ChatStatusTone): ChatHeaderView;
+  /** Bloom's header presentation: `floating` (default) islands, a `bar`, or the `navigation` bar. */
+  presentation(value: HeaderPresentation): ChatHeaderView;
+  /** Where the avatar and title sit: `start` (default) or `center`. */
+  titleAlign(value: TitleAlign): ChatHeaderView;
+  /** The title and status on one line (`inline`, default) or two (`stacked`). */
+  titleLayout(value: TitleLayout): ChatHeaderView;
+  /** The title as text (`plain`, default) or in a `capsule`. */
+  titleAppearance(value: TitleAppearance): ChatHeaderView;
+  /** `compact` gutters, or `default`; with neither, the window's width decides. */
+  density(value: ControlDensity): ChatHeaderView;
+  /** The bar presentation's bottom hairline: drawn by default. */
+  dividers(value?: boolean): ChatHeaderView;
 }
 export interface ChatInfoPanelView extends ViewModifiers<ChatInfoPanelView> {
   /** A `pane` beside the chat, or a `screen` of its own. */
   style(value: ChatInfoPanelStyle): ChatInfoPanelView;
 }
-export type PinnedMessageBarView = ViewModifiers<PinnedMessageBarView>;
+export interface PinnedMessageBarView extends ViewModifiers<PinnedMessageBarView> {
+  /** Its dismiss button's glyph: `close` the bar or `unpin`. */
+  dismissIcon(value: DismissIcon): PinnedMessageBarView;
+}
 export type ScrollToBottomButtonView = ViewModifiers<ScrollToBottomButtonView>;
 export interface ChatFolderTabsView extends ViewModifiers<ChatFolderTabsView> {
   spacing(value: SpaceToken): ChatFolderTabsView;
+  /** The hairline under the tabs. */
+  dividers(value?: boolean): ChatFolderTabsView;
 }
 export type ChatSearchFieldView = ViewModifiers<ChatSearchFieldView>;
 export type ChatSearchResultsView = ViewModifiers<ChatSearchResultsView>;
@@ -277,7 +309,10 @@ export interface TypingDotsView extends ViewModifiers<TypingDotsView> {
 export interface ContactMessageView
   extends ViewModifiers<ContactMessageView>,
     InBubble<ContactMessageView> {}
-export type DocumentGridView = ViewModifiers<DocumentGridView>;
+export interface DocumentGridView extends ViewModifiers<DocumentGridView> {
+  /** The hairlines between its rows. */
+  dividers(value?: boolean): DocumentGridView;
+}
 export interface FileMessageView extends ViewModifiers<FileMessageView>, InBubble<FileMessageView> {
   /** `bubble` (default) or `compact`. */
   style(value: FileMessageStyle): FileMessageView;
@@ -483,18 +518,34 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
   chatHeader: product(BloomChatHeader, {
     slots: ['avatar', 'accessory', 'actions', 'selectionActions'],
     lengths: ['avatarSize'],
-    own: (d) => ({ statusTone: d.own('tint')?.value }),
+    own: (d) => {
+      const density = d.own('density')?.value;
+      return {
+        statusTone: d.own('tint')?.value,
+        presentation: d.own('presentation')?.value,
+        titleAlign: d.own('titleAlign')?.value,
+        titleLayout: d.own('titleLayout')?.value,
+        titleAppearance: d.own('titleAppearance')?.value,
+        compact: density === undefined ? undefined : density === 'compact',
+        divider: d.own('dividers')?.value,
+      };
+    },
   }),
   chatInfoPanel: product(BloomChatInfoPanel, {
     slots: ['headerActions', 'cover', 'avatar', 'settings'],
     lengths: ['width', 'coverHeight', 'avatarSize'],
     own: (d) => ({ variant: d.own('style')?.value }),
   }),
-  pinnedMessageBar: product(BloomPinnedMessageBar),
+  pinnedMessageBar: product(BloomPinnedMessageBar, {
+    own: (d) => ({ dismissIcon: d.own('dismissIcon')?.value }),
+  }),
   scrollToBottomButton: product(BloomScrollToBottomButton, { lengths: ['size'], press: true }),
   chatFolderTabs: product(BloomChatFolderTabs, {
     lengths: ['paddingHorizontal'],
-    own: (d) => ({ gap: length(d.own('spacing')?.value as SpaceToken | undefined) }),
+    own: (d) => ({
+      gap: length(d.own('spacing')?.value as SpaceToken | undefined),
+      divider: d.own('dividers')?.value,
+    }),
   }),
   chatSearchField: product(BloomChatSearchField, {
     binding: ['value', 'onChangeText'],
@@ -516,7 +567,7 @@ export const CHATS: Record<ChatKind, ControlRenderer> = {
     colors: (d) => ({ color: d.own('tint')?.value as ColorToken | undefined }),
   }),
   contactMessage: product(BloomContactMessage, bubble({ lengths: sized, corners: rounded })),
-  documentGrid: product(BloomDocumentGrid),
+  documentGrid: product(BloomDocumentGrid, { own: (d) => ({ divider: d.own('dividers')?.value }) }),
   fileMessage: product(
     BloomFileMessage,
     bubble({
