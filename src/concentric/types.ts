@@ -10,7 +10,6 @@ export interface ConcentricViewProps extends Omit<ViewProps, 'style' | 'children
   /** Isolate this subtree from any rounded ancestor. */
   reset?: boolean;
   style?: StyleProp<ViewStyle>;
-  className?: string;
 }
 export interface ConcentricEdges {
   top: number;
