@@ -44,8 +44,6 @@ export type PopoverContentProps = OverlaySurfaceProps & {
 /** Shared by the panel's layout parts. */
 interface PopoverPartProps {
   children?: React.ReactNode;
-  /** Utility classes on the part's own node. */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -68,7 +66,6 @@ export interface PopoverTitleProps {
    */
   tone?: 'primary' | 'secondary';
   numberOfLines?: number;
-  className?: string;
   style?: StyleProp<TextStyle>;
   testID?: string;
 }
@@ -77,7 +74,6 @@ export interface PopoverTitleProps {
 export interface PopoverDescriptionProps {
   children?: React.ReactNode;
   numberOfLines?: number;
-  className?: string;
   style?: StyleProp<TextStyle>;
   testID?: string;
 }
@@ -90,7 +86,6 @@ export type PopoverFooterProps = PopoverPartProps;
  * `-mx-2.5 my-2.5 h-px bg-border-button-default`.
  */
 export interface PopoverSeparatorProps {
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

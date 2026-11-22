@@ -22,7 +22,7 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { PopoverProvider, usePopover } from './context';
-import { classChromeOverrides, POPOVER_SIDE_OFFSET, resolvePopoverSurfaceStyle } from './surface';
+import { POPOVER_SIDE_OFFSET, resolvePopoverSurfaceStyle } from './surface';
 import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
 import { useMessages } from '../locale/messages';
 import { POPOVER_MESSAGES } from './messages';
@@ -61,7 +61,6 @@ export function PopoverTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
 }: PopoverTriggerProps) {
@@ -71,7 +70,6 @@ export function PopoverTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={popover.anchorRef}
-      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -102,7 +100,6 @@ export function PopoverContent({
   dismissible,
   minWidth,
   maxWidth,
-  className,
   style,
   testID,
 }: PopoverContentProps) {
@@ -124,16 +121,14 @@ export function PopoverContent({
   const palette = useMenuPalette();
   const density = useMenuDensity(size);
   const { width: viewportWidth } = useWindowDimensions();
-  const overridden = useMemo(() => classChromeOverrides(className), [className]);
   const chrome = useMemo(
     () =>
       resolvePopoverSurfaceStyle(
         palette,
-        overridden,
         maxWidth === undefined ? viewportWidth : undefined,
         density.panelPadding,
       ),
-    [palette, overridden, maxWidth, viewportWidth, density.panelPadding],
+    [palette, maxWidth, viewportWidth, density.panelPadding],
   );
 
   return (
@@ -155,9 +150,7 @@ export function PopoverContent({
         minWidth={minWidth}
         maxWidth={maxWidth}
         onDismiss={close}
-        className={className}
-        // The resolved panel FIRST, so the caller's `style` overrides any of it;
-        // properties the caller's `className` names were already left out.
+        // The resolved panel FIRST, so the caller's `style` overrides any of it.
         style={[chrome, style]}
         testID={testID}
       >
