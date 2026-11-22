@@ -292,8 +292,7 @@ describe('the bottom bar', () => {
     const r = mount(
       toElement(
         BottomBar(Tab('Home', Glyph).id('home').badge(2), Tab('Search', Glyph).id('search'))
-          .selection('search')
-          .onSelect(onSelect)
+          .selection(['search', onSelect])
           .action(FAB(Icon(Glyph))),
       ),
     );

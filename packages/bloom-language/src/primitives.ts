@@ -346,7 +346,7 @@ export type TreeRow = TreeFolderView | TreeItemView | false | null | undefined |
  *   NavItem('Home', RiHome5Line).id('home').link('/'),
  *   NavItem('Settings', RiSettings3Line).id('settings').secondary(),
  *   TreeSection('Projects', TreeItem('Roadmap').id('roadmap').icon(RiFileLine)),
- * ).selection(current)
+ * ).selection([current, setCurrent])
  * ```
  */
 export function Sidebar(...rows: SidebarRow[]): SidebarView {
