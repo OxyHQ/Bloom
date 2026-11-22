@@ -14,6 +14,13 @@ const css = execFileSync(process.execPath, [join(__dirname, 'tailwind-app.cjs'),
   encoding: 'utf8',
   maxBuffer: 256 * 1024 * 1024,
 });
+// react-native-css animates a class with a transition through Reanimated's named
+// `createAnimatedComponent`; Bloom's Jest mock has it on the default export only.
+const reanimated = require('react-native-reanimated') as {
+  createAnimatedComponent?: unknown;
+  default: { createAnimatedComponent: unknown };
+};
+reanimated.createAnimatedComponent ??= reanimated.default.createAnimatedComponent;
 // The runtime first: it creates the variable context native-internal reads at load.
 require('react-native-css');
 const { compile } = require(join(TREE, 'node_modules/react-native-css/dist/commonjs/compiler'));
