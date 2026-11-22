@@ -29,13 +29,21 @@ beforeEach(() => {
   `).stylesheet(),
   );
 });
-it('resolves Accordion classes after native defaults on each actual host and the measured body', () => {
+it('puts Accordion styles after native defaults on each actual host and the measured body', () => {
   const api = render(
     <BloomThemeProvider>
-      <Accordion value="a" onValueChange={() => {}} className="root" testID="root">
-        <AccordionItem value="a" className="item">
-          <AccordionTrigger className="trigger">Details</AccordionTrigger>
-          <AccordionContent className="panel" contentClassName="body">
+      <Accordion value="a" onValueChange={() => {}} style={{ gap: 8, width: 360 }} testID="root">
+        <AccordionItem value="a" style={{ borderBottomColor: '#5433eb' }}>
+          <AccordionTrigger
+            style={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 0, paddingRight: 0 }}
+            textStyle={{ fontSize: 18 }}
+          >
+            Details
+          </AccordionTrigger>
+          <AccordionContent
+            style={{ backgroundColor: '#eef0f1' }}
+            contentStyle={{ paddingTop: 0, paddingRight: 0, paddingBottom: 16, paddingLeft: 0 }}
+          >
             <View testID="body" />
           </AccordionContent>
         </AccordionItem>
@@ -64,10 +72,15 @@ it('resolves Accordion classes after native defaults on each actual host and the
     paddingRight: 0,
   });
 });
-it('resolves Collapsible wrapper and content classes on their native owning nodes', () => {
+it('puts Collapsible wrapper and content styles on their native owning nodes', () => {
   const { Collapsible } = require('../collapsible/Collapsible');
   const api = render(
-    <Collapsible open testID="collapse" className="root panel" contentClassName="body">
+    <Collapsible
+      open
+      testID="collapse"
+      style={{ gap: 8, width: 360, backgroundColor: '#eef0f1' }}
+      contentStyle={{ paddingTop: 0, paddingRight: 0, paddingBottom: 16, paddingLeft: 0 }}
+    >
       <View />
     </Collapsible>,
   );

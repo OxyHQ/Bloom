@@ -165,7 +165,7 @@ function GroupedProjectBoard<Item>({
                   </AccordionTrigger>
                   {renderLaneActions?.(lane)}
                 </StyledView>
-                <AccordionContent contentClassName="p-0">
+                <AccordionContent contentStyle={{ padding: 0 }}>
                   <StyledView style={{ height: viewportHeight, minWidth: 0 }}>
                     {viewportHeight > 0 && (
                       <ControlledProjectBoard
