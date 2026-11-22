@@ -4,6 +4,7 @@ import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
 import { BlurIsland } from '@oxy.so/bloom/blur';
 import { Button } from '@oxy.so/bloom/button';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
+import { ChartCardSurface } from '@oxy.so/bloom/chart-cards';
 import { Divider } from '@oxy.so/bloom/divider';
 import { Fill } from '@oxy.so/bloom/fill';
 import { ResponsiveGrid } from '@oxy.so/bloom/grid';
@@ -17,6 +18,7 @@ import { Text } from '@oxy.so/bloom/typography';
 
 import { GLASS_OPACITY } from '../src/generated/spec.generated';
 import { clear, identity, regular } from '../src/glass';
+import * as Charts from '../src/controls/chart-cards';
 import { GlassGroup } from '../src/controls/glass-group';
 import { ToolbarGroup, ToolbarSpacer } from '../src/controls/toolbar-group';
 import { ViewThatFits } from '../src/controls/view-that-fits';
@@ -486,6 +488,25 @@ const boxes: ParityCase[] = [
       <ResponsiveGrid>
         <Text>One</Text>
         <Text>Two</Text>
+      </ResponsiveGrid>
+    ),
+  },
+  {
+    name: 'Grid stretching its chart cards',
+    language: () =>
+      toElement(
+        L.Grid(Charts.ChartCardSurface(L.Text('One')), Charts.ChartCardSurface(L.Text('Two')))
+          .columns(2)
+          .stretchItems(),
+      ),
+    bloom: () => (
+      <ResponsiveGrid maxColumns={2} stretchItems>
+        <ChartCardSurface>
+          <Text>One</Text>
+        </ChartCardSurface>
+        <ChartCardSurface>
+          <Text>Two</Text>
+        </ChartCardSurface>
       </ResponsiveGrid>
     ),
   },

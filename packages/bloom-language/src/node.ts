@@ -729,6 +729,7 @@ export interface ValueModifiers {
   columns: number;
   minCellWidth: SpaceToken;
   flow: GridFlow;
+  stretchItems: boolean;
 
   // Inputs (controls/inputs.tsx)
   invalid: boolean;
@@ -2995,6 +2996,9 @@ export class Node {
   minCellWidth(value: SpaceToken): Node {
     return this.set('minCellWidth', value);
   }
+  stretchItems(value = true): Node {
+    return this.set('stretchItems', value);
+  }
   flow(value: GridFlow): Node {
     return this.set('flow', value);
   }
@@ -4923,6 +4927,8 @@ export interface GridView extends ViewModifiers<GridView> {
   spacing(value: SpaceToken): GridView;
   /** `rows` (default) aligns cells in rows; `columns` stacks each column. */
   flow(value: GridFlow): GridView;
+  /** Chart cards fill the tallest cell of each row of several columns (Bloom's `stretchItems`). */
+  stretchItems(value?: boolean): GridView;
 }
 /** A `menu()` content placed in a menu: its rows are built while the menu is open. */
 export type MenuContentView = ViewNode;

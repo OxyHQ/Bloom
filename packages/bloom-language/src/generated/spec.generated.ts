@@ -3009,6 +3009,9 @@ export const MODIFIERS = {
   "flow": [
     "gridFlow"
   ],
+  "stretchItems": [
+    "value?"
+  ],
   "verified": [
     "value?"
   ],
@@ -6214,7 +6217,8 @@ export const NODE_MODIFIERS = {
     "columns",
     "minCellWidth",
     "spacing",
-    "flow"
+    "flow",
+    "stretchItems"
   ],
   "button": [
     "padding",
