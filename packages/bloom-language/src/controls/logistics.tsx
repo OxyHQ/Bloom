@@ -47,7 +47,13 @@ import {
 
 import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
-import type { ColorToken, Density, SpaceToken } from '../tokens';
+import {
+  type BorderWidthName,
+  type ColorToken,
+  type Density,
+  resolveBorderWidth,
+  type SpaceToken,
+} from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
 import { product } from './product';
 
@@ -113,7 +119,7 @@ export type JobBoardOptions = Omit<
 /** Bloom `SignaturePad`'s data (its `defaultValue`; `.value()` binds it); its height a space token. */
 export type SignaturePadOptions = Omit<
   SignaturePadProps,
-  Drawn | 'ink' | 'disabled' | 'height' | 'value' | 'onChange'
+  Drawn | 'ink' | 'strokeWidth' | 'disabled' | 'height' | 'value' | 'onChange'
 > & {
   readonly height?: SpaceToken;
 };
@@ -180,6 +186,8 @@ export interface SignaturePadView extends ViewModifiers<SignaturePadView> {
   value(value: Bound<SignaturePadProps, 'value'>): SignaturePadView;
   /** The ink's colour role (Bloom's pad text colour with none). */
   tint(value: ColorToken): SignaturePadView;
+  /** The ink's width: a border width token (Bloom's `'2.5'` with none). */
+  strokeWidth(value: BorderWidthName): SignaturePadView;
   disabled(value?: boolean): SignaturePadView;
 }
 export interface ProofOfDeliveryView extends ViewModifiers<ProofOfDeliveryView> {
@@ -309,7 +317,13 @@ export const LOGISTICS: Record<LogisticsKind, ControlRenderer> = {
   signaturePad: product(BloomSignaturePad, {
     bindings: { value: ['value', 'onChange'] },
     lengths: ['height'],
-    own: disabled,
+    own: (d) => {
+      const width = d.own('strokeWidth')?.value;
+      return {
+        strokeWidth: width === undefined ? undefined : resolveBorderWidth(width),
+        ...disabled(d),
+      };
+    },
     colors: (d) => ({ ink: d.own('tint')?.value as ColorToken | undefined }),
   }),
   proofOfDelivery: product(BloomProofOfDelivery, {

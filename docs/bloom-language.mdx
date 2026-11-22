@@ -252,7 +252,8 @@ stacking levels `'2'` and `'60'` (`z-[2]`, `z-[60]`), the 4px border (`'4'`,
 `rotate-45`), and the dialog and popover widths apps give Bloom's `width`,
 `maxWidth` and `minWidth` that the className table also finds in two or more
 places: `'240'` `'300'` `'380'` `'400'` `'420'` `'440'` `'480'` `'512'` `'560'`
-`'720'`. Durations are in milliseconds: Bloom's `instant` 100, `fast` 150,
+`'720'`. A line's width has Bloom's own signature stroke besides, `'2.5'`, so a
+signature pad's `.strokeWidth()` can name it. Durations are in milliseconds: Bloom's `instant` 100, `fast` 150,
 `normal` 200 and `slow` 300, then the exact durations apps write, `'800'` and
 `'2500'` (Willo's photo fades), and `'0'`, which stills a count-up or opens at
 once; then the waits Bloom's own components default to, so a screen can name
@@ -3522,7 +3523,8 @@ children); `EarningsSummary(periods, options?)` (its `payoutAction` a child,
 `EarningsPayoutRow(payout, options?)` (its `action` a child; `.onPress()` its
 own); `SignaturePad(options?)` (its value Bloom's own from a
 `defaultValue`, or `.value([signature, setSignature])`; `.tint()` its ink, a
-colour role; `height` a space token) and `ProofOfDelivery(options?)`
+colour role, and `.strokeWidth()` its width, a border width as a shape's
+outline takes (Bloom's `'2.5'` with none); `height` a space token) and `ProofOfDelivery(options?)`
 (`.value()` the same way, `.loading()` while it submits, `actions` a child,
 `signatureHeight` a space token), both `.disabled()`;
 `VehiclePicker(vehicle, options?)` and `ShipmentLoadPicker(load, options?)`

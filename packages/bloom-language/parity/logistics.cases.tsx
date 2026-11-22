@@ -400,6 +400,13 @@ export const LOGISTICS_CASES: ParityCase[] = [
       <Themed>{(c) => <SignaturePad onChange={hold} value={SIGNATURE} ink={c.primary} />}</Themed>
     ),
   },
+  ...(['thick', '2.5'] as const).map((width) => ({
+    name: `SignaturePad, a ${width} stroke`,
+    language: () => toElement(L.SignaturePad({}).value([SIGNATURE, hold]).strokeWidth(width)),
+    bloom: () => (
+      <SignaturePad onChange={hold} value={SIGNATURE} strokeWidth={width === 'thick' ? 2 : 2.5} />
+    ),
+  })),
   {
     name: 'SignaturePad typed, disabled',
     language: () => toElement(L.SignaturePad({ typed: true }).value([SIGNATURE, hold]).disabled()),
