@@ -116,6 +116,7 @@ import { MEDIA_PLAYERS } from './media-player';
 import { LOGISTICS } from './logistics';
 import { MUSIC_LIBRARY } from './music-library';
 import { QUEUE_PANELS } from './queue-panel';
+import { TRACK_LISTS } from './track-list';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -239,4 +240,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LOGISTICS,
   ...MUSIC_LIBRARY,
   ...QUEUE_PANELS,
+  ...TRACK_LISTS,
 };

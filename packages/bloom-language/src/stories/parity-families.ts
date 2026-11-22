@@ -116,6 +116,7 @@ import { MEDIA_PLAYER_CASES } from '../../parity/media-player.cases';
 import { LOGISTICS_CASES } from '../../parity/logistics.cases';
 import { MUSIC_LIBRARY_CASES } from '../../parity/music-library.cases';
 import { QUEUE_PANEL_CASES } from '../../parity/queue-panel.cases';
+import { TRACK_LIST_CASES } from '../../parity/track-list.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -237,6 +238,7 @@ export const FAMILIES = {
   logistics: LOGISTICS_CASES,
   musicLibrary: MUSIC_LIBRARY_CASES,
   queuePanel: QUEUE_PANEL_CASES,
+  trackList: TRACK_LIST_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';
