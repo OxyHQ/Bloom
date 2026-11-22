@@ -8,6 +8,7 @@ import TestRenderer, {
 import { LIGHT, PaintContext } from './support/bloom-theme';
 import { HStack, Text, VStack } from '../primitives';
 import { toElement } from '../render';
+import { view } from '../view';
 import { asymmetric, move, opacity } from '../motion/transition';
 import { defineKeyframes } from '../motion/keyframes';
 import { regular } from '../glass';
@@ -184,6 +185,22 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
       transitionTimingFunction: 'cubic-bezier(0.25,0.1,0.25,1)',
     });
     expect(box?.props.dataSet).toBeUndefined();
+  });
+
+  it('the scope reaches a view() body inside it: its change is the same CSS transition', () => {
+    const Dot = view(function Dot({ size }: { size: 'full' | 'dip' }) {
+      return VStack().scale(size).testID('dot');
+    });
+    const chain = (value: number, size: 'full' | 'dip') =>
+      HStack(Dot({ size })).animation('slide', value);
+    const r = mount(chain(1, 'full'));
+    update(r, chain(2, 'dip'));
+    const dot = all(r, 'View').find((box) => box.props.testID === 'dot');
+    expect(flat(dot?.props.style)).toMatchObject({
+      transform: [{ scale: 0.7 }],
+      transitionProperty: 'transform, opacity',
+      transitionDuration: '200ms',
+    });
   });
 
   it('.animatesColors() adds the colours, and marks the host for a theme switch', () => {

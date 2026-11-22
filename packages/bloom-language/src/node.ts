@@ -1881,6 +1881,7 @@ export interface Rendered {
   readonly env: unknown;
   readonly provided: unknown;
   readonly animation: unknown;
+  readonly scoped: unknown;
   readonly key: string | number | undefined;
   /** Drawn inside a text, as an inline span. */
   readonly inText: boolean | undefined;
