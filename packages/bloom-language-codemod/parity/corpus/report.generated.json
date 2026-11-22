@@ -20,7 +20,7 @@
   "unconverted": [
     {
       "file": "components/Rows.tsx",
-      "line": 66,
+      "line": 70,
       "element": "View",
       "reasons": [
         {

@@ -37,6 +37,7 @@ import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
 import { type ParityCase, Themed } from './support/cases';
+import { BaseFontText } from './support/base-font';
 
 /** Web CSS react-native-web passes through, which React Native's style types do not name. */
 const webCss = (style: Record<string, string>) => style as RN.TextStyle;
@@ -528,12 +529,12 @@ const tracked: ParityCase[] = [
   },
 ];
 
-/** React Native's own Text, as a screen moved from it draws it: only what the chain names. */
+/** React Native's own Text, as an app draws it (`support/base-font`): its base face, then only what the chain names. */
 const raw: ParityCase[] = [
   {
     name: 'RawText, bare',
     language: () => toElement(L.RawText('Raw')),
-    bloom: () => <RN.Text>Raw</RN.Text>,
+    bloom: () => <BaseFontText>Raw</BaseFontText>,
   },
   {
     name: 'RawText, a size, a line height, a weight and an ink',
@@ -542,11 +543,11 @@ const raw: ParityCase[] = [
     bloom: () => (
       <Themed>
         {(c) => (
-          <RN.Text
+          <BaseFontText
             style={{ fontSize: 14, lineHeight: 20, fontWeight: '600', color: c[paint('muted')] }}
           >
             Raw
-          </RN.Text>
+          </BaseFontText>
         )}
       </Themed>
     ),
@@ -557,11 +558,25 @@ const raw: ParityCase[] = [
       toElement(L.VStack(L.RawText('a ', L.RawText('b').weight('bold')).lines(2)).padding('sm')),
     bloom: () => (
       <RN.View style={{ paddingTop: 8, paddingBottom: 8, paddingStart: 8, paddingEnd: 8 }}>
-        <RN.Text numberOfLines={2} ellipsizeMode="tail">
-          a <RN.Text style={{ fontWeight: '700' }}>b</RN.Text>
-        </RN.Text>
+        <BaseFontText numberOfLines={2} ellipsizeMode="tail">
+          a <BaseFontText style={{ fontWeight: '700' }}>b</BaseFontText>
+        </BaseFontText>
       </RN.View>
     ),
+  },
+  {
+    name: 'RawText in a Bloom Text keeps its parent’s face',
+    language: () => toElement(L.Text('a ', L.RawText('b'))),
+    bloom: () => (
+      <Text>
+        a <BaseFontText>b</BaseFontText>
+      </Text>
+    ),
+  },
+  {
+    name: 'RawText in a family of its own',
+    language: () => toElement(L.RawText('Raw').font('mono')),
+    bloom: () => <BaseFontText style={fontFamilyStyle('mono')}>Raw</BaseFontText>,
   },
 ];
 

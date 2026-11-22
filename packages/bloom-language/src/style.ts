@@ -971,6 +971,21 @@ const TABULAR: readonly string[] = Object.freeze(['tabular-nums']);
 /** Each family's face, as Bloom's `Text` sets it for `font-mono`. */
 const FAMILY: Record<FontFamilyName, string> = { mono: fontFamilyStyle('mono').fontFamily };
 
+/**
+ * React Native's `Text` as an Oxy app draws it: `@oxy.so/app-preset` (6.8.0,
+ * `metro/base-font`) puts Bloom's base face first in the style of every text
+ * that names no family, Inter on Android and iOS for a text with no text
+ * ancestor (a nested one inherits its parent's), and the document's family
+ * (`inherit`) on the web for every text. `RawText` writes the same, first, so
+ * what its own chain names (`.font('mono')`) still wins.
+ */
+export function rawBaseFont(inText: boolean): Resolved | undefined {
+  if (IS_WEB) return RAW_FONT_WEB;
+  return inText ? undefined : RAW_FONT_NATIVE;
+}
+const RAW_FONT_WEB: Resolved = Object.freeze({ fontFamily: 'inherit' });
+const RAW_FONT_NATIVE: Resolved = Object.freeze({ fontFamily: fontFamilyStyle('sans').fontFamily });
+
 /** The colour role text and icons paint with: the environment's, or the spec's default. */
 export function foregroundOf(traits: TextTraits): InkToken {
   return traits.foreground ?? ENVIRONMENT_DEFAULTS.foreground;
