@@ -1085,6 +1085,11 @@ export const ENUMS = {
     "glass",
     "glassProminent"
   ],
+  "titleVisibility": [
+    "automatic",
+    "visible",
+    "hidden"
+  ],
   "contentFit": [
     "cover",
     "contain",
@@ -3100,6 +3105,13 @@ export const MODIFIERS = {
     "value",
     "children"
   ],
+  "confirmationDialog": [
+    "value",
+    "value"
+  ],
+  "titleVisibility": [
+    "titleVisibility"
+  ],
   "drag": [
     "motionValue",
     "value?"
@@ -4512,6 +4524,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing",
     "align",
     "justify",
@@ -4614,6 +4627,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "alignment",
     "hoverHighlight"
   ],
@@ -4710,7 +4724,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "text": [
     "padding",
@@ -4806,6 +4821,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lines",
     "noWrap",
     "truncation",
@@ -4915,6 +4931,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "avatar": [
@@ -5011,6 +5028,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "tint",
     "shape",
@@ -5113,6 +5131,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "layout",
     "size",
     "shape",
@@ -5218,6 +5237,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "size",
@@ -5320,6 +5340,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "loading": [
@@ -5416,6 +5437,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size",
     "tint"
@@ -5513,7 +5535,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "skeletonGroup": [
     "padding",
@@ -5608,7 +5631,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "image": [
     "padding",
@@ -5704,6 +5728,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -5804,7 +5829,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "ratio": [
     "padding",
@@ -5899,7 +5925,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "grid": [
     "padding",
@@ -5995,6 +6022,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "columns",
     "minCellWidth",
     "spacing",
@@ -6094,6 +6122,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "shape",
     "size",
@@ -6202,6 +6231,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "fill",
     "stroke",
@@ -6301,6 +6331,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "axis",
     "size",
     "dividers",
@@ -6400,6 +6431,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size",
     "tint",
@@ -6499,6 +6531,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "actions"
   ],
   "menuItem": [
@@ -6615,6 +6648,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lineStyle",
     "align",
     "spacing",
@@ -6788,6 +6822,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "count",
     "active",
     "tint"
@@ -6886,6 +6921,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "trailing",
     "countFormat",
     "size",
@@ -6986,7 +7022,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "lottie": [
     "padding",
@@ -7082,6 +7119,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loop",
     "paused",
     "fallback",
@@ -7181,6 +7219,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "radius",
@@ -7281,7 +7320,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardBody": [
     "padding",
@@ -7376,7 +7416,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardFooter": [
     "padding",
@@ -7471,7 +7512,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardTitle": [
     "lines"
@@ -7573,6 +7615,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "leadingView",
     "trailing",
@@ -7677,6 +7720,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "caption",
     "style",
     "separator",
@@ -7800,6 +7844,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "size",
@@ -7902,6 +7947,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "icon",
     "description",
     "media",
@@ -8007,6 +8053,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size"
   ],
@@ -8104,6 +8151,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "fullWidth",
     "onReorder",
@@ -8213,6 +8261,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "errorBoundary": [
@@ -8326,7 +8375,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "view": [
     "padding",
@@ -8421,7 +8471,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "appLayout": [
     "primaryAction",
@@ -8531,6 +8582,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "placeholder",
     "size",
     "invalid",
@@ -8645,6 +8697,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "placeholder",
     "description",
     "size",
@@ -8755,6 +8808,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "description",
     "error",
     "required"
@@ -8853,6 +8907,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "required"
   ],
@@ -8950,6 +9005,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "tint"
   ],
@@ -9047,6 +9103,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "description",
     "size",
     "tint",
@@ -9147,6 +9204,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size",
     "tint"
@@ -9245,6 +9303,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size",
     "tabs"
@@ -9343,6 +9402,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "placeholder",
     "size",
     "presented"
@@ -9449,6 +9509,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "placeholder",
     "size",
     "collapsible",
@@ -9559,6 +9620,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing",
     "contentInset",
     "fade",
@@ -9659,6 +9721,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing",
     "lines"
   ],
@@ -9765,7 +9828,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "selectionCard": [
     "padding",
@@ -9861,6 +9925,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "toggle",
     "selected",
     "description",
@@ -9966,6 +10031,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentMargins",
     "spacing",
     "refreshable",
@@ -10235,6 +10301,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentMargins",
     "spacing",
     "axis",
@@ -10338,6 +10405,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentMargins",
     "spacing",
     "axis",
@@ -10477,6 +10545,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "description",
     "trailing",
     "inset"
@@ -10575,6 +10644,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "icon",
     "muted"
   ],
@@ -10672,6 +10742,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "compact",
     "size",
     "width"
@@ -10786,6 +10857,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10888,6 +10960,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10991,6 +11064,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "unavailable",
     "weekStart",
@@ -11092,6 +11166,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "unavailable",
     "weekStart",
@@ -11194,6 +11269,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "step",
     "hourFormat",
@@ -11294,6 +11370,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "count",
     "countStyle",
     "size",
@@ -11401,6 +11478,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "max",
     "size",
     "starLabel"
@@ -11499,6 +11577,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "max",
     "valueLabel",
     "labelWidth",
@@ -11599,6 +11678,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "labels"
   ],
   "meter": [
@@ -11695,6 +11775,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11800,6 +11881,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11908,6 +11990,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "trackTint",
     "thickness",
@@ -12008,6 +12091,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "minWidth"
   ],
@@ -12104,7 +12188,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "tableColumn": [
     "padding",
@@ -12200,6 +12285,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "width",
     "share",
     "minWidth",
@@ -12301,6 +12387,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "emptyState"
   ],
   "tableRow": [
@@ -12397,6 +12484,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "selected"
   ],
   "tableCell": [
@@ -12493,6 +12581,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "width",
     "share",
     "minWidth",
@@ -12592,6 +12681,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "supporting",
     "supportingLines",
     "prefix",
@@ -12706,6 +12796,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "supporting",
     "supportingLines",
     "prefix",
@@ -12821,6 +12912,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "separator",
     "scrollable",
     "scrollHeight",
@@ -12926,6 +13018,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "itemKey",
     "itemType",
     "estimatedItemSize",
@@ -13033,6 +13126,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "selecting",
     "onSelectAll",
     "onClear",
@@ -13133,6 +13227,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "headerContent",
     "footerContent",
     "loop",
@@ -13242,6 +13337,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "width"
   ],
   "carouselDots": [
@@ -13338,6 +13434,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "shape",
     "style",
     "max",
@@ -13437,6 +13534,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "streaming",
     "size",
     "onLinkPress",
@@ -13536,6 +13634,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "tint",
     "bounds",
@@ -13644,6 +13743,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "tint",
     "bounds",
@@ -13753,6 +13853,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "allowsMultiple",
     "revealMotion"
@@ -13850,7 +13951,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "accordionTrigger": [
     "padding",
@@ -13946,6 +14048,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "indicator"
   ],
   "accordionContent": [
@@ -14041,7 +14144,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "code": [
     "padding",
@@ -14136,7 +14240,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "pre": [
     "padding",
@@ -14232,6 +14337,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "language",
     "lineNumbers"
   ],
@@ -14329,6 +14435,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "language",
     "lineNumbers",
     "highlight",
@@ -14429,6 +14536,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "language",
     "lineNumbers",
     "highlight",
@@ -14535,6 +14643,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "step",
     "size",
@@ -14637,6 +14746,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "step",
     "size",
@@ -14741,6 +14851,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "presented",
     "side",
     "openDelay",
@@ -14840,6 +14951,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "collapses",
     "separatorView",
@@ -14939,6 +15051,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "icon",
     "prefix",
@@ -15040,6 +15153,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "days",
     "endDate",
     "levels",
@@ -15145,6 +15259,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "placeholder",
     "tagSuggestions",
     "allowsCreate",
@@ -15251,6 +15366,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "file",
     "uploadProgress",
     "onFileSelected",
@@ -15356,6 +15472,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
@@ -15454,6 +15571,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "length",
     "characters",
     "onComplete",
@@ -15555,6 +15673,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "labels",
     "size"
   ],
@@ -15652,6 +15771,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "tint"
   ],
@@ -15749,6 +15869,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "actions",
     "presentedAt"
   ],
@@ -15846,6 +15967,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
@@ -15944,6 +16066,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "fileTypes",
     "dragActions",
     "folder",
@@ -16045,6 +16168,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "opaque",
     "mediaCorner"
   ],
@@ -16142,6 +16266,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "minItemWidth",
     "contentInset"
   ],
@@ -16245,6 +16370,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "onRemove",
     "onRetry",
     "onAdd",
@@ -16348,6 +16474,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "axis",
     "spacing",
     "optionBox"
@@ -16451,6 +16578,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "presented",
     "openDelay",
     "closeDelay",
@@ -16552,6 +16680,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lines",
     "style",
     "labels"
@@ -16650,6 +16779,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "trailing",
     "spacing",
     "backdrop",
@@ -16749,6 +16879,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "openMenu",
     "actions"
   ],
@@ -16851,6 +16982,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "readoutFormat"
   ],
   "phoneInput": [
@@ -16947,6 +17079,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "country",
     "countries",
     "placeholder",
@@ -17053,6 +17186,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -17153,6 +17287,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -17253,6 +17388,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "contentFit"
   ],
   "emptyMediaSurface": [
@@ -17348,7 +17484,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "avatarAnchor": [
     "padding",
@@ -17443,7 +17580,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "avatarFlightLayer": [],
   "inputGroup": [
@@ -17540,6 +17678,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "invalid"
   ],
@@ -17637,6 +17776,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "divider",
     "flush"
   ],
@@ -17734,6 +17874,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "description",
     "timestamp",
     "status",
@@ -17841,6 +17982,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "coverFill"
   ],
   "socialButton": [
@@ -17937,6 +18079,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "iconOnly",
@@ -18048,6 +18191,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "bounds",
     "unavailable",
     "weekStart",
@@ -18153,6 +18297,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "streaming",
     "onLinkPress",
     "plainRun",
@@ -18253,6 +18398,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "summary",
     "sorting",
     "rowSelection",
@@ -18370,7 +18516,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "dataTableSearch": [
     "padding",
@@ -18466,6 +18613,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "placeholder"
   ],
   "dataTableSelect": [
@@ -18562,6 +18710,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "sortableChipRow": [
@@ -18658,6 +18807,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "onReorder",
     "onDragChange",
     "trailing"
@@ -18760,7 +18910,15 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "blend"
+  ],
+  "confirmationDialog": [
+    "message",
+    "titleVisibility",
+    "actions",
+    "cancelLabel",
+    "testID"
   ],
   "agentAvatar": [
     "padding",
@@ -18856,6 +19014,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "mood",
     "paused",
@@ -18956,6 +19115,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "activeIndex"
   ],
   "compactComposer": [
@@ -19051,7 +19211,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "composerBanner": [
     "padding",
@@ -19147,6 +19308,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "composerIconButton": [
@@ -19243,6 +19405,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "size",
     "iconSize"
@@ -19341,6 +19504,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "loading",
     "presented",
@@ -19439,7 +19603,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "attachmentMenu": [
     "padding",
@@ -19535,6 +19700,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "columns",
     "presented"
@@ -19633,6 +19799,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "activeGroup",
     "query",
@@ -19733,6 +19900,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "surface"
   ],
@@ -19830,6 +19998,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "presented"
   ],
   "areaChartCard": [
@@ -19926,6 +20095,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "shape",
     "activeIndex",
@@ -20025,6 +20195,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "mono"
   ],
@@ -20122,6 +20293,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing"
   ],
   "chartHeadline": [
@@ -20217,7 +20389,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "chartStatTiles": [
     "padding",
@@ -20313,6 +20486,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "activeIndex"
   ],
   "contributionsCard": [
@@ -20409,6 +20583,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "activeCell"
   ],
@@ -20506,6 +20681,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "activeTint",
     "range",
@@ -20605,6 +20781,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "shape",
     "tint",
     "activeTint",
@@ -20704,6 +20881,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "legend",
     "activeIndex",
@@ -20803,6 +20981,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "activeIndex"
   ],
   "sparkline": [
@@ -20899,6 +21078,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "shape",
     "filled"
@@ -20997,6 +21177,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "mono",
     "activeIndex",
     "range"
@@ -21095,6 +21276,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "activeTint",
     "activeIndex"
@@ -21193,6 +21375,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "activeTint",
     "activeIndex"
@@ -21291,6 +21474,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "model",
     "effort",
     "voiceState",
@@ -21390,6 +21574,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "surface",
     "frosted",
     "model",
@@ -21490,7 +21675,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiChatShell": [
     "padding",
@@ -21586,6 +21772,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "sidebarSurface",
     "sidebarScrollbarSide",
     "surface",
@@ -21686,6 +21873,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "surface",
     "floatingChrome"
   ],
@@ -21782,7 +21970,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiChatUserMessage": [
     "padding",
@@ -21877,7 +22066,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiChatAssistantMessage": [
     "padding",
@@ -21972,7 +22162,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiChatMessageLine": [
     "padding",
@@ -22068,6 +22259,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "selectable"
   ],
@@ -22164,7 +22356,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiChatMobileHeader": [
     "padding",
@@ -22259,7 +22452,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiChatCodePanel": [
     "padding",
@@ -22355,6 +22549,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tab"
   ],
   "aiChatGalleryPanel": [
@@ -22451,6 +22646,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tab"
   ],
   "statCard": [
@@ -22547,6 +22743,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "statCards": [
@@ -22643,6 +22840,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "columns"
   ],
@@ -22740,6 +22938,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -22838,6 +23037,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "agentLimitsCard": [
@@ -22934,6 +23134,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "usageCard": [
@@ -23030,6 +23231,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "agentThinking": [
@@ -23126,6 +23328,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "presented"
@@ -23224,6 +23427,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "minimized"
   ],
   "agentProgressLoadingText": [
@@ -23320,6 +23524,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lines",
     "textVariant"
   ],
@@ -23416,7 +23621,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentLogShimmerText": [
     "padding",
@@ -23511,7 +23717,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentLogToolCall": [
     "padding",
@@ -23607,6 +23814,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "agentLogToolCalls": [
@@ -23702,7 +23910,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentLogWorkingRow": [
     "padding",
@@ -23797,7 +24006,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "composerLoader": [
     "padding",
@@ -23893,6 +24103,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "gradient",
     "blend",
     "bloomOnly",
@@ -23992,6 +24203,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size",
     "sidebarSurface",
@@ -24103,6 +24315,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "step",
     "answers"
   ],
@@ -24200,6 +24413,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "gradient"
@@ -24298,6 +24512,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "chatEmptyState": [
@@ -24393,7 +24608,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "chatHeader": [
     "padding",
@@ -24489,6 +24705,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "presentation",
     "titleAlign",
@@ -24591,6 +24808,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tab",
     "memberQuery"
@@ -24689,6 +24907,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "dismissIcon"
   ],
   "scrollToBottomButton": [
@@ -24784,7 +25003,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "chatFolderTabs": [
     "padding",
@@ -24880,6 +25100,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing",
     "dividers",
     "value"
@@ -24977,7 +25198,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "chatSearchResults": [
     "padding",
@@ -25072,7 +25294,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "storiesRow": [
     "padding",
@@ -25168,6 +25391,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing"
   ],
   "storyRing": [
@@ -25264,6 +25488,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "gradient"
   ],
   "typingDots": [
@@ -25360,6 +25585,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "contactMessage": [
@@ -25456,6 +25682,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -25554,6 +25781,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "dividers"
   ],
   "fileMessage": [
@@ -25650,6 +25878,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "bubbleTint",
@@ -25749,6 +25978,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -25848,6 +26078,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -25947,6 +26178,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -26045,6 +26277,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -26143,6 +26376,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "columns",
     "spacing"
   ],
@@ -26240,6 +26474,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -26338,6 +26573,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "bubbleTint",
@@ -26438,6 +26674,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -26537,7 +26774,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "hostCard": [
     "padding",
@@ -26632,7 +26870,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "listingHeader": [
     "padding",
@@ -26728,6 +26967,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "listingHeaderAction": [
@@ -26824,6 +27064,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "iconOnly"
   ],
   "listingPhotoGrid": [
@@ -26920,6 +27161,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "reviewCard": [
@@ -27016,6 +27258,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lines",
     "expanded"
   ],
@@ -27113,6 +27356,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "mapPriceMarker": [
@@ -27209,6 +27453,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "size"
   ],
@@ -27305,7 +27550,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "followButton": [
     "padding",
@@ -27401,6 +27647,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "size",
@@ -27502,6 +27749,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "spacing"
   ],
@@ -27599,6 +27847,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "spacing",
     "round",
@@ -27697,7 +27946,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "subscriptionPrice": [
     "padding",
@@ -27792,7 +28042,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "userHoverCard": [
     "padding",
@@ -27887,7 +28138,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardForm": [
     "padding",
@@ -27982,7 +28234,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardFormCountry": [
     "padding",
@@ -28077,7 +28330,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardFormPostcode": [
     "padding",
@@ -28172,7 +28426,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cardFormHostedField": [
     "padding",
@@ -28267,7 +28522,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "checkoutSheet": [
     "padding",
@@ -28363,6 +28619,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "methodTitleAlign",
     "methodTitleVariant"
   ],
@@ -28460,6 +28717,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "dividers"
   ],
   "priceRangeFilter": [
@@ -28556,6 +28814,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "countFilter": [
@@ -28651,7 +28910,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "toggleChipGroup": [
     "padding",
@@ -28746,7 +29006,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "amenityFilter": [
     "padding",
@@ -28841,7 +29102,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "switchFilterRow": [
     "padding",
@@ -28936,7 +29198,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "filterFooter": [
     "padding",
@@ -29032,6 +29295,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "filterTriggerButton": [
@@ -29128,6 +29392,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "areaRangeFilter": [
@@ -29223,7 +29488,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "availabilityFilter": [
     "padding",
@@ -29319,6 +29585,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "date"
   ],
   "featureFilter": [
@@ -29415,6 +29682,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "floorFilter": [
@@ -29510,7 +29778,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "staySearchCompact": [
     "padding",
@@ -29605,7 +29874,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "staySearchPanel": [
     "padding",
@@ -29700,7 +29970,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "staySearchStep": [
     "padding",
@@ -29795,7 +30066,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "destinationSuggestions": [
     "padding",
@@ -29891,6 +30163,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "highlightedIndex"
   ],
   "guestPicker": [
@@ -29987,6 +30260,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "tenancyTimeline": [
@@ -30083,6 +30357,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "leaseSummaryCard": [
@@ -30179,6 +30454,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "rentPaymentList": [
@@ -30275,6 +30551,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint"
   ],
@@ -30371,7 +30648,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "documentList": [
     "padding",
@@ -30467,6 +30745,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "evictionReportCard": [
@@ -30563,6 +30842,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lines"
   ],
   "evictionTimeline": [
@@ -30658,7 +30938,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "placeReviewSummary": [
     "padding",
@@ -30753,7 +31034,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "writeReviewPrompt": [
     "padding",
@@ -30848,7 +31130,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "callScreen": [
     "padding",
@@ -30944,6 +31227,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "size",
@@ -31047,6 +31331,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "muted"
@@ -31145,6 +31430,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "columns",
     "spacing",
@@ -31244,6 +31530,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "answerStyle"
@@ -31342,6 +31629,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint"
   ],
@@ -31439,6 +31727,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "muted"
   ],
   "selectedChipsRow": [
@@ -31535,6 +31824,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "newGroupForm": [
@@ -31631,6 +31921,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "description"
   ],
   "messageBubble": [
@@ -31727,6 +32018,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "groupPosition",
     "mediaFit",
     "tail",
@@ -31826,7 +32118,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "messageList": [
     "padding",
@@ -31921,7 +32214,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "mapScaleBar": [
     "padding",
@@ -32017,6 +32311,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "mapControls": [
@@ -32113,6 +32408,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "axis",
     "align",
     "tilted"
@@ -32211,6 +32507,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "navigationBanner": [
@@ -32306,7 +32603,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "placeCard": [
     "padding",
@@ -32402,6 +32700,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "loading",
     "favorite"
@@ -32500,6 +32799,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "placeInfoList": [
@@ -32595,7 +32895,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "placeTransit": [
     "padding",
@@ -32690,7 +32991,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "placeListCard": [
     "padding",
@@ -32786,6 +33088,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "placeList": [
@@ -32881,7 +33184,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "directionsSteps": [
     "padding",
@@ -32977,6 +33281,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "placePicker": [
@@ -33073,6 +33378,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "query"
   ],
@@ -33170,6 +33476,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "loading",
     "minimized"
@@ -33268,6 +33575,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "query"
   ],
   "mailMessage": [
@@ -33364,6 +33672,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded",
     "starred"
   ],
@@ -33461,6 +33770,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "starred",
     "expandedIds"
   ],
@@ -33558,6 +33868,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "noteEditorToolbar": [
@@ -33654,6 +33965,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "tripCard": [
@@ -33750,6 +34062,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "bookingCard": [
@@ -33846,6 +34159,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading",
     "guestsOpen"
   ],
@@ -33943,6 +34257,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "priceBreakdown": [
@@ -34038,7 +34353,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "homeSearchBar": [
     "padding",
@@ -34134,6 +34450,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "query"
   ],
   "searchModeTabs": [
@@ -34230,6 +34547,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "propertyTypePicker": [
@@ -34326,6 +34644,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "columns"
   ],
   "savedSearchCard": [
@@ -34421,7 +34740,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "listingActionBar": [
     "padding",
@@ -34517,6 +34837,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "mortgageCalculator": [
@@ -34613,6 +34934,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "price",
     "downPayment",
@@ -34713,6 +35035,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "saleActionCard": [
@@ -34809,6 +35132,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "listingCard": [
@@ -34905,6 +35229,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "density",
     "loading",
@@ -35004,6 +35329,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "wishlistCard": [
@@ -35100,6 +35426,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "listingPreviewPane": [
@@ -35196,6 +35523,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "mode"
   ],
   "listingQualityMeter": [
@@ -35291,7 +35619,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "propertyTypeSelector": [
     "padding",
@@ -35387,6 +35716,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "columns"
   ],
   "offeringBadge": [
@@ -35483,6 +35813,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style"
   ],
@@ -35580,6 +35911,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "pricePerAreaComparison": [
@@ -35675,7 +36007,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "projectBoard": [
     "padding",
@@ -35770,7 +36103,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "projectBoardCardContent": [
     "padding",
@@ -35865,7 +36199,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "boardDragHandle": [
     "padding",
@@ -35960,7 +36295,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "activityFeed": [
     "padding",
@@ -36056,6 +36392,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "density",
     "lines"
@@ -36154,6 +36491,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint"
   ],
@@ -36251,6 +36589,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "axis",
     "density"
   ],
@@ -36348,6 +36687,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "shape",
     "divider",
@@ -36447,6 +36787,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "divider"
   ],
@@ -36543,7 +36884,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "calendarView": [
     "padding",
@@ -36639,6 +36981,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "month"
   ],
@@ -36735,7 +37078,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "calendarViewMonthGrid": [
     "padding",
@@ -36831,6 +37175,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "taskList": [
@@ -36926,7 +37271,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "webSearch": [
     "padding",
@@ -37021,7 +37367,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "voiceControls": [
     "padding",
@@ -37117,6 +37464,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "muted",
     "paused"
@@ -37214,7 +37562,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentCreatorField": [
     "padding",
@@ -37310,6 +37659,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "multiline",
     "divider"
   ],
@@ -37406,7 +37756,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentProfile": [
     "padding",
@@ -37501,7 +37852,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentReplyIdentity": [
     "padding",
@@ -37596,7 +37948,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "aiProfileCard": [
     "padding",
@@ -37692,6 +38045,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "period",
     "activeCell"
@@ -37789,7 +38143,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "multiAgentChat": [
     "padding",
@@ -37884,7 +38239,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "agentChatHistory": [
     "padding",
@@ -37980,6 +38336,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "surface",
     "query",
     "selection"
@@ -38078,6 +38435,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "titleAlign",
     "value",
     "selection"
@@ -38176,6 +38534,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "noteCard": [
@@ -38272,6 +38631,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tint",
     "loading",
@@ -38371,6 +38731,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "lines"
   ],
@@ -38468,6 +38829,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "search"
   ],
@@ -38564,7 +38926,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "outlineNav": [
     "padding",
@@ -38660,6 +39023,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "pagination": [
@@ -38755,7 +39119,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "progressiveBlur": [
     "padding",
@@ -38850,7 +39215,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "addressRow": [
     "padding",
@@ -38946,6 +39312,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "density"
   ],
@@ -39043,6 +39410,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "density",
@@ -39142,6 +39510,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "paymentMethodRow": [
@@ -39238,6 +39607,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "paymentMethodList": [
@@ -39334,6 +39704,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "density",
     "loading"
@@ -39432,6 +39803,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "expanded"
   ],
   "priceSummaryLine": [
@@ -39528,6 +39900,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "paymentStatusBar": [
@@ -39624,6 +39997,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "paymentStatusBlock": [
@@ -39720,6 +40094,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "contactProfileCard": [
@@ -39816,6 +40191,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "leadScoreCard": [
@@ -39911,7 +40287,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "dealCard": [
     "padding",
@@ -40006,7 +40383,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "pipelineColumn": [
     "padding",
@@ -40101,7 +40479,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "pipelineBoard": [
     "padding",
@@ -40197,6 +40576,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "stage"
   ],
@@ -40293,7 +40673,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "patientInfoCard": [
     "padding",
@@ -40388,7 +40769,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "recentHiresCard": [
     "padding",
@@ -40483,7 +40865,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cartLine": [
     "padding",
@@ -40579,6 +40962,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "quantity"
   ],
@@ -40676,6 +41060,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "tip",
     "promo"
@@ -40773,7 +41158,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "cartTipPicker": [
     "padding",
@@ -40868,7 +41254,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "menuItemRow": [
     "padding",
@@ -40964,6 +41351,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "quantity"
   ],
@@ -41061,6 +41449,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "value",
     "quantity"
   ],
@@ -41158,6 +41547,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "loading",
     "favorite"
@@ -41256,6 +41646,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -41354,6 +41745,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading",
@@ -41453,6 +41845,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -41551,6 +41944,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -41649,6 +42043,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -41747,6 +42142,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -41845,6 +42241,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -41943,6 +42340,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -42041,6 +42439,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -42139,6 +42538,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -42237,6 +42637,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading"
@@ -42335,6 +42736,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "friendActivityCard": [
@@ -42430,7 +42832,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "quickAccessTile": [
     "padding",
@@ -42526,6 +42929,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "recapCard": [
@@ -42621,7 +43025,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "shareCard": [
     "padding",
@@ -42716,7 +43121,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "lyricsView": [
     "padding",
@@ -42812,6 +43218,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "lyricsPreviewCard": [
@@ -42908,6 +43315,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "lines"
   ],
   "audienceOverview": [
@@ -43003,7 +43411,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "streamsChart": [
     "padding",
@@ -43099,6 +43508,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "metric"
   ],
   "topTracksTable": [
@@ -43194,7 +43604,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "audienceBreakdown": [
     "padding",
@@ -43289,7 +43700,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "releaseCard": [
     "padding",
@@ -43385,6 +43797,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "releaseStatusBadge": [
@@ -43481,6 +43894,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size"
   ],
   "releaseTimeline": [
@@ -43577,6 +43991,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "axis"
   ],
   "trackUploadRow": [
@@ -43672,7 +44087,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "trackMetadataForm": [
     "padding",
@@ -43767,7 +44183,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "artistChipsInput": [
     "padding",
@@ -43862,7 +44279,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "isrcField": [
     "padding",
@@ -43957,7 +44375,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "creditsEditor": [
     "padding",
@@ -44052,7 +44471,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "artworkUploader": [
     "padding",
@@ -44147,7 +44567,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "payoutSummaryCard": [
     "padding",
@@ -44242,7 +44663,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "pitchCard": [
     "padding",
@@ -44338,6 +44760,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "release",
     "selectedMoods",
     "selectedGenres",
@@ -44436,7 +44859,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "checkoutSummary": [
     "padding",
@@ -44531,7 +44955,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "checkoutConfirm": [
     "padding",
@@ -44627,6 +45052,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading"
   ],
   "deliverySlotDays": [
@@ -44723,6 +45149,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "deliverySlotOption": [
@@ -44818,7 +45245,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "deliverySlotPicker": [
     "padding",
@@ -44914,6 +45342,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading",
     "tint",
     "day"
@@ -45012,6 +45441,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "transportControls": [
@@ -45108,6 +45538,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "style",
     "loading",
@@ -45209,6 +45640,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "muted",
     "liked",
     "devicePickerOpen",
@@ -45313,6 +45745,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "liked"
   ],
   "fullScreenPlayer": [
@@ -45409,6 +45842,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "liked",
     "shuffle",
     "repeat",
@@ -45508,6 +45942,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "presented"
   ],
@@ -45605,6 +46040,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "size",
     "presented"
   ],
@@ -45701,7 +46137,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "connectBanner": [
     "padding",
@@ -45796,7 +46233,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "carrierQuoteCard": [
     "padding",
@@ -45892,6 +46330,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "carrierQuoteList": [
@@ -45988,6 +46427,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "loading",
     "sorting"
@@ -46086,6 +46526,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "period"
   ],
   "earningsBreakdown": [
@@ -46181,7 +46622,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "earningsPayoutRow": [
     "padding",
@@ -46276,7 +46718,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "jobCard": [
     "padding",
@@ -46372,6 +46815,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "jobBoard": [
@@ -46468,6 +46912,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "loading",
     "sorting",
@@ -46568,6 +47013,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint",
     "strokeWidth",
     "value"
@@ -46666,6 +47112,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "loading",
     "value"
   ],
@@ -46762,7 +47209,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "shipmentLoadPicker": [
     "padding",
@@ -46857,7 +47305,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "shipmentOptionsList": [
     "padding",
@@ -46953,6 +47402,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "selectedExtras",
     "access",
     "window"
@@ -47050,7 +47500,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "rowActions": [
     "padding",
@@ -47146,6 +47597,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "rowActionButton": [
@@ -47242,6 +47694,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "active",
     "pressed"
@@ -47340,6 +47793,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "tint"
   ],
   "themeToggle": [
@@ -47436,6 +47890,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "collapsed"
   ],
@@ -47533,6 +47988,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "query",
     "expanded",
     "collapsed",
@@ -47635,6 +48091,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "searchField": [
@@ -47730,7 +48187,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "topResultCard": [
     "padding",
@@ -47825,7 +48283,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "searchResultTabs": [
     "padding",
@@ -47920,7 +48379,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "recentSearches": [
     "padding",
@@ -48015,7 +48475,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "browseGrid": [
     "padding",
@@ -48111,6 +48572,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "spacing"
   ],
   "queuePanel": [
@@ -48207,6 +48669,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style",
     "tab"
   ],
@@ -48303,7 +48766,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "recentlyPlayedList": [
     "padding",
@@ -48398,7 +48862,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "trackList": [
     "padding",
@@ -48494,6 +48959,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "tint",
     "selectedIds"
@@ -48592,6 +49058,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "tint"
   ],
@@ -48689,6 +49156,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density",
     "liked"
   ],
@@ -48786,6 +49254,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "density"
   ],
   "trackListEmpty": [
@@ -48881,7 +49350,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ],
   "selectionBar": [
     "padding",
@@ -48977,6 +49447,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "style"
   ],
   "episodeRow": [
@@ -49073,6 +49544,7 @@ export const NODE_MODIFIERS = {
     "controlSize",
     "buttonStyle",
     "modifier",
+    "confirmationDialog",
     "saved",
     "downloaded"
   ],
@@ -49169,7 +49641,8 @@ export const NODE_MODIFIERS = {
     "environment",
     "controlSize",
     "buttonStyle",
-    "modifier"
+    "modifier",
+    "confirmationDialog"
   ]
 } as const;
 
@@ -49521,6 +49994,7 @@ export const CONSTRUCTORS = {
   "SortableChip": "sortableChip",
   "Viewport": "viewport",
   "GlassGroup": "glassGroup",
+  "ConfirmationDialog": "confirmationDialog",
   "AgentAvatar": "agentAvatar",
   "ChatComposer": "chatComposer",
   "CompactComposer": "compactComposer",
