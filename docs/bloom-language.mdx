@@ -1040,7 +1040,8 @@ exported values; `.tint(role, opacity?)` returns a tinted copy.
 | `.glass(clear)` | `sheen={false}`, `fill` = `surface` at `subtle` |
 | `.glass(clear.tint('error'))` | `sheen={false}`, `fill` = the role at `subtle` (or the opacity given) |
 
-Opacities are tokens (`glassOpacity` in the spec): `subtle` 0.24, `medium` 0.48,
+Opacities are tokens (`glassOpacity` in the spec): `subtle` 0.24, `dim` 0.35
+(Apple's dimming layer: `clear.dimmed()` is `clear.tint('black', 'dim')`), `medium` 0.48,
 `strong` 0.72 (`strong` is Surface's own web tint, `SURFACE_TINT_OPACITY`).
 The fill is Bloom's `withAlpha` of the role's colour, as an app writes it:
 Surface computes its material from its fill, and a `color-mix(…)` hid the
@@ -1152,6 +1153,9 @@ is written):
 | Every icon-only control has a label | "Provide an accessibility label for every icon" | **error**: a `Button` or `FAB` whose content is only `Icon`s, with no `.label()` |
 | At most three toolbar groups | "aim for a maximum of three" groups | **warning**: more than three `ToolbarGroup`s in one `.toolbar()` |
 | Text actions apart from icon actions | "keep actions with text labels separate" | **warning**: a `ToolbarGroup` with both a text `Button` and an icon-only one |
+| Clear glass over bright media is dimmed | `Glass.clear`: "add a dimming layer … when the underlying content is bright" | **warning**: `.glass(clear)` with neither a tint nor `.dimmed()` (`clear.dimmed()` is black at the `dim` opacity, 35%, under the glass's content) |
+| One tinted control per group | "Refrain from adding color to the background of multiple controls"; "Only specify one primary action" | **warning**: two or more tinted glasses (`.tint()`, `glassProminent`) in one `GlassGroup`, `ToolbarGroup` or `.toolbar()` |
+| Limit the glass on screen | "Limit the use of Liquid Glass effects onscreen at the same time" | **warning**: more than 12 glasses in one module, and a glass in a `.map()` callback (one per item; `.inContent()` says it is on purpose). The budget sits well under the 60 lenses Bloom measured at 21% janky frames on a Pixel 8a |
 
 A warning is printed (`warning[bloom]`, `console.warn` in Metro and Jest) and
 the module compiles; an error fails it, as every other check does.
