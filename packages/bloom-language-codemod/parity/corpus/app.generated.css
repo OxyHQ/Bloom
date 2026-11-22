@@ -12,6 +12,7 @@
     --text-sm--line-height: calc(1.25 / 0.875);
     --font-weight-semibold: 600;
     --tracking-wide: 0.025em;
+    --radius-xl: 12px;
     --radius-2xl: 16px;
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
@@ -20,6 +21,7 @@
     --color-surface: var(--surface);
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
+    --color-card: var(--card);
   }
 }
 @layer base {
@@ -212,6 +214,9 @@
 .rounded-2xl {
   border-radius: var(--radius-2xl);
 }
+.rounded-xl {
+  border-radius: var(--radius-xl);
+}
 .border {
   border-style: var(--tw-border-style);
   border-width: 1px;
@@ -231,6 +236,9 @@
 }
 .bg-border {
   background-color: var(--color-border);
+}
+.bg-card {
+  background-color: var(--color-card);
 }
 .bg-muted {
   background-color: var(--color-muted);
@@ -299,6 +307,27 @@
   --bloom-cx-rauto-bottomRight: 0;
   --bloom-cx-radius-bottomLeft: var(--radius-2xl);
   --bloom-cx-rradius-bottomLeft: var(--radius-2xl);
+  --bloom-cx-auto-bottomLeft: 0;
+  --bloom-cx-rauto-bottomLeft: 0;
+}
+.rounded-xl {
+  --bloom-cx-publisher: 0px;
+  --bloom-cx-auto-mask: calc(var(--bloom-cx-auto-topLeft, 0) * 1 + var(--bloom-cx-auto-topRight, 0) * 2 + var(--bloom-cx-auto-bottomRight, 0) * 4 + var(--bloom-cx-auto-bottomLeft, 0) * 8);
+  --bloom-cx-rauto-mask: calc(var(--bloom-cx-rauto-topLeft, 0) * 1 + var(--bloom-cx-rauto-topRight, 0) * 2 + var(--bloom-cx-rauto-bottomRight, 0) * 4 + var(--bloom-cx-rauto-bottomLeft, 0) * 8);
+  --bloom-cx-radius-topLeft: var(--radius-xl);
+  --bloom-cx-rradius-topLeft: var(--radius-xl);
+  --bloom-cx-auto-topLeft: 0;
+  --bloom-cx-rauto-topLeft: 0;
+  --bloom-cx-radius-topRight: var(--radius-xl);
+  --bloom-cx-rradius-topRight: var(--radius-xl);
+  --bloom-cx-auto-topRight: 0;
+  --bloom-cx-rauto-topRight: 0;
+  --bloom-cx-radius-bottomRight: var(--radius-xl);
+  --bloom-cx-rradius-bottomRight: var(--radius-xl);
+  --bloom-cx-auto-bottomRight: 0;
+  --bloom-cx-rauto-bottomRight: 0;
+  --bloom-cx-radius-bottomLeft: var(--radius-xl);
+  --bloom-cx-rradius-bottomLeft: var(--radius-xl);
   --bloom-cx-auto-bottomLeft: 0;
   --bloom-cx-rauto-bottomLeft: 0;
 }
