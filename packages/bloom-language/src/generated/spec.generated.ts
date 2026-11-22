@@ -1077,6 +1077,14 @@ export const ENUMS = {
     "matchedGeometry",
     "materialize"
   ],
+  "buttonStyle": [
+    "solid",
+    "subtle",
+    "outline",
+    "plain",
+    "glass",
+    "glassProminent"
+  ],
   "contentFit": [
     "cover",
     "contain",
@@ -2318,6 +2326,171 @@ export const ENVIRONMENT_DEFAULTS = {
   "rampWeight": "regular",
   "fontSize": 13
 } as const;
+/** Each environment value: the modifier a node inside takes it as, and the node kinds that take it. */
+export const ENVIRONMENT_TAKERS = {
+  "disabled": {
+    "own": "disabled",
+    "kinds": [
+      "stack",
+      "zstack",
+      "button",
+      "fab",
+      "menuItem",
+      "menuSubmenu",
+      "card",
+      "row",
+      "groupedSectionItem",
+      "chip",
+      "tabItem",
+      "textField",
+      "textEditor",
+      "field",
+      "label",
+      "toggle",
+      "checkbox",
+      "radioGroup",
+      "segmented",
+      "picker",
+      "option",
+      "search",
+      "chipRow",
+      "selectionCard",
+      "treeItem",
+      "commandItem",
+      "settingsItem",
+      "settingsSelect",
+      "settingsTextField",
+      "datePicker",
+      "dateRangePicker",
+      "timeField",
+      "ratingInput",
+      "listItem",
+      "mailRow",
+      "slider",
+      "rangeSlider",
+      "accordionItem",
+      "stepper",
+      "stepperRow",
+      "breadcrumbItem",
+      "tagField",
+      "fileUpload",
+      "inputOtp",
+      "colorSwatchPicker",
+      "contextMenu",
+      "dropZone",
+      "sortablePhotoGrid",
+      "choiceList",
+      "hoverCard",
+      "menubarMenu",
+      "phoneInput",
+      "inputGroup",
+      "socialButton",
+      "meetingScheduler",
+      "dataTableFilter",
+      "dataTableSelect",
+      "sortableChipRow",
+      "chatComposer",
+      "compactComposer",
+      "composerIconButton",
+      "composerPanel",
+      "composerPill",
+      "playButton",
+      "playbackProgress",
+      "mapSearchAreaButton",
+      "cardForm",
+      "cardFormCountry",
+      "cardFormPostcode",
+      "cardFormHostedField",
+      "priceRangeFilter",
+      "countFilter",
+      "toggleChipGroup",
+      "amenityFilter",
+      "switchFilterRow",
+      "filterTriggerButton",
+      "areaRangeFilter",
+      "availabilityFilter",
+      "featureFilter",
+      "floorFilter",
+      "placeList",
+      "placePicker",
+      "mailRecipientField",
+      "noteEditorToolbar",
+      "bookingCard",
+      "bookingBar",
+      "propertyTypePicker",
+      "listingActionBar",
+      "propertyTypeSelector",
+      "voiceControls",
+      "addressRow",
+      "paymentMethodRow",
+      "paymentMethodList",
+      "cartPromoField",
+      "cartTipPicker",
+      "menuItemOptions",
+      "trackMetadataForm",
+      "artistChipsInput",
+      "isrcField",
+      "creditsEditor",
+      "artworkUploader",
+      "checkoutSummaryRow",
+      "checkoutConfirm",
+      "deliverySlotDays",
+      "deliverySlotOption",
+      "deliverySlotPicker",
+      "transportControls",
+      "playbackSpeedMenu",
+      "sleepTimerMenu",
+      "carrierQuoteCard",
+      "jobCard",
+      "signaturePad",
+      "proofOfDelivery",
+      "vehiclePicker",
+      "shipmentLoadPicker",
+      "shipmentOptionsList",
+      "shipmentRequestForm",
+      "rowActionButton"
+    ]
+  },
+  "controlSize": {
+    "own": "size",
+    "kinds": [
+      "loading",
+      "button",
+      "buttonGroup",
+      "fab",
+      "actionBar",
+      "row",
+      "admonition",
+      "textField",
+      "textEditor",
+      "toggle",
+      "checkbox",
+      "radioGroup",
+      "segmented",
+      "picker",
+      "search",
+      "toolbarView",
+      "settingsSelect",
+      "slider",
+      "rangeSlider",
+      "accordion",
+      "breadcrumb",
+      "breadcrumbItem",
+      "tagField",
+      "phoneInput",
+      "inputGroup",
+      "suggestionList",
+      "emojiPicker",
+      "placePicker",
+      "addressRow",
+      "addressList"
+    ]
+  },
+  "buttonStyle": {
+    "own": "style",
+    "kinds": []
+  }
+} as const;
 
 /** The object parameters (`frame`, `position`'s edges, `offset`): their keys and the token set of each value. */
 export const OBJECTS = {
@@ -2911,6 +3084,16 @@ export const MODIFIERS = {
     "glassTransition"
   ],
   "inContent": [],
+  "environment": [
+    "value",
+    "value"
+  ],
+  "controlSize": [
+    "controlSize"
+  ],
+  "buttonStyle": [
+    "buttonStyle"
+  ],
   "drag": [
     "motionValue",
     "value?"
@@ -4318,12 +4501,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing",
     "align",
     "justify",
     "wrap",
     "axis",
-    "disabled",
     "hoverHighlight",
     "listMarker"
   ],
@@ -4416,8 +4602,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "alignment",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "alignment",
     "hoverHighlight"
   ],
   "spacer": [
@@ -4508,7 +4697,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "text": [
     "padding",
@@ -4599,6 +4792,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lines",
     "noWrap",
     "truncation",
@@ -4703,6 +4900,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "avatar": [
@@ -4794,6 +4995,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "tint",
     "shape",
@@ -4891,6 +5096,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "layout",
     "size",
     "shape",
@@ -4991,6 +5200,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "size",
@@ -5088,6 +5301,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "loading": [
@@ -5179,6 +5396,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size",
     "tint"
@@ -5271,7 +5492,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "skeletonGroup": [
     "padding",
@@ -5361,7 +5586,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "image": [
     "padding",
@@ -5452,6 +5681,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentFit",
     "aspectRatio",
     "tint",
@@ -5547,7 +5780,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "ratio": [
     "padding",
@@ -5637,7 +5874,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "grid": [
     "padding",
@@ -5728,6 +5969,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "columns",
     "minCellWidth",
     "spacing",
@@ -5822,11 +6067,14 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "shape",
     "size",
     "tint",
-    "disabled",
     "loading",
     "pressed",
     "link",
@@ -5926,6 +6174,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "fill",
     "stroke",
@@ -6020,6 +6272,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "axis",
     "size",
     "dividers",
@@ -6114,10 +6370,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size",
     "tint",
-    "disabled",
     "collapsed"
   ],
   "menu": [
@@ -6209,6 +6468,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "actions"
   ],
   "menuItem": [
@@ -6320,6 +6583,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lineStyle",
     "align",
     "spacing",
@@ -6488,6 +6755,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "count",
     "active",
     "tint"
@@ -6581,6 +6852,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "trailing",
     "countFormat",
     "size",
@@ -6676,7 +6951,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "lottie": [
     "padding",
@@ -6767,6 +7046,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loop",
     "paused",
     "fallback",
@@ -6861,13 +7144,16 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "radius",
     "elevation",
     "outline",
-    "clipped",
-    "disabled"
+    "clipped"
   ],
   "cardHeader": [
     "padding",
@@ -6957,7 +7243,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardBody": [
     "padding",
@@ -7047,7 +7337,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardFooter": [
     "padding",
@@ -7137,7 +7431,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardTitle": [
     "lines"
@@ -7234,12 +7532,14 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
-    "subtitle",
     "leadingView",
     "trailing",
     "lines",
-    "disabled",
     "destructive",
     "selected",
     "active",
@@ -7335,7 +7635,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "title",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "caption",
     "style",
     "separator",
@@ -7454,14 +7757,17 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "size",
     "hue",
     "toggle",
     "selected",
-    "onClose",
-    "disabled"
+    "onClose"
   ],
   "emptyState": [
     "padding",
@@ -7552,6 +7858,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "icon",
     "description",
     "media",
@@ -7652,6 +7962,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size"
   ],
@@ -7744,6 +8058,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "fullWidth",
     "onReorder",
@@ -7848,6 +8166,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "errorBoundary": [
@@ -7956,7 +8278,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "view": [
     "padding",
@@ -8046,7 +8372,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "appLayout": [
     "primaryAction",
@@ -8151,9 +8481,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "placeholder",
     "size",
-    "disabled",
     "invalid",
     "floatingLabel",
     "revealable",
@@ -8261,10 +8594,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "placeholder",
     "description",
     "size",
-    "disabled",
     "invalid",
     "required",
     "rows",
@@ -8367,10 +8703,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "description",
     "error",
-    "required",
-    "disabled"
+    "required"
   ],
   "label": [
     "padding",
@@ -8461,9 +8800,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
-    "required",
-    "disabled"
+    "required"
   ],
   "toggle": [
     "padding",
@@ -8554,9 +8896,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
-    "tint",
-    "disabled"
+    "tint"
   ],
   "checkbox": [
     "padding",
@@ -8647,10 +8992,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "description",
     "size",
     "tint",
-    "disabled",
     "readOnly",
     "indeterminate"
   ],
@@ -8743,10 +9091,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size",
-    "tint",
-    "disabled"
+    "tint"
   ],
   "segmented": [
     "padding",
@@ -8837,9 +9188,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size",
-    "disabled",
     "tabs"
   ],
   "picker": [
@@ -8931,9 +9285,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "placeholder",
     "size",
-    "disabled",
     "presented"
   ],
   "option": [
@@ -9033,9 +9390,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "placeholder",
     "size",
-    "disabled",
     "collapsible",
     "presented",
     "tokens",
@@ -9139,9 +9499,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing",
     "contentInset",
-    "disabled",
     "fade",
     "ringInset",
     "keyboardTaps"
@@ -9235,6 +9598,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing",
     "lines"
   ],
@@ -9336,7 +9703,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "selectionCard": [
     "padding",
@@ -9427,6 +9798,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "toggle",
     "selected",
     "description",
@@ -9434,7 +9809,6 @@ export const NODE_MODIFIERS = {
     "indicator",
     "illustration",
     "density",
-    "disabled",
     "invalid",
     "nativeID",
     "describedBy"
@@ -9528,6 +9902,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentMargins",
     "spacing",
     "refreshable",
@@ -9792,6 +10170,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentMargins",
     "spacing",
     "axis",
@@ -9890,6 +10272,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentMargins",
     "spacing",
     "axis",
@@ -10024,6 +10410,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "description",
     "trailing",
     "inset"
@@ -10117,6 +10507,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "icon",
     "muted"
   ],
@@ -10209,9 +10603,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "compact",
     "size",
-    "disabled",
     "width"
   ],
   "settingsTextField": [
@@ -10319,12 +10716,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "unavailable",
     "weekStart",
     "locale",
     "placeholder",
-    "disabled",
     "presented",
     "labels"
   ],
@@ -10417,12 +10817,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "unavailable",
     "weekStart",
     "locale",
     "placeholder",
-    "disabled",
     "presented",
     "labels",
     "quickSelect"
@@ -10516,6 +10919,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10612,6 +11019,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "unavailable",
     "weekStart",
@@ -10709,12 +11120,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "step",
     "hourFormat",
     "size",
-    "placeholder",
-    "disabled"
+    "placeholder"
   ],
   "rating": [
     "padding",
@@ -10805,6 +11219,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "count",
     "countStyle",
     "size",
@@ -10907,9 +11325,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "max",
     "size",
-    "disabled",
     "starLabel"
   ],
   "ratingBar": [
@@ -11001,6 +11422,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "max",
     "valueLabel",
     "labelWidth",
@@ -11096,6 +11521,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "labels"
   ],
   "meter": [
@@ -11187,6 +11616,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11287,6 +11720,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "valueText",
     "indeterminate",
     "decorative",
@@ -11390,6 +11827,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "trackTint",
     "thickness",
@@ -11485,6 +11926,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "minWidth"
   ],
@@ -11576,7 +12021,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "tableColumn": [
     "padding",
@@ -11667,6 +12116,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "width",
     "share",
     "minWidth",
@@ -11763,6 +12216,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "emptyState"
   ],
   "tableRow": [
@@ -11854,6 +12311,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "selected"
   ],
   "tableCell": [
@@ -11945,6 +12406,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "width",
     "share",
     "minWidth",
@@ -12039,6 +12504,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "supporting",
     "supportingLines",
     "prefix",
@@ -12049,7 +12518,6 @@ export const NODE_MODIFIERS = {
     "density",
     "compactPadding",
     "active",
-    "disabled",
     "link",
     "onPrefetch",
     "checkable",
@@ -12149,6 +12617,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "supporting",
     "supportingLines",
     "prefix",
@@ -12159,7 +12631,6 @@ export const NODE_MODIFIERS = {
     "density",
     "compactPadding",
     "active",
-    "disabled",
     "link",
     "onPrefetch",
     "checkable",
@@ -12260,6 +12731,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "separator",
     "scrollable",
     "scrollHeight",
@@ -12360,6 +12835,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "itemKey",
     "itemType",
     "estimatedItemSize",
@@ -12462,6 +12941,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "selecting",
     "onSelectAll",
     "onClear",
@@ -12557,6 +13040,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "headerContent",
     "footerContent",
     "loop",
@@ -12661,6 +13148,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "width"
   ],
   "carouselDots": [
@@ -12752,6 +13243,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "shape",
     "style",
     "max",
@@ -12846,6 +13341,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "streaming",
     "size",
     "onLinkPress",
@@ -12940,12 +13439,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "tint",
     "bounds",
     "step",
     "keyboardStep",
-    "disabled",
     "thickness",
     "thumbSize",
     "fillTint",
@@ -13044,12 +13546,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "tint",
     "bounds",
     "step",
     "keyboardStep",
-    "disabled",
     "thickness",
     "thumbSize",
     "fillTint",
@@ -13149,6 +13654,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "allowsMultiple",
     "revealMotion"
@@ -13242,7 +13751,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "accordionTrigger": [
     "padding",
@@ -13333,6 +13845,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "indicator"
   ],
   "accordionContent": [
@@ -13423,7 +13939,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "code": [
     "padding",
@@ -13513,7 +14033,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "pre": [
     "padding",
@@ -13604,6 +14128,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "language",
     "lineNumbers"
   ],
@@ -13696,6 +14224,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "language",
     "lineNumbers",
     "highlight",
@@ -13791,6 +14323,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "language",
     "lineNumbers",
     "highlight",
@@ -13892,9 +14428,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "step",
-    "disabled",
     "size",
     "style",
     "valueFormat",
@@ -13990,9 +14529,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "step",
-    "disabled",
     "size",
     "style",
     "valueFormat",
@@ -14090,6 +14632,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "presented",
     "side",
     "openDelay",
@@ -14184,6 +14730,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "collapses",
     "separatorView",
@@ -14278,12 +14828,15 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "icon",
     "prefix",
     "link",
     "active",
-    "disabled",
     "hoverMenu"
   ],
   "activityHeatmap": [
@@ -14375,6 +14928,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "days",
     "endDate",
     "levels",
@@ -14475,6 +15032,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "placeholder",
     "tagSuggestions",
     "allowsCreate",
@@ -14484,7 +15045,6 @@ export const NODE_MODIFIERS = {
     "query",
     "tint",
     "size",
-    "disabled",
     "invalid",
     "labels"
   ],
@@ -14577,6 +15137,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "file",
     "uploadProgress",
     "onFileSelected",
@@ -14586,7 +15150,6 @@ export const NODE_MODIFIERS = {
     "allowedExtensions",
     "maxBytes",
     "fileIcon",
-    "disabled",
     "labels"
   ],
   "video": [
@@ -14678,6 +15241,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentFit",
     "nativeControls",
     "allowsPictureInPicture"
@@ -14771,11 +15338,14 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "length",
     "characters",
     "onComplete",
     "invalid",
-    "disabled",
     "groupSize",
     "autoFocus"
   ],
@@ -14868,9 +15438,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "labels",
-    "size",
-    "disabled"
+    "size"
   ],
   "animatedCheck": [
     "padding",
@@ -14961,6 +15534,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "tint"
   ],
@@ -15053,9 +15630,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "actions",
-    "presentedAt",
-    "disabled"
+    "presentedAt"
   ],
   "collapsible": [
     "padding",
@@ -15146,6 +15726,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "revealMotion",
     "revealsOnAppear",
     "keepsMounted"
@@ -15239,10 +15823,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "fileTypes",
     "dragActions",
     "folder",
-    "disabled",
     "onDragEnter",
     "onDragOver",
     "onDragLeave"
@@ -15336,6 +15923,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "opaque",
     "mediaCorner"
   ],
@@ -15428,6 +16019,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "minItemWidth",
     "contentInset"
   ],
@@ -15526,6 +16121,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "onRemove",
     "onRetry",
     "onAdd",
@@ -15533,7 +16132,6 @@ export const NODE_MODIFIERS = {
     "addHint",
     "columns",
     "imageVariant",
-    "disabled",
     "labels"
   ],
   "choiceList": [
@@ -15625,10 +16223,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "axis",
     "spacing",
-    "optionBox",
-    "disabled"
+    "optionBox"
   ],
   "videoPlayback": [
     "autoplay"
@@ -15724,13 +16325,16 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "presented",
     "openDelay",
     "closeDelay",
     "side",
     "align",
-    "padded",
-    "disabled"
+    "padded"
   ],
   "expandableText": [
     "padding",
@@ -15821,6 +16425,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lines",
     "style",
     "labels"
@@ -15914,6 +16522,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "trailing",
     "spacing",
     "backdrop",
@@ -16008,6 +16620,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "openMenu",
     "actions"
   ],
@@ -16105,6 +16721,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "readoutFormat"
   ],
   "phoneInput": [
@@ -16196,6 +16816,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "country",
     "countries",
     "placeholder",
@@ -16204,7 +16828,6 @@ export const NODE_MODIFIERS = {
     "showsInfo",
     "size",
     "invalid",
-    "disabled",
     "trailingIcon",
     "labels"
   ],
@@ -16298,6 +16921,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -16393,6 +17020,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentFit",
     "nativeControls",
     "surfaceType",
@@ -16488,6 +17119,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "contentFit"
   ],
   "emptyMediaSurface": [
@@ -16578,7 +17213,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "avatarAnchor": [
     "padding",
@@ -16668,7 +17307,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "avatarFlightLayer": [],
   "inputGroup": [
@@ -16760,9 +17403,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
-    "invalid",
-    "disabled"
+    "invalid"
   ],
   "inputGroupAddon": [
     "padding",
@@ -16853,6 +17499,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "divider",
     "flush"
   ],
@@ -16945,6 +17595,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "description",
     "timestamp",
     "status",
@@ -17047,6 +17701,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "coverFill"
   ],
   "socialButton": [
@@ -17138,13 +17796,16 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "iconOnly",
     "fullWidth",
     "intent",
-    "link",
-    "disabled"
+    "link"
   ],
   "gallery": [
     "page",
@@ -17245,6 +17906,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "bounds",
     "unavailable",
     "weekStart",
@@ -17254,7 +17919,6 @@ export const NODE_MODIFIERS = {
     "hourFormat",
     "onTimezonePress",
     "triggerTitle",
-    "disabled",
     "presented"
   ],
   "inlineMarkdown": [
@@ -17346,6 +18010,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "streaming",
     "onLinkPress",
     "plainRun",
@@ -17441,9 +18109,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "title",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "summary",
-    "toolbar",
     "sorting",
     "rowSelection",
     "pageSize",
@@ -17556,7 +18226,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "dataTableSearch": [
     "padding",
@@ -17647,6 +18320,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "placeholder"
   ],
   "dataTableSelect": [
@@ -17738,8 +18415,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size"
   ],
   "sortableChipRow": [
     "padding",
@@ -17830,10 +18510,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "onReorder",
     "onDragChange",
-    "trailing",
-    "disabled"
+    "trailing"
   ],
   "sortableChip": [],
   "viewport": [
@@ -17928,6 +18611,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "blend"
   ],
   "agentAvatar": [
@@ -18019,6 +18706,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "mood",
     "paused",
@@ -18115,6 +18806,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "activeIndex"
   ],
   "compactComposer": [
@@ -18206,7 +18900,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "composerBanner": [
     "padding",
@@ -18297,6 +18994,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "composerIconButton": [
@@ -18388,10 +19089,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "size",
-    "iconSize",
-    "disabled"
+    "iconSize"
   ],
   "suggestionList": [
     "padding",
@@ -18482,6 +19186,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "loading",
     "presented",
@@ -18575,7 +19283,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "attachmentMenu": [
     "padding",
@@ -18666,6 +19378,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "columns",
     "presented"
@@ -18759,6 +19475,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "activeGroup",
     "query",
@@ -18854,6 +19574,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "surface"
   ],
@@ -18946,6 +19670,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "presented"
   ],
   "areaChartCard": [
@@ -19037,6 +19765,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "shape",
     "activeIndex",
@@ -19131,6 +19863,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "mono"
   ],
@@ -19223,6 +19959,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing"
   ],
   "chartHeadline": [
@@ -19313,7 +20053,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "chartStatTiles": [
     "padding",
@@ -19404,6 +20148,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "activeIndex"
   ],
   "contributionsCard": [
@@ -19495,6 +20243,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "activeCell"
   ],
@@ -19587,6 +20339,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "activeTint",
     "range",
@@ -19681,6 +20437,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "shape",
     "tint",
     "activeTint",
@@ -19775,6 +20535,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "legend",
     "activeIndex",
@@ -19869,6 +20633,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "activeIndex"
   ],
   "sparkline": [
@@ -19960,6 +20728,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "shape",
     "filled"
@@ -20053,6 +20825,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "mono",
     "activeIndex",
     "range"
@@ -20146,6 +20922,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "activeTint",
     "activeIndex"
@@ -20239,6 +21019,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "activeTint",
     "activeIndex"
@@ -20333,6 +21117,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "model",
     "effort",
     "voiceState",
@@ -20428,6 +21215,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "surface",
     "frosted",
     "model",
@@ -20523,7 +21313,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiChatShell": [
     "padding",
@@ -20614,6 +21408,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "sidebarSurface",
     "sidebarScrollbarSide",
     "surface",
@@ -20709,6 +21507,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "surface",
     "floatingChrome"
   ],
@@ -20800,7 +21602,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiChatUserMessage": [
     "padding",
@@ -20890,7 +21696,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiChatAssistantMessage": [
     "padding",
@@ -20980,7 +21790,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiChatMessageLine": [
     "padding",
@@ -21071,6 +21885,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "selectable"
   ],
@@ -21162,7 +21980,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiChatMobileHeader": [
     "padding",
@@ -21252,7 +22074,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiChatCodePanel": [
     "padding",
@@ -21343,6 +22169,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tab"
   ],
   "aiChatGalleryPanel": [
@@ -21434,6 +22264,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tab"
   ],
   "statCard": [
@@ -21525,6 +22359,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "statCards": [
@@ -21616,6 +22454,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "columns"
   ],
@@ -21708,10 +22550,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
-    "loading",
-    "disabled"
+    "loading"
   ],
   "playbackProgress": [
     "padding",
@@ -21802,8 +22647,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "style",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "style"
   ],
   "agentLimitsCard": [
     "padding",
@@ -21894,6 +22742,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "usageCard": [
@@ -21985,6 +22837,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "agentThinking": [
@@ -22076,6 +22932,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "presented"
@@ -22169,6 +23029,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "minimized"
   ],
   "agentProgressLoadingText": [
@@ -22260,6 +23124,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lines",
     "textVariant"
   ],
@@ -22351,7 +23219,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentLogShimmerText": [
     "padding",
@@ -22441,7 +23313,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentLogToolCall": [
     "padding",
@@ -22532,6 +23408,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "agentLogToolCalls": [
@@ -22622,7 +23502,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentLogWorkingRow": [
     "padding",
@@ -22712,7 +23596,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "composerLoader": [
     "padding",
@@ -22803,6 +23691,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "gradient",
     "blend",
     "bloomOnly",
@@ -22897,6 +23789,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size",
     "sidebarSurface",
@@ -23003,6 +23899,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "step",
     "answers"
   ],
@@ -23095,6 +23995,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "gradient"
@@ -23188,6 +24092,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "chatEmptyState": [
@@ -23278,7 +24186,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "chatHeader": [
     "padding",
@@ -23369,6 +24281,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "presentation",
     "titleAlign",
@@ -23466,6 +24382,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tab",
     "memberQuery"
@@ -23559,6 +24479,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "dismissIcon"
   ],
   "scrollToBottomButton": [
@@ -23649,7 +24573,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "chatFolderTabs": [
     "padding",
@@ -23740,6 +24668,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing",
     "dividers",
     "value"
@@ -23832,7 +24764,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "chatSearchResults": [
     "padding",
@@ -23922,7 +24858,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "storiesRow": [
     "padding",
@@ -24013,6 +24953,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing"
   ],
   "storyRing": [
@@ -24104,6 +25048,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "gradient"
   ],
   "typingDots": [
@@ -24195,6 +25143,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "contactMessage": [
@@ -24286,6 +25238,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -24379,6 +25335,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "dividers"
   ],
   "fileMessage": [
@@ -24470,6 +25430,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "bubbleTint",
@@ -24564,6 +25528,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -24658,6 +25626,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -24752,6 +25724,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -24845,6 +25821,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -24938,6 +25918,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "columns",
     "spacing"
   ],
@@ -25030,6 +26014,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint"
@@ -25123,6 +26111,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "bubbleTint",
@@ -25218,6 +26210,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "bubbleTint",
     "contentTint",
@@ -25312,7 +26308,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "hostCard": [
     "padding",
@@ -25402,7 +26402,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "listingHeader": [
     "padding",
@@ -25493,6 +26497,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "listingHeaderAction": [
@@ -25584,6 +26592,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "iconOnly"
   ],
   "listingPhotoGrid": [
@@ -25675,6 +26687,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "reviewCard": [
@@ -25766,6 +26782,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lines",
     "expanded"
   ],
@@ -25858,6 +26878,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "mapPriceMarker": [
@@ -25949,6 +26973,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "size"
   ],
@@ -26041,7 +27069,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "followButton": [
     "padding",
@@ -26132,6 +27163,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "size",
@@ -26228,6 +27263,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "spacing"
   ],
@@ -26320,6 +27359,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "spacing",
     "round",
@@ -26413,7 +27456,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "subscriptionPrice": [
     "padding",
@@ -26503,7 +27550,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "userHoverCard": [
     "padding",
@@ -26593,7 +27644,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardForm": [
     "padding",
@@ -26684,7 +27739,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardFormCountry": [
     "padding",
@@ -26775,7 +27833,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardFormPostcode": [
     "padding",
@@ -26866,7 +27927,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cardFormHostedField": [
     "padding",
@@ -26957,7 +28021,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "checkoutSheet": [
     "padding",
@@ -27048,6 +28115,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "methodTitleAlign",
     "methodTitleVariant"
   ],
@@ -27140,6 +28211,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "dividers"
   ],
   "priceRangeFilter": [
@@ -27231,8 +28306,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "style",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "style"
   ],
   "countFilter": [
     "padding",
@@ -27323,7 +28401,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "toggleChipGroup": [
     "padding",
@@ -27414,7 +28495,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "amenityFilter": [
     "padding",
@@ -27505,7 +28589,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "switchFilterRow": [
     "padding",
@@ -27596,7 +28683,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "filterFooter": [
     "padding",
@@ -27687,6 +28777,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loading"
   ],
   "filterTriggerButton": [
@@ -27778,8 +28872,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size"
   ],
   "areaRangeFilter": [
     "padding",
@@ -27870,7 +28967,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "availabilityFilter": [
     "padding",
@@ -27962,6 +29062,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "date"
   ],
   "featureFilter": [
@@ -28053,8 +29156,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "style",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "style"
   ],
   "floorFilter": [
     "padding",
@@ -28145,7 +29251,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "staySearchCompact": [
     "padding",
@@ -28235,7 +29344,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "staySearchPanel": [
     "padding",
@@ -28325,7 +29438,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "staySearchStep": [
     "padding",
@@ -28415,7 +29532,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "destinationSuggestions": [
     "padding",
@@ -28506,6 +29627,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "highlightedIndex"
   ],
   "guestPicker": [
@@ -28597,6 +29722,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "tenancyTimeline": [
@@ -28688,6 +29817,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "leaseSummaryCard": [
@@ -28779,6 +29912,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "rentPaymentList": [
@@ -28870,6 +30007,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint"
   ],
@@ -28961,7 +30102,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "documentList": [
     "padding",
@@ -29052,6 +30197,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "evictionReportCard": [
@@ -29143,6 +30292,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lines"
   ],
   "evictionTimeline": [
@@ -29233,7 +30386,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "placeReviewSummary": [
     "padding",
@@ -29323,7 +30480,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "writeReviewPrompt": [
     "padding",
@@ -29413,7 +30574,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "callScreen": [
     "padding",
@@ -29504,6 +30669,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "size",
@@ -29602,6 +30771,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "muted"
@@ -29695,6 +30868,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "columns",
     "spacing",
@@ -29789,6 +30966,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "answerStyle"
@@ -29882,6 +31063,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint"
   ],
@@ -29974,6 +31159,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "muted"
   ],
   "selectedChipsRow": [
@@ -30065,6 +31254,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "newGroupForm": [
@@ -30156,6 +31349,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "description"
   ],
   "messageBubble": [
@@ -30247,6 +31444,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "groupPosition",
     "mediaFit",
     "tail",
@@ -30341,7 +31542,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "messageList": [
     "padding",
@@ -30431,7 +31636,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "mapScaleBar": [
     "padding",
@@ -30522,6 +31731,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "mapControls": [
@@ -30613,6 +31826,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "axis",
     "align",
     "tilted"
@@ -30706,6 +31923,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "navigationBanner": [
@@ -30796,7 +32017,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "placeCard": [
     "padding",
@@ -30887,6 +32112,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "loading",
     "favorite"
@@ -30980,6 +32209,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "placeInfoList": [
@@ -31070,7 +32303,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "placeTransit": [
     "padding",
@@ -31160,7 +32397,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "placeListCard": [
     "padding",
@@ -31251,6 +32492,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "placeList": [
@@ -31342,7 +32587,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "directionsSteps": [
     "padding",
@@ -31433,6 +32681,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "placePicker": [
@@ -31524,8 +32776,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size",
     "query"
   ],
   "mailComposeSurface": [
@@ -31617,6 +32872,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "loading",
     "minimized"
@@ -31711,6 +32970,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "query"
   ],
   "mailMessage": [
@@ -31802,6 +33064,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded",
     "starred"
   ],
@@ -31894,6 +33160,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "starred",
     "expandedIds"
   ],
@@ -31986,6 +33256,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "noteEditorToolbar": [
@@ -32077,8 +33351,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size"
   ],
   "tripCard": [
     "padding",
@@ -32169,6 +33446,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "bookingCard": [
@@ -32260,8 +33541,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "loading",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "loading",
     "guestsOpen"
   ],
   "bookingBar": [
@@ -32353,8 +33637,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "loading",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "loading"
   ],
   "priceBreakdown": [
     "padding",
@@ -32444,7 +33731,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "homeSearchBar": [
     "padding",
@@ -32535,6 +33826,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "query"
   ],
   "searchModeTabs": [
@@ -32626,6 +33921,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "propertyTypePicker": [
@@ -32717,8 +34016,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "columns",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "columns"
   ],
   "savedSearchCard": [
     "padding",
@@ -32808,7 +34110,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "listingActionBar": [
     "padding",
@@ -32899,8 +34205,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "loading",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "loading"
   ],
   "mortgageCalculator": [
     "padding",
@@ -32991,6 +34300,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "price",
     "downPayment",
@@ -33086,6 +34399,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loading"
   ],
   "saleActionCard": [
@@ -33177,6 +34494,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loading"
   ],
   "listingCard": [
@@ -33268,6 +34589,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "density",
     "loading",
@@ -33362,6 +34687,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "wishlistCard": [
@@ -33453,6 +34782,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "listingPreviewPane": [
@@ -33544,6 +34877,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "mode"
   ],
   "listingQualityMeter": [
@@ -33634,7 +34971,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "propertyTypeSelector": [
     "padding",
@@ -33725,8 +35066,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "columns",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "columns"
   ],
   "offeringBadge": [
     "padding",
@@ -33817,6 +35161,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style"
   ],
@@ -33909,6 +35257,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "pricePerAreaComparison": [
@@ -33999,7 +35351,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "projectBoard": [
     "padding",
@@ -34089,7 +35445,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "projectBoardCardContent": [
     "padding",
@@ -34179,7 +35539,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "boardDragHandle": [
     "padding",
@@ -34269,7 +35633,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "activityFeed": [
     "padding",
@@ -34360,6 +35728,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "density",
     "lines"
@@ -34453,6 +35825,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint"
   ],
@@ -34545,6 +35921,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "axis",
     "density"
   ],
@@ -34637,6 +36017,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "shape",
     "divider",
@@ -34731,6 +36115,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "divider"
   ],
@@ -34822,7 +36210,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "calendarView": [
     "padding",
@@ -34913,6 +36305,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "month"
   ],
@@ -35004,7 +36400,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "calendarViewMonthGrid": [
     "padding",
@@ -35095,6 +36495,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "taskList": [
@@ -35185,7 +36589,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "webSearch": [
     "padding",
@@ -35275,7 +36683,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "voiceControls": [
     "padding",
@@ -35366,8 +36778,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size",
     "muted",
     "paused"
   ],
@@ -35459,7 +36874,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentCreatorField": [
     "padding",
@@ -35550,6 +36969,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "multiline",
     "divider"
   ],
@@ -35641,7 +37064,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentProfile": [
     "padding",
@@ -35731,7 +37158,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentReplyIdentity": [
     "padding",
@@ -35821,7 +37252,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "aiProfileCard": [
     "padding",
@@ -35912,6 +37347,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "period",
     "activeCell"
@@ -36004,7 +37443,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "multiAgentChat": [
     "padding",
@@ -36094,7 +37537,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "agentChatHistory": [
     "padding",
@@ -36185,6 +37632,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "surface",
     "query",
     "selection"
@@ -36278,6 +37729,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "titleAlign",
     "value",
     "selection"
@@ -36371,6 +37826,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "noteCard": [
@@ -36462,6 +37921,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tint",
     "loading",
@@ -36556,6 +38019,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "lines"
   ],
@@ -36648,6 +38115,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "search"
   ],
@@ -36739,7 +38210,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "outlineNav": [
     "padding",
@@ -36830,6 +38305,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "pagination": [
@@ -36920,7 +38399,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "progressiveBlur": [
     "padding",
@@ -37010,7 +38493,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "addressRow": [
     "padding",
@@ -37101,9 +38588,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
-    "density",
-    "disabled"
+    "density"
   ],
   "addressList": [
     "padding",
@@ -37194,6 +38684,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "density",
@@ -37288,6 +38782,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "paymentMethodRow": [
@@ -37379,8 +38877,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "density",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "density"
   ],
   "paymentMethodList": [
     "padding",
@@ -37471,9 +38972,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "density",
-    "disabled",
     "loading"
   ],
   "priceSummary": [
@@ -37565,6 +39069,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "expanded"
   ],
   "priceSummaryLine": [
@@ -37656,6 +39164,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "paymentStatusBar": [
@@ -37747,6 +39259,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "paymentStatusBlock": [
@@ -37838,6 +39354,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "contactProfileCard": [
@@ -37929,6 +39449,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "leadScoreCard": [
@@ -38019,7 +39543,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "dealCard": [
     "padding",
@@ -38109,7 +39637,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "pipelineColumn": [
     "padding",
@@ -38199,7 +39731,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "pipelineBoard": [
     "padding",
@@ -38290,6 +39826,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "stage"
   ],
@@ -38381,7 +39921,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "patientInfoCard": [
     "padding",
@@ -38471,7 +40015,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "recentHiresCard": [
     "padding",
@@ -38561,7 +40109,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cartLine": [
     "padding",
@@ -38652,6 +40204,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "quantity"
   ],
@@ -38744,6 +40300,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "tip",
     "promo"
@@ -38837,7 +40397,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "cartTipPicker": [
     "padding",
@@ -38928,7 +40491,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "menuItemRow": [
     "padding",
@@ -39019,6 +40585,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "quantity"
   ],
@@ -39112,6 +40682,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "value",
     "quantity"
   ],
@@ -39204,6 +40777,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "loading",
     "favorite"
@@ -39297,6 +40874,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -39390,6 +40971,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading",
@@ -39484,6 +41069,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -39577,6 +41166,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -39670,6 +41263,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -39763,6 +41360,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -39856,6 +41457,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -39949,6 +41554,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -40042,6 +41651,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -40135,6 +41748,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -40228,6 +41845,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading"
@@ -40321,6 +41942,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "friendActivityCard": [
@@ -40411,7 +42036,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "quickAccessTile": [
     "padding",
@@ -40502,6 +42131,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loading"
   ],
   "recapCard": [
@@ -40592,7 +42225,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "shareCard": [
     "padding",
@@ -40682,7 +42319,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "lyricsView": [
     "padding",
@@ -40773,6 +42414,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "lyricsPreviewCard": [
@@ -40864,6 +42509,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "lines"
   ],
   "audienceOverview": [
@@ -40954,7 +42603,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "streamsChart": [
     "padding",
@@ -41045,6 +42698,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "metric"
   ],
   "topTracksTable": [
@@ -41135,7 +42792,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "audienceBreakdown": [
     "padding",
@@ -41225,7 +42886,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "releaseCard": [
     "padding",
@@ -41316,6 +42981,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "releaseStatusBadge": [
@@ -41407,6 +43076,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size"
   ],
   "releaseTimeline": [
@@ -41498,6 +43171,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "axis"
   ],
   "trackUploadRow": [
@@ -41588,7 +43265,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "trackMetadataForm": [
     "padding",
@@ -41679,7 +43360,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "artistChipsInput": [
     "padding",
@@ -41770,7 +43454,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "isrcField": [
     "padding",
@@ -41861,7 +43548,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "creditsEditor": [
     "padding",
@@ -41952,7 +43642,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "artworkUploader": [
     "padding",
@@ -42043,7 +43736,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "payoutSummaryCard": [
     "padding",
@@ -42133,7 +43829,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "pitchCard": [
     "padding",
@@ -42224,6 +43924,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "release",
     "selectedMoods",
     "selectedGenres",
@@ -42318,7 +44022,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "checkoutSummary": [
     "padding",
@@ -42408,7 +44115,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "checkoutConfirm": [
     "padding",
@@ -42500,6 +44211,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loading"
   ],
   "deliverySlotDays": [
@@ -42592,6 +44306,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "deliverySlotOption": [
@@ -42683,7 +44400,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "deliverySlotPicker": [
     "padding",
@@ -42775,6 +44495,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "loading",
     "tint",
     "day"
@@ -42868,6 +44591,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "transportControls": [
@@ -42959,10 +44686,13 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "size",
     "style",
     "loading",
-    "disabled",
     "shuffle",
     "repeat",
     "playbackRate"
@@ -43056,6 +44786,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "muted",
     "liked",
     "devicePickerOpen",
@@ -43155,6 +44889,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "liked"
   ],
   "fullScreenPlayer": [
@@ -43246,6 +44984,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "liked",
     "shuffle",
     "repeat",
@@ -43340,8 +45082,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size",
     "presented"
   ],
   "sleepTimerMenu": [
@@ -43433,8 +45178,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "size",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "size",
     "presented"
   ],
   "devicePicker": [
@@ -43525,7 +45273,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "connectBanner": [
     "padding",
@@ -43615,7 +45367,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "carrierQuoteCard": [
     "padding",
@@ -43706,8 +45462,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "density",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "density"
   ],
   "carrierQuoteList": [
     "padding",
@@ -43798,6 +45557,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "loading",
     "sorting"
@@ -43891,6 +45654,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "period"
   ],
   "earningsBreakdown": [
@@ -43981,7 +45748,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "earningsPayoutRow": [
     "padding",
@@ -44071,7 +45842,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "jobCard": [
     "padding",
@@ -44162,8 +45937,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "density",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "density"
   ],
   "jobBoard": [
     "padding",
@@ -44254,6 +46032,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "loading",
     "sorting",
@@ -44349,9 +46131,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint",
     "strokeWidth",
-    "disabled",
     "value"
   ],
   "proofOfDelivery": [
@@ -44443,8 +46228,11 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "loading",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
+    "loading",
     "value"
   ],
   "vehiclePicker": [
@@ -44536,7 +46324,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "shipmentLoadPicker": [
     "padding",
@@ -44627,7 +46418,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "shipmentOptionsList": [
     "padding",
@@ -44719,6 +46513,9 @@ export const NODE_MODIFIERS = {
     "glassTransition",
     "inContent",
     "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "selectedExtras",
     "access",
     "window"
@@ -44812,7 +46609,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
-    "disabled"
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "rowActions": [
     "padding",
@@ -44903,6 +46703,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "rowActionButton": [
@@ -44994,9 +46798,12 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "active",
-    "disabled",
     "pressed"
   ],
   "swipeRow": [
@@ -45088,6 +46895,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "tint"
   ],
   "themeToggle": [
@@ -45179,6 +46990,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "collapsed"
   ],
@@ -45271,6 +47086,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "query",
     "expanded",
     "collapsed",
@@ -45368,6 +47187,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "searchField": [
@@ -45458,7 +47281,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "topResultCard": [
     "padding",
@@ -45548,7 +47375,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "searchResultTabs": [
     "padding",
@@ -45638,7 +47469,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "recentSearches": [
     "padding",
@@ -45728,7 +47563,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "browseGrid": [
     "padding",
@@ -45819,6 +47658,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "spacing"
   ],
   "queuePanel": [
@@ -45910,6 +47753,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style",
     "tab"
   ],
@@ -46001,7 +47848,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "recentlyPlayedList": [
     "padding",
@@ -46091,7 +47942,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "trackList": [
     "padding",
@@ -46182,6 +48037,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "tint",
     "selectedIds"
@@ -46275,6 +48134,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "tint"
   ],
@@ -46367,6 +48230,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density",
     "liked"
   ],
@@ -46459,6 +48326,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "density"
   ],
   "trackListEmpty": [
@@ -46549,7 +48420,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ],
   "selectionBar": [
     "padding",
@@ -46640,6 +48515,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "style"
   ],
   "episodeRow": [
@@ -46731,6 +48610,10 @@ export const NODE_MODIFIERS = {
     "glassUnion",
     "glassTransition",
     "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle",
     "saved",
     "downloaded"
   ],
@@ -46822,7 +48705,11 @@ export const NODE_MODIFIERS = {
     "glassID",
     "glassUnion",
     "glassTransition",
-    "inContent"
+    "inContent",
+    "disabled",
+    "environment",
+    "controlSize",
+    "buttonStyle"
   ]
 } as const;
 

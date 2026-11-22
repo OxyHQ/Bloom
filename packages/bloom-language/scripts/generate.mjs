@@ -97,9 +97,28 @@ for (const [kind, node] of Object.entries(nodes)) {
     throw new Error(`nodes.${kind}: a node lists densities exactly when it takes density()`);
   if (takesDensity) nodeDensities[kind] = node.densities;
   nodeModifiers[kind] =
-    node.universal === false ? [...node.modifiers] : [...spec.universal, ...node.modifiers];
+    node.universal === false
+      ? [...node.modifiers]
+      : [...new Set([...spec.universal, ...node.modifiers])];
   for (const name of node.constructors) constructors[name] = kind;
 }
+
+/** The node kinds that take each environment value: they list its modifier (from its token set). */
+const environmentTakers = Object.fromEntries(
+  Object.entries(withoutComment(spec.environment.values)).map(([name, value]) => [
+    name,
+    {
+      own: value.own,
+      kinds: Object.entries(nodes)
+        .filter(
+          ([, node]) =>
+            node.modifiers.includes(value.own) &&
+            (value.set === undefined || node[value.own] === value.set),
+        )
+        .map(([kind]) => kind),
+    },
+  ]),
+);
 
 const runtime = `// ${HEADER}
 /* eslint-disable */
@@ -168,6 +187,8 @@ export const LAYER_RANK = ${ts(layerRank)} as const;
 /** The traits a view hands everything inside it. */
 export const ENVIRONMENT = ${ts(spec.environment.traits)} as const;
 export const ENVIRONMENT_DEFAULTS = ${ts(spec.environment.defaults)} as const;
+/** Each environment value: the modifier a node inside takes it as, and the node kinds that take it. */
+export const ENVIRONMENT_TAKERS = ${ts(environmentTakers)} as const;
 
 /** The object parameters (\`frame\`, \`position\`'s edges, \`offset\`): their keys and the token set of each value. */
 export const OBJECTS = ${ts(objects)} as const;
