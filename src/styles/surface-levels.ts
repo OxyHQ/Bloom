@@ -211,9 +211,25 @@ function paintOn(theme: Theme, level: SurfaceLevel, background: string): Surface
   };
 }
 
-/** Everything one rung paints. Pure, so it can be walked over every preset × mode. */
+/** The four rungs, per palette and mode: what a rung paints is read from nothing else. */
+const resolvedLevels = new WeakMap<
+  Theme['colors'],
+  { isDark: boolean; levels: SurfaceLevelPaint[] }
+>();
+
+/**
+ * Everything one rung paints. Pure, so it can be walked over every preset × mode,
+ * and computed once per palette and mode: the contrast search behind it is
+ * measurable, and every row's lens menu asks for it as it mounts.
+ */
 export function resolveSurfaceLevel(theme: Theme, level: SurfaceLevel): SurfaceLevelPaint {
-  return paintOn(theme, level, levelBackground(theme, level));
+  let entry = resolvedLevels.get(theme.colors);
+  if (entry?.isDark !== theme.isDark) {
+    entry = { isDark: theme.isDark, levels: [] };
+    resolvedLevels.set(theme.colors, entry);
+  }
+  entry.levels[level] ??= paintOn(theme, level, levelBackground(theme, level));
+  return entry.levels[level];
 }
 
 /**
