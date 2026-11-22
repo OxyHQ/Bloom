@@ -32,7 +32,7 @@ describe('containers', () => {
         toElement(
           Card(CardTitle('Plan').lines(1))
             .style('outline')
-            .radius('radius-16')
+            .radius('lg')
             .elevation('none')
             .padding('md')
             .onPress(onPress),

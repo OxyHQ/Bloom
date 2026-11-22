@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import type { CardRadius as BloomCardRadius } from '@oxy.so/bloom/card';
 import type { MotionSpec } from '@oxy.so/bloom/motion';
 
 import {
@@ -463,6 +464,19 @@ export function resolveLength(token: LengthToken): number | string {
 /** A rung's radius; `concentric` has none of its own (its shape's radius, drawn by Bloom). */
 export function resolveCorner(token: Exclude<CornerName, 'concentric'>): number {
   return CORNER[token];
+}
+
+/** A Card's corner: a corner rung of Bloom's radius scale, the panel's, or concentric with what holds it. */
+export type CardRadius = (typeof ENUMS.cardRadius)[number];
+
+/**
+ * A Card's corner as Bloom's `Card` names it: a corner rung is Bloom's radius
+ * of the same value (`lg` is `radius-16`, `full` `radius-max`); `panel` and
+ * `concentric` are Bloom's own.
+ */
+export function resolveCardRadius(token: CardRadius): BloomCardRadius {
+  if (token === 'panel' || token === 'concentric') return token;
+  return token === 'full' ? 'radius-max' : (`radius-${CORNER[token]}` as const);
 }
 
 export function resolveIconSize(token: IconSizeToken): number {

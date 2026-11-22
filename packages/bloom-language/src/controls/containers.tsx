@@ -53,9 +53,11 @@ import {
 } from '../node';
 import { Painted, type Paint } from '../paint';
 import {
+  type CardRadius,
   type ColorName,
   type ContentDensity,
   type KeyboardTaps,
+  resolveCardRadius,
   resolveSpace,
   type SpaceToken,
 } from '../tokens';
@@ -87,8 +89,7 @@ export type ContainerKind =
   | 'tabContent'
   | 'selectionCard';
 
-/** A Card's corner: Bloom's radius rungs, the panel's, or concentric with what holds it. */
-export type CardRadius = (typeof ENUMS.cardRadius)[number];
+export type { CardRadius };
 /** A Card's lift: none, or one of Bloom's elevation roles. */
 export type CardElevation = (typeof ENUMS.cardElevation)[number];
 /** A Card's own stroke. */
@@ -145,7 +146,7 @@ type BoxModifiers<Self> = Pick<
 export interface CardView extends ViewModifiers<CardView> {
   style(value: BloomAppearance): CardView;
   tint(value: BloomTone): CardView;
-  /** Its corner: a radius rung (`radius-16`), `panel` or `concentric`. */
+  /** Its corner: a corner rung of Bloom's radius scale (`lg`), `panel` or `concentric`. */
   radius(value: CardRadius): CardView;
   /** Its lift: `none`, or an elevation role (`s`, `m`, `floating`). */
   elevation(value: CardElevation): CardView;
@@ -552,6 +553,12 @@ function emptyStateAction(
   };
 }
 
+/** A card's (or grouped section's) `.radius()`, as Bloom's Card names it. */
+function cardRadius(d: ControlDraw) {
+  const radius = d.own('radius')?.value;
+  return radius === undefined ? undefined : resolveCardRadius(radius);
+}
+
 function card(d: ControlDraw): ReactElement {
   return d.component(
     BloomCard,
@@ -559,7 +566,7 @@ function card(d: ControlDraw): ReactElement {
       ...d.props(),
       appearance: d.own('style')?.value,
       tone: d.own('tint')?.value,
-      radius: d.own('radius')?.value,
+      radius: cardRadius(d),
       cornerCurve: d.own('cornerCurve')?.value,
       elevation: d.own('elevation')?.value,
       border: d.own('outline')?.value,
@@ -613,7 +620,7 @@ function groupedSection(d: ControlDraw): ReactElement {
         footer: d.own('caption')?.value,
         variant: d.own('style')?.value,
         separator: d.own('separator')?.value,
-        radius: d.own('radius')?.value,
+        radius: cardRadius(d),
         density: d.own('density')?.value,
       },
       ...d.children(d.node.children),

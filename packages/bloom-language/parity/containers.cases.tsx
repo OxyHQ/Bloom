@@ -15,6 +15,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
+  type CardRadius,
   CardTitle,
   SelectionCard,
 } from '@oxy.so/bloom/card';
@@ -45,6 +46,21 @@ import { type ParityCase, Themed } from './support/cases';
 const onPress = () => {};
 const setTab = (_value: string) => {};
 const setOn = (_value: boolean) => {};
+/** Each of a card's corner tokens and the radius an app hands Bloom's `Card` for it. */
+const CARD_RADII: readonly (readonly [C.CardRadius, CardRadius])[] = [
+  ['none', 'radius-0'],
+  ['2xs', 'radius-2'],
+  ['xs', 'radius-4'],
+  ['sm', 'radius-8'],
+  ['md', 'radius-12'],
+  ['lg', 'radius-16'],
+  ['xl', 'radius-20'],
+  ['2xl', 'radius-24'],
+  ['3xl', 'radius-28'],
+  ['full', 'radius-max'],
+  ['panel', 'panel'],
+  ['concentric', 'concentric'],
+];
 
 // ── Card ─────────────────────────────────────────────────────────
 
@@ -103,11 +119,11 @@ const cards: ParityCase[] = [
       </Card>
     ),
   })),
-  ...ENUMS.cardRadius.map((radius) => ({
+  ...CARD_RADII.map(([radius, bloom]) => ({
     name: `Card radius ${radius}`,
     language: () => toElement(C.Card(L.Badge(1)).radius(radius)),
     bloom: () => (
-      <Card radius={radius}>
+      <Card radius={bloom}>
         <Badge content={1} />
       </Card>
     ),
@@ -283,7 +299,7 @@ const grouped: ParityCase[] = [
   {
     name: 'GroupedSection radius',
     language: () =>
-      toElement(C.GroupedSection(C.GroupedSectionItem('Name')).radius('radius-24').testID('g')),
+      toElement(C.GroupedSection(C.GroupedSectionItem('Name')).radius('2xl').testID('g')),
     bloom: () => (
       <GroupedSection radius="radius-24" testID="g">
         <GroupedSectionItem title="Name" />

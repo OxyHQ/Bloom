@@ -88,7 +88,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("badgeStyle", &["solid", "subtle", "outlined", "onMedia"]),
     ("badgeSize", &["xs", "sm", "md", "lg", "label-small", "label-medium"]),
     ("badgePlacement", &["top-right", "top-left", "bottom-right", "bottom-left"]),
-    ("cardRadius", &["radius-0", "radius-2", "radius-4", "radius-8", "radius-12", "radius-16", "radius-20", "radius-24", "radius-28", "radius-max", "panel", "concentric"]),
+    ("cardRadius", &["none", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "full", "panel", "concentric"]),
     ("cardElevation", &["none", "s", "m", "floating"]),
     ("cardBorder", &["none", "hairline", "thin", "medium"]),
     ("groupedSectionStyle", &["plain", "filled"]),

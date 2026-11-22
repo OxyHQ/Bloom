@@ -17,6 +17,7 @@ import {
   BORDER_WIDTH,
   COLORS,
   CORNER,
+  ENUMS,
   DURATION,
   EASING,
   ENVIRONMENT,
@@ -40,7 +41,7 @@ import {
   TRACKING_PX,
   Z_INDEX,
 } from '../generated/spec.generated';
-import { SHADOW_BOX } from './support/bloom-design-tokens';
+import { RADIUS, SHADOW_BOX } from './support/bloom-design-tokens';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
 import type {
   ActionBarView,
@@ -556,6 +557,7 @@ import type {
 } from '../controls/data-table';
 import type { SortableChipRowView, SortableChipView } from '../controls/sortable-chip-row';
 import type { ViewportView } from '../controls/viewport';
+import { resolveCardRadius } from '../tokens';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -610,6 +612,19 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     // The language names Bloom's one disabled fade neutrally: it is any half opacity, not only a disabled control's.
     expect(OPACITY.half).toBe(tokens.DISABLED_OPACITY);
     expect(named(DURATION)).toEqual(tokens.animation.duration);
+  });
+
+  it('a card’s corner tokens are Bloom’s radius names of the same value', () => {
+    const radii = ENUMS.cardRadius.filter((name) => name !== 'panel' && name !== 'concentric');
+    // Every rung of Bloom's radius scale has its corner token, and nothing else does.
+    expect(radii).toHaveLength(Object.keys(RADIUS).length);
+    for (const name of radii) {
+      const bloom = resolveCardRadius(name);
+      expect(bloom in RADIUS).toBe(true);
+      expect(RADIUS[bloom as keyof typeof RADIUS]).toBe(CORNER[name as keyof typeof CORNER]);
+    }
+    expect(resolveCardRadius('panel')).toBe('panel');
+    expect(resolveCardRadius('concentric')).toBe('concentric');
   });
 
   it('a numeric token is its own value, in its scale’s unit: an exact value carried over from apps', () => {
