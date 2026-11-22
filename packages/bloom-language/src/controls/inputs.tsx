@@ -538,6 +538,7 @@ const textEditor: ControlRenderer = (d) => {
       maxRows: d.own('autoResize')?.value,
       resize: d.own('resize')?.value,
       showCount: d.own('showCount') === undefined ? undefined : true,
+      accessibilityLabel: d.label,
       accessibilityHint: d.hint,
       testID: d.testID,
       ...textInputProps(d),
