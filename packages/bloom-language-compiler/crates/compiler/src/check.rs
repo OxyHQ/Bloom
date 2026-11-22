@@ -251,6 +251,13 @@ fn check_value(
 ) -> Result<(), Problem> {
     let motion_value = module.is_motion_value_ref(value, scoping);
     if param == "motionValue" {
+        if module.is_mapped_value_ref(value, scoping) {
+            return Err(Problem {
+                span: value.span(),
+                message: format!(".{modifier}() moves a MotionValue; a mapped one only follows another"),
+                help: Some(format!(".{modifier}() the value it maps, and bind the mapped one")),
+            });
+        }
         return if motion_value || !is_literal(value) {
             Ok(())
         } else {

@@ -69,7 +69,7 @@ export type { KeyframesValue } from './motion/keyframes';
 export type { Frame as Keyframe } from './motion/keyframes';
 export { asymmetric, move, opacity, scale, TransitionValue } from './motion/transition';
 export { useNamespace } from './motion/namespace';
-export { animate, useMotionValue } from './motion/values';
+export { animate, useMappedValue, useMotionValue } from './motion/values';
 export type { MotionValue } from './motion/values';
 export type { Namespace } from './motion/namespace';
 export type {
@@ -112,6 +112,7 @@ export type {
   DividerView,
   ContentFit,
   DragSpec,
+  PinchSpec,
   Edge,
   EmbedView,
   EngagementTone,

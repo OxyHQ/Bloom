@@ -39,6 +39,8 @@ pub enum Binding {
     MotionBuilder,
     /// `useMotionValue`: makes a `MotionValue`, a number a gesture drives.
     UseMotionValue,
+    /// `useMappedValue`: a `MotionValue` that follows another one through a range.
+    UseMappedValue,
     /// Any other import: a binding the importer cannot reassign.
     Import,
     /// A module-scope `const` with a static value, declared at body index `at`.
@@ -56,6 +58,9 @@ pub struct Module {
     pub bindings: HashMap<SymbolId, Binding>,
     /// Every `const` in any scope that holds a `MotionValue` (`const y = useMotionValue(0)`).
     pub motion_values: HashSet<SymbolId>,
+    /// The ones that follow another value (`useMappedValue`): a view follows
+    /// them, and nothing writes them.
+    pub mapped_values: HashSet<SymbolId>,
     /// The body index just after the last import: where an expression with no
     /// module-scope dependency is declared.
     pub after_imports: usize,
@@ -64,7 +69,12 @@ pub struct Module {
 impl Module {
     /// The module's bindings, or `None` when it imports nothing from the language.
     pub fn read(program: &Program, scoping: &Scoping) -> Option<Self> {
-        let mut module = Self { bindings: HashMap::new(), motion_values: HashSet::new(), after_imports: 0 };
+        let mut module = Self {
+            bindings: HashMap::new(),
+            motion_values: HashSet::new(),
+            mapped_values: HashSet::new(),
+            after_imports: 0,
+        };
         let mut language = false;
         for (index, statement) in program.body.iter().enumerate() {
             match statement {
@@ -94,10 +104,13 @@ impl Module {
         if !language {
             return None;
         }
-        let mut finder = MotionValueFinder { module: &module, scoping, found: Vec::new() };
+        let mut finder =
+            MotionValueFinder { module: &module, scoping, found: Vec::new(), mapped: Vec::new() };
         finder.visit_program(program);
-        let found = finder.found;
+        let (found, mapped) = (finder.found, finder.mapped);
         module.motion_values.extend(found);
+        module.motion_values.extend(mapped.iter().copied());
+        module.mapped_values.extend(mapped);
         Some(module)
     }
 
@@ -109,6 +122,16 @@ impl Module {
             .get()
             .and_then(|reference| scoping.get_reference(reference).symbol_id())
             .is_some_and(|symbol| self.motion_values.contains(&symbol))
+    }
+
+    /// Whether `expression` names a `MotionValue` that follows another (a `const` from `useMappedValue`).
+    pub fn is_mapped_value_ref(&self, expression: &Expression, scoping: &Scoping) -> bool {
+        let Expression::Identifier(identifier) = expression.without_parentheses() else { return false };
+        identifier
+            .reference_id
+            .get()
+            .and_then(|reference| scoping.get_reference(reference).symbol_id())
+            .is_some_and(|symbol| self.mapped_values.contains(&symbol))
     }
 
     fn declare(&mut self, index: usize, declaration: &oxc_ast::ast::VariableDeclaration, scoping: &Scoping) {
@@ -299,6 +322,7 @@ fn language_export(name: &str) -> Binding {
         "opacity" => Binding::Fade,
         "move" | "scale" | "asymmetric" | "defineKeyframes" => Binding::MotionBuilder,
         "useMotionValue" => Binding::UseMotionValue,
+        "useMappedValue" => Binding::UseMappedValue,
         _ => NODES
             .iter()
             .find_map(|node| {
@@ -311,19 +335,23 @@ fn language_export(name: &str) -> Binding {
     }
 }
 
-/// Collects the `const`s, in any scope, initialised by `useMotionValue(…)`.
+/// Collects the `const`s, in any scope, initialised by `useMotionValue(…)`
+/// (`found`) or `useMappedValue(…)` (`mapped`).
 struct MotionValueFinder<'m, 's> {
     module: &'m Module,
     scoping: &'s Scoping,
     found: Vec<SymbolId>,
+    mapped: Vec<SymbolId>,
 }
 
 impl<'a> Visit<'a> for MotionValueFinder<'_, '_> {
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
-        if let (BindingPattern::BindingIdentifier(id), Some(init)) = (&declarator.id, &declarator.init)
-            && self.module.callee(init, self.scoping) == Some(Binding::UseMotionValue)
-        {
-            self.found.push(id.symbol_id());
+        if let (BindingPattern::BindingIdentifier(id), Some(init)) = (&declarator.id, &declarator.init) {
+            match self.module.callee(init, self.scoping) {
+                Some(Binding::UseMotionValue) => self.found.push(id.symbol_id()),
+                Some(Binding::UseMappedValue) => self.mapped.push(id.symbol_id()),
+                _ => {}
+            }
         }
         walk::walk_variable_declarator(self, declarator);
     }

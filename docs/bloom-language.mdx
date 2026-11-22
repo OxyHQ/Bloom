@@ -3918,6 +3918,8 @@ Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 | `.contentTransition('numeric', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change inside an animation rolls each character that changed (the same `rollKeyframes`, each place its own pair on the engine) while the others stay put, matched from the end so a count gaining a digit keeps its units in place; a new character rolls in, a lost one rolls out beside the next. At rest it is the plain text; while it plays, a row with the text's box holds the pieces in its type, named by the whole text. |
 | `.pressScale()` | Press feedback (`PressableScale`): eases to `pressed` while a finger holds the view. Off for a mouse on the web and under reduced motion. |
 | `.drag(value, { axis?, min?, max?, onEnd? })` | `DragGesture`: the finger moves `value` along `axis` (default `y`) from where it was, within the bounds. Bind the value to see it; `onEnd` (once per touch: the value and the finger's velocity) decides where it goes, with `animate()`. |
+| `.pinch(value, { min?, max?, onEnd? })` | `MagnifyGesture`: the fingers' spread scales `value` from where it was (a factor), within the bounds. Bind it to see it (`.scale(s)`); `onEnd` (the value and the pinch's velocity) decides where it goes. It holds the touch beside a `.drag()`. |
+| `.onDoubleTap(action)` | `onTapGesture(count: 2)`: two taps in quick succession run `action`, on the gesture layer. A single tap is still the view's `.onPress()`. |
 | `.swipe(direction, onSwipe)` | The view follows a swipe toward `direction` (`left` `right` `up` `down`) and, released past a quarter of the window across (or a tap's slop up or down), flies out and calls `onSwipe`; short of it, it comes back. |
 | `Lottie(url)` | A node: `.loop()`, `.paused(bool)`, `.fallback(Image(still, label))`, `.frame({ width })` (its square edge: Sticker's `size`, no box around it), `.decorative()` (its container names it). Bloom's `Sticker` draws it (lottie-react-native on native, dotLottie on the web, both lazy), paused while its screen is not in front (`useScreenVisible`). |
 
@@ -3949,7 +3951,21 @@ VStack(Grabber(), content)
 ```
 
 `animate(value, target, motion)` eases it from where it is, with a token or a
-spec (a spring keeps its physics). A bound view's geometry follows its values:
+spec (a spring keeps its physics). `useMappedValue(value, input, output)` is a
+value that follows another through a range, piece by piece and held at the
+ends, as data rather than a function, so an app still writes no worklet:
+
+```ts
+const y = useMotionValue(0);
+const s = useMappedValue(y, [0, 300], [1, 0.9]);
+VStack(Grabber(), content).offset({ y }).scale(s).drag(y, { min: 0 });
+```
+
+Native: Bloom's derived value (`useDerivedMotionValue`), worked out on the UI
+thread in the frame its input moves. Web: written with its input, and eased
+with the input's own animation (an `animate()` of the input transitions the
+mapped view's style to where it lands). Nothing writes a mapped value, so it is
+never a `.drag()`'s or a `.pinch()`'s. A bound view's geometry follows its values:
 `.animation()` does not ease it, `animate()` does.
 
 ### How it runs
@@ -4017,9 +4033,11 @@ does not own.
 it checks; `.offset()` keys and values are checked like `.frame()`'s; a string
 where a transition or keyframes value belongs is an error. A `const` from
 `useMotionValue` is a `MotionValue` in any scope: it may go in `.offset()`,
-`.scale()`, `.rotation()` and as `.drag()`'s value; anywhere a token goes it is
-an error, and so is a literal as `.drag()`'s value, or one inside `when()`
-(a variant varies geometry by token). `.swipe()`'s direction is a checked token.
+`.scale()`, `.rotation()` and as `.drag()`'s or `.pinch()`'s value; anywhere a token goes it is
+an error, and so is a literal as their value, or one inside `when()`
+(a variant varies geometry by token). A `const` from `useMappedValue` is a
+`MotionValue` that only follows, so it is an error as `.drag()`'s or
+`.pinch()`'s value. `.swipe()`'s direction is a checked token.
 `opacity`, `move`, `scale`, `asymmetric` and `defineKeyframes` are pure, so a
 chain that names them (`.transition(asymmetric(move('top', 'xl'), opacity))`)
 hoists like any other static chain, and a module constant holding one is static.

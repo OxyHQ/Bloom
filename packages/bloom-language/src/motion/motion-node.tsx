@@ -8,7 +8,11 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { GestureDetector, useCompetingGestures } from 'react-native-gesture-handler';
+import {
+  GestureDetector,
+  useCompetingGestures,
+  useSimultaneousGestures,
+} from 'react-native-gesture-handler';
 import { mergeRefs, usePrefersReducedMotion } from '@oxy.so/bloom/hooks';
 import {
   COLOR_TRANSITION_PROPS,
@@ -17,9 +21,11 @@ import {
   defineKeyframes,
   timingOf,
   transitionStyle,
+  useDoubleTap,
   useDrag,
   useMotionStyle,
   useMotionValue,
+  usePinch,
   usePlay,
   usePressScale,
   useSwipe,
@@ -34,7 +40,7 @@ import {
 } from '@oxy.so/bloom/motion';
 import { useThemePaint } from '@oxy.so/bloom/theme';
 
-import type { DragSpec, SwipeDirection } from '../node';
+import type { DragSpec, PinchSpec, SwipeDirection } from '../node';
 import type { Geometry } from '../paint';
 import type { Frame, Namespace } from './namespace';
 import { resolveMotion, type MotionToken } from './tokens';
@@ -89,6 +95,9 @@ export interface MotionPlan {
     | undefined;
   drag: { value: MotionValue; options: DragSpec } | undefined;
   swipe: { direction: SwipeDirection; onSwipe: () => void } | undefined;
+  pinch: { value: MotionValue; options: PinchSpec } | undefined;
+  /** `.onDoubleTap()`: two taps, on the gesture layer. */
+  doubleTap: (() => void) | undefined;
   /** The node is glass: on the web its fades go through the material (see `Play`). */
   glass: boolean;
   /**
@@ -427,7 +436,8 @@ PressMotionNode.displayName = 'BloomPressMotion';
 const NO_SWIPE = () => {};
 
 /**
- * A node with bound geometry or a gesture (`.drag()`, `.swipe()`): Bloom's
+ * A node with bound geometry or a gesture (`.drag()`, `.swipe()`, `.pinch()`,
+ * `.onDoubleTap()`): Bloom's
  * gesture layer writes the values from Gesture Handler's callbacks, and the
  * one mapper (`useMotionStyle`) moves the box. Native: no JS per frame.
  */
@@ -447,7 +457,22 @@ export function GestureMotionNode(props: MotionNodeProps): ReactNode {
     enabled: motion.swipe !== undefined,
     reducedMotion: reduced,
   });
-  const gesture = useCompetingGestures(dragGesture, swipe.gesture);
+  const pinch = motion.pinch;
+  const pinchGesture = usePinch(pinch?.value ?? idle, {
+    min: pinch?.options.min,
+    max: pinch?.options.max,
+    enabled: pinch !== undefined,
+    onEnd: pinch?.options.onEnd,
+  });
+  const doubleTap = useDoubleTap(motion.doubleTap ?? NO_SWIPE, {
+    enabled: motion.doubleTap !== undefined,
+  });
+  // A pinch holds the touch beside a drag; two taps compete with both.
+  const moves = useSimultaneousGestures(
+    useCompetingGestures(dragGesture, swipe.gesture),
+    pinchGesture,
+  );
+  const gesture = useCompetingGestures(doubleTap, moves);
 
   const bound = motion.bound ?? { translateX: 0, translateY: 0, rotate: 0, scale: 1 };
   const across = motion.swipe?.direction === 'left' || motion.swipe?.direction === 'right';
