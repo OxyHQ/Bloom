@@ -3,7 +3,8 @@
  */
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { StyleSheet, View } from 'react-native-web';
+// react-native-web itself (untyped here), as a web bundle resolves react-native.
+const { StyleSheet, View } = require('react-native-web') as typeof import('react-native');
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
