@@ -4464,8 +4464,10 @@ with its reason. Nothing else is missing.
   family, the selections a press reports included (a bottom bar's, a
   sidebar's, a rail's and the settings' `.selection([id, setId])`, an agent
   chat's, a pipeline's stage, a chart's active tile) and the values inside
-  Bloom's data that an app edits (a mail row's `.starred()`, a cart's
-  `.tip()` and `.promo()`, a share sheet's `.search()`, a call's toggles).
+  Bloom's data that an app edits (a mail row's `.starred()`, a track's
+  `.liked()`, an episode's `.saved()` and `.downloaded()`, a cart's `.tip()`
+  and `.promo()`, a share sheet's `.search()`, a call's toggles, a player's
+  `.shuffle()`, `.repeat()` and `.playbackRate()`, a map's `.tilted()`).
   **Decided:** an event that holds no value stays an event: a one-off
   choice (a suggestion, an emoji, a reaction a second press removes, a
   date picked from a calendar), a press that opens something, a jump the
@@ -4474,9 +4476,9 @@ with its reason. Nothing else is missing.
   card form's scheme, a loading avatar); a value written by something other
   than the person (the playing track, the read position) is a plain value; a
   value per entry of a list Bloom owns (a list's mail entries, a cart line's
-  quantity) stays in its entry, since a binding is one value; a component's
-  uncontrolled default with a change handler (a chart card's `default*`) is
-  not a binding, since the screen owns any value it edits; a flow the app
+  quantity) stays in its entry, since a binding is one value; a value a
+  component keeps itself and reports (a chart card's `default*` with its
+  `on*Change`) stays the component's, as Bloom keeps it; a flow the app
   steps through (the checkout sheet's step and draft) stays the app's state
   machine.
 - **Layout and style.** Distribution, placement, overlays, elevation, rings,
