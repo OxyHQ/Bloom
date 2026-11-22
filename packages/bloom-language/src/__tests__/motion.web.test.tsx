@@ -12,6 +12,8 @@ import { asymmetric, move, opacity } from '../motion/transition';
 import { defineKeyframes } from '../motion/keyframes';
 import { regular } from '../glass';
 import type { Child } from '../node';
+import { useMappedValue, useMotionValue } from '../motion/values';
+import { getMotionValue, setMotionValue, type MotionValue } from './support/bloom-motion.web';
 
 jest.mock('react-native', () => ({
   ...jest.requireActual('react-native'),
@@ -274,5 +276,31 @@ describe('on the web, a numeric roll is the Web Animations API on each changed p
     act(() => played[0]?.onfinish?.());
     expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['20']);
     expect(flat(all(r, 'Text')[0]?.props.style)).toBeDefined();
+  });
+});
+
+describe('on the web, a mapped value follows its value as it is written', () => {
+  it('each write of the value writes the mapped one, through the range, held at the ends', () => {
+    let y!: MotionValue;
+    let s!: MotionValue;
+    function Sheet() {
+      y = useMotionValue(0);
+      s = useMappedValue(y, [0, 300], [1, 0.9]);
+      return toElement(VStack(Text('t')).scale(s).drag(y, { min: 0 }));
+    }
+    const box = { ...element('box'), style: {} as Record<string, string> };
+    act(() => {
+      TestRenderer.create(
+        createElement(PaintContext.Provider, { value: LIGHT }, createElement(Sheet)),
+        { createNodeMock: () => box },
+      );
+    });
+    expect(getMotionValue(s)).toBe(1);
+    act(() => setMotionValue(y, 150));
+    expect(getMotionValue(s)).toBeCloseTo(0.95);
+    // The bound view is restyled directly, with no render.
+    expect(box.style.transform).toContain('scale(0.95');
+    act(() => setMotionValue(y, 600));
+    expect(getMotionValue(s)).toBeCloseTo(0.9);
   });
 });

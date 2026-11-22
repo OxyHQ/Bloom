@@ -417,7 +417,9 @@ fn a_zstack_takes_an_alignment_and_only_a_zstack_does() {
     let check = |body: &str| {
         compile(&format!("import {{ HStack, Text, ZStack }} from '@oxy.so/bloom-language';\n{body}"), "z.tsx")
     };
-    let ok = check("export const x = () => ZStack(Text('a'), Text('b')).alignment('top-leading').padding('md');\n");
+    let ok = check(
+        "export const x = () => ZStack(Text('a'), Text('b')).alignment('top-leading').padding('md');\n",
+    );
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
     let output = check("export const x = () => ZStack(Text('a')).alignment('top-left');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown overlayAlignment token 'top-left' for .alignment()");
@@ -473,6 +475,9 @@ fn motion_tokens_and_offsets_are_checked() {
     assert_eq!(output.diagnostics[0].message, "Unknown padding token '-mdd' for .offset()");
     let output = motion("export const x = () => Text('x').scale('tiny');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown scale token 'tiny' for .scale()");
+    let output =
+        motion("export const x = (n) => Text(n).contentTransition('numeric', n).animation('roll', n);\n");
+    assert!(output.diagnostics.is_empty());
     let output = motion("export const x = () => Text('x').contentTransition('flip');\n");
     assert_eq!(
         output.diagnostics[0].message,
@@ -507,7 +512,8 @@ fn fading_a_view_that_holds_glass_is_an_error() {
     assert!(output.diagnostics.is_empty());
 }
 
-const GESTURE_IMPORTS: &str = "import { Text, VStack, useMotionValue } from '@oxy.so/bloom-language';
+const GESTURE_IMPORTS: &str =
+    "import { Text, VStack, useMappedValue, useMotionValue } from '@oxy.so/bloom-language';
 ";
 
 fn gesture(body: &str) -> crate::Output {
@@ -520,6 +526,37 @@ fn geometry_follows_a_motion_value_and_gestures_take_one() {
         "export function Sheet() {\n  const y = useMotionValue(0);\n  const r = useMotionValue(0);\n  return VStack(Text('t')).offset({ x: 'md', y }).rotation(r).scale(y).drag(y, { axis: 'y', min: 0 }).swipe('down', () => {});\n}\n",
     );
     assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+}
+
+#[test]
+fn a_pinch_moves_a_motion_value_and_two_taps_take_an_action() {
+    let output = gesture(
+        "export function Photo(open) {\n  const s = useMotionValue(1);\n  return VStack(Text('t')).scale(s).pinch(s, { min: 1, max: 4 }).onDoubleTap(open);\n}\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    let output = gesture("export const x = () => VStack(Text('t')).pinch(2);\n");
+    assert_eq!(output.diagnostics[0].message, ".pinch() takes a MotionValue");
+    let output = gesture("export const x = (f) => VStack(Text('t')).onDoubleTap(f, 2);\n");
+    assert_eq!(output.diagnostics[0].message, ".onDoubleTap() takes 1 argument(s), not 2");
+}
+
+#[test]
+fn a_mapped_value_is_followed_and_never_driven() {
+    let output = gesture(
+        "export function Sheet() {\n  const y = useMotionValue(0);\n  const s = useMappedValue(y, [0, 300], [1, 0.9]);\n  return VStack(Text('t')).offset({ y }).scale(s).drag(y);\n}\n",
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics.first().map(|d| &d.message));
+    let output = gesture(
+        "export function Sheet() {\n  const y = useMotionValue(0);\n  const s = useMappedValue(y, [0, 300], [1, 0.9]);\n  return VStack(Text('t')).scale(s).drag(s);\n}\n",
+    );
+    assert_eq!(
+        output.diagnostics[0].message,
+        ".drag() moves a MotionValue; a mapped one only follows another"
+    );
+    let output = gesture(
+        "export function Sheet() {\n  const y = useMotionValue(0);\n  const s = useMappedValue(y, [0, 300], [1, 0.9]);\n  return Text('t').padding(s);\n}\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".padding() takes padding tokens, not a MotionValue");
 }
 
 #[test]

@@ -11,10 +11,12 @@ export interface RecordedGesture {
 const gesture = (config: Record<string, unknown>): RecordedGesture => ({ config, members: [] });
 export const usePanGesture = gesture;
 export const useTapGesture = gesture;
+export const usePinchGesture = gesture;
 export const useCompetingGestures = (...members: RecordedGesture[]): RecordedGesture => ({
   config: {},
   members,
 });
+export const useSimultaneousGestures = useCompetingGestures;
 /** A host named `GestureDetector` carrying its gesture, around the view it detects on. */
 export function GestureDetector({ gesture, children }: { gesture: unknown; children: ReactNode }) {
   return createElement('GestureDetector', { gesture }, children);

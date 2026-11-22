@@ -15,7 +15,7 @@ import type { Namespace } from '../motion/namespace';
 import { regular } from '../glass';
 import type { Child } from '../node';
 import { getMotionValue, type MotionValue } from './support/bloom-motion';
-import { useMotionValue } from '../motion/values';
+import { useMappedValue, useMotionValue } from '../motion/values';
 import { transitionStyle } from '@oxy.so/bloom/motion';
 
 // Each transition style a render asks for, in order: a theme switch's render and the next one.
@@ -632,8 +632,17 @@ describe('motion values and gestures', () => {
     config: Record<string, (event: Record<string, number>) => void>;
     members: Gesture[];
   };
-  const gestureOf = (r: ReactTestRenderer) =>
-    (all(r, 'GestureDetector')[0]?.props.gesture as Gesture).members;
+  /** The gesture layer's gestures: two taps compete with a pinch held beside a drag or a swipe. */
+  const gestures = (r: ReactTestRenderer) => {
+    const [doubleTap, moves] = (all(r, 'GestureDetector')[0]?.props.gesture as Gesture).members;
+    const [pans, pinch] = (moves as Gesture).members;
+    const [drag, swipe] = (pans as Gesture).members;
+    return { doubleTap, pinch, drag, swipe };
+  };
+  const gestureOf = (r: ReactTestRenderer) => {
+    const { drag, swipe } = gestures(r);
+    return [drag, swipe];
+  };
 
   function Sheet({ onValue }: { onValue: (y: MotionValue) => void }) {
     const y = useMotionValue(0);
@@ -689,5 +698,73 @@ describe('motion values and gestures', () => {
     act(() => pan.config.onUpdate?.({ translationY: -40 }));
     act(() => pan.config.onFinalize?.({}));
     expect(onSwipe).toHaveBeenCalledTimes(1);
+  });
+
+  function Photo({ onValue, onEnd }: { onValue: (s: MotionValue) => void; onEnd: () => void }) {
+    const s = useMotionValue(1);
+    onValue(s);
+    return toElement(Image('a.png').scale(s).pinch(s, { min: 1, max: 3, onEnd }));
+  }
+
+  it('.pinch() scales the value by the fingers’ spread from where it was, within its bounds', () => {
+    let value!: MotionValue;
+    const onEnd = jest.fn();
+    let r!: ReactTestRenderer;
+    act(() => {
+      r = TestRenderer.create(
+        createElement(
+          PaintContext.Provider,
+          { value: LIGHT },
+          createElement(Photo, { onValue: (s) => (value = s), onEnd }),
+        ),
+      );
+    });
+    const { pinch, drag } = gestures(r);
+    expect(drag?.config.enabled).toBe(false);
+    // The view follows the value through the one mapper.
+    expect(flat(all(r, 'Animated.View')[0]?.props.style).transform).toContainEqual({ scale: 1 });
+    act(() => {
+      pinch?.config.onBegin?.({});
+      pinch?.config.onUpdate?.({ scale: 2, velocity: 0.5 });
+    });
+    expect(getMotionValue(value)).toBe(2);
+    act(() => pinch?.config.onUpdate?.({ scale: 5, velocity: 1 }));
+    expect(getMotionValue(value)).toBe(3);
+    act(() => pinch?.config.onFinalize?.({}));
+    expect(onEnd).toHaveBeenCalledWith({ value: 3, velocity: 1 });
+  });
+
+  it('.onDoubleTap() is two taps on the gesture layer; a cancelled one does nothing', () => {
+    const open = jest.fn();
+    const r = mount(Text('photo').onDoubleTap(open));
+    const { doubleTap, pinch } = gestures(r);
+    expect(doubleTap?.config).toMatchObject({ enabled: true, numberOfTaps: 2 });
+    expect(pinch?.config.enabled).toBe(false);
+    act(() => doubleTap?.config.onDeactivate?.({ canceled: 1 }));
+    expect(open).not.toHaveBeenCalled();
+    act(() => doubleTap?.config.onDeactivate?.({ canceled: 0 }));
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  function Mapped({ at, onValue }: { at: number; onValue: (s: MotionValue) => void }) {
+    const y = useMotionValue(at);
+    const s = useMappedValue(y, [0, 100, 300], [1, 0.95, 0.9]);
+    onValue(s);
+    return toElement(VStack(Text('t')).scale(s).drag(y, { min: 0 }));
+  }
+  const mapped = (at: number) => {
+    let s!: MotionValue;
+    act(() => {
+      TestRenderer.create(createElement(Mapped, { at, onValue: (value) => (s = value) }));
+    });
+    return getMotionValue(s);
+  };
+
+  it('useMappedValue() follows its value through a range, piece by piece, held at the ends', () => {
+    expect(mapped(0)).toBe(1);
+    expect(mapped(50)).toBeCloseTo(0.975);
+    expect(mapped(200)).toBeCloseTo(0.925);
+    expect(mapped(900)).toBe(0.9);
+    expect(mapped(-40)).toBe(1);
   });
 });
