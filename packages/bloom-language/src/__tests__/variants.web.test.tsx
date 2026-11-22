@@ -99,7 +99,9 @@ describe('on the web, a variant is the same class under its condition’s CSS', 
     });
     // A pressable is that class, or what react-native-web makes focusable (an Embed's Pressable).
     for (const state of ['hovered', 'pressed'] as const)
-      expect(VARIANT_SELECTORS[state]).toContain(`:not(:has(:is(.${PRESS_HOST_CLASS}, [tabindex="0"]):`);
+      expect(VARIANT_SELECTORS[state]).toContain(
+        `:not(:has(:is(.${PRESS_HOST_CLASS}, [tabindex="0"]):`,
+      );
   });
 
   it('a variant sheet puts each class under its condition’s CSS', () => {

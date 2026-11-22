@@ -294,6 +294,47 @@ const surface: ParityCase[] = [
     ),
   },
   {
+    name: 'a concentric box whose fill and border a breakpoint varies (lg)',
+    language: () =>
+      toElement(
+        L.VStack(
+          L.VStack(L.Text('Inner'))
+            .background('popover')
+            .corner('concentric')
+            .when('lg', (v) => v.background('primary').border('border', 'thin')),
+        )
+          .padding('md')
+          .glass()
+          .corner('xl'),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Themed>
+            {(c) => (
+              <Surface radius={borderRadius.xl} style={padding(space.md)}>
+                <RN.View>
+                  <ConcentricView
+                    radius="concentric"
+                    style={{
+                      backgroundColor: atLeast('lg') ? c.primary : c.backgroundTertiary,
+                      overflow: 'hidden',
+                      ...(atLeast('lg') ? { borderWidth: 1, borderColor: c.border } : null),
+                    }}
+                  >
+                    <RN.View>
+                      <Text>Inner</Text>
+                    </RN.View>
+                  </ConcentricView>
+                </RN.View>
+              </Surface>
+            )}
+          </Themed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
     name: 'a concentric box in a glass',
     language: () =>
       toElement(
@@ -599,6 +640,43 @@ const islands: ParityCase[] = [
       <BlurIsland radius={borderRadius.xl} cornerCurve="smooth">
         <RN.View />
       </BlurIsland>
+    ),
+  },
+  {
+    name: 'a blur whose frame, border, corner and fill a breakpoint varies (lg)',
+    language: () =>
+      toElement(
+        L.VStack()
+          .blur()
+          .corner('lg')
+          .when('lg', (v) =>
+            v.frame({ width: '96' }).border('border', 'thin').corner('2xl').background('popover'),
+          ),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Themed>
+            {(c) => (
+              <BlurIsland
+                radius={atLeast('lg') ? borderRadius._2xl : borderRadius.lg}
+                style={
+                  atLeast('lg')
+                    ? {
+                        width: 96,
+                        borderWidth: 1,
+                        borderColor: c.border,
+                        backgroundColor: c.backgroundTertiary,
+                      }
+                    : undefined
+                }
+              >
+                <RN.View />
+              </BlurIsland>
+            )}
+          </Themed>
+        )}
+      </Tiered>
     ),
   },
   {
