@@ -948,13 +948,9 @@ export function layoutStyle(layout: StackLayout): Resolved {
   return style;
 }
 
-export function stackStyle(
-  axis: 'horizontal' | 'vertical' | 'depth',
-  layout: StackLayout,
-): Resolved {
+export function stackStyle(axis: 'horizontal' | 'vertical', layout: StackLayout): Resolved {
   const style: Resolved = {};
   if (axis === 'horizontal') style.flexDirection = 'row';
-  if (axis === 'depth') style.position = 'relative';
   return Object.assign(style, layoutStyle(layout));
 }
 

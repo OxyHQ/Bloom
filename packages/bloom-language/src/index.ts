@@ -215,6 +215,7 @@ export type {
   SkeletonView,
   SpacerView,
   StackView,
+  ZStackView,
   TabView,
   TextAlignment,
   TextCase,

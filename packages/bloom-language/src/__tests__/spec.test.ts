@@ -106,6 +106,7 @@ import type {
   LottieView,
   SpacerView,
   StackView,
+  ZStackView,
   TabView,
   TextView,
 } from '../node';
@@ -774,6 +775,7 @@ describe('the spec drives the rules', () => {
     // A type error here means a node interface and spec/language.json disagree.
     const checks: [
       Same<MethodsOf<StackView>, Of<'stack'>>,
+      Same<MethodsOf<ZStackView>, Of<'zstack'>>,
       Same<MethodsOf<SpacerView>, Of<'spacer'>>,
       Same<MethodsOf<TextView>, Of<'text'>>,
       Same<MethodsOf<IconView>, Of<'icon'>>,
@@ -1247,6 +1249,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<EpisodeRowView>, Of<'episodeRow'>>,
       Same<MethodsOf<EpisodeListView>, Of<'episodeList'>>,
     ] = [
+      true,
       true,
       true,
       true,

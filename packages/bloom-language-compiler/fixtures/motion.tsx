@@ -62,7 +62,10 @@ const Strip = view(function Strip({ selected }: { selected: string }) {
       ZStack(
         Text(id).padding('horizontal', 'md'),
         id === selected
-          ? VStack().background('foreground').frame({ height: '2xs' }).matchedGeometry('line', ns)
+          ? VStack()
+              .background('foreground')
+              .frame({ width: 'full', height: '2xs' })
+              .matchedGeometry('line', ns)
           : null,
       ).id(id),
     ),

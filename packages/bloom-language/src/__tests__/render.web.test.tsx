@@ -2,7 +2,7 @@ import { createElement, type ReactElement } from 'react';
 import TestRenderer, { act, type ReactTestRenderer } from 'react-test-renderer';
 
 import { LIGHT, PaintContext } from './support/bloom-theme';
-import { HStack, Icon, Image, Text, VStack } from '../primitives';
+import { HStack, Icon, Image, Text, VStack, ZStack } from '../primitives';
 import { toElement } from '../render';
 import { defineTokens } from '../tokens';
 import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
@@ -94,5 +94,44 @@ describe('on the web, styles are classes from the generated sheet', () => {
       width: 20,
       backgroundColor: 'var(--surface)',
     });
+  });
+});
+
+describe('a ZStack on the web', () => {
+  it('is the tallest child’s height, each child at the alignment, as on native', () => {
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        createElement(
+          PaintContext.Provider,
+          { value: LIGHT },
+          toElement(ZStack(Text('a'), Text('bb')).alignment('center')),
+        ),
+        {
+          createNodeMock: (host) => {
+            const child = (host.props as { children?: ReactElement }).children;
+            const text = (child?.props as { children?: unknown } | undefined)?.children;
+            return { offsetHeight: text === 'bb' ? 30 : 10 };
+          },
+        },
+      );
+    });
+    const [stack, box, a, bb] = renderer.root.findAllByType('View' as never);
+    expect(stack?.props.style).toEqual({
+      $$css: true,
+      position: WEB_CLASS['position:relative'],
+    });
+    expect(box?.props.style).toEqual([
+      { flexGrow: 1, justifyContent: 'center' },
+      { minHeight: 30 },
+    ]);
+    expect(a?.props.style).toEqual([
+      { position: 'static', alignItems: 'center' },
+      { marginTop: -5, marginBottom: -5 },
+    ]);
+    expect(bb?.props.style).toEqual([
+      { position: 'static', alignItems: 'center' },
+      { marginTop: -15, marginBottom: -15 },
+    ]);
   });
 });
