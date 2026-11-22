@@ -71,6 +71,7 @@ import {
   type LottieView,
   type SpacerView,
   type StackView,
+  type ZStackView,
   type TextRun,
   type TextView,
 } from './node';
@@ -78,7 +79,6 @@ import {
 const NO_CHILDREN: readonly Child[] = [];
 const HORIZONTAL = { axis: 'horizontal' } as const;
 const VERTICAL = { axis: 'vertical' } as const;
-const DEPTH = { axis: 'depth' } as const;
 
 /** Children side by side, in reading order. */
 export function HStack(...children: Child[]): StackView {
@@ -90,9 +90,12 @@ export function VStack(...children: Child[]): StackView {
   return new Node('stack', VERTICAL, children);
 }
 
-/** Children over one another: the first sets the size, the rest cover it, later ones on top. */
-export function ZStack(...children: Child[]): StackView {
-  return new Node('stack', DEPTH, children);
+/**
+ * Children over one another, later ones on top: the stack is as big as its
+ * largest child, and each child sits at its `.alignment()` (`center`).
+ */
+export function ZStack(...children: Child[]): ZStackView {
+  return new Node('zstack', null, children);
 }
 
 /** Takes the free space along its stack's axis. */

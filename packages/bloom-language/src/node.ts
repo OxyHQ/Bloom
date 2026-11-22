@@ -1296,6 +1296,7 @@ export type Modifier =
   | { readonly kind: 'tracking'; readonly key: string; readonly value: TrackingName }
   | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken }
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
+  | { readonly kind: 'alignment'; readonly key: string; readonly value: OverlayAlignment }
   | { readonly kind: 'justify'; readonly key: string; readonly value: Justify }
   | { readonly kind: 'wrap'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'axis'; readonly key: string; readonly value: Axis }
@@ -1555,6 +1556,7 @@ export type ModifierKind = Modifier['kind'];
 
 export type NodeKind =
   | 'stack'
+  | 'zstack'
   | 'spacer'
   | 'text'
   | 'icon'
@@ -1750,7 +1752,7 @@ export type Child = ViewNode | false | null | undefined | readonly Child[];
 export type TextRun = string | number | ViewNode | false | null | undefined;
 
 export interface StackProps {
-  readonly axis: 'horizontal' | 'vertical' | 'depth';
+  readonly axis: 'horizontal' | 'vertical';
 }
 export interface TextProps {
   readonly runs: readonly TextRun[];
@@ -2011,6 +2013,9 @@ export class Node {
   }
   align(value: Alignment): Node {
     return this.with({ kind: 'align', key: `align:${value}`, value });
+  }
+  alignment(value: OverlayAlignment): Node {
+    return this.with({ kind: 'alignment', key: `alignment:${value}`, value });
   }
   justify(value: Justify): Node {
     return this.with({ kind: 'justify', key: `justify:${value}`, value });
@@ -4253,6 +4258,23 @@ export interface StackView extends ViewModifiers<StackView> {
    * leading padding. Native draws no markers, as React Native has none.
    */
   listMarker(value: ListMarker): StackView;
+}
+/**
+ * Children over one another, later ones on top (SwiftUI's `ZStack`): the
+ * stack is as big as its largest child, and each child sits at the stack's
+ * alignment. A child pinned to its parent (`Fill()`, `.position()`) covers
+ * the whole stack and takes no part in its size.
+ */
+export interface ZStackView extends ViewModifiers<ZStackView> {
+  /** Where each child sits in the stack (`ZStack(alignment:)`): `center` by default. */
+  alignment(value: OverlayAlignment): ZStackView;
+  /** A pressable stack that takes no presses, announced as disabled; what `when('disabled', …)` answers. */
+  disabled(value?: boolean): ZStackView;
+  /**
+   * Bloom's hover wash behind the stack (`SubtleHover`): under the pointer, on
+   * the web; or while `active` (a coordinated highlight), on every platform.
+   */
+  hoverHighlight(active?: boolean): ZStackView;
 }
 /**
  * Text, drawn by Bloom's `Text` (its type ramp, its families, its desktop
