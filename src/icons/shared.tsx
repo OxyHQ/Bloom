@@ -22,7 +22,8 @@ export type IconStyle = ViewStyle & { color?: ColorValue };
 export type Props = {
   fill?: PathProps['fill'];
   style?: StyleProp<IconStyle>;
-  size?: keyof typeof sizes;
+  /** A rung of {@link sizes}, or a side in points. */
+  size?: keyof typeof sizes | number;
   gradient?: keyof typeof gradients;
 } & Omit<SvgProps, 'style' | 'size'>;
 
@@ -51,7 +52,10 @@ export function useCommonSVGProps(props: Props): CommonSVGProps {
   const reactId = React.useId();
   const { fill, size, gradient, ...rest } = props;
   const style: IconStyle | null | undefined = StyleSheet.flatten(rest.style);
-  const _size = Number(size ? sizes[size] : rest.width || sizes.md);
+  // A number is the side itself; a rung name is looked up (a number used as a rung key drew NaN).
+  const _size = Number(
+    typeof size === 'number' ? size : size ? sizes[size] : rest.width || sizes.md,
+  );
   let _fill: PathProps['fill'] = fill ?? style?.color ?? colors.primary;
   let gradientDef: React.JSX.Element | null = null;
 
