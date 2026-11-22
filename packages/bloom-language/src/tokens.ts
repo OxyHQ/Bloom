@@ -23,6 +23,7 @@ import {
   SCALE,
   SHADOW,
   SHRINK,
+  FLEX,
   SPACE,
   TRACKING,
   TRACKING_PX,
@@ -95,6 +96,8 @@ export type InkToken = ColorToken | AppToken<'color'>;
 export type BorderWidthName = keyof typeof BORDER_WIDTH;
 export type HitSlopName = keyof typeof HIT_SLOP;
 export type ShrinkPriority = keyof typeof SHRINK;
+/** Tailwind's flex utilities by name: `1` is `flex-1` (grow 1, shrink 1, basis 0%), `grow` is `grow`. */
+export type FlexName = keyof typeof FLEX;
 export type Alignment = keyof typeof ALIGNMENT;
 /** A frame's length relative to its parent: `full`, or a fraction (`1/2`, `1/3`…). */
 export type LengthName = keyof typeof LENGTH;
@@ -358,6 +361,7 @@ export {
   SCALE,
   SHADOW,
   SHRINK,
+  FLEX,
   ALIGNMENT,
   Z_INDEX,
 };

@@ -22,6 +22,7 @@ import {
   ALIGNMENT,
   OPACITY,
   SHRINK,
+  FLEX,
   Z_INDEX,
   resolveBorderWidth,
   resolveCorner,
@@ -51,6 +52,8 @@ import {
   type TrackingName,
   type LeadingToken,
   type ShrinkPriority,
+  type FlexName,
+  type PaddingToken,
   type SpaceToken,
   type TextAlignment,
   type TextCase,
@@ -430,6 +433,8 @@ const EDGE_BITS: Record<Edge, number> = {
   bottom: 0b0010,
   leading: 0b0100,
   trailing: 0b1000,
+  left: 0b10000,
+  right: 0b100000,
 };
 
 export function isLayerModifier(modifier: Modifier): modifier is LayerModifier {
@@ -455,8 +460,9 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
   const blur = modifier.kind === 'blur';
   const overlay = modifier.kind === 'overlay' ? modifier : undefined;
+  // A shadow never shares a view with a clip (iOS clips a view's own shadow): after a clipped corner it wraps.
   const clip =
-    modifier.kind === 'shadow'
+    modifier.kind === 'shadow' && current?.modifiers.some((existing) => existing.kind === 'clipped')
       ? current?.modifiers.filter(
           (existing): existing is CornerModifier => existing.kind === 'corner',
         )
@@ -550,6 +556,8 @@ export function paddingStyle(style: Resolved, edge: Edge, value: number): void {
   if (bits & 0b0010) style[`${prefix}Bottom`] = value;
   if (bits & 0b0100) style[`${prefix}Start`] = value;
   if (bits & 0b1000) style[`${prefix}End`] = value;
+  if (bits & 0b10000) style[`${prefix}Left`] = value;
+  if (bits & 0b100000) style[`${prefix}Right`] = value;
 }
 
 const BORDER_EDGE_KEY: Record<BorderEdge, string> = {
@@ -558,6 +566,8 @@ const BORDER_EDGE_KEY: Record<BorderEdge, string> = {
   bottom: 'borderBottom',
   leading: 'borderStart',
   trailing: 'borderEnd',
+  left: 'borderLeft',
+  right: 'borderRight',
 };
 
 /** One layer's view style, the variants that hold included. Glass's fill is the Surface's prop, not a style; a blur draws its own material. */
@@ -607,6 +617,8 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
       }
       case 'corner':
         cornerRadius(style, modifier);
+        break;
+      case 'clipped':
         style.overflow = 'hidden';
         break;
       case 'cornerCurve':
@@ -692,6 +704,9 @@ export interface Placement {
   zIndex: ZIndexName | undefined;
   hidden: boolean | undefined;
   basis: LengthToken | undefined;
+  flex: FlexName | undefined;
+  /** Margins, in order: a later one of a side replaces an earlier one. */
+  margin: readonly (readonly [Edge, PaddingToken])[];
   allowsHitTesting: boolean | undefined;
   accessibilityOnly: boolean;
   /**
@@ -719,6 +734,8 @@ export type PlaceModifier = Extract<
       | 'zIndex'
       | 'hidden'
       | 'basis'
+      | 'flex'
+      | 'margin'
       | 'allowsHitTesting'
       | 'accessibilityOnly'
       | GeometryModifier['kind'];
@@ -732,6 +749,8 @@ export const PLACE_KINDS: ReadonlySet<string> = new Set([
   'zIndex',
   'hidden',
   'basis',
+  'flex',
+  'margin',
   'allowsHitTesting',
   'accessibilityOnly',
   // Only from a variant: a view's own geometry is the motion layer's (render.tsx, `motionPlan`).
@@ -773,6 +792,8 @@ export function applyPlacement(place: Placement, modifier: PlaceModifier): void 
   else if (modifier.kind === 'accessibilityOnly') place.accessibilityOnly = true;
   else if (GEOMETRY_KINDS.has(modifier.kind))
     place.geometry = { ...place.geometry, ...geometryOf(modifier as GeometryModifier) };
+  else if (modifier.kind === 'margin')
+    place.margin = [...place.margin, [modifier.edge, modifier.value]];
   else (place as unknown as Record<string, unknown>)[modifier.kind] = modifier.value;
   place.key += `;${modifier.key}`;
 }
@@ -806,6 +827,8 @@ export function emptyPlacement(): Placement {
     zIndex: undefined,
     hidden: undefined,
     basis: undefined,
+    flex: undefined,
+    margin: [],
     allowsHitTesting: undefined,
     accessibilityOnly: false,
     geometry: undefined,
@@ -841,7 +864,35 @@ const POSITION_EDGE: Record<keyof PositionEdges, string> = {
   bottom: 'bottom',
   leading: 'start',
   trailing: 'end',
+  left: 'left',
+  right: 'right',
 };
+
+/** Tailwind's flex utility as the longhands NativeWind writes. */
+function flexStyle(style: Resolved, value: FlexName): void {
+  const [grow, shrink, basis] = FLEX[value] as readonly [
+    number | null,
+    number | null,
+    string | null,
+  ];
+  if (grow !== null) style.flexGrow = grow;
+  if (shrink !== null) style.flexShrink = shrink;
+  if (basis !== null) style.flexBasis = basis;
+}
+
+/** Margins on the view itself, in order (a later one of a side replaces an earlier one). */
+function marginStyle(style: Resolved, margin: Placement['margin']): void {
+  for (const [edge, token] of margin) {
+    const bits = EDGE_BITS[edge];
+    const value = resolveSpace(token);
+    if (bits & 0b0001) style.marginTop = value;
+    if (bits & 0b0010) style.marginBottom = value;
+    if (bits & 0b0100) style.marginStart = value;
+    if (bits & 0b1000) style.marginEnd = value;
+    if (bits & 0b10000) style.marginLeft = value;
+    if (bits & 0b100000) style.marginRight = value;
+  }
+}
 
 /** What sizes a view in its parent's flex (grow, shrink, basis): what a box moved around it takes too. */
 export function flexOnly(place: Placement): Resolved {
@@ -849,6 +900,7 @@ export function flexOnly(place: Placement): Resolved {
   if (place.grow) style.flex = 1;
   if (place.shrink !== undefined) style.flexShrink = SHRINK[place.shrink];
   if (place.basis !== undefined) style.flexBasis = resolveLength(place.basis);
+  if (place.flex !== undefined) flexStyle(style, place.flex);
   return style;
 }
 
@@ -866,6 +918,8 @@ export function placeStyle(place: Placement): Resolved {
   if (place.grow) style.flex = 1;
   if (place.shrink !== undefined) style.flexShrink = SHRINK[place.shrink];
   if (place.basis !== undefined) style.flexBasis = resolveLength(place.basis);
+  if (place.flex !== undefined) flexStyle(style, place.flex);
+  marginStyle(style, place.margin);
   if (place.alignSelf !== undefined) style.alignSelf = ALIGNMENT[place.alignSelf];
   if (place.position !== undefined) {
     style.position = 'absolute';
