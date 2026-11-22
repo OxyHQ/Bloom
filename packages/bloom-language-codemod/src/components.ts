@@ -83,6 +83,12 @@ export interface ComponentRule {
    * the language's node does not: inside one (in the file), the element stays JSX.
    */
   readonly outside?: readonly string[];
+  /**
+   * A shell around one input, drawn by the input's node: its children are the
+   * input (`module#export`, by its own rule) between glyphs (`TextFieldIcon`),
+   * which are the node's `icon` and `trailingIcon`; its own props join the input's.
+   */
+  readonly shell?: { readonly input: string; readonly icon: string };
 }
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
@@ -260,6 +266,18 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       ...TEXT_INPUT,
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
+    },
+  },
+  // parity/inputs.cases.tsx, TextField: the shell an app writes around its input.
+  '@oxy.so/bloom/text-field#TextField': {
+    node: 'TextField',
+    shell: {
+      input: '@oxy.so/bloom/text-field#TextFieldInput',
+      icon: '@oxy.so/bloom/text-field#TextFieldIcon',
+    },
+    props: {
+      size: p('size', 'token', tokens('controlSize')),
+      invalid: p('invalid', 'flag'),
     },
   },
   // parity/containers.cases.tsx, Card.

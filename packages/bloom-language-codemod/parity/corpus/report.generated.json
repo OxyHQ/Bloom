@@ -2,12 +2,14 @@
   "app": "parity/sample-app",
   "files": 2,
   "changedFiles": 2,
-  "candidates": 49,
-  "converted": 48,
-  "regions": 13,
+  "candidates": 51,
+  "converted": 50,
+  "regions": 14,
   "rate": 98,
   "overridden": [],
-  "bloomComponents": {},
+  "bloomComponents": {
+    "@oxy.so/bloom/text-field#TextFieldIcon": 1
+  },
   "patterns": [
     {
       "code": "prop:style",
