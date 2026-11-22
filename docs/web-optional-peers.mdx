@@ -45,7 +45,6 @@ return before the `require` is ever reached:
 | --- | --- |
 | `@react-native-community/netinfo` | the family has a WEB FORK that uses `navigator.onLine` (`connection-status/index.web.ts` → `ConnectionStatusToasts.web.tsx`) |
 | `expo-router` (adaptive colours) | `getAdaptiveColors` returns `null` unless `Platform.OS` is `android`/`ios` (`theme/adaptive-colors.ts:143-145`) |
-| `nativewind` (scoped presets) | both callers `return` on web (`theme/color-scope/style-builder.ts:159, :192`) |
 | `expo-haptics` | `useHaptics` returns on web (`hooks/use-haptics.tsx:47`) |
 | `expo-clipboard` | `writeClipboardText` writes `navigator.clipboard` first (`hooks/clipboard.ts`) |
 | `expo-sharing` | `shareFile` downloads through an anchor on web and returns before the peer is read (`hooks/share.ts`) |
@@ -61,9 +60,6 @@ Note the two different reasons: a platform guard inside the file, and a whole
 > not reading the file that runs; the two differ on exactly the axis this
 > section is about. Confirm it from the loaded page
 > (`SomeComponent.toString()`) or from the chunks, not from the repository.
-
-If scoped NativeWind presets are wrong in your web app, this is not the cause —
-look at the CSS-variable pipeline instead.
 
 The one that matters on web is handed over in a line, and it works on any
 bundler:

@@ -59,36 +59,18 @@ Visual and platform hosts are separate from that context provider:
 - `OxyProvider` from Services already supplies its documented hosts/outlets.
   Do not duplicate them around each route.
 
-## Expo / Metro CSS
+## Styling
 
-Import this stylesheet first in `app/_layout.tsx`, before component imports:
-
-```tsx
-import '../global.css';
-```
-
-```css
-/* global.css */
-@import '@oxy.so/app-preset/css/base.css';
-@source './app/**/*.{ts,tsx}';
-@source './components/**/*.{ts,tsx}';
-@source './node_modules/@oxy.so/bloom/lib/module/**/*.js';
-/* If the application installs Services: */
-@source './node_modules/@oxy.so/services/lib/module/**/*.js';
-```
-
-Paths are relative to the stylesheet; adjust for a monorepo's actual installed
-package locations. Add the app-root PostCSS configuration (and install `@tailwindcss/postcss`):
-
-```js
-// postcss.config.mjs
-export default { plugins: { '@tailwindcss/postcss': {} } };
-```
-
-Use app-preset's matching Metro configuration. `create-oxy-app` supplies the host wiring. React Native Web resets can
-otherwise leave colors working while flex direction, gaps and sizes are wrong.
-For a standalone Vite host, use its [own CSS recipe](./vite.mdx), not the Expo
-preset's bundler configuration.
+Bloom styles through React Native styles alone: no NativeWind, react-native-css,
+Tailwind or global stylesheet is needed for Bloom, on native or on the web
+([Bloom without NativeWind](./no-nativewind.mdx)). Compose Bloom's components
+and pass `style` (or write the [Bloom language](./bloom-language.mdx)); colours
+come from the theme's tokens (`useColorTokens`, `createTokenStyles` in
+[Theme](./theme.mdx)). Use app-preset's Metro configuration: an app with no
+`nativewind` dependency gets no NativeWind wrapper. An app that still writes its
+own `className` keeps NativeWind for that code until the className codemod
+moves it ([className table](./bloom-language-classnames.mdx)). For a standalone
+Vite host, use its [own recipe](./vite.mdx).
 
 Web components adopt their required animation/layout styles automatically. **Do
 not inject `BLOOM_DIALOG_CSS` or duplicate inline component style tags.** For SSR,

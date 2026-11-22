@@ -120,11 +120,37 @@ Every preset exposes:
 <Callout variant="info" title="Web CSS variables">
 On web, Bloom writes the active palette to canonical CSS variables on `:root`,
 including `--primary`, `--primary-foreground`, `--background`, `--foreground`,
-`--card` and `--muted-foreground`. Raw HTML can read `var(--primary)`; configured
-Tailwind/NativeWind consumers use the matching semantic utilities such as
-`bg-primary` and `text-primary-foreground`. Do not redefine Bloom tokens in an app
-to choose a preset: configure the provider instead.
+`--card` and `--muted-foreground`. Raw HTML can read `var(--primary)`. In a
+component, read the tokens with `useColorTokens()` or `createTokenStyles((t) => …)`:
+the scope's value on native, the token's variable on the web. Do not redefine
+Bloom tokens in an app to choose a preset: configure the provider instead.
 </Callout>
+
+## Colour tokens in a component
+
+`useColorTokens()` returns every colour token by its camelCase name
+(`mutedForeground` is `--muted-foreground`): the nearest scope's value on native
+(the provider's, a colour or seed scope's, or the one a portal carries), the
+token's CSS variable on the web. `createTokenStyles` builds a component's
+styles once per palette (once on the web) as a `StyleSheet`, so a theme switch
+re-renders only the components that read it; `tokenAlpha` is an opacity.
+
+```tsx
+import { createTokenStyles, tokenAlpha } from '@oxy.so/bloom/theme';
+
+const useStyles = createTokenStyles((t) => ({
+  row: { flexDirection: 'row', gap: 8, borderColor: t.border, borderWidth: 1 },
+  badge: { backgroundColor: tokenAlpha(t.primary, 0.12) },
+}));
+
+function Row() {
+  const styles = useStyles();
+  return <View style={styles.row} />;
+}
+```
+
+Tokens are what the theme publishes; `useTheme().colors` keeps the JS palette
+for colour arithmetic.
 
 ## Mobile web document appearance
 

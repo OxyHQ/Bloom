@@ -1,6 +1,6 @@
 ---
 title: Styles
-description: Atoms, tokens, breakpoints and the platform helpers — for styles a className cannot express.
+description: Atoms, tokens, breakpoints and the platform helpers Bloom's styles are built from.
 order: 74
 ---
 
@@ -34,10 +34,8 @@ import {
 ## `atoms`
 
 Utility style objects — `a.flex_1`, `a.flex_row`, `a.align_center`, `a.px_sm`.
-They are the inline equivalent of the Tailwind utilities, and they exist
-because **a className is inert on web without the consumer's Tailwind
-pipeline**. Anything Bloom must draw correctly with or without that pipeline
-uses atoms; layout that only apps compose can use classes.
+Bloom styles through React Native styles alone (no `className`), so atoms and
+the token scales are the shared spelling of common layout.
 
 ## `tokens`
 
@@ -66,8 +64,7 @@ one pill) writes its object out inline.
 ## `BREAKPOINTS`
 
 The shared widths, so a component and the screen around it agree about when the
-layout changes: `sm` 640, `md` 768, `lg` 1024, `xl` 1280 and `2xl` 1536, the
-Tailwind / NativeWind defaults. A component that branches on a width reads its
+layout changes: `sm` 640, `md` 768, `lg` 1024, `xl` 1280 and `2xl` 1536. A component that branches on a width reads its
 tier from here rather than writing the number again.
 
 ## `web` / `native` / `ios` / `android` / `platform` / `select`
@@ -294,10 +291,6 @@ so web CSS below it can follow the surface:
 background-color: var(--bloom-surface, var(--background));
 ```
 
-```tsx
-className="bg-[var(--bloom-surface,var(--background))]"   /* web only */
-```
-
 `SURFACE_FILL_VAR` and `SURFACE_FILL_CSS` are the exported spellings. Three
 things about it are deliberate:
 
@@ -309,13 +302,9 @@ things about it are deliberate:
   a `BloomColorScope` subtree — which paints its own `--background` — would keep
   reading the app-wide one. Both halves of the reference above substitute at the
   USING element, so a scope gets its own.
-- **It is web-only, and the hook is not.** Propagating a custom property to a
-  native subtree means react-native-css's `VariableContextProvider`, i.e. the
-  `nativewind` OPTIONAL peer, and a panel's surface must not depend on whether a
-  consumer installed it. Cross-platform code reads `useSurfaceFill()`; a
-  `.web.tsx` fork or a consumer stylesheet may read the variable. A
-  `var(--bloom-surface)` class in shared code would be right on web and
-  quietly wrong on native.
+- **It is web-only, and the hook is not.** Native has no CSS custom
+  properties. Cross-platform code reads `useSurfaceFill()`; a `.web.tsx` fork or
+  a consumer stylesheet may read the variable.
 
 It is the opposite number of `--bloom-ring-offset` below: a CONTAINER publishes
 this one, a CONTROL consumes that one, and they are the same colour.
