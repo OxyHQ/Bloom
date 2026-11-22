@@ -45,10 +45,9 @@ interface StyleableProps {
 /**
  * Native `<BloomSeedScope>`: scopes a subtree to an ARBITRARY seed colour's
  * palette (the dynamic counterpart of `<BloomColorScope>`, which takes a named
- * preset). Feeds the seed through the colour engine and (1) provides the
- * resulting canonical CSS vars to descendants via react-native-css's
- * `VariableContext` — so `bg-background` / `bg-card` / `var(--primary)` resolve
- * against the seed inside this subtree — and (2) publishes a matching JS `theme`
+ * preset). Feeds the seed through the colour engine and (1) publishes the
+ * resulting tokens on the scope context, so `useColorTokens()` resolves against
+ * the seed inside this subtree, and (2) publishes a matching JS `theme`
  * on `BloomThemeContext`, so `useTheme()`/`useBloomTheme()` consumers inside the
  * subtree also re-theme. The `colorPreset` field is left as the parent's (a seed
  * is not a named preset).

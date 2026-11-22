@@ -115,9 +115,9 @@ export interface InteractiveWebCssOptions {
    *
    * A full selector rather than a bare class name because the two kinds of
    * caller cannot both use a class. A raw-DOM fork sets `className` on a real
-   * element and gets one; a react-native-web component's `className` is consumed
-   * by react-native-css and mapped into `style`, so no class ever reaches the
-   * DOM. An attribute is the hook that IS available to it, and the interactive
+   * element and gets one; react-native-web drops a component's `className`, so
+   * no class ever reaches the DOM. An attribute is the hook that IS available
+   * to it, and the interactive
    * rules are identical either way — only the thing they hang off differs.
    */
   selector: string;
