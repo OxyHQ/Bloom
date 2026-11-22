@@ -167,6 +167,32 @@ const styles = StyleSheet.create({ row: { flexDirection: 'row', gap: 8 } });
     );
     expect(result.fixtures[0]?.before).toContain('fill={parityTheme.colors.textSecondary}');
   });
+  it('reads a style’s flex: 1 as .grow() and a theme colour as its role, and keeps a style a variant would override', () => {
+    const result = run(`import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A() {
+  const theme = useTheme();
+  return (
+    <View className="p-2" style={{ flex: 1, backgroundColor: theme.colors.backgroundSecondary }}>
+      <Text style={{ color: theme.colors.textTertiary }}>a</Text>
+    </View>
+  );
+}
+export const B = () => <View className="md:p-4" style={{ padding: 8 }} />;
+export const C = () => <View className="bg-muted" style={{ flex: 1, backgroundColor: theme.colors.primary }} />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(VStack(LText('a').foreground('textTertiary')).padding('all', 'sm').background('surface').grow())",
+    );
+    expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([
+      ['style-variant'],
+      ['style'],
+    ]);
+    expect(result.fixtures[0]?.before).toContain(
+      'style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}',
+    );
+  });
   it('reads a RefreshControl as a pull to refresh, and an indicator’s boolean on its axis', () => {
     const result = run(`import { RefreshControl } from 'react-native';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
