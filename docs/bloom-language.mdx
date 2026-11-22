@@ -4062,6 +4062,24 @@ so it leaves at once: keeping one would put a `Presence` around every child of
 every stack. A child whose removal should play is a list of one, keyed
 (`[show && view.transition(t).id('x')]`), which is that list slot's `Presence`.
 
+**What it does not play, and why.** There is no `withAnimation`: the language
+animates by declaration, `.animation(motion, value)` on the view whose change
+plays (its scope reaching the `view()` bodies inside it), not by a transaction
+around a state write, since React batches and schedules renders apart from the
+write, so a global transaction would have to guess which render it belongs to.
+Tailwind's `animate-bounce` and `animate-ping` are not loop tokens: no app
+writes them (the className scan has neither), and an app that wants one loops
+keyframes of its own (`.repeatForever(defineKeyframes(…))`). `transition-all`
+is `.animation(motion).animatesColors()`: geometry, opacity and colours; a
+frame's size and a shadow change at once, as the engine moves and paints boxes
+and does not lay them out again or redraw their shadows per frame. A colour
+plays on the view's moving box (its outermost): a fill on an inner layer of the
+same chain (`.background()` before a `.padding()`) and a text's ink inside it
+change at once, and so does a native `Text`'s own ink, because each would need
+an animated host of its own (Bloom's `Text` has no animated twin on native, and
+a twin per layer would put a Reanimated host on every layered view); chain the
+fill outermost (`.padding().background()`) for it to play.
+
 **Glass.** On the web, an opacity below 1 on a glass host or any ancestor of one
 flattens the material (AGENTS.rules.md, Material). The engine routes the fade of
 a box that holds a material host: the box only moves, and the fade plays, with
