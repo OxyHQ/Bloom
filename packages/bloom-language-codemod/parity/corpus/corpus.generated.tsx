@@ -524,6 +524,11 @@ export const CASES = [
     after: () => { const Pressable = I49; const Text = I52; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))); },
   },
   {
+    name: "components/Rows.tsx:101",
+    before: () => { const View = I9; return (<View pointerEvents="none" className="h-10 w-full rounded-lg bg-muted" />); },
+    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting(false))); },
+  },
+  {
     name: "components/SettingsRoute.tsx:13",
     before: () => { const Screen = I11; const PageHeader = I38; const Text = I52; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
