@@ -34,11 +34,9 @@ An aspect box with no width is zero-sized, and "fill the parent, derive the heig
 </AspectRatio>
 ```
 
-## It takes no `className`
+## One owner for `aspectRatio`
 
-`aspectRatio` is the ONE property this component exists to set, and react-native-css merges utilities into `style` before inline style — so a caller writing `className="aspect-video"` would have it silently overwritten by the `ratio` prop, with no error anywhere.
-
-One owner per property: use this component with `ratio`, or a plain `View` with the class, never both. Wrap it for the surrounding layout classes.
+`aspectRatio` is the ONE property this component exists to set, and `ratio` sets it. Use this component with `ratio`, or a plain `View` with `aspectRatio` in its style, never both. Wrap it for the surrounding layout.
 
 ## Not a port
 
