@@ -22,6 +22,8 @@ export interface EntityDefinition {
   readonly expires: boolean;
   /** The most rows of this type the durable copy keeps (the newest written); `undefined`: no bound. */
   readonly persistLimit: number | undefined;
+  /** What the durable copy stores of a record (`null`: not written this time); memory keeps it whole. */
+  readonly persistTrim: ((record: Plain) => Plain | null) | undefined;
   /** Secondary keys, by name: a record's value for each (`undefined`: none). */
   readonly indexes: ReadonlyArray<readonly [string, (record: Plain) => string | undefined]>;
 }
