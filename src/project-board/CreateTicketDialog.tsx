@@ -1,7 +1,8 @@
 import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { ScrollArea } from '../layout/ScrollArea';
 import { type ComponentRef, useRef, useState, type ReactNode } from 'react';
-import { Platform, useWindowDimensions, type TextInput, type ViewStyle } from 'react-native';
+import { Platform, useWindowDimensions, type TextInput } from 'react-native';
+import { cssLength } from '../styles/web-view-style';
 import { useDialogControl } from '../dialog/context';
 import { useMessages } from '../locale/messages';
 import { Switch } from '../switch';
@@ -36,14 +37,11 @@ function TicketFormBody({ children }: { children: ReactNode }) {
   if (Platform.OS === 'web')
     return (
       <ScrollArea
-        style={
-          {
-            maxHeight: 'calc(100dvh - 56px)',
-            borderRadius: 24,
-            backgroundColor: tokens.card,
-            outlineStyle: 'none',
-          } as unknown as ViewStyle
-        }
+        style={{
+          maxHeight: cssLength('calc(100dvh - 56px)'),
+          borderRadius: 24,
+          backgroundColor: tokens.card,
+        }}
         contentContainerStyle={{ padding: 16 }}
       >
         {children}

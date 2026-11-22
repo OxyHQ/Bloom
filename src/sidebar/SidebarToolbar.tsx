@@ -10,7 +10,8 @@ import Animated, {
 import { Search } from '../search';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
-import { View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import type { WebCssStyle } from '../styles/web-view-style';
 
 import type { SidebarToolbarProps } from './types';
 import { IS_WEB } from '../styles/platform';
@@ -22,7 +23,7 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 /** The web's actions fade and slide aside as the search opens (CSS transitions). */
-function webActionStyle(open: boolean, rtl: boolean, reduced: boolean): ViewStyle {
+function webActionStyle(open: boolean, rtl: boolean, reduced: boolean): WebCssStyle {
   return {
     transitionProperty: reduced ? 'none' : 'opacity,transform',
     transitionDuration: '200ms',
@@ -30,16 +31,16 @@ function webActionStyle(open: boolean, rtl: boolean, reduced: boolean): ViewStyl
     ...(open
       ? { translate: rtl ? '-8px' : '8px', scale: '95% 95%', opacity: 0 }
       : { translate: '0px', scale: '100% 100%', opacity: 1 }),
-  } as unknown as ViewStyle;
+  };
 }
 
 /** The web's search widens across the row in CSS. */
-function webSearchTransition(reduced: boolean): ViewStyle {
+function webSearchTransition(reduced: boolean): WebCssStyle {
   return {
     transitionProperty: reduced ? 'none' : 'width',
     transitionDuration: '300ms',
     transitionTimingFunction: EASE,
-  } as unknown as ViewStyle;
+  };
 }
 
 /** Between two slots of the row. */
