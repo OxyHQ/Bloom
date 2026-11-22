@@ -113,7 +113,7 @@ const scrollViews: ParityCase[] = inScreen([
   },
   {
     name: 'pull to refresh',
-    language: () => toElement(L.ScrollView(L.Text('a')).refreshable(noop)),
+    language: () => toElement(L.ScrollView(L.Text('a')).refreshable(false, noop)),
     bloom: () => (
       <ScreenScrollView refreshControl={<RefreshControl refreshing={false} onRefresh={noop} />}>
         <Text>a</Text>

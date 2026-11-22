@@ -58,7 +58,7 @@ export const HOVER_CARDS: Record<HoverCardKind, ControlRenderer> = {
         )}
         <HoverCardContent
           label={d.label}
-          side={d.own('side')?.value as TooltipSide | undefined}
+          side={d.own('side')?.value.side as TooltipSide | undefined}
           align={d.own('align')?.value as 'start' | 'center' | 'end' | undefined}
           padded={d.own('padded')?.value}
         >

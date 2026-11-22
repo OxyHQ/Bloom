@@ -22,15 +22,8 @@ import {
   type SidebarTreeItem,
 } from '@oxy.so/bloom/sidebar';
 
-import type {
-  Child,
-  IconComponent,
-  Modifier,
-  Node,
-  Press,
-  SidebarOnboarding,
-  TreeDrop,
-} from '../node';
+import type { Binding } from '../binding';
+import type { Child, IconComponent, Node, Press, SidebarOnboarding, TreeDrop } from '../node';
 import { nodesOf, valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
 import type {
@@ -177,8 +170,7 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
   const modes = rows.filter((row) => row.kind === 'sidebarMode');
   const onboarding = values.onboarding as SidebarOnboarding | undefined;
   const onDrop = values.onDrop as ((drop: TreeDrop) => void) | undefined;
-  let query: Extract<Modifier, { kind: 'query' }> | undefined;
-  for (const modifier of node.modifiers) if (modifier.kind === 'query') query = modifier;
+  const query = values.query as Binding<string> | undefined;
   const selection = values.selection as string | undefined;
   const onSelect = values.onSelect as ((id: string) => void) | undefined;
   const header = values.header as Node | false | undefined;
@@ -220,8 +212,8 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
     teamPlacement: values.teamPlacement as TeamPlacement | undefined,
     plan: values.plan as SidebarPlan | undefined,
     onboarding: onboarding ? onboardingOf(onboarding, render) : undefined,
-    searchQuery: query?.value,
-    onSearchQueryChange: query?.onChange,
+    searchQuery: query?.[0],
+    onSearchQueryChange: query?.[1],
     onTreeItemDrop: onDrop ? (drop: SidebarTreeDrop) => onDrop(dropOf(drop)) : undefined,
   });
 }

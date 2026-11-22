@@ -76,7 +76,7 @@ function GalleryCover({ isPresented: [open, setOpen], gallery, render }: Gallery
   const shown = useRef(false);
   const { measureAnchor } = useMediaFlight();
   const { items } = gallery.props as { items: readonly GalleryMedia[] };
-  const page = lastOf(gallery, 'page')?.value;
+  const page = lastOf(gallery, 'page')?.value as Binding<number> | undefined;
   const anchors = lastOf(gallery, 'sourceAnchors')?.value;
   const corner = lastOf(gallery, 'mediaCorner')?.value;
   const overlay = lastOf(gallery, 'videoOverlay')?.value;

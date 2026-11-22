@@ -99,7 +99,6 @@ import type { RatingKind } from './controls/rating';
 import type { MeterReveal } from '@oxy.so/bloom/stat-bar';
 import type { DatePickerKind } from './controls/date-picker';
 import type { HourFormat, WeekStart } from '@oxy.so/bloom/date-picker';
-import type { Binding } from './binding';
 
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
@@ -360,9 +359,6 @@ export interface FloatingActionOptions {
   readonly visibility?: 'always' | 'alone';
 }
 
-/** What a scroll view's pull to refresh runs: the spinner shows until a returned promise settles. */
-export type RefreshAction = () => unknown;
-
 /** The title's heading level for assistive technology (the web's `aria-level`); 1 by default. */
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -422,7 +418,7 @@ export interface ValueModifiers {
   screenActive: boolean;
   initialHeaderHeight: SpaceToken;
   initialFooterHeight: SpaceToken;
-  refreshable: RefreshAction;
+  refreshable: readonly [refreshing: boolean, onRefresh: () => void];
   scrollIndicators: ScrollIndicators;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
@@ -449,13 +445,13 @@ export interface ValueModifiers {
   themeToggle: boolean;
   logo: SidebarLogo;
   account: SidebarAccount;
-  width: SpaceToken;
+  width: SpaceToken | ColumnWidthToken;
   pinning: FooterPinning;
   ignoresSafeArea: boolean;
   placeholder: string;
   filter: (item: BloomCommandItem, query: string) => boolean;
   keywords: readonly string[];
-  content: () => Child;
+  content: Child | (() => Child);
   fullBleed: boolean;
   initialView: SettingsView;
   shellLayout: ShellLayout;
@@ -467,7 +463,7 @@ export interface ValueModifiers {
   maxWidth: SpaceToken;
   resizable: boolean;
   keepMounted: boolean;
-  page: boolean | DialogScreenFrame;
+  page: boolean | DialogScreenFrame | Binding<number>;
   preload: boolean;
   bar: boolean;
   sidebar: boolean;
@@ -480,7 +476,7 @@ export interface ValueModifiers {
   fadeHeight: SpaceToken;
   fadeBottom: boolean;
   matchSurfacePaint: boolean;
-  summary: Child | string;
+  summary: string | number | Child;
   onReveal: () => void;
   peek: boolean;
   barHeight: SpaceToken;
@@ -549,7 +545,7 @@ export interface ValueModifiers {
   required: boolean;
   floatingLabel: true;
   revealable: true;
-  prefix: string;
+  prefix: string | Child;
   suffix: string | Child;
   keyboard: Keyboard;
   autocapitalize: Autocapitalize;
@@ -586,7 +582,7 @@ export interface ValueModifiers {
   hideCancel: true;
   defaultAction: AlertDefault;
   dismissible: boolean;
-  buttons: readonly DialogAction[];
+  buttons: readonly DialogAction[] | readonly NotificationAction[];
   presentAt: { readonly base: DialogPlacement; readonly tiers: DialogTiers | undefined };
   sideOffset: SpaceToken;
   alignOffset: PaddingToken;
@@ -607,7 +603,7 @@ export interface ValueModifiers {
   selected: boolean;
   highlighted: boolean;
   caption: string | Child;
-  separator: GroupedSeparator;
+  separator: GroupedSeparator | ListSeparator;
   value: string;
   chevron: boolean;
   toggle: Binding<boolean>;
@@ -623,11 +619,11 @@ export interface ValueModifiers {
   illustration: Child;
   suggestions: readonly Child[];
   suggestionsLabel: string;
-  onReorder: (fromValue: string, toValue: string) => void;
+  onReorder: ((fromValue: string, toValue: string) => void) | ((keys: string[]) => void);
   reorderable: boolean;
   iconOnly: true;
   dragTranslation: MotionValue;
-  indicator: SelectionIndicator;
+  indicator: SelectionIndicator | Child;
   fade: ColorName;
   ringInset: SpaceToken;
   nativeID: string;
@@ -651,8 +647,6 @@ export interface ValueModifiers {
   unavailable: (date: Date) => boolean;
   weekStart: WeekStart;
   locale: string;
-  placeholder: string;
-  presented: Binding<boolean>;
   labels: Readonly<Record<string, unknown>>;
   quickSelect: boolean;
   initialMonth: Date;
@@ -675,26 +669,19 @@ export interface ValueModifiers {
 
   // Meters and progress bars (controls/stat-bar.tsx)
   valueText: string;
-  indeterminate: boolean;
   decorative: true;
   trackTint: ColorToken;
-  thickness: SpaceToken;
   fillDuration: DurationName;
   barCorner: Exclude<CornerName, 'concentric'>;
   backdrop: ColorToken;
   cap: MeterCap;
-  content: Child;
   onStop: readonly [action: () => void, label: string];
   rangeLabels: readonly [min: string | undefined, max: string | undefined];
 
   // Tables (controls/table.tsx)
-  width: ColumnWidthToken;
   share: number;
-  minWidth: SpaceToken;
   sort: readonly [direction: TableSort, action: () => void];
-  prefix: Child;
   emptyState: string | number | Child;
-  selected: boolean;
 
   // Rows and lists (controls/list.tsx)
   supporting: string | Child;
@@ -710,8 +697,6 @@ export interface ValueModifiers {
   swipeActions: readonly [actions: SwipeRowActions, full: SwipeRowProps['fullSwipeAction']];
   swipeEnabled: boolean;
   contextMenu: Child;
-  separator: ListSeparator;
-  scrollable: boolean;
   scrollHeight: SpaceToken;
   stickyHeaders: boolean;
   sectionIndex: NonNullable<ListProps['sectionIndex']>;
@@ -721,8 +706,6 @@ export interface ValueModifiers {
   itemKey: (item: never, index: number) => string;
   itemType: (item: never, index: number) => string | number | undefined;
   estimatedItemSize: number;
-  onEndReached: readonly [action: () => void, threshold: number | undefined];
-  refreshable: readonly [refreshing: boolean, onRefresh: () => void];
   stickyIndices: readonly number[];
   restorationKey: string;
   tuning: VirtualListTuning;
@@ -736,8 +719,6 @@ export interface ValueModifiers {
   arrowsInset: SpaceToken;
   hidesUnavailableArrows: true;
   dots: boolean;
-  contentInset: SpaceToken;
-  page: Binding<number>;
 
   // Markdown (controls/markdown.tsx)
   streaming: boolean;
@@ -755,7 +736,6 @@ export interface ValueModifiers {
   // Accordions (controls/accordion.tsx)
   allowsMultiple: true;
   revealMotion: AccordionTransition;
-  indicator: Child;
 
   // Code (controls/code.tsx)
   language: string;
@@ -771,7 +751,6 @@ export interface ValueModifiers {
   onRemove: (() => void) | ((id: string) => void);
 
   // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
-  side: TooltipSide;
   openDelay: number;
   collapses: true;
   separatorView: Child;
@@ -783,12 +762,11 @@ export interface ValueModifiers {
   onPressDay: (day: ActivityHeatmapDay) => void;
 
   // Tag fields, file uploads and videos (controls/tag-field.tsx, controls/file-upload.tsx, controls/video-view.tsx)
-  suggestions: readonly [list: ReadonlyArray<string | TagSuggestion>, max: number | undefined];
+  tagSuggestions: readonly [list: ReadonlyArray<string | TagSuggestion>, max: number | undefined];
   allowsCreate: boolean;
   onMaxReached: () => void;
   normalize: (raw: string) => string;
   query: Binding<string>;
-  invalid: boolean;
   file: FileUploadFile | null;
   uploadProgress: number;
   onFileSelected: (file: FileUploadFile) => void;
@@ -822,7 +800,6 @@ export interface ValueModifiers {
   onDragLeave: () => void;
 
   // Fact strips (controls/fact-strip.tsx)
-  caption: string | Child;
   minItemWidth: SpaceToken;
   // Choice lists (controls/choice-list.tsx)
   optionBox: ChoiceOptionBox;
@@ -858,8 +835,6 @@ export interface ValueModifiers {
   timestamp: string;
   status: NotificationStatus;
   avatar: NotificationAvatar;
-  buttons: readonly NotificationAction[];
-  dismissible: boolean;
   onDismiss: () => void;
   autoDismiss: number;
   introDelay: number;
@@ -870,8 +845,6 @@ export interface ValueModifiers {
 
   // Social buttons (controls/social-button.tsx)
   intent: SocialIntent;
-  iconOnly: true;
-  fullWidth: true;
 
   // Meeting schedulers (controls/date-picker.tsx)
   timeSlots: readonly string[];
@@ -891,7 +864,6 @@ export interface ValueModifiers {
   cell: (context: DataTableCellContext<never>) => Child;
   sortable: boolean;
   sortsDescendingFirst: boolean;
-  summary: string | number | Child;
   sorting: Binding<DataTableSort | null>;
   rowSelection: Binding<readonly string[]>;
   pageSize: number;
@@ -899,7 +871,6 @@ export interface ValueModifiers {
   bordered: boolean;
 
   // Sortable chip rows (controls/sortable-chip-row.tsx)
-  onReorder: (keys: string[]) => void;
   onDragChange: (dragging: boolean) => void;
 
   // Viewports (controls/viewport.tsx)
@@ -914,8 +885,6 @@ export interface ValueModifiers {
 
   // Menubars (controls/menubar.tsx)
   openMenu: Binding<string | undefined>;
-  shortcut: string;
-
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1158,12 +1127,6 @@ export type Modifier =
       readonly value: () => void;
       /** How many viewports before the end it is called; Bloom's 2 by default. */
       readonly threshold: number | undefined;
-    }
-  | {
-      readonly kind: 'query';
-      readonly key: string;
-      readonly value: string;
-      readonly onChange: (query: string) => void;
     }
   | {
       readonly kind: 'primaryAction';
@@ -1666,8 +1629,7 @@ export class Node {
       | ResizeHandleStyle
       | RatingStyle
       | DotsStyle
-      | StepperStyle,
-      | SegmentedStyle
+      | StepperStyle
       | GalleryStyle
       | DataTableStyle,
   ): Node {
@@ -1875,8 +1837,8 @@ export class Node {
       value: token,
     });
   }
-  refreshable(value: RefreshAction): Node {
-    return this.set('refreshable', value);
+  refreshable(refreshing: boolean, onRefresh: () => void): Node {
+    return this.set('refreshable', [refreshing, onRefresh]);
   }
   onEndReached(value: () => void, threshold?: number): Node {
     return this.with({ kind: 'onEndReached', key: 'onEndReached', value, threshold });
@@ -1959,7 +1921,7 @@ export class Node {
   account(value: SidebarAccount): Node {
     return this.set('account', value);
   }
-  width(value: SpaceToken): Node {
+  width(value: SpaceToken | ColumnWidthToken): Node {
     return this.set('width', value);
   }
   pinning(value: FooterPinning): Node {
@@ -1971,8 +1933,8 @@ export class Node {
   placeholder(value: string): Node {
     return this.set('placeholder', value);
   }
-  query(value: string, onChange: (query: string) => void): Node {
-    return this.with({ kind: 'query', key: 'query', value, onChange });
+  query(value: Binding<string>): Node {
+    return this.set('query', value);
   }
   filter(value: (item: BloomCommandItem, query: string) => boolean): Node {
     return this.set('filter', value);
@@ -1980,7 +1942,7 @@ export class Node {
   keywords(...value: string[]): Node {
     return this.set('keywords', value);
   }
-  content(value: () => Child): Node {
+  content(value: Child | (() => Child)): Node {
     return this.set('content', value);
   }
   fullBleed(value = true): Node {
@@ -2016,7 +1978,7 @@ export class Node {
   keepMounted(value = true): Node {
     return this.set('keepMounted', value);
   }
-  page(value: boolean | DialogScreenFrame = true): Node {
+  page(value: boolean | DialogScreenFrame | Binding<number> = true): Node {
     return this.set('page', value);
   }
   preload(value = true): Node {
@@ -2055,7 +2017,7 @@ export class Node {
   matchSurfacePaint(value = true): Node {
     return this.set('matchSurfacePaint', value);
   }
-  summary(value: Child | string): Node {
+  summary(value: string | number | Child): Node {
     return this.set('summary', value);
   }
   onReveal(value: () => void): Node {
@@ -2304,7 +2266,7 @@ export class Node {
   revealable(): Node {
     return this.set('revealable', true);
   }
-  prefix(value: string): Node {
+  prefix(value: string | Child): Node {
     return this.set('prefix', value);
   }
   suffix(value: string | Child): Node {
@@ -2411,7 +2373,7 @@ export class Node {
   dismissible(value: boolean): Node {
     return this.set('dismissible', value);
   }
-  buttons(value: readonly DialogAction[]): Node {
+  buttons(value: readonly DialogAction[] | readonly NotificationAction[]): Node {
     return this.set('buttons', value);
   }
   presentAt(base: DialogPlacement, tiers?: DialogTiers): Node {
@@ -2470,7 +2432,7 @@ export class Node {
   caption(value: string | Child): Node {
     return this.set('caption', value);
   }
-  separator(value: GroupedSeparator): Node {
+  separator(value: GroupedSeparator | ListSeparator): Node {
     return this.set('separator', value);
   }
   value(value: string): Node {
@@ -2518,7 +2480,9 @@ export class Node {
   suggestionsLabel(value: string): Node {
     return this.set('suggestionsLabel', value);
   }
-  onReorder(value: (fromValue: string, toValue: string) => void): Node {
+  onReorder(
+    value: ((fromValue: string, toValue: string) => void) | ((keys: string[]) => void),
+  ): Node {
     return this.set('onReorder', value);
   }
   reorderable(value = true): Node {
@@ -2530,7 +2494,7 @@ export class Node {
   dragTranslation(value: MotionValue): Node {
     return this.set('dragTranslation', value);
   }
-  indicator(value: SelectionIndicator): Node {
+  indicator(value: SelectionIndicator | Child): Node {
     return this.set('indicator', value);
   }
   fade(value: ColorName): Node {
@@ -2584,12 +2548,6 @@ export class Node {
   }
   locale(value: string): Node {
     return this.set('locale', value);
-  }
-  placeholder(value: string): Node {
-    return this.set('placeholder', value);
-  }
-  presented(value: Binding<boolean>): Node {
-    return this.set('presented', value);
   }
   labels(value: object): Node {
     return this.set('labels', value as Readonly<Record<string, unknown>>);
@@ -2649,17 +2607,11 @@ export class Node {
   valueText(value: string): Node {
     return this.set('valueText', value);
   }
-  indeterminate(value = true): Node {
-    return this.set('indeterminate', value);
-  }
   decorative(): Node {
     return this.set('decorative', true);
   }
   trackTint(value: ColorToken): Node {
     return this.set('trackTint', value);
-  }
-  thickness(value: SpaceToken): Node {
-    return this.set('thickness', value);
   }
   fillDuration(value: DurationName): Node {
     return this.set('fillDuration', value);
@@ -2673,9 +2625,6 @@ export class Node {
   cap(value: MeterCap): Node {
     return this.set('cap', value);
   }
-  content(value: Child): Node {
-    return this.set('content', value);
-  }
   onStop(action: () => void, label: string): Node {
     return this.set('onStop', [action, label]);
   }
@@ -2684,26 +2633,14 @@ export class Node {
   }
 
   // Tables (controls/table.tsx)
-  width(value: ColumnWidthToken): Node {
-    return this.set('width', value);
-  }
   share(value: number): Node {
     return this.set('share', value);
-  }
-  minWidth(value: SpaceToken): Node {
-    return this.set('minWidth', value);
   }
   sort(direction: TableSort, action: () => void): Node {
     return this.set('sort', [direction, action]);
   }
-  prefix(value: Child): Node {
-    return this.set('prefix', value);
-  }
   emptyState(value: string | number | Child): Node {
     return this.set('emptyState', value);
-  }
-  selected(value: boolean): Node {
-    return this.set('selected', value);
   }
 
   // Rows and lists (controls/list.tsx)
@@ -2746,12 +2683,6 @@ export class Node {
   contextMenu(value: Child): Node {
     return this.set('contextMenu', value);
   }
-  separator(value: ListSeparator): Node {
-    return this.set('separator', value);
-  }
-  scrollable(value = true): Node {
-    return this.set('scrollable', value);
-  }
   scrollHeight(value: SpaceToken): Node {
     return this.set('scrollHeight', value);
   }
@@ -2778,12 +2709,6 @@ export class Node {
   }
   estimatedItemSize(value: number): Node {
     return this.set('estimatedItemSize', value);
-  }
-  onEndReached(action: () => void, threshold?: number): Node {
-    return this.set('onEndReached', [action, threshold]);
-  }
-  refreshable(refreshing: boolean, onRefresh: () => void): Node {
-    return this.set('refreshable', [refreshing, onRefresh]);
   }
   stickyIndices(value: readonly number[]): Node {
     return this.set('stickyIndices', value);
@@ -2819,12 +2744,6 @@ export class Node {
   }
   dots(value = true): Node {
     return this.set('dots', value);
-  }
-  contentInset(value: SpaceToken): Node {
-    return this.set('contentInset', value);
-  }
-  page(value: Binding<number>): Node {
-    return this.set('page', value);
   }
 
   // Markdown (controls/markdown.tsx)
@@ -2865,9 +2784,6 @@ export class Node {
   revealMotion(value: AccordionTransition): Node {
     return this.set('revealMotion', value);
   }
-  indicator(value: Child): Node {
-    return this.set('indicator', value);
-  }
 
   // Code (controls/code.tsx)
   language(value: string): Node {
@@ -2901,9 +2817,6 @@ export class Node {
   }
 
   // Tooltips, breadcrumbs and activity heatmaps (controls/tooltip.tsx, controls/breadcrumb.tsx, controls/activity-heatmap.tsx)
-  side(value: TooltipSide): Node {
-    return this.set('side', value);
-  }
   openDelay(value: number): Node {
     return this.set('openDelay', value);
   }
@@ -2933,8 +2846,8 @@ export class Node {
   }
 
   // Tag fields, file uploads and videos (controls/tag-field.tsx, controls/file-upload.tsx, controls/video-view.tsx)
-  suggestions(list: ReadonlyArray<string | TagSuggestion>, max?: number): Node {
-    return this.set('suggestions', [list, max]);
+  tagSuggestions(list: ReadonlyArray<string | TagSuggestion>, max?: number): Node {
+    return this.set('tagSuggestions', [list, max]);
   }
   allowsCreate(value: boolean): Node {
     return this.set('allowsCreate', value);
@@ -2944,12 +2857,6 @@ export class Node {
   }
   normalize(value: (raw: string) => string): Node {
     return this.set('normalize', value);
-  }
-  query(value: Binding<string>): Node {
-    return this.set('query', value);
-  }
-  invalid(value = true): Node {
-    return this.set('invalid', value);
   }
   file(value: FileUploadFile | null): Node {
     return this.set('file', value);
@@ -3032,9 +2939,6 @@ export class Node {
   }
 
   // Fact strips (controls/fact-strip.tsx)
-  caption(value: string | Child): Node {
-    return this.set('caption', value);
-  }
   minItemWidth(value: SpaceToken): Node {
     return this.set('minItemWidth', value);
   }
@@ -3113,12 +3017,6 @@ export class Node {
   avatar(value: NotificationAvatar): Node {
     return this.set('avatar', value);
   }
-  buttons(value: readonly NotificationAction[]): Node {
-    return this.set('buttons', value);
-  }
-  dismissible(value: boolean): Node {
-    return this.set('dismissible', value);
-  }
   onDismiss(value: () => void): Node {
     return this.set('onDismiss', value);
   }
@@ -3138,12 +3036,6 @@ export class Node {
   }
 
   // Social buttons (controls/social-button.tsx)
-  iconOnly(): Node {
-    return this.set('iconOnly', true);
-  }
-  fullWidth(): Node {
-    return this.set('fullWidth', true);
-  }
   intent(value: SocialIntent): Node {
     return this.set('intent', value);
   }
@@ -3191,9 +3083,6 @@ export class Node {
   sortsDescendingFirst(value = true): Node {
     return this.set('sortsDescendingFirst', value);
   }
-  summary(value: string | number | Child): Node {
-    return this.set('summary', value);
-  }
   sorting(value: Binding<DataTableSort | null>): Node {
     return this.set('sorting', value);
   }
@@ -3211,9 +3100,6 @@ export class Node {
   }
 
   // Sortable chip rows (controls/sortable-chip-row.tsx)
-  onReorder(value: (keys: string[]) => void): Node {
-    return this.set('onReorder', value);
-  }
   onDragChange(value: (dragging: boolean) => void): Node {
     return this.set('onDragChange', value);
   }
@@ -3240,10 +3126,6 @@ export class Node {
   openMenu(value: Binding<string | undefined>): Node {
     return this.set('openMenu', value);
   }
-  shortcut(value: string): Node {
-    return this.set('shortcut', value);
-  }
-
 }
 
 const FRAME_KEYS = OBJECTS.frame.keys;
@@ -3865,8 +3747,8 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollViewNode;
-  /** Pull to refresh: runs `action`, and the spinner shows until a promise it returns settles. */
-  refreshable(action: RefreshAction): ScrollViewNode;
+  /** Pull to refresh: the app's refreshing state, and what a pull runs. */
+  refreshable(refreshing: boolean, onRefresh: () => void): ScrollViewNode;
   /** Called once each time the end comes within `threshold` viewports (2 by default). */
   onEndReached(action: () => void, threshold?: number): ScrollViewNode;
   /** The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`, the default). */
@@ -3961,7 +3843,7 @@ export interface SidebarView extends ViewNode {
   /** The getting-started card under the destinations. */
   onboarding(value: SidebarOnboarding): SidebarView;
   /** Its quick search's text, and what to tell when it changes (the app filters its own content with it). */
-  query(value: string, onChange: (query: string) => void): SidebarView;
+  query(value: Binding<string>): SidebarView;
   /** A `draggable` tree row was dropped: where it landed, by id; the app moves it. */
   onDrop(value: (drop: TreeDrop) => void): SidebarView;
 }
@@ -4112,7 +3994,7 @@ export interface CommandView extends ViewNode {
   /** What it says when nothing matches. */
   emptyLabel(value: string): CommandView;
   /** The query, held by the app. */
-  query(value: string, onChange: (query: string) => void): CommandView;
+  query(value: Binding<string>): CommandView;
   /** Which items a query matches; a substring of the label, subtitle or keywords by default. */
   filter(value: (item: BloomCommandItem, query: string) => boolean): CommandView;
   testID(value: string): CommandView;

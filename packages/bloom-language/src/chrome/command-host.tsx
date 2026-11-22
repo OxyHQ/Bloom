@@ -5,7 +5,7 @@
 import type { Binding } from '../binding';
 import { Command, type CommandItem, type CommandProps } from '@oxy.so/bloom/command';
 
-import type { IconComponent, Modifier, Node, Press } from '../node';
+import type { IconComponent, Node, Press } from '../node';
 import { nodesOf, valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
 import { defined } from './defined';
@@ -45,8 +45,7 @@ export function commandItems(node: Node, press: NodeHostProps['press']): Command
 
 export function CommandHost({ node, press }: NodeHostProps) {
   const values = valuesOf(node);
-  let query: Extract<Modifier, { kind: 'query' }> | undefined;
-  for (const modifier of node.modifiers) if (modifier.kind === 'query') query = modifier;
+  const query = values.query as Binding<string> | undefined;
   const presented = values.presented as Binding<boolean> | undefined;
   const props: CommandProps = defined({
     open: presented?.[0] ?? false,
@@ -54,8 +53,8 @@ export function CommandHost({ node, press }: NodeHostProps) {
     items: commandItems(node, press),
     placeholder: values.placeholder as string | undefined,
     emptyText: values.emptyLabel as string | undefined,
-    query: query?.value,
-    onQueryChange: query?.onChange,
+    query: query?.[0],
+    onQueryChange: query?.[1],
     filter: values.filter as CommandProps['filter'],
     testID: values.testID as string | undefined,
   });

@@ -94,7 +94,7 @@ export const CAROUSELS: Record<CarouselKind, ControlRenderer> = {
   carousel: (d) => {
     const props = d.props();
     const arrows = d.own('arrows')?.value;
-    const page = d.own('page')?.value;
+    const page = d.own('page')?.value as Binding<number> | undefined;
     const labels = d.own('labels')?.value as CarouselLabels | undefined;
     Object.assign(props, {
       header: slot(d, d.own('headerContent')?.value),

@@ -48,7 +48,7 @@ export const TOOLTIPS: Record<TooltipKind, ControlRenderer> = {
         key={d.props().key as string | undefined}
         visible={presented[0]}
         onVisibleChange={presented[1]}
-        position={d.own('side')?.value}
+        position={d.own('side')?.value.side as TooltipSide | undefined}
         delay={d.own('openDelay')?.value}
       >
         <BloomTooltipTrigger>{d.render(trigger)}</BloomTooltipTrigger>

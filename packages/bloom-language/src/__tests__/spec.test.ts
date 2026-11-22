@@ -107,6 +107,7 @@ import type {
   TabView,
   TextView,
 } from '../node';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -114,12 +115,14 @@ import type {
   TimeFieldView,
   MeetingSchedulerView,
 } from '../controls/date-picker';
+import type {
   RatingView,
   RatingInputView,
   RatingBarView,
   RatingSummaryView,
 } from '../controls/rating';
 import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar';
+import type {
   TableView,
   TableHeaderView,
   TableColumnView,
@@ -127,6 +130,7 @@ import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar
   TableRowView,
   TableCellView,
 } from '../controls/table';
+import type {
   ListItemView,
   ListView,
   VirtualListView,
@@ -135,6 +139,7 @@ import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar
 import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
 import type { InlineMarkdownView, MarkdownView } from '../controls/markdown';
 import type { SliderView, RangeSliderView } from '../controls/slider';
+import type {
   AccordionView,
   AccordionItemView,
   AccordionTriggerView,
@@ -182,6 +187,7 @@ import type { MediaInsetBorderView } from '../controls/media-inset-border';
 import type { SortablePhotoGridView } from '../controls/sortable-media';
 import type { HoverCardView } from '../controls/hover-card';
 import type { MenubarMenuView, MenubarView } from '../controls/menubar';
+import type {
   DataTableView,
   DataColumnView,
   DataTableFilterView,

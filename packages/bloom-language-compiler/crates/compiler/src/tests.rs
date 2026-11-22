@@ -567,7 +567,7 @@ fn first_message(output: &crate::Output) -> Option<&str> {
 #[test]
 fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable(refresh).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",
+        "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable(false, refresh).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let indicators = chrome("export const S = () => ScrollView(Text('a')).scrollIndicators('never');\n");
@@ -624,7 +624,7 @@ fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
 #[test]
 fn the_command_palette_and_the_settings_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented([open, set]).placeholder('Search').emptyLabel('None').query(q, onQ).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented([open, set]).selection('p').initialView('page').presentation('floating')];\n",
+        "export const C = (open, set, q, onQ, run, Icon, page) => [Command(CommandItem('New').icon(Icon).subtitle('a').keywords('x', 'y').shortcut('⌘N').disabled().onPress(run), CommandGroup('Go', CommandItem('B'))).presented([open, set]).placeholder('Search').emptyLabel('None').query([q, onQ]).testID('c'), SettingsModal(SettingsGroup('Account', SettingsItem('Profile', Icon).id('p').content(page).title('You').fullBleed(), SettingsItem('Out', Icon).onPress(run)).id('a')).presented([open, set]).selection('p').initialView('page').presentation('floating')];\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let view = chrome("export const S = () => SettingsModal().initialView('list');\n");
@@ -689,7 +689,7 @@ fn the_rest_of_the_layout_family_is_checked_against_the_spec() {
 #[test]
 fn the_sidebar_s_modes_identities_search_and_drops_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (Glyph, choose, team, plan, typed, dropped) => Sidebar(SidebarMode('Search', Glyph).id('search').shortcut('k'), TreeSection('Private', TreeItem('Notes').draggable().droppable(false).dropBeside(false)).droppable(false)).mode('search').onModeChange(choose).modePresentation('toggle').modesLabel('Mode').team(team).teamPlacement('header').plan(plan).onboarding({ title: 'Start', steps: [] }).query('ho', typed).onDrop(dropped);\n",
+        "export const S = (Glyph, choose, team, plan, typed, dropped) => Sidebar(SidebarMode('Search', Glyph).id('search').shortcut('k'), TreeSection('Private', TreeItem('Notes').draggable().droppable(false).dropBeside(false)).droppable(false)).mode('search').onModeChange(choose).modePresentation('toggle').modesLabel('Mode').team(team).teamPlacement('header').plan(plan).onboarding({ title: 'Start', steps: [] }).query(['ho', typed]).onDrop(dropped);\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let presentation = chrome("export const S = () => Sidebar().modePresentation('tabs');\n");
@@ -825,7 +825,7 @@ fn rows_and_lists_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("List([]).separator('dashed')", "Unknown listSeparator token 'dashed' for .separator()"),
+        ("List([]).separator('dashed')", "Unknown separator token 'dashed' for .separator()"),
         ("ListItem('a').compactPadding('tight')", "Unknown space token 'tight' for .compactPadding()"),
         ("ListItem('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("ListItem('a').tuning({})", "ListItem has no modifier .tuning()"),
@@ -958,7 +958,7 @@ fn tooltips_breadcrumbs_and_heatmaps_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("Tooltip(t, 'a').side('left')", "Unknown tooltipSide token 'left' for .side()"),
+        ("Tooltip(t, 'a').side('middle')", "Unknown floatingSide token 'middle' for .side()"),
         ("Tooltip(t, 'a').size('lg')", "Unknown tooltipSize token 'lg' for .size()"),
         ("ActivityHeatmap(t).cellSize('big')", "Unknown space token 'big' for .cellSize()"),
         ("Breadcrumb().side('top')", "Breadcrumb has no modifier .side()"),
@@ -974,7 +974,7 @@ fn tag_fields_file_uploads_and_videos_are_checked() {
     let imports = "import { TagField, FileUpload, Video, Text, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (tags, q, f, file, player) => VStack(TagField(tags, 'Topics').placeholder('Add').suggestions([], 3).allowsCreate(false).max(3).onMaxReached(f).normalize(f).query(q).tint('vivid').size('sm').disabled().invalid().labels({}), FileUpload().file(file).uploadProgress(40).onFileSelected(f).onUploadComplete(f).onReject(f).picker(f).allowedExtensions(['pdf']).maxBytes(5).fileIcon(() => Text('f')).disabled().labels({}), Video(player).contentFit('contain').nativeControls(true).allowsPictureInPicture(false));\n",
+        "export const x = (tags, q, f, file, player) => VStack(TagField(tags, 'Topics').placeholder('Add').tagSuggestions([], 3).allowsCreate(false).max(3).onMaxReached(f).normalize(f).query(q).tint('vivid').size('sm').disabled().invalid().labels({}), FileUpload().file(file).uploadProgress(40).onFileSelected(f).onUploadComplete(f).onReject(f).picker(f).allowedExtensions(['pdf']).maxBytes(5).fileIcon(() => Text('f')).disabled().labels({}), Video(player).contentFit('contain').nativeControls(true).allowsPictureInPicture(false));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -1197,7 +1197,7 @@ fn hover_cards_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("HoverCard(Text('a'), Text('b')).side('left')", "Unknown tooltipSide token 'left' for .side()"),
+        ("HoverCard(Text('a'), Text('b')).side('middle')", "Unknown floatingSide token 'middle' for .side()"),
         ("HoverCard(Text('a'), Text('b')).actions(t)", "HoverCard has no modifier .actions()"),
     ];
     for (chain, message) in cases {

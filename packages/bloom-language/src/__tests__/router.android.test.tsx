@@ -383,17 +383,12 @@ describe('screen() on Android', () => {
     ).toEqual(['children']);
   });
 
-  it('pull to refresh shows until what the action returns settles', async () => {
-    let settle!: () => void;
-    const refresh = jest.fn(() => new Promise<void>((resolve) => (settle = resolve)));
-    const r = mount(createElement(screen(() => ScrollView(Text('a')).refreshable(refresh))));
-    const control = () => only(r, 'ScreenScrollView').props.refreshControl;
-    expect(control().props.refreshing).toBe(false);
-    act(() => control().props.onRefresh());
-    expect(refresh).toHaveBeenCalledTimes(1);
-    expect(control().props.refreshing).toBe(true);
-    await act(async () => settle());
-    expect(control().props.refreshing).toBe(false);
+  it('pull to refresh is the app’s refreshing state and what a pull runs', () => {
+    const refresh = jest.fn();
+    const r = mount(createElement(screen(() => ScrollView(Text('a')).refreshable(true, refresh))));
+    const control = only(r, 'ScreenScrollView').props.refreshControl;
+    expect(control.props.refreshing).toBe(true);
+    expect(control.props.onRefresh).toBe(refresh);
   });
 
   it('a sheet is Bloom’s Dialog: built while open, kept while it closes', () => {

@@ -391,6 +391,8 @@ const tokenSets = {
   ring: [...Object.keys(colors), ...enums.ringExtra],
   corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
   columnWidth: [...Object.keys(scales.space), ...enums.columnWidthExtra],
+  // `.separator()` is a grouped section's and a list's: either's separators.
+  separator: [...new Set([...enums.groupedSeparator, ...enums.listSeparator])],
   font: [...typeFamilies, ...Object.keys(scales.fontSize), ...enums.fontFamily],
   weight: Object.keys(scales.weight),
   leading: [...Object.keys(scales.leading), ...Object.keys(scales.leadingPx)],
