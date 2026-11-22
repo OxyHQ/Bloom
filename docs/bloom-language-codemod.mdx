@@ -94,6 +94,7 @@ the element JSX with the reason `Node:prop`.
 | `Card`, `Item`, `Chip`, `ResponsiveGrid` | `Card(...children)`, `Row(title)`, `Chip(Icon, Text, Icon)`, `Grid(...cells)` |
 | `Divider`, `Loading`, `Badge`, `IconCircle`, `Avatar`, `EngagementAction` | `Divider()`, `Loading()`, `Badge(content)`, `IconCircle(icon)`, `Avatar(source, { variant, name })`, `Action(icon, label, { activeIcon, pop })` |
 | `ChatEmptyState` | `ChatEmptyState({ title, description, illustration, action })` |
+| `PageHeader`, `SpinnerIcon`, `Slider`, `Admonition` | `Header(title).inPage()`, `SpinnerIcon()`, `Slider([value, set], label).bounds(min, max)`, `Admonition(Text(…)).style(type)` |
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads
@@ -108,10 +109,24 @@ nothing around it:
 - A node drawn only inside a Bloom component (a `ScrollView` in a `Screen`, an
   `Action` in an `EngagementBar`) has both sides of its parity drawn in one.
 
+`PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
+iOS in a native stack included (a `Header` alone is the system bar there).
+
 Kept as JSX with their reason (`KEPT`): `Screen` (a route's `screen()` body in
-the language, its chrome the body's modifiers), `PageHeader` (the `Header` node
-is the system navigation bar on iOS in a native stack) and `Dialog` (presented
-from the view that owns it, `.dialog(isPresented, Dialog(...))`).
+the language, its chrome the body's modifiers) and `Dialog` (presented from the
+view that owns it, `.dialog(isPresented, Dialog(...))`). Components removed in
+Bloom 22 (`SettingsRow`, `SettingsCard`, `GlyphButton`, `CloseButton`,
+`ButtonGroup`, `ButtonGroupItem`) are reported as `removed:` with their Bloom 22
+replacement (`REMOVED`, from `docs/migrating-to-22.mdx`): the app moves to it in
+its Bloom 22 upgrade.
+
+Beside the rules: an icon's `fill` read from Bloom's `useTheme()` is
+`.foreground(role)` and a `width` and `height` of one number its `.size()`;
+`accessibilityRole` is `.role()`; a static `style` (an object literal, a
+module `StyleSheet`'s style, or a list of them) is read as the Tailwind
+utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
+through the className table. React Native's `flex: 1` is no utility (Tailwind's
+`flex-1` is grow, shrink and a 0% basis). A style built at runtime stays JSX.
 
 ## Running it on an app
 

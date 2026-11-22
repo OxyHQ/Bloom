@@ -23,6 +23,7 @@ import {
   type Form,
   KEPT,
   type PropRule,
+  REMOVED,
   ruleFor,
   TEXT_STYLES,
 } from './components';
@@ -136,7 +137,8 @@ type Tagged =
   | { readonly $: 'binding'; readonly binding: readonly [Carried, Carried] }
   | { readonly $: 'icon'; readonly name: string }
   | { readonly $: 'options'; readonly entries: readonly (readonly [string, Value])[] }
-  | { readonly $: 'absent' };
+  | { readonly $: 'absent' }
+  | { readonly $: 'null' };
 
 const isCarried = (value: Value): value is Carried =>
   typeof value === 'object' && 'hole' in value && 'node' in value;
@@ -232,7 +234,8 @@ function kindOf(source: Source | undefined): Kind | undefined {
     return 'bloomText';
   if (source.module === '@oxy.so/bloom/button' && source.imported === 'Button') return 'button';
   if (ruleFor(source.module, source.imported)) return 'component';
-  if (KEPT[`${source.module}#${source.imported}`]) return 'kept';
+  if (KEPT[`${source.module}#${source.imported}`] || REMOVED[`${source.module}#${source.imported}`])
+    return 'kept';
   if (
     (source.module === '@oxy.so/bloom/icons' || source.module.startsWith('@oxy.so/bloom/icons/')) &&
     /^(Ri|Si)[A-Z0-9]\w*$|Icon$/.test(source.imported) &&
@@ -600,13 +603,20 @@ export function transformSource(source: string, options: TransformOptions): File
     if (kind === 'button') return convertButton(node);
     if (kind === 'kept') {
       const source = sources.get(local) as Source;
+      const removed = REMOVED[`${source.module}#${source.imported}`];
       return {
         reasons: [
-          {
-            subject: local,
-            code: `kept:${source.imported}`,
-            why: KEPT[`${source.module}#${source.imported}`] as string,
-          },
+          removed
+            ? {
+                subject: local,
+                code: `removed:${source.imported}`,
+                why: `removed in Bloom 22: use ${removed}`,
+              }
+            : {
+                subject: local,
+                code: `kept:${source.imported}`,
+                why: KEPT[`${source.module}#${source.imported}`] as string,
+              },
         ],
       };
     }
@@ -1104,6 +1114,7 @@ export function transformSource(source: string, options: TransformOptions): File
       node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''))
     )
       unmapped('children');
+    for (const name of rule.always ?? []) props.push({ name, args: [] });
     // An optional argument left out at the end (children included) is no argument.
     while (args.length > 0 && isAbsent(args[args.length - 1] as Value)) args.pop();
     if (reasons.length) return { reasons };
@@ -1161,6 +1172,8 @@ export function transformSource(source: string, options: TransformOptions): File
           : [{ node: expression, hole: 'number' }];
       }
       case 'handler':
+        // `null` is a handler's own value (a header's `onBack={null}` shows no back button).
+        if (n.NullLiteral.check(expression)) return [{ $: 'null' }];
         return n.ArrowFunctionExpression.check(expression) ||
           n.FunctionExpression.check(expression) ||
           n.Identifier.check(expression) ||
@@ -1437,6 +1450,8 @@ export function transformSource(source: string, options: TransformOptions): File
           return `{ ${value.entries.map(([key, v]) => `${key}: ${printValue(v, carry)}`).join(', ')} }`;
         case 'absent':
           return 'undefined';
+        case 'null':
+          return 'null';
       }
     }
     return printArg(value as Arg);
