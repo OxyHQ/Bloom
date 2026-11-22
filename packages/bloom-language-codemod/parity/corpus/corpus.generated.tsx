@@ -8,6 +8,7 @@ import { View as I2 } from 'react-native-css/components/View';
 import { Text as I3 } from '@oxy.so/bloom/typography';
 import { Button as I4 } from '@oxy.so/bloom/button';
 import { RiArrowRightLine as I5 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I6 } from 'react-native-css/components/Text';
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -25,7 +26,7 @@ export const CASES = [
         <Text className="text-sm text-muted-foreground">{'⟨1⟩'} likes</Text>
       </View>
     </Pressable>); },
-    after: () => { const Pressable = I0; const RiHeart3Line = I1; const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText } = L; return toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('body').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {})); },
+    after: () => { const Pressable = I0; const RiHeart3Line = I1; const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText } = L; return toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {})); },
   },
   {
     name: "components/Rows.tsx:32",
@@ -36,7 +37,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I2; const Text = I3; const Button = I4; const RiArrowRightLine = I5; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').when('md', (v) => v.padding('all', '2xl'))); },
+    after: () => { const View = I2; const Text = I3; const Button = I4; const RiArrowRightLine = I5; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl'))); },
   },
   {
     name: "components/Rows.tsx:44",
@@ -49,9 +50,17 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:48",
-    before: () => { const View = I2; return (<View  className="flex-row justify-between">
-          <Hole n="0" />
+    before: () => { const View = I2; const Text = I3; return (<View  className="flex-row justify-between">
+          <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I2; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(HStack(Embed(<Hole n="0" />)).justify('between')); },
+    after: () => { const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between')); },
+  },
+  {
+    name: "components/Rows.tsx:58",
+    before: () => { const View = I2; const NativeText = I6; const Text = I3; return (<View className="flex-1 mt-2">
+      <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
+      <Hole n="0" />
+    </View>); },
+    after: () => { const View = I2; const NativeText = I6; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton, RawText } = L; return toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), Embed(<Hole n="0" />)).flex('1').margin('top', 'sm')); },
   },
 ];

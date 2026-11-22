@@ -14,6 +14,8 @@
  *   another, `borderStyle` solid, a View's `flexDirection` column and
  *   `position` relative, a Text's `ellipsizeMode` tail.
  * - A hex colour is its six-digit lowercase form (`#fff` is `#ffffff`).
+ * - A number is compared to 12 significant digits: `12 * 0.025` is
+ *   `0.30000000000000004` in JavaScript and `0.3` in NativeWind's compiler.
  * - A percentage is compared to 4 decimals: NativeWind writes a third as
  *   `33.3333%`, the language as `33.333333%`; Yoga rounds a layout to the
  *   device's pixels, where 1e-6 of a percent cannot move one.
@@ -84,6 +86,7 @@ function foldStyle(
   foldBorders(style);
   if (style.fontWeight !== undefined) style.fontWeight = String(style.fontWeight);
   for (const [key, value] of Object.entries(style)) {
+    if (typeof value === 'number') style[key] = Number(value.toPrecision(12));
     if (typeof value !== 'string') continue;
     const hex = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(value);
     if (hex)
