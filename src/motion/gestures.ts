@@ -5,6 +5,7 @@ import {
   useCompetingGestures,
   useNativeGesture,
   usePanGesture,
+  usePinchGesture,
   useTapGesture,
   type GestureTouchEvent,
   type PanGestureConfig,
@@ -447,4 +448,72 @@ export function useSwipe(
   const tap = useTapGesture(tapConfig);
   const gesture = useCompetingGestures(tap, pan);
   return { gesture, value };
+}
+
+export interface PinchOptions {
+  /** Bounds of the value while pinching (a scale factor: `min: 1` never shrinks below rest). */
+  min?: number;
+  max?: number;
+  enabled?: boolean;
+  /**
+   * JS, once per touch, when it ends: where the value is and the pinch's
+   * velocity (scale per second), to decide where it goes (`animateMotionValue`).
+   */
+  onEnd?: (end: { value: number; velocity: number }) => void;
+}
+
+/**
+ * A pinch that scales `value` by the fingers' spread, from where the value was
+ * when they landed (a factor: 2 is twice as large), within the bounds. Hand
+ * the gesture to a `GestureDetector`; bind the value to a view's `scale`.
+ */
+export function usePinch(value: MotionValue, options: PinchOptions = {}) {
+  const { min, max, enabled = true } = options;
+  const onEnd = useStableCallback(options.onEnd);
+  const start = useMotionValue(1);
+  const velocity = useMotionValue(0);
+  const config = useMemo(
+    () => ({
+      enabled,
+      onBegin: () => {
+        'worklet';
+        setMotionValue(start, getMotionValue(value));
+        setMotionValue(velocity, 0);
+      },
+      onUpdate: (event: { scale: number; velocity: number }) => {
+        'worklet';
+        setMotionValue(velocity, event.velocity);
+        setMotionValue(value, bounded(getMotionValue(start) * event.scale, min, max, 0));
+      },
+      onFinalize: () => {
+        'worklet';
+        if (onEnd)
+          runOnJS(onEnd)({ value: getMotionValue(value), velocity: getMotionValue(velocity) });
+      },
+    }),
+    [enabled, value, min, max, onEnd, start, velocity],
+  );
+  return usePinchGesture(config);
+}
+
+/**
+ * Two taps in quick succession (Gesture Handler's own timing, 500 ms between
+ * them): `onDoubleTap` runs on the JS thread once they land. Hand the gesture
+ * to a `GestureDetector`.
+ */
+export function useDoubleTap(onDoubleTap: () => void, options: { enabled?: boolean } = {}) {
+  const { enabled = true } = options;
+  const tapped = useStableCallback(onDoubleTap);
+  const config = useMemo(
+    () => ({
+      enabled,
+      numberOfTaps: 2,
+      onDeactivate: (event: { canceled: boolean }) => {
+        'worklet';
+        if (!event.canceled) runOnJS(tapped)();
+      },
+    }),
+    [enabled, tapped],
+  );
+  return useTapGesture(config);
 }

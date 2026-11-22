@@ -77,12 +77,20 @@ export type {
   MotionTarget,
   MotionValue,
 } from './motion-value.web';
-export { elasticResistance, useDrag, useScrollGesture, useSwipe } from './gestures';
+export {
+  elasticResistance,
+  useDoubleTap,
+  useDrag,
+  usePinch,
+  useScrollGesture,
+  useSwipe,
+} from './gestures';
 export type {
   Axis,
   DragActivation,
   DragOptions,
   GestureRelation,
+  PinchOptions,
   SwipeDirection,
   SwipeOptions,
 } from './gestures';

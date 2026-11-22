@@ -148,6 +148,13 @@ writes it from its own callbacks; a view follows it through the one mapper.
   until the touch ends (`onEnd`, once). A swipe follows the finger toward its
   direction, meets resistance against it, and on release flies out (`away`) and
   calls `onSwipe`, or comes back (`back`).
+- **`usePinch(value, { min, max, onEnd })`** scales `value` by the fingers'
+  spread (`usePinchGesture`'s `scale`, a factor) from where it was when they
+  landed, within the bounds, and reports where it is and the pinch's velocity
+  once the touch ends. **`useDoubleTap(onDoubleTap)`** is `useTapGesture` with
+  `numberOfTaps: 2` (Gesture Handler's own 500 ms between taps): the callback
+  runs on the JS thread once both land, never for a cancelled pair. Both are
+  one memoized literal config, like the drag's.
 - **A drag that shares a scroll view's touches** (the bottom sheet's). `useDrag`
   also takes: `simultaneousWith` (a scroll view's own gesture,
   `useScrollGesture()`, around the scroll view in its own `GestureDetector`, or
