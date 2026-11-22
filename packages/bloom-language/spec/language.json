@@ -495,7 +495,7 @@
     "wordBreak": ["all", "words"],
     "listMarker": ["disc", "decimal"],
     "fontFamily": ["mono"],
-    "cornerExtra": ["concentric"],
+    "cornerExtra": ["concentric", "infinite"],
     "cornerCurve": ["round", "smooth"],
     "cornerSide": [
       "all",

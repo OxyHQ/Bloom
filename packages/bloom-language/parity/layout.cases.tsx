@@ -513,7 +513,36 @@ const depth: ParityCase[] = [
   },
 ];
 
+/** Tailwind's own values, as NativeWind writes them on each platform. */
+const INFINITE = RN.Platform.OS === 'web' ? 'calc(infinity * 1px)' : 9007199254740000;
+const tailwind: ParityCase[] = [
+  {
+    name: 'an infinite corner (rounded-full)',
+    language: () => toElement(L.VStack(L.Text('a')).corner('infinite').clipped()),
+    bloom: () => (
+      <RN.View style={{ borderRadius: INFINITE as number, overflow: 'hidden' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'an infinite corner on one side',
+    language: () => toElement(L.VStack(L.Text('a')).corner('infinite', 'top')),
+    bloom: () => (
+      <RN.View
+        style={{
+          borderTopStartRadius: INFINITE as number,
+          borderTopEndRadius: INFINITE as number,
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...tailwind,
   ...distribution,
   ...placement,
   ...overlays,

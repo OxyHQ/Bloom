@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import type { CardRadius as BloomCardRadius } from '@oxy.so/bloom/card';
 import type { MotionSpec } from '@oxy.so/bloom/motion';
 
@@ -487,10 +487,22 @@ export function resolveLength(token: LengthToken): number | string {
   return resolveSpace(token as SpaceToken);
 }
 
-/** A rung's radius; `concentric` has none of its own (its shape's radius, drawn by Bloom). */
+/**
+ * A rung's radius in points; `concentric` has none of its own (its shape's
+ * radius, drawn by Bloom). `infinite` is a view's (`INFINITE_RADIUS`); a radius
+ * handed to a Bloom component is in points, so there it is Bloom's `full`.
+ */
 export function resolveCorner(token: Exclude<CornerName, 'concentric'>): number {
-  return CORNER[token];
+  return token === 'infinite' ? CORNER.full : CORNER[token];
 }
+
+/**
+ * The radius `infinite` gives a view: Tailwind's `rounded-full`
+ * (`calc(infinity * 1px)`) as NativeWind writes it, 9007199254740000 on native
+ * and that very value on the web.
+ */
+export const INFINITE_RADIUS: number | string =
+  Platform.OS === 'web' ? 'calc(infinity * 1px)' : 9007199254740000;
 
 /** A Card's corner: a corner rung of Bloom's radius scale, the panel's, or concentric with what holds it. */
 export type CardRadius = (typeof ENUMS.cardRadius)[number];

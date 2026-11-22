@@ -82,8 +82,6 @@ function measuredDifference(utility: string, mods: readonly Mod[]): string | und
   const fixed = /^(?:text|bg|border)-(white|black)\/(\d+)$/.exec(utility);
   if (fixed && !Number.isInteger((Number(fixed[2]) * 255) / 100))
     return `NativeWind writes ${fixed[1]} at ${fixed[2]}% as an 8-bit hex alpha (rounded down); the language writes ${Number(fixed[2]) / 100}`;
-  if (utility === 'rounded-full' || /^rounded-[a-z]+-full$/.test(utility))
-    return 'NativeWind writes 9007199254740000 on native and calc(infinity * 1px) on the web; the language’s full is 9999';
   const font = mods.find((m) => m.name === 'font');
   if (font && /^text-/.test(utility) && TRACKED.has(font.args[0] as string))
     return `.font('${font.args[0]}') brings the ramp’s letter spacing, which ${utility} does not write`;

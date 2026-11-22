@@ -25,6 +25,7 @@ import {
   FLEX,
   Z_INDEX,
   resolveBorderWidth,
+  INFINITE_RADIUS,
   resolveCorner,
   rampStep,
   resolveFont,
@@ -413,7 +414,7 @@ const CORNER_RADIUS: readonly (readonly [number, string])[] = [
 /** The radius a corner writes: one `borderRadius`, or a radius per corner it rounds. */
 function cornerRadius(style: Resolved, corner: CornerModifier): void {
   if (corner.value === 'concentric') return;
-  const radius = resolveCorner(corner.value);
+  const radius = corner.value === 'infinite' ? INFINITE_RADIUS : resolveCorner(corner.value);
   if (corner.side === 'all') {
     style.borderRadius = radius;
     return;
