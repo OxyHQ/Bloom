@@ -199,6 +199,31 @@ export type AccentTone = (typeof ENUMS.accentTone)[number];
 export type LockupSize = (typeof ENUMS.lockupSize)[number];
 /** An action bar's tone: `onImage` keeps it legible over artwork (a video). */
 export type EngagementBarTone = (typeof ENUMS.engagementBarTone)[number];
+/** Where a header's title sits: `start` or `center`. */
+export type TitleAlign = (typeof ENUMS.titleAlign)[number];
+/** A header's title and status on one line (`inline`) or two (`stacked`). */
+export type TitleLayout = (typeof ENUMS.titleLayout)[number];
+/** A header's title as text (`plain`) or in a `capsule`. */
+export type TitleAppearance = (typeof ENUMS.titleAppearance)[number];
+/** What a pinned bar's dismiss button does: `close` the bar or `unpin`. */
+export type DismissIcon = (typeof ENUMS.dismissIcon)[number];
+/** A sidebar's form: a `panel`, or a `rail` of icons. */
+export type SidebarVariant = (typeof ENUMS.sidebarVariant)[number];
+export type SidebarSize = (typeof ENUMS.sidebarSize)[number];
+/** A sidebar's edge: a `card`, `plain` (flush) or `docked`. */
+export type SidebarSurface = (typeof ENUMS.sidebarSurface)[number];
+export type ContentAlignment = (typeof ENUMS.contentAlignment)[number];
+export type PrimaryActionPlacement = (typeof ENUMS.primaryActionPlacement)[number];
+export type RailLabels = (typeof ENUMS.railLabels)[number];
+export type RailSelection = (typeof ENUMS.railSelection)[number];
+export type ModesPresentation = (typeof ENUMS.modesPresentation)[number];
+/** The side a scroll area's bar is drawn on, in the reading direction. */
+export type ScrollbarSide = (typeof ENUMS.scrollbarSide)[number];
+export type TeamPlacement = (typeof ENUMS.teamPlacement)[number];
+/** How a light composites over what is beneath it: CSS's blend modes. */
+export type Blend = (typeof ENUMS.blend)[number];
+/** A step of Bloom's type ramp (`body-regular`, `title-2-semibold`…). */
+export type TypeRampStep = keyof typeof TYPE_RAMP;
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];

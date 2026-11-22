@@ -195,6 +195,68 @@ const screen: ParityCase[] = [
       />
     ),
   })),
+  ...ENUMS.headerPresentation.flatMap((presentation) =>
+    ENUMS.titleLayout.map((titleLayout) => ({
+      name: `ChatHeader ${presentation}, title ${titleLayout}`,
+      language: () =>
+        toElement(
+          L.ChatHeader('Ana Lima', { status: 'online', avatarName: 'Ana Lima' })
+            .presentation(presentation)
+            .titleLayout(titleLayout),
+        ),
+      bloom: () => (
+        <ChatHeader
+          title="Ana Lima"
+          status="online"
+          avatarName="Ana Lima"
+          presentation={presentation}
+          titleLayout={titleLayout}
+        />
+      ),
+    })),
+  ),
+  ...ENUMS.titleAlign.flatMap((titleAlign) =>
+    ENUMS.titleAppearance.map((titleAppearance) => ({
+      name: `ChatHeader title ${titleAlign}, ${titleAppearance}`,
+      language: () =>
+        toElement(
+          L.ChatHeader('Ana Lima', { status: 'online', avatarName: 'Ana Lima' })
+            .titleAlign(titleAlign)
+            .titleAppearance(titleAppearance),
+        ),
+      bloom: () => (
+        <ChatHeader
+          title="Ana Lima"
+          status="online"
+          avatarName="Ana Lima"
+          titleAlign={titleAlign}
+          titleAppearance={titleAppearance}
+        />
+      ),
+    })),
+  ),
+  ...ENUMS.density.flatMap((density) =>
+    [true, false].map((divider) => ({
+      name: `ChatHeader bar, ${density}, ${divider ? 'a divider' : 'no divider'}`,
+      language: () =>
+        toElement(
+          L.ChatHeader('Ana Lima', { status: 'online', onPressBack: press })
+            .presentation('bar')
+            .density(density)
+            .dividers(divider),
+        ),
+      bloom: () => (
+        <ChatHeader
+          title="Ana Lima"
+          status="online"
+          onPressBack={press}
+          presentation="bar"
+          compact={density === 'compact'}
+          divider={divider}
+        />
+      ),
+    })),
+  ),
   ...ENUMS.chatInfoPanelStyle.map((variant) => ({
     name: `ChatInfoPanel ${variant}`,
     language: () =>
@@ -212,6 +274,11 @@ const screen: ParityCase[] = [
     language: () => toElement(L.PinnedMessageBar(PINS, { index: 1, onPressPin: set })),
     bloom: () => <PinnedMessageBar pins={PINS} index={1} onPressPin={set} />,
   },
+  ...ENUMS.dismissIcon.map((icon) => ({
+    name: `PinnedMessageBar dismissed by ${icon}`,
+    language: () => toElement(L.PinnedMessageBar(PINS, { onDismiss: press }).dismissIcon(icon)),
+    bloom: () => <PinnedMessageBar pins={PINS} onDismiss={press} dismissIcon={icon} />,
+  })),
   {
     name: 'ScrollToBottomButton',
     language: () =>
@@ -230,8 +297,9 @@ const list: ParityCase[] = [
     name: 'ChatFolderTabs spaced, padded, a divider',
     language: () =>
       toElement(
-        L.ChatFolderTabs(FOLDERS, { paddingHorizontal: 'lg', divider: true })
+        L.ChatFolderTabs(FOLDERS, { paddingHorizontal: 'lg' })
           .spacing('sm')
+          .dividers()
           .label('Folders'),
       ),
     bloom: () => (
@@ -374,6 +442,11 @@ const media: ParityCase[] = [
     language: () => toElement(L.DocumentGrid(DOCS, { onPressItem: set })),
     bloom: () => <DocumentGrid items={DOCS} onPressItem={set} />,
   },
+  ...[true, false].map((divider) => ({
+    name: `DocumentGrid ${divider ? 'with' : 'without'} dividers`,
+    language: () => toElement(L.DocumentGrid(DOCS).dividers(divider)),
+    bloom: () => <DocumentGrid items={DOCS} divider={divider} />,
+  })),
   ...ENUMS.fileMessageStyle.map((variant) => ({
     name: `FileMessage ${variant}`,
     language: () =>

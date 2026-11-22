@@ -1262,8 +1262,9 @@ The agent families two or more apps share, each Bloom's own:
 `AgentLimitsCard(options)`, `UsageCard(options)` (its `fallback` and
 `footer` children), `AgentThinking(reasoning?, options?)` (`.style('wave' |
 'spin' | 'stars' | 'infinity')`, `.tint('subtle' | 'default' | 'primary' |
-'accent')`), `AgentProgress(options)`, `AgentProgressLoadingText(text,
-options?)` (`.lines(n)`; its `variant` a step of Bloom's ramp),
+'accent')`), `AgentProgress(options)`, `AgentProgressLoadingText(text)`
+(`.lines(n)`, `.textVariant(step)` a step of Bloom's ramp, `body-regular` by
+default),
 `AgentLogRow(content, { first, last })`, `AgentLogShimmerText(text)`,
 `AgentLogToolCall(name, status, options?)` (`running`, `done` or `error`;
 its `content` what it shows expanded), `AgentLogToolCalls(calls)`,
@@ -1275,6 +1276,14 @@ composer; its `radius`, `line` and `offset` space tokens),
 - `ComposerLoader(...).gradient([c0, c1, c2, c3])` is the loader's four
   colours, left to right (see [Colour lists](#colour-lists)); with none, Bloom's
   own iridescent set.
+- A component's secondary looks are modifiers: a composer loader's
+  `.blend()` (CSS's blend modes), `.bloomOnly()` and `.surface(false)`; a
+  conversation sidebar's `.style('panel' | 'rail')`, `.size('sm' | 'md' |
+  'lg')`, `.sidebarSurface('card' | 'plain' | 'docked')`,
+  `.contentAlignment('start' | 'center')`, `.primaryActionPlacement('bottom'
+  | 'top')`, `.railLabels('visible' | 'hidden')`, `.railSelection('pill' |
+  'icon')`, `.modesPresentation('segmented' | 'toggle')`,
+  `.scrollbarSide('end' | 'start')` and `.teamPlacement('footer' | 'header')`.
 - The thinking marks and the working row move on the JS thread while the
   agent works; their cases are compared by Jest as they mount, not in Chrome,
   where two side by side are read at different frames.
@@ -1283,6 +1292,7 @@ composer; its `radius`, `line` and `offset` space tokens),
 
 ```ts
 ChatHeader(chat.name, { status, avatarSource: chat.avatar, onPressBack: back }).tint('accent')
+ChatHeader(chat.name, { status }).presentation('bar').titleLayout('stacked').titleAlign('center').dividers(false)
 ChatBackground(Thread(), { source: wallpaper }).style('image')
 ImageMessage(photo.url, { aspectRatio: photo.ratio, caption: Text(photo.caption) }).tint('outgoing')
 StoryRing(Avatar(friend.avatar), { size: '56', state: 'unseen' }).onPress(openStory)
@@ -1306,6 +1316,13 @@ indicators (`StoryRing`, `TypingDots`) and the media in a bubble
   a radius a corner rung, a background's opacities opacity tokens. Its slots
   (an empty state's action, a header's avatar and accessory, an image's
   caption, a ring's badge, a map from `renderMap`) are language children.
+- A header's secondary looks are modifiers too: `.presentation()` (Bloom's
+  `floating`, `bar` or `navigation`), `.titleAlign('start' | 'center')`,
+  `.titleLayout('inline' | 'stacked')`, `.titleAppearance('plain' |
+  'capsule')`, `.density('compact' | 'default')` (with neither, the window's
+  width decides) and `.dividers(false)`. A pinned bar's dismiss glyph is
+  `.dismissIcon('close' | 'unpin')`; folder tabs and a document grid draw their
+  hairlines with `.dividers()`.
 - `ChatSearchField(query)` writes its binding; `ChatFolderTabs` is named with
   `.label()`; `ScrollToBottomButton` and `StoryRing` take `.onPress()`
   themselves. `PollMessage(question, choices, options?)`: the choices are

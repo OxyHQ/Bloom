@@ -129,6 +129,22 @@ import {
   type OrderStatusBarStyle,
   type EngagementBarTone,
   type LockupSize,
+  type TitleAlign,
+  type TitleLayout,
+  type TitleAppearance,
+  type DismissIcon,
+  type SidebarVariant,
+  type SidebarSize,
+  type SidebarSurface,
+  type ContentAlignment,
+  type PrimaryActionPlacement,
+  type RailLabels,
+  type RailSelection,
+  type ModesPresentation,
+  type ScrollbarSide,
+  type TeamPlacement,
+  type Blend,
+  type TypeRampStep,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -377,6 +393,25 @@ export interface ValueModifiers {
   divider: boolean;
   // An action bar's zero counts
   showZeroCounts: boolean;
+
+  // The chat screen's secondary looks (controls/chat.tsx)
+  titleAlign: TitleAlign;
+  titleLayout: TitleLayout;
+  titleAppearance: TitleAppearance;
+  dismissIcon: DismissIcon;
+
+  // Agents (controls/agents.tsx)
+  sidebarSurface: SidebarSurface;
+  contentAlignment: ContentAlignment;
+  primaryActionPlacement: PrimaryActionPlacement;
+  railLabels: RailLabels;
+  railSelection: RailSelection;
+  modesPresentation: ModesPresentation;
+  scrollbarSide: ScrollbarSide;
+  teamPlacement: TeamPlacement;
+  textVariant: TypeRampStep;
+  blend: Blend;
+  bloomOnly: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -538,7 +573,8 @@ export type Modifier =
         | NoteToolbarSize
         | FollowButtonSize
         | OfferingBadgeSize
-        | LockupSize;
+        | LockupSize
+        | SidebarSize;
     }
   | {
       readonly kind: 'style';
@@ -581,7 +617,8 @@ export type Modifier =
         | OfferingBadgeStyle
         | ActivityFeedGrouping
         | ActivityFeedGrouping
-        | OrderStatusBarStyle;
+        | OrderStatusBarStyle
+        | SidebarVariant;
     }
   | {
       readonly kind: 'shape';
@@ -1100,7 +1137,8 @@ export class Node {
       | DirectionsDensity
       | NoteToolbarSize
       | OfferingBadgeSize
-      | LockupSize,
+      | LockupSize
+      | SidebarSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1141,7 +1179,8 @@ export class Node {
       | OfferingBadgeStyle
       | ActivityFeedGrouping
       | ActivityFeedGrouping
-      | OrderStatusBarStyle,
+      | OrderStatusBarStyle
+      | SidebarVariant,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1559,6 +1598,55 @@ export class Node {
   }
   showZeroCounts(value = true): Node {
     return this.set('showZeroCounts', value);
+  }
+
+  // The chat screen's secondary looks (controls/chat.tsx)
+  titleAlign(value: TitleAlign): Node {
+    return this.set('titleAlign', value);
+  }
+  titleLayout(value: TitleLayout): Node {
+    return this.set('titleLayout', value);
+  }
+  titleAppearance(value: TitleAppearance): Node {
+    return this.set('titleAppearance', value);
+  }
+  dismissIcon(value: DismissIcon): Node {
+    return this.set('dismissIcon', value);
+  }
+
+  // Agents (controls/agents.tsx)
+  sidebarSurface(value: SidebarSurface): Node {
+    return this.set('sidebarSurface', value);
+  }
+  contentAlignment(value: ContentAlignment): Node {
+    return this.set('contentAlignment', value);
+  }
+  primaryActionPlacement(value: PrimaryActionPlacement): Node {
+    return this.set('primaryActionPlacement', value);
+  }
+  railLabels(value: RailLabels): Node {
+    return this.set('railLabels', value);
+  }
+  railSelection(value: RailSelection): Node {
+    return this.set('railSelection', value);
+  }
+  modesPresentation(value: ModesPresentation): Node {
+    return this.set('modesPresentation', value);
+  }
+  scrollbarSide(value: ScrollbarSide): Node {
+    return this.set('scrollbarSide', value);
+  }
+  teamPlacement(value: TeamPlacement): Node {
+    return this.set('teamPlacement', value);
+  }
+  textVariant(value: TypeRampStep): Node {
+    return this.set('textVariant', value);
+  }
+  blend(value: Blend): Node {
+    return this.set('blend', value);
+  }
+  bloomOnly(value = true): Node {
+    return this.set('bloomOnly', value);
   }
 }
 

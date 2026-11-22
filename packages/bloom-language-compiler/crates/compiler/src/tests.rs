@@ -1088,3 +1088,64 @@ fn the_action_bars_orientation_and_tone_are_checked() {
     let output = check("export const x = (i) => Action(i, 'Like').showZeroCounts();\n");
     assert_eq!(output.diagnostics[0].message, "Action has no modifier .showZeroCounts()");
 }
+
+#[test]
+fn the_chat_screens_secondary_looks_are_checked() {
+    let imports =
+        "import { ChatHeader, DocumentGrid, PinnedMessageBar, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (p, d) => VStack(ChatHeader('Ana').presentation('bar').titleAlign('center').titleLayout('stacked').titleAppearance('capsule').density('compact').dividers(false), PinnedMessageBar(p).dismissIcon('unpin'), DocumentGrid(d).dividers());\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("ChatHeader('a').titleLayout('rows')", "Unknown titleLayout token 'rows' for .titleLayout()"),
+        ("ChatHeader('a').titleAlign('end')", "Unknown titleAlign token 'end' for .titleAlign()"),
+        (
+            "ChatHeader('a').titleAppearance('pill')",
+            "Unknown titleAppearance token 'pill' for .titleAppearance()",
+        ),
+        (
+            "ChatHeader('a').presentation('sheet')",
+            "Unknown headerPresentation token 'sheet' for .presentation()",
+        ),
+        ("PinnedMessageBar(b).dismissIcon('trash')", "Unknown dismissIcon token 'trash' for .dismissIcon()"),
+        ("DocumentGrid(b).titleLayout('inline')", "DocumentGrid has no modifier .titleLayout()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
+
+#[test]
+fn the_agent_families_secondary_looks_are_checked() {
+    let imports = "import { AgentProgressLoadingText, ComposerLoader, ConversationSidebar, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c, s) => VStack(AgentProgressLoadingText('Searching').textVariant('caption-1-medium'), ComposerLoader(c).blend('screen').bloomOnly().surface(false), ConversationSidebar(s, {}).style('rail').size('sm').sidebarSurface('docked').contentAlignment('center').primaryActionPlacement('top').railLabels('hidden').railSelection('icon').modesPresentation('toggle').scrollbarSide('start').teamPlacement('header'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        (
+            "AgentProgressLoadingText('a').textVariant('body')",
+            "Unknown typeRamp token 'body' for .textVariant()",
+        ),
+        ("ComposerLoader(c).blend('add')", "Unknown blend token 'add' for .blend()"),
+        ("ConversationSidebar(c, {}).style('drawer')", "Unknown sidebarVariant token 'drawer' for .style()"),
+        ("ConversationSidebar(c, {}).size('xl')", "Unknown sidebarSize token 'xl' for .size()"),
+        (
+            "ConversationSidebar(c, {}).sidebarSurface('glass')",
+            "Unknown sidebarSurface token 'glass' for .sidebarSurface()",
+        ),
+        (
+            "ConversationSidebar(c, {}).railSelection('dot')",
+            "Unknown railSelection token 'dot' for .railSelection()",
+        ),
+        ("ComposerLoader(c).teamPlacement('header')", "ComposerLoader has no modifier .teamPlacement()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (c) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}
