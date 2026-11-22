@@ -1,4 +1,5 @@
 import {
+  createContext,
   createElement,
   useContext,
   useLayoutEffect,
@@ -43,7 +44,7 @@ import { useThemePaint } from '@oxy.so/bloom/theme';
 import type { DragSpec, PinchSpec, SwipeDirection } from '../node';
 import type { Geometry } from '../paint';
 import type { Frame, Namespace } from './namespace';
-import { resolveMotion, type MotionToken } from './tokens';
+import { motionKey, resolveMotion, type MotionToken } from './tokens';
 
 /**
  * The animation in scope: a `.animation(motion, value?)` on this view or above
@@ -54,6 +55,30 @@ export interface AnimationScope {
   readonly motion: MotionToken;
   readonly value: unknown;
   readonly gated: boolean;
+}
+
+/**
+ * The `.animation()` in scope where a `view()` is placed: its body's nodes
+ * play their changes with it, as the nodes of the body it is placed in do.
+ * Provided only where the scope differs from the one already provided.
+ */
+export const AnimationContext = createContext<AnimationScope | undefined>(undefined);
+AnimationContext.displayName = 'BloomAnimationScope';
+
+const scopes = new Map<string, AnimationScope>();
+
+/**
+ * A scope as one object while its motion, value and gating are the same, so a
+ * `view()` under it re-renders only when the scope changes (a gated value
+ * moved), not on every render of the view that declares it.
+ */
+export function scopeOf(motion: MotionToken, value: unknown, gated: boolean): AnimationScope {
+  const key = `${motionKey(motion)}|${gated}`;
+  const last = scopes.get(key);
+  if (last !== undefined && Object.is(last.value, value)) return last;
+  const scope = { motion, value, gated };
+  scopes.set(key, scope);
+  return scope;
 }
 
 /** What a node's motion modifiers ask for, collected once by the renderer's plan. */
