@@ -114,12 +114,3 @@ export function warnNotVaried(modifier: Modifier): void {
     `[Bloom language] .${modifier.kind}() inside when() is left out: a variant changes style only (${VARIANT_MODIFIERS.join(', ')}).`,
   );
 }
-
-/** A value a web variant cannot draw (no generated class: an app token, a transform) is left out, once said. */
-export function warnNoClass(property: string): void {
-  if (process.env.NODE_ENV === 'production' || warned.has(`class:${property}`)) return;
-  warned.add(`class:${property}`);
-  console.warn(
-    `[Bloom language] a web variant of ${property} needs a Bloom rung: an app token or an inline value has no class to vary.`,
-  );
-}

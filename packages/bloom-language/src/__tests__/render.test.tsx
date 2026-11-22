@@ -234,23 +234,29 @@ describe('styles are resolved once per theme', () => {
     }
   });
 
-  it('an app colour is a hex, and it does not vary', () => {
+  it('an app colour is a hex, and it varies as a role does', () => {
     expect(() => defineTokens({ color: { blue: 'blue' as `#${string}` } })).toThrow(
       'color.blue is not a hex colour',
     );
     const brand = defineTokens({ color: { blue: '#1877f2' } }).color.blue;
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const r = mount(
       toElement(
-        HStack(Text('a'))
+        HStack(Icon(Glyph), Text('a'))
           .onPress(() => {})
           .background('surface')
-          .when('pressed', (v) => v.background(brand)),
+          .when('pressed', (v) => v.background(brand).foreground(brand)),
       ),
     );
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('an app colour'));
-    warn.mockRestore();
-    expect(JSON.stringify(r.toJSON())).not.toContain('#1877f2');
+    const press = () => r.root.find((node) => (node.type as unknown) === 'Pressable');
+    const flat = (style: unknown) => Object.assign({}, ...[style].flat(4).filter(Boolean));
+    expect(flat(press().props.style).backgroundColor).toBe(LIGHT.backgroundSecondary);
+    expect(r.root.findByType(Glyph).props.fill).toBe(LIGHT.text);
+    act(() => press().props.onPressIn());
+    expect(flat(press().props.style).backgroundColor).toBe('#1877f2');
+    expect(flat(hosts(r, 'Text')[0]?.props.style).color).toBe('#1877f2');
+    expect(r.root.findByType(Glyph).props.fill).toBe('#1877f2');
+    act(() => press().props.onPressOut());
+    expect(flat(press().props.style).backgroundColor).toBe(LIGHT.backgroundSecondary);
   });
 
   it('app tokens resolve to their declared values', () => {

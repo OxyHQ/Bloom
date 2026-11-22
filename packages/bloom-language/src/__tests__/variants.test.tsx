@@ -7,7 +7,18 @@ import TestRenderer, {
 
 import { DARK, LIGHT, PaintContext, withAlpha } from './support/bloom-theme';
 import { windowTier } from './support/bloom-hooks';
-import { Action, ActionBar, Avatar, Badge, HStack, Icon, Text, VStack } from '../primitives';
+import {
+  Action,
+  ActionBar,
+  Avatar,
+  Badge,
+  Button,
+  FAB,
+  HStack,
+  Icon,
+  Text,
+  VStack,
+} from '../primitives';
 import { both } from '../variants';
 import { regular } from '../glass';
 import { toElement } from '../render';
@@ -279,6 +290,43 @@ describe('when(): a variant overrides what the chain set before it', () => {
     );
     expect(ofType(r, 'Surface')[0]?.props.fill).toBe(DARK.error);
   });
+});
+
+describe('a Button’s or FAB’s glass varies with the control’s own state', () => {
+  it.each(['button', 'fab'] as const)(
+    'a %s reports its press and hover to the glass around it',
+    (kind) => {
+      const onPress = jest.fn();
+      const r = mount(
+        kind === 'button'
+          ? Button(Text('Go'))
+              .onPress(onPress)
+              .glass()
+              .when('pressed', (v) => v.background('error'))
+              .when('hovered', (v) => v.background('muted'))
+          : FAB(Icon(Glyph))
+              .onPress(onPress)
+              .glass()
+              .when('pressed', (v) => v.background('error'))
+              .when('hovered', (v) => v.background('muted')),
+      );
+      const host = kind === 'button' ? 'BloomButton' : 'BloomFab';
+      const pressable = (): ReactTestInstance => ofType(r, host)[0] as ReactTestInstance;
+      const fill = () => ofType(r, 'Surface')[0]?.props.fill;
+      const rest = fill();
+      act(() => pressable().props.onHoverIn());
+      expect(fill()).toBe(LIGHT.textSecondary);
+      act(() => pressable().props.onPressIn());
+      // A press after a hover: the later variant holds.
+      expect(fill()).toBe(LIGHT.error);
+      act(() => pressable().props.onPressOut());
+      act(() => pressable().props.onHoverOut());
+      expect(fill()).toBe(rest);
+      // The control keeps its own press.
+      pressable().props.onPress();
+      expect(onPress).toHaveBeenCalled();
+    },
+  );
 });
 
 describe('a Bloom component with no press of its own takes it on a host around it', () => {

@@ -2,6 +2,7 @@ import * as RN from 'react-native';
 import { type ReactNode, useState } from 'react';
 import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
 import { BlurIsland } from '@oxy.so/bloom/blur';
+import { Button } from '@oxy.so/bloom/button';
 import { ConcentricView } from '@oxy.so/bloom/concentric';
 import { Divider } from '@oxy.so/bloom/divider';
 import { Fill } from '@oxy.so/bloom/fill';
@@ -62,6 +63,28 @@ function Tracked({
 }
 
 const surface: ParityCase[] = [
+  {
+    name: 'a button on glass whose glass varies with its press, at rest',
+    language: () =>
+      toElement(
+        L.Button(L.Text('Go'))
+          .onPress(onPress)
+          .glass()
+          .when('pressed', (v) => v.background('error')),
+      ),
+    // The glass's fill is the button's tone; the press the button reports holds none at rest.
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <Surface fill={colors.primary}>
+            <Button material="shared" onPress={onPress}>
+              Go
+            </Button>
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
   {
     name: 'glass is Bloom’s Surface',
     language: () => toElement(L.VStack(L.Text('Glass')).glass()),

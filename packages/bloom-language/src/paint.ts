@@ -292,7 +292,12 @@ export function Conditioned({ host, paint, ...props }: PaintedProps): ReactEleme
   const lists = listProps(theme.colors, paint);
   // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
   if (props.style !== undefined && picked.style !== undefined) {
-    return createElement(host, { ...props, ...picked, ...lists, style: [picked.style, props.style] });
+    return createElement(host, {
+      ...props,
+      ...picked,
+      ...lists,
+      style: [picked.style, props.style],
+    });
   }
   return createElement(host, { ...props, ...picked, ...lists });
 }

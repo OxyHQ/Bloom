@@ -1,5 +1,7 @@
 import {
+  createContext,
   createElement,
+  useContext,
   useState,
   type ComponentType,
   type ReactElement,
@@ -94,18 +96,18 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
     handlers.onBlur = chain('onBlur', 'focused', false);
   }
   const style = Platform.OS === 'web' && out.anchor ? anchored(out.style) : out.style;
-  // A moving box's motion style (`Outer`, `props.style`) comes after its own; the leaves merge it the same way.
+  // A moving box's motion style (`Outer`, `props.style`) comes after its own
+  // classes (the anchor, a press host's); a painted box's leaf merges them
+  // after what it paints.
   const motion = props.style as readonly unknown[] | undefined;
+  const own = motion === undefined ? style : style === undefined ? motion : [style, ...motion];
   const box =
     out.paint === undefined
-      ? createElement(host, {
-          ...props,
-          ...handlers,
-          style: motion === undefined ? style : [style, ...motion],
-        })
+      ? createElement(host, { ...props, ...handlers, style: own })
       : createElement(out.paint.variants ? Conditioned : Painted, {
           ...props,
           ...handlers,
+          style: own,
           host,
           paint: out.paint,
         });
@@ -113,3 +115,60 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
 }
 
 export const StateHost = Platform.OS === 'web' ? WebStateHost : TrackedStateHost;
+
+type Report = (key: keyof Interaction, on: boolean) => void;
+
+/** Where a control on glass reports its state: the box around its glass (`ReportedState`). */
+const ReportContext = createContext<Report | null>(null);
+
+/**
+ * The box around a Button's or FAB's glass when the glass's variants answer a
+ * state: the control inside it takes the press, hover and focus (`Reporting`)
+ * and reports them here, so the glass's own leaf (a `Conditioned` Surface or
+ * platform glass) varies with the control's state. It draws nothing itself.
+ */
+export function ReportedState({ children }: { children?: ReactNode }): ReactElement {
+  const [state, setState] = useState<Interaction>(IDLE);
+  const report: Report = (key, on) =>
+    setState((current) => (current[key] === on ? current : { ...current, [key]: on }));
+  return createElement(
+    ReportContext.Provider,
+    { value: report },
+    createElement(InteractionContext.Provider, { value: state }, children),
+  );
+}
+
+/** A control on glass: `host` with its own handlers, each state the glass answers (`reports`) also reported to the glass around it. */
+export function Reporting({
+  host,
+  reports: states,
+  ...props
+}: {
+  host: ComponentType<Record<string, unknown>>;
+  reports: readonly LiveCondition[];
+  [prop: string]: unknown;
+}): ReactElement {
+  const report = useContext(ReportContext);
+  if (report === null) return createElement(host, props);
+  const chain = (name: string, key: keyof Interaction, on: boolean) => (event: unknown) => {
+    report(key, on);
+    (props[name] as Handler)?.(event);
+  };
+  const handlers: Record<string, (event: unknown) => void> = {};
+  if (states.includes('pressed')) {
+    handlers.onPressIn = chain('onPressIn', 'pressed', true);
+    handlers.onPressOut = chain('onPressOut', 'pressed', false);
+  }
+  if (states.includes('hovered')) {
+    handlers.onHoverIn = chain('onHoverIn', 'hovered', true);
+    handlers.onHoverOut = chain('onHoverOut', 'hovered', false);
+  }
+  if (states.includes('focused')) {
+    handlers.onFocus = (event: unknown) => {
+      report('focused', focusVisible(event));
+      (props.onFocus as Handler)?.(event);
+    };
+    handlers.onBlur = chain('onBlur', 'focused', false);
+  }
+  return createElement(host, { ...props, ...handlers });
+}
