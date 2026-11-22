@@ -27,7 +27,7 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `contentStyle`: a static content container style of paddings and a gap, as
  *   `.contentMargins(edge, token)` and `.spacing(token)`;
  * - `embed`: an element, or a `const` holding one, drawn as it is (`Embed`), never converted;
- * - `items`: an array of data (any expression without JSX), carried as it is;
+ * - `items`: an array of data (any expression but an element or a string), carried as it is;
  * - `element`: a JSX element or fragment only, as a view (a name may be a component);
  * - `row`: FlashList's `renderItem` as an arrow of `{ item, index }` returning an
  *   element, the node's row `(item, index) => view`.

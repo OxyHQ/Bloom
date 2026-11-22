@@ -81,8 +81,8 @@ token (checked against the spec's enum or the node's densities, or a scale
 turned round, `radius="radius-16"` to `'lg'`, `spacing={12}` to `'md'`), a
 string or number (any expression without JSX, carried as it is), a flag, a
 handler, a Bloom icon, a view (an element converted where it can be, else
-`Embed`), or an array of data (`items`, any expression without JSX, carried as
-it is). A prop the rule does not name, or a value in another form, keeps
+`Embed`), or an array of data (`items`, carried as it is, the elements inside it
+too, each a region of its own where it converts). A prop the rule does not name, or a value in another form, keeps
 the element JSX with the reason `Node:prop`.
 
 | Bloom | Language |
