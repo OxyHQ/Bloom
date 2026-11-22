@@ -57,17 +57,16 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   internal var items: List<GlassMenuItemRecord> = emptyList()
     set(value) {
       field = value
-      // Emptied, a view that opens with its rows opens again with the next ones.
-      if (value.isEmpty()) openedWithItems = false
       overlay?.menuSession?.takeIf { it.anchor === this }?.refreshItems()
       openWhenReady()
     }
-  // The owner gives this view its rows only as its menu opens (rows built by the press that opens it, or a view
-  // mounted with its menu open): it opens itself as soon as it has rows and is laid out, since nothing can call
-  // `open` with rows it does not have yet. Its rows emptied once the menu has closed, the next ones open it again.
+  // An open the owner asks for together with the rows it opens with (rows built by the press that opens it, or rows
+  // swapped in for it): while set, the view opens itself, once, as soon as it has rows and is laid out, since a call
+  // to `open` could arrive before the rows do. Set false, it opens again the next time it is set.
   internal var openWithItems = false
     set(value) {
       field = value
+      if (!value) openedWithItems = false
       openWhenReady()
     }
   private var openedWithItems = false
