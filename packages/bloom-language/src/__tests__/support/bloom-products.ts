@@ -100,3 +100,7 @@ export const RouteStops = 'RouteStops';
 export const NoteCard = 'NoteCard';
 export const NoteCardSkeleton = 'NoteCardSkeleton';
 export const ShareSheet = 'ShareSheet';
+export const ConnectionDots = 'ConnectionDots';
+export const OutlineNav = 'OutlineNav';
+export const Pagination = 'Pagination';
+export const ProgressiveBlur = 'ProgressiveBlur';

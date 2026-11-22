@@ -549,3 +549,16 @@ export type {
   ShareSheetOptions,
   ShareSheetView,
 } from './controls/share-sheet';
+
+// Generic components (controls/generic.tsx)
+export { ConnectionDots, OutlineNav, Pagination, ProgressiveBlur } from './controls/generic';
+export type {
+  ConnectionDotsOptions,
+  ConnectionDotsView,
+  OutlineNavOptions,
+  OutlineNavView,
+  PaginationOptions,
+  PaginationView,
+  ProgressiveBlurOptions,
+  ProgressiveBlurView,
+} from './controls/generic';

@@ -757,3 +757,22 @@ fn route_stops_note_cards_and_the_share_sheet_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_generic_components_are_checked() {
+    let imports = "import { ConnectionDots, OutlineNav, Pagination, ProgressiveBlur, Text, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (h, p) => VStack(ConnectionDots(Text('a'), Text('b')).label('Linking'), OutlineNav(h).style('compact'), Pagination(p, 4), ProgressiveBlur().frame({ height: '64' }));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("OutlineNav(b).style('short')", "Unknown outlineNavStyle token 'short' for .style()"),
+        ("Pagination(b, 4).size('sm')", "Pagination has no modifier .size()"),
+        ("ProgressiveBlur().style('top')", "ProgressiveBlur has no modifier .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

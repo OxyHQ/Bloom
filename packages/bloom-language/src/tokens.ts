@@ -175,6 +175,8 @@ export type NoteCardLayout = (typeof ENUMS.noteCardLayout)[number];
 /** Bloom's accent tones (`AccentTone`): a note's wash. */
 export type AccentTone = (typeof ENUMS.accentTone)[number];
 export type ShareSheetSize = (typeof ENUMS.shareSheetSize)[number];
+/** Bloom `OutlineNav`'s forms: every heading, or the compact one that drops the deep levels. */
+export type OutlineNavStyle = (typeof ENUMS.outlineNavStyle)[number];
 export type ChatBackgroundStyle = (typeof ENUMS.chatBackgroundStyle)[number];
 export type ChatDateHeaderStyle = (typeof ENUMS.chatDateHeaderStyle)[number];
 export type ChatInfoPanelStyle = (typeof ENUMS.chatInfoPanelStyle)[number];

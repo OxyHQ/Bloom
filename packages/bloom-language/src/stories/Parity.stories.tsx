@@ -12,6 +12,7 @@ import { CHAT_CASES } from '../../parity/chat.cases';
 import { CHAT_COMPOSER_CASES } from '../../parity/chat-composer.cases';
 import { CHECKOUT_SHEET_CASES } from '../../parity/checkout-sheet.cases';
 import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
+import { GENERIC_CASES } from '../../parity/generic.cases';
 import { COMPOSER_PANEL_CASES } from '../../parity/composer-panel.cases';
 import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
 import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
@@ -91,3 +92,4 @@ export const ListingsAndMedia: Story = { args: { cases: LISTINGS_MEDIA_CASES } }
 export const CardForms: Story = { args: { cases: CARD_FORM_CASES } };
 export const CheckoutSheets: Story = { args: { cases: CHECKOUT_SHEET_CASES } };
 export const RouteStopsNotesAndSharing: Story = { args: { cases: ROUTE_NOTE_SHARE_CASES } };
+export const GenericComponents: Story = { args: { cases: GENERIC_CASES } };

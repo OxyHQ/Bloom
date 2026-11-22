@@ -1371,6 +1371,31 @@ takes `.style()` and `.lines(n)`. `ShareSheet(options?)`: `.size('sm' | 'md'
 `mail-list` exports no component, only its helpers, constants and types,
 so it has no node.
 
+## Generic components
+
+Bloom's generic pieces no product family owns, each Bloom's own with parity on
+native, web and Chrome, as the product components are: content first, data as
+options, slots as language children, look as modifiers.
+
+### Connection dots, outline nav, pagination and progressive blur
+
+```ts
+ConnectionDots(AppIcon(app), Logo(), { dotCount: 4 }).label('Linking')
+OutlineNav(doc.headings, { activeId, onSelect: scrollTo, progress }).style('compact')
+Pagination([page, setPage], pageCount, { siblingCount: 2 })
+ProgressiveBlur({ direction: 'bottom' }).position({ bottom: 'none', leading: 'none', trailing: 'none' }).frame({ height: '64' })
+```
+
+`ConnectionDots(left, right, options?)` (`dotCount`, `reducedMotion`; its
+`dotSize` a space token); `.label()` names the link. `OutlineNav(headings,
+options?)` (`activeId`, `onSelect`, `progress`, `hideProgress`, `title`,
+`compactMaxLevel`, `labels`): `.style('full' | 'compact')`.
+`Pagination(page, totalPages, options?)` writes its binding, the page shown
+(`siblingCount`, `previousLabel`, `nextLabel`, `getPageLabel`).
+`ProgressiveBlur(options?)` (`direction` `top` or `bottom`, `intensity`) is
+placed and sized by the view's own modifiers. Each is named with `.label()`
+where Bloom takes a name.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
