@@ -206,7 +206,23 @@ is `.allowsHitTesting()`: `none` is `false`, `box-none` `'children'` and
 module `StyleSheet`'s style, or a list of them) is read as the Tailwind
 utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
 through the className table. React Native's `flex: 1` is no utility (Tailwind's
-`flex-1` is grow, shrink and a 0% basis). A style built at runtime stays JSX.
+`flex-1` is grow, shrink and a 0% basis): it is `.grow()`, which writes
+`flex: 1` itself. A `backgroundColor`, or a Text's `color`, read from Bloom's
+`useTheme()` in the component (outside a `BloomColorScope` around the
+element) is `.background(role)` or `.foreground(role)`, as an icon's fill is.
+These join the classes' modifiers, so a class setting the same thing is a
+conflict. A style is inline, so a class's variant never overrides it where
+the language's would: a style of something a variant of the className sets
+(`md:p-4` beside `padding: 8`) stays JSX (`style-variant`). A style built at
+runtime stays JSX.
+
+Measured in Mention (344 elements kept for a `style`): about a third are no
+object the codemod can read (a style passed in as a prop, a conditional
+`isX ? { … } : undefined`, `StyleSheet.absoluteFill`, a style of another
+module); the rest hold a value no utility writes, mostly a theme colour, a
+size of an app constant (`FONT_SIZES.sm`, `HPAD`), a font size or radius
+off Tailwind's scale, `flex: 1`, or a value computed from the layout
+(`insets.top + 32`).
 
 A className chosen at runtime between two static strings by one plain
 condition (`active ? 'bg-primary px-3' : 'bg-muted px-3'`, or a template

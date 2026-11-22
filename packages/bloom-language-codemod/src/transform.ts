@@ -35,7 +35,7 @@ import {
   type Resolved,
   resolveClassName,
 } from './resolve';
-import { styleUtilities } from './style';
+import { type StyleRead, styleUtilities } from './style';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
@@ -681,38 +681,39 @@ export function transformSource(source: string, options: TransformOptions): File
   /** A static style (an object literal, a module StyleSheet's style, or a list of them) as utilities. */
   function staticStyle(
     expression: AnyNode,
-  ): { ok: true; classes: string[] } | { ok: false; subject: string; why: string } {
-    const parts = n.ArrayExpression.check(expression) ? expression.elements : [expression];
+    read: StyleRead,
+  ):
+    | { ok: true; classes: string[]; mods: { subject: string; mod: Mod }[] }
+    | { ok: false; subject: string; why: string } {
+    const parts: AnyNode[] = n.ArrayExpression.check(expression)
+      ? expression.elements
+      : [expression];
     const classes: string[] = [];
-    const literals: string[] = [];
-    let referenced = false;
+    const mods: { subject: string; mod: Mod }[] = [];
+    // A StyleSheet's style is its literal on the before side; an inline object stays as written.
+    const literals = new Map<AnyNode, string>();
     for (const part of parts) {
       let object = part;
-      if (
+      const referenced =
         n.MemberExpression.check(part) &&
         !part.computed &&
         n.Identifier.check(part.object) &&
-        n.Identifier.check(part.property)
-      ) {
+        n.Identifier.check(part.property);
+      if (referenced) {
+        const { object: sheet, property } = part as AnyNode;
         object = moduleStyleReads.has(part)
-          ? styleSheets.get(part.object.name)?.get(part.property.name)
+          ? styleSheets.get(sheet.name)?.get(property.name)
           : undefined;
-        referenced = true;
       }
-      const style = object ? styleUtilities(object) : undefined;
+      const style = object ? styleUtilities(object, read) : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
       if (!style.ok) return style;
       classes.push(...style.classes);
-      literals.push(style.literal);
+      mods.push(...style.mods);
+      if (referenced) literals.set(part, style.literal);
     }
-    if (referenced)
-      styleLiterals.set(
-        expression,
-        literals.length === 1 && parts.length === 1
-          ? (literals[0] as string)
-          : `[${literals.join(', ')}]`,
-      );
-    return { ok: true, classes };
+    for (const [part, literal] of literals) styleLiterals.set(part, literal);
+    return { ok: true, classes, mods };
   }
 
   /** Each element's nearest enclosing element in the file. */
@@ -941,6 +942,7 @@ export function transformSource(source: string, options: TransformOptions): File
     let size: AnyNode;
     /** The utilities a static `style` writes, read with the className. */
     const styleClasses: string[] = [];
+    const styleMods: { subject: string; mod: Mod }[] = [];
     /** An icon's `width`, `height` and `fill`. */
     const iconProps = new Map<string, AnyNode>();
     for (const attribute of node.openingElement.attributes) {
@@ -1017,9 +1019,20 @@ export function transformSource(source: string, options: TransformOptions): File
         continue;
       }
       if (name === 'style' && kind !== 'icon') {
-        const style = staticStyle(expression);
-        if (style.ok) styleClasses.push(...style.classes);
-        else fail(style.subject, 'style', style.why);
+        // A theme colour read from `useTheme()` here is its role, as an icon's fill is.
+        const read: StyleRead = (key, read) => {
+          const role = themeRoles.get(read);
+          if (!role || insideOf(node, [COLOR_SCOPE])) return undefined;
+          if (key === 'backgroundColor') return { name: 'background', args: [role] };
+          if (key === 'color' && (kind === 'bloomText' || kind === 'rnText'))
+            return { name: 'foreground', args: [role] };
+          return undefined;
+        };
+        const style = staticStyle(expression, read);
+        if (style.ok) {
+          styleClasses.push(...style.classes);
+          styleMods.push(...style.mods);
+        } else fail(style.subject, 'style', style.why);
         continue;
       }
       // What takes touches: `none` nothing (SwiftUI's `allowsHitTesting(false)`), `box-none` what is inside only, `box-only` the view only.
@@ -1101,16 +1114,17 @@ export function transformSource(source: string, options: TransformOptions): File
         'a className on a typography component drops its own style',
       );
     const host: HostKind = isText ? 'text' : (kind as HostKind);
-    let resolution = resolveClassName(className, host, options.table, {
+    const resolveOptions = {
       overridden: options.overridden,
-    });
+      styleMods,
+      styleClasses: new Set(styleClasses),
+    };
+    let resolution = resolveClassName(className, host, options.table, resolveOptions);
     if (!resolution.ok) reasons.push(...resolution.reasons);
     // The other branch resolves alike: the same modifiers, only their values differing, or a variant of each.
     let choice: Choice | null = null;
     if (other) {
-      const otherwise = resolveClassName(other.className, host, options.table, {
-        overridden: options.overridden,
-      });
+      const otherwise = resolveClassName(other.className, host, options.table, resolveOptions);
       if (!otherwise.ok) reasons.push(...otherwise.reasons);
       else if (resolution.ok) {
         const mods = sameShape(resolution.value, otherwise.value);
