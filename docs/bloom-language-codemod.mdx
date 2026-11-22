@@ -130,9 +130,22 @@ container itself. A prop a rule names in `differs` is kept with that reason.
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).
 
-Kept as JSX with their reason (`KEPT`): `Screen` (a route's `screen()` body in
-the language, its chrome the body's modifiers) and `Dialog` (presented from the
-view that owns it, `.dialog(isPresented, Dialog(...))`). Components removed in
+A route's `Screen` is its `screen()` body (`SCREEN`): a default-exported
+function component (named, not async, with no return type, its name read
+nowhere else) whose every return is a Bloom `Screen` becomes
+`export default screen(function Name(props) { … })`, each `Screen` the body's
+root: its one child, with the Screen's props as the root's screen modifiers
+(`scroll` is `.screenScroll()`, `kind` `.screenKind()`, `documentScroll`,
+`headerPlacement`, `contentClearance`, `navigationScope`, `colorPreset`,
+`testID`). No `header` is `.header(false)`; a header element is
+`.header(Embed(…))` (an element, or a `const` holding one), drawn as it is, since a `Header` node would be the system
+bar on iOS in a native stack where Bloom's PageHeader stays in the page. The
+route converts whole: one Screen that stays JSX keeps the others JSX
+(`screen:route`). Its parity draws the root with the language's `ScreenHost`,
+as `screen()` does.
+
+Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, and `Dialog`
+(presented from the view that owns it, `.dialog(isPresented, Dialog(...))`). Components removed in
 Bloom 22 (`SettingsRow`, `SettingsCard`, `GlyphButton`, `CloseButton`,
 `ButtonGroup`, `ButtonGroupItem`) are reported as `removed:` with their Bloom 22
 replacement (`REMOVED`, from `docs/migrating-to-22.mdx`): the app moves to it in
@@ -145,6 +158,17 @@ module `StyleSheet`'s style, or a list of them) is read as the Tailwind
 utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
 through the className table. React Native's `flex: 1` is no utility (Tailwind's
 `flex-1` is grow, shrink and a 0% basis). A style built at runtime stays JSX.
+
+A className chosen at runtime between two static strings by one plain
+condition (`active ? 'bg-primary px-3' : 'bg-muted px-3'`, or a template
+literal holding one such choice, `` `text-sm ${unread ? 'font-semibold' :
+'font-medium'}` ``) converts when both branches resolve and write the same
+modifiers in the same order, only values differing: each differing value is
+chosen in place, `.background(active ? 'primary' : 'mutedFill')`. The
+condition is a read without a call (names, properties, literals, comparisons,
+`!`, `&&`, `||`), since the chain reads it once per value. Branches that write
+different modifiers, more than one choice, and `cn()` (its merge is the app's
+own) stay JSX as `dynamic-className`.
 
 ## Running it on an app
 
@@ -196,6 +220,8 @@ and dark:
 - **Holes:** every value carried over (a handler, a text run, an embedded
   element, a condition) is the same stand-in on both sides, so a region is
   rendered without the app around it.
+  A region with a condition is rendered twice more, every condition `false`
+  (`name (false)`), so both branches of what it chooses are proven.
 
 Native compares committed host trees; the web compares each element's tag,
 attributes and the CSS that reaches it. The spellings both sides may use for

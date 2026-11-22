@@ -211,6 +211,64 @@ const styles = StyleSheet.create({ content: { padding: 16 } });
       'ScrollView:contentContainerStyle',
     ]);
   });
+  it('chooses a value by a className’s condition, and proves both branches', () => {
+    const result = run(`import { View } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = () => (
+  <View className={active ? 'rounded-full bg-primary px-3' : 'rounded-full bg-muted px-3'}>
+    <Text className={\`text-sm \${unread ? 'font-semibold' : 'font-medium'}\`}>a</Text>
+  </View>
+);
+export const B = () => <View className={open ? 'p-2 opacity-50' : 'p-2'} />;
+export const C = () => <View className={isOpen() ? 'p-2' : 'p-4'} />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(VStack(LText('a').font('14').leading('20px').weight(unread ? 'semibold' : 'medium')).padding('horizontal', 'md').background(active ? 'primary' : 'mutedFill').corner('infinite'))",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'dynamic-className',
+      'dynamic-className',
+    ]);
+    expect(result.fixtures.map((f) => f.name)).toEqual(['test.tsx:4 (false)', 'test.tsx:4']);
+    expect(result.fixtures[0]?.before).toContain("className={false ? 'rounded-full");
+    expect(result.fixtures[0]?.classes).toEqual(
+      expect.arrayContaining(['bg-primary', 'bg-muted', 'font-semibold', 'font-medium']),
+    );
+  });
+  it('makes a route whose every return is a Screen a screen() body', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { View } from 'react-native';
+export default function Route({ id }) {
+  if (!id) return <Screen><View className="p-4" /></Screen>;
+  const header = <PageHeader title="A" />;
+  return <Screen header={header} scroll="content"><View /></Screen>;
+}
+`);
+    expect(flat(result.code)).toContain(
+      "export default screen(function Route({ id }) { if (!id) return VStack().padding('all', 'lg').header(false); const header = toElement(Header('A').inPage()); return VStack().header(Embed(header)).screenScroll('content'); });",
+    );
+    expect(result.code).toContain("import { screen } from '@oxy.so/bloom-language/router';");
+    expect(result.fixtures.filter((f) => f.screen)).toHaveLength(2);
+  });
+  it('keeps a route JSX when one of its Screens cannot convert, or its name is read', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { View } from 'react-native';
+export default function Route({ id }) {
+  if (!id) return <Screen footer={x}><View /></Screen>;
+  return <Screen><View /></Screen>;
+}
+`);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'screen:footer',
+      'screen:route',
+    ]);
+    const named = run(`import { Screen } from '@oxy.so/bloom/screen';
+export default function Route() { return <Screen />; }
+Route.options = {};
+`);
+    expect(named.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['kept:Screen']);
+  });
   it('carries a JSX comment into the chain where it is', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View className="gap-2">{/* head */}<View className="p-2" />{/* end */}</View>;

@@ -7,9 +7,12 @@
  */
 import { join, relative } from 'node:path';
 
+import { LANGUAGE_PACKAGE } from './table';
 import type { Fixture, Source } from './transform';
 
 const APP_TEXT = join(__dirname, '../parity/support/app-text');
+/** What `screen()` draws a body's root with. */
+const SCREEN_HOST = join(LANGUAGE_PACKAGE, 'src/router/screen-host');
 
 const NATIVEWIND: Record<string, string> = {
   View: 'react-native-css/components/View',
@@ -19,14 +22,17 @@ const NATIVEWIND: Record<string, string> = {
   Image: 'react-native-css/components/Image',
 };
 
+/** A module path relative to the corpus written to `dir`. */
+function relativeTo(dir: string, module: string): string {
+  const path = relative(dir, module);
+  return path.startsWith('.') ? path : `./${path}`;
+}
+
 /** The module and export a binding is drawn from in a corpus written to `dir`. */
 function origin(source: Source, dir: string): { module: string; name: string } {
   if (source.module === 'react-native') {
     const module = NATIVEWIND[source.imported];
-    if (module === APP_TEXT) {
-      const path = relative(dir, module);
-      return { module: path.startsWith('.') ? path : `./${path}`, name: source.imported };
-    }
+    if (module === APP_TEXT) return { module: relativeTo(dir, module), name: source.imported };
     if (module) return { module, name: source.imported };
   }
   if (source.module === '@oxy.so/bloom/icons')
@@ -65,10 +71,12 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     const before = fixture.themed
       ? `function Before() { const parityTheme = useParityTheme(); ${bindings} return (${fixture.before}); } return (${open}<Before />${close});`
       : `${bindings} return (${open}${fixture.before}${close});`;
+    // A route's Screen is drawn as `screen()` draws its body's root.
+    const after = fixture.screen ? `<ScreenHost root={${fixture.after}} />` : fixture.after;
     return `  {
     name: ${JSON.stringify(fixture.name)},
     before: () => { ${before} },
-    after: () => { ${bindings} ${language} return (${open}${fixture.after}${close}); },
+    after: () => { ${bindings} ${language} return (${open}${after}${close}); },
   },`;
   });
   const lines = [
@@ -77,6 +85,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
     "import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';",
+    `import { ScreenHost } from '${relativeTo(dir, SCREEN_HOST)}';`,
     ...[...imports].map(([key, local]) => {
       const [module, name] = key.split('#');
       return `import { ${name} as ${local} } from '${module}';`;

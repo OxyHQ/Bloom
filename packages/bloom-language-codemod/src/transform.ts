@@ -24,6 +24,7 @@ import {
   type PropRule,
   REMOVED,
   ruleFor,
+  SCREEN,
   SPACE,
   TEXT_STYLES,
 } from './components';
@@ -104,6 +105,7 @@ type Ir =
   | {
       type: 'stack';
       resolved: Resolved;
+      choice: Choice | null;
       props: PropMod[];
       key: Carried | null;
       children: Ir[];
@@ -113,6 +115,7 @@ type Ir =
       /** React Native's own Text: `RawText`. */
       raw: boolean;
       resolved: Resolved;
+      choice: Choice | null;
       props: PropMod[];
       key: Carried | null;
       runs: TextRun[];
@@ -137,9 +140,21 @@ type Ir =
       key: Carried | null;
     }
   | { type: 'embed'; content: Carried }
+  /** A route's Screen: its body's root, with the screen modifiers that are its chrome. */
+  | { type: 'screen'; content: Ir; props: PropMod[] }
   /** A JSX comment among children, carried into the chain as the same block comment. */
   | { type: 'comment'; text: string }
   | { type: 'cond'; test: Carried; then: Ir | null; otherwise: Ir | null };
+
+/**
+ * A className that is one of two by a condition: `mods` is what the other
+ * branch writes, modifier for modifier the chain's, each value that differs
+ * written `test ? value : other`.
+ */
+interface Choice {
+  readonly test: Carried;
+  readonly mods: readonly Mod[];
+}
 
 type TextRun = { type: 'string'; value: string } | { type: 'expr'; value: Carried } | Ir;
 
@@ -207,6 +222,8 @@ export interface Fixture {
   readonly within: readonly string[];
   /** The before side reads Bloom's theme (`parityTheme`, its `useTheme()`): a fill the chain names by role. */
   readonly themed: boolean;
+  /** The after side is a route's body root, drawn by the language's `ScreenHost` as `screen()` draws it. */
+  readonly screen: boolean;
 }
 
 export interface FileResult {
@@ -233,6 +250,7 @@ export interface TransformOptions {
 }
 
 const LANGUAGE_MODULE = '@oxy.so/bloom-language';
+const SCREEN_KEY = '@oxy.so/bloom/screen#Screen';
 
 /** The import that names an element, by kind. */
 function kindOf(source: Source | undefined): Kind | undefined {
@@ -280,6 +298,22 @@ export function cleanJsxText(value: string): string {
     }
   });
   return out;
+}
+
+/**
+ * A condition read without a call: names, properties, literals and their
+ * comparisons, negations and logic, so reading it again reads the same.
+ */
+function isPlainRead(node: AnyNode): boolean {
+  if (n.Identifier.check(node) || n.Literal.check(node) || n.StringLiteral.check(node)) return true;
+  if (n.NumericLiteral.check(node) || n.BooleanLiteral.check(node) || n.NullLiteral.check(node))
+    return true;
+  if (n.MemberExpression.check(node) || n.OptionalMemberExpression.check(node))
+    return isPlainRead(node.object) && (!node.computed || isPlainRead(node.property));
+  if (n.UnaryExpression.check(node)) return node.operator === '!' && isPlainRead(node.argument);
+  if (n.BinaryExpression.check(node) || n.LogicalExpression.check(node))
+    return isPlainRead(node.left) && isPlainRead(node.right);
+  return false;
 }
 
 /** A condition that is a boolean by its form, so `c && x` never renders a value of `c`. */
@@ -502,6 +536,29 @@ export function transformSource(source: string, options: TransformOptions): File
       },
     });
 
+  /** A className chosen at runtime, by its expression: both branches' classes, which the parity's stylesheet holds. */
+  const choiceClasses = new Map<AnyNode, string>();
+
+  /** Each `{name}` in JSX where `name` is a `const` holding an element (`const header = <PageHeader … />`). */
+  const elementReads = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitJSXExpressionContainer(path) {
+      const { expression } = path.node;
+      const bindings = n.Identifier.check(expression)
+        ? scopeOf(path, expression.name)?.getBindings()[expression.name]
+        : undefined;
+      let at = bindings?.length === 1 ? bindings[0] : undefined;
+      while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+      if (
+        at?.parent?.node.kind === 'const' &&
+        n.Identifier.check(at.node.id) &&
+        (n.JSXElement.check(at.node.init) || n.JSXFragment.check(at.node.init))
+      )
+        elementReads.add(expression);
+      this.traverse(path);
+    },
+  });
+
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
 
@@ -563,6 +620,43 @@ export function transformSource(source: string, options: TransformOptions): File
     return undefined;
   }
 
+  /**
+   * Each route's Screen: a default-exported function component (named, not
+   * async, no return type, its name read nowhere else) whose every return is a
+   * Bloom Screen becomes `screen(function …)`, each Screen its body's root.
+   */
+  const screenRoutes = new Map<AnyNode, AnyNode>();
+  for (const statement of ast.program.body as AnyNode[]) {
+    const fn: AnyNode = n.ExportDefaultDeclaration.check(statement)
+      ? statement.declaration
+      : undefined;
+    if (!n.FunctionDeclaration.check(fn) || !fn.id || fn.async || fn.generator || fn.returnType)
+      continue;
+    const returned: AnyNode[] = [];
+    recast.visit(fn.body, {
+      visitFunction: () => false,
+      visitReturnStatement(path) {
+        returned.push(path.node.argument);
+        return false;
+      },
+    });
+    const isScreen = (node: AnyNode) => {
+      const local = n.JSXElement.check(node) ? jsxName(node) : undefined;
+      const source = local ? sources.get(local) : undefined;
+      return source?.module === '@oxy.so/bloom/screen' && source.imported === 'Screen';
+    };
+    const name = fn.id.name as string;
+    let named = 0;
+    recast.visit(ast, {
+      visitIdentifier(path) {
+        if (path.node.name === name) named++;
+        this.traverse(path);
+      },
+    });
+    if (returned.length && returned.every(isScreen) && named === 1)
+      for (const node of returned) screenRoutes.set(node, fn);
+  }
+
   const results = new Map<AnyNode, { ir: Ir } | { reasons: Reason[] }>();
   const classes = new Set<string>();
   let candidates = 0;
@@ -621,6 +715,7 @@ export function transformSource(source: string, options: TransformOptions): File
         ],
       };
     if (kind === 'button') return convertButton(node);
+    if (kind === 'kept' && screenRoutes.has(node)) return convertScreen(node);
     if (kind === 'kept') {
       const source = sources.get(local) as Source;
       const removed = REMOVED[`${source.module}#${source.imported}`];
@@ -651,6 +746,8 @@ export function transformSource(source: string, options: TransformOptions): File
     const props: PropMod[] = [];
     let key: Carried | null = null;
     let className = '';
+    /** A className chosen at runtime: its condition and the other branch's classes. */
+    let other: { test: Carried; className: string } | undefined;
     let numberOfLines: Arg | Carried | undefined;
     let variant: string | undefined;
     let size: AnyNode;
@@ -677,9 +774,18 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       if (name === 'className') {
         const text = staticString(value);
-        if (text === undefined)
-          fail('className', 'dynamic-className', 'a className built at runtime');
-        else className = text;
+        const choice = text === undefined ? classNameChoice(expression) : undefined;
+        if (text !== undefined) className = text;
+        else if (choice) {
+          className = choice.whenTrue;
+          other = { test: { node: choice.test, hole: 'condition' }, className: choice.whenFalse };
+          choiceClasses.set(expression, `${choice.whenTrue} ${choice.whenFalse}`);
+        } else
+          fail(
+            'className',
+            'dynamic-className',
+            'a className built at runtime other than one of two static strings by a plain condition',
+          );
         continue;
       }
       if (name === 'testID') {
@@ -745,11 +851,15 @@ export function transformSource(source: string, options: TransformOptions): File
       fail(name, `prop:${name}`, `the prop \`${name}\` has no mapping`);
     }
 
-    for (const token of className.split(/\s+/).filter(Boolean)) classes.add(token);
-    if (styleClasses.length) className = [className, ...styleClasses].filter(Boolean).join(' ');
+    for (const token of `${className} ${other?.className ?? ''}`.split(/\s+/).filter(Boolean))
+      classes.add(token);
+    if (styleClasses.length) {
+      className = [className, ...styleClasses].filter(Boolean).join(' ');
+      if (other) other.className = [other.className, ...styleClasses].filter(Boolean).join(' ');
+    }
 
     if (kind === 'icon') {
-      if (className) fail('className', 'icon-className', 'a className on an icon');
+      if (className || other) fail('className', 'icon-className', 'a className on an icon');
       const mods: Mod[] = [];
       // A width and a height of one number are the glyph's side, as `size` is.
       const width = iconProps.get('width');
@@ -788,7 +898,7 @@ export function transformSource(source: string, options: TransformOptions): File
     const isText = kind === 'bloomText' || kind === 'rnText';
     // Bloom's typography components (`Muted`, `H2`) are its Text in a text style.
     const textStyle = textStyleOf(local);
-    if (textStyle && className)
+    if (textStyle && (className || other))
       fail(
         'className',
         'text-style-className',
@@ -799,6 +909,24 @@ export function transformSource(source: string, options: TransformOptions): File
       overridden: options.overridden,
     });
     if (!resolution.ok) reasons.push(...resolution.reasons);
+    // The other branch resolves alike and writes the same modifiers, only their values differing.
+    let choice: Choice | null = null;
+    if (other) {
+      const otherwise = resolveClassName(other.className, host, options.table, {
+        overridden: options.overridden,
+      });
+      if (!otherwise.ok) reasons.push(...otherwise.reasons);
+      else if (resolution.ok) {
+        const mods = sameShape(resolution.value, otherwise.value);
+        if (mods) choice = { test: other.test, mods };
+        else
+          fail(
+            'className',
+            'dynamic-className',
+            'a className whose two branches write different modifiers, not different values of the same',
+          );
+      }
+    }
 
     if (isText) {
       const runs: TextRun[] = [];
@@ -831,7 +959,11 @@ export function transformSource(source: string, options: TransformOptions): File
       const resolved = resolution.value;
       const fontMods: Mod[] = textStyle ? [{ name: 'textStyle', args: [textStyle] }] : [];
       if (variant) {
-        if (resolved.mods.some((m) => m.name === 'font' || m.name === 'weight'))
+        if (
+          [...resolved.mods, ...(choice?.mods ?? [])].some(
+            (m) => m.name === 'font' || m.name === 'weight',
+          )
+        )
           return {
             reasons: [
               { subject: 'variant', code: 'conflict', why: 'a variant and a className font' },
@@ -850,6 +982,7 @@ export function transformSource(source: string, options: TransformOptions): File
           type: 'text',
           raw: kind === 'rnText',
           resolved: { ...resolved, mods: [...resolved.mods, ...fontMods] },
+          choice: choice && { ...choice, mods: [...choice.mods, ...fontMods] },
           props,
           key,
           runs,
@@ -889,7 +1022,84 @@ export function transformSource(source: string, options: TransformOptions): File
       } else fail('child', 'child', 'a child the codemod does not map');
     }
     if (!resolution.ok || reasons.length) return { reasons };
-    return { ir: { type: 'stack', resolved: resolution.value, props, key, children } };
+    return { ir: { type: 'stack', resolved: resolution.value, choice, props, key, children } };
+  }
+
+  /**
+   * A route's Screen by `SCREEN`: its one child is the body's root, its props
+   * the root's screen modifiers; with no header it is `.header(false)`.
+   */
+  function convertScreen(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
+    const inner = convertComponent(node, SCREEN);
+    if (!('ir' in inner) || inner.ir.type !== 'component') return inner;
+    const views = inner.ir.args.flatMap((arg) =>
+      isTagged(arg) && arg.$ === 'view' && arg.view.type !== 'comment' ? [arg.view] : [],
+    );
+    const root = views[0];
+    if (views.length !== 1 || inner.ir.args.length !== 1 || !root || root.type === 'cond')
+      return {
+        reasons: [
+          {
+            subject: 'children',
+            code: 'screen:children',
+            why: 'a screen whose content is not one view: the body’s root is one',
+          },
+        ],
+      };
+    const props = inner.ir.props;
+    if (!props.some((prop) => prop.name === 'header'))
+      props.unshift({ name: 'header', args: [false] });
+    return { ir: { type: 'screen', content: root, props } };
+  }
+
+  /**
+   * A className that is one of two static strings by one condition:
+   * `test ? 'a' : 'b'` (a branch of `''`, `undefined` or `null` writes no
+   * class), or a template literal holding one such choice of strings. The
+   * condition is a plain read (no call), since the chain reads it once per
+   * value it chooses.
+   */
+  function classNameChoice(
+    expression: AnyNode,
+  ): { test: AnyNode; whenTrue: string; whenFalse: string } | undefined {
+    const template = n.TemplateLiteral.check(expression) && expression.expressions.length === 1;
+    const choice = template ? expression.expressions[0] : expression;
+    if (!n.ConditionalExpression.check(choice) || !isPlainRead(choice.test)) return undefined;
+    // Outside a template an absent branch is no className; inside one it would be the word.
+    const branch = (node: AnyNode) =>
+      !template &&
+      (n.NullLiteral.check(node) || (n.Identifier.check(node) && node.name === 'undefined'))
+        ? ''
+        : staticString(node);
+    const [whenTrue, whenFalse] = [branch(choice.consequent), branch(choice.alternate)];
+    if (whenTrue === undefined || whenFalse === undefined) return undefined;
+    if (!template) return { test: choice.test, whenTrue, whenFalse };
+    const [head, tail] = expression.quasis.map((q: AnyNode) => q.value.cooked as string);
+    return {
+      test: choice.test,
+      whenTrue: head + whenTrue + tail,
+      whenFalse: head + whenFalse + tail,
+    };
+  }
+
+  /**
+   * The other branch's modifiers when they are the chain's, one for one, with
+   * arguments of the same kinds (the same axis and variants too); else undefined.
+   */
+  function sameShape(chain: Resolved, other: Resolved): readonly Mod[] | undefined {
+    const same =
+      chain.axis === other.axis &&
+      JSON.stringify(chain.variants) === JSON.stringify(other.variants) &&
+      chain.mods.length === other.mods.length &&
+      chain.mods.every((mod, i) => {
+        const at = other.mods[i] as Mod;
+        return (
+          mod.name === at.name &&
+          mod.args.length === at.args.length &&
+          mod.args.every((arg, j) => typeof arg === typeof at.args[j] && typeof arg !== 'object')
+        );
+      });
+    return same ? other.mods : undefined;
   }
 
   /**
@@ -1070,6 +1280,7 @@ export function transformSource(source: string, options: TransformOptions): File
               type: 'text',
               raw: false,
               resolved: { axis: 'column', mods: [], variants: [] },
+              choice: null,
               props: [],
               key: null,
               runs: [
@@ -1234,6 +1445,12 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'icon':
         return n.Identifier.check(expression) && kindOf(sources.get(expression.name)) === 'icon'
           ? [{ $: 'icon', name: expression.name }]
+          : undefined;
+      case 'embed':
+        return n.JSXElement.check(expression) ||
+          n.JSXFragment.check(expression) ||
+          elementReads.has(expression)
+          ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
           : undefined;
       case 'literal': {
         const token = n.BooleanLiteral.check(expression)
@@ -1534,6 +1751,8 @@ export function transformSource(source: string, options: TransformOptions): File
         return `${lang('Embed')}(${carry(ir.content)})`;
       case 'comment':
         return ir.text;
+      case 'screen':
+        return `${print(ir.content, carry)}${ir.props.map((p) => printProp(p, carry)).join('')}`;
       case 'cond':
         return `${carry(ir.test)} ? ${ir.then ? print(ir.then, carry) : 'null'} : ${ir.otherwise ? print(ir.otherwise, carry) : 'null'}`;
       case 'icon':
@@ -1574,23 +1793,37 @@ export function transformSource(source: string, options: TransformOptions): File
               ? carry(run.value)
               : print(run as Ir, carry),
         );
-        return `${lang(ir.raw ? 'RawText' : 'Text')}(${runs.join(', ')})${chainTail(ir.resolved, ir.props, root ? null : ir.key, carry)}`;
+        return `${lang(ir.raw ? 'RawText' : 'Text')}(${runs.join(', ')})${chainTail(ir.resolved, ir.choice, ir.props, root ? null : ir.key, carry)}`;
       }
       case 'stack': {
         const ctor = lang(ir.resolved.axis === 'row' ? 'HStack' : 'VStack');
         const children = printViews(ir.children, carry);
-        return `${ctor}(${children.join(', ')})${chainTail(ir.resolved, ir.props, root ? null : ir.key, carry)}`;
+        return `${ctor}(${children.join(', ')})${chainTail(ir.resolved, ir.choice, ir.props, root ? null : ir.key, carry)}`;
       }
     }
   }
 
   function chainTail(
     resolved: Resolved,
+    choice: Choice | null,
     props: PropMod[],
     key: Carried | null,
     carry: (c: Carried) => string,
   ): string {
-    let out = resolved.mods.map(printMod).join('');
+    // A value the other branch writes differently is chosen by its condition.
+    let out = resolved.mods
+      .map((mod, i) => {
+        const other = choice?.mods[i];
+        if (!choice || !other) return printMod(mod);
+        const args = mod.args.map((arg, j) => {
+          const alternative = other.args[j] as Arg;
+          return arg === alternative
+            ? printArg(arg)
+            : `${carry(choice.test)} ? ${printArg(arg)} : ${printArg(alternative)}`;
+        });
+        return `.${mod.name}(${args.join(', ')})`;
+      })
+      .join('');
     for (const variant of resolved.variants) {
       let inner = `v${variant.mods.map(printMod).join('')}`;
       for (const condition of [...variant.conditions].reverse().slice(0, -1))
@@ -1661,6 +1894,8 @@ export function transformSource(source: string, options: TransformOptions): File
         ];
       case 'stack':
         return [...ir.children, ...props];
+      case 'screen':
+        return [ir.content, ...props];
       default:
         return props;
     }
@@ -1671,6 +1906,10 @@ export function transformSource(source: string, options: TransformOptions): File
     switch (ir.type) {
       case 'embed':
         out.push(ir.content);
+        break;
+      case 'screen':
+        carriedOf(ir.content, out);
+        for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         break;
       case 'cond':
         out.push(ir.test);
@@ -1694,11 +1933,13 @@ export function transformSource(source: string, options: TransformOptions): File
         for (const run of ir.runs)
           if ('type' in run && run.type === 'expr') out.push(run.value);
           else if (!('type' in run && run.type === 'string')) carriedOf(run as Ir, out);
+        if (ir.choice) out.push(ir.choice.test);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
       case 'stack':
         for (const child of ir.children) carriedOf(child, out);
+        if (ir.choice) out.push(ir.choice.test);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
@@ -1715,24 +1956,32 @@ export function transformSource(source: string, options: TransformOptions): File
     key: (i: number) => `'k${i}'`,
     number: () => '2',
     boolean: () => 'true',
-    condition: () => 'true',
     handler: () => '() => {}',
     action: () => '(() => {})',
     element: (i: number) => `<Hole n="${i}" />`,
   } as const;
 
-  function fixture(node: AnyNode, ir: Ir, rootKey: Carried | null): void {
+  /**
+   * The region's fixture; a region with a condition has a second with every
+   * condition false, so each branch it chooses between is drawn.
+   */
+  function fixture(node: AnyNode, ir: Ir, rootKey: Carried | null, conditions = true): void {
     const carried = carriedOf(ir).filter((c) => c !== rootKey);
+    if (conditions && carried.some((c) => c.hole === 'condition'))
+      fixture(node, ir, rootKey, false);
     const index = new Map(carried.map((c, i) => [c, i]));
+    const hole = (c: Carried) =>
+      c.hole === 'condition' ? String(conditions) : HOLE[c.hole](index.get(c) ?? 0);
     const removed = rootKey?.attribute;
-    const after = `toElement(${print(ir, (c) => HOLE[c.hole](index.get(c) ?? 0), true)})`;
+    const after =
+      ir.type === 'screen' ? print(ir, hole, true) : `toElement(${print(ir, hole, true)})`;
     // The source of the region, each carried value replaced by its hole.
     let before = '';
     let at = node.start as number;
     const spans: { start: number; end: number; text: string }[] = carried.map((c) => ({
       start: c.node.start,
       end: c.node.end,
-      text: HOLE[c.hole](index.get(c) ?? 0),
+      text: hole(c),
     }));
     if (removed) spans.push({ start: removed.start, end: removed.end, text: '' });
     // A StyleSheet's style is its object literal on the before side.
@@ -1769,8 +2018,11 @@ export function transformSource(source: string, options: TransformOptions): File
     const regionClasses = new Set<string>();
     for (const m of before.matchAll(/className=["'`{]+([^"'`}]*)/g))
       for (const token of (m[1] as string).split(/\s+/).filter(Boolean)) regionClasses.add(token);
+    for (const [read, both] of choiceClasses)
+      if (read.start >= node.start && read.end <= node.end)
+        for (const token of both.split(/\s+/).filter(Boolean)) regionClasses.add(token);
     fixtures.push({
-      name: `${options.name ?? 'file'}:${node.loc?.start.line ?? 0}`,
+      name: `${options.name ?? 'file'}:${node.loc?.start.line ?? 0}${conditions ? '' : ' (false)'}`,
       before,
       after,
       bindings,
@@ -1778,8 +2030,10 @@ export function transformSource(source: string, options: TransformOptions): File
         name === local ? name : `${name}: ${local}`,
       ),
       classes: [...regionClasses],
-      within: withinOf(ir),
+      // A route's Screen is the Screen its nodes are drawn in.
+      within: withinOf(ir).filter((key) => ir.type !== 'screen' || key !== SCREEN_KEY),
       themed,
+      screen: ir.type === 'screen',
     });
   }
 
@@ -1841,7 +2095,12 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       const carry = (c: Carried) => recast.print(c.node.__carried ?? c.node).code;
       const chain = print(ir, carry, true);
-      const code = `${lang('toElement')}(${chain}${rootKey ? `, ${carry(rootKey)}` : ''})`;
+      // A route's Screen is its body's root, the chain itself.
+      if (ir.type === 'screen') routes.add(screenRoutes.get(node));
+      const code =
+        ir.type === 'screen'
+          ? chain
+          : `${lang('toElement')}(${chain}${rootKey ? `, ${carry(rootKey)}` : ''})`;
       // Parsed by recast, so the comments the chain carries are printed where they are.
       const expression = recast.parse(`${code};`, { parser: babelTs }).program.body[0].expression;
       const parent = path.parent?.node;
@@ -1869,7 +2128,33 @@ export function transformSource(source: string, options: TransformOptions): File
       this.traverse(path);
     },
   });
+  // A route converts whole: a Screen it returns that stays JSX keeps the others JSX.
+  for (const fn of new Set(screenRoutes.values())) {
+    const screens = [...screenRoutes].filter(([, of]) => of === fn).map(([node]) => node);
+    if (screens.every((node) => 'ir' in convert(node))) continue;
+    for (const node of screens)
+      if ('ir' in convert(node))
+        results.set(node, {
+          reasons: [
+            {
+              subject: 'Screen',
+              code: 'screen:route',
+              why: 'another return of the route stays JSX, and a route converts whole',
+            },
+          ],
+        });
+  }
+  /** The routes whose Screens converted: each becomes `screen(function …)`. */
+  const routes = new Set<AnyNode>();
   recast.visit(ast, visitor);
+  for (const statement of ast.program.body as AnyNode[])
+    if (n.ExportDefaultDeclaration.check(statement) && routes.has(statement.declaration)) {
+      const fn: AnyNode = statement.declaration;
+      const b = recast.types.builders;
+      const body = b.functionExpression(fn.id, fn.params, fn.body);
+      body.typeParameters = fn.typeParameters;
+      statement.declaration = b.callExpression(b.identifier(lang('screen')), [body]);
+    }
 
   const converted = [...counted].filter((node) => convertedNodes.has(node)).length;
 
@@ -1898,20 +2183,32 @@ export function transformSource(source: string, options: TransformOptions): File
       });
       if (before > 0 && statement.specifiers.length === 0) body.splice(body.indexOf(statement), 1);
     }
-    const specifiers = [...usedLanguage.entries()]
-      .sort(([a], [b]) => (a < b ? -1 : 1))
-      .map(([name, local]) => (name === local ? name : `${name} as ${local}`));
-    const declaration = recast.parse(
-      `import { ${specifiers.join(', ')} } from '${LANGUAGE_MODULE}';\n`,
-      {
+    // `screen` is the router's; every other name the language's own.
+    const imports = (module: string, names: [string, string][]) => {
+      if (!names.length) return [];
+      const specifiers = names
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([name, local]) => (name === local ? name : `${name} as ${local}`));
+      return recast.parse(`import { ${specifiers.join(', ')} } from '${module}';\n`, {
         parser: babelTs,
-      },
-    ).program.body[0];
+      }).program.body;
+    };
+    const names = [...usedLanguage.entries()];
+    const declarations = [
+      ...imports(
+        LANGUAGE_MODULE,
+        names.filter(([name]) => name !== 'screen'),
+      ),
+      ...imports(
+        `${LANGUAGE_MODULE}/router`,
+        names.filter(([name]) => name === 'screen'),
+      ),
+    ];
     const lastImport = body.reduce(
       (last: number, s: AnyNode, i: number) => (n.ImportDeclaration.check(s) ? i : last),
       -1,
     );
-    body.splice(lastImport + 1, 0, declaration);
+    body.splice(lastImport + 1, 0, ...declarations);
   }
 
   return {

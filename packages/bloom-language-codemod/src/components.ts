@@ -25,7 +25,8 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `refresh`: React Native's `RefreshControl` element, as a pull to refresh's
  *   binding and tint (`.refreshable([refreshing, () => onRefresh()], tint)`);
  * - `contentStyle`: a static content container style of paddings and a gap, as
- *   `.contentMargins(edge, token)` and `.spacing(token)`.
+ *   `.contentMargins(edge, token)` and `.spacing(token)`;
+ * - `embed`: an element, or a `const` holding one, drawn as it is (`Embed`), never converted.
  */
 export type Form =
   | 'string'
@@ -39,7 +40,8 @@ export type Form =
   | 'icon'
   | 'literal'
   | 'refresh'
-  | 'contentStyle';
+  | 'contentStyle'
+  | 'embed';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -647,7 +649,29 @@ export const KEPT: Readonly<Record<string, string>> = {
   '@oxy.so/bloom/dialog#Dialog':
     'the language presents a dialog from the view that owns it (`.dialog(isPresented, Dialog(...))`), not as an element in place',
   '@oxy.so/bloom/screen#Screen':
-    'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root; no node a region holds draws one',
+    'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root: only a default-exported function component whose every return is a Screen converts (`SCREEN`)',
+};
+
+/**
+ * A Bloom `Screen` returned by a route (parity/screen.cases.tsx, `ScreenHost`):
+ * its one child is the body's root, its props the root's screen modifiers. Its
+ * header is drawn as it is: a `Header` node would be the system bar on iOS in
+ * a native stack, where Bloom's PageHeader stays in the page.
+ */
+export const SCREEN: ComponentRule = {
+  node: 'screen',
+  children: true,
+  props: {
+    header: p('header', 'embed'),
+    scroll: p('screenScroll', 'token', tokens('screenScroll')),
+    kind: p('screenKind', 'token', tokens('screenKind')),
+    documentScroll: p('documentScroll', 'flag'),
+    headerPlacement: p('headerPlacement', 'token', tokens('chromePlacement')),
+    contentClearance: p('contentClearance', 'token', SPACE),
+    navigationScope: p('navigationScope', 'token', tokens('navigationScope')),
+    colorPreset: p('colorPreset', 'token', tokens('colorPreset')),
+    testID: p('testID', 'string'),
+  },
 };
 
 const exported = readFileSync(join(LANGUAGE_PACKAGE, 'src/index.ts'), 'utf8');
