@@ -932,3 +932,33 @@ export type {
   RecentlyPlayedListOptions,
   RecentlyPlayedListView,
 } from './controls/queue-panel';
+
+// Track list (controls/track-list.tsx)
+export {
+  EpisodeList,
+  EpisodeRow,
+  SelectionBar,
+  TrackList,
+  TrackListEmpty,
+  TrackListHeader,
+  TrackRow,
+  TrackRowSkeleton,
+} from './controls/track-list';
+export type {
+  EpisodeListOptions,
+  EpisodeListView,
+  EpisodeRowOptions,
+  EpisodeRowView,
+  SelectionBarOptions,
+  SelectionBarView,
+  TrackListEmptyOptions,
+  TrackListEmptyView,
+  TrackListHeaderOptions,
+  TrackListHeaderView,
+  TrackListOptions,
+  TrackListView,
+  TrackRowOptions,
+  TrackRowSkeletonOptions,
+  TrackRowSkeletonView,
+  TrackRowView,
+} from './controls/track-list';

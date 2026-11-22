@@ -323,6 +323,16 @@ import type {
   QueuePanelRowView,
   RecentlyPlayedListView,
 } from '../controls/queue-panel';
+import type {
+  TrackListView,
+  TrackListHeaderView,
+  TrackRowView,
+  TrackRowSkeletonView,
+  TrackListEmptyView,
+  SelectionBarView,
+  EpisodeRowView,
+  EpisodeListView,
+} from '../controls/track-list';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -727,7 +737,23 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<QueuePanelView>, Of<'queuePanel'>>,
       Same<MethodsOf<QueuePanelRowView>, Of<'queuePanelRow'>>,
       Same<MethodsOf<RecentlyPlayedListView>, Of<'recentlyPlayedList'>>,
+      Same<MethodsOf<TrackListView>, Of<'trackList'>>,
+      Same<MethodsOf<TrackListHeaderView>, Of<'trackListHeader'>>,
+      Same<MethodsOf<TrackRowView>, Of<'trackRow'>>,
+      Same<MethodsOf<TrackRowSkeletonView>, Of<'trackRowSkeleton'>>,
+      Same<MethodsOf<TrackListEmptyView>, Of<'trackListEmpty'>>,
+      Same<MethodsOf<SelectionBarView>, Of<'selectionBar'>>,
+      Same<MethodsOf<EpisodeRowView>, Of<'episodeRow'>>,
+      Same<MethodsOf<EpisodeListView>, Of<'episodeList'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

@@ -1638,6 +1638,32 @@ its panel's `width` a space token), `QueuePanelRow(track, options?)` (its
 `trailing` a child; `.onPress()` its own, `.label()` its name) and
 `RecentlyPlayedList(items, options?)`.
 
+### Track list
+
+```ts
+TrackList(album.tracks, { currentTrackId, isPlaying, onPlay: play, menuItems }).density('compact').label(album.title)
+TrackRow(track, index, { current, playing, onPlay: play }).onPress(select)
+SelectionBar(selected.length, actions, { onClear: clear }).style('inline')
+EpisodeList(show.episodes, { currentEpisodeId, onPlay: play, onPress: open })
+```
+
+Bloom's `track-list`: `TrackList(tracks, options?)` (its columns, groups,
+the loaded track, its selection controlled when given, reordering and its
+handlers; `.density('default' | 'compact')`, `default` its comfortable rows;
+`.tint()` its header's background, a role; `.label()` names the grid),
+`TrackListHeader(columns, options?)` (`.density()`, `.tint()` its
+background), `TrackRow(track, index, options?)` (`.density()`; `.onPress()`
+its own, Bloom handing it the track, its index and the press),
+`TrackRowSkeleton(options?)` (`.density()`), `TrackListEmpty(title,
+options?)`, `SelectionBar(count, actions, options)` (`.style('floating' |
+'inline')`), `EpisodeRow(episode, options?)` (`.onPress()` its own: it opens
+the episode) and `EpisodeList(episodes, options?)` (`.label()` names it).
+The width each lays out for, and a sticky header's offset, are space tokens.
+
+- The now-playing bars loop while a track plays: a playing list or row is
+  compared by Jest as it mounts, not in Chrome, where two side by side are
+  read at different frames.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

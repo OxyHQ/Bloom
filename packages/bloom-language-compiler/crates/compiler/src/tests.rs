@@ -1038,3 +1038,26 @@ fn the_queue_panel_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_track_list_is_checked() {
+    let imports =
+        "import { SelectionBar, TrackList, TrackListHeader, TrackRow } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t, c, a) => [TrackList(t).density('compact').tint('surface'), TrackListHeader(c).density('default'), TrackRow(t, 0).density('compact'), SelectionBar(2, a, {}).style('inline')];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        (
+            "SelectionBar(1, a, {}).style('docked')",
+            "Unknown selectionBarPlacement token 'docked' for .style()",
+        ),
+        ("TrackList(a).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("TrackRow(a, 0).tint('surface')", "TrackRow has no modifier .tint()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (a) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

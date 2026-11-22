@@ -214,6 +214,7 @@ export type PaymentStatusStyle = (typeof ENUMS.paymentStatusStyle)[number];
 export type PipelineLayout = (typeof ENUMS.pipelineLayout)[number];
 export type LibraryItemStyle = (typeof ENUMS.libraryItemStyle)[number];
 export type QueuePanelStyle = (typeof ENUMS.queuePanelStyle)[number];
+export type SelectionBarPlacement = (typeof ENUMS.selectionBarPlacement)[number];
 
 export {
   COLORS,
