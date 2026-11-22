@@ -5,7 +5,6 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import { forwardRef, memo } from 'react';
 import type { ComponentRef } from 'react';
-import { styled } from 'react-native-css';
 import { Platform, StyleSheet, type View } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
