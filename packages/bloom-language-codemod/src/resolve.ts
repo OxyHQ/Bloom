@@ -42,6 +42,7 @@ export type Resolution =
   | { readonly ok: false; readonly reasons: readonly Reason[] };
 
 interface Spec {
+  variants: { modifiers: string[] };
   scales: Record<string, Record<string, number | string>>;
   typeRamp: Record<string, [number, number, number, string] | string>;
   layers: string[][];
@@ -56,6 +57,8 @@ spec.layers.forEach((names, index) => {
   for (const name of names) LAYER.set(name, index);
 });
 const TRAITS = new Set(spec.environment.traits);
+/** The modifiers a `when()` variant can change; any other is left out of it. */
+const VARIES = new Set(spec.variants.modifiers);
 const TEXT_ONLY = new Set(spec.nodes.text?.modifiers ?? []);
 const STACK_ONLY = new Set(spec.nodes.stack?.modifiers ?? []);
 
@@ -303,11 +306,12 @@ export function resolveClassName(
       fail(token, 'measured-difference', different);
       continue;
     }
-    if (conditions.length > 0 && entry.mods?.some((m) => m.name === 'childSpacing')) {
+    const fixed = conditions.length > 0 ? entry.mods?.find((m) => !VARIES.has(m.name)) : undefined;
+    if (fixed) {
       fail(
         token,
-        'child-spacing-variant',
-        'a child spacing under a condition: its rule reaches the children, which a when() class does not',
+        'not-varied',
+        `a when() variant cannot change .${fixed.name}() (spec \`variants\`)`,
       );
       continue;
     }
