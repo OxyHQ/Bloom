@@ -36,7 +36,6 @@ export interface MarkdownProps {
    */
   renderCodeBlock?: (code: string, language?: string) => ReactNode;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   testID?: string;
   ref?: Ref<ComponentRef<typeof View>>;
 }
