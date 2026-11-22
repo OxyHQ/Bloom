@@ -89,7 +89,9 @@ export function insertRules(rules: readonly string[]): number {
   return dropped;
 }
 
-const NUMBER = String.raw`-?\d*\.?\d+(?:e-?\d+)?`;
+const NUMBER = String.raw`-?\d*\.?\d+(?:e[-+]?\d+)?`;
+/** Chrome's largest length: what a longer one computes to (`3.35544e+07px`). */
+const LAYOUT_MAX = 33554432;
 
 function px(value: string): string {
   let out = value.replace(new RegExp(`(${NUMBER})rem\\b`, 'g'), (_, n) => `${Number(n) * 16}px`);
@@ -123,11 +125,15 @@ function px(value: string): string {
     if (next === out) break;
     out = next;
   }
-  // A browser lays out in 1/64 px (Chrome's LayoutUnit): lengths are compared at that unit.
-  out = out.replace(
-    new RegExp(`(${NUMBER})px`, 'g'),
-    (_, n) => `${Math.round(Number(n) * 64) / 64}px`,
-  );
+  // A browser lays out in 1/64 px (Chrome's LayoutUnit): lengths are compared at that unit,
+  // and one beyond its largest is that largest, as Chrome computes it (`3.35544e+07px` for
+  // Tailwind's `calc(infinity * 1px)` and the `3.40282e+38px` lightningcss lowers it to alike).
+  out = out
+    .replace(/calc\(infinity \* 1px\)/g, `${LAYOUT_MAX}px`)
+    .replace(new RegExp(`(${NUMBER})px`, 'g'), (_, n) => {
+      const value = Math.min(Number(n), LAYOUT_MAX);
+      return `${Math.round(value * 64) / 64}px`;
+    });
   // A colour mixed with transparent is that colour at the mix's alpha, in any space.
   return out.replace(
     /color-mix\(in \w+, rgb\((\d+), (\d+), (\d+)\) ([\d.]+)%, transparent\)/g,
