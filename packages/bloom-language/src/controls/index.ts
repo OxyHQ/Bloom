@@ -67,6 +67,7 @@ import { TENANCY } from './tenancy';
 import { EVICTION } from './eviction';
 import { PLACE_REVIEWS } from './place-reviews';
 import { CALL_UIS } from './call-ui';
+import { CHAT_PEOPLE } from './chat-people';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -141,4 +142,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...EVICTION,
   ...PLACE_REVIEWS,
   ...CALL_UIS,
+  ...CHAT_PEOPLE,
 };
