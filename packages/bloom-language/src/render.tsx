@@ -219,7 +219,7 @@ import {
   type MotionPlan,
   type Outer,
 } from './motion/motion-node';
-import { TextRoll } from './motion/text-roll';
+import { NumericRoll, TextRoll } from './motion/text-roll';
 import { DepthStack } from './depth-stack';
 import { resolveAnchor, resolveDelay, resolveRotation, resolveScale } from './motion/tokens';
 import { PRESS_HOST_STYLE } from '@oxy.so/bloom/styles';
@@ -2863,22 +2863,65 @@ function drawText(
     // The roll draws the text host itself, once at rest and twice while it
     // rolls, so it takes this node's outermost box (at rest).
     if (outermost !== undefined) outermost.used = true;
-    return draw(TextRoll, {
+    // A fresh copy for each host: drawing one writes its style into its props.
+    const hostOnly = (): Record<string, unknown> => {
+      const { key: _key, ...rest } = props;
+      return rest;
+    };
+    const rollProps = {
       key,
       text: plain.join(''),
       direction: roll.direction,
       scope: ctx.animation,
       draw: (text: string, rolling: Outer | undefined) => {
-        const { key: _key, ...hostOnly } = props;
-        if (rolling === undefined) return drawOutermost(outermost, host, out, hostOnly, text);
+        if (rolling === undefined) return drawOutermost(outermost, host, out, hostOnly(), text);
         const at: Outermost = { outer: rolling, used: false };
-        const drawn = drawOutermost(at, host, out, hostOnly, text);
+        const drawn = drawOutermost(at, host, out, hostOnly(), text);
         return at.used ? drawn : moveIn(rolling, drawn);
+      },
+    };
+    if (roll.value === 'roll') return draw(TextRoll, rollProps);
+    // A numeric roll's row takes the text's box; each piece its type alone.
+    const glyph = cachedStyle(
+      'host',
+      `TG|${ctx.env.key}|${lookKey}`,
+      () => textStyle(traits, look, undefined),
+      () => textVariants(traits),
+    );
+    const rowOut = cachedStyle(
+      'host',
+      `TR|${layerKey}|${flex}`,
+      () => Object.assign({ flexDirection: 'row' }, box()),
+      boxVaried,
+    );
+    const pieceProps: Record<string, unknown> = { ...HIDDEN_PIECE };
+    if (variant !== undefined) pieceProps.variant = variant;
+    return draw(NumericRoll, {
+      ...rollProps,
+      row: (text: string, ...pieces: ReactNode[]) =>
+        drawOutermost(
+          outermost,
+          View,
+          rowOut,
+          { ...hostOnly(), accessible: true, role: 'text', accessibilityLabel: text },
+          ...pieces,
+        ),
+      piece: (text: string, rolling: Outer | undefined) => {
+        const drawn = drawHost(host, glyph, { ...pieceProps }, text);
+        return rolling === undefined ? drawn : moveIn(rolling, drawn);
       },
     });
   }
   return drawOutermost(outermost, host, out, props, ...runs);
 }
+
+/** A piece of a numeric roll: the row it is in names the whole text. */
+const HIDDEN_PIECE = Object.freeze({
+  'aria-hidden': true,
+  importantForAccessibility: 'no-hide-descendants',
+  accessibilityElementsHidden: true,
+  selectable: false,
+});
 
 /** A web link to another site opens beside the app, as Bloom's inline link does. */
 const LINK_TARGET = Object.freeze({ target: '_blank', rel: 'noopener noreferrer' });

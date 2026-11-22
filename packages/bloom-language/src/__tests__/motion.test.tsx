@@ -37,6 +37,76 @@ afterEach(() => {
   runtime.screenVisible = true;
 });
 
+describe('.contentTransition("numeric")', () => {
+  const count = (n: number, press: number) =>
+    Text(String(n))
+      .font('sm')
+      .padding('xs')
+      .contentTransition('numeric', n)
+      .animation('roll', press);
+  const texts = (r: ReactTestRenderer) =>
+    all(r, 'Text').map((text) => text.props.children as unknown);
+
+  it('at rest it is the plain text, its box included', () => {
+    const r = mount(count(129, 0));
+    expect(texts(r)).toEqual(['129']);
+    expect(all(r, 'Animated.View')).toHaveLength(0);
+  });
+
+  it('a change rolls only the characters that changed; the rest stay put', () => {
+    const r = mount(count(129, 0));
+    update(r, count(130, 1));
+    // 1 stays; 2 → 3 and 9 → 0 roll, each place its own pair.
+    expect(texts(r)).toEqual(['1', '3', '2', '0', '9']);
+    const [row] = all(r, 'View').filter((view) => flat(view.props.style).flexDirection === 'row');
+    // The row takes the text's box and is named by the whole text.
+    expect(flat(row?.props.style)).toMatchObject({ flexDirection: 'row', paddingTop: 4 });
+    expect(row?.props.accessibilityLabel).toBe('130');
+    const boxes = all(r, 'Animated.View');
+    expect(boxes.map((box) => textOf(box))).toEqual(['3', '2', '0', '9']);
+    const [incoming, outgoing] = boxes;
+    expect(flat(incoming?.props.style)).toMatchObject({
+      animationName: { keyframes: { '0%': { opacity: 0, transform: [{ translateY: 10 }] } } },
+      animationDuration: 400,
+    });
+    expect(flat(outgoing?.props.style)).toMatchObject({
+      position: 'absolute',
+      animationName: { keyframes: { '100%': { opacity: 0, transform: [{ translateY: -10 }] } } },
+      animationFillMode: 'forwards',
+    });
+    // Each piece is hidden; the row names the text. A piece is the text's type, not its box.
+    const piece = all(r, 'Text')[0];
+    expect(piece?.props['aria-hidden']).toBe(true);
+    expect(flat(piece?.props.style)).toMatchObject({ fontSize: 13 });
+    expect(flat(piece?.props.style).paddingTop).toBeUndefined();
+    act(() => incoming?.props.onCSSAnimationEnd());
+    expect(all(r, 'Animated.View')).toHaveLength(0);
+    expect(texts(r)).toEqual(['130']);
+  });
+
+  it('matched from the end: a new digit rolls in, a lost one rolls out beside the next', () => {
+    const r = mount(count(99, 0));
+    update(r, count(100, 1));
+    expect(all(r, 'Animated.View').map((box) => textOf(box))).toEqual(['1', '0', '9', '0', '9']);
+    const r2 = mount(count(10, 0));
+    update(r2, count(9, 1));
+    const [gone, incoming] = all(r2, 'Animated.View');
+    expect(textOf(gone as ReactTestInstance)).toBe('1');
+    expect(flat(gone?.props.style)).toMatchObject({ position: 'absolute', insetInlineEnd: 0 });
+    // A falling count rolls down.
+    expect(flat(incoming?.props.style).animationName.keyframes).toMatchObject({
+      '0%': { transform: [{ translateY: -10 }] },
+    });
+  });
+
+  it('a change outside the animation does not roll', () => {
+    const r = mount(count(1, 1));
+    update(r, count(2, 1));
+    expect(all(r, 'Animated.View')).toHaveLength(0);
+    expect(texts(r)).toEqual(['2']);
+  });
+});
+
 const Glyph = (props: { width?: number; height?: number; fill?: string }) =>
   createElement('Glyph', props);
 
