@@ -98,7 +98,10 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
   // What redraws in this frame, from the dirty flags Android keeps under hardware rendering (it keeps no dirty rects):
   // each dirty view none of whose children is dirty, and each child of a dirty view whose place, transform, scroll,
   // alpha or visibility changed (a change of those marks only its parent), with that parent, which holds where it was.
-  // Left out: the glass surfaces, views drawn off the page (OffPage), and views that show nothing (hidden or clear).
+  // Left out: the glass surfaces, views drawn off the page (OffPage), views that show nothing (hidden or clear), and
+  // views off the window. A pager's off-screen page is one: Compose draws an interop page only while it is on screen,
+  // so the page's holder keeps the dirty flag it took when it moved away, frame after frame, with nothing under it
+  // redrawing.
   private fun collectDirt(group: ViewGroup) {
     var dirtyChild = false
     for (index in 0 until group.childCount) {
@@ -156,6 +159,7 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
       dirtRect.offset(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
       current = parent
     }
+    if (!dirtRect.intersects(0f, 0f, root.width.toFloat(), root.height.toFloat())) return
     val rect = Rect()
     dirtRect.roundOut(rect)
     dirt.add(rect)
