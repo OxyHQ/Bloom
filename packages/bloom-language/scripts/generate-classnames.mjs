@@ -167,8 +167,9 @@ const EDGE = {
   b: 'bottom',
   s: 'leading',
   e: 'trailing',
-  l: 'leading',
-  r: 'trailing',
+  // Tailwind's l and r are physical: the same sides right to left.
+  l: 'left',
+  r: 'right',
 };
 
 /** A colour utility's theme variable, or why it has none. */
@@ -212,14 +213,8 @@ function fontSize(name) {
   const arbitrary = /^\[(\d+(?:\.\d+)?)px\]$/.exec(name);
   if (!pair && !arbitrary) return undefined;
   const [size, lineHeight] = pair ?? [Number(arbitrary[1]), undefined];
-  // A ramp step is a size and a line height together; a size alone is a size rung.
-  const step =
-    lineHeight === undefined
-      ? undefined
-      : Object.entries(ramp).find(
-          ([variant, [s, l]]) => variant.endsWith('-regular') && s === size && l === lineHeight,
-        );
-  if (step) return mapped(`.font('${step[0].replace(/-regular$/, '')}')`);
+  // A size class writes a size and a line height, nothing else: never a ramp step,
+  // which brings its own weight and letter spacing. A size alone is a size rung.
   const sizeRung = rung(scales.fontSize, size);
   if (sizeRung && lineHeight === undefined) return mapped(`.font('${sizeRung}')`);
   // Otherwise a size with a named leading whose ratio gives exactly that line height,
@@ -405,8 +400,10 @@ function resolve(utility) {
   if (utility === 'flex-col') return structure('VStack(…)');
   if (utility === 'flex' || utility === 'inline-flex')
     return structure('a stack (HStack or VStack)');
-  if (utility === 'flex-1' || utility === 'grow' || utility === 'flex-grow')
-    return mapped('.grow()');
+  // Tailwind's flex utilities, as NativeWind's longhands (.flex(); .grow() is React Native's flex: 1).
+  if (utility === 'flex-1') return mapped(".flex('1')");
+  if (utility === 'grow' || utility === 'flex-grow') return mapped(".flex('grow')");
+  if ((m = /^flex-(auto|initial|none)$/.exec(utility))) return mapped(`.flex('${m[1]}')`);
   if (utility === 'shrink-0' || utility === 'flex-shrink-0') return mapped(".shrink('never')");
   if (utility === 'shrink' || utility === 'flex-shrink') return mapped(".shrink('normal')");
   if ((m = /^items-(start|center|end|stretch|baseline)$/.exec(utility)))
@@ -436,9 +433,9 @@ function resolve(utility) {
       'inset-y': ['top', 'bottom'],
       top: ['top'],
       bottom: ['bottom'],
-      left: ['leading'],
+      left: ['left'],
       start: ['leading'],
-      right: ['trailing'],
+      right: ['right'],
       end: ['trailing'],
     }[side];
     return space(
@@ -466,10 +463,10 @@ function resolve(utility) {
       if (kind === 'm' && edge === 'x') return mapped(".alignSelf('center') (in a column)");
       return structure('Spacer() on the side the auto margin takes');
     }
-    // A margin is padding outside the view's fill (SwiftUI has no margin); a negative one pulls outward.
+    // A margin is the view's own margin (.margin()), on the same edges as a padding.
     return space(
       value,
-      (t) => `.padding('${EDGE[edge]}', ${t})${kind === 'm' ? ' (outside the fill)' : ''}`,
+      (t) => `.${kind === 'm' ? 'margin' : 'padding'}('${EDGE[edge]}', ${t})`,
       negative === '-',
     );
   }
@@ -577,9 +574,9 @@ function resolve(utility) {
       t: 'top',
       b: 'bottom',
       s: 'leading',
-      l: 'leading',
+      l: 'left',
       e: 'trailing',
-      r: 'trailing',
+      r: 'right',
     }[m[1] ?? ''];
     if (edge === undefined) return modifier('a border on two sides');
     const width = (m[2] ?? '1').replace(/^\[(\d+)px\]$/, '$1');
@@ -594,8 +591,7 @@ function resolve(utility) {
     const name = rung(scales.opacity, value);
     return name ? mapped(`.opacity('${name}')`) : token('opacity', `${value}`, '.opacity(…)');
   }
-  if (utility === 'overflow-hidden')
-    return mapped('.corner(…) clips; alone it needs a clip modifier');
+  if (utility === 'overflow-hidden') return mapped('.clipped()');
   if (/^overflow-/.test(utility)) return structure('a ScrollView (Embed) for scrolling');
   // What the language says by other means, or does not say.
   if (utility === 'cursor-pointer') return drop('a pressable view takes the pointer');
