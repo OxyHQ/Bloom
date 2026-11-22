@@ -512,6 +512,26 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       ...NAMED,
     },
   },
+  // parity/slider.cases.tsx.
+  '@oxy.so/bloom/slider#Slider': {
+    node: 'Slider',
+    params: [
+      { binding: ['value', 'onValueChange'], hole: 'number' },
+      { prop: 'label', form: 'string', optional: true },
+    ],
+    props: {
+      min: { ...p('bounds', 'number'), with: ['max', 'number'] },
+      step: p('step', 'number'),
+      keyboardStep: p('keyboardStep', 'number'),
+      size: p('size', 'token', tokens('controlSize')),
+      tone: p('tint', 'token', tokens('tone')),
+      disabled: p('disabled', 'flag'),
+      showTooltip: p('showsValue', 'boolean'),
+      formatValue: p('valueFormat', 'handler'),
+      onSlidingComplete: p('onCommit', 'handler'),
+      ...NAMED,
+    },
+  },
 };
 
 /**

@@ -21,6 +21,7 @@ import { IconCircle } from '@oxy.so/bloom/icon-circle';
 import { Item } from '@oxy.so/bloom/item';
 import { Loading } from '@oxy.so/bloom/loading';
 import { ScreenScrollView } from '@oxy.so/bloom/screen';
+import { Slider } from '@oxy.so/bloom/slider';
 import { Search } from '@oxy.so/bloom/search';
 import { SettingsSection, SettingsValueField } from '@oxy.so/bloom/settings-modal';
 import { Switch } from '@oxy.so/bloom/switch';
@@ -258,3 +259,26 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
   badge: { width: 24, height: 24 },
 });
+
+export function Speed({
+  speed,
+  setSpeed,
+  save,
+}: {
+  speed: number;
+  setSpeed: (speed: number) => void;
+  save: (speed: number) => void;
+}) {
+  return (
+    <Slider
+      value={speed}
+      onValueChange={setSpeed}
+      label={t('player.speed')}
+      min={0.5}
+      max={2}
+      step={0.25}
+      formatValue={(value) => `${value}×`}
+      onSlidingComplete={save}
+    />
+  );
+}
