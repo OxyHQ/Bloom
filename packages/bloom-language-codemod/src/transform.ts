@@ -18,7 +18,7 @@ import { parseExpression } from '@babel/parser';
 import * as recast from 'recast';
 import * as babelTs from 'recast/parsers/babel-ts';
 
-import { type ComponentRule, ruleFor } from './components';
+import { type ComponentRule, type Form, KEPT, type PropRule, ruleFor } from './components';
 import { type HostKind, type Reason, type Resolved, resolveClassName } from './resolve';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
@@ -47,6 +47,7 @@ type Kind =
   | 'icon'
   | 'button'
   | 'component'
+  | 'kept'
   | 'rnText'
   | 'rnImage';
 
@@ -87,7 +88,10 @@ type Ir =
   | {
       type: 'component';
       node: string;
-      binding: readonly [Carried, Carried] | null;
+      /** Drawn only inside a Bloom `Screen`. */
+      inScreen: boolean;
+      /** The constructor's arguments, its children last. */
+      args: Value[];
       props: PropMod[];
       key: Carried | null;
     }
@@ -104,9 +108,47 @@ type Ir =
 
 type TextRun = { type: 'string'; value: string } | { type: 'expr'; value: Carried } | Ir;
 
+/**
+ * A value a modifier or a constructor takes: a literal, a carried value, a
+ * view, a binding of two carried values, or `undefined` (an optional argument
+ * before one that is given).
+ */
+type Value = Arg | Carried | Tagged;
+type Tagged =
+  | { readonly $: 'view'; readonly view: Ir }
+  | { readonly $: 'binding'; readonly binding: readonly [Carried, Carried] }
+  | { readonly $: 'icon'; readonly name: string }
+  | { readonly $: 'options'; readonly entries: readonly (readonly [string, Value])[] }
+  | { readonly $: 'absent' };
+
+const isCarried = (value: Value): value is Carried =>
+  typeof value === 'object' && 'hole' in value && 'node' in value;
+
+/** A value of the codemod's own (a style object literal never has a `$` key). */
+const isTagged = (value: Value): value is Tagged =>
+  typeof value === 'object' && '$' in value && !isCarried(value);
+
+const isAbsent = (value: Value) => isTagged(value) && value.$ === 'absent';
+
+/** Whether an expression holds JSX anywhere (an element is no string, number or flag). */
+function hasJsx(expression: AnyNode): boolean {
+  let found = false;
+  recast.visit(expression, {
+    visitJSXElement() {
+      found = true;
+      return false;
+    },
+    visitJSXFragment() {
+      found = true;
+      return false;
+    },
+  });
+  return found;
+}
+
 interface PropMod {
   readonly name: string;
-  readonly args: (Arg | Carried)[];
+  readonly args: Value[];
 }
 
 export interface Unconverted {
@@ -125,6 +167,8 @@ export interface Fixture {
   readonly bindings: Readonly<Record<string, Source>>;
   readonly language: readonly string[];
   readonly classes: readonly string[];
+  /** Both sides are drawn inside a Bloom `Screen` (the region holds a screen's scroll view). */
+  readonly inScreen: boolean;
 }
 
 export interface FileResult {
@@ -166,6 +210,7 @@ function kindOf(source: Source | undefined): Kind | undefined {
     return 'bloomText';
   if (source.module === '@oxy.so/bloom/button' && source.imported === 'Button') return 'button';
   if (ruleFor(source.module, source.imported)) return 'component';
+  if (KEPT[`${source.module}#${source.imported}`]) return 'kept';
   if (
     (source.module === '@oxy.so/bloom/icons' || source.module.startsWith('@oxy.so/bloom/icons/')) &&
     /^(Ri|Si)[A-Z0-9]\w*$|Icon$/.test(source.imported) &&
@@ -347,6 +392,18 @@ export function transformSource(source: string, options: TransformOptions): File
         ],
       };
     if (kind === 'button') return convertButton(node);
+    if (kind === 'kept') {
+      const source = sources.get(local) as Source;
+      return {
+        reasons: [
+          {
+            subject: local,
+            code: `kept:${source.imported}`,
+            why: KEPT[`${source.module}#${source.imported}`] as string,
+          },
+        ],
+      };
+    }
     if (kind === 'component') {
       const source = sources.get(local) as Source;
       return convertComponent(node, ruleFor(source.module, source.imported) as ComponentRule);
@@ -554,61 +611,219 @@ export function transformSource(source: string, options: TransformOptions): File
     rule: ComponentRule,
   ): { ir: Ir } | { reasons: Reason[] } {
     const reasons: Reason[] = [];
-    const fail = (subject: string, code: string, why: string) =>
-      reasons.push({ subject, code, why });
-    const props: PropMod[] = [];
+    const unmapped = (name: string) =>
+      reasons.push({
+        subject: name,
+        code: `${rule.node}:${name}`,
+        why: `${rule.node}'s \`${name}\` (or its form here) has no mapping`,
+      });
     let key: Carried | null = null;
-    const bound = new Map<string, AnyNode>();
+    /** Each prop's attribute value (`null` when it is bare). */
+    const given = new Map<string, AnyNode>();
     for (const attribute of node.openingElement.attributes) {
       if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
-        fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
+        reasons.push({
+          subject: '{...spread}',
+          code: 'spread',
+          why: 'spread props: the codemod cannot see what they set',
+        });
         continue;
       }
       const name = attribute.name.name as string;
-      const value = attribute.value;
-      const expression = value ? attributeExpression(value) : null;
-      if (name === 'key' && expression) key = { node: expression, hole: 'key', attribute };
-      else if (rule.binding?.includes(name) && expression) bound.set(name, expression);
-      else if (rule.tokens?.[name] && staticString(value) !== undefined)
-        props.push({ name: rule.tokens[name] as string, args: [staticString(value) as string] });
-      else if (rule.flags?.[name])
-        props.push({
-          name: rule.flags[name] as string,
-          args: expression ? [{ node: expression, hole: 'boolean' }] : [],
-        });
-      else if (rule.values?.[name] && value)
-        props.push({
-          name: rule.values[name] as string,
-          args: [staticString(value) ?? { node: expression, hole: 'string' }],
-        });
-      else
-        fail(
-          name,
-          `${rule.node}:${name}`,
-          `${rule.node}'s \`${name}\` (or its form here) has no mapping`,
-        );
+      if (name === 'key' && attribute.value)
+        key = { node: attributeExpression(attribute.value), hole: 'key', attribute };
+      else given.set(name, attribute.value ?? null);
     }
-    let binding: readonly [Carried, Carried] | null = null;
-    if (rule.binding) {
-      const [valueProp, setProp] = rule.binding;
-      const value = bound.get(valueProp);
-      const set = bound.get(setProp);
-      if (!value || !set)
-        fail(
-          valueProp,
-          `${rule.node}:binding`,
-          `${valueProp} and ${setProp} together are its binding`,
-        );
-      else
-        binding = [
-          { node: value, hole: 'boolean' },
-          { node: set, hole: 'handler' },
-        ];
+
+    const args: Value[] = [];
+    const consumed = new Set<string>();
+    let textChildren = false;
+    for (const param of rule.params ?? []) {
+      if ('binding' in param) {
+        const [valueProp, setters] = param.binding;
+        const setProps = typeof setters === 'string' ? [setters] : setters;
+        consumed.add(valueProp);
+        for (const name of setProps) consumed.add(name);
+        const value = given.get(valueProp);
+        // One setter: two would be Bloom's choice between them, which the binding does not carry.
+        const named = setProps.filter((name) => given.has(name));
+        const set = named.length === 1 ? given.get(named[0] as string) : undefined;
+        if (!value || !set) unmapped(valueProp);
+        else
+          args.push({
+            $: 'binding',
+            binding: [
+              { node: attributeExpression(value), hole: param.hole },
+              { node: attributeExpression(set), hole: 'handler' },
+            ],
+          });
+      } else if ('options' in param) {
+        const entries: [string, Value][] = [];
+        for (const [name, form] of Object.entries(param.options)) {
+          consumed.add(name);
+          if (!given.has(name)) continue;
+          const value = valuesOf(form, given.get(name));
+          // A bare flag is `true` in an object.
+          if (value?.length === 0 && (form === 'flag' || form === 'mark'))
+            entries.push([name, true]);
+          else if (value?.length !== 1) unmapped(name);
+          else entries.push([name, value[0] as Value]);
+        }
+        args.push(entries.length ? { $: 'options', entries } : { $: 'absent' });
+      } else if ('text' in param) {
+        textChildren = true;
+        const text = textOf(node.children);
+        if (text === undefined) unmapped('children');
+        else args.push(text);
+      } else {
+        consumed.add(param.prop);
+        if (!given.has(param.prop)) {
+          if (param.optional) args.push({ $: 'absent' });
+          else unmapped(param.prop);
+          continue;
+        }
+        const value = valuesOf(param.form, given.get(param.prop));
+        if (value?.length !== 1) unmapped(param.prop);
+        else args.push(value[0] as Value);
+      }
     }
-    if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
-      fail('children', `${rule.node}:children`, 'children the rule does not map');
+    const props: PropMod[] = [];
+    for (const [name, value] of given) {
+      if (consumed.has(name)) continue;
+      const prop: PropRule | undefined = rule.props?.[name];
+      const values = prop ? valuesOf(prop.form, value, prop.map) : undefined;
+      if (!prop || !values) unmapped(name);
+      else props.push({ name: prop.modifier, args: values });
+    }
+
+    if (rule.children) {
+      for (const child of node.children) {
+        const view = childView(child);
+        if (view === null) continue;
+        if (view === undefined) unmapped('children');
+        else args.push({ $: 'view', view });
+      }
+    } else if (
+      !textChildren &&
+      node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''))
+    )
+      unmapped('children');
+    // An optional argument left out at the end (children included) is no argument.
+    while (args.length > 0 && isAbsent(args[args.length - 1] as Value)) args.pop();
     if (reasons.length) return { reasons };
-    return { ir: { type: 'component', node: rule.node, binding, props, key } };
+    return {
+      ir: {
+        type: 'component',
+        node: rule.node,
+        inScreen: rule.inScreen === true,
+        args,
+        props,
+        key,
+      },
+    };
+  }
+
+  /**
+   * A prop's value in a rule's form, as the modifier's arguments (none for a
+   * bare flag), or undefined when the value is in a form the rule does not take.
+   */
+  function valuesOf(
+    form: Form,
+    value: AnyNode,
+    map?: Readonly<Record<string, string>>,
+  ): Value[] | undefined {
+    if (value === null)
+      // A bare prop is `true`.
+      return form === 'flag' || form === 'mark' ? [] : form === 'boolean' ? [true] : undefined;
+    const expression = attributeExpression(value);
+    if (n.JSXEmptyExpression.check(expression)) return undefined;
+    switch (form) {
+      case 'string': {
+        const text = staticString(value);
+        if (text !== undefined) return [text];
+        return hasJsx(expression) ? undefined : [{ node: expression, hole: 'string' }];
+      }
+      case 'token': {
+        const text = staticString(value);
+        if (text === undefined) return undefined;
+        const token = map ? map[text] : text;
+        return token === undefined ? undefined : [token];
+      }
+      case 'flag':
+      case 'boolean':
+        if (n.BooleanLiteral.check(expression)) return [expression.value];
+        return hasJsx(expression) ? undefined : [{ node: expression, hole: 'boolean' }];
+      case 'mark':
+        return n.BooleanLiteral.check(expression) && expression.value ? [] : undefined;
+      case 'number': {
+        const number = staticNumber(value);
+        if (number !== undefined) return [number];
+        return hasJsx(expression) || n.StringLiteral.check(expression)
+          ? undefined
+          : [{ node: expression, hole: 'number' }];
+      }
+      case 'handler':
+        return n.ArrowFunctionExpression.check(expression) ||
+          n.FunctionExpression.check(expression) ||
+          n.Identifier.check(expression) ||
+          n.MemberExpression.check(expression) ||
+          n.CallExpression.check(expression)
+          ? [{ node: expression, hole: 'handler' }]
+          : undefined;
+      case 'view': {
+        if (n.StringLiteral.check(expression) || n.TemplateLiteral.check(expression))
+          return undefined;
+        const view = n.JSXElement.check(expression) ? elementView(expression) : null;
+        if (view) return [{ $: 'view', view }];
+        if (n.JSXFragment.check(expression))
+          return [
+            { $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } },
+          ];
+        return [{ $: 'view', view: expressionChild(expression) }];
+      }
+      case 'icon':
+        return n.Identifier.check(expression) && kindOf(sources.get(expression.name)) === 'icon'
+          ? [{ $: 'icon', name: expression.name }]
+          : undefined;
+    }
+  }
+
+  /** An element as a view: converted when it can be, else embedded. */
+  function elementView(element: AnyNode): Ir {
+    const inner = convert(element);
+    return 'ir' in inner
+      ? inner.ir
+      : { type: 'embed', content: { node: element, hole: 'element' } };
+  }
+
+  /** A child of a view-holding element as a view; null when it is no child, undefined when it is text. */
+  function childView(child: AnyNode): Ir | null | undefined {
+    if (n.JSXText.check(child)) return cleanJsxText(child.value) ? undefined : null;
+    if (n.JSXExpressionContainer.check(child)) {
+      if (n.JSXEmptyExpression.check(child.expression)) return undefined;
+      if (n.StringLiteral.check(child.expression) || n.TemplateLiteral.check(child.expression))
+        return undefined;
+      return expressionChild(child.expression);
+    }
+    if (n.JSXElement.check(child)) return elementView(child);
+    if (n.JSXFragment.check(child))
+      return { type: 'embed', content: { node: child, hole: 'element' } };
+    return undefined;
+  }
+
+  /** An element's children as one string: one static text, or one expression (a hole). */
+  function textOf(children: AnyNode[]): Value | undefined {
+    const runs = children.filter(
+      (c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''),
+    );
+    if (runs.length !== 1) return undefined;
+    const run = runs[0];
+    if (n.JSXText.check(run)) return cleanJsxText(run.value);
+    if (!n.JSXExpressionContainer.check(run) || n.JSXEmptyExpression.check(run.expression))
+      return undefined;
+    const text = staticString(run);
+    if (text !== undefined) return text;
+    return hasJsx(run.expression) ? undefined : { node: run.expression, hole: 'string' };
   }
 
   /** Bloom's `Button`, as the language's Button parity cases draw it (`packages/bloom-language/parity/button.cases.tsx`). */
@@ -759,13 +974,8 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'icon':
         return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       case 'component': {
-        const args = ir.binding ? `[${carry(ir.binding[0])}, ${carry(ir.binding[1])}]` : '';
-        const tail = ir.props
-          .map(
-            (p) =>
-              `.${p.name}(${p.args.map((a) => (isCarried(a) ? carry(a) : printArg(a))).join(', ')})`,
-          )
-          .join('');
+        const args = ir.args.map((a) => printValue(a, carry)).join(', ');
+        const tail = ir.props.map((p) => printProp(p, carry)).join('');
         return `${lang(ir.node)}(${args})${tail}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       }
       case 'button': {
@@ -776,12 +986,7 @@ export function transformSource(source: string, options: TransformOptions): File
             `${lang('Text')}(${ir.runs.map((run) => ('type' in run && run.type === 'string' ? quote(run.value) : carry((run as { value: Carried }).value))).join(', ')})`,
           );
         if (ir.trailing) parts.push(`${lang('Icon')}(${ir.trailing})`);
-        const tail = ir.props
-          .map(
-            (p) =>
-              `.${p.name}(${p.args.map((a) => (isCarried(a) ? carry(a) : printArg(a))).join(', ')})`,
-          )
-          .join('');
+        const tail = ir.props.map((p) => printProp(p, carry)).join('');
         return `${lang('Button')}(${parts.join(', ')})${tail}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       }
       case 'text': {
@@ -815,14 +1020,72 @@ export function transformSource(source: string, options: TransformOptions): File
         inner = `v.when(${quote(condition)}, (v) => ${inner})`;
       out += `.when(${quote(variant.conditions[0] as string)}, (v) => ${inner})`;
     }
-    for (const prop of props)
-      out += `.${prop.name}(${prop.args.map((a) => (isCarried(a) ? carry(a) : printArg(a))).join(', ')})`;
+    for (const prop of props) out += printProp(prop, carry);
     if (key) out += `.id(${carry(key)})`;
     return out;
   }
 
-  const isCarried = (a: Arg | Carried): a is Carried =>
-    typeof a === 'object' && a !== null && 'hole' in a && 'node' in a;
+  function printValue(value: Value, carry: (c: Carried) => string): string {
+    if (isCarried(value)) return carry(value);
+    if (isTagged(value)) {
+      switch (value.$) {
+        case 'view':
+          return print(value.view, carry);
+        case 'binding':
+          return `[${carry(value.binding[0])}, ${carry(value.binding[1])}]`;
+        case 'icon':
+          return value.name;
+        case 'options':
+          return `{ ${value.entries.map(([key, v]) => `${key}: ${printValue(v, carry)}`).join(', ')} }`;
+        case 'absent':
+          return 'undefined';
+      }
+    }
+    return printArg(value as Arg);
+  }
+
+  const printProp = (prop: PropMod, carry: (c: Carried) => string) =>
+    `.${prop.name}(${prop.args.map((a) => printValue(a, carry)).join(', ')})`;
+
+  /** The carried values inside a value, in order. */
+  function carriedOfValue(value: Value, out: Carried[]): void {
+    if (isCarried(value)) out.push(value);
+    else if (isTagged(value)) {
+      if (value.$ === 'view') carriedOf(value.view, out);
+      else if (value.$ === 'binding') out.push(...value.binding);
+      else if (value.$ === 'options') for (const [, v] of value.entries) carriedOfValue(v, out);
+    }
+  }
+
+  /** The views a value holds. */
+  function viewsOfValue(value: Value): Ir[] {
+    if (!isTagged(value)) return [];
+    if (value.$ === 'view') return [value.view];
+    if (value.$ === 'options') return value.entries.flatMap(([, v]) => viewsOfValue(v));
+    return [];
+  }
+
+  /** The views directly inside a view: its children, spans, branches and the views its values hold. */
+  function childrenOf(ir: Ir): Ir[] {
+    const props = 'props' in ir ? ir.props.flatMap((prop) => prop.args.flatMap(viewsOfValue)) : [];
+    switch (ir.type) {
+      case 'cond':
+        return [ir.then, ir.otherwise].filter((branch): branch is Ir => branch !== null);
+      case 'component':
+        return [...ir.args.flatMap(viewsOfValue), ...props];
+      case 'text':
+        return [
+          ...ir.runs.filter(
+            (run): run is Ir => !('type' in run && (run.type === 'string' || run.type === 'expr')),
+          ),
+          ...props,
+        ];
+      case 'stack':
+        return [...ir.children, ...props];
+      default:
+        return props;
+    }
+  }
 
   /** Every carried value of a tree, in order. */
   function carriedOf(ir: Ir, out: Carried[] = []): Carried[] {
@@ -839,25 +1102,25 @@ export function transformSource(source: string, options: TransformOptions): File
         if (ir.key) out.push(ir.key);
         break;
       case 'component':
-        if (ir.binding) out.push(...ir.binding);
-        for (const prop of ir.props) for (const a of prop.args) if (isCarried(a)) out.push(a);
+        for (const a of ir.args) carriedOfValue(a, out);
+        for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
       case 'button':
         for (const run of ir.runs) if ('type' in run && run.type === 'expr') out.push(run.value);
-        for (const prop of ir.props) for (const a of prop.args) if (isCarried(a)) out.push(a);
+        for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
       case 'text':
         for (const run of ir.runs)
           if ('type' in run && run.type === 'expr') out.push(run.value);
           else if (!('type' in run && run.type === 'string')) carriedOf(run as Ir, out);
-        for (const prop of ir.props) for (const a of prop.args) if (isCarried(a)) out.push(a);
+        for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
       case 'stack':
         for (const child of ir.children) carriedOf(child, out);
-        for (const prop of ir.props) for (const a of prop.args) if (isCarried(a)) out.push(a);
+        for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
     }
@@ -920,7 +1183,19 @@ export function transformSource(source: string, options: TransformOptions): File
         name === local ? name : `${name}: ${local}`,
       ),
       classes: [...regionClasses],
+      inScreen: inScreen(ir),
     });
+  }
+
+  /** Whether a region holds a node that is drawn only inside a Bloom `Screen`. */
+  function inScreen(ir: Ir): boolean {
+    let found = false;
+    const visit = (at: Ir) => {
+      if (at.type === 'component' && at.inScreen) found = true;
+      for (const child of childrenOf(at)) visit(child);
+    };
+    visit(ir);
+    return found;
   }
 
   // ── the walk ─────────────────────────────────────────────────────────
