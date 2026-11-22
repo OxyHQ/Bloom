@@ -78,8 +78,17 @@ import { LikeFillIcon } from '@oxy.so/bloom/icons/LikeFillIcon';
 ```
 
 `ReplyIcon`, `RepostIcon`, `BookmarkIcon`, `BookmarkFillIcon` and `ShareIcon`
-complete this set. Outline hearts and reply bubbles retain their 18-unit view
-boxes; attachment, bookmark and share glyphs use 24 units. Their controls still
+complete this set, with `MenuIcon` (two rounded bars) for the navigation menu
+or drawer toggle:
+
+```tsx
+import { MenuIcon } from '@oxy.so/bloom/icons/MenuIcon';
+
+<Button iconOnly leadingIcon={MenuIcon} accessibilityLabel="Open menu" />
+```
+
+Outline hearts and reply bubbles retain their 18-unit view boxes; attachment,
+bookmark, share and menu glyphs use 24 units. Their controls still
 own target size, hover, focus, disabled state, haptics and animation. The glyphs
 add no interaction or animation wrappers.
 
