@@ -91,6 +91,8 @@ import { LISTING_ACTION_CASES } from '../../parity/listing-actions.cases';
 import { LISTING_CARD_CASES } from '../../parity/listing-card.cases';
 import { LISTING_EDITOR_CASES } from '../../parity/listing-editor.cases';
 import { PROPERTY_INSIGHT_CASES } from '../../parity/property-insights.cases';
+import { PROJECT_BOARD_CASES } from '../../parity/project-board.cases';
+import { ACTIVITY_FEED_CASES } from '../../parity/activity-feed.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -187,6 +189,8 @@ export const FAMILIES = {
   listingCard: LISTING_CARD_CASES,
   listingEditor: LISTING_EDITOR_CASES,
   propertyInsight: PROPERTY_INSIGHT_CASES,
+  projectBoard: PROJECT_BOARD_CASES,
+  activityFeed: ACTIVITY_FEED_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

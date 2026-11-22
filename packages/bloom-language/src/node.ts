@@ -120,6 +120,8 @@ import type { PlaceKind } from './controls/places';
 import type { MailKind } from './controls/mail';
 import type { HomeSearchKind } from './controls/home-search';
 import type { BookingKind } from './controls/booking';
+import type { ProjectBoardKind } from './controls/project-board';
+import type { ActivityFeedKind } from './controls/activity-feed';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -253,6 +255,7 @@ import {
   type NoteToolbarSize,
   type SearchModeTabsStyle,
   type TripCardOrientation,
+  type ActivityFeedGrouping,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1212,7 +1215,8 @@ export type Modifier =
         | SearchModeTabsStyle
         | MortgageLayout
         | ListingCardLayout
-        | OfferingBadgeStyle;
+        | OfferingBadgeStyle
+        | ActivityFeedGrouping;
     }
   | {
       readonly kind: 'shape';
@@ -1500,7 +1504,9 @@ export type NodeKind =
   | ListingCardKind
   | ListingEditorKind
   | OfferingBadgeKind
-  | PropertyInsightKind;
+  | PropertyInsightKind
+  | ProjectBoardKind
+  | ActivityFeedKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1872,7 +1878,8 @@ export class Node {
       | SearchModeTabsStyle
       | MortgageLayout
       | ListingCardLayout
-      | OfferingBadgeStyle,
+      | OfferingBadgeStyle
+      | ActivityFeedGrouping,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }

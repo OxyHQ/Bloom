@@ -79,6 +79,8 @@ import { LISTING_CARDS } from './listing-card';
 import { LISTING_EDITORS } from './listing-editor';
 import { OFFERING_BADGES } from './offering-badge';
 import { PROPERTY_INSIGHTS } from './property-insights';
+import { PROJECT_BOARDS } from './project-board';
+import { ACTIVITY_FEEDS } from './activity-feed';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -165,4 +167,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LISTING_EDITORS,
   ...OFFERING_BADGES,
   ...PROPERTY_INSIGHTS,
+  ...PROJECT_BOARDS,
+  ...ACTIVITY_FEEDS,
 };

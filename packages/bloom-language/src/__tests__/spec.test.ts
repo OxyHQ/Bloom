@@ -324,6 +324,12 @@ import type {
 import type { OfferingBadgeView } from '../controls/offering-badge';
 import type { PriceEstimateView, PricePerAreaComparisonView } from '../controls/property-insights';
 import type {
+  ProjectBoardView,
+  ProjectBoardCardContentView,
+  BoardDragHandleView,
+} from '../controls/project-board';
+import type { ActivityFeedView } from '../controls/activity-feed';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -918,7 +924,15 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<OfferingBadgeView>, Of<'offeringBadge'>>,
       Same<MethodsOf<PriceEstimateView>, Of<'priceEstimate'>>,
       Same<MethodsOf<PricePerAreaComparisonView>, Of<'pricePerAreaComparison'>>,
+      Same<MethodsOf<ProjectBoardView>, Of<'projectBoard'>>,
+      Same<MethodsOf<ProjectBoardCardContentView>, Of<'projectBoardCardContent'>>,
+      Same<MethodsOf<BoardDragHandleView>, Of<'boardDragHandle'>>,
+      Same<MethodsOf<ActivityFeedView>, Of<'activityFeed'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,
