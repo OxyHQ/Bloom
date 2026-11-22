@@ -883,6 +883,26 @@ fn the_message_bubbles_are_checked() {
 }
 
 #[test]
+fn the_order_status_the_lockup_and_the_ambient_photo_are_checked() {
+    let imports = "import { OrderStatusBar, OrderStatusTimeline, Lockup, LockupSkeleton, AmbientPhoto, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, u) => VStack(OrderStatusBar('Cooking').style('plain').tint('tertiary'), OrderStatusTimeline(s).axis('horizontal').density('compact'), Lockup('Atlas').size('lg').shape('circle').divider().lines(2), LockupSkeleton().size('sm').divider(false), AmbientPhoto(u));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    for (call, message) in [
+        ("OrderStatusBar('a').tint('danger')", "Unknown accentTone token 'danger' for .tint()"),
+        ("OrderStatusBar('a').style('solid')", "Unknown orderStatusBarStyle token 'solid' for .style()"),
+        ("Lockup('a').size('xl')", "Unknown lockupSize token 'xl' for .size()"),
+        ("Lockup('a').shape('blob')", "Unknown shapeName token 'blob' for .shape()"),
+        ("AmbientPhoto(u).style('plain')", "AmbientPhoto has no modifier .style()"),
+    ] {
+        let output = check(&format!("export const x = (u) => {call};\n"));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
+    }
+}
+
+#[test]
 fn the_map_chrome_is_checked() {
     let imports = "import { MapScaleBar, MapControls, LocationPuck } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
@@ -1039,4 +1059,18 @@ fn the_price_insights_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let output = check("export const x = (r) => PricePerAreaComparison(r).style('bars');\n");
     assert_eq!(output.diagnostics[0].message, "PricePerAreaComparison has no modifier .style()");
+}
+
+#[test]
+fn the_month_calendar_is_checked() {
+    let imports = "import { CalendarView, CalendarViewHeader, CalendarViewMonthGrid, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (e, m, o) => VStack(CalendarView(e).density('compact'), CalendarViewHeader(m, o).label('Month'), CalendarViewMonthGrid(m, e).density('default'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let output = check("export const x = (e) => CalendarView(e).density('cozy');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown density token 'cozy' for .density()");
+    let output = check("export const x = (m, o) => CalendarViewHeader(m, o).density('compact');\n");
+    assert_eq!(output.diagnostics[0].message, "CalendarViewHeader has no modifier .density()");
 }

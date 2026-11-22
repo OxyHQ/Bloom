@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { BloomImageContentFit } from '@oxy.so/bloom/image';
+import type { AccentTone as BloomAccentTone } from '@oxy.so/bloom/theme';
 import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import {
@@ -303,7 +304,15 @@ import type {
   BoardDragHandleView,
 } from '../controls/project-board';
 import type { ActivityFeedView } from '../controls/activity-feed';
-import type { ContentFit } from '../tokens';
+import type { OrderStatusBarView, OrderStatusTimelineView } from '../controls/order-status';
+import type { LockupSkeletonView, LockupView } from '../controls/lockup';
+import type { AmbientPhotoView } from '../controls/ambient-photo';
+import type {
+  CalendarViewHeaderView,
+  CalendarViewMonthGridView,
+  CalendarViewView,
+} from '../controls/calendar';
+import type { AccentTone, ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
 const PACKAGE = join(__dirname, '../..');
@@ -364,6 +373,13 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
     // A type error here means spec/language.json and BloomImage's contentFit disagree.
     const same: Same<ContentFit, BloomImageContentFit> = true;
+    expect(same).toBe(true);
+  });
+
+  it('the accent tones are Bloom’s AccentTone', () => {
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    // A type error here means spec/language.json and Bloom's AccentTone disagree.
+    const same: Same<AccentTone, BloomAccentTone> = true;
     expect(same).toBe(true);
   });
 
@@ -680,7 +696,23 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<ProjectBoardCardContentView>, Of<'projectBoardCardContent'>>,
       Same<MethodsOf<BoardDragHandleView>, Of<'boardDragHandle'>>,
       Same<MethodsOf<ActivityFeedView>, Of<'activityFeed'>>,
+      Same<MethodsOf<OrderStatusBarView>, Of<'orderStatusBar'>>,
+      Same<MethodsOf<OrderStatusTimelineView>, Of<'orderStatusTimeline'>>,
+      Same<MethodsOf<LockupView>, Of<'lockup'>>,
+      Same<MethodsOf<LockupSkeletonView>, Of<'lockupSkeleton'>>,
+      Same<MethodsOf<AmbientPhotoView>, Of<'ambientPhoto'>>,
+      Same<MethodsOf<CalendarViewView>, Of<'calendarView'>>,
+      Same<MethodsOf<CalendarViewHeaderView>, Of<'calendarViewHeader'>>,
+      Same<MethodsOf<CalendarViewMonthGridView>, Of<'calendarViewMonthGrid'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

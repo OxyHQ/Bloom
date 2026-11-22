@@ -6,8 +6,8 @@ import {
 
 import { Node, type ViewModifiers } from '../node';
 import type { ActivityFeedGrouping, ControlDensity } from '../tokens';
-import type { ControlDraw, ControlRenderer } from './draw';
-import { product } from './product';
+import type { ControlRenderer } from './draw';
+import { product, rhythm } from './product';
 
 /** The activity feed: who did what, by day. */
 export type ActivityFeedKind = 'activityFeed';
@@ -34,12 +34,6 @@ export function ActivityFeed(
   options: ActivityFeedOptions = {},
 ): ActivityFeedView {
   return new Node('activityFeed', { entries, options }, []);
-}
-
-/** Bloom's density of a content rhythm: the language's `default` is its `comfortable`. */
-export function rhythm(d: ControlDraw): 'comfortable' | 'compact' | undefined {
-  const density = d.own('density')?.value;
-  return density === undefined ? undefined : density === 'compact' ? 'compact' : 'comfortable';
 }
 
 export const ACTIVITY_FEEDS: Record<ActivityFeedKind, ControlRenderer> = {

@@ -1736,6 +1736,63 @@ confidence, options?)` takes the asking price, words, reasons and handlers as
 Bloom does; `PricePerAreaComparison(rows)` takes Bloom's rows, `.label()` its
 name.
 
+### Order status
+
+```ts
+OrderStatusBar('Out for delivery', { eta: 'Arrives 14:35', progress, icon: BikeIcon, action: Button(Text('Call')) }).tint('success')
+OrderStatusTimeline(order.steps).axis('horizontal').density('compact').label('Status')
+```
+
+Bloom's `order-status`: `OrderStatusBar(status, options?)` is the live strip
+(its ETA, detail and progress as Bloom takes them; `leading` and `action`
+views), `.style('surface' | 'plain')` its look and `.tint()` its tone, one of
+Bloom's accent tones. `OrderStatusTimeline(steps, options?)` takes Bloom's
+`OrderStatusStep`s (a step's own tone is its data); `.axis()` lays them out
+(`vertical` by default) and `.density('default' | 'compact')` is Bloom's
+`comfortable` or `compact`.
+
+### Lockup
+
+```ts
+Lockup(app.name, { subtitle: app.tagline, icon: app.icon, caption: Rating(app.rating), action: Button(Text('Get')).style('subtle').size('sm') })
+  .size('md').shape('squircle').divider().onPress(() => open(app))
+LockupSkeleton({ caption: true }).size('md')
+```
+
+Bloom's `lockup`: `Lockup(title, options?)` (its subtitle, icon, rank and
+`href` as Bloom takes them; `caption` a string, drawn in the caption style,
+or a view; `action` a view), `.size('sm' | 'md' | 'lg')`, `.shape()` its
+icon's outline, `.divider()` a hairline under its text, `.lines(n)` where the
+title truncates; `.onPress()` and `.label()` are its link's own.
+`LockupSkeleton(options?)` takes `.size()` and `.divider()`.
+
+### Ambient photo
+
+```ts
+AmbientPhoto(photo.url, { fadeMs: 2500, drift: settings.drift, onShown }).frame({ width: 'full', height: 'full' })
+```
+
+Bloom's `ambient-photo`: `AmbientPhoto(source, options?)` cross-fades to each
+new photo and drifts while it rests; its timing (`fadeMs`, `drift`,
+`driftMs`, `driftScale`) is Bloom's, as it takes it. It moves on a timer, so
+its cases are compared by Jest as they mount, not in Chrome.
+
+### Month calendar
+
+```ts
+CalendarView(events, { month, onMonthChange, title: t('calendar'), actions: Legend(), onNewEvent }).density('compact')
+CalendarViewHeader(month, { onPreviousMonth, onNextMonth, onSelectDate, headingLevel: 2 })
+CalendarViewMonthGrid(month, events, { showEventDetails: false, onSelectEvent })
+```
+
+Bloom's `calendar`: `CalendarView(events, options?)`, its header
+`CalendarViewHeader(month, options)` and its grid `CalendarViewMonthGrid(month,
+events, options?)` take Bloom's `CalendarViewEvent`s (an event's colour is
+Bloom's named tint, its data) and handlers; `breadcrumb` and `actions` are
+views, the month switcher's width a space token, and `.density('compact')`
+the short day rows of an embedded preview. A highlighted day pulses on a
+timer: compared by Jest, not in Chrome.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

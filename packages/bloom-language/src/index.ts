@@ -855,3 +855,36 @@ export type {
 // Activity feed (controls/activity-feed.tsx)
 export { ActivityFeed } from './controls/activity-feed';
 export type { ActivityFeedOptions, ActivityFeedView } from './controls/activity-feed';
+
+// Order status (controls/order-status.tsx)
+export { OrderStatusBar, OrderStatusTimeline } from './controls/order-status';
+export type {
+  OrderStatusBarOptions,
+  OrderStatusBarView,
+  OrderStatusTimelineOptions,
+  OrderStatusTimelineView,
+} from './controls/order-status';
+
+// Lockup (controls/lockup.tsx)
+export { Lockup, LockupSkeleton } from './controls/lockup';
+export type {
+  LockupOptions,
+  LockupSkeletonOptions,
+  LockupSkeletonView,
+  LockupView,
+} from './controls/lockup';
+
+// Ambient photo (controls/ambient-photo.tsx)
+export { AmbientPhoto } from './controls/ambient-photo';
+export type { AmbientPhotoOptions, AmbientPhotoView } from './controls/ambient-photo';
+
+// Calendar (controls/calendar.tsx)
+export { CalendarView, CalendarViewHeader, CalendarViewMonthGrid } from './controls/calendar';
+export type {
+  CalendarViewHeaderOptions,
+  CalendarViewHeaderView,
+  CalendarViewMonthGridOptions,
+  CalendarViewMonthGridView,
+  CalendarViewOptions,
+  CalendarViewView,
+} from './controls/calendar';

@@ -18,6 +18,10 @@ import { EVICTION } from './eviction';
 import { PLACE_REVIEWS } from './place-reviews';
 import { PROJECT_BOARDS } from './project-board';
 import { ACTIVITY_FEEDS } from './activity-feed';
+import { ORDER_STATUSES } from './order-status';
+import { LOCKUPS } from './lockup';
+import { AMBIENT_PHOTOS } from './ambient-photo';
+import { CALENDAR_VIEWS } from './calendar';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -78,4 +82,8 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...PROPERTY_INSIGHTS,
   ...PROJECT_BOARDS,
   ...ACTIVITY_FEEDS,
+  ...ORDER_STATUSES,
+  ...LOCKUPS,
+  ...AMBIENT_PHOTOS,
+  ...CALENDAR_VIEWS,
 };

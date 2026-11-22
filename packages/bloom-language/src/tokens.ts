@@ -192,6 +192,11 @@ export type SearchModeTabsStyle = (typeof ENUMS.searchModeTabsStyle)[number];
 export type TripCardOrientation = (typeof ENUMS.tripCardOrientation)[number];
 /** How an activity feed groups its entries: under day headings, or none. */
 export type ActivityFeedGrouping = (typeof ENUMS.activityFeedGrouping)[number];
+/** An order status bar's look: a strip of its own, or its content alone. */
+export type OrderStatusBarStyle = (typeof ENUMS.orderStatusBarStyle)[number];
+/** Bloom's accent tones (`AccentTone`): what a status tile, a bar or a marker is painted in. */
+export type AccentTone = (typeof ENUMS.accentTone)[number];
+export type LockupSize = (typeof ENUMS.lockupSize)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
