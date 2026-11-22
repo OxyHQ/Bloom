@@ -1,5 +1,21 @@
-import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, type ScrollView, Share } from 'react-native';
+import {
+  type ComponentRef,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  Platform,
+  type ScrollView,
+  Share,
+  type StyleProp,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { clipboardAvailable, writeClipboardText } from '../hooks/clipboard';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header/PageHeader';
@@ -29,10 +45,13 @@ import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiShare2Line } from '../icons/remix/RiShare2Line';
 import { useMessages, formatMessage } from '../locale/messages';
 import { OverlayRoot, TOAST_LAYER_Z } from '../overlay';
-import { StyledView } from '../styles/styled-primitives';
+import { IS_WEB } from '../styles/platform';
+import { ROUNDED_FULL } from '../styles/rounded-full';
 import { TextFieldInput } from '../text-field';
+import { createTokenStyles } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { stepLineHeight, WEB_TRANSITION_COLORS } from './web-css';
 import { SupportCopy } from './SupportCopy';
 import { ChatSidebar } from './ChatSidebar';
 import { useChatComponents } from './context';
@@ -60,7 +79,7 @@ import type { MultiAgentChatProps } from './types';
 import { chatId, useReplies } from './use-replies';
 import { useWorkspace } from './use-workspace';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 type Panel =
   | 'picker'
   | 'rename'
@@ -82,7 +101,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     onCopy,
     voices,
     onPreviewVoice,
-    className,
     style,
     testID = 'multi-agent-chat',
   } = props;
@@ -97,6 +115,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     Dropdown: D,
   } = useChatComponents();
   const { colors } = useTheme();
+  const tokenStyles = useTokenStyles();
   const directionProps = useDirectionProps();
   const flights = useAvatarFlights();
   const handoffGeneration = useRef(0),
@@ -463,6 +482,11 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
       }}
     />
   );
+  const column = [
+    CHAT_CONTENT_STYLE,
+    styles.column,
+    chat?.messages.length ? styles.columnMessages : styles.columnEmpty,
+  ];
   const conversation = (
     <Screen
       scroll="auto"
@@ -515,7 +539,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                 <D.DropdownMenuContent
                   label={messages.conversationOptions}
                   align="end"
-                  className="rounded-[14px] p-1"
                   style={{ borderRadius: 14, padding: 4 }}
                 >
                   <D.DropdownMenuLabel>{messages.inThisConversation}</D.DropdownMenuLabel>
@@ -524,7 +547,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                       key={agent.id}
                       onPress={() => edit(agent)}
                       leading={<AgentAvatar character={agentCharacter(agent)} size={20} />}
-                      className="px-2 py-1.5 text-body-medium"
                     >
                       {formatMessage(messages.editAgent, agent.name)}
                     </D.DropdownMenuItem>
@@ -532,7 +554,6 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   <D.DropdownMenuItem
                     onPress={() => chooseAgents(chat?.agentIds)}
                     leading={<RiGroupLine width={16} height={16} />}
-                    className="px-2 py-1.5 text-body-medium"
                   >
                     {messages.startAGroupChat}
                   </D.DropdownMenuItem>
@@ -546,7 +567,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         chat ? (
           <PageFooter safeArea={false} scrim="auto">
             {chat && (
-              <StyledView className="p-1" style={CHAT_CONTENT_STYLE}>
+              <View style={[styles.composer, CHAT_CONTENT_STYLE]}>
                 <ComposerPanel
                   status={null}
                   addMenu={composer.onAddMenuSelect ? undefined : []}
@@ -569,7 +590,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   onEffortChange={setEffort}
                   style={[{ borderRadius: 20 }, composer.style]}
                 />
-              </StyledView>
+              </View>
             )}
           </PageFooter>
         ) : undefined
@@ -579,13 +600,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         ref={scroll}
         accessibilityLabel={messages.messages}
         style={{ flex: 1 }}
-        contentContainerStyle={[
-          CHAT_CONTENT_STYLE,
-          { flexGrow: 1 },
-          chat?.messages.length
-            ? { paddingTop: 8, paddingBottom: 16 }
-            : { alignItems: 'center', justifyContent: 'center', padding: 16 },
-        ]}
+        contentContainerStyle={IS_WEB ? column : styles.scrollContent}
         scrollEventThrottle={16}
         onScroll={(event) => {
           const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -596,103 +611,99 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           if (follow.current) scroll.current?.scrollToEnd({ animated: false });
         }}
       >
-        {!chat || !chat.messages.length ? (
-          <StyledView className="flex-1 items-center justify-center gap-4 px-4 py-8">
-            <SelectedAgentPreview agents={participants} flights={flights} anchor="empty" />
-            <StyledView className="flex flex-col items-center gap-1.5">
-              <Text variant="title-3-semibold" style={{ textAlign: 'center' }}>
-                {participants.length > 1
-                  ? messages.aFewMindsOneConversation
-                  : participants[0]
-                    ? formatMessage(messages.sayHelloTo, participants[0].name)
-                    : messages.chatWithYourAgents}
-              </Text>
-              <Text
-                variant="body-regular"
-                style={{
-                  maxWidth: 420,
-                  textAlign: 'center',
-                  color: colors.textSecondary,
-                }}
-              >
-                {participants.length > 1
-                  ? formatMessage(
-                      messages.areHereSendAMessageToGet,
-                      participants.map((a) => a.name).join(', '),
-                    )
-                  : (participants[0]?.description ?? messages.chooseAnAgentOrCreateYourOwn)}
-              </Text>
-            </StyledView>
-            {!chat && <Button onPress={() => chooseAgents()}>{messages.startChat}</Button>}
-          </StyledView>
-        ) : (
-          <StyledView>
-            {/* DOM block margins collapse; RN flex margins add. Keep the same 16px inter-row gap. */}
-            <StyledView
-              className="mb-4 mt-3 flex justify-center items-center"
-              style={{ marginBottom: 4 }}
-            >
-              <Text className="rounded-full bg-background-tertiary-default px-[7px] py-1 text-body-2-medium text-text-secondary">
-                {messages.today}
-              </Text>
-            </StyledView>
-            {[
-              ...chat.messages,
-              ...(replies.thinking[chat.id] ? [replies.thinking[chat.id]!] : []),
-            ].map((message) => {
-              const agent = workspace.agents.find((a) => a.id === message.agentId);
-              const text = formatDemoReply(message.text);
-              if (message.role === 'user')
-                return (
-                  <AgentChatMessage
-                    key={message.id}
-                    role="user"
-                    text={message.text}
-                    style={{ marginTop: 12, marginInlineEnd: 12, maxWidth: '90%' }}
-                  />
-                );
-              const thinking = replies.thinking[chat.id]?.id === message.id;
-              return (
-                <AgentReply
-                  key={message.id}
-                  identity={
-                    agent && (
-                      <AgentReplyIdentity
-                        character={agentCharacter(agent)}
-                        name={agent.name}
-                        thinking={thinking}
-                        workingKey={replies.pending[chat.id] ?? agent.id}
-                        avatarRef={thinking ? flights.anchor(`reply:${agent.id}`) : undefined}
-                        avatarHidden={thinking && flights.isLanding(`reply:${agent.id}`)}
-                        onPress={() => edit(agent)}
-                        pressLabel={formatMessage(messages.editAgent, agent.name)}
-                      />
-                    )
-                  }
-                  actions={
-                    !thinking &&
-                    replies.streaming[chat.id] !== message.id &&
-                    messageActions(message.id, text)
-                  }
+        <ScrollColumn style={column}>
+          {!chat || !chat.messages.length ? (
+            <View style={styles.empty}>
+              <SelectedAgentPreview agents={participants} flights={flights} anchor="empty" />
+              <View style={styles.emptyCopy}>
+                <Text variant="title-3-semibold" style={{ textAlign: 'center' }}>
+                  {participants.length > 1
+                    ? messages.aFewMindsOneConversation
+                    : participants[0]
+                      ? formatMessage(messages.sayHelloTo, participants[0].name)
+                      : messages.chatWithYourAgents}
+                </Text>
+                <Text
+                  variant="body-regular"
+                  style={{
+                    maxWidth: 420,
+                    textAlign: 'center',
+                    color: colors.textSecondary,
+                  }}
                 >
-                  {!!text && (
-                    <AgentReplyBubble>
-                      <StreamedText text={text} paragraphs />
-                    </AgentReplyBubble>
-                  )}
-                </AgentReply>
-              );
-            })}
-          </StyledView>
-        )}
+                  {participants.length > 1
+                    ? formatMessage(
+                        messages.areHereSendAMessageToGet,
+                        participants.map((a) => a.name).join(', '),
+                      )
+                    : (participants[0]?.description ?? messages.chooseAnAgentOrCreateYourOwn)}
+                </Text>
+              </View>
+              {!chat && <Button onPress={() => chooseAgents()}>{messages.startChat}</Button>}
+            </View>
+          ) : (
+            <View>
+              {/* DOM block margins collapse; RN flex margins add. Keep the same 16px inter-row gap. */}
+              <View style={styles.today}>
+                <Text style={tokenStyles.today}>{messages.today}</Text>
+              </View>
+              {[
+                ...chat.messages,
+                ...(replies.thinking[chat.id] ? [replies.thinking[chat.id]!] : []),
+              ].map((message) => {
+                const agent = workspace.agents.find((a) => a.id === message.agentId);
+                const text = formatDemoReply(message.text);
+                if (message.role === 'user')
+                  return (
+                    <AgentChatMessage
+                      key={message.id}
+                      role="user"
+                      text={message.text}
+                      style={{ marginTop: 12, marginInlineEnd: 12, maxWidth: '90%' }}
+                    />
+                  );
+                const thinking = replies.thinking[chat.id]?.id === message.id;
+                return (
+                  <AgentReply
+                    key={message.id}
+                    identity={
+                      agent && (
+                        <AgentReplyIdentity
+                          character={agentCharacter(agent)}
+                          name={agent.name}
+                          thinking={thinking}
+                          workingKey={replies.pending[chat.id] ?? agent.id}
+                          avatarRef={thinking ? flights.anchor(`reply:${agent.id}`) : undefined}
+                          avatarHidden={thinking && flights.isLanding(`reply:${agent.id}`)}
+                          onPress={() => edit(agent)}
+                          pressLabel={formatMessage(messages.editAgent, agent.name)}
+                        />
+                      )
+                    }
+                    actions={
+                      !thinking &&
+                      replies.streaming[chat.id] !== message.id &&
+                      messageActions(message.id, text)
+                    }
+                  >
+                    {!!text && (
+                      <AgentReplyBubble>
+                        <StreamedText text={text} paragraphs />
+                      </AgentReplyBubble>
+                    )}
+                  </AgentReply>
+                );
+              })}
+            </View>
+          )}
+        </ScrollColumn>
       </ScreenScrollView>
     </Screen>
   );
   return (
-    <StyledView
+    <View
       {...directionProps}
       collapsable={false}
-      className={className}
       style={[{ flex: 1, minHeight: 0, width: '100%', height: '100%' }, style]}
       testID={testID}
     >
@@ -744,20 +755,16 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
               padding: 20,
             }}
           >
-            <StyledView
-              pointerEvents="none"
-              className="max-w-[calc(100%-32px)] rounded-xl border border-border-button-default bg-background-primary-default px-4 py-3 shadow-lg"
-              style={{ maxWidth: '100%' }}
-            >
-              <StyledView className="flex flex-row items-center gap-2">
+            <View pointerEvents="none" style={tokenStyles.notice}>
+              <View style={styles.noticeRow}>
                 <RiCheckLine width={16} height={16} fill={colors.textSecondary} />
                 {/* A confirmation: a polite `status` (RN's Text drops `aria-live`
                     on native; the role is what reaches it). */}
-                <Text role="status" className="text-body-regular text-text-primary">
+                <Text role="status" style={tokenStyles.noticeText}>
                   {replies.notice}
                 </Text>
-              </StyledView>
-            </StyledView>
+              </View>
+            </View>
           </OverlayRoot>
         </Portal>
       )}
@@ -831,9 +838,9 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           />
         )}
         {panel === 'picker' && (
-          <StyledView
+          <View
             collapsable={false}
-            className="flex flex-wrap justify-center gap-2 flex-row"
+            style={styles.picker}
             role="group"
             accessibilityLabel={messages.chooseYourTeammates}
           >
@@ -851,41 +858,45 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                       picked ? ids.filter((id) => id !== agent.id) : [...ids, agent.id],
                     )
                   }
-                  className={`h-10 max-w-full rounded-full border px-2 shadow-none transition-colors hover:bg-background-tertiary-default active:bg-background-tertiary-hover ${picked ? 'border-foreground-icon-secondary bg-background-tertiary-default text-text-primary dark:bg-background-tertiary-hover dark:hover:bg-background-tertiary-hover dark:active:bg-background-tertiary-hover' : 'border-transparent bg-background-secondary-default text-text-secondary'}`}
-                  style={{
-                    height: 40,
-                    maxWidth: '100%',
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    borderColor: picked ? colors.textSecondary : 'transparent',
-                    backgroundColor: picked
-                      ? colors.backgroundTertiary
-                      : colors.backgroundSecondary,
-                    boxShadow: 'none',
-                    paddingStart: 8,
-                    paddingEnd: 8,
-                  }}
+                  style={[
+                    {
+                      height: 40,
+                      maxWidth: '100%',
+                      borderRadius: 999,
+                      borderStyle: 'solid',
+                      borderWidth: 1,
+                      borderColor: picked ? colors.textSecondary : 'transparent',
+                      backgroundColor: picked
+                        ? colors.backgroundTertiary
+                        : colors.backgroundSecondary,
+                      boxShadow: 'none',
+                      paddingInline: 8,
+                      paddingStart: 8,
+                      paddingEnd: 8,
+                    },
+                    IS_WEB && WEB_TRANSITION_COLORS,
+                  ]}
                 >
-                  <StyledView className="inline-flex items-center justify-center px-1 shrink-0 flex-row">
-                    <StyledView className="flex min-w-0 items-center gap-2 flex-row">
-                      <StyledView className="size-6 shrink-0" aria-hidden>
+                  <View style={styles.pickerContent}>
+                    <View style={styles.pickerLabel}>
+                      <View style={styles.pickerAvatar} aria-hidden>
                         <AgentAvatar character={agentCharacter(agent)} size={24} />
-                      </StyledView>
+                      </View>
                       <Text
-                        className={`truncate text-body-medium ${picked ? 'text-text-primary' : 'text-text-secondary'}`}
+                        style={picked ? tokenStyles.pickerName : tokenStyles.pickerNameIdle}
                         numberOfLines={1}
                       >
                         {agent.name}
                       </Text>
-                    </StyledView>
-                  </StyledView>
+                    </View>
+                  </View>
                 </Button>
               );
             })}
-          </StyledView>
+          </View>
         )}
         {panel === 'options' && targetChat && (
-          <StyledView className="gap-2">
+          <View style={styles.options}>
             <Button
               appearance="plain"
               onPress={() => {
@@ -952,22 +963,17 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
             <Button appearance="plain" onPress={() => removeChat(targetChat.id)}>
               {messages.removeChat}
             </Button>
-          </StyledView>
+          </View>
         )}
         {panel === 'support' && (
-          <StyledView
-            className="space-y-4 text-body-regular text-text-secondary"
-            style={{ gap: 16 }}
-          >
+          <View style={{ gap: 16 }}>
             <SupportCopy text={messages.useToCreateABotOrStart} term="+" />
             <SupportCopy
               text={messages.openTheMarketplaceToExplorePluginsAnd}
               term={messages.marketplace}
             />
-            <Text className="text-body-regular text-text-secondary">
-              {messages.sendWithEnterUseShiftEnterFor}
-            </Text>
-          </StyledView>
+            <Text style={tokenStyles.supportText}>{messages.sendWithEnterUseShiftEnterFor}</Text>
+          </View>
         )}
       </Dialog>
       {(panel === 'marketplace' || panel === 'settings') && (
@@ -1009,8 +1015,16 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
         />
       )}
       <AvatarFlightLayer flights={flights} />
-    </StyledView>
+    </View>
   );
+}
+
+/**
+ * The conversation's column. On the web it is the scroll content itself; native's
+ * scroll content takes the chrome's insets, so the column is a view inside it.
+ */
+function ScrollColumn({ style, children }: { style: StyleProp<ViewStyle>; children: ReactNode }) {
+  return IS_WEB ? children : <View style={style}>{children}</View>;
 }
 
 function ConversationMenuButton({ label }: { label: string }) {
@@ -1028,3 +1042,76 @@ function ConversationMenuButton({ label }: { label: string }) {
     </Button.Group>
   );
 }
+
+const styles = StyleSheet.create({
+  scrollContent: { flexGrow: 1 },
+  column: { flexGrow: 1 },
+  columnMessages: { paddingTop: 8, paddingBottom: 16 },
+  columnEmpty: { alignItems: 'center', justifyContent: 'center', padding: 16 },
+  composer: { padding: 4 },
+  empty: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: '0%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    paddingInline: 16,
+    paddingBlock: 32,
+  },
+  emptyCopy: { flexDirection: 'column', alignItems: 'center', gap: 6 },
+  // DOM block margins collapse; RN flex margins add. Keep the same 16px inter-row gap.
+  today: { marginTop: 12, marginBottom: 4, alignItems: 'center', justifyContent: 'center' },
+  noticeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  picker: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
+  pickerContent: {
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingInline: 4,
+  },
+  pickerLabel: { minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pickerAvatar: { width: 24, height: 24, flexShrink: 0 },
+  options: { gap: 8 },
+});
+
+const useTokenStyles = createTokenStyles((t) => ({
+  today: {
+    borderRadius: ROUNDED_FULL,
+    backgroundColor: t.popover,
+    paddingInline: 7,
+    paddingBlock: 4,
+    color: t.mutedForeground,
+    lineHeight: stepLineHeight(18, 13),
+    fontWeight: 500,
+  },
+  notice: {
+    maxWidth: '100%',
+    borderRadius: 12,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: t.border,
+    backgroundColor: t.card,
+    paddingInline: 16,
+    paddingBlock: 12,
+    boxShadow: [
+      { offsetX: 0, offsetY: 10, blurRadius: 15, spreadDistance: -3, color: '#0000001a' },
+      { offsetX: 0, offsetY: 4, blurRadius: 6, spreadDistance: -4, color: '#0000001a' },
+    ],
+  },
+  noticeText: { color: t.foreground, lineHeight: stepLineHeight(20, 14), fontWeight: 400 },
+  pickerName: {
+    overflow: 'hidden',
+    color: t.foreground,
+    lineHeight: stepLineHeight(20, 14),
+    fontWeight: 500,
+  },
+  pickerNameIdle: {
+    overflow: 'hidden',
+    color: t.mutedForeground,
+    lineHeight: stepLineHeight(20, 14),
+    fontWeight: 500,
+  },
+  supportText: { color: t.mutedForeground, lineHeight: stepLineHeight(20, 14), fontWeight: 400 },
+}));
