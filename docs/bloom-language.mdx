@@ -957,6 +957,10 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
   `.tint(tone)`; the `Text` is what it says, `.label()` names it as a progress bar.
   Its box modifiers (padding, frame, fill, corner, margin, flex) are its
   `style`, as an app writes them.
+- **`SpinnerIcon()`**: Bloom's `SpinnerIcon` (`@oxy.so/bloom/loading`), the
+  loader's morphing glyph alone. `.size()` is its side (an icon rung, a numeric
+  side such as `'18'`, or an app token; Bloom's 26 by default), `.tint(role)`
+  its `color`, painted from the theme; its box modifiers are its `style`.
 - **`Skeleton(shape)`**: `text`, `circle`, `pill` or `box`. Its frame is its
   size (a circle's and a pill's height, a box's width and height), a box's
   corner its radius, a text line's height its font's. It takes nothing else
