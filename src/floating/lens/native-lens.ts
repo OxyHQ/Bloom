@@ -65,7 +65,7 @@ export interface LensMenu {
 }
 
 export interface Lens {
-  /** The one glass base of Bloom's controls (the upstream app's glass trigger). */
+  /** The one lens base of Bloom's controls (the upstream app's lens trigger). */
   LensBase: ComponentType<{
     lens?: boolean;
     colorScheme?: 'light' | 'dark';
