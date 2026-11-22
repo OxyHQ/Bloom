@@ -199,7 +199,7 @@ import {
   type Role,
   type TextStyleName,
 } from './tokens';
-import { deriveEnv, EnvContext, type Env } from './env';
+import { deriveEnv, EnvContext, materialEnv, type Env } from './env';
 import type { TextTraits } from './style';
 import { adoptLanguageSheet } from './web-sheet';
 import {
@@ -1020,10 +1020,16 @@ function drawNode(
   key: string | number | undefined,
   outer: Outer | undefined,
 ): ReactNode {
-  const env =
+  const traits =
     p.env.length > 0 || p.envVariants.length > 0
       ? deriveEnv(ctx.env, p.env, p.envVariants)
       : ctx.env;
+  // Inside an island its controls share its material; a glass inside it ends that.
+  const env = p.layers.some((layer) => layer.blur)
+    ? materialEnv(traits, true)
+    : p.layers.some((layer) => layer.glass !== undefined)
+      ? materialEnv(traits, false)
+      : traits;
   if (p.navigation !== undefined) p.onPress = navigationPress(env, p.navigation);
   const animation = p.motion?.animation ?? ctx.animation;
   // What the node's children render in: its environment, its animation scope, and no row (a stack sets its own).
@@ -2091,7 +2097,7 @@ function renderHost(
         href: ownValue(p, 'link')?.value,
         numberOfLines: ownValue(p, 'lines')?.value,
         underline: ownValue(p, 'underline') === undefined ? undefined : 'rest',
-        material: p.control ? 'shared' : undefined,
+        material: p.control || ctx.env.island ? 'shared' : undefined,
       });
       const colors = ownValue(p, 'colors')?.value;
       if (colors !== undefined) {
@@ -2146,7 +2152,7 @@ function renderHost(
         label,
         disabled: ownValue(p, 'disabled')?.value,
         collapsed: ownValue(p, 'collapsed')?.value,
-        material: p.control ? 'shared' : undefined,
+        material: p.control || ctx.env.island ? 'shared' : undefined,
       });
       const fab = p.control?.reports.length ? ReportingFab : BloomFab;
       if (fab === ReportingFab) props.reports = p.control?.reports;

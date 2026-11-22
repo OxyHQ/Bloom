@@ -29,6 +29,12 @@ export interface Env {
    * outside one.
    */
   readonly navigate: Navigate | undefined;
+  /**
+   * Inside an island (`.blur()`): a Button or FAB there paints with the
+   * island's shared material (Bloom's `material="shared"`), as Bloom's own
+   * controls in a `BlurIsland` do. A glass inside it ends it.
+   */
+  readonly island?: true;
 }
 
 export type Navigate = (
@@ -125,6 +131,24 @@ export function deriveEnv(
     text: Object.freeze(text) as TextTraits,
     derived: new Map(),
     navigate: parent.navigate,
+    ...(parent.island ? { island: true } : null),
+  };
+  parent.derived.set(key, env);
+  return env;
+}
+
+/** The environment inside a material: an island's (`on`), or out of one (a glass). Interned as `deriveEnv`'s are. */
+export function materialEnv(parent: Env, on: boolean): Env {
+  if ((parent.island === true) === on) return parent;
+  const key = on ? ';island' : ';glass';
+  let env = parent.derived.get(key);
+  if (env) return env;
+  env = {
+    key: `${parent.key}${key}`,
+    text: parent.text,
+    derived: new Map(),
+    navigate: parent.navigate,
+    ...(on ? { island: true } : null),
   };
   parent.derived.set(key, env);
   return env;

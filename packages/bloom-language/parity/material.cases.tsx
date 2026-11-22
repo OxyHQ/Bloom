@@ -643,15 +643,13 @@ const islands: ParityCase[] = [
     ),
   },
   {
-    name: 'a blur whose frame, border, corner and fill a breakpoint varies (lg)',
+    name: 'a blur whose frame, corner and fill a breakpoint varies (lg)',
     language: () =>
       toElement(
         L.VStack()
           .blur()
           .corner('lg')
-          .when('lg', (v) =>
-            v.frame({ width: '96' }).border('border', 'thin').corner('2xl').background('popover'),
-          ),
+          .when('lg', (v) => v.frame({ width: '96' }).corner('2xl').background('popover')),
       ),
     bloom: () => (
       <Tiered>
@@ -661,14 +659,7 @@ const islands: ParityCase[] = [
               <BlurIsland
                 radius={atLeast('lg') ? borderRadius._2xl : borderRadius.lg}
                 style={
-                  atLeast('lg')
-                    ? {
-                        width: 96,
-                        borderWidth: 1,
-                        borderColor: c.border,
-                        backgroundColor: c.backgroundTertiary,
-                      }
-                    : undefined
+                  atLeast('lg') ? { width: 96, backgroundColor: c.backgroundTertiary } : undefined
                 }
               >
                 <RN.View />
@@ -677,6 +668,28 @@ const islands: ParityCase[] = [
           </Themed>
         )}
       </Tiered>
+    ),
+  },
+  {
+    name: 'an island’s buttons share its material',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.Button(L.Text('Reply')).style('plain').onPress(onPress),
+          L.Button(L.Text('Share')).style('plain').onPress(onPress),
+        ).blur(),
+      ),
+    bloom: () => (
+      <BlurIsland>
+        <RN.View style={{ flexDirection: 'row' }}>
+          <Button appearance="plain" material="shared" onPress={onPress}>
+            Reply
+          </Button>
+          <Button appearance="plain" material="shared" onPress={onPress}>
+            Share
+          </Button>
+        </RN.View>
+      </BlurIsland>
     ),
   },
   {

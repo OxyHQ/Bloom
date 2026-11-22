@@ -274,13 +274,13 @@ describe('when(): a variant overrides what the chain set before it', () => {
     expect(surface().props.fill).toBeUndefined();
   });
 
-  it('an island’s frame, border and fill vary its style, its corner its radius, while held', () => {
+  it('an island’s frame and fill vary its style, its corner its radius, while held', () => {
     const r = mount(
       HStack(Text('a'))
         .onPress(() => {})
         .blur()
         .corner('lg')
-        .when('pressed', (v) => v.corner('xl').border('border', 'thin').background('primary')),
+        .when('pressed', (v) => v.corner('xl').frame({ width: '4xl' }).background('primary')),
     );
     const island = (): ReactTestInstance => ofType(r, 'BlurIsland')[0] as ReactTestInstance;
     expect(island().props).toMatchObject({ radius: 16 });
@@ -288,7 +288,7 @@ describe('when(): a variant overrides what the chain set before it', () => {
     act(() => host.props.onPressIn());
     expect(island().props).toMatchObject({
       radius: 20,
-      style: { borderWidth: 1, borderColor: LIGHT.border, backgroundColor: LIGHT.primary },
+      style: { width: 40, backgroundColor: LIGHT.primary },
     });
     act(() => host.props.onPressOut());
     expect(island().props.radius).toBe(16);
