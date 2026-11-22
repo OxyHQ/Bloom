@@ -6,6 +6,7 @@ import {
   PricePerAreaComparison as BloomPricePerAreaComparison,
 } from '@oxy.so/bloom/property-insights';
 
+import type { Bound } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
@@ -16,11 +17,13 @@ export type PropertyInsightKind = 'priceEstimate' | 'pricePerAreaComparison';
 /** Bloom `PriceEstimate`'s words, asking price, reasons and handlers. */
 export type PriceEstimateOptions = Omit<
   PriceEstimateProps,
-  'style' | 'testID' | 'low' | 'high' | 'confidence'
+  'style' | 'testID' | 'low' | 'high' | 'confidence' | 'expanded' | 'onExpandedChange'
 >;
 
 /** Bloom `PriceEstimate`: the estimated range, and where the asking price sits in it. */
-export type PriceEstimateView = ViewModifiers<PriceEstimateView>;
+export interface PriceEstimateView extends ViewModifiers<PriceEstimateView> {
+  expanded(value: Bound<PriceEstimateProps, 'expanded'>): PriceEstimateView;
+}
 /** Bloom `PricePerAreaComparison`: a bar per area; `.label()` names the chart. */
 export type PricePerAreaComparisonView = ViewModifiers<PricePerAreaComparisonView>;
 
@@ -39,6 +42,8 @@ export function PricePerAreaComparison(rows: readonly AreaPriceRow[]): PricePerA
 }
 
 export const PROPERTY_INSIGHTS: Record<PropertyInsightKind, ControlRenderer> = {
-  priceEstimate: product(BloomPriceEstimate),
+  priceEstimate: product(BloomPriceEstimate, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+  }),
   pricePerAreaComparison: product(BloomPricePerAreaComparison),
 };

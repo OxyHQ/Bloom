@@ -10,6 +10,7 @@ import {
   type TripCardProps,
 } from '@oxy.so/bloom/booking';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { SpaceToken, TripCardOrientation } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -27,7 +28,14 @@ export type TripCardOptions = Omit<
 type BookingCardSlots = 'guestPicker' | 'note' | 'footer';
 export type BookingCardOptions = Omit<
   BookingCardProps,
-  Drawn | 'price' | 'guests' | 'loading' | 'reserveDisabled' | BookingCardSlots
+  | Drawn
+  | 'price'
+  | 'guests'
+  | 'loading'
+  | 'reserveDisabled'
+  | BookingCardSlots
+  | 'guestsOpen'
+  | 'onGuestsOpenChange'
 > & { readonly [K in BookingCardSlots]?: Child };
 export type BookingBarOptions = Omit<
   BookingBarProps,
@@ -42,6 +50,7 @@ export interface TripCardView extends ViewModifiers<TripCardView> {
 }
 /** Bloom `BookingCard`: the price, dates, guests and the reserve button. */
 export interface BookingCardView extends ViewModifiers<BookingCardView> {
+  guestsOpen(value: Bound<BookingCardProps, 'guestsOpen'>): BookingCardView;
   /** A spinner in the reserve button; presses are ignored. */
   loading(value?: boolean): BookingCardView;
   /** The reserve button is disabled. */
@@ -86,6 +95,7 @@ export const BOOKINGS: Record<BookingKind, ControlRenderer> = {
     own: (d) => ({ orientation: d.own('style')?.value }),
   }),
   bookingCard: product(BloomBookingCard, {
+    bindings: { guestsOpen: ['guestsOpen', 'onGuestsOpenChange'] },
     slots: ['guestPicker', 'note', 'footer'],
     own: (d) => ({
       loading: d.own('loading')?.value,

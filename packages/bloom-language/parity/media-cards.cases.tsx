@@ -129,10 +129,10 @@ const cards: ParityCase[] = [
           album: 'Late Hours',
           explicit: true,
           duration: '3:45',
-          liked: true,
-          onLikedChange: press,
           playing: true,
-        }).style(layout),
+        })
+          .liked([true, press])
+          .style(layout),
       ),
     bloom: () => (
       <SongCard

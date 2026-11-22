@@ -42,6 +42,11 @@ function labelOf(node: Node): string {
   return (node.props as { label: string }).label;
 }
 
+/** A tree row's, folder's or section's `.expanded()` binding, as Bloom's `open` and its setter. */
+function expandedOf(values: Readonly<Record<string, unknown>>) {
+  const expanded = values.expanded as Binding<boolean> | undefined;
+  return { open: expanded?.[0], onOpenChange: expanded?.[1] };
+}
 /** Controls at a row's end, as one element; none when the chain names none. */
 function trailingOf(values: Record<string, unknown>, render: Draw): ReactNode | undefined {
   const trailing = values.trailing as readonly Child[] | undefined;
@@ -77,8 +82,7 @@ function treeItemOf(node: Node, render: Draw, press: PressOf): SidebarTreeItem {
     href: values.link as string | undefined,
     actions: trailingOf(values, render),
     disabled: values.disabled as boolean | undefined,
-    open: values.expanded as boolean | undefined,
-    onOpenChange: values.onExpandedChange as ((open: boolean) => void) | undefined,
+    ...expandedOf(values),
     emptyLabel: values.emptyLabel as string | undefined,
     onPress: press(values.onPress as Press | undefined),
     onLongPress: values.onLongPress as (() => void) | undefined,
@@ -129,8 +133,7 @@ function folderOf(node: Node, render: Draw, press: PressOf): SidebarTreeFolder {
     key: (values.id as string | undefined) ?? label,
     label,
     actions: trailingOf(values, render),
-    open: values.expanded as boolean | undefined,
-    onOpenChange: values.onExpandedChange as ((open: boolean) => void) | undefined,
+    ...expandedOf(values),
     items: nodesOf(node.children)
       .filter((child) => child.kind === 'treeItem')
       .map((item) => treeItemOf(item, render, press)),
@@ -150,8 +153,7 @@ function sectionOf(node: Node, render: Draw, press: PressOf): SidebarTree {
     folders:
       folders.length > 0 ? folders.map((folder) => folderOf(folder, render, press)) : undefined,
     collapsible: values.collapsible as boolean | undefined,
-    open: values.expanded as boolean | undefined,
-    onOpenChange: values.onExpandedChange as ((open: boolean) => void) | undefined,
+    ...expandedOf(values),
     loading: values.loading as boolean | undefined,
     error: values.error as string | undefined,
     emptyLabel: values.emptyLabel as string | undefined,
@@ -195,8 +197,8 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
     variant: values.variant as SidebarVariant | undefined,
     surface: values.surface as SidebarSurface | undefined,
     size: values.size as SidebarSize | undefined,
-    collapsed: values.collapsed as boolean | undefined,
-    onCollapsedChange: values.onCollapsedChange as ((collapsed: boolean) => void) | undefined,
+    collapsed: (values.collapsed as Binding<boolean> | undefined)?.[0],
+    onCollapsedChange: (values.collapsed as Binding<boolean> | undefined)?.[1],
     showSearch: values.searchable as boolean | undefined,
     showThemeToggle: values.themeToggle as boolean | undefined,
     logo: values.logo as SidebarLogo | undefined,
@@ -204,8 +206,8 @@ export function sidebarProps(node: Node, render: Draw, press: PressOf): SidebarP
     accessibilityLabel: values.label as string | undefined,
     testID: values.testID as string | undefined,
     modes: modes.length > 0 ? modes.map(modeOf) : undefined,
-    mode: values.mode as string | undefined,
-    onModeChange: values.onModeChange as ((key: string) => void) | undefined,
+    mode: (values.mode as Binding<string> | undefined)?.[0],
+    onModeChange: (values.mode as Binding<string> | undefined)?.[1],
     modesPresentation: values.modePresentation as ModePresentation | undefined,
     modesLabel: values.modesLabel as string | undefined,
     team: values.team as SidebarTeam | undefined,

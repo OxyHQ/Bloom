@@ -9,7 +9,7 @@ import {
   type StoryViewerProps,
 } from '@oxy.so/bloom/chat-people';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { DurationName, SelectedChipsLayout, SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -27,7 +27,7 @@ type Drawn = 'style' | 'testID';
  */
 export type StoryViewerOptions = Omit<
   StoryViewerProps,
-  Drawn | 'stories' | 'index' | 'composer' | 'height' | 'duration'
+  Drawn | 'stories' | 'index' | 'composer' | 'height' | 'duration' | 'muted' | 'onMutedChange'
 > & { readonly composer?: Child; readonly height?: SpaceToken; readonly duration?: DurationName };
 /** Bloom `SelectedChipsRow`'s handlers and words; what it shows with nobody picked is a language child. */
 export type SelectedChipsRowOptions = Omit<
@@ -41,15 +41,19 @@ export type SelectedChipsRowOptions = Omit<
  */
 export type NewGroupFormOptions = Omit<
   NewGroupFormProps,
-  Drawn | 'name' | 'onNameChange' | 'children'
+  Drawn | 'name' | 'onNameChange' | 'children' | 'description' | 'onDescriptionChange'
 > & { readonly content?: Child };
 
-export type StoryViewerView = ViewModifiers<StoryViewerView>;
+export interface StoryViewerView extends ViewModifiers<StoryViewerView> {
+  muted(value: Bound<StoryViewerProps, 'muted'>): StoryViewerView;
+}
 export interface SelectedChipsRowView extends ViewModifiers<SelectedChipsRowView> {
   /** `scroll` (default): one row that scrolls sideways; `wrap`: as many rows as it takes. */
   style(value: SelectedChipsLayout): SelectedChipsRowView;
 }
-export type NewGroupFormView = ViewModifiers<NewGroupFormView>;
+export interface NewGroupFormView extends ViewModifiers<NewGroupFormView> {
+  description(value: Bound<NewGroupFormProps, 'description'>): NewGroupFormView;
+}
 
 /** Bloom `StoryViewer` of `stories`, showing the one at `index` (zero-based). */
 export function StoryViewer(
@@ -81,6 +85,7 @@ export function NewGroupForm(
 
 export const CHAT_PEOPLE: Record<ChatPeopleKind, ControlRenderer> = {
   storyViewer: product(BloomStoryViewer, {
+    bindings: { muted: ['muted', 'onMutedChange'] },
     slots: ['composer'],
     lengths: ['height'],
     durations: ['duration'],
@@ -89,5 +94,8 @@ export const CHAT_PEOPLE: Record<ChatPeopleKind, ControlRenderer> = {
     slots: ['emptyState'],
     own: (d) => ({ layout: d.own('style')?.value }),
   }),
-  newGroupForm: product(BloomNewGroupForm, { binding: ['name', 'onNameChange'] }),
+  newGroupForm: product(BloomNewGroupForm, {
+    bindings: { description: ['description', 'onDescriptionChange'] },
+    binding: ['name', 'onNameChange'],
+  }),
 };

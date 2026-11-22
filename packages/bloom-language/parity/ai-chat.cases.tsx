@@ -16,7 +16,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const ACTIONS = [{ key: 'copy', label: 'Copy', icon: RiFileCopyLine, onPress: press }];
@@ -221,12 +221,12 @@ const shells: ParityCase[] = [
           sidebar: L.Text('Chats'),
           sidebarWidth: '256',
           panel: () => L.Text('Panel'),
-          panelOpen: true,
           panelLabel: 'Code',
-        }),
+        }).panelOpen([true, hold]),
       ),
     bloom: () => (
       <AiChatShell
+        onPanelOpenChange={hold}
         sidebar={<Text>Chats</Text>}
         sidebarWidth={256}
         panel={() => <Text>Panel</Text>}

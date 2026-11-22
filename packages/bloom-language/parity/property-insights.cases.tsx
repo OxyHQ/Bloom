@@ -27,11 +27,9 @@ export const PROPERTY_INSIGHT_CASES: ParityCase[] = [
           asking,
           format: euro,
           reasons: ['Two recent sales on the street', 'A renovated kitchen'],
-          expanded: true,
-          onExpandedChange: set,
           comparables: 12,
           updated: 'Nov 2026',
-        }),
+        }).expanded([true, set]),
       ),
     bloom: () => (
       <PriceEstimate

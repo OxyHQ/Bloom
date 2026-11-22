@@ -20,7 +20,7 @@ import {
   type TransportControlsProps,
 } from '@oxy.so/bloom/media-player';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { TransportSize, TransportStyle } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -39,21 +39,49 @@ export type MediaPlayerKind =
 
 type Drawn = 'style' | 'testID';
 
-/** Bloom `TransportControls`' data (its play/pause handler, the skips, shuffle and repeat); its `trailing` is a language child. */
+/** Bloom `TransportControls`' data (its play/pause handler and the skips); its `trailing` is a language child, its shuffle, repeat and rate bindings. */
 export type TransportControlsOptions = Omit<
   TransportControlsProps,
-  Drawn | 'playing' | 'size' | 'variant' | 'loading' | 'disabled' | 'trailing'
+  | Drawn
+  | 'playing'
+  | 'size'
+  | 'variant'
+  | 'loading'
+  | 'disabled'
+  | 'trailing'
+  | 'shuffle'
+  | 'onShuffleChange'
+  | 'repeat'
+  | 'onRepeatChange'
+  | 'playbackRate'
+  | 'onPlaybackRateChange'
 > & { readonly trailing?: Child };
 /** Bloom `NowPlayingBar`'s data (its transport, position and duration); its `devicePicker` is a language child. */
-export type NowPlayingBarOptions = Omit<NowPlayingBarProps, Drawn | 'track' | 'devicePicker'> & {
+export type NowPlayingBarOptions = Omit<
+  NowPlayingBarProps,
+  | Drawn
+  | 'track'
+  | 'devicePicker'
+  | 'muted'
+  | 'onMutedChange'
+  | 'liked'
+  | 'onLikedChange'
+  | 'devicePickerOpen'
+  | 'onDevicePickerOpenChange'
+  | 'volume'
+  | 'onVolumeChange'
+> & {
   readonly devicePicker?: Child;
 };
 /** Bloom `MiniPlayer`'s data; `.onPress()` opens the full player. */
-export type MiniPlayerOptions = Omit<MiniPlayerProps, Drawn | 'track' | 'onPress'>;
+export type MiniPlayerOptions = Omit<
+  MiniPlayerProps,
+  Drawn | 'track' | 'onPress' | 'liked' | 'onLikedChange'
+>;
 /** Bloom `FullScreenPlayer`'s data; its `aboutArtist` is a language child. */
 export type FullScreenPlayerOptions = Omit<
   FullScreenPlayerProps,
-  Drawn | 'track' | 'aboutArtist'
+  Drawn | 'track' | 'aboutArtist' | 'liked' | 'onLikedChange'
 > & { readonly aboutArtist?: Child };
 /** A menu's data; its `trigger` (Bloom's children) is a language child. */
 type MenuOptions<P> = Omit<
@@ -72,16 +100,32 @@ interface Sized<V> extends ViewModifiers<V> {
   disabled(value?: boolean): V;
 }
 export interface TransportControlsView extends Sized<TransportControlsView> {
+  shuffle(value: Bound<TransportControlsProps, 'shuffle'>): TransportControlsView;
+  repeat(value: Bound<TransportControlsProps, 'repeat'>): TransportControlsView;
+  playbackRate(value: Bound<TransportControlsProps, 'playbackRate'>): TransportControlsView;
   /** `music` (default) or `podcast`. */
   style(value: TransportStyle): TransportControlsView;
   /** The play button shows its spinner. */
   loading(value?: boolean): TransportControlsView;
 }
-export type NowPlayingBarView = ViewModifiers<NowPlayingBarView>;
-export type MiniPlayerView = ViewModifiers<MiniPlayerView>;
-export type FullScreenPlayerView = ViewModifiers<FullScreenPlayerView>;
-export type PlaybackSpeedMenuView = Sized<PlaybackSpeedMenuView>;
-export type SleepTimerMenuView = Sized<SleepTimerMenuView>;
+export interface NowPlayingBarView extends ViewModifiers<NowPlayingBarView> {
+  muted(value: Bound<NowPlayingBarProps, 'muted'>): NowPlayingBarView;
+  liked(value: Bound<NowPlayingBarProps, 'liked'>): NowPlayingBarView;
+  devicePickerOpen(value: Bound<NowPlayingBarProps, 'devicePickerOpen'>): NowPlayingBarView;
+  volume(value: Bound<NowPlayingBarProps, 'volume'>): NowPlayingBarView;
+}
+export interface MiniPlayerView extends ViewModifiers<MiniPlayerView> {
+  liked(value: Bound<MiniPlayerProps, 'liked'>): MiniPlayerView;
+}
+export interface FullScreenPlayerView extends ViewModifiers<FullScreenPlayerView> {
+  liked(value: Bound<FullScreenPlayerProps, 'liked'>): FullScreenPlayerView;
+}
+export interface PlaybackSpeedMenuView extends Sized<PlaybackSpeedMenuView> {
+  presented(value: Bound<PlaybackSpeedMenuProps, 'open'>): PlaybackSpeedMenuView;
+}
+export interface SleepTimerMenuView extends Sized<SleepTimerMenuView> {
+  presented(value: Bound<SleepTimerMenuProps, 'open'>): SleepTimerMenuView;
+}
 export type DevicePickerView = ViewModifiers<DevicePickerView>;
 export type ConnectBannerView = ViewModifiers<ConnectBannerView>;
 
@@ -143,6 +187,7 @@ function sized(d: ControlDraw): Record<string, unknown> {
 function menu(host: unknown, binding: readonly [string, string]): ControlRenderer {
   return product(host, {
     binding,
+    bindings: { presented: ['open', 'onOpenChange'] },
     own: (d) => {
       const { trigger } = (d.node.props as { options: { trigger?: Child } }).options;
       return { ...sized(d), trigger: undefined, children: slot(d, trigger) };
@@ -152,6 +197,11 @@ function menu(host: unknown, binding: readonly [string, string]): ControlRendere
 
 export const MEDIA_PLAYERS: Record<MediaPlayerKind, ControlRenderer> = {
   transportControls: product(BloomTransportControls, {
+    bindings: {
+      shuffle: ['shuffle', 'onShuffleChange'],
+      repeat: ['repeat', 'onRepeatChange'],
+      playbackRate: ['playbackRate', 'onPlaybackRateChange'],
+    },
     slots: ['trailing'],
     own: (d) => ({
       ...sized(d),
@@ -159,9 +209,23 @@ export const MEDIA_PLAYERS: Record<MediaPlayerKind, ControlRenderer> = {
       loading: d.own('loading')?.value,
     }),
   }),
-  nowPlayingBar: product(BloomNowPlayingBar, { slots: ['devicePicker'] }),
-  miniPlayer: product(BloomMiniPlayer, { press: true }),
-  fullScreenPlayer: product(BloomFullScreenPlayer, { slots: ['aboutArtist'] }),
+  nowPlayingBar: product(BloomNowPlayingBar, {
+    bindings: {
+      muted: ['muted', 'onMutedChange'],
+      liked: ['liked', 'onLikedChange'],
+      devicePickerOpen: ['devicePickerOpen', 'onDevicePickerOpenChange'],
+      volume: ['volume', 'onVolumeChange'],
+    },
+    slots: ['devicePicker'],
+  }),
+  miniPlayer: product(BloomMiniPlayer, {
+    bindings: { liked: ['liked', 'onLikedChange'] },
+    press: true,
+  }),
+  fullScreenPlayer: product(BloomFullScreenPlayer, {
+    bindings: { liked: ['liked', 'onLikedChange'] },
+    slots: ['aboutArtist'],
+  }),
   playbackSpeedMenu: menu(BloomPlaybackSpeedMenu, ['rate', 'onRateChange']),
   sleepTimerMenu: menu(BloomSleepTimerMenu, ['value', 'onValueChange']),
   devicePicker: product(BloomDevicePicker),

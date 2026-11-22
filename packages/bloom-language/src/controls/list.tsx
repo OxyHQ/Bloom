@@ -16,7 +16,7 @@ import {
 import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
-import type { Binding } from '../binding';
+import { type Binding, refreshing } from '../binding';
 import { Node, type Child, type ViewModifiers } from '../node';
 import { resolveSpace, type Density, type ListSeparator, type SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -132,8 +132,8 @@ export interface VirtualListView extends ViewModifiers<VirtualListView> {
   columns(value: number): VirtualListView;
   /** Called near the end, `threshold` viewports from it. */
   onEndReached(action: () => void, threshold?: number): VirtualListView;
-  /** Pull to refresh: whether it is refreshing, and what a pull does. */
-  refreshable(refreshing: boolean, onRefresh: () => void): VirtualListView;
+  /** Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). */
+  refreshable(value: Binding<boolean>): VirtualListView;
   /** The indices whose rows stick to the top. */
   stickyIndices(value: readonly number[]): VirtualListView;
   /** Where its scroll position is kept across visits. */
@@ -317,7 +317,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       props.onEndReached = end.value;
       props.onEndReachedThreshold = end.threshold;
     }
-    if (refresh !== undefined) [props.refreshing, props.onRefresh] = refresh;
+    if (refresh !== undefined) Object.assign(props, refreshing(refresh));
     props.row = row;
     props.render = d.render;
     return d.component(LanguageVirtualList, props);

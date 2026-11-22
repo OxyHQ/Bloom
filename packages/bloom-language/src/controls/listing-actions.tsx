@@ -9,6 +9,7 @@ import {
   type SaleActionCardProps,
 } from '@oxy.so/bloom/listing-actions';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { MortgageLayout, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -30,7 +31,18 @@ export type ListingActionBarOptions = Omit<
 > & { readonly bottomInset?: SpaceToken };
 export type MortgageCalculatorOptions = Omit<
   MortgageCalculatorProps,
-  Drawn | 'layout' | 'maxWidth' | 'disclaimer'
+  | Drawn
+  | 'layout'
+  | 'maxWidth'
+  | 'disclaimer'
+  | 'price'
+  | 'onPriceChange'
+  | 'downPayment'
+  | 'onDownPaymentChange'
+  | 'years'
+  | 'onYearsChange'
+  | 'annualRate'
+  | 'onAnnualRateChange'
 > & { readonly maxWidth?: SpaceToken; readonly disclaimer?: Child };
 export type RentalActionCardOptions = Omit<
   RentalActionCardProps,
@@ -50,6 +62,10 @@ export interface ListingActionBarView extends ViewModifiers<ListingActionBarView
 }
 /** Bloom `MortgageCalculator`: the price, deposit, term and rate, and the monthly payment. */
 export interface MortgageCalculatorView extends ViewModifiers<MortgageCalculatorView> {
+  price(value: Bound<MortgageCalculatorProps, 'price'>): MortgageCalculatorView;
+  downPayment(value: Bound<MortgageCalculatorProps, 'downPayment'>): MortgageCalculatorView;
+  years(value: Bound<MortgageCalculatorProps, 'years'>): MortgageCalculatorView;
+  annualRate(value: Bound<MortgageCalculatorProps, 'annualRate'>): MortgageCalculatorView;
   /** `auto` (default: side by side from 640 wide), `stacked` or `split`. */
   style(value: MortgageLayout): MortgageCalculatorView;
 }
@@ -104,6 +120,12 @@ export const LISTING_ACTIONS: Record<ListingActionKind, ControlRenderer> = {
     }),
   }),
   mortgageCalculator: product(BloomMortgageCalculator, {
+    bindings: {
+      price: ['price', 'onPriceChange'],
+      downPayment: ['downPayment', 'onDownPaymentChange'],
+      years: ['years', 'onYearsChange'],
+      annualRate: ['annualRate', 'onAnnualRateChange'],
+    },
     slots: ['disclaimer'],
     lengths: ['maxWidth'],
     own: (d) => ({ layout: d.own('style')?.value }),

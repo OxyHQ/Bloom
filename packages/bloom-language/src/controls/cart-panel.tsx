@@ -11,7 +11,7 @@ import {
   type CartTipPickerProps,
 } from '@oxy.so/bloom/cart-panel';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -23,7 +23,10 @@ export type CartKind = 'cartLine' | 'cartPanel' | 'cartPromoField' | 'cartTipPic
 type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 
 /** Bloom `CartLine`'s data (its price, quantity, options, photo and handlers). */
-export type CartLineOptions = Omit<CartLineProps, Drawn | 'name' | 'density'>;
+export type CartLineOptions = Omit<
+  CartLineProps,
+  Drawn | 'name' | 'density' | 'quantity' | 'onQuantityChange'
+>;
 /**
  * Bloom `CartPanel`'s data (the vendor's photo and meta, the line handlers,
  * the minimum order, tip, promo and summary, the checkout and its words); its
@@ -45,6 +48,7 @@ export type CartTipPickerOptions = Omit<
 >;
 
 export interface CartLineView extends ViewModifiers<CartLineView> {
+  quantity(value: Bound<CartLineProps, 'quantity'>): CartLineView;
   /** `comfortable` or `compact`. */
   density(value: Density<'cartLine'>): CartLineView;
 }
@@ -85,7 +89,10 @@ export function CartTipPicker(
 }
 
 export const CARTS: Record<CartKind, ControlRenderer> = {
-  cartLine: product(BloomCartLine, { own: (d) => ({ density: d.own('density')?.value }) }),
+  cartLine: product(BloomCartLine, {
+    bindings: { quantity: ['quantity', 'onQuantityChange'] },
+    own: (d) => ({ density: d.own('density')?.value }),
+  }),
   cartPanel: product(BloomCartPanel, {
     slots: ['empty'],
     own: (d) => ({ density: d.own('density')?.value }),

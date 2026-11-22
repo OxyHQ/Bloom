@@ -54,8 +54,7 @@ describe('Sidebar is Bloom’s Sidebar', () => {
           SidebarMode('Computer', OtherGlyph),
           NavItem('Home', Glyph),
         )
-          .mode('search')
-          .onModeChange(choose)
+          .mode(['search', choose])
           .modePresentation('toggle')
           .modesLabel('Mode')
           .team(team)

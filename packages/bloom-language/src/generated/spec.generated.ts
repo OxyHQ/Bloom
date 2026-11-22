@@ -3007,7 +3007,6 @@ export const MODIFIERS = {
     "space"
   ],
   "refreshable": [
-    "value",
     "value"
   ],
   "onEndReached": [
@@ -3048,9 +3047,6 @@ export const MODIFIERS = {
   "expanded": [
     "value"
   ],
-  "onExpandedChange": [
-    "value"
-  ],
   "emptyLabel": [
     "value"
   ],
@@ -3063,9 +3059,6 @@ export const MODIFIERS = {
   "surface": [
     "sidebarSurface",
     "value?"
-  ],
-  "onCollapsedChange": [
-    "value"
   ],
   "searchable": [
     "value?"
@@ -3212,9 +3205,6 @@ export const MODIFIERS = {
     "value"
   ],
   "mode": [
-    "value"
-  ],
-  "onModeChange": [
     "value"
   ],
   "modePresentation": [
@@ -3894,6 +3884,162 @@ export const MODIFIERS = {
   ],
   "multiline": [
     "value?"
+  ],
+  "activeIndex": [
+    "value"
+  ],
+  "activeGroup": [
+    "value"
+  ],
+  "skinTone": [
+    "value"
+  ],
+  "activeTab": [
+    "value"
+  ],
+  "range": [
+    "value"
+  ],
+  "activeCell": [
+    "value"
+  ],
+  "model": [
+    "value"
+  ],
+  "effort": [
+    "value"
+  ],
+  "voiceState": [
+    "value"
+  ],
+  "permission": [
+    "value"
+  ],
+  "tab": [
+    "value"
+  ],
+  "navOpen": [
+    "value"
+  ],
+  "panelOpen": [
+    "value"
+  ],
+  "minimized": [
+    "value"
+  ],
+  "searchQuery": [
+    "value"
+  ],
+  "searchOpen": [
+    "value"
+  ],
+  "answers": [
+    "value"
+  ],
+  "memberQuery": [
+    "value"
+  ],
+  "rate": [
+    "value"
+  ],
+  "transcriptOpen": [
+    "value"
+  ],
+  "highlightedIndex": [
+    "value"
+  ],
+  "favorite": [
+    "value"
+  ],
+  "starred": [
+    "value"
+  ],
+  "expandedIds": [
+    "value"
+  ],
+  "guestsOpen": [
+    "value"
+  ],
+  "price": [
+    "value"
+  ],
+  "downPayment": [
+    "value"
+  ],
+  "years": [
+    "value"
+  ],
+  "annualRate": [
+    "value"
+  ],
+  "month": [
+    "value"
+  ],
+  "period": [
+    "value"
+  ],
+  "quantity": [
+    "value"
+  ],
+  "liked": [
+    "value"
+  ],
+  "release": [
+    "value"
+  ],
+  "selectedMoods": [
+    "value"
+  ],
+  "selectedGenres": [
+    "value"
+  ],
+  "pitch": [
+    "value"
+  ],
+  "metric": [
+    "value"
+  ],
+  "day": [
+    "value"
+  ],
+  "shuffle": [
+    "value"
+  ],
+  "repeat": [
+    "value"
+  ],
+  "playbackRate": [
+    "value"
+  ],
+  "devicePickerOpen": [
+    "value"
+  ],
+  "volume": [
+    "value"
+  ],
+  "filtersOpen": [
+    "value"
+  ],
+  "selectedExtras": [
+    "value"
+  ],
+  "access": [
+    "value"
+  ],
+  "window": [
+    "value"
+  ],
+  "downloadedOnly": [
+    "value"
+  ],
+  "view": [
+    "value"
+  ],
+  "date": [
+    "value"
+  ],
+  "selectedIds": [
+    "value"
   ]
 } as const;
 
@@ -8607,7 +8753,6 @@ export const NODE_MODIFIERS = {
     "surface",
     "size",
     "collapsed",
-    "onCollapsedChange",
     "searchable",
     "themeToggle",
     "logo",
@@ -8615,7 +8760,6 @@ export const NODE_MODIFIERS = {
     "label",
     "testID",
     "mode",
-    "onModeChange",
     "modePresentation",
     "modesLabel",
     "team",
@@ -8640,7 +8784,6 @@ export const NODE_MODIFIERS = {
     "trailing",
     "collapsible",
     "expanded",
-    "onExpandedChange",
     "loading",
     "error",
     "emptyLabel",
@@ -8649,8 +8792,7 @@ export const NODE_MODIFIERS = {
   "treeFolder": [
     "id",
     "trailing",
-    "expanded",
-    "onExpandedChange"
+    "expanded"
   ],
   "treeItem": [
     "id",
@@ -8661,7 +8803,6 @@ export const NODE_MODIFIERS = {
     "trailing",
     "disabled",
     "expanded",
-    "onExpandedChange",
     "emptyLabel",
     "onPress",
     "onLongPress",
@@ -16110,7 +16251,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "disabled"
+    "disabled",
+    "activeIndex"
   ],
   "compactComposer": [
     "padding",
@@ -16438,7 +16580,9 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "size",
-    "loading"
+    "loading",
+    "presented",
+    "activeIndex"
   ],
   "voiceRecorder": [
     "padding",
@@ -16600,7 +16744,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "columns"
+    "columns",
+    "presented"
   ],
   "emojiPicker": [
     "padding",
@@ -16681,7 +16826,11 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "size"
+    "size",
+    "activeGroup",
+    "query",
+    "skinTone",
+    "activeTab"
   ],
   "reactionPicker": [
     "padding",
@@ -16843,7 +16992,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "presented"
   ],
   "areaChartCard": [
     "padding",
@@ -16925,7 +17075,9 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "shape"
+    "shape",
+    "activeIndex",
+    "range"
   ],
   "barListCard": [
     "padding",
@@ -17329,7 +17481,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "tint"
+    "tint",
+    "activeCell"
   ],
   "heatmapChartCard": [
     "padding",
@@ -17411,7 +17564,9 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "tint",
-    "activeTint"
+    "activeTint",
+    "range",
+    "activeCell"
   ],
   "lineChartCard": [
     "padding",
@@ -17494,7 +17649,8 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "shape",
     "tint",
-    "activeTint"
+    "activeTint",
+    "activeIndex"
   ],
   "radarChartCard": [
     "padding",
@@ -17576,7 +17732,9 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "legend"
+    "legend",
+    "activeIndex",
+    "range"
   ],
   "sleepScoreCard": [
     "padding",
@@ -17656,7 +17814,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "activeIndex"
   ],
   "sparkline": [
     "padding",
@@ -17820,7 +17979,9 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "mono"
+    "mono",
+    "activeIndex",
+    "range"
   ],
   "stepsCard": [
     "padding",
@@ -17902,7 +18063,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "tint",
-    "activeTint"
+    "activeTint",
+    "activeIndex"
   ],
   "tokensChartCard": [
     "padding",
@@ -17984,7 +18146,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "tint",
-    "activeTint"
+    "activeTint",
+    "activeIndex"
   ],
   "composerPanel": [
     "padding",
@@ -18065,7 +18228,11 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "disabled"
+    "disabled",
+    "model",
+    "effort",
+    "voiceState",
+    "permission"
   ],
   "composerPill": [
     "padding",
@@ -18148,7 +18315,11 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "disabled",
     "surface",
-    "frosted"
+    "frosted",
+    "model",
+    "effort",
+    "voiceState",
+    "permission"
   ],
   "composerPanelStatusTab": [
     "padding",
@@ -18311,7 +18482,9 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "sidebarSurface",
     "sidebarScrollbarSide",
-    "surface"
+    "surface",
+    "navOpen",
+    "panelOpen"
   ],
   "aiChatContainer": [
     "padding",
@@ -18955,7 +19128,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "tab"
   ],
   "aiChatGalleryPanel": [
     "padding",
@@ -19035,7 +19209,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "tab"
   ],
   "statCard": [
     "padding",
@@ -19444,7 +19619,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "usageCard": [
     "padding",
@@ -19524,7 +19700,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "agentThinking": [
     "padding",
@@ -19606,7 +19783,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "tint"
+    "tint",
+    "presented"
   ],
   "agentProgress": [
     "padding",
@@ -19686,7 +19864,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "minimized"
   ],
   "agentProgressLoadingText": [
     "padding",
@@ -20008,7 +20187,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "agentLogToolCalls": [
     "padding",
@@ -20342,7 +20522,12 @@ export const NODE_MODIFIERS = {
     "railSelection",
     "modesPresentation",
     "scrollbarSide",
-    "teamPlacement"
+    "teamPlacement",
+    "query",
+    "mode",
+    "collapsed",
+    "searchQuery",
+    "searchOpen"
   ],
   "questionnaire": [
     "padding",
@@ -20422,7 +20607,9 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "step",
+    "answers"
   ],
   "chatBackground": [
     "padding",
@@ -20834,7 +21021,9 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "style"
+    "style",
+    "tab",
+    "memberQuery"
   ],
   "pinnedMessageBar": [
     "padding",
@@ -21077,7 +21266,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "spacing",
-    "dividers"
+    "dividers",
+    "value"
   ],
   "chatSearchField": [
     "padding",
@@ -22395,7 +22585,9 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "tint",
     "bubbleTint",
-    "contentTint"
+    "contentTint",
+    "rate",
+    "transcriptOpen"
   ],
   "amenityList": [
     "padding",
@@ -22879,7 +23071,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "lines"
+    "lines",
+    "expanded"
   ],
   "mapClusterMarker": [
     "padding",
@@ -24833,7 +25026,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "disabled"
+    "disabled",
+    "date"
   ],
   "featureFilter": [
     "padding",
@@ -25316,7 +25510,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "highlightedIndex"
   ],
   "guestPicker": [
     "padding",
@@ -26288,7 +26483,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "tint"
+    "tint",
+    "muted"
   ],
   "groupCallGrid": [
     "padding",
@@ -26617,7 +26813,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "muted"
   ],
   "selectedChipsRow": [
     "padding",
@@ -26778,7 +26975,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "description"
   ],
   "messageBubble": [
     "padding",
@@ -27429,7 +27627,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "loading"
+    "loading",
+    "favorite"
   ],
   "placeHours": [
     "padding",
@@ -27509,7 +27708,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "placeInfoList": [
     "padding",
@@ -27994,7 +28194,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "size",
-    "disabled"
+    "disabled",
+    "query"
   ],
   "mailComposeSurface": [
     "padding",
@@ -28076,7 +28277,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "style",
-    "loading"
+    "loading",
+    "minimized"
   ],
   "mailRecipientField": [
     "padding",
@@ -28157,7 +28359,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "disabled"
+    "disabled",
+    "query"
   ],
   "mailMessage": [
     "padding",
@@ -28237,7 +28440,9 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded",
+    "starred"
   ],
   "mailThread": [
     "padding",
@@ -28317,7 +28522,9 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "starred",
+    "expandedIds"
   ],
   "mailQuoteToggle": [
     "padding",
@@ -28397,7 +28604,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "noteEditorToolbar": [
     "padding",
@@ -28642,7 +28850,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "loading",
-    "disabled"
+    "disabled",
+    "guestsOpen"
   ],
   "bookingBar": [
     "padding",
@@ -28884,7 +29093,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "query"
   ],
   "searchModeTabs": [
     "padding",
@@ -29290,7 +29500,11 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "style"
+    "style",
+    "price",
+    "downPayment",
+    "years",
+    "annualRate"
   ],
   "rentalActionCard": [
     "padding",
@@ -29535,7 +29749,8 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "style",
     "density",
-    "loading"
+    "loading",
+    "favorite"
   ],
   "listingCardGrid": [
     "padding",
@@ -29777,7 +29992,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "mode"
   ],
   "listingQualityMeter": [
     "padding",
@@ -30101,7 +30317,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "pricePerAreaComparison": [
     "padding",
@@ -30995,7 +31212,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "density"
+    "density",
+    "month"
   ],
   "calendarViewHeader": [
     "padding",
@@ -31398,7 +31616,9 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "size",
-    "disabled"
+    "disabled",
+    "muted",
+    "paused"
   ],
   "agentCreator": [
     "padding",
@@ -31881,7 +32101,9 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "tint"
+    "tint",
+    "period",
+    "activeCell"
   ],
   "selectedAgentPreview": [
     "padding",
@@ -32122,7 +32344,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "surface"
+    "surface",
+    "query"
   ],
   "agentChat": [
     "padding",
@@ -32203,7 +32426,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "titleAlign"
+    "titleAlign",
+    "value"
   ],
   "routeStops": [
     "padding",
@@ -32367,7 +32591,8 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "style",
     "tint",
-    "loading"
+    "loading",
+    "selected"
   ],
   "noteCardSkeleton": [
     "padding",
@@ -33345,7 +33570,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "expanded"
   ],
   "priceSummaryLine": [
     "padding",
@@ -34311,7 +34537,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "density"
+    "density",
+    "quantity"
   ],
   "cartPanel": [
     "padding",
@@ -34635,7 +34862,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "density"
+    "density",
+    "quantity"
   ],
   "menuItemOptions": [
     "padding",
@@ -34716,7 +34944,9 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "disabled"
+    "disabled",
+    "value",
+    "quantity"
   ],
   "vendorCard": [
     "padding",
@@ -34798,7 +35028,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "density",
-    "loading"
+    "loading",
+    "favorite"
   ],
   "mediaCard": [
     "padding",
@@ -34964,7 +35195,8 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "size",
     "style",
-    "loading"
+    "loading",
+    "liked"
   ],
   "albumCard": [
     "padding",
@@ -36435,7 +36667,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "metric"
   ],
   "topTracksTable": [
     "padding",
@@ -37483,7 +37716,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "release",
+    "selectedMoods",
+    "selectedGenres",
+    "pitch"
   ],
   "checkoutSummaryRow": [
     "padding",
@@ -37972,7 +38209,8 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "disabled",
     "loading",
-    "tint"
+    "tint",
+    "day"
   ],
   "orderConfirmation": [
     "padding",
@@ -38137,7 +38375,10 @@ export const NODE_MODIFIERS = {
     "size",
     "style",
     "loading",
-    "disabled"
+    "disabled",
+    "shuffle",
+    "repeat",
+    "playbackRate"
   ],
   "nowPlayingBar": [
     "padding",
@@ -38217,7 +38458,11 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "muted",
+    "liked",
+    "devicePickerOpen",
+    "volume"
   ],
   "miniPlayer": [
     "padding",
@@ -38297,7 +38542,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "liked"
   ],
   "fullScreenPlayer": [
     "padding",
@@ -38377,7 +38623,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "liked"
   ],
   "playbackSpeedMenu": [
     "padding",
@@ -38459,7 +38706,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "size",
-    "disabled"
+    "disabled",
+    "presented"
   ],
   "sleepTimerMenu": [
     "padding",
@@ -38541,7 +38789,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "size",
-    "disabled"
+    "disabled",
+    "presented"
   ],
   "devicePicker": [
     "padding",
@@ -38865,7 +39114,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "density",
-    "loading"
+    "loading",
+    "sorting"
   ],
   "earningsSummary": [
     "padding",
@@ -38945,7 +39195,8 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "period"
   ],
   "earningsBreakdown": [
     "padding",
@@ -39269,7 +39520,10 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "density",
-    "loading"
+    "loading",
+    "sorting",
+    "filter",
+    "filtersOpen"
   ],
   "signaturePad": [
     "padding",
@@ -39351,7 +39605,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "tint",
-    "disabled"
+    "disabled",
+    "value"
   ],
   "proofOfDelivery": [
     "padding",
@@ -39433,7 +39688,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "loading",
-    "disabled"
+    "disabled",
+    "value"
   ],
   "vehiclePicker": [
     "padding",
@@ -39676,7 +39932,10 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "disabled"
+    "disabled",
+    "selectedExtras",
+    "access",
+    "window"
   ],
   "shipmentRequestForm": [
     "padding",
@@ -39921,7 +40180,8 @@ export const NODE_MODIFIERS = {
     "fullScreenCover",
     "style",
     "active",
-    "disabled"
+    "disabled",
+    "pressed"
   ],
   "swipeRow": [
     "padding",
@@ -40164,7 +40424,14 @@ export const NODE_MODIFIERS = {
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
-    "fullScreenCover"
+    "fullScreenCover",
+    "query",
+    "expanded",
+    "collapsed",
+    "sorting",
+    "filter",
+    "downloadedOnly",
+    "view"
   ],
   "libraryItem": [
     "padding",
@@ -40727,7 +40994,8 @@ export const NODE_MODIFIERS = {
     "initialHeaderHeight",
     "initialFooterHeight",
     "fullScreenCover",
-    "style"
+    "style",
+    "tab"
   ],
   "queuePanelRow": [
     "padding",
@@ -40969,7 +41237,8 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "density",
-    "tint"
+    "tint",
+    "selectedIds"
   ],
   "trackListHeader": [
     "padding",

@@ -45,7 +45,7 @@ import {
   type VehiclePickerProps,
 } from '@oxy.so/bloom/vehicle-picker';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ColorToken, Density, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -77,12 +77,12 @@ export type CarrierQuoteCardOptions = Omit<
 /** Bloom `CarrierQuoteList`'s data; its `emptyAction` is a language child. */
 export type CarrierQuoteListOptions = Omit<
   CarrierQuoteListProps,
-  Drawn | 'quotes' | 'density' | 'loading' | 'emptyAction'
+  Drawn | 'quotes' | 'density' | 'loading' | 'emptyAction' | 'sort' | 'onSortChange'
 > & { readonly emptyAction?: Child };
 /** Bloom `EarningsSummary`'s data; its `payoutAction` a child, its chart's height a space token. */
 export type EarningsSummaryOptions = Omit<
   EarningsSummaryProps,
-  Drawn | 'periods' | 'payoutAction' | 'chartHeight'
+  Drawn | 'periods' | 'payoutAction' | 'chartHeight' | 'period' | 'onPeriodChange'
 > & { readonly payoutAction?: Child; readonly chartHeight?: SpaceToken };
 export type EarningsBreakdownOptions = Omit<EarningsBreakdownProps, Drawn | 'lines'>;
 /** Bloom `EarningsPayoutRow`'s data; its `action` is a language child. */
@@ -98,16 +98,29 @@ export type JobCardOptions = Omit<
 /** Bloom `JobBoard`'s data; its `emptyAction` is a language child. */
 export type JobBoardOptions = Omit<
   JobBoardProps,
-  Drawn | 'jobs' | 'density' | 'loading' | 'emptyAction'
+  | Drawn
+  | 'jobs'
+  | 'density'
+  | 'loading'
+  | 'emptyAction'
+  | 'sort'
+  | 'onSortChange'
+  | 'filter'
+  | 'onFilterChange'
+  | 'filtersOpen'
+  | 'onFiltersOpenChange'
 > & { readonly emptyAction?: Child };
-/** Bloom `SignaturePad`'s data (its value, controlled or not); its height a space token. */
-export type SignaturePadOptions = Omit<SignaturePadProps, Drawn | 'ink' | 'disabled' | 'height'> & {
+/** Bloom `SignaturePad`'s data (its `defaultValue`; `.value()` binds it); its height a space token. */
+export type SignaturePadOptions = Omit<
+  SignaturePadProps,
+  Drawn | 'ink' | 'disabled' | 'height' | 'value' | 'onChange'
+> & {
   readonly height?: SpaceToken;
 };
 /** Bloom `ProofOfDelivery`'s data; its `actions` a child, the signature's height a space token. */
 export type ProofOfDeliveryOptions = Omit<
   ProofOfDeliveryProps,
-  Drawn | 'submitting' | 'disabled' | 'actions' | 'signatureHeight'
+  Drawn | 'submitting' | 'disabled' | 'actions' | 'signatureHeight' | 'value' | 'onChange'
 > & { readonly actions?: Child; readonly signatureHeight?: SpaceToken };
 export type VehiclePickerOptions<T extends string = VehicleKind> = Omit<
   VehiclePickerProps<T>,
@@ -119,7 +132,15 @@ export type ShipmentLoadPickerOptions = Omit<
 >;
 export type ShipmentOptionsListOptions = Omit<
   ShipmentOptionsListProps,
-  'style' | 'testID' | 'disabled'
+  | 'style'
+  | 'testID'
+  | 'disabled'
+  | 'selectedExtras'
+  | 'onExtrasChange'
+  | 'access'
+  | 'onAccessChange'
+  | 'window'
+  | 'onWindowChange'
 >;
 /** Bloom `ShipmentRequestForm`'s data; its `footer` is a language child. */
 export type ShipmentRequestFormOptions = Omit<
@@ -133,11 +154,14 @@ export interface CarrierQuoteCardView extends ViewModifiers<CarrierQuoteCardView
   disabled(value?: boolean): CarrierQuoteCardView;
 }
 export interface CarrierQuoteListView extends ViewModifiers<CarrierQuoteListView> {
+  sorting(value: Bound<CarrierQuoteListProps, 'sort'>): CarrierQuoteListView;
   density(value: Density<'carrierQuoteList'>): CarrierQuoteListView;
   /** Skeleton cards while the quotes load. */
   loading(value?: boolean): CarrierQuoteListView;
 }
-export type EarningsSummaryView = ViewModifiers<EarningsSummaryView>;
+export interface EarningsSummaryView extends ViewModifiers<EarningsSummaryView> {
+  period(value: Bound<EarningsSummaryProps, 'period'>): EarningsSummaryView;
+}
 export type EarningsBreakdownView = ViewModifiers<EarningsBreakdownView>;
 /** Bloom `EarningsPayoutRow`; `.onPress()` is its own. */
 export type EarningsPayoutRowView = ViewModifiers<EarningsPayoutRowView>;
@@ -146,15 +170,20 @@ export interface JobCardView extends ViewModifiers<JobCardView> {
   disabled(value?: boolean): JobCardView;
 }
 export interface JobBoardView extends ViewModifiers<JobBoardView> {
+  sorting(value: Bound<JobBoardProps, 'sort'>): JobBoardView;
+  filter(value: Bound<JobBoardProps, 'filter'>): JobBoardView;
+  filtersOpen(value: Bound<JobBoardProps, 'filtersOpen'>): JobBoardView;
   density(value: Density<'jobBoard'>): JobBoardView;
   loading(value?: boolean): JobBoardView;
 }
 export interface SignaturePadView extends ViewModifiers<SignaturePadView> {
+  value(value: Bound<SignaturePadProps, 'value'>): SignaturePadView;
   /** The ink's colour role (Bloom's pad text colour with none). */
   tint(value: ColorToken): SignaturePadView;
   disabled(value?: boolean): SignaturePadView;
 }
 export interface ProofOfDeliveryView extends ViewModifiers<ProofOfDeliveryView> {
+  value(value: Bound<ProofOfDeliveryProps, 'value'>): ProofOfDeliveryView;
   /** Submitting: the proofs are on their way. */
   loading(value?: boolean): ProofOfDeliveryView;
   disabled(value?: boolean): ProofOfDeliveryView;
@@ -166,6 +195,9 @@ export interface ShipmentLoadPickerView extends ViewModifiers<ShipmentLoadPicker
   disabled(value?: boolean): ShipmentLoadPickerView;
 }
 export interface ShipmentOptionsListView extends ViewModifiers<ShipmentOptionsListView> {
+  selectedExtras(value: Bound<ShipmentOptionsListProps, 'selectedExtras'>): ShipmentOptionsListView;
+  access(value: Bound<ShipmentOptionsListProps, 'access'>): ShipmentOptionsListView;
+  window(value: Bound<ShipmentOptionsListProps, 'window'>): ShipmentOptionsListView;
   disabled(value?: boolean): ShipmentOptionsListView;
 }
 export interface ShipmentRequestFormView extends ViewModifiers<ShipmentRequestFormView> {
@@ -250,10 +282,12 @@ export const LOGISTICS: Record<LogisticsKind, ControlRenderer> = {
     own: (d) => ({ density: d.own('density')?.value, ...disabled(d) }),
   }),
   carrierQuoteList: product(BloomCarrierQuoteList, {
+    bindings: { sorting: ['sort', 'onSortChange'] },
     slots: ['emptyAction'],
     own: (d) => ({ density: d.own('density')?.value, loading: d.own('loading')?.value }),
   }),
   earningsSummary: product(BloomEarningsSummary, {
+    bindings: { period: ['period', 'onPeriodChange'] },
     slots: ['payoutAction'],
     lengths: ['chartHeight'],
   }),
@@ -264,15 +298,22 @@ export const LOGISTICS: Record<LogisticsKind, ControlRenderer> = {
     own: (d) => ({ density: d.own('density')?.value, ...disabled(d) }),
   }),
   jobBoard: product(BloomJobBoard, {
+    bindings: {
+      sorting: ['sort', 'onSortChange'],
+      filter: ['filter', 'onFilterChange'],
+      filtersOpen: ['filtersOpen', 'onFiltersOpenChange'],
+    },
     slots: ['emptyAction'],
     own: (d) => ({ density: d.own('density')?.value, loading: d.own('loading')?.value }),
   }),
   signaturePad: product(BloomSignaturePad, {
+    bindings: { value: ['value', 'onChange'] },
     lengths: ['height'],
     own: disabled,
     colors: (d) => ({ ink: d.own('tint')?.value as ColorToken | undefined }),
   }),
   proofOfDelivery: product(BloomProofOfDelivery, {
+    bindings: { value: ['value', 'onChange'] },
     slots: ['actions'],
     lengths: ['signatureHeight'],
     own: (d) => ({ submitting: d.own('loading')?.value, ...disabled(d) }),
@@ -285,7 +326,14 @@ export const LOGISTICS: Record<LogisticsKind, ControlRenderer> = {
     binding: ['value', 'onValueChange'],
     own: disabled,
   }),
-  shipmentOptionsList: product(BloomShipmentOptionsList, { own: disabled }),
+  shipmentOptionsList: product(BloomShipmentOptionsList, {
+    bindings: {
+      selectedExtras: ['selectedExtras', 'onExtrasChange'],
+      access: ['access', 'onAccessChange'],
+      window: ['window', 'onWindowChange'],
+    },
+    own: disabled,
+  }),
   shipmentRequestForm: product(BloomShipmentRequestForm, {
     binding: ['load', 'onLoadChange'],
     slots: ['footer'],

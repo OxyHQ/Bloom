@@ -41,8 +41,6 @@ const PLACE = {
     { id: 'directions', label: 'Directions', icon: RiRouteLine, onPress: press },
     { id: 'call', label: 'Call', icon: RiPhoneLine, onPress: press },
   ],
-  favorite: false,
-  onFavoriteChange: favorite,
 };
 
 const DAYS = [
@@ -155,6 +153,7 @@ const cards: ParityCase[] = [
     language: () =>
       toElement(
         L.PlaceCard('Forner de la Plaça', { ...PLACE, badge: 'New' })
+          .favorite([false, favorite])
           .style(density)
           .onPress(press),
       ),
@@ -162,6 +161,8 @@ const cards: ParityCase[] = [
       <PlaceCard
         name="Forner de la Plaça"
         {...PLACE}
+        favorite={false}
+        onFavoriteChange={favorite}
         badge="New"
         density={density}
         onPress={press}
@@ -341,7 +342,7 @@ const pickers: ParityCase[] = [
   {
     name: 'PlacePicker',
     language: () =>
-      toElement(L.PlacePicker('Address', [null, setPlace], ['', setQuery], { results: [] })),
+      toElement(L.PlacePicker('Address', [null, setPlace], { results: [] }).query(['', setQuery])),
     bloom: () => (
       <PlacePicker
         label="Address"
@@ -357,7 +358,10 @@ const pickers: ParityCase[] = [
     name: 'PlacePicker with results',
     language: () =>
       toElement(
-        L.PlacePicker('Address', [null, setPlace], ['Carrer', setQuery], { results: OPTIONS }),
+        L.PlacePicker('Address', [null, setPlace], { results: OPTIONS }).query([
+          'Carrer',
+          setQuery,
+        ]),
       ),
     bloom: () => (
       <PlacePicker
@@ -373,7 +377,9 @@ const pickers: ParityCase[] = [
   {
     name: 'PlacePicker chosen',
     language: () =>
-      toElement(L.PlacePicker('Address', [OPTIONS[0]!, setPlace], ['', setQuery], { results: [] })),
+      toElement(
+        L.PlacePicker('Address', [OPTIONS[0]!, setPlace], { results: [] }).query(['', setQuery]),
+      ),
     bloom: () => (
       <PlacePicker
         label="Address"
@@ -389,11 +395,11 @@ const pickers: ParityCase[] = [
     name: `PlacePicker ${status}`,
     language: () =>
       toElement(
-        L.PlacePicker('Address', [null, setPlace], ['Carrer', setQuery], {
+        L.PlacePicker('Address', [null, setPlace], {
           results: [],
           status,
           onRetry: press,
-        }),
+        }).query(['Carrer', setQuery]),
       ),
     bloom: () => (
       <PlacePicker
@@ -412,10 +418,11 @@ const pickers: ParityCase[] = [
     name: `PlacePicker ${size}, disabled, named`,
     language: () =>
       toElement(
-        L.PlacePicker('Address', [null, setPlace], ['', setQuery], {
+        L.PlacePicker('Address', [null, setPlace], {
           results: [],
           placeholder: 'Search',
         })
+          .query(['', setQuery])
           .size(size)
           .disabled()
           .label('Delivery address'),

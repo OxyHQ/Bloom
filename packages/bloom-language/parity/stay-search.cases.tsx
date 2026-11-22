@@ -109,9 +109,9 @@ export const STAY_SEARCH_CASES: ParityCase[] = [
         L.DestinationSuggestions(PLACES, {
           onSelect: set,
           heading: 'Suggested destinations',
-          highlightedIndex: 1,
-          onHighlightedIndexChange: set,
-        }).label('Places'),
+        })
+          .highlightedIndex([1, set])
+          .label('Places'),
       ),
     bloom: () => (
       <DestinationSuggestions

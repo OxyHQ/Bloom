@@ -573,7 +573,7 @@ fn first_message(output: &crate::Output) -> Option<&str> {
 #[test]
 fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable(false, refresh).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",
+        "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable([false, refresh]).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let indicators = chrome("export const S = () => ScrollView(Text('a')).scrollIndicators('never');\n");
@@ -588,6 +588,36 @@ fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     // A scroll view's own modifiers stay on it.
     let stack = chrome("export const S = () => Text('a').keyboardTaps('handled');\n");
     assert_eq!(first_message(&stack), Some("Text has no modifier .keyboardTaps()"));
+    // Pull to refresh is one binding, not a value and a handler.
+    let pair = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(false, r);\n");
+    assert_eq!(first_message(&pair), Some(".refreshable() takes 1 argument(s), not 2"));
+}
+
+#[test]
+fn a_nodes_other_editable_values_are_binding_modifiers() {
+    let check = |body: &str| {
+        compile(
+            &format!(
+                "import {{ AvailabilityFilter, NowPlayingBar, ReviewCard, Sidebar, NavItem }} from '@oxy.so/bloom-language';\n{body}"
+            ),
+            "row.tsx",
+        )
+    };
+    let valid = check(
+        "export const x = (r, t, now, day, open, liked, mode, I) => [ReviewCard('Ana', 'Lovely', r).expanded(open), NowPlayingBar(t, {}).liked(liked).volume([0.6, (v) => {}]).devicePickerOpen(open), AvailabilityFilter(now).date(day), Sidebar(NavItem('Home', I)).mode(mode).collapsed(open)];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        // The value and its handler are one binding, not two modifiers.
+        ("Sidebar(NavItem('Home', I)).onModeChange(f)", "Sidebar has no modifier .onModeChange()"),
+        ("Sidebar(NavItem('Home', I)).onCollapsedChange(f)", "Sidebar has no modifier .onCollapsedChange()"),
+        // A binding belongs to the node that edits that value.
+        ("ReviewCard('Ana', 'Lovely', r).liked(f)", "ReviewCard has no modifier .liked()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (r, f, I) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
 }
 
 #[test]
@@ -606,7 +636,7 @@ fn a_bottom_sheet_is_checked_against_the_spec() {
 #[test]
 fn the_sidebar_rail_and_page_footer_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (Home, select) => Sidebar(NavItem('Home', Home).id('home').link('/').badge(3).shortcut('⌘1').secondary(), TreeSection('Projects', TreeFolder('Archive', TreeItem('Old')).expanded(true), TreeItem('Roadmap').subtitle('Q1').meta('3').disabled()).collapsible().loading().emptyLabel('None')).selection('home').onSelect(select).variant('rail').surface('docked').size('lg').collapsed().searchable(false).themeToggle(false).label('Navigation');\n",
+        "export const S = (Home, select) => Sidebar(NavItem('Home', Home).id('home').link('/').badge(3).shortcut('⌘1').secondary(), TreeSection('Projects', TreeFolder('Archive', TreeItem('Old')).expanded([true, select]), TreeItem('Roadmap').subtitle('Q1').meta('3').disabled()).collapsible().loading().emptyLabel('None')).selection('home').onSelect(select).variant('rail').surface('docked').size('lg').collapsed().searchable(false).themeToggle(false).label('Navigation');\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let rail = chrome(
@@ -695,7 +725,7 @@ fn the_rest_of_the_layout_family_is_checked_against_the_spec() {
 #[test]
 fn the_sidebar_s_modes_identities_search_and_drops_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (Glyph, choose, team, plan, typed, dropped) => Sidebar(SidebarMode('Search', Glyph).id('search').shortcut('k'), TreeSection('Private', TreeItem('Notes').draggable().droppable(false).dropBeside(false)).droppable(false)).mode('search').onModeChange(choose).modePresentation('toggle').modesLabel('Mode').team(team).teamPlacement('header').plan(plan).onboarding({ title: 'Start', steps: [] }).query(['ho', typed]).onDrop(dropped);\n",
+        "export const S = (Glyph, choose, team, plan, typed, dropped) => Sidebar(SidebarMode('Search', Glyph).id('search').shortcut('k'), TreeSection('Private', TreeItem('Notes').draggable().droppable(false).dropBeside(false)).droppable(false)).mode(['search', choose]).modePresentation('toggle').modesLabel('Mode').team(team).teamPlacement('header').plan(plan).onboarding({ title: 'Start', steps: [] }).query(['ho', typed]).onDrop(dropped);\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let presentation = chrome("export const S = () => Sidebar().modePresentation('tabs');\n");
@@ -827,7 +857,7 @@ fn rows_and_lists_are_checked() {
     let imports = "import { ListItem, PersonRow, List, SectionedList, VirtualList, ListSelectionBar, Text, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (p, items, sections, data, row, set, actions) => VStack(ListItem('Ana').supporting('Design').supportingLines(2).prefix(Text('A')).trailing(Text('>')).footnote(Text('f')).attachments(Text('a')).density('compact').compactPadding('xs').active(true).disabled().link('/a').onPrefetch(set).checkable([true, set]).selecting(true).selectionLabel('Select').rowActions(actions, set).swipeActions({}, undefined).swipeEnabled(false).contextMenu(Text('m')), PersonRow(p), List(items).separator('line').scrollable().scrollHeight('320').stickyHeaders().headerContent(Text('h')).footerContent(Text('f')).emptyState(Text('e')).loading().loadingRows(3), SectionedList(sections).sectionIndex({}), VirtualList(data, row).itemKey(String).itemType(String).estimatedItemSize(56).columns(2).onEndReached(set, 0.5).refreshable(false, set).stickyIndices([0]).restorationKey('k').tuning({}), ListSelectionBar(1, 2).selecting(true).onSelectAll(set).onClear(set).rowActions(actions, set).labels({}));\n",
+        "export const x = (p, items, sections, data, row, set, actions) => VStack(ListItem('Ana').supporting('Design').supportingLines(2).prefix(Text('A')).trailing(Text('>')).footnote(Text('f')).attachments(Text('a')).density('compact').compactPadding('xs').active(true).disabled().link('/a').onPrefetch(set).checkable([true, set]).selecting(true).selectionLabel('Select').rowActions(actions, set).swipeActions({}, undefined).swipeEnabled(false).contextMenu(Text('m')), PersonRow(p), List(items).separator('line').scrollable().scrollHeight('320').stickyHeaders().headerContent(Text('h')).footerContent(Text('f')).emptyState(Text('e')).loading().loadingRows(3), SectionedList(sections).sectionIndex({}), VirtualList(data, row).itemKey(String).itemType(String).estimatedItemSize(56).columns(2).onEndReached(set, 0.5).refreshable([false, set]).stickyIndices([0]).restorationKey('k').tuning({}), ListSelectionBar(1, 2).selecting(true).onSelectAll(set).onClear(set).rowActions(actions, set).labels({}));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -1933,14 +1963,14 @@ fn the_places_are_checked() {
     let valid = check(
         "export const x = (l, p, q, o) => [PlaceCard('Forner').style('detail').loading(), \
          PlaceListCard('Saved').tint('primary'), DirectionsSteps(l).size('compact'), \
-         PlacePicker('Address', p, q, o).size('sm').disabled()];\n",
+         PlacePicker('Address', p, o).query(q).size('sm').disabled()];\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let output = check("export const x = () => PlaceCard('Forner').style('compact');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown placeCardStyle token 'compact' for .style()");
     let output = check("export const x = (l) => DirectionsSteps(l).size('md');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown directionsDensity token 'md' for .size()");
-    let output = check("export const x = (p, q, o) => PlacePicker('Address', p, q, o).style('plain');\n");
+    let output = check("export const x = (p, o) => PlacePicker('Address', p, o).style('plain');\n");
     assert_eq!(output.diagnostics[0].message, "PlacePicker has no modifier .style()");
 }
 

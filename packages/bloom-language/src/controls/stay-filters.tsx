@@ -124,6 +124,8 @@ export interface AreaRangeFilterView extends ViewModifiers<AreaRangeFilterView> 
 }
 export interface AvailabilityFilterView extends ViewModifiers<AvailabilityFilterView> {
   disabled(value?: boolean): AvailabilityFilterView;
+  /** The date it is available from, when not now (`null` none yet): a binding Bloom requires. */
+  date(value: Binding<Date | null>): AvailabilityFilterView;
 }
 export interface FeatureFilterView extends ViewModifiers<FeatureFilterView> {
   /** `chips` (default): pills with icons; `checkboxes`: a two-column list. */
@@ -212,17 +214,12 @@ export function AreaRangeFilter(
 ): AreaRangeFilterView {
   return new Node('areaRangeFilter', { binding: range, options }, []);
 }
-/** Bloom `AvailabilityFilter`: available now, else from the date its second binding holds. */
+/** Bloom `AvailabilityFilter`: available now as its binding holds, else from its `.date()`. */
 export function AvailabilityFilter(
   availableNow: Binding<boolean>,
-  date: Binding<Date | null>,
   options: AvailabilityFilterOptions = {},
 ): AvailabilityFilterView {
-  return new Node(
-    'availabilityFilter',
-    { binding: availableNow, options: { ...options, date: date[0], onDateChange: date[1] } },
-    [],
-  );
+  return new Node('availabilityFilter', { binding: availableNow, options }, []);
 }
 /** Bloom `FeatureFilter`, the chosen features the binding holds. */
 export function FeatureFilter(
@@ -265,6 +262,7 @@ export const STAY_FILTERS: Record<StayFilterKind, ControlRenderer> = {
   areaRangeFilter: product(BloomAreaRangeFilter, { binding: edited, own: disabled }),
   availabilityFilter: product(BloomAvailabilityFilter, {
     binding: ['availableNow', 'onAvailableNowChange'],
+    bindings: { date: ['date', 'onDateChange'] },
     own: disabled,
   }),
   featureFilter: product(BloomFeatureFilter, {

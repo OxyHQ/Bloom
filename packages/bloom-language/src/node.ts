@@ -56,7 +56,7 @@ import type { MediaFlightKind } from './controls/media-flight';
 import type { DataTableKind, DataTableStyle } from './controls/data-table';
 import type { SortableChipRowKind } from './controls/sortable-chip-row';
 import type { ViewportKind } from './controls/viewport';
-import type { DataTableCellContext, DataTableSize, DataTableSort } from '@oxy.so/bloom/data-table';
+import type { DataTableCellContext, DataTableSize } from '@oxy.so/bloom/data-table';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
 import type { ExpandableTextKind } from './controls/expandable-text';
@@ -169,7 +169,7 @@ import type { ChatComposerKind } from './controls/chat-composer';
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
-import type { Binding } from './binding';
+import type { AnyBinding, Binding } from './binding';
 import type {
   BoundaryErrorHandler,
   BoundaryFallback,
@@ -537,7 +537,7 @@ export type ScrollOffset = NonNullable<PageHeaderProps['scrollY']>;
 export interface ValueModifiers {
   disabled: boolean;
   loading: boolean;
-  collapsed: boolean;
+  collapsed: boolean | AnyBinding;
   icon: IconComponent | ViewNode;
   destructive: true;
   checked: boolean;
@@ -576,7 +576,7 @@ export interface ValueModifiers {
   screenActive: boolean;
   initialHeaderHeight: SpaceToken;
   initialFooterHeight: SpaceToken;
-  refreshable: readonly [refreshing: boolean, onRefresh: () => void];
+  refreshable: Binding<boolean>;
   scrollIndicators: ScrollIndicators;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
@@ -590,15 +590,13 @@ export interface ValueModifiers {
   manualActivation: boolean;
   secondary: true;
   shortcut: string;
-  expanded: boolean;
-  onExpandedChange: (expanded: boolean) => void;
+  expanded: AnyBinding;
   collapsible: boolean | SearchCollapse;
   emptyLabel: string;
   error: string | null | undefined;
   meta: string | undefined;
   variant: SidebarVariant;
   surface: SidebarSurface | boolean;
-  onCollapsedChange: (collapsed: boolean) => void;
   searchable: boolean;
   themeToggle: boolean;
   logo: SidebarLogo;
@@ -607,7 +605,7 @@ export interface ValueModifiers {
   pinning: FooterPinning;
   ignoresSafeArea: boolean;
   placeholder: string;
-  filter: (item: BloomCommandItem, query: string) => boolean;
+  filter: ((item: BloomCommandItem, query: string) => boolean) | AnyBinding;
   keywords: readonly string[];
   content: Child | (() => Child);
   fullBleed: boolean;
@@ -643,8 +641,7 @@ export interface ValueModifiers {
   onResizeStart: () => void;
   onResizeEnd: () => void;
   onNudge: (distance: number) => void;
-  mode: string;
-  onModeChange: (key: string) => void;
+  mode: AnyBinding;
   modePresentation: ModePresentation;
   modesLabel: string;
   team: SidebarTeam;
@@ -687,7 +684,7 @@ export interface ValueModifiers {
   hoverCard: boolean;
   pressScale: true;
   hoverHighlight: boolean | undefined;
-  pressed: boolean;
+  pressed: boolean | AnyBinding;
   colors: readonly [ColorToken, ColorToken];
   linkTone: ButtonLinkTone;
   inverted: boolean;
@@ -713,7 +710,7 @@ export interface ValueModifiers {
   onSubmit: () => void;
   autoFocus: true;
   maxLength: number;
-  description: string;
+  description: string | AnyBinding;
   readOnly: true;
   indeterminate: boolean;
   rows: number;
@@ -758,11 +755,11 @@ export interface ValueModifiers {
   outline: CardBorder;
   clipped: true;
   leadingView: readonly Child[];
-  selected: boolean;
+  selected: boolean | AnyBinding;
   highlighted: boolean;
   caption: string | Child;
   separator: GroupedSeparator | ListSeparator;
-  value: string;
+  value: string | AnyBinding;
   chevron: boolean;
   toggle: Binding<boolean>;
   onClose: { readonly action: () => void; readonly label: string | undefined };
@@ -789,7 +786,7 @@ export interface ValueModifiers {
   maxHeightRatio: number;
 
   // Settings rows (controls/settings.tsx)
-  muted: boolean;
+  muted: boolean | AnyBinding;
   compact: boolean;
   savedToast: boolean;
   minDate: Date;
@@ -808,7 +805,7 @@ export interface ValueModifiers {
   quickSelect: boolean;
   initialMonth: Date;
   months: 1 | 2;
-  step: number;
+  step: number | AnyBinding;
   hourFormat: HourFormat;
 
   // Ratings (controls/rating.tsx)
@@ -1021,7 +1018,7 @@ export interface ValueModifiers {
   cell: (context: DataTableCellContext<never>) => Child;
   sortable: boolean;
   sortsDescendingFirst: boolean;
-  sorting: Binding<DataTableSort | null>;
+  sorting: AnyBinding;
   rowSelection: Binding<readonly string[]>;
   pageSize: number;
   sizeToggle: Binding<DataTableSize>;
@@ -1106,6 +1103,59 @@ export interface ValueModifiers {
   methodTitleVariant: TypeRampStep;
   // Agent creator (controls/agent-creator.tsx)
   multiline: boolean;
+  // A node's other editable values (controls/product.ts, bindings): each a Binding.
+  activeIndex: AnyBinding;
+  activeGroup: AnyBinding;
+  skinTone: AnyBinding;
+  activeTab: AnyBinding;
+  range: AnyBinding;
+  activeCell: AnyBinding;
+  model: AnyBinding;
+  effort: AnyBinding;
+  voiceState: AnyBinding;
+  permission: AnyBinding;
+  tab: AnyBinding;
+  navOpen: AnyBinding;
+  panelOpen: AnyBinding;
+  minimized: AnyBinding;
+  searchQuery: AnyBinding;
+  searchOpen: AnyBinding;
+  answers: AnyBinding;
+  memberQuery: AnyBinding;
+  rate: AnyBinding;
+  transcriptOpen: AnyBinding;
+  highlightedIndex: AnyBinding;
+  favorite: AnyBinding;
+  starred: AnyBinding;
+  expandedIds: AnyBinding;
+  guestsOpen: AnyBinding;
+  price: AnyBinding;
+  downPayment: AnyBinding;
+  years: AnyBinding;
+  annualRate: AnyBinding;
+  month: AnyBinding;
+  period: AnyBinding;
+  quantity: AnyBinding;
+  liked: AnyBinding;
+  release: AnyBinding;
+  selectedMoods: AnyBinding;
+  selectedGenres: AnyBinding;
+  pitch: AnyBinding;
+  metric: AnyBinding;
+  day: AnyBinding;
+  shuffle: AnyBinding;
+  repeat: AnyBinding;
+  playbackRate: AnyBinding;
+  devicePickerOpen: AnyBinding;
+  volume: AnyBinding;
+  filtersOpen: AnyBinding;
+  selectedExtras: AnyBinding;
+  access: AnyBinding;
+  window: AnyBinding;
+  downloadedOnly: AnyBinding;
+  view: AnyBinding;
+  date: AnyBinding;
+  selectedIds: AnyBinding;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1474,7 +1524,7 @@ export type Modifier =
       readonly direction: number | undefined;
     }
   | { readonly kind: 'loop'; readonly key: string }
-  | { readonly kind: 'paused'; readonly key: string; readonly value: boolean }
+  | { readonly kind: 'paused'; readonly key: string; readonly value: boolean | AnyBinding }
   | {
       readonly kind: 'fallback';
       readonly key: string;
@@ -2140,13 +2190,169 @@ export class Node {
   private set<K extends keyof ValueModifiers>(kind: K, value: ValueModifiers[K]): Node {
     return this.with({ kind, key: kind, value } as ValueModifier);
   }
+  activeIndex(value: AnyBinding): Node {
+    return this.set('activeIndex', value);
+  }
+  activeGroup(value: AnyBinding): Node {
+    return this.set('activeGroup', value);
+  }
+  skinTone(value: AnyBinding): Node {
+    return this.set('skinTone', value);
+  }
+  activeTab(value: AnyBinding): Node {
+    return this.set('activeTab', value);
+  }
+  range(value: AnyBinding): Node {
+    return this.set('range', value);
+  }
+  activeCell(value: AnyBinding): Node {
+    return this.set('activeCell', value);
+  }
+  model(value: AnyBinding): Node {
+    return this.set('model', value);
+  }
+  effort(value: AnyBinding): Node {
+    return this.set('effort', value);
+  }
+  voiceState(value: AnyBinding): Node {
+    return this.set('voiceState', value);
+  }
+  permission(value: AnyBinding): Node {
+    return this.set('permission', value);
+  }
+  tab(value: AnyBinding): Node {
+    return this.set('tab', value);
+  }
+  navOpen(value: AnyBinding): Node {
+    return this.set('navOpen', value);
+  }
+  panelOpen(value: AnyBinding): Node {
+    return this.set('panelOpen', value);
+  }
+  minimized(value: AnyBinding): Node {
+    return this.set('minimized', value);
+  }
+  searchQuery(value: AnyBinding): Node {
+    return this.set('searchQuery', value);
+  }
+  searchOpen(value: AnyBinding): Node {
+    return this.set('searchOpen', value);
+  }
+  answers(value: AnyBinding): Node {
+    return this.set('answers', value);
+  }
+  memberQuery(value: AnyBinding): Node {
+    return this.set('memberQuery', value);
+  }
+  rate(value: AnyBinding): Node {
+    return this.set('rate', value);
+  }
+  transcriptOpen(value: AnyBinding): Node {
+    return this.set('transcriptOpen', value);
+  }
+  highlightedIndex(value: AnyBinding): Node {
+    return this.set('highlightedIndex', value);
+  }
+  favorite(value: AnyBinding): Node {
+    return this.set('favorite', value);
+  }
+  starred(value: AnyBinding): Node {
+    return this.set('starred', value);
+  }
+  expandedIds(value: AnyBinding): Node {
+    return this.set('expandedIds', value);
+  }
+  guestsOpen(value: AnyBinding): Node {
+    return this.set('guestsOpen', value);
+  }
+  price(value: AnyBinding): Node {
+    return this.set('price', value);
+  }
+  downPayment(value: AnyBinding): Node {
+    return this.set('downPayment', value);
+  }
+  years(value: AnyBinding): Node {
+    return this.set('years', value);
+  }
+  annualRate(value: AnyBinding): Node {
+    return this.set('annualRate', value);
+  }
+  month(value: AnyBinding): Node {
+    return this.set('month', value);
+  }
+  period(value: AnyBinding): Node {
+    return this.set('period', value);
+  }
+  quantity(value: AnyBinding): Node {
+    return this.set('quantity', value);
+  }
+  liked(value: AnyBinding): Node {
+    return this.set('liked', value);
+  }
+  release(value: AnyBinding): Node {
+    return this.set('release', value);
+  }
+  selectedMoods(value: AnyBinding): Node {
+    return this.set('selectedMoods', value);
+  }
+  selectedGenres(value: AnyBinding): Node {
+    return this.set('selectedGenres', value);
+  }
+  pitch(value: AnyBinding): Node {
+    return this.set('pitch', value);
+  }
+  metric(value: AnyBinding): Node {
+    return this.set('metric', value);
+  }
+  day(value: AnyBinding): Node {
+    return this.set('day', value);
+  }
+  shuffle(value: AnyBinding): Node {
+    return this.set('shuffle', value);
+  }
+  repeat(value: AnyBinding): Node {
+    return this.set('repeat', value);
+  }
+  playbackRate(value: AnyBinding): Node {
+    return this.set('playbackRate', value);
+  }
+  devicePickerOpen(value: AnyBinding): Node {
+    return this.set('devicePickerOpen', value);
+  }
+  volume(value: AnyBinding): Node {
+    return this.set('volume', value);
+  }
+  filtersOpen(value: AnyBinding): Node {
+    return this.set('filtersOpen', value);
+  }
+  selectedExtras(value: AnyBinding): Node {
+    return this.set('selectedExtras', value);
+  }
+  access(value: AnyBinding): Node {
+    return this.set('access', value);
+  }
+  window(value: AnyBinding): Node {
+    return this.set('window', value);
+  }
+  downloadedOnly(value: AnyBinding): Node {
+    return this.set('downloadedOnly', value);
+  }
+  view(value: AnyBinding): Node {
+    return this.set('view', value);
+  }
+  date(value: AnyBinding): Node {
+    return this.set('date', value);
+  }
+  selectedIds(value: AnyBinding): Node {
+    return this.set('selectedIds', value);
+  }
   disabled(value = true): Node {
     return this.set('disabled', value);
   }
   loading(value = true): Node {
     return this.set('loading', value);
   }
-  collapsed(value = true): Node {
+  collapsed(value: boolean | AnyBinding = true): Node {
     return this.set('collapsed', value);
   }
   icon(value: IconComponent | ViewNode): Node {
@@ -2285,8 +2491,8 @@ export class Node {
       value: token,
     });
   }
-  refreshable(refreshing: boolean, onRefresh: () => void): Node {
-    return this.set('refreshable', [refreshing, onRefresh]);
+  refreshable(value: Binding<boolean>): Node {
+    return this.set('refreshable', value);
   }
   onEndReached(value: () => void, threshold?: number): Node {
     return this.with({ kind: 'onEndReached', key: 'onEndReached', value, threshold });
@@ -2330,11 +2536,8 @@ export class Node {
   shortcut(value: string): Node {
     return this.set('shortcut', value);
   }
-  expanded(value: boolean): Node {
+  expanded(value: AnyBinding): Node {
     return this.set('expanded', value);
-  }
-  onExpandedChange(value: (expanded: boolean) => void): Node {
-    return this.set('onExpandedChange', value);
   }
   collapsible(value: boolean | SearchCollapse = true): Node {
     return this.set('collapsible', value);
@@ -2353,9 +2556,6 @@ export class Node {
   }
   surface(value: SidebarSurface | boolean = true): Node {
     return this.set('surface', value);
-  }
-  onCollapsedChange(value: (collapsed: boolean) => void): Node {
-    return this.set('onCollapsedChange', value);
   }
   searchable(value = true): Node {
     return this.set('searchable', value);
@@ -2384,7 +2584,7 @@ export class Node {
   query(value: Binding<string>): Node {
     return this.set('query', value);
   }
-  filter(value: (item: BloomCommandItem, query: string) => boolean): Node {
+  filter(value: ((item: BloomCommandItem, query: string) => boolean) | AnyBinding): Node {
     return this.set('filter', value);
   }
   keywords(...value: string[]): Node {
@@ -2492,11 +2692,8 @@ export class Node {
   onNudge(value: (distance: number) => void): Node {
     return this.set('onNudge', value);
   }
-  mode(value: string): Node {
+  mode(value: AnyBinding): Node {
     return this.set('mode', value);
-  }
-  onModeChange(value: (key: string) => void): Node {
-    return this.set('onModeChange', value);
   }
   modePresentation(value: ModePresentation): Node {
     return this.set('modePresentation', value);
@@ -2630,7 +2827,7 @@ export class Node {
   listMarker(value: ListMarker): Node {
     return this.with({ kind: 'listMarker', key: `list:${value}`, value });
   }
-  pressed(value: boolean): Node {
+  pressed(value: boolean | AnyBinding): Node {
     return this.set('pressed', value);
   }
   colors(background: ColorToken, foreground: ColorToken): Node {
@@ -2694,7 +2891,7 @@ export class Node {
   loop(): Node {
     return this.with({ kind: 'loop', key: 'loop' });
   }
-  paused(value: boolean): Node {
+  paused(value: boolean | AnyBinding): Node {
     return this.with({ kind: 'paused', key: 'paused', value });
   }
   fallback(value: Child | BoundaryFallback): Node {
@@ -2744,7 +2941,7 @@ export class Node {
   maxLength(value: number): Node {
     return this.set('maxLength', value);
   }
-  description(value: string): Node {
+  description(value: string | AnyBinding): Node {
     return this.set('description', value);
   }
   readOnly(): Node {
@@ -2871,7 +3068,7 @@ export class Node {
   leadingView(...value: Child[]): Node {
     return this.set('leadingView', value);
   }
-  selected(value = true): Node {
+  selected(value: boolean | AnyBinding = true): Node {
     return this.set('selected', value);
   }
   highlighted(value = true): Node {
@@ -2883,7 +3080,7 @@ export class Node {
   separator(value: GroupedSeparator | ListSeparator): Node {
     return this.set('separator', value);
   }
-  value(value: string): Node {
+  value(value: string | AnyBinding): Node {
     return this.set('value', value);
   }
   chevron(value = true): Node {
@@ -2962,7 +3159,7 @@ export class Node {
   }
 
   // Settings rows (controls/settings.tsx)
-  muted(value = true): Node {
+  muted(value: boolean | AnyBinding = true): Node {
     return this.set('muted', value);
   }
   compact(value = true): Node {
@@ -3006,7 +3203,7 @@ export class Node {
   months(value: 1 | 2): Node {
     return this.set('months', value);
   }
-  step(value: number): Node {
+  step(value: number | AnyBinding): Node {
     return this.set('step', value);
   }
   hourFormat(value: HourFormat): Node {
@@ -3528,7 +3725,7 @@ export class Node {
   sortsDescendingFirst(value = true): Node {
     return this.set('sortsDescendingFirst', value);
   }
-  sorting(value: Binding<DataTableSort | null>): Node {
+  sorting(value: AnyBinding): Node {
     return this.set('sorting', value);
   }
   rowSelection(value: Binding<readonly string[]>): Node {
@@ -4343,8 +4540,8 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollViewNode;
-  /** Pull to refresh: the app's refreshing state, and what a pull runs. */
-  refreshable(refreshing: boolean, onRefresh: () => void): ScrollViewNode;
+  /** Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). */
+  refreshable(value: Binding<boolean>): ScrollViewNode;
   /** Called once each time the end comes within `threshold` viewports (2 by default). */
   onEndReached(action: () => void, threshold?: number): ScrollViewNode;
   /** The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`, the default). */
@@ -4410,9 +4607,8 @@ export interface SidebarView extends ViewNode {
   surface(value: SidebarSurface): SidebarView;
   /** Its width and rows: `sm`, `md` (default) or `lg`. */
   size(value: SidebarSize): SidebarView;
-  /** Folded to its icons. */
-  collapsed(value?: boolean): SidebarView;
-  onCollapsedChange(value: (collapsed: boolean) => void): SidebarView;
+  /** Folded to its icons: a binding, its collapse control writing it. */
+  collapsed(value: Binding<boolean>): SidebarView;
   /** Its search field (shown by default). */
   searchable(value?: boolean): SidebarView;
   /** Its theme toggle (shown by default). */
@@ -4422,10 +4618,8 @@ export interface SidebarView extends ViewNode {
   /** Its accessible name. */
   label(value: string | undefined): SidebarView;
   testID(value: string): SidebarView;
-  /** The key of the selected `SidebarMode` (its switcher under the header). */
-  mode(value: string): SidebarView;
-  /** Told the key of the mode chosen (by a press or its shortcut). */
-  onModeChange(value: (key: string) => void): SidebarView;
+  /** The key of the selected `SidebarMode` (its switcher under the header): a binding, a press or its shortcut writing it. */
+  mode(value: Binding<string>): SidebarView;
   /** `segmented` (default), the labelled control; `toggle`, a compact switch for two modes. */
   modePresentation(value: ModePresentation): SidebarView;
   /** The modes' accessible name. */
@@ -4505,9 +4699,8 @@ export interface TreeSectionView extends ViewNode {
   trailing(...value: Child[]): TreeSectionView;
   /** Its heading folds it. */
   collapsible(value?: boolean): TreeSectionView;
-  /** Open (controlled); open at first otherwise. */
-  expanded(value: boolean): TreeSectionView;
-  onExpandedChange(value: (expanded: boolean) => void): TreeSectionView;
+  /** Open: a binding (controlled); open at first otherwise. */
+  expanded(value: Binding<boolean>): TreeSectionView;
   loading(value?: boolean): TreeSectionView;
   error(value: string | undefined): TreeSectionView;
   /** What it says when it has no rows. */
@@ -4519,8 +4712,7 @@ export interface TreeSectionView extends ViewNode {
 export interface TreeFolderView extends ViewNode {
   id(value: string): TreeFolderView;
   trailing(...value: Child[]): TreeFolderView;
-  expanded(value: boolean): TreeFolderView;
-  onExpandedChange(value: (expanded: boolean) => void): TreeFolderView;
+  expanded(value: Binding<boolean>): TreeFolderView;
 }
 /** A row of a sidebar's tree; its `TreeItem` children are nested under it. */
 export interface TreeItemView extends ViewNode {
@@ -4534,8 +4726,7 @@ export interface TreeItemView extends ViewNode {
   /** Controls at its end. */
   trailing(...value: Child[]): TreeItemView;
   disabled(value?: boolean): TreeItemView;
-  expanded(value: boolean): TreeItemView;
-  onExpandedChange(value: (expanded: boolean) => void): TreeItemView;
+  expanded(value: Binding<boolean>): TreeItemView;
   emptyLabel(value: string): TreeItemView;
   onPress(value: Press | undefined): TreeItemView;
   onLongPress(value: (() => void) | undefined): TreeItemView;

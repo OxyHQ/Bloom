@@ -21,7 +21,7 @@ import {
   type TopResultCardProps,
 } from '@oxy.so/bloom/music-library';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { LibraryItemStyle, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -46,7 +46,24 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
  */
 export type LibraryPanelOptions = Omit<
   LibraryPanelProps,
-  Drawn | 'items' | 'emptyState' | 'renderContextMenu'
+  | Drawn
+  | 'items'
+  | 'emptyState'
+  | 'renderContextMenu'
+  | 'query'
+  | 'onQueryChange'
+  | 'expanded'
+  | 'onExpandedChange'
+  | 'collapsed'
+  | 'onCollapsedChange'
+  | 'sort'
+  | 'onSortChange'
+  | 'filter'
+  | 'onFilterChange'
+  | 'downloadedOnly'
+  | 'onDownloadedOnlyChange'
+  | 'view'
+  | 'onViewChange'
 > & {
   readonly emptyState?: Child;
   readonly renderContextMenu?: (item: LibraryEntry) => Child;
@@ -69,7 +86,15 @@ export type BrowseGridOptions = Omit<
 > & { readonly children?: Child; readonly minTileWidth?: SpaceToken };
 
 /** Bloom `LibraryPanel`: the Your Library side panel. */
-export type LibraryPanelView = ViewModifiers<LibraryPanelView>;
+export interface LibraryPanelView extends ViewModifiers<LibraryPanelView> {
+  query(value: Bound<LibraryPanelProps, 'query'>): LibraryPanelView;
+  expanded(value: Bound<LibraryPanelProps, 'expanded'>): LibraryPanelView;
+  collapsed(value: Bound<LibraryPanelProps, 'collapsed'>): LibraryPanelView;
+  sorting(value: Bound<LibraryPanelProps, 'sort'>): LibraryPanelView;
+  filter(value: Bound<LibraryPanelProps, 'filter'>): LibraryPanelView;
+  downloadedOnly(value: Bound<LibraryPanelProps, 'downloadedOnly'>): LibraryPanelView;
+  view(value: Bound<LibraryPanelProps, 'view'>): LibraryPanelView;
+}
 /** Bloom `LibraryItem`; `.onPress()` opens the entry. */
 export interface LibraryItemView extends ViewModifiers<LibraryItemView> {
   /** `compact`, `list` (default), `grid` or `rail`. */
@@ -133,6 +158,15 @@ const optionsOf = <O,>(d: ControlDraw) => (d.node.props as { options: O }).optio
 
 export const MUSIC_LIBRARY: Record<MusicLibraryKind, ControlRenderer> = {
   libraryPanel: product(BloomLibraryPanel, {
+    bindings: {
+      query: ['query', 'onQueryChange'],
+      expanded: ['expanded', 'onExpandedChange'],
+      collapsed: ['collapsed', 'onCollapsedChange'],
+      sorting: ['sort', 'onSortChange'],
+      filter: ['filter', 'onFilterChange'],
+      downloadedOnly: ['downloadedOnly', 'onDownloadedOnlyChange'],
+      view: ['view', 'onViewChange'],
+    },
     slots: ['emptyState'],
     own: (d) => {
       const { renderContextMenu } = optionsOf<LibraryPanelOptions>(d);

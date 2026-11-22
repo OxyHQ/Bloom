@@ -4,6 +4,7 @@ import {
   NoteCardSkeleton as BloomNoteCardSkeleton,
 } from '@oxy.so/bloom/note-card';
 
+import type { Bound } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { AccentTone, NoteCardLayout } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -27,10 +28,13 @@ export type NoteCardOptions = Omit<
   | 'loading'
   | 'onPress'
   | 'onLongPress'
+  | 'selected'
+  | 'onSelectedChange'
 >;
 
 /** Bloom `NoteCard`; `.onPress()` opens it and `.onLongPress()` is its own. */
 export interface NoteCardView extends ViewModifiers<NoteCardView> {
+  selected(value: Bound<NoteCardProps, 'selected'>): NoteCardView;
   /** `grid` (default) or `row`. */
   style(value: NoteCardLayout): NoteCardView;
   /** The note's colour: an accent tone, its wash. */
@@ -54,6 +58,7 @@ export function NoteCardSkeleton(): NoteCardSkeletonView {
 
 export const NOTE_CARDS: Record<NoteCardKind, ControlRenderer> = {
   noteCard: product(BloomNoteCard, {
+    bindings: { selected: ['selected', 'onSelectedChange'] },
     press: true,
     own: (d) => ({
       density: d.own('style')?.value,

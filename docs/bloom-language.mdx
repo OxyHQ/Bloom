@@ -811,6 +811,24 @@ binds a store's value. The screen owns the value; the control reads it and
 writes it. It is the one mechanism for every input (SwiftUI's `$value`); a
 `Picker` takes a selection that may be `undefined` until something is chosen.
 
+**A node's other editable values.** A node's main value is its constructor's
+binding (`TextField(text)`, `NewGroupForm(name)`). Every other value it edits
+is a modifier named after that value, taking a `Binding` too:
+`.presented([open, setOpen])` (Bloom's `open`), `.query([text, setText])`,
+`.expanded([open, setOpen])`, `.sorting([sort, setSort])` (Bloom's `sort`),
+`.liked([liked, setLiked])`, `.month([month, setMonth])`… Elsewhere the
+modifier is Bloom's own name for the value (`activeIndex`, `range`, `tab`,
+`muted`, `volume`, `selectedIds`), its setter the matching `on…Change`. One
+not chained leaves the value to Bloom (uncontrolled), as an app that passes
+neither; there is no handler alone, so a screen that wants to hear a change
+owns the value. A value Bloom requires (a place picker's `.query()`, a pitch
+card's selections) is still a modifier, said where the node is. Pull to
+refresh is a binding as well: `.refreshable([refreshing, setRefreshing])`, a
+pull writing `true`. Each binding's type is the value Bloom holds
+(`Bound<ReviewCardProps, 'expanded'>` is `Binding<boolean>`), and the
+spec lists each modifier on the nodes that edit it, so the compiler rejects a
+binding on a node that has no such value.
+
 | Node | Bloom | Modifiers |
 | --- | --- | --- |
 | `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder`, `.size`, `.disabled`, `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
@@ -1215,11 +1233,11 @@ the same, and `parity/` proves it (see [Component parity](#component-parity)).
 
 ```ts
 export default screen(function Feed() {
-  const { posts, more, refreshing, refresh } = useFeed();
+  const { posts, more, refreshing, setRefreshing } = useFeed();
   return ScrollView(posts.map((post) => PostRow({ post }).id(post.id)))
     .contentMargins('horizontal', 'lg')
     .spacing('sm')
-    .refreshable(refreshing, refresh)
+    .refreshable([refreshing, setRefreshing])
     .onEndReached(more)
     .keyboardTaps('handled')
     .title(t('feed.title'))
@@ -1238,7 +1256,7 @@ inside a screen, as Bloom's is.
 | Modifier | Bloom `ScreenScrollView` |
 | --- | --- |
 | `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
-| `.refreshable(refreshing, onRefresh)` | a `RefreshControl` with the app's `refreshing` state and `onRefresh` |
+| `.refreshable([refreshing, setRefreshing])` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed |
 | `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden')` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator` |
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
@@ -1354,7 +1372,7 @@ sidebar reads, so they are rows, not views: a `NavItem(label, icon)` is a
 `TreeSection(label, ...rows)` is a `SidebarTree`, its `TreeFolder(label,
 ...items)` folders and `TreeItem(label, ...items)` rows nested to any depth
 (`.icon`, `.subtitle` the row's description, `.meta`, `.link`, `.trailing`
-its actions, `.disabled`, `.expanded` and `.onExpandedChange` its open state,
+its actions, `.disabled`, `.expanded([open, setOpen])` its open state,
 `.emptyLabel`). A section also takes `.collapsible`, `.loading` and `.error`.
 
 | Modifier | Bloom `Sidebar` |
@@ -1363,10 +1381,10 @@ its actions, `.disabled`, `.expanded` and `.onExpandedChange` its open state,
 | `.onSelect(id => …)` | `onTreeItemPress`, and `onNavigate` (a linking destination; it then takes over the link's push) |
 | `.header(view \| false)`, `.toolbar(...)`, `.footer(view)` | `header`, `toolbar`, `footer` |
 | `.variant('panel' \| 'rail')`, `.surface('card' \| 'plain' \| 'docked')`, `.size('sm' \| 'md' \| 'lg')` | `variant`, `surface`, `size` |
-| `.collapsed()`, `.onCollapsedChange(fn)` | `collapsed`, `onCollapsedChange` |
+| `.collapsed([collapsed, setCollapsed])` | `collapsed`, `onCollapsedChange` |
 | `.searchable(false)`, `.themeToggle(false)` | `showSearch`, `showThemeToggle` |
 | `.logo(logo)`, `.account(account)`, `.label(text)` | `logo`, `account`, `accessibilityLabel` |
-| `.mode(key)`, `.onModeChange(fn)`, `.modePresentation('segmented' \| 'toggle')`, `.modesLabel(text)` | `mode`, `onModeChange`, `modesPresentation`, `modesLabel`: the switcher of its `SidebarMode` rows |
+| `.mode([key, setKey])`, `.modePresentation('segmented' \| 'toggle')`, `.modesLabel(text)` | `mode`, `onModeChange`, `modesPresentation`, `modesLabel`: the switcher of its `SidebarMode` rows |
 | `.team(team)`, `.teamPlacement('header' \| 'footer')`, `.plan(plan)` | `team`, `teamPlacement`, `plan` (Bloom's `SidebarTeam` and `SidebarPlan` data) |
 | `.onboarding({ title, leading, steps, … })` | `onboarding`: the getting-started card, its `leading` a view |
 | `.query([text, onChange])` | `searchQuery`, `onSearchQueryChange`: the quick search held by the app, which filters its own content with it |
@@ -1873,7 +1891,7 @@ stable (module scope, or a `useCallback`), and the list keeps its `renderItem`,
 so the engine re-renders a row only when its item changes, as with JSX. It takes
 `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
-`.refreshable(refreshing, onRefresh)`, `.stickyIndices()`,
+`.refreshable([refreshing, setRefreshing])`, `.stickyIndices()`,
 `.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()` and
 `.tuning({...})` (the engine's own knobs). `ListSelectionBar(count, total)`
 takes `.selecting()`, `.onSelectAll()`, `.onClear()`, `.rowActions()` and
@@ -2651,7 +2669,7 @@ card cannot be drawn without comes first (`SleepScoreCard(metrics)`,
 ### Composer panel
 
 ```ts
-ComposerPanel([prompt, setPrompt], { onSubmit: send, providers, model, onModelChange, permissions, addMenu })
+ComposerPanel([prompt, setPrompt], { onSubmit: send, providers, permissions, addMenu }).model([model, setModel])
 ComposerPill([prompt, setPrompt], { onSubmit: send, models: ['Fast', 'Deep'] }).surface(false)
 ComposerPanelStatusTab({ branch: 'main', project: 'bloom', context: 42 })
 ```
@@ -2878,8 +2896,8 @@ FilterTriggerButton(applied).size('sm').onPress(openFilters)
 ```
 
 Bloom's `stay-filters`. Each filter edits the value its binding holds (a
-range, a count, a selection, a switch); the second binding of
-`AvailabilityFilter(availableNow, date)` is its day. `FilterSection(title,
+range, a count, a selection, a switch); `AvailabilityFilter(availableNow)`
+takes its day as `.date([day, setDay])`, which Bloom requires. `FilterSection(title,
 content, options?)` takes its controls as its content and `.dividers(false)`
 on the last one. A chip filter's chips are Bloom's `ToggleChipOption`s: the
 first argument of `ToggleChipGroup` and `AmenityFilter`, the `choices` option
@@ -3064,7 +3082,7 @@ token. `TypingBubble(options?)` is named with `.label()`.
 ```ts
 TaskList(tasks, { revealed: events.length, collapseOnComplete: true, onComplete: done })
 WebSearch(steps, { revealed, labels: { sources: 'Sources' } })
-VoiceControls(session.state, { muted, onMutedChange: setMuted, onEnd: hangUp, trailing: Text(elapsed) }).size('md')
+VoiceControls(session.state, { onEnd: hangUp, trailing: Text(elapsed) }).muted([muted, setMuted]).size('md')
 ```
 
 Bloom's `task-list`, `web-search` and `voice`, as Gemies draws them.
@@ -3109,7 +3127,7 @@ PlaceCard(place.name, { category, rating, openState, actions, badge: 'New' }).st
 PlaceHours(days, { state: 'open', summary: 'Open until 20:00' })
 PlaceListCard(list.name, { count, visibility: 'shared', empty: Text('No places yet') }).tint('primary').onPress(openList)
 DirectionsSteps(route.legs, { currentStepId, onPressStep: pan }).size('compact')
-PlacePicker('Address', [place, setPlace], [query, setQuery], { results, status }).size('sm')
+PlacePicker('Address', [place, setPlace], { results, status }).query([query, setQuery]).size('sm')
 ```
 
 A place and what a map app shows of it, each Bloom's own: `PlaceCard(name,
@@ -3119,9 +3137,10 @@ options?)`, `PlaceInfoList(items, options?)`, `PlaceTransit(stops, options?)`,
 its `footer` a child), a saved list (`PlaceListCard(name, options?)`,
 `.tint(role)` the list's own colour; `PlaceList(places, options?)`,
 `.disabled()`; their `empty` a child), `DirectionsSteps(legs, options?)`
-(`.size('comfortable' | 'compact')`) and `PlacePicker(label, place, query,
-options)`, which holds the chosen place and the text it searches in two
-bindings (`.size()` a control size, `.disabled()`). The card and the list card
+(`.size('comfortable' | 'compact')`) and `PlacePicker(label, place,
+options)`, which holds the chosen place in its binding and the text it
+searches in `.query(binding)`, which Bloom requires (`.size()` a control
+size, `.disabled()`). The card and the list card
 take `.onPress()` themselves. A transit line's colour is the operator's, so it
 stays the line's data.
 
@@ -3129,7 +3148,7 @@ stays the line's data.
 
 ```ts
 MailComposeSurface(Editor(), { title: 'New message', onSend: send, header: Recipients() }).style('sheet').loading(sending)
-MailRecipientField([to, setTo], { label: 'To', value: query, onChangeText: setQuery, suggestions })
+MailRecipientField([to, setTo], { label: 'To', suggestions }).query([query, setQuery])
 MailThread(messages, { subject, labels, collapseAfter: 3, messageGap: 'md', quickReply: Reply() })
 MailMessage(message.sender, Body(), { date, preview, trimmed: Quote() })
 NoteEditorToolbar('Formatting', actions).size('sm')
@@ -3322,7 +3341,7 @@ its cases are compared by Jest as they mount, not in Chrome.
 ### Month calendar
 
 ```ts
-CalendarView(events, { month, onMonthChange, title: t('calendar'), actions: Legend(), onNewEvent }).density('compact')
+CalendarView(events, { title: t('calendar'), actions: Legend(), onNewEvent }).month([month, setMonth]).density('compact')
 CalendarViewHeader(month, { onPreviousMonth, onNextMonth, onSelectDate, headingLevel: 2 })
 CalendarViewMonthGrid(month, events, { showEventDetails: false, onSelectEvent })
 ```
@@ -3409,8 +3428,9 @@ handlers, the minimum order, tip, promo and summary as Bloom's data; its
 typed) and `CartTipPicker(tip, choices, options?)` (its binding the chosen
 tip, the choices Bloom's `options`). Bloom's `menu-item`: `MenuItemRow(name,
 options)` (its price, photo, diets, heat, quantity and handlers) and
-`MenuItemOptions(groups, options)` (the choices made, `value` and
-`onValueChange`, are data as Bloom takes them; its `header` a child).
+`MenuItemOptions(groups, options)` (the choices made are `.value([chosen,
+setChosen])`, every group's in one record, which Bloom requires: a group's new
+choice writes the record with it; its `header` a child).
 Bloom's `vendor-card`: `VendorCard(name, options?)`.
 
 - `.density('comfortable' | 'compact')` on a cart line, the cart, a menu row and
@@ -3424,7 +3444,7 @@ Bloom's `vendor-card`: `VendorCard(name, options?)`.
 ```ts
 CheckoutSummary(undefined, { address, delivery, payment: PaymentMethodRow(card), price, confirm })
 CheckoutConfirm({ label: 'Place order', amount, onConfirm: place }).loading(placing)
-DeliverySlotPicker([slot, setSlot], days, windows, { day, onDayChange: setDay, asap })
+DeliverySlotPicker([slot, setSlot], days, windows, { asap }).day([day, setDay])
 OrderConfirmation({ reference, status, address, items: Text(summary) }).density('compact')
 ```
 
@@ -3451,9 +3471,9 @@ data).
 ### Logistics
 
 ```ts
-CarrierQuoteList(quotes, { onAccept: accept, sort, onSortChange: setSort }).density('compact')
+CarrierQuoteList(quotes, { onAccept: accept }).sorting([sort, setSort]).density('compact')
 JobCard(job, { onTake: take, onPass: pass, route: true }).disabled(job.state !== 'open')
-EarningsSummary(periods, { period, onPeriodChange, payoutAction: Button(Text('Cash out')).onPress(cashOut) })
+EarningsSummary(periods, { payoutAction: Button(Text('Cash out')).onPress(cashOut) }).period([period, setPeriod])
 ProofOfDelivery({ required: ['signature', 'code'], onSubmit: deliver, onAddPhoto: addPhoto }).loading(sending)
 ShipmentRequestForm(route, [load, setLoad], { options, price, footer: Button(Text('Request quotes')).onPress(send) })
 ```
@@ -3481,7 +3501,7 @@ each takes `.disabled()`. A pad's stroke width stays a number in the options
 
 ```ts
 AlbumCard(album.title, { artist, year, artwork, onPlay: play, menuItems }).size('small').onPress(open)
-SongCard(track.title, { artists, duration, liked, onLikedChange }).style('row').loading(buffering)
+SongCard(track.title, { artists, duration }).liked([liked, setLiked]).style('row').loading(buffering)
 MediaCard(item.title, { subtitle: Text(item.by), footer: Text(item.left), artworkSize: '96' }).style('row')
 ```
 
@@ -3526,7 +3546,7 @@ card under a player; `.lines(4 | 5)` is how many lines it shows.
 ### Media player
 
 ```ts
-TransportControls(playing, { onPlayPause: toggle, onNext, onPrevious, repeat, onRepeatChange }).size('lg').style('podcast')
+TransportControls(playing, { onPlayPause: toggle, onNext, onPrevious }).repeat([repeat, setRepeat]).size('lg').style('podcast')
 MiniPlayer(track, { playing, onPlayPause: toggle, position, duration }).onPress(expand)
 PlaybackSpeedMenu([rate, setRate]).size('sm')
 SleepTimerMenu([timer, setTimer], { remaining })
@@ -3567,8 +3587,9 @@ options?)`, `IsrcField(code, options?)` and `CreditsEditor(credits,
 options?)` (each writes its binding; `.disabled()`),
 `ArtworkUploader(artwork, options?)` (`null` draws the drop zone; its `size`
 a space token; `.disabled()`), `PayoutSummaryCard(estimated, options)` and
-`PitchCard(options)`, controlled by the app as Bloom's is (its release,
-tags, pitch and status). `.label()` names a chart's plot, the table and the
+`PitchCard(options)` (its releases, moods, genres and status as data; the
+release, tags and pitch it edits are `.release()`, `.selectedMoods()`,
+`.selectedGenres()` and `.pitch()` bindings, which Bloom requires). `.label()` names a chart's plot, the table and the
 timeline. The words, formats and labels stay in the options, as Bloom's.
 
 ### Music library
@@ -3681,8 +3702,8 @@ elements, as they are data) and its handlers; `.density('comfortable' |
 'compact')`; `.label()` names the list.
 `NoteCard(title, options?)`: `.style('grid' | 'row')` its arrangement (Bloom's
 `density`), `.tint()` an accent tone (its wash), `.loading()` its skeleton;
-`.onPress()` and `.onLongPress()` are its own, and its selection
-(`selectable`, `selected`, `onSelectedChange`) is data. `NoteCardSkeleton()`
+`.onPress()` and `.onLongPress()` are its own, and its selection is
+`.selected([selected, setSelected])` beside Bloom's `selectable`. `NoteCardSkeleton()`
 takes `.style()` and `.lines(n)`. `ShareSheet(options?)`: `.size('sm' | 'md'
 | 'lg')`; `peopleEmpty` is a language child.
 

@@ -33,6 +33,7 @@ import {
   type SongCardProps,
 } from '@oxy.so/bloom/media-card';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { MediaCardLayout, MediaCardSize } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -89,7 +90,11 @@ export type MediaCardOptions = Omit<
     readonly artworkSize?: SpaceToken;
     readonly artworkRadius?: CornerToken;
   };
-export type SongCardOptions = Omit<SongCardProps, Drawn | Look | 'title' | 'menu'> & Menu;
+export type SongCardOptions = Omit<
+  SongCardProps,
+  Drawn | Look | 'title' | 'menu' | 'liked' | 'onLikedChange'
+> &
+  Menu;
 export type AlbumCardOptions = Omit<AlbumCardProps, Drawn | Look | 'title' | 'menu'> & Menu;
 export type ArtistCardOptions = Omit<ArtistCardProps, Drawn | Look | 'name' | 'menu'> & Menu;
 export type PlaylistCardOptions = Omit<PlaylistCardProps, Drawn | Look | 'title' | 'menu'> & Menu;
@@ -129,7 +134,9 @@ export interface PlayableCardView<V> extends ViewModifiers<V> {
 }
 /** Bloom `MediaCard`; `.onPress()` opens the item and `.label()` replaces its name. */
 export interface MediaCardView extends PlayableCardView<MediaCardView> {}
-export interface SongCardView extends PlayableCardView<SongCardView> {}
+export interface SongCardView extends PlayableCardView<SongCardView> {
+  liked(value: Bound<SongCardProps, 'liked'>): SongCardView;
+}
 export interface AlbumCardView extends PlayableCardView<AlbumCardView> {}
 export interface ArtistCardView extends PlayableCardView<ArtistCardView> {}
 export interface PlaylistCardView extends PlayableCardView<PlaylistCardView> {}
@@ -240,7 +247,12 @@ export const MEDIA_CARDS: Record<MediaCardKind, ControlRenderer> = {
       };
     },
   }),
-  songCard: card(BloomSongCard),
+  songCard: product(BloomSongCard, {
+    press: true,
+    slots: ['menu'],
+    own: look,
+    bindings: { liked: ['liked', 'onLikedChange'] },
+  }),
   albumCard: card(BloomAlbumCard),
   artistCard: card(BloomArtistCard),
   playlistCard: card(BloomPlaylistCard),

@@ -8,6 +8,7 @@ import {
   type CalendarViewProps,
 } from '@oxy.so/bloom/calendar';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { Density, SpaceToken } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
@@ -29,7 +30,9 @@ type HeaderOptions<P> = Omit<P, Drawn | HeaderSlots | 'monthSwitcherWidth'> & {
  * handlers, the header's words, feeds and actions; `breadcrumb` and `actions`
  * are views.
  */
-export type CalendarViewOptions = HeaderOptions<Omit<CalendarViewProps, 'events' | 'compact'>>;
+export type CalendarViewOptions = HeaderOptions<
+  Omit<CalendarViewProps, 'events' | 'compact' | 'month' | 'onMonthChange'>
+>;
 /** Bloom `CalendarViewHeader`'s handlers and words; `breadcrumb` and `actions` are views. */
 export type CalendarViewHeaderOptions = HeaderOptions<Omit<CalendarViewHeaderProps, 'month'>>;
 /** Bloom `CalendarViewMonthGrid`'s handlers, its highlighted day and its details panel. */
@@ -40,6 +43,7 @@ export type CalendarViewMonthGridOptions = Omit<
 
 /** Bloom `CalendarView`. */
 export interface CalendarViewView extends ViewModifiers<CalendarViewView> {
+  month(value: Bound<CalendarViewProps, 'month'>): CalendarViewView;
   /** `compact`: short fixed day rows for an embedded preview; `default`: rows that answer the width. */
   density(value: Density<'calendarView'>): CalendarViewView;
 }
@@ -81,7 +85,11 @@ const compact = (d: ControlDraw) => {
 const header = { slots: ['breadcrumb', 'actions'], lengths: ['monthSwitcherWidth'] } as const;
 
 export const CALENDAR_VIEWS: Record<CalendarViewKind, ControlRenderer> = {
-  calendarView: product(BloomCalendarView, { ...header, own: (d) => ({ compact: compact(d) }) }),
+  calendarView: product(BloomCalendarView, {
+    bindings: { month: ['month', 'onMonthChange'] },
+    ...header,
+    own: (d) => ({ compact: compact(d) }),
+  }),
   calendarViewHeader: product(BloomCalendarViewHeader, header),
   calendarViewMonthGrid: product(BloomCalendarViewMonthGrid, {
     own: (d) => ({ compact: compact(d) }),

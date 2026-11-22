@@ -201,11 +201,11 @@ const pills: ParityCase[] = [
       toElement(
         L.CallMinimisedPill('Ana Restrepo', {
           duration: '00:42',
-          muted: true,
-          onMutedChange: set,
           onExpand: press,
           onEndCall: press,
-        }).style(mode),
+        })
+          .muted([true, set])
+          .style(mode),
       ),
     bloom: () => (
       <CallMinimisedPill

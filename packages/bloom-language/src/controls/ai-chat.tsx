@@ -20,6 +20,7 @@ import {
 } from '@oxy.so/bloom/ai-chat';
 import type { SidebarProps } from '@oxy.so/bloom/sidebar';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import {
   type AiChatLineTone,
@@ -63,6 +64,10 @@ export type AiChatShellOptions = Omit<
   | 'sidebarSurface'
   | 'sidebarScrollbarSide'
   | 'surface'
+  | 'navOpen'
+  | 'onNavOpenChange'
+  | 'panelOpen'
+  | 'onPanelOpenChange'
 > & {
   /** The sidebar, or a function of Bloom's sidebar props that returns it. */
   readonly sidebar: Child | ((props: SidebarProps) => Child);
@@ -90,15 +95,17 @@ export type AiChatUserMessageOptions = Omit<AiChatUserMessageProps, Drawn | 'bub
 export type AiChatAssistantMessageOptions = Omit<AiChatAssistantMessageProps, Drawn>;
 export type AiChatCodePanelOptions = Omit<
   AiChatCodePanelProps,
-  'style' | 'testID' | 'code' | 'browser' | PanelWidth
+  'style' | 'testID' | 'code' | 'browser' | PanelWidth | 'tab' | 'onTabChange'
 > & { readonly browser?: Child; readonly width?: LengthToken };
 export type AiChatGalleryPanelOptions = Omit<
   AiChatGalleryPanelProps,
-  'style' | 'testID' | 'generations' | 'stylePresets' | PanelWidth
+  'style' | 'testID' | 'generations' | 'stylePresets' | PanelWidth | 'tab' | 'onTabChange'
 > & { readonly stylePresets?: Child; readonly width?: LengthToken };
 
 /** Bloom `AiChatShell`: the sidebar, the chat and its side panel. */
 export interface AiChatShellView extends ViewModifiers<AiChatShellView> {
+  navOpen(value: Bound<AiChatShellProps, 'navOpen'>): AiChatShellView;
+  panelOpen(value: Bound<AiChatShellProps, 'panelOpen'>): AiChatShellView;
   /** The sidebar's edge: a `card`, `plain` or `docked`. */
   sidebarSurface(value: SidebarSurface): AiChatShellView;
   /** The side the sidebar's web scrollbar is drawn on: `end` or `start`. */
@@ -131,9 +138,13 @@ export type AiChatHeaderView = ViewModifiers<AiChatHeaderView>;
 /** Bloom `AiChatMobileHeader`: the chat's header on a phone. */
 export type AiChatMobileHeaderView = ViewModifiers<AiChatMobileHeaderView>;
 /** Bloom `AiChatCodePanel`: the code a turn changed, and its browser. */
-export type AiChatCodePanelView = ViewModifiers<AiChatCodePanelView>;
+export interface AiChatCodePanelView extends ViewModifiers<AiChatCodePanelView> {
+  tab(value: Bound<AiChatCodePanelProps, 'tab'>): AiChatCodePanelView;
+}
 /** Bloom `AiChatGalleryPanel`: the images a chat generated. */
-export type AiChatGalleryPanelView = ViewModifiers<AiChatGalleryPanelView>;
+export interface AiChatGalleryPanelView extends ViewModifiers<AiChatGalleryPanelView> {
+  tab(value: Bound<AiChatGalleryPanelProps, 'tab'>): AiChatGalleryPanelView;
+}
 
 /** Bloom `AiChatShell` around the chat (`content`). */
 export function AiChatShell(content: Child, options: AiChatShellOptions): AiChatShellView {
@@ -195,6 +206,10 @@ const width = (token: LengthToken | undefined) =>
 
 export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
   aiChatShell: product(BloomAiChatShell, {
+    bindings: {
+      navOpen: ['navOpen', 'onNavOpenChange'],
+      panelOpen: ['panelOpen', 'onPanelOpenChange'],
+    },
     slots: ['mobileSidebar', 'background'],
     lengths: [
       'sidebarWidth',
@@ -243,12 +258,14 @@ export const AI_CHATS: Record<AiChatKind, ControlRenderer> = {
   aiChatHeader: product(BloomAiChatHeader),
   aiChatMobileHeader: product(BloomAiChatMobileHeader),
   aiChatCodePanel: product(BloomAiChatCodePanel, {
+    bindings: { tab: ['tab', 'onTabChange'] },
     slots: ['browser'],
     own: (d) => ({
       width: width((d.node.props as { options: AiChatCodePanelOptions }).options.width),
     }),
   }),
   aiChatGalleryPanel: product(BloomAiChatGalleryPanel, {
+    bindings: { tab: ['tab', 'onTabChange'] },
     slots: ['stylePresets'],
     own: (d) => ({
       width: width((d.node.props as { options: AiChatGalleryPanelOptions }).options.width),

@@ -12,7 +12,7 @@ import {
 } from '@oxy.so/bloom/home-search';
 import type { PropertyType } from '@oxy.so/bloom/stay-filters';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { SearchModeTabsStyle } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -29,7 +29,14 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 
 export type HomeSearchBarOptions<K extends string = string> = Omit<
   HomeSearchBarProps<K>,
-  'style' | 'testID' | 'segments' | 'activeSegment' | 'onActiveSegmentChange' | 'panel'
+  | 'style'
+  | 'testID'
+  | 'segments'
+  | 'activeSegment'
+  | 'onActiveSegmentChange'
+  | 'panel'
+  | 'query'
+  | 'onQueryChange'
 > & { readonly panel?: Child };
 export type SearchModeTabsOptions<K extends string = HomeSearchMode> = Omit<
   SearchModeTabsProps<K>,
@@ -45,7 +52,9 @@ export type SavedSearchCardOptions = Omit<
 >;
 
 /** Bloom `HomeSearchBar`: the segments of a search, one open as its binding holds. */
-export type HomeSearchBarView = ViewModifiers<HomeSearchBarView>;
+export interface HomeSearchBarView extends ViewModifiers<HomeSearchBarView> {
+  query(value: Bound<HomeSearchBarProps, 'query'>): HomeSearchBarView;
+}
 /** Bloom `SearchModeTabs`: rent, buy, stays or swap, as its binding holds. */
 export interface SearchModeTabsView extends ViewModifiers<SearchModeTabsView> {
   /** `tabs` (default): text tabs with an underline; `segmented`: a pill, for a phone. */
@@ -92,6 +101,7 @@ export function SavedSearchCard(
 
 export const HOME_SEARCHES: Record<HomeSearchKind, ControlRenderer> = {
   homeSearchBar: product(BloomHomeSearchBar, {
+    bindings: { query: ['query', 'onQueryChange'] },
     binding: ['activeSegment', 'onActiveSegmentChange'],
     slots: ['panel'],
   }),

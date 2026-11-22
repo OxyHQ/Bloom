@@ -12,7 +12,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -56,9 +56,8 @@ export const MUSIC_LIBRARY_CASES: ParityCase[] = [
           nowPlayingId: 'liked',
           onItemPress: press,
           onCreatePress: press,
-          onExpandedChange: set,
           emptyState: L.Text('Nothing yet'),
-        }),
+        }).expanded([false, set]),
       ),
     bloom: () => (
       <LibraryPanel
@@ -67,6 +66,7 @@ export const MUSIC_LIBRARY_CASES: ParityCase[] = [
         nowPlayingId="liked"
         onItemPress={press}
         onCreatePress={press}
+        expanded={false}
         onExpandedChange={set}
         emptyState={<Text>Nothing yet</Text>}
       />
@@ -75,15 +75,21 @@ export const MUSIC_LIBRARY_CASES: ParityCase[] = [
   {
     name: 'LibraryPanel collapsed, a grid',
     language: () =>
-      toElement(L.LibraryPanel(LIBRARY, { collapsed: true, onCollapsedChange: set, view: 'grid' })),
-    bloom: () => <LibraryPanel items={LIBRARY} collapsed onCollapsedChange={set} view="grid" />,
+      toElement(L.LibraryPanel(LIBRARY, {}).view(['grid', hold]).collapsed([true, set])),
+    bloom: () => (
+      <LibraryPanel
+        onViewChange={hold}
+        items={LIBRARY}
+        collapsed
+        onCollapsedChange={set}
+        view="grid"
+      />
+    ),
   },
   {
     name: 'LibraryPanel empty',
     language: () =>
-      toElement(
-        L.LibraryPanel([], { query: 'zzz', onQueryChange: set, emptyState: L.Text('None') }),
-      ),
+      toElement(L.LibraryPanel([], { emptyState: L.Text('None') }).query(['zzz', set])),
     bloom: () => (
       <LibraryPanel items={[]} query="zzz" onQueryChange={set} emptyState={<Text>None</Text>} />
     ),

@@ -30,7 +30,7 @@ import {
 
 import type { BloomSize } from '@oxy.so/bloom/appearance';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   AttachmentLayout,
@@ -75,6 +75,8 @@ export type ChatComposerOptions = Omit<
   | 'leading'
   | 'emojiSlot'
   | 'recorder'
+  | 'activeIndex'
+  | 'onActiveIndexChange'
 > & {
   readonly notice?: Child;
   readonly banner?: Child;
@@ -97,14 +99,37 @@ export type ComposerIconButtonOptions = Pick<
 >;
 export type SuggestionListOptions = Omit<
   SuggestionListProps,
-  Drawn | 'kind' | 'suggestions' | 'size' | 'loading' | 'maxHeight'
+  | Drawn
+  | 'kind'
+  | 'suggestions'
+  | 'size'
+  | 'loading'
+  | 'maxHeight'
+  | 'open'
+  | 'onOpenChange'
+  | 'activeIndex'
+  | 'onActiveIndexChange'
 > & { readonly maxHeight?: SpaceToken };
 export type VoiceRecorderOptions = Omit<VoiceRecorderProps, Drawn | 'state' | 'seconds'>;
 export type AttachmentMenuOptions = Omit<
   AttachmentMenuProps,
-  'style' | 'testID' | 'children' | 'layout' | 'columns' | 'recent'
+  'style' | 'testID' | 'children' | 'layout' | 'columns' | 'recent' | 'open' | 'onOpenChange'
 > & { readonly recent?: Child };
-export type EmojiPickerOptions = Omit<EmojiPickerProps, Drawn | 'groups' | 'size' | 'height'> & {
+export type EmojiPickerOptions = Omit<
+  EmojiPickerProps,
+  | Drawn
+  | 'groups'
+  | 'size'
+  | 'height'
+  | 'activeGroup'
+  | 'onActiveGroupChange'
+  | 'query'
+  | 'onQueryChange'
+  | 'skinTone'
+  | 'onSkinToneChange'
+  | 'activeTab'
+  | 'onActiveTabChange'
+> & {
   readonly height?: SpaceToken;
 };
 export type ReactionPickerOptions = Omit<
@@ -113,11 +138,12 @@ export type ReactionPickerOptions = Omit<
 >;
 export type MessageContextMenuOptions = Omit<
   MessageContextMenuProps,
-  'style' | 'reactionBarStyle' | 'testID' | 'children' | 'items'
+  'style' | 'reactionBarStyle' | 'testID' | 'children' | 'items' | 'open' | 'onOpenChange'
 >;
 
 /** Bloom `ChatComposer`: a person-to-person chat's message bar. */
 export interface ChatComposerView extends ViewModifiers<ChatComposerView> {
+  activeIndex(value: Bound<ChatComposerProps, 'activeIndex'>): ChatComposerView;
   disabled(value?: boolean): ChatComposerView;
 }
 /** Bloom `CompactComposer`: a reply box that grows into the full composer. */
@@ -141,6 +167,8 @@ export interface ComposerIconButtonView extends ViewModifiers<ComposerIconButton
 }
 /** Bloom `SuggestionList`: the mentions, commands or emoji a typed trigger offers. */
 export interface SuggestionListView extends ViewModifiers<SuggestionListView> {
+  presented(value: Bound<SuggestionListProps, 'open'>): SuggestionListView;
+  activeIndex(value: Bound<SuggestionListProps, 'activeIndex'>): SuggestionListView;
   size(value: BloomSize): SuggestionListView;
   loading(value?: boolean): SuggestionListView;
 }
@@ -148,12 +176,17 @@ export interface SuggestionListView extends ViewModifiers<SuggestionListView> {
 export type VoiceRecorderView = ViewModifiers<VoiceRecorderView>;
 /** Bloom `AttachmentMenu`: what can be attached, opened from its trigger. */
 export interface AttachmentMenuView extends ViewModifiers<AttachmentMenuView> {
+  presented(value: Bound<AttachmentMenuProps, 'open'>): AttachmentMenuView;
   /** `grid` (default) of tinted tiles, or a `list`. */
   style(value: AttachmentLayout): AttachmentMenuView;
   columns(value: number): AttachmentMenuView;
 }
 /** Bloom `EmojiPicker`: emoji by group, with search, skin tones and tabs. */
 export interface EmojiPickerView extends ViewModifiers<EmojiPickerView> {
+  activeGroup(value: Bound<EmojiPickerProps, 'activeGroup'>): EmojiPickerView;
+  query(value: Bound<EmojiPickerProps, 'query'>): EmojiPickerView;
+  skinTone(value: Bound<EmojiPickerProps, 'skinTone'>): EmojiPickerView;
+  activeTab(value: Bound<EmojiPickerProps, 'activeTab'>): EmojiPickerView;
   size(value: BloomSize): EmojiPickerView;
 }
 /** Bloom `ReactionPicker`: the quick reactions over a message. */
@@ -163,7 +196,9 @@ export interface ReactionPickerView extends ViewModifiers<ReactionPickerView> {
   surface(value?: boolean): ReactionPickerView;
 }
 /** Bloom `MessageContextMenu`: a message's menu, with its reaction bar. */
-export type MessageContextMenuView = ViewModifiers<MessageContextMenuView>;
+export interface MessageContextMenuView extends ViewModifiers<MessageContextMenuView> {
+  presented(value: Bound<MessageContextMenuProps, 'open'>): MessageContextMenuView;
+}
 
 /** Bloom `ChatComposer`, writing the text the binding holds. */
 export function ChatComposer(
@@ -246,6 +281,7 @@ const propsOf = <O,>(d: ControlDraw) => d.node.props as Props<O>;
 
 export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
   chatComposer: product(BloomChatComposer, {
+    bindings: { activeIndex: ['activeIndex', 'onActiveIndexChange'] },
     binding: ['value', 'onValueChange'],
     slots: ['notice', 'banner', 'leading', 'emojiSlot', 'recorder'],
     own: (d) => ({ disabled: d.own('disabled')?.value }),
@@ -274,20 +310,33 @@ export const CHAT_COMPOSERS: Record<ChatComposerKind, ControlRenderer> = {
     });
   },
   suggestionList: product(BloomSuggestionList, {
+    bindings: {
+      presented: ['open', 'onOpenChange'],
+      activeIndex: ['activeIndex', 'onActiveIndexChange'],
+    },
     lengths: ['maxHeight'],
     own: (d) => ({ size: d.own('size')?.value, loading: d.own('loading')?.value }),
   }),
   voiceRecorder: product(BloomVoiceRecorder),
   attachmentMenu: product(BloomAttachmentMenu, {
+    bindings: { presented: ['open', 'onOpenChange'] },
     slots: ['recent'],
     own: (d) => ({ layout: d.own('style')?.value, columns: d.own('columns')?.value }),
   }),
   emojiPicker: product(BloomEmojiPicker, {
+    bindings: {
+      activeGroup: ['activeGroup', 'onActiveGroupChange'],
+      query: ['query', 'onQueryChange'],
+      skinTone: ['skinTone', 'onSkinToneChange'],
+      activeTab: ['activeTab', 'onActiveTabChange'],
+    },
     lengths: ['height'],
     own: (d) => ({ size: d.own('size')?.value }),
   }),
   reactionPicker: product(BloomReactionPicker, {
     own: (d) => ({ size: d.own('size')?.value, surface: d.own('surface')?.value }),
   }),
-  messageContextMenu: product(BloomMessageContextMenu),
+  messageContextMenu: product(BloomMessageContextMenu, {
+    bindings: { presented: ['open', 'onOpenChange'] },
+  }),
 };

@@ -10,7 +10,7 @@ import {
 } from '@oxy.so/bloom/listing-editor';
 import type { PropertyType } from '@oxy.so/bloom/stay-filters';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
@@ -26,7 +26,7 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 /** Bloom `ListingPreviewPane`'s words and mode; `renderPage` draws the page preview as a view. */
 export type ListingPreviewPaneOptions = Omit<
   ListingPreviewPaneProps,
-  'style' | 'testID' | 'listing' | 'renderPage'
+  'style' | 'testID' | 'listing' | 'renderPage' | 'mode' | 'onModeChange'
 > & { readonly renderPage?: (listing: ListingPreviewData) => Child };
 export type ListingQualityMeterOptions = Omit<ListingQualityMeterProps, Drawn | 'items'>;
 export type PropertyTypeSelectorOptions<T extends string = PropertyType> = Omit<
@@ -35,7 +35,9 @@ export type PropertyTypeSelectorOptions<T extends string = PropertyType> = Omit<
 >;
 
 /** Bloom `ListingPreviewPane`: the listing as guests see it, as a card or a page. */
-export type ListingPreviewPaneView = ViewModifiers<ListingPreviewPaneView>;
+export interface ListingPreviewPaneView extends ViewModifiers<ListingPreviewPaneView> {
+  mode(value: Bound<ListingPreviewPaneProps, 'mode'>): ListingPreviewPaneView;
+}
 /** Bloom `ListingQualityMeter`: how complete a listing is, and what to add. */
 export type ListingQualityMeterView = ViewModifiers<ListingQualityMeterView>;
 /** Bloom `PropertyTypeSelector`: one property type, as its binding holds. */
@@ -69,6 +71,7 @@ export function PropertyTypeSelector<T extends string = PropertyType>(
 
 export const LISTING_EDITORS: Record<ListingEditorKind, ControlRenderer> = {
   listingPreviewPane: product(BloomListingPreviewPane, {
+    bindings: { mode: ['mode', 'onModeChange'] },
     own: (d) => {
       const { renderPage } = (d.node.props as { options: ListingPreviewPaneOptions }).options;
       return {

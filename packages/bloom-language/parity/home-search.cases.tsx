@@ -149,8 +149,7 @@ export const HOME_SEARCH_CASES: ParityCase[] = [
 export const HOME_SEARCH_CASES_FOCUSED: ParityCase[] = [
   {
     name: 'HomeSearchBar typing a location',
-    language: () =>
-      toElement(L.HomeSearchBar(SEGMENTS, ['location', set], { query: 'Lis', onQueryChange: set })),
+    language: () => toElement(L.HomeSearchBar(SEGMENTS, ['location', set], {}).query(['Lis', set])),
     bloom: () => (
       <HomeSearchBar
         segments={SEGMENTS}

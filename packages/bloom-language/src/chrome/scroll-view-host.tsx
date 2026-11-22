@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { RefreshControl, type ViewStyle } from 'react-native';
 import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 
+import { refreshing } from '../binding';
 import type { Edge, Modifier, Node, ValueModifiers } from '../node';
 import { valuesOf } from '../platform/values';
 import type { NodeHostProps } from '../platform/host.types';
@@ -85,8 +86,7 @@ export function ScrollViewHost({ node, children }: NodeHostProps & { children?: 
     props.onEndReached = modifier.value;
     if (modifier.threshold !== undefined) props.onEndReachedThreshold = modifier.threshold;
   }
-  if (refresh)
-    props.refreshControl = <RefreshControl refreshing={refresh[0]} onRefresh={refresh[1]} />;
+  if (refresh) props.refreshControl = <RefreshControl {...refreshing(refresh)} />;
   if (values.testID !== undefined) props.testID = values.testID as string;
   return <ScreenScrollView {...props}>{children}</ScreenScrollView>;
 }

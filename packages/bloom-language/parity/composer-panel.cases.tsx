@@ -9,7 +9,7 @@ import { Text } from '@oxy.so/bloom/typography';
 
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const set = () => {};
 const PROVIDERS = [
@@ -44,13 +44,15 @@ const panels: ParityCase[] = [
           permissions: COMPOSER_PANEL_PERMISSIONS,
           addMenu: COMPOSER_PANEL_ADD_MENU,
           providers: PROVIDERS,
-          model: 'deep',
-          effort: 2,
           showVoice: true,
-        }),
+        })
+          .model(['deep', hold])
+          .effort([2, hold]),
       ),
     bloom: () => (
       <ComposerPanel
+        onModelChange={hold}
+        onEffortChange={hold}
         value="Plan the trip"
         onValueChange={set}
         onSubmit={set}
@@ -95,8 +97,17 @@ const panels: ParityCase[] = [
   },
   ...VOICE.map((voiceState) => ({
     name: `ComposerPanel voice ${voiceState}`,
-    language: () => toElement(L.ComposerPanel(['', set], { showVoice: true, voiceState })),
-    bloom: () => <ComposerPanel value="" onValueChange={set} showVoice voiceState={voiceState} />,
+    language: () =>
+      toElement(L.ComposerPanel(['', set], { showVoice: true }).voiceState([voiceState, hold])),
+    bloom: () => (
+      <ComposerPanel
+        onVoiceStateChange={hold}
+        value=""
+        onValueChange={set}
+        showVoice
+        voiceState={voiceState}
+      />
+    ),
   })),
 ];
 
@@ -113,14 +124,14 @@ const pills: ParityCase[] = [
         L.ComposerPill(['Summarise', set], {
           onSubmit: set,
           models: ['Fast', 'Deep'],
-          model: 'Fast',
           permissions: COMPOSER_PANEL_PERMISSIONS,
           error: 'Could not send',
           maxLines: 4,
-        }),
+        }).model(['Fast', hold]),
       ),
     bloom: () => (
       <ComposerPill
+        onModelChange={hold}
         value="Summarise"
         onValueChange={set}
         onSubmit={set}
@@ -140,9 +151,18 @@ const pills: ParityCase[] = [
   ...VOICE.map((voiceState) => ({
     name: `ComposerPill voice ${voiceState}, busy`,
     language: () =>
-      toElement(L.ComposerPill(['', set], { showVoice: true, voiceState, busy: true })),
+      toElement(
+        L.ComposerPill(['', set], { showVoice: true, busy: true }).voiceState([voiceState, hold]),
+      ),
     bloom: () => (
-      <ComposerPill value="" onValueChange={set} showVoice voiceState={voiceState} busy />
+      <ComposerPill
+        onVoiceStateChange={hold}
+        value=""
+        onValueChange={set}
+        showVoice
+        voiceState={voiceState}
+        busy
+      />
     ),
   })),
   {

@@ -304,7 +304,7 @@ const virtual: ParityCase[] = [
         L.VirtualList(NAMES, nameRow)
           .estimatedItemSize(56)
           .onEndReached(press, 0.5)
-          .refreshable(false, press)
+          .refreshable([false, press])
           .headerContent(L.Text('Top'))
           .footerContent(L.Text('End'))
           .tuning({ drawDistance: 500 })

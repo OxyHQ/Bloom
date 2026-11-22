@@ -112,9 +112,9 @@ const notes: ParityCase[] = [
         L.NoteCard('Harbour notes', {
           excerpt: 'Dawn',
           selectable: true,
-          selected: true,
-          onSelectedChange: press,
-        }).label('Harbour'),
+        })
+          .selected([true, press])
+          .label('Harbour'),
       ),
     bloom: () => (
       <NoteCard

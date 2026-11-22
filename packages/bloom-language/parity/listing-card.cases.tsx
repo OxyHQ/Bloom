@@ -64,11 +64,10 @@ const cards: ParityCase[] = [
       toElement(
         L.ListingCard('Harbour flat', PHOTOS, {
           ...HOME,
-          favorite: true,
-          onFavoriteChange: set,
           status: 'reserved',
           badge: L.Text('New'),
         })
+          .favorite([true, set])
           .onPress(press)
           .onLongPress(press)
           .label('Harbour flat, €1,250 a month'),

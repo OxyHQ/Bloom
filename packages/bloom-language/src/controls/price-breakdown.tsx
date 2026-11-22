@@ -6,6 +6,7 @@ import {
   type PriceSummaryProps,
 } from '@oxy.so/bloom/price-breakdown';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { PriceLineTone } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -17,7 +18,10 @@ export type PriceBreakdownKind = 'priceSummary' | 'priceSummaryLine';
 type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 
 /** Bloom `PriceSummary`'s data (the total, the disclosure and its words). */
-export type PriceSummaryOptions = Omit<PriceSummaryProps, Drawn | 'lines'>;
+export type PriceSummaryOptions = Omit<
+  PriceSummaryProps,
+  Drawn | 'lines' | 'expanded' | 'onExpandedChange'
+>;
 /** Bloom `PriceSummaryLine`'s data (its amounts, state and words); its `info` is a language child. */
 export type PriceSummaryLineOptions = Omit<
   PriceSummaryLineProps,
@@ -27,7 +31,9 @@ export type PriceSummaryLineOptions = Omit<
 };
 
 /** Bloom `PriceSummary`; `.label()` names its list of charges. */
-export type PriceSummaryView = ViewModifiers<PriceSummaryView>;
+export interface PriceSummaryView extends ViewModifiers<PriceSummaryView> {
+  expanded(value: Bound<PriceSummaryProps, 'expanded'>): PriceSummaryView;
+}
 export interface PriceSummaryLineView extends ViewModifiers<PriceSummaryLineView> {
   /** `default`, `discount` (money back, the success tone) or `muted` (a line read past). */
   tint(value: PriceLineTone): PriceSummaryLineView;
@@ -47,7 +53,9 @@ export function PriceSummaryLine(
 }
 
 export const PRICE_BREAKDOWNS: Record<PriceBreakdownKind, ControlRenderer> = {
-  priceSummary: product(BloomPriceSummary),
+  priceSummary: product(BloomPriceSummary, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+  }),
   priceSummaryLine: product(BloomPriceSummaryLine, {
     slots: ['info'],
     own: (d) => ({ tone: d.own('tint')?.value }),

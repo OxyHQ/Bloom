@@ -7,7 +7,7 @@ import {
   type ComposerPillProps,
 } from '@oxy.so/bloom/composer-panel';
 
-import type { Binding } from '../binding';
+import type { Binding, Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ControlRenderer } from './draw';
 import { product } from './product';
@@ -33,17 +33,51 @@ type Replaced =
   | 'emptyAction';
 
 /** Bloom `ComposerPanel`'s data: its menus, models, voice and handlers; its slots as children. */
-export type ComposerPanelOptions = Omit<ComposerPanelProps, Replaced> & Slots;
+export type ComposerPanelOptions = Omit<
+  ComposerPanelProps,
+  | Replaced
+  | 'model'
+  | 'onModelChange'
+  | 'effort'
+  | 'onEffortChange'
+  | 'voiceState'
+  | 'onVoiceStateChange'
+  | 'permission'
+  | 'onPermissionChange'
+> &
+  Slots;
 /** Bloom `ComposerPill`'s data, as the panel's. */
-export type ComposerPillOptions = Omit<ComposerPillProps, Replaced | 'surface' | 'frosted'> & Slots;
+export type ComposerPillOptions = Omit<
+  ComposerPillProps,
+  | Replaced
+  | 'surface'
+  | 'frosted'
+  | 'model'
+  | 'onModelChange'
+  | 'effort'
+  | 'onEffortChange'
+  | 'voiceState'
+  | 'onVoiceStateChange'
+  | 'permission'
+  | 'onPermissionChange'
+> &
+  Slots;
 export type ComposerPanelStatusTabOptions = Omit<ComposerPanelStatusTabProps, 'style' | 'testID'>;
 
 /** Bloom `ComposerPanel`: prompt, add menu, permissions, model and effort, voice and send. */
 export interface ComposerPanelView extends ViewModifiers<ComposerPanelView> {
+  model(value: Bound<ComposerPanelProps, 'model'>): ComposerPanelView;
+  effort(value: Bound<ComposerPanelProps, 'effort'>): ComposerPanelView;
+  voiceState(value: Bound<ComposerPanelProps, 'voiceState'>): ComposerPanelView;
+  permission(value: Bound<ComposerPanelProps, 'permission'>): ComposerPanelView;
   disabled(value?: boolean): ComposerPanelView;
 }
 /** Bloom `ComposerPill`: the composer in one pill, which grows as it is written in. */
 export interface ComposerPillView extends ViewModifiers<ComposerPillView> {
+  model(value: Bound<ComposerPillProps, 'model'>): ComposerPillView;
+  effort(value: Bound<ComposerPillProps, 'effort'>): ComposerPillView;
+  voiceState(value: Bound<ComposerPillProps, 'voiceState'>): ComposerPillView;
+  permission(value: Bound<ComposerPillProps, 'permission'>): ComposerPillView;
   disabled(value?: boolean): ComposerPillView;
   /** `false` draws it without its own surface (on a surface of yours). */
   surface(value?: boolean): ComposerPillView;
@@ -80,10 +114,22 @@ const composer = {
 
 export const COMPOSER_PANELS: Record<ComposerPanelKind, ControlRenderer> = {
   composerPanel: product(BloomComposerPanel, {
+    bindings: {
+      model: ['model', 'onModelChange'],
+      effort: ['effort', 'onEffortChange'],
+      voiceState: ['voiceState', 'onVoiceStateChange'],
+      permission: ['permission', 'onPermissionChange'],
+    },
     ...composer,
     own: (d) => ({ disabled: d.own('disabled')?.value }),
   }),
   composerPill: product(BloomComposerPill, {
+    bindings: {
+      model: ['model', 'onModelChange'],
+      effort: ['effort', 'onEffortChange'],
+      voiceState: ['voiceState', 'onVoiceStateChange'],
+      permission: ['permission', 'onPermissionChange'],
+    },
     ...composer,
     own: (d) => ({
       disabled: d.own('disabled')?.value,

@@ -6,6 +6,7 @@ import {
   type WishlistCardProps,
 } from '@oxy.so/bloom/listing-card';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type { ColorToken, Density, ListingCardLayout } from '../tokens';
 import type { ControlRenderer } from './draw';
@@ -19,7 +20,15 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel' | 'onPress' | 'onLongPres
 
 export type ListingCardOptions = Omit<
   ListingCardProps,
-  Drawn | 'title' | 'photos' | 'layout' | 'density' | 'loading' | 'badge'
+  | Drawn
+  | 'title'
+  | 'photos'
+  | 'layout'
+  | 'density'
+  | 'loading'
+  | 'badge'
+  | 'favorite'
+  | 'onFavoriteChange'
 > & { readonly badge?: Child };
 export type WishlistCardOptions = Omit<
   WishlistCardProps,
@@ -28,6 +37,7 @@ export type WishlistCardOptions = Omit<
 
 /** Bloom `ListingCard`: a listing's photos, words and price; `.onPress()` opens it. */
 export interface ListingCardView extends ViewModifiers<ListingCardView> {
+  favorite(value: Bound<ListingCardProps, 'favorite'>): ListingCardView;
   /** `vertical` (default): the photo over the words; `horizontal`: beside them. */
   style(value: ListingCardLayout): ListingCardView;
   /** `comfortable` or `compact`, for a dense list. */
@@ -69,6 +79,7 @@ export function WishlistCard(
 
 export const LISTING_CARDS: Record<ListingCardKind, ControlRenderer> = {
   listingCard: product(BloomListingCard, {
+    bindings: { favorite: ['favorite', 'onFavoriteChange'] },
     slots: ['badge'],
     press: true,
     own: (d) => ({

@@ -8,7 +8,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { hold, type ParityCase } from './support/cases';
 
 const press = () => {};
 const setRecipients = (_recipients: unknown[]) => {};
@@ -113,9 +113,14 @@ const compose: ParityCase[] = [
     name: 'MailComposeSurface minimized, send disabled',
     language: () =>
       toElement(
-        L.MailComposeSurface(undefined, { title: 'Draft', minimized: true, sendDisabled: true }),
+        L.MailComposeSurface(undefined, { title: 'Draft', sendDisabled: true }).minimized([
+          true,
+          hold,
+        ]),
       ),
-    bloom: () => <MailComposeSurface title="Draft" minimized sendDisabled />,
+    bloom: () => (
+      <MailComposeSurface onMinimizedChange={hold} title="Draft" minimized sendDisabled />
+    ),
   },
   {
     name: 'MailRecipientField',
@@ -130,12 +135,12 @@ const compose: ParityCase[] = [
       toElement(
         L.MailRecipientField([RECIPIENTS, setRecipients], {
           label: 'Cc',
-          value: 'pe',
-          onChangeText: setText,
           suggestions: SUGGESTIONS,
           placeholder: 'Add people',
           trailing: L.Button(L.Text('Bcc')).style('plain').onPress(press),
-        }).label('Copies'),
+        })
+          .query(['pe', setText])
+          .label('Copies'),
       ),
     bloom: () => (
       <MailRecipientField
@@ -194,15 +199,13 @@ const thread: ParityCase[] = [
           date: 'Mon 3',
           time: '10:40',
           defaultExpanded: true,
-          starred: true,
-          onStarredChange: setExpanded,
           attachments: MESSAGES[1]!.attachments,
           trimmed: L.Text('> The plan'),
           menu: L.Text('More'),
           onReply: press,
           onReplyAll: press,
           onForward: press,
-        }),
+        }).starred([true, setExpanded]),
       ),
     bloom: () => (
       <MailMessage
@@ -237,15 +240,17 @@ const thread: ParityCase[] = [
         L.MailThread(MESSAGES, {
           subject: 'Spring plan',
           labels: [{ id: 'l1', name: 'Work', tone: 'info' as const }],
-          starred: true,
           collapseAfter: 1,
           messageGap: 'md',
           quickReply: L.Button(L.Text('Reply')).onPress(press),
           header: L.Text('Inbox'),
-        }).label('Thread'),
+        })
+          .starred([true, hold])
+          .label('Thread'),
       ),
     bloom: () => (
       <MailThread
+        onStarredChange={hold}
         messages={MESSAGES}
         subject="Spring plan"
         labels={[{ id: 'l1', name: 'Work', tone: 'info' as const }]}
@@ -261,9 +266,7 @@ const thread: ParityCase[] = [
   ...[false, true].map((expanded) => ({
     name: `MailQuoteToggle ${expanded ? 'open' : 'folded'}`,
     language: () =>
-      toElement(
-        L.MailQuoteToggle(L.Text('> Earlier'), { expanded, onExpandedChange: setExpanded }),
-      ),
+      toElement(L.MailQuoteToggle(L.Text('> Earlier'), {}).expanded([expanded, setExpanded])),
     bloom: () => (
       <MailQuoteToggle expanded={expanded} onExpandedChange={setExpanded}>
         <Text>{'> Earlier'}</Text>

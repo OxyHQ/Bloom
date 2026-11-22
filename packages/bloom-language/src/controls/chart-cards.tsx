@@ -33,6 +33,7 @@ import {
   type TokensPoint,
 } from '@oxy.so/bloom/chart-cards';
 
+import type { Bound } from '../binding';
 import { type Child, Node, type ViewModifiers } from '../node';
 import type {
   AreaVariant,
@@ -69,7 +70,10 @@ type Drawn = 'style' | 'testID' | 'accessibilityLabel';
 /** A card's own colours, which are modifiers (roles). */
 type Inks = 'color' | 'activeColor';
 
-export type AreaChartCardOptions = Omit<AreaChartCardProps, Drawn | 'variant' | 'shape'>;
+export type AreaChartCardOptions = Omit<
+  AreaChartCardProps,
+  Drawn | 'variant' | 'shape' | 'activeIndex' | 'onActiveIndexChange' | 'range' | 'onRangeChange'
+>;
 export type BarListCardOptions = Omit<BarListCardProps, Drawn | Inks | 'mono'>;
 export type ChartCardSurfaceOptions = Omit<
   ChartCardSurfaceProps,
@@ -77,22 +81,43 @@ export type ChartCardSurfaceOptions = Omit<
 > & { readonly height?: SpaceToken | 'auto'; readonly radius?: CardRadius };
 export type ChartHeadlineOptions = Omit<ChartHeadlineProps, Drawn | 'label'>;
 export type ChartStatTilesOptions = Omit<ChartStatTilesProps, Drawn | 'items'>;
-export type ContributionsCardOptions = Omit<ContributionsCardProps, Drawn | Inks>;
-export type HeatmapChartCardOptions = Omit<HeatmapChartCardProps, Drawn | Inks>;
-export type LineChartCardOptions = Omit<LineChartCardProps, Drawn | Inks | 'shape'>;
-export type RadarChartCardOptions = Omit<RadarChartCardProps, Drawn | 'variant' | 'legend'>;
-export type SleepScoreCardOptions = Omit<SleepScoreCardProps, Drawn | 'metrics' | 'height'> & {
+export type ContributionsCardOptions = Omit<
+  ContributionsCardProps,
+  Drawn | Inks | 'activeCell' | 'onActiveCellChange'
+>;
+export type HeatmapChartCardOptions = Omit<
+  HeatmapChartCardProps,
+  Drawn | Inks | 'range' | 'onRangeChange' | 'activeCell' | 'onActiveCellChange'
+>;
+export type LineChartCardOptions = Omit<
+  LineChartCardProps,
+  Drawn | Inks | 'shape' | 'activeIndex' | 'onActiveIndexChange'
+>;
+export type RadarChartCardOptions = Omit<
+  RadarChartCardProps,
+  Drawn | 'variant' | 'legend' | 'activeIndex' | 'onActiveIndexChange' | 'range' | 'onRangeChange'
+>;
+export type SleepScoreCardOptions = Omit<
+  SleepScoreCardProps,
+  Drawn | 'metrics' | 'height' | 'activeIndex' | 'onActiveIndexChange'
+> & {
   readonly height?: SpaceToken;
 };
 export type SparklineOptions = Omit<
   SparklineProps,
   Drawn | Inks | 'data' | 'tone' | 'width' | 'height' | 'shape' | 'fill'
 > & { readonly width?: SpaceToken; readonly height?: SpaceToken };
-export type StageBarsCardOptions = Omit<StageBarsCardProps, Drawn | 'mono'>;
-export type StepsCardOptions = Omit<StepsCardProps, Drawn | Inks | 'data'>;
+export type StageBarsCardOptions = Omit<
+  StageBarsCardProps,
+  Drawn | 'mono' | 'activeIndex' | 'onActiveIndexChange' | 'range' | 'onRangeChange'
+>;
+export type StepsCardOptions = Omit<
+  StepsCardProps,
+  Drawn | Inks | 'data' | 'activeIndex' | 'onActiveIndexChange'
+>;
 export type TokensChartCardOptions = Omit<
   TokensChartCardProps,
-  Drawn | Inks | 'data' | 'plotHeight'
+  Drawn | Inks | 'data' | 'plotHeight' | 'activeIndex' | 'onActiveIndexChange'
 > & { readonly plotHeight?: SpaceToken };
 
 /** A card drawn in one colour role, and another while a point is active. */
@@ -105,6 +130,8 @@ interface Inked<Self> {
 
 /** Bloom `AreaChartCard`: stacked, overlapping or percent areas over a range. */
 export interface AreaChartCardView extends ViewModifiers<AreaChartCardView> {
+  activeIndex(value: Bound<AreaChartCardProps, 'activeIndex'>): AreaChartCardView;
+  range(value: Bound<AreaChartCardProps, 'range'>): AreaChartCardView;
   /** `stacked` (default), `overlap` or `percent`. */
   style(value: AreaVariant): AreaChartCardView;
   /** `curved` (default) or `sharp`. */
@@ -127,27 +154,36 @@ export type ChartHeadlineView = ViewModifiers<ChartHeadlineView>;
 export type ChartStatTilesView = ViewModifiers<ChartStatTilesView>;
 /** Bloom `ContributionsCard`: a year of activity as a grid of cells. */
 export interface ContributionsCardView extends ViewModifiers<ContributionsCardView> {
+  activeCell(value: Bound<ContributionsCardProps, 'activeCell'>): ContributionsCardView;
   tint(value: ColorToken): ContributionsCardView;
 }
 /** Bloom `HeatmapChartCard`: values by row and column, in one colour's strengths. */
 export interface HeatmapChartCardView
   extends ViewModifiers<HeatmapChartCardView>,
-    Inked<HeatmapChartCardView> {}
+    Inked<HeatmapChartCardView> {
+  range(value: Bound<HeatmapChartCardProps, 'range'>): HeatmapChartCardView;
+  activeCell(value: Bound<HeatmapChartCardProps, 'activeCell'>): HeatmapChartCardView;
+}
 /** Bloom `LineChartCard`: a line over a range. */
 export interface LineChartCardView
   extends ViewModifiers<LineChartCardView>,
     Inked<LineChartCardView> {
+  activeIndex(value: Bound<LineChartCardProps, 'activeIndex'>): LineChartCardView;
   shape(value: ChartShape): LineChartCardView;
 }
 /** Bloom `RadarChartCard`: values around a polygon. */
 export interface RadarChartCardView extends ViewModifiers<RadarChartCardView> {
+  activeIndex(value: Bound<RadarChartCardProps, 'activeIndex'>): RadarChartCardView;
+  range(value: Bound<RadarChartCardProps, 'range'>): RadarChartCardView;
   /** `filled` (default), `dots`, `lines` or `score`. */
   style(value: RadarVariant): RadarChartCardView;
   /** Its legend at the `bottom` (default), the `top`, or over the chart (`overlay`). */
   legend(value: RadarLegend): RadarChartCardView;
 }
 /** Bloom `SleepScoreCard`: a score from its metrics. */
-export type SleepScoreCardView = ViewModifiers<SleepScoreCardView>;
+export interface SleepScoreCardView extends ViewModifiers<SleepScoreCardView> {
+  activeIndex(value: Bound<SleepScoreCardProps, 'activeIndex'>): SleepScoreCardView;
+}
 /** Bloom `Sparkline`: a small line of values. */
 export interface SparklineView extends ViewModifiers<SparklineView> {
   /** `accent` (default), `positive`, `negative` or `neutral`. */
@@ -159,15 +195,21 @@ export interface SparklineView extends ViewModifiers<SparklineView> {
 }
 /** Bloom `StageBarsCard`: a funnel's stages as bars. */
 export interface StageBarsCardView extends ViewModifiers<StageBarsCardView> {
+  activeIndex(value: Bound<StageBarsCardProps, 'activeIndex'>): StageBarsCardView;
+  range(value: Bound<StageBarsCardProps, 'range'>): StageBarsCardView;
   /** One ink for every stage. */
   mono(value?: boolean): StageBarsCardView;
 }
 /** Bloom `StepsCard`: a day's steps as bars. */
-export interface StepsCardView extends ViewModifiers<StepsCardView>, Inked<StepsCardView> {}
+export interface StepsCardView extends ViewModifiers<StepsCardView>, Inked<StepsCardView> {
+  activeIndex(value: Bound<StepsCardProps, 'activeIndex'>): StepsCardView;
+}
 /** Bloom `TokensChartCard`: tokens used over time. */
 export interface TokensChartCardView
   extends ViewModifiers<TokensChartCardView>,
-    Inked<TokensChartCardView> {}
+    Inked<TokensChartCardView> {
+  activeIndex(value: Bound<TokensChartCardProps, 'activeIndex'>): TokensChartCardView;
+}
 
 export function AreaChartCard(options: AreaChartCardOptions = {}): AreaChartCardView {
   return new Node('areaChartCard', { options }, []);
@@ -239,6 +281,10 @@ const inks = (d: ControlDraw) => ({
 
 export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
   areaChartCard: product(BloomAreaChartCard, {
+    bindings: {
+      activeIndex: ['activeIndex', 'onActiveIndexChange'],
+      range: ['range', 'onRangeChange'],
+    },
     own: (d) => ({ variant: d.own('style')?.value, shape: d.own('shape')?.value }),
   }),
   barListCard: product(BloomBarListCard, {
@@ -257,16 +303,33 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
   }),
   chartHeadline: product(BloomChartHeadline),
   chartStatTiles: product(BloomChartStatTiles),
-  contributionsCard: product(BloomContributionsCard, { colors: inks }),
-  heatmapChartCard: product(BloomHeatmapChartCard, { colors: inks }),
+  contributionsCard: product(BloomContributionsCard, {
+    bindings: { activeCell: ['activeCell', 'onActiveCellChange'] },
+    colors: inks,
+  }),
+  heatmapChartCard: product(BloomHeatmapChartCard, {
+    bindings: {
+      range: ['range', 'onRangeChange'],
+      activeCell: ['activeCell', 'onActiveCellChange'],
+    },
+    colors: inks,
+  }),
   lineChartCard: product(BloomLineChartCard, {
+    bindings: { activeIndex: ['activeIndex', 'onActiveIndexChange'] },
     own: (d) => ({ shape: d.own('shape')?.value }),
     colors: inks,
   }),
   radarChartCard: product(BloomRadarChartCard, {
+    bindings: {
+      activeIndex: ['activeIndex', 'onActiveIndexChange'],
+      range: ['range', 'onRangeChange'],
+    },
     own: (d) => ({ variant: d.own('style')?.value, legend: d.own('legend')?.value }),
   }),
-  sleepScoreCard: product(BloomSleepScoreCard, { lengths: ['height'] }),
+  sleepScoreCard: product(BloomSleepScoreCard, {
+    bindings: { activeIndex: ['activeIndex', 'onActiveIndexChange'] },
+    lengths: ['height'],
+  }),
   sparkline: product(BloomSparkline, {
     lengths: ['width', 'height'],
     own: (d) => ({
@@ -275,7 +338,20 @@ export const CHART_CARDS: Record<ChartCardKind, ControlRenderer> = {
       fill: d.own('filled')?.value,
     }),
   }),
-  stageBarsCard: product(BloomStageBarsCard, { own: (d) => ({ mono: d.own('mono')?.value }) }),
-  stepsCard: product(BloomStepsCard, { colors: inks }),
-  tokensChartCard: product(BloomTokensChartCard, { lengths: ['plotHeight'], colors: inks }),
+  stageBarsCard: product(BloomStageBarsCard, {
+    bindings: {
+      activeIndex: ['activeIndex', 'onActiveIndexChange'],
+      range: ['range', 'onRangeChange'],
+    },
+    own: (d) => ({ mono: d.own('mono')?.value }),
+  }),
+  stepsCard: product(BloomStepsCard, {
+    bindings: { activeIndex: ['activeIndex', 'onActiveIndexChange'] },
+    colors: inks,
+  }),
+  tokensChartCard: product(BloomTokensChartCard, {
+    bindings: { activeIndex: ['activeIndex', 'onActiveIndexChange'] },
+    lengths: ['plotHeight'],
+    colors: inks,
+  }),
 };

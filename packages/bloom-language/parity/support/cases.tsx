@@ -3,6 +3,13 @@ import { useTheme, useThemePaint, type ThemeColors } from '@oxy.so/bloom/theme';
 
 export type Scheme = 'light' | 'dark';
 
+/**
+ * The setter of a binding a case holds still (the screen shows a value and
+ * never changes it): the language's binding and Bloom's handler prop both
+ * take it.
+ */
+export const hold = (): void => {};
+
 /** One comparison: a language tree and what an app draws with Bloom today. */
 export interface ParityCase {
   name: string;

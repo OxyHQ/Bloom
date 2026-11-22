@@ -255,7 +255,7 @@ export type {
   SpaceToken,
   WeightName,
 } from './tokens';
-export type { Binding } from './binding';
+export type { Binding, Bound } from './binding';
 export type { AnyDensity, Density, DensityNode } from './tokens';
 export {
   SettingsDateField,
