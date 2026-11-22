@@ -497,21 +497,64 @@ export const E = () => <List items={rows.map((r) => ({ id: r.id, trailing: <View
     expect(result.fixtures[0]?.after).toContain("['⟨1⟩', () => {}], ITEMS)");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['AvatarGroup:size']);
   });
-  it('draws a virtual list’s renderItem as its row, reading only its item and index', () => {
+  it('draws a virtual list’s renderItem as its row, handed FlashList’s argument as Bloom hands it', () => {
     const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
 export const A = () => (
   <VirtualList data={posts} renderItem={({ item: post }) => <Post post={post} />} ListFooterComponent={<Footer />} />
 );
 export const B = () => <VirtualList data={posts} renderItem={renderPost} />;
 export const C = () => <VirtualList data={posts} renderItem={({ item }) => <Post post={item} />} ListHeaderComponent={Header} />;
+export const D = () => <VirtualList data={posts} renderItem={(row) => <Post post={row.item} />} />;
+export const E = () => <VirtualList data={posts} renderItem={info} />;
+export const F = () => <VirtualList data={rows} renderItem={({ item }) => (item.kind === 'tabs' ? tabs : renderRow(item))} />;
+export const G = () => <VirtualList data={rows} renderItem={({ item }) => { return renderRow(item); }} />;
 `);
+    expect(result.code).toContain(
+      "toElement(LVirtualList(rows, ({ item }) => Embed((item.kind === 'tabs' ? tabs : renderRow(item)))))",
+    );
     expect(flat(result.code)).toContain(
-      'toElement(LVirtualList(posts, (post) => Embed(<Post post={post} />)).footerContent(Embed(<Footer />)))',
+      'toElement(LVirtualList(posts, ({ item: post }) => Embed(<Post post={post} />)).footerContent(Embed(<Footer />)))',
+    );
+    expect(result.code).toContain(
+      'toElement(LVirtualList(posts, (info) => Embed(renderPost(info))))',
+    );
+    expect(result.code).toContain(
+      'toElement(LVirtualList(posts, (row) => Embed(<Post post={row.item} />)))',
+    );
+    expect(result.fixtures[1]?.before).toContain(
+      "renderItem={((info) => <Hole n={'1-' + info.index} />)}",
+    );
+    expect(result.fixtures[1]?.after).toContain(
+      "LVirtualList(ITEMS, (info) => Embed(((info) => <Hole n={'1-' + info.index} />)(info)))",
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'VirtualList:renderItem',
       'VirtualList:ListHeaderComponent',
+      'VirtualList:renderItem',
+      'VirtualList:renderItem',
     ]);
+  });
+  it('binds a virtual list to its screen and gathers the engine’s knobs into its tuning', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+export const A = () => (
+  <VirtualList
+    data={posts}
+    renderItem={renderPost}
+    screen={{}}
+    scrollbar="never"
+    keyboardShouldPersistTaps="handled"
+    keyboardDismissMode="on-drag"
+    overscan={OVERSCAN_ROWS}
+    removeClippedSubviews
+    windowSize={10}
+    maintainVisibleContentPosition={false}
+  />
+);
+export const B = () => <VirtualList data={posts} renderItem={renderPost} screen={{ active }} />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LVirtualList(posts, (info) => Embed(renderPost(info))).tuning({ overscan: OVERSCAN_ROWS, removeClippedSubviews: true, windowSize: 10, maintainVisibleContentPosition: false }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['VirtualList:screen']);
   });
   it('lets touches through a view of pointerEvents none, box-none and box-only', () => {
     const result = run(`import { View } from 'react-native';

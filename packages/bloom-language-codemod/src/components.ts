@@ -29,8 +29,11 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `items`: an array of data (any expression but an element or a string), carried as it is;
  * - `element`: a JSX element, as a view; a fragment or a `const` holding an element, embedded
  *   (any other name may be a component);
- * - `row`: FlashList's `renderItem` as an arrow of `{ item, index }` returning an
- *   element, the node's row `(item, index) => view`;
+ * - `row`: FlashList's `renderItem` as the node's row, which Bloom hands the
+ *   same `{ item, index }`: an arrow of one parameter returning an expression (the
+ *   parameter as written; an element its view, any other expression embedded), or a named function, embedded
+ *   as it is called (`(info) => Embed(renderPost(info))`);
+ * - `empty`: an empty object literal (`screen={{}}`), as the bare modifier.
  * - `placement`: Bloom's responsive placement, a static token
  *   (`placement="bottom"`) or an object of them (`{ base: 'bottom', md: 'center' }`),
  *   as `.presentAt(base, tiers)`.
@@ -51,13 +54,19 @@ export type Form =
   | 'items'
   | 'element'
   | 'row'
-  | 'placement';
+  | 'placement'
+  | 'empty';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
   readonly modifier: string;
   readonly form: Form;
   readonly map?: Readonly<Record<string, string>>;
+  /**
+   * A Bloom component (`module#export`) the node is drawn only inside when this
+   * prop is given (a list bound to its screen, in a `Screen`): its parity draws both sides in one.
+   */
+  readonly within?: string;
   /**
    * A second prop that is the modifier's next argument (`onEndReachedThreshold`
    * to `.onEndReached(action, threshold)`); given without this prop, it is a reason.
@@ -138,6 +147,11 @@ export interface ComponentRule {
    * which are the node's `icon` and `trailingIcon`; its own props join the input's.
    */
   readonly shell?: { readonly input: string; readonly icon: string };
+  /**
+   * Props gathered into one modifier's object, each given one under its own
+   * name, its value carried as it is (`overscan={n}` into `.tuning({ overscan: n })`).
+   */
+  readonly gather?: { readonly modifier: string; readonly props: Readonly<Record<string, Form>> };
   /** Props the Bloom component draws in a way no modifier of the node does, and how: each is the reason it stays JSX. */
   readonly differs?: Readonly<Record<string, string>>;
   /**
@@ -192,6 +206,13 @@ const p = (modifier: string, form: Form, map?: Readonly<Record<string, string>>)
   form,
   map,
 });
+
+/** React Native's `keyboardDismissMode` as the language's `.scrollDismissesKeyboard()`. */
+const DISMISS_MODE: Readonly<Record<string, string>> = {
+  none: 'never',
+  'on-drag': 'immediately',
+  interactive: 'interactively',
+};
 
 /** A scroll indicator's boolean prop as `.scrollIndicators()` on its axis. */
 const INDICATOR = { true: 'visible', false: 'hidden' } as const;
@@ -808,7 +829,26 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       ListHeaderComponent: p('headerContent', 'element'),
       ListFooterComponent: p('footerContent', 'element'),
       ListEmptyComponent: p('emptyState', 'element'),
+      screen: { ...p('screen', 'empty'), within: '@oxy.so/bloom/screen#Screen' },
+      scrollbar: p('scrollbar', 'token', tokens('scrollbarVisibility')),
+      keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),
+      keyboardDismissMode: p('scrollDismissesKeyboard', 'token', DISMISS_MODE),
       testID: p('testID', 'string'),
+    },
+    // The engine's knobs, as the language's `VirtualListTuning` names them.
+    gather: {
+      modifier: 'tuning',
+      props: {
+        overscan: 'number',
+        removeClippedSubviews: 'flag',
+        maxToRenderPerBatch: 'number',
+        windowSize: 'number',
+        initialNumToRender: 'number',
+        recycleItems: 'flag',
+        maintainVisibleContentPosition: 'flag',
+        drawDistance: 'number',
+        maxItemsInRecyclePool: 'number',
+      },
     },
   },
   // parity/chat.cases.tsx, ChatSearchField: the query a binding, the rest its options.

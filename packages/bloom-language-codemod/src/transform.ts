@@ -105,7 +105,9 @@ interface Carried {
     | 'element'
     | 'condition'
     | 'key'
-    | 'items';
+    | 'items'
+    /** A list's named row function, called with the argument Bloom hands it (`renderPost(info)`). */
+    | 'renderer';
   /** For a key: its attribute, which a fixture's root leaves out (a key is no part of what draws). */
   readonly attribute?: AnyNode;
 }
@@ -222,6 +224,8 @@ const appColorName = (value: string) =>
       : value.replace(/[^\w]+/g, '_').replace(/_$/, '');
 /** Bloom's colour scope: inside it, a theme read outside it is another scheme's colour. */
 const COLOR_SCOPE = '@oxy.so/bloom/theme#BloomColorScope';
+/** The parameter of a list's row that hands a named row function its argument. */
+const ROW_INFO = 'info';
 
 /**
  * A value a modifier or a constructor takes: a literal, a carried value, a
@@ -234,8 +238,10 @@ type Tagged =
   | { readonly $: 'binding'; readonly binding: readonly [Value, Value] }
   | { readonly $: 'icon'; readonly name: string }
   | { readonly $: 'options'; readonly entries: readonly (readonly [string, Value])[] }
-  /** A list's row: its parameters (the item's name, and the index's) and the view it returns. */
-  | { readonly $: 'row'; readonly params: readonly string[]; readonly view: Ir }
+  /** A list's row: its one parameter, as written, and the view it returns. */
+  | { readonly $: 'row'; readonly param: string; readonly view: Ir }
+  /** A list's row as a named function, embedded as it is called: `(info) => Embed(renderPost(info))`. */
+  | { readonly $: 'renderer'; readonly fn: Carried }
   | { readonly $: 'absent' }
   | { readonly $: 'null' };
 
@@ -1487,6 +1493,23 @@ export function transformSource(source: string, options: TransformOptions): File
     const args: Value[] = [];
     const consumed = new Set<string>();
     let textChildren = false;
+    /** The props of an object given as one value, each under its own name or the key beside its form. */
+    const optionsOf = (
+      options: Readonly<Record<string, Form | readonly [key: string, form: Form]>>,
+    ): [string, Value][] => {
+      const entries: [string, Value][] = [];
+      for (const [name, entry] of Object.entries(options)) {
+        consumed.add(name);
+        if (!given.has(name)) continue;
+        const [key, form] = typeof entry === 'string' ? [name, entry] : entry;
+        const value = valuesOf(form, given.get(name));
+        // A bare flag is `true` in an object.
+        if (value?.length === 0 && (form === 'flag' || form === 'mark')) entries.push([key, true]);
+        else if (value?.length !== 1) unmapped(name);
+        else entries.push([key, value[0] as Value]);
+      }
+      return entries;
+    };
     for (const param of rule.params ?? []) {
       if ('binding' in param) {
         const [valueProp, setters] = param.binding;
@@ -1507,18 +1530,7 @@ export function transformSource(source: string, options: TransformOptions): File
             ],
           });
       } else if ('options' in param) {
-        const entries: [string, Value][] = [];
-        for (const [name, entry] of Object.entries(param.options)) {
-          consumed.add(name);
-          if (!given.has(name)) continue;
-          const [key, form] = typeof entry === 'string' ? [name, entry] : entry;
-          const value = valuesOf(form, given.get(name));
-          // A bare flag is `true` in an object.
-          if (value?.length === 0 && (form === 'flag' || form === 'mark'))
-            entries.push([key, true]);
-          else if (value?.length !== 1) unmapped(name);
-          else entries.push([key, value[0] as Value]);
-        }
+        const entries = optionsOf(param.options);
         args.push(entries.length ? { $: 'options', entries } : { $: 'absent' });
       } else if ('label' in param) {
         // Its glyphs and its label, as the node reads them from its content.
@@ -1580,6 +1592,11 @@ export function transformSource(source: string, options: TransformOptions): File
       }
     }
     const props: PropMod[] = [];
+    if (rule.gather) {
+      const entries = optionsOf(rule.gather.props);
+      if (entries.length)
+        props.push({ name: rule.gather.modifier, args: [{ $: 'options', entries }] });
+    }
     /** A binding that ends the chain (`.presented()`), written after every other modifier. */
     let last: PropMod | undefined;
     // A prop that is another's modifier's next argument (or its close handler) is read with it.
@@ -1700,7 +1717,11 @@ export function transformSource(source: string, options: TransformOptions): File
       ir: {
         type: 'component',
         node: rule.node,
-        within: rule.within,
+        within:
+          rule.within ??
+          Object.entries(rule.props ?? {}).find(
+            ([name, prop]) => prop.within && given.has(name),
+          )?.[1].within,
         args,
         props,
         key,
@@ -1848,6 +1869,10 @@ export function transformSource(source: string, options: TransformOptions): File
         return hasJsx(expression) ? undefined : [{ node: expression, hole: 'boolean' }];
       case 'mark':
         return n.BooleanLiteral.check(expression) && expression.value ? [] : undefined;
+      case 'empty':
+        return n.ObjectExpression.check(expression) && expression.properties.length === 0
+          ? []
+          : undefined;
       case 'number': {
         const number = staticNumber(value);
         if (number !== undefined) return [number];
@@ -2028,32 +2053,39 @@ export function transformSource(source: string, options: TransformOptions): File
       : undefined;
   }
 
-  /** `({ item, index }) => <Row />`, FlashList's `renderItem` reading only its item and index, as a row. */
+  /**
+   * FlashList's `renderItem` as the node's row, which Bloom hands the same
+   * `{ item, index }`: an arrow of one parameter returning an expression (its
+   * parameter as written; an element as the row's view, anything else
+   * embedded as it is), or a named function,
+   * called with that argument as it is (`(info) => Embed(renderPost(info))`).
+   */
   function rowOf(expression: AnyNode): Value | undefined {
-    if (!n.ArrowFunctionExpression.check(expression) || expression.params.length !== 1)
+    if (n.Identifier.check(expression) || n.MemberExpression.check(expression)) {
+      // The row's own parameter is `info`: a function read through that name would be shadowed.
+      let shadowed = false;
+      recast.visit(expression, {
+        visitIdentifier(path) {
+          if (path.node.name === ROW_INFO) shadowed = true;
+          return false;
+        },
+      });
+      return shadowed ? undefined : { $: 'renderer', fn: { node: expression, hole: 'renderer' } };
+    }
+    if (
+      !n.ArrowFunctionExpression.check(expression) ||
+      expression.params.length !== 1 ||
+      n.BlockStatement.check(expression.body)
+    )
       return undefined;
     const [param] = expression.params;
-    if (!n.ObjectPattern.check(param) || !n.JSXElement.check(expression.body)) return undefined;
-    const names = new Map<string, string>();
-    for (const property of param.properties) {
-      if (
-        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
-        property.computed ||
-        !n.Identifier.check(property.key) ||
-        !['item', 'index'].includes(property.key.name) ||
-        !n.Identifier.check(property.value)
-      )
-        return undefined;
-      names.set(property.key.name, property.value.name);
-    }
-    const item = names.get('item');
-    if (!item) return undefined;
-    const index = names.get('index');
-    return {
-      $: 'row',
-      params: index ? [item, index] : [item],
-      view: elementView(expression.body),
-    };
+    if (!n.Identifier.check(param) && !n.ObjectPattern.check(param)) return undefined;
+    const { body } = expression;
+    // An element is converted where it can be; any other expression (`renderRow(item)`) is embedded as it is.
+    const view: Ir = n.JSXElement.check(body)
+      ? elementView(body)
+      : { type: 'embed', content: { node: body, hole: 'element' } };
+    return { $: 'row', param: recast.print(param).code, view };
   }
 
   /** An element as a view: converted when it can be, else embedded. */
@@ -2381,7 +2413,9 @@ export function transformSource(source: string, options: TransformOptions): File
             ? `{ ${value.entries.map(([key, v]) => `${key}: ${printValue(v, carry)}`).join(', ')} }`
             : '{}';
         case 'row':
-          return `(${value.params.join(', ')}) => ${print(value.view, carry)}`;
+          return `(${value.param}) => ${print(value.view, carry)}`;
+        case 'renderer':
+          return `(${ROW_INFO}) => ${lang('Embed')}(${carry(value.fn)}(${ROW_INFO}))`;
         case 'absent':
           return 'undefined';
         case 'null':
@@ -2400,6 +2434,7 @@ export function transformSource(source: string, options: TransformOptions): File
     else if (isTagged(value)) {
       if (value.$ === 'view' || value.$ === 'row') carriedOf(value.view, out);
       else if (value.$ === 'binding') for (const v of value.binding) carriedOfValue(v, out);
+      else if (value.$ === 'renderer') out.push(value.fn);
       else if (value.$ === 'options') for (const [, v] of value.entries) carriedOfValue(v, out);
     }
   }
@@ -2502,6 +2537,8 @@ export function transformSource(source: string, options: TransformOptions): File
     element: (i: number) => `<Hole n="${i}" />`,
     // The corpus's sample items (`corpus.ts`), the same array on both sides.
     items: () => 'ITEMS',
+    // A row function drawing each item's index, so the argument it is handed is proven.
+    renderer: (i: number) => `((${ROW_INFO}) => <Hole n={'${i}-' + ${ROW_INFO}.index} />)`,
   } as const;
 
   /**

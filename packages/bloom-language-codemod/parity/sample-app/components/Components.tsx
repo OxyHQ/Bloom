@@ -514,6 +514,46 @@ export function Feed({
   );
 }
 
+const OVERSCAN_ROWS = 4;
+
+export function Timeline({
+  posts,
+  renderPost,
+}: {
+  posts: { id: string; title: string }[];
+  renderPost: (info: { item: { id: string; title: string }; index: number }) => React.ReactElement;
+}) {
+  return (
+    <VirtualList
+      data={posts}
+      renderItem={renderPost}
+      screen={{}}
+      scrollbar="never"
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      overscan={OVERSCAN_ROWS}
+      removeClippedSubviews
+      maxToRenderPerBatch={10}
+      windowSize={10}
+      initialNumToRender={10}
+      recycleItems
+      maintainVisibleContentPosition={false}
+      drawDistance={400}
+      maxItemsInRecyclePool={24}
+    />
+  );
+}
+
+export function Rows({
+  rows,
+  renderRow,
+}: {
+  rows: { id: string; title: string }[];
+  renderRow: (row: { id: string; title: string }) => React.ReactElement;
+}) {
+  return <VirtualList data={rows} renderItem={({ item }) => renderRow(item)} />;
+}
+
 export function Compose({ compose }: { compose: () => void }) {
   return (
     <PressableScale
