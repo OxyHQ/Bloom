@@ -12,7 +12,7 @@ import {
 import { PageHeader } from '../page-header';
 import { PageFooter } from '../page-footer';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolvedStyle, classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
 
 function Probe() {
   return <Text testID="surface-probe">{`${useSurfaceLevelValue()}:${useSurfaceFill()}`}</Text>;
@@ -61,7 +61,6 @@ it.each([
     expect(resolvedStyle(view.getByTestId('content-panel-content').props.style).borderRadius).toBe(
       28,
     );
-    expect(classNamesOn(surface.props.style).join(' ')).not.toContain('bg-card');
     expect(resolvedStyle(surface.props.style).boxShadow).toBeUndefined();
     expect(surface.props.dataSet?.bloomPanelMaterial).toBeUndefined();
     expect(view.queryByTestId('content-panel-border-frame')).toBeNull();
@@ -99,9 +98,9 @@ it.each([NativePanel, WebPanel])(
     );
     const view = render(tree(false));
     expect(view.getByTestId('surface-probe').props.children).toMatch(/^1:/);
-    expect(classNamesOn(view.getByTestId('content-panel-surface').props.style).join(' ')).toContain(
-      'bg-card',
-    );
+    expect(
+      resolvedStyle(view.getByTestId('content-panel-surface').props.style).backgroundColor,
+    ).not.toBe('transparent');
     view.rerender(tree(true));
     expect(view.getByTestId('surface-probe').props.children).toBe('2:#203040');
     expect(mounts).toBe(1);

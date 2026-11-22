@@ -7,17 +7,14 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PANEL_SHADOW } from '../styles/panel-chrome';
 import { ContentPanel } from '../content-panel/ContentPanel.web';
-import { classNamesOn, findHost, resolvedStyle } from './support/rendered-style';
+import { findHost, resolvedStyle } from './support/rendered-style';
 
 /**
  * `overlaySizing` is WEB-only, so it must be exercised against `ContentPanel.web`
  * directly — the bare `../content-panel` specifier resolves to the native
  * variant under jest (no haste/platform config; see `AGENTS.md`), which is
  * exactly what `ContentPanelNesting.test.tsx` already relies on for the native
- * side. Same rendering/assertion approach as that suite (`classNamesOn` reads
- * the `{ $$css, className }` descriptor react-native-css merges into `style`)
- * so this stays consistent with how every other web-fork suite in this repo
- * reads a resolved class list.
+ * side. The test window is 375 wide, below every framing breakpoint.
  */
 function renderPanel(ui: React.ReactElement) {
   return render(
@@ -27,15 +24,10 @@ function renderPanel(ui: React.ReactElement) {
   );
 }
 
-// `classNamesOn` returns one array entry per `$$css` descriptor merged into
-// `style` (i.e. per class-string layer), not one per individual class token —
-// joined into a single string here, exactly like `ContentPanelNesting.test.tsx`'s
-// own `surfaceClassName` helper, so `.toContain(token)` does a substring check
-// rather than an exact-array-element one.
-function classesFor(tree: unknown, testID: string): string {
+function styleOf(tree: unknown, testID: string): Record<string, unknown> {
   const host = findHost(tree, testID);
   if (!host) throw new Error(`no host rendered for testID "${testID}"`);
-  return classNamesOn(host.props.style).join(' ');
+  return resolvedStyle(host.props.style);
 }
 
 describe('ContentPanel.web overlaySizing default (viewport)', () => {
@@ -46,11 +38,11 @@ describe('ContentPanel.web overlaySizing default (viewport)', () => {
       </ContentPanel>,
     );
     const tree = toJSON();
-    const mask = classesFor(tree, 'content-panel-bleed-mask');
-    expect(mask).toContain('web:sticky');
-    expect(mask).toContain('h-[calc(100dvh-16px)]');
-    expect(mask).not.toContain('web:[grid-area:1/1]');
-    expect(classesFor(tree, 'content-panel-border-frame')).toContain('web:sticky');
+    const mask = styleOf(tree, 'content-panel-bleed-mask');
+    expect(mask.position).toBe('sticky');
+    expect(mask.height).toBe('calc(100dvh - 16px)');
+    expect(mask.gridArea).toBeUndefined();
+    expect(styleOf(tree, 'content-panel-border-frame').position).toBe('sticky');
   });
 });
 
@@ -61,10 +53,11 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    const surface = classesFor(toJSON(), 'content-panel-surface');
-    expect(surface).toContain('web:grid');
-    expect(surface).toContain('web:[grid-template-columns:minmax(0,1fr)]');
-    expect(surface).toContain('web:[grid-template-rows:minmax(0,1fr)]');
+    expect(styleOf(toJSON(), 'content-panel-surface')).toMatchObject({
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0,1fr)',
+      gridTemplateRows: 'minmax(0,1fr)',
+    });
   });
 
   it('places the border and rounded content in the same grid cell without a page-colored mask', () => {
@@ -75,9 +68,9 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     );
     const tree = toJSON();
     for (const id of ['content-panel-border-frame', 'content-panel-content']) {
-      const classes = classesFor(tree, id);
-      expect(classes).toContain('web:[grid-area:1/1]');
-      expect(classes).not.toContain('web:sticky');
+      const style = styleOf(tree, id);
+      expect(style.gridArea).toBe('1/1');
+      expect(style.position).not.toBe('sticky');
     }
     expect(findHost(tree, 'content-panel-bleed-mask')).toBeNull();
   });
@@ -88,7 +81,7 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('max-sm:hidden');
+    expect(styleOf(toJSON(), 'content-panel-border-frame').display).toBe('none');
   });
 
   it('never hides the overlays when framed is always-on (true), panel mode included', () => {
@@ -97,8 +90,7 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
         <Text>content</Text>
       </ContentPanel>,
     );
-    const border = classesFor(toJSON(), 'content-panel-border-frame');
-    expect(border).not.toContain('hidden');
+    expect(styleOf(toJSON(), 'content-panel-border-frame').display).toBeUndefined();
   });
 
   it('clips actual bounded content, leaving rounded corners transparent over neighboring panels', () => {
@@ -109,10 +101,11 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     );
     const tree = toJSON();
     expect(findHost(tree, 'content-panel-bleed-mask')).toBeNull();
-    expect(classesFor(tree, 'content-panel-content')).toContain('web:overflow-clip');
-    const border = classesFor(tree, 'content-panel-border-frame');
-    expect(border).toContain('border');
-    expect(border).toContain('border-transparent');
+    expect(styleOf(tree, 'content-panel-content').overflow).toBe('clip');
+    expect(styleOf(tree, 'content-panel-border-frame')).toMatchObject({
+      borderWidth: 1,
+      borderColor: 'transparent',
+    });
   });
 
   it('selects the viewport mask rule, which covers the declared insets', () => {
@@ -146,17 +139,17 @@ describe('ContentPanel.web fill', () => {
       </ContentPanel>,
     );
     const tree = toJSON();
-    const surface = classesFor(tree, 'content-panel-surface');
-    const content = classesFor(tree, 'content-panel-content');
-    // `min-h-0` on both: a flex child's automatic minimum size is its content,
+    const surface = styleOf(tree, 'content-panel-surface');
+    const content = styleOf(tree, 'content-panel-content');
+    // `minHeight: 0` on both: a flex child's automatic minimum size is its content,
     // so without it the panel grows past the box it was told to fit.
-    expect(surface).toContain('min-h-0');
-    expect(content).toContain('min-h-0');
+    expect(surface.minHeight).toBe(0);
+    expect(content.minHeight).toBe(0);
     // The overflow goes on the content, never the surface — the surface is what
     // the frame and mask are drawn to, and a scrolling surface takes the edge
     // with it.
-    expect(content).toContain('web:[overflow-y:auto]');
-    expect(surface).not.toContain('overflow-y');
+    expect(content.overflowY).toBe('auto');
+    expect(surface.overflowY).toBeUndefined();
   });
 
   it('is off by default — the panel grows with its content', () => {
@@ -166,8 +159,8 @@ describe('ContentPanel.web fill', () => {
       </ContentPanel>,
     );
     const tree = toJSON();
-    expect(classesFor(tree, 'content-panel-surface')).not.toContain('min-h-0');
-    expect(classesFor(tree, 'content-panel-content')).not.toContain('web:[overflow-y:auto]');
+    expect(styleOf(tree, 'content-panel-surface').minHeight).toBeUndefined();
+    expect(styleOf(tree, 'content-panel-content').overflowY).toBeUndefined();
   });
 });
 
@@ -200,15 +193,15 @@ describe('ContentPanel.web overlayInset', () => {
     expect(mask.height).toBe('calc(100dvh - 80px)');
   });
 
-  it('is a no-op at the default 8 — the className values stand alone', () => {
+  it('keeps the default 8 inset', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlayInset={8}>
         <Text>content</Text>
       </ContentPanel>,
     );
     const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
-    expect(mask.top).toBeUndefined();
-    expect(mask.height).toBeUndefined();
+    expect(mask.top).toBe(8);
+    expect(mask.height).toBe('calc(100dvh - 16px)');
   });
 
   it("is a no-op in panel mode — that mode already starts at the panel's own box", () => {
@@ -229,7 +222,7 @@ describe('chrome', () => {
       </ContentPanel>,
     );
     const frame = findHost(toJSON(), 'content-panel-border-frame');
-    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('border-transparent');
+    expect(styleOf(toJSON(), 'content-panel-border-frame').borderColor).toBe('transparent');
     expect(resolvedStyle(frame?.props.style).boxShadow).toBe(PANEL_SHADOW.light);
   });
 

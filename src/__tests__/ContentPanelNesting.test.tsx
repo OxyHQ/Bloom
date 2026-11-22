@@ -3,22 +3,14 @@ import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { ContentPanel } from '../content-panel';
-import { classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
-/**
- * The classes the outer surface node received.
- *
- * They arrive INSIDE `style`, not as a `className` prop: the panel wires them
- * through Bloom's own `styled()`, and react-native-css merges each class in as a
- * `{ $$css: true, className }` descriptor. Reading `props.className` — what this
- * used to do — reads the prop as WRITTEN rather than as interpreted, which is
- * exactly the difference between a class that resolves to a style and one that
- * sits inert on an element react-native never looks at.
- */
-function surfaceClassName(node: ReturnType<typeof render>): string {
+/** The style the outer surface node received. */
+function surfaceStyle(node: ReturnType<typeof render>): Record<string, unknown> {
   const json = node.toJSON();
   const el = Array.isArray(json) ? json[0] : json;
-  return classNamesOn(el?.props?.style).join(' ');
+  return resolvedStyle(el?.props?.style);
 }
 
 // Jest resolves `../content-panel` to the native variant (`index.tsx`), which
@@ -68,68 +60,36 @@ describe('ContentPanel nesting guard', () => {
   });
 });
 
-// The responsive framing breakpoint is configurable via `framedFrom` and is
-// uses literal NativeWind border classes. These assert the native
-// surface picks up the pre-shipped literal bundle for each breakpoint value.
+// The responsive framing breakpoint is configurable via `framedFrom`: the
+// native surface draws its hairline once the window is at least that wide. The
+// test window is 375 wide.
 describe('ContentPanel framedFrom breakpoint', () => {
-  it('defaults to the md (768) named-screen bundle when omitted', () => {
-    const className = surfaceClassName(
+  const panel = (props: React.ComponentProps<typeof ContentPanel>) =>
+    surfaceStyle(
       render(
-        <ContentPanel>
+        <ContentPanel {...props}>
           <Text>content</Text>
         </ContentPanel>,
       ),
     );
-    expect(className).toContain('md:border-border');
-    expect(className).toContain('md:border');
-    expect(className).not.toContain('min-[500px]:');
+
+  it('frames from md (768) when omitted, so a phone window is unframed', () => {
+    expect(panel({}).borderWidth).toBeUndefined();
   });
 
-  it('uses the arbitrary min-[500px] bundle for framedFrom={500}', () => {
-    const className = surfaceClassName(
-      render(
-        <ContentPanel framedFrom={500}>
-          <Text>content</Text>
-        </ContentPanel>,
-      ),
-    );
-    expect(className).toContain('min-[500px]:border-border');
-    expect(className).toContain('min-[500px]:border');
-    expect(className).not.toContain('md:');
-  });
-
-  it('uses named sm (640) and lg (1024) bundles', () => {
-    expect(
-      surfaceClassName(
-        render(
-          <ContentPanel framedFrom={640}>
-            <Text>content</Text>
-          </ContentPanel>,
-        ),
-      ),
-    ).toContain('sm:border');
-    expect(
-      surfaceClassName(
-        render(
-          <ContentPanel framedFrom={1024}>
-            <Text>content</Text>
-          </ContentPanel>,
-        ),
-      ),
-    ).toContain('lg:border');
+  it('frames at and above framedFrom', () => {
+    expect(panel({ framedFrom: 500 }).borderWidth).toBeUndefined();
+    const wide = mockWindowSize({ width: 500, height: 900 });
+    expect(panel({ framedFrom: 500 })).toMatchObject({ borderWidth: 1, borderStyle: 'solid' });
+    expect(panel({ framedFrom: 640 }).borderWidth).toBeUndefined();
+    wide.mockRestore();
   });
 
   it('ignores framedFrom when framed is explicitly true (always framed)', () => {
-    const className = surfaceClassName(
-      render(
-        <ContentPanel framed framedFrom={500}>
-          <Text>content</Text>
-        </ContentPanel>,
-      ),
-    );
-    // Always-framed uses unconditional (non-breakpoint) rounding + border.
-    expect(className).toContain('border');
-    expect(className).not.toContain('min-[500px]:');
-    expect(className).not.toContain('md:');
+    expect(panel({ framed: true, framedFrom: 500 })).toMatchObject({ borderWidth: 1 });
+  });
+
+  it('never frames when framed is false', () => {
+    expect(panel({ framed: false, framedFrom: 500 }).borderWidth).toBeUndefined();
   });
 });

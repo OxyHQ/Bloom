@@ -251,24 +251,10 @@ describe('ContentPanel publishes the colour it paints', () => {
     expect(probed(toJSON(), 'level')).toBe('1');
   });
 
-  it('stops claiming a colour when the caller repainted the surface', () => {
-    const theme = THEMES.dark;
-    const { toJSON } = renderIn(
-      'dark',
-      <ContentPanel surfaceClassName="bg-background">
-        <FillProbe />
-      </ContentPanel>,
-    );
-    // Not `colors.card` — the panel is not painting it any more, and a wrong
-    // exact colour is worse than the rung it can still stand behind.
-    expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
-    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceLevel(theme, 1).background);
-  });
-
   it('takes the caller at their word when they name the repainted colour', () => {
     const { toJSON } = renderIn(
       'dark',
-      <ContentPanel surfaceClassName="bg-background" surfaceColor="rgb(1 2 3)">
+      <ContentPanel surfaceStyle={{ backgroundColor: '#000' }} surfaceColor="rgb(1 2 3)">
         <FillProbe />
       </ContentPanel>,
     );

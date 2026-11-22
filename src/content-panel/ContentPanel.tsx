@@ -12,12 +12,11 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * On NATIVE none of the WEB overlay machinery applies: there is no document
  * scroll, no sticky positioning, and no bleed to mask, so the panel is simply a
  * surface wrapping its content. The `framed` prop still drives whether that
- * surface is rounded + bordered, tri-state with responsive NativeWind borders
- * (the material and scoped radius follow the same window breakpoint):
+ * surface is rounded + bordered, tri-state with a responsive border (the
+ * material and scoped radius follow the same window breakpoint):
  *
  *  - `undefined` (DEFAULT) → responsive: full-bleed below the `framedFrom`
- *    breakpoint (default `768` / Tailwind `md`), rounded + bordered at/above it
- *    (e.g. `md:border md:border-border`).
+ *    breakpoint (default `768`), rounded + bordered at/above it.
  *  - `false` → never framed (plain full-bleed at every size).
  *  - `true` → always rounded + bordered.
  *
@@ -26,25 +25,22 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  *
  * Web bundlers select `./index.web` via the `"browser"` export condition in
  * `package.json`; native bundlers fall through to this file.
- *
- * Styling is NativeWind-className-first; the literal class strings below must
- * stay literal so a consumer's Tailwind content-scan over `lib/**` (and the
- * native `src/**`) picks them up.
  */
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useWindowWidthClass } from '../hooks/use-width-class';
 
 import { useOptionalPanelChrome, usePanelShape } from '../styles/panel-chrome';
 import { surfaceStyle as resolveShapeStyle } from '../shapes/surface-style';
-import { StyledView } from '../styles/styled-primitives';
 import {
   SurfaceLevelProvider,
   surfaceFillVars,
   useOptionalSurfaceFill,
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
+import { createTokenStyles } from '../theme/color-tokens';
 import { ContentPanelNestingContext, useContentPanelNestingGuard } from './context';
 import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
@@ -67,26 +63,17 @@ export const PANEL_TOP_INSET = 8;
 /** Bottom sticky inset (px) of the framed panel chrome. */
 export const PANEL_BOTTOM_INSET = 8;
 
-/**
- * Per-breakpoint literal Tailwind surface class bundle for the NATIVE responsive
- * mode. Each value is a WHOLE literal string (never assembled from parts at
- * runtime) so the Tailwind content-scan over `src/**`/`lib/**` picks up every
- * `min-*`/`sm:`/`md:`/`lg:` token verbatim. Selecting a bundle by `framedFrom`
- * value is the only runtime decision.
- */
-const RESPONSIVE_SURFACE: Record<ContentPanelFramedBreakpoint, string> = {
-  500: 'min-[500px]:border min-[500px]:border-border',
-  640: 'sm:border sm:border-border',
-  768: 'md:border md:border-border',
-  1024: 'lg:border lg:border-border',
-};
+const styles = StyleSheet.create({
+  fill: { flexGrow: 1, flexShrink: 1, flexBasis: '0%' },
+  bounded: { minHeight: 0 },
+  clipped: { overflow: 'hidden' },
+});
 
-const RESPONSIVE_CONTENT: Record<ContentPanelFramedBreakpoint, string> = {
-  500: 'min-[500px]:overflow-hidden',
-  640: 'sm:overflow-hidden',
-  768: 'md:overflow-hidden',
-  1024: 'lg:overflow-hidden',
-};
+const useStyles = createTokenStyles((t) => ({
+  framed: { borderStyle: 'solid', borderWidth: 1, borderColor: t.border },
+  card: { backgroundColor: t.card },
+  clear: { backgroundColor: '#0000' },
+}));
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
@@ -95,20 +82,19 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   framed,
   framedFrom = 768,
   fill = false,
-  surfaceClassName,
   surfaceStyle,
   surfaceColor,
   chrome = 'elevated',
   shadow,
-  contentClassName,
   contentStyle,
 }) => {
   // Dev-only invariant — a ContentPanel must never be nested inside another.
   useContentPanelNestingGuard();
+  const themed = useStyles();
   const panelShape = usePanelShape();
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
-  const rawFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
+  const rawFill = usePanelSurfaceFill(surfaceStyle, surfaceColor);
   const defaultFill = rawFill;
   // The window at the framing breakpoint only: never a re-render per pixel.
   const width = useWindowWidthClass([framedFrom]);
@@ -147,27 +133,10 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     ...ownCorners,
   };
 
-  // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
-  // framed, `false` → never framed (plain full-bleed). Whole literal class
-  // strings are selected per mode so the Tailwind content-scan over `src/**`
-  // picks up every `min-*`/`sm:`/`md:`/`lg:` token verbatim
-  // (the breakpoint bundle lives whole in `RESPONSIVE_SURFACE`; `framed ===
-  // true`/`false` ignore `framedFrom` for fixed always/never framing).
-  const surfaceBase =
-    isPlain || chrome === 'none'
-      ? 'flex-1'
-      : framed === undefined
-        ? `flex-1 ${RESPONSIVE_SURFACE[framedFrom]}`
-        : framed
-          ? 'flex-1 border border-border'
-          : 'flex-1';
-  const surfaceClass = [
-    surfaceBase,
-    fill ? 'min-h-0' : '',
-    surfaceClassName ?? (isPlain || paintsSurface ? 'bg-transparent' : 'bg-card'),
-  ]
-    .filter(Boolean)
-    .join(' ');
+  // `framed` undefined frames from `framedFrom` up; `true` and `false` always
+  // and never frame. A framed surface draws a hairline; its content clips.
+  const surfaceFrame = !isPlain && chrome !== 'none' && isFramed ? themed.framed : null;
+  const surfaceFill = isPlain || paintsSurface ? themed.clear : themed.card;
   // Native has no overlays: the surface itself carries the edge. `none` drops
   // both, `border` keeps the class-drawn hairline, `elevated` adds the lift.
   const chromeStyle =
@@ -181,25 +150,15 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // bottom and a list inside it scrolls within it. What the prop adds here is
   // `min-h-0`, so a tall child cannot push the panel past the box it was given
   // — the same automatic-minimum-size trap as on web.
-  const contentClass = [
-    'flex-1',
-    framed === true
-      ? 'overflow-hidden'
-      : framed === undefined
-        ? RESPONSIVE_CONTENT[framedFrom]
-        : '',
-    fill ? 'min-h-0' : '',
-    contentClassName,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <StyledView
+      <View
         testID="content-panel-surface"
-        className={surfaceClass}
         style={[
+          styles.fill,
+          surfaceFrame,
+          fill ? styles.bounded : null,
+          surfaceFill,
           // The surface variable rides the element that carries the fill, so
           // the two can never disagree. A no-op on native; the provider below
           // is what answers there. (`styles/surface-levels.ts`.)
@@ -218,10 +177,15 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             {...(ownCorners ? { geometryStyle: ownCorners } : null)}
           />
         ) : null}
-        <StyledView
+        <View
           testID="content-panel-content"
-          className={contentClass}
-          style={[geometry, contentStyle]}
+          style={[
+            styles.fill,
+            isFramed ? styles.clipped : null,
+            fill ? styles.bounded : null,
+            geometry,
+            contentStyle,
+          ]}
         >
           {/* Solid panels publish their painted surface. Plain panels preserve
               the enclosing surface so descendant scrims follow its real fill. */}
@@ -234,8 +198,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
               </PanelErrorBoundary>
             )}
           </SurfaceLevelProvider>
-        </StyledView>
-      </StyledView>
+        </View>
+      </View>
     </ContentPanelNestingContext.Provider>
   );
 };
