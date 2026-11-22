@@ -362,6 +362,8 @@ const MOTION_KINDS: ReadonlySet<string> = new Set([
   'pressScale',
   'drag',
   'swipe',
+  'pinch',
+  'onDoubleTap',
 ]);
 
 /** Resting transforms (and the same by component), interned by key so a moving host's style keeps its identity. */
@@ -384,6 +386,8 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
     bound: undefined,
     drag: undefined,
     swipe: undefined,
+    pinch: undefined,
+    doubleTap: undefined,
     glass: layers.some((layer) => layer.glass !== undefined),
     stable: false,
   };
@@ -428,6 +432,13 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
       case 'swipe':
         motion.stable = true;
         motion.swipe = { direction: modifier.direction, onSwipe: modifier.onSwipe };
+        break;
+      case 'pinch':
+        motion.stable = true;
+        motion.pinch = { value: modifier.value, options: modifier.options };
+        break;
+      case 'onDoubleTap':
+        motion.doubleTap = modifier.value;
         break;
       case 'animation':
         // What its box draws changes with the motion: the box is animated from the first render.
@@ -981,7 +992,9 @@ function restsStill(motion: MotionPlan): boolean {
     !motion.pressScale &&
     motion.bound === undefined &&
     motion.drag === undefined &&
-    motion.swipe === undefined
+    motion.swipe === undefined &&
+    motion.pinch === undefined &&
+    motion.doubleTap === undefined
   );
 }
 
@@ -994,7 +1007,10 @@ function drawMoving(
 ): ReactElement {
   const motion = p.motion as MotionPlan;
   const component =
-    motion.bound !== undefined || motion.drag !== undefined
+    motion.bound !== undefined ||
+    motion.drag !== undefined ||
+    motion.pinch !== undefined ||
+    motion.doubleTap !== undefined
       ? GestureMotionNode
       : motion.pressScale
         ? PressMotionNode

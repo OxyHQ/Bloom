@@ -1214,6 +1214,15 @@ export interface DragSpec {
   onEnd?: (end: { value: number; velocity: number }) => void;
 }
 
+/** What `.pinch()` takes besides its value. */
+export interface PinchSpec {
+  /** Bounds of the value while pinching (a scale factor). */
+  min?: number;
+  max?: number;
+  /** Once per touch, when it ends: where the value is and the pinch's velocity (scale per second). */
+  onEnd?: (end: { value: number; velocity: number }) => void;
+}
+
 export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
 /** How a text's change plays (`.contentTransition()`): the whole text rolls, or each character that changed. */
 export type ContentTransition = 'roll' | 'numeric';
@@ -1513,6 +1522,13 @@ export type Modifier =
       readonly direction: SwipeDirection;
       readonly onSwipe: () => void;
     }
+  | {
+      readonly kind: 'pinch';
+      readonly key: string;
+      readonly value: MotionValue;
+      readonly options: PinchSpec;
+    }
+  | { readonly kind: 'onDoubleTap'; readonly key: string; readonly value: () => void }
   | {
       readonly kind: 'animation';
       readonly key: string;
@@ -2944,6 +2960,12 @@ export class Node {
   swipe(direction: SwipeDirection, onSwipe: () => void): Node {
     return this.with({ kind: 'swipe', key: 'swipe', direction, onSwipe });
   }
+  pinch(value: MotionValue, options: PinchSpec = {}): Node {
+    return this.with({ kind: 'pinch', key: 'pinch', value, options });
+  }
+  onDoubleTap(value: () => void): Node {
+    return this.with({ kind: 'onDoubleTap', key: 'onDoubleTap', value });
+  }
   contentTransition(value: ContentTransition, direction?: number): Node {
     return this.with({ kind: 'contentTransition', key: 'contentTransition', value, direction });
   }
@@ -4234,6 +4256,18 @@ export interface ViewModifiers<Self> extends ViewNode {
    * `onSwipe`; short of it, it comes back.
    */
   swipe(direction: SwipeDirection, onSwipe: () => void): Self;
+  /**
+   * `MagnifyGesture`: the fingers' spread scales `value` from where it was (a
+   * factor: 2 is twice as large), within `min`/`max`. Bind the value to see it
+   * (`.scale(s)`); `options.onEnd` decides where it goes on release
+   * (`animate()`). Native: the pinch runs on the UI thread, with no JS per frame.
+   */
+  pinch(value: MotionValue, options?: PinchSpec): Self;
+  /**
+   * `onTapGesture(count: 2)`: two taps in quick succession run `action`, on
+   * Bloom's gesture layer. A single tap is still the view's own (`.onPress()`).
+   */
+  onDoubleTap(action: () => void): Self;
 }
 
 export interface StackView extends ViewModifiers<StackView> {
