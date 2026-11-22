@@ -9,8 +9,6 @@ import { Divider } from '../divider';
 const meta: Meta<typeof ContentPanel> = {
   argTypes: {
     framed: { control: 'boolean' },
-    surfaceClassName: { control: 'text' },
-    contentClassName: { control: 'text' },
     showStickyFrame: { control: 'boolean' },
     maskColor: { control: 'text' },
     overlaySizing: { control: 'select', options: ['viewport', 'panel'] },
@@ -64,15 +62,7 @@ export const Framed: Story = {
   args: { framed: true, framedFrom: 640 },
   parameters: {
     controls: {
-      include: [
-        'framed',
-        'framedFrom',
-        'surfaceClassName',
-        'contentClassName',
-        'showStickyFrame',
-        'maskColor',
-        'overlaySizing',
-      ],
+      include: ['framed', 'framedFrom', 'showStickyFrame', 'maskColor', 'overlaySizing'],
     },
   },
   render: (args) => (
@@ -104,14 +94,7 @@ export const ExternalHeaderBoundedShell: Story = {
   args: { framed: true, overlaySizing: 'panel' },
   parameters: {
     controls: {
-      include: [
-        'framed',
-        'overlaySizing',
-        'surfaceClassName',
-        'contentClassName',
-        'showStickyFrame',
-        'maskColor',
-      ],
+      include: ['framed', 'overlaySizing', 'showStickyFrame', 'maskColor'],
     },
   },
   render: (args) => (

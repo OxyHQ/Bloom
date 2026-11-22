@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import type { PanelErrorBoundaryOptions } from '../error-boundary/types';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
  * Viewport width (px) at which a RESPONSIVE `ContentPanel` (`framed` undefined)
@@ -88,12 +88,10 @@ export interface ContentPanelProps {
    * Set false when a Screen or list inside owns the viewport, as with Dialog.
    */
   scrollable?: boolean;
-  /** Override the surface background utility (defaults to `bg-card`). */
-  surfaceClassName?: string;
+  /** The surface's style; its `backgroundColor` repaints the card fill. */
   surfaceStyle?: StyleProp<ViewStyle>;
   /**
-   * The colour this panel paints, when `surfaceClassName`/`surfaceStyle` has
-   * repainted it.
+   * The colour this panel paints, when `surfaceStyle` has repainted it.
    *
    * The panel PUBLISHES its fill to everything inside it — `useSurfaceFill()`
    * and, on web, `var(--bloom-surface)` — so in-panel chrome that has to be
@@ -101,18 +99,13 @@ export interface ContentPanelProps {
    * can ask instead of repeating a class. By default that colour is
    * `theme.colors.card`, which is what the panel paints.
    *
-   * A `surfaceClassName` override is a utility Bloom cannot resolve to a colour,
-   * so the panel stops claiming to know one rather than publishing a wrong
-   * answer — this prop is how the override says what it painted, and it is
-   * needed only then. A `surfaceStyle` carrying a `backgroundColor` is the same
-   * repaint by the other door and stops the claim the same way: the colour is
-   * legible there, but which of the class and the style actually paints differs
-   * by platform, so the panel refuses to guess. It changes nothing about how the
-   * panel LOOKS: the class or the style still paints the surface.
+   * A repaint Bloom cannot read back to a colour (a style that is not a plain
+   * `backgroundColor`) stops the panel claiming to know one rather than
+   * publishing a wrong answer; this prop is how the override says what it
+   * painted. It changes nothing about how the panel LOOKS: the style still
+   * paints the surface.
    */
   surfaceColor?: string;
-  /** Extra utilities for the inner content wrapper. */
-  contentClassName?: string;
   contentStyle?: StyleProp<ViewStyle>;
   /**
    * Whether to render the WEB sticky border frame. No-op on native (the border
