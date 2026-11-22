@@ -215,7 +215,7 @@ for (const story of stories) {
         }
       }
     } catch (error) {
-      differences.push(`${label}: ${error.message} ${error.cause?.message ?? ""}`);
+      differences.push(`${label}: ${error.message} ${error.cause?.message ?? ''}`);
     }
     if (differences.length) {
       failed++;
