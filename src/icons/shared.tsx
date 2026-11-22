@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, type ColorValue, type StyleProp, type ViewStyle } from 'react-native';
-import { type PathProps, type SvgProps } from 'react-native-svg';
+import type { PathProps, SvgProps } from 'react-native-svg';
 import { Defs, LinearGradient, Stop } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
@@ -38,6 +38,11 @@ export const sizes = {
   '3xl': 48,
 } as const;
 
+/** An icon's side in points: a rung of {@link sizes} by name, or a number as it is. */
+export function iconSide(size: NonNullable<Props['size']>): number {
+  return typeof size === 'number' ? size : sizes[size];
+}
+
 /** What {@link useCommonSVGProps} resolves; named so emitted declarations need no RN-internal path. */
 export type CommonSVGProps = Omit<Props, 'fill' | 'size' | 'gradient' | 'style'> & {
   fill: PathProps['fill'];
@@ -53,9 +58,7 @@ export function useCommonSVGProps(props: Props): CommonSVGProps {
   const { fill, size, gradient, ...rest } = props;
   const style: IconStyle | null | undefined = StyleSheet.flatten(rest.style);
   // A number is the side itself; a rung name is looked up (a number used as a rung key drew NaN).
-  const _size = Number(
-    typeof size === 'number' ? size : size ? sizes[size] : rest.width || sizes.md,
-  );
+  const _size = Number(size !== undefined ? iconSide(size) : rest.width || sizes.md);
   let _fill: PathProps['fill'] = fill ?? style?.color ?? colors.primary;
   let gradientDef: React.JSX.Element | null = null;
 
