@@ -93,7 +93,7 @@ export function LoadingRoot({
 /** The two platform pieces a fork supplies. */
 export interface LoadingPlatform {
   /** Forked: react-native-svg on native, a DOM `<svg>` on web. */
-  SpinnerIcon: React.ComponentType<{ size?: number; color?: string; className?: string }>;
+  SpinnerIcon: React.ComponentType<{ size?: number; color?: string }>;
   /** Forked: the `top` variant, the only one whose motion differs. */
   TopLoading: React.FC<TopLoadingProps>;
 }
@@ -103,7 +103,6 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     size: sizeProp,
     color,
     tone: toneProp,
-    className,
     text,
     textStyle,
     style,
@@ -120,9 +119,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
     );
     const sizeConfig = SIZE_CONFIG[size];
     const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-    const spinnerColor = className
-      ? 'currentColor'
-      : (color ?? resolveBloomColors(theme.colors, tone, 'solid').background);
+    const spinnerColor = color ?? resolveBloomColors(theme.colors, tone, 'solid').background;
     const textColor = color ?? theme.colors.textSecondary;
 
     return (
@@ -131,9 +128,7 @@ export function bindLoading({ SpinnerIcon, TopLoading }: LoadingPlatform) {
         style={[styles.container, style]}
         testID={testID}
       >
-        {spinnerIcon ?? (
-          <SpinnerIcon size={effectiveIconSize} color={spinnerColor} className={className} />
-        )}
+        {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
         {showText && text && (
           <Text
             style={[
