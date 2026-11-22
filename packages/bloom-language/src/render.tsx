@@ -688,6 +688,8 @@ function plan(node: Node, env: Env): Plan {
       case 'zIndex':
       case 'hidden':
       case 'basis':
+      case 'flex':
+      case 'margin':
       case 'allowsHitTesting':
       case 'accessibilityOnly':
         applyPlacement(result.place, modifier);

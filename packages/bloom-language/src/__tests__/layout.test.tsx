@@ -227,7 +227,9 @@ describe('elevation and rings', () => {
   it('a shadow is Bloom’s elevation role; after a corner it is a view of its own that follows the radius', () => {
     const [shadowed] = views(mount(toElement(VStack(Text('a')).shadow('m'))));
     expect(shadowed?.props.style).toEqual({ boxShadow: SHADOW_BOX.m });
-    const [outer, clipped] = views(mount(toElement(VStack(Text('a')).corner('lg').shadow('s'))));
+    const [outer, clipped] = views(
+      mount(toElement(VStack(Text('a')).corner('lg').clipped().shadow('s'))),
+    );
     expect(outer?.props.style).toEqual({ boxShadow: SHADOW_BOX.s, borderRadius: 16 });
     expect(clipped?.props.style).toEqual({ borderRadius: 16, overflow: 'hidden' });
   });

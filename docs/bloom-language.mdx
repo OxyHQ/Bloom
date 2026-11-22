@@ -88,7 +88,8 @@ starts a new view around the previous ones:
 
 - `.padding('md').background('surface')` is one view: the fill covers the padding.
 - `.background('surface').padding('md')` is two: the padding sits outside the fill.
-- `.corner('lg').background('surface')` is two: a fill after the clip is not clipped.
+- `.corner('lg').background('surface')` is two: a fill after the corner is not rounded.
+- A corner sets the radius only; `.clipped()` clips what the view draws to it, as SwiftUI's does (`.corner('lg').clipped()`).
 - A second padding on the same edge adds to the first, so it wraps.
 
 Text and icon traits (`foreground`, `font`, `weight`, `leading`, `tracking`) are an
@@ -359,8 +360,11 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5` |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
 | `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first`; a frame length, its `flex-basis` |
+| `flex(f)` | Tailwind's flex utility, exactly as NativeWind writes it: `'1'` (`flex-1`: grow 1, shrink 1, basis 0%), `auto`, `initial`, `none`, `grow` (`flex-grow: 1` alone). `grow()` stays React Native's `flex: 1` |
+| `margin(edge?, v)` | space (negatives included), on the view itself: no view around it |
+| `clipped()` | clips what the view draws to its bounds and its corner |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
+| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`; out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
@@ -374,6 +378,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `leading(l)` | Bloom line heights (ratios of the size) `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `relaxed` 1.625; or an exact px height (`'14px'` … `'40px'`) |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at an opacity token (`'muted/70'`) |
 | `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
+| edges | `padding`, `margin` and `border` take `leading` and `trailing` (the reading direction's sides) and `left` and `right` (physical, the same right to left) |
 | `corner(r, side?)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'10'` `'14'` `'18'` `'22'`), `full`, `concentric`; the corners it rounds: `all`, `top` `bottom` `leading` `trailing`, or one (`top-leading`…); `round` `smooth` (see [Material](#material)) |
 | `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'10'` `'20'` `'30'` `'40'` `'60'` `'70'` `'80'` `'90'`) |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
@@ -485,7 +490,7 @@ VStack(...).background('surface').corner('xl').shadow('m')
 - **Elevation.** `.shadow(role)` is Bloom's `bloomShadowStyle(role)`: the web's
   box-shadow, native's shadow and elevation (`floating` is a box-shadow on
   both). It is the outermost layer. A shadow never shares a view with a
-  corner's clip, since iOS clips a view's own shadow: after a `corner` it is a
+  clip, since iOS clips a view's own shadow: after a `.clipped()` corner it is a
   view of its own around the clipped box, with the same radii. Tailwind's own
   shadows are tokens named by their exact box-shadow
   (`.shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)')`
@@ -777,8 +782,8 @@ Card(
 - **Concentric corners.** `.corner('concentric')` is Bloom's concentric
   geometry: the radius of the shape the box sits in, less the inset between
   them (a glass, a Bloom card or panel, another concentric box), drawn by
-  `ConcentricView` (on a glass, `Surface radius="concentric"`). It clips, as
-  every corner does.
+  `ConcentricView` (on a glass, `Surface radius="concentric"`). It clips
+  with `.clipped()`, as any corner does.
 - **Smooth corners.** `.cornerCurve('smooth')` is Bloom's platform-adaptive
   corner (`shapes`' `surfaceStyle`): continuous on iOS, a squircle on the web,
   round on Android; on a glass, Surface's `cornerCurve`. It sits in the
@@ -1964,7 +1969,8 @@ Image(post.cover, 'Cover')
 
 - **Box.** An image has no size until it loads, so it is sized like a view:
   `frame`, or one side and `aspectRatio` (width over height). The innermost
-  layer is the image's own style, so `corner` clips the pixels and
+  layer is the image's own style, so `corner` rounds the pixels
+  (`.clipped()` clips the box too) and
   `background` shows until they arrive.
 - **Options.** `contentFit` takes `BloomImage`'s vocabulary (`cover`, the
   default, `contain`, `fill`, `none`, `scale-down`). `tint(role)` paints every
