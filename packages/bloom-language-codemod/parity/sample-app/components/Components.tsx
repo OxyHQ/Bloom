@@ -41,7 +41,7 @@ import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
 import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
 import { useTheme } from '@oxy.so/bloom/theme';
-import { Muted } from '@oxy.so/bloom/typography';
+import { Muted, Text } from '@oxy.so/bloom/typography';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 declare const t: (key: string) => string;
@@ -542,5 +542,20 @@ export function FindChat({
       accessibilityLabel={t('chats.search')}
       clearLabel={t('chats.clear')}
     />
+  );
+}
+
+export function ThemedStyle() {
+  const theme = useTheme();
+  return (
+    <View
+      className="flex-row p-2"
+      style={{ flex: 1, backgroundColor: theme.colors.backgroundSecondary }}
+    >
+      <Text style={{ color: theme.colors.textSecondary }}>a</Text>
+      <Text className="text-sm" style={{ flex: 1, color: theme.colors.primary }}>
+        b
+      </Text>
+    </View>
   );
 }

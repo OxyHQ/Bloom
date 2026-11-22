@@ -239,6 +239,14 @@ const newGroup = (): Group => ({
 export interface ResolveOptions {
   /** Classes the app's own theme draws differently from Bloom's (see `overrides.ts`). */
   readonly overridden?: ReadonlySet<string>;
+  /**
+   * Modifiers a `style` writes that no utility does (React Native's `flex: 1`
+   * as `.grow()`, a theme colour as its role), by the style key: they join the
+   * classes' modifiers, so a class setting the same thing is a conflict.
+   */
+  readonly styleMods?: readonly { readonly subject: string; readonly mod: Mod }[];
+  /** The classes a `style` was read as (`gap: 12` is `gap-3`): inline, so no variant overrides them. */
+  readonly styleClasses?: ReadonlySet<string>;
 }
 
 /** Resolves `className` on a host of `kind`. */
@@ -373,12 +381,34 @@ export function resolveClassName(
         fail(token, entry.status, entry.language);
     }
   }
+  for (const { subject, mod } of options.styleMods ?? []) {
+    const into = group([]);
+    into.mods.push(mod);
+    into.subjects.set(mod, subject);
+  }
   if (reasons.length > 0) return { ok: false, reasons };
 
   const resolved: Variant[] = [];
   for (const [key, g] of groups) {
     const mods = finish(g, kind, fail);
     resolved.push({ conditions: key ? key.split(':') : [], mods });
+  }
+  // A style is inline, so a class's variant never overrides it, where the language's would.
+  const inline = new Set([
+    ...(options.styleClasses ?? []),
+    ...(options.styleMods ?? []).map((s) => s.subject),
+  ]);
+  const unconditional = groups.get('');
+  for (const mod of unconditional?.mods ?? []) {
+    const subject = unconditional?.subjects.get(mod) ?? '';
+    if (!inline.has(subject)) continue;
+    for (const variant of resolved)
+      if (variant.conditions.length > 0 && variant.mods.some((m) => m.name === mod.name))
+        fail(
+          subject,
+          'style-variant',
+          `a style a variant of the className sets too (.${mod.name}()): inline, the style wins`,
+        );
   }
   if (reasons.length > 0) return { ok: false, reasons };
   const base = resolved.find((v) => v.conditions.length === 0)?.mods ?? [];

@@ -8,6 +8,8 @@
  */
 import * as recast from 'recast';
 
+import type { Mod } from './table';
+
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
 
@@ -78,15 +80,32 @@ const KEYWORD: Readonly<Record<string, Readonly<Record<string, string>>>> = {
 /**
  * A numeric key whose value is a utility of its own. (React Native's `flex: 1`
  * is no utility: Tailwind's `flex-1` is grow 1, shrink 1, basis 0%, which
- * React Native draws differently; measured on the corpus.)
+ * React Native draws differently; measured on the corpus. It is the
+ * language's `.grow()`, which writes `flex: 1` itself: `DIRECT`.)
  */
 const NUMERIC: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   flexGrow: { 1: 'grow', 0: 'grow-0' },
   flexShrink: { 1: 'shrink', 0: 'shrink-0' },
 };
 
+/** A style key and value the language writes itself, as its modifier: React Native's `flex: 1` is `.grow()`. */
+function direct(key: string, value: AnyNode): Mod | undefined {
+  return key === 'flex' && n.NumericLiteral.check(value) && value.value === 1
+    ? { name: 'grow', args: [] }
+    : undefined;
+}
+
+/** A declaration the caller reads as a modifier (a theme colour as its role), or undefined. */
+export type StyleRead = (key: string, value: AnyNode) => Mod | undefined;
+
 export type StyleResult =
-  | { readonly ok: true; readonly classes: readonly string[]; readonly literal: string }
+  | {
+      readonly ok: true;
+      readonly classes: readonly string[];
+      /** What no utility writes, by its style key (`flex: 1` is `.grow()`). */
+      readonly mods: readonly { readonly subject: string; readonly mod: Mod }[];
+      readonly literal: string;
+    }
   | { readonly ok: false; readonly subject: string; readonly why: string };
 
 /** One declaration as its utility, or undefined. */
@@ -116,10 +135,11 @@ function utility(key: string, value: AnyNode): string | undefined {
  * An object literal of a style as utilities, and the literal itself (for the
  * parity's before side, where `styles.x` is not in scope).
  */
-export function styleUtilities(object: AnyNode): StyleResult {
+export function styleUtilities(object: AnyNode, read?: StyleRead): StyleResult {
   if (!n.ObjectExpression.check(object))
     return { ok: false, subject: 'style', why: 'a style that is no object literal' };
   const classes: string[] = [];
+  const mods: { subject: string; mod: Mod }[] = [];
   for (const property of object.properties) {
     if (
       !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
@@ -128,6 +148,11 @@ export function styleUtilities(object: AnyNode): StyleResult {
     )
       return { ok: false, subject: 'style', why: 'a style built at runtime' };
     const key = property.key.name as string;
+    const mod = direct(key, property.value) ?? read?.(key, property.value);
+    if (mod) {
+      mods.push({ subject: key, mod });
+      continue;
+    }
     const found = utility(key, property.value);
     if (!found)
       return {
@@ -137,5 +162,5 @@ export function styleUtilities(object: AnyNode): StyleResult {
       };
     classes.push(found);
   }
-  return { ok: true, classes, literal: recast.print(object).code };
+  return { ok: true, classes, mods, literal: recast.print(object).code };
 }
