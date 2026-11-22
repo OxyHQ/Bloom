@@ -591,25 +591,36 @@ const named: ParityCase[] = [
       </ThemedRgb>
     ),
   },
-  // A fixed colour at an opacity (`bg-white/70`, `bg-black/50`): on native NativeWind's compiler
-  // writes its hex with the alpha in 8 bits; the browser draws the mix at its exact alpha.
-  {
-    name: 'a fixed colour at an opacity',
-    language: () => toElement(L.VStack(L.VStack().background('black/half')).background('white/70')),
+  // A fixed colour at an opacity (`bg-white/70`, `text-black/50`): on native, what NativeWind's
+  // compiler writes, measured (react-native-css, `#ffffffb2` for 70%: the opacity a 32-bit float,
+  // so 0.7 × 255 is 178.49999… and 0.9 × 255 229.49999…); the browser draws the exact mix.
+  ...(
+    [
+      ['10', 0.1, '1a'],
+      ['30', 0.3, '4d'],
+      ['half', 0.5, '80'],
+      ['70', 0.7, 'b2'],
+      ['90', 0.9, 'e5'],
+    ] as const
+  ).map(([name, alpha, hex]) => ({
+    name: `white and black at ${name}`,
+    language: () =>
+      toElement(L.VStack(L.Text('a').foreground(`black/${name}`)).background(`white/${name}`)),
     bloom: () => (
       <RN.View
         style={{
-          backgroundColor: RN.Platform.OS === 'web' ? 'rgba(255, 255, 255, 0.7)' : '#ffffffb2',
+          backgroundColor:
+            RN.Platform.OS === 'web' ? `rgba(255, 255, 255, ${alpha})` : `#ffffff${hex}`,
         }}
       >
-        <RN.View
-          style={{
-            backgroundColor: RN.Platform.OS === 'web' ? 'rgba(0, 0, 0, 0.5)' : '#00000080',
-          }}
-        />
+        <Text
+          style={{ color: RN.Platform.OS === 'web' ? `rgba(0, 0, 0, ${alpha})` : `#000000${hex}` }}
+        >
+          a
+        </Text>
       </RN.View>
     ),
-  },
+  })),
   ...(
     [
       ['20', 0.2],
