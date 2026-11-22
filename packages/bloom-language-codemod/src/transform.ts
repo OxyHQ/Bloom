@@ -65,7 +65,15 @@ type Ir =
       key: Carried | null;
       children: Ir[];
     }
-  | { type: 'text'; resolved: Resolved; props: PropMod[]; key: Carried | null; runs: TextRun[] }
+  | {
+      type: 'text';
+      /** React Native's own Text: `RawText`. */
+      raw: boolean;
+      resolved: Resolved;
+      props: PropMod[];
+      key: Carried | null;
+      runs: TextRun[];
+    }
   | { type: 'icon'; component: string; mods: Mod[]; key: Carried | null }
   | {
       type: 'button';
@@ -311,16 +319,6 @@ export function transformSource(source: string, options: TransformOptions): File
     kind: Kind,
     local: string,
   ): { ir: Ir } | { reasons: Reason[] } {
-    if (kind === 'rnText')
-      return {
-        reasons: [
-          {
-            subject: 'Text',
-            code: 'react-native-text',
-            why: 'React Native’s Text, not Bloom’s: the language’s Text draws Bloom’s family, size and ink where this draws the platform’s',
-          },
-        ],
-      };
     if (kind === 'rnImage')
       return {
         reasons: [
@@ -394,7 +392,7 @@ export function transformSource(source: string, options: TransformOptions): File
         props.push({ name: 'disabled', args: [{ node: expression, hole: 'boolean' }] });
         continue;
       }
-      if (kind === 'bloomText' && name === 'numberOfLines') {
+      if ((kind === 'bloomText' || kind === 'rnText') && name === 'numberOfLines') {
         numberOfLines = staticNumber(value) ?? { node: expression, hole: 'number' };
         continue;
       }
@@ -418,15 +416,12 @@ export function transformSource(source: string, options: TransformOptions): File
       if (className) fail('className', 'icon-className', 'a className on an icon');
       const mods: Mod[] = [];
       if (size !== undefined) {
-        // Bloom's icon takes a rung name; a number is no key of its sizes and draws NaN.
+        // A rung by name, or a number of points that is a rung's (Bloom draws a number as its side).
         const named = staticString(size);
-        const rung = ICON_SIZES.find(([k]) => k === named);
+        const number = staticNumber(size);
+        const rung = ICON_SIZES.find(([k, v]) => k === named || v === number);
         if (!rung)
-          fail(
-            'size',
-            'icon-size',
-            'an icon size that is no rung name (a number draws NaN), or set at runtime',
-          );
+          fail('size', 'icon-size', 'an icon size that is no icon rung, or set at runtime');
         else mods.push({ name: 'size', args: [rung[0]] });
       }
       if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
@@ -437,13 +432,14 @@ export function transformSource(source: string, options: TransformOptions): File
       return { ir: { type: 'icon', component: local, mods, key } };
     }
 
-    const host: HostKind = kind === 'bloomText' ? 'text' : kind;
+    const isText = kind === 'bloomText' || kind === 'rnText';
+    const host: HostKind = isText ? 'text' : (kind as HostKind);
     const resolution = resolveClassName(className, host, options.table, {
       overridden: options.overridden,
     });
     if (!resolution.ok) reasons.push(...resolution.reasons);
 
-    if (kind === 'bloomText') {
+    if (isText) {
       const runs: TextRun[] = [];
       for (const child of node.children) {
         if (n.JSXText.check(child)) {
@@ -458,7 +454,8 @@ export function transformSource(source: string, options: TransformOptions): File
         } else if (n.JSXElement.check(child)) {
           const inner = convert(child);
           const innerKind = elementOf(child)?.kind;
-          if ('ir' in inner && innerKind === 'bloomText') runs.push(inner.ir);
+          // A span is the same Text as its parent: Bloom's in Bloom's, React Native's in React Native's.
+          if ('ir' in inner && innerKind === kind) runs.push(inner.ir);
           else
             fail(
               jsxName(child) ?? 'element',
@@ -488,6 +485,7 @@ export function transformSource(source: string, options: TransformOptions): File
       return {
         ir: {
           type: 'text',
+          raw: kind === 'rnText',
           resolved: { ...resolved, mods: [...resolved.mods, ...fontMods] },
           props,
           key,
@@ -700,7 +698,7 @@ export function transformSource(source: string, options: TransformOptions): File
               ? carry(run.value)
               : print(run as Ir, carry),
         );
-        return `${lang('Text')}(${runs.join(', ')})${chainTail(ir.resolved, ir.props, root ? null : ir.key, carry)}`;
+        return `${lang(ir.raw ? 'RawText' : 'Text')}(${runs.join(', ')})${chainTail(ir.resolved, ir.props, root ? null : ir.key, carry)}`;
       }
       case 'stack': {
         const ctor = lang(ir.resolved.axis === 'row' ? 'HStack' : 'VStack');

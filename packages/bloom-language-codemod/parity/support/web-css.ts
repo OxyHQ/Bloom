@@ -20,7 +20,7 @@
  * logical shorthands (`padding-block`, `padding-inline`, margins alike), so
  * they are folded onto their sides (the page is left to right, as the
  * language harness folds them), and a border side with no width is no side.
- * `overflow` is its two axes, a percentage is compared to 4 decimals (NativeWind's
+ * `flex` and `overflow` are their longhands, a percentage is compared to 4 decimals (NativeWind's
  * `33.3333%` third), a unitless 0 length is 0px,
  * `font-weight: normal` is 400; an em letter-spacing is px of the element's
  * size; a colour mixed with transparent is that colour at the mix's alpha;
@@ -158,6 +158,19 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
   if (typeof node === 'string') return node;
   const css: Record<string, string> = {};
   for (const [name, value] of Object.entries(node.css)) css[name] = px(value);
+  if (css.flex !== undefined) {
+    const named: Record<string, string> = {
+      auto: '1 1 auto',
+      none: '0 0 auto',
+      initial: '0 1 auto',
+    };
+    const parts = (named[css.flex] ?? css.flex).split(/\s+/);
+    const [grow, shrink = '1', basis = '0%'] = parts;
+    css['flex-grow'] = grow as string;
+    css['flex-shrink'] = shrink;
+    css['flex-basis'] = basis;
+    delete css.flex;
+  }
   if (css.overflow !== undefined) {
     const [x, y] = css.overflow.split(/\s+/);
     css['overflow-x'] = x as string;
