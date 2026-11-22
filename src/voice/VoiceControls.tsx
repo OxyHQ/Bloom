@@ -9,7 +9,7 @@ import { RiPauseFill } from '../icons/remix/RiPauseFill';
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { RiStopFill } from '../icons/remix/RiStopFill';
 import { useMessages } from '../locale/messages';
-import { StyledView } from '../styles/styled-primitives';
+import { View } from 'react-native';
 import { VOICE_MESSAGES } from './messages';
 import type { VoiceControlsProps } from './types';
 
@@ -35,7 +35,6 @@ export function VoiceControls({
   size: sizeProp,
   leading,
   trailing,
-  className,
   style,
   ref,
   testID,
@@ -50,12 +49,11 @@ export function VoiceControls({
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
 
   return (
-    <StyledView
+    <View
       collapsable={false}
       ref={ref}
       role="toolbar"
       aria-label={messages.controls}
-      className={className}
       testID={testID}
       style={[
         { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
@@ -118,6 +116,6 @@ export function VoiceControls({
         />
       ) : null}
       {trailing}
-    </StyledView>
+    </View>
   );
 }

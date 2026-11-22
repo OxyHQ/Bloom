@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
+import { View } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { resolveBloomColors } from '../appearance';
-import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { DEFAULT_WAVE_BARS, WAVE_METRICS } from './constants';
 import type { AudioWaveVisualizerProps } from './types';
@@ -56,7 +56,6 @@ export const AudioWaveVisualizer = memo(function AudioWaveVisualizer({
   active = true,
   size = 'md',
   tone = 'neutral',
-  className,
   style,
   ref,
   testID,
@@ -69,12 +68,11 @@ export const AudioWaveVisualizer = memo(function AudioWaveVisualizer({
   const color = resolveBloomColors(colors, tone, 'outline').foreground;
 
   return (
-    <StyledView
+    <View
       ref={ref}
       aria-hidden
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      className={className}
       testID={testID}
       style={[
         {
@@ -98,6 +96,6 @@ export const AudioWaveVisualizer = memo(function AudioWaveVisualizer({
           color={color}
         />
       ))}
-    </StyledView>
+    </View>
   );
 });
