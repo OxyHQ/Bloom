@@ -7,21 +7,21 @@
  *
  * `Menubar`, `MenubarMenu` and `MenubarTrigger` live in `MenubarBase` so the
  * two forks hold only what actually diverges — the surface a menu opens into.
- * Nothing exercised them before: replacing `MENUBAR_CLASS` on the bar with a
+ * Nothing exercised them before: replacing `MENUBAR_STYLE` on the bar with a
  * sentinel left all 116 tests of `trigger-classname`, `overlay-stack-order`
  * and `aria-state-web` green, so the extraction shipped with nothing able to
  * report a regression in it.
  *
  * What is pinned here is the shared contract, not the chrome's exact values:
  *
- *  1. The bar announces itself as a `menubar` and carries its geometry class.
+ *  1. The bar announces itself as a `menubar` and carries its geometry.
  *  2. At most ONE menu is open, and switching is a SINGLE state write — the
  *     reason the root owns "which value is open" instead of each menu owning a
  *     boolean (`context.ts`). A frame with nothing open is the defect.
  *  3. The trigger reports `aria-expanded` and `aria-haspopup`. On web
  *     `accessibilityState` is dropped entirely by react-native-web, so the
  *     flat `aria-*` props are the only ones that reach a screen reader.
- *  4. A caller's `className` reaches the node the parent lays out.
+ *  4. A caller's `style` reaches the node the parent lays out.
  */
 import type React from 'react';
 import { Text } from 'react-native';
@@ -29,7 +29,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { classNamesOn, findHost, hostNodes } from './support/rendered-style';
+import { findHost, hostNodes, resolvedStyle } from './support/rendered-style';
 
 function renderBar(ui: React.ReactNode) {
   return render(
@@ -63,22 +63,28 @@ const twoMenus = (
 );
 
 describe('Menubar (shared across both platforms)', () => {
-  it('announces the bar and carries its geometry class', () => {
+  it('announces the bar and carries its geometry', () => {
     const tree = renderBar(bar(twoMenus));
     const node = findHost(tree.toJSON(), 'bar');
     expect(node).not.toBeNull();
     expect(node?.props.role).toBe('menubar');
     expect(node?.props['aria-label']).toBe('Menu bar');
-    // `flex-row items-center gap-1 rounded-… border p-1` — the bar's own
-    // geometry, which nothing else in the family supplies.
-    expect(classNamesOn(node?.props.style).join(' ')).toContain('flex-row');
+    // A 40px row, 4px padding and gap, a 1px border — the bar's own geometry,
+    // which nothing else in the family supplies.
+    expect(resolvedStyle(node?.props.style)).toMatchObject({
+      flexDirection: 'row',
+      height: 40,
+      padding: 4,
+      gap: 4,
+      borderWidth: 1,
+    });
   });
 
-  it('takes a caller className without losing the bar geometry', () => {
-    const tree = renderBar(bar(twoMenus, { className: 'w-[321px]' }));
-    const classes = classNamesOn(findHost(tree.toJSON(), 'bar')?.props.style).join(' ');
-    expect(classes).toContain('w-[321px]');
-    expect(classes).toContain('flex-row');
+  it('takes a caller style without losing the bar geometry', () => {
+    const tree = renderBar(bar(twoMenus, { style: { width: 321 } }));
+    const style = resolvedStyle(findHost(tree.toJSON(), 'bar')?.props.style);
+    expect(style.width).toBe(321);
+    expect(style.flexDirection).toBe('row');
   });
 
   it('opens at most one menu, and switching is a single write', () => {
@@ -143,7 +149,11 @@ describe('Menubar (shared across both platforms)', () => {
     // The caller's element IS the trigger: it carries the handle, and Bloom's
     // own pressable chrome is not rendered beside it.
     expect(tree.getByLabelText('File').props['aria-haspopup']).toBe('menu');
-    const classes = hostNodes(tree.toJSON()).flatMap((n) => classNamesOn(n.props.style));
-    expect(classes.join(' ')).not.toContain('justify-center px-space-8');
+    // No host carries the title's own 6px-corner chrome.
+    const chrome = hostNodes(tree.toJSON()).filter((n) => {
+      const style = resolvedStyle(n.props.style);
+      return style.borderRadius === 6 && style.paddingInline === 8;
+    });
+    expect(chrome).toHaveLength(0);
   });
 });
