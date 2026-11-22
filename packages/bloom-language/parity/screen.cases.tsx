@@ -65,6 +65,18 @@ const scrollViews: ParityCase[] = inScreen([
     ),
   },
   {
+    name: 'physical left and right margins',
+    language: () =>
+      toElement(
+        L.ScrollView(L.Text('a')).contentMargins('left', 'sm').contentMargins('right', 'lg'),
+      ),
+    bloom: () => (
+      <ScreenScrollView contentContainerStyle={{ paddingLeft: space.sm, paddingRight: space.lg }}>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
+  {
     name: 'margins on every edge',
     language: () => toElement(L.ScrollView(L.Text('a')).contentMargins('xl')),
     bloom: () => (
