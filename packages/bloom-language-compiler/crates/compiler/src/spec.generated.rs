@@ -282,7 +282,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
 ];
 
 /// The modifiers a variant (`when(condition, v => v…)`) can change.
-pub const VARIANT_MODIFIERS: &[&str] = &["padding", "frame", "background", "border", "ring", "corner", "opacity", "shadow", "foreground", "font", "weight", "leading", "spacing", "align", "justify", "wrap", "axis", "grow", "shrink", "alignSelf", "position", "zIndex", "hidden", "basis", "flex", "margin", "allowsHitTesting", "scale", "offset", "rotation", "when"];
+pub const VARIANT_MODIFIERS: &[&str] = &["padding", "frame", "background", "border", "ring", "corner", "opacity", "shadow", "foreground", "font", "weight", "leading", "spacing", "childSpacing", "align", "justify", "wrap", "axis", "grow", "shrink", "alignSelf", "position", "zIndex", "hidden", "basis", "flex", "margin", "allowsHitTesting", "scale", "offset", "rotation", "when"];
 
 /// The loops (`.repeatForever(loop)`) whose frames change opacity: each one fades the view.
 pub const FADING_LOOPS: &[&str] = &["pulse"];

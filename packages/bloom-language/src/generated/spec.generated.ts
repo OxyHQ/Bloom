@@ -333,6 +333,7 @@ export const VARIANT_MODIFIERS = [
   "weight",
   "leading",
   "spacing",
+  "childSpacing",
   "align",
   "justify",
   "wrap",
