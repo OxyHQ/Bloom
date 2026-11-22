@@ -174,3 +174,4 @@ export const AgentEditor: Story = { args: { family: 'agentEditor' } };
 export const AgentChats: Story = { args: { family: 'agentChat' } };
 export const RouteStopsNotesAndSharing: Story = { args: { family: 'routeNoteShare' } };
 export const GenericComponents: Story = { args: { family: 'generic' } };
+export const AddressesAndPaymentMethods: Story = { args: { family: 'addressPayment' } };
