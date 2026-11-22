@@ -358,6 +358,11 @@ export interface ListProps {
   /** Opt into an owned scroller. A height or section index also enables it. */
   scrollable?: boolean;
   height?: number;
+  /**
+   * The owned scroller's content style (its padding: room for views pinned
+   * over the list's edges). Read only when the list scrolls.
+   */
+  contentContainerStyle?: StyleProp<ViewStyle>;
   /** Heading pinning in the owned scroller; Android opts in explicitly. */
   stickyHeaders?: boolean;
   sectionIndex?: {
