@@ -25,7 +25,7 @@ import type {
   SpaceToken,
 } from '../tokens';
 import type { ControlDraw, ControlRenderer } from './draw';
-import { length, product, slot } from './product';
+import { bound, length, product, slot } from './product';
 
 /** The call screens: a call in progress, minimised, in a group, and ringing. */
 export type CallUiKind =
@@ -38,14 +38,29 @@ export type CallUiKind =
 /** What the language draws itself: the box, the name, the call's look. */
 type Drawn = 'style' | 'testID' | 'mode' | 'accentColor';
 
+/** A call's toggles: each the screen's binding modifier, drawn into its control bar. */
+type CallToggles = 'muted' | 'speaker' | 'videoOn' | 'screenSharing';
+/** Each toggle's modifier, as Bloom's `CallControls` takes it: its value and its setter. */
+const TOGGLES = {
+  muted: ['muted', 'onMutedChange'],
+  speaker: ['speaker', 'onSpeakerChange'],
+  videoOn: ['videoOn', 'onVideoChange'],
+  screenSharing: ['screenSharing', 'onScreenShareChange'],
+} as const satisfies Record<
+  CallToggles,
+  readonly [keyof CallControlsProps, keyof CallControlsProps]
+>;
+
 /**
- * A call screen's control bar: Bloom `CallControls`' toggles and handlers. Its
- * size is the screen's `.size()`, its colour the screen's `.tint()`; extra
- * buttons drawn before the end button are `extra`, language children.
+ * A call screen's control bar: Bloom `CallControls`' actions, order and words.
+ * Its toggles are the screen's bindings (`.muted()`, `.speaker()`,
+ * `.videoOn()`, `.screenSharing()`), each drawing its button; its size is the
+ * screen's `.size()`, its colour the screen's `.tint()`; extra buttons drawn
+ * before the end button are `extra`, language children.
  */
 export type CallScreenControls = Omit<
   CallControlsProps,
-  'style' | 'testID' | 'size' | 'accentColor' | 'children'
+  'style' | 'testID' | 'size' | 'accentColor' | 'children' | (typeof TOGGLES)[CallToggles][number]
 > & { readonly extra?: Child };
 
 type CallScreenSlots = 'remoteVideo' | 'localVideo' | 'controlsSlot' | 'topBarSlot';
@@ -65,6 +80,8 @@ export type CallScreenOptions = Omit<
   | 'encryption'
   | 'localVideoWidth'
   | 'controls'
+  | 'localVideoCorner'
+  | 'onMoveLocal'
   | CallScreenSlots
 > & {
   readonly [K in CallScreenSlots]?: Child;
@@ -101,6 +118,16 @@ interface CallLook<Self> {
 export interface CallScreenView extends ViewModifiers<CallScreenView>, CallLook<CallScreenView> {
   /** The control bar's buttons: `sm` 40, `md` 48 or `lg` 56. */
   size(value: CallControlSize): CallScreenView;
+  /** The microphone, muted: a binding; bound, the bar draws its button. */
+  muted(value: Bound<CallControlsProps, 'muted'>): CallScreenView;
+  /** The speaker, on: a binding; bound, the bar draws its button. */
+  speaker(value: Bound<CallControlsProps, 'speaker'>): CallScreenView;
+  /** The camera, on: a binding; bound, the bar draws its button. */
+  videoOn(value: Bound<CallControlsProps, 'videoOn'>): CallScreenView;
+  /** The screen, shared: a binding; bound, the bar draws its button. */
+  screenSharing(value: Bound<CallControlsProps, 'screenSharing'>): CallScreenView;
+  /** The picture-in-picture's corner (`top-right` by default): a binding, its move button writing the next. */
+  localVideoCorner(value: Bound<CallScreenProps, 'localVideoCorner'>): CallScreenView;
 }
 export interface CallMinimisedPillView
   extends ViewModifiers<CallMinimisedPillView>,
@@ -182,19 +209,25 @@ const look = {
 };
 const mode = (d: ControlDraw) => d.own('style')?.value as CallMode | undefined;
 
-/** A call screen's control bar as Bloom takes it: its size and extra buttons drawn in. */
+/**
+ * A call screen's control bar as Bloom takes it: its toggles' bindings, its
+ * size and extra buttons drawn in. With neither controls nor a toggle bound,
+ * there is no bar.
+ */
 function controlsOf(d: ControlDraw): CallControlsProps | undefined {
   const { controls } = (d.node.props as { options: CallScreenOptions }).options;
-  if (controls === undefined) return undefined;
+  const toggles = bound(d, TOGGLES);
+  if (controls === undefined && Object.keys(toggles).length === 0) return undefined;
   const size = d.own('size')?.value as CallControlSize | undefined;
-  const { extra, ...rest } = controls;
-  if (size === undefined && extra === undefined) return rest;
-  return { ...rest, size, children: slot(d, extra) };
+  const { extra, ...rest } = controls ?? {};
+  if (size === undefined && extra === undefined) return { ...rest, ...toggles };
+  return { ...rest, ...toggles, size, children: slot(d, extra) };
 }
 
 export const CALL_UIS: Record<CallUiKind, ControlRenderer> = {
   callScreen: product(BloomCallScreen, {
     ...look,
+    bindings: { localVideoCorner: ['localVideoCorner', 'onMoveLocal'] },
     slots: ['remoteVideo', 'localVideo', 'controlsSlot', 'topBarSlot'],
     lengths: ['localVideoWidth'],
     own: (d) => {
