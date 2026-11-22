@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 it.each([false, true])(
-  'keeps class utilities separate from numeric card geometry (pressable=%s)',
+  'puts the caller style with numeric card geometry (pressable=%s)',
   (pressable) => {
     const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
     try {
@@ -29,7 +29,6 @@ it.each([false, true])(
         root.render(
           <Card
             testID="card"
-            className="gap-space-16 p-space-20"
             radius="radius-28"
             border="none"
             style={{ padding: 20, gap: 16 }}
@@ -40,13 +39,11 @@ it.each([false, true])(
         ),
       );
       const host = container.querySelector('[data-testid="card"]') as HTMLElement;
-      expect(host.classList.contains('gap-space-16')).toBe(true);
-      expect(host.classList.contains('p-space-20')).toBe(true);
       expect(getComputedStyle(host).borderTopLeftRadius).toBe('28px');
       expect(getComputedStyle(host).borderTopWidth).toBe('0px');
       expect(getComputedStyle(host).paddingTop).toBe('20px');
       expect(host.style.gap).toBe('16px');
-      expect(host.querySelectorAll('.bloom-surface-paint')).toHaveLength(1);
+      expect(host.querySelectorAll('[data-bloom-surface-paint]')).toHaveLength(1);
       expect(
         errors.mock.calls.filter((args) => args.some((arg) => String(arg).includes('styleq'))),
       ).toEqual([]);

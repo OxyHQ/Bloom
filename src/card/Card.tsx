@@ -33,13 +33,11 @@ import { resolveBloomColors } from '../appearance/colors';
  * requires a new appearance name.
  */
 import React, { type ComponentRef, memo, useMemo, useContext } from 'react';
-import { StyleSheet, type View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from '../typography';
 
-import { styled } from 'react-native-css';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
-import { splitCompiledStyle } from '../styles/compiled-style';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import {
   SurfaceLevelProvider,
@@ -51,7 +49,6 @@ import { useTheme } from '../theme/use-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { space } from '../styles/tokens';
 import { usePanelShape } from '../styles/panel-chrome';
 import type {
@@ -65,7 +62,6 @@ import type {
   CardDescriptionProps,
 } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
-import { typographyDefaultsWhenNoClassName } from '../typography/defaults';
 
 /** How present a card stays while it is pressed. */
 const PRESSED_PRESENCE = 0.85;
@@ -102,7 +98,6 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
       elevation,
       border,
       style,
-      className,
       onPress,
       onLayout,
       accessibilityRole = 'button',
@@ -127,11 +122,7 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
         : radius && radius !== 'concentric'
           ? RADIUS[radius]
           : undefined;
-    // On web the caller's `className` arrives in `style` as a compiled-CSS entry
-    // (this component is `styled()` below). Values are read from the inline part
-    // only, and the classes stay separate entries on the host — never flattened
-    // into the inline object, which react-native-web would reject wholesale.
-    const { classes, inline: callerStyle } = splitCompiledStyle<ViewStyle>(style);
+    const callerStyle = StyleSheet.flatten(style) as ViewStyle | undefined;
     const baseGeometry = resolveSurfaceGeometry(
       explicitRadius,
       callerStyle,
@@ -319,11 +310,10 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
 
     if (onPress) {
       return (
-        <StyledPressable
+        <Pressable
           ref={hostRef}
           onLayout={onLayout}
-          className={className}
-          style={[classes, outerStyle, surfacePresenceStyle(presence)]}
+          style={[outerStyle, surfacePresenceStyle(presence)]}
           onPress={onPress}
           onPressIn={disabled ? undefined : onPressIn}
           onPressOut={disabled ? undefined : onPressOut}
@@ -335,21 +325,20 @@ const CardRootComponent = React.forwardRef<ComponentRef<typeof View>, CardProps>
           testID={testID}
         >
           {contents}
-        </StyledPressable>
+        </Pressable>
       );
     }
 
     return (
-      <StyledView
+      <View
         ref={hostRef}
         onLayout={onLayout}
-        className={className}
-        style={[classes, outerStyle, surfacePresenceStyle(presence)]}
+        style={[outerStyle, surfacePresenceStyle(presence)]}
         accessibilityLabel={accessibilityLabel}
         testID={testID}
       >
         {contents}
-      </StyledView>
+      </View>
     );
   },
 );
@@ -402,24 +391,18 @@ const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => 
   </ConcentricView>
 );
 
-const CardTitleComponent: React.FC<CardTitleProps> = ({
-  children,
-  style,
-  numberOfLines,
-  className,
-}) => {
+const CardTitleComponent: React.FC<CardTitleProps> = ({ children, style, numberOfLines }) => {
   const theme = useTheme();
   const foreground = useContext(CardForegroundContext);
   return (
     <Text
-      {...(className ? { className } : {})}
       style={[
-        typographyDefaultsWhenNoClassName(className, {
+        {
           fontSize: 17,
           fontWeight: '600',
           color: foreground ?? theme.colors.text,
           lineHeight: 22,
-        }),
+        },
         style,
       ]}
       numberOfLines={numberOfLines}
@@ -433,19 +416,17 @@ const CardDescriptionComponent: React.FC<CardDescriptionProps> = ({
   children,
   style,
   numberOfLines,
-  className,
 }) => {
   const theme = useTheme();
   const foreground = useContext(CardForegroundContext);
   return (
     <Text
-      {...(className ? { className } : {})}
       style={[
-        typographyDefaultsWhenNoClassName(className, {
+        {
           fontSize: 14,
           color: foreground ?? theme.colors.textSecondary,
           lineHeight: 20,
-        }),
+        },
         style,
       ]}
       numberOfLines={numberOfLines}
@@ -455,11 +436,7 @@ const CardDescriptionComponent: React.FC<CardDescriptionProps> = ({
   );
 };
 
-// Keep ref internals out of styled's recursive property-path inference.
-const StyledCard = styled(CardRootComponent as React.ComponentType<CardProps>, {
-  className: 'style',
-}) as typeof CardRootComponent;
-export const Card: MemoRefComponent<CardProps> = memo(StyledCard);
+export const Card: MemoRefComponent<CardProps> = memo(CardRootComponent);
 Card.displayName = 'Card';
 
 export const CardHeader = memo(CardHeaderComponent);
