@@ -1149,11 +1149,11 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
   const live = layer.variants.filter(([condition]) => condition !== null);
   if (live.length === 0) return undefined;
   const takes = (modifier: LayerModifier) =>
-    modifier.kind === 'padding' || (layer.glass !== undefined && GLASS_VARIES.has(modifier.kind));
+    modifier.kind === 'padding' || GLASS_VARIES.has(modifier.kind);
   if (live.some(([, modifier]) => !takes(modifier)))
     warnOnce(
       'material-variant',
-      '[Bloom language] a glass varies its padding, frame, border, corner and fill, an island or a concentric box only its padding: its other variants are left out (a material is never faded).',
+      '[Bloom language] a material (a glass, an island, a concentric box) varies its padding, frame, border, corner and fill: its other variants are left out (a material is never faded).',
     );
   if (!live.some(([, modifier]) => modifier.kind === 'padding')) return undefined;
   const isPadding = (modifier: LayerModifier) => modifier.kind === 'padding';
@@ -1181,7 +1181,7 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
   return { outer, inner };
 }
 
-/** What a glass varies besides its padding (a view just inside it): its own frame, border, corner and fill. */
+/** What a material varies besides its padding (a view just inside it): its own frame, border, corner and fill. */
 const GLASS_VARIES: ReadonlySet<string> = new Set(['frame', 'border', 'corner', 'background']);
 
 /** What a glass's live variants change, each where the material takes it. */
@@ -1212,15 +1212,15 @@ function glassVariants(layer: Layer): GlassVariants {
   const props = new Map<LiveCondition, { radius?: number; fill?: ColorToken }>();
   for (const [condition, modifier] of live) {
     if (modifier.kind === 'corner') {
-      if (modifier.side !== 'all' || modifier.value === 'concentric') {
+      if (modifier.side !== 'all' || modifier.value === 'concentric' || layer.concentric) {
         warnOnce(
           'glass-corner-variant',
-          '[Bloom language] a glass’s corner varies as one radius: a corner of some sides, or concentric, is left out of when().',
+          '[Bloom language] a material’s corner varies as one radius: a corner of some sides, or concentric (a concentric box’s own radius), is left out of when().',
         );
         continue;
       }
       props.set(condition, { ...props.get(condition), radius: resolveCorner(modifier.value) });
-    } else if (modifier.kind === 'background') {
+    } else if (modifier.kind === 'background' && layer.glass !== undefined) {
       if (isAppColor(modifier.value)) {
         // A glass is tinted by a role, at rest and in a variant: the platforms' glasses take one.
         warnOnce(
@@ -1232,13 +1232,13 @@ function glassVariants(layer: Layer): GlassVariants {
       props.set(condition, { ...props.get(condition), fill: modifier.value });
     }
   }
+  // A glass's fill is its tint (a prop); an island's and a concentric box's is their style's.
+  const inStyle = (modifier: LayerModifier) =>
+    modifier.kind === 'frame' ||
+    modifier.kind === 'border' ||
+    (modifier.kind === 'background' && layer.glass === undefined);
   varied = {
-    style: layerVariants({
-      ...layer,
-      variants: live.filter(
-        ([, modifier]) => modifier.kind === 'frame' || modifier.kind === 'border',
-      ),
-    }),
+    style: layerVariants({ ...layer, variants: live.filter(([, modifier]) => inStyle(modifier)) }),
     props: [...props].sort(([a], [b]) => compareLive(a, b)),
     stateful: live.some(
       ([condition, modifier]) =>
@@ -1247,6 +1247,13 @@ function glassVariants(layer: Layer): GlassVariants {
   };
   glassVariantsByKey.set(layer.key, varied);
   return varied;
+}
+
+/** A material's varied corner as its `radius` prop, under each condition that varies it. */
+function radiusVariants(varied: GlassVariants): (readonly [LiveCondition, VariedProps])[] {
+  return varied.props.flatMap(([condition, { radius }]) =>
+    radius === undefined ? [] : [[condition, { props: { radius } }] as const],
+  );
 }
 
 /** A padding of nothing: what opens the view of its own a Bloom component's hit testing takes on the web. */
@@ -1380,11 +1387,18 @@ function wrapLayer(
     // Bloom's floating island: its material, its shadow and its clip; a capsule
     // unless the layer's corner names the radius.
     const { corner, resolved } = materialRadius(boxStyle(layer, flex, p));
-    const out = cachedStyle('material', styleKey, () => resolved);
+    const varied = glassVariants(layer);
+    const out = cachedStyle(
+      'material',
+      styleKey,
+      () => resolved,
+      () => varied.style,
+    );
     const outer = behaviour && !p.pressable ? behaviour : null;
+    const paint = variedPaint(`I|${styleKey}`, out, NO_ROLES, () => radiusVariants(varied));
     const island = drawHost(
       BlurIsland,
-      out,
+      paint ? painted(out, paint) : out,
       {
         ...(typeof corner === 'number' ? { radius: corner } : null),
         ...(layer.curve ? { cornerCurve: layer.curve } : null),
@@ -1394,12 +1408,24 @@ function wrapLayer(
       ...children,
     );
     return behaviour && p.pressable
-      ? drawOutermost(box, hostFor(p), NO_OUT, { ...behaviour, key }, island)
+      ? drawOutermost(
+          box,
+          hostFor(p),
+          varied.stateful ? AROUND : NO_OUT,
+          { ...behaviour, key },
+          island,
+        )
       : island;
   }
   if (layer.concentric) {
     // Bloom's concentric geometry: the radius of the shape it sits in, less the inset.
-    const out = cachedStyle('component', styleKey, () => boxStyle(layer, flex, p));
+    const varied = glassVariants(layer);
+    const out = cachedStyle(
+      'component',
+      styleKey,
+      () => boxStyle(layer, flex, p),
+      () => varied.style,
+    );
     const outer = behaviour && !p.pressable ? behaviour : null;
     const view = drawHost(
       ConcentricView,
@@ -1408,7 +1434,13 @@ function wrapLayer(
       ...children,
     );
     return behaviour && p.pressable
-      ? drawOutermost(box, hostFor(p), NO_OUT, { ...behaviour, key }, view)
+      ? drawOutermost(
+          box,
+          hostFor(p),
+          varied.stateful ? AROUND : NO_OUT,
+          { ...behaviour, key },
+          view,
+        )
       : view;
   }
   const out = cachedStyle(

@@ -274,6 +274,46 @@ describe('when(): a variant overrides what the chain set before it', () => {
     expect(surface().props.fill).toBeUndefined();
   });
 
+  it('an island’s frame, border and fill vary its style, its corner its radius, while held', () => {
+    const r = mount(
+      HStack(Text('a'))
+        .onPress(() => {})
+        .blur()
+        .corner('lg')
+        .when('pressed', (v) => v.corner('xl').border('border', 'thin').background('primary')),
+    );
+    const island = (): ReactTestInstance => ofType(r, 'BlurIsland')[0] as ReactTestInstance;
+    expect(island().props).toMatchObject({ radius: 16 });
+    const host = ofType(r, 'Pressable')[0] as ReactTestInstance;
+    act(() => host.props.onPressIn());
+    expect(island().props).toMatchObject({
+      radius: 20,
+      style: { borderWidth: 1, borderColor: LIGHT.border, backgroundColor: LIGHT.primary },
+    });
+    act(() => host.props.onPressOut());
+    expect(island().props.radius).toBe(16);
+    expect(island().props.style ?? {}).not.toHaveProperty('backgroundColor');
+  });
+
+  it('a concentric box’s frame, border and fill vary its style; its corner stays concentric', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    windowTier.current = 'md';
+    const r = mount(
+      VStack(Text('a'))
+        .frame({ width: '3xl' })
+        .background('surface')
+        .corner('concentric')
+        .when('md', (v) => v.frame({ width: '4xl' }).background('primary').corner('xl')),
+    );
+    const view = ofType(r, 'ConcentricView')[0] as ReactTestInstance;
+    expect(view.props).toMatchObject({
+      radius: 'concentric',
+      style: { width: 40, backgroundColor: LIGHT.primary },
+    });
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('a concentric box’s own radius'));
+    warn.mockRestore();
+  });
+
   it('a tinted glass’s fill is its tint at rest, and a variant’s while it holds', () => {
     const r = mount(
       VStack()
