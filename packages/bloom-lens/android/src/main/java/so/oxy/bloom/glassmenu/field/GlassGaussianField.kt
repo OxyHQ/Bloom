@@ -1,7 +1,6 @@
 package so.oxy.bloom.glassmenu.field
 
 import android.graphics.RectF
-import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.exp
 import kotlin.math.floor
@@ -28,26 +27,33 @@ internal class GlassGaussianField(private val minimumStep: Float) {
   private var raw = FloatArray(0)
   private var horizontal = FloatArray(0)
   private val weights = FloatArray(17)
-  private val incoming = RoundedField()
-  private val outgoing = RoundedField()
+  private val incoming = RoundedUnion()
+  private val outgoing = RoundedUnion()
   private var hasOutgoing = false
   private var blend = 0f
 
+  // [members], when it has shapes, is the trigger drawn as several (a group of glasses): they take the trigger's
+  // place, the outgoing shape in a morph, else the incoming one.
   fun update(
     incomingRect: RectF, radiusX: Float, radiusY: Float,
     outgoingRect: RectF?, outgoingRadius: Float, smoothing: Float, lockedStep: Float = 0f,
+    members: GlassShapes? = null,
   ): Boolean {
     val sigma = max(smoothing, 0f)
     if (sigma <= 0.000001f) return false
-    var left = incomingRect.left
-    var top = incomingRect.top
-    var right = incomingRect.right
-    var bottom = incomingRect.bottom
-    if (outgoingRect != null) {
-      left = min(left, outgoingRect.left)
-      top = min(top, outgoingRect.top)
-      right = max(right, outgoingRect.right)
-      bottom = max(bottom, outgoingRect.bottom)
+    incoming.set(incomingRect, radiusX, radiusY)
+    hasOutgoing = outgoingRect != null
+    if (outgoingRect != null) outgoing.set(outgoingRect, outgoingRadius, outgoingRadius)
+    if (members != null && members.count > 0) (if (hasOutgoing) outgoing else incoming).set(members)
+    var left = incoming.bounds.left
+    var top = incoming.bounds.top
+    var right = incoming.bounds.right
+    var bottom = incoming.bounds.bottom
+    if (hasOutgoing) {
+      left = min(left, outgoing.bounds.left)
+      top = min(top, outgoing.bounds.top)
+      right = max(right, outgoing.bounds.right)
+      bottom = max(bottom, outgoing.bounds.bottom)
     }
     val grow = if (outgoingRect != null) sigma * 0.25f * max(radiusX, radiusY) / max(min(radiusX, radiusY), 0.01f) else 0f
     left -= grow
@@ -75,9 +81,6 @@ internal class GlassGaussianField(private val minimumStep: Float) {
     for (index in 1..radius) sum += weights[index] * 2f
     for (index in 0..radius) weights[index] /= sum
 
-    incoming.set(incomingRect, radiusX, radiusY)
-    hasOutgoing = outgoingRect != null
-    if (outgoingRect != null) outgoing.set(outgoingRect, outgoingRadius, outgoingRadius)
     blend = sigma
     originX = floor(left / step) * step - step
     originY = floor(top / step) * step - step
@@ -146,36 +149,13 @@ internal class GlassGaussianField(private val minimumStep: Float) {
   }
 
   private fun sample(x: Float, y: Float, index: Int) {
-    val a = incoming.distance(x, y)
-    incoming.gradient(x, y)
-    val ax = incoming.gradientX
-    val ay = incoming.gradientY
-    if (!hasOutgoing) {
-      raw[index] = a
-      raw[index + 1] = ax
-      raw[index + 2] = ay
-      return
+    incoming.sample(x, y)
+    if (hasOutgoing) {
+      outgoing.sample(x, y)
+      incoming.blendWith(outgoing.distance, outgoing.gradientX, outgoing.gradientY, blend)
     }
-    val b = outgoing.distance(x, y)
-    outgoing.gradient(x, y)
-    val bx = outgoing.gradientX
-    val by = outgoing.gradientY
-    if (abs(a - b) >= blend) {
-      val first = a <= b
-      raw[index] = min(a, b)
-      raw[index + 1] = if (first) ax else bx
-      raw[index + 2] = if (first) ay else by
-      return
-    }
-    val alignment = ax * bx + ay * by
-    val radius = blend * (0.5f - 0.5f * alignment).coerceIn(0f, 1f)
-    val weight = if (radius <= 0.000001f) {
-      if (a <= b) 0f else 1f
-    } else {
-      (0.5f + 0.5f * (a - b) / radius).coerceIn(0f, 1f)
-    }
-    raw[index] = a + (b - a) * weight - radius * weight * (1f - weight)
-    raw[index + 1] = ax + (bx - ax) * weight
-    raw[index + 2] = ay + (by - ay) * weight
+    raw[index] = incoming.distance
+    raw[index + 1] = incoming.gradientX
+    raw[index + 2] = incoming.gradientY
   }
 }

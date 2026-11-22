@@ -51,6 +51,15 @@ export interface LensMenuConfig {
   separatorColor?: string;
 }
 
+/** A glass of a group on one lens base: the views whose `nativeID` is its key (several: one shape around them). */
+export interface LensGroupMember {
+  key: string;
+  /** The corner radius in points; unset is a capsule. */
+  cornerRadius?: number;
+  /** Out of and into the nearest glass (default), or where it is. */
+  transition?: 'matchedGeometry' | 'materialize';
+}
+
 /** What a menu inside a lens base calls. */
 export interface LensHandle {
   open: () => void;
@@ -77,6 +86,10 @@ export interface Lens {
     restBackdrop?: string;
     /** The base is one menu's trigger: a tap opens it natively, with no round trip to JS. */
     openOnTap?: boolean;
+    /** The base is a group of glasses: it draws each member's glass, not its own rect. */
+    members?: readonly LensGroupMember[];
+    /** The distance in points within which a group's glasses blend. */
+    blend?: number;
     style?: StyleProp<ViewStyle>;
     children?: ReactNode;
   }>;

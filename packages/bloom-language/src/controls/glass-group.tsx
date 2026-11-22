@@ -8,15 +8,16 @@ import type { ControlRenderer } from './draw';
 /**
  * SwiftUI's `GlassEffectContainer`: the glasses inside render together. Each
  * platform draws it with its own container (see docs/bloom-language.mdx,
- * Glass groups): one lens base on Android and OxyOS, UIKit's glass container
- * on iOS, and a plain view on the web, where each glass is its own `Surface`.
+ * Glass groups): one lens base drawn as its glasses on Android and OxyOS,
+ * UIKit's glass container on iOS, and a plain view on the web, where each
+ * glass is its own `Surface`.
  */
 export type GlassGroupKind = 'glassGroup';
 
 export interface GlassGroupView extends ViewModifiers<GlassGroupView> {
   /**
    * The distance at which the group's glasses blend into one shape (SwiftUI's
-   * container `spacing`; a stack's gap is `.spacing()`). iOS reads it.
+   * container `spacing`; a stack's gap is `.spacing()`). iOS and Android read it.
    */
   blend(value: SpaceToken): GlassGroupView;
 }

@@ -8,6 +8,7 @@ import type {
 import type {
   TMenuAlignment,
   TMenuConfig,
+  TMenuGroupMember,
   TMenuScheme,
   TMenuSelectEvent,
   TMenuTriggerConfig,
@@ -30,6 +31,8 @@ interface INativeMenu {
   openWithItems?: boolean;
   restBackdrop?: string;
   openOnTap?: boolean;
+  members?: readonly TMenuGroupMember[];
+  blend?: number;
   onMenuClosed?: () => void;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;

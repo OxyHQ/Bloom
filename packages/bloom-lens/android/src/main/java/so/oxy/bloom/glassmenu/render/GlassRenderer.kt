@@ -17,6 +17,7 @@ import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
 import so.oxy.bloom.glassmenu.backdrop.GlassLens
 import so.oxy.bloom.glassmenu.field.GlassFieldTexture
 import so.oxy.bloom.glassmenu.field.GlassGaussianField
+import so.oxy.bloom.glassmenu.field.GlassShapes
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
@@ -38,6 +39,9 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   private val texture = GlassFieldTexture()
   private val nodeRect = Rect()
   private val union = RectF()
+  private val memberBounds = RectF()
+  private val memberShapes = FloatArray(MemberSlots * 4)
+  private val memberRadii = FloatArray(MemberSlots)
   // This surface's view of the window page (GlassLens): the page while the region behind it changes, else its still.
   private var lens: GlassLens? = null
   private val signature = FloatArray(SignatureSize)
@@ -104,6 +108,7 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     val active = field.update(
       state.incoming, state.radiusX, state.radiusY,
       if (state.hasSource) state.source else null, state.sourceRadius, state.smoothing, state.lockedFieldStep,
+      state.members,
     )
     texture.update(if (active) field else null)
     bindField(material, state)
@@ -112,16 +117,38 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   }
 
   private fun bindField(shader: RuntimeShader, state: GlassSurfaceState) {
-    val a = state.incoming
+    // A trigger of several shapes (a group of glasses) draws them in its place, the source of a morph or else the
+    // glass: its first shape takes that place, the others follow in the member uniforms.
+    val shapes = state.members
+    val inIncoming = shapes.count > 0 && !state.hasSource
+    val inSource = shapes.count > 0 && state.hasSource
+    val a = if (inIncoming) shapes.rects[0] else state.incoming
     shader.setFloatUniform("center", a.centerX(), a.centerY())
     shader.setFloatUniform("halfSize", a.width() / 2f, a.height() / 2f)
-    shader.setFloatUniform("cornerRadii", state.radiusX, state.radiusY)
-    val b = if (state.hasSource) state.source else a
+    if (inIncoming) shader.setFloatUniform("cornerRadii", shapes.radii[0], shapes.radii[0])
+    else shader.setFloatUniform("cornerRadii", state.radiusX, state.radiusY)
+    val b = if (inSource) shapes.rects[0] else if (state.hasSource) state.source else a
+    val bRadius = if (inSource) shapes.radii[0] else state.sourceRadius
     shader.setFloatUniform("secondaryEnabled", if (state.hasSource) 1f else 0f)
     shader.setFloatUniform("secondaryCenter", b.centerX(), b.centerY())
     shader.setFloatUniform("secondaryHalfSize", b.width() / 2f, b.height() / 2f)
-    shader.setFloatUniform("secondaryRadii", state.sourceRadius, state.sourceRadius)
+    shader.setFloatUniform("secondaryRadii", bRadius, bRadius)
     shader.setFloatUniform("smoothing", state.smoothing)
+    memberShapes.fill(0f)
+    memberRadii.fill(0f)
+    for (index in 1 until shapes.count) {
+      val rect = shapes.rects[index]
+      val slot = (index - 1) * 4
+      memberShapes[slot] = rect.centerX()
+      memberShapes[slot + 1] = rect.centerY()
+      memberShapes[slot + 2] = rect.width() / 2f
+      memberShapes[slot + 3] = rect.height() / 2f
+      memberRadii[index - 1] = shapes.radii[index]
+    }
+    shader.setFloatUniform("memberCount", max(shapes.count - 1, 0).toFloat())
+    shader.setFloatUniform("memberBlend", shapes.blend)
+    shader.setFloatUniform("members", memberShapes)
+    shader.setFloatUniform("memberRadii", memberRadii)
     texture.bind(shader)
   }
 
@@ -132,6 +159,10 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   fun drawGlass(canvas: Canvas, backdrop: RenderNode, state: GlassSurfaceState, limits: Rect, page: GlassBackdrop? = null) {
     union.set(state.incoming)
     if (state.hasSource) union.union(state.source)
+    if (state.members.count > 0) {
+      state.members.bounds(memberBounds)
+      union.union(memberBounds)
+    }
     val t = state.materialProgress.coerceIn(0f, 1f)
     val config = state.config
     val trigger = state.trigger
@@ -237,6 +268,15 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     put(state.lensHeight); put(state.lensAmount); put(state.lensBand); put(state.materialProgress)
     put(state.surfaceOpacity); put(state.refractionScale); put(state.magnify)
     put(state.pressX); put(state.pressY); put(state.pressRadius); put(state.poolGain); put(state.pressLift); put(state.rimLift)
+    val shapes = state.members
+    put(shapes.count.toFloat()); put(shapes.blend)
+    for (slot in 0 until GlassShapes.Capacity) {
+      if (slot < shapes.count) {
+        put(shapes.rects[slot]); put(shapes.radii[slot])
+      } else {
+        repeat(5) { put(0f) }
+      }
+    }
     val same = recordedSource === source && recordedConfig === state.config && recordedTrigger === state.trigger &&
       values.contentEquals(recorded)
     if (!same) {
@@ -302,7 +342,9 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     val fieldWarmed = AtomicBoolean(false)
     val pipelinesWarmed = AtomicBoolean(false)
     const val MorphBlur = 1.2f
-    const val SignatureSize = 36
+    const val SignatureSize = 38 + GlassShapes.Capacity * 5
+    // The shader's member uniforms: a trigger's shapes beyond its first.
+    const val MemberSlots = GlassShapes.Capacity - 1
     const val BlurReach = 2f
     const val PortalReach = 28f
     const val WarmRounds = 40

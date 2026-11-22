@@ -16,10 +16,12 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import com.facebook.react.R
 import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
+import so.oxy.bloom.glassmenu.motion.GlassGroup
 import so.oxy.bloom.glassmenu.motion.GlassJelly
 import so.oxy.bloom.glassmenu.overlay.GlassDevGuard
 import so.oxy.bloom.glassmenu.overlay.GlassMenuOverlay
 import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
+import so.oxy.bloom.glassmenu.records.GlassMemberRecord
 import so.oxy.bloom.glassmenu.records.GlassMenuItemRecord
 import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
 import so.oxy.bloom.glassmenu.render.GlassRenderer
@@ -127,6 +129,22 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   internal var openOnTap = false
   private var tapping = false
   private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+  // A group of glasses on this base (GlassGroup): the base draws each member's glass, not its own rect. Null: one glass.
+  // Drawn by the overlay only: a base drawn in its place (restBackdrop) is its own rect.
+  internal val group = GlassGroup()
+  internal var members: List<GlassMemberRecord>? = null
+    set(value) {
+      field = value
+      group.setRecords(value)
+      overlay?.invalidate()
+    }
+  // The distance in points within which a group's glasses blend into one another.
+  internal var blend = 0f
+    set(value) {
+      field = value
+      group.blend = value
+      overlay?.invalidate()
+    }
   internal var menuWidth: Float? = null
   internal var fontFamily: String? = null
   internal var alignment = "auto"
@@ -293,6 +311,7 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     state.radiusX = radius
     state.radiusY = radius
     state.hasSource = false
+    state.members.clear()
     state.smoothing = 0f
     state.lensHeight = 0f
     state.lensAmount = 0f
