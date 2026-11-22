@@ -14,6 +14,7 @@ import { GroupedSection, GroupedSectionItem } from '@oxy.so/bloom/grouped-sectio
 import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';
 import { RiHeart3Fill } from '@oxy.so/bloom/icons/RiHeart3Fill';
 import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line';
+import { RiMailLine } from '@oxy.so/bloom/icons/RiMailLine';
 import { RiSmartphoneLine } from '@oxy.so/bloom/icons/RiSmartphoneLine';
 import { RiStarLine } from '@oxy.so/bloom/icons/RiStarLine';
 import { IconCircle } from '@oxy.so/bloom/icon-circle';
@@ -23,7 +24,7 @@ import { ScreenScrollView } from '@oxy.so/bloom/screen';
 import { Search } from '@oxy.so/bloom/search';
 import { SettingsSection, SettingsValueField } from '@oxy.so/bloom/settings-modal';
 import { Switch } from '@oxy.so/bloom/switch';
-import { TextFieldInput } from '@oxy.so/bloom/text-field';
+import { TextField, TextFieldIcon, TextFieldInput } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
 import { Muted } from '@oxy.so/bloom/typography';
 import { View } from 'react-native';
@@ -214,5 +215,19 @@ export function Filters({
         popOnActivate
       />
     </View>
+  );
+}
+
+export function Email({ email, setEmail }: { email: string; setEmail: (email: string) => void }) {
+  return (
+    <TextField size="lg">
+      <TextFieldIcon icon={RiMailLine} />
+      <TextFieldInput
+        label={t('account.email')}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
+    </TextField>
   );
 }
