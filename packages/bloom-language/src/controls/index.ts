@@ -3,6 +3,7 @@ import { CALL_UIS } from './call-ui';
 import { CHAT_PEOPLE } from './chat-people';
 import { MESSAGE_BUBBLES } from './message-bubble';
 import { AGENT_AVATARS } from './agent-avatar';
+import { HOME_SEARCHES } from './home-search';
 import { BOOKINGS } from './booking';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { STAY_FILTERS } from './stay-filters';
@@ -62,4 +63,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...PLACES,
   ...MAILS,
   ...BOOKINGS,
+  ...HOME_SEARCHES,
 };

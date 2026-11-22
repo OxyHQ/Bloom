@@ -43,6 +43,7 @@ module.exports = {
     '^@oxy.so/bloom/(place-card|place-details|place-list|directions|place-picker)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(mail-compose|mail-thread|note-editor)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(booking)$': `${support}/bloom-products.ts`,
+    '^@oxy.so/bloom/(booking|home-search)$': `${support}/bloom-products.ts`,
     '^@oxy.so/bloom/(app-shell|screen|dialog|tab-pager|tab-pager/expo-router|panel-routing/expo-router)$': `${support}/bloom-router.ts`,
     // Optional native modules: absent unless a test mocks one in.
     '^(expo|expo-blur|expo-glass-effect|expo-router|@expo/ui/swift-ui/modifiers)$': `${support}/absent/$1.ts`,

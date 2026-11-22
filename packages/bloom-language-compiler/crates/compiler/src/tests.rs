@@ -936,3 +936,22 @@ fn the_booking_family_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_home_search_family_is_checked() {
+    let imports = "import { HomeSearchBar, PropertyTypePicker, SavedSearchCard, SearchModeTabs, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (s, m, t) => VStack(HomeSearchBar(s, m), SearchModeTabs(m).style('segmented'), PropertyTypePicker(t).columns(2).disabled(), SavedSearchCard('Flats').label('Open'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("SearchModeTabs(m).style('pill')", "Unknown searchModeTabsStyle token 'pill' for .style()"),
+        ("HomeSearchBar(s, m).style('tabs')", "HomeSearchBar has no modifier .style()"),
+        ("SavedSearchCard('a').disabled()", "SavedSearchCard has no modifier .disabled()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (s, m) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

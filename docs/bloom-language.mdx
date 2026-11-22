@@ -1608,6 +1608,22 @@ the reserve button and `.disabled()` disables it. A card's `guestPicker`,
 card its button, and its `actions` are a child. `PriceBreakdown(rows,
 options?)` takes Bloom's rows.
 
+### Home search
+
+```ts
+HomeSearchBar(segments, [open, setOpen], { onSearch: search, panel: open === 'budget' ? BudgetPanel() : undefined })
+SearchModeTabs([mode, setMode]).style('segmented')
+PropertyTypePicker([types, setTypes], { labels }).columns(2)
+SavedSearchCard(search.title, { criteria, newCount, onEdit, onDelete }).onPress(openSearch)
+```
+
+Bloom's `home-search`: `HomeSearchBar(segments, active, options?)` writes the
+open segment its binding holds (`null` at rest), its `panel` a language child;
+`SearchModeTabs(mode, options?)` writes the mode, `.style('tabs' |
+'segmented')` its look; `PropertyTypePicker(types, options?)` writes the
+selected types, `.columns(n)` its tiles per row and `.disabled()`;
+`SavedSearchCard(title, options?)` takes `.onPress()` itself.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
