@@ -169,6 +169,7 @@ import type {
   DataTableSelectView,
 } from '../controls/data-table';
 import type { SortableChipRowView, SortableChipView } from '../controls/sortable-chip-row';
+import type { ViewportView } from '../controls/viewport';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -452,10 +453,12 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<DataColumnView>, Of<'dataColumn'>>,
       Same<MethodsOf<SortableChipRowView>, Of<'sortableChipRow'>>,
       Same<MethodsOf<SortableChipView>, Of<'sortableChip'>>,
+      Same<MethodsOf<ViewportView>, Of<'viewport'>>,
       Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
       Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
       Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
     ] = [
+      true,
       true,
       true,
       true,

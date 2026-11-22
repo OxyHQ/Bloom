@@ -109,3 +109,4 @@ export const DataTableFilter = 'DataTableFilter';
 export const DataTableSearch = 'DataTableSearch';
 export const DataTableSelect = 'DataTableSelect';
 export const SortableChipRow = 'SortableChipRow';
+export const ViewportProvider = 'ViewportProvider';

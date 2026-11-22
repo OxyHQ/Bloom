@@ -1310,3 +1310,19 @@ fn sortable_chip_rows_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn viewports_are_checked() {
+    let imports = "import { Viewport, Text } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check("export const x = () => Viewport(Viewport(Text('A')).root());\n");
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("Viewport(Text('A')).padding('md')", "Viewport has no modifier .padding()"),
+        ("Viewport(Text('A')).root(true)", ".root() takes 0 argument(s), not 1"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

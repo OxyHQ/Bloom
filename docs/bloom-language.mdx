@@ -1930,6 +1930,24 @@ reader's actions move a chip by one. Only the order changes: `.onReorder(keys =>
 …)` (to hold a parent's scroll), `.trailing(...)` (after the chips, not part of
 the order), `.disabled()` and `.label()`.
 
+### Viewports
+
+```ts
+Viewport(Embed(<ReviewsScroll />)).root()          // a dialog's own chain
+const Histogram = view(() => {
+  const { inView, targetProps } = useInView({ threshold: 1, once: true });
+  return Embed((render) => <View {...targetProps}>{render(RatingBar('Five stars', 75).reveal({ visible: inView }))}</View>);
+});
+```
+
+Bloom's `viewport` is a provider and two hooks, and the language takes them as
+they are. `Viewport(...)` is Bloom's `ViewportProvider`, a view around what it
+holds with no box of its own; `.root()` starts a chain of its own (a portaled
+dialog's). Its hooks (`useViewportBinding` on the scroller, `useInView` on the
+target) are used as they are inside a `view()`: they hand the props a native
+host takes (its ref and its layout and scroll callbacks), so the host they go on
+is an `Embed`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2337,7 +2355,8 @@ and `@oxy.so/bloom-data` beside it.
   social buttons,
   media galleries,
   data tables,
-  sortable chip rows.
+  sortable chip rows,
+  viewports.
 
 **Not built**
 

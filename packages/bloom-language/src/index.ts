@@ -370,6 +370,10 @@ export type {
 export { SortableChip, SortableChipRow } from './controls/sortable-chip-row';
 export type { SortableChipRowView, SortableChipView } from './controls/sortable-chip-row';
 
+// Viewports (controls/viewport.tsx)
+export { Viewport } from './controls/viewport';
+export type { ViewportView } from './controls/viewport';
+
 // Inputs (controls/inputs.tsx)
 export {
   Checkbox,
