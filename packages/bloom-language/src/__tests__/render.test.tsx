@@ -65,9 +65,9 @@ describe('rendering through React Native hosts', () => {
   it('a grid stretches its chart cards only when asked: Bloom’s stretchItems', () => {
     const grid = (node: ReturnType<typeof Grid>) =>
       hosts(mount(toElement(node)), 'ResponsiveGrid')[0]?.props;
-    expect(grid(Grid(Text('a')).stretchItems()).stretchItems).toBe(true);
-    expect(grid(Grid(Text('a')).stretchItems(false)).stretchItems).toBe(false);
-    expect(grid(Grid(Text('a'))).stretchItems).toBeUndefined();
+    expect(grid(Grid(Text('a')).stretchItems())?.stretchItems).toBe(true);
+    expect(grid(Grid(Text('a')).stretchItems(false))?.stretchItems).toBe(false);
+    expect(grid(Grid(Text('a')))?.stretchItems).toBeUndefined();
   });
 
   it('a stack is one View with its spacing, alignment and box', () => {
