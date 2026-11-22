@@ -5,9 +5,8 @@ import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
-import type { ControlDensity } from '../src/tokens';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -54,24 +53,22 @@ const rows: ParityCase[] = [
     ),
   },
   // A row takes a control's densities; `comfortable` is a content density.
-  ...ENUMS.density
-    .filter((density): density is ControlDensity => density !== 'comfortable')
-    .map((density) => ({
-      name: `a ${density} row, active, pressable`,
-      language: () =>
-        toElement(
-          L.ListItem('Inbox').density(density).active(true).onPress(press).onLongPress(press),
-        ),
-      bloom: () => (
-        <ListItem
-          title="Inbox"
-          density={density === 'compact' ? 'compact' : 'comfortable'}
-          active
-          onPress={press}
-          onLongPress={press}
-        />
+  ...CONTROL_DENSITIES.map((density) => ({
+    name: `a ${density} row, active, pressable`,
+    language: () =>
+      toElement(
+        L.ListItem('Inbox').density(density).active(true).onPress(press).onLongPress(press),
       ),
-    })),
+    bloom: () => (
+      <ListItem
+        title="Inbox"
+        density={density === 'compact' ? 'compact' : 'comfortable'}
+        active
+        onPress={press}
+        onLongPress={press}
+      />
+    ),
+  })),
   {
     name: 'a compact row of its own padding, disabled, a link',
     language: () =>

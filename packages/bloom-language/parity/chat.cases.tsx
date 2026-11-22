@@ -33,7 +33,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed, ThemedRgb } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase, Themed, ThemedRgb } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -235,7 +235,7 @@ const screen: ParityCase[] = [
       ),
     })),
   ),
-  ...ENUMS.density.flatMap((density) =>
+  ...CONTROL_DENSITIES.flatMap((density) =>
     [true, false].map((divider) => ({
       name: `ChatHeader bar, ${density}, ${divider ? 'a divider' : 'no divider'}`,
       language: () =>

@@ -11,7 +11,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
 
 const press = () => {};
 
@@ -131,7 +131,7 @@ export const TENANCY_CASES: ParityCase[] = [
     language: () => toElement(L.TenancyTimeline(EVENTS)),
     bloom: () => <TenancyTimeline events={EVENTS} />,
   },
-  ...ENUMS.density.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `TenancyTimeline ${density}, named, its state words`,
     language: () =>
       toElement(

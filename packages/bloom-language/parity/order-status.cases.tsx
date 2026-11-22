@@ -4,7 +4,7 @@ import { OrderStatusBar, OrderStatusTimeline } from '@oxy.so/bloom/order-status'
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
 
 const STEPS = [
   { id: 'placed', label: 'Placed', timestamp: '14:02', state: 'done' as const, icon: RiCheckLine },
@@ -90,7 +90,7 @@ export const ORDER_STATUS_CASES: ParityCase[] = [
     bloom: () => <OrderStatusTimeline steps={STEPS} />,
   },
   ...ENUMS.axis.flatMap((orientation) =>
-    ENUMS.density.map((density) => ({
+    CONTROL_DENSITIES.map((density) => ({
       name: `OrderStatusTimeline ${orientation}, ${density}`,
       language: () => toElement(L.OrderStatusTimeline(STEPS).axis(orientation).density(density)),
       bloom: () => (

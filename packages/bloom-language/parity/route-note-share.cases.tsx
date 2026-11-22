@@ -8,7 +8,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
 
 const press = () => {};
 const pick = (_id: string) => {};
@@ -21,7 +21,7 @@ const STOPS = [
 const TWO = STOPS.slice(0, 2);
 
 const routes: ParityCase[] = [
-  ...(['default', 'compact'] as const).map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `RouteStops ${density}`,
     language: () =>
       toElement(

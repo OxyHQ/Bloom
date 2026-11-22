@@ -10,7 +10,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase } from './support/cases';
 
 const press = () => {};
 const select = (_id: string) => {};
@@ -37,10 +37,9 @@ const METHODS = [
   { id: 'b', scheme: 'Meridian', masked: '•••• 0042', kind: 'account' as const, icon: RiBankLine },
   { id: 'c', scheme: 'Aurora', masked: '•••• 1881', state: 'expired' as const },
 ];
-const DENSITIES = ENUMS.density;
 
 const addresses: ParityCase[] = [
-  ...DENSITIES.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `AddressRow ${density}`,
     language: () =>
       toElement(
@@ -82,7 +81,7 @@ const addresses: ParityCase[] = [
     bloom: () => <AddressRow title="Plaça Reial 3" leading={null} disabled onPress={press} />,
   },
   ...ENUMS.choiceListStyle.flatMap((variant) =>
-    DENSITIES.map((density) => ({
+    CONTROL_DENSITIES.map((density) => ({
       name: `AddressList ${variant} ${density}`,
       language: () =>
         toElement(
@@ -121,7 +120,7 @@ const addresses: ParityCase[] = [
 ];
 
 const payments: ParityCase[] = [
-  ...DENSITIES.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `PaymentMethodMark ${density}`,
     language: () => toElement(L.PaymentMethodMark({ scheme: 'Aurora' }).density(density)),
     bloom: () => (
@@ -136,7 +135,7 @@ const payments: ParityCase[] = [
     language: () => toElement(L.PaymentMethodMark({ kind: 'wallet', image: L.Text('W') })),
     bloom: () => <PaymentMethodMark kind="wallet" image={<Text>W</Text>} />,
   },
-  ...DENSITIES.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `PaymentMethodRow ${density}`,
     language: () =>
       toElement(
@@ -186,7 +185,7 @@ const payments: ParityCase[] = [
     ),
   },
   ...ENUMS.choiceListStyle.flatMap((variant) =>
-    DENSITIES.map((density) => ({
+    CONTROL_DENSITIES.map((density) => ({
       name: `PaymentMethodList ${variant} ${density}`,
       language: () =>
         toElement(

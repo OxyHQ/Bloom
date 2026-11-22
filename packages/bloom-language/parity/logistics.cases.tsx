@@ -11,10 +11,9 @@ import {
 } from '@oxy.so/bloom/shipment-request';
 import { VehiclePicker } from '@oxy.so/bloom/vehicle-picker';
 
-import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { CONTROL_DENSITIES, type ParityCase, Themed } from './support/cases';
 
 const press = () => {};
 const set = () => {};
@@ -175,7 +174,7 @@ const SIGNATURE = {
 };
 
 export const LOGISTICS_CASES: ParityCase[] = [
-  ...ENUMS.density.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `CarrierQuoteCard ${density}`,
     language: () =>
       toElement(
@@ -308,7 +307,7 @@ export const LOGISTICS_CASES: ParityCase[] = [
       <EarningsPayoutRow payout={PAYOUT} action={<Button onPress={press}>Details</Button>} />
     ),
   },
-  ...ENUMS.density.map((density) => ({
+  ...CONTROL_DENSITIES.map((density) => ({
     name: `JobCard ${density}`,
     language: () =>
       toElement(
