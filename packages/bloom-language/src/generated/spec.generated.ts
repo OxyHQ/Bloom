@@ -2488,7 +2488,9 @@ export const ENVIRONMENT_TAKERS = {
   },
   "buttonStyle": {
     "own": "style",
-    "kinds": []
+    "kinds": [
+      "button"
+    ]
   }
 } as const;
 
