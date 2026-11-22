@@ -1416,6 +1416,35 @@ Bloom's `vendor-card`: `VendorCard(name, options?)`.
 - A menu row and a vendor card take `.onPress()` themselves. A vendor card's
   promo tone keeps Bloom's name (`promoTone`) in its options.
 
+### Checkout summary, delivery slots and order confirmation
+
+```ts
+CheckoutSummary(undefined, { address, delivery, payment: PaymentMethodRow(card), price, confirm })
+CheckoutConfirm({ label: 'Place order', amount, onConfirm: place }).loading(placing)
+DeliverySlotPicker([slot, setSlot], days, windows, { day, onDayChange: setDay, asap })
+OrderConfirmation({ reference, status, address, items: Text(summary) }).density('compact')
+```
+
+Bloom's `checkout-summary`: `CheckoutSummaryRow(label, options?)` (its
+`content`, `leading` and `badge` children; it takes `.onPress()` itself),
+`CheckoutSummary(content?, options?)` (its address, delivery, note, extras,
+price and confirm are Bloom's data, its `payment` a child, its content what
+it holds beyond the rows) and `CheckoutConfirm(options?)` (its `terms` and
+`footer` children; `.loading()` is Bloom's `busy`). Bloom's `delivery-slot`:
+`DeliverySlotDays(day, days, options?)` (its binding the day chosen),
+`DeliverySlotOption(label, options?)` (its `badge` a child; `.onPress()` its
+own) and `DeliverySlotPicker(window, days, windows, options?)` (its binding
+the window chosen; the day chosen and its handler, the ASAP option and the
+words are data; its `empty` a child). Bloom's `order-confirmation`:
+`OrderConfirmation(options?)` (its `mark`, `items` and `footer` children, its
+`markSize` a space token; its status, address, facts and actions Bloom's
+data).
+
+- `.disabled()` on the rows, the confirm and the slots; `.loading()` on the
+  confirm and the picker; the days' and the picker's `.tint()` is the colour
+  role their scrolling edges fade into (Bloom's `fadeColor`); a confirmation's
+  `.density()` is Bloom's comfortable or compact `variant`.
+
 ### Media cards
 
 ```ts

@@ -7,6 +7,9 @@ import { LYRICS } from './lyrics';
 import { MEDIA_CARDS } from './media-cards';
 import { PAYMENT_METHODS } from './payment-method';
 import { ADDRESSES } from './address';
+import { ORDER_CONFIRMATIONS } from './order-confirmation';
+import { DELIVERY_SLOTS } from './delivery-slot';
+import { CHECKOUT_SUMMARIES } from './checkout-summary';
 import { VENDOR_CARDS } from './vendor-card';
 import { MENU_ITEMS } from './menu-item';
 import { CARTS } from './cart-panel';
@@ -70,4 +73,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MEDIA_CARDS,
   ...LYRICS,
   ...CREATOR_STUDIO,
+  ...CHECKOUT_SUMMARIES,
+  ...DELIVERY_SLOTS,
+  ...ORDER_CONFIRMATIONS,
 };

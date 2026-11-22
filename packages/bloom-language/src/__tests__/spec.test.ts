@@ -269,6 +269,17 @@ import type {
   TrackMetadataFormView,
   TrackUploadRowView,
 } from '../controls/creator-studio';
+import type {
+  CheckoutSummaryRowView,
+  CheckoutSummaryView,
+  CheckoutConfirmView,
+} from '../controls/checkout-summary';
+import type {
+  DeliverySlotDaysView,
+  DeliverySlotOptionView,
+  DeliverySlotPickerView,
+} from '../controls/delivery-slot';
+import type { OrderConfirmationView } from '../controls/order-confirmation';
 import type { ContentFit } from '../tokens';
 
 const BLOOM_SRC = join(__dirname, '../../../../src');
@@ -631,7 +642,21 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TopTracksTableView>, Of<'topTracksTable'>>,
       Same<MethodsOf<TrackMetadataFormView>, Of<'trackMetadataForm'>>,
       Same<MethodsOf<TrackUploadRowView>, Of<'trackUploadRow'>>,
+      Same<MethodsOf<CheckoutSummaryRowView>, Of<'checkoutSummaryRow'>>,
+      Same<MethodsOf<CheckoutSummaryView>, Of<'checkoutSummary'>>,
+      Same<MethodsOf<CheckoutConfirmView>, Of<'checkoutConfirm'>>,
+      Same<MethodsOf<DeliverySlotDaysView>, Of<'deliverySlotDays'>>,
+      Same<MethodsOf<DeliverySlotOptionView>, Of<'deliverySlotOption'>>,
+      Same<MethodsOf<DeliverySlotPickerView>, Of<'deliverySlotPicker'>>,
+      Same<MethodsOf<OrderConfirmationView>, Of<'orderConfirmation'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

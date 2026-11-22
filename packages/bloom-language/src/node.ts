@@ -29,6 +29,9 @@ import type { LyricsKind } from './controls/lyrics';
 import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
+import type { OrderConfirmationKind } from './controls/order-confirmation';
+import type { DeliverySlotKind } from './controls/delivery-slot';
+import type { CheckoutSummaryKind } from './controls/checkout-summary';
 import type { VendorCardKind } from './controls/vendor-card';
 import type { MenuItemKind } from './controls/menu-item';
 import type { CartKind } from './controls/cart-panel';
@@ -711,7 +714,10 @@ export type NodeKind =
   | VendorCardKind
   | MediaCardKind
   | LyricsKind
-  | CreatorStudioKind;
+  | CreatorStudioKind
+  | CheckoutSummaryKind
+  | DeliverySlotKind
+  | OrderConfirmationKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {

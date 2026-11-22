@@ -16,6 +16,7 @@ import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
 import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
 import { GENERIC_CASES } from '../../parity/generic.cases';
 import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
+import { CHECKOUT_DELIVERY_ORDER_CASES } from '../../parity/checkout-delivery-order.cases';
 import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
 import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
@@ -109,3 +110,6 @@ export const CartMenuItemsAndVendors: Story = { args: { cases: CART_MENU_VENDOR_
 export const MediaCards: Story = { args: { cases: MEDIA_CARD_CASES } };
 export const Lyrics: Story = { args: { cases: LYRICS_CASES } };
 export const CreatorStudio: Story = { args: { cases: CREATOR_STUDIO_CASES } };
+export const CheckoutSummaryDeliveryAndOrders: Story = {
+  args: { cases: CHECKOUT_DELIVERY_ORDER_CASES },
+};

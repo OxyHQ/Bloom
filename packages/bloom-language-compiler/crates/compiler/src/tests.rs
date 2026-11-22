@@ -924,3 +924,22 @@ fn the_creator_studio_is_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_checkout_summary_delivery_slots_and_order_confirmation_are_checked() {
+    let imports = "import { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow, DeliverySlotDays, DeliverySlotOption, DeliverySlotPicker, OrderConfirmation, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (b, d, w) => VStack(CheckoutSummaryRow('a').disabled(), CheckoutSummary().label('Review'), CheckoutConfirm().loading().disabled(), DeliverySlotDays(b, d).tint('primary').disabled(), DeliverySlotOption('a').disabled(), DeliverySlotPicker(b, d, w).loading().tint('surface'), OrderConfirmation().density('compact'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("DeliverySlotDays(b, d).tint('teal')", "Unknown color token 'teal' for .tint()"),
+        ("OrderConfirmation().density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("CheckoutSummary().disabled()", "CheckoutSummary has no modifier .disabled()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b, d) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

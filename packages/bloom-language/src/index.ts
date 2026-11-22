@@ -775,3 +775,31 @@ export type {
   TrackUploadRowOptions,
   TrackUploadRowView,
 } from './controls/creator-studio';
+// Checkout summary (controls/checkout-summary.tsx)
+export { CheckoutSummaryRow, CheckoutSummary, CheckoutConfirm } from './controls/checkout-summary';
+export type {
+  CheckoutConfirmOptions,
+  CheckoutConfirmView,
+  CheckoutSummaryOptions,
+  CheckoutSummaryRowOptions,
+  CheckoutSummaryRowView,
+  CheckoutSummaryView,
+} from './controls/checkout-summary';
+
+// Delivery slots (controls/delivery-slot.tsx)
+export { DeliverySlotDays, DeliverySlotOption, DeliverySlotPicker } from './controls/delivery-slot';
+export type {
+  DeliverySlotDaysOptions,
+  DeliverySlotDaysView,
+  DeliverySlotOptionOptions,
+  DeliverySlotOptionView,
+  DeliverySlotPickerOptions,
+  DeliverySlotPickerView,
+} from './controls/delivery-slot';
+
+// Order confirmation (controls/order-confirmation.tsx)
+export { OrderConfirmation } from './controls/order-confirmation';
+export type {
+  OrderConfirmationOptions,
+  OrderConfirmationView,
+} from './controls/order-confirmation';
