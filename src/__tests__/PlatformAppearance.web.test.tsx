@@ -97,7 +97,7 @@ it('turns the window controls opaque with the rest of the material', () => {
   for (const key of ['close', 'minimize', 'zoom']) {
     const paint = container.querySelector(`[data-testid="controls-${key}-paint"]`) as HTMLElement;
     // A host of the one material, with the opaque body the attribute's rule paints.
-    expect(paint.classList.contains('bloom-surface-paint')).toBe(true);
+    expect(paint.hasAttribute('data-bloom-surface-paint')).toBe(true);
     expect(paint.style.getPropertyValue('--bloom-surface-solid')).toMatch(/^rgb\(/);
   }
 });

@@ -100,7 +100,7 @@ function NativeActiveWash({ active, style }: WashProps & { active: boolean }) {
   useEffect(() => {
     opacity.value = withTiming(target, { duration: FADE_MS, easing: FADE });
   }, [opacity, target]);
-  const fade = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
   return (
     <Animated.View
       style={[styles.overlay, { backgroundColor: theme.colors.contrast50 }, fade, style]}

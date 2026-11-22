@@ -1,5 +1,6 @@
 import { useContext } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { IS_WEB } from '../styles/platform';
 import { ThemeScopeContext } from './color-scope/context';
 import { buildScopeVars } from './color-scope/style-builder';
 import { parseRgba } from './color-utils';
@@ -18,8 +19,6 @@ export type ColorToken = Camel<CanonicalToken>;
  * token's CSS variable on the web.
  */
 export type ColorTokens = Readonly<Record<ColorToken, string>>;
-
-const IS_WEB = Platform.OS === 'web';
 
 function camel(name: string): string {
   return name.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
