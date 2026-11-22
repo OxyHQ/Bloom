@@ -91,11 +91,8 @@
  * to another preset paints its own `--background`; a root-computed alias keeps
  * the app-wide one — `theme/color-scope/seed-scope.ts` has the mechanism).
  *
- * It is WEB-ONLY, and deliberately: propagating a custom property to a native
- * subtree means react-native-css's `VariableContextProvider`, i.e. the
- * `nativewind` OPTIONAL peer, and a panel's own surface must not depend on
- * whether a consumer installed it. Native's answer is the hook, which is also
- * the only form that is correct on both platforms — so cross-platform code
+ * It is WEB-ONLY: native has no CSS custom properties. Native's answer is the
+ * hook, which is also the only form that is correct on both platforms — so cross-platform code
  * reads `useSurfaceFill()` and a web-only fork may read the variable.
  */
 import { useThemeRecipe } from '../theme/use-theme-paint';
