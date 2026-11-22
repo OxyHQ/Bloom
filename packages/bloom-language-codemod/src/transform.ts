@@ -1721,12 +1721,6 @@ export function transformSource(source: string, options: TransformOptions): File
         return n.Identifier.check(expression) && kindOf(sources.get(expression.name)) === 'icon'
           ? [{ $: 'icon', name: expression.name }]
           : undefined;
-      case 'embed':
-        return n.JSXElement.check(expression) ||
-          n.JSXFragment.check(expression) ||
-          elementReads.has(expression)
-          ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
-          : undefined;
       case 'literal': {
         const token = n.BooleanLiteral.check(expression)
           ? map?.[String(expression.value)]
@@ -1744,7 +1738,8 @@ export function transformSource(source: string, options: TransformOptions): File
           : [{ node: expression, hole: 'items' }];
       case 'element':
         if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
-        return n.JSXFragment.check(expression)
+        // A fragment, or a `const` holding an element, is drawn as it is.
+        return n.JSXFragment.check(expression) || elementReads.has(expression)
           ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
           : undefined;
       case 'row': {

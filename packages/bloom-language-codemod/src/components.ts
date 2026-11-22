@@ -26,9 +26,9 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  *   binding and tint (`.refreshable([refreshing, () => onRefresh()], tint)`);
  * - `contentStyle`: a static content container style of paddings and a gap, as
  *   `.contentMargins(edge, token)` and `.spacing(token)`;
- * - `embed`: an element, or a `const` holding one, drawn as it is (`Embed`), never converted;
  * - `items`: an array of data (any expression but an element or a string), carried as it is;
- * - `element`: a JSX element or fragment only, as a view (a name may be a component);
+ * - `element`: a JSX element, as a view; a fragment or a `const` holding an element, embedded
+ *   (any other name may be a component);
  * - `row`: FlashList's `renderItem` as an arrow of `{ item, index }` returning an
  *   element, the node's row `(item, index) => view`.
  */
@@ -45,7 +45,6 @@ export type Form =
   | 'literal'
   | 'refresh'
   | 'contentStyle'
-  | 'embed'
   | 'items'
   | 'element'
   | 'row';
@@ -835,14 +834,15 @@ export const KEPT: Readonly<Record<string, string>> = {
 /**
  * A Bloom `Screen` returned by a route (parity/screen.cases.tsx, `ScreenHost`):
  * its one child is the body's root, its props the root's screen modifiers. Its
- * header is drawn as it is: a `Header` node would be the system bar on iOS in
- * a native stack, where Bloom's PageHeader stays in the page.
+ * header element is its view: Bloom's PageHeader is `Header(…).inPage()`, the
+ * Screen's own header on every platform (a bare `Header` would be the system
+ * bar on iOS in a native stack).
  */
 export const SCREEN: ComponentRule = {
   node: 'screen',
   children: true,
   props: {
-    header: p('header', 'embed'),
+    header: p('header', 'element'),
     scroll: p('screenScroll', 'token', tokens('screenScroll')),
     kind: p('screenKind', 'token', tokens('screenKind')),
     documentScroll: p('documentScroll', 'flag'),

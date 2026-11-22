@@ -245,13 +245,13 @@ export const C = () => <View className={isOpen() ? 'p-2' : 'p-4'} />;
 import { PageHeader } from '@oxy.so/bloom/page-header';
 import { View } from 'react-native';
 export default function Route({ id }) {
-  if (!id) return <Screen><View className="p-4" /></Screen>;
+  if (!id) return <Screen header={<PageHeader title="B" />}><View className="p-4" /></Screen>;
   const header = <PageHeader title="A" />;
   return <Screen header={header} scroll="content"><View /></Screen>;
 }
 `);
     expect(flat(result.code)).toContain(
-      "export default screen(function Route({ id }) { if (!id) return VStack().padding('all', 'lg').header(false); const header = toElement(Header('A').inPage()); return VStack().header(Embed(header)).screenScroll('content'); });",
+      "export default screen(function Route({ id }) { if (!id) return VStack().padding('all', 'lg').header(Header('B').inPage()); const header = toElement(Header('A').inPage()); return VStack().header(Embed(header)).screenScroll('content'); });",
     );
     expect(result.code).toContain("import { screen } from '@oxy.so/bloom-language/router';");
     expect(result.fixtures.filter((f) => f.screen)).toHaveLength(2);

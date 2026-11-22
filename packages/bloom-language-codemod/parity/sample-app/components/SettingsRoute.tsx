@@ -10,7 +10,7 @@ export default function SettingsRoute() {
   const [ready] = useState(true);
   if (!ready)
     return (
-      <Screen>
+      <Screen header={<PageHeader title={t('settings.title')} />}>
         <Text className="text-sm text-muted-foreground">{t('settings.loading')}</Text>
       </Screen>
     );
