@@ -6,11 +6,9 @@
  * height measurement, swipe wrapper and the imperative wiggle handle. The visual
  * row itself is `ToastContent` (or the consumer's `jsx`).
  *
- * W6 — INVARIANT: THE MEASURED `Animated.View` IS `style`-ONLY, NEVER
- * `className`'d. Under react-native-css on web, `onLayout` never fires for a
- * className'd component, which would strand every row at
- * `ESTIMATED_TOAST_HEIGHT` and pile the stack on top of itself. Measurement runs
- * a three-tier ladder — `getBoundingClientRect()` (RN >= 0.83 refs and RN-Web),
+ * W6 — THE MEASURED `Animated.View` MUST REPORT ITS HEIGHT: a row that never
+ * measures is stranded at `ESTIMATED_TOAST_HEIGHT` and piles the stack on top
+ * of itself. Measurement runs a three-tier ladder — `getBoundingClientRect()` (RN >= 0.83 refs and RN-Web),
  * then `measureInWindow` (older New Arch), then `onLayout` as the safety net —
  * so no single platform quirk can silently degrade it. A consumer's `toast.custom`
  * JSX is unaffected: the ref sits on this engine wrapper, not on their element.
