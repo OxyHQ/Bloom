@@ -1215,6 +1215,8 @@ export interface DragSpec {
 }
 
 export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
+/** How a text's change plays (`.contentTransition()`): the whole text rolls, or each character that changed. */
+export type ContentTransition = 'roll' | 'numeric';
 
 export type Modifier =
   | {
@@ -1538,7 +1540,7 @@ export type Modifier =
   | {
       readonly kind: 'contentTransition';
       readonly key: string;
-      readonly value: 'roll';
+      readonly value: ContentTransition;
       readonly direction: number | undefined;
     }
   | { readonly kind: 'loop'; readonly key: string }
@@ -2942,7 +2944,7 @@ export class Node {
   swipe(direction: SwipeDirection, onSwipe: () => void): Node {
     return this.with({ kind: 'swipe', key: 'swipe', direction, onSwipe });
   }
-  contentTransition(value: 'roll', direction?: number): Node {
+  contentTransition(value: ContentTransition, direction?: number): Node {
     return this.with({ kind: 'contentTransition', key: 'contentTransition', value, direction });
   }
   loop(): Node {
@@ -4314,11 +4316,12 @@ export interface TextView extends ViewModifiers<TextView> {
   /** Web: where a line may break inside a word (`all`, `words`); native text keeps its platform's breaking. */
   wordBreak(value: WordBreak): TextView;
   /**
-   * SwiftUI's `.contentTransition(.numericText(value:))`: a change of the text
-   * inside an animation rolls the old text out and the new one in, up when
-   * `direction` rose and down when it fell.
+   * How a change of the text inside an animation plays, up when `direction`
+   * rose and down when it fell: `roll` rolls the old text out and the new one
+   * in; `numeric` (SwiftUI's `.contentTransition(.numericText(value:))`) rolls
+   * each character that changed, the rest staying put.
    */
-  contentTransition(value: 'roll', direction?: number): TextView;
+  contentTransition(value: ContentTransition, direction?: number): TextView;
 }
 export interface LottieView extends ViewModifiers<LottieView> {
   /** Plays again from the start each time it ends. */
