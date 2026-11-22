@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
-import { styled } from 'react-native-css';
-import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 
 import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
@@ -41,12 +40,8 @@ function RatingBarComponent({
   labelStyle,
   displayStyle,
   trackStyle,
-  fillClassName,
-}: RatingBarProps & {
-  labelStyle?: StyleProp<TextStyle>;
-  displayStyle?: StyleProp<TextStyle>;
-  trackStyle?: StyleProp<ViewStyle>;
-}) {
+  fillStyle,
+}: RatingBarProps) {
   const theme = useTheme();
   const safeMax = max > 0 ? max : 1;
 
@@ -74,7 +69,7 @@ function RatingBarComponent({
         valueText={display}
         testID={testID ? `${testID}-bar` : undefined}
         fillTestID={testID ? `${testID}-fill` : undefined}
-        fillClassName={fillClassName}
+        fillStyle={fillStyle}
         style={[
           labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 },
           trackStyle,
@@ -102,12 +97,5 @@ function RatingBarComponent({
   );
 }
 
-export const RatingBar = memo(
-  styled(RatingBarComponent, {
-    className: 'style',
-    labelClassName: 'labelStyle',
-    displayClassName: 'displayStyle',
-    trackClassName: 'trackStyle',
-  }),
-);
+export const RatingBar = memo(RatingBarComponent);
 RatingBar.displayName = 'RatingBar';
