@@ -80,6 +80,8 @@ const TRACKED = new Set(
  * with what differs. They stay JSX until the language or the table changes.
  */
 function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
+  if (mods.some((m) => m.args.some((a) => typeof a === 'string' && /^[a-zA-Z]\w*\/\w+$/.test(a))))
+    return 'a colour at an opacity: the language writes a color-mix() inline on the web, which react-native-web drops (its normalizeColor takes no color-mix), so nothing is drawn';
   const fixed = /^(?:text|bg|border)-(white|black)\/(\d+)$/.exec(utility);
   if (fixed && !Number.isInteger((Number(fixed[2]) * 255) / 100))
     return `NativeWind writes ${fixed[1]} at ${fixed[2]}% as an 8-bit hex alpha (rounded down); the language writes ${Number(fixed[2]) / 100}`;
