@@ -182,6 +182,12 @@ import type { MediaInsetBorderView } from '../controls/media-inset-border';
 import type { SortablePhotoGridView } from '../controls/sortable-media';
 import type { HoverCardView } from '../controls/hover-card';
 import type { MenubarMenuView, MenubarView } from '../controls/menubar';
+  DataTableView,
+  DataColumnView,
+  DataTableFilterView,
+  DataTableSearchView,
+  DataTableSelectView,
+} from '../controls/data-table';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
   SettingsDateFieldView,
@@ -505,7 +511,17 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<NotificationView>, Of<'notification'>>,
       Same<MethodsOf<LinkPreviewView>, Of<'linkPreview'>>,
       Same<MethodsOf<SocialButtonView>, Of<'socialButton'>>,
+      Same<MethodsOf<DataTableView>, Of<'dataTable'>>,
+      Same<MethodsOf<DataColumnView>, Of<'dataColumn'>>,
+      Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
+      Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
+      Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

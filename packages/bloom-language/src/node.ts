@@ -53,6 +53,8 @@ import type { CategoryBarKind } from './controls/category-bar';
 import type { VideoSlot } from './controls/media-flight';
 import type { VideoSurfaceType } from '@oxy.so/bloom/media-flight';
 import type { MediaFlightKind } from './controls/media-flight';
+import type { DataTableKind, DataTableStyle } from './controls/data-table';
+import type { DataTableCellContext, DataTableSize, DataTableSort } from '@oxy.so/bloom/data-table';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
 import type { ExpandableTextKind } from './controls/expandable-text';
@@ -883,6 +885,16 @@ export interface ValueModifiers {
   // Inline markdown (controls/markdown.tsx)
   plainRun: (text: string) => Child;
   linkView: (link: InlineMarkdownLink) => Child | undefined;
+  // Data tables (controls/data-table.tsx)
+  cell: (context: DataTableCellContext<never>) => Child;
+  sortable: boolean;
+  sortsDescendingFirst: boolean;
+  summary: string | number | Child;
+  sorting: Binding<DataTableSort | null>;
+  rowSelection: Binding<readonly string[]>;
+  pageSize: number;
+  sizeToggle: Binding<DataTableSize>;
+  bordered: boolean;
 
   // Context menus (controls/context-menu.tsx)
   presentedAt: Binding<ContextMenuAnchor | null>;
@@ -1065,7 +1077,8 @@ export type Modifier =
         | RatingStyle
         | DotsStyle
         | StepperStyle
-        | GalleryStyle;
+        | GalleryStyle
+        | DataTableStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1305,6 +1318,7 @@ export type NodeKind =
   | SortableMediaKind
   | HoverCardKind
   | MenubarKind
+  | DataTableKind
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind
@@ -1643,7 +1657,8 @@ export class Node {
       | DotsStyle
       | StepperStyle,
       | SegmentedStyle
-      | GalleryStyle,
+      | GalleryStyle
+      | DataTableStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -3153,6 +3168,35 @@ export class Node {
   }
   linkView(value: (link: InlineMarkdownLink) => Child | undefined): Node {
     return this.set('linkView', value);
+  }
+
+  // Data tables (controls/data-table.tsx)
+  cell(value: (context: DataTableCellContext<never>) => Child): Node {
+    return this.set('cell', value);
+  }
+  sortable(value = true): Node {
+    return this.set('sortable', value);
+  }
+  sortsDescendingFirst(value = true): Node {
+    return this.set('sortsDescendingFirst', value);
+  }
+  summary(value: string | number | Child): Node {
+    return this.set('summary', value);
+  }
+  sorting(value: Binding<DataTableSort | null>): Node {
+    return this.set('sorting', value);
+  }
+  rowSelection(value: Binding<readonly string[]>): Node {
+    return this.set('rowSelection', value);
+  }
+  pageSize(value: number): Node {
+    return this.set('pageSize', value);
+  }
+  sizeToggle(value: Binding<DataTableSize>): Node {
+    return this.set('sizeToggle', value);
+  }
+  bordered(value: boolean): Node {
+    return this.set('bordered', value);
   }
 
   // Context menus (controls/context-menu.tsx)

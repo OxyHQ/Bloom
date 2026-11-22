@@ -104,3 +104,7 @@ export const Notification = 'Notification';
 export const LinkPreviewCard = 'LinkPreviewCard';
 export const SocialButton = 'SocialButton';
 export const ZoomableMediaGallery = 'ZoomableMediaGallery';
+export const DataTable = 'DataTable';
+export const DataTableFilter = 'DataTableFilter';
+export const DataTableSearch = 'DataTableSearch';
+export const DataTableSelect = 'DataTableSelect';

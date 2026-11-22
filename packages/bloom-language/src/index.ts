@@ -571,6 +571,23 @@ export type {
   InputGroupContent,
   InputGroupView,
 } from './controls/input-group';
+// Data tables (controls/data-table.tsx)
+export {
+  DataColumn,
+  DataTable,
+  DataTableFilter,
+  DataTableSearch,
+  DataTableSelect,
+} from './controls/data-table';
+export type {
+  DataColumnView,
+  DataTableFilterView,
+  DataTableLabels,
+  DataTableSearchView,
+  DataTableSelectView,
+  DataTableStyle,
+  DataTableView,
+} from './controls/data-table';
 
 // Animated checks (controls/animated-check.tsx)
 export { AnimatedCheck } from './controls/animated-check';
