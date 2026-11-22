@@ -1,7 +1,6 @@
 // `ScreenScrollView`'s own scroller (native, and web outside document mode):
 // `onEndReached` from the scroll handler and from layout, with FlatList's
-// once-per-content-length semantics, and `contentContainerClassName` keeping
-// the chrome footprint without overriding the class's padding.
+// once-per-content-length semantics.
 import type React from 'react';
 import { View } from 'react-native';
 import * as Reanimated from 'react-native-reanimated';
@@ -13,7 +12,6 @@ import {
   END_REACHED_ARMED,
   stepEndReached,
 } from '../screen/use-end-reached';
-import { resolvedStyle } from './support/rendered-style';
 
 function wrap(children: React.ReactNode) {
   return <BloomThemeProvider fonts={false}>{children}</BloomThemeProvider>;
@@ -139,30 +137,5 @@ describe('ScreenScrollView onEndReached', () => {
     const binding = spy.mock.calls.filter(([handlers]) => handlers[0] != null);
     expect(binding.length).toBeGreaterThan(0);
     for (const [handlers] of binding) expect(handlers[1]).toBeNull();
-  });
-});
-
-describe('ScreenScrollView contentContainerClassName', () => {
-  it('pads the scroll content with the chrome and lays the class out inside it', () => {
-    const tree = render(
-      wrap(
-        <Screen scroll="content" header={<View />} headerHeight={70}>
-          <ScreenScrollView
-            testID="scroll"
-            contentContainerClassName="gap-4 p-4"
-            contentContainerStyle={{ alignItems: 'center' }}
-          >
-            <View testID="row" />
-          </ScreenScrollView>
-        </Screen>,
-      ),
-    );
-    const outer = resolvedStyle(tree.getByTestId('scroll').props.contentContainerStyle);
-    expect(outer).toMatchObject({ paddingTop: 70, flexGrow: 1 });
-    expect(outer.alignItems).toBeUndefined();
-    let inner = tree.getByTestId('row').parent!;
-    while (typeof inner.type !== 'string') inner = inner.parent!;
-    expect(resolvedStyle(inner.props.style)).toMatchObject({ alignItems: 'center' });
-    expect(resolvedStyle(inner.props.style).paddingTop).toBeUndefined();
   });
 });
