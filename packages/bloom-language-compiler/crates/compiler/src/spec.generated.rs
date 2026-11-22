@@ -49,7 +49,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("typeRamp", &["large-title-regular", "large-title-medium", "large-title-semibold", "large-title-bold", "display-1-regular", "display-1-medium", "display-1-semibold", "display-1-bold", "display-2-regular", "display-2-medium", "display-2-semibold", "display-2-bold", "display-3-regular", "display-3-medium", "display-3-semibold", "display-3-bold", "display-4-regular", "display-4-medium", "display-4-semibold", "display-4-bold", "title-1-regular", "title-1-medium", "title-1-semibold", "title-1-bold", "title-2-regular", "title-2-medium", "title-2-semibold", "title-2-bold", "title-3-regular", "title-3-medium", "title-3-semibold", "title-3-bold", "headline-regular", "headline-medium", "headline-semibold", "headline-bold", "body-regular", "body-medium", "body-semibold", "body-bold", "body-2-regular", "body-2-medium", "body-2-semibold", "body-2-bold", "caption-1-regular", "caption-1-medium", "caption-1-semibold", "caption-1-bold", "caption-2-regular", "caption-2-medium", "caption-2-semibold", "caption-2-bold"]),
     ("edge", &["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing", "left", "right"]),
     ("borderEdge", &["all", "top", "bottom", "leading", "trailing", "left", "right"]),
-    ("role", &["button", "link", "header", "image", "text", "none", "checkbox", "radio", "tab", "radiogroup", "tablist", "list"]),
+    ("role", &["button", "link", "header", "image", "text", "none", "checkbox", "radio", "tab", "radiogroup", "tablist", "list", "alert", "progressbar", "imagebutton", "summary"]),
     ("buttonShape", &["circle", "pill", "fit"]),
     ("linkTone", &["primary", "secondary", "text"]),
     ("appearance", &["solid", "subtle", "outline", "plain"]),

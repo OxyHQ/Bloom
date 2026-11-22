@@ -297,7 +297,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `blur()` | Bloom's floating island (`BlurIsland`) |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
-| `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity |
+| `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity. `role` is React Native's `accessibilityRole` of the same name: `button` `link` `header` `image` `text` `none` `checkbox` `radio` `tab` `radiogroup` `tablist` `list` `alert` `progressbar` `imagebutton` `summary` |
 | `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
 | `listMarker(m)` | a stack only: a web list behind `disc` or `decimal` markers (see [Layout](#layout)) |
 | `contentFit`, `aspectRatio`, `tint`, `crossFade`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |

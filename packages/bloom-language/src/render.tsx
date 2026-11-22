@@ -274,6 +274,10 @@ const ROLE: Record<Role, string | undefined> = {
   radiogroup: 'radiogroup',
   tablist: 'tablist',
   list: 'list',
+  alert: 'alert',
+  progressbar: 'progressbar',
+  imagebutton: 'imagebutton',
+  summary: 'summary',
 };
 
 const ENV_KINDS: ReadonlySet<string> = new Set(ENVIRONMENT);
