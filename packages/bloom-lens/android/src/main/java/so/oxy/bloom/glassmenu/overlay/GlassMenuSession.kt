@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
+import so.oxy.bloom.glassmenu.backdrop.GlassBackdrop
 import android.graphics.Shader
 import android.os.Build
 import android.view.MotionEvent
@@ -293,13 +294,13 @@ internal class GlassMenuSession(
     jelly.deformMenu(out, if (opensFromRight) -1f else 1f, if (opensAbove) -1f else 1f, density, anchor.config.jelly)
   }
 
-  fun draw(canvas: Canvas, backdrop: RenderNode, limits: Rect) {
+  fun draw(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
     drawRoot(canvas, backdrop, limits)
     child?.draw(canvas, backdrop, limits)
   }
 
-  private fun drawRoot(canvas: Canvas, backdrop: RenderNode, limits: Rect) {
+  private fun drawRoot(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
     val frame = motion.frame
     liveBounds(shown)
     // While a stacked submenu is open the root recedes: the glass shrinks and the rows dim.
