@@ -15,7 +15,7 @@ RN + Web. Families: `src/<name>/`, published subpaths/root exports
 
 - scripts/generate-platform-exports.mjs owns `package.json#exports`, `#typesVersions` + web barrels. `prebuild` overwrites edits. TS5.9 `moduleResolution: "node"` ignores exports: NO subpath previously typechecked; typesVersions fixes it + is ignored by node16/bundler
 - Wildcards: `./icons/Ri*`, never `./icons/*` (hits `index`: built icons/remix/index.js vs Metro index.ts, not index.tsx; silent mismatch). `existsSync` cannot validate `*`; verify-package.mjs expands tarball patterns, requires IDENTICAL names across conditions
-- Forks have TWO barrels: native index.ts, web index.web.ts (`browser` condition), never `index.native.*`. Exception: three `theme/native-root-vars.*` files; native imports react-native-css/native-internal, absent on web/tsc
+- Forks have TWO barrels: native index.ts, web index.web.ts (`browser` condition), never `index.native.*`.
 - Relative imports ignore export conditions: web-only fork importers use `.web`, neutral bare (`.web` breaks native). Avatar-group hoverCard false pass: one importer correct, another bare; Storybook Vite resolved `.web.tsx`. Old reachability/browser checks missed it; web-fork-reachability.test.ts checks both. docs/avatar-group.mdx
 - Keep `react-native` conditions split into `types` + `default`. Bare strings make consumers typecheck Bloom .tsx + import react-dom/undeclared optional peers
 - Required postbuild `verify:package`: ship all packed exports; RN has no src fallback. No `prepack`/`prepare`: packs never rebuild (`--ignore-scripts`)
@@ -40,7 +40,7 @@ The worklets Babel plugin workletizes a Gesture Handler 3 hook's config object (
 
 ## Consumer CSS
 
-Web: Tailwind/NativeWind `@source`-scan Bloom/Services lib/. Standalone Vite needs `@custom-variant web (@supports selector(div > div));`; else bounded desktop panels collapse to 0px while compact works. Missing CSS silently breaks RNW flex/gap/sizes despite inline colors; native unaffected
+Bloom needs none of this (docs/no-nativewind.mdx); it applies to an app's OWN `className` until the codemod moves it. Web: Tailwind/NativeWind `@source`-scan Bloom/Services lib/. Standalone Vite needs `@custom-variant web (@supports selector(div > div));`; else bounded desktop panels collapse to 0px while compact works. Missing CSS silently breaks RNW flex/gap/sizes despite inline colors; native unaffected
 
 Expo/Metro: import @oxy.so/app-preset/css/base.css atop `global.css`, first in app/_layout.tsx, with @tailwindcss/postcss. Vite: @tailwindcss/vite + stylesheet scanning both lib/s. `create-oxy-app` scaffolds it
 
@@ -137,7 +137,7 @@ Two surfaces; CenteredDialog/ResponsiveSheet removed without shims. API/migratio
 
 - `BloomThemeHead` is explicit prepaint head exception: shared generated token CSS + preference script, authorized by host nonce/hashes. Runtime styles use adopted sheets; SSR recipes use `ServerStyleSheet` under `ssrStyles`. `useThemePaint` is final style output; `useTheme` stays concrete for color arithmetic/native
 
-BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyColorPresetVars (never raw HSL triples). getResolvedTokens feeds BOTH platforms. Presets: APP_COLOR_PRESETS keys. BloomColorScope emits canonical --x + Tailwind --color-x. Contract: docs/design-tokens.mdx
+BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyColorPresetVars (never raw HSL triples). getResolvedTokens feeds BOTH platforms. Presets: APP_COLOR_PRESETS keys. BloomColorScope emits canonical --x (no --color-x aliases). Contract: docs/design-tokens.mdx
 
 - buildSeedScopeVars withScopeAliases/ROLE vocabulary hazard is import-graph gated (same docs)
 - ColorEngine is NAMESPACE via theme/color-engine/index.ts; ports internal. Servers: SAME barrel as `@oxy.so/bloom/color-engine`, no React/RN, no copy (test-color-engine-subpath.mjs). useTheme/BloomThemeProvider/tokens stay flat for fleet consumers; raw argbFromHex/quantizeImage has no external UI consumers
@@ -191,8 +191,10 @@ Font hazards: base64 `.woff2` inlining, apply-font-faces.ts empty stub, `FontLoa
 - Platform guards cannot prune optional peers. Inject native adapters into shared factories; docs/screen.mdx
 - Toast engine is vendored: no `sonner`/`sonner-native`/`nanoid`. Web bundles DO import reanimated + gesture-handler
 
-## Style + `className`
+## Style
 
+- ONE mechanism (docs/no-nativewind.mdx): StyleSheet styles from tokens; colours from `useColorTokens()`/`createTokenStyles()` (scope value on native, `var(--x)` on web; adaptive themes differ from `useTheme().colors`, so a colour a class painted reads tokens). No `className`, `styled()` or react-native-css. RNW drops a component's `className`: a Bloom-own class on an RN host silently lost its adopted CSS; use a `dataSet` hook (`webDataSet`). Parity: scripts/no-nativewind (native dump vs NativeWind baseline, Chrome web check)
+- Bullets below that name `className` record hazards of the removed NativeWind path, kept for apps that still style with it
 - Override padding/margin with matching LONGHANDS. RNW ranks paddingHorizontal/marginHorizontal CSS shorthands above left/right despite array order; native differs. SettingsListItem32px leftInset painted8px since release; prop-array tests miss cascade
 - Typography: styled(RNText). With caller className omit inline font-size/line-height/weight/color defaults: react-native-css merges utilities first; inline defeats text/font/leading. Font family may remain
 - className belongs on PARENT-laid-out node. Extra Animated.View press wrapper silently disables native layout classes despite working visual classes/web. One module-scope Animated.createAnimatedComponent shares transform/visuals/style/className (button/Button.tsx)
