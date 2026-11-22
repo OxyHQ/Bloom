@@ -103,6 +103,7 @@ the element JSX with the reason `Node:prop`.
 | `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
 | `VirtualList` | `VirtualList(data, (item, index) => row).itemKey().onEndReached(action, threshold)` |
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
+| `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads
@@ -151,6 +152,20 @@ its element converted where it can be); a named function may read the rest of
 FlashList's argument, so it is a reason. Its header, footer and empty state are
 JSX elements only: a name there may be a component, which the node does not draw.
 
+A `Dialog` driven by `open` and `onClose` is a presented dialog, wherever it
+is (a component that is a dialog returns it): `.presented([open, close])`, the
+binding that sets it false calling `onClose` with no arguments, as Bloom does.
+A name or a member is called with none (`() => onClose()`) and an arrow of no
+parameters is carried as it is; a handler that takes parameters may read one,
+and is a reason (`Dialog:open`), as an `open` without `onClose` is. Bloom's
+imperative `control` (`useDialogControl()`) has no binding and stays JSX
+(`Dialog:control`). Its `placement` is `.presentAt()`: a static token, or an
+object of static tokens with its `base` (`{ base: 'bottom', md: 'center' }` is
+`.presentAt('bottom', { md: 'center' })`, drawn as the same object). Its
+`width` and `maxWidth` join one `.frame()` (numeric space tokens, `maxWidth={400}`
+is `'400'`), its `contentPadding` is `.padding()`, and `actions` and `header`
+are data carried as they are. `detached` and `panelStyle` have no modifier.
+
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).
 
@@ -158,10 +173,16 @@ A route's `Screen` is its `screen()` body (`SCREEN`): a default-exported
 function component (named, not async, with no return type, its name read
 nowhere else) whose every return is a Bloom `Screen` becomes
 `export default screen(function Name(props) { … })`, each `Screen` the body's
-root: its one child, with the Screen's props as the root's screen modifiers
-(`scroll` is `.screenScroll()`, `kind` `.screenKind()`, `documentScroll`,
-`headerPlacement`, `contentClearance`, `navigationScope`, `colorPreset`,
-`testID`). No `header` is `.header(false)`; a header element is its view, so
+root: its one child, or a `Group` of its children when it has several (a
+comment or a condition among them, or one condition), a fragment's children
+each one of them, as React draws them; the Screen's props are the root's
+screen modifiers (`scroll` is `.screenScroll()`, `kind` `.screenKind()`,
+`documentScroll`, `headerPlacement`, `contentClearance`, `navigationScope`,
+`colorPreset`, `testID`). Its `bottomBar` is `.footer(view, { placement,
+keyboard })`, its `bottomBarPlacement` and `bottomBarKeyboardBehavior` the
+options; the bar is an element, a fragment or a `const` holding one, and any
+other value (a name that may hold `undefined`, where Bloom draws no bar) is a
+reason (`screen:bottomBar`). No `header` is `.header(false)`; a header element is its view, so
 Bloom's PageHeader is `.header(Header(…).inPage())`, the Screen's own header
 on every platform (a bare `Header` is the system bar on iOS in a native
 stack), and a `const` holding the element is `.header(Embed(header))`.
@@ -169,8 +190,7 @@ The route converts whole: one Screen that stays JSX keeps the others JSX
 (`screen:route`). Its parity draws the root with the language's `ScreenHost`,
 as `screen()` does.
 
-Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, `Dialog`
-(presented from the view that owns it, `.dialog(isPresented, Dialog(...))`) and
+Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, and
 `DropdownMenu` with its parts (the language's `Menu` is the platform's own menu
 on Android and iOS, Bloom's DropdownMenu only on the web and as a fallback),
 and `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's

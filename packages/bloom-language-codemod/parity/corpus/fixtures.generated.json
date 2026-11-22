@@ -1566,6 +1566,98 @@
   "appColors": null
  },
  {
+  "name": "components/Dialogs.tsx:8",
+  "before": "<Dialog open={true} onClose={(() => {})} title=\"Post as\" label=\"Post as\">\n      <View className=\"gap-4 p-4\">\n        <Text className=\"text-sm\">Choose an account</Text>\n      </View>\n    </Dialog>",
+  "after": "toElement(LDialog(VStack(LText('Choose an account').font('14').leading('20px')).padding('all', 'lg').spacing('lg')).title('Post as').label('Post as').presented([true, () => (() => {})()]))",
+  "bindings": {
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "Dialog: LDialog"
+  ],
+  "classes": [
+   "gap-4",
+   "p-4",
+   "text-sm"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Dialogs.tsx:18",
+  "before": "<Dialog\n      open={true}\n      onClose={() => {}}\n      label=\"Sources\"\n      placement={{ base: 'bottom', md: 'center' }}\n      contentPadding={0}\n      maxWidth={400}\n      actions={ITEMS}\n      dismissOnBackdrop={false}\n    >\n      <Text>Where it came from</Text>\n    </Dialog>",
+  "after": "toElement(LDialog(LText('Where it came from')).label('Sources').presentAt('bottom', { md: 'center' }).padding('none').frame({ maxWidth: '400' }).buttons(ITEMS).dismissOnBackdrop(false).presented([true, () => {}]))",
+  "bindings": {
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "Dialog: LDialog",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Dialogs.tsx:35",
+  "before": "<View className=\"gap-2\">\n      <Text>Shortcuts</Text>\n      <Dialog\n        open={true}\n        onClose={(() => {})}\n        header={ITEMS}\n        placement=\"center\"\n      >\n        <View className=\"px-5\" />\n      </Dialog>\n    </View>",
+  "after": "toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "Dialog: LDialog",
+   "toElement"
+  ],
+  "classes": [
+   "gap-2",
+   "px-5"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Rows.tsx:19",
   "before": "<Pressable onPress={() => {}} className=\"flex-row items-center gap-3 px-4 py-3 active:opacity-70\">\n      <RiHeart3Line size=\"sm\" />\n      <View className=\"gap-1\">\n        <Text variant=\"body-semibold\" numberOfLines={1}>\n          {'⟨0⟩'}\n        </Text>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨1⟩'} likes</Text>\n      </View>\n    </Pressable>",
   "after": "toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))",
@@ -2140,6 +2232,125 @@
   ],
   "classes": [
    "text-sm"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/ThreadRoute.tsx:12",
+  "before": "<Screen header={<PageHeader title={'⟨1⟩'} />}>\n        <>\n          <Text className=\"text-sm\">{'⟨0⟩'}</Text>\n          <View className=\"p-4\" />\n        </>\n      </Screen>",
+  "after": "Group(LText('⟨0⟩').font('14').leading('20px'), VStack().padding('all', 'lg')).header(Header('⟨1⟩').inPage())",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "VStack",
+   "Group",
+   "Header"
+  ],
+  "classes": [
+   "text-sm",
+   "p-4"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/ThreadRoute.tsx:20 (false)",
+  "before": "<Screen\n      scroll=\"content\"\n      bottomBar={<View className=\"px-4 py-2 bg-card\" />}\n      bottomBarPlacement=\"overlay\"\n      bottomBarKeyboardBehavior=\"follow\"\n    >\n      {/* The messages, then a note under them. */}\n      <ScreenScrollView>\n        <Text>{'⟨0⟩'}</Text>\n      </ScreenScrollView>\n      {false ? <Text className=\"text-xs text-muted-foreground\">{'⟨2⟩'}</Text> : null}\n    </Screen>",
+  "after": "Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), false ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "VStack",
+   "Group",
+   "Header",
+   "ScrollView"
+  ],
+  "classes": [
+   "px-4",
+   "py-2",
+   "bg-card",
+   "text-xs",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/ThreadRoute.tsx:20",
+  "before": "<Screen\n      scroll=\"content\"\n      bottomBar={<View className=\"px-4 py-2 bg-card\" />}\n      bottomBarPlacement=\"overlay\"\n      bottomBarKeyboardBehavior=\"follow\"\n    >\n      {/* The messages, then a note under them. */}\n      <ScreenScrollView>\n        <Text>{'⟨0⟩'}</Text>\n      </ScreenScrollView>\n      {true ? <Text className=\"text-xs text-muted-foreground\">{'⟨2⟩'}</Text> : null}\n    </Screen>",
+  "after": "Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), true ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "VStack",
+   "Group",
+   "Header",
+   "ScrollView"
+  ],
+  "classes": [
+   "px-4",
+   "py-2",
+   "bg-card",
+   "text-xs",
+   "text-muted-foreground"
   ],
   "within": [],
   "themed": false,

@@ -30,7 +30,10 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `element`: a JSX element, as a view; a fragment or a `const` holding an element, embedded
  *   (any other name may be a component);
  * - `row`: FlashList's `renderItem` as an arrow of `{ item, index }` returning an
- *   element, the node's row `(item, index) => view`.
+ *   element, the node's row `(item, index) => view`;
+ * - `placement`: Bloom's responsive placement, a static token
+ *   (`placement="bottom"`) or an object of them (`{ base: 'bottom', md: 'center' }`),
+ *   as `.presentAt(base, tiers)`.
  */
 export type Form =
   | 'string'
@@ -47,7 +50,8 @@ export type Form =
   | 'contentStyle'
   | 'items'
   | 'element'
-  | 'row';
+  | 'row'
+  | 'placement';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -66,6 +70,25 @@ export interface PropRule {
    * takes, as the bare modifier (`true`) or none (`false`).
    */
   readonly marks?: Readonly<Record<string, boolean>>;
+  /**
+   * The modifier's one object argument's key (`maxWidth` to
+   * `.frame({ maxWidth })`): the props of one modifier join one object.
+   */
+  readonly key?: string;
+  /**
+   * The close handler Bloom calls with no arguments when the reader dismisses
+   * (`onClose`): the prop's value and it are one binding, `[open, () => onClose()]`,
+   * a modifier that ends the chain (`.presented()`). Either alone is a reason.
+   */
+  readonly closedBy?: string;
+  /**
+   * Props that are the modifier's options object after its value
+   * (`bottomBarPlacement` to `.footer(view, { placement })`), each by its key
+   * and form; given without this prop, each is a reason.
+   */
+  readonly options?: Readonly<
+    Record<string, readonly [key: string, form: Form, map?: Readonly<Record<string, string>>]>
+  >;
 }
 
 /**
@@ -125,6 +148,8 @@ export interface ComponentRule {
   readonly parts?: readonly string[];
   /** The compound component (`module#export`) this is a part of: alone, it stays JSX. */
   readonly partOf?: string;
+  /** A fragment among its children is its children, each one of them (React draws them so). */
+  readonly fragments?: true;
 }
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
@@ -174,6 +199,11 @@ const indicator = (axis: 'vertical' | 'horizontal'): PropRule => ({
   ...p('scrollIndicators', 'literal', INDICATOR),
   args: [axis],
 });
+
+/** Bloom's dialog placements (`bottom`, `center`…), the language's `.presentAt()` tokens. */
+export const DIALOG_PLACEMENT = tokens('dialogPlacement');
+/** The breakpoints a responsive placement names over its `base`, `.presentAt()`'s tiers. */
+export const PLACEMENT_TIERS: readonly string[] = ['sm', 'md', 'lg', 'xl'];
 
 /** Bloom's spacing in points (`12`) as the language's space token (`md`), the spec's scale turned round. */
 export const SPACE: Readonly<Record<string, string>> = Object.fromEntries(
@@ -234,6 +264,29 @@ const SETTINGS_SELECT: ComponentRule = {
 
 /** `module#export` to its rule. */
 export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
+  // parity/overlays.cases.tsx, a presented dialog: its `open` and `onClose` one binding.
+  '@oxy.so/bloom/dialog#Dialog': {
+    node: 'Dialog',
+    children: true,
+    props: {
+      open: { ...p('presented', 'boolean'), closedBy: 'onClose' },
+      title: p('title', 'string'),
+      description: p('message', 'string'),
+      label: p('label', 'string'),
+      actions: p('buttons', 'items'),
+      placement: p('presentAt', 'placement'),
+      header: p('header', 'items'),
+      footer: p('footer', 'view'),
+      width: { ...p('frame', 'token', SPACE), key: 'width' },
+      maxWidth: { ...p('frame', 'token', SPACE), key: 'maxWidth' },
+      contentPadding: p('padding', 'token', SPACE),
+      minSideGutter: p('sideGutter', 'token', SPACE),
+      maxHeightRatio: p('maxHeightRatio', 'number'),
+      dismissOnBackdrop: p('dismissOnBackdrop', 'boolean'),
+      scrollable: p('scrollable', 'flag'),
+      testID: p('testID', 'string'),
+    },
+  },
   // parity/inputs.cases.tsx, Toggle (Switch).
   '@oxy.so/bloom/switch#Switch': {
     node: 'Toggle',
@@ -817,8 +870,6 @@ export const REMOVED: Readonly<Record<string, string>> = {
  * draws them, but not as a node a region can hold in their place.
  */
 export const KEPT: Readonly<Record<string, string>> = {
-  '@oxy.so/bloom/dialog#Dialog':
-    'the language presents a dialog from the view that owns it (`.dialog(isPresented, Dialog(...))`), not as an element in place',
   '@oxy.so/bloom/dropdown-menu#DropdownMenu':
     'the language’s `Menu` is the platform’s menu (the lens menu on Android, SwiftUI’s on iOS), Bloom’s DropdownMenu only on the web and as a fallback; no parity case pairs it with a DropdownMenu and its parts',
   '@oxy.so/bloom/screen#Screen':
@@ -831,18 +882,30 @@ export const KEPT: Readonly<Record<string, string>> = {
     'a Bloom AppShellPanel is a `Panel(id, content)` of an `AppLayout`’s `.panels()` in the language, not a node a region holds',
 };
 
+/** Bloom Screen's `bottomBarKeyboardBehavior`, the footer's `keyboard`: the same names. */
+const FOOTER_KEYBOARD = { hide: 'hide', visible: 'visible', follow: 'follow' } as const;
+
 /**
  * A Bloom `Screen` returned by a route (parity/screen.cases.tsx, `ScreenHost`):
- * its one child is the body's root, its props the root's screen modifiers. Its
- * header element is its view: Bloom's PageHeader is `Header(…).inPage()`, the
- * Screen's own header on every platform (a bare `Header` would be the system
- * bar on iOS in a native stack).
+ * its one child is the body's root, and several (a fragment's included) are a
+ * `Group`'s; its props are the root's screen modifiers. Its header element is
+ * its view: Bloom's PageHeader is `Header(…).inPage()`, the Screen's own header
+ * on every platform (a bare `Header` would be the system bar on iOS in a native
+ * stack). Its bottom bar is the screen's `.footer()`.
  */
 export const SCREEN: ComponentRule = {
   node: 'screen',
   children: true,
+  fragments: true,
   props: {
     header: p('header', 'element'),
+    bottomBar: {
+      ...p('footer', 'element'),
+      options: {
+        bottomBarPlacement: ['placement', 'token', tokens('chromePlacement')],
+        bottomBarKeyboardBehavior: ['keyboard', 'token', FOOTER_KEYBOARD],
+      },
+    },
     scroll: p('screenScroll', 'token', tokens('screenScroll')),
     kind: p('screenKind', 'token', tokens('screenKind')),
     documentScroll: p('documentScroll', 'flag'),

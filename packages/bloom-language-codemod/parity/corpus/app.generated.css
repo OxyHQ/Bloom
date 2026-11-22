@@ -295,8 +295,14 @@
 .px-4 {
   padding-inline: calc(4px * 4);
 }
+.px-5 {
+  padding-inline: calc(4px * 5);
+}
 .py-1\.5 {
   padding-block: calc(4px * 1.5);
+}
+.py-2 {
+  padding-block: calc(4px * 2);
 }
 .py-3 {
   padding-block: calc(4px * 3);
@@ -442,9 +448,19 @@
   --bloom-cx-padding-right: calc(4px * 4);
   --bloom-cx-rpadding-right: calc(4px * 4);
 }
+.px-5 {
+  --bloom-cx-padding-left: calc(4px * 5);
+  --bloom-cx-rpadding-left: calc(4px * 5);
+  --bloom-cx-padding-right: calc(4px * 5);
+  --bloom-cx-rpadding-right: calc(4px * 5);
+}
 .py-1\.5 {
   --bloom-cx-padding-top: calc(4px * 1.5);
   --bloom-cx-padding-bottom: calc(4px * 1.5);
+}
+.py-2 {
+  --bloom-cx-padding-top: calc(4px * 2);
+  --bloom-cx-padding-bottom: calc(4px * 2);
 }
 .py-3 {
   --bloom-cx-padding-top: calc(4px * 3);
