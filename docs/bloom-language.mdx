@@ -1689,7 +1689,7 @@ inside a screen, as Bloom's is.
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
 | `.safeAreaInset(edge, view, spacing?)`, `.safeAreaBar(edge, view)` | a view pinned at the `top` or `bottom` and the content padded by its height (see below) |
 | `.keyboardTaps('never' \| 'always' \| 'handled')` | `keyboardShouldPersistTaps` |
-| `.contentView((v) => v…)` | `contentContainerClassName`'s view: the content laid out in a view of its own inside the content container, which then grows to the viewport and pads only the screen's chrome (a content-sized screen reads no intrinsic height from it, as with a class). `v` takes the layout of one view: `padding`, `spacing`, `align`, `justify`, `wrap`, `axis`, `frame`, `flex`, `grow`, `shrink`, `basis`, `alignSelf` (the spec's `contentView.modifiers`), drawn as a vertical stack of them is, in layer order (a frame after its padding: one view); the content margins and spacing go on that view after its own, as Bloom draws `contentContainerStyle` after the class |
+| `.contentView((v) => v…)` | Bloom's `ScreenScrollView contentView` (what an app's `contentContainerClassName` drew): the content laid out in a view of its own inside the content container, which then grows to the viewport and pads only the screen's chrome (a content-sized screen reads no intrinsic height from it). `v` takes the layout of one view: `padding`, `spacing`, `align`, `justify`, `wrap`, `axis`, `frame`, `flex`, `grow`, `shrink`, `basis`, `alignSelf` (the spec's `contentView.modifiers`), drawn as a vertical stack of them is, in layer order (a frame after its padding: one view); the content margins and spacing go on that view after its own, as an app's `contentContainerStyle` followed its class |
 
 Only what the chain names reaches the scroll view, so Bloom's own defaults
 hold (`keyboardShouldPersistTaps="handled"` among them). Box modifiers
@@ -2351,12 +2351,13 @@ one; a `List`'s entries stay Bloom's data, each entry's star with it.
 `.emptyState()`, `.loading()` and `.loadingRows(n)`.
 
 `VirtualList(data, row)` is Bloom's: FlashList (or FlatList) on native, the
-virtualizer on the web. `row({ item, index })` returns the item's view: it is
-handed FlashList's `renderItem` argument as Bloom passes it, so an app's
-`renderPost` reads what it read before (`(info) => Embed(renderPost(info))`).
-Keep it stable (module scope, or a `useCallback`), and the list keeps its
-`renderItem`, so the engine re-renders a row only when its item changes, as with
-JSX. It takes `.itemKey()`, `.itemType()` (FlashList's recycling type),
+virtualizer on the web. `row({ item, index })` returns the item's view, or the
+element FlashList's own `renderItem` returns: it is handed FlashList's argument
+as Bloom passes it, so an app's named `renderPost` is the row as it is
+(`VirtualList(posts, renderPost)`), its element drawn unchanged. Keep it stable
+(module scope, or a `useCallback`), and the list keeps its `renderItem`, so the
+engine re-renders a row only when its item changes, as with JSX; a new arrow per
+render would redraw every memoised row. It takes `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
 `.refreshable([refreshing, setRefreshing])`, `.stickyIndices()`,
 `.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()`,
@@ -4857,10 +4858,11 @@ artifacts, ready for the release workflow.
 
 ## Built and not built
 
-The whole language is built. One line holds it (`feat/bloom-language-finish`,
-on `feat/bloom-language-all`): the core, spec and compiler with its
-distribution; the platform components and navigation; the primitives, numeric
-tokens, layout and style modifiers and variants; the motion engine; and
+The whole language is built. One line holds it (`feat/bloom-language-final`):
+the core, spec and compiler with its distribution; the platform components and
+navigation; the primitives, numeric tokens, layout and style modifiers and
+variants; the motion engine; the SwiftUI adoptions; the className codemod and
+the rules that move Bloom JSX; Bloom without NativeWind; and
 `@oxy.so/bloom-data` beside it. Each area below says what is built and, after
 **Decided**, what the language does not do on purpose, each a design decision
 with its reason. Nothing else is missing.
@@ -4882,14 +4884,15 @@ with its reason. Nothing else is missing.
   and the bottom bar's capsule; on the web react-native-web, the language's
   generated stylesheet and Bloom's web components (see
   [Platform components](#platform-components)). A server-rendered page carries
-  the sheets (`LanguageStyles`). Verified: Android on a Pixel, the web in
-  Chrome; iOS is typechecked and tested against stand-ins. **Decided:**
-  there is no renderer of the language's own beside React Native (no
-  SwiftUI or CSS output of a whole tree): Bloom's components are the look,
-  and the platform components above are drawn where they exist. On the web
-  `hoverGroup()` sets the `group` Bloom's `SubtleHover` reads, through
-  `react-native-css`, as Bloom does; it follows Bloom when Bloom drops
-  NativeWind (`feat/bloom-no-nativewind`, docs/no-nativewind.mdx).
+  the sheets (`LanguageStyles`), the ink sheets of colours at an opacity
+  included. Neither Bloom nor the language uses NativeWind, react-native-css
+  or Tailwind: a style is Bloom's tokens and the language's generated sheet,
+  and `hoverGroup()` spreads the marker Bloom's `SubtleHover` reads
+  (docs/no-nativewind.mdx). Verified: Android on a Pixel, the web in Chrome;
+  iOS is typechecked and tested against stand-ins. **Decided:** there is no
+  renderer of the language's own beside React Native (no SwiftUI or CSS
+  output of a whole tree): Bloom's components are the look, and the platform
+  components above are drawn where they exist.
 - **Primitives.** Stacks, `ZStack` (sized to its largest child, each placed at
   its `.alignment()`, SwiftUI's `ZStack(alignment:)`), `.overlay(view,
   alignment)` and `.background(view, alignment)`, `Spacer`, `Text` (Bloom's
@@ -4940,10 +4943,20 @@ with its reason. Nothing else is missing.
   steps through (the checkout sheet's step and draft) stays the app's state
   machine.
 - **Layout and style.** Distribution, placement, overlays, elevation, rings,
-  corners and their curve, text styles, links, truncation. **Decided:**
-  none.
+  corners and their curve (`'infinite'` is Tailwind's `rounded-full`, and a
+  corner or edge may be physical: left, right, top-left…), margins and
+  `flex()`, `childSpacing()` (Tailwind's `space-x`/`space-y`), hit testing
+  (`true`, `false`, `'children'`, `'self'`), text styles (`textTertiary`
+  among the roles, tabular figures, `textAlign('left' | 'right')`), links,
+  truncation, and `RawText` (React Native's own Text in Bloom's base face).
+  On native a class's fixed colour at an opacity, a leading and a tracking
+  are drawn as NativeWind's compiler rounded them, and on the web a colour
+  at an opacity is an ink (`var(--bl-…)`) a variant can override. An app
+  colour is a hex, an `rgb()`/`rgba()` of numbers or a CSS colour name both
+  platforms paint alike. **Decided:** none.
 - **Variants.** Breakpoints, the scheme, a view's own hover, focus
-  (`:focus-visible`) and press, `disabled` and the platforms; nested
+  (`:focus-visible`) and press, `disabled`, the platforms and an app's own
+  boolean (`.when(isOpen, …)`); nested
   variants; an app's colours and other app tokens (on the web the view's
   style picked in JS, as a Bloom component's); a material's padding, frame,
   border, corner and fill (a glass, an island, a concentric box), a Button's
@@ -4979,11 +4992,14 @@ with its reason. Nothing else is missing.
   keyframe tracks, `ViewThatFits`, and the Liquid Glass rules in the compiler.
   **Decided** (see Glass groups): on Android a group is one capsule (separate
   shapes that blend and a `glassID` morph between siblings would be an engine
-  rewrite); a union is the platform's merge; the web has no shared sampling.
-  **Not built:** SwiftUI's own `glassEffectID` for a group of anything but
-  glass icon buttons; the Liquid Glass rules across a
-  `view()`'s boundary (the compiler sees one expression). iOS is type-checked
-  and held against stand-ins, not run.
+  rewrite); a union is the platform's merge; the web has no shared sampling;
+  on iOS only a group of glass icon buttons morphs by SwiftUI's
+  `glassEffectID`, since those are the one glass the language draws as
+  SwiftUI controls, and any other glass is a React Native view under
+  `expo-glass-effect`, which has no identity to morph by; the compiler checks
+  the Liquid Glass rules within the one expression that builds a group, since
+  following views across a `view()`'s boundary is a type checker's work, not
+  a chain compiler's (the runtime draws what it is given).
 - **Motion** (`@oxy.so/bloom/motion`). Motion tokens and curves,
   `.animation()` (geometry and opacity; its scope reaches the `view()` bodies
   inside it), `.animatesColors()` (colours, opt-in: `transition-colors`; a
@@ -5020,11 +5036,16 @@ with its reason. Nothing else is missing.
   native-stack screens and not on the web.
 - **className.** The className table (`docs/bloom-language-classnames.mdx`)
   says what each utility the apps use becomes; the codemod
-  (`feat/bloom-language-codemod`) moves an app's `className` and Bloom JSX to
-  the language where it renders the same, and Bloom itself drops NativeWind
-  on `feat/bloom-no-nativewind` (docs/no-nativewind.mdx). **Decided:** a
-  utility the table flags is not moved until it is a modifier or a named
-  token: a raw value never becomes a number in the language.
+  (`packages/bloom-language-codemod`, docs/bloom-language-codemod.mdx) moves
+  an app's `className` and Bloom JSX to the language where it renders the
+  same, by a rule per Bloom component (a route's `PageHeader` as an in-page
+  `Header`, presented dialogs, a `Screen`'s several views as a `Group`, a
+  `VirtualList`'s rows and modifiers, a scroll's content class as its
+  `.contentView()`…), proven by its parity corpus. Bloom itself has no
+  NativeWind (docs/no-nativewind.mdx). **Decided:** a utility the table
+  flags is not moved until it is a modifier or a named token: a raw value
+  never becomes a number in the language; a difference the parity measures
+  stays JSX with its reason.
 - **Inputs** (see [Inputs](#inputs)). `TextField`, `SecureField`,
   `TextEditor`, `Field`, `Label`, `Toggle`, `Checkbox`, `RadioGroup`
   (swatches included), `Segmented`, `Picker` with their `Option` and
