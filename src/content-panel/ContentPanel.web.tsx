@@ -90,7 +90,13 @@ import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
+import {
+  cssLength,
+  WEB_DISPLAY_GRID,
+  WEB_OVERFLOW_CLIP,
+  WEB_POSITION_STICKY,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import { surfaceStyle as resolveShapeStyle } from '../shapes/surface-style';
 import { useColorTokens } from '../theme/color-tokens';
 
@@ -133,7 +139,8 @@ export const PANEL_BOTTOM_INSET = 8;
  */
 /** `flex: 1`, as the CSS shorthand computes it. */
 const FLEX_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' };
-const PANEL_RADIUS = 'var(--bloom-panel-radius)' as unknown as number;
+const PANEL_RADIUS = 'var(--bloom-panel-radius)';
+const CLIP_TO_BOX: WebCssStyle = { clipPath: 'inset(0)' };
 
 // The mask must reach the viewport edges for arbitrary shell gutters. Keep
 // horizontal bleed to one CSS pixel to cover fractional device-pixel seams
@@ -281,9 +288,9 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : framed
       ? { borderRadius: PANEL_RADIUS }
       : null;
-  const contentBase: ViewStyle | null =
+  const contentBase: WebCssStyle | null =
     (responsive && wide) || framed === true
-      ? ({ borderRadius: PANEL_RADIUS, overflowX: 'clip' } as unknown as ViewStyle)
+      ? { borderRadius: PANEL_RADIUS, overflowX: 'clip' }
       : null;
   // `fill`: the panel takes the height its parent gives it and the CONTENT
   // scrolls inside. `minHeight: 0` on both boxes is the whole trick — a flex
@@ -302,40 +309,34 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     surfaceBase,
     fill ? { minHeight: 0 } : null,
     boundToPanel
-      ? ({
-          display: 'grid',
+      ? {
+          display: WEB_DISPLAY_GRID,
           gridTemplateColumns: 'minmax(0,1fr)',
           gridTemplateRows: 'minmax(0,1fr)',
-        } as unknown as ViewStyle)
+        }
       : null,
     { backgroundColor: isPlain || paintsSurface ? 'transparent' : tokens.card },
   ];
-  const contentLayout: (ViewStyle | null)[] = [
+  const contentLayout: (ViewStyle | WebCssStyle | null)[] = [
     FLEX_FILL,
     contentBase,
     fill ? { minHeight: 0 } : null,
-    boundToPanel ? ({ gridArea: '1/1' } as unknown as ViewStyle) : null,
-    boundToPanel && !scrollable ? ({ overflow: 'clip' } as unknown as ViewStyle) : null,
-    fill && scrollable ? ({ overflowY: 'auto' } as unknown as ViewStyle) : null,
+    boundToPanel ? { gridArea: '1/1' } : null,
+    boundToPanel && !scrollable ? { overflow: WEB_OVERFLOW_CLIP } : null,
+    fill && scrollable ? { overflowY: 'auto' } : null,
   ];
-  const overlayBox = (zIndex: number): ViewStyle =>
+  const overlayBox = (zIndex: number): WebCssStyle =>
     boundToPanel
-      ? ({
-          gridArea: '1/1',
-          zIndex,
-          height: '100%',
-          width: '100%',
-          borderRadius: PANEL_RADIUS,
-        } as unknown as ViewStyle)
-      : ({
+      ? { gridArea: '1/1', zIndex, height: '100%', width: '100%', borderRadius: PANEL_RADIUS }
+      : {
           position: WEB_POSITION_STICKY,
           top: 8,
           zIndex,
-          height: 'calc(100dvh - 16px)',
+          height: cssLength('calc(100dvh - 16px)'),
           width: '100%',
           borderRadius: PANEL_RADIUS,
-          marginBottom: 'calc(-100dvh + 16px)',
-        } as unknown as ViewStyle);
+          marginBottom: cssLength('calc(-100dvh + 16px)'),
+        };
 
   // The viewport-mode overlays are sized and positioned from literal Tailwind
   // classes (`top-2`, `h-[calc(100dvh-16px)]`, the matching negative
@@ -360,11 +361,11 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const customInset = insetTop !== PANEL_TOP_INSET || insetBottom !== PANEL_BOTTOM_INSET;
   const insetStyle =
     !boundToPanel && customInset
-      ? ({
+      ? {
           top: insetTop,
-          height: `calc(100dvh - ${insetTop + insetBottom}px)`,
-          marginBottom: `calc(-100dvh + ${insetTop + insetBottom}px)`,
-        } as unknown as ViewStyle)
+          height: cssLength(`calc(100dvh - ${insetTop + insetBottom}px)`),
+          marginBottom: cssLength(`calc(-100dvh + ${insetTop + insetBottom}px)`),
+        }
       : undefined;
 
   const insetVars: WebCssStyle = {
@@ -431,7 +432,7 @@ ${surfaceMaterialCss('[data-bloom-panel-material]', 'var(--bloom-surface-fill)')
             pointerEvents="none"
             style={[
               overlayBox(30),
-              boundToPanel ? ({ clipPath: 'inset(0)' } as unknown as ViewStyle) : null,
+              boundToPanel ? CLIP_TO_BOX : null,
               overlayHidden,
               {
                 ...panelStyle,

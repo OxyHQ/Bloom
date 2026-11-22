@@ -188,17 +188,17 @@ function Scroller({
 const PAGE_CLEARANCE = 16;
 const AnimatedLayoutView = Animated.createAnimatedComponent(View);
 /** The reading column eases its width on the web (`ease-in-out`), unless motion is reduced. */
-const READING_TRANSITION = {
+const READING_TRANSITION: WebCssStyle = {
   transitionProperty: 'width,flex-basis,max-width,flex-grow',
   transitionDuration: '380ms',
   transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-} as unknown as ViewStyle;
+};
 /** `flex: 1` with `minHeight: 0`, as the classes computed it. */
 const FLEX_FILL_BOUNDED: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: '0%', minHeight: 0 };
-const READING_TRANSITION_REDUCED = {
-  ...(READING_TRANSITION as object),
+const READING_TRANSITION_REDUCED: WebCssStyle = {
+  ...READING_TRANSITION,
   transitionProperty: 'none',
-} as unknown as ViewStyle;
+};
 
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
