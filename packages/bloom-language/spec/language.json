@@ -554,7 +554,8 @@
     "rowActionStyle": ["plain", "outline"],
     "themeToggleStyle": ["sidebar", "segmented", "sidebar-segmented", "bare-segmented"],
     "libraryItemStyle": ["compact", "list", "grid", "rail"],
-    "queuePanelStyle": ["panel", "sheet"]
+    "queuePanelStyle": ["panel", "sheet"],
+    "selectionBarPlacement": ["floating", "inline"]
   },
   "glass": {
     "$comment": [
@@ -1726,7 +1727,27 @@
       "style": "queuePanelStyle"
     },
     "queuePanelRow": { "constructors": ["QueuePanelRow"], "modifiers": [] },
-    "recentlyPlayedList": { "constructors": ["RecentlyPlayedList"], "modifiers": [] }
+    "recentlyPlayedList": { "constructors": ["RecentlyPlayedList"], "modifiers": [] },
+    "trackList": {
+      "constructors": ["TrackList"],
+      "modifiers": ["density", "tint"],
+      "tint": "color"
+    },
+    "trackListHeader": {
+      "constructors": ["TrackListHeader"],
+      "modifiers": ["density", "tint"],
+      "tint": "color"
+    },
+    "trackRow": { "constructors": ["TrackRow"], "modifiers": ["density"] },
+    "trackRowSkeleton": { "constructors": ["TrackRowSkeleton"], "modifiers": ["density"] },
+    "trackListEmpty": { "constructors": ["TrackListEmpty"], "modifiers": [] },
+    "selectionBar": {
+      "constructors": ["SelectionBar"],
+      "modifiers": ["style"],
+      "style": "selectionBarPlacement"
+    },
+    "episodeRow": { "constructors": ["EpisodeRow"], "modifiers": [] },
+    "episodeList": { "constructors": ["EpisodeList"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
