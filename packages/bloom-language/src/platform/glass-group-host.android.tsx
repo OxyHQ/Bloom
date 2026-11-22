@@ -11,7 +11,11 @@ import { useTheme } from '@oxy.so/bloom/theme';
 import { regular } from '../glass';
 import { getLens } from './lens';
 import { glassTriggerConfig } from './lens-glass';
-import type { GlassGroupHostProps, PlatformGlassGroup } from './glass-group-host.types';
+import type {
+  GlassGroupHostProps,
+  PlatformGlassGroup,
+  SystemGlassGroup,
+} from './glass-group-host.types';
 
 function LensGlassGroup({ style, children }: GlassGroupHostProps) {
   const lens = getLens();
@@ -33,3 +37,6 @@ LensGlassGroup.displayName = 'BloomLensGlassGroup';
 export function getPlatformGlassGroup(): PlatformGlassGroup {
   return getLens() ? LensGlassGroup : null;
 }
+
+/** Only iOS draws a group as the system's own glass. */
+export const systemGlassGroup: SystemGlassGroup = null;
