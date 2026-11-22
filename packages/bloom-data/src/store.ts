@@ -763,10 +763,12 @@ export class Store {
     }
     const records: Array<PersistBatch['records'][number]> = [];
     for (const slot of this.dirtyRecords) {
+      const stored = slot.base ? this.trimmed(slot) : null;
+      if (stored === undefined) continue;
       records.push({
         type: slot.definition.type,
         id: slot.id,
-        json: slot.base ? JSON.stringify(slot.base) : null,
+        json: stored === null ? null : JSON.stringify(stored),
       });
     }
     const lists: Array<PersistBatch['lists'][number]> = [];
@@ -787,6 +789,22 @@ export class Store {
       .then(() => (this.persisterFailed ? undefined : persister.write({ records, lists })))
       .catch(reportError);
     return this.flushing;
+  }
+
+  /**
+   * What the durable copy stores of a held record: its base, through the
+   * entity's `persist.trim`. `undefined`: not written this time.
+   */
+  private trimmed(slot: Slot): Plain | undefined {
+    const base = slot.base as Plain;
+    const trim = slot.definition.persistTrim;
+    if (!trim) return base;
+    try {
+      return trim(base) ?? undefined;
+    } catch (error) {
+      reportError(error);
+      return undefined;
+    }
   }
 
   /** Reads records from the durable copy into memory, with the records their refs name. */

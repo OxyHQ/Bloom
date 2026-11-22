@@ -34,8 +34,12 @@ export interface EntityOptions<T> {
    * rows on disk to the newest `keep` written (memory holds whatever is
    * loaded): older rows are deleted with each write, so a restart restores
    * only the kept ones. Rows written in one batch count as equally new.
+   * `trim` decides what the durable copy stores of a record, each time it is
+   * written there: the record in the same shape (a ref field holds the
+   * referenced record's id), or `null` to skip writing it this time (its
+   * stored row stays as it was). Memory always keeps the whole record.
    */
-  persist?: boolean | { version?: number; keep?: number };
+  persist?: boolean | { version?: number; keep?: number; trim?: (record: T) => T | null };
   /** Whether stored rows not written for `persistMaxAgeMs` are dropped. Default true. */
   expires?: boolean;
   /**
@@ -121,6 +125,10 @@ export function entity<T extends object>(type: string, options: EntityOptions<T>
     persistVersion,
     expires: options.expires ?? true,
     persistLimit: typeof options.persist === 'object' ? options.persist.keep : undefined,
+    persistTrim:
+      typeof options.persist === 'object'
+        ? (options.persist.trim as EntityDefinition['persistTrim'])
+        : undefined,
     indexes: Object.entries(options.index ?? {}).map(([name, keyOf]) => [
       name,
       (record: Plain) => {
