@@ -1692,7 +1692,10 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   takes `.leadingView()` (its icon: a `GroupedSectionIcon(X).tint(tone)`, a
   glyph on a disc in one of Bloom's accent tones), `.description()`,
   `.value()`, `.trailing()` (a control), `.chevron()`, `.lines(n)`,
-  `.destructive()`, `.disabled()`, its own press and name, and the box
+  `.wrapControl()` (a wide control wraps below the title, Bloom's
+  `wrapControl`), `.descriptionLines(n)` (the description's lines, 2 by
+  default; `0` never truncates), `.destructive()`, `.disabled()`, its own
+  press and name, and the box
   modifiers as its own style. `GroupedSectionDivider().inset(space)` is a line
   between rows; `GroupedSectionCollapse(open, ...rows)` reveals and hides rows
   in place.
