@@ -4,12 +4,14 @@
  *
  *   node scripts/verify-colors-chrome.mjs <corpus dir>
  *
- * The language writes `bg-primary/60` as `color-mix(in oklab, var(--primary)
- * 60%, transparent)` inline; Tailwind writes its own `color-mix()` over its
- * theme variable. jsdom's style probe drops a mix of a variable, so the web
- * parity suite cannot compare them. Here Chrome computes both, for every
- * such class the corpus converted, under the theme's variables in each
- * scheme (`theme-variables.json`, written by the web parity suite), with the
+ * The language writes `bg-primary/60` as `var(--bl-primary-60)` inline (the
+ * `var()` react-native-web passes through), the custom property declared in
+ * its ink sheet as `color-mix(in oklab, var(--primary) 60%, transparent)`;
+ * Tailwind writes its own `color-mix()` over its theme variable. jsdom drops a
+ * mix's percentage, so the web parity suite cannot compare them exactly. Here
+ * Chrome computes both, for every such class the corpus converted, under the
+ * theme's variables in each scheme (`theme-variables.json`), with the ink
+ * sheet the language declared in that suite (`language-ink.css`) and the
  * app's own stylesheet (`app.generated.css`). Writes `parity-chrome-colors.json`.
  *
  * Chrome is puppeteer's download (`~/.cache/puppeteer`) unless CHROME_PATH
@@ -54,6 +56,7 @@ const table = JSON.parse(
 const fixtures = JSON.parse(readFileSync(join(corpus, 'fixtures.generated.json'), 'utf8'));
 const appCss = readFileSync(join(corpus, 'app.generated.css'), 'utf8');
 const variables = JSON.parse(readFileSync(join(corpus, 'theme-variables.json'), 'utf8'));
+const ink = readFileSync(join(corpus, 'language-ink.css'), 'utf8');
 
 const PROPERTY = { background: 'background-color', foreground: 'color', border: 'border-color' };
 const cases = [];
@@ -64,15 +67,9 @@ for (const name of new Set(fixtures.flatMap((f) => f.classes))) {
   );
   if (!m) continue;
   const [, modifier, role, amount] = m;
-  const css = spec.colors[role]?.[1];
-  if (!css) continue;
-  // The language's web value of a role (generate.mjs webColor): a fixed colour as it is, else its variable.
-  const web = css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`;
-  cases.push({
-    name,
-    property: PROPERTY[modifier],
-    language: `color-mix(in oklab, ${web} ${Number(amount)}%, transparent)`,
-  });
+  if (!spec.colors[role]) continue;
+  // The language's web value of a role at an opacity (style.ts webInk).
+  cases.push({ name, property: PROPERTY[modifier], language: `var(--bl-${role}-${amount})` });
 }
 
 const browser = await puppeteer.launch({ executablePath: chromePath(), headless: true });
@@ -84,7 +81,7 @@ try {
       .map(([k, v]) => `${k}: ${v};`)
       .join(' ');
     const html = `<!doctype html><html class="${scheme === 'dark' ? 'dark' : ''}"><head>
-<style>${appCss}</style><style>:root { ${root} } .probe { border-style: solid; border-width: 1px; }</style>
+<style>${appCss}</style><style>${ink}</style><style>:root { ${root} } .probe { border-style: solid; border-width: 1px; }</style>
 </head><body>${cases
       .map(
         (c, i) =>
