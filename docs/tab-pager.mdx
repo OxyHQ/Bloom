@@ -121,6 +121,21 @@ From `@oxy.so/bloom/tab-pager`, under a `TabPagerProvider`:
 | `progress` | The highlight's position in bar-item units, on the UI thread. |
 | `chromeProgress` | The bar's absence, 0 to 1, on the UI thread. |
 
+## `useTabPageContentPainted(painted)`
+
+From `@oxy.so/bloom/tab-pager`, in a page. While `painted` is `false` the pager
+keeps the pages beside this one unmounted, so they do not compete with its first
+paint; a drag still mounts them at once. Pass `true` once the page's first
+content is on screen: its first rows, an empty state or an error.
+
+```tsx
+const { data, error } = useFeed();
+useTabPageContentPainted(data !== undefined || error != null);
+```
+
+Outside a tab pager it does nothing; a page that never calls it counts as
+painted when it mounts.
+
 ## Native
 
 `TabPagerLayout` is an expo-router tabs navigator (`useTabsWithTriggers`,
@@ -140,11 +155,15 @@ that arbitrate a drag between the pager and a child that also scrolls.
   of an animated scroll through every page in between (unmounted and blank,
   ~680ms a tap on a Pixel 10 Pro). Reduced motion cuts.
 - **Pages are admitted lazily.** The focused page renders first; preloading
-  neighbours of the page the pager has come to rest on mount once the JS thread
-  is idle (`requestIdleCallback`; the next frame where there is none), or at once
-  when a drag starts. At launch a neighbour mounted on the next frame competed
-  with the first page's first paint (Mention: the Videos tab, its reel and its
-  player, next to Home).
+  neighbours of the page the pager has come to rest on mount on the frame after
+  that page has painted its first content, or at once when a drag starts. A page
+  whose content arrives later (a fetch, a cache read) says when it is on screen
+  with `useTabPageContentPainted(painted)` from `@oxy.so/bloom/tab-pager`; a page
+  that says nothing counts as painted when it mounts. Pass `true` for whatever
+  the page settles on first, rows, an empty state or an error. At launch a
+  neighbour mounted earlier competed with the first page's first paint (Mention:
+  the Videos tab, its reel and its player, next to Home); an idle callback was
+  not enough, since it fired in the short gaps between the first page's tasks.
 - **Only the page in front is active.** Each page's `Screen` is active while it is the page in front, as a covered stack scene's is not: a hidden page's videos, stickers and live avatars stop and its reselect, status bar and floating action yield, with no `active` prop on the page.
 - **Off-screen pages are cheap.** Each page is a `react-native-screens`
   `Screen`: the page in front is active, preloading bar pages and the resting
