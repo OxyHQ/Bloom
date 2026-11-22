@@ -10,6 +10,25 @@ interface Thread {
 }
 /** A conversation with its messages: only the two written last stay on disk. */
 const Thread = entity<Thread>('retention-thread', { id: (t) => t.id, persist: { keep: 2 } });
+interface Conversation {
+  id: string;
+  messages: Array<{ text: string; streaming?: boolean }>;
+  draft?: boolean;
+}
+/** Its last two finished messages go to disk; a draft is not written at all. */
+const Conversation = entity<Conversation>('retention-conversation', {
+  id: (c) => c.id,
+  persist: {
+    trim: (conversation) =>
+      conversation.draft
+        ? null
+        : {
+            ...conversation,
+            messages: conversation.messages.filter((m) => !m.streaming).slice(-2),
+          },
+  },
+});
+
 /** Unbounded, written in the same batches. */
 const Note = entity<Thread>('retention-note', { id: (n) => n.id, persist: true });
 
@@ -75,5 +94,29 @@ describe.each(Object.keys(copies))('persist.keep (%s)', (kind) => {
     expect(Thread.get('t2')).toBeUndefined();
     expect(Thread.get('t3')?.title).toBe('three');
     expect(Note.ids().sort()).toEqual(['n1', 'n2', 'n3']);
+  });
+
+  it('stores what trim returns, keeps the whole record in memory, and skips a null', async () => {
+    const copy = (copies[kind] as () => () => Persister)();
+    const first = launch(copy());
+    const messages = [{ text: 'a' }, { text: 'b' }, { text: 'c' }, { text: 'd', streaming: true }];
+    await write(first, () =>
+      Conversation.put([
+        { id: 'c1', messages },
+        { id: 'c2', messages: [{ text: 'saved' }] },
+      ]),
+    );
+    // A draft now: c2's write is skipped, so its stored row stays as it was.
+    await write(first, () =>
+      Conversation.merge('c2', { draft: true, messages: [{ text: 'saved' }, { text: 'draft' }] }),
+    );
+    expect(Conversation.get('c1')?.messages).toEqual(messages);
+    expect(Conversation.get('c2')?.messages).toHaveLength(2);
+    await first.close();
+
+    launch(copy());
+    await Conversation.load(['c1', 'c2']);
+    expect(Conversation.get('c1')?.messages).toEqual([{ text: 'b' }, { text: 'c' }]);
+    expect(Conversation.get('c2')).toEqual({ id: 'c2', messages: [{ text: 'saved' }] });
   });
 });
