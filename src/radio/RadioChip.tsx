@@ -39,6 +39,7 @@ function RadioChipComponent<Value extends string = string>({
   size: sizeProp,
   tone: toneProp,
   appearance = 'outline',
+  bare = false,
   style,
   labelStyle,
   testID,
@@ -82,24 +83,28 @@ function RadioChipComponent<Value extends string = string>({
   }, [checked, disabled, onValueChange, value]);
   const groupItem = useRadioGroupItem(value, disabled, activate);
   const defaultStyle: WebCssStyle = {
-    minHeight: height,
-    minWidth: height,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: border,
-    backgroundColor: highlighted
-      ? pressedSurface(theme.colors, background, foreground)
-      : background,
-    paddingLeft: size === 'xs' ? 10 : 14,
-    paddingRight: size === 'xs' ? 10 : 14,
-    paddingTop: 6,
-    paddingBottom: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'flex-start',
-    flexShrink: 0,
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    ...(bare
+      ? null
+      : ({
+          minHeight: height,
+          minWidth: height,
+          borderRadius: borderRadius.full,
+          borderWidth: 1,
+          borderColor: border,
+          backgroundColor: highlighted
+            ? pressedSurface(theme.colors, background, foreground)
+            : background,
+          paddingLeft: size === 'xs' ? 10 : 14,
+          paddingRight: size === 'xs' ? 10 : 14,
+          paddingTop: 6,
+          paddingBottom: 6,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignSelf: 'flex-start',
+          flexShrink: 0,
+          opacity: disabled ? DISABLED_OPACITY : 1,
+        } as const)),
     '--bloom-radio-chip-ring': theme.colors.primary,
     ...ringOffset,
   };
@@ -136,9 +141,10 @@ function RadioChipComponent<Value extends string = string>({
         </View>
       ) : (
         <RadioLabel
+          bare={bare}
           variant={size === 'xs' || size === 'sm' ? 'body-2-medium' : 'body-medium'}
           style={[
-            {
+            !bare && {
               color: foreground,
               ...(checked && appearance === 'plain'
                 ? { textDecorationLine: 'underline' as const }

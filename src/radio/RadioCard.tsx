@@ -72,6 +72,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   description,
   disabled: disabledProp = false,
   tone: toneProp,
+  bare = false,
   style,
   labelStyle,
   accessibilityLabel,
@@ -146,7 +147,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
     <RadioHost
       {...groupItem}
       {...webDataSet({ bloomRadioCard: '' })}
-      style={[cardStyle, style]}
+      style={[bare ? { '--bloom-radio-ring': paint.ring, ...ringOffset } : cardStyle, style]}
       onPress={handlePress}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={disabled ? undefined : onPressOut}
@@ -175,9 +176,10 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
           </View>
         ) : (
           <RadioLabel
+            bare={bare}
             variant="body-medium"
             numberOfLines={1}
-            style={[{ color: paint.title }, labelStyle]}
+            style={[!bare && { color: paint.title }, labelStyle]}
           >
             {title}
           </RadioLabel>
