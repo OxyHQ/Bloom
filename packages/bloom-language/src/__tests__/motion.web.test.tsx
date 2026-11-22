@@ -254,3 +254,25 @@ describe('on the web, motion is CSS and the Web Animations API', () => {
     expect(host?.props.onPressIn).toBeUndefined();
   });
 });
+
+describe('on the web, a numeric roll is the Web Animations API on each changed place', () => {
+  const count = (n: number, press: number) =>
+    Text(String(n)).contentTransition('numeric', n).animation('roll', press);
+
+  it('each changed character’s old piece leaves and its new one arrives; the rest stay', () => {
+    const r = mount(count(19, 0));
+    played.length = 0;
+    update(r, count(20, 1));
+    // Two places changed: each plays its incoming and its outgoing half.
+    expect(played).toHaveLength(4);
+    expect(played[0]?.frames).toEqual([
+      expect.objectContaining({ offset: 0, opacity: 0, transform: 'translateY(10px)' }),
+      expect.objectContaining({ offset: 1, opacity: 1, transform: 'translateY(0px)' }),
+    ]);
+    expect(played[1]?.options).toMatchObject({ fill: 'forwards' });
+    expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['2', '1', '0', '9']);
+    act(() => played[0]?.onfinish?.());
+    expect(all(r, 'Text').map((text) => text.props.children)).toEqual(['20']);
+    expect(flat(all(r, 'Text')[0]?.props.style)).toBeDefined();
+  });
+});

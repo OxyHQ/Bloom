@@ -526,6 +526,13 @@ const tracked: ParityCase[] = [
     language: () => toElement(L.Text('12').font('mono').font('xs')),
     bloom: () => <Text style={{ fontSize: 12, ...fontFamilyStyle('mono') }}>12</Text>,
   },
+  {
+    // At rest a numeric content transition is the plain text: the roll's pieces exist only while it plays.
+    name: 'a numeric count at rest',
+    language: () =>
+      toElement(L.Text('1,204').font('md').contentTransition('numeric', 1204).animation('roll', 0)),
+    bloom: () => <Text style={{ fontSize: FONT_SIZE.md }}>1,204</Text>,
+  },
 ];
 
 export const TEXT_CASES: ParityCase[] = [

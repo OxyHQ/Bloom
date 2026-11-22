@@ -241,6 +241,15 @@ element named by `value` (or `accessibilityLabel`). Both modes snap under
 reduced motion, including a change while mounted. `EngagementBar`'s count roll,
 the chart cards' week pill and `SubscriptionPrice` render it.
 
+The Bloom language's `.contentTransition('numeric')` (SwiftUI's `numericText`)
+is a third reading on the engine itself: each character that changed rolls on
+`rollKeyframes`, its old piece out and its new one in, each a `Play` of its own
+(Reanimated's CSS animations on native, `element.animate()` on the web), while
+the characters that stayed are one still piece. It matches the two texts from
+their ends, as `'digits'` keys its wheels, and runs no JS per frame; `'digits'`
+keeps its wheels (a Reanimated timing on a shared value), so no rendered roll
+moved.
+
 ## Number tweens
 
 Two hooks animate numbers that no CSS transition reaches — a headline count, an
