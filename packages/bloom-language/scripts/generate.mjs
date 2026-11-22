@@ -406,6 +406,7 @@ const tokenSets = {
   duration: Object.keys(scales.duration),
   rotation: Object.keys(scales.rotation),
   motion: Object.keys(motion),
+  typeRamp: Object.keys(typeRamp),
   ...enums,
 };
 

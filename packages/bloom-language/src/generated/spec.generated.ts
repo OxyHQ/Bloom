@@ -1489,6 +1489,67 @@ export const ENUMS = {
   "dismissIcon": [
     "close",
     "unpin"
+  ],
+  "sidebarVariant": [
+    "panel",
+    "rail"
+  ],
+  "sidebarSize": [
+    "sm",
+    "md",
+    "lg"
+  ],
+  "sidebarSurface": [
+    "card",
+    "plain",
+    "docked"
+  ],
+  "contentAlignment": [
+    "start",
+    "center"
+  ],
+  "primaryActionPlacement": [
+    "bottom",
+    "top"
+  ],
+  "railLabels": [
+    "visible",
+    "hidden"
+  ],
+  "railSelection": [
+    "pill",
+    "icon"
+  ],
+  "modesPresentation": [
+    "segmented",
+    "toggle"
+  ],
+  "scrollbarSide": [
+    "end",
+    "start"
+  ],
+  "teamPlacement": [
+    "footer",
+    "header"
+  ],
+  "blend": [
+    "normal",
+    "multiply",
+    "screen",
+    "overlay",
+    "darken",
+    "lighten",
+    "color-dodge",
+    "color-burn",
+    "hard-light",
+    "soft-light",
+    "difference",
+    "exclusion",
+    "hue",
+    "saturation",
+    "color",
+    "luminosity",
+    "plus-lighter"
   ]
 } as const;
 
@@ -2083,6 +2144,39 @@ export const MODIFIERS = {
   ],
   "dismissIcon": [
     "dismissIcon"
+  ],
+  "sidebarSurface": [
+    "sidebarSurface"
+  ],
+  "contentAlignment": [
+    "contentAlignment"
+  ],
+  "primaryActionPlacement": [
+    "primaryActionPlacement"
+  ],
+  "railLabels": [
+    "railLabels"
+  ],
+  "railSelection": [
+    "railSelection"
+  ],
+  "modesPresentation": [
+    "modesPresentation"
+  ],
+  "scrollbarSide": [
+    "scrollbarSide"
+  ],
+  "teamPlacement": [
+    "teamPlacement"
+  ],
+  "textVariant": [
+    "typeRamp"
+  ],
+  "blend": [
+    "blend"
+  ],
+  "bloomOnly": [
+    "value?"
   ]
 } as const;
 
@@ -6889,7 +6983,8 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "lines"
+    "lines",
+    "textVariant"
   ],
   "agentLogRow": [
     "padding",
@@ -7262,7 +7357,10 @@ export const NODE_MODIFIERS = {
     "matchedGeometry",
     "drag",
     "swipe",
-    "gradient"
+    "gradient",
+    "blend",
+    "bloomOnly",
+    "surface"
   ],
   "conversationSidebar": [
     "padding",
@@ -7324,7 +7422,17 @@ export const NODE_MODIFIERS = {
     "keyframes",
     "matchedGeometry",
     "drag",
-    "swipe"
+    "swipe",
+    "style",
+    "size",
+    "sidebarSurface",
+    "contentAlignment",
+    "primaryActionPlacement",
+    "railLabels",
+    "railSelection",
+    "modesPresentation",
+    "scrollbarSide",
+    "teamPlacement"
   ],
   "questionnaire": [
     "padding",

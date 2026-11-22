@@ -569,7 +569,36 @@
     "titleAlign": ["start", "center"],
     "titleLayout": ["inline", "stacked"],
     "titleAppearance": ["plain", "capsule"],
-    "dismissIcon": ["close", "unpin"]
+    "dismissIcon": ["close", "unpin"],
+    "sidebarVariant": ["panel", "rail"],
+    "sidebarSize": ["sm", "md", "lg"],
+    "sidebarSurface": ["card", "plain", "docked"],
+    "contentAlignment": ["start", "center"],
+    "primaryActionPlacement": ["bottom", "top"],
+    "railLabels": ["visible", "hidden"],
+    "railSelection": ["pill", "icon"],
+    "modesPresentation": ["segmented", "toggle"],
+    "scrollbarSide": ["end", "start"],
+    "teamPlacement": ["footer", "header"],
+    "blend": [
+      "normal",
+      "multiply",
+      "screen",
+      "overlay",
+      "darken",
+      "lighten",
+      "color-dodge",
+      "color-burn",
+      "hard-light",
+      "soft-light",
+      "difference",
+      "exclusion",
+      "hue",
+      "saturation",
+      "color",
+      "luminosity",
+      "plus-lighter"
+    ]
   },
   "glass": {
     "$comment": [
@@ -869,7 +898,18 @@
     "titleAlign": ["titleAlign"],
     "titleLayout": ["titleLayout"],
     "titleAppearance": ["titleAppearance"],
-    "dismissIcon": ["dismissIcon"]
+    "dismissIcon": ["dismissIcon"],
+    "sidebarSurface": ["sidebarSurface"],
+    "contentAlignment": ["contentAlignment"],
+    "primaryActionPlacement": ["primaryActionPlacement"],
+    "railLabels": ["railLabels"],
+    "railSelection": ["railSelection"],
+    "modesPresentation": ["modesPresentation"],
+    "scrollbarSide": ["scrollbarSide"],
+    "teamPlacement": ["teamPlacement"],
+    "textVariant": ["typeRamp"],
+    "blend": ["blend"],
+    "bloomOnly": ["value?"]
   },
   "universal": [
     "padding",
@@ -1335,15 +1375,34 @@
     "agentProgress": { "constructors": ["AgentProgress"], "modifiers": [] },
     "agentProgressLoadingText": {
       "constructors": ["AgentProgressLoadingText"],
-      "modifiers": ["lines"]
+      "modifiers": ["lines", "textVariant"]
     },
     "agentLogRow": { "constructors": ["AgentLogRow"], "modifiers": [] },
     "agentLogShimmerText": { "constructors": ["AgentLogShimmerText"], "modifiers": [] },
     "agentLogToolCall": { "constructors": ["AgentLogToolCall"], "modifiers": [] },
     "agentLogToolCalls": { "constructors": ["AgentLogToolCalls"], "modifiers": [] },
     "agentLogWorkingRow": { "constructors": ["AgentLogWorkingRow"], "modifiers": [] },
-    "composerLoader": { "constructors": ["ComposerLoader"], "modifiers": ["gradient"] },
-    "conversationSidebar": { "constructors": ["ConversationSidebar"], "modifiers": [] },
+    "composerLoader": {
+      "constructors": ["ComposerLoader"],
+      "modifiers": ["gradient", "blend", "bloomOnly", "surface"]
+    },
+    "conversationSidebar": {
+      "constructors": ["ConversationSidebar"],
+      "modifiers": [
+        "style",
+        "size",
+        "sidebarSurface",
+        "contentAlignment",
+        "primaryActionPlacement",
+        "railLabels",
+        "railSelection",
+        "modesPresentation",
+        "scrollbarSide",
+        "teamPlacement"
+      ],
+      "size": "sidebarSize",
+      "style": "sidebarVariant"
+    },
     "questionnaire": { "constructors": ["Questionnaire"], "modifiers": [] },
     "chatBackground": {
       "constructors": ["ChatBackground"],
