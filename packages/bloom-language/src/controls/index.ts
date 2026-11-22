@@ -3,6 +3,8 @@ import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { PAYMENT_METHODS } from './payment-method';
 import { ADDRESSES } from './address';
+import { PAYMENT_STATUSES } from './payment-status';
+import { PRICE_BREAKDOWNS } from './price-breakdown';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -50,4 +52,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...GENERIC,
   ...ADDRESSES,
   ...PAYMENT_METHODS,
+  ...PRICE_BREAKDOWNS,
+  ...PAYMENT_STATUSES,
 };

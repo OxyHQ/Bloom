@@ -581,3 +581,21 @@ export type {
   PaymentMethodRowOptions,
   PaymentMethodRowView,
 } from './controls/payment-method';
+
+// Price breakdown (controls/price-breakdown.tsx)
+export { PriceSummary, PriceSummaryLine } from './controls/price-breakdown';
+export type {
+  PriceSummaryLineOptions,
+  PriceSummaryLineView,
+  PriceSummaryOptions,
+  PriceSummaryView,
+} from './controls/price-breakdown';
+
+// Payment status (controls/payment-status.tsx)
+export { PaymentStatusBar, PaymentStatusBlock } from './controls/payment-status';
+export type {
+  PaymentStatusBarOptions,
+  PaymentStatusBarView,
+  PaymentStatusBlockOptions,
+  PaymentStatusBlockView,
+} from './controls/payment-status';

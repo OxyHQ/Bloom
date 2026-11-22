@@ -201,6 +201,10 @@ export type ReactionPickerSize = (typeof ENUMS.reactionPickerSize)[number];
 // Commerce (controls/address.tsx, payment-method.tsx…)
 /** A list read (`list`) or one entry chosen from it (`picker`). */
 export type ChoiceListStyle = (typeof ENUMS.choiceListStyle)[number];
+/** A price line: `default`, `discount` (money back) or `muted` (read past). */
+export type PriceLineTone = (typeof ENUMS.priceLineTone)[number];
+/** A payment status: `surface`, a strip or block of its own; or `plain`, only its content. */
+export type PaymentStatusStyle = (typeof ENUMS.paymentStatusStyle)[number];
 
 export {
   COLORS,

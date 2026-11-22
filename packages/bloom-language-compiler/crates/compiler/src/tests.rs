@@ -796,3 +796,22 @@ fn addresses_and_payment_methods_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_price_breakdown_and_payment_status_are_checked() {
+    let imports = "import { PaymentStatusBar, PaymentStatusBlock, PriceSummary, PriceSummaryLine, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (l) => VStack(PriceSummary(l).label('Price'), PriceSummaryLine('Promo').tint('discount'), PaymentStatusBar('paid').style('plain'), PaymentStatusBlock('failed').style('surface'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("PriceSummaryLine('a').tint('success')", "Unknown priceLineTone token 'success' for .tint()"),
+        ("PaymentStatusBar('paid').style('card')", "Unknown paymentStatusStyle token 'card' for .style()"),
+        ("PriceSummary(l).style('plain')", "PriceSummary has no modifier .style()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (l) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

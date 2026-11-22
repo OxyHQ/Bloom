@@ -109,3 +109,7 @@ export const AddressList = 'AddressList';
 export const PaymentMethodMark = 'PaymentMethodMark';
 export const PaymentMethodRow = 'PaymentMethodRow';
 export const PaymentMethodList = 'PaymentMethodList';
+export const PriceSummary = 'PriceSummary';
+export const PriceSummaryLine = 'PriceSummaryLine';
+export const PaymentStatusBar = 'PaymentStatusBar';
+export const PaymentStatusBlock = 'PaymentStatusBlock';

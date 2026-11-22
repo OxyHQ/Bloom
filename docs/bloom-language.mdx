@@ -1372,6 +1372,23 @@ are Bloom's data as it is: the selection (`selected`, `selectedId`,
   and a list's `.loading()` (its placeholder rows).
 - The rows take `.onPress()` themselves.
 
+### Prices and payment status
+
+```ts
+PriceSummary(order.lines, { total: order.total, collapsible: true }).label('Price')
+PriceSummaryLine('Promo', { amount: '−€3.00' }).tint('discount')
+PaymentStatusBlock(payment.state, { amount, reference, actions: Button(Text('Try again')) }).style('plain')
+```
+
+Bloom's `price-breakdown`: `PriceSummary(lines, options?)` (Bloom's own lines,
+a line's `info` a React element as it is data; its total, disclosure and
+words) and `PriceSummaryLine(label, options?)` (its amounts and state; its
+`info` a language child), `.tint('default' | 'discount' | 'muted')` the
+line's tone. Bloom's `payment-status`: `PaymentStatusBar(state, options?)`
+(its `action` a child) and `PaymentStatusBlock(state, options?)` (its
+`actions` and `illustration` children; `illustration: null` draws no glyph
+tile), each `.style('surface' | 'plain')`.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

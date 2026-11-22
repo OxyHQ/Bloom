@@ -27,6 +27,8 @@ import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
+import type { PaymentStatusKind } from './controls/payment-status';
+import type { PriceBreakdownKind } from './controls/price-breakdown';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -87,6 +89,8 @@ import {
   type ShareSheetSize,
   type ShelfLayout,
   type ChoiceListStyle,
+  type PaymentStatusStyle,
+  type PriceLineTone,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -499,7 +503,8 @@ export type Modifier =
         | ShelfLayout
         | NoteCardLayout
         | OutlineNavStyle
-        | ChoiceListStyle;
+        | ChoiceListStyle
+        | PaymentStatusStyle;
     }
   | {
       readonly kind: 'shape';
@@ -521,7 +526,8 @@ export type Modifier =
         | AgentThinkingTone
         | ChatStatusTone
         | MessageTone
-        | AccentTone;
+        | AccentTone
+        | PriceLineTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -675,7 +681,9 @@ export type NodeKind =
   | ShareSheetKind
   | GenericKind
   | AddressesKind
-  | PaymentMethodsKind;
+  | PaymentMethodsKind
+  | PriceBreakdownKind
+  | PaymentStatusKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1017,7 +1025,8 @@ export class Node {
       | ShelfLayout
       | NoteCardLayout
       | OutlineNavStyle
-      | ChoiceListStyle,
+      | ChoiceListStyle
+      | PaymentStatusStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1037,7 +1046,8 @@ export class Node {
       | AgentThinkingTone
       | ChatStatusTone
       | MessageTone
-      | AccentTone,
+      | AccentTone
+      | PriceLineTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
