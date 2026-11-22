@@ -25,9 +25,7 @@ export interface CollapsibleProps {
   transition?: SurfaceTransition;
   /** Used only if focus was inside when closing; never steals deliberate outside focus. */
   returnFocusRef?: RefObject<CollapsibleFocusTarget | null>;
-  className?: string;
   style?: StyleProp<ViewStyle>;
-  contentClassName?: string;
   contentStyle?: StyleProp<ViewStyle>;
   nativeID?: string;
   testID?: string;
