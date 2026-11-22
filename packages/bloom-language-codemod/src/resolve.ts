@@ -76,15 +76,19 @@ const TRACKED = new Set(
 );
 
 /**
- * Table mappings the parity corpus measured drawing otherwise on native, each
- * with what differs. They stay JSX until the language or the table changes.
+ * Table mappings the parity corpus measured drawing otherwise, each with what
+ * differs. They stay JSX until the language or the table changes.
  */
-function measuredDifference(utility: string, mods: readonly Mod[]): string | undefined {
-  if (mods.some((m) => m.args.some((a) => typeof a === 'string' && /^[a-zA-Z]\w*\/\w+$/.test(a))))
-    return 'a colour at an opacity: the language writes a color-mix() inline on the web, which react-native-web drops (its normalizeColor takes no color-mix), so nothing is drawn';
-  const fixed = /^(?:text|bg|border)-(white|black)\/(\d+)$/.exec(utility);
-  if (fixed && !Number.isInteger((Number(fixed[2]) * 255) / 100))
-    return `NativeWind writes ${fixed[1]} at ${fixed[2]}% as an 8-bit hex alpha (rounded down); the language writes ${Number(fixed[2]) / 100}`;
+function measuredDifference(
+  utility: string,
+  mods: readonly Mod[],
+  conditions: readonly string[],
+): string | undefined {
+  if (
+    conditions.some((c) => !HELD.has(c)) &&
+    mods.some((m) => m.args.some((a) => typeof a === 'string' && /^[a-zA-Z]\w*\/\w+$/.test(a)))
+  )
+    return 'a colour at an opacity under a live condition: a web variant is a class of the generated sheet, which has none for it';
   const font = mods.find((m) => m.name === 'font');
   if (font && /^text-/.test(utility) && TRACKED.has(font.args[0] as string))
     return `.font('${font.args[0]}') brings the ramp’s letter spacing, which ${utility} does not write`;
@@ -100,13 +104,14 @@ function fontSizeOf(token: string): number | undefined {
 }
 
 /**
- * NativeWind's compiler rounds a length it computes (a line height as a ratio
- * of the size, a letter spacing in em) to two decimals; the language keeps
- * the exact product. Where the two differ the class stays JSX.
+ * A leading or tracking that is a ratio of the size measures, in the language,
+ * from the element's own size (Bloom's `Text` default when it sets none); the
+ * class measures from the size it inherits. Where the element sets no size the
+ * class stays JSX.
  */
-function rounding(mods: readonly Mod[]): string | undefined {
-  const font = mods.find((m) => m.name === 'font' && fontSizeOf(m.args[0] as string) !== undefined);
-  const size = font ? fontSizeOf(font.args[0] as string) : undefined;
+function unsized(mods: readonly Mod[]): string | undefined {
+  if (mods.some((m) => m.name === 'font' && fontSizeOf(m.args[0] as string) !== undefined))
+    return undefined;
   for (const mod of mods) {
     const token = mod.args[0] as string;
     const ratio =
@@ -116,12 +121,8 @@ function rounding(mods: readonly Mod[]): string | undefined {
           ? (spec.scales.tracking?.[token] ??
             (/^-?[\d.]+em$/.test(token) ? Number(token.slice(0, -2)) : undefined))
           : undefined;
-    if (typeof ratio !== 'number') continue;
-    if (size === undefined)
+    if (typeof ratio === 'number')
       return `.${mod.name}('${token}') measures from a size this element does not set`;
-    const value = size * ratio;
-    if (Math.abs(value * 100 - Math.round(value * 100)) > 1e-9)
-      return `.${mod.name}('${token}') at ${size}pt is ${value}; NativeWind rounds it to ${Math.round(value * 100) / 100}`;
   }
   return undefined;
 }
@@ -308,7 +309,7 @@ export function resolveClassName(
       fail(token, 'unknown', 'not in the className table');
       continue;
     }
-    const different = measuredDifference(utility, entry.mods ?? []);
+    const different = measuredDifference(utility, entry.mods ?? [], conditions);
     if (different) {
       fail(token, 'measured-difference', different);
       continue;
@@ -487,15 +488,15 @@ function finish(
     seen.set(mod.name, mod);
   }
 
-  const rounded = kind === 'text' ? rounding(mods) : undefined;
-  if (rounded)
+  const measuredFrom = kind === 'text' ? unsized(mods) : undefined;
+  if (measuredFrom)
     fail(
       mods
         .filter((m) => m.name === 'leading' || m.name === 'tracking')
         .map(subject)
         .join(' '),
-      'nativewind-rounding',
-      rounded,
+      'unsized-ratio',
+      measuredFrom,
     );
 
   for (const mod of mods) {
