@@ -1373,7 +1373,8 @@
     "sizeToggle": ["value"],
     "bordered": ["value"],
     "onReorder": ["value"],
-    "onDragChange": ["value"]
+    "onDragChange": ["value"],
+    "root": []
   },
   "universal": [
     "padding",
@@ -3052,7 +3053,8 @@
       "constructors": ["SortableChipRow"],
       "modifiers": ["onReorder", "onDragChange", "trailing", "disabled"]
     },
-    "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] }
+    "sortableChip": { "constructors": ["SortableChip"], "universal": false, "modifiers": [] },
+    "viewport": { "constructors": ["Viewport"], "universal": false, "modifiers": ["root"] }
   },
   "sfSymbols": {
     "$comment": [
