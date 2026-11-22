@@ -4050,7 +4050,11 @@ the one they last committed, as the nodes of the declaring body do.
 **Removal.** A list slot (`items.map(…)`) is Bloom's `Presence`, on every
 platform: it keeps a child that left until its removal ends, holding its last
 frame. Only children keyed by `.id()`
-can leave: by index, a removal and a reorder look the same.
+can leave: by index, a removal and a reorder look the same. A conditional child
+(`show && view`) is a slot of its own, which keeps no record of what it held,
+so it leaves at once: keeping one would put a `Presence` around every child of
+every stack. A child whose removal should play is a list of one, keyed
+(`[show && view.transition(t).id('x')]`), which is that list slot's `Presence`.
 
 **Glass.** On the web, an opacity below 1 on a glass host or any ancestor of one
 flattens the material (AGENTS.rules.md, Material). The engine routes the fade of
