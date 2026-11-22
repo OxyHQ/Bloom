@@ -184,7 +184,7 @@ const glassStyles: ParityCase[] = [
 ];
 
 /** A named recipe of modifiers, and one with an argument. */
-const sectionCard = defineModifier((v) => v.padding('md').corner('xl'));
+const sectionCard = defineModifier((v) => v.padding('md').corner('xl').clipped());
 const inset = defineModifier((v, edge: 'horizontal' | 'vertical') => v.padding(edge, 'lg'));
 
 const modifiers: ParityCase[] = [

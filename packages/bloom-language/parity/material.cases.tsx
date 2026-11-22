@@ -307,6 +307,7 @@ const surface: ParityCase[] = [
           L.VStack(L.Text('Inner'))
             .background('popover')
             .corner('concentric')
+            .clipped()
             .when('lg', (v) => v.background('primary').border('border', 'thin')),
         )
           .padding('md')
@@ -800,7 +801,7 @@ const glassGroups: ParityCase[] = [
   },
   {
     name: 'identity glass draws no material and keeps the box',
-    language: () => toElement(L.VStack(L.Text('Plain')).padding('md').glass(identity).corner('xl')),
+    language: () => toElement(L.VStack(L.Text('Plain')).padding('md').glass(identity).corner('xl').clipped()),
     bloom: () => (
       <RN.View style={{ ...padding(space.md), borderRadius: borderRadius.xl, overflow: 'hidden' }}>
         <Text>Plain</Text>
