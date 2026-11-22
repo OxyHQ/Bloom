@@ -530,6 +530,14 @@ export const CASES = [
     after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting(false))); },
   },
   {
+    name: "components/Rows.tsx:106",
+    before: () => { const View = I9; return (<View pointerEvents="box-none" className="p-2">
+      <View pointerEvents="box-only" className="h-10 w-full rounded-lg bg-muted" />
+      {<Hole n="0" />}
+    </View>); },
+    after: () => { const View = I9; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting('self'), Embed(<Hole n="0" />)).padding('all', 'sm').allowsHitTesting('children'))); },
+  },
+  {
     name: "components/SettingsRoute.tsx:13",
     before: () => { const Screen = I11; const PageHeader = I38; const Text = I52; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>

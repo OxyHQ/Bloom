@@ -282,7 +282,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native); out of the layout |
 | `scale(s)` | drawn scaled about its centre: Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
-| `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; read by a screen reader and not drawn (`sr-only`) |
+| `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; `'children'`: only what is inside it takes them, `'self'`: only the view; read by a screen reader and not drawn (`sr-only`) |
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
 | `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`, or one of Tailwind's shadows by its exact box-shadow; a colour role (or a role at an opacity, or `none`) as an outline, `thin` `thick` or `'3'` wide |
 | `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android` (see [Variants](#variants)) |
@@ -402,7 +402,10 @@ VStack(...).background('surface').corner('xl').shadow('m')
   `.basis('none')`).
 - **Hit testing.** `.allowsHitTesting(false)` lets touches and the pointer
   through the view and everything inside it, as SwiftUI's does
-  (`pointer-events-none`); `true` takes them again. react-native-web drops an
+  (`pointer-events-none`); `true` takes them again. `'children'` lets them
+  through the view's outermost box but not what is inside it (React Native's
+  `box-none`, a scrim whose buttons still press), and `'self'` takes them on
+  that box and not inside it (`box-only`). react-native-web drops an
   inline `pointerEvents`, so on the web a Bloom component's is a box of its own
   around it.
 - **Read, not drawn.** `.accessibilityOnly()` is Tailwind's `sr-only`: a

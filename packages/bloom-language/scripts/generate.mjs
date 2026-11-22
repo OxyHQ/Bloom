@@ -381,7 +381,7 @@ for (const [grow, shrink, basis] of Object.values(withoutComment(scales.flex))) 
 for (const value of [...spaceValues, ...Object.values(scales.length)])
   valueClass('flexBasis', value);
 // Hit testing, and a view only assistive technology reads (style.ts, placement).
-for (const value of ['none', 'auto']) valueClass('pointerEvents', value);
+for (const value of ['none', 'auto', 'box-none', 'box-only']) valueClass('pointerEvents', value);
 valueClass('borderWidth', 0);
 valueClass('clipPath', 'inset(50%)');
 // Type: sizes, ramp line heights, every size at every leading and every tracking, weights.
