@@ -1,14 +1,7 @@
 import { useBloomAppearance } from '../appearance';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import React, { type ComponentRef, type ReactNode, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  type StyleProp,
-  type TextStyle,
-  type TextInputProps,
-  View,
-} from 'react-native';
+import { type ComponentRef, useRef, useState } from 'react';
+import { StyleSheet, TextInput, type TextStyle, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -33,18 +26,7 @@ import {
 import { useFieldControl } from '../field/context';
 import { useFieldMembership } from '../field/membership';
 import type { TextareaProps } from './types';
-import { styled } from 'react-native-css';
-import { StyledView } from '../styles/styled-primitives';
 import { IS_WEB } from '../styles/platform';
-// `styled()` is told only about `style`: its mapping type is a dot-path union
-// over the wrapped component's whole prop type, which overflows the checker for
-// React Native 0.88's `TextInputProps` (TS2590). The export annotation is the
-// real contract — `styles/styled-primitives.ts` does the same.
-const StyledTextInput: React.ComponentType<
-  TextInputProps & { ref?: React.Ref<ComponentRef<typeof TextInput>> }
-> = styled(TextInput as (props: { style?: StyleProp<TextStyle> }) => ReactNode, {
-  className: 'style',
-});
 
 /** The shell is `p-2` (8px) at `medium` and `px-1.5 py-2` at `small`. */
 const SHELL_PADDING_VERTICAL = 8;
@@ -90,9 +72,7 @@ export function Textarea({
   tooltip = false,
   style,
   inputStyle,
-  className,
-  fieldClassName,
-  inputClassName,
+  bare = false,
   fieldStyle,
   inputRef,
   accessibilityLabel,
@@ -147,18 +127,14 @@ export function Textarea({
   const controlStyle = StyleSheet.flatten([
     {
       fontFamily: SANS_FONT_FAMILY,
-      ...(inputClassName
-        ? {}
-        : {
-            fontSize: TEXT_FIELD_TEXT.fontSize,
-            lineHeight: line,
-            fontWeight: TEXT_FIELD_TEXT.fontWeight,
-            color: field.disabled ? palette.textDisabled : palette.text,
-            paddingLeft: TEXT_FIELD_INPUT_INSET,
-            paddingRight: TEXT_FIELD_INPUT_INSET,
-            paddingTop: 0,
-            paddingBottom: 0,
-          }),
+      fontSize: TEXT_FIELD_TEXT.fontSize,
+      lineHeight: line,
+      fontWeight: TEXT_FIELD_TEXT.fontWeight,
+      color: field.disabled ? palette.textDisabled : palette.text,
+      paddingLeft: TEXT_FIELD_INPUT_INSET,
+      paddingRight: TEXT_FIELD_INPUT_INSET,
+      paddingTop: 0,
+      paddingBottom: 0,
       position: 'relative',
       margin: 0,
       minWidth: 0,
@@ -184,17 +160,16 @@ export function Textarea({
   ]) as TextStyle;
 
   return (
-    <StyledView className={className} style={[{ width: '100%' }, style]} testID={testID}>
+    <View style={[{ width: '100%' }, style]} testID={testID}>
       {label && !fieldOwnsLabel ? (
         <TextFieldLabel required={field.required} tooltip={tooltip}>
           {label}
         </TextFieldLabel>
       ) : null}
 
-      <StyledView
-        className={fieldClassName}
+      <View
         style={[
-          fieldClassName
+          bare
             ? null
             : {
                 borderRadius: TEXT_FIELD_RADIUS,
@@ -221,7 +196,7 @@ export function Textarea({
             } as Record<string, unknown>)
           : {})}
       >
-        {fieldClassName ? null : (
+        {bare ? null : (
           <SurfacePaint
             fill={IS_WEB ? paint.backgroundColor : undefined}
             radius={IS_WEB ? TEXT_FIELD_RADIUS : TEXT_FIELD_RADIUS - TEXT_FIELD_RING_WIDTH}
@@ -230,8 +205,7 @@ export function Textarea({
             transition={TEXT_FIELD_FILL_TRANSITION}
           />
         )}
-        <StyledTextInput
-          className={inputClassName}
+        <TextInput
           {...rest}
           {...(IS_WEB && field.disabled ? ({ disabled: true } as Record<string, unknown>) : {})}
           ref={mergeRefs([innerRef, inputRef])}
@@ -264,10 +238,10 @@ export function Textarea({
           }}
           style={controlStyle}
         />
-      </StyledView>
+      </View>
 
       {hint || showCount ? (
-        <StyledView
+        <View
           style={{
             flexDirection: 'row',
             alignItems: 'flex-start',
@@ -295,8 +269,8 @@ export function Textarea({
               {maxLength ? `${count}/${maxLength}` : String(count)}
             </Text>
           ) : null}
-        </StyledView>
+        </View>
       ) : null}
-    </StyledView>
+    </View>
   );
 }
