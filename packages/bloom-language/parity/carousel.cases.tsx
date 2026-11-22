@@ -26,11 +26,21 @@ const bloomSlides = () => [
   </CarouselItem>,
 ];
 
+/** A carousel's slides fill its track and a table cell is as wide as what it draws: each is framed. */
 const carousels: ParityCase[] = [
   {
     name: 'a carousel',
-    language: () => toElement(L.Carousel(...slides()).label('Photos')),
-    bloom: () => <Carousel accessibilityLabel="Photos">{bloomSlides()}</Carousel>,
+    language: () =>
+      toElement(
+        L.Carousel(...slides())
+          .label('Photos')
+          .frame({ width: '320' }),
+      ),
+    bloom: () => (
+      <Carousel accessibilityLabel="Photos" style={{ width: 320 }}>
+        {bloomSlides()}
+      </Carousel>
+    ),
   },
   ...ENUMS.arrowsPlacement.map((placement) => ({
     name: `arrows in the ${placement}`,
@@ -40,11 +50,13 @@ const carousels: ParityCase[] = [
           .arrows(placement)
           .headerContent(L.Text('Popular'))
           .footerContent(L.Text('3 places'))
-          .label('Places'),
+          .label('Places')
+          .frame({ width: '320' }),
       ),
     bloom: () => (
       <Carousel
         accessibilityLabel="Places"
+        style={{ width: 320 }}
         arrowsPlacement={placement}
         header={<Text>Popular</Text>}
         footer={<Text>3 places</Text>}
@@ -61,11 +73,13 @@ const carousels: ParityCase[] = [
           .arrowsVisibility(visibility)
           .arrowsInset('sm')
           .hidesUnavailableArrows()
-          .label('Places'),
+          .label('Places')
+          .frame({ width: '320' }),
       ),
     bloom: () => (
       <Carousel
         accessibilityLabel="Places"
+        style={{ width: 320 }}
         arrowsVisibility={visibility}
         arrowsInset={8}
         hideUnavailableArrows
@@ -86,11 +100,13 @@ const carousels: ParityCase[] = [
           .arrows(false)
           .spacing('md')
           .contentInset('lg')
-          .label('Places'),
+          .label('Places')
+          .frame({ width: '320' }),
       ),
     bloom: () => (
       <Carousel
         accessibilityLabel="Places"
+        style={{ width: 320 }}
         align={align}
         loop
         slidesPerGroup={2}
@@ -112,11 +128,13 @@ const carousels: ParityCase[] = [
           .labels({ previous: 'Back', next: 'On', dot })
           .dots()
           .label('Places')
+          .frame({ width: '320' })
           .testID('places'),
       ),
     bloom: () => (
       <Carousel
         accessibilityLabel="Places"
+        style={{ width: 320 }}
         index={1}
         onIndexChange={set}
         previousLabel="Back"
