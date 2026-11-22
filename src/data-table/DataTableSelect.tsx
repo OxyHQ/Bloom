@@ -32,6 +32,8 @@ const SHRINK_TO_CONTENT: WebCssStyle | null =
 
 /** The row the trigger is a flex item of. */
 const ROW = { flexDirection: 'row', alignSelf: 'stretch' } as const;
+/** A leading option mark sits closer to the field's edge than a value does. */
+const LEADING_MARK_INSET = { paddingLeft: 8 } as const;
 
 function OptionMark({ option, color }: { option: DataTableSelectOption; color: string }) {
   if (option.icon) {
@@ -75,7 +77,7 @@ export function DataTableSelect({
         <SelectTrigger
           label={label}
           testID={testID}
-          className={current?.icon ? 'pl-2' : undefined}
+          fieldStyle={current?.icon ? LEADING_MARK_INSET : undefined}
           style={[{ width }, SHRINK_TO_CONTENT]}
         >
           <SelectValue
