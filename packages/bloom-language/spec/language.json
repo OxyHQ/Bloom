@@ -1019,6 +1019,7 @@
     "basis": ["length"],
     "flex": ["flex"],
     "margin": ["edge?", "padding"],
+    "childSpacing": ["axis", "space"],
     "scale": ["scale"],
     "allowsHitTesting": ["value"],
     "accessibilityOnly": [],
@@ -1689,6 +1690,7 @@
       "constructors": ["HStack", "VStack", "ZStack"],
       "modifiers": [
         "spacing",
+        "childSpacing",
         "align",
         "justify",
         "wrap",

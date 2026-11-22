@@ -482,7 +482,11 @@ function resolve(utility) {
       negative === '-',
     );
   }
-  if ((m = /^(gap|space-[xy])-(.+)$/.exec(utility))) return space(m[2], (t) => `.spacing(${t})`);
+  if ((m = /^gap-(.+)$/.exec(utility)) && !/^[xy]-/.test(m[1]))
+    return space(m[1], (t) => `.spacing(${t})`);
+  // Tailwind's space-x/space-y: a margin on each child but the last, not a gap.
+  if ((m = /^space-([xy])-(.+)$/.exec(utility)) && m[2] !== 'reverse')
+    return space(m[2], (t) => `.childSpacing('${m[1] === 'x' ? 'horizontal' : 'vertical'}', ${t})`);
   if ((m = /^gap-[xy]-(.+)$/.exec(utility))) return modifier('one spacing per axis (gap-x, gap-y)');
   // Frames.
   if ((m = /^(w|h|min-w|min-h|max-w|max-h|size)-(.+)$/.exec(utility))) {

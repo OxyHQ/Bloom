@@ -2365,6 +2365,10 @@ export const MODIFIERS = {
     "edge?",
     "padding"
   ],
+  "childSpacing": [
+    "axis",
+    "space"
+  ],
   "scale": [
     "scale"
   ],
@@ -4173,6 +4177,7 @@ export const NODE_MODIFIERS = {
     "initialFooterHeight",
     "fullScreenCover",
     "spacing",
+    "childSpacing",
     "align",
     "justify",
     "wrap",

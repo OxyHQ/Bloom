@@ -466,6 +466,11 @@ export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
+/** `.childSpacing()`: the margin after each child but the last, along an axis (Tailwind's `space-x`/`space-y`). */
+export interface ChildSpacing {
+  readonly axis: Axis;
+  readonly space: SpaceToken;
+}
 
 /**
  * A place to go, as data: what `navigate(href, params)` returns. A press
@@ -1293,6 +1298,7 @@ export type Modifier =
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
   | { readonly kind: 'tracking'; readonly key: string; readonly value: TrackingName }
   | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken }
+  | { readonly kind: 'childSpacing'; readonly key: string; readonly value: ChildSpacing }
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'justify'; readonly key: string; readonly value: Justify }
   | { readonly kind: 'wrap'; readonly key: string; readonly value: boolean }
@@ -2008,6 +2014,13 @@ export class Node {
   }
   spacing(value: SpaceToken): Node {
     return this.with({ kind: 'spacing', key: `gap:${tokenKey(value)}`, value });
+  }
+  childSpacing(axis: Axis, space: SpaceToken): Node {
+    return this.with({
+      kind: 'childSpacing',
+      key: `cs:${axis}:${tokenKey(space)}`,
+      value: { axis, space },
+    });
   }
   align(value: Alignment): Node {
     return this.with({ kind: 'align', key: `align:${value}`, value });
@@ -4172,6 +4185,13 @@ export interface ViewModifiers<Self> extends ViewNode {
 export interface StackView extends ViewModifiers<StackView> {
   /** The gap between children. */
   spacing(value: SpaceToken): StackView;
+  /**
+   * Tailwind's `space-x-*`/`space-y-*` exactly as NativeWind draws them: on the
+   * web a margin after every child but the last, along `axis` (the inline end,
+   * or the block end); on Android and iOS nothing, as NativeWind writes no rule
+   * for a child selector. Not a gap: new screens use `.spacing()`.
+   */
+  childSpacing(axis: Axis, space: SpaceToken): StackView;
   /** The children's place across the axis. */
   align(value: Alignment): StackView;
   /** How the children spread along the axis: packed at `start`, `center` or `end`, or the free space `between`, `around` or `evenly` around them. */
