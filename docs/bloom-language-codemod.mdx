@@ -160,11 +160,12 @@ nowhere else) whose every return is a Bloom `Screen` becomes
 root: its one child, with the Screen's props as the root's screen modifiers
 (`scroll` is `.screenScroll()`, `kind` `.screenKind()`, `documentScroll`,
 `headerPlacement`, `contentClearance`, `navigationScope`, `colorPreset`,
-`testID`). No `header` is `.header(false)`; a header element is
-`.header(Embed(…))` (an element, or a `const` holding one), drawn as it is,
-since a `Header` node would be the system bar on iOS in a native stack where
-Bloom's PageHeader stays in the page. The route converts whole: one Screen
-that stays JSX keeps the others JSX (`screen:route`). Its parity draws the root with the language's `ScreenHost`,
+`testID`). No `header` is `.header(false)`; a header element is its view, so
+Bloom's PageHeader is `.header(Header(…).inPage())`, the Screen's own header
+on every platform (a bare `Header` is the system bar on iOS in a native
+stack), and a `const` holding the element is `.header(Embed(header))`.
+The route converts whole: one Screen that stays JSX keeps the others JSX
+(`screen:route`). Its parity draws the root with the language's `ScreenHost`,
 as `screen()` does.
 
 Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, `Dialog`

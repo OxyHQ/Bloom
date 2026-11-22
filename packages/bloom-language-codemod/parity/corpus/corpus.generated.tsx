@@ -525,10 +525,10 @@ export const CASES = [
   },
   {
     name: "components/SettingsRoute.tsx:13",
-    before: () => { const Screen = I11; const Text = I52; return (<Screen>
+    before: () => { const Screen = I11; const PageHeader = I38; const Text = I52; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
       </Screen>); },
-    after: () => { const Screen = I11; const Text = I52; const { Text: LText } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)} />); },
+    after: () => { const Screen = I11; const PageHeader = I38; const Text = I52; const { Text: LText, Header } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())} />); },
   },
   {
     name: "components/SettingsRoute.tsx:17",

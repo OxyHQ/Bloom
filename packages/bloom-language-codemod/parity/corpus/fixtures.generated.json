@@ -1832,12 +1832,16 @@
  },
  {
   "name": "components/SettingsRoute.tsx:13",
-  "before": "<Screen>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨0⟩'}</Text>\n      </Screen>",
-  "after": "LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(false)",
+  "before": "<Screen header={<PageHeader title={'⟨1⟩'} />}>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨0⟩'}</Text>\n      </Screen>",
+  "after": "LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())",
   "bindings": {
    "Screen": {
     "module": "@oxy.so/bloom/screen",
     "imported": "Screen"
+   },
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
    },
    "Text": {
     "module": "@oxy.so/bloom/typography",
@@ -1845,7 +1849,8 @@
    }
   },
   "language": [
-   "Text: LText"
+   "Text: LText",
+   "Header"
   ],
   "classes": [
    "text-sm",
