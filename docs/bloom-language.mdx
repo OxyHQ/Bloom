@@ -1401,14 +1401,14 @@ collapse and drawer are Bloom's `AppShell`.
 Command(
   CommandItem(t('compose')).icon(RiQuillPenLine).shortcut('⌘N').keywords('write').onPress(compose),
   CommandGroup(t('goTo'), CommandItem(t('settings')).onPress(navigate('/settings'))),
-).presented(paletteOpen).onPresentedChange(setPaletteOpen)
+).presented([paletteOpen, setPaletteOpen])
 
 SettingsModal(
   SettingsGroup(t('account'),
     SettingsItem(t('profile'), RiUserLine).id('profile').content(() => ProfilePage()),
     SettingsItem(t('signOut'), RiLogoutBoxRLine).onPress(signOut),
   ),
-).presented(settingsOpen).onPresentedChange(setSettingsOpen).selection(page).onSelect(setPage)
+).presented([settingsOpen, setSettingsOpen]).selection(page).onSelect(setPage)
 ```
 
 `Command(...rows)` is Bloom's `Command` palette. Each `CommandItem(label)` is
@@ -1416,7 +1416,7 @@ a `CommandItem` (`.id`, its label by default; `.icon`, `.subtitle` its
 description, `.keywords(...)`, `.shortcut`, `.disabled`, `.onPress` its
 `onSelect`); a `CommandGroup(title, ...items)` puts its items under that
 group, after the ungrouped ones, as Bloom orders them. The palette takes
-`.presented(open)`, `.onPresentedChange(fn)` (Bloom's `open` and
+`.presented([open, setOpen])` (a binding: Bloom's `open` and
 `onOpenChange`), `.placeholder`, `.emptyLabel`, `.query(value, onChange)` and
 `.filter(fn)`.
 
@@ -1425,7 +1425,7 @@ group, after the ungrouped ones, as Bloom orders them. The palette takes
 `SettingsItem(label, icon)` a row that opens its page when it has
 `.content(() => view)` (built only while the page is shown; `.title` and
 `.fullBleed` are the page's) or runs its `.onPress`. The modal takes
-`.presented`, `.onPresentedChange` (its `onClose` is `onPresentedChange(false)`),
+`.presented([open, setOpen])` (a binding; its `onClose` sets it to `false`),
 `.selection` and `.onSelect` (the page), `.initialView` and
 `.presentation('bar' \| 'floating')`. A page's rows are views, and Bloom's own
 settings rows are language nodes:
@@ -1472,7 +1472,7 @@ export default layout(function App() {
     .shellLayout('workspace')
     .panels(
       Panel('main'),
-      Panel('details', Details()).panelRole('inspector').label(t('details')).presented(details).onPresentedChange(setDetails),
+      Panel('details', Details()).panelRole('inspector').label(t('details')).presented([details, setDetails]),
     )
     .primaryAction(RiQuillPenLine, t('compose'), 'write');
 });
@@ -1495,7 +1495,7 @@ holds the layout's navigator, with it that view beside it. `.panelRole` is its
 each with Bloom's widths), and `.label`, `.width`, `.minWidth`, `.maxWidth`,
 `.resizable`, `.hidden` (`visible={false}`), `.keepMounted` and `.testID` its
 own. An **inspector** is a panel with the `inspector` role and
-`.presented(open)`/`.onPresentedChange(fn)` (Bloom's `open`/`onOpenChange`,
+`.presented([open, setOpen])` (a binding: Bloom's `open`/`onOpenChange`,
 and it needs a `.label`): a column at the end from `lg`, a floating sheet from
 the end below it, as Bloom draws it.
 

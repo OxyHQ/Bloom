@@ -402,7 +402,7 @@ type Rows<T> = (T | false | null | undefined | readonly T[])[];
  * Command(
  *   CommandItem('New post').icon(RiQuillPenLine).shortcut('⌘N').onPress(compose),
  *   CommandGroup('Go to', CommandItem('Settings').onPress(navigate('/settings'))),
- * ).presented(open).onPresentedChange(setOpen)
+ * ).presented([open, setOpen])
  * ```
  */
 export function Command(...rows: Rows<CommandItemView | CommandGroupView>): CommandView {
@@ -428,7 +428,7 @@ export function CommandGroup(title: string, ...items: Rows<CommandItemView>): Co
  *     SettingsItem('Profile', RiUserLine).content(() => ProfilePage()),
  *     SettingsItem('Sign out', RiLogoutBoxRLine).onPress(signOut),
  *   ),
- * ).presented(open).onPresentedChange(setOpen)
+ * ).presented([open, setOpen])
  * ```
  */
 export function SettingsModal(...groups: Rows<SettingsGroupView>): SettingsModalView {

@@ -226,8 +226,7 @@ describe('Command and SettingsModal', () => {
             .onPress(compose),
           CommandGroup('Go to', CommandItem('Settings').id('settings').subtitle('Preferences')),
         )
-          .presented(true)
-          .onPresentedChange(change)
+          .presented([true, change])
           .placeholder('Search')
           .emptyLabel('Nothing')
           .query('ne', query),
@@ -276,8 +275,7 @@ describe('Command and SettingsModal', () => {
             SettingsItem('Sign out', OtherGlyph).onPress(signOut),
           ),
         )
-          .presented(true)
-          .onPresentedChange(change)
+          .presented([true, change])
           .selection('profile')
           .initialView('page')
           .presentation('floating'),

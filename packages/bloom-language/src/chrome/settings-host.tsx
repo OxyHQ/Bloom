@@ -3,6 +3,7 @@
  * `SettingsGroup`s its navigation groups, each `SettingsItem` a row that opens
  * its page (built only while the page is shown) or runs its press.
  */
+import type { Binding } from '../binding';
 import {
   SettingsModal,
   type SettingsModalPage,
@@ -64,12 +65,12 @@ export function settingsNavigation(
 export function SettingsHost({ node, render, press }: NodeHostProps) {
   const values = valuesOf(node);
   const { groups, pages } = settingsNavigation(node, render, press);
-  const change = values.onPresentedChange as ((presented: boolean) => void) | undefined;
+  const presented = values.presented as Binding<boolean> | undefined;
   const props: SettingsModalProps = defined({
     groups,
     pages,
-    open: (values.presented as boolean | undefined) ?? false,
-    onClose: change ? () => change(false) : undefined,
+    open: presented?.[0] ?? false,
+    onClose: presented ? () => presented[1](false) : undefined,
     page: values.selection as string | undefined,
     onPageChange: values.onSelect as ((page: string) => void) | undefined,
     initialView: values.initialView as SettingsView | undefined,

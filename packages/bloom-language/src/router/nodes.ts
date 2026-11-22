@@ -94,7 +94,7 @@ export function navigate(
  * ```ts
  * AppLayout(Stack()).panels(
  *   Panel('main'),
- *   Panel('details', Details()).panelRole('inspector').presented(open).onPresentedChange(setOpen).label('Details'),
+ *   Panel('details', Details()).panelRole('inspector').presented([open, setOpen]).label('Details'),
  * )
  * ```
  */

@@ -18,6 +18,7 @@ import { Node, type Child, type IconComponent, type ViewModifiers, type ViewNode
 import { resolveSpace, type SpaceToken } from '../tokens';
 import { defined } from '../chrome/defined';
 import type { ControlRenderer } from './draw';
+import type { ContentType, Keyboard } from './inputs';
 
 /** Settings rows: a section, a value, a select, a text field and a date field. */
 export type SettingsKind =
@@ -27,10 +28,6 @@ export type SettingsKind =
   | 'settingsTextField'
   | 'settingsDateField';
 
-/** The keyboards a settings text field offers (Bloom's `keyboardType`). */
-export type SettingsKeyboard = NonNullable<SettingsTextFieldProps['keyboardType']>;
-/** What a settings text field autofills (Bloom's `autoComplete`). */
-export type SettingsAutofill = NonNullable<SettingsTextFieldProps['autoComplete']>;
 /** A choice of a `SettingsSelect`: Bloom's `items`. */
 export interface SettingsChoice<T extends string> {
   readonly value: T;
@@ -66,9 +63,9 @@ export interface SettingsSelectView extends ViewModifiers<SettingsSelectView> {
 export interface SettingsTextFieldView extends ViewNode {
   icon(value: IconComponent): SettingsTextFieldView;
   placeholder(value: string): SettingsTextFieldView;
-  keyboard(value: SettingsKeyboard): SettingsTextFieldView;
+  keyboard(value: Keyboard): SettingsTextFieldView;
   /** What the system autofills it with. */
-  contentType(value: SettingsAutofill): SettingsTextFieldView;
+  contentType(value: ContentType): SettingsTextFieldView;
   disabled(value?: boolean): SettingsTextFieldView;
   /** The modal's saved toast on a commit (shown by default). */
   savedToast(value?: boolean): SettingsTextFieldView;

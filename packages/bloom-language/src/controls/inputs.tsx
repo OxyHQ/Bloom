@@ -789,7 +789,12 @@ const search: ControlRenderer = (d) => {
       placeholder: d.own('placeholder')?.value,
       size: d.own('size')?.value as BloomSize | undefined,
       disabled: d.own('disabled')?.value,
-      presentation: collapsible === undefined ? undefined : (collapsible.value ?? 'collapsible'),
+      presentation:
+        collapsible === undefined || collapsible.value === false
+          ? undefined
+          : collapsible.value === true
+            ? 'collapsible'
+            : collapsible.value,
       open: presented?.[0],
       onOpenChange: presented?.[1],
       tokens: tokens?.[0],

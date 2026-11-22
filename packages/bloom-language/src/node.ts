@@ -34,7 +34,6 @@ import type { Binding } from './binding';
 import type {
   BoundaryErrorHandler,
   BoundaryFallback,
-  KeyboardTaps,
   SelectionIndicator,
   CardBorder,
   CardElevation,
@@ -70,7 +69,7 @@ import type {
   Presentation,
   PresentedNode,
 } from './controls/overlays';
-import type { SettingsAutofill, SettingsKeyboard, SettingsKind } from './controls/settings';
+import type { SettingsKind } from './controls/settings';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import type { KeyframesValue } from './motion/keyframes';
@@ -353,9 +352,9 @@ export interface ValueModifiers {
   shortcut: string;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
-  collapsible: boolean;
+  collapsible: boolean | SearchCollapse;
   emptyLabel: string;
-  error: string | undefined;
+  error: string | null | undefined;
   meta: string | undefined;
   variant: SidebarVariant;
   surface: SidebarSurface;
@@ -367,8 +366,6 @@ export interface ValueModifiers {
   width: SpaceToken;
   pinning: FooterPinning;
   ignoresSafeArea: boolean;
-  presented: boolean;
-  onPresentedChange: (presented: boolean) => void;
   placeholder: string;
   filter: (item: BloomCommandItem, query: string) => boolean;
   keywords: readonly string[];
@@ -384,7 +381,7 @@ export interface ValueModifiers {
   maxWidth: SpaceToken;
   resizable: boolean;
   keepMounted: boolean;
-  page: boolean;
+  page: boolean | DialogScreenFrame;
   preload: boolean;
   bar: boolean;
   sidebar: boolean;
@@ -462,7 +459,6 @@ export interface ValueModifiers {
   flow: GridFlow;
 
   // Inputs (controls/inputs.tsx)
-  placeholder: string;
   invalid: boolean;
   required: boolean;
   floatingLabel: true;
@@ -478,7 +474,6 @@ export interface ValueModifiers {
   autoFocus: true;
   maxLength: number;
   description: string;
-  error: string | null | undefined;
   readOnly: true;
   indeterminate: boolean;
   rows: number;
@@ -486,7 +481,6 @@ export interface ValueModifiers {
   resize: TextareaResize;
   showCount: true;
   tabs: true;
-  collapsible: SearchCollapse | undefined;
   presented: Binding<boolean>;
   tokens: Binding<readonly SearchToken[]>;
   trailingIcon: IconComponent;
@@ -508,7 +502,6 @@ export interface ValueModifiers {
   dismissible: boolean;
   buttons: readonly DialogAction[];
   presentAt: { readonly base: DialogPlacement; readonly tiers: DialogTiers | undefined };
-  page: DialogScreenFrame;
   sideOffset: SpaceToken;
   alignOffset: PaddingToken;
   offlineMessage: string;
@@ -517,7 +510,6 @@ export interface ValueModifiers {
   reconnectingDelay: number;
   restoredDuration: number;
   dismissOnBackdrop: boolean;
-  scrollable: boolean;
   side: { readonly side: FloatingSide; readonly align: FloatingAlign | undefined };
 
   // Containers (controls/containers.tsx)
@@ -552,19 +544,14 @@ export interface ValueModifiers {
   indicator: SelectionIndicator;
   fade: ColorName;
   ringInset: SpaceToken;
-  keyboardTaps: KeyboardTaps;
   nativeID: string;
   describedBy: string;
   sideGutter: SpaceToken;
   maxHeightRatio: number;
 
   // Settings rows (controls/settings.tsx)
-  description: string;
-  inset: SpaceToken;
   muted: boolean;
   compact: boolean;
-  keyboard: SettingsKeyboard;
-  contentType: SettingsAutofill;
   savedToast: boolean;
   minDate: Date;
   maxDate: Date;
@@ -1512,13 +1499,13 @@ export class Node {
   onExpandedChange(value: (expanded: boolean) => void): Node {
     return this.set('onExpandedChange', value);
   }
-  collapsible(value = true): Node {
+  collapsible(value: boolean | SearchCollapse = true): Node {
     return this.set('collapsible', value);
   }
   emptyLabel(value: string): Node {
     return this.set('emptyLabel', value);
   }
-  error(value: string | undefined): Node {
+  error(value: string | null | undefined): Node {
     return this.set('error', value);
   }
   meta(value: string | undefined): Node {
@@ -1553,12 +1540,6 @@ export class Node {
   }
   ignoresSafeArea(value = true): Node {
     return this.set('ignoresSafeArea', value);
-  }
-  presented(value: boolean): Node {
-    return this.set('presented', value);
-  }
-  onPresentedChange(value: (presented: boolean) => void): Node {
-    return this.set('onPresentedChange', value);
   }
   placeholder(value: string): Node {
     return this.set('placeholder', value);
@@ -1608,7 +1589,7 @@ export class Node {
   keepMounted(value = true): Node {
     return this.set('keepMounted', value);
   }
-  page(value = true): Node {
+  page(value: boolean | DialogScreenFrame = true): Node {
     return this.set('page', value);
   }
   preload(value = true): Node {
@@ -1884,9 +1865,6 @@ export class Node {
   }
 
   // Inputs (controls/inputs.tsx)
-  placeholder(value: string): Node {
-    return this.set('placeholder', value);
-  }
   invalid(value = true): Node {
     return this.set('invalid', value);
   }
@@ -1932,9 +1910,6 @@ export class Node {
   description(value: string): Node {
     return this.set('description', value);
   }
-  error(value: string | null | undefined): Node {
-    return this.set('error', value);
-  }
   readOnly(): Node {
     return this.set('readOnly', true);
   }
@@ -1955,9 +1930,6 @@ export class Node {
   }
   tabs(): Node {
     return this.set('tabs', true);
-  }
-  collapsible(value?: SearchCollapse): Node {
-    return this.set('collapsible', value);
   }
   presented(value: Binding<boolean>): Node {
     return this.set('presented', value);
@@ -2018,9 +1990,6 @@ export class Node {
   presentAt(base: DialogPlacement, tiers?: DialogTiers): Node {
     return this.set('presentAt', { base, tiers });
   }
-  page(value: DialogScreenFrame): Node {
-    return this.set('page', value);
-  }
   sideOffset(value: SpaceToken): Node {
     return this.set('sideOffset', value);
   }
@@ -2044,9 +2013,6 @@ export class Node {
   }
   dismissOnBackdrop(value: boolean): Node {
     return this.set('dismissOnBackdrop', value);
-  }
-  scrollable(value = true): Node {
-    return this.set('scrollable', value);
   }
   side(side: FloatingSide, align?: FloatingAlign): Node {
     return this.set('side', { side, align });
@@ -2146,9 +2112,6 @@ export class Node {
   ringInset(value: SpaceToken): Node {
     return this.set('ringInset', value);
   }
-  keyboardTaps(value: KeyboardTaps): Node {
-    return this.set('keyboardTaps', value);
-  }
   nativeID(value: string): Node {
     return this.set('nativeID', value);
   }
@@ -2163,23 +2126,11 @@ export class Node {
   }
 
   // Settings rows (controls/settings.tsx)
-  description(value: string): Node {
-    return this.set('description', value);
-  }
-  inset(value: SpaceToken): Node {
-    return this.set('inset', value);
-  }
   muted(value = true): Node {
     return this.set('muted', value);
   }
   compact(value = true): Node {
     return this.set('compact', value);
-  }
-  keyboard(value: SettingsKeyboard): Node {
-    return this.set('keyboard', value);
-  }
-  contentType(value: SettingsAutofill): Node {
-    return this.set('contentType', value);
   }
   savedToast(value = true): Node {
     return this.set('savedToast', value);
@@ -3049,9 +3000,8 @@ export interface PageFooterView extends ViewNode {
  * its title.
  */
 export interface CommandView extends ViewNode {
-  presented(value: boolean): CommandView;
+  presented(value: Binding<boolean>): CommandView;
   /** Told `false` when the reader closes it (Escape, the backdrop, a choice). */
-  onPresentedChange(value: (presented: boolean) => void): CommandView;
   placeholder(value: string): CommandView;
   /** What it says when nothing matches. */
   emptyLabel(value: string): CommandView;
@@ -3082,9 +3032,8 @@ export type CommandGroupView = ViewNode;
  * `.content` its page.
  */
 export interface SettingsModalView extends ViewNode {
-  presented(value: boolean): SettingsModalView;
+  presented(value: Binding<boolean>): SettingsModalView;
   /** Told `false` when the reader closes it. */
-  onPresentedChange(value: (presented: boolean) => void): SettingsModalView;
   /** The id of the page shown, held by the app. */
   selection(value: string | undefined): SettingsModalView;
   onSelect(value: (id: string) => void): SettingsModalView;
@@ -3260,8 +3209,7 @@ export interface PanelView extends ViewNode {
   /** Kept mounted while hidden. */
   keepMounted(value?: boolean): PanelView;
   /** An inspector's open state: a column from `lg`, a sheet from the end below it. */
-  presented(value: boolean): PanelView;
-  onPresentedChange(value: (presented: boolean) => void): PanelView;
+  presented(value: Binding<boolean>): PanelView;
   testID(value: string): PanelView;
 }
 /** A destination of the app: a route the pager, the bar and the sidebar know by its name. */

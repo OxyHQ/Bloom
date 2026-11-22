@@ -2,6 +2,7 @@
  * A `Command` as Bloom's `Command` palette, on every platform: its
  * `CommandItem` rows its items, a `CommandGroup`'s under that group.
  */
+import type { Binding } from '../binding';
 import { Command, type CommandItem, type CommandProps } from '@oxy.so/bloom/command';
 
 import type { IconComponent, Modifier, Node, Press } from '../node';
@@ -46,9 +47,10 @@ export function CommandHost({ node, press }: NodeHostProps) {
   const values = valuesOf(node);
   let query: Extract<Modifier, { kind: 'query' }> | undefined;
   for (const modifier of node.modifiers) if (modifier.kind === 'query') query = modifier;
+  const presented = values.presented as Binding<boolean> | undefined;
   const props: CommandProps = defined({
-    open: (values.presented as boolean | undefined) ?? false,
-    onOpenChange: (values.onPresentedChange as ((open: boolean) => void) | undefined) ?? NOOP,
+    open: presented?.[0] ?? false,
+    onOpenChange: presented?.[1] ?? NOOP,
     items: commandItems(node, press),
     placeholder: values.placeholder as string | undefined,
     emptyText: values.emptyLabel as string | undefined,

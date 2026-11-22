@@ -266,10 +266,8 @@ export {
   SettingsValue,
 } from './controls/settings';
 export type {
-  SettingsAutofill,
   SettingsChoice,
   SettingsDateFieldView,
-  SettingsKeyboard,
   SettingsSectionView,
   SettingsSelectView,
   SettingsTextFieldView,
@@ -373,7 +371,6 @@ export type {
   GroupedSectionCollapseView,
   GroupedSectionDividerView,
   GroupedSectionIconView,
-  KeyboardTaps,
   SelectionCardView,
   SelectionIndicator,
   TabContentView,
