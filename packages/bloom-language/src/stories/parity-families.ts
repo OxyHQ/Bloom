@@ -93,6 +93,9 @@ import { LISTING_EDITOR_CASES } from '../../parity/listing-editor.cases';
 import { PROPERTY_INSIGHT_CASES } from '../../parity/property-insights.cases';
 import { PROJECT_BOARD_CASES } from '../../parity/project-board.cases';
 import { ACTIVITY_FEED_CASES } from '../../parity/activity-feed.cases';
+import { ORDER_STATUS_CASES } from '../../parity/order-status.cases';
+import { LOCKUP_CASES } from '../../parity/lockup.cases';
+import { CALENDAR_CASES } from '../../parity/calendar.cases';
 
 /** Every parity family's cases, by the name a story and a frame's URL give it. */
 export const FAMILIES = {
@@ -191,6 +194,9 @@ export const FAMILIES = {
   propertyInsight: PROPERTY_INSIGHT_CASES,
   projectBoard: PROJECT_BOARD_CASES,
   activityFeed: ACTIVITY_FEED_CASES,
+  orderStatus: ORDER_STATUS_CASES,
+  lockup: LOCKUP_CASES,
+  calendar: CALENDAR_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

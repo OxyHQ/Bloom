@@ -122,6 +122,10 @@ import type { HomeSearchKind } from './controls/home-search';
 import type { BookingKind } from './controls/booking';
 import type { ProjectBoardKind } from './controls/project-board';
 import type { ActivityFeedKind } from './controls/activity-feed';
+import type { OrderStatusKind } from './controls/order-status';
+import type { LockupKind } from './controls/lockup';
+import type { AmbientPhotoKind } from './controls/ambient-photo';
+import type { CalendarViewKind } from './controls/calendar';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -256,6 +260,8 @@ import {
   type SearchModeTabsStyle,
   type TripCardOrientation,
   type ActivityFeedGrouping,
+  type OrderStatusBarStyle,
+  type LockupSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1001,6 +1007,8 @@ export interface ValueModifiers {
   tail: boolean;
   metaOverlay: boolean;
   senderTint: ColorToken;
+  // A product component's hairline (a lockup's)
+  divider: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1163,7 +1171,8 @@ export type Modifier =
         | DirectionsDensity
         | NoteToolbarSize
         | FollowButtonSize
-        | OfferingBadgeSize;
+        | OfferingBadgeSize
+        | LockupSize;
     }
   | {
       readonly kind: 'style';
@@ -1216,7 +1225,9 @@ export type Modifier =
         | MortgageLayout
         | ListingCardLayout
         | OfferingBadgeStyle
-        | ActivityFeedGrouping;
+        | ActivityFeedGrouping
+        | ActivityFeedGrouping
+        | OrderStatusBarStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1238,7 +1249,8 @@ export type Modifier =
         | AgentThinkingTone
         | ChatStatusTone
         | MessageTone
-        | RentOutstandingTone;
+        | RentOutstandingTone
+        | AccentTone;
     }
   | {
       readonly kind: 'count';
@@ -1506,7 +1518,11 @@ export type NodeKind =
   | OfferingBadgeKind
   | PropertyInsightKind
   | ProjectBoardKind
-  | ActivityFeedKind;
+  | ActivityFeedKind
+  | OrderStatusKind
+  | LockupKind
+  | AmbientPhotoKind
+  | CalendarViewKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1828,7 +1844,8 @@ export class Node {
       | GuestPickerSize
       | DirectionsDensity
       | NoteToolbarSize
-      | OfferingBadgeSize,
+      | OfferingBadgeSize
+      | LockupSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -1879,7 +1896,9 @@ export class Node {
       | MortgageLayout
       | ListingCardLayout
       | OfferingBadgeStyle
-      | ActivityFeedGrouping,
+      | ActivityFeedGrouping
+      | ActivityFeedGrouping
+      | OrderStatusBarStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1899,7 +1918,8 @@ export class Node {
       | AgentThinkingTone
       | ChatStatusTone
       | MessageTone
-      | RentOutstandingTone,
+      | RentOutstandingTone
+      | AccentTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
@@ -3449,6 +3469,9 @@ export class Node {
   }
   senderTint(value: ColorToken): Node {
     return this.set('senderTint', value);
+  }
+  divider(value = true): Node {
+    return this.set('divider', value);
   }
 }
 

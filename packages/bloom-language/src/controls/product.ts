@@ -23,6 +23,15 @@ export function length(token: SpaceToken | undefined): number | undefined {
   return token === undefined ? undefined : resolveSpace(token);
 }
 
+/**
+ * Bloom's density of a content rhythm (an activity feed's, an order timeline's),
+ * from the node's `.density()`: the language's `default` is its `comfortable`.
+ */
+export function rhythm(d: ControlDraw): 'comfortable' | 'compact' | undefined {
+  const density = d.own('density')?.value;
+  return density === undefined ? undefined : density === 'compact' ? 'compact' : 'comfortable';
+}
+
 /** A corner a product component takes as a radius: a corner rung. */
 export type CornerToken = Exclude<CornerName, 'concentric'>;
 
