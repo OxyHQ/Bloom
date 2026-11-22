@@ -31,7 +31,7 @@ export const Default: Story = {
     <ScrollArea
       {...args}
       style={{ height: 260, width: 360, maxWidth: '100%' }}
-      contentContainerClassName="gap-2 p-4"
+      contentContainerStyle={{ gap: 8, padding: 16 }}
     >
       {LINES.map((line) => (
         <Text key={line} variant="body-regular">
@@ -52,7 +52,7 @@ export const Modes: Story = {
           <ScrollArea
             scrollbar={mode}
             style={{ height: 200, width: 200 }}
-            contentContainerClassName="gap-2 p-3"
+            contentContainerStyle={{ gap: 8, padding: 12 }}
           >
             {LINES.slice(0, 20).map((line) => (
               <Text key={line} variant="body-2-regular">
@@ -90,7 +90,7 @@ export const Sizes: Story = {
           size={size}
           scrollbar="always"
           style={{ height: 200, width: 220 }}
-          contentContainerClassName="gap-2 p-3"
+          contentContainerStyle={{ gap: 8, padding: 12 }}
         >
           {LINES.slice(0, 20).map((line) => (
             <Text key={line} variant="body-2-regular">

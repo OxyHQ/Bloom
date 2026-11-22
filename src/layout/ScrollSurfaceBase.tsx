@@ -1,5 +1,5 @@
 import { useRef, useState, type ComponentType, type ComponentRef } from 'react';
-import { Platform, StyleSheet, type View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { WEB_POSITION_STICKY } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import { usePaintedSurfaceFill } from '../surface/use-painted-surface-fill';
@@ -10,11 +10,19 @@ import {
 } from './scroll-surface-sticky';
 import Animated, { useAnimatedStyle, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { EdgeScrim } from '../page-header/EdgeScrim';
-import { StyledView } from '../styles/styled-primitives';
+import { useInteractiveWebCss } from '../styles/interactive-web-css';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { parseRgba } from '../theme/color-utils';
 import { ScrollMetricsProvider, useScrollMetricsValue } from './scroll-metrics';
 import type { ScrollAreaProps, ScrollSurfaceProps } from './types';
+
+/**
+ * The web viewport: its overscroll stays inside, and keyboard focus draws an
+ * inset ring instead of the browser's outline.
+ */
+const SCROLL_SURFACE_CSS = `[data-bloom-scroll-surface] { overscroll-behavior: contain; outline-style: none; }
+[data-bloom-scroll-surface]:focus-visible { box-shadow: inset 0 0 0 2px var(--ring); }`;
 
 /** A nested scroll surface owns its metrics; it never drives an enclosing screen's chrome. */
 export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) {
@@ -22,8 +30,6 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
     children,
     stickyHeader,
     stickyFooter,
-    className,
-    contentClassName,
     hostStyle,
     fadeColor,
     matchSurfacePaint = false,
@@ -38,6 +44,7 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
     onLayout,
     ...props
   }: ScrollSurfaceProps) {
+    useInteractiveWebCss('bloom-scroll-surface', SCROLL_SURFACE_CSS);
     const { colors } = useTheme();
     const host = useRef<ComponentRef<typeof View>>(null);
     const [viewport, setViewport] = useState(0);
@@ -60,7 +67,7 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
     // Select the UI-thread metrics binding on native, without a JS observer.
     const handler = useAnimatedScrollHandler({}, []);
     const viewportOverlay = (
-      <StyledView
+      <View
         pointerEvents="none"
         aria-hidden
         accessibilityElementsHidden
@@ -90,22 +97,20 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
             bottom
           />
         ) : null}
-      </StyledView>
+      </View>
     );
     return (
-      <StyledView
+      <View
         ref={host}
-        className={`relative min-h-0 ${className ?? ''}`}
-        style={hostStyle}
+        style={[{ position: 'relative', minHeight: 0 }, hostStyle]}
         testID={testID ? `${testID}-viewport` : undefined}
       >
         <ScrollArea
           ref={scrollRef}
           testID={testID}
           accessibilityLabel={label}
-          className="overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
+          {...webDataSet({ bloomScrollSurface: '' })}
           style={{ height: '100%' }}
-          contentContainerClassName={contentClassName}
           {...props}
           viewportOverlay={viewportOverlay}
           contentContainerStyle={
@@ -136,9 +141,9 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
                 >
                   {stickyHeader}
                 </ScrollChrome>,
-                <StyledView key="body" style={{ flexGrow: 1, flexShrink: 0 }}>
+                <View key="body" style={{ flexGrow: 1, flexShrink: 0 }}>
                   {children}
-                </StyledView>,
+                </View>,
                 <ScrollChrome
                   key="footer"
                   edge="bottom"
@@ -152,7 +157,7 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
               ]
             : children}
         </ScrollArea>
-      </StyledView>
+      </View>
     );
   }
   return function ScrollSurface(props: ScrollSurfaceProps) {
@@ -164,7 +169,7 @@ export function createScrollSurface(ScrollArea: ComponentType<ScrollAreaProps>) 
   };
 }
 
-const AnimatedChrome = Animated.createAnimatedComponent(StyledView);
+const AnimatedChrome = Animated.createAnimatedComponent(View);
 function ScrollChrome({
   children,
   edge,
@@ -207,13 +212,13 @@ function ScrollChrome({
   const layout = (event: import('react-native').LayoutChangeEvent) =>
     onHeight(event.nativeEvent.layout.height);
   return Platform.OS === 'web' ? (
-    <StyledView
+    <View
       testID={testID}
       onLayout={layout}
       style={[baseStyle, enabled ? { position: WEB_POSITION_STICKY, [edge]: 0 } : undefined]}
     >
       {children}
-    </StyledView>
+    </View>
   ) : (
     <AnimatedChrome testID={testID} onLayout={layout} style={[baseStyle, footerStyle]}>
       {children}

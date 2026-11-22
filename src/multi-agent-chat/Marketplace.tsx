@@ -28,6 +28,7 @@ import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { Tabs, TabsTrigger } from '../tabs';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { useTheme } from '../theme/use-theme';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
 import { Text } from '../typography';
 import type { Agent } from './data';
 import {
@@ -171,6 +172,9 @@ function Section({
   );
 }
 
+/** `flex: 1`, as the CSS shorthand computes it. */
+const FLEX_FILL = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' } as const;
+
 export function Marketplace({
   agents,
   installedPlugins,
@@ -194,6 +198,7 @@ export function Marketplace({
 }) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
   const { ScrollSurface } = useChatComponents();
+  const narrow = useWindowBreakpoint() === 'base';
 
   const [query, setQuery] = useState('');
   const [view, setView] = useState<View>('discover');
@@ -337,8 +342,8 @@ export function Marketplace({
             <ScrollSurface
               key={detail.id}
               surface="full"
-              className="flex-1"
-              contentClassName="px-5 pb-8 sm:px-8"
+              hostStyle={FLEX_FILL}
+              contentContainerStyle={{ paddingInline: narrow ? 20 : 32, paddingBottom: 32 }}
               label={formatMessage(messages.itemDetails, detail.name)}
             >
               <StyledView className="flex flex-col gap-5 pt-1">
@@ -525,8 +530,8 @@ export function Marketplace({
                 <ScrollSurface
                   key={`${view}-${query}`}
                   surface="full"
-                  className="flex-1"
-                  contentClassName="px-4 pb-6 sm:px-8"
+                  hostStyle={FLEX_FILL}
+                  contentContainerStyle={{ paddingInline: narrow ? 16 : 32, paddingBottom: 24 }}
                   label={messages.marketplaceListings}
                 >
                   <StyledView className="flex flex-col gap-5 pt-1">
