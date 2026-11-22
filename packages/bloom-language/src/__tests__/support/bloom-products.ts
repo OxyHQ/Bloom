@@ -130,3 +130,6 @@ export const IncomingCallBanner = 'IncomingCallBanner';
 export const StoryViewer = 'StoryViewer';
 export const SelectedChipsRow = 'SelectedChipsRow';
 export const NewGroupForm = 'NewGroupForm';
+export const MessageBubble = 'MessageBubble';
+export const TypingBubble = 'TypingBubble';
+export const MessageList = 'MessageList';
