@@ -157,6 +157,9 @@ export const BREAKPOINT = ${ts(scales.breakpoint)} as const;
 export const VARIANT_MODIFIERS = ${ts(spec.variants.modifiers)} as const;
 export const VARIANT_SELECTORS = ${ts(withoutComment(spec.variants.selectors))} as const;
 
+/** What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view. */
+export const CONTENT_VIEW_MODIFIERS = ${ts(spec.contentView.modifiers)} as const;
+
 /** Cubic-bezier curves by name. */
 export const EASING = ${ts(easing)} as const;
 /** Motion tokens as Bloom \`MotionSpec\`s: a duration and curve, or a spring. */
@@ -573,6 +576,9 @@ pub const VARIANT_MODIFIERS: &[&str] = ${rustList(spec.variants.modifiers)};
 pub const FADING_LOOPS: &[&str] = ${rustList(
   Object.keys(loops).filter((name) => loops[name].frames.some((frame) => 'opacity' in frame)),
 )};
+
+/// What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view.
+pub const CONTENT_VIEW_MODIFIERS: &[&str] = ${rustList(spec.contentView.modifiers)};
 
 /// Modifier → its parameter types, in order (\`?\` optional).
 pub const MODIFIERS: &[(&str, &[&str])] = &[

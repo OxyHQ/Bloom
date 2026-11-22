@@ -1,12 +1,13 @@
 import { type ReactNode, useState } from 'react';
 import { RefreshControl, View } from 'react-native';
 import { EdgeScrim, PageHeader, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
-import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+import { Screen, ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 import { tokens, useSurfaceFill } from '@oxy.so/bloom/styles';
 import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
+import type { ScrollViewNode } from '../src/node';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { ScreenHost } from '../src/router/screen-host';
@@ -178,6 +179,96 @@ const scrollViews: ParityCase[] = inScreen([
     ),
   })),
 ]);
+
+/**
+ * A content view is Bloom's view of a content class (`contentContainerClassName`):
+ * the class laid out inside the content container, styled by the class and then
+ * by `contentContainerStyle`. Here the class is empty and the style is the
+ * view's (the codemod's corpus draws Tailwind's classes against it).
+ */
+const contentViews: ParityCase[] = (
+  [
+    {
+      name: 'a content view of paddings and spacing',
+      language: L.ScrollView(L.Text('a'), L.Text('b')).contentView((v) =>
+        v.padding('horizontal', 'lg').padding('bottom', '2xl').spacing('lg'),
+      ),
+      bloom: {
+        contentContainerStyle: {
+          paddingStart: space.lg,
+          paddingEnd: space.lg,
+          paddingBottom: space._2xl,
+          gap: space.lg,
+        },
+      },
+    },
+    {
+      name: 'a content view that fills the viewport and centres its content',
+      language: L.ScrollView(L.Text('a'), L.Text('b')).contentView((v) =>
+        v.flex('1').align('center').justify('center').spacing('md'),
+      ),
+      bloom: {
+        contentContainerStyle: {
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: '0%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: space.md,
+        },
+      },
+    },
+    {
+      name: 'a content view in a row, centred at a width',
+      language: L.ScrollView(L.Text('a'), L.Text('b')).contentView((v) =>
+        v.axis('horizontal').frame({ width: 'full', maxWidth: '672' }).alignSelf('center'),
+      ),
+      bloom: {
+        contentContainerStyle: {
+          flexDirection: 'row',
+          width: '100%',
+          maxWidth: 672,
+          alignSelf: 'center',
+        },
+      },
+    },
+    {
+      name: 'a content view with the content margins and spacing after its own',
+      language: L.ScrollView(L.Text('a'), L.Text('b'))
+        .contentMargins('lg')
+        .spacing('sm')
+        .contentView((v) => v.padding('horizontal', 'md').align('start')),
+      bloom: {
+        contentContainerStyle: [
+          { paddingStart: space.md, paddingEnd: space.md, alignItems: 'flex-start' },
+          { padding: space.lg, gap: space.sm },
+        ],
+      },
+    },
+    {
+      name: 'an empty content view',
+      language: L.ScrollView(L.Text('a'), L.Text('b')).contentView((v) => v),
+      bloom: {},
+    },
+  ] as {
+    name: string;
+    language: ScrollViewNode;
+    bloom: Pick<ScreenScrollViewProps, 'contentContainerStyle'>;
+  }[]
+).flatMap(({ name, language, bloom }) =>
+  [false, true].map((documentScroll) => ({
+    name: `${name}${documentScroll ? ', the document scrolling' : ''}`,
+    language: () => <Screen documentScroll={documentScroll}>{toElement(language)}</Screen>,
+    bloom: () => (
+      <Screen documentScroll={documentScroll}>
+        <ScreenScrollView contentContainerClassName="" {...bloom}>
+          <Text>a</Text>
+          <Text>b</Text>
+        </ScreenScrollView>
+      </Screen>
+    ),
+  })),
+);
 
 /** A `Header` as Bloom's `PageHeader`, each prop an app gives it that the header maps. */
 const pageHeaders: ParityCase[] = [
@@ -581,6 +672,7 @@ const groups: ParityCase[] = [
 export const SCREEN_CASES: ParityCase[] = [
   ...scrollViews,
   ...insets,
+  ...contentViews,
   ...pageHeaders,
   ...screens,
   ...groups,

@@ -366,6 +366,26 @@ fn tracking_and_the_mono_face_are_checked() {
 }
 
 #[test]
+fn a_content_view_takes_the_layout_of_one_view() {
+    let ok = chrome(
+        "export const x = () => ScrollView(Text('a')).contentView((v) => v.padding('horizontal', 'lg').spacing('md').flex('1').align('center'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>());
+    let output =
+        chrome("export const x = () => ScrollView(Text('a')).contentView((v) => v.padding('huge'));\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'huge' for .padding()");
+    let output =
+        chrome("export const x = () => ScrollView(Text('a')).contentView((v) => v.background('surface'));\n");
+    assert_eq!(output.diagnostics[0].message, "A content view cannot take .background()");
+    let output = chrome(
+        "export const x = () => ScrollView(Text('a')).contentView((v) => v.when('md', (w) => w.padding('lg')));\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "A content view cannot take .when()");
+    let output = chrome("export const x = () => Sidebar(Text('a')).contentView((v) => v.padding('lg'));\n");
+    assert!(!output.diagnostics.is_empty());
+}
+
+#[test]
 fn a_variant_is_checked_against_what_a_variant_changes() {
     let ok = compiled(
         "export const x = () => HStack().padding('sm').when('md', (v) => v.padding('lg').justify('center')).when('dark', v => { return v.background('surface'); });\n",
