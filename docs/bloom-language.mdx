@@ -4215,6 +4215,7 @@ Tailwind's `animate-pulse` curve `[0.4, 0, 0.6, 1]`).
 | `.repeatForever(loop)` | `keyframeAnimator(repeating: true)`: plays a loop again and again while the view is on screen: `'spin'` (a turn, 1 s linear: `animate-spin`), `'pulse'` (half opacity at the midpoint, 2 s: `animate-pulse`), frame for frame, or keyframes of the app's own. It plays when nothing else does, after an insertion ends; never under reduced motion. |
 | `.delay(d)` | What the view plays waits `d` first (its `.animation()` changes, its insertion and removal, its keyframes, its loop): a duration token: Bloom's `instant` 100, `fast` 150, `normal` 200, `slow` 300 (ms), or an exact one the scale holds (`'0'`, `'800'`…). No app writes a Tailwind delay (the className scan has no `delay-*`). A delayed playing holds its first frame while it waits. |
 | `.anchor(a)` | The point its scale and rotation (and its keyframes' and transition's) turn about; see [Modifiers](#modifiers). |
+| `.phases(phases, trigger, build, motion?)` | `phaseAnimator`: through every phase and back, each time `trigger` changes to a truthy value (see below). |
 | `.matchedGeometry(id, ns)` | `matchedGeometryEffect`: the view that takes `id` moves from where the last view with it was. `const ns = useNamespace()` within one tree; between screens, a namespace declared once at module scope, `const photos = transitionNamespace()` (SwiftUI's `matchedTransitionSource` beside a navigation transition): see How it runs. |
 | `.contentTransition('roll', direction?)` | `Text` only: a change of the text inside an animation rolls the old text out and the new one in (Bloom's `rollKeyframes`, as `RollingText` rolls), up when `direction` rose and down when it fell. |
 | `.contentTransition('numeric', direction?)` | `Text` only; `.contentTransition(.numericText(value:))`: a change inside an animation rolls each character that changed (the same `rollKeyframes`, each place its own pair on the engine) while the others stay put, matched from the end so a count gaining a digit keeps its units in place; a new character rolls in, a lost one rolls out beside the next. At rest it is the plain text; while it plays, a row with the text's box holds the pieces in its type, named by the whole text. |
@@ -4241,6 +4242,45 @@ A frame's `easing` curves the stretch from it to the next; without one the
 stretch takes the motion's curve, as a CSS animation applies its timing function
 per stretch. Values are Bloom-internal numbers (a scale factor, an opacity, px or
 a space token, degrees), as `defineTokens` allows.
+
+**Phases.** `.phases(phases, trigger, build, motion?)` is SwiftUI's
+`phaseAnimator`: the view rests in the first phase and, each time `trigger`
+changes to a truthy value (a counter, a flag turning on), moves through every
+next phase and back to the first. `build(view, phase)` sets a phase's geometry
+and opacity with tokens, and `motion(phase)` the motion a step into that phase
+plays with (Bloom's `select` spring by default):
+
+```ts
+Icon(liked ? LikeFillIcon : LikeIcon).phases(
+  ['rest', 'lift', 'settle'] as const,
+  likeCount,
+  (v, phase) => v.offset({ y: phase === 'lift' ? '-sm' : 'none' }).scale(phase === 'lift' ? 'swell' : 'full'),
+  (phase) => (phase === 'lift' ? 'pop' : 'select'),
+)
+```
+
+**Keyframe tracks.** `defineKeyframes({ y: [...], scale: [...] })` is SwiftUI's
+`KeyframeTrack`: each property (`x`, `y`, `scale`, `rotate`, `opacity`) its own
+timeline of steps, each `{ to, motion?, ms? }` (a motion's curve and length, a
+spring's physics included; `ms` alone is linear, with a motion it stretches it):
+
+```ts
+const bounce = defineKeyframes({
+  y: [{ to: '-lg', motion: 'pop' }, { to: 'none', motion: 'select' }],
+  scale: [{ to: 1.2, ms: 120 }, { to: 1, ms: 180 }],
+});
+Icon(StarIcon).keyframes(bounce, starred);
+```
+
+Both compile into Bloom's existing keyframes: phases are tracks (every
+property steps through the phases together), and tracks are sampled at each
+step's ends and eight points inside it, so each step keeps its own curve,
+played linearly between the samples over the longest track. One keyframes
+value per phases and motions, built once; the engine plays it as CSS
+keyframes, with no JavaScript per frame, on every platform. SwiftUI's
+per-frame `content` closure is not adopted. The compiler checks a phase's
+build (geometry and opacity only, each token), and a tracks value is pure, so
+a module constant holding one is static.
 
 A `MotionValue` is the one way to tie a gesture to geometry, and apps never
 write a worklet:
