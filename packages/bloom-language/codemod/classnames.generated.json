@@ -33,13 +33,13 @@
    "count": 1955,
    "apps": 21,
    "status": "mapped",
-   "language": ".font('body')"
+   "language": ".font('14').leading('20px')"
   },
   "flex-1": {
    "count": 1914,
    "apps": 27,
    "status": "mapped",
-   "language": ".grow()"
+   "language": ".flex('1')"
   },
   "text-foreground": {
    "count": 1777,
@@ -51,7 +51,7 @@
    "count": 1489,
    "apps": 23,
    "status": "mapped",
-   "language": ".font('caption-1')"
+   "language": ".font('xs').leading('16px')"
   },
   "gap-2": {
    "count": 1279,
@@ -249,7 +249,7 @@
    "count": 245,
    "apps": 23,
    "status": "mapped",
-   "language": ".corner(…) clips; alone it needs a clip modifier"
+   "language": ".clipped()"
   },
   "py-3": {
    "count": 244,
@@ -291,7 +291,7 @@
    "count": 215,
    "apps": 19,
    "status": "mapped",
-   "language": ".padding('top', 'xs') (outside the fill)"
+   "language": ".margin('top', 'xs')"
   },
   "text-primary": {
    "count": 214,
@@ -309,7 +309,7 @@
    "count": 207,
    "apps": 19,
    "status": "mapped",
-   "language": ".padding('top', 'sm') (outside the fill)"
+   "language": ".margin('top', 'sm')"
   },
   "border-b": {
    "count": 201,
@@ -363,7 +363,7 @@
    "count": 162,
    "apps": 15,
    "status": "mapped",
-   "language": ".padding('bottom', 'md') (outside the fill)"
+   "language": ".margin('bottom', 'md')"
   },
   "text-text-tertiary": {
    "count": 161,
@@ -405,13 +405,13 @@
    "count": 142,
    "apps": 15,
    "status": "mapped",
-   "language": ".padding('top', 'md') (outside the fill)"
+   "language": ".margin('top', 'md')"
   },
   "mt-0.5": {
    "count": 139,
    "apps": 14,
    "status": "mapped",
-   "language": ".padding('top', '2xs') (outside the fill)"
+   "language": ".margin('top', '2xs')"
   },
   "py-4": {
    "count": 137,
@@ -423,7 +423,7 @@
    "count": 136,
    "apps": 16,
    "status": "mapped",
-   "language": ".padding('top', 'lg') (outside the fill)"
+   "language": ".margin('top', 'lg')"
   },
   "px-2": {
    "count": 135,
@@ -435,7 +435,7 @@
    "count": 133,
    "apps": 15,
    "status": "mapped",
-   "language": ".padding('bottom', 'sm') (outside the fill)"
+   "language": ".margin('bottom', 'sm')"
   },
   "gap-0.5": {
    "count": 124,
@@ -495,7 +495,7 @@
    "count": 110,
    "apps": 14,
    "status": "mapped",
-   "language": ".padding('bottom', 'lg') (outside the fill)"
+   "language": ".margin('bottom', 'lg')"
   },
   "text-primary-text": {
    "count": 106,
@@ -507,7 +507,7 @@
    "count": 103,
    "apps": 13,
    "status": "mapped",
-   "language": ".padding('bottom', 'xs') (outside the fill)"
+   "language": ".margin('bottom', 'xs')"
   },
   "px-8": {
    "count": 103,
@@ -543,7 +543,7 @@
    "count": 96,
    "apps": 12,
    "status": "mapped",
-   "language": ".padding('bottom', '2xl') (outside the fill)"
+   "language": ".margin('bottom', '2xl')"
   },
   "bg-primary/10": {
    "count": 95,
@@ -855,13 +855,13 @@
    "count": 52,
    "apps": 8,
    "status": "mapped",
-   "language": ".padding('top', '2xl') (outside the fill)"
+   "language": ".margin('top', '2xl')"
   },
   "text-bodySmall": {
    "count": 51,
    "apps": 2,
    "status": "mapped",
-   "language": ".font('body-2')"
+   "language": ".font('sm').leading('18px')"
   },
   "text-primary-foreground": {
    "count": 51,
@@ -927,13 +927,13 @@
    "count": 44,
    "apps": 6,
    "status": "mapped",
-   "language": ".padding('bottom', '3xl') (outside the fill)"
+   "language": ".margin('bottom', '3xl')"
   },
   "mr-3": {
    "count": 43,
    "apps": 6,
    "status": "mapped",
-   "language": ".padding('trailing', 'md') (outside the fill)"
+   "language": ".margin('right', 'md')"
   },
   "px-screen-margin": {
    "count": 43,
@@ -951,19 +951,19 @@
    "count": 42,
    "apps": 13,
    "status": "mapped",
-   "language": ".position({ leading: 'none' })"
+   "language": ".position({ left: 'none' })"
   },
   "mt-8": {
    "count": 42,
    "apps": 11,
    "status": "mapped",
-   "language": ".padding('top', '3xl') (outside the fill)"
+   "language": ".margin('top', '3xl')"
   },
   "right-0": {
    "count": 42,
    "apps": 14,
    "status": "mapped",
-   "language": ".position({ trailing: 'none' })"
+   "language": ".position({ right: 'none' })"
   },
   "space-y-2": {
    "count": 42,
@@ -1101,7 +1101,7 @@
    "count": 35,
    "apps": 7,
    "status": "mapped",
-   "language": ".padding('horizontal', 'lg') (outside the fill)"
+   "language": ".margin('horizontal', 'lg')"
   },
   "rounded-3xl": {
    "count": 35,
@@ -1161,7 +1161,7 @@
    "count": 33,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('bottom', '2xs') (outside the fill)"
+   "language": ".margin('bottom', '2xs')"
   },
   "pointer-events-none": {
    "count": 33,
@@ -1185,25 +1185,25 @@
    "count": 32,
    "apps": 8,
    "status": "mapped",
-   "language": ".padding('bottom', '6') (outside the fill)"
+   "language": ".margin('bottom', '6')"
   },
   "ml-2": {
    "count": 32,
    "apps": 9,
    "status": "mapped",
-   "language": ".padding('leading', 'sm') (outside the fill)"
+   "language": ".margin('left', 'sm')"
   },
   "mt-1.5": {
    "count": 32,
    "apps": 10,
    "status": "mapped",
-   "language": ".padding('top', '6') (outside the fill)"
+   "language": ".margin('top', '6')"
   },
   "mt-5": {
    "count": 32,
    "apps": 9,
    "status": "mapped",
-   "language": ".padding('top', 'xl') (outside the fill)"
+   "language": ".margin('top', 'xl')"
   },
   "min-w-56": {
    "count": 31,
@@ -1257,7 +1257,7 @@
    "count": 30,
    "apps": 8,
    "status": "mapped",
-   "language": ".padding('leading', 'md') (outside the fill)"
+   "language": ".margin('left', 'md')"
   },
   "opacity-60": {
    "count": 30,
@@ -1341,7 +1341,7 @@
    "count": 27,
    "apps": 9,
    "status": "mapped",
-   "language": ".padding('bottom', 'xl') (outside the fill)"
+   "language": ".margin('bottom', 'xl')"
   },
   "space-y-3": {
    "count": 27,
@@ -1371,7 +1371,7 @@
    "count": 25,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('trailing', 'sm') (outside the fill)"
+   "language": ".margin('right', 'sm')"
   },
   "pt-6": {
    "count": 25,
@@ -1479,7 +1479,7 @@
    "count": 22,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', 'xs') (outside the fill)"
+   "language": ".margin('top', 'xs')"
   },
   "pb-8": {
    "count": 22,
@@ -1601,13 +1601,13 @@
    "count": 20,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('vertical', 'xs') (outside the fill)"
+   "language": ".margin('vertical', 'xs')"
   },
   "my-2": {
    "count": 20,
    "apps": 4,
    "status": "mapped",
-   "language": ".padding('vertical', 'sm') (outside the fill)"
+   "language": ".margin('vertical', 'sm')"
   },
   "p-3.5": {
    "count": 20,
@@ -1619,7 +1619,7 @@
    "count": 20,
    "apps": 6,
    "status": "mapped",
-   "language": ".padding('trailing', 'md')"
+   "language": ".padding('right', 'md')"
   },
   "shadow-sm": {
    "count": 20,
@@ -1757,7 +1757,7 @@
    "count": 17,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('top', '10') (outside the fill)"
+   "language": ".margin('top', '10')"
   },
   "overflow-auto": {
    "count": 17,
@@ -1929,7 +1929,7 @@
    "count": 15,
    "apps": 7,
    "status": "mapped",
-   "language": ".position({ trailing: 'sm' })"
+   "language": ".position({ right: 'sm' })"
   },
   "text-shop-sectionTitle": {
    "count": 15,
@@ -2189,7 +2189,7 @@
    "count": 12,
    "apps": 4,
    "status": "mapped",
-   "language": ".border(role, 'thin', 'trailing')"
+   "language": ".border(role, 'thin', 'right')"
   },
   "cursor-default": {
    "count": 12,
@@ -2213,13 +2213,13 @@
    "count": 12,
    "apps": 7,
    "status": "mapped",
-   "language": ".padding('leading', 'xs') (outside the fill)"
+   "language": ".margin('left', 'xs')"
   },
   "mt-space-8": {
    "count": 12,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('top', 'sm') (outside the fill)"
+   "language": ".margin('top', 'sm')"
   },
   "opacity-0": {
    "count": 12,
@@ -2285,7 +2285,7 @@
    "count": 11,
    "apps": 6,
    "status": "mapped",
-   "language": ".border(role, 'thin', 'leading')"
+   "language": ".border(role, 'thin', 'left')"
   },
   "duration-150": {
    "count": 11,
@@ -2335,13 +2335,13 @@
    "count": 11,
    "apps": 4,
    "status": "mapped",
-   "language": ".padding('bottom', '4xl') (outside the fill)"
+   "language": ".margin('bottom', '4xl')"
   },
   "mb-space-32": {
    "count": 11,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('bottom', '3xl') (outside the fill)"
+   "language": ".margin('bottom', '3xl')"
   },
   "min-h-5": {
    "count": 11,
@@ -2359,13 +2359,13 @@
    "count": 11,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('leading', '6') (outside the fill)"
+   "language": ".margin('left', '6')"
   },
   "ml-4": {
    "count": 11,
    "apps": 7,
    "status": "mapped",
-   "language": ".padding('leading', 'lg') (outside the fill)"
+   "language": ".margin('left', 'lg')"
   },
   "ml-auto": {
    "count": 11,
@@ -2383,13 +2383,13 @@
    "count": 11,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('leading', 'lg')"
+   "language": ".padding('left', 'lg')"
   },
   "pr-4": {
    "count": 11,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('trailing', 'lg')"
+   "language": ".padding('right', 'lg')"
   },
   "px-0": {
    "count": 11,
@@ -2401,7 +2401,7 @@
    "count": 11,
    "apps": 6,
    "status": "mapped",
-   "language": ".position({ trailing: 'md' })"
+   "language": ".position({ right: 'md' })"
   },
   "rounded-radius-20": {
    "count": 11,
@@ -2503,7 +2503,7 @@
    "count": 10,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', 'xl')"
+   "language": ".padding('left', 'xl')"
   },
   "ring-1": {
    "count": 10,
@@ -2535,7 +2535,7 @@
    "count": 10,
    "apps": 2,
    "status": "mapped",
-   "language": ".font('title-2')"
+   "language": ".font('xl').leading('snug')"
   },
   "top-3": {
    "count": 10,
@@ -2617,7 +2617,7 @@
    "count": 9,
    "apps": 5,
    "status": "mapped",
-   "language": ".grow()"
+   "language": ".flex('grow')"
   },
   "h-0.5": {
    "count": 9,
@@ -2653,19 +2653,19 @@
    "count": 9,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('bottom', '10') (outside the fill)"
+   "language": ".margin('bottom', '10')"
   },
   "mb-space-12": {
    "count": 9,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'md') (outside the fill)"
+   "language": ".margin('bottom', 'md')"
   },
   "mb-space-24": {
    "count": 9,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('bottom', '2xl') (outside the fill)"
+   "language": ".margin('bottom', '2xl')"
   },
   "min-w-64": {
    "count": 9,
@@ -2677,25 +2677,25 @@
    "count": 9,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('top', '4xl') (outside the fill)"
+   "language": ".margin('top', '4xl')"
   },
   "mt-[16px]": {
    "count": 9,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', 'lg') (outside the fill)"
+   "language": ".margin('top', 'lg')"
   },
   "mt-space-12": {
    "count": 9,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', 'md') (outside the fill)"
+   "language": ".margin('top', 'md')"
   },
   "mx-5": {
    "count": 9,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('horizontal', 'xl') (outside the fill)"
+   "language": ".margin('horizontal', 'xl')"
   },
   "overflow-x-auto": {
    "count": 9,
@@ -2871,7 +2871,7 @@
    "count": 8,
    "apps": 5,
    "status": "mapped",
-   "language": ".position({ leading: 'md' })"
+   "language": ".position({ left: 'md' })"
   },
   "max-w-[320px]": {
    "count": 8,
@@ -2883,19 +2883,19 @@
    "count": 8,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'sm') (outside the fill)"
+   "language": ".margin('bottom', 'sm')"
   },
   "mr-1.5": {
    "count": 8,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', '6') (outside the fill)"
+   "language": ".margin('right', '6')"
   },
   "mt-16": {
    "count": 8,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', '64') (outside the fill)"
+   "language": ".margin('top', '64')"
   },
   "opacity-100": {
    "count": 8,
@@ -2949,7 +2949,7 @@
    "count": 8,
    "apps": 4,
    "status": "mapped",
-   "language": ".position({ trailing: 'lg' })"
+   "language": ".position({ right: 'lg' })"
   },
   "ring-foreground/10": {
    "count": 8,
@@ -3119,13 +3119,13 @@
    "count": 7,
    "apps": 5,
    "status": "mapped",
-   "language": ".border(role, 'thick', 'leading')"
+   "language": ".border(role, 'thick', 'left')"
   },
   "font-bodySmall": {
    "count": 7,
    "apps": 1,
    "status": "mapped",
-   "language": ".font('body-2')"
+   "language": ".font('sm').leading('18px')"
   },
   "gap-space-20": {
    "count": 7,
@@ -3191,13 +3191,13 @@
    "count": 7,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '3xl') (outside the fill)"
+   "language": ".margin('bottom', '3xl')"
   },
   "mb-space-16": {
    "count": 7,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('bottom', 'lg') (outside the fill)"
+   "language": ".margin('bottom', 'lg')"
   },
   "min-w-[9rem]": {
    "count": 7,
@@ -3209,7 +3209,7 @@
    "count": 7,
    "apps": 4,
    "status": "mapped",
-   "language": ".padding('leading', 'md')"
+   "language": ".padding('left', 'md')"
   },
   "ps-2": {
    "count": 7,
@@ -3319,7 +3319,7 @@
    "count": 6,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '-lg') (outside the fill)"
+   "language": ".margin('left', '-lg')"
   },
   "animate-pulse": {
    "count": 6,
@@ -3447,7 +3447,7 @@
    "count": 6,
    "apps": 2,
    "status": "mapped",
-   "language": ".position({ leading: 'lg' })"
+   "language": ".position({ left: 'lg' })"
   },
   "max-h-72": {
    "count": 6,
@@ -3487,7 +3487,7 @@
    "count": 6,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('bottom', 'sm') (outside the fill)"
+   "language": ".margin('bottom', 'sm')"
   },
   "min-h-12": {
    "count": 6,
@@ -3517,19 +3517,19 @@
    "count": 6,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', '3') (outside the fill)"
+   "language": ".margin('right', '3')"
   },
   "mt-space-24": {
    "count": 6,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '2xl') (outside the fill)"
+   "language": ".margin('top', '2xl')"
   },
   "my-7": {
    "count": 6,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('vertical', '28') (outside the fill)"
+   "language": ".margin('vertical', '28')"
   },
   "p-0.5": {
    "count": 6,
@@ -3559,19 +3559,19 @@
    "count": 6,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('leading', '6')"
+   "language": ".padding('left', '6')"
   },
   "pr-2": {
    "count": 6,
    "apps": 5,
    "status": "mapped",
-   "language": ".padding('trailing', 'sm')"
+   "language": ".padding('right', 'sm')"
   },
   "pr-2.5": {
    "count": 6,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('trailing', '10')"
+   "language": ".padding('right', '10')"
   },
   "pt-": {
    "count": 6,
@@ -3601,7 +3601,7 @@
    "count": 6,
    "apps": 4,
    "status": "mapped",
-   "language": ".position({ trailing: 'xs' })"
+   "language": ".position({ right: 'xs' })"
   },
   "rounded-[23px]": {
    "count": 6,
@@ -3693,7 +3693,7 @@
    "count": 5,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('top', '-md') (outside the fill)"
+   "language": ".margin('top', '-md')"
   },
   "aspect-video": {
    "count": 5,
@@ -3945,19 +3945,19 @@
    "count": 5,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', '10') (outside the fill)"
+   "language": ".margin('right', '10')"
   },
   "mt-space-16": {
    "count": 5,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', 'lg') (outside the fill)"
+   "language": ".margin('top', 'lg')"
   },
   "mt-space-32": {
    "count": 5,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '3xl') (outside the fill)"
+   "language": ".margin('top', '3xl')"
   },
   "p-space-40": {
    "count": 5,
@@ -3975,7 +3975,7 @@
    "count": 5,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('leading', 'none')"
+   "language": ".padding('left', 'none')"
   },
   "place-items-center": {
    "count": 5,
@@ -3987,7 +3987,7 @@
    "count": 5,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', '3xl')"
+   "language": ".padding('right', '3xl')"
   },
   "pt-space-12": {
    "count": 5,
@@ -4195,19 +4195,19 @@
    "count": 4,
    "apps": 4,
    "status": "mapped",
-   "language": ".padding('top', '-xs') (outside the fill)"
+   "language": ".margin('top', '-xs')"
   },
   "-mt-2": {
    "count": 4,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('top', '-sm') (outside the fill)"
+   "language": ".margin('top', '-sm')"
   },
   "-mx-1": {
    "count": 4,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('horizontal', '-xs') (outside the fill)"
+   "language": ".margin('horizontal', '-xs')"
   },
   "[clip-path:inset(-12px)]": {
    "count": 4,
@@ -4355,7 +4355,7 @@
    "count": 4,
    "apps": 3,
    "status": "mapped",
-   "language": ".position({ leading: 'sm' })"
+   "language": ".position({ left: 'sm' })"
   },
   "max-h-40": {
    "count": 4,
@@ -4407,7 +4407,7 @@
    "count": 4,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'md') (outside the fill)"
+   "language": ".margin('bottom', 'md')"
   },
   "min-h-6": {
    "count": 4,
@@ -4447,7 +4447,7 @@
    "count": 4,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', '28') (outside the fill)"
+   "language": ".margin('top', '28')"
   },
   "mt-auto": {
    "count": 4,
@@ -4459,7 +4459,7 @@
    "count": 4,
    "apps": 4,
    "status": "mapped",
-   "language": ".padding('horizontal', 'sm') (outside the fill)"
+   "language": ".margin('horizontal', 'sm')"
   },
   "overflow-x-clip": {
    "count": 4,
@@ -4501,7 +4501,7 @@
    "count": 4,
    "apps": 4,
    "status": "mapped",
-   "language": ".padding('leading', 'sm')"
+   "language": ".padding('left', 'sm')"
   },
   "pointer-events-auto": {
    "count": 4,
@@ -4519,7 +4519,7 @@
    "count": 4,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('trailing', 'xs')"
+   "language": ".padding('right', 'xs')"
   },
   "pt-1.5": {
    "count": 4,
@@ -4743,25 +4743,25 @@
    "count": 3,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('leading', '-xs') (outside the fill)"
+   "language": ".margin('left', '-xs')"
   },
   "-ml-3": {
    "count": 3,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('leading', '-md') (outside the fill)"
+   "language": ".margin('left', '-md')"
   },
   "-mx-4": {
    "count": 3,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('horizontal', '-lg') (outside the fill)"
+   "language": ".margin('horizontal', '-lg')"
   },
   "-mx-space-8": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '-sm') (outside the fill)"
+   "language": ".margin('horizontal', '-sm')"
   },
   "-translate-y-1/2": {
    "count": 3,
@@ -4998,14 +4998,14 @@
   "flex-none": {
    "count": 3,
    "apps": 2,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".flex('none')"
   },
   "font-sectionTitle": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".font('title-2')"
+   "language": ".font('xl').leading('snug')"
   },
   "gap-space-40": {
    "count": 3,
@@ -5221,19 +5221,19 @@
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '48') (outside the fill)"
+   "language": ".margin('bottom', '48')"
   },
   "mb-16": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '64') (outside the fill)"
+   "language": ".margin('bottom', '64')"
   },
   "mb-7": {
    "count": 3,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('bottom', '28') (outside the fill)"
+   "language": ".margin('bottom', '28')"
   },
   "min-h-11": {
    "count": 3,
@@ -5337,37 +5337,37 @@
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', 'xl') (outside the fill)"
+   "language": ".margin('left', 'xl')"
   },
   "mr-1": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', 'xs') (outside the fill)"
+   "language": ".margin('right', 'xs')"
   },
   "mt-[2px]": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '2xs') (outside the fill)"
+   "language": ".margin('top', '2xs')"
   },
   "mt-px": {
    "count": 3,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', '1') (outside the fill)"
+   "language": ".margin('top', '1')"
   },
   "mt-space-2": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '2xs') (outside the fill)"
+   "language": ".margin('top', '2xs')"
   },
   "mx-[12px]": {
    "count": 3,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', 'md') (outside the fill)"
+   "language": ".margin('horizontal', 'md')"
   },
   "origin-(--radix-dropdown-menu-content-transform-origin)": {
    "count": 3,
@@ -5453,7 +5453,7 @@
    "count": 3,
    "apps": 3,
    "status": "mapped",
-   "language": ".padding('leading', 'xs')"
+   "language": ".padding('left', 'xs')"
   },
   "ps-space-16": {
    "count": 3,
@@ -5757,13 +5757,13 @@
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '-lg') (outside the fill)"
+   "language": ".margin('bottom', '-lg')"
   },
   "-ml-2": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '-sm') (outside the fill)"
+   "language": ".margin('left', '-sm')"
   },
   "-translate-x-px": {
    "count": 2,
@@ -6141,7 +6141,7 @@
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".border(role, '4', 'leading')"
+   "language": ".border(role, '4', 'left')"
   },
   "border-l-transparent": {
    "count": 2,
@@ -6501,7 +6501,7 @@
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".position({ leading: '2xl' })"
+   "language": ".position({ left: '2xl' })"
   },
   "line": {
    "count": 2,
@@ -6629,7 +6629,7 @@
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'xl') (outside the fill)"
+   "language": ".margin('bottom', 'xl')"
   },
   "min-h-6.5": {
    "count": 2,
@@ -6743,115 +6743,115 @@
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('leading', '2xs') (outside the fill)"
+   "language": ".margin('left', '2xs')"
   },
   "ml-2.5": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '10') (outside the fill)"
+   "language": ".margin('left', '10')"
   },
   "ml-[1px]": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('leading', '1') (outside the fill)"
+   "language": ".margin('left', '1')"
   },
   "mr-3.5": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', '14') (outside the fill)"
+   "language": ".margin('right', '14')"
   },
   "mr-4": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', 'lg') (outside the fill)"
+   "language": ".margin('right', 'lg')"
   },
   "mr-[10px]": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', '10') (outside the fill)"
+   "language": ".margin('right', '10')"
   },
   "mt-0": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', 'none') (outside the fill)"
+   "language": ".margin('top', 'none')"
   },
   "mt-12": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '48') (outside the fill)"
+   "language": ".margin('top', '48')"
   },
   "mt-3.5": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', '14') (outside the fill)"
+   "language": ".margin('top', '14')"
   },
   "mt-[8px]": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', 'sm') (outside the fill)"
+   "language": ".margin('top', 'sm')"
   },
   "mt-space-20": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('top', 'xl') (outside the fill)"
+   "language": ".margin('top', 'xl')"
   },
   "mx-0": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('horizontal', 'none') (outside the fill)"
+   "language": ".margin('horizontal', 'none')"
   },
   "mx-1.5": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '6') (outside the fill)"
+   "language": ".margin('horizontal', '6')"
   },
   "mx-3": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('horizontal', 'md') (outside the fill)"
+   "language": ".margin('horizontal', 'md')"
   },
   "mx-3.5": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('horizontal', '14') (outside the fill)"
+   "language": ".margin('horizontal', '14')"
   },
   "mx-[8px]": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', 'sm') (outside the fill)"
+   "language": ".margin('horizontal', 'sm')"
   },
   "my-3": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('vertical', 'md') (outside the fill)"
+   "language": ".margin('vertical', 'md')"
   },
   "my-6": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('vertical', '2xl') (outside the fill)"
+   "language": ".margin('vertical', '2xl')"
   },
   "my-8": {
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('vertical', '3xl') (outside the fill)"
+   "language": ".margin('vertical', '3xl')"
   },
   "no-scrollbar": {
    "count": 2,
@@ -6967,13 +6967,13 @@
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '2xl')"
+   "language": ".padding('left', '2xl')"
   },
   "pl-space-12": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', 'md')"
+   "language": ".padding('left', 'md')"
   },
   "plan": {
    "count": 2,
@@ -6991,13 +6991,13 @@
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".padding('trailing', '2xl')"
+   "language": ".padding('right', '2xl')"
   },
   "pr-space-4": {
    "count": 2,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', 'xs')"
+   "language": ".padding('right', 'xs')"
   },
   "promo": {
    "count": 2,
@@ -7099,7 +7099,7 @@
    "count": 2,
    "apps": 2,
    "status": "mapped",
-   "language": ".position({ trailing: '2xl' })"
+   "language": ".position({ right: '2xl' })"
   },
   "ring-background": {
    "count": 2,
@@ -7677,61 +7677,61 @@
    "status": "token",
    "scale": "space",
    "value": "10000px",
-   "language": ".position({ leading: … })"
+   "language": ".position({ left: … })"
   },
   "-m-1": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('all', '-xs') (outside the fill)"
+   "language": ".margin('all', '-xs')"
   },
   "-mt-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '-64') (outside the fill)"
+   "language": ".margin('top', '-64')"
   },
   "-mt-2.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '-10') (outside the fill)"
+   "language": ".margin('top', '-10')"
   },
   "-mx-2": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '-sm') (outside the fill)"
+   "language": ".margin('horizontal', '-sm')"
   },
   "-mx-space-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '-lg') (outside the fill)"
+   "language": ".margin('horizontal', '-lg')"
   },
   "-mx-space-4": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '-xs') (outside the fill)"
+   "language": ".margin('horizontal', '-xs')"
   },
   "-my-2": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('vertical', '-sm') (outside the fill)"
+   "language": ".margin('vertical', '-sm')"
   },
   "-right-0.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: '-2xs' })"
+   "language": ".position({ right: '-2xs' })"
   },
   "-right-1": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: '-xs' })"
+   "language": ".position({ right: '-xs' })"
   },
   "-rotate-12": {
    "count": 1,
@@ -8441,7 +8441,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".border(role, 'thick', 'trailing')"
+   "language": ".border(role, 'thick', 'right')"
   },
   "border-red-500/40": {
    "count": 1,
@@ -9429,19 +9429,19 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ leading: 'xs' })"
+   "language": ".position({ left: 'xs' })"
   },
   "left-10": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ leading: '4xl' })"
+   "language": ".position({ left: '4xl' })"
   },
   "left-[12px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ leading: 'md' })"
+   "language": ".position({ left: 'md' })"
   },
   "left-[13px]": {
    "count": 1,
@@ -9449,13 +9449,13 @@
    "status": "token",
    "scale": "space",
    "value": "13px",
-   "language": ".position({ leading: … })"
+   "language": ".position({ left: … })"
   },
   "left-space-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ leading: 'lg' })"
+   "language": ".position({ left: 'lg' })"
   },
   "liked": {
    "count": 1,
@@ -9551,7 +9551,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('all', 'md') (outside the fill)"
+   "language": ".margin('all', 'md')"
   },
   "m-auto": {
    "count": 1,
@@ -9563,7 +9563,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('all', 'sm') (outside the fill)"
+   "language": ".margin('all', 'sm')"
   },
   "markdown-content": {
    "count": 1,
@@ -9817,7 +9817,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'none') (outside the fill)"
+   "language": ".margin('bottom', 'none')"
   },
   "mb-4.5": {
    "count": 1,
@@ -9825,13 +9825,13 @@
    "status": "token",
    "scale": "space",
    "value": "18px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "language": ".margin('bottom', …)"
   },
   "mb-9": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '36') (outside the fill)"
+   "language": ".margin('bottom', '36')"
   },
   "mb-[11px]": {
    "count": 1,
@@ -9839,37 +9839,37 @@
    "status": "token",
    "scale": "space",
    "value": "11px",
-   "language": ".padding('bottom', …) (outside the fill)"
+   "language": ".margin('bottom', …)"
   },
   "mb-[16px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'lg') (outside the fill)"
+   "language": ".margin('bottom', 'lg')"
   },
   "mb-[3px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '3') (outside the fill)"
+   "language": ".margin('bottom', '3')"
   },
   "mb-[4px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'xs') (outside the fill)"
+   "language": ".margin('bottom', 'xs')"
   },
   "mb-space-2": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', '2xs') (outside the fill)"
+   "language": ".margin('bottom', '2xs')"
   },
   "mb-space-4": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('bottom', 'xs') (outside the fill)"
+   "language": ".margin('bottom', 'xs')"
   },
   "md": {
    "count": 1,
@@ -9881,7 +9881,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', 'sm') (outside the fill)"
+   "language": ".margin('trailing', 'sm')"
   },
   "min-h-28": {
    "count": 1,
@@ -10209,25 +10209,25 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '44') (outside the fill)"
+   "language": ".margin('left', '44')"
   },
   "ml-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '64') (outside the fill)"
+   "language": ".margin('left', '64')"
   },
   "ml-7": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '28') (outside the fill)"
+   "language": ".margin('left', '28')"
   },
   "ml-8": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '3xl') (outside the fill)"
+   "language": ".margin('left', '3xl')"
   },
   "model_inferred": {
    "count": 1,
@@ -10239,7 +10239,7 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', '2xl') (outside the fill)"
+   "language": ".margin('right', '2xl')"
   },
   "mr-[34px]": {
    "count": 1,
@@ -10247,13 +10247,13 @@
    "status": "token",
    "scale": "space",
    "value": "34px",
-   "language": ".padding('trailing', …) (outside the fill)"
+   "language": ".margin('right', …)"
   },
   "ms-2": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', 'sm') (outside the fill)"
+   "language": ".margin('leading', 'sm')"
   },
   "ms-auto": {
    "count": 1,
@@ -10265,13 +10265,13 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', 'sm') (outside the fill)"
+   "language": ".margin('leading', 'sm')"
   },
   "mt-20": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', '80') (outside the fill)"
+   "language": ".margin('top', '80')"
   },
   "mt-[100px]": {
    "count": 1,
@@ -10279,13 +10279,13 @@
    "status": "token",
    "scale": "space",
    "value": "100px",
-   "language": ".padding('top', …) (outside the fill)"
+   "language": ".margin('top', …)"
   },
   "mt-[4px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('top', 'xs') (outside the fill)"
+   "language": ".margin('top', 'xs')"
   },
   "mt-[52px]": {
    "count": 1,
@@ -10293,61 +10293,61 @@
    "status": "token",
    "scale": "space",
    "value": "52px",
-   "language": ".padding('top', …) (outside the fill)"
+   "language": ".margin('top', …)"
   },
   "mx-0.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '2xs') (outside the fill)"
+   "language": ".margin('horizontal', '2xs')"
   },
   "mx-2.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '10') (outside the fill)"
+   "language": ".margin('horizontal', '10')"
   },
   "mx-7": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', '28') (outside the fill)"
+   "language": ".margin('horizontal', '28')"
   },
   "mx-[16px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', 'lg') (outside the fill)"
+   "language": ".margin('horizontal', 'lg')"
   },
   "mx-space-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('horizontal', 'lg') (outside the fill)"
+   "language": ".margin('horizontal', 'lg')"
   },
   "my-0.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('vertical', '2xs') (outside the fill)"
+   "language": ".margin('vertical', '2xs')"
   },
   "my-4": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('vertical', 'lg') (outside the fill)"
+   "language": ".margin('vertical', 'lg')"
   },
   "my-space-24": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('vertical', '2xl') (outside the fill)"
+   "language": ".margin('vertical', '2xl')"
   },
   "my-space-32": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('vertical', '3xl') (outside the fill)"
+   "language": ".margin('vertical', '3xl')"
   },
   "object-cover": {
    "count": 1,
@@ -10649,25 +10649,25 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '4xl')"
+   "language": ".padding('left', '4xl')"
   },
   "pl-2.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '10')"
+   "language": ".padding('left', '10')"
   },
   "pl-7": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '28')"
+   "language": ".padding('left', '28')"
   },
   "pl-8": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '3xl')"
+   "language": ".padding('left', '3xl')"
   },
   "pl-[33px]": {
    "count": 1,
@@ -10675,7 +10675,7 @@
    "status": "token",
    "scale": "space",
    "value": "33px",
-   "language": ".padding('leading', …)"
+   "language": ".padding('left', …)"
   },
   "pl-[34px]": {
    "count": 1,
@@ -10683,19 +10683,19 @@
    "status": "token",
    "scale": "space",
    "value": "34px",
-   "language": ".padding('leading', …)"
+   "language": ".padding('left', …)"
   },
   "pl-space-2": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', '2xs')"
+   "language": ".padding('left', '2xs')"
   },
   "pl-space-4": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('leading', 'xs')"
+   "language": ".padding('left', 'xs')"
   },
   "poor": {
    "count": 1,
@@ -10761,37 +10761,37 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', '6')"
+   "language": ".padding('right', '6')"
   },
   "pr-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', '64')"
+   "language": ".padding('right', '64')"
   },
   "pr-7": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', '28')"
+   "language": ".padding('right', '28')"
   },
   "pr-9": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', '36')"
+   "language": ".padding('right', '36')"
   },
   "pr-space-16": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', 'lg')"
+   "language": ".padding('right', 'lg')"
   },
   "pr-space-8": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".padding('trailing', 'sm')"
+   "language": ".padding('right', 'sm')"
   },
   "preparing": {
    "count": 1,
@@ -10983,37 +10983,37 @@
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: '6' })"
+   "language": ".position({ right: '6' })"
   },
   "right-2.5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: '10' })"
+   "language": ".position({ right: '10' })"
   },
   "right-5": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: 'xl' })"
+   "language": ".position({ right: 'xl' })"
   },
   "right-[12px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: 'md' })"
+   "language": ".position({ right: 'md' })"
   },
   "right-[4px]": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: 'xs' })"
+   "language": ".position({ right: 'xs' })"
   },
   "right-space-8": {
    "count": 1,
    "apps": 1,
    "status": "mapped",
-   "language": ".position({ trailing: 'sm' })"
+   "language": ".position({ right: 'sm' })"
   },
   "ring-offset-1": {
    "count": 1,
