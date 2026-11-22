@@ -378,7 +378,8 @@ for (const side of ['top', 'bottom', 'start', 'end', 'left', 'right']) {
     if (value > 0) valueClass(side, -value);
   }
 }
-for (const value of numbers(scales.zIndex)) valueClass('zIndex', value);
+// `auto` is Tailwind's z-auto on the web (style.ts, placeStyle).
+for (const value of [...numbers(scales.zIndex), 'auto']) valueClass('zIndex', value);
 for (const value of ['none', 'flex']) valueClass('display', value);
 valueClass('flexDirection', 'column');
 for (const value of ['wrap', 'nowrap']) valueClass('flexWrap', value);
@@ -428,6 +429,7 @@ for (const value of new Set([
   valueClass('fontWeight', value);
 }
 valueClass('whiteSpace', 'nowrap');
+valueClass('textOverflow', 'ellipsis');
 // Text: slant, decoration and case (style.ts, textStyle). Alignment stays inline:
 // react-native-web writes it per direction, which one class cannot.
 valueClass('fontStyle', 'italic');
@@ -500,7 +502,7 @@ const tokenSets = {
   space: Object.keys(scales.space),
   padding: [...Object.keys(scales.space), ...negative],
   length: [...Object.keys(scales.space), ...Object.keys(scales.length)],
-  zIndex: Object.keys(scales.zIndex),
+  zIndex: [...Object.keys(scales.zIndex), ...enums.zIndexExtra],
   shadow: Object.keys(scales.shadow),
   scale: Object.keys(scales.scale),
   ring: [...Object.keys(colors), ...enums.ringExtra],

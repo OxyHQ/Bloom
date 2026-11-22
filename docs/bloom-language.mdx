@@ -366,7 +366,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `clipped()` | clips what the view draws to its bounds and its corner |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
 | `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
-| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`; out of the layout |
+| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
 | `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; read by a screen reader and not drawn (`sr-only`) |
@@ -702,7 +702,11 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   box, and what the chain sets for the text is a span inside it.
 - **Truncation.** `.lines(n)` is `numberOfLines`, cut at the tail;
   `.truncation('head' | 'middle' | 'tail' | 'clip')` says where.
-  `.noWrap()` keeps a web line from wrapping.
+  `.noWrap()` keeps a web line from wrapping. `.truncation('tail')` with no
+  line limit is the web's ellipsis where the text is cut (`text-overflow`);
+  React Native draws one only at a line limit. Tailwind's `truncate` is
+  `.noWrap().clipped().truncation('tail')`, as NativeWind draws it (only the
+  clip on native).
 - **Selection.** `.selectable()` lets the reader select and copy it.
 - **Links.** `.link(href)` is Bloom's inline link, as its Markdown draws one:
   the primary ink and an underline, announced as a link, an anchor on the web
@@ -4621,9 +4625,9 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1039 | 46966 | 87.4% |
+| Maps to a modifier and a token | 1040 | 46970 | 87.4% |
 | Expressed by the view’s structure | 53 | 3445 | 6.4% |
-| Redundant in the language | 32 | 513 | 1.0% |
+| Redundant in the language | 31 | 509 | 0.9% |
 | Needs a named token (raw value) | 278 | 671 | 1.2% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |

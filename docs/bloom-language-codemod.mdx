@@ -58,10 +58,8 @@ does not keeps the element JSX. Each class goes through the className table
 Measured on the corpus and kept as reasons (`measuredDifference` and
 `rounding` in `src/resolve.ts`):
 
-- `z-auto`: `z-index: auto` over react-native-web's 0; the language writes nothing.
-- `truncate`: `white-space: nowrap` and an ellipsis on the web; `.lines(1)` is
-  a line clamp.
-- `tabular-nums`: NativeWind writes no `fontVariant` on native.
+- `tabular-nums`: NativeWind writes no `fontVariant` on native (its rule only
+  sets a variable there); `.monospacedDigit()` does.
 - `text-white/70` and the like: NativeWind writes a fixed colour at an opacity
   as an 8-bit hex alpha, rounded down (`#ffffffb2`), where `0.7` is 178.5/255.
 - A line height as a ratio or a letter spacing in em whose product has more
