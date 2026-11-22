@@ -1,8 +1,8 @@
 # Bloom language codemod: parity/sample-app
 
 - Files: 1 read, 1 changed
-- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons): 16
-- Converted: 15 (93.8%), in 5 regions
+- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 17
+- Converted: 16 (94.1%), in 5 regions
 - Classes the app's theme draws differently from Bloom's: 0
 
 ## Why elements stayed JSX
@@ -20,4 +20,4 @@ Not mapped by the codemod yet (each needs its prop rules and parity first):
 
 ## Each element
 
-- components/Rows.tsx:60 `<View>`: `style` (prop:style: the prop `style` has no mapping)
+- components/Rows.tsx:66 `<View>`: `style` (prop:style: the prop `style` has no mapping)

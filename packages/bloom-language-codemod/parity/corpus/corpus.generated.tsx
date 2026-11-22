@@ -6,9 +6,10 @@ import { Pressable as I0 } from 'react-native-css/components/Pressable';
 import { RiHeart3Line as I1 } from '@oxy.so/bloom/icons/RiHeart3Line';
 import { View as I2 } from 'react-native-css/components/View';
 import { Text as I3 } from '@oxy.so/bloom/typography';
-import { Button as I4 } from '@oxy.so/bloom/button';
-import { RiArrowRightLine as I5 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I6 } from 'react-native-css/components/Text';
+import { Switch as I4 } from '@oxy.so/bloom/switch';
+import { Button as I5 } from '@oxy.so/bloom/button';
+import { RiArrowRightLine as I6 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I7 } from 'react-native-css/components/Text';
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -16,7 +17,7 @@ function Hole({ n }: { n: string }) {
 
 export const CASES = [
   {
-    name: "components/Rows.tsx:18",
+    name: "components/Rows.tsx:19",
     before: () => { const Pressable = I0; const RiHeart3Line = I1; const View = I2; const Text = I3; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
@@ -29,38 +30,39 @@ export const CASES = [
     after: () => { const Pressable = I0; const RiHeart3Line = I1; const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText } = L; return toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {})); },
   },
   {
-    name: "components/Rows.tsx:32",
-    before: () => { const View = I2; const Text = I3; const Button = I4; const RiArrowRightLine = I5; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    name: "components/Rows.tsx:37",
+    before: () => { const View = I2; const Text = I3; const Switch = I4; const Button = I5; const RiArrowRightLine = I6; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
+      <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
       <Button appearance="subtle" size="sm" trailingIcon={RiArrowRightLine} onPress={() => {}}>
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I2; const Text = I3; const Button = I4; const RiArrowRightLine = I5; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl'))); },
+    after: () => { const View = I2; const Text = I3; const Switch = I4; const Button = I5; const RiArrowRightLine = I6; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl'))); },
   },
   {
-    name: "components/Rows.tsx:44",
+    name: "components/Rows.tsx:50",
     before: () => { const View = I2; return (<View className="gap-2 border-b border-border pb-3">
       {true ? <View className="h-10 w-full bg-muted" /> : null}
       {true && <View className="h-px bg-border" />}
       {<Hole n="2" />}
     </View>); },
-    after: () => { const View = I2; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm')); },
+    after: () => { const View = I2; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n="2" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm')); },
   },
   {
-    name: "components/Rows.tsx:48",
+    name: "components/Rows.tsx:54",
     before: () => { const View = I2; const Text = I3; return (<View  className="flex-row justify-between">
           <Text className="text-xs uppercase tracking-wide text-muted-foreground">{'⟨0⟩'}</Text>
         </View>); },
-    after: () => { const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton } = L; return toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between')); },
+    after: () => { const View = I2; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L; return toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between')); },
   },
   {
-    name: "components/Rows.tsx:58",
-    before: () => { const View = I2; const NativeText = I6; const Text = I3; return (<View className="flex-1 mt-2">
+    name: "components/Rows.tsx:64",
+    before: () => { const View = I2; const NativeText = I7; const Text = I3; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <Hole n="0" />
     </View>); },
-    after: () => { const View = I2; const NativeText = I6; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Button: LButton, RawText } = L; return toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), Embed(<Hole n="0" />)).flex('1').margin('top', 'sm')); },
+    after: () => { const View = I2; const NativeText = I7; const Text = I3; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L; return toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), Embed(<Hole n="0" />)).flex('1').margin('top', 'sm')); },
   },
 ];

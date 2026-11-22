@@ -1285,7 +1285,6 @@ export type Modifier =
       readonly edge: Edge;
       readonly value: PaddingToken;
     }
-  | { readonly kind: 'clipped'; readonly key: string }
   | { readonly kind: 'alignSelf'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'position'; readonly key: string; readonly value: PositionEdges }
   | { readonly kind: 'offset'; readonly key: string; readonly value: OffsetSpec }
@@ -2015,9 +2014,6 @@ export class Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
     const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
     return this.with({ kind: 'margin', key: `m:${edge}:${tokenKey(token)}`, edge, value: token });
-  }
-  clipped(): Node {
-    return this.with({ kind: 'clipped', key: 'clipped' });
   }
   alignSelf(value: Alignment): Node {
     return this.with({ kind: 'alignSelf', key: `self:${value}`, value });

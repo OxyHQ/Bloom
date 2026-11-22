@@ -18,6 +18,7 @@ import { parseExpression } from '@babel/parser';
 import * as recast from 'recast';
 import * as babelTs from 'recast/parsers/babel-ts';
 
+import { type ComponentRule, ruleFor } from './components';
 import { type HostKind, type Reason, type Resolved, resolveClassName } from './resolve';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
@@ -39,7 +40,15 @@ export interface Source {
   readonly imported: string;
 }
 
-type Kind = 'view' | 'pressable' | 'bloomText' | 'icon' | 'button' | 'rnText' | 'rnImage';
+type Kind =
+  | 'view'
+  | 'pressable'
+  | 'bloomText'
+  | 'icon'
+  | 'button'
+  | 'component'
+  | 'rnText'
+  | 'rnImage';
 
 /** A value carried over from the source as it is (a handler, a text run, an embedded element). */
 interface Carried {
@@ -75,6 +84,13 @@ type Ir =
       runs: TextRun[];
     }
   | { type: 'icon'; component: string; mods: Mod[]; key: Carried | null }
+  | {
+      type: 'component';
+      node: string;
+      binding: readonly [Carried, Carried] | null;
+      props: PropMod[];
+      key: Carried | null;
+    }
   | {
       type: 'button';
       leading: string | null;
@@ -149,6 +165,7 @@ function kindOf(source: Source | undefined): Kind | undefined {
   if (source.module === '@oxy.so/bloom/typography' && source.imported === 'Text')
     return 'bloomText';
   if (source.module === '@oxy.so/bloom/button' && source.imported === 'Button') return 'button';
+  if (ruleFor(source.module, source.imported)) return 'component';
   if (
     (source.module === '@oxy.so/bloom/icons' || source.module.startsWith('@oxy.so/bloom/icons/')) &&
     /^(Ri|Si)[A-Z0-9]\w*$|Icon$/.test(source.imported) &&
@@ -330,6 +347,10 @@ export function transformSource(source: string, options: TransformOptions): File
         ],
       };
     if (kind === 'button') return convertButton(node);
+    if (kind === 'component') {
+      const source = sources.get(local) as Source;
+      return convertComponent(node, ruleFor(source.module, source.imported) as ComponentRule);
+    }
     const reasons: Reason[] = [];
     const fail = (subject: string, code: string, why: string) =>
       reasons.push({ subject, code, why });
@@ -527,6 +548,69 @@ export function transformSource(source: string, options: TransformOptions): File
     return { ir: { type: 'stack', resolved: resolution.value, props, key, children } };
   }
 
+  /** A Bloom component the language draws as a node of its own, by its rule (`components.ts`). */
+  function convertComponent(
+    node: AnyNode,
+    rule: ComponentRule,
+  ): { ir: Ir } | { reasons: Reason[] } {
+    const reasons: Reason[] = [];
+    const fail = (subject: string, code: string, why: string) =>
+      reasons.push({ subject, code, why });
+    const props: PropMod[] = [];
+    let key: Carried | null = null;
+    const bound = new Map<string, AnyNode>();
+    for (const attribute of node.openingElement.attributes) {
+      if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
+        fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
+        continue;
+      }
+      const name = attribute.name.name as string;
+      const value = attribute.value;
+      const expression = value ? attributeExpression(value) : null;
+      if (name === 'key' && expression) key = { node: expression, hole: 'key', attribute };
+      else if (rule.binding?.includes(name) && expression) bound.set(name, expression);
+      else if (rule.tokens?.[name] && staticString(value) !== undefined)
+        props.push({ name: rule.tokens[name] as string, args: [staticString(value) as string] });
+      else if (rule.flags?.[name])
+        props.push({
+          name: rule.flags[name] as string,
+          args: expression ? [{ node: expression, hole: 'boolean' }] : [],
+        });
+      else if (rule.values?.[name] && value)
+        props.push({
+          name: rule.values[name] as string,
+          args: [staticString(value) ?? { node: expression, hole: 'string' }],
+        });
+      else
+        fail(
+          name,
+          `${rule.node}:${name}`,
+          `${rule.node}'s \`${name}\` (or its form here) has no mapping`,
+        );
+    }
+    let binding: readonly [Carried, Carried] | null = null;
+    if (rule.binding) {
+      const [valueProp, setProp] = rule.binding;
+      const value = bound.get(valueProp);
+      const set = bound.get(setProp);
+      if (!value || !set)
+        fail(
+          valueProp,
+          `${rule.node}:binding`,
+          `${valueProp} and ${setProp} together are its binding`,
+        );
+      else
+        binding = [
+          { node: value, hole: 'boolean' },
+          { node: set, hole: 'handler' },
+        ];
+    }
+    if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
+      fail('children', `${rule.node}:children`, 'children the rule does not map');
+    if (reasons.length) return { reasons };
+    return { ir: { type: 'component', node: rule.node, binding, props, key } };
+  }
+
   /** Bloom's `Button`, as the language's Button parity cases draw it (`packages/bloom-language/parity/button.cases.tsx`). */
   function convertButton(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
     const reasons: Reason[] = [];
@@ -674,6 +758,16 @@ export function transformSource(source: string, options: TransformOptions): File
         return `${carry(ir.test)} ? ${ir.then ? print(ir.then, carry) : 'null'} : ${ir.otherwise ? print(ir.otherwise, carry) : 'null'}`;
       case 'icon':
         return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
+      case 'component': {
+        const args = ir.binding ? `[${carry(ir.binding[0])}, ${carry(ir.binding[1])}]` : '';
+        const tail = ir.props
+          .map(
+            (p) =>
+              `.${p.name}(${p.args.map((a) => (isCarried(a) ? carry(a) : printArg(a))).join(', ')})`,
+          )
+          .join('');
+        return `${lang(ir.node)}(${args})${tail}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
+      }
       case 'button': {
         const parts: string[] = [];
         if (ir.leading) parts.push(`${lang('Icon')}(${ir.leading})`);
@@ -742,6 +836,11 @@ export function transformSource(source: string, options: TransformOptions): File
         if (ir.otherwise) carriedOf(ir.otherwise, out);
         break;
       case 'icon':
+        if (ir.key) out.push(ir.key);
+        break;
+      case 'component':
+        if (ir.binding) out.push(...ir.binding);
+        for (const prop of ir.props) for (const a of prop.args) if (isCarried(a)) out.push(a);
         if (ir.key) out.push(ir.key);
         break;
       case 'button':

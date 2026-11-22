@@ -2,10 +2,10 @@
   "app": "parity/sample-app",
   "files": 1,
   "changedFiles": 1,
-  "candidates": 16,
-  "converted": 15,
+  "candidates": 17,
+  "converted": 16,
   "regions": 5,
-  "rate": 93.8,
+  "rate": 94.1,
   "overridden": [],
   "bloomComponents": {},
   "patterns": [
@@ -20,7 +20,7 @@
   "unconverted": [
     {
       "file": "components/Rows.tsx",
-      "line": 60,
+      "line": 66,
       "element": "View",
       "reasons": [
         {

@@ -1,5 +1,6 @@
 // A sample of the patterns the codemod meets in apps, for its own parity suite.
 import { Button } from '@oxy.so/bloom/button';
+import { Switch } from '@oxy.so/bloom/switch';
 import { RiArrowRightLine } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line';
 import { Text } from '@oxy.so/bloom/typography';
@@ -27,11 +28,20 @@ export function Row({
   );
 }
 
-export function Card({ children }: { children: React.ReactNode }) {
+export function Card({
+  children,
+  on,
+  setOn,
+}: {
+  children: React.ReactNode;
+  on: boolean;
+  setOn: (on: boolean) => void;
+}) {
   return (
     <View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {children}
+      <Switch checked={on} onCheckedChange={setOn} size="sm" accessibilityLabel="Notify" />
       <Button appearance="subtle" size="sm" trailingIcon={RiArrowRightLine} onPress={() => {}}>
         {'Next'}
       </Button>
