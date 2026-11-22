@@ -6,6 +6,7 @@ import { fn } from 'storybook/test';
 import { FollowButton } from './MediaActionBar';
 import { Button } from '../button';
 import { Text } from '../typography';
+import { useTheme } from '../theme/use-theme';
 import { defaultAvatarSource } from '../avatar/default-avatar';
 import type { FollowButtonProps } from './types';
 
@@ -109,6 +110,7 @@ export const Styled: Story = {
     const [following, setFollowing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
+    const { isDark } = useTheme();
     return (
       <View style={{ alignItems: 'flex-start', gap: 16 }}>
         <FollowButton
@@ -119,8 +121,20 @@ export const Styled: Story = {
           disabled={disabled}
           appearance="outline"
           material="flat"
-          className="bloom-demo-follow"
-          labelClassName="bloom-demo-follow-label"
+          style={{
+            height: 40,
+            borderRadius: 999,
+            backgroundColor: isDark ? '#404040' : '#eef0f1',
+            borderWidth: 1,
+            borderColor: '#abcdef',
+            paddingInline: 16,
+          }}
+          textStyle={{
+            fontSize: 16,
+            lineHeight: 20,
+            fontWeight: '600',
+            color: isDark ? '#abcdef' : '#123456',
+          }}
           testID="styled-follow"
         />
         <FollowButton

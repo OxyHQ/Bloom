@@ -188,21 +188,18 @@ paints on. As `neutral-500` it measured 4.38:1 on the light card. See
 
 ## FollowButton recipes
 
-`FollowButton` forwards `appearance`, `material` and `className` to the Button
+`FollowButton` forwards `appearance`, `material` and `style` to the Button
 that owns its layout and surface. Defaults remain `appearance="subtle"` and the
 standard Button material. Use `material="flat"` for a recipe without the standard
 surface sheen. These props do not change the toggle, loading or animation logic.
 
-`labelClassName` applies to both animated text labels and their hidden measuring
-copies. Supply complete typography classes as for Bloom Text. Their shared
-measurement keeps the button width stable between Follow and Following and while
-loading. Explicit `color` and `textStyle` retain their existing precedence.
-`labelClassName` is for text mode; the icon-only mode keeps its existing icon and
-color contract. `className` belongs to the Button box and its spinner, while
-`labelClassName` belongs to its custom text content on both platforms.
+`textStyle` applies to both animated text labels and their hidden measuring
+copies, so their shared measurement keeps the button width stable between
+Follow and Following and while loading. Explicit `color` sits under
+`textStyle`. The icon-only mode keeps its existing icon and color contract.
 
 ```tsx
 <FollowButton following={following} onFollowChange={setFollowing}
-  appearance="outline" material="flat" className="account-follow"
-  labelClassName="account-follow-label" />
+  appearance="outline" material="flat" style={{ height: 40, paddingInline: 16 }}
+  textStyle={{ fontSize: 16, lineHeight: 20 }} />
 ```
