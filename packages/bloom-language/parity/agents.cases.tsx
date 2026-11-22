@@ -11,15 +11,18 @@ import { AgentThinking } from '@oxy.so/bloom/agent-thinking';
 import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 import { ConversationSidebar } from '@oxy.so/bloom/conversation-sidebar';
 import { Questionnaire } from '@oxy.so/bloom/questionnaire';
+import { withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 import { UsageCard } from '@oxy.so/bloom/usage-card';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import type { ParityCase } from './support/cases';
+import { type ParityCase, ThemedRgb } from './support/cases';
 
 const press = () => {};
+/** An app's own colour, as an app declares it. */
+const BRAND = L.defineTokens({ color: { sky: '#38bdf8' } });
 const CONTEXT = {
   max: 200_000,
   segments: [
@@ -221,6 +224,31 @@ export const AGENT_CASES: ParityCase[] = [
       <ComposerLoader active={false} radius={28} line={3}>
         <Text>Composer</Text>
       </ComposerLoader>
+    ),
+  },
+  {
+    name: 'ComposerLoader four colours: roles, a role at an opacity, an app colour',
+    language: () =>
+      toElement(
+        L.ComposerLoader(L.Text('Composer'), { phase: 'streaming', paused: true }).gradient([
+          'primary',
+          'info/half',
+          BRAND.color.sky,
+          'success',
+        ]),
+      ),
+    bloom: () => (
+      <ThemedRgb>
+        {(c) => (
+          <ComposerLoader
+            phase="streaming"
+            paused
+            colors={[c.primary, withAlpha(c.info, 0.5), '#38bdf8', c.success]}
+          >
+            <Text>Composer</Text>
+          </ComposerLoader>
+        )}
+      </ThemedRgb>
     ),
   },
   {

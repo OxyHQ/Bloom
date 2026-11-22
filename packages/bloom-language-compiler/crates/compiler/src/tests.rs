@@ -737,3 +737,29 @@ fn the_checkout_sheet_is_checked() {
     let output = check("export const x = (o) => CheckoutSheet(o).style('solid');\n");
     assert_eq!(output.diagnostics[0].message, "CheckoutSheet has no modifier .style()");
 }
+
+#[test]
+fn a_gradient_is_checked_colour_by_colour() {
+    let imports =
+        "import { ChatBackground, ComposerLoader, StoryRing, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (c, brand) => VStack(ComposerLoader(c).gradient(['primary', 'accent', brand.color.sky, 'info/half']), ChatBackground().style('gradient').gradient(['primary', 'secondary']), StoryRing(c, { size: 'xl' }).gradient(['accent']));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    for (call, message) in [
+        (
+            "StoryRing(c, { size: 'xl' }).gradient(['accent', 'pink'])",
+            "Unknown color token 'pink' for .gradient()",
+        ),
+        ("ChatBackground().gradient(['primary/12'])", "Unknown opacity token '12' for .gradient()"),
+        ("ComposerLoader(c).gradient('primary')", ".gradient() takes a list of colours, not 'primary'"),
+        ("ChatBackground().gradient(['primary'], 'accent')", ".gradient() takes 1 argument(s), not 2"),
+        ("ChatHeader('Ana').gradient(['primary'])", "ChatHeader has no modifier .gradient()"),
+    ] {
+        let output = check(&format!(
+            "import {{ ChatHeader }} from '@oxy.so/bloom-language';\nexport const x = (c) => {call};\n"
+        ));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
+    }
+}

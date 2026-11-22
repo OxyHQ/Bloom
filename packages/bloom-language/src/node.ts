@@ -308,6 +308,9 @@ export interface ValueModifiers {
   bubbleTint: ColorToken;
   contentTint: ColorToken;
   placeholderTint: ColorToken;
+
+  // A product component's list of colours (a loader's, a gradient's, a ring's)
+  gradient: readonly InkToken[];
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1374,6 +1377,11 @@ export class Node {
   }
   placeholderTint(value: ColorToken): Node {
     return this.set('placeholderTint', value);
+  }
+
+  // A product component's list of colours
+  gradient(colors: readonly InkToken[]): Node {
+    return this.set('gradient', colors);
   }
 }
 

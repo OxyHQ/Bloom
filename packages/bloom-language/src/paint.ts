@@ -32,7 +32,12 @@ export interface Paint {
   readonly propRoles: readonly (readonly [string, ColorName, number?])[];
   /** Native: what live variants override, in the order they apply (a `Conditioned` leaf draws them). */
   readonly variants?: readonly PaintVariant[];
+  /** Props painted as a list of colours (a loader's four, a gradient's stops): see `listProps`. */
+  readonly propLists?: readonly (readonly [string, readonly ListColor[]])[];
 }
+
+/** One colour of a painted list: a role (at an opacity), or an app's own colour as it is. */
+export type ListColor = readonly [ColorName, number?] | string;
 
 /**
  * One live variant of a native style: its values, the properties painted from
@@ -92,6 +97,40 @@ function paintProps(colors: ThemeColors, paint: Paint): Record<string, unknown> 
   return props;
 }
 
+const listed = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>>>();
+
+/**
+ * The props a paint's lists resolve to under one palette, built once per
+ * palette and reused: `undefined` when it paints none. A list is what Bloom
+ * blends (a composer loader's midpoint, a gradient's stops), so its roles are
+ * the theme's RGB colours (`useTheme().colors`), which an app hands Bloom for
+ * colour math, not the paint palette (a CSS variable on the web).
+ */
+function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> | undefined {
+  if (paint.propLists === undefined) return undefined;
+  let byPaint = listed.get(colors);
+  if (byPaint === undefined) {
+    byPaint = new WeakMap();
+    listed.set(colors, byPaint);
+  }
+  let props = byPaint.get(paint);
+  if (props === undefined) {
+    props = {};
+    for (const [key, list] of paint.propLists)
+      props[key] = Object.freeze(
+        list.map((color) => {
+          if (typeof color === 'string') return color;
+          const [role, opacity] = color;
+          const rgb = colors[COLORS[role].paint];
+          return opacity === undefined ? rgb : withAlpha(rgb, opacity);
+        }),
+      );
+    Object.freeze(props);
+    byPaint.set(paint, props);
+  }
+  return props;
+}
+
 interface PaintedProps {
   host: ComponentType<Record<string, unknown>> | string;
   paint: Paint;
@@ -107,11 +146,17 @@ interface PaintedProps {
  */
 export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
   const painted = paintProps(useThemePaint(), paint);
+  const lists = listProps(useTheme().colors, paint);
   // A moving host's motion style (`Outer`) comes after the painted one.
   if (props.style !== undefined && painted.style !== undefined) {
-    return createElement(host, { ...props, ...painted, style: [painted.style, props.style] });
+    return createElement(host, {
+      ...props,
+      ...painted,
+      ...lists,
+      style: [painted.style, props.style],
+    });
   }
-  return createElement(host, { ...props, ...painted });
+  return createElement(host, { ...props, ...painted, ...lists });
 }
 Painted.displayName = 'BloomPaint';
 
@@ -202,13 +247,17 @@ function conditionedProps(
  */
 export function Conditioned({ host, paint, ...props }: PaintedProps): ReactElement {
   const colors = useThemePaint();
-  const { isDark } = useTheme();
+  const theme = useTheme();
   const tier = useWindowBreakpoint();
   const state = useContext(InteractionContext);
   let holding = 0;
   (paint.variants ?? []).forEach((variant, index) => {
-    if (holds(variant.condition, tier, isDark, state)) holding |= 1 << index;
+    if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
   });
-  return createElement(host, { ...props, ...conditionedProps(colors, paint, holding) });
+  return createElement(host, {
+    ...props,
+    ...conditionedProps(colors, paint, holding),
+    ...listProps(theme.colors, paint),
+  });
 }
 Conditioned.displayName = 'BloomConditioned';
