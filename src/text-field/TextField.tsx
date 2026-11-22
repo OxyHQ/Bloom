@@ -15,11 +15,13 @@ import {
   type AccessibilityProps,
   Animated,
   Platform,
+  type StyleProp,
   StyleSheet,
   TextInput,
   type TextInputProps,
   type TextStyle,
   View,
+  type ViewStyle,
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -97,7 +99,7 @@ interface TextFieldContextValue {
   addonFocused: boolean;
   /** Inside an `InputGroup`: the group paints the shell, so the field draws none. */
   bare: boolean;
-  chromeClassName?: string;
+  chromeStyle?: StyleProp<ViewStyle>;
   chromeInset: number;
 }
 
@@ -176,8 +178,7 @@ export function TextField({
   size: sizeProp,
   radius = TEXT_FIELD_RADIUS,
   leadingAddon,
-  className,
-  chromeClassName,
+  chromeStyle,
   chromeInset = 0,
   style,
 }: TextFieldProps) {
@@ -238,7 +239,7 @@ export function TextField({
       palette,
       radius,
       bare,
-      chromeClassName,
+      chromeStyle,
       chromeInset,
     }),
     [
@@ -256,7 +257,7 @@ export function TextField({
       palette,
       radius,
       bare,
-      chromeClassName,
+      chromeStyle,
       chromeInset,
     ],
   );
@@ -265,7 +266,6 @@ export function TextField({
     <Context.Provider value={context}>
       <FieldBox
         {...direction}
-        className={className}
         style={style}
         baseStyle={[
           a.flex_row,
@@ -401,7 +401,6 @@ function Chrome({ invalid, focused }: { invalid: boolean; focused?: boolean }) {
         />
       )}
       <FieldBox
-        className={ctx.chromeClassName}
         stateStyle={
           ctx.disabled || invalid
             ? { backgroundColor: 'transparent', borderColor: paint.borderColor }
@@ -425,7 +424,7 @@ function Chrome({ invalid, focused }: { invalid: boolean; focused?: boolean }) {
           },
           TEXT_FIELD_WEB_TRANSITION,
         ]}
-        style={pointerEventsStyle('none')}
+        style={[ctx.chromeStyle, pointerEventsStyle('none')]}
       />
     </>
   );

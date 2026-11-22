@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react';
-import type { TextInput, TextInputProps } from 'react-native';
+import type { StyleProp, TextInput, TextInputProps, ViewStyle } from 'react-native';
 
 import type { ViewStyleProp, TextStyleProp } from '../styles';
 import type { Props as SVGIconProps } from '../icons/shared';
@@ -9,10 +9,8 @@ export type { TextFieldSize } from './shared';
 
 export type TextFieldProps = React.PropsWithChildren<
   {
-    /** Classes on the layout host: width, height and padding. */
-    className?: string;
-    /** Classes on the inset surface: background, border/ring and radius. State paint remains authoritative. */
-    chromeClassName?: string;
+    /** The inset surface's style: background, border/ring and radius. State paint remains authoritative. */
+    chromeStyle?: StyleProp<ViewStyle>;
     /** Insets all decorative chrome while retaining the field and action hit boxes. */
     chromeInset?: number;
     invalid?: boolean;
