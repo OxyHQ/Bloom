@@ -41,9 +41,7 @@ export function CollapsibleFrame({
   transition = DEFAULT_COLLAPSIBLE_TRANSITION,
   children,
   style,
-  className,
   contentStyle,
-  contentClassName,
   returnFocusRef,
   nativeID,
   testID,
@@ -129,7 +127,7 @@ export function CollapsibleFrame({
   const content = (
     <div
       ref={body}
-      className={['bloom-collapsible-content', contentClassName].filter(Boolean).join(' ')}
+      className="bloom-collapsible-content"
       style={resolveNativeWebStyle(contentStyle)}
     >
       {mounted ? children : null}
@@ -171,9 +169,9 @@ export function CollapsibleFrame({
         onBlurCapture={() => {
           focusWithin.current = false;
         }}
-        className={['bloom-collapsible-panel', cssMotion && 'bloom-collapsible-css', className]
-          .filter(Boolean)
-          .join(' ')}
+        className={
+          cssMotion ? 'bloom-collapsible-panel bloom-collapsible-css' : 'bloom-collapsible-panel'
+        }
         style={[
           {
             ...surfacePresenceVars(visible ? 1 : 0, fadeMs),
