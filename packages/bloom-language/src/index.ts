@@ -713,3 +713,15 @@ export type {
   RecapCardView,
   ShareCardView,
 } from './controls/media-cards';
+
+// Lyrics (controls/lyrics.tsx)
+export {
+  LyricsView,
+  LyricsPreviewCard,
+} from './controls/lyrics';
+export type {
+  LyricsViewOptions,
+  LyricsPreviewCardOptions,
+  LyricsViewView,
+  LyricsPreviewCardView,
+} from './controls/lyrics';

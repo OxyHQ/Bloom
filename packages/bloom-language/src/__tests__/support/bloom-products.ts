@@ -144,3 +144,5 @@ export const FriendActivityCard = 'FriendActivityCard';
 export const QuickAccessTile = 'QuickAccessTile';
 export const RecapCard = 'RecapCard';
 export const ShareCard = 'ShareCard';
+export const LyricsView = 'LyricsView';
+export const LyricsPreviewCard = 'LyricsPreviewCard';

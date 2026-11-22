@@ -1448,6 +1448,20 @@ Bloom's data as options: `MediaCard`, `SongCard`, `AlbumCard`, `ArtistCard`,
 - A friend listening live draws bars that move on the JS thread: compared by
   Jest as it mounts, not in Chrome.
 
+### Lyrics
+
+```ts
+LyricsView(track.lines, { currentTime, onSeekLine: seek, footer: Text(credits) }).size('medium')
+LyricsPreviewCard(track.lines, { currentTime, onShowLyrics: open }).lines(4)
+```
+
+Bloom's `lyrics`: `LyricsView(lines, options?)` follows playback (its
+`currentTime`, `onSeekLine`, the artwork's colour from the backend, plain
+`text` when there are no timed lines, its words); `.size('large' | 'medium'
+| 'small')`, with none by its width; its `footer` is a language child and
+`.label()` names its region. `LyricsPreviewCard(lines, options?)` is the
+card under a player; `.lines(4 | 5)` is how many lines it shows.
+
 ### Route stops, note cards and the share sheet
 
 ```ts

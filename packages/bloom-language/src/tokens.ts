@@ -411,3 +411,4 @@ export function resolveFont(
         : size * TRACKING[tracking as keyof typeof TRACKING];
   return style;
 }
+export type LyricsSize = (typeof ENUMS.lyricsSize)[number];

@@ -887,3 +887,21 @@ fn the_media_cards_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn the_lyrics_are_checked() {
+    let imports = "import { LyricsPreviewCard, LyricsView, VStack } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (l) => VStack(LyricsView(l).size('small').label('Lyrics'), LyricsPreviewCard(l).lines(4));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("LyricsView(b).size('xl')", "Unknown lyricsSize token 'xl' for .size()"),
+        ("LyricsPreviewCard(b).size('small')", "LyricsPreviewCard has no modifier .size()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (b) => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

@@ -25,6 +25,7 @@ import type { ShareSheetKind } from './controls/share-sheet';
 import type { NoteCardKind } from './controls/note-card';
 import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
+import type { LyricsKind } from './controls/lyrics';
 import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
@@ -94,6 +95,7 @@ import {
   type NoteCardLayout,
   type ShareSheetSize,
   type ShelfLayout,
+  type LyricsSize,
   type MediaCardLayout,
   type MediaCardSize,
   type ChoiceListStyle,
@@ -487,7 +489,8 @@ export type Modifier =
         | MapPriceMarkerSize
         | FollowButtonSize
         | ShareSheetSize
-        | MediaCardSize;
+        | MediaCardSize
+        | LyricsSize;
     }
   | {
       readonly kind: 'style';
@@ -701,7 +704,8 @@ export type NodeKind =
   | CartKind
   | MenuItemKind
   | VendorCardKind
-  | MediaCardKind;
+  | MediaCardKind
+  | LyricsKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1018,7 +1022,8 @@ export class Node {
       | MapPriceMarkerSize
       | FollowButtonSize
       | ShareSheetSize
-      | MediaCardSize,
+      | MediaCardSize
+      | LyricsSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
