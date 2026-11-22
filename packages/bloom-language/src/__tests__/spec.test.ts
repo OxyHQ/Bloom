@@ -244,6 +244,15 @@ import type {
   GuestPickerView,
 } from '../controls/stay-search';
 import type {
+  TenancyTimelineView,
+  LeaseSummaryCardView,
+  RentPaymentListView,
+  MaintenanceRequestCardView,
+  DocumentListView,
+} from '../controls/tenancy';
+import type { EvictionReportCardView, EvictionTimelineView } from '../controls/eviction';
+import type { PlaceReviewSummaryView, WriteReviewPromptView } from '../controls/place-reviews';
+import type {
   DatePickerView,
   DateRangePickerView,
   CalendarView,
@@ -779,7 +788,25 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<StaySearchStepView>, Of<'staySearchStep'>>,
       Same<MethodsOf<DestinationSuggestionsView>, Of<'destinationSuggestions'>>,
       Same<MethodsOf<GuestPickerView>, Of<'guestPicker'>>,
+      Same<MethodsOf<TenancyTimelineView>, Of<'tenancyTimeline'>>,
+      Same<MethodsOf<LeaseSummaryCardView>, Of<'leaseSummaryCard'>>,
+      Same<MethodsOf<RentPaymentListView>, Of<'rentPaymentList'>>,
+      Same<MethodsOf<MaintenanceRequestCardView>, Of<'maintenanceRequestCard'>>,
+      Same<MethodsOf<DocumentListView>, Of<'documentList'>>,
+      Same<MethodsOf<EvictionReportCardView>, Of<'evictionReportCard'>>,
+      Same<MethodsOf<EvictionTimelineView>, Of<'evictionTimeline'>>,
+      Same<MethodsOf<PlaceReviewSummaryView>, Of<'placeReviewSummary'>>,
+      Same<MethodsOf<WriteReviewPromptView>, Of<'writeReviewPrompt'>>,
     ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       true,
       true,

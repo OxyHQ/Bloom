@@ -63,6 +63,9 @@ import { CARD_FORMS } from './card-form';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { STAY_FILTERS } from './stay-filters';
 import { STAY_SEARCH } from './stay-search';
+import { TENANCY } from './tenancy';
+import { EVICTION } from './eviction';
+import { PLACE_REVIEWS } from './place-reviews';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -133,4 +136,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CHECKOUT_SHEETS,
   ...STAY_FILTERS,
   ...STAY_SEARCH,
+  ...TENANCY,
+  ...EVICTION,
+  ...PLACE_REVIEWS,
 };

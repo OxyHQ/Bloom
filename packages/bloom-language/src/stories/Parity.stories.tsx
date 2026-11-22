@@ -147,3 +147,5 @@ export const CardForms: Story = { args: { family: 'cardForm' } };
 export const CheckoutSheets: Story = { args: { family: 'checkoutSheet' } };
 export const StayFilters: Story = { args: { family: 'stayFilter' } };
 export const StaySearch: Story = { args: { family: 'staySearch' } };
+export const Tenancy: Story = { args: { family: 'tenancy' } };
+export const EvictionsAndReviews: Story = { args: { family: 'eviction' } };
