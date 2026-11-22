@@ -149,7 +149,6 @@ function SelectionCardComponent({
   invalid,
   nativeID,
   describedBy,
-  className,
   children,
   accessibilityLabel,
   style,
@@ -297,7 +296,7 @@ function SelectionCardComponent({
   };
 
   return (
-    <View ref={setCard} testID={testID} className={className} style={cardStyle}>
+    <View ref={setCard} testID={testID} style={cardStyle}>
       {selection === 'multiple' ? (
         <Pressable
           role="checkbox"
