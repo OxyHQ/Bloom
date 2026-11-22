@@ -153,3 +153,4 @@ export const CallScreens: Story = { args: { family: 'callUi' } };
 export const ChatPeople: Story = { args: { family: 'chatPeople' } };
 export const MessageBubbles: Story = { args: { family: 'messageBubble' } };
 export const MapChrome: Story = { args: { family: 'mapChrome' } };
+export const Places: Story = { args: { family: 'place' } };

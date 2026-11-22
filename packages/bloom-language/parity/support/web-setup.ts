@@ -11,3 +11,13 @@ class NoResize {
   disconnect(): void {}
 }
 (globalThis as { ResizeObserver?: unknown }).ResizeObserver ??= NoResize;
+
+// jsdom lays nothing out and has no ResizeObserver; a component that observes
+// its size (a collapsible's body) gets one that never reports, on both sides.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+}
