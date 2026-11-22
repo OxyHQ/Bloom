@@ -60,7 +60,6 @@ import {
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
-import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { layerForRank, type OverlayLayer } from './stack';
 import { useHardwareBack } from './use-hardware-back';
@@ -120,7 +119,6 @@ export const BACKDROP_DIM_OPACITY = 0.28;
  */
 export function OverlayRoot({
   children,
-  className,
   style,
   testID,
   zIndex,
@@ -137,39 +135,24 @@ export function OverlayRoot({
   // non-empty — the counter would never reset and depths would climb for the
   // rest of the session.
   return zIndex === undefined ? (
-    <StackedOverlayRoot className={className} style={style} testID={testID} modal={modal}>
+    <StackedOverlayRoot style={style} testID={testID} modal={modal}>
       <BloomScope controlDensity="default">{children}</BloomScope>
     </StackedOverlayRoot>
   ) : (
-    <PinnedOverlayRoot
-      zIndex={zIndex}
-      className={className}
-      style={style}
-      testID={testID}
-      modal={modal}
-    >
+    <PinnedOverlayRoot zIndex={zIndex} style={style} testID={testID} modal={modal}>
       <BloomScope controlDensity="default">{children}</BloomScope>
     </PinnedOverlayRoot>
   );
 }
 
-type OverlayRootViewProps = Pick<
-  OverlayRootProps,
-  'children' | 'className' | 'style' | 'testID'
-> & {
+type OverlayRootViewProps = Pick<OverlayRootProps, 'children' | 'style' | 'testID'> & {
   modal: boolean;
 };
 
-function StackedOverlayRoot({ children, className, style, testID, modal }: OverlayRootViewProps) {
+function StackedOverlayRoot({ children, style, testID, modal }: OverlayRootViewProps) {
   const layer = useOverlayLayer();
   return (
-    <OverlayRootView
-      layer={layer}
-      className={className}
-      style={style}
-      testID={testID}
-      modal={modal}
-    >
+    <OverlayRootView layer={layer} style={style} testID={testID} modal={modal}>
       {children}
     </OverlayRootView>
   );
@@ -177,7 +160,6 @@ function StackedOverlayRoot({ children, className, style, testID, modal }: Overl
 
 function PinnedOverlayRoot({
   children,
-  className,
   style,
   testID,
   zIndex,
@@ -187,13 +169,7 @@ function PinnedOverlayRoot({
   // either — every slot is the pinned depth.
   const layer = useMemo(() => ({ root: zIndex, backdrop: zIndex, surface: zIndex }), [zIndex]);
   return (
-    <OverlayRootView
-      layer={layer}
-      className={className}
-      style={style}
-      testID={testID}
-      modal={modal}
-    >
+    <OverlayRootView layer={layer} style={style} testID={testID} modal={modal}>
       {children}
     </OverlayRootView>
   );
@@ -201,7 +177,6 @@ function PinnedOverlayRoot({
 
 function OverlayRootView({
   children,
-  className,
   style,
   testID,
   layer,
@@ -218,9 +193,8 @@ function OverlayRootView({
           `accessibilityViewIsModal` sits HERE, not on the panel: iOS hides only
           the modal view's SIBLINGS, and at the native outlet this root is the
           sibling of the app content, where the panel is not. */}
-      <StyledView
+      <View
         accessibilityViewIsModal={modal && Platform.OS !== 'web' ? true : undefined}
-        className={className}
         style={[[styles.root, { zIndex: layer.root }, style], pointerEventsStyle('box-none')]}
         testID={testID}
       >
@@ -252,7 +226,7 @@ function OverlayRootView({
         <ScreenScope>
           <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
         </ScreenScope>
-      </StyledView>
+      </View>
     </OverlayLayerContext.Provider>
   );
 }
