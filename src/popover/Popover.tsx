@@ -61,7 +61,6 @@ export function PopoverTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
 }: PopoverTriggerProps) {
@@ -71,7 +70,6 @@ export function PopoverTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={popover.anchorRef}
-      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -101,7 +99,6 @@ export function PopoverContent({
   minWidth = POPOVER_WIDTH,
   maxWidth,
   maxHeight,
-  className,
   style,
   testID,
 }: PopoverContentProps) {
@@ -130,7 +127,6 @@ export function PopoverContent({
           minWidth={minWidth}
           maxWidth={maxWidth}
           maxHeight={maxHeight}
-          className={className}
           style={style}
           testID={testID}
         >
@@ -148,7 +144,6 @@ export function PopoverContent({
         control={control}
         label={label}
         onClose={onSheetClose}
-        contentClassName={className}
         contentStyle={[
           styles.body,
           {
@@ -185,7 +180,6 @@ function PopoverPopup({
   minWidth,
   maxWidth,
   maxHeight,
-  className,
   style,
   testID,
   children,
@@ -199,7 +193,6 @@ function PopoverPopup({
   minWidth?: number;
   maxWidth?: number;
   maxHeight?: number;
-  className?: string;
   style?: PopoverContentProps['style'];
   testID?: string;
   children?: React.ReactNode;
@@ -225,7 +218,6 @@ function PopoverPopup({
         minWidth={minWidth}
         maxWidth={maxWidth}
         maxHeight={maxHeight}
-        className={className}
         style={style}
       >
         {children}

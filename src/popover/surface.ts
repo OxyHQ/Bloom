@@ -12,21 +12,11 @@
  *
  * The motion is `FloatingPanel`'s; everything else is resolved here.
  *
- * ── WHY INLINE, AND HOW A CALLER'S `className` STILL WINS ────────────────────
+ * ── WHY INLINE ───────────────────────────────────────────────────────────────
  *
  * The colours are ramp stops (`menu-palette.ts`) that exist as no CSS variable,
- * so they cannot be classes. The geometry is inline too, because a default CLASS
- * competes with the caller's class by Tailwind's emission order, not by the order
- * in the attribute — measured on this very family: `DialogHeader`'s
- * `className="w-auto p-space-4"` rendered 16px of padding, because the old
- * `p-space-16` default was emitted later and won.
- *
- * But an inline style beats ANY class on web, so a naive inline default would
- * silently outrank every `className` a caller passes. {@link classChromeOverrides}
- * closes that: it reads which chrome PROPERTIES the caller's utilities name
- * (`w-*`, `p-*`, `rounded-*`, `bg-*`, …) and the matching inline default is left
- * out, so the caller's class is the only rule for that property. A caller's
- * `style` still comes last and overrides everything.
+ * and the geometry has to agree with them. A caller's `style` comes last and
+ * overrides any of it.
  */
 import type { MenuPalette } from '../floating/menu-palette';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -42,141 +32,37 @@ export const POPOVER_VIEWPORT_INSET = 32;
 /** Popovers sit `offset={8}` from their trigger. */
 export const POPOVER_SIDE_OFFSET = 8;
 
-export type PopoverChromeKey =
-  | 'width'
-  | 'maxWidth'
-  | 'paddingTop'
-  | 'paddingBottom'
-  | 'paddingLeft'
-  | 'paddingRight'
-  | 'radius'
-  | 'borderWidth'
-  | 'borderColor'
-  | 'background'
-  | 'shadow'
-  | 'overflow'
-  // The rest are the PANEL PARTS' chrome (`parts.tsx`). The panel itself sets
-  // no default for any of them, so `resolvePopoverSurfaceStyle` ignores them.
-  | 'color'
-  | 'gap'
-  | 'marginTop'
-  | 'marginBottom'
-  | 'marginLeft'
-  | 'marginRight'
-  | 'height'
-  | 'flexDirection'
-  | 'alignItems';
-
-const BORDER_WIDTH = /^border(-[xytrblse])?(-\d+(\.\d+)?|-\[[^\]]+px\])?$/;
-
 /**
- * The sides a spacing utility's axis letter claims. `p-4` has no letter and
- * claims all four; `px`/`py` are the pairs; `pt`/`pb`/`pl`/`pr` are single
- * sides. `ps`/`pe` are the LOGICAL start and end — one side each, not the
- * pair — which react-native-web resolves to left and right in an LTR
- * document. Treating them as the pair would drop a default the caller never
- * asked to own.
- */
-function sidesOf(letter: string | undefined, property: 'padding' | 'margin'): PopoverChromeKey[] {
-  const sides =
-    letter === undefined
-      ? ['Top', 'Bottom', 'Left', 'Right']
-      : letter === 'x'
-        ? ['Left', 'Right']
-        : letter === 'y'
-          ? ['Top', 'Bottom']
-          : letter === 't'
-            ? ['Top']
-            : letter === 'b'
-              ? ['Bottom']
-              : letter === 'l' || letter === 's'
-                ? ['Left']
-                : letter === 'r' || letter === 'e'
-                  ? ['Right']
-                  : [];
-  return sides.map((side) => `${property}${side}` as PopoverChromeKey);
-}
-
-/**
- * Which chrome properties a caller's utility classes set. Variants (`dark:`,
- * `md:`, `hover:`), the important `!` and a negative `-` are stripped first, so
- * `md:!p-0` counts as padding.
- *
- * Padding and margin are claimed PER SIDE, because the utilities are: `px-4`
- * names left and right and says nothing about the top, so a part that also
- * sets `paddingTop` must keep it. Treating them as one key dropped a header's
- * `pt-1` for a caller who only asked for wider sides.
- *
- * `text-*` is counted as a COLOUR, including the size steps (`text-sm`). That
- * is deliberately imprecise: telling `text-sm` from `text-red-500` means
- * knowing the consumer's palette, and the alternative the parts used before
- * this — drop the colour default whenever ANY `className` is passed — is
- * strictly worse, since it loses the colour to an unrelated `mt-1`.
- */
-export function classChromeOverrides(className?: string): ReadonlySet<PopoverChromeKey> {
-  const keys = new Set<PopoverChromeKey>();
-  if (!className) return keys;
-  let spacing: RegExpExecArray | null;
-  for (const raw of className.split(/\s+/)) {
-    if (!raw) continue;
-    const token = raw
-      .slice(raw.lastIndexOf(':') + 1)
-      .replace(/^!/, '')
-      .replace(/^-/, '');
-    if (/^(w|size)-/.test(token)) keys.add('width');
-    else if (/^max-w-/.test(token)) keys.add('maxWidth');
-    else if ((spacing = /^([pm])([xytrbles])?-/.exec(token))) {
-      const property = spacing[1] === 'p' ? 'padding' : 'margin';
-      for (const key of sidesOf(spacing[2], property)) keys.add(key);
-    } else if (/^rounded(-|$)/.test(token)) keys.add('radius');
-    else if (BORDER_WIDTH.test(token)) keys.add('borderWidth');
-    else if (/^border-/.test(token)) keys.add('borderColor');
-    else if (/^bg-/.test(token)) keys.add('background');
-    else if (/^shadow(-|$)/.test(token)) keys.add('shadow');
-    else if (/^overflow-/.test(token)) keys.add('overflow');
-    else if (/^text-/.test(token)) keys.add('color');
-    else if (/^gap(-|$)/.test(token)) keys.add('gap');
-    else if (/^h-/.test(token)) keys.add('height');
-    else if (/^flex-(row|col)/.test(token)) keys.add('flexDirection');
-    else if (/^items-/.test(token)) keys.add('alignItems');
-  }
-  return keys;
-}
-
-/**
- * The panel's inline chrome, minus every property the caller's `className`
- * names. `maxWidth` is only the default: a numeric `maxWidth` PROP is applied by
- * `FloatingPanel` and must not be overwritten, so the caller passes
- * `viewportWidth` only when no prop was given.
+ * The panel's inline chrome. `maxWidth` is only the default: a numeric
+ * `maxWidth` PROP is applied by `FloatingPanel` and must not be overwritten, so
+ * the caller passes `viewportWidth` only when no prop was given.
  */
 export function resolvePopoverSurfaceStyle(
   palette: MenuPalette,
-  overridden: ReadonlySet<PopoverChromeKey>,
   viewportWidth?: number,
   padding = POPOVER_PADDING,
 ): WebCssStyle {
-  const keep = (key: PopoverChromeKey) => !overridden.has(key);
   // Longhands, one side at a time: a caller's `style` override of one side must
   // not lose to a shorthand react-native-web ranks above it (AGENTS.md,
-  // "Style"), and a caller who writes `px-4` is claiming the sides, not the top.
+  // "Style").
   //
   // FloatingPanel owns the bounded ScrollArea. This outer surface clips material
   // and content to its radius; consumers do not install a second scroller.
   const style: WebCssStyle = {
-    ...(keep('width') ? { width: POPOVER_WIDTH } : null),
-    ...(keep('maxWidth') && viewportWidth !== undefined
+    width: POPOVER_WIDTH,
+    ...(viewportWidth !== undefined
       ? { maxWidth: Math.max(0, viewportWidth - POPOVER_VIEWPORT_INSET) }
       : null),
-    ...(keep('paddingTop') ? { paddingTop: padding } : null),
-    ...(keep('paddingBottom') ? { paddingBottom: padding } : null),
-    ...(keep('paddingLeft') ? { paddingLeft: padding } : null),
-    ...(keep('paddingRight') ? { paddingRight: padding } : null),
-    ...(keep('radius') ? { borderRadius: POPOVER_RADIUS } : null),
-    ...(keep('borderWidth') ? { borderWidth: 1 } : null),
-    ...(keep('borderColor') ? { borderColor: palette.border } : null),
-    ...(keep('background') ? { backgroundColor: palette.surface } : null),
-    ...(keep('shadow') ? { boxShadow: palette.shadow } : null),
-    ...(keep('overflow') ? { overflow: 'hidden' as const } : null),
+    paddingTop: padding,
+    paddingBottom: padding,
+    paddingLeft: padding,
+    paddingRight: padding,
+    borderRadius: POPOVER_RADIUS,
+    borderWidth: 1,
+    borderColor: palette.border,
+    backgroundColor: palette.surface,
+    boxShadow: palette.shadow,
+    overflow: 'hidden',
   };
   return style;
 }

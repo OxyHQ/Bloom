@@ -15,33 +15,16 @@ import { useMenuDensity } from '../floating/use-menu-density';
  *
  * Popovers have no close button and no arrow, so neither is a part.
  *
- * ── HOW A CALLER'S CLASS STILL WINS ─────────────────────────────────────────
- *
- * Every default here is INLINE, because the colours are ramp stops that exist
- * as no CSS variable and the geometry has to agree with them. But an inline
- * style beats ANY class on web, so a naive inline default silently outranks
- * whatever the caller passes: `<PopoverSeparator className="bg-red-500" />`
- * painted the palette colour, and `<PopoverHeader className="px-4" />` kept
- * its 8px.
- *
- * So each part omits exactly the properties the caller's utilities NAME, using
- * the same token scan the panel uses (`classChromeOverrides` in `surface.ts`).
- * The parts previously used an all-or-nothing guard instead — drop the colour
- * default if ANY `className` is present — which failed in the other direction:
- * `<PopoverTitle className="mt-1">` lost its colour entirely.
- *
- * The trade-off is real and the panel already made it: on a web build whose
- * Tailwind/NativeWind pipeline is not wired (`AGENTS.md`, "Consumer web CSS
- * pipeline"), a named property falls back to NOTHING rather than to the
- * default. A caller who names it is asking to own it.
+ * Every default here is inline, because the colours are ramp stops that exist
+ * as no CSS variable and the geometry has to agree with them. A caller's
+ * `style` goes over it.
  */
 import React from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useMenuPalette } from '../floating/menu-palette';
-import { StyledView } from '../styles/styled-primitives';
 import { Text } from '../typography';
-import { classChromeOverrides, POPOVER_PADDING, type PopoverChromeKey } from './surface';
+import { POPOVER_PADDING } from './surface';
 import type {
   PopoverDescriptionProps,
   PopoverFooterProps,
@@ -50,50 +33,12 @@ import type {
   PopoverTitleProps,
 } from './types';
 
-/**
- * `base` minus the properties the caller's `className` claims.
- *
- * It walks BASE, not the map: a property with no chrome key is one no utility
- * can name, so it is always kept. Walking the map instead would silently drop
- * whatever was added to a part's stylesheet without being classified — the
- * failure would be a missing default, with nothing to report it.
- */
-function kept(base: ViewStyle, owned: ReadonlySet<PopoverChromeKey>): ViewStyle {
-  if (owned.size === 0) return base;
-  const out: ViewStyle = {};
-  for (const [property, value] of Object.entries(base)) {
-    const key = PROPERTY_KEY[property];
-    if (key === undefined || !owned.has(key)) {
-      Object.assign(out, { [property]: value });
-    }
-  }
-  return out;
-}
-
-/** Which chrome key each style property belongs to. */
-const PROPERTY_KEY: Record<string, PopoverChromeKey | undefined> = {
-  flexDirection: 'flexDirection',
-  alignItems: 'alignItems',
-  gap: 'gap',
-  paddingLeft: 'paddingLeft',
-  paddingRight: 'paddingRight',
-  paddingTop: 'paddingTop',
-  paddingBottom: 'paddingBottom',
-  marginLeft: 'marginLeft',
-  marginRight: 'marginRight',
-  marginTop: 'marginTop',
-  marginBottom: 'marginBottom',
-  height: 'height',
-  backgroundColor: 'background',
-};
-
-export function PopoverHeader({ leading, children, className, style, testID }: PopoverHeaderProps) {
-  const owned = classChromeOverrides(className);
+export function PopoverHeader({ leading, children, style, testID }: PopoverHeaderProps) {
   return (
-    <StyledView className={className} style={[kept(styles.header, owned), style]} testID={testID}>
+    <View style={[styles.header, style]} testID={testID}>
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <View style={styles.headerText}>{children}</View>
-    </StyledView>
+    </View>
   );
 }
 
@@ -101,7 +46,6 @@ export function PopoverTitle({
   children,
   tone = 'primary',
   numberOfLines = 1,
-  className,
   style,
   testID,
 }: PopoverTitleProps) {
@@ -111,8 +55,7 @@ export function PopoverTitle({
     <Text
       variant="body-medium"
       numberOfLines={numberOfLines}
-      className={className}
-      style={[classChromeOverrides(className).has('color') ? null : { color }, style]}
+      style={[{ color }, style]}
       testID={testID}
     >
       {children}
@@ -123,7 +66,6 @@ export function PopoverTitle({
 export function PopoverDescription({
   children,
   numberOfLines = 1,
-  className,
   style,
   testID,
 }: PopoverDescriptionProps) {
@@ -132,11 +74,7 @@ export function PopoverDescription({
     <Text
       variant="body-regular"
       numberOfLines={numberOfLines}
-      className={className}
-      style={[
-        classChromeOverrides(className).has('color') ? null : { color: palette.textSecondary },
-        style,
-      ]}
+      style={[{ color: palette.textSecondary }, style]}
       testID={testID}
     >
       {children}
@@ -144,36 +82,30 @@ export function PopoverDescription({
   );
 }
 
-export function PopoverFooter({ children, className, style, testID }: PopoverFooterProps) {
-  const owned = classChromeOverrides(className);
+export function PopoverFooter({ children, style, testID }: PopoverFooterProps) {
   return (
-    <StyledView className={className} style={[kept(styles.footer, owned), style]} testID={testID}>
+    <View style={[styles.footer, style]} testID={testID}>
       {children}
-    </StyledView>
+    </View>
   );
 }
 
-export function PopoverSeparator({ className, style, testID }: PopoverSeparatorProps) {
+export function PopoverSeparator({ style, testID }: PopoverSeparatorProps) {
   const density = useMenuDensity();
   const palette = useMenuPalette();
-  const owned = classChromeOverrides(className);
   return (
-    <StyledView
+    <View
       // Decorative: the sections it divides are announced on their own.
       aria-hidden
-      className={className}
       style={[
-        kept(
-          {
-            ...styles.separator,
-            marginLeft: -density.panelPadding,
-            marginRight: -density.panelPadding,
-            marginTop: density.separatorMargin,
-            marginBottom: density.separatorMargin,
-            backgroundColor: palette.border,
-          },
-          owned,
-        ),
+        {
+          ...styles.separator,
+          marginLeft: -density.panelPadding,
+          marginRight: -density.panelPadding,
+          marginTop: density.separatorMargin,
+          marginBottom: density.separatorMargin,
+          backgroundColor: palette.border,
+        },
         style,
       ]}
       testID={testID}
