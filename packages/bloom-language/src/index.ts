@@ -590,3 +590,42 @@ export type {
   StaySearchStepOptions,
   StaySearchStepView,
 } from './controls/stay-search';
+
+// Tenancy (controls/tenancy.tsx)
+export {
+  DocumentList,
+  LeaseSummaryCard,
+  MaintenanceRequestCard,
+  RentPaymentList,
+  TenancyTimeline,
+} from './controls/tenancy';
+export type {
+  DocumentListOptions,
+  DocumentListView,
+  LeaseSummaryCardOptions,
+  LeaseSummaryCardView,
+  MaintenanceRequestCardOptions,
+  MaintenanceRequestCardView,
+  RentPaymentListOptions,
+  RentPaymentListView,
+  TenancyTimelineOptions,
+  TenancyTimelineView,
+} from './controls/tenancy';
+
+// Eviction (controls/eviction.tsx)
+export { EvictionReportCard, EvictionTimeline } from './controls/eviction';
+export type {
+  EvictionReportCardOptions,
+  EvictionReportCardView,
+  EvictionTimelineOptions,
+  EvictionTimelineView,
+} from './controls/eviction';
+
+// Place reviews (controls/place-reviews.tsx)
+export { PlaceReviewSummary, WriteReviewPrompt } from './controls/place-reviews';
+export type {
+  PlaceReviewSummaryOptions,
+  PlaceReviewSummaryView,
+  WriteReviewPromptOptions,
+  WriteReviewPromptView,
+} from './controls/place-reviews';

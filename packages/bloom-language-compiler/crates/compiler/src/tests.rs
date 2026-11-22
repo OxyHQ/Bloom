@@ -793,3 +793,22 @@ fn the_stay_search_is_checked() {
     let output = check("export const x = (c) => StaySearchStep('Where', c, {}).style('solid');\n");
     assert_eq!(output.diagnostics[0].message, "StaySearchStep has no modifier .style()");
 }
+
+#[test]
+fn the_tenancy_eviction_and_review_families_are_checked() {
+    let imports = "import { DocumentList, EvictionReportCard, LeaseSummaryCard, RentPaymentList, TenancyTimeline, VStack, WriteReviewPrompt } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (o, p, d, e) => VStack(TenancyTimeline(e).density('compact'), LeaseSummaryCard(o).style('wide'), RentPaymentList(p).style('narrow').tint('error'), DocumentList(d).style('auto'), EvictionReportCard(o).lines(3), WriteReviewPrompt('Tilos 27', o).label('Review'));\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    for (call, message) in [
+        ("LeaseSummaryCard(o).style('grid')", "Unknown tenancyLayout token 'grid' for .style()"),
+        ("RentPaymentList(o).tint('warning')", "Unknown rentOutstandingTone token 'warning' for .tint()"),
+        ("TenancyTimeline(o).density('comfortable')", "Unknown density token 'comfortable' for .density()"),
+        ("EvictionReportCard(o).style('solid')", "EvictionReportCard has no modifier .style()"),
+    ] {
+        let output = check(&format!("export const x = (o) => {call};\n"));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{call}");
+    }
+}

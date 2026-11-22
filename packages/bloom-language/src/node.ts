@@ -23,6 +23,9 @@ import type { AgentAvatarKind } from './controls/agent-avatar';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
 import type { StaySearchKind } from './controls/stay-search';
+import type { TenancyKind } from './controls/tenancy';
+import type { EvictionKind } from './controls/eviction';
+import type { PlaceReviewKind } from './controls/place-reviews';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -83,6 +86,8 @@ import {
   type FeatureFilterStyle,
   type FilterTriggerSize,
   type GuestPickerSize,
+  type TenancyLayout,
+  type RentOutstandingTone,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -498,7 +503,8 @@ export type Modifier =
         | MapMarkerState
         | ShelfLayout
         | PriceScale
-        | FeatureFilterStyle;
+        | FeatureFilterStyle
+        | TenancyLayout;
     }
   | {
       readonly kind: 'shape';
@@ -519,7 +525,8 @@ export type Modifier =
         | AiChatLineTone
         | AgentThinkingTone
         | ChatStatusTone
-        | MessageTone;
+        | MessageTone
+        | RentOutstandingTone;
     }
   | { readonly kind: 'count'; readonly key: string; readonly value: number | null | undefined }
   | { readonly kind: 'active'; readonly key: string; readonly value: boolean | undefined }
@@ -669,7 +676,10 @@ export type NodeKind =
   | CardFormKind
   | CheckoutSheetKind
   | StayFilterKind
-  | StaySearchKind;
+  | StaySearchKind
+  | TenancyKind
+  | EvictionKind
+  | PlaceReviewKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -1011,7 +1021,8 @@ export class Node {
       | MapMarkerState
       | ShelfLayout
       | PriceScale
-      | FeatureFilterStyle,
+      | FeatureFilterStyle
+      | TenancyLayout,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -1030,7 +1041,8 @@ export class Node {
       | AiChatLineTone
       | AgentThinkingTone
       | ChatStatusTone
-      | MessageTone,
+      | MessageTone
+      | RentOutstandingTone,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }

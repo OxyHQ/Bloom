@@ -1413,6 +1413,37 @@ Bloom's suggestions and their `onSelect`. `GuestPicker(guests, options?)` edits
 the counts its binding holds: `.size('sm' | 'md')` its steppers, its `note` a
 language child.
 
+### Tenancy
+
+```ts
+LeaseSummaryCard({ ...lease, actions: Button(Text('Pay rent')).onPress(pay) }).style('wide')
+RentPaymentList(payments, { outstanding: '€1,150' }).tint(late ? 'error' : 'default')
+TenancyTimeline(events).density('compact').label(t('Tenancy history'))
+```
+
+Bloom's `tenancy`: `TenancyTimeline(events, options?)`, `LeaseSummaryCard(options)`,
+`RentPaymentList(payments, options?)`, `MaintenanceRequestCard(options)` and
+`DocumentList(documents, options?)`, each taking Bloom's own data. A card's,
+list's or document list's layout is `.style('auto' | 'wide' | 'narrow')`; the
+outstanding amount's tone `.tint('default' | 'error')`; the timeline's rows
+`.density('default' | 'compact')` (Bloom's `comfortable` is the default). The
+lease's and the request's `actions` are language children.
+
+### Evictions and place reviews
+
+```ts
+EvictionReportCard({ ...report, attending: [attending, setAttending], onShare: share }).lines(3)
+EvictionTimeline(events).label(t('What happened'))
+WriteReviewPrompt(building.title, { onStart: review, media: Image(building.photo) })
+```
+
+Bloom's `eviction`: `EvictionReportCard(options)` (whether one attends is its
+`attending` binding; `.lines(n)` cuts the description) and
+`EvictionTimeline(events, options?)`. Bloom's `place-reviews`:
+`PlaceReviewSummary(rating, options?)` and `WriteReviewPrompt(buildingTitle,
+options)` (its `media` a language child). `PlaceReviewCard`, which no app
+imports, is not drawn.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a

@@ -3,6 +3,9 @@ import { AGENT_AVATARS } from './agent-avatar';
 import { CHECKOUT_SHEETS } from './checkout-sheet';
 import { STAY_FILTERS } from './stay-filters';
 import { STAY_SEARCH } from './stay-search';
+import { TENANCY } from './tenancy';
+import { EVICTION } from './eviction';
+import { PLACE_REVIEWS } from './place-reviews';
 import { CARD_FORMS } from './card-form';
 import { MEDIA } from './media';
 import { LISTINGS } from './listings';
@@ -42,4 +45,7 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...CHECKOUT_SHEETS,
   ...STAY_FILTERS,
   ...STAY_SEARCH,
+  ...TENANCY,
+  ...EVICTION,
+  ...PLACE_REVIEWS,
 };
