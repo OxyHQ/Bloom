@@ -67,8 +67,9 @@ const STORIES = process.argv.filter((arg) => arg.startsWith('language-parity--')
 function describeInPage(testid, portals) {
   const SKIP = new Set(['class', 'style', 'data-testid', 'id']);
   // React's useId counts across the page, and Bloom counts a few SVG ids itself
-  // (parity/support/web.tsx names them); an id is compared by its order in its
-  // cell, Bloom's counted ones read first.
+  // (parity/support/web.tsx names them), as Reanimated counts the keyframes of
+  // a layout animation; an id is compared by its order in its cell, Bloom's
+  // counted ones read first, then Reanimated's.
   const REACT_ID = /_r_[0-9a-z]+_|(?<=[-_:«#])r[0-9a-z]+(?=[-_:»)]|$)/g;
   const BLOOM_ID =
     /\bbloom-(?:alerts-fade|call-scrim-|call-stage-|heading-cone|media-card-cover-|stat-tile|story-ring-|story-scrim-|theme-toggle-gradient)\d+\b/g;
@@ -77,7 +78,12 @@ function describeInPage(testid, portals) {
     if (!map.has(id)) map.set(id, `id${map.size}`);
     return map.get(id);
   };
-  const ids = (text) => text.replace(BLOOM_ID, byOrder).replace(REACT_ID, byOrder);
+  const REANIMATED_KEYFRAMES = /\bREA-(?:ENTERING|EXITING|LAYOUT)-\d+\b/g;
+  const ids = (text) =>
+    text
+      .replace(BLOOM_ID, byOrder)
+      .replace(REANIMATED_KEYFRAMES, byOrder)
+      .replace(REACT_ID, byOrder);
   const describe = (element) => {
     const attributes = {};
     for (const { name, value } of [...element.attributes].sort((a, b) =>
