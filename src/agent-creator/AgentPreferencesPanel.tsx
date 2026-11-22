@@ -135,7 +135,6 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
           rightElement={
             <SegmentedControl
               label={messages.playbackSpeed}
-              className="w-full bg-background-tertiary-default dark:bg-segmented-control-background"
               style={{ width: '100%' }}
               type="radio"
               value={String(preferences.speed)}
@@ -146,7 +145,6 @@ export function AgentPreferencesPanel(props: AgentCreatorProps) {
                   key={speed}
                   value={String(speed)}
                   accessibilityLabel={messages.playbackSpeedLabel(speed)}
-                  className="min-w-0 flex-1 px-1"
                   style={{ flex: 1, minWidth: 0, paddingHorizontal: 4 }}
                 >
                   <SegmentedControlItemText>{speed}×</SegmentedControlItemText>
