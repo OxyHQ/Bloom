@@ -81,7 +81,9 @@ const placed: ParityCase[] = [
   {
     name: 'a box around a glyph',
     language: () =>
-      toElement(L.Icon(Heart).size('sm').padding('xs').background('surface').corner('full')),
+      toElement(
+        L.Icon(Heart).size('sm').padding('xs').background('surface').corner('full').clipped(),
+      ),
     bloom: () => (
       <Themed>
         {(c) => (

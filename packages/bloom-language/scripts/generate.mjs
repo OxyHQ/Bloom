@@ -119,6 +119,8 @@ export const OPACITY = ${ts(scales.opacity)} as const;
 export const BORDER_WIDTH = ${ts(scales.borderWidth)} as const;
 export const HIT_SLOP = ${ts(scales.hitSlop)} as const;
 export const SHRINK = ${ts(scales.shrink)} as const;
+/** Tailwind's flex utilities: [grow, shrink, basis], null where one writes none. */
+export const FLEX = ${ts(withoutComment(scales.flex))} as const;
 export const ALIGNMENT = ${ts(scales.alignment)} as const;
 export const GLASS_OPACITY = ${ts(scales.glassOpacity)} as const;
 export const DURATION = ${ts(scales.duration)} as const;
@@ -265,6 +267,14 @@ for (const edge of ['Top', 'Bottom', 'Start', 'End']) {
   for (const value of spaceValues) valueClass(`padding${edge}`, value);
   for (const value of spaceValues) if (value > 0) valueClass(`margin${edge}`, -value);
 }
+// Physical sides, and margins (style.ts, margin): every space rung, inward and outward.
+for (const edge of ['Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
+  for (const value of spaceValues) {
+    if (edge === 'Left' || edge === 'Right') valueClass(`padding${edge}`, value);
+    valueClass(`margin${edge}`, value);
+    if (value > 0) valueClass(`margin${edge}`, -value);
+  }
+}
 for (const property of [
   'width',
   'height',
@@ -287,7 +297,7 @@ for (const value of numbers(scales.corner)) {
 valueClass('overflow', 'hidden');
 for (const value of numbers(scales.opacity)) valueClass('opacity', value);
 // Borders: react-native-web's hairline is 1px.
-for (const edge of ['', 'Top', 'Bottom', 'Start', 'End']) {
+for (const edge of ['', 'Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
   valueClass(`border${edge}Width`, 1);
   for (const role of Object.keys(colors)) roleClass(`border${edge}Color`, role);
 }
@@ -307,7 +317,7 @@ valueClass('position', 'relative');
 valueClass('position', 'absolute');
 for (const side of ['top', 'right', 'bottom', 'left']) valueClass(side, 0);
 // A pinned view's edges (style.ts, placement): every space rung, inward and outward.
-for (const side of ['top', 'bottom', 'start', 'end']) {
+for (const side of ['top', 'bottom', 'start', 'end', 'left', 'right']) {
   for (const value of spaceValues) {
     valueClass(side, value);
     if (value > 0) valueClass(side, -value);
@@ -332,6 +342,12 @@ for (const value of Object.values(scales.alignment)) {
 }
 valueClass('flex', 1);
 for (const value of numbers(scales.shrink)) valueClass('flexShrink', value);
+// Tailwind's flex utilities (style.ts, placement): each longhand they write.
+for (const [grow, shrink, basis] of Object.values(withoutComment(scales.flex))) {
+  if (grow !== null) valueClass('flexGrow', grow);
+  if (shrink !== null) valueClass('flexShrink', shrink);
+  if (basis !== null) valueClass('flexBasis', basis);
+}
 for (const value of [...spaceValues, ...Object.values(scales.length)])
   valueClass('flexBasis', value);
 // Hit testing, and a view only assistive technology reads (style.ts, placement).
@@ -411,6 +427,7 @@ const tokenSets = {
   opacity: Object.keys(scales.opacity),
   hitSlop: Object.keys(scales.hitSlop),
   shrink: Object.keys(scales.shrink),
+  flex: Object.keys(withoutComment(scales.flex)),
   alignment: Object.keys(scales.alignment),
   iconSize: Object.keys(scales.iconSize),
   avatarSize: Object.keys(scales.avatarSize),

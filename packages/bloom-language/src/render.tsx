@@ -529,6 +529,8 @@ function plan(node: Node): Plan {
       case 'zIndex':
       case 'hidden':
       case 'basis':
+      case 'flex':
+      case 'margin':
       case 'allowsHitTesting':
       case 'accessibilityOnly':
         applyPlacement(result.place, modifier);

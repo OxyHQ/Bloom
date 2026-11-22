@@ -244,6 +244,7 @@ import {
   type Edge,
   type Role,
   type ShrinkPriority,
+  type FlexName,
   type AvatarColor,
   type AvatarLayout,
   type AvatarOverflow,
@@ -1181,6 +1182,9 @@ export interface PositionEdges {
   bottom?: PaddingToken;
   leading?: PaddingToken;
   trailing?: PaddingToken;
+  /** A physical side, the same in a right-to-left layout. */
+  left?: PaddingToken;
+  right?: PaddingToken;
 }
 
 /** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
@@ -1212,6 +1216,14 @@ export type Modifier =
     }
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
+  | { readonly kind: 'flex'; readonly key: string; readonly value: FlexName }
+  | {
+      readonly kind: 'margin';
+      readonly key: string;
+      readonly edge: Edge;
+      readonly value: PaddingToken;
+    }
+  | { readonly kind: 'clipped'; readonly key: string }
   | { readonly kind: 'alignSelf'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'position'; readonly key: string; readonly value: PositionEdges }
   | { readonly kind: 'offset'; readonly key: string; readonly value: OffsetSpec }
@@ -1885,6 +1897,17 @@ export class Node {
   }
   grow(): Node {
     return this.with({ kind: 'grow', key: 'grow' });
+  }
+  flex(value: FlexName): Node {
+    return this.with({ kind: 'flex', key: `flex:${value}`, value });
+  }
+  margin(edgeOrValue: Edge | PaddingToken, value?: PaddingToken): Node {
+    const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
+    const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
+    return this.with({ kind: 'margin', key: `m:${edge}:${tokenKey(token)}`, edge, value: token });
+  }
+  clipped(): Node {
+    return this.with({ kind: 'clipped', key: 'clipped' });
   }
   alignSelf(value: Alignment): Node {
     return this.with({ kind: 'alignSelf', key: `self:${value}`, value });
@@ -3938,6 +3961,16 @@ export interface ViewModifiers<Self> extends ViewNode {
   frame(value: FrameSpec): Self;
   /** Takes the free space along its parent's axis. */
   grow(): Self;
+  /**
+   * Tailwind's flex utility, exactly: `1` is `flex-1` (grow 1, shrink 1, basis
+   * 0%), `auto`, `initial`, `none`, and `grow` (`flex-grow: 1` alone).
+   */
+  flex(value: FlexName): Self;
+  /** Room outside the box, on every edge or one (`top`, `leading`, `left`…): a margin, on the view itself. */
+  margin(value: PaddingToken): Self;
+  margin(edge: Edge, value: PaddingToken): Self;
+  /** Clips what it draws to its bounds, rounded by its corner (SwiftUI's `clipped()`): a corner alone does not clip. */
+  clipped(): Self;
   shrink(value: ShrinkPriority): Self;
   /** Its own place across its parent's axis, over the parent's `align`. */
   alignSelf(value: Alignment): Self;

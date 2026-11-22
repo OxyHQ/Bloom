@@ -414,6 +414,7 @@ describe('interop', () => {
           .frame({ width: '5xl' })
           .aspectRatio(2)
           .corner('lg')
+          .clipped()
           .contentFit('contain')
           .crossFade('fast')
           .onLoad(onLoad)

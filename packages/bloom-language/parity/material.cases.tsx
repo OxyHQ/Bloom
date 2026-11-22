@@ -231,7 +231,8 @@ const surface: ParityCase[] = [
   },
   {
     name: 'smooth corners on a box',
-    language: () => toElement(L.VStack().background('surface').corner('lg').cornerCurve('smooth')),
+    language: () =>
+      toElement(L.VStack().background('surface').corner('lg').cornerCurve('smooth').clipped()),
     bloom: () => (
       <Themed>
         {(c) => (
@@ -274,7 +275,7 @@ const surface: ParityCase[] = [
     name: 'a concentric box in a glass',
     language: () =>
       toElement(
-        L.VStack(L.VStack(L.Text('Inner')).background('popover').corner('concentric'))
+        L.VStack(L.VStack(L.Text('Inner')).background('popover').corner('concentric').clipped())
           .padding('md')
           .glass()
           .corner('xl'),
@@ -402,7 +403,7 @@ const boxes: ParityCase[] = [
   },
   {
     name: 'AspectRatio, rounded',
-    language: () => toElement(L.AspectRatio(1).corner('lg').testID('well')),
+    language: () => toElement(L.AspectRatio(1).corner('lg').clipped().testID('well')),
     bloom: () => (
       <AspectRatio
         ratio={1}
@@ -551,7 +552,7 @@ const named: ParityCase[] = [
     ] as const
   ).map(([rung, value]) => ({
     name: `corner ${rung}`,
-    language: () => toElement(L.VStack().corner(rung)),
+    language: () => toElement(L.VStack().corner(rung).clipped()),
     bloom: () => <RN.View style={{ borderRadius: value, overflow: 'hidden' }} />,
   })),
 ];

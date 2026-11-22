@@ -195,6 +195,14 @@
       "normal": 1,
       "first": 10
     },
+    "flex": {
+      "$comment": "Tailwind's flex utilities as React Native's longhands, exactly as NativeWind writes them: [grow, shrink, basis], null where the utility writes none. 1 is flex-1, grow is grow (flex-grow: 1).",
+      "1": [1, 1, "0%"],
+      "auto": [1, 1, "auto"],
+      "initial": [0, 1, "auto"],
+      "none": [0, 0, "auto"],
+      "grow": [1, null, null]
+    },
     "alignment": {
       "start": "flex-start",
       "center": "center",
@@ -372,8 +380,8 @@
     "infoText": ["infoSubtleForeground", "info-text"]
   },
   "enums": {
-    "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing"],
-    "borderEdge": ["all", "top", "bottom", "leading", "trailing"],
+    "edge": ["all", "horizontal", "vertical", "top", "bottom", "leading", "trailing", "left", "right"],
+    "borderEdge": ["all", "top", "bottom", "leading", "trailing", "left", "right"],
     "role": [
       "button",
       "link",
@@ -887,7 +895,7 @@
     ["overlay"],
     ["background", "glass", "blur"],
     ["border", "ring"],
-    ["corner", "cornerCurve"],
+    ["corner", "cornerCurve", "clipped"],
     ["opacity"],
     ["shadow"]
   ],
@@ -897,7 +905,7 @@
       "keys": ["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"],
       "tokens": "length"
     },
-    "edges": { "keys": ["top", "bottom", "leading", "trailing"], "tokens": "padding" },
+    "edges": { "keys": ["top", "bottom", "leading", "trailing", "left", "right"], "tokens": "padding" },
     "offset": { "keys": ["x", "y"], "tokens": "padding" },
     "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" }
   },
@@ -933,6 +941,8 @@
       "zIndex",
       "hidden",
       "basis",
+      "flex",
+      "margin",
       "allowsHitTesting",
       "when"
     ],
@@ -994,6 +1004,9 @@
     "zIndex": ["zIndex"],
     "hidden": ["value?"],
     "basis": ["length"],
+    "flex": ["flex"],
+    "margin": ["edge?", "padding"],
+    "clipped": [],
     "scale": ["scale"],
     "allowsHitTesting": ["value"],
     "accessibilityOnly": [],
@@ -1586,6 +1599,8 @@
     "zIndex",
     "hidden",
     "basis",
+    "flex",
+    "margin",
     "scale",
     "allowsHitTesting",
     "accessibilityOnly",
@@ -1595,6 +1610,7 @@
     "ring",
     "corner",
     "cornerCurve",
+    "clipped",
     "opacity",
     "shadow",
     "glass",

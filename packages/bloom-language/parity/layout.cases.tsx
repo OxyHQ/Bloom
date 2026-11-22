@@ -171,7 +171,7 @@ const elevation: ParityCase[] = [
   })),
   {
     name: 'a shadow around a clipped corner',
-    language: () => toElement(L.VStack(L.Text('card')).corner('lg').shadow('m')),
+    language: () => toElement(L.VStack(L.Text('card')).corner('lg').clipped().shadow('m')),
     bloom: () => (
       <RN.View style={{ ...bloomShadowStyle('m'), borderRadius: borderRadius.lg }}>
         <RN.View style={{ borderRadius: borderRadius.lg, overflow: 'hidden' }}>
@@ -243,7 +243,7 @@ const small: ParityCase[] = [
   },
   {
     name: 'the top corners rounded',
-    language: () => toElement(L.VStack(L.Text('sheet')).corner('3xl', 'top')),
+    language: () => toElement(L.VStack(L.Text('sheet')).corner('3xl', 'top').clipped()),
     bloom: () => (
       <RN.View
         style={{
@@ -259,7 +259,9 @@ const small: ParityCase[] = [
   {
     name: 'two sides rounded apart, in one view',
     language: () =>
-      toElement(L.VStack(L.Text('a')).corner('lg', 'leading').corner('sm', 'bottom-trailing')),
+      toElement(
+        L.VStack(L.Text('a')).corner('lg', 'leading').corner('sm', 'bottom-trailing').clipped(),
+      ),
     bloom: () => (
       <RN.View
         style={{
@@ -275,7 +277,7 @@ const small: ParityCase[] = [
   },
   {
     name: 'a shadow around a corner of the top',
-    language: () => toElement(L.VStack(L.Text('a')).corner('lg', 'top').shadow('s')),
+    language: () => toElement(L.VStack(L.Text('a')).corner('lg', 'top').clipped().shadow('s')),
     bloom: () => (
       <RN.View
         style={{
