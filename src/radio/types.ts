@@ -33,8 +33,6 @@ export interface RadioProps<Value extends string = string> {
   disabled?: boolean;
   /** Colour of the checked indicator. Uses the theme primary by default. */
   tone?: BloomTone;
-  className?: string;
-  labelClassName?: string;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -58,7 +56,7 @@ export interface RadioChipProps<Value extends string = string> extends RadioProp
  * by a screen reader, and `description` its hint.
  */
 export interface RadioSwatchProps<Value extends string = string>
-  extends Omit<RadioProps<Value>, 'labelContent' | 'labelClassName' | 'labelStyle' | 'tone'> {
+  extends Omit<RadioProps<Value>, 'labelContent' | 'labelStyle' | 'tone'> {
   /** The colour the swatch shows. */
   color: string;
   /** The chosen swatch's centre dot: a colour readable on `color`. Default white. */
@@ -120,15 +118,15 @@ export interface RadioGroupProps<Value extends string = string> {
   tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-  /** Class recipe on the group layout; replaces its default layout. */
-  className?: string;
-  /** Class recipes for owned options and their built-in string labels. */
-  optionClassName?: string | ((state: Readonly<RadioOptionState>) => string | undefined);
-  optionLabelClassName?: string | ((state: Readonly<RadioOptionState>) => string | undefined);
   /** Selected chip paint; used with variant="chip". Defaults to outline. */
   appearance?: BloomAppearance;
-  /** Layout/style on each owned Radio, RadioCard or RadioChip. */
-  optionStyle?: StyleProp<ViewStyle>;
+  /**
+   * Layout/style on each owned Radio, RadioCard or RadioChip; a function of
+   * `{ checked, disabled, controlRef }` styles each option by its state.
+   */
+  optionStyle?:
+    | StyleProp<ViewStyle>
+    | ((state: Readonly<RadioOptionState>) => StyleProp<ViewStyle>);
   /**
    * `default` renders each option as a `Radio` row; `card` as a `RadioCard`
    * (title + description left, the dot right, the whole
@@ -158,8 +156,6 @@ export interface RadioCardProps<Value extends string = string> {
   disabled?: boolean;
   /** Accent for the checked dot. Uses the theme primary by default. */
   tone?: BloomTone;
-  className?: string;
-  labelClassName?: string;
   labelStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;

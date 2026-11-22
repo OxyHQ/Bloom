@@ -39,8 +39,6 @@ function RadioChipComponent<Value extends string = string>({
   size: sizeProp,
   tone: toneProp,
   appearance = 'outline',
-  className,
-  labelClassName,
   style,
   labelStyle,
   testID,
@@ -84,28 +82,24 @@ function RadioChipComponent<Value extends string = string>({
   }, [checked, disabled, onValueChange, value]);
   const groupItem = useRadioGroupItem(value, disabled, activate);
   const defaultStyle: WebCssStyle = {
-    ...(!className
-      ? ({
-          minHeight: height,
-          minWidth: height,
-          borderRadius: borderRadius.full,
-          borderWidth: 1,
-          borderColor: border,
-          backgroundColor: highlighted
-            ? pressedSurface(theme.colors, background, foreground)
-            : background,
-          paddingLeft: size === 'xs' ? 10 : 14,
-          paddingRight: size === 'xs' ? 10 : 14,
-          paddingTop: 6,
-          paddingBottom: 6,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignSelf: 'flex-start',
-          flexShrink: 0,
-          opacity: disabled ? DISABLED_OPACITY : 1,
-        } as const)
-      : {}),
+    minHeight: height,
+    minWidth: height,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: border,
+    backgroundColor: highlighted
+      ? pressedSurface(theme.colors, background, foreground)
+      : background,
+    paddingLeft: size === 'xs' ? 10 : 14,
+    paddingRight: size === 'xs' ? 10 : 14,
+    paddingTop: 6,
+    paddingBottom: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    flexShrink: 0,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-radio-chip-ring': theme.colors.primary,
     ...ringOffset,
   };
@@ -113,7 +107,6 @@ function RadioChipComponent<Value extends string = string>({
     <RadioHost
       {...groupItem}
       {...webDataSet({ bloomRadioChip: '' })}
-      className={className}
       style={[defaultStyle, style]}
       onPress={activate}
       onPressIn={onPressIn}
@@ -143,10 +136,9 @@ function RadioChipComponent<Value extends string = string>({
         </View>
       ) : (
         <RadioLabel
-          className={labelClassName}
           variant={size === 'xs' || size === 'sm' ? 'body-2-medium' : 'body-medium'}
           style={[
-            !labelClassName && {
+            {
               color: foreground,
               ...(checked && appearance === 'plain'
                 ? { textDecorationLine: 'underline' as const }

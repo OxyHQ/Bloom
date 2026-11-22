@@ -1,34 +1,12 @@
 import React from 'react';
 import { Platform } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
-import { compile } from 'react-native-css/compiler';
-import { StyleCollection } from 'react-native-css/native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { RadioGroup } from '../radio';
 import { resolvedStyle } from './support/rendered-style';
 
-jest.mock('react-native', () => ({
-  ...jest.requireActual('../../__mocks__/react-native'),
-  PlatformColor: (...names: string[]) => ({ semantic: names }),
-}));
-jest.mock('react-native-css', () => jest.requireActual('react-native-css/native'));
-jest.mock('react-native-css/native-internal', () =>
-  jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
-);
-
-beforeEach(() => {
-  StyleCollection.styles.clear();
-  StyleCollection.inject(
-    compile(`
-    .chip-layout { min-height:48px; border-radius:12px; padding:10px; background-color:#eeeeee; }
-    .chip-selected { background-color:#123456; }
-    .chip-label { font-size:18px; color:#654321; }
-  `).stylesheet(),
-  );
-});
-
 it.each(['ios', 'android'] as const)(
-  '%s resolves authored chip styles and retains controlled selection and disabled semantics',
+  '%s takes authored chip styles and retains controlled selection and disabled semantics',
   (platform) => {
     const previous = Platform.OS;
     Object.defineProperty(Platform, 'OS', { configurable: true, value: platform });
@@ -46,8 +24,13 @@ it.each(['ios', 'android'] as const)(
                 onChange(next);
               }}
               label="Size"
-              optionClassName={({ checked }) => `chip-layout ${checked ? 'chip-selected' : ''}`}
-              optionLabelClassName="chip-label"
+              optionStyle={({ checked }) => ({
+                minHeight: 48,
+                borderRadius: 12,
+                padding: 10,
+                backgroundColor: checked ? '#123456' : '#eeeeee',
+              })}
+              labelStyle={{ fontSize: 18, color: '#654321' }}
               options={[
                 { testID: 'small', value: 'small', label: 'Small' },
                 { testID: 'medium', value: 'medium', label: 'Medium', disabled: true },

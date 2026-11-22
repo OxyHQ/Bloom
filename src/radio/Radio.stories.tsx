@@ -340,10 +340,18 @@ export const Chips: Story = {
           label="Authored choices"
           variant="chip"
           defaultValue="a"
-          optionClassName={({ checked }) =>
-            `bloom-demo-radio-chip ${checked ? 'bloom-demo-radio-chip-selected' : ''}`
-          }
-          optionLabelClassName="bloom-demo-radio-chip-label"
+          optionStyle={({ checked }) => ({
+            minHeight: 48,
+            paddingTop: 10,
+            paddingBottom: 10,
+            paddingLeft: 20,
+            paddingRight: 20,
+            borderRadius: 12,
+            borderWidth: 2,
+            borderColor: '#345678',
+            backgroundColor: checked ? '#e3edf6' : '#fff',
+          })}
+          labelStyle={{ fontSize: 18, lineHeight: 24, color: '#123456' }}
           options={[
             { value: 'a', label: 'Authored A' },
             { value: 'b', label: 'Authored B' },
