@@ -168,7 +168,6 @@ export function DropdownMenuTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
   pressTrigger,
@@ -218,7 +217,6 @@ export function DropdownMenuTrigger({
             }
           : undefined
       }
-      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -266,7 +264,6 @@ export function DropdownMenuContent(props: DropdownMenuContentProps) {
     minWidth,
     maxWidth,
     maxHeight,
-    className,
     style,
     testID,
   } = props;
@@ -314,7 +311,6 @@ export function DropdownMenuContent(props: DropdownMenuContentProps) {
           minWidth={minWidth}
           maxWidth={maxWidth}
           maxHeight={maxHeight}
-          className={className}
           style={style}
           testID={testID}
         >
@@ -333,7 +329,6 @@ export function DropdownMenuContent(props: DropdownMenuContentProps) {
         control={control}
         label={label}
         onClose={onSheetClose}
-        contentClassName={className}
         contentStyle={[{ gap: density.gap }, style]}
         contentTestID={testID}
       >

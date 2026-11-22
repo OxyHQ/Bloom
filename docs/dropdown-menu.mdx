@@ -69,7 +69,7 @@ Handlers the child already carries are composed, not replaced — `track()` runs
 
 On native, the screen reader's focus comes back to the trigger as the menu closes. `restoreFocus={false}` leaves it to the caller, for a trigger that hands focus elsewhere itself: a system menu opened with the pointer whose choice gives the keyboard back to the window that had it (OxyOS's top bar input source menu). `ContextMenu` and `Menubar` decide the same inside. `DropdownMenuRestoreFocus.test.tsx` checks both.
 
-`className` and `style` land on the trigger's anchor wrapper, the node the parent lays out and the web surface measures. With `asChild`, keep the button's visual chrome on the child and use the trigger props for anchor geometry. If the child is positioned out of flow instead (`position: absolute` on the button), the wrapper is left an empty 0×0 box: the surface then anchors to the child and development builds warn once, naming the fix — move the position and size onto the trigger.
+`style` lands on the trigger's anchor wrapper, the node the parent lays out and the web surface measures. With `asChild`, keep the button's visual chrome on the child and use the trigger props for anchor geometry. If the child is positioned out of flow instead (`position: absolute` on the button), the wrapper is left an empty 0×0 box: the surface then anchors to the child and development builds warn once, naming the fix — move the position and size onto the trigger.
 
 ## Controlled
 
@@ -137,7 +137,7 @@ A row of colour swatches, as a desktop file manager's context menu shows its col
 | `keepOpen` | keep the menu open after a press; by default it closes, like any row |
 | `disabled` | disables every swatch |
 | `accessibilityLabel` | the row's name as a group ("Tags") |
-| `className`, `style`, `testID` | the row's; each swatch's `testID` is `` `${testID}-${key}` `` |
+| `style`, `testID` | the row's; each swatch's `testID` is `` `${testID}-${key}` `` |
 
 **What it draws.** Each swatch is a 14px circle of its `color` with a thin ring of its own hue pulled toward the panel's opposite (darker on a light menu, lighter on a dark one), so a pale yellow keeps its edge on a white panel and a grey on a dark one. Its state is drawn at rest: a tick for `on`, a dash for `mixed`, nothing for `off`. Under the pointer or the keyboard the swatch grows to 20px and shows what a press does, `+` for off and mixed, `×` for on, and the line under the row shows its `caption`. The glyph is white wherever white holds 3:1 on the colour (WCAG 1.4.11), near-black on a colour too pale for it. Bloom has none of the application's words: the caption ("Add Tag “Red”", "Remove Tag “Red”") is the application's, per swatch and per state. The caption line is kept while empty, so the menu never changes height under the pointer; a row with no captions has none.
 
@@ -199,7 +199,7 @@ The API is one thing on both platforms — a shadcn call site ports across uncha
     side="right"
     align="start"
     sideOffset={2}
-    className="w-[150px]"
+    style={{ width: 150 }}
     testID="effort-menu">
     <DropdownMenuItem>Email</DropdownMenuItem>
     <DropdownMenuItem>Messages</DropdownMenuItem>
@@ -223,7 +223,7 @@ The API is one thing on both platforms — a shadcn call site ports across uncha
 
 In a platform popup the keys reach the submenu through the adapter (`floating/popup-navigation.tsx`), as the web flyout's do: <kbd>→</kbd> on the sub trigger opens it and makes its first enabled row active (on one already open, moves into it); <kbd>←</kbd> inside it, or <kbd>Esc</kbd>, closes it and makes the trigger active again; <kbd>Esc</kbd> outside a submenu closes the menu. Pinned by `PlatformSurfacePopup.test.tsx` (inline) and `MenubarDesktop.test.tsx` (flyout).
 
-`DropdownMenuSubContent` accepts `side="left" | "right"`, `align`, `sideOffset`, `alignOffset`, `minWidth`, `maxWidth`, `className`, `style`, `label` and `testID`. Web applies the geometry to the flyout and still fit-flip-clamps it; native keeps the same API, forwards identity and styling to the inline disclosure, and ignores flyout-only placement.
+`DropdownMenuSubContent` accepts `side="left" | "right"`, `align`, `sideOffset`, `alignOffset`, `minWidth`, `maxWidth`, `style`, `label` and `testID`. Web applies the geometry to the flyout and still fit-flip-clamps it; native keeps the same API, forwards identity and styling to the inline disclosure, and ignores flyout-only placement.
 
 The web/native split is a build-time one, not a `Platform.OS` branch: `floating/menu-sub-flyout.tsx` and `floating/menu-sub-inline.tsx` are passed to `createMenuRows` by each family's own platform fork, so the web-only `FloatingPanel` never reaches a native bundle. The native file's own choice between the sheet's disclosure and the desktop's flyout is made at render, from the panel it is in.
 
@@ -262,15 +262,13 @@ The platform's own dismiss gesture works too: a two-finger Z scrub under VoiceOv
 
 On WEB none of this applies — the browser owns focus and the hooks return early rather than calling an API that is a no-op there.
 
-## Rows are className-first
+## Rows
 
-Every row is one pressable node built from Bloom's `styled()` primitives, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
+Every row is one pressable node, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
 
-`appearance/control-geometry.ts` owns the size recipes; `floating/constants.ts` owns shared chrome. Rows resolve their size through BloomScope, including across portals. Normal md uses 28px rows and 14/20 regular labels; section labels use 12/16 medium and shortcuts use the caption ramp. Native and coarse-pointer web keep at least 44px targets; a desktop window on native (a platform reporting the `window` capability, an OxyOS window) is pointer-driven and takes the compact rows, as fine-pointer web does (`styles/pointer.ts` `useTouchInput`). Typography is applied as TYPE_SCALE + Inter by `floating/menu-type.ts`; caller text classes retain precedence.
+`appearance/control-geometry.ts` owns the size recipes; `floating/constants.ts` owns shared chrome. Rows resolve their size through BloomScope, including across portals. Normal md uses 28px rows and 14/20 regular labels; section labels use 12/16 medium and shortcuts use the caption ramp. Native and coarse-pointer web keep at least 44px targets; a desktop window on native (a platform reporting the `window` capability, an OxyOS window) is pointer-driven and takes the compact rows, as fine-pointer web does (`styles/pointer.ts` `useTouchInput`). Typography is applied as TYPE_SCALE + Inter by `floating/menu-type.ts`.
 
-Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
-
-**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxy.so/bloom/lib`.** That was always required; without it the rows keep their colours (inline, below) but lose every piece of geometry.
+Every part takes a `style`, applied over its own.
 
 ## Look
 
@@ -283,7 +281,7 @@ The panel and rows share one menu recipe, used by `DropdownMenu`, `ContextMenu`,
 - **Check, shortcut, sub chevron** — `text-secondary`, Remix glyphs at 16px: `RiCheckLine`, `RiArrowRightSLine` (web flyout), `RiArrowDownSLine` / `RiArrowUpSLine` (native disclosure).
 - **Material and themes** — shared Surface paint uses the menu fill composited against the actual parent, including its sheen, rim and backdrop treatment. Semantic foreground, disabled, border and highlight colours follow the active theme; density does not replace the material.
 
-These colours come from the theme through `button/shared.ts`'s ramps (`floating/menu-palette.ts`) and are applied INLINE, since the ramp stops exist as no CSS variable. A caller's `style` still overrides them; a `className` on a label or shortcut drops the inline colour so a `text-*` utility applies. The leading slot no longer dims its icon — pass the glyph in `text-secondary`.
+These colours come from the theme through `button/shared.ts`'s ramps (`floating/menu-palette.ts`) and are applied INLINE, since the ramp stops exist as no CSS variable. A caller's `style` still overrides them. The leading slot no longer dims its icon — pass the glyph in `text-secondary`.
 
 ### On a desktop platform
 
