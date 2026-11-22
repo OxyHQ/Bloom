@@ -1212,6 +1212,7 @@
     "delay": ["duration"],
     "anchor": ["anchor"],
     "matchedGeometry": ["value", "namespace"],
+    "phases": ["value", "value", "phaseBuild", "value?"],
     "glassID": ["value", "namespace"],
     "glassUnion": ["value", "namespace"],
     "glassTransition": ["glassTransition"],
@@ -1759,7 +1760,8 @@
     "controlSize",
     "buttonStyle",
     "modifier",
-    "confirmationDialog"
+    "confirmationDialog",
+    "phases"
   ],
   "nodes": {
     "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
