@@ -182,3 +182,4 @@ export const CartMenuItemsAndVendors: Story = { args: { family: 'cartMenuVendor'
 export const MediaCards: Story = { args: { family: 'mediaCard' } };
 export const Lyrics: Story = { args: { family: 'lyrics' } };
 export const CreatorStudio: Story = { args: { family: 'creatorStudio' } };
+export const MediaPlayer: Story = { args: { family: 'mediaPlayer' } };
