@@ -927,6 +927,10 @@ export const COLORS = {
     "paint": "textSecondary",
     "web": "var(--muted-foreground)"
   },
+  "textTertiary": {
+    "paint": "textTertiary",
+    "web": "var(--muted-foreground)"
+  },
   "primary": {
     "paint": "primary",
     "web": "var(--primary)"

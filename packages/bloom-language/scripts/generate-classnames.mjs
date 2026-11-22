@@ -73,10 +73,13 @@ for (const file of ['src/design-tokens/color-roles.ts', 'src/design-tokens/compo
     colorUtilities[match[1]] = match[2] ?? match[3];
 }
 
-/** The language's colour role for a theme variable (or, for a fixed colour, the colour). */
-const roleByVariable = Object.fromEntries(
-  Object.entries(colors).map(([role, [, css]]) => [css, role]),
-);
+/**
+ * The language's colour role for a theme variable (or, for a fixed colour, the
+ * colour): the first role that paints it, so `--muted-foreground` is `muted`
+ * (`textTertiary` paints the same variable on the web, another colour on native).
+ */
+const roleByVariable = {};
+for (const [role, [, css]] of Object.entries(colors)) roleByVariable[css] ??= role;
 /** Tailwind's own colours that a fixed role paints exactly. */
 const TW_FIXED = { white: '#ffffff', black: '#000000', transparent: 'transparent' };
 
