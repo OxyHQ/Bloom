@@ -1152,6 +1152,7 @@
     "columns": ["value"],
     "minCellWidth": ["space"],
     "flow": ["gridFlow"],
+    "stretchItems": ["value?"],
     "verified": ["value?"],
     "live": ["value?"],
     "liveBadge": ["value"],
@@ -1819,7 +1820,7 @@
     },
     "grid": {
       "constructors": ["Grid"],
-      "modifiers": ["columns", "minCellWidth", "spacing", "flow"]
+      "modifiers": ["columns", "minCellWidth", "spacing", "flow", "stretchItems"]
     },
     "button": {
       "constructors": ["Button"],

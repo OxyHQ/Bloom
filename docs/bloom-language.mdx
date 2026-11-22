@@ -674,7 +674,8 @@ VStack(
 - **`Grid(...cells)`** is Bloom's `ResponsiveGrid`: `.columns(n)` the most
   columns, `.minCellWidth(space)` a cell's narrowest width (an app token for
   the widths apps use, 128 to 300), `.spacing(space)`, `.flow('rows' |
-  'columns')`.
+  'columns')`, `.stretchItems()` (its chart cards fill the tallest cell of a
+  row of several columns, Bloom's `stretchItems`).
 
 - **Islands.** `.blur()` floats the view over content as Bloom's
   `BlurIsland`: the shared material with its shadow, drawn by the lens on

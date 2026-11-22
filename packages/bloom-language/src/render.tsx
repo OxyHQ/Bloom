@@ -2181,6 +2181,7 @@ function renderHost(
           minItemWidth: minWidth === undefined ? undefined : resolveSpace(minWidth),
           gap: gap === undefined ? undefined : resolveSpace(gap),
           flow: ownValue(p, 'flow')?.value,
+          stretchItems: ownValue(p, 'stretchItems')?.value,
         },
         node,
         p,
