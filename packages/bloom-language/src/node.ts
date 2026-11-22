@@ -57,6 +57,11 @@ import type { DataTableKind, DataTableStyle } from './controls/data-table';
 import type { SortableChipRowKind } from './controls/sortable-chip-row';
 import type { ViewportKind } from './controls/viewport';
 import type { GlassGroupKind } from './controls/glass-group';
+import type {
+  ConfirmationDialogKind,
+  ConfirmationDialogView,
+  TitleVisibility,
+} from './controls/confirmation-dialog';
 import type { DataTableCellContext, DataTableSize } from '@oxy.so/bloom/data-table';
 import type { SortableMediaKind } from './controls/sortable-media';
 import type { VideoPlaybackKind } from './controls/video-playback';
@@ -746,6 +751,8 @@ export interface ValueModifiers {
 
   // Overlays and feedback (controls/overlays.tsx)
   alert: Presentation;
+  confirmationDialog: Presentation;
+  titleVisibility: TitleVisibility;
   dialog: Presentation;
   popover: Presentation;
   message: string;
@@ -1717,6 +1724,7 @@ export type NodeKind =
   | SortableChipRowKind
   | ViewportKind
   | GlassGroupKind
+  | ConfirmationDialogKind
   | AnimatedCheckKind
   | FactStripKind
   | ExpandableTextKind
@@ -3176,6 +3184,12 @@ export class Node {
   alert(isPresented: Binding<boolean>, content: PresentedNode): Node {
     return this.set('alert', { isPresented, content });
   }
+  confirmationDialog(isPresented: Binding<boolean>, content: PresentedNode): Node {
+    return this.set('confirmationDialog', { isPresented, content });
+  }
+  titleVisibility(value: TitleVisibility): Node {
+    return this.set('titleVisibility', value);
+  }
   dialog(isPresented: Binding<boolean>, content: PresentedNode): Node {
     return this.set('dialog', { isPresented, content });
   }
@@ -4258,6 +4272,13 @@ export interface ViewModifiers<Self> extends ViewNode {
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
   /** An alert while `isPresented` holds (Bloom's `AlertDialog`); dismissing it sets it false. */
   alert(isPresented: Binding<boolean>, alert: AlertView): Self;
+  /**
+   * SwiftUI's `confirmationDialog`: while `isPresented` holds, the dialog's
+   * actions grow out of this view (the lens menu on Android and OxyOS, the
+   * system's action sheet on iOS, Bloom's dialog on the web). Every action
+   * dismisses it, and dismissing it cancels.
+   */
+  confirmationDialog(isPresented: Binding<boolean>, dialog: ConfirmationDialogView): Self;
   /** A dialog while `isPresented` holds (Bloom's `Dialog`); dismissing it sets it false. */
   dialog(isPresented: Binding<boolean>, dialog: DialogView): Self;
   /** A popover anchored on this view while `isPresented` holds (Bloom's `Popover`); pressing the view opens it. */

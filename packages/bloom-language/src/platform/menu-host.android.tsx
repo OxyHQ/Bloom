@@ -58,16 +58,7 @@ function LensMenuHost({
   const inBase = lens.useInLensBase();
   const surfaceFill = useSurfaceFill();
   const { trigger, glass } = splitTriggerGlass(given);
-  const config = useMemo(() => {
-    const surface = resolveSurfaceLevel(theme, 1);
-    return {
-      tintColor: surface.background,
-      textColor: surface.text,
-      mutedColor: surface.textSecondary,
-      destructiveColor: theme.colors.errorSubtleForeground,
-      separatorColor: surface.border,
-    };
-  }, [theme]);
+  const config = useMemo(() => lensMenuConfig(theme), [theme]);
   const triggerConfig = useSame(
     glass ? glassTriggerConfig(glass, undefined, theme.colors) : undefined,
   );
@@ -152,6 +143,18 @@ function LensMenuOpener({
   return <View testID={testID}>{render(pressableTrigger(trigger, open))}</View>;
 }
 
+/** The lens menu's colours from Bloom's theme: the panel's tint and the rows' ink, from its menu palette. */
+export function lensMenuConfig(theme: ReturnType<typeof useTheme>): LensMenuConfig {
+  const surface = resolveSurfaceLevel(theme, 1);
+  return {
+    tintColor: surface.background,
+    textColor: surface.text,
+    mutedColor: surface.textSecondary,
+    destructiveColor: theme.colors.errorSubtleForeground,
+    separatorColor: surface.border,
+  };
+}
+
 /** The same content keeps the same value, so a render that changes nothing sends the engine nothing. */
 function useSame<T>(value: T): T {
   const key = JSON.stringify(value);
@@ -167,7 +170,10 @@ function lensGlyph(icon: IconComponent, destructive: boolean): Child {
 }
 
 /** The rows as the lens menu takes them: a section is a heading set apart by separators. */
-function toLensRows(rows: readonly MenuRowData[], render: MenuHostProps['render']): LensRow[] {
+export function toLensRows(
+  rows: readonly MenuRowData[],
+  render: MenuHostProps['render'],
+): LensRow[] {
   const out: LensRow[] = [];
   rows.forEach((row, index) => {
     if (setApart(rows, index)) out.push({ kind: 'separator', id: `${row.id}-` });
@@ -208,5 +214,5 @@ function toLensRows(rows: readonly MenuRowData[], render: MenuHostProps['render'
 
 const NO_ROWS: readonly MenuRowData[] = [];
 /** The rows' face: Bloom's sans (Inter), the family the app registered for every Bloom text. */
-const MENU_FONT_FAMILY = fontFamilyStyle('sans').fontFamily;
+export const MENU_FONT_FAMILY = fontFamilyStyle('sans').fontFamily;
 const TRIGGER_STYLE = { alignSelf: 'flex-start' } as const;

@@ -22,7 +22,9 @@ import {
   Tab,
   Text,
 } from '../primitives';
-import { clear, regular } from '../glass';
+import { clear, identity, regular } from '../glass';
+import { GlassGroup } from '../controls/glass-group';
+import { ConfirmationDialog } from '../controls/confirmation-dialog';
 import { menu } from '../primitives';
 import { toElement } from '../render';
 import { resolveCorner } from '../tokens';
@@ -58,6 +60,12 @@ beforeEach(() => {
 });
 jest.mock('../platform/glass-host', () => jest.requireActual('../platform/glass-host.android'));
 jest.mock('../platform/menu-host', () => jest.requireActual('../platform/menu-host.android'));
+jest.mock('../platform/glass-group-host', () =>
+  jest.requireActual('../platform/glass-group-host.android'),
+);
+jest.mock('../platform/confirmation-host', () =>
+  jest.requireActual('../platform/confirmation-host.android'),
+);
 
 quietRenderer();
 
@@ -331,5 +339,63 @@ describe('the lens menu: tagged rows', () => {
     expect(copy).toHaveBeenCalledTimes(1);
     expect(built).toHaveBeenCalledTimes(1);
     expect(only(r, 'BloomLensMenu')).toBe(lens);
+  });
+});
+
+describe('glass groups, interactive and identity glass', () => {
+  it('a glass group is one lens base: the glasses inside draw no lens of their own', () => {
+    const r = mount(
+      toElement(
+        GlassGroup(
+          HStack(HStack(Text('a')).glass(), HStack(Text('b')).glass()).spacing('xl'),
+        ).blend('xl'),
+      ),
+    );
+    const lenses = hosts(r, 'BloomLensMenu');
+    expect(lenses).toHaveLength(1);
+    expect(lenses[0]?.props).toMatchObject({ lens: true, items: [], cornerRadius: undefined });
+  });
+
+  it('a glass that is not interactive turns the jelly off; unsaid, the engine’s own', () => {
+    const off = mount(toElement(HStack(Text('a')).glass(regular.interactive(false))));
+    expect(only(off, 'BloomLensMenu').props.triggerConfig).toMatchObject({ jelly: 0 });
+    const unsaid = mount(toElement(HStack(Text('a')).glass()));
+    expect(only(unsaid, 'BloomLensMenu').props.triggerConfig.jelly).toBeUndefined();
+  });
+
+  it('identity draws no lens', () => {
+    const r = mount(toElement(HStack(Text('a')).glass(identity)));
+    expect(hosts(r, 'BloomLensMenu')).toHaveLength(0);
+    expect(hosts(r, 'Surface')).toHaveLength(0);
+  });
+});
+
+describe('a confirmation dialog is the lens menu, grown out of the view that asks', () => {
+  it('the view is a base with no resting lens, holding the title, the message and the actions', () => {
+    const remove = jest.fn();
+    const setOpen = jest.fn();
+    const r = mount(
+      toElement(
+        Button(Text('Delete')).confirmationDialog(
+          [true, setOpen],
+          ConfirmationDialog('Delete this post?', Item('Delete').destructive().onPress(remove))
+            .message('It cannot be undone.')
+            .cancelLabel('Keep it'),
+        ),
+      ),
+    );
+    const lens = only(r, 'BloomLensMenu');
+    expect(lens.props.lens).toBe(false);
+    expect(lens.props.items).toMatchObject([
+      { title: 'Delete this post?' },
+      { title: 'It cannot be undone.' },
+      {},
+      { title: 'Delete', destructive: true },
+      {},
+      { title: 'Keep it' },
+    ]);
+    // Presented: the base opens with the rows it holds (the view opens itself with them).
+    expect(lens.props.openWithItems || mockLensHandle.open.mock.calls.length > 0).toBe(true);
+    expect(hosts(r, 'Dialog')).toHaveLength(0);
   });
 });

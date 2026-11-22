@@ -560,6 +560,7 @@ import type {
 import type { SortableChipRowView, SortableChipView } from '../controls/sortable-chip-row';
 import type { ViewportView } from '../controls/viewport';
 import type { GlassGroupView } from '../controls/glass-group';
+import type { ConfirmationDialogView } from '../controls/confirmation-dialog';
 import { resolveCardRadius } from '../tokens';
 import type { ColorPreset, ContentFit } from '../tokens';
 import type {
@@ -934,6 +935,7 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<SortableChipView>, Of<'sortableChip'>>,
       Same<MethodsOf<ViewportView>, Of<'viewport'>>,
       Same<MethodsOf<GlassGroupView>, Of<'glassGroup'>>,
+      Same<MethodsOf<ConfirmationDialogView>, Of<'confirmationDialog'>>,
       Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
       Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
       Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
