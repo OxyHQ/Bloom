@@ -1478,7 +1478,9 @@ takes them, as SwiftUI's `navigationTitle`, `toolbar` and `sheet`; elsewhere
 they draw nothing): `.title`, `.titleDisplay`, `.subtitle`, `.toolbar`,
 `.toolbarLeading`, `.onBack`, `.backLabel`, `.headingLevel` (the web's
 `aria-level`), `.header(presentation | false | node)` (a
-header node of the screen's own is drawn in the page on every platform),
+`Header` node is the system navigation bar on iOS in a native stack, as the
+composed header is; a `Header` with `.inPage()`, or any other node, is the
+Screen's header in the page on every platform),
 `.footer(content, { placement, keyboard })` (Bloom Screen's bottom bar),
 `.onReselect` and `.sheet(open, content, { onDismiss, title })`, Bloom's
 `Dialog` from the bottom and centred from `md`, its content built while open
