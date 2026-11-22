@@ -13,7 +13,7 @@ import { BloomScope } from '../appearance';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import type { View } from 'react-native';
 
-import { MENU_MIN_WIDTH_CLASS, MENU_TRIGGER_POPUP } from '../floating/constants';
+import { MENU_TRIGGER_POPUP, MENU_WIDTH } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { MenuRowAlignmentScope } from '../floating/menu-row-alignment';
 import { FloatingPanel } from '../floating/FloatingPanel';
@@ -27,7 +27,6 @@ import {
 } from '../floating/menu-keyboard';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
-import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { FloatingAnchor } from '../floating/types';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
@@ -108,7 +107,6 @@ export function ContextMenuTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
 }: ContextMenuTriggerProps) {
@@ -170,7 +168,6 @@ export function ContextMenuTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={wrapperRef}
-      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -205,7 +202,6 @@ export function ContextMenuContent({
   dismissible,
   minWidth,
   maxWidth,
-  className,
   style,
   testID,
 }: ContextMenuContentProps) {
@@ -242,7 +238,7 @@ export function ContextMenuContent({
         minWidth={minWidth}
         maxWidth={maxWidth}
         onDismiss={onDismiss}
-        className={cx(MENU_MIN_WIDTH_CLASS, className)}
+        defaultMinWidth={MENU_WIDTH}
         style={style}
         testID={testID}
       >
