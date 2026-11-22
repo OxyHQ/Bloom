@@ -31,8 +31,8 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  *   (any other name may be a component);
  * - `row`: FlashList's `renderItem` as the node's row, which Bloom hands the
  *   same `{ item, index }`: an arrow of one parameter returning an expression (the
- *   parameter as written; an element its view, any other expression embedded), or a named function, embedded
- *   as it is called (`(info) => Embed(renderPost(info))`);
+ *   parameter as written; an element its view, any other expression embedded), or a named function, carried
+ *   as it is (`VirtualList(posts, renderPost)`), its identity kept;
  * - `empty`: an empty object literal (`screen={{}}`), as the bare modifier;
  * - `className`: a static className laid out in a view of its own, as the
  *   modifiers of that view's build function (`.contentView((v) => v.padding('lg'))`),

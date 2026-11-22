@@ -1,5 +1,5 @@
-import { createElement, type ReactElement } from 'react';
-import { act } from 'react-test-renderer';
+import { createElement, Fragment, memo, type ReactElement } from 'react';
+import { act, create } from 'react-test-renderer';
 
 import { MOTION } from '@oxy.so/bloom/motion';
 
@@ -43,6 +43,44 @@ describe('VirtualList()', () => {
     const list = only(r, 'VirtualList');
     expect(list.props.renderItem).toBe(first);
     expect(list.props.data).toEqual(['Ana', 'Rui', 'Mia']);
+  });
+
+  it('hands a renderItem of FlashList’s signature through: its element as it is, memoised rows kept', () => {
+    let drawn = 0;
+    function Post({ title }: { title: string }) {
+      drawn += 1;
+      return createElement('Post', { title });
+    }
+    // An app's named renderItem, as the codemod carries it: `VirtualList(posts, renderPost)`.
+    const renderPost = ({ item }: { item: string }) => createElement(Post, { title: item });
+    type RenderItem = (info: { item: string; index: number }) => ReactElement | null;
+    // FlashList's rows are memoised on their item and the list's renderItem.
+    const Row = memo(({ item, renderItem }: { item: string; renderItem: RenderItem }) =>
+      renderItem({ item, index: 0 }),
+    );
+    const rows = (renderItem: RenderItem) =>
+      createElement(
+        Fragment,
+        null,
+        ['Ana', 'Rui'].map((item) => createElement(Row, { key: item, item, renderItem })),
+      );
+    const r = mount(toElement(VirtualList(['Ana', 'Rui'], renderPost)));
+    const first = only(r, 'VirtualList').props.renderItem as RenderItem;
+    act(() => r.update(themed(toElement(VirtualList(['Ana', 'Rui'], renderPost)))));
+    const second = only(r, 'VirtualList').props.renderItem as RenderItem;
+    expect(second).toBe(first);
+    let list!: ReturnType<typeof create>;
+    act(() => {
+      list = create(rows(first));
+    });
+    act(() => list.update(rows(second)));
+    expect(
+      list.root
+        .findAll((node) => (node.type as unknown) === 'Post')
+        .map((node) => node.props.title),
+    ).toEqual(['Ana', 'Rui']);
+    // Each row drawn once: the second render kept them.
+    expect(drawn).toBe(2);
   });
 
   it('draws each item with the latest row function', () => {

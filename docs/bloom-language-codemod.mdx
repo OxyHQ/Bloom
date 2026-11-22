@@ -158,9 +158,12 @@ hands `renderItem` (`{ item, index }`): an arrow of one parameter keeps its
 parameter as written and returns its element converted where it can be
 (`({ item }) => <Post post={item} />` is `({ item }) => Embed(<Post post={item} />)`)
 or any other expression embedded as it is (`({ item }) => renderRow(item)` is
-`({ item }) => Embed(renderRow(item))`; a block body stays JSX), and a named function is called with that argument as it is
-(`renderItem={renderPost}` is `(info) => Embed(renderPost(info))`; its parity
-draws a stand-in that reads the index). Bloom's `screen={{}}` is `.screen()`, its
+`({ item }) => Embed(renderRow(item))`; a block body stays JSX), and a named
+function is the row itself (`renderItem={renderPost}` is
+`VirtualList(posts, renderPost)`): the language draws the element it returns as
+it is, and the list's `renderItem` keeps its identity while the function does,
+so FlashList's memoised rows are not drawn again (a new arrow per render would
+redraw them); its parity draws a stand-in that reads the index. Bloom's `screen={{}}` is `.screen()`, its
 parity drawn in a `Screen` (an object with options stays JSX); `scrollbar`,
 `keyboardShouldPersistTaps` and `keyboardDismissMode` are `.scrollbar()`,
 `.keyboardTaps()` and `.scrollDismissesKeyboard()`; the engine's knobs

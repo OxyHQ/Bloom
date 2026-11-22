@@ -2111,21 +2111,14 @@ export function transformSource(source: string, options: TransformOptions): File
    * FlashList's `renderItem` as the node's row, which Bloom hands the same
    * `{ item, index }`: an arrow of one parameter returning an expression (its
    * parameter as written; an element as the row's view, anything else
-   * embedded as it is), or a named function,
-   * called with that argument as it is (`(info) => Embed(renderPost(info))`).
+   * embedded as it is), or a named function, carried as it is
+   * (`VirtualList(posts, renderPost)`: the language draws its element as it
+   * is, and the list's `renderItem` keeps its identity).
    */
   function rowOf(expression: AnyNode): Value | undefined {
-    if (n.Identifier.check(expression) || n.MemberExpression.check(expression)) {
-      // The row's own parameter is `info`: a function read through that name would be shadowed.
-      let shadowed = false;
-      recast.visit(expression, {
-        visitIdentifier(path) {
-          if (path.node.name === ROW_INFO) shadowed = true;
-          return false;
-        },
-      });
-      return shadowed ? undefined : { $: 'renderer', fn: { node: expression, hole: 'renderer' } };
-    }
+    // A named renderItem is the row itself, as JSX handed it: its identity kept, so FlashList's memoised rows stay.
+    if (n.Identifier.check(expression) || n.MemberExpression.check(expression))
+      return { $: 'renderer', fn: { node: expression, hole: 'renderer' } };
     if (
       !n.ArrowFunctionExpression.check(expression) ||
       expression.params.length !== 1 ||
@@ -2471,7 +2464,7 @@ export function transformSource(source: string, options: TransformOptions): File
         case 'build':
           return `(v) => v${value.mods.map(printMod).join('')}`;
         case 'renderer':
-          return `(${ROW_INFO}) => ${lang('Embed')}(${carry(value.fn)}(${ROW_INFO}))`;
+          return carry(value.fn);
         case 'absent':
           return 'undefined';
         case 'null':
