@@ -1697,7 +1697,10 @@
       "modifiers": ["size", "divider"],
       "size": "lockupSize"
     },
-    "ambientPhoto": { "constructors": ["AmbientPhoto"], "modifiers": [] }
+    "ambientPhoto": { "constructors": ["AmbientPhoto"], "modifiers": [] },
+    "calendarView": { "constructors": ["CalendarView"], "modifiers": ["density"] },
+    "calendarViewHeader": { "constructors": ["CalendarViewHeader"], "modifiers": [] },
+    "calendarViewMonthGrid": { "constructors": ["CalendarViewMonthGrid"], "modifiers": ["density"] }
   },
   "sfSymbols": {
     "$comment": [
