@@ -251,6 +251,7 @@ describe('on the web geometry is a custom property per component, composed by on
         transform: WEB_CLASS['transform:translateY+scale'],
         'scale@hovered': `${WEB_CLASS['scale:1.05']}-hovered`,
       },
+      { $$css: true, bloomPressHost: PRESS_HOST_CLASS },
       { $$css: true, blStateAnchor: 'blsg' },
     ]);
     const rule = (key: string) =>
