@@ -13,7 +13,7 @@ import { hasBackOwner, subscribeBackOwnership } from '../../overlay/back-ownersh
 import { hasActiveOverlays, subscribeActiveOverlays } from '../../overlay/stack';
 import { useTabPagerContext } from '../context';
 import { stateLeavingTab } from './leave-tab';
-import { TabPager } from './TabPager';
+import { TabPager, type TabPagerHandle } from './TabPager';
 import { TabPagesHost } from './TabPagesHost';
 import { tabBackPreview } from './back-preview';
 import { supportsPredictiveNavigation } from './predictive-navigation';
@@ -142,7 +142,15 @@ export function TabPagerLayout() {
     }
   }, [pages, navigation, state.routes]);
 
-  const commit = useCallback((name: string) => navigation.navigate(name), [navigation]);
+  // The pager moves on the tap itself; the navigator's state follows.
+  const pager = useRef<TabPagerHandle>(null);
+  const commit = useCallback(
+    (name: string) => {
+      pager.current?.select(name);
+      navigation.navigate(name);
+    },
+    [navigation],
+  );
   // One state change: a `RESET` to the history without the page being left.
   const leave = useCallback(
     (from: string, to: string) => {
@@ -177,6 +185,7 @@ export function TabPagerLayout() {
     <NavigationContent>
       <TabPagesHost>
         <TabPager
+          handle={pager}
           model={model}
           state={state}
           descriptors={descriptors}
