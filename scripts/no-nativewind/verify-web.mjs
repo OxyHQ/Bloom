@@ -201,7 +201,8 @@ for (const story of stories) {
               [left, right].map(async (page) => {
                 await page.mouse.move(target.at.x, target.at.y);
                 if (action === 'press') await page.mouse.down();
-                await new Promise((resolve) => setTimeout(resolve, 250));
+                // Past every transition (150ms to 500ms in Bloom), so both sides are at rest.
+                await new Promise((resolve) => setTimeout(resolve, 700));
               }),
             );
             const [ha, hb] = await Promise.all([
