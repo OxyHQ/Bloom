@@ -1,5 +1,5 @@
 import type { MeterReveal } from '../stat-bar/types';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 /** `sm` is body-2 text with a 14px star; `md` (default) body text with a 16px star. */
 export type RatingSize = 'sm' | 'md';
@@ -106,13 +106,14 @@ export interface RatingInputProps {
 export interface RatingBarProps {
   /** Forwarded to Meter; never changes the accessible measurement. */
   reveal?: MeterReveal;
-  className?: string;
-  labelClassName?: string;
-  displayClassName?: string;
-  /** Classes on the underlying Meter track (geometry and paint). */
-  trackClassName?: string;
-  /** Classes on the underlying Meter fill; its measured fraction stays data-owned. */
-  fillClassName?: string;
+  /** The label's style, over its defaults. */
+  labelStyle?: StyleProp<TextStyle>;
+  /** The display value's style, over its defaults. */
+  displayStyle?: StyleProp<TextStyle>;
+  /** The underlying Meter track's style (geometry and paint). */
+  trackStyle?: StyleProp<ViewStyle>;
+  /** The underlying Meter fill's style; its measured fraction stays data-owned. */
+  fillStyle?: StyleProp<ViewStyle>;
   /** What the row measures ("Cleanliness", "5 stars"). Also the bar's accessible name. */
   label: string;
   /** Position on the scale, `0..max`; clamped. */

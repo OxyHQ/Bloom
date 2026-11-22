@@ -170,26 +170,41 @@ export const Input: Story = {
   },
 };
 
+const AUTHORED_LABEL = { fontSize: 10, lineHeight: 13, fontWeight: '600' } as const;
+
 export const AuthoredSummary: Story = {
-  render: () => (
-    <View style={{ width: 360, maxWidth: '100%', padding: 16, gap: 16 }}>
-      <Rating value={4.5} variant="stars" showValue={false} starSize={20} testID="summary-stars" />
-      <RatingBar
-        label="5"
-        value={0.75}
-        max={1}
-        labelWidth={16}
-        display="75%"
-        testID="summary-rating"
-        className="bloom-demo-rating-row"
-        labelClassName="bloom-demo-rating-label"
-        displayClassName="bloom-demo-rating-label"
-        trackClassName="bloom-demo-rating-track"
-        fillClassName="bloom-demo-rating-fill"
-      />
-      <RatingBar label="Default" value={3} testID="default-rating" />
-    </View>
-  ),
+  render: function AuthoredSummaryStory() {
+    const { isDark } = useTheme();
+    return (
+      <View style={{ width: 360, maxWidth: '100%', padding: 16, gap: 16 }}>
+        <Rating
+          value={4.5}
+          variant="stars"
+          showValue={false}
+          starSize={20}
+          testID="summary-stars"
+        />
+        <RatingBar
+          label="5"
+          value={0.75}
+          max={1}
+          labelWidth={16}
+          display="75%"
+          testID="summary-rating"
+          style={{ gap: 8 }}
+          labelStyle={AUTHORED_LABEL}
+          displayStyle={AUTHORED_LABEL}
+          trackStyle={{
+            height: 8,
+            borderRadius: 9999,
+            backgroundColor: isDark ? '#404040' : '#eef0f1',
+          }}
+          fillStyle={{ borderRadius: 9999, backgroundColor: isDark ? '#fff' : '#121212' }}
+        />
+        <RatingBar label="Default" value={3} testID="default-rating" />
+      </View>
+    );
+  },
 };
 
 /**
