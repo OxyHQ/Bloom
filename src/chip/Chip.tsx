@@ -26,7 +26,7 @@ import {
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CHIP_GEOMETRY, resolveChipPaint, resolveChipRing } from './shared';
 import type { ChipProps } from './types';
-import { StyledView, StyledPressable } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 import { IS_WEB } from '../styles/platform';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -57,8 +57,8 @@ const DISABLED_DIM = 0.5;
 //  from — see `styles/interactive-web-css.ts` for why the selector is
 //  `:focus-visible` rather than `:focus`, and why injection goes through
 //  `adoptStyleSheet` rather than a `<style>` element. The hook is a `data-*`
-//  attribute rather than a class because a class never reaches the DOM here:
-//  react-native-css consumes `className` into `style` before that could happen.
+//  attribute rather than a class because react-native-web puts no class of
+//  ours on the DOM.
 //
 //  THE RING COLOUR IS THE ACCENT RAMP'S 500, not the chip's own label. It was
 //  the label, which is the one colour guaranteed to be invisible on the chip:
@@ -167,8 +167,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
     onKeyDown,
     style,
     textStyle,
-    className,
-    textClassName,
+    bare = false,
     accessibilityLabel,
     testID,
   },
@@ -214,8 +213,8 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
 
   const containerStyle = useMemo(
     (): WebCssStyle => ({
-      ...(className
-        ? {}
+      ...(bare
+        ? null
         : {
             height: geometry.height,
             ...(size === '2xl' ? { minHeight: geometry.height } : null),
@@ -227,7 +226,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
           }),
       flexDirection: 'row',
       alignItems: 'center',
-      ...(className ? {} : { gap: geometry.iconGap }),
+      ...(bare ? null : { gap: geometry.iconGap }),
       alignSelf: 'flex-start',
       ...(geometry.minWidth ? { minWidth: geometry.minWidth, justifyContent: 'center' } : null),
       // A pill is a fixed-size token. In a flex row of chips (a filter bar, a tag
@@ -238,24 +237,24 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       // Never wider than the space it sits in: a long label ellipsises inside the
       // pill (see the label below) instead of running past the row's edge.
       maxWidth: '100%',
-      ...(className ? {} : { overflow: 'hidden' as const }),
+      ...(bare ? null : { overflow: 'hidden' as const }),
       // The `:focus-visible` ring colour, read by the adopted sheet. A custom
       // property because the value is a resolved theme token the static sheet
       // cannot know; native has no such style key and ignores it.
       '--bloom-chip-ring': ring,
     }),
-    [className, geometry, paint, ring, dimContent, size],
+    [bare, geometry, paint, ring, dimContent, size],
   );
 
   const labelStyle = useMemo(
     (): TextStyle => ({
-      ...(className ? {} : { color: paint.foreground }),
+      ...(bare ? null : { color: paint.foreground }),
       // The label yields before the pill does: a chip narrower than its text
       // ellipsises rather than overflowing its own radius.
       flexShrink: 1,
       ...(dimContent ? { opacity: DISABLED_DIM } : null),
     }),
-    [className, paint, dimContent],
+    [bare, paint, dimContent],
   );
 
   // Icons inside the pill are sized to the RUNG, not to whatever the caller
@@ -295,12 +294,12 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
     </Pressable>
   ) : null;
 
-  // The fill paints through the shared surface material. A caller's own class or
-  // background owns the pill's paint instead, so it acquires no surface.
+  // The fill paints through the shared surface material. A bare chip, or a
+  // caller's own background, owns the pill's paint instead: no surface.
   const callerFill = StyleSheet.flatten(style)?.backgroundColor;
   const fill = pressed && !disabled ? paint.pressedBackground : paint.background;
   const material =
-    className || callerFill !== undefined || isClearFill(fill) ? null : (
+    bare || callerFill !== undefined || isClearFill(fill) ? null : (
       <SurfacePaint
         fill={fill}
         radius={Math.max(0, borderRadius.full - paint.borderWidth)}
@@ -314,18 +313,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
     <>
       {startIcon != null ? <View style={iconSlotStyle}>{startIcon}</View> : null}
       {typeof children === 'string' ? (
-        <Text
-          className={
-            textClassName ??
-            className
-              ?.split(/\s+/)
-              .filter((token) => /^(text-|font-|leading-|tracking-|whitespace-)/.test(token))
-              .join(' ')
-          }
-          variant={geometry.type}
-          numberOfLines={1}
-          style={[labelStyle, textStyle]}
-        >
+        <Text variant={geometry.type} numberOfLines={1} style={[labelStyle, textStyle]}>
           {children}
         </Text>
       ) : (
@@ -372,7 +360,6 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
 
     const button = (
       <StyledPressable
-        className={onClose ? undefined : className}
         ref={ref}
         // The DOM hook the adopted sheet above hangs off.
         //
@@ -386,9 +373,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         //
         // A cast because react-native has no type for it (it is a
         // react-native-web prop, inert on native). Same web-only-attribute case
-        // as `TextField`'s DOM mouse handlers, registered in
-        // `classname-interop.test.ts`'s exemption list. It is NOT a `className`
-        // smuggled past `styled()`, which is what that gate forbids.
+        // as `TextField`'s DOM mouse handlers.
         {...(IS_WEB
           ? ({
               dataSet: {
@@ -455,10 +440,9 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
     );
     if (!onClose) return button;
     // Selection and removal are sibling controls, never nested buttons.
-    // The shared outer pill owns layout classes and paint; the ref still targets selection.
+    // The shared outer pill owns layout and paint; the ref still targets selection.
     return (
-      <StyledView
-        className={className}
+      <View
         {...(IS_WEB ? { dataSet: { bloomChipGroup: '' } } : {})}
         style={[
           containerStyle,
@@ -470,13 +454,12 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         {material}
         {button}
         {closeButton}
-      </StyledView>
+      </View>
     );
   }
 
   return (
-    <StyledView
-      className={className}
+    <View
       ref={ref}
       style={[containerStyle, dimHost && { opacity: DISABLED_DIM }, style]}
       accessibilityLabel={accessibilityLabel}
@@ -485,7 +468,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       {material}
       {content}
       {closeButton}
-    </StyledView>
+    </View>
   );
 });
 
