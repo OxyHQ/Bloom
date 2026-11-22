@@ -29,6 +29,7 @@ is `toElement`'s second argument, a child's `.id()`).
 | a Bloom icon (`<RiHeart3Line size="sm" />`, or `size={16}`, a rung's points) | `Icon(RiHeart3Line).size('sm').foreground('primary')` (a bare Bloom icon paints primary) |
 | `className` | modifiers through the className table, in the language's layer order |
 | `md:`, `dark:`, `web:`… and, on a `Pressable`, `hover:`, `active:`, `focus-visible:` | `.when(condition, (v) => …)` |
+| a className chosen by a condition (`open ? 'p-2 opacity-50' : 'p-2'`) | each differing value chosen in place, or what a branch adds as `.when(open, (v) => …)` |
 | `testID`, `accessibilityLabel`, `accessibilityHint` | `.testID()`, `.label()`, `.hint()` |
 | `{cond ? <A/> : <B/>}`, `{isX && <A/>}` (a boolean by its form) | the branches as nodes |
 | any other child (`{items.map(…)}`, a component) | `Embed(…)`, its own regions converted inside it |
@@ -183,15 +184,18 @@ its Bloom 22 upgrade.
 
 Beside the rules: an icon's `fill` read from Bloom's `useTheme()` is
 `.foreground(role)` and a `width` and `height` of one number its `.size()`;
-a static hex `fill` (`fill="#fff"`, or a module constant
+a static colour `fill` (a hex, an `rgb()` or `rgba()` of numbers, or a CSS
+colour name: `fill="#fff"`, `fill="white"`, or a module constant
 `const LIKE = '#FF3040'` the file declares) is an app colour,
 `.foreground(appColors.color.hexfff)`, from one `defineTokens({ color })`
 table the codemod declares after the imports and the constants it reads
-(`{ LIKE, hexfff: '#fff' }`: a constant by its own name, a literal as `hex`
-and its digits). The hex is the glyph's fill as written, in both schemes; the
-corpus declares the same table and the before side reads the constant's hex.
-A fill stays JSX when it is no hex (`white`, an `rgba()`, `currentColor`:
-`icon-fill:not-hex`), a theme colour no role paints (`icon-fill:no-role`), a theme handed in as a prop (`icon-fill:theme-handed-in`:
+(`{ LIKE, hexfff: '#fff', white: 'white' }`: a constant by its own name, a
+hex literal as `hex` and its digits, a name as itself, an `rgba()` as its
+numbers joined, `rgba_0_0_0_0_5`). The colour is the glyph's fill as written,
+the same string on every platform and in both schemes; the corpus declares the
+same table and the before side reads the constant's colour. A fill stays JSX
+when the platforms do not paint it alike (`currentColor`, an `hsl()`:
+`icon-fill:not-a-colour`), a theme colour no role paints (`icon-fill:no-role`), a theme handed in as a prop (`icon-fill:theme-handed-in`:
 read where the parent called `useTheme()`, which may be outside a colour scope
 the icon is drawn in), a theme colour read outside a `BloomColorScope` around
 the icon (`icon-fill:color-scope`), or set at runtime or imported
@@ -212,8 +216,16 @@ modifiers in the same order, only values differing: each differing value is
 chosen in place, `.background(active ? 'primary' : 'mutedFill')`. The
 condition is a read without a call (names, properties, literals, comparisons,
 `!`, `&&`, `||`), since the chain reads it once per value. Branches that write
-different modifiers, more than one choice, and `cn()` (its merge is the app's
-own) stay JSX as `dynamic-className`.
+different modifiers are the modifiers both write, then what each branch adds
+alone as a variant of the app's own condition, before any live variant:
+`index > 0 ? 'border-t border-border px-4' : 'px-4 py-2'` is
+`.padding('horizontal', 'lg').when(index > 0, (v) => v.border('border', 'thin', 'top')).when(!(index > 0), (v) => v.padding('vertical', 'sm'))`
+(a condition that is no boolean by its form is `Boolean(x)`). Both branches
+resolve with no two classes setting one thing, so a variant adds what it
+writes and overrides nothing. Branches on two axes or with different live
+variants, one that adds a box layer or a placement a held variant cannot
+change, more than one choice, and `cn()` (its merge is the app's own) stay
+JSX as `dynamic-className`.
 
 ## Running it on an app
 

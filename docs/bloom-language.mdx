@@ -376,7 +376,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; `'children'`: only what is inside it takes them, `'self'`: only the view; read by a screen reader and not drawn (`sr-only`) |
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
 | `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`, or one of Tailwind's shadows by its exact box-shadow; a colour role (or a role at an opacity, or `none`) as an outline, `thin` `thick` or `'3'` wide |
-| `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android` (see [Variants](#variants)) |
+| `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android`, or the app's own boolean (see [Variants](#variants)) |
 | `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'11'` `'14'` `'16'` `'18'` `'24'` `'30'` `'36'`), or `mono` (Bloom's monospaced face, beside the size) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
 | `tracking(t)` | `tight` `wide` `wider` `widest` (em of the size); or an exact em (`'-0.02em'` `'-0.01em'` `'0.04em'`) or px (`'-0.5px'` … `'2px'`) |
@@ -427,15 +427,19 @@ gutter is `'64'` and `leading-tight` (1.25) is `close`. The 18px context row,
 the 3px gap before its text and the 13, 14 and 18px glyphs stay app tokens.
 
 An app's brand colour is an app token too: `defineTokens({ color: { blue:
-'#1877f2' } })` declares a hex (checked when it is declared), the same in both
-schemes, and `.background()`, `.foreground()` (text and glyphs), `.border()`
-and `.ring()` take it where they take a role. It paints as its hex on every
-platform (inline on the web: no class names it). It varies as a role does:
-under `when()` it is the colour while the condition holds, on the web through
-the view's JS-picked style (see [Variants](#variants), a value with no class).
-The paints that are props of a Bloom component (`.tint()`, `.fill()`,
-`.stroke()`, a button's `.colors()`, a glass tint, at rest and in a variant)
-take roles only: a material or a control computes its look from a role.
+'#1877f2' } })` declares a colour, the same in both schemes, and
+`.background()`, `.foreground()` (text and glyphs), `.border()` and `.ring()`
+take it where they take a role. It is a hex, an `rgb()` or `rgba()` of numbers
+(`'rgba(255,255,255,0.72)'`), or a CSS colour name React Native paints too
+(`'white'`; the spec's `appColorName`, every CSS name but none React Native
+alone knows), checked when it is declared. It paints as that string on every
+platform (inline on the web: no class names it), so it draws what the same
+colour written in JSX draws. It varies as a role does: under `when()` it is
+the colour while the condition holds, on the web through the view's JS-picked
+style (see [Variants](#variants), a value with no class). The paints that are
+props of a Bloom component (`.tint()`, `.fill()`, `.stroke()`, a button's
+`.colors()`, a glass tint, at rest and in a variant) take roles only: a
+material or a control computes its look from a role.
 
 ## Layout
 
@@ -547,6 +551,7 @@ VStack(...).hidden().when('lg', (v) => v.hidden(false))
 Card().background('surface').when('dark', (v) => v.background('popover'))
 HStack(...).onPress(open).when('pressed', (v) => v.opacity('70')).when('hovered', (v) => v.foreground('foreground'))
 VStack(...).when('web', (v) => v.padding('lg'))   // a platform: settled when it renders
+HStack(...).background('mutedFill').when(isActive, (v) => v.background('primary'))   // the app's own boolean
 ```
 
 `.when(condition, build)` is SwiftUI's environment-driven variant as a
@@ -565,6 +570,7 @@ inside; a stack's layout to its host; a placement to its outermost box.
 | `hovered` `focused` `pressed` | the view's own state (`focused` is a keyboard's focus, `:focus-visible`) | the view's outermost box carries the anchor class `blsg`, and a class answers its nearest anchor's state (see below) | the outermost box (`StateHost`) tracks the states its variants answer and hands them to the view's leaves |
 | `disabled` | the view's own `.disabled()` (Button, FAB, a pressable stack) | settled when it renders | settled when it renders |
 | `web` `native` `ios` `android` | the platform | settled | settled |
+| a boolean (`isActive`) | the app's own condition, read as the view renders | settled | settled |
 
 - **No view body runs.** A live condition is answered below the view: by CSS
   on the web, by the leaf that draws each host on native (`Conditioned`, a
@@ -600,7 +606,7 @@ inside; a stack's layout to its host; a placement to its outermost box.
   style, placement (a basis and hit testing included), elevation, rings and
   geometry (`.scale()`, `.offset()`, `.rotation()`). Under a
   condition that holds as the view renders (`web`, `native`, `ios`, `android`,
-  `disabled`), anything else but a box layer, a placement, a press or a name
+  `disabled`, a boolean that is `true`), anything else but a box layer, a placement, a press or a name
   is the chain's own, as if chained there (`when('web', (v) => v.monospacedDigit())`
   is Tailwind's `tabular-nums` as NativeWind draws it). Anything else inside `when()` is left
   out and said once in development; the compiler rejects it (`A variant cannot

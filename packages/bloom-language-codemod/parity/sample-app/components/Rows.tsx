@@ -109,3 +109,22 @@ export function PassThrough({ children }: { children: React.ReactNode }) {
     </View>
   );
 }
+
+export function Divided({
+  index,
+  active,
+  selected,
+}: {
+  index: number;
+  active: boolean;
+  selected: boolean;
+}) {
+  return (
+    <View className={index > 0 ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>
+      <Text className={`text-sm ${active ? 'font-bold text-primary' : ''}`}>Row</Text>
+      <View
+        className={`rounded-xl overflow-hidden bg-card ${selected ? 'border border-primary' : 'opacity-70'}`}
+      />
+    </View>
+  );
+}

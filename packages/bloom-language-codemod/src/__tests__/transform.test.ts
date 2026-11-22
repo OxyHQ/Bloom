@@ -226,15 +226,31 @@ export const A = () => (
 );
 export const B = () => <View className={open ? 'p-2 opacity-50' : 'p-2'} />;
 export const C = () => <View className={isOpen() ? 'p-2' : 'p-4'} />;
+export const D = () => <View className={index > 0 ? 'border-t border-border px-4' : 'px-4 py-2'} />;
+export const E = () => <View className={wide ? 'flex-row' : ''} />;
 `);
     expect(flat(result.code)).toContain(
       "toElement(VStack(LText('a').font('14').leading('20px').weight(unread ? 'semibold' : 'medium')).padding('horizontal', 'md').background(active ? 'primary' : 'mutedFill').corner('infinite'))",
+    );
+    // Branches that write different modifiers: what each adds alone is a variant of its condition.
+    expect(flat(result.code)).toContain(
+      "toElement(VStack().padding('all', 'sm').when(Boolean(open), (v) => v.opacity('half')))",
+    );
+    expect(flat(result.code)).toContain(
+      "toElement(VStack().padding('horizontal', 'lg').when(index > 0, (v) => v.border('border', 'thin', 'top')).when(!(index > 0), (v) => v.padding('vertical', 'sm')))",
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
       'dynamic-className',
       'dynamic-className',
     ]);
-    expect(result.fixtures.map((f) => f.name)).toEqual(['test.tsx:4 (false)', 'test.tsx:4']);
+    expect(result.fixtures.map((f) => f.name)).toEqual([
+      'test.tsx:4 (false)',
+      'test.tsx:4',
+      'test.tsx:8 (false)',
+      'test.tsx:8',
+      'test.tsx:10 (false)',
+      'test.tsx:10',
+    ]);
     expect(result.fixtures[0]?.before).toContain("className={false ? 'rounded-full");
     expect(result.fixtures[0]?.classes).toEqual(
       expect.arrayContaining(['bg-primary', 'bg-muted', 'font-semibold', 'font-medium']),
@@ -274,7 +290,7 @@ Route.options = {};
 `);
     expect(named.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['kept:Screen']);
   });
-  it('paints a static hex fill as an app colour, declared once after the constants it reads', () => {
+  it('paints a static colour fill as an app colour, declared once after the constants it reads', () => {
     const result = run(`import { View } from 'react-native';
 import { BloomColorScope, useTheme } from '@oxy.so/bloom/theme';
 import { RiHeart3Line, RiPlayFill } from '@oxy.so/bloom/icons';
@@ -288,27 +304,27 @@ export function A() {
       <RiPlayFill fill="#fff" />
       <RiPlayFill fill="white" />
       <RiPlayFill fill={MUTED} />
+      <RiPlayFill fill="currentColor" />
       <BloomColorScope mode="dark"><RiPlayFill fill={theme.colors.text} /></BloomColorScope>
     </View>
   );
 }
 `);
     expect(result.code).toContain(
-      "const LIKE = '#FF3040';\nconst appColors = defineTokens({ color: { LIKE, hexfff: '#fff' } });",
+      "const MUTED = 'rgba(255,255,255,0.72)';\nconst appColors = defineTokens({ color: { LIKE, hexfff: '#fff', white: 'white', MUTED } });",
     );
     expect(flat(result.code)).toContain(
-      "HStack(Icon(RiHeart3Line).size('sm').foreground(appColors.color.LIKE), Icon(RiPlayFill).foreground(appColors.color.hexfff),",
+      "HStack(Icon(RiHeart3Line).size('sm').foreground(appColors.color.LIKE), Icon(RiPlayFill).foreground(appColors.color.hexfff), Icon(RiPlayFill).foreground(appColors.color.white), Icon(RiPlayFill).foreground(appColors.color.MUTED),",
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'icon-fill:not-hex',
-      'icon-fill:not-hex',
+      'icon-fill:not-a-colour',
       'icon-fill:color-scope',
     ]);
     // The before side reads the constant's hex; the corpus declares the table the chain reads.
     expect(result.fixtures[0]?.before).toContain("fill={'#FF3040'}");
     expect(result.fixtures[0]?.appColors).toEqual({
       table: 'appColors',
-      color: { LIKE: '#FF3040', hexfff: '#fff' },
+      color: { LIKE: '#FF3040', hexfff: '#fff', white: 'white', MUTED: 'rgba(255,255,255,0.72)' },
     });
   });
   it('draws a PressableScale as a pressable stack that scales', () => {
