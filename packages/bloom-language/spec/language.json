@@ -551,7 +551,20 @@
     "listingCardLayout": ["vertical", "horizontal"],
     "offeringBadgeSize": ["sm", "md"],
     "offeringBadgeStyle": ["tinted", "onMedia"],
-    "activityFeedGrouping": ["day", "none"]
+    "activityFeedGrouping": ["day", "none"],
+    "orderStatusBarStyle": ["surface", "plain"],
+    "accentTone": [
+      "default",
+      "primary",
+      "vivid",
+      "secondary",
+      "tertiary",
+      "success",
+      "warning",
+      "error",
+      "info"
+    ],
+    "lockupSize": ["sm", "md", "lg"]
   },
   "glass": {
     "$comment": [
@@ -845,7 +858,8 @@
     "mediaFit": ["messageMediaFit"],
     "tail": ["value?"],
     "metaOverlay": ["value?"],
-    "senderTint": ["color"]
+    "senderTint": ["color"],
+    "divider": ["value?"]
   },
   "universal": [
     "padding",
@@ -1661,7 +1675,29 @@
       "constructors": ["ActivityFeed"],
       "modifiers": ["style", "density", "lines"],
       "style": "activityFeedGrouping"
-    }
+    },
+    "orderStatusBar": {
+      "constructors": ["OrderStatusBar"],
+      "modifiers": ["style", "tint"],
+      "style": "orderStatusBarStyle",
+      "tint": "accentTone"
+    },
+    "orderStatusTimeline": {
+      "constructors": ["OrderStatusTimeline"],
+      "modifiers": ["axis", "density"]
+    },
+    "lockup": {
+      "constructors": ["Lockup"],
+      "modifiers": ["size", "shape", "divider", "lines"],
+      "size": "lockupSize",
+      "shape": "shapeName"
+    },
+    "lockupSkeleton": {
+      "constructors": ["LockupSkeleton"],
+      "modifiers": ["size", "divider"],
+      "size": "lockupSize"
+    },
+    "ambientPhoto": { "constructors": ["AmbientPhoto"], "modifiers": [] }
   },
   "sfSymbols": {
     "$comment": [
