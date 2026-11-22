@@ -28,8 +28,6 @@ export interface ConnectionDotsProps {
    * @default 'Connecting'
    */
   accessibilityLabel?: string;
-  /** NativeWind className passthrough on the outer row. */
-  className?: string;
   /** Style passthrough on the outer row. */
   style?: StyleProp<ViewStyle>;
   /**
