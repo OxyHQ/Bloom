@@ -6,7 +6,8 @@
  * app ships it) and in this branch's Storybook (no NativeWind, no Tailwind).
  *
  * Each story is compared element by element, in light and dark: tag, attributes
- * other than `class`, `style`, `id` and `data-testid`, own text, every computed
+ * other than `class`, `style`, `id`, `data-testid` and Bloom's `data-bloom-*`
+ * styling hooks (an adopted sheet's selectors: what they draw is compared), own text, every computed
  * style property (custom properties aside: what they set is compared) with its
  * `::before` and `::after`, and the laid-out size. Then each element the pointer
  * can act on (`cursor: pointer`) is hovered, then pressed, at the same point on
@@ -70,7 +71,7 @@ function describeInPage() {
     for (const { name, value } of [...element.attributes].sort((a, b) =>
       a.name < b.name ? -1 : 1,
     ))
-      if (!SKIP.has(name) && !name.startsWith('data-bloom-hook')) attributes[name] = ids(value);
+      if (!SKIP.has(name) && !name.startsWith('data-bloom-')) attributes[name] = ids(value);
     const style = getComputedStyle(element);
     const animated = element.getAnimations().length > 0;
     const MOVING = new Set(['opacity', 'transform', 'animation-delay']);
