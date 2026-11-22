@@ -9,7 +9,7 @@ import {
 } from '../dropdown-menu';
 import { MenuSurfaceProvider } from '../floating/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { classNamesOn, hostNodes } from './support/rendered-style';
+import { hostNodes, resolvedStyle } from './support/rendered-style';
 
 function renderRows(children: React.ReactNode) {
   return render(
@@ -21,8 +21,12 @@ function renderRows(children: React.ReactNode) {
   );
 }
 
-function classTokens(style: unknown): string[] {
-  return classNamesOn(style).flatMap((className) => className.split(/\s+/));
+/** The out-of-flow indicator box 8px from the row's `side` edge. */
+function indicatorSlots(tree: unknown, side: 'left' | 'right') {
+  return hostNodes(tree).filter((node) => {
+    const style = resolvedStyle(node.props.style);
+    return style.position === 'absolute' && style[side] === 8 && style.width !== undefined;
+  });
 }
 
 describe('the shared menu selection indicator', () => {
@@ -43,15 +47,13 @@ describe('the shared menu selection indicator', () => {
     ],
   ])("%s keeps Bloom's selected mark in the leading gutter by default", (_kind, row) => {
     const rendered = renderRows(row);
-    const rowTokens = classTokens(rendered.getByTestId('row').props.style);
+    const rowStyle = resolvedStyle(rendered.getByTestId('row').props.style);
 
-    expect(rowTokens).toContain('pl-space-32');
-    expect(rowTokens).toContain('pr-space-8');
+    // The leading gutter, and the plain inset on the trailing edge.
+    expect(rowStyle.paddingLeft).toBeGreaterThanOrEqual(32);
+    expect(rowStyle.paddingRight).toBe(8);
 
-    const leadingSlots = hostNodes(rendered.toJSON()).filter((node) => {
-      const tokens = classTokens(node.props.style);
-      return tokens.includes('absolute') && tokens.includes('left-space-8');
-    });
+    const leadingSlots = indicatorSlots(rendered.toJSON(), 'left');
     expect(leadingSlots).toHaveLength(1);
     expect(leadingSlots[0]?.children?.length).toBeGreaterThan(0);
   });
@@ -85,16 +87,13 @@ describe('the shared menu selection indicator', () => {
     ],
   ])('%s composes a custom selected mark into the trailing gutter', (_kind, row) => {
     const rendered = renderRows(row);
-    const rowTokens = classTokens(rendered.getByTestId('row').props.style);
+    const rowStyle = resolvedStyle(rendered.getByTestId('row').props.style);
 
     expect(rendered.getByTestId('custom-indicator')).toBeTruthy();
-    expect(rowTokens).toContain('pl-space-8');
-    expect(rowTokens).toContain('pr-space-32');
+    expect(rowStyle.paddingLeft).toBe(8);
+    expect(rowStyle.paddingRight).toBeGreaterThanOrEqual(32);
 
-    const trailingSlots = hostNodes(rendered.toJSON()).filter((node) => {
-      const tokens = classTokens(node.props.style);
-      return tokens.includes('absolute') && tokens.includes('right-space-8');
-    });
+    const trailingSlots = indicatorSlots(rendered.toJSON(), 'right');
     expect(trailingSlots).toHaveLength(1);
   });
 

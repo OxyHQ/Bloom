@@ -13,7 +13,7 @@ export {
   VIEWPORT_GUTTER,
   DEFAULT_SIDE_OFFSET,
   DEFAULT_ALIGN_OFFSET,
-  MENU_MIN_WIDTH_CLASS,
+  MENU_WIDTH,
 } from './constants';
 export {
   MenuSurfaceProvider,
