@@ -16,6 +16,7 @@ import { LINK_PREVIEWS } from './link-preview';
 import { NOTIFICATIONS } from './notification';
 import { COMPOSITION_BARS } from './composition-bar';
 import { DATA_TABLES } from './data-table';
+import { SORTABLE_CHIP_ROWS } from './sortable-chip-row';
 import { SORTABLE_MEDIA } from './sortable-media';
 import { EXPANDABLE_TEXTS } from './expandable-text';
 import { DROP_ZONES } from './drop-zone';
@@ -97,4 +98,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LINK_PREVIEWS,
   ...SOCIAL_BUTTONS,
   ...DATA_TABLES,
+  ...SORTABLE_CHIP_ROWS,
 };

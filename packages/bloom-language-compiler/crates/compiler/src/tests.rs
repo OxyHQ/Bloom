@@ -1292,3 +1292,21 @@ fn data_tables_are_checked() {
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }
+
+#[test]
+fn sortable_chip_rows_are_checked() {
+    let imports = "import { SortableChipRow, SortableChip, Text, Button } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (f, g) => SortableChipRow(SortableChip('a', 'A', Text('A'))).onReorder(f).onDragChange(g).trailing(Button(Text('Add'))).disabled().label('Links');\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        ("SortableChipRow().columns(2)", "SortableChipRow has no modifier .columns()"),
+        ("SortableChip('a', 'A', Text('A')).padding('md')", "SortableChip has no modifier .padding()"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = () => {chain};\n"));
+        assert_eq!(output.diagnostics[0].message, message, "{chain}");
+    }
+}

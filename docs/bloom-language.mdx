@@ -1913,6 +1913,23 @@ The toolbar's `DataTableFilter([value, set], label, options)` and
 `DataTableSearch([text, set], label)`, and a cell's
 `DataTableSelect([value, set], label, options, width)`, are Bloom's own.
 
+### Sortable chip rows
+
+```ts
+SortableChipRow(...links.map((l) => SortableChip(l.id, l.title, Text(l.title))))
+  .onReorder((ids) => setLinks(ids.map((id) => byId[id])))
+  .trailing(Button(Text('Add link')).onPress(addLink)).label('Links')
+```
+
+Bloom's `SortableChipRow`: its chips in the screen's order, each a
+`SortableChip(key, label, content)` (the key is its identity across moves, the
+label what a screen reader says when it is moved). A drag is Gesture Handler 3's
+pan, as Bloom's other gestures are; the arrow keys on the web and the screen
+reader's actions move a chip by one. Only the order changes: `.onReorder(keys =>
+…)` hands the screen the new order to write. It takes `.onDragChange(dragging =>
+…)` (to hold a parent's scroll), `.trailing(...)` (after the chips, not part of
+the order), `.disabled()` and `.label()`.
+
 ## Interop
 
 **JSX inside the language.** `Embed(element)` places any React element: a
@@ -2319,7 +2336,8 @@ and `@oxy.so/bloom-data` beside it.
   link previews,
   social buttons,
   media galleries,
-  data tables.
+  data tables,
+  sortable chip rows.
 
 **Not built**
 
