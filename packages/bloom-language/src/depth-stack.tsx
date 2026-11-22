@@ -1,5 +1,5 @@
-import { createElement, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { View } from 'react-native';
+import { createElement, useState, type ReactNode } from 'react';
+import { View, type LayoutChangeEvent } from 'react-native';
 
 import type { OverlayAlignment } from './tokens';
 
@@ -48,11 +48,6 @@ function placed(alignment: OverlayAlignment): Placed {
   return out;
 }
 
-function heightOf(node: unknown): number | undefined {
-  const height = (node as { offsetHeight?: unknown } | null)?.offsetHeight;
-  return typeof height === 'number' ? height : undefined;
-}
-
 export interface DepthStackProps {
   alignment: OverlayAlignment;
   children: readonly ReactNode[];
@@ -66,44 +61,39 @@ export interface DepthStackProps {
  * widest child, and the slot places it across), and the slots share one line:
  * a slot's margins take back its own height, half of it above the line for a
  * centred stack, so no slot moves another. The box is as tall as the tallest
- * slot (measured as it lays out, before it paints) and its justification puts
- * the line at the top, the middle or the bottom. A slot is `static`, so a child
- * pinned to its parent (`Fill()`, `.position()`) is pinned to the stack and
- * takes no part in its size.
+ * slot and its justification puts the line at the top, the middle or the
+ * bottom. Each slot's height is the one its own layout reports (`onLayout`, on
+ * every platform), kept in state; a margin never changes it, so the layout it
+ * causes settles. A slot is `static`, so a child pinned to its parent
+ * (`Fill()`, `.position()`) is pinned to the stack and takes no part in its size.
  */
 export function DepthStack({ alignment, children }: DepthStackProps): ReactNode {
   const { box, slot, above } = placed(alignment);
-  const slots = useRef<unknown[]>([]);
   const [heights, setHeights] = useState<readonly number[]>([]);
-  const measure = () => {
-    const next = children.map((_, i) => heightOf(slots.current[i]) ?? 0);
-    setHeights((last) =>
-      last.length === next.length && last.every((h, i) => h === next[i]) ? last : next,
-    );
+  const laidOut = (index: number) => (event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
+    setHeights((last) => {
+      if (last[index] === height) return last;
+      const next = [...last];
+      next[index] = height;
+      return next;
+    });
   };
-  // Before the first paint (a layout effect's update is applied before it), and
-  // again when a slot's own layout changes later.
-  useLayoutEffect(measure);
   let tallest = 0;
-  for (const height of heights) tallest = Math.max(tallest, height);
+  for (let i = 0; i < children.length; i++) tallest = Math.max(tallest, heights[i] ?? 0);
   return createElement(
     View,
     { style: tallest > 0 ? [box, { minHeight: tallest }] : box, pointerEvents: 'box-none' },
     ...children.map((child, i) => {
       const height = heights[i] ?? 0;
+      const top = height * above;
       return createElement(
         View,
         {
           key: i,
-          ref: (node: unknown) => {
-            slots.current[i] = node;
-          },
-          onLayout: measure,
+          onLayout: laidOut(i),
           pointerEvents: 'box-none',
-          style:
-            height === 0
-              ? slot
-              : [slot, { marginTop: -height * above, marginBottom: -height * (1 - above) }],
+          style: height === 0 ? slot : [slot, { marginTop: 0 - top, marginBottom: top - height }],
         },
         child,
       );

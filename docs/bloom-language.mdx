@@ -387,9 +387,11 @@ VStack(...).background('surface').corner('xl').shadow('m')
   each child is in a slot of the stack's width (the stack is as wide as the
   widest child, and the slot places it across) and the slots share one line:
   each slot's margins take back its own height, so none moves another, and the
-  stack's box is as tall as the tallest slot, measured as it lays out (a layout
-  effect, applied before the first paint on the web and on the New
-  Architecture) and again when a slot's layout changes. A slot is `static`, so
+  stack's box is as tall as the tallest slot. Each slot's height is the one its
+  own layout reports (`onLayout`, on every platform), kept in state; a margin
+  never changes a slot's height, so the layout it causes settles, and a child
+  that grows reports again. Until the slots report, the children are in their
+  slots unmoved, one under another. A slot is `static`, so
   a pinned child is pinned to the stack. A child that should span the stack
   says so (`.frame({ width: 'full' })`). A `ZStack` takes no `spacing`,
   `align` or `justify`: it has no axis.
