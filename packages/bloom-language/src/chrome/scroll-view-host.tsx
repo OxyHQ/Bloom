@@ -4,17 +4,25 @@
  * screen's reselect and, with a footer that follows the keyboard, keeps the
  * focused input above it. Its modifiers are the scroll view's own props.
  */
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { RefreshControl, type ViewStyle } from 'react-native';
 import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 
 import { refreshing } from '../binding';
-import type { Edge, Modifier, Node, ValueModifiers } from '../node';
+import type { Edge, Modifier, Node } from '../node';
+import { type Paint, Painted } from '../paint';
 import { valuesOf } from '../platform/values';
 import { type InsetRoom, withRoom } from './safe-area-inset';
 import type { NodeHostProps } from '../platform/host.types';
+import { role } from '../style';
 import { resolveSpace, tokenKey } from '../tokens';
-import type { KeyboardDismiss, KeyboardTaps, ScrollIndicators, SpaceToken } from '../tokens';
+import type {
+  ColorToken,
+  KeyboardDismiss,
+  KeyboardTaps,
+  ScrollIndicators,
+  SpaceToken,
+} from '../tokens';
 
 /** Each edge's padding key in a content container style. */
 const EDGE_PADDING: Record<Edge, keyof ViewStyle> = {
@@ -65,9 +73,68 @@ export function containerStyle(node: Node, spacing: SpaceToken | undefined): Vie
   return style;
 }
 
-function indicators(value: ScrollIndicators | undefined): boolean | undefined {
-  return value === undefined || value === 'automatic' ? undefined : value === 'visible';
+function indicators(value: ScrollIndicators): boolean | undefined {
+  return value === 'automatic' ? undefined : value === 'visible';
 }
+
+const refreshPaints = new Map<ColorToken, Paint>();
+
+/**
+ * A refresh control's tint: its `tintColor` (iOS) and its `colors` (Android)
+ * from one role, as an app hands it its theme's colour. One paint per token.
+ */
+function refreshPaint(tint: ColorToken): Paint {
+  let paint = refreshPaints.get(tint);
+  if (paint === undefined) {
+    const { role: name, opacity } = role(tint);
+    const color = opacity === undefined ? ([name] as const) : ([name, opacity] as const);
+    paint = {
+      style: undefined,
+      styleRoles: [],
+      propRoles: [['tintColor', ...color]],
+      propLists: [['colors', [color]]],
+    };
+    refreshPaints.set(tint, paint);
+  }
+  return paint;
+}
+
+/** What a tinted refresh control takes beside its scroll view's props. */
+interface RefreshProps {
+  refreshing: boolean;
+  onRefresh: () => void;
+  tintColor: string;
+  colors: string[];
+}
+
+/**
+ * A scroll view whose refresh control takes the tint a `Painted` leaf hands it:
+ * the one theme reader, around the scroll view, since the control is a prop.
+ */
+function TintedScrollView({
+  refreshing,
+  onRefresh,
+  tintColor,
+  colors,
+  ...props
+}: ScreenScrollViewProps & RefreshProps) {
+  return (
+    <ScreenScrollView
+      {...props}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={tintColor}
+          colors={colors}
+        />
+      }
+    />
+  );
+}
+
+/** `TintedScrollView` as a `Painted` host (which types its host's props loosely). */
+const TINTED_HOST = TintedScrollView as unknown as ComponentType<Record<string, unknown>>;
 
 export function ScrollViewHost({
   node,
@@ -75,25 +142,44 @@ export function ScrollViewHost({
   children,
 }: NodeHostProps & { room?: InsetRoom; children?: ReactNode }) {
   const values = valuesOf(node);
-  const refresh = values.refreshable as ValueModifiers['refreshable'] | undefined;
   // Only what the chain sets: an explicit undefined would replace the scroll view's own defaults.
   const props: { -readonly [K in keyof ScreenScrollViewProps]: ScreenScrollViewProps[K] } = {};
   const container = withRoom(containerStyle(node, values.spacing as SpaceToken | undefined), room);
   if (container) props.contentContainerStyle = container;
-  const shown = indicators(values.scrollIndicators as ScrollIndicators | undefined);
-  if (shown !== undefined) {
-    props.showsVerticalScrollIndicator = shown;
-    props.showsHorizontalScrollIndicator = shown;
-  }
   const dismiss = values.scrollDismissesKeyboard as KeyboardDismiss | undefined;
   if (dismiss) props.keyboardDismissMode = DISMISS_MODE[dismiss];
   if (values.keyboardTaps) props.keyboardShouldPersistTaps = values.keyboardTaps as KeyboardTaps;
+  let vertical: boolean | undefined;
+  let horizontal: boolean | undefined;
+  let refresh: Extract<Modifier, { kind: 'refreshable' }> | undefined;
   for (const modifier of node.modifiers) {
-    if (modifier.kind !== 'onEndReached') continue;
-    props.onEndReached = modifier.value;
-    if (modifier.threshold !== undefined) props.onEndReachedThreshold = modifier.threshold;
+    if (modifier.kind === 'onEndReached') {
+      props.onEndReached = modifier.value;
+      if (modifier.threshold !== undefined) props.onEndReachedThreshold = modifier.threshold;
+    } else if (modifier.kind === 'scrollIndicators') {
+      // A later one replaces an earlier one on the axes it names.
+      const shown = indicators(modifier.value);
+      if (modifier.axis !== 'horizontal') vertical = shown;
+      if (modifier.axis !== 'vertical') horizontal = shown;
+    } else if (modifier.kind === 'refreshable') {
+      refresh = modifier;
+    }
   }
-  if (refresh) props.refreshControl = <RefreshControl {...refreshing(refresh)} />;
+  if (vertical !== undefined) props.showsVerticalScrollIndicator = vertical;
+  if (horizontal !== undefined) props.showsHorizontalScrollIndicator = horizontal;
   if (values.testID !== undefined) props.testID = values.testID as string;
+  if (refresh?.tint !== undefined) {
+    return (
+      <Painted
+        host={TINTED_HOST}
+        paint={refreshPaint(refresh.tint)}
+        {...props}
+        {...refreshing(refresh.value)}
+      >
+        {children}
+      </Painted>
+    );
+  }
+  if (refresh) props.refreshControl = <RefreshControl {...refreshing(refresh.value)} />;
   return <ScreenScrollView {...props}>{children}</ScreenScrollView>;
 }

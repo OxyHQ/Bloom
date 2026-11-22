@@ -608,8 +608,6 @@ export interface ValueModifiers {
   screenActive: boolean;
   initialHeaderHeight: SpaceToken;
   initialFooterHeight: SpaceToken;
-  refreshable: Binding<boolean>;
-  scrollIndicators: ScrollIndicators;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
   detached: boolean;
@@ -1558,6 +1556,20 @@ export type Modifier =
       readonly value: () => void;
       /** How many viewports before the end it is called; Bloom's 2 by default. */
       readonly threshold: number | undefined;
+    }
+  | {
+      readonly kind: 'refreshable';
+      readonly key: string;
+      readonly value: Binding<boolean>;
+      /** The refresh control's `tintColor` and `colors`, painted from a role; the platform's by default. */
+      readonly tint: ColorToken | undefined;
+    }
+  | {
+      readonly kind: 'scrollIndicators';
+      readonly key: string;
+      readonly value: ScrollIndicators;
+      /** The one axis it sets; both by default. */
+      readonly axis: Axis | undefined;
     }
   | {
       readonly kind: 'primaryAction';
@@ -2681,14 +2693,14 @@ export class Node {
       value: token,
     });
   }
-  refreshable(value: Binding<boolean>): Node {
-    return this.set('refreshable', value);
+  refreshable(value: Binding<boolean>, tint?: ColorToken): Node {
+    return this.with({ kind: 'refreshable', key: 'refreshable', value, tint });
   }
   onEndReached(value: () => void, threshold?: number): Node {
     return this.with({ kind: 'onEndReached', key: 'onEndReached', value, threshold });
   }
-  scrollIndicators(value: ScrollIndicators): Node {
-    return this.set('scrollIndicators', value);
+  scrollIndicators(value: ScrollIndicators, axis?: Axis): Node {
+    return this.with({ kind: 'scrollIndicators', key: `si:${axis ?? ''}`, value, axis });
   }
   scrollDismissesKeyboard(value: KeyboardDismiss): Node {
     return this.set('scrollDismissesKeyboard', value);
@@ -4999,12 +5011,20 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollViewNode;
-  /** Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). */
-  refreshable(value: Binding<boolean>): ScrollViewNode;
+  /**
+   * Pull to refresh: whether it is refreshing, a binding a pull writes `true`
+   * (the app writes `false` when done). `tint` paints the refresh control's
+   * `tintColor` and `colors` from a colour role, as an app hands it its
+   * theme's colour; the platform's by default.
+   */
+  refreshable(value: Binding<boolean>, tint?: ColorToken): ScrollViewNode;
   /** Called once each time the end comes within `threshold` viewports (2 by default). */
   onEndReached(action: () => void, threshold?: number): ScrollViewNode;
-  /** The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`, the default). */
-  scrollIndicators(value: ScrollIndicators): ScrollViewNode;
+  /**
+   * The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`,
+   * the default), on both axes or on the one `axis` names.
+   */
+  scrollIndicators(value: ScrollIndicators, axis?: Axis): ScrollViewNode;
   /** A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default. */
   scrollDismissesKeyboard(value: KeyboardDismiss): ScrollViewNode;
   /** Whether a tap with the keyboard up reaches the content: `handled` by a control, `always`, or `never` (default). */
