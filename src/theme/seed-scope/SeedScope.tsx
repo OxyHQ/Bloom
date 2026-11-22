@@ -7,6 +7,7 @@ import { buildSeedScopeVars } from '../color-scope/seed-scope';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import type { SchemeVariant } from '../color-engine';
 import { ThemeScopeContext, type ScopeState } from '../color-scope/context';
+import { ColorScopeLayerContext, throughLayer } from '../color-scope/layer';
 
 export interface BloomSeedScopeProps {
   /**
@@ -64,6 +65,7 @@ export function BloomSeedScope({
 }: BloomSeedScopeProps) {
   // Hooks run unconditionally; conditional no-op/throw is applied afterwards.
   const parent = useContext(BloomThemeContext);
+  const Layer = useContext(ColorScopeLayerContext);
   const resolvedMode = parent?.theme.mode ?? 'light';
 
   const contextValue = useMemo<BloomThemeContextValue | null>(() => {
@@ -110,7 +112,9 @@ export function BloomSeedScope({
 
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      <ThemeScopeContext.Provider value={scopeState}>{content}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={scopeState}>
+        {throughLayer(Layer, scopeState.vars, content)}
+      </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }
