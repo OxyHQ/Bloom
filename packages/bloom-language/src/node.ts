@@ -75,6 +75,7 @@ import type { ColorSwatchPickerKind } from './controls/color-swatch-picker';
 import type { InputOtpKind } from './controls/input-otp';
 import type { OtpCharacters } from './tokens';
 import type { AnimatedCheckKind } from './controls/animated-check';
+import type { SpinnerIconKind } from './controls/spinner-icon';
 import type { MediaInsetBorderKind } from './controls/media-inset-border';
 import type { TagSuggestion } from '@oxy.so/bloom/tag-field';
 import type { FileUploadFile, FileUploadProps } from '@oxy.so/bloom/file-upload';
@@ -1689,6 +1690,7 @@ export type NodeKind =
   | SortableChipRowKind
   | ViewportKind
   | AnimatedCheckKind
+  | SpinnerIconKind
   | FactStripKind
   | ExpandableTextKind
   | CompositionBarKind
