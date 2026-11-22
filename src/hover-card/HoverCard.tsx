@@ -48,7 +48,6 @@ export function HoverCardTrigger({
   children,
   asChild,
   disabled,
-  className,
   style,
   testID,
 }: HoverCardTriggerProps) {
@@ -60,7 +59,6 @@ export function HoverCardTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={card.anchorRef}
-      className={className}
       style={style}
       testID={testID}
       handle={{

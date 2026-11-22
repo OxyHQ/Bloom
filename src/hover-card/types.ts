@@ -30,7 +30,6 @@ export interface HoverCardTriggerProps {
   asChild?: boolean;
   /** A disabled trigger never opens the card. */
   disabled?: boolean;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -46,8 +45,6 @@ export interface HoverCardContentProps extends FloatingPositionProps {
    * not need `false`.
    */
   padded?: boolean;
-  /** Appended to the panel's own classes. */
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
