@@ -172,6 +172,9 @@ function Section({
   );
 }
 
+/** A skill or app row: icon beside its text. */
+const SKILL_CARD = { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 } as const;
+
 /** `flex: 1`, as the CSS shorthand computes it. */
 const FLEX_FILL = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' } as const;
 
@@ -236,10 +239,7 @@ export function Marketplace({
   const grid = (items: MarketplaceItem[]) => (
     <CatalogGrid className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {items.map((item) => (
-        <Card
-          key={item.id}
-          className="group min-w-0 gap-3 p-3 transition-colors hover:bg-background-secondary-hover"
-        >
+        <Card key={item.id} style={{ minWidth: 0, gap: 12, padding: 12 }}>
           <StyledPressable
             accessibilityRole="button"
             accessibilityLabel={formatMessage(messages.viewItem, item.name)}
@@ -348,8 +348,10 @@ export function Marketplace({
             >
               <StyledView className="flex flex-col gap-5 pt-1">
                 <Card
-                  className="items-center gap-4 p-5 text-center"
                   style={{
+                    alignItems: 'center',
+                    gap: 16,
+                    padding: 20,
                     paddingLeft: 20,
                     paddingRight: 20,
                     paddingTop: 20,
@@ -423,7 +425,7 @@ export function Marketplace({
                   </SettingsSectionLabel>
                   <StyledView className="flex flex-col gap-2">
                     {detail.skills.map((skill) => (
-                      <Card key={skill.name} className="flex-row items-center gap-3 p-3">
+                      <Card key={skill.name} style={SKILL_CARD}>
                         <RiCodeSSlashLine
                           className="size-5 shrink-0 text-foreground-icon-secondary"
                           aria-hidden
@@ -445,7 +447,7 @@ export function Marketplace({
                     </SettingsSectionLabel>
                     <CatalogGrid gap={8} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {detail.apps.map((app) => (
-                        <Card key={app} className="flex-row items-center gap-3 p-3">
+                        <Card key={app} style={SKILL_CARD}>
                           <RiPlugLine
                             className="size-5 shrink-0 text-foreground-icon-secondary"
                             aria-hidden
@@ -464,8 +466,9 @@ export function Marketplace({
                 <StyledView className="flex flex-col gap-1">
                   <SettingsSectionLabel>{messages.details}</SettingsSectionLabel>
                   <Card
-                    className="gap-4 p-4"
                     style={{
+                      gap: 16,
+                      padding: 16,
                       paddingLeft: 16,
                       paddingRight: 16,
                       paddingTop: 16,

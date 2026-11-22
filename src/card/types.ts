@@ -58,7 +58,6 @@ export interface CardProps {
   /** Overrides the appearance's border width. */
   border?: CardBorder;
   style?: StyleProp<CardStyle>;
-  className?: string;
   /** Layout of the actual card host, without an extra measuring wrapper. */
   onLayout?: ViewProps['onLayout'];
   onPress?: () => void;
@@ -91,24 +90,12 @@ export interface CardTitleProps {
   children?: React.ReactNode;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
-  /**
-   * Utilities for the text (`font-display` sets it in BlomusModernus). A utility
-   * replaces only the default it names: the colour paired with the card's fill
-   * stays unless the className sets one.
-   */
-  className?: string;
 }
 
 export interface CardDescriptionProps {
   children?: React.ReactNode;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
-  /**
-   * Utilities for the text (`font-display` sets it in BlomusModernus). A utility
-   * replaces only the default it names: the colour paired with the card's fill
-   * stays unless the className sets one.
-   */
-  className?: string;
 }
 
 export interface SelectionCardProps {
@@ -126,7 +113,6 @@ export interface SelectionCardProps {
   invalid?: boolean;
   nativeID?: string;
   describedBy?: string;
-  className?: string;
   children?: ReactNode;
   accessibilityLabel?: string;
   style?: WebCssStyle;

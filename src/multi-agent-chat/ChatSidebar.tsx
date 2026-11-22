@@ -135,8 +135,6 @@ export function ChatSidebar(props: ChatSidebarProps) {
           icon: RiCustomerService2Line,
           onPress: props.onSupport,
           style: { height: 36, minHeight: 36, paddingTop: 8, paddingBottom: 8 },
-          className:
-            'justify-start bg-transparent text-text-secondary hover:bg-background-secondary-hover active:bg-background-secondary-hover',
         },
         {
           key: 'settings',
@@ -144,8 +142,6 @@ export function ChatSidebar(props: ChatSidebarProps) {
           icon: RiSettings3Line,
           onPress: props.onSettings,
           style: { height: 36, minHeight: 36, paddingTop: 8, paddingBottom: 8 },
-          className:
-            'justify-start bg-transparent text-text-secondary hover:bg-background-secondary-hover active:bg-background-secondary-hover',
         },
       ]}
       team={props.team}
