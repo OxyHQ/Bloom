@@ -191,8 +191,7 @@ table the codemod declares after the imports and the constants it reads
 and its digits). The hex is the glyph's fill as written, in both schemes; the
 corpus declares the same table and the before side reads the constant's hex.
 A fill stays JSX when it is no hex (`white`, an `rgba()`, `currentColor`:
-`icon-fill:not-hex`), a theme colour no role paints (`textTertiary`:
-`icon-fill:no-role`), a theme handed in as a prop (`icon-fill:theme-handed-in`:
+`icon-fill:not-hex`), a theme colour no role paints (`icon-fill:no-role`), a theme handed in as a prop (`icon-fill:theme-handed-in`:
 read where the parent called `useTheme()`, which may be outside a colour scope
 the icon is drawn in), a theme colour read outside a `BloomColorScope` around
 the icon (`icon-fill:color-scope`), or set at runtime or imported
