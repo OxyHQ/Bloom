@@ -298,6 +298,10 @@ const ROLE: Record<Role, string | undefined> = {
   radiogroup: 'radiogroup',
   tablist: 'tablist',
   list: 'list',
+  alert: 'alert',
+  progressbar: 'progressbar',
+  imagebutton: 'imagebutton',
+  summary: 'summary',
 };
 
 /** What sets the environment of what is inside: the text traits, and the environment values. */
