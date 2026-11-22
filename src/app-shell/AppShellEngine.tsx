@@ -1,5 +1,6 @@
 import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
+import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { ScrollArea } from '../layout/ScrollArea';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
@@ -187,18 +188,17 @@ function Scroller({
 /** A route Screen's own clearance beyond the occupied bottom edge (Screen's default). */
 const PAGE_CLEARANCE = 16;
 const AnimatedLayoutView = Animated.createAnimatedComponent(View);
-/** The reading column eases its width on the web (`ease-in-out`), unless motion is reduced. */
-const READING_TRANSITION: WebCssStyle = {
-  transitionProperty: 'width,flex-basis,max-width,flex-grow',
-  transitionDuration: '380ms',
-  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-};
+/**
+ * The reading column eases its width on the web (`ease-in-out`), unless motion
+ * is reduced. A base-layer rule, so the panel layout's own transition for a
+ * scoped envelope (`panel-layout-css.ts`) keeps the final say.
+ */
+const READING_TRANSITION_CSS = `@layer base {
+[data-bloom-reading-envelope],[data-bloom-reading-content] { transition-property: width,flex-basis,max-width,flex-grow; transition-duration: 380ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) { [data-bloom-reading-envelope],[data-bloom-reading-content] { transition-property: none; } }
+}`;
 /** `flex: 1` with `minHeight: 0`, as the classes computed it. */
 const FLEX_FILL_BOUNDED: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: '0%', minHeight: 0 };
-const READING_TRANSITION_REDUCED: WebCssStyle = {
-  ...READING_TRANSITION,
-  transitionProperty: 'none',
-};
 
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
@@ -1614,19 +1614,13 @@ export function createAppShellEngine() {
       : plainFrame || railNav
         ? { paddingTop: gutter, paddingBottom: gutter }
         : {};
-    const readingTransition =
-      Platform.OS === 'web'
-        ? reducedMotion
-          ? READING_TRANSITION_REDUCED
-          : READING_TRANSITION
-        : undefined;
+    useInteractiveWebCss('bloom-reading-transition', READING_TRANSITION_CSS);
     const centredBody = (
       <AnimatedLayoutView
         {...(Platform.OS === 'web'
           ? { dataSet: { bloomReadingEnvelope: cssScope ?? 'legacy' } }
           : {})}
         style={[
-          readingTransition,
           {
             flexGrow: 1,
             flexShrink: 1,
@@ -1658,7 +1652,6 @@ export function createAppShellEngine() {
             : {})}
           testID={testID ? `${testID}-content` : undefined}
           style={[
-            readingTransition,
             // `flexBasis` is the reading width and `flexShrink: 1` is what keeps a
             // 600px column inside a 360px phone — a `width` would overflow.
             {
