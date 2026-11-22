@@ -247,7 +247,6 @@ export interface ButtonProps {
   tabIndex?: number;
   hitSlop?: number | { top: number; bottom: number; left: number; right: number };
   testID?: string;
-  className?: string;
 
   // -------------------------------------------------------------------------
   //  Web-only props
@@ -277,9 +276,15 @@ export interface ButtonProps {
    * Render as the child element instead of a `<button>` (web only). Use for
    * link-buttons: `<Button asChild><a href="…">Go</a></Button>` applies the
    * button styling to the `<a>` (or a router `<Link>`). The child receives the
-   * merged `className`, `style`, and the button's event handlers.
+   * button's classes, merged `style`, and the button's event handlers.
    */
   asChild?: boolean;
+  /**
+   * `data-*` attributes on the button's DOM element (web only): a styling hook
+   * an adopted stylesheet's selectors hang off, as react-native-web's `dataSet`
+   * is (`{ bloomStepperAction: '' }` → `data-bloom-stepper-action=""`).
+   */
+  dataSet?: Record<string, string>;
   /**
    * Inline DOM `id` (web only).
    */
@@ -327,8 +332,7 @@ export interface ButtonProps {
    */
   autoFocus?: boolean;
   /**
-   * Stretch the button to fill its container's main axis (web only). Equivalent
-   * to passing `className="w-full"`; provided as a prop for ergonomics.
+   * Stretch the button to fill its container's main axis (web only).
    */
   fullWidth?: boolean;
 }

@@ -1,8 +1,6 @@
 import React from 'react';
 import { Text, View, type ViewStyle } from 'react-native';
 import { render } from '@testing-library/react-native';
-import { compile } from 'react-native-css/compiler';
-import { StyleCollection } from 'react-native-css/native';
 import { Button } from '../button/Button';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { findHost, hostNodes, type HostNode } from './support/rendered-style';
@@ -12,10 +10,6 @@ jest.mock('react-native', () => ({
   ...jest.requireActual('../../__mocks__/react-native'),
   PlatformColor: (...names: string[]) => ({ semantic: names }),
 }));
-jest.mock('react-native-css', () => jest.requireActual('react-native-css/native'));
-jest.mock('react-native-css/native-internal', () =>
-  jest.requireActual('../../node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
-);
 
 let yoga: ReturnType<typeof createYogaHostRenderer>;
 beforeAll(() => {
@@ -155,17 +149,25 @@ it('bounds a long native label and preserves icon slot gaps', () => {
   expect(yoga.layout(tree).get('icon')).toMatchObject({ width: 103, height: 40 });
 });
 
-it('preserves full-width class-driven distribution through the native CSS resolver', () => {
-  StyleCollection.styles.clear();
-  StyleCollection.inject(
-    compile(
-      '.distributed { width: 100%; height: 48px; padding: 0 16px; border-width: 0; flex-direction: row; justify-content: space-between; }',
-    ).stylesheet(),
-  );
+it('preserves full-width style-driven distribution', () => {
   const api = render(
     <BloomThemeProvider>
       <View testID="root" style={{ width: 344 }}>
-        <Button material="flat" className="distributed" testID="distributed">
+        <Button
+          material="flat"
+          style={{
+            width: '100%',
+            height: 48,
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingLeft: 16,
+            paddingRight: 16,
+            borderWidth: 0,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+          testID="distributed"
+        >
           <Text testID="start">Start</Text>
           <Text testID="end">End</Text>
         </Button>

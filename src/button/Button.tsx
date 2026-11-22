@@ -32,7 +32,6 @@ import {
 } from 'react-native';
 import { openExternal, openHref } from '../hooks/link-activation';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { styled } from 'react-native-css';
 
 import { useBloomAppearance, useBloomControlDensity } from '../appearance/context';
 import { useTouchInput } from '../styles/pointer';
@@ -193,15 +192,11 @@ const ANDROID_LINK_HIT_SLOP = growVertical(LINK_HIT_SLOP);
 
 // ---------------------------------------------------------------------------
 //  The button renders ONE node — the same shape the web fork renders (one
-//  `<button>`), so a caller's layout `className` lands on the box its parent
-//  lays out. `styled()` comes from Bloom's own `react-native-css`, and both
-//  wrappers are built ONCE at module scope so the element type is stable.
+//  `<button>`), so a caller's layout `style` lands on the box its parent lays
+//  out.
 // ---------------------------------------------------------------------------
 
-/**
- * Exactly the prop surface `Button` hands to the pressable — narrowing keeps
- * `styled()`'s dot-path mapping type from overflowing the checker (`TS2590`).
- */
+/** Exactly the prop surface `Button` hands to the pressable. */
 type ButtonPressableProps = Pick<
   PressableProps,
   | 'accessibilityActions'
@@ -215,7 +210,6 @@ type ButtonPressableProps = Pick<
   | 'aria-valuenow'
   | 'aria-valuetext'
   | 'onAccessibilityAction'
-  | 'className'
   | 'disabled'
   | 'hitSlop'
   | 'onFocus'
@@ -386,13 +380,6 @@ function ButtonLoading({
   );
 }
 
-const ButtonInterop: ComponentType<ButtonPressableProps> = ButtonPressable;
-const StyledPressable: ComponentType<
-  ButtonPressableProps & React.RefAttributes<ComponentRef<typeof View>>
-> = styled(ButtonInterop, {
-  className: 'style',
-});
-
 const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
   function ButtonComponent(props, ref) {
     const {
@@ -462,7 +449,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       onAccessibilityAction,
       hitSlop,
       testID,
-      className,
       'aria-current': ariaCurrent,
       'aria-expanded': ariaExpanded,
       'aria-haspopup': ariaHasPopup,
@@ -762,7 +748,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     const split = lens ? splitLensStyle(style) : null;
     const pressable = (
-      <StyledPressable
+      <ButtonPressable
         interactive={interactive}
         ref={ref}
         onLayout={onLayout}
@@ -776,7 +762,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         {...(tabIndex === undefined
           ? {}
           : { tabIndex: tabIndex < 0 ? (-1 as const) : (0 as const) })}
-        className={className}
         baseStyle={baseStyles}
         style={split ? split.control : style}
         onLongPress={isInteractionBlocked ? undefined : onLongPress}
@@ -868,7 +853,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           </ButtonLoading>
         ) : null}
         {decoration}
-      </StyledPressable>
+      </ButtonPressable>
     );
     if (!split) return pressable;
     const flatRadius = StyleSheet.flatten(style)?.borderRadius;
