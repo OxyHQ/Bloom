@@ -94,7 +94,7 @@ it('inherits scope through the portal, accepts a surface override, and owns exac
   expect(Number.parseFloat(getComputedStyle(node('menu')).maxHeight)).toBeLessThanOrEqual(
     window.innerHeight - 16,
   );
-  expect(node('menu').className).toContain('bloom-floating-surface');
+  expect(node('menu').hasAttribute('data-bloom-floating-surface')).toBe(true);
 });
 it('inherits the application size through a portal without a local size override', () => {
   mount(

@@ -30,14 +30,10 @@ import { useMenuDensity } from './use-menu-density';
  *
  * ── STYLING ──────────────────────────────────────────────────────────────────
  *
- * Every shape below is a Tailwind class from `floating/constants.ts`, applied
- * through Bloom's own `styled()` primitives, because that is how the originals
- * are built and it is the only form a consumer can override with a utility. The
- * row shell itself is `shared.tsx`'s `MenuRowShell` — see its header for why
- * these rows are no longer `item/Item`.
- *
- * Every part takes a `className` and APPENDS it to its own, so a caller can
- * restyle a row without stripping its chrome.
+ * Every shape below is a style from `floating/constants.ts` and the density
+ * (`use-menu-density.ts`); a caller's `style` goes over it. The row shell itself
+ * is `shared.tsx`'s `MenuRowShell` — see its header for why these rows are no
+ * longer `item/Item`.
  *
  * The `sm:` breakpoint the previous pass carried (`py-2 sm:py-1.5`) is gone:
  * the target has one row inset (6px) plus a 32px minimum height, so a row is
@@ -47,24 +43,32 @@ import type React from 'react';
 import { useCallback, useMemo } from 'react';
 
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
-import { StyledText, StyledView } from '../styles/styled-primitives';
+import { Text, View } from 'react-native';
+import { createTokenStyles } from '../theme/color-tokens';
 import {
   ROW_ICON_SIZE,
-  ROW_INDICATOR_CLASS,
-  ROW_INDICATOR_END_CLASS,
-  ROW_LABEL_INSET_CLASS,
-  ROW_RADIO_DOT_CLASS,
-  ROW_SHORTCUT_CLASS,
+  ROW_INDICATOR_END_STYLE,
+  ROW_INDICATOR_STYLE,
+  ROW_LABEL_INSET_STYLE,
+  ROW_TRAILING_STYLE,
 } from './constants';
+import { ROUNDED_FULL } from '../styles/rounded-full';
 import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './context';
 import { useMenuPalette } from './menu-palette';
-import { MENU_FONT_FAMILY, menuType, menuTypeClass } from './menu-type';
-import { cx, MenuRowGlyph, MenuRowShell, splitChildren, useMenuRowInk } from './shared';
+import { MENU_FONT_FAMILY, menuType } from './menu-type';
+import { MenuRowGlyph, MenuRowShell, splitChildren, useMenuRowInk } from './shared';
 import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
 import { useMenuRowAlignment } from './menu-row-alignment';
 import { MenuSwatchRow } from './menu-swatch-row';
 
 const NO_ROW_TRAITS = { gutter: false, leading: false } as const;
+
+const ROW_RELATIVE = { position: 'relative' } as const;
+
+/** The default radio mark: an 8px dot in the foreground, with no ring. */
+const useRadioDotStyles = createTokenStyles((t) => ({
+  dot: { width: 8, height: 8, borderRadius: ROUNDED_FULL, backgroundColor: t.foreground },
+}));
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -106,16 +110,18 @@ function IndicatorGutter({
   // mark takes the row's ink under the accent highlight.
   if (density.desktop) return <>{children}</>;
   return (
-    <StyledView className="relative">
+    <View style={ROW_RELATIVE}>
       {children}
-      <StyledView
-        className={position === 'leading' ? ROW_INDICATOR_CLASS : ROW_INDICATOR_END_CLASS}
-        style={{ width: density.leadingSize }}
+      <View
+        style={[
+          position === 'leading' ? ROW_INDICATOR_STYLE : ROW_INDICATOR_END_STYLE,
+          { width: density.leadingSize },
+        ]}
         pointerEvents="none"
       >
         {indicator}
-      </StyledView>
-    </StyledView>
+      </View>
+    </View>
   );
 }
 
@@ -124,9 +130,7 @@ function MenuRadioDot() {
   const palette = useMenuPalette();
   const ink = useMenuRowInk();
   return (
-    <StyledView
-      style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ink ?? palette.text }}
-    />
+    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ink ?? palette.text }} />
   );
 }
 
@@ -155,7 +159,6 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     tone,
     keepOpen = false,
     accessibilityLabel,
-    className,
     style,
     testID,
   }: MenuRowProps) {
@@ -188,7 +191,6 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
         title={title}
         onPress={handlePress}
         accessibilityLabel={accessibilityLabel}
-        className={className}
         style={style}
         testID={testID}
       >
@@ -209,7 +211,6 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     trailing,
     keepOpen = false,
     accessibilityLabel,
-    className,
     style,
     testID,
   }: MenuCheckboxRowProps) {
@@ -247,7 +248,6 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
             if (!keepOpen) surface.close();
           }}
           accessibilityLabel={accessibilityLabel}
-          className={className}
           style={style}
           testID={testID}
         >
@@ -263,13 +263,13 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     return (
       <MenuRadioGroupProvider value={context}>
         {/* `gap-1` — the panel's own 4px row rhythm, carried into the group. */}
-        <StyledView
+        <View
           collapsable={false}
           role={Platform.OS === 'web' ? 'group' : 'radiogroup'}
-          className={useMenuDensity().groupClass}
+          style={useMenuDensity().groupStyle}
         >
           {children}
-        </StyledView>
+        </View>
       </MenuRadioGroupProvider>
     );
   }
@@ -285,7 +285,6 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     trailing,
     keepOpen = false,
     accessibilityLabel,
-    className,
     style,
     testID,
   }: MenuRadioRowProps) {
@@ -294,6 +293,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const { title, body } = splitChildren(children);
     const checked = group.value === value;
     const density = useMenuDensity();
+    const radioDot = useRadioDotStyles();
     // `bg-foreground h-2 w-2 rounded-full`: the established default remains a
     // filled dot. A caller-supplied node replaces only this selected mark; the
     // shared gutter and ARIA state remain owned here. A desktop's dot takes the
@@ -304,7 +304,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
       ) : density.desktop ? (
         <MenuRadioDot />
       ) : (
-        <StyledView className={ROW_RADIO_DOT_CLASS} />
+        <View style={radioDot.dot} />
       );
 
     return (
@@ -324,7 +324,6 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
             if (!keepOpen) surface.close();
           }}
           accessibilityLabel={accessibilityLabel}
-          className={className}
           style={style}
           testID={testID}
         >
@@ -335,41 +334,30 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
   }
   MenuRadioItem.displayName = `${prefix}RadioItem`;
 
-  function MenuLabel({ children, inset = false, className, style }: MenuLabelProps) {
+  function MenuLabel({ children, inset = false, style }: MenuLabelProps) {
     const palette = useMenuPalette();
     const density = useMenuDensity();
-    const type = 'caption-1-medium';
     const column = useMenuRowAlignment(NO_ROW_TRAITS);
     // A desktop's group label: the subheadline (11/14), semibold, in the
     // secondary label level.
     const labelType = density.desktop
-      ? className
-        ? MENU_FONT_FAMILY
-        : { ...DESKTOP_TEXT_STYLES.subheadline, fontWeight: '600' as const, ...MENU_FONT_FAMILY }
-      : menuType(type, className);
+      ? { ...DESKTOP_TEXT_STYLES.subheadline, fontWeight: '600' as const, ...MENU_FONT_FAMILY }
+      : menuType('caption-1-medium');
     const aligned = inset || column.gutter;
-    // The group label: `pl-2 text-body-medium text-text-secondary` — the
-    // rows' size and weight, one step back in colour. The colour is inline only
-    // while the caller passes no `className`: an inline colour would outrank a
-    // caller's `text-*` utility on native.
+    // The group label: the rows' inset, a caption, one step back in colour.
     return (
-      <StyledText
-        className={cx(
-          density.labelClass,
-          aligned && ROW_LABEL_INSET_CLASS,
-          menuTypeClass(type, className),
-          className && 'text-muted-foreground',
-          className,
-        )}
+      <Text
         style={[
+          density.labelStyle,
+          aligned ? ROW_LABEL_INSET_STYLE : null,
           labelType,
           aligned ? { paddingLeft: density.gutter } : null,
-          className ? null : { color: palette.textSecondary },
+          { color: palette.textSecondary },
           style,
         ]}
       >
         {children}
-      </StyledText>
+      </Text>
     );
   }
   MenuLabel.displayName = `${prefix}Label`;
@@ -382,11 +370,11 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     // own `p-2.5`, and a hairline is not what the target draws — `h-px` is one
     // whole pixel.
     // A desktop's rule is inset from the panel's padding with room above and
-    // below (`DESKTOP_MENU_GEOMETRY`), inline as well as in the class.
+    // below (`DESKTOP_MENU_GEOMETRY`).
     return (
-      <StyledView
-        className={density.separatorClass}
-        style={
+      <View
+        style={[
+          density.separatorStyle,
           density.desktop
             ? {
                 height: 1,
@@ -396,14 +384,14 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
                 marginBottom: density.separatorMargin,
                 backgroundColor: palette.border,
               }
-            : { backgroundColor: palette.border }
-        }
+            : { backgroundColor: palette.border },
+        ]}
       />
     );
   }
   MenuSeparator.displayName = `${prefix}Separator`;
 
-  function MenuShortcut({ children, className, style }: MenuShortcutProps) {
+  function MenuShortcut({ children, style }: MenuShortcutProps) {
     const palette = useMenuPalette();
     const density = useMenuDensity();
     const ink = useMenuRowInk();
@@ -412,52 +400,42 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
       // level (the accent's foreground while the row is highlighted), clear of
       // the label by 16px and pushed to the trailing edge.
       return (
-        <StyledText
+        <Text
           numberOfLines={1}
-          className={cx(ROW_SHORTCUT_CLASS, className)}
           style={[
-            className ? MENU_FONT_FAMILY : { ...density.rowType, ...MENU_FONT_FAMILY },
+            ROW_TRAILING_STYLE,
+            { ...density.rowType, ...MENU_FONT_FAMILY },
             { paddingLeft: 16, textAlign: 'right' },
-            className && ink == null ? null : { color: ink ?? palette.textSecondary },
+            { color: ink ?? palette.textSecondary },
             style,
           ]}
         >
           {children}
-        </StyledText>
+        </Text>
       );
     }
     return (
-      <StyledText
-        className={cx(
-          ROW_SHORTCUT_CLASS,
-          menuTypeClass('caption-1-medium', className),
-          className && 'text-muted-foreground',
-          className,
-        )}
+      <Text
         style={[
-          menuType('caption-1-medium', className),
-          className ? null : { color: palette.textSecondary },
+          ROW_TRAILING_STYLE,
+          menuType('caption-1-medium'),
+          { color: palette.textSecondary },
           style,
         ]}
       >
         {children}
-      </StyledText>
+      </Text>
     );
   }
   MenuShortcut.displayName = `${prefix}Shortcut`;
 
-  function MenuGroup({ children, className, style }: MenuGroupProps) {
+  function MenuGroup({ children, style }: MenuGroupProps) {
     // `group` is the ARIA role for a set of related menu rows; it carries no
     // state, so there is no `aria-*` counterpart to spell.
     return (
-      <StyledView
-        collapsable={false}
-        role="group"
-        className={cx(useMenuDensity().groupClass, className)}
-        style={style}
-      >
+      <View collapsable={false} role="group" style={[useMenuDensity().groupStyle, style]}>
         {children}
-      </StyledView>
+      </View>
     );
   }
   MenuGroup.displayName = `${prefix}Group`;
