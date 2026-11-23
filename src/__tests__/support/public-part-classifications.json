@@ -1610,7 +1610,7 @@
       "src/__tests__/NavigationPublicPartScope.test.tsx",
       "src/__tests__/NavigationPublicPartScope.web.test.tsx"
     ],
-    "verification": "mock-rendered native styles and DOM-computed web styles compare PageHeader navigation min-height 44, TabBar pill height 58 and BottomBar height 74 under xs and lg BloomScope; physical layout, control proportions and target matrix pending",
+    "verification": "mock-rendered native styles and DOM-computed web styles compare PageHeader navigation min-height 44, TabBar pill height 62 and BottomBar height 78 under xs and lg BloomScope; physical layout, control proportions and target matrix pending",
     "parts": [
       "src/page-header/PageHeader.tsx#PageHeader",
       "src/tab-bar/index.ts#TabBar",

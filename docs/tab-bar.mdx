@@ -329,7 +329,7 @@ Centring and the minimize animation compose without either knowing about the oth
 
 ## The blur behind the bar
 
-The bar draws a progressive blur rising from the bottom edge of the screen — the band content dissolves into instead of meeting the pill at a hard line. It is full-bleed and 114pt tall at a zero bottom inset (the bar's bottom gap + its expanded height + 44pt of bleed above it), which is taller than the bar itself.
+The bar draws a progressive blur rising from the bottom edge of the screen — the band content dissolves into instead of meeting the pill at a hard line. It is full-bleed and 118pt tall at a zero bottom inset (the bar's bottom gap + its expanded height + 44pt of bleed above it), which is taller than the bar itself.
 
 That matters if your screen floats its own chrome down there. A video scrubber, a compose FAB, a QR-scan button — anything inside that band is blurred, and **no `zIndex` gets it out**: z-order only sorts siblings within one stacking context, and your FAB lives inside the screen, which is an earlier sibling of the bar's host. Turn the band off instead:
 
@@ -351,9 +351,9 @@ Every color comes from the active `BloomThemeProvider` preset and mode — there
 
 | Role | Resolves from | Meaning |
 |------|---------------|---------|
-| `activeTint` | `colors.text` | Label and glyph of the tab the highlight is over. |
-| `inactiveTint` | `colors.textSecondary` | Label and glyph of every other tab. |
-| `highlight` | `colors.contrast50` | The sliding highlight pill. |
+| `activeTint` | `colors.primary` | Label and glyph of the tab the highlight is over: the accent, as Apple's tab bar tints its selected tab. |
+| `inactiveTint` | `colors.text` | Label and glyph of every other tab: the foreground that reads on the glass. |
+| `highlight` | `colors.shadow` | The sliding highlight pill: a neutral, translucent darkening of the glass (black at 10% light, 30% dark), never a colour. It sits 4pt in from the bar's wall on every side (54pt in the 62pt bar), as Apple's does. |
 | `blurTint` | `colors.card` (72% on web, opaque on native) | Tint of the capsule material. |
 
 Override any subset with the `theme` prop; the rest keep their token-derived values.
@@ -406,7 +406,7 @@ The tail gradient is derived from the theme's page background, so it works on li
 | `onIndexLongPress?` | `(index: number) => void` | — | Called with the index under the finger after a 500ms hold. Does not select. The gesture is armed only when this is supplied. |
 | `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |
 | `haptics?` | `boolean` | `true` | Picker-style tick as the scrub crosses tab boundaries. Already a no-op on web and when `expo-haptics` is absent. |
-| `blur?` | `boolean \| { intensity?: number }` | `true` | The progressive blur band behind the bar. `false` removes it entirely — the escape hatch for a FAB or scrubber that sits inside its 114pt reach. |
+| `blur?` | `boolean \| { intensity?: number }` | `true` | The progressive blur band behind the bar. `false` removes it entirely — the escape hatch for a FAB or scrubber that sits inside its 118pt reach. |
 | `maxWidth?` | `number` | adaptive | Adds a ceiling to the tab-count-based width, with item geometry and hit-testing following. It never stretches a compact bar. |
 
 Everything `View` accepts is forwarded.
