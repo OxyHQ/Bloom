@@ -131,8 +131,10 @@ jobs:
 
   # The language packages: the language (with its parity suite, every family
   # rendered as the language and as hand-written Bloom, native and web), the
-  # compiler (Rust, its adapters and its own parity suite) and Bloom data. Their
-  # suites outgrow the build job's budget, so they run beside it.
+  # compiler (Rust, its adapters and its own parity suite), Bloom data and the
+  # className codemod (its transform, and its sample app's corpus proven before
+  # and after, native and web). Their suites outgrow the build job's budget, so
+  # they run beside it.
   language:
     name: Language packages
     needs: provenance
@@ -176,9 +178,13 @@ jobs:
       - name: Language package builds, typecheck and test
         run: |
           (cd packages/bloom-language-compiler && bun run build:addon)
-          for package in packages/bloom-language packages/bloom-language-compiler packages/bloom-data; do
+          for package in packages/bloom-language packages/bloom-language-compiler packages/bloom-data packages/bloom-language-codemod; do
             (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
           done
+      # The codemod's corpus is what its CLI writes for its sample app: rewritten
+      # here, so a transform change that alters it fails the step below.
+      - name: Codemod corpus is current
+        run: cd packages/bloom-language-codemod && bun run corpus
       - name: Generated sources are committed
         run: |
           git diff --exit-code
