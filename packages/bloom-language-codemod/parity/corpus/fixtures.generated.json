@@ -1935,6 +1935,26 @@
   "appColors": null
  },
  {
+  "name": "components/Corners.tsx:6",
+  "before": "<View\n      style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, borderBottomEndRadius: 4, padding: 8 }}\n    />",
+  "after": "toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "VStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Dialogs.tsx:8",
   "before": "<Dialog open={true} onClose={(() => {})} title=\"Post as\" label=\"Post as\">\n      <View className=\"gap-4 p-4\">\n        <Text className=\"text-sm\">Choose an account</Text>\n      </View>\n    </Dialog>",
   "after": "toElement(LDialog(VStack(LText('Choose an account').font('14').leading('20px')).padding('all', 'lg').spacing('lg')).title('Post as').label('Post as').presented([true, () => (() => {})()]))",
@@ -2133,7 +2153,7 @@
  },
  {
   "name": "components/Menus.tsx:41 (false)",
-  "before": "<Button appearance=\"plain\" tone=\"neutral\" iconOnly leadingIcon={RiMoreFill} color={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)} hoverColor={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)} />",
+  "before": "<Button\n      appearance=\"plain\"\n      tone=\"neutral\"\n      iconOnly\n      leadingIcon={RiMoreFill}\n      color={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}\n      hoverColor={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}\n    />",
   "after": "toElement(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(false ? 'error' : false ? 'primary' : undefined).hoverForeground(false ? 'error' : false ? 'primary' : undefined))",
   "bindings": {
    "Button": {
@@ -2162,7 +2182,7 @@
  },
  {
   "name": "components/Menus.tsx:41",
-  "before": "<Button appearance=\"plain\" tone=\"neutral\" iconOnly leadingIcon={RiMoreFill} color={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)} hoverColor={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)} />",
+  "before": "<Button\n      appearance=\"plain\"\n      tone=\"neutral\"\n      iconOnly\n      leadingIcon={RiMoreFill}\n      color={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}\n      hoverColor={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}\n    />",
   "after": "toElement(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(true ? 'error' : true ? 'primary' : undefined).hoverForeground(true ? 'error' : true ? 'primary' : undefined))",
   "bindings": {
    "Button": {

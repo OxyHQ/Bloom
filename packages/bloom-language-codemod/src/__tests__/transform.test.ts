@@ -455,6 +455,21 @@ export function A({ invalid, active }) {
       'color={(true ? parityTheme.colors.error',
     );
   });
+  it('rounds a radius of 999 as full, a corner’s own radius on its side', () => {
+    const result = run(`import { View } from 'react-native';
+import { Button } from '@oxy.so/bloom/button';
+export const A = () => <View style={{ borderRadius: 999 }} />;
+export const B = () => <Button style={{ borderRadius: 999 }}>Go</Button>;
+export const C = () => <View style={{ borderTopLeftRadius: 999, borderBottomEndRadius: 12 }} />;
+`);
+    const code = flat(result.code);
+    expect(code).toContain("toElement(VStack().corner('full'))");
+    expect(code).toContain("toElement(LButton(Text('Go')).corner('full'))");
+    expect(code).toContain(
+      "toElement(VStack().corner('full', 'top-left').corner('md', 'bottom-trailing'))",
+    );
+    expect(result.unconverted).toEqual([]);
+  });
   it('makes a DropdownMenu tree a Menu drawn as Bloom’s dropdown', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';
 import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';

@@ -116,11 +116,24 @@ const NUMERIC: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   flexShrink: { 1: 'shrink', 0: 'shrink-0' },
 };
 
+/** A corner's own radius key as the language's corner side. */
+const CORNER_SIDE: Readonly<Record<string, string>> = {
+  borderTopLeftRadius: 'top-left',
+  borderTopRightRadius: 'top-right',
+  borderBottomLeftRadius: 'bottom-left',
+  borderBottomRightRadius: 'bottom-right',
+  borderTopStartRadius: 'top-leading',
+  borderTopEndRadius: 'top-trailing',
+  borderBottomStartRadius: 'bottom-leading',
+  borderBottomEndRadius: 'bottom-trailing',
+};
+
 /**
  * A style key and value the language writes itself, as its modifier: React
  * Native's `flex: 1` is `.grow()`; a radius, a stacking level and an aspect
- * ratio are the tokens (or number) of their exact value. A radius of 999 is
- * `full` (9999): both round any box under 1998pt fully, so they draw alike.
+ * ratio are the tokens (or number) of their exact value, a corner's own
+ * radius (`borderTopLeftRadius`) its side's. A radius of 999 is `full` (9999):
+ * both round any box under 1998pt fully, so they draw alike.
  */
 function direct(key: string, value: AnyNode): Mod | undefined {
   const number = n.NumericLiteral.check(value)
@@ -132,9 +145,12 @@ function direct(key: string, value: AnyNode): Mod | undefined {
       : undefined;
   if (number === undefined) return undefined;
   if (key === 'flex' && number === 1) return { name: 'grow', args: [] };
-  if (key === 'borderRadius') {
+  if (key === 'borderRadius' || CORNER_SIDE[key]) {
     const token = number === 999 ? 'full' : CORNER.get(number);
-    return token === undefined ? undefined : { name: 'corner', args: [token] };
+    const side = CORNER_SIDE[key];
+    return token === undefined
+      ? undefined
+      : { name: 'corner', args: side ? [token, side] : [token] };
   }
   if (key === 'zIndex') {
     const token = Z_INDEX.get(number);
