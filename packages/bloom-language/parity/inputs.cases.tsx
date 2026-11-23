@@ -33,6 +33,8 @@ import {
   TextFieldSuffix,
 } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
+import { Text } from '@oxy.so/bloom/typography';
+import { View } from 'react-native';
 
 import type { Binding } from '../src/binding';
 import * as L from '../src/controls/inputs';
@@ -591,6 +593,19 @@ const editors: ParityCase[] = [
 // ── Field, Label ─────────────────────────────────────────────────
 
 const forms: ParityCase[] = [
+  {
+    name: 'a Field that grows in its row (React Native’s flex: 1)',
+    language: () =>
+      toElement(P.HStack(L.Field('Date', L.TextField(empty, 'Date')).grow(), P.Text('to'))),
+    bloom: () => (
+      <View style={{ flexDirection: 'row' }}>
+        <Field label="Date" style={{ flex: 1 }}>
+          <TextFieldInput label="Date" value="" onValueChange={set} />
+        </Field>
+        <Text>to</Text>
+      </View>
+    ),
+  },
   {
     name: 'Field around a TextField',
     language: () =>

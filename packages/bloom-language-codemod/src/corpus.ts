@@ -77,7 +77,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     ].join('');
     // A before side that reads the theme is a component, so it reads it where it is drawn.
     const before = fixture.themed
-      ? `function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); ${bindings} return (${fixture.before}); } return (${open}<Before />${close});`
+      ? `function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); ${bindings} return (${fixture.before}); } return (${open}<Before />${close});`
       : `${bindings} return (${open}${fixture.before}${close});`;
     let colors = '';
     if (fixture.appColors) {
@@ -101,6 +101,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
     "import { useColorTokens as useParityTokens, useTheme as useParityTheme } from '@oxy.so/bloom/theme';",
+    "import { useSurfaceFill as useParitySurface } from '@oxy.so/bloom/styles';",
     "import { SafeAreaInsetsContext } from 'react-native-safe-area-context';",
     `import { ScreenHost } from '${relativeTo(dir, SCREEN_HOST)}';`,
     ...[...imports].map(([key, local]) => {

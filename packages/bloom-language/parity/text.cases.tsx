@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import * as RN from 'react-native';
 import { InlineMarkdown } from '@oxy.so/bloom/markdown';
 import { tokens } from '@oxy.so/bloom/styles';
-import { withAlpha } from '@oxy.so/bloom/theme';
+import { type ThemeColors, withAlpha } from '@oxy.so/bloom/theme';
 import {
   Blockquote,
   H1,
@@ -50,7 +50,11 @@ const webCss = (style: Record<string, string>) => style as RN.TextStyle;
 const ofSize = (size: number, ratio: number) =>
   RN.Platform.OS === 'web' ? size * ratio : Math.round(size * ratio * 100) / 100;
 
-const paint = (role: ColorName) => COLORS[role].paint;
+const paint = (role: ColorName) => COLORS[role].paint as keyof ThemeColors;
+/** The roles of the theme's palette (the surface fill has its own cases, surface-fill.cases.tsx). */
+const PALETTE_ROLES = (Object.keys(COLORS) as ColorName[]).filter(
+  (role) => COLORS[role].web !== null,
+);
 
 /** Every step of Bloom's type ramp, as `.font(family).weight(weight)`. */
 const ramp: ParityCase[] = Object.keys(TYPE_SCALE).map((variant) => {
@@ -92,7 +96,7 @@ const sizes: ParityCase[] = (Object.keys(FONT_SIZE) as FontSizeName[]).flatMap((
 ]);
 
 /** Every colour role as the text's ink, and the environment's. */
-const inks: ParityCase[] = (Object.keys(COLORS) as ColorName[]).flatMap((role) => [
+const inks: ParityCase[] = PALETTE_ROLES.flatMap((role) => [
   {
     name: `foreground ${role}`,
     language: () => toElement(L.Text('Ink').foreground(role)),

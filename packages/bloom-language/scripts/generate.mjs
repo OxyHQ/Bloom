@@ -70,7 +70,11 @@ const motionSpecs = Object.fromEntries(
 );
 
 /** A role's web value: its canonical CSS variable, or, for a colour the same in every theme, the colour. */
-const webColor = (css) => (css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`);
+/** A role's web value; the surface fill has none (\`null\`): its leaf paints it. */
+const webColor = (css) =>
+  css === null ? null : css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`;
+/** The roles a class paints: every one with a web value. */
+const classRoles = Object.keys(colors).filter((role) => colors[role][1] !== null);
 
 const typeFamilies = [];
 for (const variant of Object.keys(typeRamp)) {
@@ -372,9 +376,9 @@ for (const value of numbers(scales.opacity)) valueClass('opacity', value);
 for (const value of enums.borderStyle) valueClass('borderStyle', value);
 for (const edge of ['', 'Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
   valueClass(`border${edge}Width`, 1);
-  for (const role of Object.keys(colors)) roleClass(`border${edge}Color`, role);
+  for (const role of classRoles) roleClass(`border${edge}Color`, role);
 }
-for (const role of Object.keys(colors)) {
+for (const role of classRoles) {
   roleClass('color', role);
   roleClass('backgroundColor', role);
   roleClass('outlineColor', role);
@@ -519,6 +523,8 @@ const negative = Object.keys(scales.space).map((name) => `-${name}`);
 const tokenSets = {
   space: Object.keys(scales.space),
   padding: [...Object.keys(scales.space), ...negative],
+  // A pinned view's edge takes a percentage of its parent besides (\`top: '25%'\`).
+  edgeDistance: [...Object.keys(scales.space), ...negative, ...enums.insetPercent],
   // A margin takes `auto` besides: the free space on that side (Tailwind's `ml-auto`).
   margin: [...Object.keys(scales.space), ...negative, ...enums.marginExtra],
   length: [...Object.keys(scales.space), ...Object.keys(scales.length)],

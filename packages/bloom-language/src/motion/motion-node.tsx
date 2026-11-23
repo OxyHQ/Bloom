@@ -43,10 +43,9 @@ import {
 } from '@oxy.so/bloom/motion';
 import { OverlayRoot } from '@oxy.so/bloom/overlay';
 import { Portal } from '@oxy.so/bloom/portal';
-import { useThemePaint } from '@oxy.so/bloom/theme';
 
 import type { DragSpec, PinchSpec, SwipeDirection } from '../node';
-import type { Geometry } from '../paint';
+import { type Geometry, usePalette } from '../paint';
 import type { Frame, Lander, Namespace } from './namespace';
 import { motionKey, resolveMotion, type MotionToken } from './tokens';
 
@@ -510,7 +509,7 @@ export function ThemedMotion({
   node,
   ...props
 }: MotionNodeProps & { node: (props: MotionNodeProps) => ReactNode }): ReactNode {
-  return createElement(node, { ...props, theme: useThemePaint() });
+  return createElement(node, { ...props, theme: usePalette() });
 }
 ThemedMotion.displayName = 'BloomThemedMotion';
 

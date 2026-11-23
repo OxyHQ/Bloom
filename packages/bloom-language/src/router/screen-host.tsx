@@ -9,7 +9,7 @@
 import { type ComponentProps, type ReactElement, type ReactNode, useMemo } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Screen } from '@oxy.so/bloom/screen';
-import { BloomColorScope, useTheme } from '@oxy.so/bloom/theme';
+import { BloomColorScope } from '@oxy.so/bloom/theme';
 
 import { Header } from '../primitives';
 import {
@@ -24,7 +24,7 @@ import {
 } from '../node';
 import { valuesOf } from '../platform/values';
 import { ink, flexStyle } from '../style';
-import { themeColor } from '../paint';
+import { themeColor, useRgbPalette } from '../paint';
 import type { InkToken } from '../tokens';
 import { toElement } from '../render';
 import {
@@ -179,8 +179,7 @@ function FilledScreen({
   background,
   ...props
 }: ComponentProps<typeof Screen> & { background: InkToken }): ReactElement {
-  const { colors } = useTheme();
-  const fill = themeColor(colors, ink(background));
+  const fill = themeColor(useRgbPalette(), ink(background));
   const style = useMemo(() => ({ backgroundColor: fill }), [fill]);
   return <Screen {...props} style={style} />;
 }

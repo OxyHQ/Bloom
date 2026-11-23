@@ -1,6 +1,7 @@
 import type { ThemeColors } from '@oxy.so/bloom/theme';
 
-import { COLORS, GLASS, GLASS_OPACITY } from '../generated/spec.generated';
+import { GLASS, GLASS_OPACITY } from '../generated/spec.generated';
+import { paletteColor } from '../paint';
 import type { GlassValue } from '../glass';
 import type { RoleRef } from '../style';
 import type { ColorName } from '../tokens';
@@ -22,14 +23,14 @@ export function glassTriggerConfig(
   if (fill !== undefined)
     return {
       blur: material.lensBlur,
-      tintColor: colors[COLORS[fill.role].paint],
+      tintColor: paletteColor(colors, fill.role),
       tintOpacity: fill.opacity,
     };
   const role = glass.tintColor ?? fallback;
   const opacity = glass.tintOpacity ?? (glass.tintColor ? material.tintOpacity : null);
   return {
     blur: material.lensBlur,
-    tintColor: role === undefined ? undefined : colors[COLORS[role].paint],
+    tintColor: role === undefined ? undefined : paletteColor(colors, role),
     tintOpacity: opacity === null || opacity === undefined ? undefined : GLASS_OPACITY[opacity],
   };
 }

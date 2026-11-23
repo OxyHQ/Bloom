@@ -394,7 +394,13 @@ the engine's error role fills; `error` is the policy's status colour),
 `primaryText` is `--primary-text`, `errorText` `--error-text`, `onSurface`
 `--surface-foreground`, `accent` `--accent`, and `white`, `black` and
 `transparent` are Tailwind's fixed colours (Bloom's `ThemeColors.white`,
-`black` and `transparent`, the same in every theme). A role at an opacity is one token, `'role/opacity'`,
+`black` and `transparent`, the same in every theme). `surfaceFill` is the
+fill of the surface the view sits on, Bloom's `useSurfaceFill()`: the colour a
+container around it published (a Screen, a Card, a panel), else its level's,
+for chrome that has to be that colour (a tab bar's backing, an avatar's ring
+in a skeleton). No theme colour or CSS variable holds it, so the leaf that
+paints the view reads it where it is drawn, on the web too (its style is an
+object there, its variants tracked in JS, as an app token's are). A role at an opacity is one token, `'role/opacity'`,
 with an `opacity` token for the amount: `text-muted-foreground/70` is
 `.foreground('muted/70')`, `bg-primary/10` `.background('primary/10')`.
 Native paints the role's colour at that alpha; the web paints an ink, a
@@ -469,7 +475,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `horizontalSpacing(v)`, `verticalSpacing(v)` | space: the gap along one axis only, over `spacing`'s: between children side by side (`columnGap`, `gap-x-*`) or one above another and between wrapped lines (`rowGap`, `gap-y-*`) |
 | `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap; new screens use `spacing()` |
 | `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
-| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5`, or points computed at render (`{ width: itemSize }`; see [Styles computed at runtime](#styles-computed-at-runtime)) |
+| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5`, and the percentages apps write that no fraction holds, named by their value (`90%`, `31%`), or points computed at render (`{ width: itemSize }`; see [Styles computed at runtime](#styles-computed-at-runtime)) |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
 | `aspectRatio(r)` | the view's width to its height (`1`, `1.6`), React Native's `aspectRatio`, in its frame's view: the frame's width or height (or the view's stretch) sets the other side. Any view, a pressable one included; an `Image`'s sizes the image in its box |
 | `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first`; a frame length, its `flex-basis` |
@@ -477,7 +483,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
 | `clipped(on?)` | clips what the view draws to its bounds and its corner; `clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out (NativeWind's `overflow-visible`), over a clip the view would otherwise have |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also points computed at render (`{ top: insets.top + 8 }`) |
+| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`) |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |

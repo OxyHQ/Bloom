@@ -72,6 +72,7 @@ export const TextAndTypography: Story = { args: { family: 'text' } };
 export const Icons: Story = { args: { family: 'icons' } };
 export const EveryIcon: Story = { args: { family: 'everyIcon' } };
 export const Material: Story = { args: { family: 'material' } };
+export const SurfaceFill: Story = { args: { family: 'surfaceFill' } };
 export const AvatarsAndGroups: Story = { args: { family: 'avatars' } };
 export const SmallPieces: Story = { args: { family: 'pieces' } };
 export const Buttons: Story = { args: { family: 'buttons' } };

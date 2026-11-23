@@ -268,7 +268,7 @@ fn geometry_takes_points_computed_at_render_and_never_a_number_written_out() {
     let output = compiled("export const x = () => VStack().frame({ width: 44 });\n");
     assert_eq!(output.diagnostics[0].message, ".frame() takes length tokens, not the number 44");
     let output = compiled("export const x = () => VStack().position({ top: -8 });\n");
-    assert_eq!(output.diagnostics[0].message, ".position() takes padding tokens, not the number -8");
+    assert_eq!(output.diagnostics[0].message, ".position() takes edgeDistance tokens, not the number -8");
     let output = compiled("export const x = () => VStack().zIndex(2);\n");
     assert_eq!(output.diagnostics[0].message, ".zIndex() takes zIndex tokens, not the number 2");
     // Spacing, type and colour stay tokens: a number is never theirs.
@@ -1054,9 +1054,21 @@ fn a_screen_s_colour_activity_and_starting_heights_are_checked_against_the_spec(
 }
 
 #[test]
+fn percentages_of_the_parent_are_tokens_of_a_frame_and_an_edge() {
+    let fine = chrome(
+        "export const P = () => Text('a').frame({ width: '31%', maxHeight: '90%' }).position({ left: '25%', right: '25%' });\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let frame = chrome("export const P = () => Text('a').frame({ width: '45%' });\n");
+    assert!(first_message(&frame).is_some_and(|m| m.contains("'45%'")), "{:?}", first_message(&frame));
+    let edge = chrome("export const P = () => Text('a').position({ top: '90%' });\n");
+    assert!(first_message(&edge).is_some_and(|m| m.contains("'90%'")), "{:?}", first_message(&edge));
+}
+
+#[test]
 fn a_screen_s_fill_and_its_own_top_are_checked_against_the_spec() {
     let fine = chrome(
-        "export const S = (atTop, toTop, black) => Text('a').screenBackground('background').screenBackground('primary/10').screenBackground(black).reselectTop(atTop, toTop);\n",
+        "export const S = (atTop, toTop, black) => Text('a').background('surfaceFill').screenBackground('background').screenBackground('primary/10').screenBackground(black).reselectTop(atTop, toTop);\n",
     );
     assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
     let fill = chrome("export const S = () => Text('a').screenBackground('#000000');\n");

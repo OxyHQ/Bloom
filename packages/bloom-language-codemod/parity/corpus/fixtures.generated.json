@@ -2125,6 +2125,31 @@
   "appColors": null
  },
  {
+  "name": "components/Geometry.tsx:37",
+  "before": "<View className=\"relative h-24\" style={{ maxHeight: '90%' }}>\n      <View style={{ width: '31%' }} />\n      <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />\n    </View>",
+  "after": "toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [
+   "relative",
+   "h-24"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Insets.tsx:11",
   "before": "<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>\n      <Text>Compose</Text>\n    </View>",
   "after": "toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))",
@@ -3036,6 +3061,59 @@
   "themed": false,
   "insets": false,
   "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/Surfaces.tsx:10",
+  "before": "<View className=\"flex-row gap-2 px-4\" style={{ backgroundColor: paritySurface }}>\n      <Text style={{ color: paritySurface }}>Posts</Text>\n    </View>",
+  "after": "toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Text: LText"
+  ],
+  "classes": [
+   "flex-row",
+   "gap-2",
+   "px-4"
+  ],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Surfaces.tsx:19",
+  "before": "<Card>\n      <Hole n=\"0\" />\n    </Card>",
+  "after": "toElement(LCard(Embed(<Hole n=\"0\" />)))",
+  "bindings": {
+   "Card": {
+    "module": "@oxy.so/bloom/card",
+    "imported": "Card"
+   }
+  },
+  "language": [
+   "HStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Card: LCard"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
   "appColors": null
  },
  {

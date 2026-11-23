@@ -285,6 +285,8 @@ export const LENGTH = {
   "1/5": "20%",
   "2/5": "40%",
   "3/5": "60%",
+  "90%": "90%",
+  "31%": "31%",
   "fit": "fit-content"
 } as const;
 export const Z_INDEX = {
@@ -1084,6 +1086,10 @@ export const COLORS = {
   "infoText": {
     "paint": "infoSubtleForeground",
     "web": "var(--info-text)"
+  },
+  "surfaceFill": {
+    "paint": "surfaceFill",
+    "web": null
   }
 } as const;
 
@@ -1347,6 +1353,9 @@ export const ENUMS = {
   ],
   "marginExtra": [
     "auto"
+  ],
+  "insetPercent": [
+    "25%"
   ],
   "liveRegion": [
     "polite",
@@ -2893,7 +2902,7 @@ export const OBJECTS = {
       "left",
       "right"
     ],
-    "tokens": "padding"
+    "tokens": "edgeDistance"
   },
   "offset": {
     "keys": [

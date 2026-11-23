@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
+import { useSurfaceFill } from '@oxy.so/bloom/styles';
 import {
   parseRgb,
   useTheme,
@@ -56,6 +57,26 @@ export interface PaintVariant {
 
 const IS_WEB = Platform.OS === 'web';
 const resolved = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>>>();
+
+const surfaced = new WeakMap<ThemeColors, Map<string, ThemeColors>>();
+/**
+ * The palette a leaf paints with: the theme's, and the fill of the surface it
+ * sits on as the `surfaceFill` role (Bloom's `useSurfaceFill()`), one palette
+ * per theme and fill, so what it paints is built once for each.
+ */
+function onSurface(colors: ThemeColors, fill: string): ThemeColors {
+  let byFill = surfaced.get(colors);
+  if (byFill === undefined) {
+    byFill = new Map();
+    surfaced.set(colors, byFill);
+  }
+  let palette = byFill.get(fill);
+  if (palette === undefined) {
+    palette = Object.freeze({ ...colors, [COLORS.surfaceFill.paint]: fill }) as ThemeColors;
+    byFill.set(fill, palette);
+  }
+  return palette;
+}
 
 /**
  * A view's geometry in a resolved style: one key per transform component
@@ -109,9 +130,24 @@ function atOpacity(color: string, opacity: number): string {
   return `var(${name})`;
 }
 
+/** A role's colour in a palette (the surface fill's included, `onSurface`). */
+export function paletteColor(colors: ThemeColors, role: ColorName): string {
+  return (colors as unknown as Record<string, string>)[COLORS[role].paint] as string;
+}
+
+/** The theme's paint palette, with the surface fill around the caller (`surfaceFill`). */
+export function usePalette(): ThemeColors {
+  return onSurface(useThemePaint(), useSurfaceFill());
+}
+
+/** The theme's RGB colours (an app's for colour math), with the surface fill around the caller. */
+export function useRgbPalette(): ThemeColors {
+  return onSurface(useTheme().colors, useSurfaceFill());
+}
+
 /** A prop painted from a role (an icon's `fill`), at its opacity: what an app hands Bloom. */
 function propColor(colors: ThemeColors, role: ColorName, opacity: number | undefined): string {
-  const color = colors[COLORS[role].paint];
+  const color = paletteColor(colors, role);
   return opacity === undefined ? color : atOpacity(color, opacity);
 }
 
@@ -126,7 +162,7 @@ function propColor(colors: ThemeColors, role: ColorName, opacity: number | undef
  */
 function styleColor(colors: ThemeColors, role: ColorName, opacity: number | undefined): string {
   const fixed = COLORS[role].web;
-  if (opacity === undefined || IS_WEB || !fixed.startsWith('#'))
+  if (opacity === undefined || IS_WEB || !fixed?.startsWith('#'))
     return propColor(colors, role, opacity);
   return `${fixed}${Math.round(Math.fround(opacity) * 255)
     .toString(16)
@@ -183,7 +219,7 @@ function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> |
         list.map((color) => {
           if (typeof color === 'string') return color;
           const [role, opacity] = color;
-          const rgb = colors[COLORS[role].paint];
+          const rgb = paletteColor(colors, role);
           return opacity === undefined ? rgb : withAlpha(rgb, opacity);
         }),
       );
@@ -200,7 +236,7 @@ function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> |
  */
 export function themeColor(colors: ThemeColors, value: RoleRef | string): string {
   if (typeof value === 'string') return value;
-  const rgb = colors[COLORS[value.role].paint];
+  const rgb = paletteColor(colors, value.role);
   return value.opacity === undefined ? rgb : withAlpha(rgb, value.opacity);
 }
 
@@ -218,8 +254,9 @@ interface PaintedProps {
  * through context, past every memoized view in between).
  */
 export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
-  const painted = paintProps(useThemePaint(), paint);
-  const lists = listProps(useTheme().colors, paint);
+  const fill = useSurfaceFill();
+  const painted = paintProps(onSurface(useThemePaint(), fill), paint);
+  const lists = listProps(onSurface(useTheme().colors, fill), paint);
   // A moving host's motion style (`Outer`) comes after the painted one.
   if (props.style !== undefined && painted.style !== undefined) {
     return createElement(host, {
@@ -319,7 +356,8 @@ function conditionedProps(
  * it only across a breakpoint, a press only the leaves of the pressed view.
  */
 export function Conditioned({ host, paint, ...props }: PaintedProps): ReactElement {
-  const colors = useThemePaint();
+  const fill = useSurfaceFill();
+  const colors = onSurface(useThemePaint(), fill);
   const theme = useTheme();
   const tier = useWindowBreakpoint();
   const state = useContext(InteractionContext);
@@ -328,7 +366,7 @@ export function Conditioned({ host, paint, ...props }: PaintedProps): ReactEleme
     if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
   });
   const picked = conditionedProps(colors, paint, holding);
-  const lists = listProps(theme.colors, paint);
+  const lists = listProps(onSurface(theme.colors, fill), paint);
   // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
   if (props.style !== undefined && picked.style !== undefined) {
     return createElement(host, {

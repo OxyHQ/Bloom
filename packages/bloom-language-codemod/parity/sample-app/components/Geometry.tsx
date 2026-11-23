@@ -31,3 +31,12 @@ export function PresenceDot({ size }: { size: keyof typeof DOT }) {
   const side = DOT[size];
   return <View style={{ width: side, height: side, borderRadius: side / 2 }} />;
 }
+
+export function SheetColumns() {
+  return (
+    <View className="relative h-24" style={{ maxHeight: '90%' }}>
+      <View style={{ width: '31%' }} />
+      <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />
+    </View>
+  );
+}

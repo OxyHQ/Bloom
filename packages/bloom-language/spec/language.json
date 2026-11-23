@@ -251,7 +251,7 @@
       "strong": 0.72
     },
     "length": {
-      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction; fit is its content's width (w-fit: fit-content), up to what the parent has.",
+      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction; fit is its content's width (w-fit: fit-content), up to what the parent has. '90%' and '31%' are the percentages apps write that no fraction holds, named by their value.",
       "full": "100%",
       "1/2": "50%",
       "1/3": "33.333333%",
@@ -261,6 +261,8 @@
       "1/5": "20%",
       "2/5": "40%",
       "3/5": "60%",
+      "90%": "90%",
+      "31%": "31%",
       "fit": "fit-content"
     },
     "zIndex": {
@@ -405,7 +407,7 @@
     "caption-2-bold": [11, 15, 0.2, "700"]
   },
   "colors": {
-    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black, transparent) gives the colour itself for the web.",
+    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black, transparent) gives the colour itself for the web. surfaceFill is the fill of the surface the view sits on (Bloom's useSurfaceFill(): the fill a container published, or its level's): no theme colour or CSS variable holds it, so the leaf that paints a view reads it, on the web too (null).",
     "foreground": ["text", "foreground"],
     "muted": ["textSecondary", "muted-foreground"],
     "textTertiary": ["textTertiary", "muted-foreground"],
@@ -436,7 +438,8 @@
     "onSurface": ["surfaceForeground", "surface-foreground"],
     "accent": ["accent", "accent"],
     "errorText": ["errorSubtleForeground", "error-text"],
-    "infoText": ["infoSubtleForeground", "info-text"]
+    "infoText": ["infoSubtleForeground", "info-text"],
+    "surfaceFill": ["surfaceFill", null]
   },
   "enums": {
     "pressOpenTab": ["report", "reselect"],
@@ -556,6 +559,7 @@
     "cornerExtra": ["concentric", "infinite"],
     "zIndexExtra": ["auto"],
     "marginExtra": ["auto"],
+    "insetPercent": ["25%"],
     "liveRegion": ["polite", "assertive", "none"],
     "accessibilityChecked": ["mixed"],
     "borderStyle": ["solid", "dashed", "dotted"],
@@ -1168,7 +1172,7 @@
     },
     "edges": {
       "keys": ["top", "bottom", "leading", "trailing", "left", "right"],
-      "tokens": "padding"
+      "tokens": "edgeDistance"
     },
     "offset": { "keys": ["x", "y"], "tokens": "padding" },
     "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" },

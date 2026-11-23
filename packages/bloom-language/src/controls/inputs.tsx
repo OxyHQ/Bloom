@@ -40,10 +40,10 @@ import {
   TextFieldSuffix,
 } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
-import { useThemePaint } from '@oxy.so/bloom/theme';
 
 import type { Binding } from '../binding';
-import { COLORS, type ENUMS } from '../generated/spec.generated';
+import type { ENUMS } from '../generated/spec.generated';
+import { paletteColor, usePalette } from '../paint';
 import {
   type ButtonView,
   type Child,
@@ -638,13 +638,13 @@ function PaintedRadioGroup({
   options,
   ...props
 }: Record<string, unknown> & { options: readonly RadioOptionOf[] }): ReactElement {
-  const colors = useThemePaint();
+  const colors = usePalette();
   return createElement(BloomRadioGroup, {
     ...props,
     options: options.map(({ tint, foreground, ...option }) => ({
       ...option,
-      color: tint === undefined ? undefined : colors[COLORS[tint].paint],
-      foreground: foreground === undefined ? undefined : colors[COLORS[foreground].paint],
+      color: tint === undefined ? undefined : paletteColor(colors, tint),
+      foreground: foreground === undefined ? undefined : paletteColor(colors, foreground),
     })),
   });
 }

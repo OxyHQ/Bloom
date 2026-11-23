@@ -12,11 +12,20 @@ import * as recast from 'recast';
 
 import { LANGUAGE_PACKAGE, type Mod } from './table';
 
-const scales = (
-  JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
-    scales: Record<string, Record<string, unknown>>;
-  }
-).scales;
+const { scales, enums } = JSON.parse(
+  readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8'),
+) as {
+  scales: Record<string, Record<string, unknown>>;
+  enums: Record<string, readonly string[]>;
+};
+/** A frame's length relative to its parent by its percentage (`'50%'` is `'1/2'`, `'90%'` itself). */
+const LENGTH_BY_PERCENT = new Map(
+  Object.entries(scales.length as Record<string, unknown>)
+    .filter(([name, value]) => name !== '$comment' && typeof value === 'string')
+    .map(([name, value]) => [value as string, name]),
+);
+/** The percentages a pinned view's edge takes (`top: '25%'`). */
+const INSET_PERCENT = new Set(enums.insetPercent);
 
 /** A scale's tokens by value, a named rung over a numeric token of the same value. */
 function byValue(scale: Record<string, unknown>): ReadonlyMap<number, string> {
@@ -404,6 +413,22 @@ function halfSquareSide(object: AnyNode, value: AnyNode): AnyNode | undefined {
     : undefined;
 }
 
+/**
+ * A percentage of the parent the language names: a frame's length token of
+ * that percentage (`maxHeight: '90%'` is `.frame({ maxHeight: '90%' })`,
+ * `width: '50%'` `.frame({ width: '1/2' })`), a pinned view's edge
+ * (`left: '25%'` is `.position({ left: '25%' })`).
+ */
+function percentDeclaration(key: string, value: AnyNode): Mod | undefined {
+  if (!n.StringLiteral.check(value)) return undefined;
+  const length = LENGTH_BY_PERCENT.get(value.value);
+  if (FRAME_KEYS.has(key) && length !== undefined)
+    return { name: 'frame', args: [{ [key]: length }] };
+  if (PINNED_EDGES.has(key) && INSET_PERCENT.has(value.value))
+    return { name: 'position', args: [{ [key]: value.value }] };
+  return undefined;
+}
+
 export interface StyleReaders {
   /** Declarations the caller reads as modifiers (a theme colour as its role). */
   readonly read?: StyleRead;
@@ -486,6 +511,11 @@ export function styleUtilities(
       }
     }
     const found = utility(key, value);
+    const percent = found ? undefined : percentDeclaration(key, value);
+    if (percent) {
+      mods.push({ subject: key, mod: percent });
+      continue;
+    }
     if (!found)
       return {
         ok: false,

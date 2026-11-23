@@ -30,6 +30,7 @@ import {
   rampStep,
   resolveFont,
   resolveLength,
+  resolveEdge,
   resolveSpace,
   type Alignment,
   type Axis,
@@ -112,6 +113,8 @@ export function role(token: ColorToken): RoleRef {
  */
 export function webInk(ref: RoleRef): string {
   const web = COLORS[ref.role].web;
+  // The surface fill has no web value: its leaf paints it (`serialize`).
+  if (web === null) throw new Error('bloom-language: the surface fill is painted by its leaf');
   if (ref.opacity === undefined) return web;
   const name = `--bl-${ref.token.replace('/', '-')}`;
   adoptInk(
@@ -229,8 +232,23 @@ function split(resolved: Resolved): {
   return { style: Object.freeze(values), styleRoles: roles };
 }
 
+/** Whether a style or its variants paint with the surface fill, which no class or CSS variable holds. */
+function namesSurface(resolved: Resolved, variants: VariantStyles): boolean {
+  const surface = (style: Resolved) =>
+    Object.values(style).some(
+      (value) => isRole(value as StyleValue) && (value as RoleRef).role === 'surfaceFill',
+    );
+  return surface(resolved) || variants.some(([, styled]) => surface(styled));
+}
+
 function serialize(resolved: Resolved, target: Target, variants: VariantStyles): StyleOut {
   const keys = Object.keys(resolved);
+  // The surface fill is the surface around the view (Bloom's `useSurfaceFill()`): on the web
+  // too its leaf paints it, as native's are, its live variants picked there (tracked in JS).
+  if (IS_WEB && target !== 'material' && namesSurface(resolved, variants))
+    return variants.length === 0
+      ? paintOut(resolved, variants)
+      : { ...paintOut(resolved, variants), object: true, anchor: true };
   if (IS_WEB && target === 'component') {
     // A Bloom component reads its style as an object, which CSS cannot vary:
     // its live variants are picked by a `Conditioned` leaf, as native's are,
@@ -318,9 +336,10 @@ function classOf(key: string, value: StyleValue): string | undefined {
   if (value.opacity === undefined) return WEB_CLASS[`${key}:@${value.token}`];
   // A role at an opacity: the role's class, painting its ink (web-sheet.ts).
   const base = WEB_CLASS[`${key}:@${value.role}`];
-  return base === undefined
+  const web = COLORS[value.role].web;
+  return base === undefined || web === null
     ? undefined
-    : inkClass(base, value.token, COLORS[value.role].web, webInk(value));
+    : inkClass(base, value.token, web, webInk(value));
 }
 
 const hasClass = (key: string, styled: Resolved): boolean =>
@@ -1040,7 +1059,7 @@ export function placeStyle(place: Placement): Resolved {
     style.position = 'absolute';
     for (const edge of Object.keys(POSITION_EDGE) as (keyof PositionEdges)[]) {
       const token = place.position[edge];
-      if (token !== undefined) style[POSITION_EDGE[edge]] = resolveSpace(token);
+      if (token !== undefined) style[POSITION_EDGE[edge]] = resolveEdge(token);
     }
   }
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);

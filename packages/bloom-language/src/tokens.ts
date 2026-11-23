@@ -525,8 +525,8 @@ export type PaddingToken = SpaceName | NegativeSpaceName | AppToken<'space'>;
 export type Points = number;
 /** A frame's length: a token, or points computed at render. */
 export type FrameLength = LengthToken | Points;
-/** A pinned view's distance from an edge: a token, or points computed at render. */
-export type EdgeDistance = PaddingToken | Points;
+/** A pinned view's distance from an edge: a token, a percentage of its parent (`'25%'`), or points computed at render. */
+export type EdgeDistance = PaddingToken | (typeof ENUMS.insetPercent)[number] | Points;
 /** A view's stacking order: a level of Bloom's, or one computed at render (a facepile's `count - index`). */
 export type ZIndexValue = ZIndexName | Points;
 /** A margin: a padding's tokens, or `auto`, the free space on that side (Tailwind's `ml-auto`). */
@@ -545,11 +545,19 @@ export function tokenKey(token: string | AppToken | Points): string {
 }
 
 /** A space token's points; points computed at render (a frame's, an edge's) are themselves. */
-export function resolveSpace(token: EdgeDistance): number {
+export function resolveSpace(token: PaddingToken | Points): number {
   if (typeof token === 'number') return token;
   if (typeof token !== 'string') return token.value;
   if (token.startsWith('-')) return -SPACE[token.slice(1) as SpaceName];
   return SPACE[token as SpaceName];
+}
+
+const INSET_PERCENT: ReadonlySet<string> = new Set(ENUMS.insetPercent);
+/** A pinned view's edge: a percentage of its parent as it is, anything else a space. */
+export function resolveEdge(token: EdgeDistance): number | string {
+  return typeof token === 'string' && INSET_PERCENT.has(token)
+    ? token
+    : resolveSpace(token as PaddingToken | Points);
 }
 
 /** A frame length: a relative length is its percentage; anything else a space. */

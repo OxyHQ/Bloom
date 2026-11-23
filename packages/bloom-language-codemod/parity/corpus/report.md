@@ -1,14 +1,15 @@
 # Bloom language codemod: parity/sample-app
 
-- Files: 10 read, 10 changed
-- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 172
-- Converted: 172 (100.0%), in 63 regions
+- Files: 11 read, 11 changed
+- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 179
+- Converted: 178 (99.4%), in 66 regions
 - Classes the app's theme draws differently from Bloom's: 0
 
 ## Why elements stayed JSX
 
 | Reason | Elements | Most frequent |
 | --- | ---: | --- |
+| style | 1 | `backgroundColor` 1 |
 
 ## Bloom components left as JSX
 
@@ -25,3 +26,4 @@ Not mapped by the codemod yet (each needs its prop rules and parity first):
 
 ## Each element
 
+- components/Surfaces.tsx:20 `<View>`: `backgroundColor` (style: a style `backgroundColor` whose value no Tailwind utility writes exactly)

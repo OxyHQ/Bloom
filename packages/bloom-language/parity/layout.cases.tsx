@@ -116,6 +116,29 @@ const placement: ParityCase[] = [
       </RN.View>
     ),
   },
+  {
+    name: 'the percentages no fraction holds: 31% wide, 90% high at most',
+    language: () => toElement(L.VStack(L.Text('a')).frame({ width: '31%', maxHeight: '90%' })),
+    bloom: () => (
+      <RN.View style={{ width: '31%', maxHeight: '90%' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'pinned a quarter of its parent in from each side',
+    language: () =>
+      toElement(
+        L.VStack(L.VStack(L.Text('a')).position({ bottom: 'none', left: '25%', right: '25%' })),
+      ),
+    bloom: () => (
+      <RN.View>
+        <RN.View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }}>
+          <Text>a</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
 ];
 
 const BOX = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as const;

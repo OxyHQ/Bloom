@@ -3,6 +3,7 @@ import * as RN from 'react-native';
 import * as L from '@oxy.so/bloom-language';
 import { toElement } from '@oxy.so/bloom-language';
 import { useColorTokens as useParityTokens, useTheme as useParityTheme } from '@oxy.so/bloom/theme';
+import { useSurfaceFill as useParitySurface } from '@oxy.so/bloom/styles';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { ScreenHost } from '../../../bloom-language/src/router/screen-host';
 import { SettingsSection as I0 } from '@oxy.so/bloom/settings-modal';
@@ -285,7 +286,7 @@ export const CASES = [
   },
   {
     name: "components/Components.tsx:309",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const RiHeart3Fill = I31; return (<View className="flex-row gap-2" accessibilityRole="header">
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const RiHeart3Fill = I31; return (<View className="flex-row gap-2" accessibilityRole="header">
       <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />
       <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />
       <RiStarLine fill={parityTheme.colors.error} />
@@ -343,7 +344,7 @@ export const CASES = [
   },
   {
     name: "components/Components.tsx:394",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const ScreenScrollView = I8; const RefreshControl = I39; return (<ScreenScrollView
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const ScreenScrollView = I8; const RefreshControl = I39; return (<ScreenScrollView
       refreshControl={
         <RefreshControl
           refreshing={true}
@@ -522,7 +523,7 @@ export const CASES = [
   },
   {
     name: "components/Components.tsx:638",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const View = I9; const Text = I52; return (<View
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const Text = I52; return (<View
       className="flex-row p-2"
       style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}
     >
@@ -610,6 +611,14 @@ export const CASES = [
     after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
   },
   {
+    name: "components/Geometry.tsx:37",
+    before: () => { const View = I9; return (<View className="relative h-24" style={{ maxHeight: '90%' }}>
+      <View style={{ width: '31%' }} />
+      <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />
+    </View>); },
+    after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))); },
+  },
+  {
     name: "components/Insets.tsx:11",
     before: () => { const View = I9; const Text = I52; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>
       <Text>Compose</Text>
@@ -646,7 +655,7 @@ export const CASES = [
   },
   {
     name: "components/Menus.tsx:42 (false)",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const Icon = I59; const RiMoreFill = I60; return (<Button
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Button = I13; const Icon = I59; const RiMoreFill = I60; return (<Button
       appearance="plain"
       tone="neutral"
       iconOnly
@@ -658,7 +667,7 @@ export const CASES = [
   },
   {
     name: "components/Menus.tsx:42",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const Icon = I59; const RiMoreFill = I60; return (<Button
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Button = I13; const Icon = I59; const RiMoreFill = I60; return (<Button
       appearance="plain"
       tone="neutral"
       iconOnly
@@ -670,7 +679,7 @@ export const CASES = [
   },
   {
     name: "components/Menus.tsx:57",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const View = I9; const withAlpha = I62; return (<View
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const withAlpha = I62; return (<View
       style={{
         paddingHorizontal: 12,
         paddingVertical: 8,
@@ -681,7 +690,7 @@ export const CASES = [
   },
   {
     name: "components/ReelRoute.tsx:8 (false)",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Screen = I11; const Text = I52; return (<Screen
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I11; const Text = I52; return (<Screen
       reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
       style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}
     >
@@ -691,7 +700,7 @@ export const CASES = [
   },
   {
     name: "components/ReelRoute.tsx:8",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Screen = I11; const Text = I52; return (<Screen
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I11; const Text = I52; return (<Screen
       reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
       style={{ backgroundColor: true ? parityTheme.colors.background : '#000000' }}
     >
@@ -854,6 +863,20 @@ export const CASES = [
       </ScreenScrollView>
     </Screen>); },
     after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I52; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
+  },
+  {
+    name: "components/Surfaces.tsx:10",
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const Text = I52; return (<View className="flex-row gap-2 px-4" style={{ backgroundColor: paritySurface }}>
+      <Text style={{ color: paritySurface }}>Posts</Text>
+    </View>); } return (<Before />); },
+    after: () => { const View = I9; const Text = I52; const { HStack, Text: LText } = L;  return (toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))); },
+  },
+  {
+    name: "components/Surfaces.tsx:19",
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Card = I5; return (<Card>
+      <Hole n="0" />
+    </Card>); } return (<Before />); },
+    after: () => { const Card = I5; const { HStack, Text: LText, toElement, Embed, Card: LCard } = L;  return (toElement(LCard(Embed(<Hole n="0" />)))); },
   },
   {
     name: "components/ThreadRoute.tsx:12",

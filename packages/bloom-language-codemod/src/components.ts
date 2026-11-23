@@ -551,6 +551,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       required: p('required', 'flag'),
       disabled: p('disabled', 'flag'),
       multiple: p('multiple', 'flag'),
+      // Bloom's Field draws its `style` on its outer view, the node's box (`{ flex: 1 }` is `.grow()`).
+      style: p('box', 'style'),
       testID: p('testID', 'string'),
     },
   },

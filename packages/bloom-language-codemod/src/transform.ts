@@ -172,18 +172,20 @@ function hitSlopCalls(value: AnyNode): Arg[][] | undefined {
   return calls;
 }
 
+/** The roles the theme's palette paints (the surface fill is the surface's: `useSurfaceFill()`). */
+const PALETTE = Object.entries(spec.colors).filter(
+  (entry): entry is [string, [string, string]] => Array.isArray(entry[1]) && entry[1][1] !== null,
+);
 /** A Bloom theme colour (`theme.colors.textSecondary`) as the role painted from it (`muted`). */
 const ROLE_OF_THEME_COLOR = new Map<string, string>();
-for (const [role, entry] of Object.entries(spec.colors))
-  if (Array.isArray(entry) && !ROLE_OF_THEME_COLOR.has(entry[0]))
-    ROLE_OF_THEME_COLOR.set(entry[0], role);
+for (const [role, entry] of PALETTE)
+  if (!ROLE_OF_THEME_COLOR.has(entry[0])) ROLE_OF_THEME_COLOR.set(entry[0], role);
 /** Each canonical colour token, as `useColorTokens()` names it (`mutedForeground`), as the role painted from it. */
 const ROLE_OF_COLOR_TOKEN = new Map<string, string>();
-for (const [role, entry] of Object.entries(spec.colors))
-  if (Array.isArray(entry)) {
-    const token = entry[1].replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
-    if (!ROLE_OF_COLOR_TOKEN.has(token)) ROLE_OF_COLOR_TOKEN.set(token, role);
-  }
+for (const [role, entry] of PALETTE) {
+  const token = entry[1].replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+  if (!ROLE_OF_COLOR_TOKEN.has(token)) ROLE_OF_COLOR_TOKEN.set(token, role);
+}
 const ICON_SIZES = Object.entries(spec.scales.iconSize);
 /** A glyph size in points (`28`) as the icon size token of its value (`'xl'`), a named rung over a numeric one. */
 const ICON_SIZE_TOKEN = new Map<number, string>();
@@ -946,6 +948,33 @@ export function transformSource(source: string, options: TransformOptions): File
       { name: 'padding', args: [side, beyond] },
     ];
   };
+  /**
+   * Each read of a `const` holding Bloom's `useSurfaceFill()`: the fill of the
+   * surface around the component, the language's `surfaceFill` role.
+   */
+  const surfaceReads = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitIdentifier(path) {
+      const bindings = renderReads.has(path.node)
+        ? scopeOf(path, path.node.name)?.getBindings()[path.node.name]
+        : undefined;
+      let at = bindings?.length === 1 ? bindings[0] : undefined;
+      while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+      const init = at?.node.init;
+      const callee = n.CallExpression.check(init) ? init.callee : undefined;
+      const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+      if (
+        at?.parent?.node.kind === 'const' &&
+        n.Identifier.check(at.node.id) &&
+        at.node.id !== path.node &&
+        source?.module === '@oxy.so/bloom/styles' &&
+        source.imported === 'useSurfaceFill' &&
+        init.arguments.length === 0
+      )
+        surfaceReads.add(path.node);
+      this.traverse(path);
+    },
+  });
   /** Each `{name}` in a JSX attribute where `name` is a `const`: its initialiser (a Button's ink held in a variable). */
   const constInits = new Map<AnyNode, AnyNode>();
   recast.visit(ast, {
@@ -1377,6 +1406,15 @@ export function transformSource(source: string, options: TransformOptions): File
       this.traverse(path);
     },
   });
+
+  /** Whether a Bloom component's element is around `node` in the file. */
+  function insideBloomComponent(node: AnyNode): boolean {
+    for (let at = enclosing.get(node); at; at = enclosing.get(at)) {
+      const local = jsxName(at);
+      if (local && sources.get(local)?.module.startsWith('@oxy.so/bloom/')) return true;
+    }
+    return false;
+  }
 
   /** The first element around `node` (in the file) drawn by one of `components` (`module#export`). */
   function insideOf(node: AnyNode, components: readonly string[]): string | undefined {
@@ -1966,6 +2004,13 @@ export function transformSource(source: string, options: TransformOptions): File
         const read: StyleRead = (key, read) => {
           const inset = insetPadding(key, read);
           if (inset) return inset;
+          // The surface fill, read where the component is: the same surface the view sits on unless
+          // a Bloom component between them (a Card, a Surface) publishes one of its own.
+          if (surfaceReads.has(read) && !insideBloomComponent(node)) {
+            if (key === 'backgroundColor') return { name: 'background', args: ['surfaceFill'] };
+            if (key === 'color' && (kind === 'bloomText' || kind === 'rnText'))
+              return { name: 'foreground', args: ['surfaceFill'] };
+          }
           if (kind === 'bloomText' || kind === 'rnText') {
             const text = textDeclaration(key, read);
             if (text) return text;
@@ -4401,6 +4446,12 @@ export function transformSource(source: string, options: TransformOptions): File
             ? `parityTokens.${read.property.name}`
             : `parityTheme.colors.${read.property.name}`,
         });
+      }
+    // The surface fill is the before side's own read of it, where it is drawn.
+    for (const read of surfaceReads)
+      if (read.start >= node.start && read.end <= node.end) {
+        themed = true;
+        spans.push({ start: read.start, end: read.end, text: 'paritySurface' });
       }
     // A `const` holding the ink is its initialiser on the before side, its conditions the holes and its colours the theme's.
     for (const read of roleConstReads) {

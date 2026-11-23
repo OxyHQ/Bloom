@@ -810,6 +810,52 @@ export function Scoped() {
       'screen:style',
     ]);
   });
+  it('paints the surface fill read with useSurfaceFill() as its role, outside a Bloom component', () => {
+    const result = run(`import { Card } from '@oxy.so/bloom/card';
+import { useSurfaceFill } from '@oxy.so/bloom/styles';
+import { View } from 'react-native';
+export function A() {
+  const surfaceFill = useSurfaceFill();
+  return (
+    <View>
+      <View style={{ backgroundColor: surfaceFill }} />
+      <Card>
+        <View style={{ backgroundColor: surfaceFill }} />
+      </Card>
+    </View>
+  );
+}
+`);
+    expect(flat(result.code)).toContain("VStack().background('surfaceFill')");
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['backgroundColor']);
+    expect(result.fixtures[0]?.before).toContain('style={{ backgroundColor: paritySurface }}');
+    expect(result.fixtures[0]?.themed).toBe(true);
+  });
+  it('names a percentage of the parent by its length or edge token', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = () => (
+  <View style={{ maxHeight: '90%', width: '50%' }}>
+    <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />
+    <View style={{ width: '45%' }} />
+  </View>
+);
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".frame({ maxHeight: '90%', width: '1/2' })");
+    expect(code).toContain(".position({ bottom: 'none', left: '25%', right: '25%' })");
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['width']);
+  });
+  it('grows a Field by React Native’s flex: 1, which .grow() writes itself', () => {
+    const result = run(`import { Field } from '@oxy.so/bloom/field';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = () => (
+  <Field label="Date" style={{ flex: 1 }}>
+    <Text>a</Text>
+  </Field>
+);
+`);
+    expect(flat(result.code)).toContain("LField('Date', LText('a')).grow()");
+  });
   it('rounds a radius of half a square’s side as full', () => {
     const result = run(`import { View } from 'react-native';
 export function A({ size, w }) {
