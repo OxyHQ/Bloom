@@ -2,8 +2,10 @@
 import * as RN from 'react-native';
 import * as L from '@oxy.so/bloom-language';
 import { toElement } from '@oxy.so/bloom-language';
-import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';
+import { useColorTokens as useParityTokens, useTheme as useParityTheme } from '@oxy.so/bloom/theme';
 import { useTheme as useParityTheme22 } from 'bloom-22/theme';
+import { useSurfaceFill as useParitySurface } from '@oxy.so/bloom/styles';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { ScreenHost } from '../../../bloom-language/src/router/screen-host';
 import { SettingsSection as I0 } from '@oxy.so/bloom/settings-modal';
 import { GroupedSection as I1 } from '@oxy.so/bloom/grouped-section';
@@ -66,14 +68,29 @@ import { Text as I57 } from 'bloom-22/typography';
 import { Text as I58 } from '@oxy.so/bloom/typography';
 import { Dialog as I59 } from 'bloom-22/dialog';
 import { Dialog as I60 } from '@oxy.so/bloom/dialog';
-import { RiHeart3Line as I61 } from 'bloom-22/icons/RiHeart3Line';
-import { Switch as I62 } from 'bloom-22/switch';
-import { RiArrowRightLine as I63 } from 'bloom-22/icons/RiArrowRightLine';
-import { RiArrowRightLine as I64 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I65 } from '../support/app-text';
-import { PageHeader as I66 } from 'bloom-22/page-header';
+import { DropdownMenu as I61 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuTrigger as I62 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuContent as I63 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuItem as I64 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuSeparator as I65 } from '@oxy.so/bloom/dropdown-menu';
+import { Icon as I66 } from '@oxy.so/bloom-language';
+import { RiMoreFill as I67 } from '@oxy.so/bloom/icons/RiMoreFill';
+import { RiShareLine as I68 } from '@oxy.so/bloom/icons/RiShareLine';
+import { withAlpha as I69 } from '@oxy.so/bloom/theme';
+import { RiHeart3Line as I70 } from 'bloom-22/icons/RiHeart3Line';
+import { Switch as I71 } from 'bloom-22/switch';
+import { RiArrowRightLine as I72 } from 'bloom-22/icons/RiArrowRightLine';
+import { RiArrowRightLine as I73 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I74 } from 'react-native-css/components/Text';
+import { PageHeader as I75 } from 'bloom-22/page-header';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
+const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });
+const T2 = L.defineTokens({ color: {"hex000000":"#000000"} });
+const T3 = L.defineTokens({ color: {"hex000":"#000"} });
+
+/** The insets of a phone with a notch and a home bar. */
+const PARITY_INSETS = { top: 47, bottom: 34, left: 0, right: 0 };
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -296,7 +313,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:309",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const View = I9; const RiHeart3Line = I33; const RiMailLine = I39; const RiStarLine = I30; const RiHeart3Fill = I35; return (<View className="flex-row gap-2" accessibilityRole="header">
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const RiHeart3Line = I33; const RiMailLine = I39; const RiStarLine = I30; const RiHeart3Fill = I35; return (<View className="flex-row gap-2" accessibilityRole="header">
       <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />
       <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />
       <RiStarLine fill={parityTheme.colors.error} />
@@ -360,11 +377,11 @@ export const CASES = [
   {
     name: "components/Components.tsx:394",
     bloom22: false,
-    before: () => { function Before() { const parityTheme = useParityTheme(); const ScreenScrollView = I8; const RefreshControl = I43; return (<ScreenScrollView
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const ScreenScrollView = I8; const RefreshControl = I43; return (<ScreenScrollView
       refreshControl={
         <RefreshControl
           refreshing={true}
-          onRefresh={(() => {})}
+          onRefresh={() => {}}
           tintColor={parityTheme.colors.primary}
           colors={[parityTheme.colors.primary]}
         />
@@ -374,7 +391,7 @@ export const CASES = [
     >
       {<Hole n="0" />}
     </ScreenScrollView>); } return (<I11>{<Before />}</I11>); },
-    after: () => { const ScreenScrollView = I8; const RefreshControl = I43; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
+    after: () => { const ScreenScrollView = I8; const RefreshControl = I43; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
   },
   {
     name: "components/Components.tsx:421",
@@ -552,7 +569,7 @@ export const CASES = [
   {
     name: "components/Components.tsx:638",
     bloom22: true,
-    before: () => { function Before() { const parityTheme = useParityTheme22(); const View = I9; const Text = I57; return (<View
+    before: () => { function Before() { const parityTheme = useParityTheme22(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const Text = I57; return (<View
       className="flex-row p-2"
       style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}
     >
@@ -562,6 +579,19 @@ export const CASES = [
       </Text>
     </View>); } return (<Before />); },
     after: () => { const View = I9; const Text = I58; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList, ChatSearchField: LChatSearchField } = L;  return (toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())); },
+  },
+  {
+    name: "components/Corners.tsx:6",
+    bloom22: false,
+    before: () => { const View = I9; return (<View
+      style={{
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        borderBottomEndRadius: 4,
+        padding: 8,
+      }}
+    />); },
+    after: () => { const View = I9; const { VStack } = L;  return (toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))); },
   },
   {
     name: "components/Dialogs.tsx:8",
@@ -607,9 +637,151 @@ export const CASES = [
     after: () => { const View = I9; const Text = I58; const Dialog = I60; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
   },
   {
+    name: "components/Geometry.tsx:10",
+    bloom22: false,
+    before: () => { const View = I9; return (<View className="flex-row flex-wrap">
+      <View style={{ width: 37, height: 37 }} />
+      <View className="w-12" style={{ height: 43 }} />
+      <View style={{ maxWidth: 49, minHeight: 55 }} />
+    </View>); },
+    after: () => { const View = I9; const { HStack, VStack } = L;  return (toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())); },
+  },
+  {
+    name: "components/Geometry.tsx:21",
+    bloom22: false,
+    before: () => { const View = I9; return (<View className="relative h-24">
+      <View
+        className="absolute right-4 p-1"
+        style={{ top: 43, zIndex: 37 }}
+      />
+    </View>); },
+    after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))); },
+  },
+  {
+    name: "components/Geometry.tsx:32",
+    bloom22: false,
+    before: () => { const View = I9; return (<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />); },
+    after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
+  },
+  {
+    name: "components/Geometry.tsx:37",
+    bloom22: false,
+    before: () => { const View = I9; return (<View className="relative h-24" style={{ maxHeight: '90%' }}>
+      <View style={{ width: '31%' }} />
+      <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />
+    </View>); },
+    after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))); },
+  },
+  {
+    name: "components/Insets.tsx:11",
+    bloom22: false,
+    before: () => { const View = I9; const Text = I58; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>
+      <Text>Compose</Text>
+    </View>}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I9; const Text = I58; const { VStack, Text: LText } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))}</SafeAreaInsetsContext.Provider>); },
+  },
+  {
+    name: "components/Insets.tsx:20",
+    bloom22: false,
+    before: () => { const View = I9; const Text = I58; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>
+      <Text>Welcome</Text>
+    </View>}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I9; const Text = I58; const { VStack, Text: LText, toElement } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))}</SafeAreaInsetsContext.Provider>); },
+  },
+  {
+    name: "components/Menus.tsx:17",
+    bloom22: false,
+    before: () => { const DropdownMenu = I61; const DropdownMenuTrigger = I62; const Button = I17; const DropdownMenuContent = I63; const DropdownMenuItem = I64; const DropdownMenuSeparator = I65; const Icon = I66; const RiMoreFill = I67; const RiShareLine = I68; return (<DropdownMenu>
+      <DropdownMenuTrigger asChild label="More">
+        <Button iconOnly appearance="plain" leadingIcon={RiMoreFill} accessibilityLabel="More" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent label="More">
+        <DropdownMenuItem
+          leading={toElement(Icon(RiShareLine).size('sm').foreground('primary'))}
+          onPress={() => {}}
+        >
+          Share
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onPress={() => {}}>
+          Block
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>); },
+    after: () => { const DropdownMenu = I61; const DropdownMenuTrigger = I62; const Button = I17; const DropdownMenuContent = I63; const DropdownMenuItem = I64; const DropdownMenuSeparator = I65; const Icon = I66; const RiMoreFill = I67; const RiShareLine = I68; const { Button: LButton, Item, Divider, Menu } = L;  return (toElement(Menu(LButton(Icon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))); },
+  },
+  {
+    name: "components/Menus.tsx:42 (false)",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Button = I17; const Icon = I66; const RiMoreFill = I67; return (<Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
+      leadingIcon={RiMoreFill}
+      color={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}
+      hoverColor={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}
+    />); } return (<Before />); },
+    after: () => { const Button = I17; const Icon = I66; const RiMoreFill = I67; const { Button: LButton, Item, Divider, Menu } = L;  return (toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(false ? 'error' : false ? 'primary' : undefined).hoverForeground(false ? 'error' : false ? 'primary' : undefined))); },
+  },
+  {
+    name: "components/Menus.tsx:42",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Button = I17; const Icon = I66; const RiMoreFill = I67; return (<Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
+      leadingIcon={RiMoreFill}
+      color={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}
+      hoverColor={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}
+    />); } return (<Before />); },
+    after: () => { const Button = I17; const Icon = I66; const RiMoreFill = I67; const { Button: LButton, Item, Divider, Menu } = L;  return (toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(true ? 'error' : true ? 'primary' : undefined).hoverForeground(true ? 'error' : true ? 'primary' : undefined))); },
+  },
+  {
+    name: "components/Menus.tsx:57",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const withAlpha = I69; return (<View
+      style={{
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        backgroundColor: withAlpha(parityTheme.colors.primary, 0.1),
+      }}
+    />); } return (<Before />); },
+    after: () => { const View = I9; const withAlpha = I69; const { Button: LButton, Item, Divider, Menu, VStack } = L;  return (toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))); },
+  },
+  {
+    name: "components/ReelRoute.tsx:8 (false)",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I11; const Text = I58; return (<Screen
+      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
+      style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}
+    >
+      <Text>Reel</Text>
+    </Screen>); } return (<Before />); },
+    after: () => { const Screen = I11; const Text = I58; const { defineTokens, Text: LText } = L; const appColors = T1; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)} />); },
+  },
+  {
+    name: "components/ReelRoute.tsx:8",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Screen = I11; const Text = I58; return (<Screen
+      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
+      style={{ backgroundColor: true ? parityTheme.colors.background : '#000000' }}
+    >
+      <Text>Reel</Text>
+    </Screen>); } return (<Before />); },
+    after: () => { const Screen = I11; const Text = I58; const { defineTokens, Text: LText } = L; const appColors = T2; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(true ? 'background' : appColors.color.hex000000)} />); },
+  },
+  {
+    name: "components/ReelRoute.tsx:18",
+    bloom22: false,
+    before: () => { const Screen = I11; const Text = I58; return (<Screen scroll="none" style={{ backgroundColor: '#000' }}>
+      <Text>Camera</Text>
+    </Screen>); },
+    after: () => { const Screen = I11; const Text = I58; const { defineTokens, Text: LText } = L; const appColors = T3; return (<ScreenHost root={LText('Camera').header(false).screenScroll('none').screenBackground(appColors.color.hex000)} />); },
+  },
+  {
     name: "components/Rows.tsx:19",
     bloom22: true,
-    before: () => { const Pressable = I53; const RiHeart3Line = I61; const View = I9; const Text = I57; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
+    before: () => { const Pressable = I53; const RiHeart3Line = I70; const View = I9; const Text = I57; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
       <View className="gap-1">
         <Text variant="body-semibold" numberOfLines={1}>
@@ -623,7 +795,7 @@ export const CASES = [
   {
     name: "components/Rows.tsx:41",
     bloom22: true,
-    before: () => { const View = I9; const Text = I57; const Switch = I62; const Button = I14; const RiArrowRightLine = I63; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I9; const Text = I57; const Switch = I71; const Button = I14; const RiArrowRightLine = I72; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -631,7 +803,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I9; const Text = I58; const Switch = I3; const Button = I17; const RiArrowRightLine = I64; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I9; const Text = I58; const Switch = I3; const Button = I17; const RiArrowRightLine = I73; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
@@ -664,11 +836,11 @@ export const CASES = [
   {
     name: "components/Rows.tsx:68",
     bloom22: false,
-    before: () => { const View = I9; const NativeText = I65; const Text = I58; return (<View className="flex-1 mt-2">
+    before: () => { const View = I9; const NativeText = I74; const Text = I58; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I9; const NativeText = I65; const Text = I58; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I9; const NativeText = I74; const Text = I58; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
   {
     name: "components/Rows.tsx:85 (false)",
@@ -750,7 +922,7 @@ export const CASES = [
   {
     name: "components/SettingsRoute.tsx:13",
     bloom22: true,
-    before: () => { const Screen = I15; const PageHeader = I66; const Text = I57; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
+    before: () => { const Screen = I15; const PageHeader = I75; const Text = I57; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <Text className="text-sm text-muted-foreground">{'⟨0⟩'}</Text>
       </Screen>); },
     after: () => { const Screen = I11; const PageHeader = I42; const Text = I58; const { Text: LText, Header } = L;  return (<ScreenHost root={LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())} />); },
@@ -772,9 +944,25 @@ export const CASES = [
     after: () => { const Screen = I11; const ScreenScrollView = I8; const Text = I58; const { Text: LText, Header, toElement, ScrollView, Embed } = L;  return (<ScreenHost root={ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n="1" />)).screenScroll('content')} />); },
   },
   {
+    name: "components/Surfaces.tsx:10",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const Text = I58; return (<View className="flex-row gap-2 px-4" style={{ backgroundColor: paritySurface }}>
+      <Text style={{ color: paritySurface }}>Posts</Text>
+    </View>); } return (<Before />); },
+    after: () => { const View = I9; const Text = I58; const { HStack, Text: LText } = L;  return (toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))); },
+  },
+  {
+    name: "components/Surfaces.tsx:19",
+    bloom22: false,
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const Card = I5; return (<Card>
+      <Hole n="0" />
+    </Card>); } return (<Before />); },
+    after: () => { const Card = I5; const { HStack, Text: LText, toElement, Embed, Card: LCard } = L;  return (toElement(LCard(Embed(<Hole n="0" />)))); },
+  },
+  {
     name: "components/ThreadRoute.tsx:12",
     bloom22: true,
-    before: () => { const Screen = I15; const PageHeader = I66; const Text = I57; const View = I9; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
+    before: () => { const Screen = I15; const PageHeader = I75; const Text = I57; const View = I9; return (<Screen header={<PageHeader title={'⟨1⟩'} />}>
         <>
           <Text className="text-sm">{'⟨0⟩'}</Text>
           <View className="p-4" />

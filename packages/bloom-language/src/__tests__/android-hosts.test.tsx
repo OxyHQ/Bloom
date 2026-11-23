@@ -217,6 +217,21 @@ describe('the menu is the lens menu', () => {
     expect(only(r, 'Pressable').props.accessibilityLabel).toBe('Post options');
   });
 
+  it('a row that sizes and inks its own glyph draws it so in the lens menu', () => {
+    const r = mount(
+      toElement(
+        Menu(
+          Icon(Glyph),
+          Item('Copy').icon(Glyph).iconSize('22').iconForeground('primary'),
+          Item('Delete').icon(Glyph).iconForeground('muted').destructive(),
+        ),
+      ),
+    );
+    const glyphs = hosts(r, 'Glyph').slice(-2);
+    expect(glyphs.map((glyph) => glyph.props.fill)).toEqual([LIGHT.primary, LIGHT.textSecondary]);
+    expect(glyphs.map((glyph) => glyph.props.width)).toEqual([22, 20]);
+  });
+
   it('a press opens it natively: one call to the engine, the same view', () => {
     const r = mount(toElement(node));
     const lens = only(r, 'BloomLensMenu');

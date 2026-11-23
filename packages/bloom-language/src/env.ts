@@ -87,7 +87,7 @@ function applyTrait(text: Partial<TextTraits>, modifier: EnvModifier): void {
       text.foreground = modifier.value;
       break;
     case 'font':
-      // A family (`mono`) sets the face and keeps the size; a size keeps the face.
+      // A family (`mono`, `display`) sets the face and keeps the size; a size keeps the face.
       if (isFontFamily(modifier.value)) text.family = modifier.value;
       else text.font = modifier.value;
       break;

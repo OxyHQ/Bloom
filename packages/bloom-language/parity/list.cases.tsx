@@ -315,6 +315,93 @@ const lists: ParityCase[] = [
 
 const virtual: ParityCase[] = [
   {
+    // What an app's contentContainerStyle wrote: its padding and gap.
+    name: 'a virtual list with content margins and a gap',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .itemKey(keyOf)
+          .contentMargins('horizontal', 'lg')
+          .contentMargins('bottom', '2xl')
+          .spacing('sm'),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }}
+      />
+    ),
+  },
+  {
+    // Mention's lists: a query's isRefetching and refetch.
+    name: 'a virtual list refreshed by its query',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .itemKey(keyOf)
+          .refreshable({ refreshing: true, onRefresh: press }),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        refreshing
+        onRefresh={press}
+      />
+    ),
+  },
+  {
+    // Mention's notifications: the content grows to the list only while it is empty.
+    name: 'a virtual list whose content grows while it is empty',
+    language: () =>
+      toElement(
+        L.VirtualList([] as string[], nameRow)
+          .itemKey(keyOf)
+          .contentGrows([].length === 0)
+          .emptyState(L.Text('Nothing yet')),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={[] as string[]}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        contentContainerStyle={{ flexGrow: 1 }}
+        ListEmptyComponent={<Text>Nothing yet</Text>}
+      />
+    ),
+  },
+  {
+    name: 'a virtual list whose content keeps its height',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .itemKey(keyOf)
+          .contentGrows(NAMES.length === 0),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+      />
+    ),
+  },
+  {
+    name: 'a virtual list with a numeric padding all round',
+    language: () => toElement(L.VirtualList(NAMES, nameRow).itemKey(keyOf).contentMargins('6')),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        contentContainerStyle={{ padding: 6 }}
+      />
+    ),
+  },
+  {
     name: 'a virtual list',
     language: () => toElement(L.VirtualList(NAMES, nameRow).itemKey(keyOf)),
     bloom: () => (

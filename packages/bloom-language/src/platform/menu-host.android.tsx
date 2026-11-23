@@ -21,6 +21,7 @@ import { useTheme } from '@oxy.so/bloom/theme';
 import { fontFamilyStyle } from '@oxy.so/bloom/typography';
 
 import { glassTriggerConfig } from './lens-glass';
+import { withSurface } from '../paint';
 import { useMenuChoice } from './menu-actions';
 import { DropdownMenuHost } from './menu-dropdown';
 import {
@@ -30,6 +31,7 @@ import {
   setApart,
   splitTriggerGlass,
   triggerCorner,
+  type MenuItemRow,
   type MenuRowData,
 } from './menu-rows';
 import type { MenuHostProps } from './host.types';
@@ -48,6 +50,7 @@ function LensMenuHost({
   trigger: given,
   rows,
   actions,
+  presented,
   testID,
   render,
   lens,
@@ -60,7 +63,9 @@ function LensMenuHost({
   const { trigger, glass } = splitTriggerGlass(given);
   const config = useMemo(() => lensMenuConfig(theme), [theme]);
   const triggerConfig = useSame(
-    glass ? glassTriggerConfig(glass, undefined, theme.colors) : undefined,
+    glass
+      ? glassTriggerConfig(glass, undefined, withSurface(theme.colors, surfaceFill))
+      : undefined,
   );
   const opener = (
     <LensMenuOpener
@@ -68,6 +73,7 @@ function LensMenuHost({
       nodes={rows}
       choose={choose}
       config={config}
+      presented={presented}
       testID={testID}
       render={render}
       lens={lens}
@@ -101,6 +107,7 @@ function LensMenuOpener({
   nodes,
   choose,
   config,
+  presented,
   testID,
   render,
   lens,
@@ -109,6 +116,7 @@ function LensMenuOpener({
   nodes: MenuHostProps['rows'];
   choose: ((tag: string) => void) | undefined;
   config: LensMenuConfig;
+  presented: MenuHostProps['presented'];
   testID: string | undefined;
   render: MenuHostProps['render'];
   lens: Lens;
@@ -117,12 +125,21 @@ function LensMenuOpener({
   const deferred = builtOnOpen(nodes);
   const [building, setBuilding] = useState(false);
   const rows = deferred && !building ? NO_ROWS : readMenuRows(nodes, choose);
+  /** Whether the engine's menu is open, as it last said. */
+  const shown = useRef(false);
   const menu =
     rows.length > 0
       ? {
           rows: toLensRows(rows, render),
           config,
           fontFamily: MENU_FONT_FAMILY,
+          // A presented menu tells its binding as it opens and closes.
+          onOpenChange: presented
+            ? (open: boolean) => {
+                shown.current = open;
+                if (open !== presented[0]) presented[1](open);
+              }
+            : undefined,
           onClosed: deferred ? () => setBuilding(false) : undefined,
         }
       : null;
@@ -140,6 +157,14 @@ function LensMenuOpener({
         setBuilding(true);
       }
     : () => handle?.open();
+  // A presented menu follows its binding: the app opens it, or closes it, as its trigger does.
+  const wanted = presented?.[0];
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a change of the binding's value moves the menu
+  useLayoutEffect(() => {
+    if (wanted === undefined || wanted === shown.current) return;
+    if (wanted) open();
+    else handle?.close();
+  }, [wanted]);
   return <View testID={testID}>{render(pressableTrigger(trigger, open))}</View>;
 }
 
@@ -162,11 +187,11 @@ function useSame<T>(value: T): T {
   return useMemo(() => value, [key]);
 }
 
-/** A row's glyph: Bloom's 20pt icon in the row's ink, or its negative one. */
-function lensGlyph(icon: IconComponent, destructive: boolean): Child {
+/** A row's glyph: Bloom's 20pt icon in the row's ink, or its negative one; the row's own size and ink over them. */
+function lensGlyph(icon: IconComponent, row: MenuItemRow): Child {
   return Icon(icon)
-    .size('md')
-    .foreground(destructive ? 'error' : 'foreground');
+    .size(row.iconSize ?? 'md')
+    .foreground(row.iconForeground ?? (row.destructive ? 'error' : 'foreground'));
 }
 
 /** The rows as the lens menu takes them: a section is a heading set apart by separators. */
@@ -199,7 +224,7 @@ export function toLensRows(
           id: row.id,
           title: row.title,
           subtitle: row.subtitle,
-          icon: row.icon ? render(lensGlyph(row.icon, row.destructive)) : undefined,
+          icon: row.icon ? render(lensGlyph(row.icon, row)) : undefined,
           checked: row.checked,
           destructive: row.destructive || undefined,
           disabled: row.disabled || undefined,

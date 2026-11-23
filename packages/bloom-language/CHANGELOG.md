@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- An `Action`'s hit slop is the universal `.hitSlop(edge?, token)` alone: `ActionOptions` no longer takes `hitSlop` (raw insets or a number).
+
+### Added
+
+- Presses and accessibility: `.pressFade(opacity?)` (React Native's `TouchableOpacity` as the press host), `.accessibilityState()`, `.accessibilityValue({ min, max, now, text })`, `.liveRegion()` and `.accessibilityHidden()`.
+- Layout: auto margins, `.horizontalSpacing()` and `.verticalSpacing()`, dashed and dotted borders (`.borderStyle()`), the off-scale sizes, borders, fades, corners (7, 15, 999 as `full`) and stacking levels apps write as numeric tokens, the 38 and 76 space tokens and the 96px line, an aspect ratio on any view, `.safeAreaPadding(edge?)`, a hit slop per side, `.clipped(false)`, `.contentGrows()` on a scroll and a `VirtualList`, a `VirtualList`'s `.contentMargins()` and `.spacing()`, percentages of the parent for a pinned edge, and the display face beside a numeric size (`.font('display')`).
+- Geometry computed at render: a frame's lengths, a pinned view's edges and a stacking order take points besides their tokens (`spec.points`); a number written out stays a token, and the compiler refuses a literal.
+- Screens: `.colorScope()`, `.keyboardAvoiding(flex?)`, `.provider()`, `.screenBackground()` and `.reselectTop()` on a screen's root.
+- Menus: Bloom's dropdown everywhere (`.menuStyle('dropdown')`), sections of choices drawn as radio rows (`Section(...).selection()`), a menu the app opens (`.presented()`), and a row's and a submenu's own glyph size and ink.
+- `surfaceFill`, a colour role: the fill of the surface a view sits on (Bloom's `useSurfaceFill()`), read only by the leaf that paints it.
+- Views as content: a header's title and subtitle, a button's content and the views beside its label; a button's inks and spinner; a field's lines; a tab's own box and label font; a Chip's colour chosen at render; the Button, Card, Chip and Field props apps write.
+- A pull to refresh as `{ refreshing, onRefresh }` (a query's `isRefetching` and `refetch`), with a tint per platform; `.ref()` and `.onLayout()` on the outermost box; `Dialog`'s `.onDismissed()`; hit testing chosen at render and a `Divider`'s own axis; a `Search`'s most characters.
+
+### Changed
+
+- `RawText` is React Native's own `Text`, writing only what its chain names: a text that names no family draws the platform face (Roboto on Android, San Francisco on iOS, the system stack on the web), not Bloom's base face.
+
 ## 1.0.0
 
 First release. Bloom's UI language: views as functions, modifiers chained in order (order means nesting), every value a Bloom token. It draws Bloom's own React Native and web components, with parity against hand-written Bloom on native and web, light and dark. See `docs/bloom-language.mdx` in the Bloom repository.

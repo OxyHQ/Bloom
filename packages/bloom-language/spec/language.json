@@ -29,11 +29,13 @@
       "28": 28,
       "30": 30,
       "36": 36,
+      "38": 38,
       "44": 44,
       "48": 48,
       "56": 56,
       "64": 64,
       "72": 72,
+      "76": 76,
       "80": 80,
       "96": 96,
       "120": 120,
@@ -78,8 +80,10 @@
       "3xl": 28,
       "full": 9999,
       "6": 6,
+      "7": 7,
       "10": 10,
       "14": 14,
+      "15": 15,
       "18": 18,
       "22": 22
     },
@@ -94,13 +98,18 @@
       "3xl": 26,
       "4xl": 32,
       "5xl": 40,
+      "9": 9,
       "11": 11,
+      "12.5": 12.5,
       "14": 14,
       "16": 16,
       "18": 18,
       "24": 24,
+      "28": 28,
       "30": 30,
-      "36": 36
+      "36": 36,
+      "42": 42,
+      "96": 96
     },
     "leading": {
       "tight": 1.15,
@@ -120,7 +129,8 @@
       "28px": 28,
       "32px": 32,
       "36px": 36,
-      "40px": 40
+      "40px": 40,
+      "96px": 96
     },
     "tracking": {
       "tight": -0.025,
@@ -189,22 +199,29 @@
       "70": 0.7,
       "75": 0.75,
       "80": 0.8,
+      "85": 0.85,
       "90": 0.9,
       "opaque": 1
     },
     "borderWidth": {
-      "$comment": "A line's width: a border, a ring, a shape's outline, a signature's stroke. Bloom's rungs, then exact widths named by their value: '3' (the 3px ring), '4' (border-4), '2.5' (Bloom's own signature stroke).",
+      "$comment": "A line's width: a border, a ring, a shape's outline, a signature's stroke. Bloom's rungs, then exact widths named by their value: '0.5' and '1.5' (the half-point and point-and-a-half borders apps write), '3' (the 3px ring), '4' (border-4), '2.5' (Bloom's own signature stroke). '0.5' is a fixed half point; 'hairline' is the platform's thinnest line.",
       "hairline": "hairline",
       "thin": 1,
       "thick": 2,
+      "0.5": 0.5,
+      "1.5": 1.5,
       "2.5": 2.5,
       "3": 3,
       "4": 4
     },
     "hitSlop": {
+      "$comment": "Bloom's hit slops (styles/tokens.ts), 'none' (an edge that reaches no further, as space's), and the exact slops Mention gives an edge, '4' and '5', each named by its value.",
+      "none": 0,
       "sm": 6,
       "md": 8,
-      "lg": 12
+      "lg": 12,
+      "4": 4,
+      "5": 5
     },
     "shrink": {
       "never": 0,
@@ -234,7 +251,7 @@
       "strong": 0.72
     },
     "length": {
-      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction; fit is its content's width (w-fit: fit-content), up to what the parent has.",
+      "$comment": "A frame's length relative to its parent (Tailwind's w-full, w-1/2…): the parent's width or height times the fraction; fit is its content's width (w-fit: fit-content), up to what the parent has. '90%' and '31%' are the percentages apps write that no fraction holds, named by their value.",
       "full": "100%",
       "1/2": "50%",
       "1/3": "33.333333%",
@@ -244,15 +261,23 @@
       "1/5": "20%",
       "2/5": "40%",
       "3/5": "60%",
+      "90%": "90%",
+      "31%": "31%",
       "fit": "fit-content"
     },
     "zIndex": {
-      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value.",
+      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value; then the levels Mention stacks its video chrome with (3 to 7), and '-1', under its siblings (apps' -z-[1] and zIndex: -1).",
       "base": 0,
       "raised": 1,
       "floating": 10,
       "dropdown": 40,
+      "-1": -1,
       "2": 2,
+      "3": 3,
+      "4": 4,
+      "5": 5,
+      "6": 6,
+      "7": 7,
       "20": 20,
       "30": 30,
       "50": 50,
@@ -382,7 +407,7 @@
     "caption-2-bold": [11, 15, 0.2, "700"]
   },
   "colors": {
-    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black, transparent) gives the colour itself for the web.",
+    "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black, transparent) gives the colour itself for the web. surfaceFill is the fill of the surface the view sits on (Bloom's useSurfaceFill(): the fill a container published, or its level's): no theme colour or CSS variable holds it, so the leaf that paints a view reads it, on the web too (null).",
     "foreground": ["text", "foreground"],
     "muted": ["textSecondary", "muted-foreground"],
     "textTertiary": ["textTertiary", "muted-foreground"],
@@ -413,9 +438,13 @@
     "onSurface": ["surfaceForeground", "surface-foreground"],
     "accent": ["accent", "accent"],
     "errorText": ["errorSubtleForeground", "error-text"],
-    "infoText": ["infoSubtleForeground", "info-text"]
+    "infoText": ["infoSubtleForeground", "info-text"],
+    "surfaceFill": ["surfaceFill", null]
   },
   "enums": {
+    "pressOpenTab": ["report", "reselect"],
+    "menuStyle": ["platform", "dropdown"],
+    "physicalEdge": ["all", "top", "bottom", "horizontal", "vertical", "left", "right"],
     "edge": [
       "all",
       "horizontal",
@@ -537,9 +566,14 @@
     "textCase": ["uppercase", "lowercase", "capitalize"],
     "wordBreak": ["all", "words"],
     "listMarker": ["disc", "decimal"],
-    "fontFamily": ["mono"],
+    "fontFamily": ["mono", "display"],
     "cornerExtra": ["concentric", "infinite"],
     "zIndexExtra": ["auto"],
+    "marginExtra": ["auto"],
+    "insetPercent": ["25%"],
+    "liveRegion": ["polite", "assertive", "none"],
+    "accessibilityChecked": ["mixed"],
+    "borderStyle": ["solid", "dashed", "dotted"],
     "cornerCurve": ["round", "smooth"],
     "cornerSide": [
       "all",
@@ -869,6 +903,7 @@
     "shellLayout": ["workspace", "collection-detail", "feed", "deck", "catalog", "map-browser"],
     "shellPresentation": ["continuous", "framed", "floating"],
     "panelRole": ["main", "collection", "detail", "inspector", "context", "canvas"],
+    "colorScopeMode": ["light", "dark"],
     "colorPreset": [
       "teal",
       "blue",
@@ -1127,28 +1162,50 @@
     "info": "info"
   },
   "layers": [
-    ["padding"],
-    ["frame"],
+    ["padding", "safeAreaPadding"],
+    ["frame", "aspectRatio"],
     ["overlay"],
     ["background", "glass", "blur"],
-    ["border", "ring"],
+    ["border", "borderStyle", "ring"],
     ["corner", "cornerCurve", "clipped"],
     ["opacity"],
     ["shadow"]
   ],
   "objects": {
-    "$comment": "The object parameters: the keys each takes, and the token set of every value.",
+    "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it); orToken: one token of the set on its own is the object too.",
+    "refresh": {
+      "keys": ["refreshing", "onRefresh"],
+      "tokens": "value"
+    },
+    "accessibilityValue": {
+      "keys": ["min", "max", "now", "text"],
+      "tokens": "value"
+    },
+    "accessibilityState": {
+      "keys": ["selected", "checked", "busy", "expanded", "disabled"],
+      "tokens": "accessibilityChecked"
+    },
     "frame": {
       "keys": ["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"],
       "tokens": "length"
     },
     "edges": {
       "keys": ["top", "bottom", "leading", "trailing", "left", "right"],
-      "tokens": "padding"
+      "tokens": "edgeDistance"
     },
     "offset": { "keys": ["x", "y"], "tokens": "padding" },
     "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" },
+    "refreshTint": {
+      "$comment": "A refresh control's tint by the platform that paints it: iOS's tintColor, Android's colors. One colour on its own paints both.",
+      "keys": ["ios", "android"],
+      "tokens": "color",
+      "orToken": true
+    },
     "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
+  },
+  "points": {
+    "$comment": "The parameters that take points besides their tokens: a number the view computes as it renders (a size from a prop, a column's width from its container, an inset), as SwiftUI's .frame, .position and .zIndex take any CGFloat and Double. Geometry only: a frame's lengths, a pinned view's edges, its stacking order. Spacing, type and colour stay tokens, and a number written out is a token ('44'), never a literal (the compiler rejects one).",
+    "params": ["frame", "edges", "zIndex"]
   },
   "variants": {
     "$comment": [
@@ -1171,6 +1228,8 @@
       "weight",
       "leading",
       "spacing",
+      "horizontalSpacing",
+      "verticalSpacing",
       "childSpacing",
       "align",
       "justify",
@@ -1207,6 +1266,8 @@
     "modifiers": [
       "padding",
       "spacing",
+      "horizontalSpacing",
+      "verticalSpacing",
       "align",
       "justify",
       "wrap",
@@ -1281,6 +1342,7 @@
   "modifiers": {
     "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token. colors: a list of colours, each a color token (a role, a role at an opacity) or an app colour.",
     "padding": ["edge?", "padding"],
+    "safeAreaPadding": ["physicalEdge?"],
     "frame": ["frame"],
     "grow": [],
     "shrink": ["shrink"],
@@ -1294,7 +1356,10 @@
     "hidden": ["value?"],
     "basis": ["length"],
     "flex": ["flex"],
-    "margin": ["edge?", "padding"],
+    "margin": ["edge?", "margin"],
+    "horizontalSpacing": ["space"],
+    "verticalSpacing": ["space"],
+    "borderStyle": ["borderStyle"],
     "childSpacing": ["axis", "space"],
     "scale": ["scale"],
     "allowsHitTesting": ["hitTesting"],
@@ -1352,8 +1417,21 @@
     "hoverGroup": [],
     "label": ["value"],
     "hint": ["value"],
+    "accessibilityState": ["accessibilityState"],
+    "accessibilityValue": ["accessibilityValue"],
+    "stopPropagation": ["value?"],
+    "loadingIndicator": ["value"],
+    "hoverForeground": ["color"],
+    "editable": ["value"],
+    "pressOpenTab": ["pressOpenTab"],
+    "menuStyle": ["menuStyle"],
+    "multiple": ["value?"],
+    "ref": ["value"],
+    "onLayout": ["value"],
+    "liveRegion": ["liveRegion"],
+    "accessibilityHidden": ["value?"],
     "role": ["role"],
-    "hitSlop": ["hitSlop"],
+    "hitSlop": ["physicalEdge?", "hitSlop"],
     "testID": ["value"],
     "id": ["value"],
     "disabled": ["value?"],
@@ -1428,11 +1506,12 @@
     "onPressItem": ["value"],
     "hoverCard": ["value?"],
     "pressScale": [],
+    "pressFade": ["opacity?"],
     "hoverHighlight": ["value?"],
     "radius": ["cardRadius"],
     "elevation": ["cardElevation"],
     "outline": ["cardBorder"],
-    "clipped": [],
+    "clipped": ["value?"],
     "leadingView": ["children"],
     "selected": ["value?"],
     "highlighted": ["value?"],
@@ -1551,6 +1630,7 @@
     "describedBy": ["value"],
     "sideGutter": ["space"],
     "maxHeightRatio": ["value"],
+    "onDismissed": ["value"],
     "screenKind": ["screenKind"],
     "screenScroll": ["screenScroll"],
     "documentScroll": ["value?"],
@@ -1560,7 +1640,8 @@
     "contentClearance": ["space"],
     "navigationScope": ["navigationScope"],
     "contentMargins": ["edge?", "space"],
-    "refreshable": ["value", "color?"],
+    "contentGrows": ["value?"],
+    "refreshable": ["refresh", "refreshTint?"],
     "onEndReached": ["value", "value?"],
     "scrollIndicators": ["scrollIndicators", "axis?"],
     "scrollDismissesKeyboard": ["keyboardDismiss"],
@@ -1608,8 +1689,13 @@
     "colorPreset": ["colorPreset"],
     "seed": ["value"],
     "screenActive": ["value?"],
+    "screenBackground": ["color"],
+    "reselectTop": ["value", "value"],
     "initialHeaderHeight": ["space"],
     "initialFooterHeight": ["space"],
+    "colorScope": ["colorScopeMode"],
+    "keyboardAvoiding": ["flex?"],
+    "provider": ["value"],
     "scrollbar": ["scrollbarVisibility"],
     "scrollbarSide": ["scrollbarSide"],
     "stickyHeader": ["value"],
@@ -1826,6 +1912,7 @@
     "interactive": ["value?"],
     "portrait": ["value?"],
     "iconSize": ["iconSize"],
+    "iconForeground": ["color"],
     "activeTint": ["color"],
     "bubbleTint": ["color"],
     "contentTint": ["color"],
@@ -1931,7 +2018,9 @@
   },
   "universal": [
     "padding",
+    "safeAreaPadding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -1948,6 +2037,7 @@
     "background",
     "overlay",
     "border",
+    "borderStyle",
     "ring",
     "corner",
     "cornerCurve",
@@ -1966,11 +2056,18 @@
     "onHover",
     "hoverGroup",
     "pressScale",
+    "pressFade",
     "label",
     "hint",
     "role",
+    "accessibilityState",
+    "accessibilityValue",
+    "liveRegion",
+    "accessibilityHidden",
     "hitSlop",
     "testID",
+    "ref",
+    "onLayout",
     "badge",
     "id",
     "title",
@@ -2014,8 +2111,13 @@
     "colorPreset",
     "seed",
     "screenActive",
+    "screenBackground",
+    "reselectTop",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "colorScope",
+    "keyboardAvoiding",
+    "provider",
     "fullScreenCover",
     "glassID",
     "glassUnion",
@@ -2035,6 +2137,8 @@
       "constructors": ["HStack", "VStack"],
       "modifiers": [
         "spacing",
+        "horizontalSpacing",
+        "verticalSpacing",
         "childSpacing",
         "align",
         "justify",
@@ -2161,7 +2265,11 @@
         "colors",
         "linkTone",
         "inverted",
-        "density"
+        "density",
+        "iconSize",
+        "stopPropagation",
+        "loadingIndicator",
+        "hoverForeground"
       ],
       "densities": ["default", "compact"],
       "size": "controlSize",
@@ -2188,13 +2296,15 @@
     },
     "menu": {
       "constructors": ["Menu"],
-      "modifiers": ["actions"]
+      "modifiers": ["actions", "menuStyle", "presented"]
     },
     "menuItem": {
       "constructors": ["Item"],
       "universal": false,
       "modifiers": [
         "icon",
+        "iconSize",
+        "iconForeground",
         "subtitle",
         "destructive",
         "disabled",
@@ -2209,16 +2319,16 @@
     "menuSubmenu": {
       "constructors": ["Submenu"],
       "universal": false,
-      "modifiers": ["icon", "disabled", "testID"]
+      "modifiers": ["icon", "iconSize", "iconForeground", "disabled", "testID"]
     },
     "menuSection": {
       "constructors": ["Section"],
       "universal": false,
-      "modifiers": ["title"]
+      "modifiers": ["title", "selection"]
     },
     "divider": {
       "constructors": ["Divider"],
-      "modifiers": ["lineStyle", "align", "spacing", "tint"],
+      "modifiers": ["lineStyle", "align", "spacing", "tint", "axis"],
       "tint": "colorRole",
       "params": { "align": ["dividerAlign"] }
     },
@@ -2258,6 +2368,7 @@
         "padding",
         "sideGutter",
         "maxHeightRatio",
+        "onDismissed",
         "presented"
       ],
       "params": { "padding": ["space"] }
@@ -2344,7 +2455,19 @@
     },
     "card": {
       "constructors": ["Card"],
-      "modifiers": ["style", "tint", "radius", "elevation", "outline", "clipped", "disabled"],
+      "modifiers": [
+        "style",
+        "tint",
+        "radius",
+        "elevation",
+        "outline",
+        "clipped",
+        "disabled",
+        "axis",
+        "spacing",
+        "align",
+        "justify"
+      ],
       "style": "appearance",
       "tint": "tone"
     },
@@ -2442,7 +2565,7 @@
     },
     "tabs": {
       "constructors": ["Tabs"],
-      "modifiers": ["style", "fullWidth", "onReorder", "dragTranslation"],
+      "modifiers": ["style", "fullWidth", "onReorder", "dragTranslation", "pressOpenTab"],
       "style": "tabsStyle"
     },
     "tabItem": {
@@ -2456,8 +2579,14 @@
         "iconOnly",
         "reorderable",
         "trailing",
-        "onLongPress"
-      ]
+        "onLongPress",
+        "frame",
+        "padding",
+        "font",
+        "leading",
+        "weight"
+      ],
+      "params": { "font": ["labelFont"] }
     },
     "kbd": {
       "constructors": ["Kbd"],
@@ -2520,8 +2649,13 @@
         "colorPreset",
         "seed",
         "screenActive",
+        "screenBackground",
+        "reselectTop",
         "initialHeaderHeight",
-        "initialFooterHeight"
+        "initialFooterHeight",
+        "colorScope",
+        "keyboardAvoiding",
+        "provider"
       ]
     },
     "view": {
@@ -2580,7 +2714,9 @@
         "maxLength",
         "trailingIcon",
         "completion",
-        "focused"
+        "focused",
+        "multiline",
+        "editable"
       ],
       "size": "controlSize"
     },
@@ -2608,7 +2744,7 @@
     },
     "field": {
       "constructors": ["Field"],
-      "modifiers": ["description", "error", "required", "disabled"]
+      "modifiers": ["description", "error", "required", "disabled", "multiple"]
     },
     "label": {
       "constructors": ["Label"],
@@ -2668,6 +2804,7 @@
         "onSubmit",
         "onClearText",
         "autoFocus",
+        "maxLength",
         "trigger",
         "trailing",
         "focused"
@@ -2728,6 +2865,7 @@
       "constructors": ["ScrollView"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "refreshable",
         "onEndReached",
@@ -2936,6 +3074,7 @@
       "constructors": ["ScrollArea"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "axis",
         "scrollbar",
@@ -2952,6 +3091,7 @@
       "constructors": ["ScrollSurface"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "axis",
         "scrollbar",
@@ -3251,6 +3391,9 @@
     "virtualList": {
       "constructors": ["VirtualList"],
       "modifiers": [
+        "contentMargins",
+        "contentGrows",
+        "spacing",
         "itemKey",
         "itemType",
         "estimatedItemSize",

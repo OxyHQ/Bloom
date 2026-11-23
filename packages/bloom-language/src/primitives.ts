@@ -312,8 +312,11 @@ export function BottomBar(
   return new Node('bottomBar', null, tabs as Child[]);
 }
 
-/** The page header, or the navigation bar (`.presentation('navigation')`), titled `title`. */
-export function Header(title?: string): HeaderView {
+/**
+ * The page header, or the navigation bar (`.presentation('navigation')`),
+ * titled `title`: a text, or a view drawn in the title's place as it is.
+ */
+export function Header(title?: string | ViewNode): HeaderView {
   return new Node('header', { title }, NO_CHILDREN);
 }
 

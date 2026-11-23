@@ -1034,8 +1034,8 @@
   "gap-x-4": {
    "count": 37,
    "apps": 9,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('lg')"
   },
   "px-1.5": {
    "count": 37,
@@ -1148,8 +1148,8 @@
   "border-dashed": {
    "count": 33,
    "apps": 11,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".borderStyle('dashed')"
   },
   "bottom-0": {
    "count": 33,
@@ -1280,8 +1280,8 @@
   "gap-y-1": {
    "count": 29,
    "apps": 8,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('xs')"
   },
   "max-w-[1200px]": {
    "count": 29,
@@ -1970,8 +1970,8 @@
   "border-[0.5px]": {
    "count": 14,
    "apps": 1,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".border(role, '0.5')"
   },
   "checkout-page__pending": {
    "count": 14,
@@ -2298,14 +2298,14 @@
   "gap-y-2": {
    "count": 11,
    "apps": 7,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('sm')"
   },
   "gap-y-5": {
    "count": 11,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('xl')"
   },
   "h-40": {
    "count": 11,
@@ -2370,8 +2370,8 @@
   "ml-auto": {
    "count": 11,
    "apps": 6,
-   "status": "structure",
-   "language": "Spacer() on the side the auto margin takes"
+   "status": "mapped",
+   "language": ".margin('left', 'auto')"
   },
   "pb-5": {
    "count": 11,
@@ -2852,8 +2852,8 @@
   "gap-x-3": {
    "count": 8,
    "apps": 3,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('md')"
   },
   "inset-y-0": {
    "count": 8,
@@ -2976,10 +2976,8 @@
   "rounded-[15px]": {
    "count": 8,
    "apps": 4,
-   "status": "token",
-   "scale": "corner",
-   "value": "15px",
-   "language": ".corner(…)"
+   "status": "mapped",
+   "language": ".corner('15')"
   },
   "row-start-1": {
    "count": 8,
@@ -3280,10 +3278,8 @@
   "text-[28px]": {
    "count": 7,
    "apps": 4,
-   "status": "token",
-   "scale": "font",
-   "value": "28px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('28')"
   },
   "text-background": {
    "count": 7,
@@ -3384,8 +3380,8 @@
   "border-[1.5px]": {
    "count": 6,
    "apps": 5,
-   "status": "app",
-   "language": "not a Bloom or Tailwind utility (an app’s own class)"
+   "status": "mapped",
+   "language": ".border(role, '1.5')"
   },
   "data-[disabled]:opacity-50": {
    "count": 6,
@@ -3852,8 +3848,8 @@
   "gap-y-3": {
    "count": 5,
    "apps": 4,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('md')"
   },
   "h-20": {
    "count": 5,
@@ -4064,10 +4060,8 @@
   "text-[12.5px]": {
    "count": 5,
    "apps": 2,
-   "status": "token",
-   "scale": "font",
-   "value": "12.5px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('12.5')"
   },
   "text-[20px]": {
    "count": 5,
@@ -4452,8 +4446,8 @@
   "mt-auto": {
    "count": 4,
    "apps": 4,
-   "status": "structure",
-   "language": "Spacer() on the side the auto margin takes"
+   "status": "mapped",
+   "language": ".margin('top', 'auto')"
   },
   "mx-2": {
    "count": 4,
@@ -4620,10 +4614,8 @@
   "text-[9px]": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "font",
-   "value": "9px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('9')"
   },
   "text-body-2-regular": {
    "count": 4,
@@ -5022,8 +5014,8 @@
   "gap-x-6": {
    "count": 3,
    "apps": 2,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('2xl')"
   },
   "grid-cols-6": {
    "count": 3,
@@ -5282,10 +5274,8 @@
   "min-h-[76px]": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "76px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '76' })"
   },
   "min-h-[88px]": {
    "count": 3,
@@ -5642,10 +5632,8 @@
   "text-white/85": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "white at 85%",
-   "language": ".foreground('white/…')"
+   "status": "mapped",
+   "language": ".foreground('white/85')"
   },
   "text-willo-on-blue": {
    "count": 3,
@@ -5900,10 +5888,8 @@
   "bg-background/85": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--background at 85%",
-   "language": ".background('background/…')"
+   "status": "mapped",
+   "language": ".background('background/85')"
   },
   "bg-bad/12": {
    "count": 2,
@@ -6332,20 +6318,20 @@
   "gap-x-2": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('sm')"
   },
   "gap-x-5": {
    "count": 2,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('xl')"
   },
   "gap-x-8": {
    "count": 2,
    "apps": 2,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('3xl')"
   },
   "group-focus-within/menu-item:opacity-100": {
    "count": 2,
@@ -6886,8 +6872,8 @@
   "overflow-visible": {
    "count": 2,
    "apps": 2,
-   "status": "structure",
-   "language": "a ScrollView (Embed) for scrolling"
+   "status": "mapped",
+   "language": ".clipped(false)"
   },
   "p-12": {
    "count": 2,
@@ -7350,10 +7336,8 @@
   "text-[42px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "font",
-   "value": "42px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('42')"
   },
   "text-balance": {
    "count": 2,
@@ -8843,7 +8827,7 @@
    "status": "token",
    "scale": "font",
    "value": "28px / 34px",
-   "language": ".font(…)"
+   "language": ".font('28') (line height 34px has no rung)"
   },
   "gap-16": {
    "count": 1,
@@ -8872,38 +8856,38 @@
   "gap-x-1": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('xs')"
   },
   "gap-x-24": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('96')"
   },
   "gap-x-space-8": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".horizontalSpacing('sm')"
   },
   "gap-y-1.5": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('6')"
   },
   "gap-y-12": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('48')"
   },
   "gap-y-space-4": {
    "count": 1,
    "apps": 1,
-   "status": "modifier",
-   "language": "one spacing per axis (gap-x, gap-y)"
+   "status": "mapped",
+   "language": ".verticalSpacing('xs')"
   },
   "gemies": {
    "count": 1,
@@ -9556,8 +9540,8 @@
   "m-auto": {
    "count": 1,
    "apps": 1,
-   "status": "structure",
-   "language": "Spacer() on the side the auto margin takes"
+   "status": "mapped",
+   "language": ".margin('all', 'auto')"
   },
   "m-space-8": {
    "count": 1,
@@ -10258,8 +10242,8 @@
   "ms-auto": {
    "count": 1,
    "apps": 1,
-   "status": "structure",
-   "language": "Spacer() on the side the auto margin takes"
+   "status": "mapped",
+   "language": ".margin('leading', 'auto')"
   },
   "ms-space-8": {
    "count": 1,
@@ -10568,10 +10552,8 @@
   "pb-[38px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "38px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', '38')"
   },
   "pb-[60px]": {
    "count": 1,
@@ -11048,10 +11030,8 @@
   "rounded-[7px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "corner",
-   "value": "7px",
-   "language": ".corner(…)"
+   "status": "mapped",
+   "language": ".corner('7')"
   },
   "rounded-b-[28px]": {
    "count": 1,
@@ -11623,7 +11603,7 @@
    "status": "token",
    "scale": "font",
    "value": "28px / 34px",
-   "language": ".font(…)"
+   "language": ".font('28') (line height 34px has no rung)"
   },
   "text-neutral-600": {
    "count": 1,
@@ -12120,10 +12100,8 @@
   "z-[3]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "3",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('3')"
   },
   "z-[80]": {
    "count": 1,

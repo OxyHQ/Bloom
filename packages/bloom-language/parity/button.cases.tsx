@@ -1,7 +1,11 @@
+import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
-import { RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
+import { Fab } from '@oxy.so/bloom/fab';
+import { Loading } from '@oxy.so/bloom/loading';
+import { RiAddLine, RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
 
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
+import { identity } from '../src/glass';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { type ParityCase, Themed } from './support/cases';
@@ -70,6 +74,122 @@ const content: ParityCase[] = [
             icon={<RiHeart3Line width={20} height={20} fill={c.error} />}
             accessibilityLabel="Like"
           />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    // Mention's post menu: a 28pt glyph on a large icon button.
+    name: 'a glyph of its own size',
+    language: () =>
+      toElement(
+        L.Button(L.Icon(RiMoreFill))
+          .style('plain')
+          .size('lg')
+          .shape('circle')
+          .iconSize('xl')
+          .label('More'),
+      ),
+    bloom: () => (
+      <Button
+        appearance="plain"
+        size="lg"
+        leadingIcon={RiMoreFill}
+        iconOnly
+        iconSize={28}
+        accessibilityLabel="More"
+      />
+    ),
+  },
+  {
+    name: 'a press that goes no further',
+    language: () => toElement(L.Button(L.Text('Accept')).stopPropagation().onPress(onPress)),
+    bloom: () => (
+      <Button stopPropagation onPress={onPress}>
+        Accept
+      </Button>
+    ),
+  },
+  {
+    name: 'a trigger that says it is open',
+    language: () =>
+      toElement(
+        L.Button(L.Icon(RiMoreFill))
+          .shape('circle')
+          .label('Menu')
+          .accessibilityState({ expanded: true }),
+      ),
+    bloom: () => (
+      <Button leadingIcon={RiMoreFill} iconOnly accessibilityLabel="Menu" aria-expanded />
+    ),
+  },
+  {
+    // Mention's composer toolbar: an ink of a role at rest and under the pointer, no spinner.
+    name: 'an ink of its own at rest and under the pointer, and no spinner while loading',
+    language: () =>
+      toElement(
+        L.Button(L.Icon(RiMoreFill))
+          .style('plain')
+          .shape('circle')
+          .label('More')
+          .foreground('error')
+          .hoverForeground('error')
+          .loading(true)
+          .loadingIndicator(null),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Button
+            appearance="plain"
+            leadingIcon={RiMoreFill}
+            iconOnly
+            accessibilityLabel="More"
+            color={c.error}
+            hoverColor={c.error}
+            loading
+            loadingIndicator={null}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a view before its label',
+    language: () => toElement(L.Button(L.Badge(1), L.Text('Ask'))),
+    bloom: () => <Button leading={<Badge content={1} />}>Ask</Button>,
+  },
+  // Content that is a view is the button's children as drawn (Mention's privacy rows).
+  {
+    name: 'a spinner as its content',
+    language: () =>
+      toElement(
+        L.Button(L.Loading().style('inline').size('sm'))
+          .size('sm')
+          .style('subtle')
+          .tint('neutral')
+          .label('Ana'),
+      ),
+    bloom: () => (
+      <Button size="sm" appearance="subtle" tone="neutral" accessibilityLabel="Ana">
+        <Loading variant="inline" size="sm" />
+      </Button>
+    ),
+  },
+  {
+    name: 'a glyph as its content, in a group',
+    language: () =>
+      toElement(
+        L.Button(L.Group(L.Icon(RiHeart3Line).size('22').foreground('primary')))
+          .size('sm')
+          .label('Add'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Button size="sm" accessibilityLabel="Add">
+            <RiHeart3Line width={22} height={22} fill={c.primary} />
+          </Button>
         )}
       </Themed>
     ),
@@ -235,7 +355,60 @@ const leftovers: ParityCase[] = [
   },
 ];
 
+/** A button's box as an app's `style` writes it: Bloom's `style` is the button's outer box. */
+const boxed: ParityCase[] = [
+  {
+    name: 'a style placing the button: self alignment and a margin',
+    language: () =>
+      toElement(L.Button(L.Text('Follow')).alignSelf('start').margin('top', 'sm').onPress(onPress)),
+    bloom: () => (
+      <Button style={{ alignSelf: 'flex-start', marginTop: 8 }} onPress={onPress}>
+        Follow
+      </Button>
+    ),
+  },
+  {
+    name: 'a style sizing the button: full width and a height',
+    language: () =>
+      toElement(L.Button(L.Text('Sign in')).frame({ width: 'full', height: '48' }).corner('full')),
+    // `full` is 9999, which rounds a button as an app's 999 does.
+    bloom: () => <Button style={{ width: '100%', height: 48, borderRadius: 9999 }}>Sign in</Button>,
+  },
+];
+
+/**
+ * `FAB`: Bloom's `Fab`, its glyph an `Icon` child and its extended label a
+ * `Text` one; with no glass (`identity`), Bloom's own solid FAB, as an app's
+ * `<Fab>` draws it.
+ */
+const fabs: ParityCase[] = [
+  {
+    // Mention's feeds and saved pages: the page's own action.
+    name: 'a FAB with its glyph and name',
+    language: () =>
+      toElement(
+        L.FAB(L.Icon(RiAddLine)).size('md').label('Create feed').onPress(onPress).glass(identity),
+      ),
+    bloom: () => (
+      <Fab size="md" icon={RiAddLine} accessibilityLabel="Create feed" onPress={onPress} />
+    ),
+  },
+  {
+    name: 'an extended FAB, collapsed',
+    language: () =>
+      toElement(
+        L.FAB(L.Icon(RiAddLine), L.Text('Compose'))
+          .collapsed(true)
+          .onPress(onPress)
+          .glass(identity),
+      ),
+    bloom: () => <Fab icon={RiAddLine} label="Compose" collapsed onPress={onPress} />,
+  },
+];
+
 export const BUTTON_CASES: ParityCase[] = [
+  ...fabs,
+  ...boxed,
   ...matrix,
   ...sizes,
   ...content,

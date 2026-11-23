@@ -37,8 +37,14 @@ import {
   type Resolved,
   resolveClassName,
 } from './resolve';
-import { type StyleRead, styleUtilities } from './style';
-import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
+import {
+  ABSOLUTE_FILL,
+  type SpreadStyle,
+  type StyleRead,
+  styleUtilities,
+  textDeclaration,
+} from './style';
+import { type Arg, isPoints, LANGUAGE_PACKAGE, type Mod, modKey, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
@@ -46,22 +52,146 @@ type AnyNode = any;
 const n = recast.types.namedTypes;
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
-  scales: { iconSize: Record<string, number> };
+  scales: {
+    iconSize: Record<string, number>;
+    opacity: Record<string, number>;
+    hitSlop: Record<string, number>;
+    space: Record<string, number>;
+    corner: Record<string, number>;
+    fontSize: Record<string, number>;
+    weight: Record<string, string>;
+  };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
-  enums: { role: readonly string[]; appColorName: readonly string[] };
+  enums: Readonly<Record<string, readonly string[]>> & {
+    role: readonly string[];
+    fontFamily: readonly string[];
+    appColorName: readonly string[];
+    liveRegion: readonly string[];
+  };
   contentView: { modifiers: readonly string[] };
+  nodes: Record<
+    string,
+    { constructors?: readonly string[]; modifiers?: readonly string[]; universal?: false } | string
+  >;
+  universal: readonly string[];
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
+/** A React Native `fontWeight` as the spec's weight of that value (`'700'` is `bold`). */
+const WEIGHT_BY_VALUE: Readonly<Record<string, string>> = {
+  ...Object.fromEntries(Object.entries(spec.scales.weight).map(([name, value]) => [value, name])),
+  bold: 'bold',
+  normal: 'regular',
+};
 /** What a scroll view's content view takes: the layout of one view. */
 const CONTENT_VIEW = new Set(spec.contentView.modifiers);
+/** The modifiers each constructor's node takes: its own, and the universal ones unless it opts out. */
+const NODE_MODIFIERS = new Map<string, ReadonlySet<string>>();
+for (const node of Object.values(spec.nodes)) {
+  if (typeof node === 'string') continue;
+  const taken = new Set([
+    ...(node.modifiers ?? []),
+    ...(node.universal === false ? [] : spec.universal),
+  ]);
+  for (const constructor of node.constructors ?? []) NODE_MODIFIERS.set(constructor, taken);
+}
+/** React Native's `accessibilityLiveRegion` values, each the language's `.liveRegion()` of its name. */
+const LIVE_REGIONS = new Set(spec.enums.liveRegion);
+/** An opacity (`0.7`) as the opacity token of its value (`'70'`): a `TouchableOpacity`'s `activeOpacity`. */
+const OPACITY_TOKEN = new Map(
+  Object.entries(spec.scales.opacity)
+    .filter(([name]) => name !== '$comment')
+    .map(([name, value]) => [value, name]),
+);
+/** A hit slop in points (`8`) as the hit slop token of its value (`'md'`); a name of Bloom's (`tokens.hitSlop.md`) as itself. */
+const HIT_SLOP = Object.fromEntries(
+  Object.entries(spec.scales.hitSlop).filter(([name]) => name !== '$comment'),
+) as Record<string, number>;
+const HIT_SLOP_TOKEN = new Map(Object.entries(HIT_SLOP).map(([name, value]) => [value, name]));
+
+/** One side's slop: a static number, or Bloom's `tokens.hitSlop.<name>`, as its token. */
+function hitSlopToken(value: AnyNode): string | undefined {
+  const number = staticNumber(value);
+  if (number !== undefined) return HIT_SLOP_TOKEN.get(number);
+  const expression = n.JSXExpressionContainer.check(value) ? value.expression : value;
+  if (
+    n.MemberExpression.check(expression) &&
+    !expression.computed &&
+    n.Identifier.check(expression.property) &&
+    n.MemberExpression.check(expression.object) &&
+    n.Identifier.check(expression.object.property) &&
+    expression.object.property.name === 'hitSlop' &&
+    expression.property.name in HIT_SLOP
+  )
+    return expression.property.name;
+  return undefined;
+}
+
+/**
+ * React Native's `hitSlop` as `.hitSlop()` calls: one slop is one call; an
+ * object of static sides is a call per pair of equal opposite sides (or per
+ * side), only the sides it names. Undefined when any side is no token.
+ */
+function hitSlopCalls(value: AnyNode): Arg[][] | undefined {
+  const one = hitSlopToken(value);
+  if (one !== undefined) return [[one]];
+  const object = n.JSXExpressionContainer.check(value) ? value.expression : value;
+  if (!n.ObjectExpression.check(object)) return undefined;
+  const sides: Record<string, string> = {};
+  for (const property of object.properties) {
+    if (
+      !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+      property.computed ||
+      !n.Identifier.check(property.key) ||
+      !['top', 'bottom', 'left', 'right'].includes(property.key.name)
+    )
+      return undefined;
+    const token = hitSlopToken(property.value);
+    if (token === undefined) return undefined;
+    sides[property.key.name] = token;
+  }
+  const { top, bottom, left, right } = sides;
+  if (top !== undefined && top === bottom && bottom === left && left === right) return [[top]];
+  const calls: Arg[][] = [];
+  const pair = (
+    edge: string,
+    a: string | undefined,
+    b: string | undefined,
+    sideA: string,
+    sideB: string,
+  ) => {
+    if (a !== undefined && a === b) calls.push([edge, a]);
+    else {
+      if (a !== undefined) calls.push([sideA, a]);
+      if (b !== undefined) calls.push([sideB, b]);
+    }
+  };
+  pair('vertical', top, bottom, 'top', 'bottom');
+  pair('horizontal', left, right, 'left', 'right');
+  return calls;
+}
+
+/** The roles the theme's palette paints (the surface fill is the surface's: `useSurfaceFill()`). */
+const PALETTE = Object.entries(spec.colors).filter(
+  (entry): entry is [string, [string, string]] => Array.isArray(entry[1]) && entry[1][1] !== null,
+);
 /** A Bloom theme colour (`theme.colors.textSecondary`) as the role painted from it (`muted`). */
 const ROLE_OF_THEME_COLOR = new Map<string, string>();
-for (const [role, entry] of Object.entries(spec.colors))
-  if (Array.isArray(entry) && !ROLE_OF_THEME_COLOR.has(entry[0]))
-    ROLE_OF_THEME_COLOR.set(entry[0], role);
+for (const [role, entry] of PALETTE)
+  if (!ROLE_OF_THEME_COLOR.has(entry[0])) ROLE_OF_THEME_COLOR.set(entry[0], role);
+/** Each canonical colour token, as `useColorTokens()` names it (`mutedForeground`), as the role painted from it. */
+const ROLE_OF_COLOR_TOKEN = new Map<string, string>();
+for (const [role, entry] of PALETTE) {
+  const token = entry[1].replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+  if (!ROLE_OF_COLOR_TOKEN.has(token)) ROLE_OF_COLOR_TOKEN.set(token, role);
+}
 const ICON_SIZES = Object.entries(spec.scales.iconSize);
+/** A glyph size in points (`28`) as the icon size token of its value (`'xl'`), a named rung over a numeric one. */
+const ICON_SIZE_TOKEN = new Map<number, string>();
+for (const [name, size] of ICON_SIZES)
+  if (typeof size === 'number' && (!/^\d/.test(name) || !ICON_SIZE_TOKEN.has(size)))
+    ICON_SIZE_TOKEN.set(size, name);
 const RAMP = new Set(Object.keys(spec.typeRamp).filter((k) => !k.startsWith('$')));
 
 /** A content container's padding key as the edge of its content margin. */
@@ -110,7 +240,11 @@ interface Carried {
     | 'key'
     | 'items'
     /** A list's named row function, called with the argument Bloom hands it (`renderPost(info)`). */
-    | 'renderer';
+    | 'renderer'
+    /** An `accessibilityState` or `accessibilityValue` object. */
+    | 'state'
+    /** A number of points the view computes as it renders (a frame's `itemSize`). */
+    | 'points';
   /** For a key: its attribute, which a fixture's root leaves out (a key is no part of what draws). */
   readonly attribute?: AnyNode;
 }
@@ -200,6 +334,13 @@ interface AppColor {
   readonly read?: AnyNode;
 }
 
+/** A style chosen by a condition: the utilities each branch adds. */
+interface StyleChoice {
+  readonly test: AnyNode;
+  readonly whenTrue: readonly string[];
+  readonly whenFalse: readonly string[];
+}
+
 /** React Native's `pointerEvents` as the language's hit testing (`auto` is the default, left as JSX). */
 const HIT_TESTING: Record<string, boolean | string> = {
   none: false,
@@ -248,7 +389,20 @@ type Tagged =
   /** A list's row as a named function, embedded as it is called: `(info) => Embed(renderPost(info))`. */
   | { readonly $: 'renderer'; readonly fn: Carried }
   | { readonly $: 'absent' }
-  | { readonly $: 'null' };
+  | { readonly $: 'null' }
+  /** A component by its name, as the file imports it (an app's provider around a screen). */
+  | { readonly $: 'component'; readonly name: string }
+  /** An app colour, a token of the file's colour table (`appColors.color.hex000`). */
+  | { readonly $: 'appColor'; readonly color: AppColor }
+  /** A value the language exports, by its name (`identity`, no glass), imported as the views are. */
+  | { readonly $: 'language'; readonly name: string }
+  /** One of two values by a condition, as the app chose (`invalid ? 'error' : undefined`). */
+  | {
+      readonly $: 'choose';
+      readonly test: Carried;
+      readonly then: Value;
+      readonly otherwise: Value;
+    };
 
 const isCarried = (value: Value): value is Carried =>
   typeof value === 'object' && 'hole' in value && 'node' in value;
@@ -300,6 +454,8 @@ export interface Fixture {
   readonly within: readonly string[];
   /** The before side reads Bloom's theme (`parityTheme`, its `useTheme()`): a fill the chain names by role. */
   readonly themed: boolean;
+  /** The before side pads by the device's insets: both sides are drawn under the corpus's (`PARITY_INSETS`). */
+  readonly insets: boolean;
   /** The after side is a route's body root, drawn by the language's `ScreenHost` as `screen()` draws it. */
   readonly screen: boolean;
   /** The app colours the chain paints with: the table's local name and each token's colour. */
@@ -333,6 +489,10 @@ export interface TransformOptions {
 }
 
 const LANGUAGE_MODULE = '@oxy.so/bloom-language';
+/** Bloom's floating action button. */
+const FAB_MODULE = '@oxy.so/bloom/fab';
+/** Bloom's dropdown menu and its parts. */
+const DROPDOWN = '@oxy.so/bloom/dropdown-menu';
 const SCREEN_KEY = '@oxy.so/bloom/screen#Screen';
 
 /**
@@ -350,6 +510,8 @@ function kindOf(source: Source | undefined): Kind | undefined {
   if (source.module === 'react-native') {
     if (source.imported === 'View') return 'view';
     if (source.imported === 'Pressable') return 'pressable';
+    // A TouchableOpacity is a pressable whose press fades it: `.pressFade()`.
+    if (source.imported === 'TouchableOpacity') return 'pressable';
     if (source.imported === 'Text') return 'rnText';
     if (source.imported === 'Image') return 'rnImage';
     return undefined;
@@ -463,16 +625,28 @@ const uncommented = (code: string) => code.replace(/\/\*[\s\S]*?\*\//g, '');
 const quote = (text: string) =>
   `'${text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
 
-function printArg(arg: Arg): string {
+/** An argument as code; points computed at render are their carried value (`carry`). */
+function printArg(arg: Arg, carry: (c: Carried) => string): string {
   if (typeof arg === 'string') return quote(arg);
   if (typeof arg === 'number' || typeof arg === 'boolean') return String(arg);
+  if (isPoints(arg)) return carry(arg);
   const entries = Object.entries(arg).map(
-    ([k, v]) => `${/^[A-Za-z_$][\w$]*$/.test(k) ? k : quote(k)}: ${quote(v)}`,
+    ([k, v]) =>
+      `${/^[A-Za-z_$][\w$]*$/.test(k) ? k : quote(k)}: ${isPoints(v) ? carry(v) : quote(v)}`,
   );
   return `{ ${entries.join(', ')} }`;
 }
 
-const printMod = (mod: Mod) => `.${mod.name}(${mod.args.map(printArg).join(', ')})`;
+const printMod = (mod: Mod, carry: (c: Carried) => string) =>
+  `.${mod.name}(${mod.args.map((arg) => printArg(arg, carry)).join(', ')})`;
+
+/** The points an argument carries: itself, or an object's values (`{ width: itemSize }`). */
+const pointsOf = (arg: unknown): Carried[] =>
+  isPoints(arg)
+    ? [arg]
+    : typeof arg === 'object' && arg !== null && !('$' in arg) && !('hole' in arg)
+      ? Object.values(arg).filter(isPoints)
+      : [];
 
 /** Transforms one file's source. */
 export function transformSource(source: string, options: TransformOptions): FileResult {
@@ -501,9 +675,16 @@ export function transformSource(source: string, options: TransformOptions): File
     },
   });
 
-  /** A language name, aliased when the file already uses it. */
+  /** The language names the file already imports, by their local name (`Embed`, `toElement`). */
+  const importedLanguage = new Map<string, string>();
+  for (const [local, source] of sources)
+    if (source.module === LANGUAGE_MODULE || source.module === `${LANGUAGE_MODULE}/router`)
+      importedLanguage.set(source.imported, local);
+  /** A language name: the file's own import of it, else one added, aliased when the file already uses the name. */
   const usedLanguage = new Map<string, string>();
   const lang = (name: string) => {
+    const imported = importedLanguage.get(name);
+    if (imported) return imported;
     let local = usedLanguage.get(name);
     if (!local) {
       local = declared.has(name) ? `L${name}` : name;
@@ -552,6 +733,13 @@ export function transformSource(source: string, options: TransformOptions): File
    * theme colour, resolved through the scope it is read in.
    */
   const themeRoles = new Map<AnyNode, string>();
+  const useColorTokensLocals = new Set(
+    [...sources]
+      .filter(([, s]) => s.module === '@oxy.so/bloom/theme' && s.imported === 'useColorTokens')
+      .map(([local]) => local),
+  );
+  /** The theme reads that are `useColorTokens()`'s (`colorTokens.border`), not `useTheme()`'s. */
+  const colorTokenReads = new Set<AnyNode>();
   const useThemeLocals = new Set(
     [...sources]
       .filter(([, s]) => s.module === '@oxy.so/bloom/theme' && s.imported === 'useTheme')
@@ -570,7 +758,7 @@ export function transformSource(source: string, options: TransformOptions): File
     }
   };
   /** What `name` is bound to where `path` reads it: Bloom's theme, its colours, or neither. */
-  const boundTo = (path: AnyNode, name: string): 'theme' | 'colors' | undefined => {
+  const boundTo = (path: AnyNode, name: string): 'theme' | 'colors' | 'tokens' | undefined => {
     const bindings = scopeOf(path, name)?.getBindings()[name];
     if (bindings?.length !== 1) return undefined;
     // `const theme = useTheme()`, or `const { colors } = useTheme()` (the property's value is the binding).
@@ -581,10 +769,13 @@ export function transformSource(source: string, options: TransformOptions): File
       !init ||
       !n.CallExpression.check(init) ||
       !n.Identifier.check(init.callee) ||
-      !useThemeLocals.has(init.callee.name) ||
       at.parent?.node.kind !== 'const'
     )
       return undefined;
+    // `const colorTokens = useColorTokens()`: the theme's canonical colours by token.
+    if (useColorTokensLocals.has(init.callee.name))
+      return n.Identifier.check(at.node.id) && at.node.id.name === name ? 'tokens' : undefined;
+    if (!useThemeLocals.has(init.callee.name)) return undefined;
     if (n.Identifier.check(at.node.id) && at.node.id.name === name) return 'theme';
     if (
       n.ObjectPattern.check(at.node.id) &&
@@ -603,7 +794,7 @@ export function transformSource(source: string, options: TransformOptions): File
   };
   /** Each `styles.x` read where `styles` is the module's StyleSheet (not a name that shadows it). */
   const moduleStyleReads = new Set<AnyNode>();
-  if (useThemeLocals.size > 0 || styleSheets.size > 0)
+  if (useThemeLocals.size > 0 || useColorTokensLocals.size > 0 || styleSheets.size > 0)
     recast.visit(ast, {
       visitMemberExpression(path) {
         const { object, property, computed } = path.node;
@@ -624,6 +815,11 @@ export function transformSource(source: string, options: TransformOptions): File
             boundTo(path, object.object.name) === 'theme';
           const colors = n.Identifier.check(object) && boundTo(path, object.name) === 'colors';
           if (role && (colorsOf || colors)) themeRoles.set(path.node, role);
+          const token = ROLE_OF_COLOR_TOKEN.get(property.name);
+          if (token && n.Identifier.check(object) && boundTo(path, object.name) === 'tokens') {
+            themeRoles.set(path.node, token);
+            colorTokenReads.add(path.node);
+          }
         }
         this.traverse(path);
       },
@@ -632,7 +828,245 @@ export function transformSource(source: string, options: TransformOptions): File
   /** A className chosen at runtime, by its expression: both branches' classes, which the parity's stylesheet holds. */
   const choiceClasses = new Map<AnyNode, string>();
 
-  /** Each `{name}` in JSX where `name` is a `const` holding an element (`const header = <PageHeader … />`). */
+  /**
+   * Each `insets.top` (`bottom`, `left`, `right`) where `insets` is a `const`
+   * holding `useSafeAreaInsets()` (react-native-safe-area-context): the device's
+   * inset on that side, which `.safeAreaPadding(side)` pads by.
+   */
+  const insetReads = new Map<AnyNode, 'top' | 'bottom' | 'left' | 'right'>();
+  recast.visit(ast, {
+    visitMemberExpression(path) {
+      const { object, property } = path.node;
+      const side =
+        !path.node.computed && n.Identifier.check(property) ? (property.name as string) : '';
+      if (n.Identifier.check(object) && ['top', 'bottom', 'left', 'right'].includes(side)) {
+        const bindings = scopeOf(path, object.name)?.getBindings()[object.name];
+        let at = bindings?.length === 1 ? bindings[0] : undefined;
+        while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+        const init = at?.node.init;
+        const callee = n.CallExpression.check(init) ? init.callee : undefined;
+        const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+        if (
+          at?.parent?.node.kind === 'const' &&
+          n.Identifier.check(at.node.id) &&
+          init.arguments.length === 0 &&
+          source?.module === 'react-native-safe-area-context' &&
+          source.imported === 'useSafeAreaInsets'
+        )
+          insetReads.set(path.node, side as 'top' | 'bottom' | 'left' | 'right');
+      }
+      this.traverse(path);
+    },
+  });
+  /**
+   * Each identifier read whose binding is inside a function (a prop, a local, a
+   * hook's result): what the view works out as it renders, never a module's constant.
+   */
+  const renderReads = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitIdentifier(path) {
+      const parent = path.parent?.node;
+      const named =
+        (n.MemberExpression.check(parent) && parent.property === path.node && !parent.computed) ||
+        ((n.ObjectProperty.check(parent) || n.Property.check(parent)) &&
+          parent.key === path.node &&
+          !parent.computed);
+      if (!named && scopeOf(path, path.node.name)?.isGlobal === false) renderReads.add(path.node);
+      this.traverse(path);
+    },
+  });
+  /** An expression of numbers alone: reads, arithmetic, `Math`'s functions, a plain choice between two. */
+  const numberForm = (node: AnyNode): boolean => {
+    if (n.NumericLiteral.check(node)) return true;
+    if (n.Identifier.check(node)) return node.name !== 'undefined';
+    if (n.MemberExpression.check(node))
+      return (
+        (n.Identifier.check(node.object) || n.MemberExpression.check(node.object)) &&
+        numberForm(node.object) &&
+        (!node.computed || numberForm(node.property))
+      );
+    if (n.BinaryExpression.check(node))
+      return (
+        ['+', '-', '*', '/'].includes(node.operator) &&
+        numberForm(node.left) &&
+        numberForm(node.right)
+      );
+    if (n.UnaryExpression.check(node)) return node.operator === '-' && numberForm(node.argument);
+    if (n.TSNonNullExpression.check(node)) return numberForm(node.expression);
+    if (n.ConditionalExpression.check(node))
+      return (
+        (isPlainRead(node.test) || isBooleanForm(node.test)) &&
+        numberForm(node.consequent) &&
+        numberForm(node.alternate)
+      );
+    return (
+      n.CallExpression.check(node) &&
+      n.MemberExpression.check(node.callee) &&
+      n.Identifier.check(node.callee.object) &&
+      node.callee.object.name === 'Math' &&
+      !renderReads.has(node.callee.object) &&
+      node.arguments.every(numberForm)
+    );
+  };
+  /**
+   * A number the view computes as it renders (`itemSize`, `insets.top + 8`,
+   * `SIZES[size] / 2`): a number form that reads something bound in the
+   * component. A number written out, or one of module constants alone, is a token.
+   */
+  const computedAtRender = (node: AnyNode): boolean => {
+    if (n.NumericLiteral.check(node) || !numberForm(node)) return false;
+    let reads = false;
+    recast.visit(node, {
+      visitIdentifier(path) {
+        if (renderReads.has(path.node)) reads = true;
+        return false;
+      },
+    });
+    return reads;
+  };
+  /**
+   * A padding by the device's inset, as `.safeAreaPadding(side)`: `paddingTop:
+   * insets.top`, or `insets.top + 24` with a padding of the space token beyond it
+   * on the same view (a top or bottom one: the language adds them).
+   */
+  const insetPadding = (key: string, value: AnyNode): Mod[] | undefined => {
+    const side = {
+      paddingTop: 'top',
+      paddingBottom: 'bottom',
+      paddingLeft: 'left',
+      paddingRight: 'right',
+    }[key];
+    if (!side) return undefined;
+    const sum = n.BinaryExpression.check(value) && value.operator === '+' ? value : undefined;
+    const inset = sum ? sum.left : value;
+    if (insetReads.get(inset) !== side) return undefined;
+    if (!sum) return [{ name: 'safeAreaPadding', args: [side] }];
+    const beyond = n.NumericLiteral.check(sum.right) ? SPACE[String(sum.right.value)] : undefined;
+    if (beyond === undefined || (side !== 'top' && side !== 'bottom')) return undefined;
+    return [
+      { name: 'safeAreaPadding', args: [side] },
+      { name: 'padding', args: [side, beyond] },
+    ];
+  };
+  /**
+   * Each read of a `const` holding Bloom's `useSurfaceFill()`: the fill of the
+   * surface around the component, the language's `surfaceFill` role.
+   */
+  const surfaceReads = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitIdentifier(path) {
+      const bindings = renderReads.has(path.node)
+        ? scopeOf(path, path.node.name)?.getBindings()[path.node.name]
+        : undefined;
+      let at = bindings?.length === 1 ? bindings[0] : undefined;
+      while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+      const init = at?.node.init;
+      const callee = n.CallExpression.check(init) ? init.callee : undefined;
+      const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+      if (
+        at?.parent?.node.kind === 'const' &&
+        n.Identifier.check(at.node.id) &&
+        at.node.id !== path.node &&
+        source?.module === '@oxy.so/bloom/styles' &&
+        source.imported === 'useSurfaceFill' &&
+        init.arguments.length === 0
+      )
+        surfaceReads.add(path.node);
+      this.traverse(path);
+    },
+  });
+  /** Each `{name}` in a JSX attribute where `name` is a `const`: its initialiser (a Button's ink held in a variable). */
+  const constInits = new Map<AnyNode, AnyNode>();
+  recast.visit(ast, {
+    visitJSXAttribute(path) {
+      const expression = n.JSXExpressionContainer.check(path.node.value)
+        ? path.node.value.expression
+        : undefined;
+      if (n.Identifier.check(expression)) {
+        const bindings = scopeOf(path, expression.name)?.getBindings()[expression.name];
+        let at = bindings?.length === 1 ? bindings[0] : undefined;
+        while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+        if (at?.parent?.node.kind === 'const' && n.Identifier.check(at.node.id) && at.node.init)
+          constInits.set(expression, at.node.init);
+      }
+      this.traverse(path);
+    },
+  });
+  /**
+   * A colour as the role it is painted from: a theme colour read from
+   * `useTheme()`, a choice of them by a plain condition (`undefined` for none),
+   * or a `const` holding one.
+   */
+  /** The `const` reads `roleOf` followed: the before side writes their initialiser in their place. */
+  const roleConstReads = new Set<AnyNode>();
+  const roleOf = (expression: AnyNode): Value | undefined => {
+    const role = themeRoles.get(expression);
+    if (role) return role;
+    if (n.Identifier.check(expression) && expression.name === 'undefined') return { $: 'absent' };
+    if (n.Identifier.check(expression) && constInits.has(expression)) {
+      const held = roleOf(constInits.get(expression));
+      if (held !== undefined) roleConstReads.add(expression);
+      return held;
+    }
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const then = roleOf(expression.consequent);
+      const otherwise = roleOf(expression.alternate);
+      if (then !== undefined && otherwise !== undefined)
+        return { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
+    }
+    // Bloom's `withAlpha(colors.primary, 0.1)` or `tokenAlpha(tokens.primary, 0.1)`: the role at
+    // that opacity token, `'primary/10'` (the web paints it from the language's ink sheet).
+    const callee = n.CallExpression.check(expression) ? expression.callee : undefined;
+    const alpha = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+    if (
+      alpha?.module === '@oxy.so/bloom/theme' &&
+      (alpha.imported === 'withAlpha' || alpha.imported === 'tokenAlpha') &&
+      expression.arguments.length === 2
+    ) {
+      const role = roleOf(expression.arguments[0]);
+      const opacity = OPACITY_TOKEN.get(staticNumber(expression.arguments[1]) as number);
+      if (typeof role === 'string' && !role.includes('/') && opacity !== undefined)
+        return `${role}/${opacity}`;
+    }
+    return undefined;
+  };
+  /**
+   * A colour as a modifier's value: a theme colour as its role (outside a
+   * colour scope, where the role would paint the scope's scheme), a colour
+   * written out as an app colour, or a plain choice between them
+   * (`empty ? theme.colors.background : '#000000'`).
+   */
+  const inkOf = (node: AnyNode, expression: AnyNode): Value | undefined => {
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const then = inkOf(node, expression.consequent);
+      const otherwise = inkOf(node, expression.alternate);
+      return then === undefined || otherwise === undefined
+        ? undefined
+        : { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
+    }
+    const role = roleOf(expression);
+    if (typeof role === 'string') return insideOf(node, [COLOR_SCOPE]) ? undefined : role;
+    const value = staticString(expression);
+    if (value === undefined || !isAppColorValue(value) || colorConstants.has(appColorName(value)))
+      return undefined;
+    return { $: 'appColor', color: { name: appColorName(value), value } };
+  };
+  /** A language view placed as an element: `toElement(view)`, as a file partly in the language writes it. */
+  const isToElement = (expression: AnyNode) => {
+    const callee = n.CallExpression.check(expression) ? expression.callee : undefined;
+    const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+    return source?.module === LANGUAGE_MODULE && source.imported === 'toElement';
+  };
+  /**
+   * Each `{name}` in JSX where `name` is a `const` holding an element
+   * (`const header = <PageHeader … />`, or `toElement(Header(…))`).
+   */
   const elementReads = new Set<AnyNode>();
   recast.visit(ast, {
     visitJSXExpressionContainer(path) {
@@ -645,7 +1079,9 @@ export function transformSource(source: string, options: TransformOptions): File
       if (
         at?.parent?.node.kind === 'const' &&
         n.Identifier.check(at.node.id) &&
-        (n.JSXElement.check(at.node.init) || n.JSXFragment.check(at.node.init))
+        (n.JSXElement.check(at.node.init) ||
+          n.JSXFragment.check(at.node.init) ||
+          isToElement(at.node.init))
       )
         elementReads.add(expression);
       this.traverse(path);
@@ -690,23 +1126,220 @@ export function transformSource(source: string, options: TransformOptions): File
 
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
+  /** Each shorthand property's value (`{ width }`), which shares its key's place in the source. */
+  const shorthandValues = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitObjectProperty(path) {
+      if (path.node.shorthand) shorthandValues.add(path.node.value);
+      this.traverse(path);
+    },
+  });
+  /** Points a style's chain draws without carrying them (a half-square radius's side): holes on the before side. */
+  const heldPoints = new Set<AnyNode>();
+
+  /**
+   * Module-level `const NAME = { … }` (a style held in a constant, `satisfies`
+   * or `as` a type left out), by name: read as a StyleSheet's style is.
+   */
+  const styleConstants = new Map<string, AnyNode>();
+  for (const statement of ast.program.body as AnyNode[]) {
+    const declaration = n.ExportNamedDeclaration.check(statement)
+      ? statement.declaration
+      : statement;
+    if (!n.VariableDeclaration.check(declaration) || declaration.kind !== 'const') continue;
+    for (const declarator of declaration.declarations as AnyNode[]) {
+      let init = declarator.init;
+      while (init && (init.type === 'TSSatisfiesExpression' || init.type === 'TSAsExpression'))
+        init = init.expression;
+      if (n.Identifier.check(declarator.id) && n.ObjectExpression.check(init))
+        styleConstants.set(declarator.id.name, init);
+    }
+  }
+  /** Each name that reads a module style constant (not a name that shadows it): the constant's object. */
+  const styleConstantReads = new Map<AnyNode, AnyNode>();
+  if (styleConstants.size > 0)
+    recast.visit(ast, {
+      visitIdentifier(path) {
+        const parent = path.parent?.node;
+        const declares = n.VariableDeclarator.check(parent) && parent.id === path.node;
+        if (
+          !declares &&
+          styleConstants.has(path.node.name) &&
+          scopeOf(path, path.node.name)?.isGlobal
+        )
+          styleConstantReads.set(path.node, styleConstants.get(path.node.name));
+        this.traverse(path);
+      },
+    });
+  /** Bloom's `tokens` (`@oxy.so/bloom/styles`), by its local name in the file. */
+  const bloomTokens = [...sources].find(
+    ([, s]) => s.module === '@oxy.so/bloom/styles' && s.imported === 'tokens',
+  )?.[0];
+  /** Bloom's scales the language holds, by their name in `tokens`. */
+  const TOKEN_SCALES: Record<string, Record<string, unknown>> = {
+    space: spec.scales.space,
+    borderRadius: spec.scales.corner,
+    fontSize: spec.scales.fontSize,
+  };
+  /** `tokens.space.sm` (`tokens.borderRadius.xs`, `tokens.fontSize._2xl`): the rung's points, the spec's own. */
+  const bloomTokenNumber = (node: AnyNode): number | undefined => {
+    const scale = node?.object;
+    if (
+      !bloomTokens ||
+      !n.MemberExpression.check(node) ||
+      node.computed ||
+      !n.MemberExpression.check(scale) ||
+      scale.computed ||
+      !n.Identifier.check(scale.object) ||
+      scale.object.name !== bloomTokens ||
+      !n.Identifier.check(scale.property) ||
+      !n.Identifier.check(node.property)
+    )
+      return undefined;
+    const value = TOKEN_SCALES[scale.property.name]?.[node.property.name.replace(/^_/, '')];
+    return typeof value === 'number' ? value : undefined;
+  };
+  /** React Native's `StyleSheet.absoluteFill`, read from the module's `StyleSheet`. */
+  const isAbsoluteFill = (node: AnyNode) =>
+    !!styleSheetLocal &&
+    n.MemberExpression.check(node) &&
+    !node.computed &&
+    n.Identifier.check(node.object) &&
+    node.object.name === styleSheetLocal &&
+    n.Identifier.check(node.property) &&
+    node.property.name === 'absoluteFill';
+  /** Bloom's `fontFamilyStyle` (`@oxy.so/bloom/typography`), by its local name in the file. */
+  const fontFamilyStyleLocal = [...sources].find(
+    ([, s]) => s.module === '@oxy.so/bloom/typography' && s.imported === 'fontFamilyStyle',
+  )?.[0];
+  /**
+   * A spread a style reads: `StyleSheet.absoluteFill`'s edges, and Bloom's
+   * `fontFamilyStyle('mono' | 'display')`, the face the language's
+   * `.font('mono')` and `.font('display')` set (the same family on every platform).
+   */
+  const spreadOf = (node: AnyNode): SpreadStyle | undefined => {
+    if (isAbsoluteFill(node))
+      return { classes: ABSOLUTE_FILL.classes, mods: [], literal: ABSOLUTE_FILL.literal };
+    if (
+      fontFamilyStyleLocal &&
+      n.CallExpression.check(node) &&
+      n.Identifier.check(node.callee) &&
+      node.callee.name === fontFamilyStyleLocal &&
+      node.arguments.length === 1 &&
+      n.StringLiteral.check(node.arguments[0]) &&
+      spec.enums.fontFamily.includes(node.arguments[0].value)
+    )
+      return { classes: [], mods: [{ name: 'font', args: [node.arguments[0].value] }] };
+    return undefined;
+  };
+
+  /** No style: a branch of a choice that adds none. */
+  const noStyle = (node: AnyNode) =>
+    n.NullLiteral.check(node) ||
+    (n.BooleanLiteral.check(node) && !node.value) ||
+    (n.Identifier.check(node) && node.name === 'undefined');
+  /**
+   * A list part chosen by a plain condition: `test && style` or `test ? a : b`,
+   * its branches (null where it adds no style).
+   */
+  function styleBranches(
+    part: AnyNode,
+  ): { test: AnyNode; branches: [AnyNode | null, AnyNode | null] } | undefined {
+    const plain = (test: AnyNode) => isPlainRead(test) || isBooleanForm(test);
+    if (n.LogicalExpression.check(part) && part.operator === '&&' && plain(part.left))
+      return { test: part.left, branches: [part.right, null] };
+    if (n.ConditionalExpression.check(part) && plain(part.test))
+      return {
+        test: part.test,
+        branches: [
+          noStyle(part.consequent) ? null : part.consequent,
+          noStyle(part.alternate) ? null : part.alternate,
+        ],
+      };
+    return undefined;
+  }
 
   /** A static style (an object literal, a module StyleSheet's style, or a list of them) as utilities. */
   function staticStyle(
     expression: AnyNode,
     read: StyleRead,
+    /** A Pressable's style function's `pressed`: what it adds is the pressed variant (`active:`). */
+    pressed?: string,
   ):
-    | { ok: true; classes: string[]; mods: { subject: string; mod: Mod }[] }
+    | {
+        ok: true;
+        classes: string[];
+        mods: { subject: string; mod: Mod }[];
+        choice?: StyleChoice;
+      }
     | { ok: false; subject: string; why: string } {
     const parts: AnyNode[] = n.ArrayExpression.check(expression)
       ? expression.elements
       : [expression];
     const classes: string[] = [];
     const mods: { subject: string; mod: Mod }[] = [];
+    let choice: StyleChoice | undefined;
     // A StyleSheet's style is its literal on the before side; an inline object stays as written.
     const literals = new Map<AnyNode, string>();
     for (const part of parts) {
+      // A style chosen by a plain condition (`!focused && styles.dim`, `compact ? A : B`): each
+      // branch's utilities, chosen as a className is (`dynamic-className`).
+      const chosen = styleBranches(part);
+      if (chosen && pressed && n.Identifier.check(chosen.test) && chosen.test.name === pressed) {
+        const [whenPressed, otherwise] = chosen.branches;
+        const style = whenPressed && !otherwise ? staticStyle(whenPressed, read) : undefined;
+        if (!style?.ok || style.mods.length || style.choice)
+          return {
+            ok: false,
+            subject: 'style',
+            why: 'a pressed style that is more than utilities added while pressed',
+          };
+        classes.push(...style.classes.map((name) => `active:${name}`));
+        continue;
+      }
+      if (chosen) {
+        // Inside a style function a choice reads its parameter, which the chain has no name for.
+        if (pressed)
+          return {
+            ok: false,
+            subject: 'style',
+            why: 'a pressed style chosen with another condition (`pressed || locked`)',
+          };
+        if (choice) return { ok: false, subject: 'style', why: 'a style with two choices' };
+        const [whenTrue, whenFalse] = chosen.branches.map((branch) =>
+          branch ? staticStyle(branch, read) : { ok: true as const, classes: [], mods: [] },
+        ) as [ReturnType<typeof staticStyle>, ReturnType<typeof staticStyle>];
+        if (!whenTrue.ok) return whenTrue;
+        if (!whenFalse.ok) return whenFalse;
+        if (whenTrue.mods.length || whenFalse.mods.length || whenTrue.choice || whenFalse.choice)
+          return {
+            ok: false,
+            subject: 'style',
+            why: 'a style chosen at runtime whose branches write more than utilities',
+          };
+        choice = { test: chosen.test, whenTrue: whenTrue.classes, whenFalse: whenFalse.classes };
+        continue;
+      }
+      // React Native's own fill, pinned to every edge: its declarations, written out on the before side.
+      if (isAbsoluteFill(part)) {
+        classes.push(...ABSOLUTE_FILL.classes);
+        literals.set(part, `{ ${ABSOLUTE_FILL.literal} }`);
+        continue;
+      }
       let object = part;
+      // A module constant holding a style is its object, written out on the before side.
+      if (styleConstantReads.has(part)) {
+        const style = styleUtilities(styleConstantReads.get(part), {
+          read,
+          spreadOf,
+          numberOf: bloomTokenNumber,
+        });
+        if (!style.ok) return style;
+        classes.push(...style.classes);
+        mods.push(...style.mods);
+        literals.set(part, style.literal);
+        continue;
+      }
       const referenced =
         n.MemberExpression.check(part) &&
         !part.computed &&
@@ -718,15 +1351,57 @@ export function transformSource(source: string, options: TransformOptions): File
           ? styleSheets.get(sheet.name)?.get(property.name)
           : undefined;
       }
-      const style = object ? styleUtilities(object, read) : undefined;
+      const style = object
+        ? styleUtilities(object, {
+            read,
+            spreadOf,
+            numberOf: bloomTokenNumber,
+            computed: computedAtRender,
+          })
+        : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
       if (!style.ok) return style;
       classes.push(...style.classes);
       mods.push(...style.mods);
+      for (const side of style.held) heldPoints.add(side);
       if (referenced) literals.set(part, style.literal);
     }
     for (const [part, literal] of literals) styleLiterals.set(part, literal);
-    return { ok: true, classes, mods };
+    return { ok: true, classes, mods, choice };
+  }
+
+  /**
+   * A Bloom component's static `style` as its node's box, for a component
+   * that draws its `style` on its outer view, where the language draws a
+   * node's box: each declaration through the className table as a View's
+   * (`padding: 16` is `.padding('lg')`, `gap: 12` `.spacing('md')`,
+   * `flexDirection: 'row'` `.axis('horizontal')`), every modifier one the node
+   * takes. A colour, a variant or a value no token writes is a reason.
+   */
+  function componentStyle(
+    expression: AnyNode,
+    node: string,
+  ): { mods: PropMod[] } | { reasons: Reason[] } {
+    const reason = (subject: string, why: string) => ({
+      reasons: [{ subject, code: `${node}:style`, why }],
+    });
+    const style = staticStyle(expression, () => undefined);
+    if (!style.ok) return reason(style.subject, style.why);
+    const resolution = resolveClassName(style.classes.join(' '), 'view', options.table, {
+      overridden: options.overridden,
+    });
+    if (!resolution.ok) return { reasons: [...resolution.reasons] };
+    if (resolution.value.variants.length) return reason('style', 'a style with a variant');
+    const mods: Mod[] = [
+      ...(resolution.value.axis === 'row' ? [{ name: 'axis', args: ['horizontal'] }] : []),
+      ...resolution.value.mods,
+      ...style.mods.map(({ mod }) => mod),
+    ];
+    const taken = NODE_MODIFIERS.get(node);
+    const outside = mods.find((mod) => !taken?.has(mod.name));
+    if (outside)
+      return reason('style', `a style that is \`.${outside.name}()\`, which ${node} does not take`);
+    return { mods: mods.map((mod) => ({ name: mod.name, args: [...mod.args] as Value[] })) };
   }
 
   /** Each element's nearest enclosing element in the file. */
@@ -740,6 +1415,15 @@ export function transformSource(source: string, options: TransformOptions): File
     },
   });
 
+  /** Whether a Bloom component's element is around `node` in the file. */
+  function insideBloomComponent(node: AnyNode): boolean {
+    for (let at = enclosing.get(node); at; at = enclosing.get(at)) {
+      const local = jsxName(at);
+      if (local && sources.get(local)?.module.startsWith('@oxy.so/bloom/')) return true;
+    }
+    return false;
+  }
+
   /** The first element around `node` (in the file) drawn by one of `components` (`module#export`). */
   function insideOf(node: AnyNode, components: readonly string[]): string | undefined {
     for (let at = enclosing.get(node); at; at = enclosing.get(at)) {
@@ -751,41 +1435,282 @@ export function transformSource(source: string, options: TransformOptions): File
   }
 
   /**
-   * Each route's Screen: a default-exported function component (named, not
-   * async, no return type, its name read nowhere else) whose every return is a
+   * Each screen: a module-level function component whose every return is a
    * Bloom Screen becomes `screen(function …)`, each Screen its body's root.
+   * `screen()` wraps the whole component, so its branches (a loading, an
+   * error, the content) each return their content and chrome. A component is
+   * a function declaration (exported or not) or a `const` holding an arrow or
+   * a function expression, named with a capital, not async, with no return
+   * type; a `const` or a declaration whose name is read becomes
+   * `const Name = screen(function Name …)`, so its name is never read before
+   * the module has defined it.
    */
   const screenRoutes = new Map<AnyNode, AnyNode>();
-  for (const statement of ast.program.body as AnyNode[]) {
-    const fn: AnyNode = n.ExportDefaultDeclaration.check(statement)
-      ? statement.declaration
-      : undefined;
-    if (!n.FunctionDeclaration.check(fn) || !fn.id || fn.async || fn.generator || fn.returnType)
-      continue;
-    const returned: AnyNode[] = [];
-    recast.visit(fn.body, {
-      visitFunction: () => false,
-      visitReturnStatement(path) {
-        returned.push(path.node.argument);
-        return false;
+  /** Where each screen's function is declared: the statement that holds it, and its name. */
+  const screenDeclarations = new Map<AnyNode, { statement: AnyNode; name: string }>();
+  /** The Screens of a component whose name is read before it is declared. */
+  const earlyScreens = new Map<AnyNode, Reason>();
+  const isScreenElement = (node: AnyNode) => {
+    const local = n.JSXElement.check(node) ? jsxName(node) : undefined;
+    const source = local ? sources.get(local) : undefined;
+    return source?.module === '@oxy.so/bloom/screen' && source.imported === 'Screen';
+  };
+  /**
+   * A route's return around its Screen, peeled to the Screen: each element
+   * around it with the Screen (or the next one in) as its only child is a
+   * screen modifier the language draws around the Screen, innermost first,
+   * as the chain's order wraps them. `<BloomColorScope mode asChild>` is
+   * `.colorScope(mode)`, a `<KeyboardAvoidingView>` filling (`flex: 1`) with
+   * React Native's behavior (`Platform.OS === 'ios' ? 'padding' : 'height'`)
+   * `.keyboardAvoiding()`, and a `…Provider` with no props (Bloom's
+   * `HeaderDockProvider`, an app's own) `.provider(Name)`. Anything else around it is the reason it stays JSX.
+   */
+  type Peeled =
+    | { readonly screen: AnyNode; readonly mods: readonly PropMod[] }
+    | { readonly screen: AnyNode; readonly reason: Reason };
+  const peeled = new Map<AnyNode, Peeled | undefined>();
+  function peelScreen(node: AnyNode): Peeled | undefined {
+    if (peeled.has(node)) return peeled.get(node);
+    let result: Peeled | undefined;
+    if (isScreenElement(node)) result = { screen: node, mods: [] };
+    else if (n.JSXElement.check(node)) {
+      const children = (node.children as AnyNode[]).filter(
+        (child) => !(n.JSXText.check(child) && !child.value.trim()),
+      );
+      const inner = children.length === 1 ? peelScreen(children[0]) : undefined;
+      if (inner && 'mods' in inner) {
+        const wrapper = screenWrapper(node);
+        result =
+          'mod' in wrapper
+            ? { screen: inner.screen, mods: [...inner.mods, wrapper.mod] }
+            : { screen: inner.screen, reason: wrapper.reason };
+      } else result = inner;
+    }
+    peeled.set(node, result);
+    return result;
+  }
+  /** The one element a wrapper around a route's Screen holds. */
+  const peelChild = (node: AnyNode): AnyNode =>
+    (node.children as AnyNode[]).find((child) => n.JSXElement.check(child));
+  /** One element around a route's Screen as its screen modifier, or why it is none. */
+  function screenWrapper(node: AnyNode): { mod: PropMod } | { reason: Reason } {
+    const local = jsxName(node) ?? 'an element';
+    const source = sources.get(local);
+    const reason = (why: string) => ({
+      reason: {
+        subject: 'Screen',
+        code: 'screen:wrapped',
+        why: `inside \`${local}\`: ${why}`,
       },
     });
-    const isScreen = (node: AnyNode) => {
-      const local = n.JSXElement.check(node) ? jsxName(node) : undefined;
-      const source = local ? sources.get(local) : undefined;
-      return source?.module === '@oxy.so/bloom/screen' && source.imported === 'Screen';
-    };
-    const name = fn.id.name as string;
-    let named = 0;
+    const attributes = (node.openingElement.attributes as AnyNode[]).filter((a) =>
+      n.JSXAttribute.check(a),
+    );
+    if (attributes.length !== node.openingElement.attributes.length)
+      return reason('spread props: the codemod cannot see what they set');
+    const named = new Map<string, AnyNode>(
+      attributes.map((a) => [a.name.name as string, a.value] as const),
+    );
+    const only = (...names: string[]) => [...named.keys()].every((name) => names.includes(name));
+    if (source?.module === '@oxy.so/bloom/theme' && source.imported === 'BloomColorScope') {
+      const asChild = named.get('asChild');
+      const mode = named.get('mode');
+      if (!only('asChild', 'mode') || !named.has('asChild') || !named.has('mode'))
+        return reason(
+          'a colour scope is `.colorScope(mode)` when it takes only `mode` and `asChild` (a preset, a seed or its own view are its own)',
+        );
+      const bare =
+        asChild === null ||
+        (n.JSXExpressionContainer.check(asChild) &&
+          n.BooleanLiteral.check(asChild.expression) &&
+          asChild.expression.value === true);
+      if (!bare) return reason('a colour scope that is no `asChild` draws a view of its own');
+      const scheme = staticString(mode);
+      if (scheme !== undefined && scheme !== 'light' && scheme !== 'dark')
+        return reason(`a scheme \`${scheme}\` that is neither light nor dark`);
+      return {
+        mod: {
+          name: 'colorScope',
+          args: [scheme ?? { node: attributeExpression(mode), hole: 'string' }],
+        },
+      };
+    }
+    if (source?.module === 'react-native' && source.imported === 'KeyboardAvoidingView') {
+      if (!only('style', 'behavior'))
+        return reason('a keyboard avoiding view with props `.keyboardAvoiding()` does not draw');
+      const style = named.get('style');
+      const fill = style ? staticStyle(attributeExpression(style), () => undefined) : undefined;
+      const filled =
+        fill?.ok && fill.classes.length === 0 && fill.mods.length === 1
+          ? fill.mods[0]?.mod
+          : undefined;
+      if (filled?.name !== 'grow' && filled?.name !== 'flex')
+        return reason(
+          'a style other than a fill `.keyboardAvoiding()` draws (React Native’s `flex: 1`, or a flex token)',
+        );
+      const behavior = attributeExpression(named.get('behavior'));
+      if (!isKeyboardBehavior(behavior))
+        return reason(
+          "a behavior other than React Native’s (`Platform.OS === 'ios' ? 'padding' : 'height'`)",
+        );
+      keyboardBehaviors.add(behavior);
+      return {
+        mod: { name: 'keyboardAvoiding', args: filled.name === 'flex' ? [...filled.args] : [] },
+      };
+    }
+    if (source && /Provider$/.test(local) && !source.module.startsWith('react-native')) {
+      if (named.size > 0) return reason('a provider with props: `.provider()` draws one with none');
+      return { mod: { name: 'provider', args: [{ $: 'component', name: local }] } };
+    }
+    return reason(
+      '`screen()` wraps the whole component, so what is around the Screen would draw inside it (a colour scope, a keyboard avoiding view and an app’s provider are screen modifiers)',
+    );
+  }
+  /** `Platform.OS === 'ios' ? 'padding' : 'height'`, React Native's behavior, as a route writes it. */
+  const isKeyboardBehavior = (expression: AnyNode) => {
+    if (!n.ConditionalExpression.check(expression)) return false;
+    const { test, consequent, alternate }: AnyNode = expression;
+    const platform =
+      n.BinaryExpression.check(test) && test.operator === '===' ? test.left : undefined;
+    return (
+      n.MemberExpression.check(platform) &&
+      n.Identifier.check(platform.object) &&
+      sources.get(platform.object.name)?.module === 'react-native' &&
+      sources.get(platform.object.name)?.imported === 'Platform' &&
+      n.Identifier.check(platform.property) &&
+      platform.property.name === 'OS' &&
+      staticString(test.right) === 'ios' &&
+      staticString(consequent) === 'padding' &&
+      staticString(alternate) === 'height'
+    );
+  };
+  /** The behaviors a converted keyboard avoiding view wrote: the parity's before side writes React Native's own `Platform`. */
+  const keyboardBehaviors = new Set<AnyNode>();
+  /** Each route's Screen: the return around it, and the screen modifiers what is around it draws. */
+  const screenOuter = new Map<AnyNode, { outer: AnyNode; mods: readonly PropMod[] }>();
+  /** Where each module-level name is read outside a function, before its own statement. */
+  const readsBefore = (name: string, statement: AnyNode) => {
+    let early = false;
     recast.visit(ast, {
+      visitFunction: () => false,
       visitIdentifier(path) {
-        if (path.node.name === name) named++;
+        if (path.node.name === name && ((path.node as AnyNode).start as number) < statement.start)
+          early = true;
         this.traverse(path);
       },
     });
-    if (returned.length && returned.every(isScreen) && named === 1)
-      for (const node of returned) screenRoutes.set(node, fn);
+    return early;
+  };
+  for (const statement of ast.program.body as AnyNode[]) {
+    const declaration: AnyNode =
+      n.ExportDefaultDeclaration.check(statement) || n.ExportNamedDeclaration.check(statement)
+        ? statement.declaration
+        : statement;
+    let fn: AnyNode | undefined;
+    let name: string | undefined;
+    if (n.FunctionDeclaration.check(declaration)) {
+      fn = declaration;
+      name = declaration.id?.name as string | undefined;
+    } else if (
+      n.VariableDeclaration.check(declaration) &&
+      declaration.kind === 'const' &&
+      declaration.declarations.length === 1
+    ) {
+      const declarator: AnyNode = declaration.declarations[0];
+      if (
+        n.Identifier.check(declarator.id) &&
+        !declarator.id.typeAnnotation &&
+        (n.ArrowFunctionExpression.check(declarator.init) ||
+          (n.FunctionExpression.check(declarator.init) && !declarator.init.id))
+      ) {
+        fn = declarator.init;
+        name = declarator.id.name;
+      }
+    }
+    if (!fn || !name || !/^[A-Z]/.test(name) || fn.async || fn.generator || fn.returnType) continue;
+    const returned: AnyNode[] = [];
+    if (!n.BlockStatement.check(fn.body)) returned.push(fn.body);
+    else
+      recast.visit(fn.body, {
+        visitFunction: () => false,
+        visitReturnStatement(path) {
+          returned.push(path.node.argument);
+          return false;
+        },
+      });
+    const screens = returned.map(peelScreen);
+    if (!returned.length || !screens.every((p) => p !== undefined)) continue;
+    // A Screen inside an element that is no screen modifier stays JSX, with what keeps it.
+    const kept = screens.find((p): p is Peeled & { reason: Reason } => 'reason' in (p as Peeled));
+    if (kept) {
+      for (const p of screens as Peeled[])
+        earlyScreens.set(p.screen, 'reason' in p ? p.reason : kept.reason);
+      continue;
+    }
+    if (readsBefore(name, statement)) {
+      for (const { screen: node } of screens as Peeled[])
+        earlyScreens.set(node, {
+          subject: 'Screen',
+          code: 'screen:read-early',
+          why: `\`${name}\` is read before its declaration, where \`const ${name} = screen(…)\` is not yet defined`,
+        });
+      continue;
+    }
+    returned.forEach((outer, i) => {
+      const { screen, mods } = screens[i] as Peeled & { mods: readonly PropMod[] };
+      screenRoutes.set(screen, fn);
+      if (outer !== screen) screenOuter.set(screen, { outer, mods });
+    });
+    screenDeclarations.set(fn, { statement, name });
   }
+
+  /**
+   * Why a Screen that is no screen's return stays JSX: what is around it, or
+   * the component's other returns. `screen()` wraps the whole component, so a
+   * view beside the Screen or around it would draw inside it.
+   */
+  const screenPlaces = new Map<AnyNode, Reason>(earlyScreens);
+  recast.visit(ast, {
+    visitJSXElement(path) {
+      const node = path.node;
+      if (isScreenElement(node) && !screenRoutes.has(node) && !earlyScreens.has(node)) {
+        // Past what its screen modifiers draw (a colour scope, a keyboard avoiding view, a provider).
+        let at = path;
+        while (
+          n.JSXElement.check(at.parent?.node) &&
+          peelScreen(at.parent.node)?.screen === node &&
+          'mods' in (peelScreen(at.parent.node) as Peeled)
+        )
+          at = at.parent;
+        const outer = at.node;
+        const parent = at.parent?.node;
+        const name = (element: AnyNode) => `\`${jsxName(element) ?? 'an element'}\``;
+        const beside = n.JSXFragment.check(parent)
+          ? (parent.children as AnyNode[]).filter(
+              (child) => child !== outer && n.JSXElement.check(child),
+            )
+          : [];
+        const wrapper = n.JSXElement.check(parent) ? screenWrapper(parent) : undefined;
+        screenPlaces.set(
+          node,
+          wrapper && 'reason' in wrapper
+            ? wrapper.reason
+            : beside.length
+              ? {
+                  subject: 'Screen',
+                  code: 'screen:beside',
+                  why: `beside ${beside.map(name).join(', ')}: \`screen()\` wraps the whole component, so a view beside the Screen would draw inside it (one that draws nothing, a head element, moves into the Screen by hand)`,
+                }
+              : {
+                  subject: 'Screen',
+                  code: 'screen:returns',
+                  why: 'a return of its component that is no Screen (`null`, another view, a choice): `screen()` would draw a Screen around it',
+                },
+        );
+      }
+      this.traverse(path);
+    },
+  });
 
   /**
    * An icon's fill as the chain paints it: a Bloom theme colour read from
@@ -907,6 +1832,9 @@ export function transformSource(source: string, options: TransformOptions): File
       };
     if (kind === 'button') return convertButton(node);
     if (kind === 'kept' && screenRoutes.has(node)) return convertScreen(node);
+    if (kind === 'kept' && sources.get(local)?.module === FAB_MODULE) return convertFab(node);
+    if (kind === 'kept' && sources.get(local)?.module === DROPDOWN)
+      return convertDropdownMenu(node);
     if (kind === 'kept') {
       const source = sources.get(local) as Source;
       const removed = REMOVED[`${source.module}#${source.imported}`];
@@ -918,11 +1846,11 @@ export function transformSource(source: string, options: TransformOptions): File
                 code: `removed:${source.imported}`,
                 why: `removed in Bloom 22: use ${removed}`,
               }
-            : {
+            : (screenPlaces.get(node) ?? {
                 subject: local,
                 code: `kept:${source.imported}`,
                 why: KEPT[`${source.module}#${source.imported}`] as string,
-              },
+              }),
         ],
       };
     }
@@ -956,8 +1884,14 @@ export function transformSource(source: string, options: TransformOptions): File
     /** The utilities a static `style` writes, read with the className. */
     const styleClasses: string[] = [];
     const styleMods: { subject: string; mod: Mod }[] = [];
+    let styleChoice: StyleChoice | undefined;
     /** An icon's `width`, `height` and `fill`. */
     const iconProps = new Map<string, AnyNode>();
+    /** A TouchableOpacity: its press fades it (`.pressFade()`), at its `activeOpacity` token. */
+    const fades =
+      kind === 'pressable' &&
+      (sources.get(local) as Source | undefined)?.imported === 'TouchableOpacity';
+    let fade: string | undefined;
     for (const attribute of node.openingElement.attributes) {
       if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
         fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
@@ -1020,6 +1954,48 @@ export function transformSource(source: string, options: TransformOptions): File
         props.push({ name: 'disabled', args: [{ node: expression, hole: 'boolean' }] });
         continue;
       }
+      if (fades && name === 'activeOpacity') {
+        const token = OPACITY_TOKEN.get(staticNumber(value) as number);
+        if (token === undefined)
+          fail(
+            name,
+            'prop:activeOpacity',
+            'an activeOpacity that is no opacity token, or set at runtime',
+          );
+        else fade = token;
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessibilityLiveRegion') {
+        const region = staticString(value);
+        if (region !== undefined && LIVE_REGIONS.has(region))
+          props.push({ name: 'liveRegion', args: [region] });
+        else fail(name, 'prop:accessibilityLiveRegion', 'a live region set at runtime');
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessibilityState') {
+        props.push({ name: 'accessibilityState', args: [{ node: expression, hole: 'state' }] });
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessibilityValue') {
+        props.push({ name: 'accessibilityValue', args: [{ node: expression, hole: 'state' }] });
+        continue;
+      }
+      // The escape hatches, on the view's outermost box as React Native's own.
+      if (kind !== 'icon' && (name === 'ref' || name === 'onLayout')) {
+        props.push({ name, args: [{ node: expression, hole: 'handler' }] });
+        continue;
+      }
+      if (kind !== 'icon' && name === 'hitSlop') {
+        const calls = hitSlopCalls(value);
+        if (calls === undefined)
+          fail(
+            name,
+            'prop:hitSlop',
+            'a hit slop whose sides are no hit slop tokens, or set at runtime',
+          );
+        else for (const args of calls) props.push({ name: 'hitSlop', args });
+        continue;
+      }
       if ((kind === 'bloomText' || kind === 'rnText') && name === 'numberOfLines') {
         numberOfLines = staticNumber(value) ?? { node: expression, hole: 'number' };
         continue;
@@ -1034,23 +2010,57 @@ export function transformSource(source: string, options: TransformOptions): File
       if (name === 'style' && kind !== 'icon') {
         // A theme colour read from `useTheme()` here is its role, as an icon's fill is.
         const read: StyleRead = (key, read) => {
-          const role = themeRoles.get(read);
-          if (!role || insideOf(node, [COLOR_SCOPE])) return undefined;
+          const inset = insetPadding(key, read);
+          if (inset) return inset;
+          // The surface fill, read where the component is: the same surface the view sits on unless
+          // a Bloom component between them (a Card, a Surface) publishes one of its own.
+          if (surfaceReads.has(read) && !insideBloomComponent(node)) {
+            if (key === 'backgroundColor') return { name: 'background', args: ['surfaceFill'] };
+            if (key === 'color' && (kind === 'bloomText' || kind === 'rnText'))
+              return { name: 'foreground', args: ['surfaceFill'] };
+          }
+          if (kind === 'bloomText' || kind === 'rnText') {
+            const text = textDeclaration(key, read);
+            if (text) return text;
+          }
+          // A role, or a role at an opacity (`withAlpha(colors.primary, 0.1)`).
+          const role = roleOf(read);
+          if (typeof role !== 'string' || insideOf(node, [COLOR_SCOPE])) return undefined;
           if (key === 'backgroundColor') return { name: 'background', args: [role] };
           if (key === 'color' && (kind === 'bloomText' || kind === 'rnText'))
             return { name: 'foreground', args: [role] };
           return undefined;
         };
-        const style = staticStyle(expression, read);
+        // A Pressable's style of its press state (`({ pressed }) => [base, pressed && dim]`): `.when('pressed')`.
+        const fn: AnyNode =
+          kind === 'pressable' &&
+          n.ArrowFunctionExpression.check(expression) &&
+          expression.params.length === 1 &&
+          n.ObjectPattern.check(expression.params[0]) &&
+          !n.BlockStatement.check(expression.body)
+            ? expression
+            : undefined;
+        const pressedProperty = fn?.params[0].properties.find(
+          (p: AnyNode) =>
+            (n.ObjectProperty.check(p) || n.Property.check(p)) &&
+            n.Identifier.check(p.key) &&
+            p.key.name === 'pressed' &&
+            n.Identifier.check(p.value),
+        );
+        const style =
+          fn && pressedProperty && fn.params[0].properties.length === 1
+            ? staticStyle(fn.body, read, pressedProperty.value.name)
+            : staticStyle(expression, read);
         if (style.ok) {
           styleClasses.push(...style.classes);
           styleMods.push(...style.mods);
+          styleChoice = style.choice;
         } else fail(style.subject, 'style', style.why);
         continue;
       }
       // What takes touches: `none` nothing (SwiftUI's `allowsHitTesting(false)`), `box-none` what is inside only, `box-only` the view only.
       if (name === 'pointerEvents' && (kind === 'view' || kind === 'pressable')) {
-        const hitTesting = HIT_TESTING[staticString(value) ?? ''];
+        const hitTesting = hitTestingOf(attributeExpression(value));
         if (hitTesting !== undefined) props.push({ name: 'allowsHitTesting', args: [hitTesting] });
         else fail(name, 'prop:pointerEvents', 'a pointerEvents set at runtime');
         continue;
@@ -1072,6 +2082,18 @@ export function transformSource(source: string, options: TransformOptions): File
       fail(name, `prop:${name}`, `the prop \`${name}\` has no mapping`);
     }
 
+    // A style chosen by a condition is the className choice it writes: what each branch adds.
+    if (styleChoice) {
+      if (other)
+        fail('style', 'dynamic-className', 'a className and a style both chosen at runtime');
+      else {
+        other = {
+          test: { node: styleChoice.test, hole: 'condition' },
+          className: [className, ...styleChoice.whenFalse].filter(Boolean).join(' '),
+        };
+        className = [className, ...styleChoice.whenTrue].filter(Boolean).join(' ');
+      }
+    }
     for (const token of `${className} ${other?.className ?? ''}`.split(/\s+/).filter(Boolean))
       classes.add(token);
     if (styleClasses.length) {
@@ -1254,6 +2276,7 @@ export function transformSource(source: string, options: TransformOptions): File
     if (!resolution.ok || reasons.length) return { reasons };
     if (isPressableScale(sources.get(local) as Source))
       props.push({ name: 'pressScale', args: [] });
+    if (fades) props.push({ name: 'pressFade', args: fade === undefined ? [] : [fade] });
     return { ir: { type: 'stack', resolved: resolution.value, choice, props, key, children } };
   }
 
@@ -1286,6 +2309,7 @@ export function transformSource(source: string, options: TransformOptions): File
     const props = inner.ir.props;
     if (!props.some((prop) => prop.name === 'header'))
       props.unshift({ name: 'header', args: [false] });
+    props.push(...(screenOuter.get(node)?.mods ?? []));
     return { ir: { type: 'screen', content: root, props } };
   }
 
@@ -1336,16 +2360,13 @@ export function transformSource(source: string, options: TransformOptions): File
     chain: Resolved,
     other: Resolved,
   ): { both: Mod[]; whenTrue: Mod[]; whenFalse: Mod[] } | undefined {
-    if (
-      chain.axis !== other.axis ||
-      JSON.stringify(chain.variants) !== JSON.stringify(other.variants)
-    )
+    if (chain.axis !== other.axis || modKey(chain.variants) !== modKey(other.variants))
       return undefined;
-    const rest = other.mods.map((mod) => JSON.stringify(mod));
+    const rest = other.mods.map(modKey);
     const both: Mod[] = [];
     const whenTrue: Mod[] = [];
     for (const mod of chain.mods) {
-      const at = rest.indexOf(JSON.stringify(mod));
+      const at = rest.indexOf(modKey(mod));
       if (at < 0) whenTrue.push(mod);
       else {
         both.push(mod);
@@ -1365,7 +2386,7 @@ export function transformSource(source: string, options: TransformOptions): File
   function sameShape(chain: Resolved, other: Resolved): readonly Mod[] | undefined {
     const same =
       chain.axis === other.axis &&
-      JSON.stringify(chain.variants) === JSON.stringify(other.variants) &&
+      modKey(chain.variants) === modKey(other.variants) &&
       chain.mods.length === other.mods.length &&
       chain.mods.every((mod, i) => {
         const at = other.mods[i] as Mod;
@@ -1551,9 +2572,24 @@ export function transformSource(source: string, options: TransformOptions): File
           const { name } = value[0] as { name: string };
           return { $: 'view', view: { type: 'icon', component: name, mods: [], key: null } };
         };
-        const leading = glyph(param.label.leading);
+        /** A view in the glyph's slot: one of the element props naming it, and no glyph beside it. */
+        const slotView = (props: readonly string[] = [], icon: Value | null): Value | null => {
+          const named = props.filter((prop) => given.has(prop));
+          for (const prop of named) consumed.add(prop);
+          if (named.length === 0) return icon;
+          const value =
+            named.length === 1 && !icon
+              ? valuesOf('view', given.get(named[0] as string))
+              : undefined;
+          if (value?.length !== 1) {
+            unmapped(named[0] as string);
+            return icon;
+          }
+          return value[0] as Value;
+        };
+        const leading = slotView(param.label.leadingViews, glyph(param.label.leading));
         const text = textOf(node.children);
-        const trailing = glyph(param.label.trailing);
+        const trailing = slotView(param.label.trailingViews, glyph(param.label.trailing));
         if (leading) args.push(leading);
         if (text !== undefined)
           args.push({
@@ -1611,6 +2647,8 @@ export function transformSource(source: string, options: TransformOptions): File
       for (const option of Object.keys(prop.options ?? {}))
         if (given.has(option)) consumed.add(option);
     }
+    /** Its `style`, the node's box: chained after its own modifiers. */
+    const styled: PropMod[] = [];
     for (const [name, value] of given) {
       if (consumed.has(name)) continue;
       const differs = rule.differs?.[name];
@@ -1627,6 +2665,31 @@ export function transformSource(source: string, options: TransformOptions): File
         else props.push({ name: prop.modifier, args: [view] });
         continue;
       }
+      if (prop?.form === 'style') {
+        const box = value ? componentStyle(attributeExpression(value), rule.node) : undefined;
+        if (!box) unmapped(name);
+        else if ('reasons' in box) reasons.push(...box.reasons);
+        else styled.push(...box.mods);
+        continue;
+      }
+      if (prop?.form === 'fill') {
+        const ink = value ? fillOf(node, attributeExpression(value)) : undefined;
+        if (ink === undefined) unmapped(name);
+        else props.push({ name: prop.modifier, args: [ink] });
+        continue;
+      }
+      if (prop?.form === 'reselect') {
+        const handlers = value ? reselectOf(attributeExpression(value)) : undefined;
+        if (!handlers) unmapped(name);
+        else props.push(...handlers);
+        continue;
+      }
+      if (prop?.form === 'textStyle') {
+        const text = value ? partTextStyleOf(attributeExpression(value)) : undefined;
+        if (text) props.push(...text);
+        else unmapped(name);
+        continue;
+      }
       if (prop?.form === 'contentStyle') {
         const margins = value ? contentStyleOf(attributeExpression(value)) : undefined;
         if (margins) props.push(...margins);
@@ -1641,7 +2704,7 @@ export function transformSource(source: string, options: TransformOptions): File
         else if (mark) props.push({ name: prop.modifier, args: [] });
         continue;
       }
-      const values = prop ? valuesOf(prop.form, value, prop.map) : undefined;
+      const values = prop ? valuesOf(prop.form, value, prop.map, prop.unset) : undefined;
       if (!prop || !values) {
         unmapped(name);
         continue;
@@ -1722,6 +2785,7 @@ export function transformSource(source: string, options: TransformOptions): File
     )
       unmapped('children');
     for (const name of rule.always ?? []) props.push({ name, args: [] });
+    props.push(...styled);
     // An optional argument left out at the end (children included) is no argument.
     while (args.length > 0 && isAbsent(args[args.length - 1] as Value)) args.pop();
     if (reasons.length) return { reasons };
@@ -1850,6 +2914,7 @@ export function transformSource(source: string, options: TransformOptions): File
     form: Form,
     value: AnyNode,
     map?: Readonly<Record<string, string>>,
+    unset?: boolean,
   ): Value[] | undefined {
     if (value === null)
       // A bare prop is `true`.
@@ -1869,6 +2934,29 @@ export function transformSource(source: string, options: TransformOptions): File
         return hasJsx(expression) ? undefined : [{ node: expression, hole: 'string' }];
       }
       case 'token': {
+        // Tokens chosen by a plain condition (`sensitive ? 'error' : 'default'`) are that choice;
+        // none is a branch only where the modifier takes `undefined` (`unset`).
+        if (
+          n.ConditionalExpression.check(expression) &&
+          (isPlainRead(expression.test) || isBooleanForm(expression.test))
+        ) {
+          const branch = (node: AnyNode): Value | undefined =>
+            unset && noStyle(node) && !n.BooleanLiteral.check(node)
+              ? { $: 'absent' }
+              : valuesOf('token', node, map)?.[0];
+          const then = branch(expression.consequent);
+          const otherwise = branch(expression.alternate);
+          return then === undefined || otherwise === undefined
+            ? undefined
+            : [
+                {
+                  $: 'choose',
+                  test: { node: expression.test, hole: 'condition' },
+                  then,
+                  otherwise,
+                },
+              ];
+        }
         // A token is a static string, or a static number of points (`spacing={12}`).
         const number = staticNumber(value);
         const text = staticString(value) ?? (number === undefined ? undefined : String(number));
@@ -1903,6 +2991,10 @@ export function transformSource(source: string, options: TransformOptions): File
           n.CallExpression.check(expression)
           ? [{ node: expression, hole: 'handler' }]
           : undefined;
+      case 'content':
+        return n.JSXElement.check(expression) || n.JSXFragment.check(expression)
+          ? valuesOf('view', value, map)
+          : valuesOf('string', value, map);
       case 'view': {
         if (n.StringLiteral.check(expression) || n.TemplateLiteral.check(expression))
           return undefined;
@@ -1934,11 +3026,7 @@ export function transformSource(source: string, options: TransformOptions): File
           ? undefined
           : [{ node: expression, hole: 'items' }];
       case 'element':
-        if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
-        // A fragment, or a `const` holding an element, is drawn as it is.
-        return n.JSXFragment.check(expression) || elementReads.has(expression)
-          ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
-          : undefined;
+        return elementPropOf(expression);
       case 'row': {
         const row = rowOf(expression);
         return row === undefined ? undefined : [row];
@@ -1946,6 +3034,38 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'placement':
         return placementOf(value);
     }
+  }
+
+  /**
+   * An element prop as a view: an element converted; a fragment, a language
+   * view's element, a `const` holding an element, or what a render function
+   * returns (`renderEmpty()`, a lowercase callee: a component is never called)
+   * drawn as it is; an element or none chosen by a plain condition (`loading ?
+   * <Spinner /> : null`) as that choice.
+   */
+  function elementPropOf(expression: AnyNode): Value[] | undefined {
+    if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const branch = (node: AnyNode): Value | undefined =>
+        noStyle(node) ? { $: 'null' } : elementPropOf(node)?.[0];
+      const then = branch(expression.consequent);
+      const otherwise = branch(expression.alternate);
+      if (then === undefined || otherwise === undefined) return undefined;
+      return [{ $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise }];
+    }
+    const rendered =
+      n.CallExpression.check(expression) &&
+      n.Identifier.check(expression.callee) &&
+      /^[a-z]/.test(expression.callee.name);
+    return n.JSXFragment.check(expression) ||
+      isToElement(expression) ||
+      elementReads.has(expression) ||
+      rendered
+      ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
+      : undefined;
   }
 
   /**
@@ -1995,15 +3115,73 @@ export function transformSource(source: string, options: TransformOptions): File
   }
 
   /**
+   * A part's label style (a tab's `textStyle`), an object literal of a
+   * `fontSize` and `lineHeight` of the spec's tokens and a `fontWeight`, as
+   * `.font()`, `.leading()` and `.weight()`; a weight chosen by a plain
+   * condition (`open ? '700' : '500'`) is the weight it chooses.
+   */
+  function partTextStyleOf(expression: AnyNode): PropMod[] | undefined {
+    if (!n.ObjectExpression.check(expression)) return undefined;
+    const weightOf = (node: AnyNode): Value | undefined => {
+      const text =
+        staticString(node) ?? (n.NumericLiteral.check(node) ? String(node.value) : undefined);
+      if (text !== undefined) return WEIGHT_BY_VALUE[text];
+      if (
+        n.ConditionalExpression.check(node) &&
+        (isPlainRead(node.test) || isBooleanForm(node.test))
+      ) {
+        const then = weightOf(node.consequent);
+        const otherwise = weightOf(node.alternate);
+        return then === undefined || otherwise === undefined
+          ? undefined
+          : { $: 'choose', test: { node: node.test, hole: 'condition' }, then, otherwise };
+      }
+      return undefined;
+    };
+    const mods: PropMod[] = [];
+    for (const property of expression.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key)
+      )
+        return undefined;
+      const key = property.key.name as string;
+      if (key === 'fontWeight') {
+        const weight = weightOf(property.value);
+        if (weight === undefined) return undefined;
+        mods.push({ name: 'weight', args: [weight] });
+        continue;
+      }
+      const mod = textDeclaration(key, property.value);
+      if (!mod) return undefined;
+      mods.push({ name: mod.name, args: [...mod.args] });
+    }
+    return mods;
+  }
+
+  /**
    * A static content container style (an object literal or a module
    * StyleSheet's style) of paddings and a gap, each a space token, as the
    * scroll view's content margins and spacing: the language's content
    * container style holds the same keys.
    */
   function contentStyleOf(expression: AnyNode): PropMod[] | undefined {
+    // Content that grows while a condition holds (`empty ? { flexGrow: 1 } : undefined`):
+    // `.contentGrows(condition)`, the style itself nothing but the grow.
+    if (
+      n.ConditionalExpression.check(expression) &&
+      noStyle(expression.alternate) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const grown = contentStyleOf(expression.consequent);
+      return grown?.length === 1 && grown[0]?.name === 'contentGrows'
+        ? [{ name: 'contentGrows', args: [{ node: expression.test, hole: 'condition' }] }]
+        : undefined;
+    }
     const object = moduleStyleReads.has(expression)
       ? styleSheets.get(expression.object.name)?.get(expression.property.name)
-      : expression;
+      : (styleConstantReads.get(expression) ?? expression);
     if (!n.ObjectExpression.check(object)) return undefined;
     const mods: PropMod[] = [];
     for (const property of object.properties) {
@@ -2013,6 +3191,11 @@ export function transformSource(source: string, options: TransformOptions): File
         !n.Identifier.check(property.key)
       )
         return undefined;
+      // A content container that grows to the scroll: `.contentGrows()`.
+      if (property.key.name === 'flexGrow' && staticNumber(property.value) === 1) {
+        mods.push({ name: 'contentGrows', args: [] });
+        continue;
+      }
       const token = SPACE[String(staticNumber(property.value))];
       const key = property.key.name as string;
       const edge = key === 'gap' ? undefined : CONTENT_EDGE[key];
@@ -2025,6 +3208,49 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     if (object !== expression) styleLiterals.set(expression, recast.print(object).code);
     return mods;
+  }
+
+  /** A style that is a fill alone (`{ backgroundColor: '#000' }`) as its colour (`inkOf`). */
+  function fillOf(node: AnyNode, expression: AnyNode): Value | undefined {
+    const [property, ...rest] = n.ObjectExpression.check(expression) ? expression.properties : [];
+    if (
+      rest.length ||
+      !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+      property.computed ||
+      !n.Identifier.check(property.key) ||
+      property.key.name !== 'backgroundColor'
+    )
+      return undefined;
+    return inkOf(node, property.value);
+  }
+
+  /**
+   * Bloom Screen's `reselect` (`{ refresh, isAtTop, scrollToTop }`, each as
+   * written) as `.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`:
+   * where the top is comes with how to go there, both or neither.
+   */
+  function reselectOf(expression: AnyNode): PropMod[] | undefined {
+    if (!n.ObjectExpression.check(expression)) return undefined;
+    const handlers = new Map<string, Carried>();
+    for (const property of expression.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key) ||
+        !['refresh', 'isAtTop', 'scrollToTop'].includes(property.key.name) ||
+        hasJsx(property.value)
+      )
+        return undefined;
+      handlers.set(property.key.name, { node: property.value, hole: 'handler' });
+    }
+    const [refresh, isAtTop, scrollToTop] = ['refresh', 'isAtTop', 'scrollToTop'].map((key) =>
+      handlers.get(key),
+    );
+    if (Boolean(isAtTop) !== Boolean(scrollToTop)) return undefined;
+    const mods: PropMod[] = [];
+    if (refresh) mods.push({ name: 'onReselect', args: [refresh] });
+    if (isAtTop && scrollToTop) mods.push({ name: 'reselectTop', args: [isAtTop, scrollToTop] });
+    return mods.length ? mods : undefined;
   }
 
   /**
@@ -2072,8 +3298,8 @@ export function transformSource(source: string, options: TransformOptions): File
    * React Native's `RefreshControl` as a pull to refresh: its `refreshing` and
    * the binding a pull writes `true` to, which calls `onRefresh` with no
    * arguments as React Native does; its `tintColor` and `colors` as the tint
-   * when both are one theme colour, since the tint paints both. A `tintColor`
-   * alone tints iOS only, which no tint draws.
+   * when both are one theme colour, since the tint paints both; each alone, or
+   * two colours, the tint of its platform (`{ ios: 'primary' }`).
    */
   function refreshOf(expression: AnyNode): Value[] | undefined {
     const local = n.JSXElement.check(expression) ? jsxName(expression) : undefined;
@@ -2090,21 +3316,28 @@ export function transformSource(source: string, options: TransformOptions): File
     const { refreshing, onRefresh, tintColor, colors, ...rest } = Object.fromEntries(given);
     if (Object.keys(rest).length || !refreshing || !onRefresh || hasJsx(refreshing))
       return undefined;
-    // A function of no parameters ignores the `true` a pull writes; a named one is called with none.
-    const action = actionOf(onRefresh);
-    if (!action) return undefined;
+    // The refreshing value and the action a pull runs, as written: `{ refreshing, onRefresh }`.
+    if (hasJsx(onRefresh)) return undefined;
     const binding: Value = {
-      $: 'binding',
-      binding: [{ node: refreshing, hole: 'boolean' }, action],
+      $: 'options',
+      entries: [
+        ['refreshing', { node: refreshing, hole: 'boolean' }],
+        ['onRefresh', { node: onRefresh, hole: 'handler' }],
+      ],
     };
+    // iOS's `tintColor` and Android's `colors` (one theme colour), each the tint of its platform.
+    const ios = tintColor ? themeRoles.get(tintColor) : undefined;
+    const [only, ...others] = n.ArrayExpression.check(colors) ? colors.elements : [];
+    const android = colors && only && !others.length ? themeRoles.get(only) : undefined;
+    if ((tintColor && !ios) || (colors && !android)) return undefined;
     // Its import goes with the element when nothing else draws one.
     convertedLocals.add(local as string);
-    if (!tintColor && !colors) return [binding];
-    const tint = tintColor && themeRoles.get(tintColor);
-    const [only, ...others] = n.ArrayExpression.check(colors) ? colors.elements : [];
-    return tint && only && !others.length && themeRoles.get(only) === tint
-      ? [binding, tint]
-      : undefined;
+    if (!ios && !android) return [binding];
+    if (ios === android) return [binding, ios as string];
+    const entries: [string, Value][] = [];
+    if (ios) entries.push(['ios', ios]);
+    if (android) entries.push(['android', android]);
+    return [binding, { $: 'options', entries }];
   }
 
   /**
@@ -2201,12 +3434,392 @@ export function transformSource(source: string, options: TransformOptions): File
     return hasJsx(run.expression) ? undefined : { node: run.expression, hole: 'string' };
   }
 
+  /**
+   * Bloom's `DropdownMenu` tree as `Menu(trigger, ...rows).menuStyle('dropdown')`,
+   * which draws Bloom's DropdownMenu on every platform (parity/context-menu.cases.tsx):
+   * a `DropdownMenuTrigger asChild` around one view the codemod converts, and a
+   * `DropdownMenuContent` of `DropdownMenuItem`s and `DropdownMenuSeparator`s
+   * (`Divider()`), with the trigger's label (`.label()`). The menu holds its
+   * own open state, so a menu the app opens itself (`open`) stays JSX. An
+   * item's `leading` is a language glyph, `toElement(Icon(icon).size(s).foreground(f))`:
+   * the row's `.icon()`, `.iconSize()` and `.iconForeground()`.
+   */
+  function convertDropdownMenu(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
+    const reasons: Reason[] = [];
+    const fail = (subject: string, code: string, why: string) => {
+      reasons.push({ subject, code: `DropdownMenu:${code}`, why });
+      return { reasons };
+    };
+    const part = (element: AnyNode) => {
+      const local = n.JSXElement.check(element) ? jsxName(element) : undefined;
+      const source = local ? sources.get(local) : undefined;
+      return source?.module === DROPDOWN ? source.imported : undefined;
+    };
+    const elements = (parent: AnyNode): AnyNode[] | undefined => {
+      const out: AnyNode[] = [];
+      for (const child of parent.children as AnyNode[]) {
+        if (n.JSXText.check(child) && cleanJsxText(child.value) === '') continue;
+        if (!n.JSXElement.check(child)) return undefined;
+        out.push(child);
+      }
+      return out;
+    };
+    const attributes = (element: AnyNode) => {
+      const out = new Map<string, AnyNode>();
+      for (const attribute of element.openingElement.attributes as AnyNode[]) {
+        if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+          return undefined;
+        out.set(attribute.name.name, attribute.value);
+      }
+      return out;
+    };
+    // A menu the app opens itself (`open` and `onOpenChange`) is `.presented([open, onOpenChange])`.
+    const menuProps = attributes(node);
+    const opened = menuProps?.get('open');
+    const onOpenChange = menuProps?.get('onOpenChange');
+    const presented = opened && onOpenChange && menuProps?.size === 2;
+    if (menuProps?.size !== 0 && !presented)
+      return fail(
+        'props',
+        'props',
+        'a menu with props besides `open` and `onOpenChange`, its `.presented()` binding',
+      );
+    const [trigger, content, ...rest] = elements(node) ?? [];
+    if (
+      part(trigger) !== 'DropdownMenuTrigger' ||
+      part(content) !== 'DropdownMenuContent' ||
+      rest.length
+    )
+      return fail('children', 'children', 'children that are no trigger and content');
+    const triggerProps = attributes(trigger);
+    const contentProps = attributes(content);
+    const label = triggerProps?.get('label');
+    if (
+      !triggerProps?.has('asChild') ||
+      [...triggerProps.keys()].some((key) => key !== 'asChild' && key !== 'label')
+    )
+      return fail(
+        'trigger',
+        'trigger',
+        'a trigger that is not `asChild`, or with props besides its label',
+      );
+    const labelText = (value: AnyNode | undefined) =>
+      value === undefined ? undefined : source.slice(value.start, value.end);
+    if (
+      !contentProps ||
+      labelText(contentProps.get('label')) !== labelText(label) ||
+      [...contentProps.keys()].some((key) => key !== 'label' && key !== 'testID')
+    )
+      return fail(
+        'content',
+        'content',
+        'a content whose label is not its trigger’s, or with other props',
+      );
+    const [view, ...others] = elements(trigger) ?? [];
+    const triggerView = view ? convert(view) : undefined;
+    if (!triggerView || others.length || !('ir' in triggerView))
+      return fail('trigger', 'trigger', 'a trigger that is no one view the codemod converts');
+    /** One text child as a row's title: a literal, or the string it carries. */
+    const titleOf = (element: AnyNode): Value | undefined => {
+      const texts = (element?.children as AnyNode[] | undefined)?.filter(
+        (child) => !(n.JSXText.check(child) && cleanJsxText(child.value) === ''),
+      );
+      const text = texts?.length === 1 ? texts[0] : undefined;
+      return n.JSXText.check(text)
+        ? cleanJsxText(text.value)
+        : n.JSXExpressionContainer.check(text) && !n.JSXEmptyExpression.check(text.expression)
+          ? (staticString(text) ?? { node: text.expression, hole: 'string' })
+          : undefined;
+    };
+    type RowView = { $: 'view'; view: Ir };
+    const rowView = (node: string, args: Value[], props: PropMod[]): RowView => ({
+      $: 'view',
+      view: { type: 'component', node, within: undefined, args, props, key: null },
+    });
+    /**
+     * An item, or a radio item (`radio`): its value is the row's tag, the
+     * choice it is in its section of choices.
+     */
+    const itemRow = (row: AnyNode, radio: boolean): RowView | { reasons: Reason[] } => {
+      const props =
+        row && part(row) === (radio ? 'DropdownMenuRadioItem' : 'DropdownMenuItem')
+          ? attributes(row)
+          : undefined;
+      const title = titleOf(row);
+      if (!props || title === undefined)
+        return fail('row', 'row', 'a row that is no item with one text, or a separator');
+      const mods: PropMod[] = [];
+      for (const [name, value] of props) {
+        const expression = value ? attributeExpression(value) : undefined;
+        if (name === 'onPress' && expression && !radio)
+          mods.push({ name, args: [{ node: expression, hole: 'handler' }] });
+        else if (name === 'value' && expression && radio)
+          mods.push({
+            name: 'tag',
+            args: [staticString(value) ?? { node: expression, hole: 'string' }],
+          });
+        else if (name === 'variant' && staticString(value) === 'destructive' && !radio)
+          mods.push({ name: 'destructive', args: [] });
+        else if (name === 'variant' && staticString(value) === 'default' && !radio) continue;
+        else if ((name === 'disabled' || name === 'keepOpen') && value === null)
+          mods.push({ name, args: [] });
+        else if (name === 'testID' && staticString(value) !== undefined)
+          mods.push({ name, args: [staticString(value) as string] });
+        else if (name === 'leading' && expression) {
+          const glyph = menuGlyph(expression);
+          if (!glyph)
+            return fail(
+              name,
+              'leading',
+              'a leading view that is no `toElement(Icon(icon).size(s).foreground(f))`',
+            );
+          mods.unshift(...glyph);
+        } else
+          return fail(
+            name,
+            `item:${name}`,
+            `an item's \`${name}\` (or its form here) has no mapping`,
+          );
+      }
+      // The tag first, as a choice is written: `Item(title).tag(value)`.
+      mods.sort((a, b) => Number(b.name === 'tag') - Number(a.name === 'tag'));
+      return rowView('Item', [title], mods);
+    };
+    const rows: Value[] = [];
+    /** Elements the menu holds below its content's rows (a radio group's items). */
+    const nested: AnyNode[] = [];
+    const contentRows = elements(content) ?? [undefined];
+    for (let index = 0; index < contentRows.length; index++) {
+      const row = contentRows[index];
+      if (
+        part(row) === 'DropdownMenuSeparator' &&
+        attributes(row)?.size === 0 &&
+        !elements(row)?.length
+      ) {
+        rows.push(rowView('Divider', [], []));
+        continue;
+      }
+      // A label over a radio group, or a radio group alone: a Section of choices,
+      // `Section(...items).title(label).selection([value, onValueChange])`.
+      const labelled =
+        part(row) === 'DropdownMenuLabel' &&
+        part(contentRows[index + 1]) === 'DropdownMenuRadioGroup' &&
+        attributes(row)?.size === 0;
+      const group = labelled ? contentRows[index + 1] : row;
+      if (part(group) === 'DropdownMenuRadioGroup') {
+        const title = labelled ? titleOf(row) : undefined;
+        const groupProps = attributes(group);
+        const value = groupProps?.get('value');
+        const set = groupProps?.get('onValueChange');
+        const items = elements(group);
+        if (
+          (labelled && title === undefined) ||
+          !value ||
+          !set ||
+          groupProps?.size !== 2 ||
+          !items?.length
+        )
+          return fail(
+            'radio-group',
+            'radio-group',
+            'a radio group that is no `value` and `onValueChange` over radio items, under one label',
+          );
+        const choices: Value[] = [];
+        for (const item of items) {
+          const choice = itemRow(item, true);
+          if ('reasons' in choice) return choice;
+          choices.push(choice);
+        }
+        nested.push(...items);
+        const sectionProps: PropMod[] = [];
+        if (title !== undefined) sectionProps.push({ name: 'title', args: [title] });
+        sectionProps.push({
+          name: 'selection',
+          args: [
+            {
+              $: 'binding',
+              binding: [
+                { node: attributeExpression(value), hole: 'string' },
+                { node: attributeExpression(set), hole: 'handler' },
+              ],
+            },
+          ],
+        });
+        rows.push(rowView('Section', choices, sectionProps));
+        if (labelled) index++;
+        continue;
+      }
+      const item = itemRow(row, false);
+      if ('reasons' in item) return item;
+      rows.push(item);
+    }
+    const props: PropMod[] = [];
+    if (label) {
+      const expression = attributeExpression(label);
+      props.push({
+        name: 'label',
+        args: [staticString(label) ?? { node: expression, hole: 'string' }],
+      });
+    }
+    const testID = contentProps.get('testID');
+    if (testID) {
+      const text = staticString(testID);
+      if (text === undefined) return fail('testID', 'testID', 'a testID set at runtime');
+      props.push({ name: 'testID', args: [text] });
+    }
+    props.push({ name: 'menuStyle', args: ['dropdown'] });
+    if (presented)
+      props.push({
+        name: 'presented',
+        args: [
+          {
+            $: 'binding',
+            binding: [
+              { node: attributeExpression(opened), hole: 'boolean' },
+              { node: attributeExpression(onOpenChange), hole: 'handler' },
+            ],
+          },
+        ],
+      });
+    for (const element of [trigger, content, ...(elements(content) ?? []), ...nested])
+      results.set(element, {
+        ir: { type: 'component', node: 'Menu', within: undefined, args: [], props: [], key: null },
+      });
+    return {
+      ir: {
+        type: 'component',
+        node: 'Menu',
+        within: undefined,
+        args: [{ $: 'view', view: triggerView.ir }, ...rows],
+        props,
+        key: null,
+      },
+    };
+  }
+
+  /**
+   * Bloom's `Fab` as `FAB(Icon(icon), Text(label)).glass(identity)`
+   * (parity/button.cases.tsx): the language's FAB is on glass, so an app's
+   * solid Fab names no glass. Its `icon` is the glyph, its `label` the
+   * extended label, `accessibilityLabel` its `.label()`, and `size`,
+   * `appearance`, `tone`, `disabled`, `collapsed`, `onPress` and `testID` the
+   * modifiers of the same meaning.
+   */
+  function convertFab(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
+    const reasons: Reason[] = [];
+    const fail = (subject: string, why: string) => {
+      reasons.push({ subject, code: `Fab:${subject}`, why });
+      return { reasons };
+    };
+    if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
+      return fail('children', 'children: a Fab draws its icon and label props');
+    const views: Value[] = [];
+    const props: PropMod[] = [];
+    const TOKENS: Readonly<Record<string, readonly [modifier: string, set: string]>> = {
+      size: ['size', 'controlSize'],
+      appearance: ['style', 'appearance'],
+      tone: ['tint', 'tone'],
+    };
+    let icon: Value | undefined;
+    let label: Value | undefined;
+    for (const attribute of node.openingElement.attributes as AnyNode[]) {
+      if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+        return fail('spread', 'spread props: the codemod cannot see what they set');
+      const name = attribute.name.name as string;
+      const { value } = attribute;
+      const expression = value ? attributeExpression(value) : undefined;
+      const text = staticString(value);
+      if (
+        name === 'icon' &&
+        n.Identifier.check(expression) &&
+        kindOf(sources.get(expression.name)) === 'icon'
+      )
+        icon = {
+          $: 'view',
+          view: { type: 'icon', component: expression.name, mods: [], key: null },
+        };
+      else if (name === 'label' && expression && !hasJsx(expression))
+        label = text ?? { node: expression, hole: 'string' };
+      else if (name === 'accessibilityLabel' && expression && !hasJsx(expression))
+        props.push({ name: 'label', args: [text ?? { node: expression, hole: 'string' }] });
+      else if (TOKENS[name] && text !== undefined && spec.enums[TOKENS[name][1]]?.includes(text))
+        props.push({ name: TOKENS[name][0], args: [text] });
+      else if ((name === 'disabled' || name === 'collapsed') && (value === null || expression))
+        props.push({
+          name,
+          args: [value === null ? true : { node: expression, hole: 'boolean' }],
+        });
+      else if (name === 'onPress' && expression)
+        props.push({ name, args: [{ node: expression, hole: 'handler' }] });
+      else if (name === 'testID' && text !== undefined) props.push({ name, args: [text] });
+      else return fail(name, `a Fab's \`${name}\` (or its form here) has no mapping`);
+    }
+    if (icon === undefined) return fail('icon', 'a Fab with no icon the codemod reads');
+    views.push(icon);
+    if (label !== undefined)
+      views.push({
+        $: 'view',
+        view: {
+          type: 'text',
+          raw: false,
+          resolved: { axis: 'column', mods: [], variants: [] },
+          choice: null,
+          props: [],
+          key: null,
+          runs: [
+            typeof label === 'string'
+              ? { type: 'string', value: label }
+              : { type: 'expr', value: label as Carried },
+          ],
+        },
+      });
+    props.push({ name: 'glass', args: [{ $: 'language', name: 'identity' }] });
+    return {
+      ir: { type: 'component', node: 'FAB', within: undefined, args: views, props, key: null },
+    };
+  }
+
+  /** A row's glyph as the language writes it, `toElement(Icon(icon).size(s).foreground(f))`, as the row's modifiers. */
+  function menuGlyph(expression: AnyNode): PropMod[] | undefined {
+    if (!isToElement(expression) || expression.arguments.length !== 1) return undefined;
+    const chain: [string, AnyNode][] = [];
+    let at: AnyNode = expression.arguments[0];
+    while (n.CallExpression.check(at) && n.MemberExpression.check(at.callee)) {
+      if (at.arguments.length !== 1 || !n.Identifier.check(at.callee.property)) return undefined;
+      chain.unshift([at.callee.property.name, at.arguments[0]]);
+      at = at.callee.object;
+    }
+    const callee = n.CallExpression.check(at) ? at.callee : undefined;
+    const base = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+    const icon = at?.arguments?.[0];
+    if (
+      base?.module !== LANGUAGE_MODULE ||
+      base.imported !== 'Icon' ||
+      at.arguments.length !== 1 ||
+      !n.Identifier.check(icon) ||
+      kindOf(sources.get(icon.name)) !== 'icon'
+    )
+      return undefined;
+    const size = chain.find(([name]) => name === 'size')?.[1];
+    const ink = chain.find(([name]) => name === 'foreground')?.[1];
+    // Both named: the menu's own glyph (`md`, quiet) is drawn otherwise.
+    if (chain.length !== 2 || staticString(size) === undefined || staticString(ink) === undefined)
+      return undefined;
+    return [
+      { name: 'icon', args: [{ $: 'icon', name: icon.name }] },
+      { name: 'iconSize', args: [staticString(size) as string] },
+      { name: 'iconForeground', args: [staticString(ink) as string] },
+    ];
+  }
+
   /** Bloom's `Button`, as the language's Button parity cases draw it (`packages/bloom-language/parity/button.cases.tsx`). */
   function convertButton(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
     const reasons: Reason[] = [];
     const fail = (subject: string, code: string, why: string) =>
       reasons.push({ subject, code, why });
     const props: PropMod[] = [];
+    /** Its `style`, the button's box: chained after its own modifiers. */
+    const styled: PropMod[] = [];
     let key: Carried | null = null;
     let leading: string | null = null;
     let trailing: string | null = null;
@@ -2253,6 +3866,41 @@ export function transformSource(source: string, options: TransformOptions): File
         (value === null || value === undefined)
       )
         flags.add(name);
+      // An appearance or tone set at runtime is the modifier's own expression.
+      else if (ENUM[name] && expression && !hasJsx(expression))
+        props.push({ name: ENUM[name] as string, args: [{ node: expression, hole: 'string' }] });
+      else if (name === 'stopPropagation' && (value === null || value === undefined))
+        props.push({ name: 'stopPropagation', args: [] });
+      else if (name === 'iconSize' && ICON_SIZE_TOKEN.has(staticNumber(value) as number))
+        props.push({
+          name: 'iconSize',
+          args: [ICON_SIZE_TOKEN.get(staticNumber(value) as number) as string],
+        });
+      // No spinner while loading.
+      else if (name === 'loadingIndicator' && n.NullLiteral.check(expression))
+        props.push({ name: 'loadingIndicator', args: [{ node: expression, hole: 'handler' }] });
+      // A menu trigger's open state: Bloom's aria-expanded is the language's accessibility state.
+      else if (name === 'aria-expanded' && expression && !hasJsx(expression))
+        props.push({
+          name: 'accessibilityState',
+          args: [
+            {
+              node: recast.types.builders.objectExpression([
+                recast.types.builders.objectProperty(
+                  recast.types.builders.identifier('expanded'),
+                  expression,
+                ),
+              ]),
+              hole: 'state',
+            },
+          ],
+        });
+      // Its inks, each a theme colour read as its role.
+      else if ((name === 'color' || name === 'hoverColor') && expression && roleOf(expression))
+        props.push({
+          name: name === 'color' ? 'foreground' : 'hoverForeground',
+          args: [roleOf(expression) as Value],
+        });
       else if (name === 'leadingIcon' && icon(value)) leading = icon(value) as string;
       else if (name === 'trailingIcon' && icon(value)) trailing = icon(value) as string;
       else if (name === 'accessibilityLabel' && value)
@@ -2267,8 +3915,13 @@ export function transformSource(source: string, options: TransformOptions): File
           name: 'testID',
           args: [staticString(value) ?? { node: expression, hole: 'string' }],
         });
-      else fail(name, `button:${name}`, `Button's \`${name}\` (or its form here) has no mapping`);
+      else if (name === 'style' && expression) {
+        const box = componentStyle(expression, 'Button');
+        if ('reasons' in box) reasons.push(...box.reasons);
+        else styled.push(...box.mods);
+      } else fail(name, `button:${name}`, `Button's \`${name}\` (or its form here) has no mapping`);
     }
+    props.push(...styled);
     const shape = flags.has('iconOnly')
       ? flags.has('wide')
         ? 'pill'
@@ -2337,13 +3990,112 @@ export function transformSource(source: string, options: TransformOptions): File
     return { type: 'embed', content: { node: expression, hole: 'element' } };
   }
 
+  /**
+   * React Native's `pointerEvents` as the language's hit testing: a static
+   * value, or values (and none, `undefined`) chosen by a plain condition
+   * (`split ? 'box-none' : undefined`). `auto` alone stays JSX, the default.
+   */
+  function hitTestingOf(expression: AnyNode): Value | undefined {
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const branch = (node: AnyNode): Value | undefined =>
+        n.Identifier.check(node) && node.name === 'undefined'
+          ? { $: 'absent' }
+          : staticString(node) === 'auto'
+            ? true
+            : hitTestingOf(node);
+      const then = branch(expression.consequent);
+      const otherwise = branch(expression.alternate);
+      return then === undefined || otherwise === undefined
+        ? undefined
+        : { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
+    }
+    return HIT_TESTING[staticString(expression) ?? ''];
+  }
+
+  // ── styles left unread ───────────────────────────────────────────────
+
+  /**
+   * How often each module style is read: a StyleSheet's style by
+   * `sheet.key`, a module style constant by its name (its declaration not counted).
+   */
+  function styleReadsIn(root: AnyNode): Map<string, number> {
+    const reads = new Map<string, number>();
+    const count = (name: string) => reads.set(name, (reads.get(name) ?? 0) + 1);
+    recast.visit(root, {
+      visitMemberExpression(path) {
+        const { object, property } = path.node;
+        if (
+          !path.node.computed &&
+          n.Identifier.check(object) &&
+          n.Identifier.check(property) &&
+          styleSheets.get(object.name)?.has(property.name)
+        )
+          count(`${object.name}.${property.name}`);
+        this.traverse(path);
+      },
+      visitIdentifier(path) {
+        const parent = path.parent?.node;
+        const declares = n.VariableDeclarator.check(parent) && parent.id === path.node;
+        const member =
+          (n.MemberExpression.check(parent) && parent.property === path.node && !parent.computed) ||
+          (n.ObjectProperty.check(parent) && parent.key === path.node && !parent.computed);
+        if (!declares && !member && styleConstants.has(path.node.name)) count(path.node.name);
+        this.traverse(path);
+      },
+    });
+    return reads;
+  }
+
+  /**
+   * The module styles the conversion leaves unread: a StyleSheet's style, or a
+   * module style constant, that an element read before the walk and nothing
+   * reads now is removed (a style never read before stays: not the
+   * conversion's). A StyleSheet left empty goes with its declaration, its
+   * `StyleSheet` import then pruned as a converted component's is. An
+   * exported style is the module's API and stays.
+   */
+  function removeUnreadStyles(before: ReadonlyMap<string, number>): void {
+    const after = styleReadsIn(ast);
+    const unread = (name: string) => (before.get(name) ?? 0) > 0 && !after.get(name);
+    const body = ast.program.body as AnyNode[];
+    for (const statement of [...body]) {
+      if (!n.VariableDeclaration.check(statement) || statement.kind !== 'const') continue;
+      statement.declarations = statement.declarations.filter((declarator: AnyNode) => {
+        if (!n.Identifier.check(declarator.id)) return true;
+        const name = declarator.id.name as string;
+        if (styleConstants.has(name)) return !unread(name);
+        const sheet = styleSheets.get(name);
+        const object = sheet ? declarator.init.arguments[0] : undefined;
+        if (!object) return true;
+        object.properties = object.properties.filter(
+          (property: AnyNode) =>
+            !(n.Identifier.check(property.key) && unread(`${name}.${property.key.name}`)),
+        );
+        if (object.properties.length > 0) return true;
+        if (styleSheetLocal) convertedLocals.add(styleSheetLocal);
+        return false;
+      });
+      if (statement.declarations.length === 0) body.splice(body.indexOf(statement), 1);
+    }
+  }
+
   // ── printing ─────────────────────────────────────────────────────────
 
   /** Prints the chain; with `holes`, each carried value is its hole. */
   function print(ir: Ir, carry: (c: Carried) => string, root = false): string {
     switch (ir.type) {
-      case 'embed':
-        return `${lang('Embed')}(${carry(ir.content)})`;
+      case 'embed': {
+        const text = carry(ir.content);
+        const shown = ir.content.node.__carried ?? ir.content.node;
+        // A language view the file placed with toElement() is that view: `Embed(toElement(v))` is
+        // `v`. (A fixture's hole stands for the element, so there it stays embedded.)
+        if (isToElement(shown) && shown.arguments.length === 1 && text === recast.print(shown).code)
+          return recast.print(shown.arguments[0]).code;
+        return `${lang('Embed')}(${text})`;
+      }
       case 'comment':
         return ir.text;
       case 'screen':
@@ -2353,7 +4105,7 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'map':
         return `${carry(ir.items)}.map((${ir.params.map((param) => recast.print(param).code).join(', ')}) => ${print(ir.body, carry)})`;
       case 'icon':
-        return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.color ? `.foreground(${appColorTable}.color.${ir.color.name})` : ''}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
+        return `${lang('Icon')}(${ir.component})${ir.mods.map((mod) => printMod(mod, carry)).join('')}${ir.color ? `.foreground(${appColorTable}.color.${ir.color.name})` : ''}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       case 'component': {
         // Its children (the trailing views) with their comments; the arguments before them as values.
         const first = ir.args.findIndex((a) => isTagged(a) && a.$ === 'view');
@@ -2411,12 +4163,12 @@ export function transformSource(source: string, options: TransformOptions): File
     let out = resolved.mods
       .map((mod, i) => {
         const other = choice && 'mods' in choice ? choice.mods[i] : undefined;
-        if (!choice || !other) return printMod(mod);
+        if (!choice || !other) return printMod(mod, carry);
         const args = mod.args.map((arg, j) => {
           const alternative = other.args[j] as Arg;
           return arg === alternative
-            ? printArg(arg)
-            : `${carry(choice.test)} ? ${printArg(arg)} : ${printArg(alternative)}`;
+            ? printArg(arg, carry)
+            : `${carry(choice.test)} ? ${printArg(arg, carry)} : ${printArg(alternative, carry)}`;
         });
         return `.${mod.name}(${args.join(', ')})`;
       })
@@ -2432,10 +4184,11 @@ export function transformSource(source: string, options: TransformOptions): File
         [holds, choice.only.whenTrue],
         [fails, choice.only.whenFalse],
       ] as const)
-        if (mods.length) out += `.when(${condition}, (v) => v${mods.map(printMod).join('')})`;
+        if (mods.length)
+          out += `.when(${condition}, (v) => v${mods.map((mod) => printMod(mod, carry)).join('')})`;
     }
     for (const variant of resolved.variants) {
-      let inner = `v${variant.mods.map(printMod).join('')}`;
+      let inner = `v${variant.mods.map((mod) => printMod(mod, carry)).join('')}`;
       for (const condition of [...variant.conditions].reverse().slice(0, -1))
         inner = `v.when(${quote(condition)}, (v) => ${inner})`;
       out += `.when(${quote(variant.conditions[0] as string)}, (v) => ${inner})`;
@@ -2462,16 +4215,24 @@ export function transformSource(source: string, options: TransformOptions): File
         case 'row':
           return `(${value.param}) => ${print(value.view, carry)}`;
         case 'build':
-          return `(v) => v${value.mods.map(printMod).join('')}`;
+          return `(v) => v${value.mods.map((mod) => printMod(mod, carry)).join('')}`;
         case 'renderer':
           return carry(value.fn);
         case 'absent':
           return 'undefined';
+        case 'component':
+          return value.name;
+        case 'language':
+          return lang(value.name);
         case 'null':
           return 'null';
+        case 'choose':
+          return `${carry(value.test)} ? ${printValue(value.then, carry)} : ${printValue(value.otherwise, carry)}`;
+        case 'appColor':
+          return `${appColorTable}.color.${value.color.name}`;
       }
     }
-    return printArg(value as Arg);
+    return printArg(value as Arg, carry);
   }
 
   const printProp = (prop: PropMod, carry: (c: Carried) => string) =>
@@ -2480,11 +4241,17 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The carried values inside a value, in order. */
   function carriedOfValue(value: Value, out: Carried[]): void {
     if (isCarried(value)) out.push(value);
+    else if (!isTagged(value)) out.push(...pointsOf(value));
     else if (isTagged(value)) {
       if (value.$ === 'view' || value.$ === 'row') carriedOf(value.view, out);
       else if (value.$ === 'binding') for (const v of value.binding) carriedOfValue(v, out);
       else if (value.$ === 'renderer') out.push(value.fn);
       else if (value.$ === 'options') for (const [, v] of value.entries) carriedOfValue(v, out);
+      else if (value.$ === 'choose') {
+        out.push(value.test);
+        carriedOfValue(value.then, out);
+        carriedOfValue(value.otherwise, out);
+      }
     }
   }
 
@@ -2520,6 +4287,16 @@ export function transformSource(source: string, options: TransformOptions): File
       default:
         return props;
     }
+  }
+
+  /** The points a view's modifiers carry (a style's `width: itemSize`), each once. */
+  function resolvedPoints(resolved: Resolved, choice: Choice | null): Carried[] {
+    const mods = [
+      ...resolved.mods,
+      ...resolved.variants.flatMap((variant) => variant.mods),
+      ...choiceMods(choice),
+    ];
+    return [...new Set(mods.flatMap((mod) => mod.args.flatMap(pointsOf)))];
   }
 
   /** Every carried value of a tree, in order. */
@@ -2558,12 +4335,14 @@ export function transformSource(source: string, options: TransformOptions): File
         for (const run of ir.runs)
           if ('type' in run && run.type === 'expr') out.push(run.value);
           else if (!('type' in run && run.type === 'string')) carriedOf(run as Ir, out);
+        out.push(...resolvedPoints(ir.resolved, ir.choice));
         if (ir.choice) out.push(ir.choice.test);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
       case 'stack':
         for (const child of ir.children) carriedOf(child, out);
+        out.push(...resolvedPoints(ir.resolved, ir.choice));
         if (ir.choice) out.push(ir.choice.test);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
@@ -2580,7 +4359,10 @@ export function transformSource(source: string, options: TransformOptions): File
     string: (i: number) => `'⟨${i}⟩'`,
     key: (i: number) => `'k${i}'`,
     number: () => '2',
+    // A length of its own for each, so a value carried to another key shows.
+    points: (i: number) => String(37 + 6 * i),
     boolean: () => 'true',
+    state: () => '{ selected: true, busy: false }',
     handler: () => '() => {}',
     action: () => '(() => {})',
     element: (i: number) => `<Hole n="${i}" />`,
@@ -2599,20 +4381,35 @@ export function transformSource(source: string, options: TransformOptions): File
     if (conditions && carried.some((c) => c.hole === 'condition'))
       fixture(node, ir, rootKey, false);
     const index = new Map(carried.map((c, i) => [c, i]));
+    // Points are one hole per expression: `width: size, height: size` stays a square.
+    const pointsTexts: string[] = [];
+    const pointsHole = (node: AnyNode) => {
+      const text = recast.print(node).code;
+      if (!pointsTexts.includes(text)) pointsTexts.push(text);
+      return HOLE.points(pointsTexts.indexOf(text));
+    };
     const hole = (c: Carried) =>
-      c.hole === 'condition' ? String(conditions) : HOLE[c.hole](index.get(c) ?? 0);
+      c.hole === 'condition'
+        ? String(conditions)
+        : c.hole === 'points'
+          ? pointsHole(c.node)
+          : HOLE[c.hole](index.get(c) ?? 0);
     const removed = rootKey?.attribute;
     const after =
       ir.type === 'screen' ? print(ir, hole, true) : `toElement(${print(ir, hole, true)})`;
     // The source of the region, each carried value replaced by its hole.
     let before = '';
     let at = node.start as number;
+    // A shorthand property's value is its key too (`{ width }`): the hole is written beside the key.
     const spans: { start: number; end: number; text: string }[] = carried.map((c) => ({
       start: c.node.start,
       end: c.node.end,
-      text: hole(c),
+      text: shorthandValues.has(c.node) ? `${c.node.name}: ${hole(c)}` : hole(c),
     }));
     if (removed) spans.push({ start: removed.start, end: removed.end, text: '' });
+    for (const side of heldPoints)
+      if (side.start >= node.start && side.end <= node.end)
+        spans.push({ start: side.start, end: side.end, text: pointsHole(side) });
     // An element's type arguments (`<SegmentedControl<Cadence>`) draw nothing, and name the app's types.
     recast.visit(node, {
       visitJSXOpeningElement(path) {
@@ -2626,6 +4423,26 @@ export function transformSource(source: string, options: TransformOptions): File
     for (const [read, literal] of styleLiterals)
       if (read.start >= node.start && read.end <= node.end)
         spans.push({ start: read.start, end: read.end, text: literal });
+    // React Native's keyboard behavior reads its `Platform`, the corpus's own on the before side.
+    for (const behavior of keyboardBehaviors)
+      if (behavior.start >= node.start && behavior.end <= node.end)
+        spans.push({
+          start: behavior.test.left.object.start,
+          end: behavior.test.left.object.end,
+          text: 'RN.Platform',
+        });
+    // An inset the chain pads by is the corpus's on the before side, both sides drawn under it.
+    let insets = false;
+    for (const [read, side] of insetReads)
+      if (
+        read.start >= node.start &&
+        read.end <= node.end &&
+        // An inset inside points the chain carries (`top: insets.top + 8`) is that value's hole.
+        !carried.some((c) => c.node.start <= read.start && read.end <= c.node.end)
+      ) {
+        insets = true;
+        spans.push({ start: read.start, end: read.end, text: `PARITY_INSETS.${side}` });
+      }
     // A theme colour the chain names by its role is read from the theme the before side is drawn in.
     let themed = false;
     for (const [read] of themeRoles)
@@ -2634,9 +4451,51 @@ export function transformSource(source: string, options: TransformOptions): File
         spans.push({
           start: read.start,
           end: read.end,
-          text: `parityTheme.colors.${read.property.name}`,
+          text: colorTokenReads.has(read)
+            ? `parityTokens.${read.property.name}`
+            : `parityTheme.colors.${read.property.name}`,
         });
       }
+    // The surface fill is the before side's own read of it, where it is drawn.
+    for (const read of surfaceReads)
+      if (read.start >= node.start && read.end <= node.end) {
+        themed = true;
+        spans.push({ start: read.start, end: read.end, text: 'paritySurface' });
+      }
+    // A `const` holding the ink is its initialiser on the before side, its conditions the holes and its colours the theme's.
+    for (const read of roleConstReads) {
+      if (read.start < node.start || read.end > node.end) continue;
+      const init = constInits.get(read);
+      const inner: { start: number; end: number; text: string }[] = [];
+      // A condition both inks read is one span.
+      for (const c of carried)
+        if (
+          c.node.start >= init.start &&
+          c.node.end <= init.end &&
+          !inner.some((span) => span.start === c.node.start)
+        )
+          inner.push({ start: c.node.start, end: c.node.end, text: hole(c) });
+      for (const [themeRead] of themeRoles)
+        if (themeRead.start >= init.start && themeRead.end <= init.end) {
+          themed = true;
+          inner.push({
+            start: themeRead.start,
+            end: themeRead.end,
+            text: colorTokenReads.has(themeRead)
+              ? `parityTokens.${themeRead.property.name}`
+              : `parityTheme.colors.${themeRead.property.name}`,
+          });
+        }
+      inner.sort((a, b) => a.start - b.start);
+      let text = '';
+      let from = init.start as number;
+      for (const span of inner) {
+        text += source.slice(from, span.start) + span.text;
+        from = span.end;
+      }
+      text += source.slice(from, init.end);
+      spans.push({ start: read.start, end: read.end, text: `(${text})` });
+    }
     // A constant the chain names as an app colour is its colour on the before side, drawn without the module.
     const colors = colorsOf(ir);
     for (const color of colors)
@@ -2654,6 +4513,19 @@ export function transformSource(source: string, options: TransformOptions): File
       [...uncommented(before).matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
     ))
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
+    // A Bloom or React Native value the before side reads or calls (`tokens.hitSlop.md`, `fontFamilyStyle('display')`).
+    for (const match of uncommented(before).matchAll(/(?:^|[^\w.]|\.\.\.)([a-z]\w*)[.(]/g)) {
+      const local = match[1] as string;
+      const module = sources.get(local)?.module ?? '';
+      if (module.startsWith('@oxy.so/bloom/') || module === 'react-native')
+        bindings[local] = sources.get(local) as Source;
+    }
+    // A language view the before side already writes (a menu row's `toElement(Icon(…))`).
+    for (const match of uncommented(before).matchAll(/\b([A-Z][\w]*)\(/g)) {
+      const local = match[1] as string;
+      if (sources.get(local)?.module === LANGUAGE_MODULE)
+        bindings[local] = sources.get(local) as Source;
+    }
     for (const match of uncommented(after).matchAll(/\b([A-Z][\w]*)\b/g)) {
       const local = match[1] as string;
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
@@ -2677,6 +4549,7 @@ export function transformSource(source: string, options: TransformOptions): File
       // A route's Screen is the Screen its nodes are drawn in.
       within: withinOf(ir).filter((key) => ir.type !== 'screen' || key !== SCREEN_KEY),
       themed,
+      insets,
       screen: ir.type === 'screen',
       appColors: colors.length
         ? {
@@ -2690,8 +4563,17 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The app colours a region's icons paint with. */
   function colorsOf(ir: Ir): AppColor[] {
     const found: AppColor[] = [];
+    const inValue = (value: Value) => {
+      if (!isTagged(value)) return;
+      if (value.$ === 'appColor') found.push(value.color);
+      else if (value.$ === 'choose') {
+        inValue(value.then);
+        inValue(value.otherwise);
+      }
+    };
     const visit = (at: Ir) => {
       if (at.type === 'icon' && at.color) found.push(at.color);
+      if ('props' in at) for (const prop of at.props) for (const arg of prop.args) inValue(arg);
       for (const child of childrenOf(at)) visit(child);
     };
     visit(ir);
@@ -2749,7 +4631,17 @@ export function transformSource(source: string, options: TransformOptions): File
         appColors.set(color.name, color);
         lang('defineTokens');
       }
-      if (options.fixtures) fixture(node, ir, rootKey);
+      // A route's Screen inside what its screen modifiers draw is the return around it, whole.
+      const outer = ir.type === 'screen' ? screenOuter.get(node)?.outer : undefined;
+      if (options.fixtures) fixture(outer ?? node, ir, rootKey);
+      // What wrapped the Screen is its modifiers now: its imports go where nothing else reads them.
+      if (outer)
+        for (let at = outer; at !== node; at = peelChild(at)) {
+          convertedLocals.add(jsxName(at) as string);
+          for (const behavior of keyboardBehaviors)
+            if (behavior.start >= at.start && behavior.end <= at.end)
+              convertedLocals.add(behavior.test.left.object.name);
+        }
       // Regions inside the values it carries (an embedded element's children, an array's elements).
       for (const c of carriedOf(ir)) {
         if (c.hole === 'element' || c.hole === 'items') {
@@ -2769,11 +4661,13 @@ export function transformSource(source: string, options: TransformOptions): File
           : `${lang('toElement')}(${chain}${rootKey ? `, ${carry(rootKey)}` : ''})`;
       // Parsed by recast, so the comments the chain carries are printed where they are.
       const expression = recast.parse(`${code};`, { parser: babelTs }).program.body[0].expression;
-      const parent = path.parent?.node;
+      let at = path;
+      while (outer && at.node !== outer) at = at.parent;
+      const parent = at.parent?.node;
       const inJsx =
         parent &&
         (n.JSXElement.check(parent) || n.JSXFragment.check(parent) || n.JSXAttribute.check(parent));
-      path.replace(
+      at.replace(
         inJsx ? recast.types.builders.jsxExpressionContainer(expression as AnyNode) : expression,
       );
       return false;
@@ -2812,19 +4706,46 @@ export function transformSource(source: string, options: TransformOptions): File
   }
   /** The routes whose Screens converted: each becomes `screen(function …)`. */
   const routes = new Set<AnyNode>();
+  // The module styles elements read before the walk: what it leaves unread goes after it.
+  const stylesReadBefore = styleReadsIn(ast);
   recast.visit(ast, visitor);
-  for (const statement of ast.program.body as AnyNode[])
-    if (n.ExportDefaultDeclaration.check(statement) && routes.has(statement.declaration)) {
-      const fn: AnyNode = statement.declaration;
-      const b = recast.types.builders;
-      const body = b.functionExpression(fn.id, fn.params, fn.body);
-      body.typeParameters = fn.typeParameters;
-      statement.declaration = b.callExpression(b.identifier(lang('screen')), [body]);
+  for (const fn of routes) {
+    const { statement, name } = screenDeclarations.get(fn) as { statement: AnyNode; name: string };
+    const b = recast.types.builders;
+    const id = b.identifier(name);
+    // An arrow's expression body is the one return of its function.
+    const block = n.BlockStatement.check(fn.body)
+      ? fn.body
+      : b.blockStatement([b.returnStatement(fn.body)]);
+    const body = b.functionExpression(id, fn.params, block);
+    body.typeParameters = fn.typeParameters;
+    const call = b.callExpression(b.identifier(lang('screen')), [body]);
+    const program = ast.program.body as AnyNode[];
+    const at = program.indexOf(statement);
+    let named = 0;
+    recast.visit(ast, {
+      visitIdentifier(path) {
+        if (path.node.name === name) named++;
+        this.traverse(path);
+      },
+    });
+    if (n.ExportDefaultDeclaration.check(statement) && named === 1) {
+      // A default export read nowhere else is the call itself.
+      statement.declaration = call;
+      continue;
     }
+    const constant = b.variableDeclaration('const', [b.variableDeclarator(id, call)]);
+    if (!n.ExportNamedDeclaration.check(statement)) constant.comments = statement.comments;
+    if (n.ExportDefaultDeclaration.check(statement))
+      program.splice(at, 1, constant, b.exportDefaultDeclaration(b.identifier(name)));
+    else if (n.ExportNamedDeclaration.check(statement)) statement.declaration = constant;
+    else program.splice(at, 1, constant);
+  }
 
   const converted = [...counted].filter((node) => convertedNodes.has(node)).length;
 
   if (regions > 0) {
+    removeUnreadStyles(stylesReadBefore);
     // Imports: the language's names in, and the converted components' out when nothing else uses them.
     const remaining = new Map<string, number>();
     recast.visit(ast, {

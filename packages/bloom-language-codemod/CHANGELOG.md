@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Converts more of an app: `TouchableOpacity` as `.pressFade()`, the accessibility state, value and live region, auto margins, a gap per axis and border lines, a style's radius, stacking level and aspect ratio by value, inset as its edges, a hit slop per side, a ref and a layout handler.
+- Bloom components: a `Button`'s runtime look, glyph size, press, spinner, open state, inks and static style; a `Card`'s and a `Tabs`' style; a `Chip`'s variant, accent colour and views beside its label; a `Field` of several controls; a `DropdownMenu` tree as `Menu(trigger, ...rows).menuStyle('dropdown')`; `Fab` as `FAB(...).glass(identity)`; `PageFooter`; a `Dialog`'s `onDismissed`; a `VirtualList`'s content style, refreshing and `onRefresh`, and a `RefreshControl`, as one refresh.
+- `screen()` wraps a component whose every return is a `Screen`; a padding by `useSafeAreaInsets()` as `.safeAreaPadding()`; `useColorTokens()` reads, style constants, flex triples, a `Pressable`'s pressed style as `.when('pressed')`, `StyleSheet.absoluteFill`, a text's `fontSize`, `lineHeight` and `fontWeight`, geometry computed at render as points, and React Native's edge precedence.
+
 ## 0.1.0
 
 First release. Moves an app's NativeWind `className` JSX and Bloom JSX to the Bloom language only where the rendered result stays the same, keeps everything else as JSX with its reason, and writes a report. See `docs/bloom-language-codemod.mdx` in the Bloom repository.

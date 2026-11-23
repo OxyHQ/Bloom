@@ -2,8 +2,8 @@
  * The parity corpus as a module: each fixture's two sides as functions. The
  * before side is the app as it draws today: React Native's components as
  * NativeWind's own (react-native-css, as the app's Babel preset rewrites React
- * Native's imports; its Text in Bloom's base face, as `@oxy.so/app-preset`
- * bundles it) and Bloom's. The after side is the language over this checkout's
+ * Native's imports, its Text among them, which names no face of its own) and
+ * Bloom's. The after side is the language over this checkout's
  * Bloom. `parity/corpus.*.test.tsx` renders them.
  *
  * Bloom 23 has no `className`: a region whose before side hands a class to a
@@ -19,7 +19,6 @@ import type { Node } from '@babel/types';
 import { LANGUAGE_PACKAGE } from './table';
 import type { Fixture, Source } from './transform';
 
-const APP_TEXT = join(__dirname, '../parity/support/app-text');
 /** What `screen()` draws a body's root with. */
 const SCREEN_HOST = join(LANGUAGE_PACKAGE, 'src/router/screen-host');
 /**
@@ -34,8 +33,7 @@ type Side = 'before' | 'before22' | 'after';
 const NATIVEWIND: Record<string, string> = {
   View: 'react-native-css/components/View',
   Pressable: 'react-native-css/components/Pressable',
-  // NativeWind's Text as the app preset bundles it, in Bloom's base face.
-  Text: APP_TEXT,
+  Text: 'react-native-css/components/Text',
   Image: 'react-native-css/components/Image',
 };
 
@@ -99,7 +97,6 @@ export function handsBloomAClass(fixture: Fixture): boolean {
 function origin(source: Source, dir: string, side: Side): { module: string; name: string } {
   if (source.module === 'react-native') {
     const module = NATIVEWIND[source.imported];
-    if (module === APP_TEXT) return { module: relativeTo(dir, module), name: source.imported };
     if (module) return { module, name: source.imported };
   }
   const module =
@@ -130,26 +127,34 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
       Object.entries(fixture.bindings)
         .map(([local, source]) => `const ${local} = ${alias(source, side)};`)
         .join(' ');
-    const language = fixture.language.length ? `const { ${fixture.language.join(', ')} } = L;` : '';
+    // A language name the file already imports (a file partly in the language) is bound once, as a binding.
+    const names = fixture.language.filter(
+      (entry) => !((entry.split(':').pop() as string).trim() in fixture.bindings),
+    );
+    const language = names.length ? `const { ${names.join(', ')} } = L;` : '';
     // A node drawn only inside a Bloom component (a screen's scroll view in a Screen) is, on both sides.
     const within = (side: Side) =>
       fixture.within.map((key) => {
         const [module, imported] = key.split('#') as [string, string];
         return alias({ module, imported }, side);
       });
+    // A region that pads by the device's insets is drawn under the corpus's, on both sides.
     const open = (side: Side) =>
-      within(side)
-        .map((local) => `<${local}>{`)
-        .join('');
+      [
+        ...(fixture.insets ? ['<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{'] : []),
+        ...within(side).map((local) => `<${local}>{`),
+      ].join('');
     const close = (side: Side) =>
-      within(side)
-        .map((local) => `}</${local}>`)
-        .reverse()
-        .join('');
+      [
+        ...within(side)
+          .map((local) => `}</${local}>`)
+          .reverse(),
+        ...(fixture.insets ? ['}</SafeAreaInsetsContext.Provider>'] : []),
+      ].join('');
     // A before side that reads the theme is a component, so it reads it where it is drawn.
     const theme = bloom22 ? 'useParityTheme22' : 'useParityTheme';
     const before = fixture.themed
-      ? `function Before() { const parityTheme = ${theme}(); ${bindings(beforeSide)} return (${fixture.before}); } return (${open(beforeSide)}<Before />${close(beforeSide)});`
+      ? `function Before() { const parityTheme = ${theme}(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); ${bindings(beforeSide)} return (${fixture.before}); } return (${open(beforeSide)}<Before />${close(beforeSide)});`
       : `${bindings(beforeSide)} return (${open(beforeSide)}${fixture.before}${close(beforeSide)});`;
     let colors = '';
     if (fixture.appColors) {
@@ -173,8 +178,10 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as RN from 'react-native';",
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
-    "import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';",
+    "import { useColorTokens as useParityTokens, useTheme as useParityTheme } from '@oxy.so/bloom/theme';",
     `import { useTheme as useParityTheme22 } from '${BEFORE_BLOOM}/theme';`,
+    "import { useSurfaceFill as useParitySurface } from '@oxy.so/bloom/styles';",
+    "import { SafeAreaInsetsContext } from 'react-native-safe-area-context';",
     `import { ScreenHost } from '${relativeTo(dir, SCREEN_HOST)}';`,
     ...[...imports].map(([key, local]) => {
       const [module, name] = key.split('#');
@@ -182,6 +189,9 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     }),
     '',
     ...(tables.length ? [...tables, ''] : []),
+    '/** The insets of a phone with a notch and a home bar. */',
+    'const PARITY_INSETS = { top: 47, bottom: 34, left: 0, right: 0 };',
+    '',
     'function Hole({ n }: { n: string }) {',
     "  return <RN.View testID={'hole-' + n} />;",
     '}',

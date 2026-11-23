@@ -52,6 +52,11 @@ const sfSymbols = withoutComment(spec.sfSymbols);
 const easing = withoutComment(spec.easing);
 const motion = withoutComment(spec.motion);
 const loops = withoutComment(spec.loops);
+// The parameters that take points besides their tokens: each one an object or a modifier's own set.
+const pointParams = spec.points.params;
+for (const param of pointParams)
+  if (!(param in objects) && !Object.values(modifiers).some((params) => params.includes(param)))
+    throw new Error(`points: ${param} is no object and no modifier's parameter`);
 
 /** A motion token with its easing resolved to its curve: a Bloom `MotionSpec`. */
 const motionSpecs = Object.fromEntries(
@@ -64,7 +69,11 @@ const motionSpecs = Object.fromEntries(
 );
 
 /** A role's web value: its canonical CSS variable, or, for a colour the same in every theme, the colour. */
-const webColor = (css) => (css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`);
+/** A role's web value; the surface fill has none (\`null\`): its leaf paints it. */
+const webColor = (css) =>
+  css === null ? null : css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`;
+/** The roles a class paints: every one with a web value. */
+const classRoles = Object.keys(colors).filter((role) => colors[role][1] !== null);
 
 const typeFamilies = typeFamiliesOf(typeRamp);
 
@@ -210,6 +219,11 @@ export const TONE_ROLE = ${ts(withoutComment(spec.toneRole))} as const;
 /** A box modifier's place in one view's stack of effects (see style.ts, layers). */
 export const LAYER_RANK = ${ts(layerRank)} as const;
 
+/** The nodes whose own \`aspectRatio\` sizes what they draw (an image, a call grid's tiles), never their box. */
+export const OWN_ASPECT_RATIO: readonly string[] = ${ts(
+  Object.keys(nodes).filter((kind) => nodes[kind].modifiers.includes('aspectRatio')),
+)};
+
 /** The traits a view hands everything inside it. */
 export const ENVIRONMENT = ${ts(spec.environment.traits)} as const;
 export const ENVIRONMENT_DEFAULTS = ${ts(spec.environment.defaults)} as const;
@@ -324,6 +338,7 @@ for (const edge of ['Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
     valueClass(`margin${edge}`, value);
     if (value > 0) valueClass(`margin${edge}`, -value);
   }
+  valueClass(`margin${edge}`, 'auto');
 }
 for (const property of [
   'width',
@@ -333,6 +348,9 @@ for (const property of [
   'maxWidth',
   'maxHeight',
   'gap',
+  // `.horizontalSpacing()` and `.verticalSpacing()`: a stack's gap along one axis.
+  'columnGap',
+  'rowGap',
 ]) {
   for (const value of spaceValues) valueClass(property, value);
 }
@@ -376,11 +394,12 @@ for (const value of spaceValues) {
 }
 for (const value of numbers(scales.opacity)) valueClass('opacity', value);
 // Borders: react-native-web's hairline is 1px.
+for (const value of enums.borderStyle) valueClass('borderStyle', value);
 for (const edge of ['', 'Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
   valueClass(`border${edge}Width`, 1);
-  for (const role of Object.keys(colors)) roleClass(`border${edge}Color`, role);
+  for (const role of classRoles) roleClass(`border${edge}Color`, role);
 }
-for (const role of Object.keys(colors)) {
+for (const role of classRoles) {
   roleClass('color', role);
   roleClass('backgroundColor', role);
   roleClass('outlineColor', role);
@@ -564,6 +583,9 @@ pub const FADING_LOOPS: &[&str] = ${rustList(
   Object.keys(loops).filter((name) => loops[name].frames.some((frame) => 'opacity' in frame)),
 )};
 
+/// The parameters that take points (a number the view computes as it renders) besides their tokens.
+pub const POINT_PARAMS: &[&str] = ${rustList(pointParams)};
+
 /// What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view.
 pub const CONTENT_VIEW_MODIFIERS: &[&str] = ${rustList(spec.contentView.modifiers)};
 
@@ -595,11 +617,12 @@ ${Object.entries(glassValue)
 ];
 
 /// An object parameter (\`frame({ … })\`, \`position({ … })\`…): its type, the keys it takes,
-/// and the token set every value is in.
-pub const OBJECTS: &[(&str, &[&str], &str)] = &[
+/// the token set every value is in, and whether one token on its own is the object too.
+pub const OBJECTS: &[(&str, &[&str], &str, bool)] = &[
 ${Object.entries(objects)
   .map(
-    ([name, { keys, tokens }]) => `    (${rustStr(name)}, ${rustList(keys)}, ${rustStr(tokens)}),`,
+    ([name, { keys, tokens, orToken }]) =>
+      `    (${rustStr(name)}, ${rustList(keys)}, ${rustStr(tokens)}, ${orToken === true}),`,
   )
   .join('\n')}
 ];

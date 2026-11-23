@@ -373,6 +373,25 @@ const surface: ParityCase[] = [
 
 const dividers: ParityCase[] = [
   { name: 'Divider', language: () => toElement(L.Divider()), bloom: () => <Divider /> },
+  {
+    // A vertical line outside a row: its own axis over its stack's.
+    name: 'a vertical Divider outside an HStack',
+    language: () => toElement(L.VStack(L.Divider().axis('vertical'))),
+    bloom: () => (
+      <RN.View>
+        <Divider vertical />
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a horizontal Divider inside an HStack',
+    language: () => toElement(L.HStack(L.Divider().axis('horizontal'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Divider />
+      </RN.View>
+    ),
+  },
   ...(['single', 'double', 'fill'] as const).flatMap((style) => [
     {
       name: `Divider ${style}`,
@@ -554,6 +573,36 @@ const named: ParityCase[] = [
     ),
   },
   {
+    // The 7pt and 15pt corners Mention writes (a count badge, a media card).
+    name: 'a 7pt corner',
+    language: () => toElement(L.VStack().corner('7')),
+    bloom: () => <RN.View style={{ borderRadius: 7 }} />,
+  },
+  {
+    name: 'a 15pt corner on the top',
+    language: () => toElement(L.VStack().corner('15', 'top')),
+    bloom: () => <RN.View style={{ borderTopStartRadius: 15, borderTopEndRadius: 15 }} />,
+  },
+  {
+    // The half-point and point-and-a-half borders and the 85% fade Mention writes.
+    name: 'a half-point border, 85% opaque',
+    language: () => toElement(L.VStack().border('border', '0.5').opacity('85')),
+    bloom: () => (
+      <Themed>
+        {(c) => <RN.View style={{ borderWidth: 0.5, borderColor: c.border, opacity: 0.85 }} />}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a point-and-a-half bottom border',
+    language: () => toElement(L.VStack().border('border', '1.5', 'bottom')),
+    bloom: () => (
+      <Themed>
+        {(c) => <RN.View style={{ borderBottomWidth: 1.5, borderBottomColor: c.border }} />}
+      </Themed>
+    ),
+  },
+  {
     name: 'an 80% opaque box',
     language: () => toElement(L.VStack().opacity('80')),
     bloom: () => <RN.View style={{ opacity: 0.8 }} />,
@@ -668,6 +717,12 @@ const named: ParityCase[] = [
     language: () => toElement(L.VStack().corner(rung).clipped()),
     bloom: () => <RN.View style={{ borderRadius: value, overflow: 'hidden' }} />,
   })),
+  {
+    // Mention's media preview: React Native's `overflow: 'visible'` written out.
+    name: 'a view that draws what overflows it',
+    language: () => toElement(L.VStack().margin('top', 'md').clipped(false)),
+    bloom: () => <RN.View style={{ marginTop: space.md, overflow: 'visible' }} />,
+  },
 ];
 
 /** `.blur()`: Bloom's floating island, a capsule unless a corner names its radius. */

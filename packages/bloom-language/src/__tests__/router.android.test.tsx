@@ -244,6 +244,20 @@ describe('screen() on Android', () => {
     expect(hosts(r, 'Text').some((t) => t.props.children === 'row')).toBe(true);
   });
 
+  it('a screen that drives its own scroll says where its top is', () => {
+    const refresh = jest.fn();
+    const atTop = () => true;
+    const toTop = jest.fn();
+    const Reel = screen(() => Text('a').onReselect(refresh).reselectTop(atTop, toTop));
+    expect(only(mount(createElement(Reel)), 'Screen').props.reselect).toEqual({
+      refresh,
+      isAtTop: atTop,
+      scrollToTop: toTop,
+    });
+    const Plain = screen(() => Text('a'));
+    expect(only(mount(createElement(Plain)), 'Screen').props.reselect).toBeUndefined();
+  });
+
   it('no header, or a header node of the screen’s own', () => {
     const Bare = screen(() => Text('a').header(false));
     expect(only(mount(createElement(Bare)), 'Screen').props.header).toBeUndefined();

@@ -6,7 +6,7 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { defineEnvironment, useEnvironment } from '../src/environment';
-import { defineModifier } from '../src/modifier';
+import { defineModifier, type ViewModifier } from '../src/modifier';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { view } from '../src/view';
@@ -186,6 +186,11 @@ const glassStyles: ParityCase[] = [
 /** A named recipe of modifiers, and one with an argument. */
 const sectionCard = defineModifier((v) => v.padding('md').corner('xl').clipped());
 const inset = defineModifier((v, edge: 'horizontal' | 'vertical') => v.padding(edge, 'lg'));
+const muted = defineModifier((v) => v.padding('horizontal', 'xs').opacity('60'));
+/** A view whose handle a caller may style: a recipe, applied as it is (none: no modifier). */
+const Handle = view(function Handle({ handle, look }: { handle: string; look?: ViewModifier }) {
+  return L.Text(`@${handle}`).modifier(look);
+});
 
 const modifiers: ParityCase[] = [
   {
@@ -210,6 +215,29 @@ const modifiers: ParityCase[] = [
     name: 'a custom modifier takes its arguments',
     language: () => toElement(L.Text('Beta').modifier(inset, 'horizontal')),
     bloom: () => <Text style={{ paddingStart: space.lg, paddingEnd: space.lg }}>Beta</Text>,
+  },
+  {
+    // A style a caller hands in is modifiers: on the view the caller places, chained there.
+    name: "a caller's modifiers chained on the view it places",
+    language: () => toElement(Handle({ handle: 'ana' }).margin('top', 'sm').alignSelf('start')),
+    bloom: () => (
+      <RN.View style={{ marginTop: space.sm, alignSelf: 'flex-start' }}>
+        <Text>@ana</Text>
+      </RN.View>
+    ),
+  },
+  {
+    // For a part inside the view, the caller hands a recipe (SwiftUI's ViewModifier), not a style.
+    name: 'a part styled by a recipe its caller hands in',
+    language: () => toElement(Handle({ handle: 'ana', look: muted })),
+    bloom: () => (
+      <Text style={{ paddingStart: space.xs, paddingEnd: space.xs, opacity: 0.6 }}>@ana</Text>
+    ),
+  },
+  {
+    name: 'no recipe handed in is no modifier',
+    language: () => toElement(Handle({ handle: 'ana' })),
+    bloom: () => <Text>@ana</Text>,
   },
 ];
 

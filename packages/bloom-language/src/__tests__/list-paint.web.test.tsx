@@ -27,7 +27,8 @@ jest.mock('react-native', () => ({
 
 quietRenderer();
 
-const ROLES = Object.keys(COLORS) as ColorName[];
+/** The palette's roles (the surface fill is the surface's, `onSurface`). */
+const ROLES = (Object.keys(COLORS) as ColorName[]).filter((role) => COLORS[role].web !== null);
 const OPACITIES = Object.keys(OPACITY) as OpacityName[];
 const TOKENS: ColorToken[] = ROLES.flatMap((role) => [
   role,

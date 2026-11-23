@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import * as RN from 'react-native';
 import { InlineMarkdown } from '@oxy.so/bloom/markdown';
 import { tokens } from '@oxy.so/bloom/styles';
-import { withAlpha } from '@oxy.so/bloom/theme';
+import { type ThemeColors, withAlpha } from '@oxy.so/bloom/theme';
 import {
   Blockquote,
   H1,
@@ -37,7 +37,6 @@ import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
 import { type ParityCase, Themed, ThemedRgb } from './support/cases';
-import { BaseFontText } from './support/base-font';
 
 /** Web CSS react-native-web passes through, which React Native's style types do not name. */
 const webCss = (style: Record<string, string>) => style as RN.TextStyle;
@@ -50,7 +49,11 @@ const webCss = (style: Record<string, string>) => style as RN.TextStyle;
 const ofSize = (size: number, ratio: number) =>
   RN.Platform.OS === 'web' ? size * ratio : Math.round(size * ratio * 100) / 100;
 
-const paint = (role: ColorName) => COLORS[role].paint;
+const paint = (role: ColorName) => COLORS[role].paint as keyof ThemeColors;
+/** The roles of the theme's palette (the surface fill has its own cases, surface-fill.cases.tsx). */
+const PALETTE_ROLES = (Object.keys(COLORS) as ColorName[]).filter(
+  (role) => COLORS[role].web !== null,
+);
 
 /** Every step of Bloom's type ramp, as `.font(family).weight(weight)`. */
 const ramp: ParityCase[] = Object.keys(TYPE_SCALE).map((variant) => {
@@ -92,7 +95,7 @@ const sizes: ParityCase[] = (Object.keys(FONT_SIZE) as FontSizeName[]).flatMap((
 ]);
 
 /** Every colour role as the text's ink, and the environment's. */
-const inks: ParityCase[] = (Object.keys(COLORS) as ColorName[]).flatMap((role) => [
+const inks: ParityCase[] = PALETTE_ROLES.flatMap((role) => [
   {
     name: `foreground ${role}`,
     language: () => toElement(L.Text('Ink').foreground(role)),
@@ -436,6 +439,12 @@ const named: ParityCase[] = [
     language: () => L.Text('Small').font('11'),
     bloom: () => <Text style={{ fontSize: 11 }}>Small</Text>,
   },
+  // The sizes Mention writes outside the ramp.
+  ...(['9', '12.5', '28', '42', '96'] as const).map((size) => ({
+    name: `size ${size}`,
+    language: () => L.Text('Sized').font(size),
+    bloom: () => <Text style={{ fontSize: Number(size) }}>Sized</Text>,
+  })),
 ].map((c) => ({ ...c, language: () => toElement(c.language()) }));
 
 /**
@@ -532,6 +541,40 @@ const tracked: ParityCase[] = [
     bloom: () => <Text style={{ fontSize: 12, ...fontFamilyStyle('mono') }}>12</Text>,
   },
   {
+    // Mention's camera countdown: Tailwind's text-8xl in bold, in the display face.
+    name: 'a numeric size in the display face',
+    language: () =>
+      toElement(
+        L.Text('3').font('96').leading('96px').weight('bold').foreground('white').font('display'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Text
+            style={{
+              ...fontFamilyStyle('display'),
+              color: c[paint('white')],
+              fontSize: 96,
+              lineHeight: 96,
+              fontWeight: '700',
+            }}
+          >
+            3
+          </Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'the display face, then a size, from the stack',
+    language: () => toElement(L.VStack(L.Text('42')).font('display').font('42')),
+    bloom: () => (
+      <RN.View>
+        <Text style={{ fontSize: 42, ...fontFamilyStyle('display') }}>42</Text>
+      </RN.View>
+    ),
+  },
+  {
     // At rest a numeric content transition is the plain text: the roll's pieces exist only while it plays.
     name: 'a numeric count at rest',
     language: () =>
@@ -540,12 +583,31 @@ const tracked: ParityCase[] = [
   },
 ];
 
-/** React Native's own Text, as an app draws it (`support/base-font`): its base face, then only what the chain names. */
+/** React Native's own Text: only what the chain names. */
 const raw: ParityCase[] = [
+  {
+    // Mention's upload progress: a text read as a progress bar's value.
+    name: 'RawText, a progress value',
+    language: () =>
+      toElement(
+        L.RawText('40%').role('progressbar').accessibilityValue({ min: 0, max: 100, now: 40 }),
+      ),
+    bloom: () => (
+      <RN.Text accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: 40 }}>
+        40%
+      </RN.Text>
+    ),
+  },
+  {
+    // Mention's attachment cards announce their status as a polite live region.
+    name: 'RawText, a polite live region',
+    language: () => toElement(L.RawText('Raw').liveRegion('polite')),
+    bloom: () => <RN.Text accessibilityLiveRegion="polite">Raw</RN.Text>,
+  },
   {
     name: 'RawText, bare',
     language: () => toElement(L.RawText('Raw')),
-    bloom: () => <BaseFontText>Raw</BaseFontText>,
+    bloom: () => <RN.Text>Raw</RN.Text>,
   },
   {
     name: 'RawText, a size, a line height, a weight and an ink',
@@ -554,11 +616,11 @@ const raw: ParityCase[] = [
     bloom: () => (
       <Themed>
         {(c) => (
-          <BaseFontText
+          <RN.Text
             style={{ fontSize: 14, lineHeight: 20, fontWeight: '600', color: c[paint('muted')] }}
           >
             Raw
-          </BaseFontText>
+          </RN.Text>
         )}
       </Themed>
     ),
@@ -569,9 +631,9 @@ const raw: ParityCase[] = [
       toElement(L.VStack(L.RawText('a ', L.RawText('b').weight('bold')).lines(2)).padding('sm')),
     bloom: () => (
       <RN.View style={{ paddingTop: 8, paddingBottom: 8, paddingStart: 8, paddingEnd: 8 }}>
-        <BaseFontText numberOfLines={2} ellipsizeMode="tail">
-          a <BaseFontText style={{ fontWeight: '700' }}>b</BaseFontText>
-        </BaseFontText>
+        <RN.Text numberOfLines={2} ellipsizeMode="tail">
+          a <RN.Text style={{ fontWeight: '700' }}>b</RN.Text>
+        </RN.Text>
       </RN.View>
     ),
   },
@@ -580,7 +642,7 @@ const raw: ParityCase[] = [
     language: () => toElement(L.Text('a ', L.RawText('b'))),
     bloom: () => (
       <Text>
-        a <BaseFontText>b</BaseFontText>
+        a <RN.Text>b</RN.Text>
       </Text>
     ),
   },
@@ -591,7 +653,7 @@ const raw: ParityCase[] = [
     bloom: () => (
       <RN.View>
         <Text style={{ textAlign: 'left' }}>a</Text>
-        <BaseFontText style={{ textAlign: 'right' }}>b</BaseFontText>
+        <RN.Text style={{ textAlign: 'right' }}>b</RN.Text>
       </RN.View>
     ),
   },
@@ -633,7 +695,7 @@ const raw: ParityCase[] = [
   {
     name: 'RawText in a family of its own',
     language: () => toElement(L.RawText('Raw').font('mono')),
-    bloom: () => <BaseFontText style={fontFamilyStyle('mono')}>Raw</BaseFontText>,
+    bloom: () => <RN.Text style={fontFamilyStyle('mono')}>Raw</RN.Text>,
   },
 ];
 

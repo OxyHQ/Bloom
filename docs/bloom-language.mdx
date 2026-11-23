@@ -8,7 +8,9 @@ description: Views as functions and modifiers chained in order, every value a Bl
 Bloom's UI language is a way to write Bloom interfaces in TypeScript the way
 SwiftUI writes them in Swift: a component is a function, and its look is a chain
 of modifiers applied in order. Every modifier value is a Bloom token, never a
-pixel or a colour. The package is `packages/bloom-language`
+pixel or a colour; only geometry the view computes as it renders (a size, a
+pinned edge, a stacking order) is a number of points (see
+[Styles computed at runtime](#styles-computed-at-runtime)). The package is `packages/bloom-language`
 (`@oxy.so/bloom-language`, published from 1.0.0 beside Bloom 23):
 
 ```bash
@@ -213,6 +215,98 @@ Text('Beta').modifier(tag, 'primary/10')
   like the chain it stands for.
 - **Where shared ones go.** A recipe several apps repeat belongs in Bloom
   (Bloom-first), not re-spelled in each app.
+- **Handed in.** `.modifier(undefined)` applies none, so a view whose part a
+  caller may style takes a recipe as a prop (`look?: ViewModifier`) and chains
+  `.modifier(look)` as it is (see [Styles computed at runtime](#styles-computed-at-runtime)).
+
+## Styles computed at runtime
+
+Every value is a token, but some of what an app's JSX styles is only known as
+it renders: a cell's width from its container, a card's size from its props,
+an inset, a role chosen by state, a style a caller hands in. Each kind has one
+form in the language, chosen as SwiftUI chooses it, with the rules that hold
+everywhere else: no rendered value changes, styles stay static where they can,
+and no layout goes to state.
+
+Measured on Mention (the codemod at this commit, `style` kept 222 elements):
+
+| Kind | Elements | The language |
+| --- | ---: | --- |
+| A static style the codemod did not read: a module constant or `StyleSheet` style held in a list, a choice between two of them (`compact ? styles.a : styles.b`), `StyleSheet.absoluteFill`, `tokens.space.sm` | 44 | Tokens, as any static style: the codemod's to read (below) |
+| A static value off Tailwind's scale: an `rgba()` scrim, a radius of half a fixed side, an app constant (`HPAD`), a font size and its line | 36 | Tokens: an app colour, `'full'`, a numeric token; the codemod's to read |
+| A theme colour read at render: `useColorTokens()`, `theme.colors.*` in a list or chosen by state, `withAlpha(…)`, a hook that builds the app's ink styles | 73 | A role, chosen at render where the state chooses it: `.background(active ? 'primary' : 'card')`, `'primary/10'` for `withAlpha(primary, 0.1)` |
+| A style a caller hands in (`style`, `style?.handle`, `rowStyle`, a spread of props) | 26 | Modifiers, not a style object: the caller chains them on the view it places; a part inside takes a `ViewModifier` |
+| Geometry computed at render: a size from props or a measurement, a pinned edge, a stacking order, a playback fraction | 20 | Points: `.frame({ width: itemSize })`, `.position({ left })`, `.zIndex(count - index)`; a fraction that moves with playback is a `MotionValue` or Bloom's progress |
+| Safe-area and bar insets | 11 | `.safeAreaPadding()` for a padding; points for a pinned edge (`.position({ top: insets.top + 8 })`) |
+| Spacing computed at render (an indent times a depth, an offset of the header's rows) | 7 | Stays JSX: spacing is a token, chosen at render (`compact ? 'none' : 'md'`), never arithmetic |
+| A colour from data (an artwork's accent, a severity's hex) | 4 | A closed set is an app colour table indexed at render (`.background(severity.color[level])`); an open one (an artwork's accent) stays JSX |
+| A style of the press state (`({ pressed }) => …`) | 1 | `.when('pressed', (v) => …)` |
+
+No element among them animates a style or transforms by a value computed at
+render: Mention's moving views are the engine's already (`MotionValue`, see
+[Animations](#animations)).
+
+**Points: geometry takes numbers computed at render.** SwiftUI's `.frame`,
+`.position` and `.zIndex` take any `CGFloat` and `Double`; so do the
+language's, for geometry alone: a frame's six lengths, a pinned view's edges
+and its stacking order take a number of points (`Points`) besides their tokens.
+
+```ts
+const Cell = view(function Cell({ item, size }: { item: Media; size: number }) {
+  return Image(item.thumb).frame({ width: size, height: size }).clipped();
+});
+CheckoutBadge().position({ top: insets.top + 8, right: 'lg' })
+Avatar(actor.avatar).zIndex(shown.length - index)
+```
+
+- **Only what the view computes.** A number written out is a token: `.frame({
+  width: 44 })` is a compile error (`'44'`), as a `MotionValue` written out is,
+  so a static frame stays one static, hoisted chain. Points are for a value
+  the view works out as it renders: a size from a prop, an inset, a column's
+  width from its container.
+- **Spacing, type and colour stay tokens.** A padding, a margin, a gap, a font
+  and a colour take no number: they are the design's scale, and a value
+  chosen at render is a token chosen at render.
+- **How it renders.** Points are a value like an app token's: the style is
+  cached by the number (`#117.5` in its key), so one view drawn at the same
+  size again costs a lookup, and on the web a number with no class is inline
+  beside the classes. A value that moves every frame (a drag, a scrubber, a
+  playback fraction) is a `MotionValue`, which no style caches.
+- **Not a layout read back.** A width the app measured with `onLayout` and kept
+  in state is still that: the language draws it, but a `Grid`, a fraction of
+  the parent (`'1/3'`) or `.aspectRatio()` says the layout without a second
+  pass, and is the form for new screens.
+- **The spec.** `points.params` names them (`frame`, `edges`, `zIndex`); the
+  compiler holds every other parameter to tokens and rejects a number written
+  out anywhere, with the token to write.
+
+**A style a caller hands in is modifiers.** In SwiftUI a caller modifies the
+view it places, and a view never takes a style object. So it is here:
+
+- **On the view itself:** the caller chains it on the node it places,
+  `PodcastCard({ podcast }).margin('bottom', 'md')`, and a `view()` node takes
+  the universal modifiers around its body (see [`view()`](#view)). A component
+  that took `style` only to place its root drops the prop.
+- **On a part inside:** the view takes a recipe, `look?: ViewModifier`, and
+  chains `.modifier(look)` on that part (`undefined` applies none). The caller
+  names the recipe once at module scope, `const handleLook =
+  defineModifier((v) => v.padding('horizontal', 'xs'))`, so it is the same
+  value on every render and the view's props stay equal.
+- **Never a raw style.** A view that passes a style object through to a host
+  stays JSX: a style object holds pixels and colours no token names, which
+  the language's chains would carry unchecked.
+
+**A colour chosen at render is a role chosen at render.** A theme read
+(`useTheme().colors.primary`, `useColorTokens().border`) is that role, and a
+condition between two is the condition between two roles, the modifier the
+same: `.border(isActive ? 'primary' : 'border', 'thin')`. Bloom's
+`withAlpha(colors.primary, 0.1)` is `'primary/10'`. An app's own palette chosen
+by a key is an app colour table (`defineTokens({ color: { low: '#64748b',
+high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`).
+
+**Insets.** `.safeAreaPadding()` pads by the device's insets (see
+[Layout](#layout)); a view pinned below the inset is pinned by points,
+`.position({ top: insets.top + 8 })`.
 
 ## Rendering
 
@@ -221,12 +315,13 @@ Text('Beta').modifier(tag, 'primary/10')
 | `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers); a `ZStack`'s children in one box of slots (see [Layout](#layout)) |
 | `Spacer` | `View` with `flex: 1` |
 | `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
-| `RawText` | React Native's own `Text` as an app draws it: Bloom's base face (as `@oxy.so/app-preset` 6.8.0's `metro/base-font` gives every React Native `Text`: Inter on Android and iOS when no text is around it, the document's family on the web), then only what its chain names (no Bloom size or ink), as a span. What a screen moved from React Native's `Text` draws; new screens use `Text`. |
+| `RawText` | React Native's own `Text`: only what its chain names (no Bloom family, size or ink), as a span, so a text that names no family draws the platform face (Roboto on Android, San Francisco on iOS, react-native-web's system stack on the web). What a screen moved from React Native's `Text` draws; new screens use `Text`, which is Inter. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
 | `Avatar` | Bloom `Avatar` (with a presence, `AvatarPresence`) |
 | `AvatarGroup` / `Badge` / `IconCircle` / `Loading` | Bloom `AvatarGroup` / `Badge` / `IconCircle` / `Loading` |
 | `Skeleton` / `SkeletonGroup` | Bloom's skeleton shapes / `Skeleton.Region` |
 | `.pressScale()` / `.hoverHighlight()` | Bloom `PressableScale` as the pressable host / `SubtleHover` as the stack's first child |
+| `.pressFade(o?)` | React Native's `TouchableOpacity` as the pressable host, its `activeOpacity` the opacity token |
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide, `fit` grows; see [Button](#button)) |
 | `ButtonGroup` | Bloom `Button.Group` |
@@ -297,6 +392,8 @@ generated from the spec, not by scanning (no PostCSS plugin).
 Fonts are Bloom's: a language `Text` is Bloom's `Text`, so it takes Bloom's
 families (Inter, the display face for titles), its desktop scale under a
 `TypographyScope` and its own ink when no colour is set (see [Text](#text)).
+`RawText` is React Native's own `Text` and takes none of them: with no family
+of its own it draws the platform face.
 
 ## Modifiers
 
@@ -311,7 +408,16 @@ the engine's error role fills; `error` is the policy's status colour),
 `primaryText` is `--primary-text`, `errorText` `--error-text`, `onSurface`
 `--surface-foreground`, `accent` `--accent`, and `white`, `black` and
 `transparent` are Tailwind's fixed colours (Bloom's `ThemeColors.white`,
-`black` and `transparent`, the same in every theme). A role at an opacity is one token, `'role/opacity'`,
+`black` and `transparent`, the same in every theme). `surfaceFill` is the
+fill of the surface the view sits on, Bloom's `useSurfaceFill()`: the colour a
+container around it published (a Screen, a Card, a panel), else its level's,
+for chrome that has to be that colour (a tab bar's backing, an avatar's ring
+in a skeleton). No theme colour or CSS variable holds it, so the leaf that
+paints the view reads it where it is drawn, on the web too (its style is an
+object there, its variants tracked in JS, as an app token's are). Only a leaf
+whose paint names it reads the surface's context (drawn inside `OnSurface`,
+which hands it the fill); every other leaf reads what it did before, so a node
+that does not paint it costs what its JSX does. A role at an opacity is one token, `'role/opacity'`,
 with an `opacity` token for the amount: `text-muted-foreground/70` is
 `.foreground('muted/70')`, `bg-primary/10` `.background('primary/10')`.
 Native paints the role's colour at that alpha; the web paints an ink, a
@@ -355,7 +461,13 @@ stacking levels `'2'` and `'60'` (`z-[2]`, `z-[60]`), the 4px border (`'4'`,
 `maxWidth` and `minWidth` that the className table also finds in two or more
 places: `'240'` `'300'` `'380'` `'400'` `'420'` `'440'` `'480'` `'512'` `'560'`
 `'720'`. A line's width has Bloom's own signature stroke besides, `'2.5'`, so a
-signature pad's `.strokeWidth()` can name it. Durations are in milliseconds: Bloom's `instant` 100, `fast` 150,
+signature pad's `.strokeWidth()` can name it, and the half-point and
+point-and-a-half borders apps write, `'0.5'` and `'1.5'` (`'0.5'` is a fixed
+half point on every screen; `hairline` stays the platform's thinnest line). The
+sizes Mention writes outside the ramp are font sizes too: `'9'`, `'12.5'`,
+`'28'`, `'42'` and `'96'`, and its pressed fade `'85'` is an opacity; its 7pt
+count badge and 15pt media card are the corners `'7'` and `'15'` (`15px` is
+the radius apps write most outside the scale). Durations are in milliseconds: Bloom's `instant` 100, `fast` 150,
 `normal` 200 and `slow` 300, then the exact durations apps write, `'800'` and
 `'2500'` (Willo's photo fades), and `'0'`, which stills a count-up or opens at
 once; then the waits Bloom's own components default to, so a screen can name
@@ -375,39 +487,46 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | Modifier | Values |
 | --- | --- |
 | `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`, or a numeric token (`'1'` `'6'` `'10'` `'14'` `'28'` `'44'` `'56'` `'96'`…); `-lg`, `-6` and the like pull outward (a margin) |
+| `safeAreaPadding(edge?)` | the device's safe-area insets (`react-native-safe-area-context`) as padding on those sides: `all` (the default), `top`, `bottom`, `horizontal`, `vertical`, `left`, `right` (physical: the insets are the device's); on the view itself, a top or bottom inset added to the view's own padding there (see [Layout](#layout)) |
 | `spacing(v)` | space: the gap between a stack's children |
+| `horizontalSpacing(v)`, `verticalSpacing(v)` | space: the gap along one axis only, over `spacing`'s: between children side by side (`columnGap`, `gap-x-*`) or one above another and between wrapped lines (`rowGap`, `gap-y-*`) |
 | `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap; new screens use `spacing()` |
 | `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
-| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5` |
+| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5`, and the percentages apps write that no fraction holds, named by their value (`90%`, `31%`), or points computed at render (`{ width: itemSize }`; see [Styles computed at runtime](#styles-computed-at-runtime)) |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
+| `aspectRatio(r)` | the view's width to its height (`1`, `1.6`), React Native's `aspectRatio`, in its frame's view: the frame's width or height (or the view's stretch) sets the other side. Any view, a pressable one included; an `Image`'s sizes the image in its box |
 | `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first`; a frame length, its `flex-basis` |
 | `flex(f)` | Tailwind's flex utility, exactly as NativeWind writes it: `'1'` (`flex-1`: grow 1, shrink 1, basis 0%), `auto`, `initial`, `none`, `grow` (`flex-grow: 1` alone). `grow()` stays React Native's `flex: 1` |
-| `margin(edge?, v)` | space (negatives included), on the view itself: no view around it |
-| `clipped()` | clips what the view draws to its bounds and its corner |
+| `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
+| `clipped(on?)` | clips what the view draws to its bounds and its corner; `clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out (NativeWind's `overflow-visible`), over a clip the view would otherwise have |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
-| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native); out of the layout |
+| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`) |
+| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
 | `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; `'children'`: only what is inside it takes them, `'self'`: only the view; read by a screen reader and not drawn (`sr-only`) |
 | `overlay(view, alignment?)`, `background(view, alignment?)` | a view over or under this one, at `center` `top` `bottom` `leading` `trailing` `top-leading` … `bottom-trailing` |
 | `shadow(s)`, `ring(c, width?, offset?)` | Bloom's elevation `s` `m` `floating`, or one of Tailwind's shadows by its exact box-shadow; a colour role (or a role at an opacity, or `none`) as an outline, `thin` `thick` or `'3'` wide |
 | `when(condition, (v) => v…)` | a variant: `sm` `md` `lg` `xl` `2xl`, `dark`, `hovered` `focused` `pressed` `disabled`, `web` `native` `ios` `android`, or the app's own boolean (see [Variants](#variants)) |
-| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'11'` `'14'` `'16'` `'18'` `'24'` `'30'` `'36'`), or `mono` (Bloom's monospaced face, beside the size) |
+| `font(f)` | a Bloom type-ramp step (`body`, `headline`, `caption-1`…: size, line height and tracking, as `Text variant`) or a size rung (`sm` 13, `md` 15…), a numeric size (`'9'` `'11'` `'12.5'` `'14'` `'16'` `'18'` `'24'` `'28'` `'30'` `'36'` `'42'` `'96'`), or a face beside the size: `mono` (Bloom's monospaced face) or `display` (the face of Bloom's big ramp steps, for a numeric size: `.font('96').font('display')`) |
 | `weight(w)` | `light` `regular` `medium` `semibold` `bold` `extrabold` |
 | `tracking(t)` | `tight` `wide` `wider` `widest` (em of the size); or an exact em (`'-0.02em'` `'-0.01em'` `'0.04em'`) or px (`'-0.5px'` … `'2px'`) |
-| `leading(l)` | Bloom line heights (ratios of the size) `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `relaxed` 1.625; or an exact px height (`'14px'` … `'40px'`) |
-| `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at an opacity token (`'muted/70'`) |
-| `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick` |
+| `leading(l)` | Bloom line heights (ratios of the size) `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `relaxed` 1.625; or an exact px height (`'14px'` … `'40px'`, and `'96px'`, Tailwind's `text-8xl` line, a 96pt countdown's) |
+| `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at an opacity token (`'muted/70'`); `foreground(undefined)` is no ink of its own (SwiftUI's `foregroundColor(nil)`), so `.foreground(invalid ? 'error' : undefined)` inks the view only when it is invalid |
+| `borderStyle(s)` | the border's line: `solid` (the default), `dashed`, `dotted` (React Native's `borderStyle`), in the border's view |
+| `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick`, or an exact width (`'0.5'`, a fixed half point; `'1.5'` `'2.5'` `'3'` `'4'`) |
 | edges | `padding`, `margin` and `border` take `leading` and `trailing` (the reading direction's sides) and `left` and `right` (physical, the same right to left) |
-| `corner(r, side?)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'10'` `'14'` `'18'` `'22'`), `full` (Bloom's `radius-max`, 9999), `infinite` (Tailwind's `rounded-full` as NativeWind writes it: 9007199254740000 on native, `calc(infinity * 1px)` on the web; a Bloom component that takes a radius in points gets `full`), `concentric`; the corners it rounds: `all`, `top` `bottom` `leading` `trailing`, or one (`top-leading`…), which follow the reading direction, or `left` `right` and one (`top-left`…), which do not (Tailwind's `rounded-l`, `rounded-tl`…); `round` `smooth` (see [Material](#material)) |
-| `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'10'` `'20'` `'30'` `'40'` `'60'` `'70'` `'80'` `'90'`) |
+| `corner(r, side?)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'7'` `'10'` `'14'` `'15'` `'18'` `'22'`), `full` (Bloom's `radius-max`, 9999; an app's 999 is `full` too, since both round any box under 1998pt fully), `infinite` (Tailwind's `rounded-full` as NativeWind writes it: 9007199254740000 on native, `calc(infinity * 1px)` on the web; a Bloom component that takes a radius in points gets `full`), `concentric`; the corners it rounds: `all`, `top` `bottom` `leading` `trailing`, or one (`top-leading`…), which follow the reading direction, or `left` `right` and one (`top-left`…), which do not (Tailwind's `rounded-l`, `rounded-tl`…); `round` `smooth` (see [Material](#material)) |
+| `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'10'` `'20'` `'30'` `'40'` `'45'` `'60'` `'70'` `'75'` `'80'` `'85'` `'90'`) |
 | `size(s)` | icon rungs, avatar rungs, or Bloom sizes, by node |
 | `style(a)` / `shape(s)` / `tint(t)` | Bloom appearance / `circle` `pill` / Bloom tone |
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `blur()` | Bloom's floating island (`BlurIsland`) |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
-| `label`, `hint`, `role`, `hitSlop`, `testID`, `id` | accessibility and identity. `role` is React Native's `accessibilityRole` of the same name: `button` `link` `header` `image` `text` `none` `checkbox` `radio` `tab` `radiogroup` `tablist` `list` `alert` `progressbar` `imagebutton` `summary` |
+| `accessibilityState(s)`, `accessibilityValue(v)`, `liveRegion(r)`, `accessibilityHidden(on?)` | what assistive technology reads: a state (`selected`, `checked` or `'mixed'`, `busy`, `expanded`, `disabled`: React Native's `accessibilityState`); a value, a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`; numbers and a text, no tokens); a region whose changes are announced (`polite`, `assertive`, `none`: `accessibilityLiveRegion`); hidden from screen readers with what is inside (see [Layout](#layout)) |
+| `hitSlop(edge?, s)` | how far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`, or an exact slop (`'4'` `'5'`); with a side first (`top` `bottom` `horizontal` `vertical` `left` `right`, physical as React Native's insets are) only that side, a later one of a side over the earlier. Every side alike is one number (`hitSlop={8}`), sides of their own React Native's insets with the sides named. An `Action`'s is its `EngagementAction`'s (an `Action` takes no `hitSlop` option) |
+| `ref(r)`, `onLayout(f)` | escape hatches, on the view's outermost box (its host, or the Bloom component that draws it): React Native's `ref` (a ref object or a callback, for a visibility tracker, a measurement, a DOM lookup on the web) and `onLayout`. Laying a view out from state its own `onLayout` wrote is discouraged: it draws twice, the second time moved, and can loop; a frame, a grow, an aspect ratio or a `ZStack` says the layout instead |
+| `label`, `hint`, `role`, `testID`, `id` | accessibility and identity. `role` is React Native's `accessibilityRole` of the same name: `button` `link` `header` `image` `text` `none` `checkbox` `radio` `tab` `radiogroup` `tablist` `list` `alert` `progressbar` `imagebutton` `summary` |
 | `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
 | `listMarker(m)` | a stack only: a web list behind `disc` or `decimal` markers (see [Layout](#layout)) |
 | `contentFit`, `aspectRatio`, `tint`, `crossFade`, `onLoad`, `onError` | `Image` only (see [Image](#image)) |
@@ -474,8 +593,31 @@ VStack(...).background('surface').corner('xl').shadow('m')
   children that do not fit onto further lines. `axis()` lays a stack out along
   the other axis, which is what a breakpoint variant uses (`flex-col
   md:flex-row`).
+- **Gaps per axis.** `.horizontalSpacing(v)` is the gap between children side
+  by side (`columnGap`), `.verticalSpacing(v)` the gap between children one
+  above another and between a wrapped row's lines (`rowGap`). Each is over
+  `spacing`'s on its axis, as React Native's `columnGap` and `rowGap` are over
+  `gap`.
 - **Self alignment.** `alignSelf` is the view's own place across its parent's
   axis, over the parent's `align`. `mx-auto` in a column is `alignSelf('center')`.
+- **Safe area.** `.safeAreaPadding(edge?)` is SwiftUI's: the view padded by
+  the device's safe area on those sides, as an app pads by
+  `useSafeAreaInsets()` (`paddingTop: insets.top`). It reads the insets as it
+  renders (none outside a `SafeAreaProvider`) and pads the view it is chained
+  on, as a padding does, so the view's fill, flex and own padding stay one
+  view: a top or bottom inset adds to the view's padding there, and
+  `paddingTop: insets.top + 24` is `.safeAreaPadding('top').padding('top', '2xl')`.
+  As with a padding, a fill chained after it covers the inset
+  (`.safeAreaPadding('vertical').background('card')`) and one chained before it
+  does not. A left or right inset beside a padding across is a view of its
+  own around it (a padding's start and end are logical, the inset physical).
+  On a column or row with no press, the safe area is the host itself. The insets are the device's
+  physical ones, not what a Bloom header or bar has already taken
+  (`useContentSafeAreaInsets()`).
+- **Auto margins.** `.margin(edge, 'auto')` takes the free space on that side,
+  as React Native's and CSS's `margin: auto` do: `.margin('leading', 'auto')`
+  pushes the view to its row's trailing end (Tailwind's `ms-auto`), and
+  `.margin('auto')` centres it on both axes. A padding has no `auto`.
 - **Lengths.** A frame takes a length of its parent (`full` is `100%`, `1/2` is
   `50%`) besides space rungs. `w-full` is `.frame({ width: 'full' })`: the same
   value, not SwiftUI's `maxWidth: .infinity`, so no rendered size moves.
@@ -511,7 +653,14 @@ VStack(...).background('surface').corner('xl').shadow('m')
   shifted (`x` right, `y` down, physical) without moving its siblings.
 - **Stacking.** `zIndex` takes Bloom's own levels (`Z_INDEX`): `base` 0,
   `raised` 1, `floating` 10, `dropdown` 40; Tailwind's `z-20`, `z-30` and
-  `z-50` are the numeric tokens `'20'`, `'30'`, `'50'`.
+  `z-50` are the numeric tokens `'20'`, `'30'`, `'50'`, and the exact levels
+  apps write are named by their value: `'-1'` (under its siblings), `'2'` to
+  `'7'`, `'60'`.
+- **Defaults that are no modifier.** Every view is the positioned parent of
+  what it pins (`position: relative`, React Native's and react-native-web's
+  default) and draws what overflows it (`overflow: visible`, the default of
+  both): neither is written, and the className table drops `relative` and
+  `overflow-visible`. `.clipped()` is the one that changes it.
 - **Elevation.** `.shadow(role)` is Bloom's `bloomShadowStyle(role)`: the web's
   box-shadow, native's shadow and elevation (`floating` is a box-shadow on
   both). It is the outermost layer. A shadow never shares a view with a
@@ -536,9 +685,26 @@ VStack(...).background('surface').corner('xl').shadow('m')
   (`pointer-events-none`); `true` takes them again. `'children'` lets them
   through the view's outermost box but not what is inside it (React Native's
   `box-none`, a scrim whose buttons still press), and `'self'` takes them on
-  that box and not inside it (`box-only`). react-native-web drops an
-  inline `pointerEvents`, so on the web a Bloom component's is a box of its own
-  around it.
+  that box and not inside it (`box-only`). `undefined` sets none, as React
+  Native's `pointerEvents={undefined}`, so `.allowsHitTesting(split ?
+  'children' : undefined)` lets touches through only while it holds. On the
+  web each is the class react-native-web's own `pointerEvents` prop draws
+  (`box-none`: `pointer-events: none` on the view, `auto` on each child), held
+  equal to it by the layout parity, a value chosen at render included;
+  react-native-web drops an inline `pointerEvents`, so on the web a Bloom
+  component's is a box of its own around it.
+- **Drawn, not read.** `.accessibilityHidden()` hides the view and everything
+  inside it from screen readers, each platform its own way: on Android and iOS
+  `accessibilityElementsHidden` and `importantForAccessibility:
+  'no-hide-descendants'`, on the web `aria-hidden` (react-native-web drops the
+  native props). `.accessibilityHidden(false)` reads it again (on the web it
+  writes nothing). `.accessibilityState({ … })` and `.liveRegion(r)` pass
+  React Native's `accessibilityState` and `accessibilityLiveRegion` as an app
+  writes them, on every platform: react-native-web reads the live region
+  (`aria-live`) and, as for the JSX they replace, no state.
+  `.accessibilityValue({ min, max, now })` or `({ text })` is React Native's
+  `accessibilityValue`, on the same box: a progress or a slider's place in its
+  range, or a value in words.
 - **Read, not drawn.** `.accessibilityOnly()` is Tailwind's `sr-only`: a
   1pt clipped box out of the layout that a screen reader still announces.
   Native has no clip path or white-space, so it is the box alone, as
@@ -547,6 +713,10 @@ VStack(...).background('surface').corner('xl').shadow('m')
   HTML list and each child a list item, so the browser draws its markers
   (`list-disc`); give it the room with a leading padding. Native draws no
   markers, as React Native has none.
+- **Dashed and dotted borders.** `.borderStyle('dashed' | 'dotted')` draws the
+  border of its view with that line (React Native's `borderStyle`; `solid` is
+  the default). It joins the border's view, so its place in the chain is the
+  border's.
 - **Rings.** `.ring(role, width?, offset?)` is an outline (Bloom's focus ring
   recipe): it draws outside the box and takes no room. `ring('none')` is the
   web's `outline: none`. It sits in the border's layer.
@@ -757,6 +927,14 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   Markdown nests its runs: it writes only what its own chain names (a weight,
   an ink, a link) and inherits the rest, so a span of an `h1` keeps the
   heading's size.
+- **Raw text.** `RawText(...runs)` is React Native's own `Text`, not Bloom's:
+  it writes only what its chain names, so a text that names no family draws
+  the platform face (Roboto on Android, San Francisco on iOS,
+  react-native-web's system stack on the web), not Inter. It is what the
+  codemod writes for a React Native `Text`, so the move changes no pixel: a
+  face the app's bundler gives React Native's `Text` (`@oxy.so/app-preset`'s
+  `baseFont`) reaches `RawText` alike. New screens use `Text`. Inside a `Text`
+  it is a span that inherits its parent's face.
 
 - **Digits and breaking.** `.monospacedDigit()` draws digits of one width
   (`tabular-nums`, React Native's `fontVariant`). `.wordBreak('all')` lets a
@@ -768,6 +946,14 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   `@oxy.so/bloom/typography`). A family sits beside the size: it keeps the
   ramp step or size rung the text has, and a later size keeps the face, so
   `.font('body').font('mono')` is body in mono.
+- **Display.** `.font('display')` is the face Bloom's `Text` sets its big
+  ramp steps in (`large-title`, `display-*`, `title-*`: BlomusModernus,
+  `fontFamilyStyle('display')`), for a size off the ramp: Mention's camera
+  countdown is `.font('96').leading('96px').weight('bold').font('display')`.
+  It is a family as `mono` is, beside the size; on Android and iOS Bloom's
+  text host draws the cut its weight selects (the bold cut at `bold`), as it
+  does for a ramp step. A ramp step already has its face: `display` is for a
+  numeric size.
 - **Tracking.** `.tracking(t)` is letter spacing in em of the text's size,
   Tailwind's `tracking-*`: `tight` −0.025,
   `wide` 0.025, `wider` 0.05, `widest` 0.1, or an exact em or px token (an
@@ -838,7 +1024,7 @@ Card(
   'fill')`, `.align('start' | 'center' | 'end')` (the label's place),
   `.spacing(space)` (the room on each side), `.tint(role)` (the line). A label
   `Text` with nothing of its own is Bloom's divider label (its type and ink);
-  any other view is drawn as it is. In a `Menu` it is the line between rows.
+  any other view is drawn as it is. In a `Menu` it is the line between rows. `.axis('vertical')` or `.axis('horizontal')` says which way the line runs over its stack's (Bloom's `vertical`): a vertical line outside an `HStack`.
 - **`Fill(...)`** covers the whole of the view it is in (a scrim, an overlay).
 - **`AspectRatio(ratio, ...)`** is its parent's width and the height `ratio`
   (width over height) gives; a ratio that is not one yet (`0 / 0` before an
@@ -896,7 +1082,11 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
 
 - **Content.** An `Icon` before the `Text` is the leading glyph, one after it
   the trailing glyph; the `Text` runs are the label. A glyph with an ink of
-  its own (`Icon(X).foreground(role)`) is drawn as it is.
+  its own (`Icon(X).foreground(role)`) is drawn as it is. A child that is
+  neither an `Icon` nor a `Text` makes the children the button's content,
+  drawn as views in the button (Bloom's `children`), none read as a glyph or
+  label: `Button(Loading().style('inline').size('sm')).label(name)`, or a glyph
+  as content rather than as the button's icon, `Button(Group(Icon(X)))`.
 - **Look.** `.style('solid' | 'subtle' | 'outline' | 'plain')`, `.tint(tone)`
   (Bloom's tones, `vivid` included), `.size('xs'…'lg')`; `.shape('circle')`
   is the square icon-only button, `.shape('pill')` the wide one.
@@ -913,6 +1103,22 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
 - **State.** `.loading()`, `.disabled()`, `.pressed(on)` (a toggle,
   announced as pressed), `.link(href)` (an anchor on the web, opened on
   native), `.lines(n)`, `.underline()` (at rest).
+  `.accessibilityState({ expanded })` on a button is Bloom's `aria-expanded`
+  (a menu trigger's open state; Bloom writes the button's own accessibility
+  state).
+- **Views beside the label.** With a `Text` label, a view before it (that is
+  no `Icon`) is Bloom's `leading`, one after it its `trailing`, drawn as they
+  are. A glyph drawn in the button's own ink, as Bloom's render-function
+  children draw one, is a plain `Icon` child: Bloom paints it in its ink.
+- **Inks and spinner.** `.foreground(role)` is the button's ink at rest
+  (Bloom's `color`) and `.hoverForeground(role)` under the pointer
+  (`hoverColor`), each painted from a colour role. `.loadingIndicator(null)`
+  draws no spinner while loading (the glyph or label stays); a view is drawn
+  in its place.
+- **Glyph and press.** `.iconSize(size)` is the glyph's size over its size's
+  own (an icon rung, `xl` is 28, or a numeric size), Bloom's `iconSize`.
+  `.stopPropagation()` keeps its press from reaching a pressable around it on
+  the web (a button in a pressable row); native presses never bubble.
 - **On glass** it keeps its own press, ink and name; the glass draws its fill
   (see [Glass](#glass)).
 - **Glass styles.** `.style('glass')` and `.style('glassProminent')` are
@@ -995,6 +1201,18 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
   of a chain. `SkeletonGroup(...)` is `Skeleton.Region`, named with `.label()`.
 - **`.pressScale()`**: a pressable view shrinks under the finger: its host is
   Bloom's `PressableScale`.
+- **`.pressFade(opacity?)`**: a pressable view fades while pressed, as React
+  Native's `TouchableOpacity` fades it, because that is its host: to the
+  opacity token on touch (`'70'` is `activeOpacity={0.7}`; without one,
+  `TouchableOpacity`'s own 0.2) and back on release, with
+  `TouchableOpacity`'s own timing and curve on each platform (Animated on
+  Android and iOS, react-native-web's opacity transition on the web). The
+  view's layout, fill and accessibility props are the host's, as on a
+  `Pressable`. It is press feedback, as `.pressScale()` is: a view takes one
+  of them. Its focus is `TouchableOpacity`'s own: with `.onPress(undefined)`
+  it is out of the focus order on Android and iOS and focusable on the web,
+  as the `TouchableOpacity` an app writes (a `Pressable` without a press is
+  out of it everywhere).
 - **`.hoverHighlight(active?)`** on a stack: Bloom's `SubtleHover` wash behind
   it. With no argument it answers the pointer (the web; the stack becomes its
   hover group); with `active`, it is a coordinated highlight on every platform.
@@ -1042,16 +1260,18 @@ neither; there is no handler alone, so a screen that wants to hear a change
 owns the value. A value Bloom requires (a place picker's `.query()`, a pitch
 card's selections) is still a modifier, said where the node is. Pull to
 refresh is a binding as well: `.refreshable([refreshing, setRefreshing])`, a
-pull writing `true`. Each binding's type is the value Bloom holds
+pull writing `true`; or, where a query drives it, its value and action,
+`.refreshable({ refreshing: isRefetching, onRefresh: refetch })` (React
+Native's names), which writes nothing back. Each binding's type is the value Bloom holds
 (`Bound<ReviewCardProps, 'expanded'>` is `Binding<boolean>`), and the
 spec lists each modifier on the nodes that edit it, so the compiler rejects a
 binding on a node that has no such value.
 
 | Node | Bloom | Modifiers |
 | --- | --- | --- |
-| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder`, `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
+| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder` (`null`: none, not even the label Bloom draws in its place otherwise), `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength`, `.multiline()`, `.editable(false)` (shown and selectable, no typing) |
 | `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, `.focused(binding)`, `.label(name)` (its `accessibilityLabel`, beside the visible `label`), the keyboard modifiers |
-| `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid |
+| `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid; `.multiple()` for a field of several controls (chips, two inputs), whose label names the group (Bloom's `multiple`) |
 | `Label(text)` | `Label` | `.size('xs' \| 'sm' \| 'md')`, `.required`, `.disabled` |
 | `Toggle(isOn)` | `Switch` | `.size`, `.tint(tone)`, `.disabled`; `.label()` names it (a switch draws no words) |
 | `Checkbox(isOn, label?)` | `Checkbox` | `.description`, `.size`, `.tint`, `.disabled`, `.readOnly()`, `.indeterminate()` |
@@ -1060,7 +1280,7 @@ binding on a node that has no such value.
 | `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`, `.presented(isOpen)` (its list open through a binding: Bloom's controlled `open`); `.label()` names it |
 | `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID`, `.leadingView(...)` (a picker row's mark), `.tint(role)` and `.foreground(role)` (a swatch's colour and its chosen dot) |
 | `OptionGroup(label, ...options)` | a picker's `SelectGroup` with its `SelectLabel`, heading its first row | none |
-| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, `.onClearText(action)` (the clear button's press: the screen empties its text, and its tokens), the keyboard modifiers |
+| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, `.onClearText(action)` (the clear button's press: the screen empties its text, and its tokens), `.maxLength(n)` (the most characters it takes), the keyboard modifiers |
 
 - **The box.** A field's box modifiers (`frame`, `padding`…) are its shell's
   style, as an app writes `<TextField style>`; a picker's are its trigger's;
@@ -1287,15 +1507,23 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 | --- | --- | --- | --- |
 | `Menu` | the lens menu | the system menu (SwiftUI `Menu` through `@expo/ui`) | Bloom `DropdownMenu` |
 | `Button` | Bloom `Button`; on glass, on the lens | Bloom `Button`; on glass, on Liquid Glass | Bloom `Button`; on glass, on Surface |
-| `FAB` | Bloom `Fab` on the lens | Bloom `Fab` on Liquid Glass | Bloom `Fab` on Surface |
+| `FAB` | Bloom `Fab` on the lens | Bloom `Fab` on Liquid Glass | Bloom `Fab` on Surface; `.glass(identity)`: Bloom's solid `Fab` everywhere, as an app's `<Fab>` draws it |
 | `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`, `Stack.Toolbar`) | Bloom `PageHeader` |
 | `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur); an app's tabs are the system tab bar (see [Navigation](#navigation)) | Bloom `BottomBar` |
 
-**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.subtitle`, `.destructive`,
-`.disabled`, `.checked`, `.keepOpen`, `.onPress`), `Submenu` (one level),
-`Section` (`.title`, set apart from the rows beside it) and `Divider`. A
-row's glyph is a Bloom icon in the menu's quiet ink (the negative ink for a
-destructive row). Rows built from hooks, or costly to build, go in one
+**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.iconSize`, `.iconForeground`,
+`.subtitle`, `.destructive`, `.disabled`, `.checked`, `.keepOpen`, `.onPress`),
+`Submenu` (one level; `.icon`, `.iconSize`, `.iconForeground`, `.disabled`), `Section` (`.title`, set apart from the rows beside it;
+`.selection()`, a section of choices, below) and `Divider`. A row's glyph is a 20pt Bloom icon in the menu's quiet ink (the
+negative ink for a destructive row; the row's own ink on the lens menu). A row
+sizes and inks its own with `.iconSize(size)` (an icon rung or a numeric size,
+`'22'`) and `.iconForeground(role)`, over those: Bloom's dropdown, context and
+menubar menus and the lens menu (Android, OxyOS) draw them; the system menu on
+iOS draws its SF Symbol at its own size and ink. A `Submenu` takes the same two
+for its own glyph; Bloom's menus draw them, and the lens menu's submenus draw
+no glyph. `.menuStyle('dropdown')` draws Bloom's own DropdownMenu on every
+platform (its panel and rows, as an app's `<DropdownMenu>` draws them) rather
+than the platform's menu; `platform` is the default. Rows built from hooks, or costly to build, go in one
 `menu()` content, whose body runs only while the menu is open:
 
 ```ts
@@ -1340,6 +1568,39 @@ Menu(MORE, PostMenu({ post }))
   and toggle shows its icon's SF Symbol (see [Icons on iOS](#icons-on-ios)); an
   icon without one draws no glyph.
 
+**Opened by the app.** `.presented([isOpen, setOpen])` opens the menu through
+a binding, as SwiftUI's `isPresented`: setting `true` opens it as its trigger's
+press does, and it sets `false` as it closes (`.presented([false, set])` keeps it
+shut). Bloom's menus take it as `DropdownMenu`'s `open` and `onOpenChange`; the
+lens menu opens and closes its base from it and reports its own opening and
+closing; the system menu on iOS opens only from its trigger, so a presented
+menu is Bloom's menu there.
+
+**Choices.** A `Section` with a `.selection(binding)` is one choice among its
+rows, as SwiftUI's `Picker` in a `Menu` is: each row is an `Item` whose
+`.tag()` is its value (as a picker row's `tag`), marked while the binding holds
+it, and choosing it sets the binding. `undefined` is no row chosen. Its rows are
+its choices only: a row that is no tagged `Item` is refused, by the compiler
+where it can see the row and by the runtime always.
+
+```ts
+Menu(
+  trigger,
+  Section(Item(t('Everyone')).tag('public'), Item(t('Private mention')).tag('direct'))
+    .title(t('Who can see this post'))
+    .selection([audience, setAudience]),
+)
+```
+
+Bloom's menus (the dropdown, context and menubar menus) draw the title as a
+label over a radio group (`DropdownMenuLabel`, then `DropdownMenuRadioGroup` of
+`DropdownMenuRadioItem`s, each with its glyph, `.disabled()`, `.keepOpen()` and
+`testID`), exactly as an app writes it; the lens menu (Android, OxyOS) a check
+on the chosen row; the system menu on iOS SwiftUI's inline `Picker` in a
+`Section` (a `UIMenu` of single selection), each choice a `Label` tagged with its
+value, which dismisses as a whole: the menu stays open only when every choice
+`.keepOpen()`s.
+
 **Tagged rows.** A row can name its action instead of holding a handler, and
 the menu takes what its tags do as an `actions()` view. The rows are plain data
 a closed menu builds without a hook or a closure (so the system menu on iOS can
@@ -1373,7 +1634,11 @@ bar.
 **Header.** `Header(title)` with `.titleDisplay('large' | 'inline')` (large is
 the ramp's `title-1-bold`), `.subtitle`, `.toolbar(...)`, `.toolbarLeading(...)`,
 `.onBack(fn | null)`, `.scrollEdge('auto' | 'always' | 'none')` (Bloom's
-scrim), `.scrollY` and `.presentation('floating' | 'bar' | 'navigation')`. On
+scrim), `.scrollY` and `.presentation('floating' | 'bar' | 'navigation')`. A
+title or subtitle may be a view (`Header(HStack(Avatar(a), Text(name)))`,
+`.subtitle(Text(handle).foreground('muted'))`): Bloom's `PageHeader` draws it in
+the title's place as it is, and on iOS's system bar a title view is UIKit's
+(`headerTitle`; the system bar draws no subtitle). On
 iOS, in a screen of a native stack, the header sets the screen's options and
 its `Stack.Toolbar`: a `Button` whose glyph has an SF Symbol (or a text label)
 is a bar button, a `Menu` of plain or tagged rows opened from one is a bar
@@ -1466,9 +1731,25 @@ PostRow({ id }).onPress(navigate('/p/[id]', { id }))
 
 **`layout(body)`, `screen(body)`.** A route file's default export. The body
 runs as the route's component, so it may call hooks; a screen a route renders
-with props (a post's id) is a `screen()` whose body takes them. Both provide the
+with props (a post's id), a gate's inner screen or a sheet's, is a `screen()`
+whose body takes them. Both provide the
 environment's navigator (Bloom's panel-aware router, so a deck panel's routes
 push in that panel on the web), which `navigate()` presses go through.
+
+`screen()` wraps the whole component: it draws the one Bloom `Screen`, and
+each branch of its body (a loading, an error, the content) returns its content
+with the chrome it shows. The Screen stays mounted from one branch to the
+next, as React keeps one `<Screen>` that each branch of a component returns.
+
+```ts
+export default screen(function EditList() {
+  const { list, loading, error } = useList();
+  const header = Header(t('lists.edit')).backLabel(t('common.back')).inPage();
+  if (loading) return ScrollView(Embed(<FormSkeleton />)).header(header);
+  if (error) return ErrorState(error).header(header);
+  return ScrollView(...list.members.map(MemberRow)).header(header);
+});
+```
 
 **`AppLayout(navigator)`.** Bloom's `AppShell` around the navigator. The shell
 draws its navigation from the `TabPagerProvider` above it (the sidebar's rows
@@ -1570,7 +1851,10 @@ toast.success('Saved')
   key), `.frame({ width, maxWidth })` and `.padding(space)` (its
   `contentPadding`), `.sideGutter(space)` (its `minSideGutter`),
   `.maxHeightRatio(0.9)` (its height ceiling as a fraction of the window's),
-  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`. The widths apps
+  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`,
+  `.onDismissed(action)` (Bloom's `onDismissed`: once the dialog has finished
+  closing, its exit animation done, after its binding turned false; the place
+  to unmount what presented it, as an app's `control.close(callback)` did). The widths apps
   use are numeric tokens (`.frame({ maxWidth: '560' })`); another is an app
   token (`defineTokens({ space: { sheet: 609 } })`).
 - **Popover.** `.label()`, `.side(side, align?)` (`top` `bottom` `left`
@@ -1699,7 +1983,8 @@ inside a screen, as Bloom's is.
 | Modifier | Bloom `ScreenScrollView` |
 | --- | --- |
 | `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
-| `.refreshable([refreshing, setRefreshing], tint?)` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed. `tint`, a colour role (or a role at an opacity), is its `tintColor` and `colors={[…]}`, painted from the theme as an app writes `tintColor={theme.colors.primary} colors={[theme.colors.primary]}` |
+| `.contentGrows(on?)` | `contentContainerStyle`'s `flexGrow: 1`: the content container grows to fill the scroll, so content shorter than the viewport (an empty state) centres or sits at its end; `on` a condition (`items.length === 0`) grows it only while it holds. A `ScrollArea`, a `ScrollSurface` and a `VirtualList` take it too |
+| `.refreshable([refreshing, setRefreshing], tint?)`, `.refreshable({ refreshing, onRefresh }, tint?)` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed. Or a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`), passed as they are. `tint`, a colour role (or a role at an opacity), is its `tintColor` and `colors={[…]}`, painted from the theme as an app writes `tintColor={theme.colors.primary} colors={[theme.colors.primary]}`; `{ ios, android }` is each platform's own (`{ ios: 'primary' }` is `tintColor` alone: Android's spinner keeps its look) |
 | `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden', axis?)` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator`, or only the one `axis` (`'vertical'` or `'horizontal'`) names: `showsVerticalScrollIndicator={false}` alone is `.scrollIndicators('hidden', 'vertical')` |
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
@@ -1729,7 +2014,23 @@ modifiers above (see [Navigation](#navigation)), the rest of Bloom `Screen`:
 | `.colorPreset(name)` | `colorPreset`: one of Bloom's presets (`AppColorName`), the screen's own recipe for its content, panel and shell, restored when it leaves |
 | `.seed('#rrggbb')` | `seed`: the colours from one RGB seed (a colour the person chose), over the preset |
 | `.screenActive(false)` | `active={false}`: a retained screen drives no scroll, chrome or reselect |
+| `.screenBackground(color)` | `style={{ backgroundColor }}`: the screen's own fill behind its header and content, the surface its chrome is painted for (a reel's or a camera's black); a role is the theme's colour (`useTheme().colors`), an app colour as written |
+| `.reselectTop(isAtTop, scrollToTop)` | `reselect`'s `isAtTop` and `scrollToTop`, beside `.onReselect()`'s `refresh`: where the top is for a screen that drives its own scroll (a reel, whose top is its first slide); without it the scroller in front answers |
 | `.initialHeaderHeight(space)`, `.initialFooterHeight(space)` | `headerHeight`, `bottomBarHeight`: the chrome's heights before it measures itself (safe area included) |
+
+Three more draw around the `Screen`, as a route's JSX wrapped it:
+
+| Modifier | Around Bloom `Screen` |
+| --- | --- |
+| `.colorScope('light' \| 'dark' \| undefined)` | `<BloomColorScope mode asChild>`: the screen in a scheme of its own (a dark reel or camera in a light app); `undefined` is the app's, the scope still drawn so a scheme chosen at render never remounts the screen |
+| `.keyboardAvoiding(fill?)` | React Native's `<KeyboardAvoidingView>`: filling (React Native's `flex: 1`, or a flex token as `.flex()` writes it: `'1'` is Tailwind's `flex-1`, `flex: 1 1 0%`), padded on iOS and resized elsewhere, as React Native recommends (SwiftUI avoids the keyboard itself; React Native does not) |
+| `.provider(Component)` | a provider of children around the screen (Bloom's `<HeaderDockProvider>`, or an app's own): a context the screen's header and content share |
+
+Each wraps what the root's modifiers before it drew, in chain order, as
+SwiftUI's modifiers do, so the last is outermost:
+`.colorScope('dark').provider(HeaderDock)` is the dock around the scope around
+the Screen. The header on iOS (the system bar) and the sheets stay beside the
+Screen, as they do without them.
 
 The insets are Bloom `Screen`'s own: the header and the footer measure
 themselves, the safe area comes from the screen's context, and the content
@@ -2106,16 +2407,16 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 
 | Node | Draws |
 | --- | --- |
-| `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts |
+| `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts; a card lays its children out as a stack does, `.axis()`, `.spacing()`, `.align()`, `.justify()`, in the view Bloom's Card holds them in (its `style`) |
 | `Row(title?)` | Bloom `Item` (the list row; `Item` is the menu's row) |
 | `GroupedSection(...rows)`, `GroupedSectionItem(title)` | Bloom `GroupedSection`, `GroupedSectionItem` |
 | `GroupedSectionIcon(icon)`, `GroupedSectionDivider()`, `GroupedSectionCollapse(open, ...rows)` | Bloom `GroupedSectionIcon`, `GroupedSectionDivider`, `GroupedSectionCollapse` |
-| `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs |
+| `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs; a glyph with a size or ink of its own (`Icon(X).size('sm').foreground('primary')`), or any other view, before or after the label is drawn as it is (Bloom's `leading` and `trailing`) |
 | `ChipRow(...chips)`, `CappedChipRow(...chips)` | Bloom `ChipRow` (scrolls sideways), `CappedChipRow` (wraps, the rest behind "+N") |
 | `EmptyState(title?, ...content)` | Bloom `EmptyState` (the content between its explanation and its actions) |
 | `SelectionCard(title, ...body)` | Bloom `SelectionCard` |
 | `Admonition(...content)` | Bloom's `AdmonitionRoot`, row, icon and content: a `Text` is `AdmonitionText`, a `Button` an action |
-| `Tabs(selection, ...TabItem(value, label), ...TabContent(value, ...))` | Bloom `Tabs`, its `TabsTrigger`s and its `TabsContent`s |
+| `Tabs(selection, ...TabItem(value, label), ...TabContent(value, ...))` | Bloom `Tabs`, its `TabsTrigger`s and its `TabsContent`s; `.pressOpenTab('report' \| 'reselect')` is what pressing the open tab does (`reselect`: its content back to the top) |
 | `Kbd(keys)` | Bloom `Kbd` |
 | `ErrorBoundary(...content)` | Bloom `ErrorBoundary` |
 
@@ -2149,7 +2450,7 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   modifiers as its own style. `GroupedSectionDivider().inset(space)` is a line
   between rows; `GroupedSectionCollapse(open, ...rows)` reveals and hides rows
   in place.
-- **Chip.** `.style()`, `.tint()`, `.size('xs'…'2xl')`, `.hue()`,
+- **Chip.** `.style()`, `.tint()` (`undefined` is no tone of its own, so `.tint(sensitive ? 'danger' : undefined)` paints only while it holds), `.size('xs'…'2xl')`, `.hue()`,
   `.toggle(binding)` (a filter chip: checked through its binding),
   `.selected()`, `.onClose(remove, label?)`, `.disabled()`, `.onPress()`,
   `.role('checkbox' | 'radio' | 'tab')` (what it is to assistive technology).
@@ -2176,7 +2477,13 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 - **Tabs.** `.style('underline' | 'pill' | 'filled')`, `.fullWidth()`,
   `.label()` (the strip's name); a `TabItem` takes `.icon()`, `.count()`,
   `.disabled()`, `.testID()`, `.iconOnly()`, `.reorderable()`, `.trailing()`
-  (a control in its chrome, not its press) and `.onLongPress()`; the strip's
+  (a control in its chrome, not its press) and `.onLongPress()`, and its own
+  box and label over Bloom's: `.frame()` and `.padding()` are `TabsTrigger`'s
+  `style`, `.font()`, `.leading()` and `.weight()` its `textStyle` (Mention's
+  home tabs: `.frame({ height: '38', minWidth: '76' }).padding('left', 'md')
+  .padding('right', 'md').padding('vertical', 'none').font('md').leading('18px')
+  .weight(open ? 'bold' : 'medium')`, the 38pt strip and 76pt tab the space
+  tokens `'38'` and `'76'`); the strip's
   `.onReorder(from, to)` keeps a new order and `.dragTranslation(value)` is a
   swipe's travel the underline follows. What each tab shows is
   `TabContent(value, ...)` inside the strip (Bloom's `TabsContent`), or a
@@ -2373,9 +2680,13 @@ as Bloom passes it, so an app's named `renderPost` is the row as it is
 (`VirtualList(posts, renderPost)`), its element drawn unchanged. Keep it stable
 (module scope, or a `useCallback`), and the list keeps its `renderItem`, so the
 engine re-renders a row only when its item changes, as with JSX; a new arrow per
-render would redraw every memoised row. It takes `.itemKey()`, `.itemType()` (FlashList's recycling type),
+render would redraw every memoised row. It takes `.contentMargins(edge?, space)`, `.contentGrows(on?)` and
+`.spacing(space)`, its `contentContainerStyle`'s padding and `gap`, as every
+scroll of the language's takes them (`paddingHorizontal: 16, gap: 8` is
+`.contentMargins('horizontal', 'lg').spacing('sm')`; the room for views pinned
+at its edges adds to that padding), `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
-`.refreshable([refreshing, setRefreshing])`, `.stickyIndices()`,
+`.refreshable([refreshing, setRefreshing])` or `.refreshable({ refreshing, onRefresh })`, `.stickyIndices()`,
 `.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()`,
 `.screen(options?)` (Bloom's `screen`, `{}` by default: the list is its screen's
 scroller, binding the header's fade, the bottom bar's fold, the reselect and the
@@ -4730,14 +5041,14 @@ the owner's decision, or an app's `defineTokens`) before a codemod moves it.
 
 |  | Utilities | Uses | Share of uses |
 | --- | ---: | ---: | ---: |
-| Maps to a modifier and a token | 1040 | 46970 | 87.4% |
-| Expressed by the view’s structure | 53 | 3445 | 6.4% |
+| Maps to a modifier and a token | 1075 | 47195 | 87.9% |
+| Expressed by the view’s structure | 48 | 3426 | 6.4% |
 | Redundant in the language | 31 | 509 | 0.9% |
-| Needs a named token (raw value) | 278 | 671 | 1.2% |
+| Needs a named token (raw value) | 267 | 634 | 1.2% |
 | An app’s own token (a brand colour) | 30 | 76 | 0.1% |
 | Maps to the motion layer | 13 | 236 | 0.4% |
-| Needs a modifier the language lacks | 42 | 179 | 0.3% |
-| An app’s own class | 433 | 1634 | 3.0% |
+| Needs a modifier the language lacks | 26 | 63 | 0.1% |
+| An app’s own class | 430 | 1581 | 2.9% |
 
 53720 uses of 1920 utilities across 28 apps. Of the
 2061 variant prefixes written over them, 1739 (84.4%) are a `when()`
@@ -4746,13 +5057,13 @@ condition. The values with no rung, by scale (the owner names each as a token or
 | Scale | Uses | Raw values with no rung (uses) |
 | --- | ---: | --- |
 | color | 219 | --primary-subtle (20), --ring (18), --sidebar-foreground (14), green-500 (12), --sidebar-border (12), red-500 (10), --sidebar-accent (9), red-400 (9), --sidebar-accent-foreground (9), --sidebar (8), --sidebar-ring (8), --accent-foreground (8) |
-| space | 203 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
-| opacity | 88 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), white at 85% (3), --background at 85% (2) |
-| font | 55 | 10.5px (8), 28px (7), 12.5px (5), 23px (5), 34px (4), 9px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2) |
+| space | 199 | 18px (9), 600px (8), 144px (8), 520px (7), 100px (7), 220px (7), 565px (6), 52px (6), 112px (6), 7px (6), 150px (6), 88px (6) |
+| opacity | 83 | --ring at 50% (16), --foreground at 5% (7), black at [0.04]% (7), white at [0.06]% (6), --primary at 5% (5), white at 15% (4), white at 25% (4), black at 25% (3), --primary at 15% (3), --surface at 25% (3), black at [0.025]% (2), black at [0.07]% (2) |
 | leading | 42 | 1 (15), 29px (6), 17px (5), 15px (2), 41px (2), 12px (1), 13px (1), 19px (1), 21px (1), 23px (1), 26px (1), 27px (1) |
-| corner | 38 | 15px (8), 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1) |
+| font | 37 | 10.5px (8), 23px (5), 34px (4), 48px / 48px (2), 11.5px (2), 13.5px (2), 15.5px (2), 21px (2), 29px (2), 28px / 34px (2), 60px / 60px (1), 19px (1) |
+| corner | 29 | 23px (6), 5px (5), 13px (3), 27px (3), 25px (2), 26px (2), 3px (2), 9px (2), 19px (1), 30px (1), 35px (1), 32px (1) |
 | shadow | 16 | shadow-shop-s (10), shadow-shop-m (2), shadow-dropdown (1), shadow-foreground/10 (1), shadow-foreground/20 (1), shadow-l (1) |
-| zIndex | 7 | 10000 (1), 1000 (1), 2000 (1), 2001 (1), 3 (1), 80 (1), 9998 (1) |
+| zIndex | 6 | 10000 (1), 1000 (1), 2000 (1), 2001 (1), 80 (1), 9998 (1) |
 | rotation | 1 | -12° (1) |
 | weight | 1 | 900 (1) |
 | scale | 1 | 1.01 (1) |
@@ -4970,7 +5281,7 @@ with its reason. Nothing else is missing.
   `flex()`, `childSpacing()` (Tailwind's `space-x`/`space-y`), hit testing
   (`true`, `false`, `'children'`, `'self'`), text styles (`textTertiary`
   among the roles, tabular figures, `textAlign('left' | 'right')`), links,
-  truncation, and `RawText` (React Native's own Text in Bloom's base face).
+  truncation, and `RawText` (React Native's own Text).
   On native a class's fixed colour at an opacity, a leading and a tracking
   are drawn as NativeWind's compiler rounded them, and on the web a colour
   at an opacity is an ink (`var(--bl-…)`) a variant can override. An app

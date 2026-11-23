@@ -4,6 +4,7 @@
 
 ### Added
 
+- `Dialog` takes `onDismissed`: it fires once the dialog has finished closing, its exit animation done, in either mode (in controlled mode, after the host flipped `open` to `false`), the place to unmount what presented it. The language's `Dialog` takes it as `.onDismissed()`.
 - The Bloom language guides ship in `docs/`: `bloom-language-getting-started.mdx` (install, the compiler in Metro, Jest and Vite, a first screen), `bloom-language-tour.mdx`, `bloom-language-from-jsx.mdx` and `bloom-language-for-agents.mdx`, every `check` example compiled by the language compiler and TypeScript in CI; and the reference generated from the language's spec, `bloom-language-nodes.mdx`, `bloom-language-modifiers.mdx` and `bloom-language-tokens.mdx`. Storybook has a `Language` section led by the tour.
 
 ## 23.0.0

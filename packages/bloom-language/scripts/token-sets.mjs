@@ -34,6 +34,10 @@ export function tokenSetsOf(spec) {
   return {
     space: Object.keys(scales.space),
     padding: [...Object.keys(scales.space), ...negative],
+    // A pinned view's edge takes a percentage of its parent besides (`top: '25%'`).
+    edgeDistance: [...Object.keys(scales.space), ...negative, ...enums.insetPercent],
+    // A margin takes `auto` besides: the free space on that side (Tailwind's `ml-auto`).
+    margin: [...Object.keys(scales.space), ...negative, ...enums.marginExtra],
     length: [...Object.keys(scales.space), ...Object.keys(scales.length)],
     zIndex: [...Object.keys(scales.zIndex), ...enums.zIndexExtra],
     shadow: Object.keys(scales.shadow),
@@ -49,6 +53,8 @@ export function tokenSetsOf(spec) {
     // `.separator()` is a grouped section's and a list's: either's separators.
     separator: [...new Set([...enums.groupedSeparator, ...enums.listSeparator])],
     font: [...typeFamiliesOf(typeRamp), ...Object.keys(scales.fontSize), ...enums.fontFamily],
+    // A label's size alone (a tab's): a ramp family or a size, never a face of its own.
+    labelFont: [...typeFamiliesOf(typeRamp), ...Object.keys(scales.fontSize)],
     weight: Object.keys(scales.weight),
     leading: [...Object.keys(scales.leading), ...Object.keys(scales.leadingPx)],
     tracking: [...Object.keys(scales.tracking), ...Object.keys(scales.trackingPx)],

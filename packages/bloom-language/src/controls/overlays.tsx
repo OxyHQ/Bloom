@@ -125,6 +125,12 @@ export interface DialogView extends PresentedNode {
   sideGutter(value: SpaceToken): DialogView;
   /** Its height ceiling, as a fraction of the window's (`0.9`). */
   maxHeightRatio(value: number): DialogView;
+  /**
+   * Once it has finished closing, its exit animation done (Bloom's
+   * `onDismissed`): after its binding turned false and it left the screen,
+   * the place to unmount what presented it.
+   */
+  onDismissed(action: () => void): DialogView;
   /** `false`: a press on the backdrop does not dismiss it. */
   dismissOnBackdrop(value: boolean): DialogView;
   /** Its content scrolls when it is taller than the dialog. */
@@ -324,6 +330,7 @@ export function drawDialog(
       contentPadding: space(own.padding),
       minSideGutter: space(own.sideGutter),
       maxHeightRatio: own.maxHeightRatio,
+      onDismissed: own.onDismissed,
       title: own.title,
       description: own.message,
       label: own.label,

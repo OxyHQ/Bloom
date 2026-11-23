@@ -71,6 +71,8 @@ export interface LensMenu {
   rows: readonly LensRow[];
   config?: LensMenuConfig;
   fontFamily?: string;
+  /** The menu opened or started closing. */
+  onOpenChange?: (open: boolean) => void;
   onClosed?: () => void;
 }
 

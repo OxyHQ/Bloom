@@ -30,7 +30,14 @@ import {
   GroupedSectionIcon,
   GroupedSectionItem,
 } from '@oxy.so/bloom/grouped-section';
-import { RiArrowRightLine, RiHeart3Line, RiInbox2Line, RiSettings3Line } from '@oxy.so/bloom/icons';
+import {
+  RiArrowDownSLine,
+  RiArrowRightLine,
+  RiHeart3Line,
+  RiInbox2Line,
+  RiSettings3Line,
+  RiTimeLine,
+} from '@oxy.so/bloom/icons';
 import { Item } from '@oxy.so/bloom/item';
 import { Kbd } from '@oxy.so/bloom/kbd';
 import { tokens } from '@oxy.so/bloom/styles';
@@ -66,6 +73,45 @@ const CARD_RADII: readonly (readonly [C.CardRadius, CardRadius])[] = [
 // ── Card ─────────────────────────────────────────────────────────
 
 const cards: ParityCase[] = [
+  {
+    // Mention's stat cards: a row of content, spread and centred, with a gap.
+    name: 'Card laying its content out in a row',
+    language: () =>
+      toElement(
+        C.Card(L.Badge(1), L.Badge(2))
+          .axis('horizontal')
+          .align('center')
+          .justify('between')
+          .spacing('md'),
+      ),
+    bloom: () => (
+      <Card
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: tokens.space.md,
+        }}
+      >
+        <Badge content={1} />
+        <Badge content={2} />
+      </Card>
+    ),
+  },
+  {
+    // Mention's application cards: a padded card whose content is a column with a gap.
+    name: 'Card padded, its content spaced',
+    language: () => toElement(C.Card(L.Badge(1), L.Badge(2)).padding('lg').spacing('md')),
+    bloom: () => (
+      // An app's `padding: 16` is these four edges, as React Native draws it.
+      <Card
+        style={{ paddingTop: 16, paddingBottom: 16, paddingStart: 16, paddingEnd: 16, gap: 12 }}
+      >
+        <Badge content={1} />
+        <Badge content={2} />
+      </Card>
+    ),
+  },
   {
     name: 'Card with its parts',
     language: () =>
@@ -422,6 +468,82 @@ const grouped: ParityCase[] = [
 
 const chips: ParityCase[] = [
   {
+    // Mention's composer chips: a glyph in its own size and ink before the label, an arrow after it.
+    name: 'Chip with an inked glyph before its label and an arrow after it',
+    language: () =>
+      toElement(
+        C.Chip(
+          L.Icon(RiTimeLine).size('sm').foreground('primary'),
+          L.Text('Schedule'),
+          L.Icon(RiArrowDownSLine),
+        )
+          .size('xl')
+          .style('subtle'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Chip
+            size="xl"
+            appearance="subtle"
+            leading={<RiTimeLine size="sm" fill={c.primary} />}
+            trailingIcon={RiArrowDownSLine}
+          >
+            Schedule
+          </Chip>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    // Bloom's `startIcon` and `endIcon` are the same slots as `leading` and `trailing`.
+    name: 'Chip with a startIcon and an endIcon',
+    language: () =>
+      toElement(
+        C.Chip(L.Icon(RiTimeLine).size('sm').foreground('primary'), L.Text('Later'), L.Badge(2))
+          .size('xl')
+          .style('subtle'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Chip
+            size="xl"
+            appearance="subtle"
+            startIcon={<RiTimeLine size="sm" fill={c.primary} />}
+            endIcon={<Badge content={2} />}
+          >
+            Later
+          </Chip>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'Chip with a view after its label',
+    language: () => toElement(C.Chip(L.Text('Site'), L.Badge(1)).style('solid').tint('success')),
+    bloom: () => (
+      <Chip appearance="solid" tone="success" trailing={<Badge content={1} />}>
+        Site
+      </Chip>
+    ),
+  },
+  ...[true, false].map((sensitive) => ({
+    // Mention's composer: the sensitive chip paints red only while the post is marked.
+    name: `Chip whose colour is chosen at render (${sensitive})`,
+    language: () =>
+      toElement(
+        C.Chip(L.Text('Sensitive'))
+          .size('xl')
+          .tint(sensitive ? 'danger' : undefined),
+      ),
+    bloom: () => (
+      <Chip size="xl" color={sensitive ? 'error' : undefined}>
+        Sensitive
+      </Chip>
+    ),
+  })),
+  {
     name: 'Chip',
     language: () => toElement(C.Chip(L.Text('Design'))),
     bloom: () => <Chip>Design</Chip>,
@@ -610,6 +732,91 @@ const tabs: ParityCase[] = [
       </Tabs>
     ),
   },
+  {
+    // An app's `style` on the strip is its box: Bloom's Tabs takes it on the strip's outer view.
+    name: 'Tabs with a style: the strip height',
+    language: () =>
+      toElement(
+        C.Tabs(['posts', setTab], C.TabItem('posts', 'Posts'), C.TabItem('replies', 'Replies'))
+          .style('underline')
+          .frame({ height: '44' }),
+      ),
+    bloom: () => (
+      <Tabs value="posts" onValueChange={setTab} variant="underline" style={{ height: 44 }}>
+        <TabsTrigger value="posts" label="Posts" />
+        <TabsTrigger value="replies" label="Replies" />
+      </Tabs>
+    ),
+  },
+  {
+    // Mention's home tabs: each tab's box and label its own, the open one bold.
+    name: 'Tabs whose tabs size their box and label',
+    language: () => {
+      const tab = (value: string, label: string) =>
+        C.TabItem(value, label)
+          .frame({ height: '38', minWidth: '76' })
+          .padding('left', 'md')
+          .padding('right', 'md')
+          .padding('vertical', 'none')
+          .font('md')
+          .leading('18px')
+          .weight(value === 'posts' ? 'bold' : 'medium');
+      return toElement(
+        C.Tabs(['posts', setTab], tab('posts', 'Posts'), tab('replies', 'Replies'))
+          .style('underline')
+          .pressOpenTab('reselect')
+          .frame({ height: '38' }),
+      );
+    },
+    bloom: () => {
+      const style = {
+        height: 38,
+        minWidth: 76,
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 0,
+        paddingBottom: 0,
+      };
+      return (
+        <Tabs
+          value="posts"
+          onValueChange={setTab}
+          variant="underline"
+          pressOpenTab="reselect"
+          style={{ height: 38 }}
+        >
+          <TabsTrigger
+            value="posts"
+            label="Posts"
+            style={style}
+            textStyle={{ fontSize: 15, lineHeight: 18, fontWeight: '700' }}
+          />
+          <TabsTrigger
+            value="replies"
+            label="Replies"
+            style={style}
+            textStyle={{ fontSize: 15, lineHeight: 18, fontWeight: '500' }}
+          />
+        </Tabs>
+      );
+    },
+  },
+  ...ENUMS.pressOpenTab.map((press) => ({
+    // Mention's feed tabs: pressing the open tab takes its content back to the top.
+    name: `Tabs whose open tab, pressed, does ${press}`,
+    language: () =>
+      toElement(
+        C.Tabs(['posts', setTab], C.TabItem('posts', 'Posts'), C.TabItem('replies', 'Replies'))
+          .style('underline')
+          .pressOpenTab(press),
+      ),
+    bloom: () => (
+      <Tabs value="posts" onValueChange={setTab} variant="underline" pressOpenTab={press}>
+        <TabsTrigger value="posts" label="Posts" />
+        <TabsTrigger value="replies" label="Replies" />
+      </Tabs>
+    ),
+  })),
   ...ENUMS.tabsStyle.map((style) => ({
     name: `Tabs style ${style}`,
     language: () =>

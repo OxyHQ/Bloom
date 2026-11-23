@@ -29,7 +29,10 @@ const post = (
     toElement(
       L.ActionBar(
         L.ActionGroup(
-          L.Action(RiArrowUpSLine, 'Upvote', { rollCount: true, hitSlop: HIT_SLOP })
+          L.Action(RiArrowUpSLine, 'Upvote', { rollCount: true })
+            .hitSlop('vertical', 'md')
+            .hitSlop('left', 'md')
+            .hitSlop('right', '4')
             .count(1520)
             .active(true)
             .onPress(press),

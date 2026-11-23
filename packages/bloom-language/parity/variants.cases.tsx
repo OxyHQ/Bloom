@@ -79,6 +79,25 @@ function Tracked({
 
 export const VARIANT_CASES: ParityCase[] = [
   {
+    // Points computed at render vary as a token does: a value with no class, picked in JS on the web.
+    name: 'a breakpoint variant (md) over a frame of points',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .frame({ width: 'full' })
+          .when('md', (v) => v.frame({ width: 117.5 })),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <RN.View style={{ width: atLeast('md') ? 117.5 : '100%' }}>
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Tiered>
+    ),
+  },
+  {
     name: 'a breakpoint variant (md) over a padding',
     language: () =>
       toElement(

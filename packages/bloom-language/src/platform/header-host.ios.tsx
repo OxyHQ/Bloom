@@ -125,7 +125,10 @@ function SystemBar({ node, render, press, Stack }: NodeHostProps & { Stack: Stac
       <Stack.Screen
         options={{
           headerShown: true,
-          title: header.title,
+          // A title that is a view is UIKit's title view.
+          ...(isNode(header.title)
+            ? { headerTitle: () => render(header.title as Node) }
+            : { title: header.title }),
           headerLargeTitle: header.display === 'large',
           headerTransparent: true,
           headerShadowVisible: header.scrollEdge !== 'none',

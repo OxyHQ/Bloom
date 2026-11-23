@@ -144,7 +144,17 @@ export type GlassOpacityName = keyof typeof GLASS_OPACITY;
 /** Bloom's motion durations (`animation.duration`): an image's cross-fade, by name. */
 export type DurationName = keyof typeof DURATION;
 export type Edge = (typeof ENUMS.edge)[number];
+/** Which menu a `Menu` is: the platform's, or Bloom's dropdown on every platform. */
+export type MenuStyle = (typeof ENUMS.menuStyle)[number];
+/** What pressing a `Tabs` strip's open tab does (Bloom's `pressOpenTab`). */
+export type PressOpenTab = (typeof ENUMS.pressOpenTab)[number];
+/** A physical side or set of sides (left and right, never leading or trailing): what `.safeAreaPadding()` pads and `.hitSlop()` reaches, both the device's. */
+export type PhysicalEdge = (typeof ENUMS.physicalEdge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
+/** A border's line: `solid`, `dashed` or `dotted` (React Native's `borderStyle`). */
+export type BorderStyleName = (typeof ENUMS.borderStyle)[number];
+/** How assistive technology announces a change inside a view (React Native's `accessibilityLiveRegion`). */
+export type LiveRegion = (typeof ENUMS.liveRegion)[number];
 export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 /** A plain link button's ink (Bloom `Button`'s `linkTone`). */
@@ -176,6 +186,8 @@ export type ChromePlacement = (typeof ENUMS.chromePlacement)[number];
 export type NavigationScope = (typeof ENUMS.navigationScope)[number];
 /** One of Bloom's colour presets (`AppColorName`), a screen's own recipe. */
 export type ColorPreset = (typeof ENUMS.colorPreset)[number];
+/** A colour scope's scheme (Bloom `BloomColorScope`'s `mode`): its own light or dark, whatever the app's. */
+export type ColorScopeMode = (typeof ENUMS.colorScopeMode)[number];
 export type ActionPlacement = (typeof ENUMS.actionPlacement)[number];
 export type ScrollIndicators = (typeof ENUMS.scrollIndicators)[number];
 export type KeyboardDismiss = (typeof ENUMS.keyboardDismiss)[number];
@@ -503,6 +515,23 @@ export type SpaceToken = SpaceName | AppToken<'space'>;
 /** A frame's length: a space rung or an app's own, or a length relative to the parent. */
 export type LengthToken = SpaceToken | LengthName;
 export type PaddingToken = SpaceName | NegativeSpaceName | AppToken<'space'>;
+/**
+ * A number of points computed as the view renders (a size from a prop, a
+ * column's width from its container, an inset), as SwiftUI's `.frame` and
+ * `.position` take any `CGFloat`. Only geometry takes one: a frame's lengths,
+ * a pinned view's edges and its stacking order. A number written out is a
+ * token (`'44'`, not `44`: the compiler rejects the literal), and spacing,
+ * type and colour stay tokens.
+ */
+export type Points = number;
+/** A frame's length: a token, or points computed at render. */
+export type FrameLength = LengthToken | Points;
+/** A pinned view's distance from an edge: a token, a percentage of its parent (`'25%'`), or points computed at render. */
+export type EdgeDistance = PaddingToken | (typeof ENUMS.insetPercent)[number] | Points;
+/** A view's stacking order: a level of Bloom's, or one computed at render (a facepile's `count - index`). */
+export type ZIndexValue = ZIndexName | Points;
+/** A margin: a padding's tokens, or `auto`, the free space on that side (Tailwind's `ml-auto`). */
+export type MarginToken = PaddingToken | (typeof ENUMS.marginExtra)[number];
 export type IconSizeToken = IconSizeName | AppToken<'iconSize'>;
 /** An avatar rung, or an app's own diameter (Bloom's avatar takes any; it is 40 with none). */
 export type AvatarSizeToken = AvatarSizeName | AppToken<'avatarSize'>;
@@ -510,20 +539,32 @@ export type LeadingToken = LeadingName | AppToken<'leading'>;
 
 // ── Resolution (pure; the renderer caches the results) ──────────
 
-export function tokenKey(token: string | AppToken): string {
+/** A value's part of its modifier's key; points as `#` and their number, apart from every token's name. */
+export function tokenKey(token: string | AppToken | Points): string {
+  if (typeof token === 'number') return `#${token}`;
   return typeof token === 'string' ? token : token.key;
 }
 
-export function resolveSpace(token: PaddingToken): number {
+/** A space token's points; points computed at render (a frame's, an edge's) are themselves. */
+export function resolveSpace(token: PaddingToken | Points): number {
+  if (typeof token === 'number') return token;
   if (typeof token !== 'string') return token.value;
   if (token.startsWith('-')) return -SPACE[token.slice(1) as SpaceName];
   return SPACE[token as SpaceName];
 }
 
+const INSET_PERCENT: ReadonlySet<string> = new Set(ENUMS.insetPercent);
+/** A pinned view's edge: a percentage of its parent as it is, anything else a space. */
+export function resolveEdge(token: EdgeDistance): number | string {
+  return typeof token === 'string' && INSET_PERCENT.has(token)
+    ? token
+    : resolveSpace(token as PaddingToken | Points);
+}
+
 /** A frame length: a relative length is its percentage; anything else a space. */
-export function resolveLength(token: LengthToken): number | string {
+export function resolveLength(token: FrameLength): number | string {
   if (typeof token === 'string' && token in LENGTH) return LENGTH[token as LengthName];
-  return resolveSpace(token as SpaceToken);
+  return resolveSpace(token as SpaceToken | Points);
 }
 
 /**

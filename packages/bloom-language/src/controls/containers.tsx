@@ -1,4 +1,5 @@
 import { createElement, Fragment, type ErrorInfo, type ReactElement, type ReactNode } from 'react';
+import type { TextStyle } from 'react-native';
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
 import {
   AdmonitionContent,
@@ -45,6 +46,7 @@ import {
   Node,
   type ButtonView,
   type Child,
+  type FrameSpec,
   type IconComponent,
   type Press,
   type TextProps,
@@ -52,10 +54,22 @@ import {
   type ViewNode,
 } from '../node';
 import { paintedHost } from '../painted-host';
+import type { PressOpenTab } from '../tokens';
+import { layoutOf, layoutStyle, partBoxStyle, type StackModifier } from '../style';
 import {
+  type Alignment,
+  type Axis,
+  type Edge,
+  type FontFamilyName,
+  type FontName,
+  type LeadingToken,
+  type PaddingToken,
+  type WeightName,
+  resolveFont,
   type CardRadius,
   type Density,
   type InkToken,
+  type Justify,
   type KeyboardTaps,
   resolveCardRadius,
   resolveSpace,
@@ -153,8 +167,16 @@ export interface CardView extends ViewModifiers<CardView> {
   /** Its own stroke over its appearance's: `none`, `hairline`, `thin` or `medium`. */
   outline(value: CardBorder): CardView;
   /** Clips its content to its corner. */
-  clipped(): CardView;
+  clipped(on?: boolean): CardView;
   disabled(value?: boolean): CardView;
+  /** Its content laid out side by side (`horizontal`) or one above another (the default), as a stack's. */
+  axis(value: Axis): CardView;
+  /** The gap between its children, as a stack's. */
+  spacing(value: SpaceToken): CardView;
+  /** Its children across its axis, as a stack's. */
+  align(value: Alignment): CardView;
+  /** Its children along its axis, as a stack's. */
+  justify(value: Justify): CardView;
 }
 /** A Card's header, body or footer: its padded region. */
 export type CardPartView = ViewModifiers<CardPartView>;
@@ -239,7 +261,12 @@ export interface GroupedSectionCollapseView extends ViewNode {
 export interface ChipView extends ViewModifiers<ChipView> {
   /** Its look: an appearance, or `inverted`. */
   style(value: ChipStyle): ChipView;
-  tint(value: BloomTone): ChipView;
+  /**
+   * Its tone; `undefined` is no tone of its own (Bloom's neutral), so a tone
+   * chosen at render (`.tint(sensitive ? 'danger' : undefined)`) paints only
+   * while it holds.
+   */
+  tint(value: BloomTone | undefined): ChipView;
   size(value: ChipSize): ChipView;
   hue(value: ChipHue): ChipView;
   /** A filter chip: on or off, through its binding. */
@@ -303,6 +330,12 @@ export interface TabsView extends ViewModifiers<TabsView> {
   onReorder(value: (fromValue: string, toValue: string) => void): TabsView;
   /** A swipe's travel between the tabs, which the underline follows. */
   dragTranslation(value: MotionValue): TabsView;
+  /**
+   * What pressing the open tab does: `report` tells its value again, `reselect`
+   * takes its content back to the top (and reloads there), as social apps'
+   * inner tabs do (Bloom's `pressOpenTab`).
+   */
+  pressOpenTab(value: PressOpenTab): TabsView;
 }
 /** A tab of a `Tabs` strip: its value and label. */
 export interface TabItemView<V extends string = string> extends ViewNode {
@@ -318,6 +351,15 @@ export interface TabItemView<V extends string = string> extends ViewNode {
   trailing(...value: Child[]): TabItemView<V>;
   /** A long press: the tab's own menu. */
   onLongPress(value: Press | undefined): TabItemView<V>;
+  /** The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's. */
+  frame(value: FrameSpec): TabItemView<V>;
+  /** The tab's own padding (`TabsTrigger`'s `style`), over Bloom's. */
+  padding(value: PaddingToken): TabItemView<V>;
+  padding(edge: Edge, value: PaddingToken): TabItemView<V>;
+  /** Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's. */
+  font(value: Exclude<FontName, 'mono' | 'display'>): TabItemView<V>;
+  leading(value: LeadingToken): TabItemView<V>;
+  weight(value: WeightName): TabItemView<V>;
 }
 /** Bloom `TabsContent`: what a tab shows, inside the strip, while its tab is chosen. */
 export type TabContentView = ViewModifiers<TabContentView>;
@@ -522,20 +564,29 @@ function chipContent(children: readonly Child[]): {
   label: string | undefined;
   leading: IconComponent | undefined;
   trailing: IconComponent | undefined;
+  /** A view before or after the label: a glyph with a size or ink of its own, or any other view. */
+  leadingView: Node | undefined;
+  trailingView: Node | undefined;
 } {
   let label: string | undefined;
   let leading: IconComponent | undefined;
   let trailing: IconComponent | undefined;
+  let leadingView: Node | undefined;
+  let trailingView: Node | undefined;
   for (const child of nodesOf(children)) {
-    if (child.kind === 'text')
+    if (child.kind === 'text') {
       label = label === undefined ? words(child) : `${label} ${words(child)}`;
-    if (child.kind === 'icon') {
+      continue;
+    }
+    // A bare glyph is Bloom's icon slot; one with modifiers, or another view, is drawn as it is.
+    if (child.kind === 'icon' && child.modifiers.length === 0) {
       const icon = (child.props as { icon: IconComponent }).icon;
       if (label === undefined) leading ??= icon;
       else trailing ??= icon;
-    }
+    } else if (label === undefined) leadingView ??= child;
+    else trailingView ??= child;
   }
-  return { label, leading, trailing };
+  return { label, leading, trailing, leadingView, trailingView };
 }
 
 /** A `Button` node as an empty state's action: its label, glyph, press, state and name. */
@@ -563,18 +614,28 @@ function cardRadius(d: ControlDraw) {
   return radius === undefined ? undefined : resolveCardRadius(radius);
 }
 
+/** What a card's own stack modifiers lay out: its content, in Bloom's Card's style. */
+const CARD_LAYOUT = ['axis', 'spacing', 'align', 'justify'] as const;
+
 function card(d: ControlDraw): ReactElement {
+  const layout: StackModifier[] = [];
+  for (const kind of CARD_LAYOUT) {
+    const modifier = d.own(kind);
+    if (modifier !== undefined) layout.push(modifier as StackModifier);
+  }
   return d.component(
     BloomCard,
     {
       ...d.props(),
+      // Bloom's Card holds its children in the view its style lays out.
+      ...(layout.length === 0 ? null : { style: [layoutStyle(layoutOf(layout))] }),
       appearance: d.own('style')?.value,
       tone: d.own('tint')?.value,
       radius: cardRadius(d),
       cornerCurve: d.own('cornerCurve')?.value,
       elevation: d.own('elevation')?.value,
       border: d.own('outline')?.value,
-      clipContent: d.own('clipped') === undefined ? undefined : true,
+      clipContent: d.own('clipped')?.value || undefined,
       disabled: d.own('disabled')?.value,
     },
     ...d.children(d.node.children),
@@ -661,7 +722,7 @@ function space(token: SpaceToken | undefined): number | undefined {
 }
 
 function chip(d: ControlDraw): ReactElement {
-  const { label, leading, trailing } = chipContent(d.node.children);
+  const { label, leading, trailing, leadingView, trailingView } = chipContent(d.node.children);
   const toggle = d.own('toggle')?.value;
   const close = d.own('onClose')?.value;
   const style = d.own('style')?.value as ChipStyle | undefined;
@@ -682,6 +743,8 @@ function chip(d: ControlDraw): ReactElement {
       disabled: d.own('disabled')?.value,
       leadingIcon: leading,
       trailingIcon: trailing,
+      leading: leadingView === undefined ? undefined : d.render(leadingView),
+      trailing: trailingView === undefined ? undefined : d.render(trailingView),
     },
     label,
   );
@@ -773,6 +836,16 @@ function admonition(d: ControlDraw): ReactElement {
   );
 }
 
+/** A tab's label's own size, line and weight, as Bloom's `TabsTrigger` takes them (`textStyle`). */
+function tabText(item: Node): TextStyle | undefined {
+  const font = lastOf(item, 'font')?.value as Exclude<FontName, FontFamilyName> | undefined;
+  const leading = lastOf(item, 'leading')?.value as LeadingToken | undefined;
+  const weight = lastOf(item, 'weight')?.value as WeightName | undefined;
+  if (font === undefined && leading === undefined && weight === undefined) return undefined;
+  // A weight is one of React Native's own (`'700'`), as `resolveFont` resolves it from the spec.
+  return resolveFont(font, weight, leading) as TextStyle;
+}
+
 function tabs(d: ControlDraw): ReactElement {
   const [value, setValue] = (d.node.props as TabsProps).selection;
   // Its tabs and what they show, in order: a `TabContent` is drawn as the language draws a view.
@@ -791,6 +864,8 @@ function tabs(d: ControlDraw): ReactElement {
       reorderable: lastOf(item, 'reorderable')?.value,
       trailing: slot(d, lastOf(item, 'trailing')?.value),
       onLongPress: d.press(lastOf(item, 'onLongPress')?.value as Press | undefined),
+      style: partBoxStyle(item.modifiers),
+      textStyle: tabText(item),
     });
   });
   return d.component(
@@ -805,6 +880,7 @@ function tabs(d: ControlDraw): ReactElement {
       fullWidth: d.own('fullWidth')?.value,
       onReorder: d.own('onReorder')?.value,
       dragTranslation: d.own('dragTranslation')?.value,
+      pressOpenTab: d.own('pressOpenTab')?.value,
     },
     ...triggers,
   );

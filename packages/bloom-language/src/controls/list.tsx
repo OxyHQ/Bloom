@@ -6,7 +6,6 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import type { ViewStyle } from 'react-native';
 import { withRoom } from '../chrome/safe-area-inset';
 import {
   List as BloomList,
@@ -26,11 +25,12 @@ import {
 import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
-import { type Binding, refreshing } from '../binding';
+import { type Binding, type Refresh, refreshing } from '../binding';
 import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
 import {
   resolveSpace,
   type Density,
+  type Edge,
   type InsetEdge,
   type KeyboardDismiss,
   type KeyboardTaps,
@@ -38,7 +38,7 @@ import {
   type ScrollbarVisibility,
   type SpaceToken,
 } from '../tokens';
-import { DISMISS_MODE } from '../chrome/scroll-view-host';
+import { DISMISS_MODE, containerStyle } from '../chrome/scroll-view-host';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
@@ -166,6 +166,13 @@ export interface ListView extends ViewModifiers<ListView> {
 /** Bloom `VirtualList`: FlashList (or FlatList) on native, the virtualizer on the web. */
 /** `T` is the data's item type, so `.itemKey()` and `.itemType()` take a typed item. */
 export interface VirtualListView<T = unknown> extends ViewModifiers<VirtualListView<T>> {
+  /** The content container grows to fill the list (`flexGrow: 1`): an empty state centres in it. */
+  contentGrows(on?: boolean): VirtualListView<T>;
+  /** Room around the rows inside the scroll: `contentContainerStyle`'s padding, on every edge or one (a later margin of an edge replaces the earlier). */
+  contentMargins(value: SpaceToken): VirtualListView<T>;
+  contentMargins(edge: Edge, value: SpaceToken): VirtualListView<T>;
+  /** The gap between the rows: `contentContainerStyle`'s `gap`. */
+  spacing(value: SpaceToken): VirtualListView<T>;
   /** A view pinned at the list's top or bottom, the content padded by its height (SwiftUI's `safeAreaInset`). */
   safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): VirtualListView<T>;
   /** A `safeAreaInset` that is a bar, with Bloom's scroll edge scrim under it (SwiftUI's `safeAreaBar`). */
@@ -180,8 +187,12 @@ export interface VirtualListView<T = unknown> extends ViewModifiers<VirtualListV
   columns(value: number): VirtualListView<T>;
   /** Called near the end, `threshold` viewports from it. */
   onEndReached(action: () => void, threshold?: number): VirtualListView<T>;
-  /** Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). */
-  refreshable(value: Binding<boolean>): VirtualListView<T>;
+  /**
+   * Pull to refresh: a binding a pull writes `true` (the app writes `false`
+   * when done), or `{ refreshing, onRefresh }`, a refreshing value and the
+   * action a pull runs (a query's `isRefetching` and `refetch`).
+   */
+  refreshable(value: Refresh): VirtualListView<T>;
   /** The indices whose rows stick to the top. */
   stickyIndices(value: readonly number[]): VirtualListView<T>;
   /** Where its scroll position is kept across visits. */
@@ -401,12 +412,10 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       props.onEndReachedThreshold = end.threshold;
     }
     if (refresh !== undefined) Object.assign(props, refreshing(refresh));
-    // Views pinned at its edges: its content makes room for them.
-    if (d.room !== undefined)
-      props.contentContainerStyle = withRoom(
-        props.contentContainerStyle as ViewStyle | undefined,
-        d.room,
-      );
+    // Its content margins and gap, as every scroll of the language's, then the
+    // room for views pinned at its edges.
+    const container = withRoom(containerStyle(d.node, d.own('spacing')?.value), d.room);
+    if (container !== undefined) props.contentContainerStyle = container;
     props.row = row;
     props.render = d.render;
     return d.component(LanguageVirtualList, props);

@@ -23,7 +23,7 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `icon`: a Bloom icon component, by name;
  * - `literal`: a boolean literal (bare is `true`), through the rule's map (`'true'`, `'false'`);
  * - `refresh`: React Native's `RefreshControl` element, as a pull to refresh's
- *   binding and tint (`.refreshable([refreshing, () => onRefresh()], tint)`);
+ *   value, action and tint (`.refreshable({ refreshing, onRefresh }, tint)`);
  * - `contentStyle`: a static content container style of paddings and a gap, as
  *   `.contentMargins(edge, token)` and `.spacing(token)`;
  * - `items`: an array of data (any expression but an element or a string), carried as it is;
@@ -34,9 +34,18 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  *   parameter as written; an element its view, any other expression embedded), or a named function, carried
  *   as it is (`VirtualList(posts, renderPost)`), its identity kept;
  * - `empty`: an empty object literal (`screen={{}}`), as the bare modifier;
+ * - `style`: a static style (an object literal, a module StyleSheet's style, or
+ *   a list of them) as the node's box, each declaration through the className
+ *   table as a View's, for a component that draws `style` on its outer view
+ *   (the modifier name is unused);
  * - `className`: a static className laid out in a view of its own, as the
  *   modifiers of that view's build function (`.contentView((v) => v.padding('lg'))`),
  *   each class through the className table;
+ * - `textStyle`: a part's label style of a `fontSize`, `lineHeight` and
+ *   `fontWeight` (a weight chosen by a plain condition included), as `.font()`,
+ *   `.leading()` and `.weight()` (the modifier name is unused);
+ * - `content`: a text (as `string`), or an element as a view (as `view`): a
+ *   header's title or subtitle;
  * - `placement`: Bloom's responsive placement, a static token
  *   (`placement="bottom"`) or an object of them (`{ base: 'bottom', md: 'center' }`),
  *   as `.presentAt(base, tiers)`.
@@ -59,7 +68,14 @@ export type Form =
   | 'row'
   | 'placement'
   | 'empty'
-  | 'className';
+  | 'className'
+  | 'style'
+  | 'textStyle'
+  | 'content'
+  /** A style that is its fill alone (`{ backgroundColor }`): a role or an app colour. */
+  | 'fill'
+  /** Bloom Screen's `reselect` handler: `.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`. */
+  | 'reselect';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -76,6 +92,11 @@ export interface PropRule {
    * to `.onEndReached(action, threshold)`); given without this prop, it is a reason.
    */
   readonly with?: readonly [prop: string, form: Form];
+  /**
+   * A token whose modifier takes `undefined` as no value of its own (a Chip's
+   * `.tint()`): a token or none chosen by a plain condition is that choice.
+   */
+  readonly unset?: boolean;
   /** Fixed arguments after the value (`showsVerticalScrollIndicator` to `.scrollIndicators(value, 'vertical')`). */
   readonly args?: readonly Arg[];
   /**
@@ -124,7 +145,19 @@ export type Param =
     }
   | { readonly text: true | string }
   | { readonly options: Readonly<Record<string, Form | readonly [key: string, form: Form]>> }
-  | { readonly label: { readonly leading?: string; readonly trailing?: string } };
+  | {
+      /**
+       * Its label from its text, with a glyph before or after it (an icon prop),
+       * or a view there (an element prop, each of the names given: Bloom reads
+       * either into the same slot).
+       */
+      readonly label: {
+        readonly leading?: string;
+        readonly trailing?: string;
+        readonly leadingViews?: readonly string[];
+        readonly trailingViews?: readonly string[];
+      };
+    };
 
 export interface ComponentRule {
   /** The language constructor. */
@@ -264,6 +297,19 @@ const TEXT_INPUT = {
   maxLength: p('maxLength', 'number'),
 } as const;
 
+/** Bloom's accent tones as the Bloom tones they paint in (`appearance/colors.ts`, `PALETTE` read backwards). */
+const ACCENT_TONE: Readonly<Record<string, string>> = {
+  default: 'neutral',
+  primary: 'accent',
+  vivid: 'vivid',
+  secondary: 'support',
+  tertiary: 'action',
+  success: 'success',
+  warning: 'warning',
+  error: 'danger',
+  info: 'info',
+};
+
 /** The props a node takes from its press and name (`d.props()`). */
 const NAMED = {
   accessibilityLabel: p('label', 'string'),
@@ -295,6 +341,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     children: true,
     props: {
       open: { ...p('presented', 'boolean'), closedBy: 'onClose' },
+      onDismissed: p('onDismissed', 'handler'),
       title: p('title', 'string'),
       description: p('message', 'string'),
       label: p('label', 'string'),
@@ -372,6 +419,17 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       testID: p('testID', 'string'),
     },
   },
+  // parity/navigation.cases.tsx: the page's footer, its actions its toolbar.
+  '@oxy.so/bloom/page-footer#PageFooter': {
+    node: 'PageFooter',
+    children: true,
+    props: {
+      actions: p('toolbar', 'view'),
+      position: p('pinning', 'token', tokens('footerPinning')),
+      scrim: p('scrollEdge', 'token', tokens('scrollEdge')),
+      testID: p('testID', 'string'),
+    },
+  },
   // parity/settings.cases.tsx.
   '@oxy.so/bloom/settings-modal#SettingsSection': {
     node: 'SettingsSection',
@@ -407,6 +465,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       invalid: p('invalid', 'flag'),
       disabled: p('disabled', 'flag'),
       floatingLabel: p('floatingLabel', 'mark'),
+      multiline: p('multiline', 'flag'),
+      editable: p('editable', 'boolean'),
       ...TEXT_INPUT,
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
@@ -439,6 +499,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       clipContent: p('clipped', 'mark'),
       disabled: p('disabled', 'flag'),
       onPress: p('onPress', 'handler'),
+      style: p('box', 'style'),
       ...NAMED,
     },
   },
@@ -489,6 +550,9 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       error: p('error', 'string'),
       required: p('required', 'flag'),
       disabled: p('disabled', 'flag'),
+      multiple: p('multiple', 'flag'),
+      // Bloom's Field draws its `style` on its outer view, the node's box (`{ flex: 1 }` is `.grow()`).
+      style: p('box', 'style'),
       testID: p('testID', 'string'),
     },
   },
@@ -647,12 +711,25 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   // parity/containers.cases.tsx, Chip: an `Icon` before its `Text` leads it, one after trails it.
   '@oxy.so/bloom/chip#Chip': {
     node: 'Chip',
-    params: [{ label: { leading: 'leadingIcon', trailing: 'trailingIcon' } }],
+    // Bloom draws `leading` (or `startIcon`) and `trailing` (or `endIcon`) in the glyph's slot.
+    params: [
+      {
+        label: {
+          leading: 'leadingIcon',
+          trailing: 'trailingIcon',
+          leadingViews: ['leading', 'startIcon'],
+          trailingViews: ['trailing', 'endIcon'],
+        },
+      },
+    ],
     props: {
-      // `inverted` is Bloom's chip variant; the appearances are its `appearance`.
-      variant: p('style', 'token', { inverted: 'inverted' }),
+      // `inverted` is Bloom's chip variant; the appearances are its `appearance`, which
+      // Bloom reads over a variant of the same name (`solid`, `subtle`).
+      variant: p('style', 'token', { inverted: 'inverted', solid: 'solid', subtle: 'subtle' }),
       appearance: p('style', 'token', tokens('appearance')),
-      tone: p('tint', 'token', tokens('tone')),
+      tone: { ...p('tint', 'token', tokens('tone')), unset: true },
+      // An accent tone is the Bloom tone Bloom's Chip paints it in (`bloomToneOf`).
+      color: { ...p('tint', 'token', ACCENT_TONE), unset: true },
       size: p('size', 'token', tokens('chipSize')),
       hue: p('hue', 'token', tokens('chipHue')),
       selected: p('selected', 'flag'),
@@ -674,10 +751,10 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   // parity/screen.cases.tsx and header cases: Bloom's PageHeader, in the page on every platform.
   '@oxy.so/bloom/page-header#PageHeader': {
     node: 'Header',
-    params: [{ prop: 'title', form: 'string', optional: true }],
+    params: [{ prop: 'title', form: 'content', optional: true }],
     always: ['inPage'],
     props: {
-      subtitle: p('subtitle', 'string'),
+      subtitle: p('subtitle', 'content'),
       actions: p('toolbar', 'view'),
       leading: p('toolbarLeading', 'view'),
       onBack: p('onBack', 'handler'),
@@ -727,8 +804,10 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       variant: p('style', 'token', tokens('tabsStyle')),
       fullWidth: p('fullWidth', 'flag'),
       onReorder: p('onReorder', 'handler'),
+      pressOpenTab: p('pressOpenTab', 'token', tokens('pressOpenTab')),
       label: p('label', 'string'),
       testID: p('testID', 'string'),
+      style: p('box', 'style'),
     },
   },
   '@oxy.so/bloom/tabs#TabsTrigger': {
@@ -747,6 +826,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       trailing: p('trailing', 'view'),
       onLongPress: p('onLongPress', 'handler'),
       testID: p('testID', 'string'),
+      style: p('box', 'style'),
+      textStyle: p('label', 'textStyle'),
     },
   },
   // parity/inputs.cases.tsx, Segmented (SegmentedControl): its items are its options.
@@ -824,12 +905,16 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       keyExtractor: p('itemKey', 'handler'),
       getItemType: p('itemType', 'handler'),
       estimatedItemSize: p('estimatedItemSize', 'number'),
+      contentContainerStyle: p('contentMargins', 'contentStyle'),
       numColumns: p('columns', 'number'),
       onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
       restorationKey: p('restorationKey', 'string'),
       ListHeaderComponent: p('headerContent', 'element'),
       ListFooterComponent: p('footerContent', 'element'),
       ListEmptyComponent: p('emptyState', 'element'),
+      // A query-driven pull to refresh: `.refreshable({ refreshing, onRefresh })`, as written.
+      refreshing: { ...p('refreshable', 'boolean'), key: 'refreshing' },
+      onRefresh: { ...p('refreshable', 'handler'), key: 'onRefresh' },
       screen: { ...p('screen', 'empty'), within: '@oxy.so/bloom/screen#Screen' },
       scrollbar: p('scrollbar', 'token', tokens('scrollbarVisibility')),
       keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),
@@ -911,10 +996,12 @@ export const REMOVED: Readonly<Record<string, string>> = {
  * draws them, but not as a node a region can hold in their place.
  */
 export const KEPT: Readonly<Record<string, string>> = {
+  '@oxy.so/bloom/fab#Fab':
+    'a Bloom Fab is the language’s `FAB(Icon(icon), Text(label)).glass(identity)`, its solid fill: it converts with its icon and label props (`convertFab`)',
   '@oxy.so/bloom/dropdown-menu#DropdownMenu':
-    'the language’s `Menu` is the platform’s menu (the lens menu on Android, SwiftUI’s on iOS), Bloom’s DropdownMenu only on the web and as a fallback; no parity case pairs it with a DropdownMenu and its parts',
+    "a Bloom DropdownMenu is the language’s `Menu(trigger, ...rows).menuStyle('dropdown')`: it converts with its trigger and its rows (`convertDropdownMenu`)",
   '@oxy.so/bloom/screen#Screen':
-    'a Bloom Screen is a route’s `screen()` body in the language, its chrome the modifiers of the body’s root: only a default-exported function component whose every return is a Screen converts (`SCREEN`)',
+    'a Bloom Screen is what a `screen()` body returns in the language, its chrome the modifiers of what each branch returns: a component whose every return is a Screen converts whole (`SCREEN`)',
   '@oxy.so/bloom/app-shell#AppShell':
     'a Bloom AppShell is a layout route’s `AppLayout(navigator)` in the language (`.shellLayout()`, `.panels(Panel(…))`); no node a region holds draws one',
   '@oxy.so/bloom/app-shell#AppShellPanels':
@@ -954,6 +1041,8 @@ export const SCREEN: ComponentRule = {
     contentClearance: p('contentClearance', 'token', SPACE),
     navigationScope: p('navigationScope', 'token', tokens('navigationScope')),
     colorPreset: p('colorPreset', 'token', tokens('colorPreset')),
+    style: p('screenBackground', 'fill'),
+    reselect: p('onReselect', 'reselect'),
     testID: p('testID', 'string'),
   },
 };

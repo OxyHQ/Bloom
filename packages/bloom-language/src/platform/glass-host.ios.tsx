@@ -10,7 +10,8 @@ import type { ComponentType } from 'react';
 import { StyleSheet, View, type ViewProps } from 'react-native';
 import { useTheme, withAlpha, type ThemeColors } from '@oxy.so/bloom/theme';
 
-import { COLORS, GLASS, GLASS_OPACITY } from '../generated/spec.generated';
+import { GLASS, GLASS_OPACITY } from '../generated/spec.generated';
+import { paletteColor, withSurface } from '../paint';
 import type { GlassHostProps, PlatformGlass } from './glass-host.types';
 
 interface GlassEffectModule {
@@ -60,13 +61,13 @@ function tintOf(
   colors: ThemeColors,
 ): string | undefined {
   if (fill !== undefined) {
-    const color = colors[COLORS[fill.role].paint] as string;
+    const color = paletteColor(colors, fill.role);
     return fill.opacity === undefined ? color : withAlpha(color, fill.opacity);
   }
   const role = glass.tintColor ?? fallbackTint;
   if (role === undefined) return undefined;
   const name = glass.tintOpacity ?? (glass.tintColor ? GLASS[glass.material].tintOpacity : null);
-  const color = colors[COLORS[role].paint] as string;
+  const color = paletteColor(colors, role);
   return name === null || name === undefined ? color : withAlpha(color, GLASS_OPACITY[name]);
 }
 
@@ -76,10 +77,11 @@ const CAPSULE = 9999;
 function LiquidGlass(props: GlassHostProps) {
   const { GlassView } = loadGlassEffect() as GlassEffectModule;
   const theme = useTheme();
+  const palette = withSurface(theme.colors, props.surface);
   return (
     <GlassView
       glassEffectStyle={GLASS[props.glass.material].iosStyle}
-      tintColor={tintOf(props, theme.colors)}
+      tintColor={tintOf(props, palette)}
       isInteractive={props.interactive}
       colorScheme={theme.isDark ? 'dark' : 'light'}
       style={[props.style, { borderRadius: props.radius ?? CAPSULE }]}
@@ -93,7 +95,7 @@ LiquidGlass.displayName = 'BloomLiquidGlass';
 function BlurGlass(props: GlassHostProps) {
   const { BlurView } = loadBlur() as BlurModule;
   const theme = useTheme();
-  const tint = tintOf(props, theme.colors);
+  const tint = tintOf(props, withSurface(theme.colors, props.surface));
   const shape = { borderRadius: props.radius ?? CAPSULE, overflow: 'hidden' as const };
   return (
     <View style={[props.style, shape]}>

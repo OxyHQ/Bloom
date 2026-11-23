@@ -5,7 +5,7 @@
 
 use oxc_ast::ast::{
     Argument, ArrowFunctionBody, BindingPattern, CallExpression, Expression, IdentifierReference,
-    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
+    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement, UnaryOperator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
@@ -15,8 +15,8 @@ use crate::diagnostics::suggest;
 use crate::docs::{Doc, Tour};
 use crate::module::{Binding, Literal, Module};
 use crate::spec::{
-    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, GLASS_VALUE, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS,
-    VARIANT_MODIFIERS,
+    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, GLASS_VALUE, MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS,
+    TOKEN_SETS, VARIANT_MODIFIERS,
 };
 
 pub struct Problem {
@@ -125,6 +125,9 @@ impl<'a> Visit<'a> for Checker<'_> {
         }
         let glass = self.check_glass(expression);
         self.check_toolbar(expression);
+        if let Some(problem) = untagged_choice(expression, self.module, self.scoping) {
+            self.checked.errors.push(problem);
+        }
         // The chain's own calls were checked together; their arguments are visited
         // for the chains inside them, never the chain's own prefix again. Its
         // children (the constructor's arguments) are inside it: in its glass, its
@@ -352,6 +355,32 @@ impl Checker<'_> {
             });
         }
     }
+}
+
+/// A row of a menu `Section` with a `.selection()` that is no tagged `Item`: the
+/// runtime refuses it (`readMenuRows`), as each row of a section of choices is
+/// one choice, its tag its value. A row the compiler cannot see (a list, a
+/// name) is the runtime's to check.
+fn untagged_choice(expression: &Expression, module: &Module, scoping: &Scoping) -> Option<Problem> {
+    if chain_kind(expression, module, scoping) != "menuSection"
+        || !modifier_calls(expression).iter().any(|(name, _)| *name == "selection")
+    {
+        return None;
+    }
+    let root = root_call(expression)?;
+    root.arguments.iter().filter_map(Argument::as_expression).find_map(|row| {
+        if !module.is_chain(row, scoping) {
+            return None;
+        }
+        let tagged = chain_kind(row, module, scoping) == "menuItem"
+            && modifier_calls(row).iter().any(|(name, _)| *name == "tag");
+        (!tagged).then(|| Problem {
+            span: row.span(),
+            message: "a Section with a .selection() holds its choices only".into(),
+            help: Some("each row is a choice: Item(title).tag(value)".into()),
+            docs: vec![Doc::Node("menuSection"), Doc::modifier("selection")],
+        })
+    })
 }
 
 /// The constructor call at the root of a chain.
@@ -853,9 +882,17 @@ fn check_value(
             }),
             _ => Ok(()),
         },
-        param if OBJECTS.iter().any(|(name, _, _)| *name == param) => {
-            let &(_, keys, set) = OBJECTS.iter().find(|(name, _, _)| *name == param).expect("matched above");
-            let Expression::ObjectExpression(object) = value.without_parentheses() else { return Ok(()) };
+        param if OBJECTS.iter().any(|(name, _, _, _)| *name == param) => {
+            let &(_, keys, set, or_token) =
+                OBJECTS.iter().find(|(name, _, _, _)| *name == param).expect("matched above");
+            let Expression::ObjectExpression(object) = value.without_parentheses() else {
+                // One token on its own is the object too (a refresh tint's one colour).
+                return if or_token {
+                    check_token(modifier, Doc::modifier(modifier), set, value)
+                } else {
+                    Ok(())
+                };
+            };
             for property in &object.properties {
                 let ObjectPropertyKind::ObjectProperty(property) = property else { continue };
                 let key = match &property.key {
@@ -874,8 +911,15 @@ fn check_value(
                         docs: vec![Doc::modifier(modifier)],
                     });
                 }
-                // An offset's axis may follow a `MotionValue` in place of its token.
-                if !(param == "offset" && module.is_motion_value_ref(&property.value, scoping)) {
+                // An offset's axis may follow a `MotionValue` in place of its token; a `value` is no token.
+                if let Some(number) =
+                    written_number(&property.value).filter(|_| POINT_PARAMS.contains(&param))
+                {
+                    return Err(written_number_problem(modifier, set, &number, true, property.value.span()));
+                }
+                if set != "value"
+                    && !(param == "offset" && module.is_motion_value_ref(&property.value, scoping))
+                {
                     check_token(modifier, Doc::modifier(modifier), set, &property.value)?;
                 }
             }
@@ -920,7 +964,10 @@ fn check_value(
         "blend" => check_token(modifier, Doc::modifier(modifier), spec.blend.unwrap_or("blend"), value),
         // A density is the node's own: each node lists Bloom's names for its densities.
         "density" => check_density(modifier, spec, value),
-        set => check_token(modifier, Doc::modifier(modifier), set, value),
+        set => match written_number(value).filter(|_| POINT_PARAMS.contains(&set)) {
+            Some(number) => Err(written_number_problem(modifier, set, &number, true, value.span())),
+            None => check_token(modifier, Doc::modifier(modifier), set, value),
+        },
     }
 }
 
@@ -1134,6 +1181,9 @@ fn motion_value_for_token(modifier: &str, param: &str, span: Span) -> Problem {
 /// A colour may name an opacity after its role (`'muted/faded'`): both halves are checked.
 /// `doc` is where the modifier is explained; the token set's own section follows it.
 fn check_token(modifier: &str, doc: Doc, set: &str, value: &Expression) -> Result<(), Problem> {
+    if let Some(number) = written_number(value) {
+        return Err(written_number_problem(modifier, set, &number, false, value.span()));
+    }
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
     let token = literal.value.as_str().unwrap_or_default();
     let (set, token) = match token.split_once('/') {
@@ -1145,6 +1195,39 @@ fn check_token(modifier: &str, doc: Doc, set: &str, value: &Expression) -> Resul
     };
     let docs = vec![doc, Doc::tokens(set).unwrap_or(Doc::Tour(Tour::Tokens))];
     known(modifier, set, tokens(set), token, literal.span, docs, || token_elsewhere(token, set))
+}
+
+/// A number written out where a token goes. A parameter that takes points
+/// (`POINT_PARAMS`: a frame, an edge, a stacking order) takes them computed at
+/// render; one written out is its token.
+fn written_number_problem(modifier: &str, set: &str, number: &str, points: bool, span: Span) -> Problem {
+    Problem {
+        span,
+        message: format!(".{modifier}() takes {set} tokens, not the number {number}"),
+        help: Some(if points {
+            format!(
+                "a number written out is a token ('{number}'); points are a value the view computes as it renders"
+            )
+        } else {
+            format!("write the token ('{number}'); .{modifier}() takes tokens only")
+        }),
+        docs: vec![Doc::modifier(modifier), Doc::tokens(set).unwrap_or(Doc::Tour(Tour::Tokens))],
+    }
+}
+
+/// A number written out (`44`, `-8`) where a token goes: a frame, an edge and a
+/// stacking order take points the view computes as it renders, never a literal.
+fn written_number(value: &Expression) -> Option<String> {
+    match value.without_parentheses() {
+        Expression::NumericLiteral(number) => Some(number.value.to_string()),
+        Expression::UnaryExpression(unary) if unary.operator == UnaryOperator::UnaryNegation => {
+            match unary.argument.without_parentheses() {
+                Expression::NumericLiteral(number) => Some(format!("-{}", number.value)),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
 }
 
 /// A density written out is one the node lists itself.

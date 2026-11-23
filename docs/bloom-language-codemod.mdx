@@ -21,10 +21,19 @@ is `toElement`'s second argument, a child's `.id()`).
 | React Native `View` | `VStack(…)`, or `HStack(…)` with `flex-row` |
 | React Native `Pressable` with `onPress` or `onLongPress` | a stack with `.onPress()` / `.onLongPress()` |
 | Bloom `PressableScale` (`@oxy.so/bloom/pressable-scale`), as a `Pressable` | the same stack with `.pressScale()`; its `targetScale` is a reason |
+| React Native's `TouchableOpacity`, as a `Pressable` | the same stack with `.pressFade(token)`, its `activeOpacity` the opacity token of its value (`0.7` is `'70'`; none, `.pressFade()`); an `activeOpacity` that is no token, or set at runtime, is a reason |
+| `accessibilityState`, `accessibilityLiveRegion` on a view, a pressable or a text | `.accessibilityState(state)` (the object as written), `.liveRegion(region)`; `accessibilityElementsHidden`, `importantForAccessibility` and `aria-hidden` stay reasons: `.accessibilityHidden()` writes each platform's own form, which none of an app's single forms draws on every platform |
+| `accessibilityValue`, `ref`, `onLayout` on a view, a pressable or a text | `.accessibilityValue(value)`, `.ref(r)` and `.onLayout(f)`, each as written |
+| a `Button`'s `appearance` or `tone` set at runtime, `iconSize`, `stopPropagation`, `loadingIndicator={null}`, `aria-expanded`, `color` and `hoverColor` | `.style(expr)` / `.tint(expr)`; `.iconSize(token)` of the exact size (`28` is `'xl'`); `.stopPropagation()`; `.loadingIndicator(null)`; `.accessibilityState({ expanded })`; `.foreground(role)` and `.hoverForeground(role)` for a theme colour (a colour held in a variable stays a reason). `aria-pressed` stays a reason: Bloom's `pressed` is a toggle that draws pressed, which the JSX's attribute does not |
+| a `Tabs`' `pressOpenTab`; a `TextFieldInput`'s `multiline` and `editable`; a `PageHeader`'s `title` or `subtitle` that is an element | `.pressOpenTab(token)`; `.multiline()` and `.editable(value)`; `Header(view)` and `.subtitle(view)` |
+| a `VirtualList`'s `refreshing` and `onRefresh` | `.refreshable({ refreshing, onRefresh })`, each as written (a query's `isRefetching` and `refetch`) |
+| a `Field`'s `multiple`; a `Chip`'s `variant` (`solid`, `subtle`) and `color` | `.multiple()`; `.style()` (Bloom reads the appearance over a variant of the same name) and `.tint()` of the Bloom tone the accent tone paints in (`error` is `danger`) |
+| a style's `borderRadius` (and each corner's own, `borderTopLeftRadius`…`borderBottomEndRadius`), `zIndex`, `aspectRatio`, `overflow: 'visible'`, `inset` | `.corner(token)` (`.corner(token, side)` for one corner: `top-left`, `bottom-trailing`…) and `.zIndex(token)` of the exact value (a named rung over a numeric token; a radius of 999 is `full`, in a style and in a class (`rounded-[999px]`), which draws alike on any box under 1998pt), `.aspectRatio(ratio)`; `overflow: 'visible'` (and the class `overflow-visible`) is `.clipped(false)`, written out as the app wrote it, over a clip the view would otherwise have (a ScrollView's, an earlier style's); `inset` is its four edges; a value that is no token stays a reason |
+| `hitSlop` on a view, a pressable or a text | `.hitSlop(token)` for one slop (a number of a hit slop token, `8` is `'md'`, or Bloom's `tokens.hitSlop.md`); an object of static sides is a call per pair of equal opposite sides, or per side, only the sides it names (`{ top: 8, bottom: 8 }` is `.hitSlop('vertical', 'md')`, a 0 side `'none'`); a side that is no token, or a slop set at runtime, is a reason |
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
 | Bloom's typography components (`Muted`, `H2`, `Small`…), without a `className` | `Text(…runs).textStyle('muted')` |
 | a Bloom component with a rule (`src/components.ts`, below) | its node, prop by prop |
-| React Native `Text` | `RawText(…runs)`: React Native's own Text in the app preset's base face, then only what its chain names |
+| React Native `Text` | `RawText(…runs)`: React Native's own Text, only what its chain names, in the platform face when it names no family |
 | Bloom `Button` (`@oxy.so/bloom/button`) | `Button(Icon(lead), Text(label), Icon(trail))` with `.style()`, `.tint()`, `.size()`, `.shape()`… as the language's Button parity cases draw it |
 | a Bloom icon (`<RiHeart3Line size="sm" />`, or `size={16}`, a rung's points) | `Icon(RiHeart3Line).size('sm').foreground('primary')` (a bare Bloom icon paints primary) |
 | `className` | modifiers through the className table, in the language's layer order |
@@ -62,11 +71,6 @@ does not keeps the element JSX. Each class goes through the className table
 Measured on the corpus and kept as reasons (`measuredDifference` and
 `rounding` in `src/resolve.ts`):
 
-- A colour at an opacity (`bg-primary/10`, `text-white/60`): the language
-  writes it inline on the web as a `color-mix()`, and react-native-web's
-  `normalizeColor` drops any colour that is not a `var()`, so nothing is
-  drawn. The Chrome check below renders the mix directly, past
-  react-native-web, so it does not see this; the jsdom web suite does.
 - `text-white/70` and the like: NativeWind writes a fixed colour at an opacity
   as an 8-bit hex alpha, rounded down (`#ffffffb2`), where `0.7` is 178.5/255.
 - A line height as a ratio or a letter spacing in em whose product has more
@@ -91,7 +95,7 @@ the element JSX with the reason `Node:prop`.
 | --- | --- |
 | `Switch` | `Toggle([checked, onCheckedChange])` |
 | `GroupedSection`, `GroupedSectionItem` | `GroupedSection(...rows).title().caption()`, `GroupedSectionItem(title).leadingView().trailing().value()` |
-| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable([refreshing, () => onRefresh()], tint).scrollIndicators(value, axis).contentView((v) => v…)` |
+| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable({ refreshing, onRefresh }, tint).scrollIndicators(value, axis).contentView((v) => v…)` |
 | `SettingsSection`, `SettingsValueField` | `SettingsSection(label, ...children).trailing()`, `SettingsValue(text)` |
 | `TextFieldInput` (bare, or in a `TextField` shell with its `TextFieldIcon`s), `Textarea`, `Search`, `Checkbox`, `Field` | `TextField([value, set], label)`, `TextEditor([value, set], label)`, `Search([value, set])`, `Checkbox([checked, set], label)`, `Field(label, ...children)` |
 | `Card`, `Item`, `Chip`, `ResponsiveGrid` | `Card(...children)`, `Row(title)`, `Chip(Icon, Text, Icon)`, `Grid(...cells)` |
@@ -104,6 +108,86 @@ the element JSX with the reason `Node:prop`.
 | `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().onEndReached(action, threshold).screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })` |
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
 | `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
+
+A style's padding by the device's inset, `insets.top` where `insets` is a
+`const` holding `useSafeAreaInsets()`, is `.safeAreaPadding(side)` on the same
+view (`paddingTop`, `paddingBottom`, `paddingLeft`, `paddingRight`); a top or
+bottom inset plus a space token's points (`insets.top + 24`) is
+`.safeAreaPadding('top').padding('top', '2xl')`, which the language adds on one
+view. Any other sum, or insets handed in as a prop, is a reason. Its parity
+draws both sides under a phone's insets (47 top, 34 bottom).
+
+Geometry a style computes as the view renders is points, the number the
+language's frame, edges and stacking order take (see [Styles computed at
+runtime](./bloom-language.mdx#styles-computed-at-runtime)): `width: itemSize`
+is `.frame({ width: itemSize })`, joined with the frame the classes write
+(`w-12` and `height: itemSize / 2` are `.frame({ width: '48', height: itemSize
+/ 2 })`); `top: insets.top + 8` beside `absolute right-4` is `.position({
+right: 'lg', top: insets.top + 8 })`; `zIndex: count - index` is
+`.zIndex(count - index)`. A value is points when it is a number form (reads,
+arithmetic, `Math`'s functions, a plain choice between two) that reads
+something bound in the component (a prop, a local, a hook's result); a number
+written out, or one of module constants alone (`width: SIZE`), stays a token
+or a reason. A percentage of the parent the language names is its token: a frame's length
+(`maxHeight: '90%'` is `.frame({ maxHeight: '90%' })`, `width: '50%'`
+`.frame({ width: '1/2' })`) and a pinned view's edge (`left: '25%'` is
+`.position({ left: '25%' })`); any other percentage is a reason. A radius of half a square's side (`width: size, height: size,
+borderRadius: size / 2`, the side one expression and no minimum beside it) is
+`.corner('full')`: either draws a circle, since a radius past half the side
+draws as half of it. Its parity writes one hole per expression, so a square
+stays square and the radius is half the hole on the before side.
+
+A `backgroundColor`, or a Text's `color`, that reads a `const` holding Bloom's
+`useSurfaceFill()` is `.background('surfaceFill')` or `.foreground('surfaceFill')`,
+when no Bloom component's element is between the component and the view (a
+Card, a Surface, a Dialog publish a surface of their own, which the language
+would read and the JSX did not). Its parity's before side reads the hook where
+it is drawn.
+
+A route's Screen `style` that is its fill alone (`{ backgroundColor }`) is
+`.screenBackground(color)`: a theme colour read from `useTheme()` is its role
+(outside a `BloomColorScope` around the Screen, where the role would paint the
+scope's scheme), a colour written out an app colour, and a plain choice
+between them that choice (Mention's reel: `.screenBackground(empty ?
+'background' : appColors.color.hex000000)`). Its `reselect` object is
+`.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`, each handler
+as written; `isAtTop` without `scrollToTop`, or the reverse, is a reason.
+
+A `Button`'s `color` and `hoverColor` are `.foreground(role)` and
+`.hoverForeground(role)` when they are a theme colour read from `useTheme()`,
+a choice of them by a plain condition (`undefined` for Bloom's own ink), or a
+`const` holding either (Mention's toolbar: `const tint = invalid ?
+theme.colors.error : active ? theme.colors.primary : undefined` is
+`.foreground(invalid ? 'error' : active ? 'primary' : undefined)`). Its parity
+writes the `const`'s value in its place, each condition true and then false.
+
+A `Chip`'s glyphs and views are its children around its label, as the
+language's Chip reads them: `leadingIcon` and `trailingIcon` are bare `Icon`s,
+and a view in either slot (`leading` or Bloom's `startIcon`, `trailing` or
+`endIcon`, which Bloom draws in the same slot) is that view, before or after
+the `Text`. A glyph and a view on one side, or both names of one slot, are a
+reason, since Bloom draws only one of them.
+
+A `Button`'s, a `Card`'s, a `Field`'s and a `Tabs`' static `style` (an object literal, a
+module StyleSheet's style, or a list of them) is the node's box: Bloom draws
+these components' `style` on their outer view, where the language draws a
+node's box, so each declaration goes through the className table as a View's
+(`alignSelf: 'flex-start'` is `.alignSelf('start')`, `flex: 1` `.grow()`,
+which writes React Native's `flex: 1` itself (Yoga's grow 1, shrink 0, basis
+0 on native, the same `flex: 1` on the web), `padding: 16`
+`.padding('all', 'lg')`, `height: 44` `.frame({ height: '44' })`). A Card's
+layout is its own: `flexDirection: 'row'` is `.axis('horizontal')`, `gap`
+`.spacing()`, `alignItems` `.align()`, `justifyContent` `.justify()`. A
+declaration the node does not take (a Button's `gap`) is a reason
+(`Button:style`), and so is a colour or a value no token writes. A tab's own
+`style` and `textStyle` have no modifier: Mention's tab strip writes heights
+and widths no token holds (38, 76). A `TabsTrigger`'s `style` is its `TabItem`'s
+`.frame()` and `.padding()` alike, and its `textStyle` (a `fontSize` and
+`lineHeight` of the spec's tokens, and a `fontWeight`, chosen by a plain
+condition or not) `.font()`, `.leading()` and `.weight()`. A frame length on
+the spacing scale that no app writes as a class (so the table has no row:
+`height: 38` is `h-9.5`) is the frame the table writes for the steps it holds,
+when its points are a space token (`.frame({ height: '38' })`).
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads
@@ -122,15 +206,26 @@ A scroll view's `refreshControl` of React Native's `RefreshControl` is
 `.refreshable(binding, tint)`: the binding is its `refreshing` and a setter a
 pull calls with `true`, which calls `onRefresh` with no arguments, as React
 Native does (`() => onRefresh()`; a function of no parameters is carried as
-it is). Its tint paints the control's `tintColor` and `colors` from one role,
-so a `tintColor` and `colors` of the same theme colour are its tint, and a
-`tintColor` alone (iOS only, Android's spinner left the platform's) stays
-JSX. `showsVerticalScrollIndicator={false}` is
+it is). Its tint paints the control's `tintColor` (iOS) and `colors`
+(Android): a `tintColor` and `colors` of the same theme colour are one role,
+and each alone, or two colours, the tint of its platform (`tintColor` alone is
+`{ ios: 'primary' }`, Android's spinner keeping its look). `showsVerticalScrollIndicator={false}` is
 `.scrollIndicators('hidden', 'vertical')` (`true` is `'visible'`; horizontal
 alike).
 A static `contentContainerStyle` of paddings and a gap, each a space token
 (`{ padding: 16, gap: 12 }`), is `.contentMargins(edge, token)` and
-`.spacing(token)`: the language's content container style holds the same keys.
+`.spacing(token)`: the language's content container style holds the same keys;
+its `flexGrow: 1` is `.contentGrows()`, and a style of only that grow chosen by a
+plain condition (`items.length === 0 ? EMPTY_CONTENT : undefined`, a module
+constant written out on the before side) `.contentGrows(condition)`.
+A `VirtualList`'s is moved alike. Its `ListHeaderComponent`,
+`ListFooterComponent` and `ListEmptyComponent` are `.headerContent()`,
+`.footerContent()` and `.emptyState()` of an element (converted), a fragment, a
+`const` holding an element, what a render function returns (`renderEmpty()`:
+a lowercase callee, as a component is never called) embedded, or an element or
+none chosen by a plain condition (`loading ? <Spinner /> : null`); a bare name
+may be a component and stays a reason. A `Dialog`'s `onDismissed` is
+`.onDismissed(handler)`.
 A static `contentContainerClassName` is `.contentView((v) => v…)`, the scroll
 view's content view: Bloom lays the class out in a view of its own inside the
 content container, and the language hands Bloom that view's style. Each class
@@ -191,10 +286,18 @@ are data carried as they are. `detached` and `panelStyle` have no modifier.
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).
 
-A route's `Screen` is its `screen()` body (`SCREEN`): a default-exported
-function component (named, not async, with no return type, its name read
-nowhere else) whose every return is a Bloom `Screen` becomes
-`export default screen(function Name(props) { … })`, each `Screen` the body's
+A `Screen` is what a `screen()` body returns (`SCREEN`). `screen()` wraps the
+whole component, and each branch (a loading, an error, the content) returns
+its content with its chrome. A module-level function component whose every
+return is a Bloom `Screen` becomes a `screen()`: a function declaration
+(exported or not) or a `const` holding an arrow or a function expression,
+named with a capital, not async, with no return type. A default export read
+nowhere else is `export default screen(function Name(props) { … })`; any
+other is `const Name = screen(function Name(props) { … })` where it was
+declared, so a gate's inner screen, a sheet's screen and a route's
+`Name.options` keep their name. A component whose name is read before its
+declaration, outside a function, stays JSX (`screen:read-early`): a `const`
+is not yet defined there. Each `Screen` is the body's
 root: its one child, or a `Group` of its children when it has several (a
 comment or a condition among them, or one condition), a fragment's children
 each one of them, as React draws them; the Screen's props are the root's
@@ -207,15 +310,93 @@ other value (a name that may hold `undefined`, where Bloom draws no bar) is a
 reason (`screen:bottomBar`). No `header` is `.header(false)`; a header element is its view, so
 Bloom's PageHeader is `.header(Header(…).inPage())`, the Screen's own header
 on every platform (a bare `Header` is the system bar on iOS in a native
-stack), and a `const` holding the element is `.header(Embed(header))`.
-The route converts whole: one Screen that stays JSX keeps the others JSX
+stack), and a `const` holding the element, or a language view placed with
+`toElement()` (`header={toElement(Header(…).inPage())}`), is
+`.header(Embed(header))`.
+The component converts whole: one Screen that stays JSX keeps the others JSX
 (`screen:route`). Its parity draws the root with the language's `ScreenHost`,
 as `screen()` does.
 
-Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, and
-`DropdownMenu` with its parts (the language's `Menu` is the platform's own menu
-on Android and iOS, Bloom's DropdownMenu only on the web and as a fallback),
-and `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's
+What a route wraps its Screen in is the root's screen modifiers, innermost
+first, as the chain wraps them: `<BloomColorScope mode={m} asChild>` (only
+those two props) is `.colorScope(m)`, a `<KeyboardAvoidingView>` whose style
+reads as a fill (React Native's `flex: 1`, or Tailwind's `flex-1` as
+`.keyboardAvoiding('1')`) and whose behavior is React Native's
+(`Platform.OS === 'ios' ? 'padding' : 'height'`) is `.keyboardAvoiding()`, and
+a `…Provider` with no props (Bloom's `HeaderDockProvider`, an app's own) is
+`.provider(Name)`. Their imports go where nothing else reads them. The parity
+draws the same elements around the Screen on the before side, the scope's
+mode a hole on both sides and the behavior read from the corpus's
+`RN.Platform`.
+
+A Screen stays JSX, with what keeps it, when `screen()` would draw something
+else: inside any other element, or one of these that draws what the modifier
+does not (`screen:wrapped`, the element and what differs: a colour scope with
+a preset, a keyboard avoiding view filled by Tailwind's `flex-1`, a provider
+with props), beside views in a fragment
+(`screen:beside`: an `SEO` head element beside the Screen; one that draws
+nothing moves into the Screen by hand, then the component converts), or in a
+component with a return that is no Screen (`screen:returns`: `null`, another
+view, a choice of views).
+
+A style's paddings and margins resolve as React Native resolves them where
+keys of one side meet: a side's own key (`marginLeft`) over its axis's
+(`marginHorizontal`), an axis's over the whole (`margin`), whatever their
+order; an overridden key is the sides it still holds, each its own, so
+`{ marginHorizontal: 8, marginLeft: 4 }` is `.margin('right', 'sm').margin('left', 'xs')`.
+A `Start` or `End` key beside them stays the conflict it is.
+
+A file partly in the language keeps its own imports of the language's names
+(no `Icon as LIcon`, no second `toElement`), and a language view it placed
+with `toElement()` among converted views is that view: `Embed(toElement(v))`
+is `v`. A StyleSheet's style or a module style constant that an element read
+before the conversion and nothing reads after it is removed, and a StyleSheet
+left empty goes with its declaration and, when nothing else reads it, its
+`StyleSheet` import; a style read by nothing before, or exported, stays.
+
+A View's or a Pressable's `pointerEvents` is `.allowsHitTesting()`: `none`
+`false`, `box-none` `'children'`, `box-only` `'self'`, and values chosen by a
+plain condition that choice, `undefined` none and `auto` `true`
+(`split ? 'box-none' : undefined` is `.allowsHitTesting(split ? 'children' : undefined)`).
+
+A theme colour at an opacity, Bloom's `withAlpha(colors.primary, 0.1)` or
+`tokenAlpha(tokens.primary, 0.1)` of a `useTheme()` or `useColorTokens()` read,
+is the role at that opacity token, `.background('primary/10')`: native paints
+the role's colour at that alpha, as `withAlpha` does, and the web the
+language's ink (`var(--bl-primary-10)`, declared in its ink sheet), which
+react-native-web keeps; the corpus holds it equal on both (`Menus.tsx`'s
+labeler tab), and an opacity that is no token keeps the element JSX.
+
+A token prop chosen by a plain condition (`size={compact ? 'sm' : 'md'}`) is
+that choice; where the modifier takes `undefined` as no value of its own (a
+Chip's `color` and `tone`, `.tint()`), a branch of none is too
+(`color={sensitive ? 'error' : undefined}` is `.tint(sensitive ? 'danger' : undefined)`).
+
+Bloom's `Fab` is `FAB(Icon(icon), Text(label)).glass(identity)`: the language's
+FAB is on glass, so an app's solid Fab names none (parity/button.cases.tsx).
+Its `accessibilityLabel` is `.label()`, and `size`, `appearance`, `tone`,
+`disabled`, `collapsed`, `onPress` and `testID` the modifiers of the same
+meaning; anything else (`iconSize`, a spread) keeps it JSX. Bloom's
+`PageFooter` is `PageFooter(...children)` with its `actions` as `.toolbar()`,
+`position` as `.pinning()` and `scrim` as `.scrollEdge()`.
+
+A `DropdownMenu` tree is `Menu(trigger, ...rows).label(label).menuStyle('dropdown')`,
+which draws Bloom's DropdownMenu on every platform, as the app's JSX does: a
+`DropdownMenuTrigger asChild` around one view the codemod converts, and a
+`DropdownMenuContent` with the trigger's label (and a static `testID`) holding
+`DropdownMenuItem`s and `DropdownMenuSeparator`s (`Divider()`). An item is
+`Item(text)` with `.onPress()`, `variant="destructive"` `.destructive()`,
+`disabled`, `keepOpen` and `testID`; its `leading`, a language glyph
+`toElement(Icon(icon).size(s).foreground(f))`, is `.icon(icon).iconSize(s).iconForeground(f)`.
+A `DropdownMenuLabel` over a `DropdownMenuRadioGroup` (or a radio group
+alone) is a section of choices, `Section(...items).title(label).selection([value,
+onValueChange])`, each `DropdownMenuRadioItem` an `Item(text).tag(value)` with
+its glyph, `disabled`, `keepOpen` and `testID`. A menu the app opens itself
+(`open` and `onOpenChange`, nothing else) is `.presented([open, onOpenChange])`;
+any other prop stays JSX (`DropdownMenu:props`), as does any other shape (rows
+from a component or a condition, a trigger that is a component's children).
+
+Kept as JSX with their reason (`KEPT`): `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's
 `AppLayout(navigator)` with `.shellLayout()` and `.panels(Panel(id, content))`).
 `AppShellMenuButton` has no node yet and is listed with the other unmapped
 Bloom components. Components removed in Bloom 22 (`SettingsRow`,
@@ -249,7 +430,36 @@ module `StyleSheet`'s style, or a list of them) is read as the Tailwind
 utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
 through the className table. React Native's `flex: 1` is no utility (Tailwind's
 `flex-1` is grow, shrink and a 0% basis): it is `.grow()`, which writes
-`flex: 1` itself. A `backgroundColor`, or a Text's `color`, read from Bloom's
+`flex: 1` itself. A colour read from Bloom's `useColorTokens()` (`const colorTokens =
+useColorTokens()`, `colorTokens.mutedForeground`) is the role painted from
+that canonical token (`'muted'`; `colorTokens.muted` is `'mutedFill'`), as a
+`useTheme()` read is; the parity's before side reads the corpus's own
+`useColorTokens()`. Bloom's `tokens.space.sm`, `tokens.borderRadius.xs` and
+`tokens.fontSize._2xl` in a style are the spec's rungs of the same name. A
+part of a style list chosen by a plain condition (`!focused && styles.dim`,
+`compact ? styles.a : styles.b`) is the className choice it writes: each
+value that differs chosen in place, or what one branch adds a variant of the
+app's condition, proven with the condition true and false; a branch that
+writes more than utilities (a theme colour, a `.grow()`) is a reason.
+A Pressable's style of its press state, `({ pressed }) => [base, pressed &&
+dim]` (or `pressed ? dim : null`), is the base and `.when('pressed', (v) =>
+…)` of what it adds, as `active:` is; a variant the style writes itself is
+inline, so it is no conflict with the style's base. A press state chosen with
+another condition (`pressed || locked`) is a reason.
+A grow, a shrink and a basis that are one of Tailwind's flex utilities
+(`flexGrow: 1, flexShrink: 1, flexBasis: '0%'`) are `.flex('1')`, and a style
+held in a module constant (`const ROW = { … } satisfies ViewStyle`) is read as
+a StyleSheet's style is. React Native's `StyleSheet.absoluteFill`, as the style or
+spread in one (`{ ...StyleSheet.absoluteFill, zIndex: 2 }`), is its
+declarations (`absolute inset-0`), `.position()` on every edge; the parity's
+before side writes them out. A Text's `fontSize` is `.font()` of the token of
+its points (a named rung over a numeric token: `15` is `'md'`), its
+`lineHeight` `.leading()` of the px line (`'20px'`), and its `fontWeight`
+Tailwind's `font-*` (`'700'` is `.weight('bold')`); a size or a line no token
+holds is a reason. A spread of Bloom's `fontFamilyStyle('mono')` or
+`fontFamilyStyle('display')` is the face, `.font('mono')` or `.font('display')`
+(a face and a size are two things a text keeps, no conflict); the before side
+calls the function itself. A `backgroundColor`, or a Text's `color`, read from Bloom's
 `useTheme()` in the component (outside a `BloomColorScope` around the
 element) is `.background(role)` or `.foreground(role)`, as an icon's fill is.
 These join the classes' modifiers, so a class setting the same thing is a
@@ -264,7 +474,7 @@ object the codemod can read (a style passed in as a prop, a conditional
 module); the rest hold a value no utility writes, mostly a theme colour, a
 size of an app constant (`FONT_SIZES.sm`, `HPAD`), a font size or radius
 off Tailwind's scale, `flex: 1`, or a value computed from the layout
-(`insets.top + 32`).
+(`insets.top + 32`, now points where it is geometry).
 
 A className chosen at runtime between two static strings by one plain
 condition (`active ? 'bg-primary px-3' : 'bg-muted px-3'`, or a template
@@ -337,9 +547,8 @@ and dark:
 
 - **Before:** the JSX as written, drawn by NativeWind's own runtime
   (`react-native-css`'s components, as the app's Babel preset rewrites React
-  Native's imports; React Native's `Text` as `@oxy.so/app-preset` 6.8.0 bundles
-  it, in Bloom's base face, `parity/support/app-text.ts`) over the app's
-  Tailwind stylesheet, compiled for native
+  Native's imports, React Native's `Text` among them, which names no face of
+  its own) over the app's Tailwind stylesheet, compiled for native
   with the preset's `inlineRem: 16`, and in the jsdom document on the web.
   Bloom is this checkout's, with app-preset 6.9's `BloomNativeWindTheme`
   restated (`parity/support/nativewind-theme.tsx`): Bloom 23 no longer hands

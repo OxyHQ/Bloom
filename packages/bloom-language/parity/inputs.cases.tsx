@@ -33,6 +33,8 @@ import {
   TextFieldSuffix,
 } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
+import { Text } from '@oxy.so/bloom/typography';
+import { View } from 'react-native';
 
 import type { Binding } from '../src/binding';
 import * as L from '../src/controls/inputs';
@@ -368,6 +370,24 @@ const fields: ParityCase[] = [
       <TextFieldInput label="Name" value="" onValueChange={set} placeholder="Your name" />
     ),
   },
+  {
+    name: 'TextField over several lines, not editable',
+    language: () => toElement(L.TextField(text, 'Bio').multiline().editable(false)),
+    bloom: () => (
+      <TextFieldInput
+        label="Bio"
+        value="Ada Lovelace"
+        onValueChange={set}
+        multiline
+        editable={false}
+      />
+    ),
+  },
+  {
+    name: 'TextField with no placeholder at all',
+    language: () => toElement(L.TextField(empty, 'Name').placeholder(null)),
+    bloom: () => <TextFieldInput label="Name" value="" onValueChange={set} placeholder={null} />,
+  },
   ...ENUMS.controlSize.map((size) => ({
     name: `TextField size ${size}`,
     language: () => toElement(L.TextField(text, 'Name').size(size)),
@@ -574,12 +594,35 @@ const editors: ParityCase[] = [
 
 const forms: ParityCase[] = [
   {
+    name: 'a Field that grows in its row (React Native’s flex: 1)',
+    language: () =>
+      toElement(P.HStack(L.Field('Date', L.TextField(empty, 'Date')).grow(), P.Text('to'))),
+    bloom: () => (
+      <View style={{ flexDirection: 'row' }}>
+        <Field label="Date" style={{ flex: 1 }}>
+          <TextFieldInput label="Date" value="" onValueChange={set} />
+        </Field>
+        <Text>to</Text>
+      </View>
+    ),
+  },
+  {
     name: 'Field around a TextField',
     language: () =>
       toElement(L.Field('Email', L.TextField(empty, 'Email')).description('We never share it')),
     bloom: () => (
       <Field label="Email" description="We never share it">
         <TextFieldInput label="Email" value="" onValueChange={set} />
+      </Field>
+    ),
+  },
+  {
+    name: 'Field of several controls',
+    language: () => toElement(L.Field('Wi-Fi', L.Toggle(on), L.Toggle(on)).multiple()),
+    bloom: () => (
+      <Field label="Wi-Fi" multiple>
+        <Switch checked onCheckedChange={set} />
+        <Switch checked onCheckedChange={set} />
       </Field>
     ),
   },
@@ -635,6 +678,11 @@ const searches: ParityCase[] = [
     name: 'Search',
     language: () => toElement(L.Search(empty).placeholder('Search posts')),
     bloom: () => <Search value="" onValueChange={set} placeholder="Search posts" />,
+  },
+  {
+    name: 'Search with a most characters',
+    language: () => toElement(L.Search(empty).placeholder('Search posts').maxLength(50)),
+    bloom: () => <Search value="" onValueChange={set} placeholder="Search posts" maxLength={50} />,
   },
   {
     name: 'Search with text, named',

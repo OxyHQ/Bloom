@@ -43,10 +43,10 @@ import {
 } from '@oxy.so/bloom/motion';
 import { OverlayRoot } from '@oxy.so/bloom/overlay';
 import { Portal } from '@oxy.so/bloom/portal';
-import { useThemePaint } from '@oxy.so/bloom/theme';
 
 import type { DragSpec, PinchSpec, SwipeDirection } from '../node';
-import type { Geometry } from '../paint';
+import { type Geometry, withSurface } from '../paint';
+import { useThemePaint } from '@oxy.so/bloom/theme';
 import type { Frame, Lander, Namespace } from './namespace';
 import { motionKey, resolveMotion, type MotionToken } from './tokens';
 
@@ -101,6 +101,8 @@ export interface MotionPlan {
   animation: AnimationScope | undefined;
   /** `.animatesColors()`: its box's colour changes play with the animation in scope. */
   colors: boolean;
+  /** Its animated colours name the surface fill: its palette is read `OnSurface`. */
+  surface: boolean;
   transition: TransitionValue | undefined;
   keyframes: { value: KeyframesValue; trigger: unknown } | undefined;
   /** `.repeatForever()`: keyframes that play again and again while nothing else plays. */
@@ -508,9 +510,13 @@ const NO_PRESS = { style: [] as readonly unknown[], ownsTransform: false };
  */
 export function ThemedMotion({
   node,
+  surface,
   ...props
-}: MotionNodeProps & { node: (props: MotionNodeProps) => ReactNode }): ReactNode {
-  return createElement(node, { ...props, theme: useThemePaint() });
+}: MotionNodeProps & {
+  node: (props: MotionNodeProps) => ReactNode;
+  surface?: string;
+}): ReactNode {
+  return createElement(node, { ...props, theme: withSurface(useThemePaint(), surface) });
 }
 ThemedMotion.displayName = 'BloomThemedMotion';
 

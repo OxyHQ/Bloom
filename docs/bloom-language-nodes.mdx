@@ -547,6 +547,8 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 Modifiers:
 
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between children.
+- [`.horizontalSpacing()`](bloom-language-modifiers.mdx#horizontalspacing) `(value: SpaceToken)`: The gap between children side by side (`columnGap`, Tailwind's `gap-x-*`), over `spacing`'s.
+- [`.verticalSpacing()`](bloom-language-modifiers.mdx#verticalspacing) `(value: SpaceToken)`: The gap between children one above another, and between wrapped lines (`rowGap`, Tailwind's `gap-y-*`), over `spacing`'s.
 - [`.childSpacing()`](bloom-language-modifiers.mdx#childspacing) `(axis: Axis, space: SpaceToken)`: Tailwind's `space-x-*`/`space-y-*` exactly as NativeWind draws them: on the web a margin after every child but the last, along `axis` (the inline end, or the block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap: new screens use `.spacing()`.
 - [`.align()`](bloom-language-modifiers.mdx#align) `(value: Alignment)`: The children's place across the axis.
 - [`.justify()`](bloom-language-modifiers.mdx#justify) `(value: Justify)`: How the children spread along the axis: packed at `start`, `center` or `end`, or the free space `between`, `around` or `evenly` around them.
@@ -731,12 +733,11 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
 - [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: ContentFit)`: How the image fills its box. Defaults to `cover`.
-- [`.aspectRatio()`](bloom-language-modifiers.mdx#aspectratio) `(value: number)`: Width over height, so one side sizes the other (`16 / 9`).
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: Paints every opaque pixel one colour role (monochrome artwork).
 - [`.crossFade()`](bloom-language-modifiers.mdx#crossfade) `(value: DurationName)`: Cross-fades the image in when it arrives, over a Bloom duration. Defaults to none. (`.transition()` is how any view arrives and leaves.)
 - [`.onLoad()`](bloom-language-modifiers.mdx#onload) `(value: ImageLoadHandler | undefined)`: The intrinsic pixel size, once loaded.
@@ -797,6 +798,10 @@ Modifiers:
 - [`.linkTone()`](bloom-language-modifiers.mdx#linktone) `(value: ButtonLinkTone)`: A `plain` link's ink: the accent (`primary`), the secondary text, or the reading colour (`text`).
 - [`.inverted()`](bloom-language-modifiers.mdx#inverted) `(value?: boolean)`: The theme's background and foreground swapped: a high-contrast action.
 - [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'button'>)`: The control's geometry over the nearest Bloom scope's: `default` or `compact`.
+- [`.iconSize()`](bloom-language-modifiers.mdx#iconsize) `(value: IconSizeToken)`: Its glyph's size, an icon rung (`xl` is 28) or a numeric size (`'22'`), over its size's own (Bloom's `iconSize`).
+- [`.stopPropagation()`](bloom-language-modifiers.mdx#stoppropagation) `(value?: boolean)`: Its press goes no further on the web: a button inside a pressable row presses only itself (Bloom's `stopPropagation`). Native presses never bubble.
+- [`.loadingIndicator()`](bloom-language-modifiers.mdx#loadingindicator) `(value: ViewNode | null)`: Its spinner while loading: a view, or `null` for none, the label or glyph staying (Bloom's `loadingIndicator`).
+- [`.hoverForeground()`](bloom-language-modifiers.mdx#hoverforeground) `(value: ColorToken | undefined)`: Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at rest is `.foreground(role)` (Bloom's `color`); `undefined` is Bloom's own.
 
 And every universal modifier.
 
@@ -806,7 +811,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -860,6 +865,8 @@ And every universal modifier.
 Modifiers:
 
 - [`.actions()`](bloom-language-modifiers.mdx#actions) `(value: MenuActionsView)`: What its tagged rows do: an `actions()` view, whose body (it may call hooks) runs only when a row is chosen. The rows stay plain data, which every platform can present before the menu opens.
+- [`.menuStyle()`](bloom-language-modifiers.mdx#menustyle) `(value: MenuStyle)`: `dropdown`: Bloom's own DropdownMenu on every platform (its panel and rows, as an app's `<DropdownMenu>` draws them), not the platform's menu (the lens menu on Android and OxyOS, SwiftUI's on iOS). `platform` is the default.
+- [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: The menu open through a binding, SwiftUI's `isPresented`: the app opens it (setting `true`) as its trigger's press does, and hears it close (`false`). The system menu on iOS opens only from its trigger, so a presented menu is Bloom's menu there.
 
 And every universal modifier.
 
@@ -870,6 +877,8 @@ And every universal modifier.
 Modifiers:
 
 - [`.icon()`](bloom-language-modifiers.mdx#icon) `(value: IconComponent)`
+- [`.iconSize()`](bloom-language-modifiers.mdx#iconsize) `(value: IconSizeToken)`: The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's 20pt. Bloom's menus and the lens menu draw it; the system menu on iOS draws its own.
+- [`.iconForeground()`](bloom-language-modifiers.mdx#iconforeground) `(value: InkToken)`: The glyph's ink, a colour role, over the menu's (its quiet ink, or the negative one of a destructive row). Bloom's menus and the lens menu draw it; the system menu on iOS draws its own.
 - [`.subtitle()`](bloom-language-modifiers.mdx#subtitle) `(value: string | undefined)`: A second, quieter line under the title (drawn by the lens menu on Android and OxyOS).
 - [`.destructive()`](bloom-language-modifiers.mdx#destructive) `()`: Drawn in the theme's negative colour: an action that deletes or leaves.
 - [`.disabled()`](bloom-language-modifiers.mdx#disabled) `(value?: boolean)`
@@ -889,6 +898,8 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.icon()`](bloom-language-modifiers.mdx#icon) `(value: IconComponent)`
+- [`.iconSize()`](bloom-language-modifiers.mdx#iconsize) `(value: IconSizeToken)`: The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's 20pt, as an `Item`'s. Bloom's menus draw it; the lens menu's submenus and the system menu on iOS draw their own.
+- [`.iconForeground()`](bloom-language-modifiers.mdx#iconforeground) `(value: InkToken)`: The glyph's ink, a colour role, over the menu's quiet ink, as an `Item`'s. Bloom's menus draw it; the lens menu's submenus and the system menu on iOS draw their own.
 - [`.disabled()`](bloom-language-modifiers.mdx#disabled) `(value?: boolean)`
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 
@@ -901,6 +912,7 @@ Takes only the modifiers above (no universal modifiers).
 Modifiers:
 
 - [`.title()`](bloom-language-modifiers.mdx#title) `(value: string)`: A quiet heading above the section's rows.
+- [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: readonly [value: T | undefined, set: (value: T) => void])`: One of the section's rows chosen, as SwiftUI's `Picker` in a `Menu` (a `UIMenu` of single selection): each tagged `Item` in it is a choice whose tag is its value, marked while the binding holds it; choosing one sets the binding. `undefined` is no row chosen. Bloom's menus draw a radio group (`DropdownMenuRadioGroup`), the lens menu a check on the chosen row, iOS the system's inline picker.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -910,7 +922,7 @@ Takes only the modifiers above (no universal modifiers).
 
 Token sets:
 
-- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -918,6 +930,7 @@ Modifiers:
 - [`.align()`](bloom-language-modifiers.mdx#align) `(value: 'start' | 'center' | 'end')` (here: [dividerAlign](bloom-language-tokens.mdx#divideralign)): Where the label sits on the line.
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The space on each side of the line, along its stack.
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The line's colour role; the neutral separator by default.
+- [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: Which way the line runs, over its stack's (vertical in an `HStack`, horizontal elsewhere): `.axis('vertical')` is a vertical line outside a row (Bloom `Divider vertical`), as in a `ZStack` or an `Embed`'s view.
 
 And every universal modifier.
 
@@ -962,6 +975,7 @@ Modifiers:
 - [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space)): The padding around its content (Bloom's `contentPadding`).
 - [`.sideGutter()`](bloom-language-modifiers.mdx#sidegutter) `(value: SpaceToken)`: The least room kept beside it on a narrow screen (Bloom's `minSideGutter`).
 - [`.maxHeightRatio()`](bloom-language-modifiers.mdx#maxheightratio) `(value: number)`: Its height ceiling, as a fraction of the window's (`0.9`).
+- [`.onDismissed()`](bloom-language-modifiers.mdx#ondismissed) `(action: () => void)`: Once it has finished closing, its exit animation done (Bloom's `onDismissed`): after its binding turned false and it left the screen, the place to unmount what presented it.
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(isPresented: Binding<boolean>)`: The dialog as a view of its own, shown while `isPresented` holds; dismissing it sets it false. It ends the chain: what a component that is a dialog returns, its binding handed in by the caller.
 
 Takes only the modifiers above (no universal modifiers).
@@ -1005,12 +1019,12 @@ Takes only the modifiers above (no universal modifiers).
 
 ### `header`
 
-- `Header(title?: string)`: The page header, or the navigation bar (`.presentation('navigation')`), titled `title`.
+- `Header(title?: string | ViewNode)`: The page header, or the navigation bar (`.presentation('navigation')`), titled `title`: a text, or a view drawn in the title's place as it is.
 
 Modifiers:
 
 - [`.titleDisplay()`](bloom-language-modifiers.mdx#titledisplay) `(value: TitleDisplay)`: `large`: the title at the ramp's title step; `inline` (default): the bar's own.
-- [`.subtitle()`](bloom-language-modifiers.mdx#subtitle) `(value: string | undefined)`
+- [`.subtitle()`](bloom-language-modifiers.mdx#subtitle) `(value: string | ViewNode | undefined)`: A line under the title: a text, or a view drawn there as it is.
 - [`.toolbar()`](bloom-language-modifiers.mdx#toolbar) `(...value: Child[])`: Trailing items, in reading order.
 - [`.toolbarLeading()`](bloom-language-modifiers.mdx#toolbarleading) `(...value: Child[])`: Leading items, after the back button.
 - [`.onBack()`](bloom-language-modifiers.mdx#onback) `(value: (() => void) | null | undefined)`: The back button's action; `null` shows none (a top-level destination).
@@ -1130,6 +1144,10 @@ Modifiers:
 - [`.radius()`](bloom-language-modifiers.mdx#radius) `(value: CardRadius)`: Its corner: a corner rung of Bloom's radius scale (`lg`), `panel` or `concentric`.
 - [`.elevation()`](bloom-language-modifiers.mdx#elevation) `(value: CardElevation)`: Its lift: `none`, or an elevation role (`s`, `m`, `floating`).
 - [`.outline()`](bloom-language-modifiers.mdx#outline) `(value: CardBorder)`: Its own stroke over its appearance's: `none`, `hairline`, `thin` or `medium`.
+- [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: Its content laid out side by side (`horizontal`) or one above another (the default), as a stack's.
+- [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between its children, as a stack's.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: Alignment)`: Its children across its axis, as a stack's.
+- [`.justify()`](bloom-language-modifiers.mdx#justify) `(value: Justify)`: Its children along its axis, as a stack's.
 
 And every universal modifier.
 
@@ -1258,7 +1276,7 @@ Token sets:
 Modifiers:
 
 - [`.style()`](bloom-language-modifiers.mdx#style) `(value: ChipStyle)`: Its look: an appearance, or `inverted`.
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: BloomTone)`
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: BloomTone | undefined)`: Its tone; `undefined` is no tone of its own (Bloom's neutral), so a tone chosen at render (`.tint(sensitive ? 'danger' : undefined)`) paints only while it holds.
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: ChipSize)`
 - [`.hue()`](bloom-language-modifiers.mdx#hue) `(value: ChipHue)`
 - [`.toggle()`](bloom-language-modifiers.mdx#toggle) `(value: Binding<boolean>)`: A filter chip: on or off, through its binding.
@@ -1320,6 +1338,7 @@ Modifiers:
 - [`.fullWidth()`](bloom-language-modifiers.mdx#fullwidth) `(value?: boolean)`: The tabs share the strip's width.
 - [`.onReorder()`](bloom-language-modifiers.mdx#onreorder) `(value: (fromValue: string, toValue: string) => void)`: A tab moved (a drag, or Ctrl+Shift+Arrow on the web): the screen keeps the new order.
 - [`.dragTranslation()`](bloom-language-modifiers.mdx#dragtranslation) `(value: MotionValue)`: A swipe's travel between the tabs, which the underline follows.
+- [`.pressOpenTab()`](bloom-language-modifiers.mdx#pressopentab) `(value: PressOpenTab)`: What pressing the open tab does: `report` tells its value again, `reselect` takes its content back to the top (and reloads there), as social apps' inner tabs do (Bloom's `pressOpenTab`).
 
 And every universal modifier.
 
@@ -1337,6 +1356,11 @@ Modifiers:
 - [`.reorderable()`](bloom-language-modifiers.mdx#reorderable) `(value?: boolean)`: It can be moved, and take a moved tab's place (with the strip's `.onReorder()`).
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(...value: Child[])`: A control beside its label, in its chrome, not part of its press.
 - [`.onLongPress()`](bloom-language-modifiers.mdx#onlongpress) `(value: Press | undefined)`: A long press: the tab's own menu.
+- [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: FrameSpec)`: The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's.
+- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: PaddingToken)` or `(edge: Edge, value: PaddingToken)`: The tab's own padding (`TabsTrigger`'s `style`), over Bloom's.
+- [`.font()`](bloom-language-modifiers.mdx#font) `(value: Exclude<FontName, 'mono' | 'display'>)` (here: [labelFont](bloom-language-tokens.mdx#labelfont)): Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's.
+- [`.leading()`](bloom-language-modifiers.mdx#leading) `(value: LeadingToken)`
+- [`.weight()`](bloom-language-modifiers.mdx#weight) `(value: WeightName)`
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1417,8 +1441,13 @@ Modifiers:
 - [`.colorPreset()`](bloom-language-modifiers.mdx#colorpreset) `(value: ColorPreset)`: The screen's own colour recipe, one of Bloom's presets (Bloom `Screen`'s `colorPreset`): its content, its panel and the shell around it, restored when it leaves.
 - [`.seed()`](bloom-language-modifiers.mdx#seed) `(value: string)`: The screen's colours from one RGB seed (`#rrggbb`, Bloom `Screen`'s `seed`, a colour the person chose): over `colorPreset`, the roles from Bloom's colour engine.
 - [`.screenActive()`](bloom-language-modifiers.mdx#screenactive) `(value?: boolean)`: Whether the screen is in front (Bloom `Screen`'s `active`): a retained screen (`false`) drives no scroll, chrome or reselect. `true` by default.
+- [`.screenBackground()`](bloom-language-modifiers.mdx#screenbackground) `(value: InkToken)`: The screen's own fill, behind its header and content (Bloom `Screen`'s `style.backgroundColor`, the surface its chrome is painted for): a role, which Bloom's theme gives as its colour, or an app colour (a reel's black).
+- [`.reselectTop()`](bloom-language-modifiers.mdx#reselecttop) `(isAtTop: () => boolean, scrollToTop: () => void)`: Where the top is for a screen that drives its own scroll (a reel, whose top is its first slide), and how to go back there: reselecting it away from the top calls `scrollToTop`, and at the top `.onReselect()` (Bloom `Screen`'s `reselect`, its `isAtTop` and `scrollToTop`). Without it the scroller in front answers.
 - [`.initialHeaderHeight()`](bloom-language-modifiers.mdx#initialheaderheight) `(value: SpaceToken)`: The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included).
 - [`.initialFooterHeight()`](bloom-language-modifiers.mdx#initialfooterheight) `(value: SpaceToken)`: The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included).
+- [`.colorScope()`](bloom-language-modifiers.mdx#colorscope) `(mode: ColorScopeMode | undefined)`: The screen in a colour scheme of its own (Bloom's `BloomColorScope`, its `mode`, around the Screen with `asChild`): a dark reel or camera over a light app. `undefined` is the app's scheme, the scope still drawn, so a scheme that changes at render never remounts the screen.
+- [`.keyboardAvoiding()`](bloom-language-modifiers.mdx#keyboardavoiding) `(fill?: FlexName)`: The screen kept above the keyboard: React Native's `KeyboardAvoidingView` around it, filling, padded on iOS and resized elsewhere, as React Native recommends. SwiftUI avoids the keyboard by default; React Native does not. It fills with React Native's `flex: 1`, or with a flex token (`'1'` is Tailwind's `flex-1`, `flex: 1 1 0%`, as `.flex()` writes it).
+- [`.provider()`](bloom-language-modifiers.mdx#provider) `(component: ScreenProvider)`: A provider around the screen (a React component that draws its children: Bloom's `HeaderDockProvider`, an app's own context the screen's header and content share). Each of these three wraps what the root's modifiers before it drew, in chain order, as SwiftUI's modifiers do: the last one is outermost.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1473,7 +1502,7 @@ Token sets:
 
 Modifiers:
 
-- [`.placeholder()`](bloom-language-modifiers.mdx#placeholder) `(value: string)`
+- [`.placeholder()`](bloom-language-modifiers.mdx#placeholder) `(value: string | null)`: Shown while the field is empty; `null` shows none (not even the label, which Bloom draws in its place otherwise).
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: BloomSize)`
 - [`.invalid()`](bloom-language-modifiers.mdx#invalid) `(value?: boolean)`: Painted as wrong (the error ring) and announced as invalid.
 - [`.floatingLabel()`](bloom-language-modifiers.mdx#floatinglabel) `()`: The label sits in the field and floats above the text once there is some.
@@ -1492,6 +1521,8 @@ Modifiers:
 - [`.trailingIcon()`](bloom-language-modifiers.mdx#trailingicon) `(value: IconComponent)`: A glyph after the text (and after a suffix).
 - [`.completion()`](bloom-language-modifiers.mdx#completion) `(value: string)`: The rest of a suggested text, drawn faintly after what is typed (Bloom's `TextFieldGhost`).
 - [`.focused()`](bloom-language-modifiers.mdx#focused) `(value: Binding<boolean>)`: Whether it holds the keyboard's focus: focusing or leaving it writes the binding, and setting the binding focuses or blurs it.
+- [`.multiline()`](bloom-language-modifiers.mdx#multiline) `(value?: boolean)`: Text over several lines, the field growing with it (React Native's `multiline`).
+- [`.editable()`](bloom-language-modifiers.mdx#editable) `(value: boolean)`: `false`: the text is shown and selectable but takes no typing (React Native's `editable`).
 
 And every universal modifier.
 
@@ -1532,6 +1563,7 @@ Modifiers:
 - [`.description()`](bloom-language-modifiers.mdx#description) `(value: string)`
 - [`.error()`](bloom-language-modifiers.mdx#error) `(value: string | null | undefined)`: The error under the control; the control is announced as invalid.
 - [`.required()`](bloom-language-modifiers.mdx#required) `(value?: boolean)`
+- [`.multiple()`](bloom-language-modifiers.mdx#multiple) `(value?: boolean)`: A field of several controls (chips, two inputs): its label names the group, not one control (Bloom's `multiple`).
 
 And every universal modifier.
 
@@ -1642,7 +1674,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -1677,6 +1709,7 @@ Modifiers:
 - [`.onSubmit()`](bloom-language-modifiers.mdx#onsubmit) `(value: () => void)`
 - [`.onClearText()`](bloom-language-modifiers.mdx#oncleartext) `(value: () => void)`: Called when the clear button is pressed: the screen empties its text (and, with tokens, its tokens).
 - [`.autoFocus()`](bloom-language-modifiers.mdx#autofocus) `()`: Takes the keyboard's focus when it appears.
+- [`.maxLength()`](bloom-language-modifiers.mdx#maxlength) `(value: number)`: The most characters the field takes (React Native's `maxLength`).
 - [`.trigger()`](bloom-language-modifiers.mdx#trigger) `(value: ButtonView)`: The collapsed search's button: a `Button`'s style, tint, size and test id (Search owns its glyph and name).
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(...value: Child[])`: An action at the field's end (a voice search).
 - [`.focused()`](bloom-language-modifiers.mdx#focused) `(value: Binding<boolean>)`: Whether it holds the keyboard's focus: focusing or leaving it writes the binding, and setting the binding focuses or blurs it.
@@ -1785,8 +1818,9 @@ And every universal modifier.
 Modifiers:
 
 - [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins) `(value: SpaceToken)` or `(edge: Edge, value: SpaceToken)`: Room around the content, inside the scroll (the content container's padding).
+- [`.contentGrows()`](bloom-language-modifiers.mdx#contentgrows) `(on?: boolean)`: The content container grows to fill the scroll (`flexGrow: 1` on React Native's `contentContainerStyle`), so content shorter than the viewport (an empty state) can centre or sit at its bottom; `false` (an `items.length === 0` written as a boolean) leaves it the content's height.
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between the content's children.
-- [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Binding<boolean>, tint?: ColorToken)`: Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). `tint` paints the refresh control's `tintColor` and `colors` from a colour role, as an app hands it its theme's colour; the platform's by default.
+- [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Refresh, tint?: RefreshTint<ColorToken>)`: Pull to refresh: a binding a pull writes `true` (the app writes `false` when done), or `{ refreshing, onRefresh }`, a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`). `tint` paints the refresh control's `tintColor` (iOS) and `colors` (Android) from a colour role, as an app hands it its theme's colour, or each platform's own (`{ ios: 'primary' }`: Android's spinner keeps its look); the platform's by default.
 - [`.onEndReached()`](bloom-language-modifiers.mdx#onendreached) `(action: () => void, threshold?: number)`: Called once each time the end comes within `threshold` viewports (2 by default).
 - [`.scrollIndicators()`](bloom-language-modifiers.mdx#scrollindicators) `(value: ScrollIndicators, axis?: Axis)`: The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`, the default), on both axes or on the one `axis` names.
 - [`.scrollDismissesKeyboard()`](bloom-language-modifiers.mdx#scrolldismisseskeyboard) `(value: KeyboardDismiss)`: A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default.
@@ -2114,6 +2148,7 @@ Token sets:
 Modifiers:
 
 - [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins) `(value: SpaceToken)` or `(edge: Edge, value: SpaceToken)`: Room around the content, inside the scroll (the content container's padding).
+- [`.contentGrows()`](bloom-language-modifiers.mdx#contentgrows) `(on?: boolean)`: The content container grows to fill the scroll (`flexGrow: 1` on React Native's `contentContainerStyle`), so content shorter than the viewport (an empty state) can centre or sit at its bottom; `false` (an `items.length === 0` written as a boolean) leaves it the content's height.
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between the content's children.
 - [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: `horizontal` scrolls across; `vertical` by default.
 - [`.scrollbar()`](bloom-language-modifiers.mdx#scrollbar) `(value: ScrollbarVisibility)`: When its bar shows: as it scrolls (`scroll`, default), on `hover`, `always`, `never`.
@@ -2138,6 +2173,7 @@ Token sets:
 Modifiers:
 
 - [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins) `(value: SpaceToken)` or `(edge: Edge, value: SpaceToken)`: Room around the content, inside the scroll (the content container's padding).
+- [`.contentGrows()`](bloom-language-modifiers.mdx#contentgrows) `(on?: boolean)`: The content container grows to fill the scroll (`flexGrow: 1` on React Native's `contentContainerStyle`), so content shorter than the viewport (an empty state) can centre or sit at its bottom; `false` (an `items.length === 0` written as a boolean) leaves it the content's height.
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between the content's children.
 - [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: `horizontal` scrolls across; `vertical` by default.
 - [`.scrollbar()`](bloom-language-modifiers.mdx#scrollbar) `(value: ScrollbarVisibility)`: When its bar shows: as it scrolls (`scroll`, default), on `hover`, `always`, `never`.
@@ -2369,7 +2405,7 @@ And every universal modifier.
 Token sets:
 
 - `.size()`: [ratingSize](bloom-language-tokens.mdx#ratingsize), `'sm'`, `'md'`
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.style()`: [ratingStyle](bloom-language-tokens.mdx#ratingstyle), `'compact'`, `'stars'`
 
 Modifiers:
@@ -2436,7 +2472,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -2460,8 +2496,8 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -2488,7 +2524,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -2665,12 +2701,15 @@ And every universal modifier.
 
 Modifiers:
 
+- [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins) `(value: SpaceToken)` or `(edge: Edge, value: SpaceToken)`: Room around the rows inside the scroll: `contentContainerStyle`'s padding, on every edge or one (a later margin of an edge replaces the earlier).
+- [`.contentGrows()`](bloom-language-modifiers.mdx#contentgrows) `(on?: boolean)`: The content container grows to fill the list (`flexGrow: 1`): an empty state centres in it.
+- [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between the rows: `contentContainerStyle`'s `gap`.
 - [`.itemKey()`](bloom-language-modifiers.mdx#itemkey) `(value: (item: T, index: number) => string)`: Each item's key (its index by default).
 - [`.itemType()`](bloom-language-modifiers.mdx#itemtype) `(value: (item: T, index: number) => string | number | undefined)`: Each item's recycling type (FlashList's `getItemType`).
 - [`.estimatedItemSize()`](bloom-language-modifiers.mdx#estimateditemsize) `(value: number)`: The engine's first estimate of a row's height, in px.
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`: Items per row.
 - [`.onEndReached()`](bloom-language-modifiers.mdx#onendreached) `(action: () => void, threshold?: number)`: Called near the end, `threshold` viewports from it.
-- [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Binding<boolean>)` (here: a value): Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done).
+- [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Refresh)` (here: a value): Pull to refresh: a binding a pull writes `true` (the app writes `false` when done), or `{ refreshing, onRefresh }`, a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`).
 - [`.stickyIndices()`](bloom-language-modifiers.mdx#stickyindices) `(value: readonly number[])`: The indices whose rows stick to the top.
 - [`.restorationKey()`](bloom-language-modifiers.mdx#restorationkey) `(value: string)`: Where its scroll position is kept across visits.
 - [`.headerContent()`](bloom-language-modifiers.mdx#headercontent) `(value: Child)`
@@ -3109,7 +3148,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -3124,8 +3163,8 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -3141,7 +3180,7 @@ And every universal modifier.
 Token sets:
 
 - `.size()`: [iconSize](bloom-language-tokens.mdx#iconsize), `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'10'`, `'11'`, `'13'`, `'14'`, `'15'`, `'17'`, `'18'`, `'21'`, `'22'`, `'40'`, `'44'`, `'64'`, `'96'`
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -3675,7 +3714,7 @@ Takes only the modifiers above (no universal modifiers).
 
 Token sets:
 
-- `.blend()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.blend()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -3755,7 +3794,7 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -3769,7 +3808,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [composerButtonTone](bloom-language-tokens.mdx#composerbuttontone), `'plain'`, `'accent'`
 
 Modifiers:
@@ -3886,7 +3925,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -3927,7 +3966,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -3942,7 +3981,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -3959,7 +3998,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.shape()`: [chartShape](bloom-language-tokens.mdx#chartshape), `'curved'`, `'sharp'`
 
 Modifiers:
@@ -4033,7 +4072,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -4049,7 +4088,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -4395,7 +4434,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.style()`: [chatBackgroundStyle](bloom-language-tokens.mdx#chatbackgroundstyle), `'plain'`, `'pattern'`, `'gradient'`, `'image'`
 
 Modifiers:
@@ -4529,7 +4568,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -5163,7 +5202,7 @@ Takes the universal modifiers.
 Token sets:
 
 - `.size()`: [callControlSize](bloom-language-tokens.mdx#callcontrolsize), `'sm'`, `'md'`, `'lg'`
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.style()`: [callMode](bloom-language-tokens.mdx#callmode), `'voice'`, `'video'`
 
 Modifiers:
@@ -5185,7 +5224,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.style()`: [callMode](bloom-language-tokens.mdx#callmode), `'voice'`, `'video'`
 
 Modifiers:
@@ -5209,7 +5248,6 @@ Modifiers:
 - [`.style()`](bloom-language-modifiers.mdx#style) `(value: GroupCallLayout)`: `grid` (default): equal tiles; `spotlight`: one big tile and a strip.
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gutter between tiles.
-- [`.aspectRatio()`](bloom-language-modifiers.mdx#aspectratio) `(value: number)`: A tile's width over its height (1 by default).
 
 And every universal modifier.
 
@@ -5219,7 +5257,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.style()`: [callMode](bloom-language-tokens.mdx#callmode), `'voice'`, `'video'`
 
 Modifiers:
@@ -5236,7 +5274,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.style()`: [callMode](bloom-language-tokens.mdx#callmode), `'voice'`, `'video'`
 
 Modifiers:
@@ -5396,7 +5434,7 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -5678,7 +5716,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -5955,7 +5993,7 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -6780,7 +6818,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -6800,7 +6838,7 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -7017,7 +7055,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -7104,7 +7142,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
 
@@ -7224,7 +7262,7 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.density()`: `'comfortable'`, `'compact'`
 
 Modifiers:
@@ -7241,7 +7279,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `.density()`: `'comfortable'`, `'compact'`
 
 Modifiers:

@@ -40,10 +40,11 @@ import {
   TextFieldSuffix,
 } from '@oxy.so/bloom/text-field';
 import { Textarea } from '@oxy.so/bloom/textarea';
-import { useThemePaint } from '@oxy.so/bloom/theme';
 
 import type { Binding } from '../binding';
-import { COLORS, type ENUMS } from '../generated/spec.generated';
+import type { ENUMS } from '../generated/spec.generated';
+import { isSurfaceFill, paletteColor, surfaced, withSurface } from '../paint';
+import { useThemePaint } from '@oxy.so/bloom/theme';
 import {
   type ButtonView,
   type Child,
@@ -145,7 +146,8 @@ interface TextInputModifiers<Self> {
 export interface TextFieldView
   extends ViewModifiers<TextFieldView>,
     TextInputModifiers<TextFieldView> {
-  placeholder(value: string): TextFieldView;
+  /** Shown while the field is empty; `null` shows none (not even the label, which Bloom draws in its place otherwise). */
+  placeholder(value: string | null): TextFieldView;
   size(value: BloomSize): TextFieldView;
   disabled(value?: boolean): TextFieldView;
   /** Painted as wrong (the error ring) and announced as invalid. */
@@ -169,6 +171,10 @@ export interface TextFieldView
   /** The return key's action. */
   onSubmit(value: () => void): TextFieldView;
   maxLength(value: number): TextFieldView;
+  /** Text over several lines, the field growing with it (React Native's `multiline`). */
+  multiline(value?: boolean): TextFieldView;
+  /** `false`: the text is shown and selectable but takes no typing (React Native's `editable`). */
+  editable(value: boolean): TextFieldView;
 }
 
 /** Bloom `Textarea`: text over several lines. */
@@ -199,6 +205,8 @@ export interface FieldView extends ViewModifiers<FieldView> {
   error(value: string | null | undefined): FieldView;
   required(value?: boolean): FieldView;
   disabled(value?: boolean): FieldView;
+  /** A field of several controls (chips, two inputs): its label names the group, not one control (Bloom's `multiple`). */
+  multiple(value?: boolean): FieldView;
 }
 
 /** Bloom `Label`: a form label. */
@@ -296,6 +304,8 @@ export interface SearchView extends ViewModifiers<SearchView>, TextInputModifier
   trigger(value: ButtonView): SearchView;
   /** An action at the field's end (a voice search). */
   trailing(...value: Child[]): SearchView;
+  /** The most characters the field takes (React Native's `maxLength`). */
+  maxLength(value: number): SearchView;
 }
 
 const NO_CHILDREN: readonly Child[] = [];
@@ -470,6 +480,8 @@ const TEXT_INPUT_PROPS = [
   ['onSubmit', 'onSubmitEditing'],
   ['autoFocus', 'autoFocus'],
   ['maxLength', 'maxLength'],
+  ['multiline', 'multiline'],
+  ['editable', 'editable'],
 ] as const;
 
 const textField: ControlRenderer = (d) => {
@@ -556,6 +568,7 @@ const field: ControlRenderer = (d) =>
       error: d.own('error')?.value,
       required: d.own('required')?.value,
       disabled: d.own('disabled')?.value,
+      multiple: d.own('multiple')?.value,
       testID: d.testID,
     },
     ...d.children(d.node.children),
@@ -624,15 +637,19 @@ interface RadioOptionOf {
  */
 function PaintedRadioGroup({
   options,
+  surface,
   ...props
-}: Record<string, unknown> & { options: readonly RadioOptionOf[] }): ReactElement {
-  const colors = useThemePaint();
+}: Record<string, unknown> & {
+  options: readonly RadioOptionOf[];
+  surface?: string;
+}): ReactElement {
+  const colors = withSurface(useThemePaint(), surface);
   return createElement(BloomRadioGroup, {
     ...props,
     options: options.map(({ tint, foreground, ...option }) => ({
       ...option,
-      color: tint === undefined ? undefined : colors[COLORS[tint].paint],
-      foreground: foreground === undefined ? undefined : colors[COLORS[foreground].paint],
+      color: tint === undefined ? undefined : paletteColor(colors, tint),
+      foreground: foreground === undefined ? undefined : paletteColor(colors, foreground),
     })),
   });
 }
@@ -655,18 +672,27 @@ const radioGroup: ControlRenderer = (d) => {
   const painted = options.some(
     (option) => option.tint !== undefined || option.foreground !== undefined,
   );
-  return d.component(painted ? PaintedRadioGroup : BloomRadioGroup, {
-    key: d.key,
-    label: d.label,
-    value,
-    onValueChange: setValue,
-    options,
-    variant: d.own('style')?.value,
-    size: d.own('size')?.value,
-    tone: d.own('tint')?.value,
-    disabled: d.own('disabled')?.value,
-    testID: d.testID,
-  });
+  // A swatch of the surface fill reads it where the group is drawn (`OnSurface`).
+  const onSurface = options.some(
+    (option) => isSurfaceFill(option.tint) || isSurfaceFill(option.foreground),
+  );
+  const [group, groupProps] = surfaced(
+    painted ? PaintedRadioGroup : BloomRadioGroup,
+    {
+      key: d.key,
+      label: d.label,
+      value,
+      onValueChange: setValue,
+      options,
+      variant: d.own('style')?.value,
+      size: d.own('size')?.value,
+      tone: d.own('tint')?.value,
+      disabled: d.own('disabled')?.value,
+      testID: d.testID,
+    },
+    onSurface,
+  );
+  return d.component(group, groupProps);
 };
 
 const segmented: ControlRenderer = (d) => {
@@ -736,7 +762,8 @@ const chosenMark = (item: unknown) => (item as PickerItem | undefined)?.leading 
 
 const picker: ControlRenderer = (d) => {
   const [value, setValue] = (d.node.props as ChoiceProps).selection;
-  const placeholder = d.own('placeholder')?.value;
+  // A picker's placeholder is a text (`PickerView.placeholder`); only a text field's takes `null`.
+  const placeholder = d.own('placeholder')?.value as string | undefined;
   const presented = d.own('presented')?.value;
   const items = optionsOf(d.node.children).map(({ node, props, group }): PickerItem => {
     const leading = lastOf(node, 'leadingView')?.value;

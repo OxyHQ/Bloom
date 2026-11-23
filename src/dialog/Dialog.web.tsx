@@ -172,10 +172,10 @@ function useDialogCss(): void {
  * node. The bottom placement animates via `BottomSheet`'s shared-value/gesture
  * animation (no `exiting` layout animation).
  */
-export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
+export function Dialog({ placement, frame, children, header, onDismissed, ...props }: DialogProps) {
   const session = usePresentationSession(
     props.presentation === 'fullscreen' ? 'center' : placement,
-    props,
+    { open: props.open, startOpen: props.startOpen, onDismissed },
   );
   const rest = {
     ...props,

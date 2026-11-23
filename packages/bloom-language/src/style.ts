@@ -30,6 +30,7 @@ import {
   rampStep,
   resolveFont,
   resolveLength,
+  resolveEdge,
   resolveSpace,
   type Alignment,
   type Axis,
@@ -39,7 +40,7 @@ import {
   type LengthToken,
   type Justify,
   type OverlayAlignment,
-  type ZIndexName,
+  type ZIndexValue,
   type ShadowName,
   type ColorName,
   type AppToken,
@@ -48,6 +49,7 @@ import {
   type CornerCurve,
   type OpacityName,
   type Edge,
+  type PhysicalEdge,
   type FontFamilyName,
   type FontName,
   type TrackingName,
@@ -55,7 +57,7 @@ import {
   type ShrinkPriority,
   type FlexName,
   type HitTesting,
-  type PaddingToken,
+  type MarginToken,
   type SpaceToken,
   type TextAlignment,
   type TextCase,
@@ -111,6 +113,8 @@ export function role(token: ColorToken): RoleRef {
  */
 export function webInk(ref: RoleRef): string {
   const web = COLORS[ref.role].web;
+  // The surface fill has no web value: its leaf paints it (`serialize`).
+  if (web === null) throw new Error('bloom-language: the surface fill is painted by its leaf');
   if (ref.opacity === undefined) return web;
   const name = `--bl-${ref.token.replace('/', '-')}`;
   adoptInk(
@@ -228,8 +232,23 @@ function split(resolved: Resolved): {
   return { style: Object.freeze(values), styleRoles: roles };
 }
 
+/** Whether a style or its variants paint with the surface fill, which no class or CSS variable holds. */
+function namesSurface(resolved: Resolved, variants: VariantStyles): boolean {
+  const surface = (style: Resolved) =>
+    Object.values(style).some(
+      (value) => isRole(value as StyleValue) && (value as RoleRef).role === 'surfaceFill',
+    );
+  return surface(resolved) || variants.some(([, styled]) => surface(styled));
+}
+
 function serialize(resolved: Resolved, target: Target, variants: VariantStyles): StyleOut {
   const keys = Object.keys(resolved);
+  // The surface fill is the surface around the view (Bloom's `useSurfaceFill()`): on the web
+  // too its leaf paints it, as native's are, its live variants picked there (tracked in JS).
+  if (IS_WEB && target !== 'material' && namesSurface(resolved, variants))
+    return variants.length === 0
+      ? paintOut(resolved, variants)
+      : { ...paintOut(resolved, variants), object: true, anchor: true };
   if (IS_WEB && target === 'component') {
     // A Bloom component reads its style as an object, which CSS cannot vary:
     // its live variants are picked by a `Conditioned` leaf, as native's are,
@@ -317,9 +336,10 @@ function classOf(key: string, value: StyleValue): string | undefined {
   if (value.opacity === undefined) return WEB_CLASS[`${key}:@${value.token}`];
   // A role at an opacity: the role's class, painting its ink (web-sheet.ts).
   const base = WEB_CLASS[`${key}:@${value.role}`];
-  return base === undefined
+  const web = COLORS[value.role].web;
+  return base === undefined || web === null
     ? undefined
-    : inkClass(base, value.token, COLORS[value.role].web, webInk(value));
+    : inkClass(base, value.token, web, webInk(value));
 }
 
 const hasClass = (key: string, styled: Resolved): boolean =>
@@ -395,6 +415,11 @@ export interface Layer {
   curve: CornerCurve | undefined;
   /** A `blur()` layer: Bloom's `BlurIsland` draws it. */
   blur: boolean;
+  /**
+   * A `safeAreaPadding()` layer: the sides it pads by the device's safe area,
+   * a bit each (`SAFE_AREA_BITS`); its view reads the insets (`SafeAreaPadded`).
+   */
+  safeArea: number;
   /** Views drawn over (and, `behind`, under) what the layer holds: \`overlay()\` and \`background(view)\`. */
   overlays: Extract<Modifier, { kind: 'overlay' }>[];
   /** The corners the layer's `corner()`s round, a bit each (`CORNER_BITS`). */
@@ -460,6 +485,17 @@ function cornerRadius(style: Resolved, corner: CornerModifier): void {
 /** The radius keys a per-side corner writes: a glass or an island takes one radius, so it has none of these. */
 export const SIDE_RADII: readonly string[] = CORNER_RADIUS.map(([, key]) => key);
 
+/** The sides `safeAreaPadding()` pads, a bit each: top, bottom, left, right. */
+export const SAFE_AREA_BITS: Record<PhysicalEdge, number> = {
+  all: 0b1111,
+  top: 0b0001,
+  bottom: 0b0010,
+  horizontal: 0b1100,
+  vertical: 0b0011,
+  left: 0b0100,
+  right: 0b1000,
+};
+
 const EDGE_BITS: Record<Edge, number> = {
   all: 0b1111,
   horizontal: 0b1100,
@@ -481,15 +517,20 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const rank = LAYER_RANK[modifier.kind];
   const current = layers[layers.length - 1];
   const edges = modifier.kind === 'padding' ? EDGE_BITS[modifier.edge] : 0;
+  // A safe-area padding pads the view it joins: its inset is added to the view's own
+  // top or bottom padding (`paddingTop: insets.top + 24`), so a fill and a flex stay one view.
+  const safeArea = modifier.kind === 'safeAreaPadding' ? SAFE_AREA_BITS[modifier.edge] : 0;
   const corners = modifier.kind === 'corner' ? CORNER_BITS[modifier.side] : 0;
   // A second padding of an edge (or corner of a corner) the view has wraps it; other edges join it.
   const repeats =
     current !== undefined &&
     (modifier.kind === 'padding'
-      ? (current.edges & edges) !== 0
-      : modifier.kind === 'corner'
-        ? (current.corners & corners) !== 0
-        : current.modifiers.some((existing) => existing.kind === modifier.kind));
+      ? (current.edges & edges) !== 0 || sidesMeet(current.safeArea, edges)
+      : modifier.kind === 'safeAreaPadding'
+        ? (current.safeArea & safeArea) !== 0 || sidesMeet(safeArea, current.edges)
+        : modifier.kind === 'corner'
+          ? (current.corners & corners) !== 0
+          : current.modifiers.some((existing) => existing.kind === modifier.kind));
   const glass = modifier.kind === 'glass' ? modifier.value : undefined;
   const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
@@ -497,7 +538,8 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const overlay = modifier.kind === 'overlay' ? modifier : undefined;
   // A shadow never shares a view with a clip (iOS clips a view's own shadow): after a clipped corner it wraps.
   const clip =
-    modifier.kind === 'shadow' && current?.modifiers.some((existing) => existing.kind === 'clipped')
+    modifier.kind === 'shadow' &&
+    current?.modifiers.some((existing) => existing.kind === 'clipped' && existing.value)
       ? current?.modifiers.filter(
           (existing): existing is CornerModifier => existing.kind === 'corner',
         )
@@ -516,6 +558,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       concentric,
       curve,
       blur,
+      safeArea,
       overlays: overlay ? [overlay] : [],
       corners,
       follows: clipped ? clip : [],
@@ -526,12 +569,26 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   current.key = `${current.key};${modifier.key}`;
   current.rank = rank;
   current.edges |= edges;
+  current.safeArea |= safeArea;
   current.corners |= corners;
   if (glass) current.glass = glass;
   if (concentric) current.concentric = true;
   if (curve) current.curve = curve;
   if (blur) current.blur = true;
   if (overlay) current.overlays.push(overlay);
+}
+
+/** The left and right safe-area sides (`SAFE_AREA_BITS`), and every side a padding writes across. */
+const SAFE_AREA_ACROSS = 0b1100;
+const EDGES_ACROSS = 0b111100;
+
+/**
+ * Whether a safe-area padding and a padding meet on a side they cannot add on
+ * one view: the left or right inset beside a padding across (its start and end
+ * are logical, the inset physical). Top and bottom add (`SafeAreaPadded`).
+ */
+function sidesMeet(safeArea: number, edges: number): boolean {
+  return (safeArea & SAFE_AREA_ACROSS) !== 0 && (edges & EDGES_ACROSS) !== 0;
 }
 
 /** Whether two box modifiers set the same thing (a padding the same edge, a border the same side). */
@@ -572,6 +629,7 @@ export function addVariantToLayers(
       concentric: false,
       curve: undefined,
       blur: false,
+      safeArea: 0,
       overlays: [],
       corners: 0,
       follows: [],
@@ -580,6 +638,30 @@ export function addVariantToLayers(
   }
   target.variants.push([condition, modifier]);
   target.key += `;?${condition ?? ''}${modifier.key}`;
+}
+
+/**
+ * A part's own box, drawn by the Bloom component it is a part of (a tab's
+ * `TabsTrigger` style): its paddings and frame, in chain order, as one view's.
+ * `undefined` when the chain sets neither.
+ */
+export function partBoxStyle(modifiers: readonly Modifier[]): Resolved | undefined {
+  const box = modifiers.filter(
+    (modifier): modifier is Extract<LayerModifier, { kind: 'padding' | 'frame' }> =>
+      modifier.kind === 'padding' || modifier.kind === 'frame',
+  );
+  if (box.length === 0) return undefined;
+  const style: Resolved = {};
+  for (const modifier of box) {
+    if (modifier.kind === 'padding')
+      paddingStyle(style, modifier.edge, resolveSpace(modifier.value));
+    else
+      for (const name of Object.keys(modifier.value) as (keyof FrameSpec)[]) {
+        const token = modifier.value[name];
+        if (token !== undefined) style[name] = resolveLength(token);
+      }
+  }
+  return style;
 }
 
 export function paddingStyle(style: Resolved, edge: Edge, value: number): void {
@@ -641,6 +723,10 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
           if (token !== undefined) style[name] = resolveLength(token);
         }
         break;
+      case 'aspectRatio':
+        // In the frame's view: a width or height there sets the other side by the ratio.
+        style.aspectRatio = modifier.value;
+        break;
       case 'background':
         style.backgroundColor = ink(modifier.value);
         break;
@@ -650,11 +736,14 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         style[`${prefix}Color`] = ink(modifier.value);
         break;
       }
+      case 'borderStyle':
+        style.borderStyle = modifier.value;
+        break;
       case 'corner':
         cornerRadius(style, modifier);
         break;
       case 'clipped':
-        style.overflow = 'hidden';
+        style.overflow = modifier.value ? 'hidden' : 'visible';
         break;
       case 'cornerCurve':
         // Bloom's platform-adaptive corner (`shapes/surface-style`): the curve alone, on the radius beside it.
@@ -674,6 +763,8 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
       case 'glass':
       case 'blur':
       case 'overlay':
+      // The insets are the safe-area view's own, read as it renders (`SafeAreaPadded`).
+      case 'safeAreaPadding':
         break;
     }
   }
@@ -736,12 +827,12 @@ export interface Placement {
   shrink: ShrinkPriority | undefined;
   alignSelf: Alignment | undefined;
   position: PositionEdges | undefined;
-  zIndex: ZIndexName | undefined;
+  zIndex: ZIndexValue | undefined;
   hidden: boolean | undefined;
   basis: LengthToken | undefined;
   flex: FlexName | undefined;
   /** Margins, in order: a later one of a side replaces an earlier one. */
-  margin: readonly (readonly [Edge, PaddingToken])[];
+  margin: readonly (readonly [Edge, MarginToken])[];
   allowsHitTesting: HitTesting | undefined;
   accessibilityOnly: boolean;
   /**
@@ -904,7 +995,7 @@ const POSITION_EDGE: Record<keyof PositionEdges, string> = {
 };
 
 /** Tailwind's flex utility as the longhands NativeWind writes. */
-function flexStyle(style: Resolved, value: FlexName): void {
+export function flexStyle(style: Resolved, value: FlexName): void {
   const [grow, shrink, basis] = FLEX[value] as readonly [
     number | null,
     number | null,
@@ -919,7 +1010,7 @@ function flexStyle(style: Resolved, value: FlexName): void {
 function marginStyle(style: Resolved, margin: Placement['margin']): void {
   for (const [edge, token] of margin) {
     const bits = EDGE_BITS[edge];
-    const value = resolveSpace(token);
+    const value = token === 'auto' ? token : resolveSpace(token);
     if (bits & 0b0001) style.marginTop = value;
     if (bits & 0b0010) style.marginBottom = value;
     if (bits & 0b0100) style.marginStart = value;
@@ -968,7 +1059,7 @@ export function placeStyle(place: Placement): Resolved {
     style.position = 'absolute';
     for (const edge of Object.keys(POSITION_EDGE) as (keyof PositionEdges)[]) {
       const token = place.position[edge];
-      if (token !== undefined) style[POSITION_EDGE[edge]] = resolveSpace(token);
+      if (token !== undefined) style[POSITION_EDGE[edge]] = resolveEdge(token);
     }
   }
   if (place.accessibilityOnly) Object.assign(style, ACCESSIBILITY_ONLY);
@@ -977,7 +1068,8 @@ export function placeStyle(place: Placement): Resolved {
   // `auto` is Tailwind's z-auto: the web's z-index: auto; NativeWind writes nothing on native.
   if (place.zIndex === 'auto') {
     if (IS_WEB) style.zIndex = 'auto';
-  } else if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
+  } else if (typeof place.zIndex === 'number') style.zIndex = place.zIndex;
+  else if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)
     style.pointerEvents = POINTER_EVENTS[`${place.allowsHitTesting}`];
@@ -992,6 +1084,10 @@ export function placeStyle(place: Placement): Resolved {
 /** A stack's own layout: what its constructor and its stack modifiers say. */
 export interface StackLayout {
   spacing: SpaceToken | undefined;
+  /** `.horizontalSpacing()`: the gap between children side by side (`columnGap`). */
+  horizontalSpacing: SpaceToken | undefined;
+  /** `.verticalSpacing()`: the gap between children one above another (`rowGap`). */
+  verticalSpacing: SpaceToken | undefined;
   /** `.childSpacing()`: a margin after each child but the last; the web's only (see `layoutStyle`). */
   childSpacing: ChildSpacing | undefined;
   align: Alignment | undefined;
@@ -1013,10 +1109,22 @@ const JUSTIFY: Record<Justify, string> = {
 /** The stack modifiers. */
 export type StackModifier = Extract<
   Modifier,
-  { kind: 'spacing' | 'childSpacing' | 'align' | 'justify' | 'wrap' | 'axis' }
+  {
+    kind:
+      | 'spacing'
+      | 'horizontalSpacing'
+      | 'verticalSpacing'
+      | 'childSpacing'
+      | 'align'
+      | 'justify'
+      | 'wrap'
+      | 'axis';
+  }
 >;
 export const STACK_KINDS: ReadonlySet<string> = new Set([
   'spacing',
+  'horizontalSpacing',
+  'verticalSpacing',
   'childSpacing',
   'align',
   'justify',
@@ -1028,6 +1136,8 @@ export const STACK_KINDS: ReadonlySet<string> = new Set([
 export function layoutOf(modifiers: readonly StackModifier[]): StackLayout {
   const layout: StackLayout = {
     spacing: undefined,
+    horizontalSpacing: undefined,
+    verticalSpacing: undefined,
     childSpacing: undefined,
     align: undefined,
     justify: undefined,
@@ -1047,6 +1157,9 @@ export function layoutStyle(layout: StackLayout): Resolved {
     style.flexDirection = layout.axis === 'horizontal' ? 'row' : 'column';
   if (layout.justify !== undefined) style.justifyContent = JUSTIFY[layout.justify];
   if (layout.spacing !== undefined) style.gap = resolveSpace(layout.spacing);
+  if (layout.horizontalSpacing !== undefined)
+    style.columnGap = resolveSpace(layout.horizontalSpacing);
+  if (layout.verticalSpacing !== undefined) style.rowGap = resolveSpace(layout.verticalSpacing);
   // Tailwind's space-x/space-y: on the web its rule for the children (a class of the
   // language's sheet, `childSpacingX` / `childSpacingY`); NativeWind writes none on native.
   if (layout.childSpacing !== undefined && IS_WEB) {
@@ -1070,7 +1183,7 @@ export interface TextTraits {
   foreground: InkToken | undefined;
   /** The size: a ramp step or a size rung. */
   font: Exclude<FontName, FontFamilyName> | undefined;
-  /** The face beside the size (`.font('mono')`); Bloom's own when unset. */
+  /** The face beside the size (`.font('mono')`, `.font('display')`); Bloom's own when unset. */
   family: FontFamilyName | undefined;
   weight: WeightName | undefined;
   leading: LeadingToken | undefined;
@@ -1109,23 +1222,15 @@ export function textVariants(traits: TextTraits): VariantStyles {
 /** Digits of one width: React Native's `fontVariant`, the web's `font-variant`. */
 const TABULAR: readonly string[] = Object.freeze(['tabular-nums']);
 
-/** Each family's face, as Bloom's `Text` sets it for `font-mono`. */
-const FAMILY: Record<FontFamilyName, string> = { mono: fontFamilyStyle('mono').fontFamily };
-
 /**
- * React Native's `Text` as an Oxy app draws it: `@oxy.so/app-preset` (6.8.0,
- * `metro/base-font`) puts Bloom's base face first in the style of every text
- * that names no family, Inter on Android and iOS for a text with no text
- * ancestor (a nested one inherits its parent's), and the document's family
- * (`inherit`) on the web for every text. `RawText` writes the same, first, so
- * what its own chain names (`.font('mono')`) still wins.
+ * Each family's face, as Bloom's `Text` sets it: `font-mono`'s, and the display
+ * face its big ramp steps take (BlomusModernus; on Android and iOS Bloom's text
+ * host draws the cut the weight selects), for a size off the ramp.
  */
-export function rawBaseFont(inText: boolean): Resolved | undefined {
-  if (IS_WEB) return RAW_FONT_WEB;
-  return inText ? undefined : RAW_FONT_NATIVE;
-}
-const RAW_FONT_WEB: Resolved = Object.freeze({ fontFamily: 'inherit' });
-const RAW_FONT_NATIVE: Resolved = Object.freeze({ fontFamily: fontFamilyStyle('sans').fontFamily });
+const FAMILY: Record<FontFamilyName, string> = {
+  mono: fontFamilyStyle('mono').fontFamily,
+  display: fontFamilyStyle('display').fontFamily,
+};
 
 /** The colour role text and icons paint with: the environment's, or the spec's default. */
 export function foregroundOf(traits: TextTraits): InkToken {

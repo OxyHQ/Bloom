@@ -20,6 +20,11 @@ import normalizeColor from '@react-native/normalize-colors';
  * - A hex colour is its long lowercase form (`#fff` is `#ffffff`, `#fff9`
  *   `#ffffff99`); a
  *   colour with an alpha is compared at the 8 bits of alpha a device draws.
+ *   `transparent` is black at no alpha, as React Native's `normalizeColor`
+ *   makes it (`#0000`, `#00000000`).
+ * - `inset` is its four edges: `top`, `right`, `bottom` and `left` each take
+ *   it where the style does not set that edge itself, as React Native resolves
+ *   the shorthand (`inset: 0` draws what four zero edges draw).
  * - A corner of the reading direction is its physical corner left to right.
  * - A style's `pointerEvents` is the view's `pointerEvents` prop: React Native
  *   sends that style attribute to the view as its prop.
@@ -140,6 +145,11 @@ function foldStyle(
   foldBox(style, 'padding');
   foldBox(style, 'margin');
   foldBorders(style);
+  // `inset` is each edge the style leaves unset; an edge of its own overrides it.
+  if (style.inset !== undefined) {
+    for (const edge of ['top', 'right', 'bottom', 'left']) style[edge] ??= style.inset;
+    delete style.inset;
+  }
   if (style.fontWeight !== undefined) style.fontWeight = String(style.fontWeight);
   if (style.boxShadow !== undefined) style.boxShadow = drawnShadows(style.boxShadow);
   // A corner of the reading direction is its physical corner left to right (the web harness folds them alike).
@@ -156,6 +166,11 @@ function foldStyle(
   for (const [key, value] of Object.entries(style)) {
     if (typeof value === 'number') style[key] = Number(value.toPrecision(12));
     if (typeof value !== 'string') continue;
+    // `transparent` is black at no alpha (React Native's `normalizeColor`): `#00000000`.
+    if (value === 'transparent') {
+      style[key] = 'rgba(0, 0, 0, 0/255)';
+      continue;
+    }
     // A short hex colour is its long form: `#fff` is `#ffffff`, `#fff9` is `#ffffff99`.
     const short = /^#([0-9a-f]{3,4})$/i.exec(value);
     const long = short
@@ -178,6 +193,15 @@ function foldStyle(
     if (style.flexDirection === 'column') delete style.flexDirection;
     if (style.position === 'relative') delete style.position;
   }
+  // Accepted folds: an explicit `overflow: 'visible'` is the default a view draws without
+  // one, and a corner of exactly half a square box is a full one (`full`, 9999), as both draw it.
+  if (style.overflow === 'visible') delete style.overflow;
+  if (
+    typeof style.width === 'number' &&
+    style.width === style.height &&
+    style.borderRadius === style.width / 2
+  )
+    style.borderRadius = 9999;
   if (text && !span) {
     if (style.fontWeight === '400' || style.fontWeight === 'normal') delete style.fontWeight;
     if (style.letterSpacing === 0) delete style.letterSpacing;
