@@ -29,7 +29,7 @@
  *
  * ## What does NOT belong here: the collapse
  *
- * The tab bar minimizes 58 -> 44 on scroll, and this registry twice tried to
+ * The tab bar minimizes 62 -> 44 on scroll, and this registry twice tried to
  * publish that so a FAB could react — first as a live pixel height (1.11.0), then
  * as a boolean (1.12.0). Both felt wrong on a device, for the same reason, and
  * the reason is structural rather than a matter of tuning:
