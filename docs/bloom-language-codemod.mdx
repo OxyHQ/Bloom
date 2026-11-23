@@ -100,7 +100,7 @@ the element JSX with the reason `Node:prop`.
 | --- | --- |
 | `Switch` | `Toggle([checked, onCheckedChange])` |
 | `GroupedSection`, `GroupedSectionItem` | `GroupedSection(...rows).title().caption()`, `GroupedSectionItem(title).leadingView().trailing().value()` |
-| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable([refreshing, () => onRefresh()], tint).scrollIndicators(value, axis).contentView((v) => v…)` |
+| `ScreenScrollView` | `ScrollView(...children).keyboardTaps().onEndReached(action, threshold).refreshable({ refreshing, onRefresh }, tint).scrollIndicators(value, axis).contentView((v) => v…)` |
 | `SettingsSection`, `SettingsValueField` | `SettingsSection(label, ...children).trailing()`, `SettingsValue(text)` |
 | `TextFieldInput` (bare, or in a `TextField` shell with its `TextFieldIcon`s), `Textarea`, `Search`, `Checkbox`, `Field` | `TextField([value, set], label)`, `TextEditor([value, set], label)`, `Search([value, set])`, `Checkbox([checked, set], label)`, `Field(label, ...children)` |
 | `Card`, `Item`, `Chip`, `ResponsiveGrid` | `Card(...children)`, `Row(title)`, `Chip(Icon, Text, Icon)`, `Grid(...cells)` |
