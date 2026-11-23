@@ -75,6 +75,12 @@ const KEYWORD: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   },
   position: { absolute: 'absolute', relative: 'relative' },
   overflow: { hidden: 'overflow-hidden' },
+  // An auto margin takes the free space on its side (the language's `.margin(edge, 'auto')`).
+  marginTop: { auto: 'mt-auto' },
+  marginBottom: { auto: 'mb-auto' },
+  marginLeft: { auto: 'ml-auto' },
+  marginRight: { auto: 'mr-auto' },
+  borderStyle: { solid: 'border-solid', dashed: 'border-dashed', dotted: 'border-dotted' },
 };
 
 /**

@@ -492,6 +492,8 @@ function resolve(utility) {
     if (value === 'auto') {
       // In a column (every NativeWind view is one), auto side margins centre the box: its own alignment.
       if (kind === 'm' && edge === 'x') return mapped(".alignSelf('center') (in a column)");
+      // Any other auto margin takes the free space on its side, as the language's does.
+      if (kind === 'm') return mapped(`.margin('${EDGE[edge]}', 'auto')`);
       return structure('Spacer() on the side the auto margin takes');
     }
     // A margin is the view's own margin (.margin()), on the same edges as a padding.
@@ -506,7 +508,9 @@ function resolve(utility) {
   // Tailwind's space-x/space-y: a margin on each child but the last, not a gap.
   if ((m = /^space-([xy])-(.+)$/.exec(utility)) && m[2] !== 'reverse')
     return space(m[2], (t) => `.childSpacing('${m[1] === 'x' ? 'horizontal' : 'vertical'}', ${t})`);
-  if ((m = /^gap-[xy]-(.+)$/.exec(utility))) return modifier('one spacing per axis (gap-x, gap-y)');
+  // One axis's gap: column-gap (gap-x), row-gap (gap-y).
+  if ((m = /^gap-([xy])-(.+)$/.exec(utility)))
+    return space(m[2], (t) => `.${m[1] === 'x' ? 'horizontalSpacing' : 'verticalSpacing'}(${t})`);
   // Frames.
   if ((m = /^(w|h|min-w|min-h|max-w|max-h|size)-(.+)$/.exec(utility))) {
     const [, kind, value] = m;
@@ -604,7 +608,8 @@ function resolve(utility) {
   if ((m = /^bg-(.+)$/.exec(utility))) return color(m[1], (r) => `.background(${r})`);
   if ((m = /^rounded(?:-(tl|tr|bl|br|ss|se|es|ee|t|b|l|r|s|e))?(?:-(.+))?$/.exec(utility)))
     return corner(m[2] ?? '', m[1] && CORNER_SIDE[m[1]]);
-  if ((m = /^border(?:-([xytbserl]))?(?:-(\d+|hairline|\[\d+px\]))?$/.exec(utility))) {
+  if ((m = /^border-(solid|dashed|dotted)$/.exec(utility))) return mapped(`.borderStyle('${m[1]}')`);
+  if ((m = /^border(?:-([xytbserl]))?(?:-(\d+|hairline|\[\d+(?:\.\d+)?px\]))?$/.exec(utility))) {
     const edge = {
       '': 'all',
       t: 'top',
@@ -615,7 +620,7 @@ function resolve(utility) {
       r: 'right',
     }[m[1] ?? ''];
     if (edge === undefined) return modifier('a border on two sides');
-    const width = (m[2] ?? '1').replace(/^\[(\d+)px\]$/, '$1');
+    const width = (m[2] ?? '1').replace(/^\[(\d+(?:\.\d+)?)px\]$/, '$1');
     if (width === '0') return drop('no border is the default');
     const name = width === 'hairline' ? 'hairline' : rung(scales.borderWidth, Number(width));
     const call = `.border(role, ${name ? `'${name}'` : '…'}${edge === 'all' ? '' : `, '${edge}'`})`;

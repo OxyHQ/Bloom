@@ -661,6 +661,18 @@ export const C = ({ open, o }) => <TouchableOpacity onPress={open} activeOpacity
     );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:activeOpacity']);
   });
+  it('moves auto margins, a gap per axis and a dashed border, from a class or a style', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = () => <View className="flex-row flex-wrap gap-x-4 gap-y-1"><View className="ml-auto" /></View>;
+export const B = () => <View style={{ marginLeft: 'auto', rowGap: 8 }} />;
+export const C = () => <View className="border-dashed" />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(HStack(VStack().margin('left', 'auto')).wrap().horizontalSpacing('lg').verticalSpacing('xs'))",
+    );
+    expect(flat(result.code)).toContain("toElement(VStack().margin('left', 'auto').verticalSpacing('sm'))");
+    expect(flat(result.code)).toContain("toElement(VStack().borderStyle('dashed'))");
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');
