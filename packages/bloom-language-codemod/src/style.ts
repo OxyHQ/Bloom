@@ -6,9 +6,30 @@
  * scale (`gap: 12` is `gap-3`, 0.25rem steps at the preset's 16px rem), `100%`,
  * and the flex keywords. Anything else is a reason.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import * as recast from 'recast';
 
-import type { Mod } from './table';
+import { LANGUAGE_PACKAGE, type Mod } from './table';
+
+const scales = (
+  JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
+    scales: Record<string, Record<string, unknown>>;
+  }
+).scales;
+
+/** A scale's tokens by value, a named rung over a numeric token of the same value. */
+function byValue(scale: Record<string, unknown>): ReadonlyMap<number, string> {
+  const out = new Map<number, string>();
+  for (const [name, value] of Object.entries(scale)) {
+    if (typeof value !== 'number') continue;
+    const named = !/^-?\d/.test(name);
+    if (named || !out.has(value)) out.set(value, name);
+  }
+  return out;
+}
+const CORNER = byValue(scales.corner as Record<string, unknown>);
+const Z_INDEX = byValue(scales.zIndex as Record<string, unknown>);
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
@@ -74,7 +95,8 @@ const KEYWORD: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     'space-evenly': 'justify-evenly',
   },
   position: { absolute: 'absolute', relative: 'relative' },
-  overflow: { hidden: 'overflow-hidden' },
+  // A view draws what overflows it by default: the className table drops `overflow-visible`.
+  overflow: { hidden: 'overflow-hidden', visible: 'overflow-visible' },
   // An auto margin takes the free space on its side (the language's `.margin(edge, 'auto')`).
   marginTop: { auto: 'mt-auto' },
   marginBottom: { auto: 'mb-auto' },
@@ -94,11 +116,32 @@ const NUMERIC: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   flexShrink: { 1: 'shrink', 0: 'shrink-0' },
 };
 
-/** A style key and value the language writes itself, as its modifier: React Native's `flex: 1` is `.grow()`. */
+/**
+ * A style key and value the language writes itself, as its modifier: React
+ * Native's `flex: 1` is `.grow()`; a radius, a stacking level and an aspect
+ * ratio are the tokens (or number) of their exact value. A radius of 999 is
+ * `full` (9999): both round any box under 1998pt fully, so they draw alike.
+ */
 function direct(key: string, value: AnyNode): Mod | undefined {
-  return key === 'flex' && n.NumericLiteral.check(value) && value.value === 1
-    ? { name: 'grow', args: [] }
-    : undefined;
+  const number = n.NumericLiteral.check(value)
+    ? (value.value as number)
+    : n.UnaryExpression.check(value) &&
+        value.operator === '-' &&
+        n.NumericLiteral.check(value.argument)
+      ? -(value.argument.value as number)
+      : undefined;
+  if (number === undefined) return undefined;
+  if (key === 'flex' && number === 1) return { name: 'grow', args: [] };
+  if (key === 'borderRadius') {
+    const token = number === 999 ? 'full' : CORNER.get(number);
+    return token === undefined ? undefined : { name: 'corner', args: [token] };
+  }
+  if (key === 'zIndex') {
+    const token = Z_INDEX.get(number);
+    return token === undefined ? undefined : { name: 'zIndex', args: [token] };
+  }
+  if (key === 'aspectRatio' && number > 0) return { name: 'aspectRatio', args: [number] };
+  return undefined;
 }
 
 /** A declaration the caller reads as a modifier (a theme colour as its role), or undefined. */
@@ -158,6 +201,14 @@ export function styleUtilities(object: AnyNode, read?: StyleRead): StyleResult {
     if (mod) {
       mods.push({ subject: key, mod });
       continue;
+    }
+    // `inset` is its four edges, as React Native resolves it.
+    if (key === 'inset') {
+      const edges = ['top', 'right', 'bottom', 'left'].map((edge) => utility(edge, property.value));
+      if (edges.every((edge) => edge !== undefined)) {
+        classes.push(...(edges as string[]));
+        continue;
+      }
     }
     const found = utility(key, property.value);
     if (!found)

@@ -643,6 +643,22 @@ export const C = () => <VirtualList data={posts} renderItem={renderPost} content
       'VirtualList:contentContainerStyle',
     ]);
   });
+  it('reads a radius, a stacking level and an aspect ratio by value, overflow: visible as the default and inset as its edges', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = () => <View style={{ borderRadius: 999, zIndex: 6, aspectRatio: 1, overflow: 'visible' }} />;
+export const B = () => <View style={{ borderRadius: 15, zIndex: -1 }} />;
+export const C = () => <View style={{ position: 'absolute', inset: 0, borderRadius: 7 }} />;
+export const D = () => <View style={{ borderRadius: 13 }} />;
+`);
+    const code = flat(result.code);
+    expect(code).toContain("toElement(VStack().aspectRatio(1).corner('full').zIndex('6'))");
+    expect(code).toContain("toElement(VStack().corner('15').zIndex('-1'))");
+    expect(code).toContain(
+      "toElement(VStack().corner('7').position({ top: 'none', right: 'none', bottom: 'none', left: 'none' }))",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['borderRadius']);
+  });
+
   it('moves a hit slop per side, an accessibility value, a ref and a layout handler', () => {
     const result = run(`import { Pressable, View, Text } from 'react-native';
 import { tokens } from '@oxy.so/bloom/styles';
