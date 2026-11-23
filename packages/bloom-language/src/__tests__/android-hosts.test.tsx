@@ -126,7 +126,8 @@ describe('glass is the lens', () => {
     const onPress = jest.fn();
     const r = mount(toElement(Button(Icon(Glyph)).shape('circle').glass().onPress(onPress)));
     const button = only(r, 'BloomButton');
-    expect(button.props).toMatchObject({ material: 'shared', onPress, iconOnly: true });
+    // On glass it is Bloom's one floating size, whatever its chain says.
+    expect(button.props).toMatchObject({ material: 'shared', onPress, iconOnly: true, size: 'lg' });
     // The solid fill tints the glass as Bloom's own lens control does (Apple's glassProminent).
     expect(only(r, 'BloomLensMenu').props.triggerConfig).toMatchObject({
       tintColor: LIGHT.primary,
