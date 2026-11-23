@@ -1,5 +1,7 @@
 import { Button } from '@oxy.so/bloom/button';
-import { RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
+import { Fab } from '@oxy.so/bloom/fab';
+import { Surface } from '@oxy.so/bloom/surface';
+import { RiAddLine, RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
@@ -235,7 +237,52 @@ const leftovers: ParityCase[] = [
   },
 ];
 
+/**
+ * A FAB is on glass, tinted with the accent (the theme's primary, Apple's `glassProminent`), in its shape:
+ * the glass takes the corner of its silhouette at its diameter (a 50pt `md` FAB here).
+ */
+const fabs: ParityCase[] = [
+  {
+    name: 'a FAB: a circle on glass tinted with the accent',
+    language: () => toElement(L.FAB(L.Icon(RiAddLine)).label('Create').onPress(onPress)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface fill={c.primary}>
+            <Fab icon={RiAddLine} accessibilityLabel="Create" material="shared" onPress={onPress} />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  ...(['rounded', 'squircle'] as const).map((shape) => ({
+    name: `a ${shape} FAB: its glass takes its corner`,
+    language: () =>
+      toElement(L.FAB(L.Icon(RiAddLine)).shape(shape).label('Create').onPress(onPress)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface
+            fill={c.primary}
+            radius={14}
+            cornerCurve={shape === 'squircle' ? 'smooth' : 'round'}
+          >
+            <Fab
+              icon={RiAddLine}
+              shape={shape}
+              accessibilityLabel="Create"
+              material="shared"
+              onPress={onPress}
+            />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  })),
+];
+
 export const BUTTON_CASES: ParityCase[] = [
+  ...fabs,
   ...matrix,
   ...sizes,
   ...content,

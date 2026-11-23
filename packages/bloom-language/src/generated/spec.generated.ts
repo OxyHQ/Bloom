@@ -935,6 +935,11 @@ export const ENUMS = {
     "pill",
     "fit"
   ],
+  "fabShape": [
+    "circle",
+    "rounded",
+    "squircle"
+  ],
   "linkTone": [
     "primary",
     "secondary",
@@ -3001,6 +3006,7 @@ export const NODE_MODIFIERS = {
     "drag",
     "swipe",
     "style",
+    "shape",
     "size",
     "tint",
     "disabled",

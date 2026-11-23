@@ -815,7 +815,15 @@ on the lens and iOS stand-ins, and by parity and Chrome on Surface.
 ink, size and name (Bloom's `material="shared"`); the glass draws its fill.
 An untinted glass under a solid control takes the control's fill (the spec's
 `toneRole`: `accent` is `primary`, `action` is `tertiary`…), so the ink still
-reads. A `FAB` is always on glass.
+reads; on the lens at Bloom's solid lens control's 0.96, as Apple's
+`glassProminent` is filled. A `FAB` is always on glass, tinted with the accent
+(the theme's primary, its glyph the on-primary colour) unless it names a
+`.tint()`. `.shape('circle' | 'rounded' | 'squircle')` is its silhouette
+(Bloom `Fab`'s `shape`): a circle by default, or a square whose corner is 28%
+of its diameter, round (`rounded`) or continuous (`squircle`); its glass takes
+that corner at the FAB's diameter, so the lens, its press and a menu's morph
+follow the shape. The lens draws every corner continuous, so the two squares
+read alike on Android and OxyOS.
 
 ## Platform components
 
