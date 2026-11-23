@@ -34,7 +34,7 @@ export function useFabProps({
 }: FabProps): ButtonProps {
   const theme = useTheme();
   // Tinted with the accent by default: the theme's primary, its glyph the on-primary colour (Apple's
-  // `glassProminent`).
+  // prominent bar button).
   const resolved = useBloomAppearance({ size, tone }, { size: 'md', tone: 'accent' });
   const palette = resolveButtonPalette(appearance, theme, resolved.tone);
   const foreground = props.disabled ? palette.disabled.foreground : palette.rest.foreground;
@@ -67,7 +67,7 @@ export function useFabProps({
       {
         height: diameter,
         minHeight: diameter,
-        // The silhouette: the lens takes this radius as its corner, so the glass, its press and a
+        // The silhouette: the lens takes this radius as its corner, so the lens, its press and a
         // menu's morph follow it.
         ...(shape === 'circle'
           ? null

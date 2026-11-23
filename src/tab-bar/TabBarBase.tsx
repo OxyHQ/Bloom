@@ -798,7 +798,7 @@ function TabBarBody({
       {recipe.sheet}
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
-          full-bleed and 118pt tall at a zero bottom inset, so it blurs whatever
+          full-bleed and 122pt tall at a zero bottom inset, so it blurs whatever
           a screen floats near the bottom edge (a scrubber, a FAB), and leaving
           an empty absolutely-positioned view behind would keep a node — and a
           rect — that exists to do nothing. Stays full-bleed under `maxWidth`:
