@@ -6,13 +6,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../select';
-import { createSettingsSelect } from './create-settings-select';
+import { COMPACT_TRIGGER, createSettingsSelect } from './create-settings-select';
 
-export const SettingsSelect = createSettingsSelect({
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectIcon,
-  SelectContent,
-  SelectItem,
-});
+export const SettingsSelect = createSettingsSelect(
+  {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectIcon,
+    SelectContent,
+    SelectItem,
+  },
+  COMPACT_TRIGGER,
+);
