@@ -93,10 +93,66 @@ class VerifiedDownloads(unittest.TestCase):
             self.assertIn('--retry', run.call_args.args[0])
             self.assertIn('--retry-all-errors', run.call_args.args[0])
             args = run.call_args.args[0]
-            for flag, expected in [('--retry', '2'), ('--retry-max-time', '180'), ('--max-time', '90')]:
+            for flag, expected in [('--retry', '4'), ('--retry-max-time', '300'), ('--max-time', '90')]:
                 self.assertEqual(args[args.index(flag) + 1], expected)
+            # A fixed delay would turn off curl's backoff and its Retry-After.
+            self.assertNotIn('--retry-delay', args)
             self.assertNotIn('--insecure', args)
             self.assertNotIn('-k', args)
+
+    def test_probe_retries_transient_failures_but_not_its_healthy_refusal(self):
+        import subprocess
+        with patch.object(module.subprocess, 'run', return_value=subprocess.CompletedProcess([], 63, stdout='200', stderr='')) as run:
+            module.primary_available('https://official.invalid')
+        args = run.call_args.args[0]
+        self.assertEqual(args[args.index('--retry') + 1], '3')
+        self.assertNotIn('--retry-all-errors', args)
+        self.assertNotIn('--retry-delay', args)
+
+    def test_robolectric_runtimes_are_verified_into_the_local_repository(self):
+        bodies = {}
+        pins = {}
+        for version in module.ROBOLECTRIC_RUNTIMES:
+            for extension in ('pom', 'jar'):
+                body = f'{version}.{extension}'.encode()
+                name = f'android-all-instrumented-{version}.{extension}'
+                pin = artifact(body, name)
+                pin['primary'] = f'https://primary.invalid/{name}'
+                pins[f'android-all-instrumented-{version}-{extension}'] = pin
+                bodies[pin['primary']] = body
+        calls = []
+        def transport(url, output):
+            calls.append(url)
+            output.write_bytes(bodies[url])
+        with patch.dict(module.MANIFEST, pins):
+            module.prepare_robolectric(self.root, transport)
+            self.assertEqual(len(calls), 6)
+            for version in module.ROBOLECTRIC_RUNTIMES:
+                module_dir = self.root / f'org/robolectric/android-all-instrumented/{version}'
+                jar = module_dir / f'android-all-instrumented-{version}.jar'
+                self.assertEqual(jar.read_bytes(), f'{version}.jar'.encode())
+                self.assertEqual((module_dir / (jar.name + '.sha512')).read_text(),
+                                 hashlib.sha512(jar.read_bytes()).hexdigest())
+                self.assertFalse((module_dir / '.downloads').exists())
+            # A verified repository (the Actions cache) is used as it is.
+            calls.clear()
+            module.prepare_robolectric(self.root, transport)
+            self.assertEqual(calls, [])
+            # A corrupt jar is fetched again, not trusted.
+            first = module.ROBOLECTRIC_RUNTIMES[0]
+            corrupt = self.root / f'org/robolectric/android-all-instrumented/{first}/android-all-instrumented-{first}.jar'
+            corrupt.write_bytes(b'truncated')
+            module.prepare_robolectric(self.root, transport)
+            self.assertEqual(calls, [f'https://primary.invalid/android-all-instrumented-{first}.jar'])
+            self.assertEqual(corrupt.read_bytes(), f'{first}.jar'.encode())
+
+    def test_robolectric_pins_are_the_maven_central_runtimes(self):
+        for version in module.ROBOLECTRIC_RUNTIMES:
+            for extension in ('pom', 'jar'):
+                pin = module.MANIFEST[f'android-all-instrumented-{version}-{extension}']
+                path = f'org/robolectric/android-all-instrumented/{version}/android-all-instrumented-{version}.{extension}'
+                self.assertEqual(pin['primary'], f'https://repo.maven.apache.org/maven2/{path}')
+                self.assertEqual(pin['fallback'], f'https://maven-central.storage-download.googleapis.com/maven2/{path}')
 
     def test_probe_treats_only_success_or_bounded_healthy_body_as_available(self):
         import subprocess
@@ -275,6 +331,12 @@ class RealCurlTransport(unittest.TestCase):
                 if test.mode == 'missing':
                     self.send_error(404)
                     return
+                if test.mode == 'rate-limited' and test.requests < 3:
+                    self.send_response(429)
+                    self.send_header('Retry-After', '3')
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
                 if test.mode == 'reset' or (test.mode == 'recover' and test.requests == 1):
                     self.send_response(200)
                     self.send_header('Content-Length', '10000')
@@ -315,20 +377,31 @@ class RealCurlTransport(unittest.TestCase):
         self.assertEqual(output.read_bytes(), self.payload)
         module.verify(output, artifact(self.payload))
 
-    def test_receive_reset_exhausts_exactly_three_attempts(self):
+    def test_receive_reset_exhausts_exactly_five_attempts(self):
         import time
         self.mode = 'reset'
         start = time.monotonic()
         with self.assertRaisesRegex(module.DownloadFailure, 'curl 56'):
             module.download(self.url, self.root / 'artifact')
-        self.assertEqual(self.requests, 3)
-        self.assertLess(time.monotonic() - start, 30)
+        self.assertEqual(self.requests, 5)
+        # curl's backoff: 1 + 2 + 4 + 8 s between the five attempts.
+        self.assertLess(time.monotonic() - start, 40)
 
     def test_404_still_fails_after_bounded_retries(self):
         self.mode = 'missing'
         with self.assertRaisesRegex(module.DownloadFailure, 'curl 22, HTTP 404'):
             module.download(self.url, self.root / 'artifact')
+        self.assertEqual(self.requests, 5)
+
+    def test_rate_limit_waits_out_retry_after_and_recovers(self):
+        import time
+        self.mode = 'rate-limited'
+        start = time.monotonic()
+        module.download(self.url, self.root / 'artifact')
         self.assertEqual(self.requests, 3)
+        self.assertEqual((self.root / 'artifact').read_bytes(), self.payload)
+        # Two 429s with `Retry-After: 3`: waited out (6 s), not the old fixed 2 s apart.
+        self.assertGreaterEqual(time.monotonic() - start, 5.5)
 
     def test_untrusted_tls_still_fails_without_an_http_request(self):
         with patch.dict(module.os.environ, {'CURL_CA_BUNDLE': '/etc/ssl/certs/ca-certificates.crt'}):

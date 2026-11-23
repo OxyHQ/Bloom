@@ -15,6 +15,9 @@ env:
   # Must match scripts/native-check/build.gradle (React Native 0.88's own NDK).
   ANDROID_NDK_VERSION: 27.1.12297006
   ANDROID_CMAKE_VERSION: 3.30.5
+  # The SDK packages the Android gates compile against, cached by name.
+  ANDROID_SDK_CURRENT: platforms;android-36 platforms;android-37.0 build-tools;37.0.0
+  ANDROID_SDK_MINIMUM: platforms;android-34 build-tools;33.0.1 build-tools;34.0.0
 
 concurrency:
   group: bloom-validate-${{ github.workflow }}-${{ github.ref }}
@@ -314,9 +317,41 @@ jobs:
         run: python3 .github/scripts/verified-android-downloads.py kotlin --version 2.2.10 --directory "$RUNNER_TEMP/bloom-verified-kotlin"
 
       - run: bun install --frozen-lockfile --ignore-scripts
-      - name: Current Android SDK
+      # The platforms and build tools each variant compiles against: legacy the
+      # declared minimum React Native toolchain, the others the current SDK.
+      - name: The variant's SDK packages
+        id: sdk
+        env:
+          PACKAGES: ${{ matrix.variant == 'legacy' && env.ANDROID_SDK_MINIMUM || env.ANDROID_SDK_CURRENT }}
+        run: bash .github/scripts/android-sdk-cache.sh "$PACKAGES" >> "$GITHUB_OUTPUT"
+      - name: Restore the SDK packages
+        id: sdk-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.sdk.outputs.paths }}
+          key: ${{ steps.sdk.outputs.key }}
+      - name: Install the SDK packages
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
+        env:
+          PACKAGES: ${{ steps.sdk.outputs.packages }}
+        # Word splitting is the package list.
+        run: bash .github/scripts/install-android-sdk-packages.sh $PACKAGES
+      # Robolectric's runtimes (android-all-instrumented, ~420 MB): restored,
+      # verified, and fetched with retries only when missing, so the unit tests
+      # never download one themselves (Robolectric's own fetch has no retry).
+      - name: Robolectric runtime cache key
+        id: robolectric
         if: matrix.variant != 'legacy'
-        run: sdkmanager 'platforms;android-36' 'platforms;android-37.0' 'build-tools;37.0.0'
+        run: echo "key=$(python3 .github/scripts/verified-android-downloads.py robolectric-key --directory .)" >> "$GITHUB_OUTPUT"
+      - name: Restore Robolectric runtimes
+        if: matrix.variant != 'legacy'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository/org/robolectric/android-all-instrumented
+          key: ${{ steps.robolectric.outputs.key }}
+      - name: Verified Robolectric runtimes
+        if: matrix.variant != 'legacy'
+        run: python3 .github/scripts/verified-android-downloads.py robolectric --directory ~/.m2/repository
       # Only predictive compiles native code (React Native and Hermes from
       # source); Bloom's own Android library has no native build.
       - name: The cached NDK is the one the fixture builds with
@@ -333,10 +368,7 @@ jobs:
           key: android-native-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}
       - name: Install NDK and CMake
         if: matrix.variant == 'predictive' && steps.native-toolchain.outputs.cache-hit != 'true'
-        run: bash .github/scripts/install-android-native-toolchain.sh
-      - name: Declared minimum React Native toolchain SDK
-        if: matrix.variant == 'legacy'
-        run: sdkmanager 'platforms;android-34' 'build-tools;33.0.1' 'build-tools;34.0.0'
+        run: bash .github/scripts/install-android-sdk-packages.sh "ndk;${ANDROID_NDK_VERSION}" "cmake;${ANDROID_CMAKE_VERSION}"
       - name: Prepare verified Hermes source transport when required
         if: matrix.variant == 'predictive'
         run: python3 .github/scripts/verified-android-downloads.py hermes --react-native node_modules/react-native --directory "$RUNNER_TEMP/bloom-verified-hermes"
@@ -384,16 +416,23 @@ jobs:
         if: always()
         run: python3 .github/scripts/verified-android-downloads.py cleanup --directory "$RUNNER_TEMP/bloom-verified-kotlin"
 
-  # Keeps the predictive gate's NDK and CMake in main's Actions cache, the one
-  # scope every pull request and merge-queue run can restore from. The android
-  # job itself never runs on a queue-verified push, so without this nothing
-  # would ever save the cache there and every run would re-download ~700 MB.
-  # A cache warmer, not a gate: a miss downstream installs it directly.
+  # Keeps what the android job downloads in main's Actions cache, the one scope
+  # every pull request and merge-queue run can restore from: the predictive
+  # gate's NDK and CMake, each variant's SDK packages and Robolectric's
+  # runtimes. The android job itself never runs on a queue-verified push, so
+  # without this nothing would ever save them there and every run would
+  # re-download them (~700 MB of NDK alone), from hosts that time out and
+  # rate-limit shared runners. A cache warmer, not a gate: a miss downstream
+  # installs or fetches directly, with retries.
   native-toolchain-cache:
-    name: Warm Android NDK cache
+    name: Warm Android caches
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cache: [native, sdk-current, sdk-minimum, robolectric]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -407,26 +446,42 @@ jobs:
         with:
           packages: platform-tools
           cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
-      - name: Is the toolchain already cached?
+      - name: What this entry holds
+        id: entry
+        env:
+          CACHE: ${{ matrix.cache }}
+        run: |
+          case "$CACHE" in
+            native) bash .github/scripts/android-sdk-cache.sh "ndk;${ANDROID_NDK_VERSION} cmake;${ANDROID_CMAKE_VERSION}" ;;
+            sdk-current) bash .github/scripts/android-sdk-cache.sh "${ANDROID_SDK_CURRENT}" ;;
+            sdk-minimum) bash .github/scripts/android-sdk-cache.sh "${ANDROID_SDK_MINIMUM}" ;;
+            robolectric)
+              echo "key=$(python3 .github/scripts/verified-android-downloads.py robolectric-key --directory .)"
+              echo "paths=$HOME/.m2/repository/org/robolectric/android-all-instrumented"
+              ;;
+          esac >> "$GITHUB_OUTPUT"
+      - name: Is it already cached?
         id: lookup
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: |
-            ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
-            ${{ env.ANDROID_HOME }}/cmake/${{ env.ANDROID_CMAKE_VERSION }}
-          key: android-native-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}
+          path: ${{ steps.entry.outputs.paths }}
+          key: ${{ steps.entry.outputs.key }}
           lookup-only: true
-      - name: Install NDK and CMake
-        if: steps.lookup.outputs.cache-hit != 'true'
-        run: bash .github/scripts/install-android-native-toolchain.sh
-      - name: Save NDK and CMake
+      - name: Install the SDK packages
+        if: steps.lookup.outputs.cache-hit != 'true' && matrix.cache != 'robolectric'
+        env:
+          PACKAGES: ${{ steps.entry.outputs.packages }}
+        # Word splitting is the package list.
+        run: bash .github/scripts/install-android-sdk-packages.sh $PACKAGES
+      - name: Fetch the verified Robolectric runtimes
+        if: steps.lookup.outputs.cache-hit != 'true' && matrix.cache == 'robolectric'
+        run: python3 .github/scripts/verified-android-downloads.py robolectric --directory ~/.m2/repository
+      - name: Save it
         if: steps.lookup.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: |
-            ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
-            ${{ env.ANDROID_HOME }}/cmake/${{ env.ANDROID_CMAKE_VERSION }}
-          key: android-native-ndk-${{ env.ANDROID_NDK_VERSION }}-cmake-${{ env.ANDROID_CMAKE_VERSION }}
+          path: ${{ steps.entry.outputs.paths }}
+          key: ${{ steps.entry.outputs.key }}
 
   # The one required check of the main merge queue: green only when every job
   # above is, so a skipped or cancelled shard can never read as a pass. The ONE
