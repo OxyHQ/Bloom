@@ -58,7 +58,8 @@
     "build": "bob build",
     "typescript": "tsc --noEmit -p .",
     "test": "jest && jest -c parity/jest.config.js",
-    "test:parity": "jest -c parity/jest.config.js"
+    "test:parity": "jest -c parity/jest.config.js",
+    "test:unit": "jest"
   },
   "peerDependencies": {
     "@expo/ui": ">=58.0.0",

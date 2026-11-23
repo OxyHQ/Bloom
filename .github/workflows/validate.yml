@@ -129,12 +129,11 @@ jobs:
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
-  # The language packages: the language (with its parity suite, every family
-  # rendered as the language and as hand-written Bloom, native and web), the
-  # compiler (Rust, its adapters and its own parity suite), Bloom data and the
-  # className codemod (its transform, and its sample app's corpus proven before
-  # and after, native and web). Their suites outgrow the build job's budget, so
-  # they run beside it.
+  # The language packages: the language (its unit suite; its parity suite runs
+  # in `language-parity`), the compiler (Rust, its adapters and its own parity
+  # suite), Bloom data and the className codemod (its transform, and its sample
+  # app's corpus proven before and after, native and web). Their suites outgrow
+  # the build job's budget, so they run beside it.
   language:
     name: Language packages
     needs: provenance
@@ -178,7 +177,8 @@ jobs:
       - name: Language package builds, typecheck and test
         run: |
           (cd packages/bloom-language-compiler && bun run build:addon)
-          for package in packages/bloom-language packages/bloom-language-compiler packages/bloom-data packages/bloom-language-codemod; do
+          (cd packages/bloom-language && bun run build && bun run typescript && bun run test:unit)
+          for package in packages/bloom-language-compiler packages/bloom-data packages/bloom-language-codemod; do
             (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
           done
       # The codemod as an app installs it: packed as the release packs it, with
@@ -193,6 +193,38 @@ jobs:
         run: |
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
+
+  # The language's parity suite: every family rendered as the language and as
+  # hand-written Bloom, native and web, light and dark. Alone it takes about
+  # half an hour, so it runs in two shards beside the other language packages.
+  # The shard list and the `/2` denominator (name + --shard) must agree, or
+  # jest silently runs only part of the suite.
+  language-parity:
+    name: Language parity (${{ matrix.shard }}/2)
+    needs: provenance
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile --ignore-scripts
+      # The suite renders Bloom from its source, beside the outputs its build generates.
+      - run: bun run build
+      - name: Language parity suite
+        run: cd packages/bloom-language && bun run test:parity --shard=${{ matrix.shard }}/2
 
   # The shard list and the `/5` denominator (name + --shard) must agree, or
   # jest silently runs only part of the suite.
@@ -398,7 +430,7 @@ jobs:
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, build, language, tests, android]
+    needs: [provenance, build, language, language-parity, tests, android]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -422,7 +454,7 @@ jobs:
             verified=
           fi
 
-          for job in build language tests android; do
+          for job in build language language-parity tests android; do
             result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")
