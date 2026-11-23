@@ -31,11 +31,11 @@ export type DataTableKind =
 export type DataTableStyle = 'table' | 'inset';
 
 /** A data table's wording of your own (Bloom speaks its own in the locale). */
-export interface DataTableLabels {
+export interface DataTableLabels<T = unknown> {
   /** The header checkbox's name. */
   readonly selectAll?: string;
   /** A row checkbox's name. */
-  readonly selectRow?: (row: never, rowId: string) => string;
+  readonly selectRow?: (row: T, rowId: string) => string;
   /** The density control's segments. */
   readonly density?: { readonly md: string; readonly sm: string };
   /** The density control's name. */
@@ -43,34 +43,35 @@ export interface DataTableLabels {
 }
 
 /** Bloom `DataTable`: its rows, drawn by its `DataColumn`s, sorted, selected and paged by Bloom. */
-export interface DataTableView extends ViewModifiers<DataTableView> {
+/** `T` is the row's type, so `.labels()`'s callbacks take a typed row. */
+export interface DataTableView<T = unknown> extends ViewModifiers<DataTableView<T>> {
   /** The muted caption over the summary (`Total Results`). */
-  title(value: string): DataTableView;
+  title(value: string): DataTableView<T>;
   /** The count line under the title (`48 customers`). */
-  summary(value: TableContent): DataTableView;
+  summary(value: TableContent): DataTableView<T>;
   /** The toolbar's controls (filters, a search), in a row. */
-  toolbar(...value: Child[]): DataTableView;
+  toolbar(...value: Child[]): DataTableView<T>;
   /** The sort, `null` unsorted: what a header press writes. */
-  sorting(value: Binding<DataTableSort | null>): DataTableView;
+  sorting(value: Binding<DataTableSort | null>): DataTableView<T>;
   /** A checkbox per row and a select-all: the selected rows' ids. */
-  rowSelection(value: Binding<readonly string[]>): DataTableView;
+  rowSelection(value: Binding<readonly string[]>): DataTableView<T>;
   /** Rows per page (8 by default). */
-  pageSize(value: number): DataTableView;
+  pageSize(value: number): DataTableView<T>;
   /** The current page, from 1. */
-  page(value: Binding<number>): DataTableView;
+  page(value: Binding<number>): DataTableView<T>;
   /** Row density: `md` (default) or `sm`. */
-  size(value: DataTableSize): DataTableView;
+  size(value: DataTableSize): DataTableView<T>;
   /** The Normal / Compact control under the table, and the density it sets. */
-  sizeToggle(value: Binding<DataTableSize>): DataTableView;
+  sizeToggle(value: Binding<DataTableSize>): DataTableView<T>;
   /** `false` drops the table's own border, inside a surface that draws one. */
-  bordered(value: boolean): DataTableView;
+  bordered(value: boolean): DataTableView<T>;
   /** What fills the empty band with no rows. */
-  emptyState(value: TableContent): DataTableView;
+  emptyState(value: TableContent): DataTableView<T>;
   /** The table's narrowest width: a narrower container scrolls it sideways. */
-  minWidth(value: SpaceToken): DataTableView;
+  minWidth(value: SpaceToken): DataTableView<T>;
   /** `table` (default) or the dashboards' `inset` rows. */
-  style(value: DataTableStyle): DataTableView;
-  labels(value: DataTableLabels): DataTableView;
+  style(value: DataTableStyle): DataTableView<T>;
+  labels(value: DataTableLabels<T>): DataTableView<T>;
 }
 
 /** Bloom's `DataTableColumn`: a header, the row's value, its cell and its layout. */
@@ -117,7 +118,7 @@ export function DataTable<T>(
   rows: readonly T[],
   rowId: (row: T, index: number) => string,
   ...columns: DataColumnView<T>[]
-): DataTableView {
+): DataTableView<T> {
   return new Node('dataTable', { rows, rowId }, columns as unknown as Child[]);
 }
 /** A column: its `id` (its sort key), its header, and the row's value (what it sorts by and shows). */
