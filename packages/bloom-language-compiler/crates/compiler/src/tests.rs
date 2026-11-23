@@ -3258,11 +3258,11 @@ fn a_wrong_token_links_its_modifier_and_its_token_set() {
         "{}",
         diagnostic.rendered
     );
-    // A set the compiler composes (`padding`'s: the space scale and its negatives) is its modifier's.
+    // A set the compiler composes (`padding`'s: the space scale and its negatives) has its own section.
     let padding = compiled("export const x = () => HStack().padding('mdd');\n");
     assert_eq!(
         links(&padding.diagnostics[0]),
-        ["bloom-language-modifiers.mdx#padding", "bloom-language-tour.mdx#tokens"]
+        ["bloom-language-modifiers.mdx#padding", "bloom-language-tokens.mdx#padding"]
     );
     // A node's own set (a button's styles) is a token set of its own.
     let style = compile(

@@ -2,7 +2,7 @@
 //! (generated from the spec, one heading per node kind, modifier and token
 //! set) or of the tour. Every diagnostic links one or more.
 
-use crate::spec::{DOCUMENTED_TOKEN_SETS, MODIFIERS, NODES};
+use crate::spec::{MODIFIERS, NODES, TOKEN_SETS};
 
 /// The docs folder every link points into.
 pub const DOCS_BASE: &str = "https://github.com/OxyHQ/Bloom/blob/main/docs/";
@@ -16,7 +16,8 @@ pub enum Doc {
     /// A modifier's section of `bloom-language-modifiers.mdx`: its parameters
     /// and the tokens each takes.
     Modifier(&'static str),
-    /// A token set's section of `bloom-language-tokens.mdx` (a scale or an enum).
+    /// A token set's section of `bloom-language-tokens.mdx`: every set the
+    /// compiler checks a literal against has one.
     Tokens(&'static str),
     /// A section of the tour, `bloom-language-tour.mdx`.
     Tour(Tour),
@@ -84,10 +85,9 @@ impl Doc {
         Doc::find_modifier(name).unwrap_or(Doc::Tour(Tour::ModifiersAndOrder))
     }
 
-    /// A token set's section, when the set has one of its own (a set the
-    /// compiler composes, such as `padding`'s, is explained by its modifier).
+    /// A token set's section, when the compiler has the set.
     pub fn tokens(set: &str) -> Option<Doc> {
-        DOCUMENTED_TOKEN_SETS.iter().find(|name| **name == set).map(|name| Doc::Tokens(name))
+        TOKEN_SETS.iter().find(|(name, _)| *name == set).map(|(name, _)| Doc::Tokens(name))
     }
 
     pub fn url(self) -> String {
@@ -105,7 +105,7 @@ impl Doc {
 pub fn links() -> Vec<String> {
     let nodes = NODES.iter().map(|node| Doc::Node(node.kind));
     let modifiers = MODIFIERS.iter().map(|(name, _)| Doc::Modifier(name));
-    let tokens = DOCUMENTED_TOKEN_SETS.iter().map(|set| Doc::Tokens(set));
+    let tokens = TOKEN_SETS.iter().map(|(set, _)| Doc::Tokens(set));
     let tour = Tour::ALL.iter().map(|section| Doc::Tour(*section));
     nodes.chain(modifiers).chain(tokens).chain(tour).map(Doc::url).collect()
 }

@@ -539,10 +539,6 @@ pub const FADING_LOOPS: &[&str] = ${rustList(
 /// What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view.
 pub const CONTENT_VIEW_MODIFIERS: &[&str] = ${rustList(spec.contentView.modifiers)};
 
-/// The token sets with a section of their own in the tokens reference
-/// (docs/bloom-language-tokens.mdx): the spec's scales and enums.
-pub const DOCUMENTED_TOKEN_SETS: &[&str] = ${rustList([...Object.keys(scales), ...Object.keys(withoutComment(enums))])};
-
 /// Modifier → its parameter types, in order (\`?\` optional).
 pub const MODIFIERS: &[(&str, &[&str])] = &[
 ${Object.entries(modifiers)
