@@ -230,7 +230,6 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     material.setFloatUniform("lensAmount", min(state.lensAmount, -innerAmount) * refraction)
     material.setFloatUniform("outerHeight", outerHeight)
     material.setFloatUniform("outerAmount", -outerAmount * refraction)
-    material.setFloatUniform("keyThreshold", if (state.dark) .2588f else -.2756f)
     material.setFloatUniform("highlightAlpha", 1f)
     material.setFloatUniform("rimAlpha", ((if (state.dark) RimAlphaDark else RimAlphaLight) * mix(trigger.rim, config.rim)).coerceIn(0f, 1f))
     material.setFloatUniform("surfaceOpacity", state.surfaceOpacity)
