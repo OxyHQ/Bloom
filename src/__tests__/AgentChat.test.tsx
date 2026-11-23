@@ -294,9 +294,10 @@ describe('AgentChatActions', () => {
     });
     expect(onShare).toHaveBeenCalledWith('You: hi');
     expect(getByLabelText('Transcript copied')).toBeTruthy();
+    // The actions are a group, one capsule on the lens: Bloom's floating size.
     expect(resolvedStyle(getByTestId('a-share').props.style)).toMatchObject({
-      width: 36,
-      height: 36,
+      width: 44,
+      height: 44,
     });
 
     rerender(
