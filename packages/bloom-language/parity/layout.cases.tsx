@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
 import { Border, Fill, Image } from '@oxy.so/bloom/shapes';
 import { Z_INDEX } from '@oxy.so/bloom/styles';
@@ -927,7 +928,57 @@ const aspectRatio: ParityCase[] = [
   },
 ];
 
+/** The insets of a phone with a notch and a home bar. */
+const INSETS = { top: 47, bottom: 34, left: 0, right: 0 };
+const withInsets = (element: ReactElement) => (
+  <SafeAreaInsetsContext.Provider value={INSETS}>{element}</SafeAreaInsetsContext.Provider>
+);
+
+/** `.safeAreaPadding()`: a view padded by the device's insets, as an app pads by `useSafeAreaInsets()`. */
+const safeArea: ParityCase[] = [
+  {
+    name: 'a column padded by the safe area top and bottom',
+    language: () => withInsets(toElement(L.VStack(L.Text('a')).safeAreaPadding('vertical'))),
+    bloom: () =>
+      withInsets(
+        <RN.View style={{ paddingTop: INSETS.top, paddingBottom: INSETS.bottom }}>
+          <RN.View>
+            <Text>a</Text>
+          </RN.View>
+        </RN.View>,
+      ),
+  },
+  {
+    // Mention's sign-in: the inset, then 24 more, on a card fill.
+    name: 'a safe-area top, a padding beyond it, on a fill',
+    language: () =>
+      withInsets(
+        toElement(
+          L.VStack(L.Text('a'))
+            .safeAreaPadding('top')
+            .padding('top', '2xl')
+            .background('card'),
+        ),
+      ),
+    bloom: () =>
+      withInsets(
+        <Themed>
+          {(c) => (
+            <RN.View style={{ paddingTop: 24, backgroundColor: c.card }}>
+              <RN.View style={{ paddingTop: INSETS.top }}>
+                <RN.View>
+                  <Text>a</Text>
+                </RN.View>
+              </RN.View>
+            </RN.View>
+          )}
+        </Themed>,
+      ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...safeArea,
   ...aspectRatio,
   ...pressFade,
   ...accessibility,

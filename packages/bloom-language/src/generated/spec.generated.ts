@@ -1082,6 +1082,15 @@ export const COLORS = {
 } as const;
 
 export const ENUMS = {
+  "safeAreaEdge": [
+    "all",
+    "top",
+    "bottom",
+    "horizontal",
+    "vertical",
+    "left",
+    "right"
+  ],
   "edge": [
     "all",
     "horizontal",
@@ -2613,6 +2622,7 @@ export const TONE_ROLE = {
 /** A box modifier's place in one view's stack of effects (see style.ts, layers). */
 export const LAYER_RANK = {
   "padding": 0,
+  "safeAreaPadding": 0,
   "frame": 1,
   "aspectRatio": 1,
   "overlay": 2,
@@ -2875,6 +2885,9 @@ export const MODIFIERS = {
   "padding": [
     "edge?",
     "padding"
+  ],
+  "safeAreaPadding": [
+    "safeAreaEdge?"
   ],
   "frame": [
     "frame"
@@ -4849,6 +4862,7 @@ export const MODIFIERS = {
 export const NODE_MODIFIERS = {
   "stack": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -4965,6 +4979,7 @@ export const NODE_MODIFIERS = {
   ],
   "zstack": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5073,6 +5088,7 @@ export const NODE_MODIFIERS = {
   ],
   "spacer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5179,6 +5195,7 @@ export const NODE_MODIFIERS = {
   ],
   "text": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5299,6 +5316,7 @@ export const NODE_MODIFIERS = {
   ],
   "icon": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5406,6 +5424,7 @@ export const NODE_MODIFIERS = {
   ],
   "avatar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5519,6 +5538,7 @@ export const NODE_MODIFIERS = {
   ],
   "avatarGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5635,6 +5655,7 @@ export const NODE_MODIFIERS = {
   ],
   "badge": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5749,6 +5770,7 @@ export const NODE_MODIFIERS = {
   ],
   "iconCircle": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5856,6 +5878,7 @@ export const NODE_MODIFIERS = {
   ],
   "loading": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -5965,6 +5988,7 @@ export const NODE_MODIFIERS = {
   ],
   "skeleton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6071,6 +6095,7 @@ export const NODE_MODIFIERS = {
   ],
   "skeletonGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6177,6 +6202,7 @@ export const NODE_MODIFIERS = {
   ],
   "image": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6288,6 +6314,7 @@ export const NODE_MODIFIERS = {
   ],
   "fill": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6394,6 +6421,7 @@ export const NODE_MODIFIERS = {
   ],
   "ratio": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6500,6 +6528,7 @@ export const NODE_MODIFIERS = {
   ],
   "grid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6611,6 +6640,7 @@ export const NODE_MODIFIERS = {
   ],
   "button": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6730,6 +6760,7 @@ export const NODE_MODIFIERS = {
   ],
   "shape": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6840,6 +6871,7 @@ export const NODE_MODIFIERS = {
   ],
   "buttonGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -6950,6 +6982,7 @@ export const NODE_MODIFIERS = {
   ],
   "fab": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7060,6 +7093,7 @@ export const NODE_MODIFIERS = {
   ],
   "menu": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7191,6 +7225,7 @@ export const NODE_MODIFIERS = {
   ],
   "divider": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7385,6 +7420,7 @@ export const NODE_MODIFIERS = {
   ],
   "action": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7494,6 +7530,7 @@ export const NODE_MODIFIERS = {
   ],
   "actionBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7606,6 +7643,7 @@ export const NODE_MODIFIERS = {
   ],
   "actionGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7712,6 +7750,7 @@ export const NODE_MODIFIERS = {
   ],
   "lottie": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7822,6 +7861,7 @@ export const NODE_MODIFIERS = {
   ],
   "card": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -7933,6 +7973,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8039,6 +8080,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardBody": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8145,6 +8187,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardFooter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8257,6 +8300,7 @@ export const NODE_MODIFIERS = {
   ],
   "row": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8372,6 +8416,7 @@ export const NODE_MODIFIERS = {
   ],
   "groupedSection": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8508,6 +8553,7 @@ export const NODE_MODIFIERS = {
   ],
   "chip": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8621,6 +8667,7 @@ export const NODE_MODIFIERS = {
   ],
   "emptyState": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8737,6 +8784,7 @@ export const NODE_MODIFIERS = {
   ],
   "admonition": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8845,6 +8893,7 @@ export const NODE_MODIFIERS = {
   ],
   "tabs": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -8965,6 +9014,7 @@ export const NODE_MODIFIERS = {
   ],
   "kbd": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9090,6 +9140,7 @@ export const NODE_MODIFIERS = {
   ],
   "embed": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9226,6 +9277,7 @@ export const NODE_MODIFIERS = {
   ],
   "view": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9346,6 +9398,7 @@ export const NODE_MODIFIERS = {
   "tabView": [],
   "textField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9471,6 +9524,7 @@ export const NODE_MODIFIERS = {
   ],
   "textEditor": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9592,6 +9646,7 @@ export const NODE_MODIFIERS = {
   ],
   "field": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9701,6 +9756,7 @@ export const NODE_MODIFIERS = {
   ],
   "label": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9809,6 +9865,7 @@ export const NODE_MODIFIERS = {
   ],
   "toggle": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -9917,6 +9974,7 @@ export const NODE_MODIFIERS = {
   ],
   "checkbox": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10028,6 +10086,7 @@ export const NODE_MODIFIERS = {
   ],
   "radioGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10137,6 +10196,7 @@ export const NODE_MODIFIERS = {
   ],
   "segmented": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10246,6 +10306,7 @@ export const NODE_MODIFIERS = {
   ],
   "picker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10363,6 +10424,7 @@ export const NODE_MODIFIERS = {
   ],
   "search": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10486,6 +10548,7 @@ export const NODE_MODIFIERS = {
   "optionGroup": [],
   "chipRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10597,6 +10660,7 @@ export const NODE_MODIFIERS = {
   ],
   "cappedChipRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10715,6 +10779,7 @@ export const NODE_MODIFIERS = {
   ],
   "tabContent": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10821,6 +10886,7 @@ export const NODE_MODIFIERS = {
   ],
   "selectionCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -10937,6 +11003,7 @@ export const NODE_MODIFIERS = {
   ],
   "scrollView": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11220,6 +11287,7 @@ export const NODE_MODIFIERS = {
   ],
   "scrollArea": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11336,6 +11404,7 @@ export const NODE_MODIFIERS = {
   ],
   "scrollSurface": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11488,6 +11557,7 @@ export const NODE_MODIFIERS = {
   ],
   "settingsSection": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11597,6 +11667,7 @@ export const NODE_MODIFIERS = {
   ],
   "settingsValue": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11705,6 +11776,7 @@ export const NODE_MODIFIERS = {
   ],
   "settingsSelect": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11830,6 +11902,7 @@ export const NODE_MODIFIERS = {
   ],
   "datePicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -11943,6 +12016,7 @@ export const NODE_MODIFIERS = {
   ],
   "dateRangePicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12057,6 +12131,7 @@ export const NODE_MODIFIERS = {
   ],
   "calendar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12169,6 +12244,7 @@ export const NODE_MODIFIERS = {
   ],
   "rangeCalendar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12282,6 +12358,7 @@ export const NODE_MODIFIERS = {
   ],
   "timeField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12393,6 +12470,7 @@ export const NODE_MODIFIERS = {
   ],
   "rating": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12511,6 +12589,7 @@ export const NODE_MODIFIERS = {
   ],
   "ratingInput": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12620,6 +12699,7 @@ export const NODE_MODIFIERS = {
   ],
   "ratingBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12731,6 +12811,7 @@ export const NODE_MODIFIERS = {
   ],
   "ratingSummary": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12838,6 +12919,7 @@ export const NODE_MODIFIERS = {
   ],
   "meter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -12954,6 +13036,7 @@ export const NODE_MODIFIERS = {
   ],
   "meterRing": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13073,6 +13156,7 @@ export const NODE_MODIFIERS = {
   ],
   "statBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13184,6 +13268,7 @@ export const NODE_MODIFIERS = {
   ],
   "table": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13292,6 +13377,7 @@ export const NODE_MODIFIERS = {
   ],
   "tableHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13398,6 +13484,7 @@ export const NODE_MODIFIERS = {
   ],
   "tableColumn": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13510,6 +13597,7 @@ export const NODE_MODIFIERS = {
   ],
   "tableBody": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13617,6 +13705,7 @@ export const NODE_MODIFIERS = {
   ],
   "tableRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13724,6 +13813,7 @@ export const NODE_MODIFIERS = {
   ],
   "tableCell": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13834,6 +13924,7 @@ export const NODE_MODIFIERS = {
   ],
   "listItem": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -13959,6 +14050,7 @@ export const NODE_MODIFIERS = {
   ],
   "mailRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14085,6 +14177,7 @@ export const NODE_MODIFIERS = {
   ],
   "list": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14203,6 +14296,7 @@ export const NODE_MODIFIERS = {
   ],
   "virtualList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14329,6 +14423,7 @@ export const NODE_MODIFIERS = {
   ],
   "listSelectionBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14440,6 +14535,7 @@ export const NODE_MODIFIERS = {
   ],
   "carousel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14560,6 +14656,7 @@ export const NODE_MODIFIERS = {
   ],
   "carouselItem": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14667,6 +14764,7 @@ export const NODE_MODIFIERS = {
   ],
   "carouselDots": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14777,6 +14875,7 @@ export const NODE_MODIFIERS = {
   ],
   "markdown": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -14887,6 +14986,7 @@ export const NODE_MODIFIERS = {
   ],
   "slider": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15006,6 +15106,7 @@ export const NODE_MODIFIERS = {
   ],
   "rangeSlider": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15126,6 +15227,7 @@ export const NODE_MODIFIERS = {
   ],
   "accordion": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15235,6 +15337,7 @@ export const NODE_MODIFIERS = {
   ],
   "accordionItem": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15341,6 +15444,7 @@ export const NODE_MODIFIERS = {
   ],
   "accordionTrigger": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15448,6 +15552,7 @@ export const NODE_MODIFIERS = {
   ],
   "accordionContent": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15554,6 +15659,7 @@ export const NODE_MODIFIERS = {
   ],
   "code": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15660,6 +15766,7 @@ export const NODE_MODIFIERS = {
   ],
   "pre": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15768,6 +15875,7 @@ export const NODE_MODIFIERS = {
   ],
   "codeLines": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15879,6 +15987,7 @@ export const NODE_MODIFIERS = {
   ],
   "codeBlock": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -15996,6 +16105,7 @@ export const NODE_MODIFIERS = {
   ],
   "stepper": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16109,6 +16219,7 @@ export const NODE_MODIFIERS = {
   ],
   "stepperRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16224,6 +16335,7 @@ export const NODE_MODIFIERS = {
   ],
   "tooltip": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16334,6 +16446,7 @@ export const NODE_MODIFIERS = {
   ],
   "breadcrumb": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16444,6 +16557,7 @@ export const NODE_MODIFIERS = {
   ],
   "breadcrumbItem": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16556,6 +16670,7 @@ export const NODE_MODIFIERS = {
   ],
   "activityHeatmap": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16672,6 +16787,7 @@ export const NODE_MODIFIERS = {
   ],
   "tagField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16789,6 +16905,7 @@ export const NODE_MODIFIERS = {
   ],
   "fileUpload": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -16905,6 +17022,7 @@ export const NODE_MODIFIERS = {
   ],
   "video": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17014,6 +17132,7 @@ export const NODE_MODIFIERS = {
   ],
   "inputOtp": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17126,6 +17245,7 @@ export const NODE_MODIFIERS = {
   ],
   "colorSwatchPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17234,6 +17354,7 @@ export const NODE_MODIFIERS = {
   ],
   "animatedCheck": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17342,6 +17463,7 @@ export const NODE_MODIFIERS = {
   ],
   "spinnerIcon": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17450,6 +17572,7 @@ export const NODE_MODIFIERS = {
   ],
   "contextMenu": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17558,6 +17681,7 @@ export const NODE_MODIFIERS = {
   ],
   "collapsible": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17667,6 +17791,7 @@ export const NODE_MODIFIERS = {
   ],
   "dropZone": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17779,6 +17904,7 @@ export const NODE_MODIFIERS = {
   ],
   "mediaInsetBorder": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -17887,6 +18013,7 @@ export const NODE_MODIFIERS = {
   ],
   "factStrip": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18001,6 +18128,7 @@ export const NODE_MODIFIERS = {
   ],
   "sortablePhotoGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18115,6 +18243,7 @@ export const NODE_MODIFIERS = {
   ],
   "choiceList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18229,6 +18358,7 @@ export const NODE_MODIFIERS = {
   "videoViewabilityScope": [],
   "hoverCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18341,6 +18471,7 @@ export const NODE_MODIFIERS = {
   ],
   "expandableText": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18450,6 +18581,7 @@ export const NODE_MODIFIERS = {
   ],
   "categoryBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18560,6 +18692,7 @@ export const NODE_MODIFIERS = {
   ],
   "menubar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18673,6 +18806,7 @@ export const NODE_MODIFIERS = {
   ],
   "compositionBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18780,6 +18914,7 @@ export const NODE_MODIFIERS = {
   ],
   "phoneInput": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -18897,6 +19032,7 @@ export const NODE_MODIFIERS = {
   "mediaFlightLayer": [],
   "mediaFlightHost": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19008,6 +19144,7 @@ export const NODE_MODIFIERS = {
   ],
   "mediaSurface": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19119,6 +19256,7 @@ export const NODE_MODIFIERS = {
   ],
   "mediaPoster": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19226,6 +19364,7 @@ export const NODE_MODIFIERS = {
   ],
   "emptyMediaSurface": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19332,6 +19471,7 @@ export const NODE_MODIFIERS = {
   ],
   "avatarAnchor": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19439,6 +19579,7 @@ export const NODE_MODIFIERS = {
   "avatarFlightLayer": [],
   "inputGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19547,6 +19688,7 @@ export const NODE_MODIFIERS = {
   ],
   "inputGroupAddon": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19655,6 +19797,7 @@ export const NODE_MODIFIERS = {
   ],
   "notification": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19773,6 +19916,7 @@ export const NODE_MODIFIERS = {
   ],
   "linkPreview": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -19880,6 +20024,7 @@ export const NODE_MODIFIERS = {
   ],
   "socialButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20002,6 +20147,7 @@ export const NODE_MODIFIERS = {
   ],
   "meetingScheduler": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20118,6 +20264,7 @@ export const NODE_MODIFIERS = {
   ],
   "inlineMarkdown": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20229,6 +20376,7 @@ export const NODE_MODIFIERS = {
   ],
   "dataTable": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20358,6 +20506,7 @@ export const NODE_MODIFIERS = {
   ],
   "dataTableFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20464,6 +20613,7 @@ export const NODE_MODIFIERS = {
   ],
   "dataTableSearch": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20571,6 +20721,7 @@ export const NODE_MODIFIERS = {
   ],
   "dataTableSelect": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20678,6 +20829,7 @@ export const NODE_MODIFIERS = {
   ],
   "sortableChipRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20791,6 +20943,7 @@ export const NODE_MODIFIERS = {
   ],
   "glassGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -20898,6 +21051,7 @@ export const NODE_MODIFIERS = {
   ],
   "viewThatFits": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21013,6 +21167,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentAvatar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21124,6 +21279,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatComposer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21231,6 +21387,7 @@ export const NODE_MODIFIERS = {
   ],
   "compactComposer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21337,6 +21494,7 @@ export const NODE_MODIFIERS = {
   ],
   "composerBanner": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21444,6 +21602,7 @@ export const NODE_MODIFIERS = {
   ],
   "composerIconButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21553,6 +21712,7 @@ export const NODE_MODIFIERS = {
   ],
   "suggestionList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21663,6 +21823,7 @@ export const NODE_MODIFIERS = {
   ],
   "voiceRecorder": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21769,6 +21930,7 @@ export const NODE_MODIFIERS = {
   ],
   "attachmentMenu": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21878,6 +22040,7 @@ export const NODE_MODIFIERS = {
   ],
   "emojiPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -21989,6 +22152,7 @@ export const NODE_MODIFIERS = {
   ],
   "reactionPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22097,6 +22261,7 @@ export const NODE_MODIFIERS = {
   ],
   "messageContextMenu": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22204,6 +22369,7 @@ export const NODE_MODIFIERS = {
   ],
   "areaChartCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22314,6 +22480,7 @@ export const NODE_MODIFIERS = {
   ],
   "barListCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22422,6 +22589,7 @@ export const NODE_MODIFIERS = {
   ],
   "chartCardSurface": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22529,6 +22697,7 @@ export const NODE_MODIFIERS = {
   ],
   "chartHeadline": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22635,6 +22804,7 @@ export const NODE_MODIFIERS = {
   ],
   "chartStatTiles": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22742,6 +22912,7 @@ export const NODE_MODIFIERS = {
   ],
   "contributionsCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22850,6 +23021,7 @@ export const NODE_MODIFIERS = {
   ],
   "heatmapChartCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -22960,6 +23132,7 @@ export const NODE_MODIFIERS = {
   ],
   "lineChartCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23070,6 +23243,7 @@ export const NODE_MODIFIERS = {
   ],
   "radarChartCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23180,6 +23354,7 @@ export const NODE_MODIFIERS = {
   ],
   "sleepScoreCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23287,6 +23462,7 @@ export const NODE_MODIFIERS = {
   ],
   "sparkline": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23396,6 +23572,7 @@ export const NODE_MODIFIERS = {
   ],
   "stageBarsCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23505,6 +23682,7 @@ export const NODE_MODIFIERS = {
   ],
   "stepsCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23614,6 +23792,7 @@ export const NODE_MODIFIERS = {
   ],
   "tokensChartCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23723,6 +23902,7 @@ export const NODE_MODIFIERS = {
   ],
   "composerPanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23833,6 +24013,7 @@ export const NODE_MODIFIERS = {
   ],
   "composerPill": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -23945,6 +24126,7 @@ export const NODE_MODIFIERS = {
   ],
   "composerPanelStatusTab": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24051,6 +24233,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatShell": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24162,6 +24345,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatContainer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24270,6 +24454,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatThread": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24376,6 +24561,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatUserMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24482,6 +24668,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatAssistantMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24588,6 +24775,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatMessageLine": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24696,6 +24884,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24802,6 +24991,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatMobileHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -24908,6 +25098,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatCodePanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25015,6 +25206,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiChatGalleryPanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25122,6 +25314,7 @@ export const NODE_MODIFIERS = {
   ],
   "statCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25229,6 +25422,7 @@ export const NODE_MODIFIERS = {
   ],
   "statCards": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25337,6 +25531,7 @@ export const NODE_MODIFIERS = {
   ],
   "playButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25446,6 +25641,7 @@ export const NODE_MODIFIERS = {
   ],
   "playbackProgress": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25553,6 +25749,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentLimitsCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25660,6 +25857,7 @@ export const NODE_MODIFIERS = {
   ],
   "usageCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25767,6 +25965,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentThinking": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25876,6 +26075,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentProgress": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -25983,6 +26183,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentProgressLoadingText": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26091,6 +26292,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentLogRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26197,6 +26399,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentLogShimmerText": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26303,6 +26506,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentLogToolCall": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26410,6 +26614,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentLogToolCalls": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26516,6 +26721,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentLogWorkingRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26622,6 +26828,7 @@ export const NODE_MODIFIERS = {
   ],
   "composerLoader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26732,6 +26939,7 @@ export const NODE_MODIFIERS = {
   ],
   "conversationSidebar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26854,6 +27062,7 @@ export const NODE_MODIFIERS = {
   ],
   "questionnaire": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -26962,6 +27171,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatBackground": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27071,6 +27281,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatDateHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27178,6 +27389,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatEmptyState": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27284,6 +27496,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27397,6 +27610,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatInfoPanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27506,6 +27720,7 @@ export const NODE_MODIFIERS = {
   ],
   "pinnedMessageBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27613,6 +27828,7 @@ export const NODE_MODIFIERS = {
   ],
   "scrollToBottomButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27719,6 +27935,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatFolderTabs": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27828,6 +28045,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatSearchField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -27934,6 +28152,7 @@ export const NODE_MODIFIERS = {
   ],
   "chatSearchResults": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28040,6 +28259,7 @@ export const NODE_MODIFIERS = {
   ],
   "storiesRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28147,6 +28367,7 @@ export const NODE_MODIFIERS = {
   ],
   "storyRing": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28254,6 +28475,7 @@ export const NODE_MODIFIERS = {
   ],
   "typingDots": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28361,6 +28583,7 @@ export const NODE_MODIFIERS = {
   ],
   "contactMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28470,6 +28693,7 @@ export const NODE_MODIFIERS = {
   ],
   "documentGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28577,6 +28801,7 @@ export const NODE_MODIFIERS = {
   ],
   "fileMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28687,6 +28912,7 @@ export const NODE_MODIFIERS = {
   ],
   "gifMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28797,6 +29023,7 @@ export const NODE_MODIFIERS = {
   ],
   "imageMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -28907,6 +29134,7 @@ export const NODE_MODIFIERS = {
   ],
   "locationMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29016,6 +29244,7 @@ export const NODE_MODIFIERS = {
   ],
   "pollMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29125,6 +29354,7 @@ export const NODE_MODIFIERS = {
   ],
   "sharedMediaGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29233,6 +29463,7 @@ export const NODE_MODIFIERS = {
   ],
   "stickerMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29342,6 +29573,7 @@ export const NODE_MODIFIERS = {
   ],
   "videoMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29453,6 +29685,7 @@ export const NODE_MODIFIERS = {
   ],
   "voiceMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29564,6 +29797,7 @@ export const NODE_MODIFIERS = {
   ],
   "amenityList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29670,6 +29904,7 @@ export const NODE_MODIFIERS = {
   ],
   "hostCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29776,6 +30011,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29883,6 +30119,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingHeaderAction": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -29990,6 +30227,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingPhotoGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30097,6 +30335,7 @@ export const NODE_MODIFIERS = {
   ],
   "reviewCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30205,6 +30444,7 @@ export const NODE_MODIFIERS = {
   ],
   "mapClusterMarker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30312,6 +30552,7 @@ export const NODE_MODIFIERS = {
   ],
   "mapPriceMarker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30420,6 +30661,7 @@ export const NODE_MODIFIERS = {
   ],
   "mapSearchAreaButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30526,6 +30768,7 @@ export const NODE_MODIFIERS = {
   ],
   "followButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30638,6 +30881,7 @@ export const NODE_MODIFIERS = {
   ],
   "shelf": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30746,6 +30990,7 @@ export const NODE_MODIFIERS = {
   ],
   "shelfSkeleton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30856,6 +31101,7 @@ export const NODE_MODIFIERS = {
   ],
   "subscriptionPlans": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -30962,6 +31208,7 @@ export const NODE_MODIFIERS = {
   ],
   "subscriptionPrice": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31068,6 +31315,7 @@ export const NODE_MODIFIERS = {
   ],
   "userHoverCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31174,6 +31422,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardForm": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31280,6 +31529,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardFormCountry": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31386,6 +31636,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardFormPostcode": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31492,6 +31743,7 @@ export const NODE_MODIFIERS = {
   ],
   "cardFormHostedField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31598,6 +31850,7 @@ export const NODE_MODIFIERS = {
   ],
   "checkoutSheet": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31706,6 +31959,7 @@ export const NODE_MODIFIERS = {
   ],
   "filterSection": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31813,6 +32067,7 @@ export const NODE_MODIFIERS = {
   ],
   "priceRangeFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -31920,6 +32175,7 @@ export const NODE_MODIFIERS = {
   ],
   "countFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32026,6 +32282,7 @@ export const NODE_MODIFIERS = {
   ],
   "toggleChipGroup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32132,6 +32389,7 @@ export const NODE_MODIFIERS = {
   ],
   "amenityFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32238,6 +32496,7 @@ export const NODE_MODIFIERS = {
   ],
   "switchFilterRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32344,6 +32603,7 @@ export const NODE_MODIFIERS = {
   ],
   "filterFooter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32451,6 +32711,7 @@ export const NODE_MODIFIERS = {
   ],
   "filterTriggerButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32558,6 +32819,7 @@ export const NODE_MODIFIERS = {
   ],
   "areaRangeFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32664,6 +32926,7 @@ export const NODE_MODIFIERS = {
   ],
   "availabilityFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32771,6 +33034,7 @@ export const NODE_MODIFIERS = {
   ],
   "featureFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32878,6 +33142,7 @@ export const NODE_MODIFIERS = {
   ],
   "floorFilter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -32984,6 +33249,7 @@ export const NODE_MODIFIERS = {
   ],
   "staySearchCompact": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33090,6 +33356,7 @@ export const NODE_MODIFIERS = {
   ],
   "staySearchPanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33196,6 +33463,7 @@ export const NODE_MODIFIERS = {
   ],
   "staySearchStep": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33302,6 +33570,7 @@ export const NODE_MODIFIERS = {
   ],
   "destinationSuggestions": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33409,6 +33678,7 @@ export const NODE_MODIFIERS = {
   ],
   "guestPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33516,6 +33786,7 @@ export const NODE_MODIFIERS = {
   ],
   "tenancyTimeline": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33623,6 +33894,7 @@ export const NODE_MODIFIERS = {
   ],
   "leaseSummaryCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33730,6 +34002,7 @@ export const NODE_MODIFIERS = {
   ],
   "rentPaymentList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33838,6 +34111,7 @@ export const NODE_MODIFIERS = {
   ],
   "maintenanceRequestCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -33944,6 +34218,7 @@ export const NODE_MODIFIERS = {
   ],
   "documentList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34051,6 +34326,7 @@ export const NODE_MODIFIERS = {
   ],
   "evictionReportCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34158,6 +34434,7 @@ export const NODE_MODIFIERS = {
   ],
   "evictionTimeline": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34264,6 +34541,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeReviewSummary": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34370,6 +34648,7 @@ export const NODE_MODIFIERS = {
   ],
   "writeReviewPrompt": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34476,6 +34755,7 @@ export const NODE_MODIFIERS = {
   ],
   "callScreen": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34590,6 +34870,7 @@ export const NODE_MODIFIERS = {
   ],
   "callMinimisedPill": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34699,6 +34980,7 @@ export const NODE_MODIFIERS = {
   ],
   "groupCallGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34808,6 +35090,7 @@ export const NODE_MODIFIERS = {
   ],
   "incomingCallScreen": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -34917,6 +35200,7 @@ export const NODE_MODIFIERS = {
   ],
   "incomingCallBanner": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35025,6 +35309,7 @@ export const NODE_MODIFIERS = {
   ],
   "storyViewer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35132,6 +35417,7 @@ export const NODE_MODIFIERS = {
   ],
   "selectedChipsRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35239,6 +35525,7 @@ export const NODE_MODIFIERS = {
   ],
   "newGroupForm": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35346,6 +35633,7 @@ export const NODE_MODIFIERS = {
   ],
   "messageBubble": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35457,6 +35745,7 @@ export const NODE_MODIFIERS = {
   ],
   "typingBubble": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35563,6 +35852,7 @@ export const NODE_MODIFIERS = {
   ],
   "messageList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35669,6 +35959,7 @@ export const NODE_MODIFIERS = {
   ],
   "mapScaleBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35776,6 +36067,7 @@ export const NODE_MODIFIERS = {
   ],
   "mapControls": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35885,6 +36177,7 @@ export const NODE_MODIFIERS = {
   ],
   "locationPuck": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -35992,6 +36285,7 @@ export const NODE_MODIFIERS = {
   ],
   "navigationBanner": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36098,6 +36392,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36207,6 +36502,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeHours": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36314,6 +36610,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeInfoList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36420,6 +36717,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeTransit": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36526,6 +36824,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeListCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36633,6 +36932,7 @@ export const NODE_MODIFIERS = {
   ],
   "placeList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36739,6 +37039,7 @@ export const NODE_MODIFIERS = {
   ],
   "directionsSteps": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36846,6 +37147,7 @@ export const NODE_MODIFIERS = {
   ],
   "placePicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -36954,6 +37256,7 @@ export const NODE_MODIFIERS = {
   ],
   "mailComposeSurface": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37063,6 +37366,7 @@ export const NODE_MODIFIERS = {
   ],
   "mailRecipientField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37170,6 +37474,7 @@ export const NODE_MODIFIERS = {
   ],
   "mailMessage": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37278,6 +37583,7 @@ export const NODE_MODIFIERS = {
   ],
   "mailThread": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37386,6 +37692,7 @@ export const NODE_MODIFIERS = {
   ],
   "mailQuoteToggle": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37493,6 +37800,7 @@ export const NODE_MODIFIERS = {
   ],
   "noteEditorToolbar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37600,6 +37908,7 @@ export const NODE_MODIFIERS = {
   ],
   "tripCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37707,6 +38016,7 @@ export const NODE_MODIFIERS = {
   ],
   "bookingCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37815,6 +38125,7 @@ export const NODE_MODIFIERS = {
   ],
   "bookingBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -37922,6 +38233,7 @@ export const NODE_MODIFIERS = {
   ],
   "priceBreakdown": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38028,6 +38340,7 @@ export const NODE_MODIFIERS = {
   ],
   "homeSearchBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38135,6 +38448,7 @@ export const NODE_MODIFIERS = {
   ],
   "searchModeTabs": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38242,6 +38556,7 @@ export const NODE_MODIFIERS = {
   ],
   "propertyTypePicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38349,6 +38664,7 @@ export const NODE_MODIFIERS = {
   ],
   "savedSearchCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38455,6 +38771,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingActionBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38562,6 +38879,7 @@ export const NODE_MODIFIERS = {
   ],
   "mortgageCalculator": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38673,6 +38991,7 @@ export const NODE_MODIFIERS = {
   ],
   "rentalActionCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38780,6 +39099,7 @@ export const NODE_MODIFIERS = {
   ],
   "saleActionCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38887,6 +39207,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -38997,6 +39318,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingCardGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39104,6 +39426,7 @@ export const NODE_MODIFIERS = {
   ],
   "wishlistCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39211,6 +39534,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingPreviewPane": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39318,6 +39642,7 @@ export const NODE_MODIFIERS = {
   ],
   "listingQualityMeter": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39424,6 +39749,7 @@ export const NODE_MODIFIERS = {
   ],
   "propertyTypeSelector": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39531,6 +39857,7 @@ export const NODE_MODIFIERS = {
   ],
   "offeringBadge": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39639,6 +39966,7 @@ export const NODE_MODIFIERS = {
   ],
   "priceEstimate": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39746,6 +40074,7 @@ export const NODE_MODIFIERS = {
   ],
   "pricePerAreaComparison": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39852,6 +40181,7 @@ export const NODE_MODIFIERS = {
   ],
   "projectBoard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -39958,6 +40288,7 @@ export const NODE_MODIFIERS = {
   ],
   "projectBoardCardContent": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40064,6 +40395,7 @@ export const NODE_MODIFIERS = {
   ],
   "boardDragHandle": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40170,6 +40502,7 @@ export const NODE_MODIFIERS = {
   ],
   "activityFeed": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40279,6 +40612,7 @@ export const NODE_MODIFIERS = {
   ],
   "orderStatusBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40387,6 +40721,7 @@ export const NODE_MODIFIERS = {
   ],
   "orderStatusTimeline": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40495,6 +40830,7 @@ export const NODE_MODIFIERS = {
   ],
   "lockup": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40605,6 +40941,7 @@ export const NODE_MODIFIERS = {
   ],
   "lockupSkeleton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40713,6 +41050,7 @@ export const NODE_MODIFIERS = {
   ],
   "ambientPhoto": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40819,6 +41157,7 @@ export const NODE_MODIFIERS = {
   ],
   "calendarView": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -40927,6 +41266,7 @@ export const NODE_MODIFIERS = {
   ],
   "calendarViewHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41033,6 +41373,7 @@ export const NODE_MODIFIERS = {
   ],
   "calendarViewMonthGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41140,6 +41481,7 @@ export const NODE_MODIFIERS = {
   ],
   "taskList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41246,6 +41588,7 @@ export const NODE_MODIFIERS = {
   ],
   "webSearch": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41352,6 +41695,7 @@ export const NODE_MODIFIERS = {
   ],
   "voiceControls": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41461,6 +41805,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentCreator": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41567,6 +41912,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentCreatorField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41675,6 +42021,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentCreatorSection": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41781,6 +42128,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentProfile": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41887,6 +42235,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentReplyIdentity": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -41993,6 +42342,7 @@ export const NODE_MODIFIERS = {
   ],
   "aiProfileCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42102,6 +42452,7 @@ export const NODE_MODIFIERS = {
   ],
   "selectedAgentPreview": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42208,6 +42559,7 @@ export const NODE_MODIFIERS = {
   ],
   "multiAgentChat": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42314,6 +42666,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentChatHistory": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42423,6 +42776,7 @@ export const NODE_MODIFIERS = {
   ],
   "agentChat": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42532,6 +42886,7 @@ export const NODE_MODIFIERS = {
   ],
   "routeStops": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42639,6 +42994,7 @@ export const NODE_MODIFIERS = {
   ],
   "noteCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42749,6 +43105,7 @@ export const NODE_MODIFIERS = {
   ],
   "noteCardSkeleton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42857,6 +43214,7 @@ export const NODE_MODIFIERS = {
   ],
   "shareSheet": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -42965,6 +43323,7 @@ export const NODE_MODIFIERS = {
   ],
   "connectionDots": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43071,6 +43430,7 @@ export const NODE_MODIFIERS = {
   ],
   "outlineNav": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43178,6 +43538,7 @@ export const NODE_MODIFIERS = {
   ],
   "pagination": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43284,6 +43645,7 @@ export const NODE_MODIFIERS = {
   ],
   "progressiveBlur": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43390,6 +43752,7 @@ export const NODE_MODIFIERS = {
   ],
   "addressRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43498,6 +43861,7 @@ export const NODE_MODIFIERS = {
   ],
   "addressList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43608,6 +43972,7 @@ export const NODE_MODIFIERS = {
   ],
   "paymentMethodMark": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43715,6 +44080,7 @@ export const NODE_MODIFIERS = {
   ],
   "paymentMethodRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43822,6 +44188,7 @@ export const NODE_MODIFIERS = {
   ],
   "paymentMethodList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -43931,6 +44298,7 @@ export const NODE_MODIFIERS = {
   ],
   "priceSummary": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44038,6 +44406,7 @@ export const NODE_MODIFIERS = {
   ],
   "priceSummaryLine": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44145,6 +44514,7 @@ export const NODE_MODIFIERS = {
   ],
   "paymentStatusBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44252,6 +44622,7 @@ export const NODE_MODIFIERS = {
   ],
   "paymentStatusBlock": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44359,6 +44730,7 @@ export const NODE_MODIFIERS = {
   ],
   "contactProfileCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44466,6 +44838,7 @@ export const NODE_MODIFIERS = {
   ],
   "leadScoreCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44572,6 +44945,7 @@ export const NODE_MODIFIERS = {
   ],
   "dealCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44678,6 +45052,7 @@ export const NODE_MODIFIERS = {
   ],
   "pipelineColumn": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44784,6 +45159,7 @@ export const NODE_MODIFIERS = {
   ],
   "pipelineBoard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44892,6 +45268,7 @@ export const NODE_MODIFIERS = {
   ],
   "importantAlertsCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -44998,6 +45375,7 @@ export const NODE_MODIFIERS = {
   ],
   "patientInfoCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45104,6 +45482,7 @@ export const NODE_MODIFIERS = {
   ],
   "recentHiresCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45210,6 +45589,7 @@ export const NODE_MODIFIERS = {
   ],
   "cartLine": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45318,6 +45698,7 @@ export const NODE_MODIFIERS = {
   ],
   "cartPanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45427,6 +45808,7 @@ export const NODE_MODIFIERS = {
   ],
   "cartPromoField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45533,6 +45915,7 @@ export const NODE_MODIFIERS = {
   ],
   "cartTipPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45639,6 +46022,7 @@ export const NODE_MODIFIERS = {
   ],
   "menuItemRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45747,6 +46131,7 @@ export const NODE_MODIFIERS = {
   ],
   "menuItemOptions": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45855,6 +46240,7 @@ export const NODE_MODIFIERS = {
   ],
   "vendorCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -45964,6 +46350,7 @@ export const NODE_MODIFIERS = {
   ],
   "mediaCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46073,6 +46460,7 @@ export const NODE_MODIFIERS = {
   ],
   "songCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46183,6 +46571,7 @@ export const NODE_MODIFIERS = {
   ],
   "albumCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46292,6 +46681,7 @@ export const NODE_MODIFIERS = {
   ],
   "artistCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46401,6 +46791,7 @@ export const NODE_MODIFIERS = {
   ],
   "playlistCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46510,6 +46901,7 @@ export const NODE_MODIFIERS = {
   ],
   "mixCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46619,6 +47011,7 @@ export const NODE_MODIFIERS = {
   ],
   "podcastCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46728,6 +47121,7 @@ export const NODE_MODIFIERS = {
   ],
   "episodeCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46837,6 +47231,7 @@ export const NODE_MODIFIERS = {
   ],
   "audiobookCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -46946,6 +47341,7 @@ export const NODE_MODIFIERS = {
   ],
   "eventCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47055,6 +47451,7 @@ export const NODE_MODIFIERS = {
   ],
   "profileCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47164,6 +47561,7 @@ export const NODE_MODIFIERS = {
   ],
   "genreCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47271,6 +47669,7 @@ export const NODE_MODIFIERS = {
   ],
   "friendActivityCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47377,6 +47776,7 @@ export const NODE_MODIFIERS = {
   ],
   "quickAccessTile": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47484,6 +47884,7 @@ export const NODE_MODIFIERS = {
   ],
   "recapCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47590,6 +47991,7 @@ export const NODE_MODIFIERS = {
   ],
   "shareCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47696,6 +48098,7 @@ export const NODE_MODIFIERS = {
   ],
   "lyricsView": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47803,6 +48206,7 @@ export const NODE_MODIFIERS = {
   ],
   "lyricsPreviewCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -47910,6 +48314,7 @@ export const NODE_MODIFIERS = {
   ],
   "audienceOverview": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48016,6 +48421,7 @@ export const NODE_MODIFIERS = {
   ],
   "streamsChart": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48123,6 +48529,7 @@ export const NODE_MODIFIERS = {
   ],
   "topTracksTable": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48229,6 +48636,7 @@ export const NODE_MODIFIERS = {
   ],
   "audienceBreakdown": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48335,6 +48743,7 @@ export const NODE_MODIFIERS = {
   ],
   "releaseCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48442,6 +48851,7 @@ export const NODE_MODIFIERS = {
   ],
   "releaseStatusBadge": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48549,6 +48959,7 @@ export const NODE_MODIFIERS = {
   ],
   "releaseTimeline": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48656,6 +49067,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackUploadRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48762,6 +49174,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackMetadataForm": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48868,6 +49281,7 @@ export const NODE_MODIFIERS = {
   ],
   "artistChipsInput": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -48974,6 +49388,7 @@ export const NODE_MODIFIERS = {
   ],
   "isrcField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49080,6 +49495,7 @@ export const NODE_MODIFIERS = {
   ],
   "creditsEditor": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49186,6 +49602,7 @@ export const NODE_MODIFIERS = {
   ],
   "artworkUploader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49292,6 +49709,7 @@ export const NODE_MODIFIERS = {
   ],
   "payoutSummaryCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49398,6 +49816,7 @@ export const NODE_MODIFIERS = {
   ],
   "pitchCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49508,6 +49927,7 @@ export const NODE_MODIFIERS = {
   ],
   "checkoutSummaryRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49614,6 +50034,7 @@ export const NODE_MODIFIERS = {
   ],
   "checkoutSummary": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49720,6 +50141,7 @@ export const NODE_MODIFIERS = {
   ],
   "checkoutConfirm": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49827,6 +50249,7 @@ export const NODE_MODIFIERS = {
   ],
   "deliverySlotDays": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -49934,6 +50357,7 @@ export const NODE_MODIFIERS = {
   ],
   "deliverySlotOption": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50040,6 +50464,7 @@ export const NODE_MODIFIERS = {
   ],
   "deliverySlotPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50149,6 +50574,7 @@ export const NODE_MODIFIERS = {
   ],
   "orderConfirmation": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50256,6 +50682,7 @@ export const NODE_MODIFIERS = {
   ],
   "transportControls": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50368,6 +50795,7 @@ export const NODE_MODIFIERS = {
   ],
   "nowPlayingBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50483,6 +50911,7 @@ export const NODE_MODIFIERS = {
   ],
   "miniPlayer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50590,6 +51019,7 @@ export const NODE_MODIFIERS = {
   ],
   "fullScreenPlayer": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50700,6 +51130,7 @@ export const NODE_MODIFIERS = {
   ],
   "playbackSpeedMenu": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50808,6 +51239,7 @@ export const NODE_MODIFIERS = {
   ],
   "sleepTimerMenu": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -50916,6 +51348,7 @@ export const NODE_MODIFIERS = {
   ],
   "devicePicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51022,6 +51455,7 @@ export const NODE_MODIFIERS = {
   ],
   "connectBanner": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51128,6 +51562,7 @@ export const NODE_MODIFIERS = {
   ],
   "carrierQuoteCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51235,6 +51670,7 @@ export const NODE_MODIFIERS = {
   ],
   "carrierQuoteList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51344,6 +51780,7 @@ export const NODE_MODIFIERS = {
   ],
   "earningsSummary": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51451,6 +51888,7 @@ export const NODE_MODIFIERS = {
   ],
   "earningsBreakdown": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51557,6 +51995,7 @@ export const NODE_MODIFIERS = {
   ],
   "earningsPayoutRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51663,6 +52102,7 @@ export const NODE_MODIFIERS = {
   ],
   "jobCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51770,6 +52210,7 @@ export const NODE_MODIFIERS = {
   ],
   "jobBoard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51881,6 +52322,7 @@ export const NODE_MODIFIERS = {
   ],
   "signaturePad": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -51990,6 +52432,7 @@ export const NODE_MODIFIERS = {
   ],
   "proofOfDelivery": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52098,6 +52541,7 @@ export const NODE_MODIFIERS = {
   ],
   "vehiclePicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52204,6 +52648,7 @@ export const NODE_MODIFIERS = {
   ],
   "shipmentLoadPicker": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52310,6 +52755,7 @@ export const NODE_MODIFIERS = {
   ],
   "shipmentOptionsList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52419,6 +52865,7 @@ export const NODE_MODIFIERS = {
   ],
   "shipmentRequestForm": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52525,6 +52972,7 @@ export const NODE_MODIFIERS = {
   ],
   "rowActions": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52632,6 +53080,7 @@ export const NODE_MODIFIERS = {
   ],
   "rowActionButton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52741,6 +53190,7 @@ export const NODE_MODIFIERS = {
   ],
   "swipeRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52848,6 +53298,7 @@ export const NODE_MODIFIERS = {
   ],
   "themeToggle": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -52956,6 +53407,7 @@ export const NODE_MODIFIERS = {
   ],
   "libraryPanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53069,6 +53521,7 @@ export const NODE_MODIFIERS = {
   ],
   "libraryItem": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53176,6 +53629,7 @@ export const NODE_MODIFIERS = {
   ],
   "searchField": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53282,6 +53736,7 @@ export const NODE_MODIFIERS = {
   ],
   "topResultCard": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53388,6 +53843,7 @@ export const NODE_MODIFIERS = {
   ],
   "searchResultTabs": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53494,6 +53950,7 @@ export const NODE_MODIFIERS = {
   ],
   "recentSearches": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53600,6 +54057,7 @@ export const NODE_MODIFIERS = {
   ],
   "browseGrid": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53707,6 +54165,7 @@ export const NODE_MODIFIERS = {
   ],
   "queuePanel": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53815,6 +54274,7 @@ export const NODE_MODIFIERS = {
   ],
   "queuePanelRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -53921,6 +54381,7 @@ export const NODE_MODIFIERS = {
   ],
   "recentlyPlayedList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54027,6 +54488,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54136,6 +54598,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackListHeader": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54244,6 +54707,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54352,6 +54816,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackRowSkeleton": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54459,6 +54924,7 @@ export const NODE_MODIFIERS = {
   ],
   "trackListEmpty": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54565,6 +55031,7 @@ export const NODE_MODIFIERS = {
   ],
   "selectionBar": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54672,6 +55139,7 @@ export const NODE_MODIFIERS = {
   ],
   "episodeRow": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",
@@ -54780,6 +55248,7 @@ export const NODE_MODIFIERS = {
   ],
   "episodeList": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",

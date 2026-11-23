@@ -3356,3 +3356,13 @@ fn stacking_levels_and_an_aspect_ratio_anywhere() {
     let output = compiled("export const x = () => VStack(Text('a')).zIndex('-2');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown zIndex token '-2' for .zIndex()");
 }
+
+#[test]
+fn a_view_is_padded_by_the_safe_area() {
+    let ok = compiled(
+        "export const x = () => [VStack(Text('a')).safeAreaPadding(), VStack(Text('b')).safeAreaPadding('top').padding('top', '2xl')];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack(Text('a')).safeAreaPadding('leading');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown safeAreaEdge token 'leading' for .safeAreaPadding()");
+}

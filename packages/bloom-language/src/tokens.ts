@@ -143,6 +143,8 @@ export type GlassOpacityName = keyof typeof GLASS_OPACITY;
 /** Bloom's motion durations (`animation.duration`): an image's cross-fade, by name. */
 export type DurationName = keyof typeof DURATION;
 export type Edge = (typeof ENUMS.edge)[number];
+/** The sides `.safeAreaPadding()` pads: the device's own, so physical (left and right, never leading or trailing). */
+export type SafeAreaEdge = (typeof ENUMS.safeAreaEdge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
 /** A border's line: `solid`, `dashed` or `dotted` (React Native's `borderStyle`). */
 export type BorderStyleName = (typeof ENUMS.borderStyle)[number];

@@ -263,6 +263,7 @@ import {
   type ContentFit,
   type DurationName,
   type Edge,
+  type SafeAreaEdge,
   type Role,
   type ShrinkPriority,
   type FlexName,
@@ -1319,6 +1320,7 @@ export type Modifier =
       readonly edge: Edge;
       readonly value: PaddingToken;
     }
+  | { readonly kind: 'safeAreaPadding'; readonly key: string; readonly edge: SafeAreaEdge }
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
   | { readonly kind: 'flex'; readonly key: string; readonly value: FlexName }
@@ -2077,6 +2079,9 @@ export class Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
     const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
     return this.with({ kind: 'padding', key: `p:${edge}:${tokenKey(token)}`, edge, value: token });
+  }
+  safeAreaPadding(edge: SafeAreaEdge = 'all'): Node {
+    return this.with({ kind: 'safeAreaPadding', key: `sa:${edge}`, edge });
   }
   frame(value: FrameSpec): Node {
     return this.with({ kind: 'frame', key: `f:${objectKey(value, FRAME_KEYS)}`, value });
@@ -4449,6 +4454,13 @@ export interface ScreenModifiers<Self> {
 export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   padding(value: PaddingToken): Self;
   padding(edge: Edge, value: PaddingToken): Self;
+  /**
+   * Padded by the device's safe area on those sides (all by default), as
+   * SwiftUI's `.safeAreaPadding()`: React Native's safe-area insets
+   * (`react-native-safe-area-context`), a view of its own, so a padding beside
+   * it adds to it. The sides are physical: the insets are the device's.
+   */
+  safeAreaPadding(edge?: SafeAreaEdge): Self;
   frame(value: FrameSpec): Self;
   /** Takes the free space along its parent's axis. */
   grow(): Self;

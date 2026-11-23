@@ -432,6 +432,7 @@
     "infoText": ["infoSubtleForeground", "info-text"]
   },
   "enums": {
+    "safeAreaEdge": ["all", "top", "bottom", "horizontal", "vertical", "left", "right"],
     "edge": [
       "all",
       "horizontal",
@@ -1128,7 +1129,7 @@
     "info": "info"
   },
   "layers": [
-    ["padding"],
+    ["padding", "safeAreaPadding"],
     ["frame", "aspectRatio"],
     ["overlay"],
     ["background", "glass", "blur"],
@@ -1290,6 +1291,7 @@
   "modifiers": {
     "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token. colors: a list of colours, each a color token (a role, a role at an opacity) or an app colour.",
     "padding": ["edge?", "padding"],
+    "safeAreaPadding": ["safeAreaEdge?"],
     "frame": ["frame"],
     "grow": [],
     "shrink": ["shrink"],
@@ -1949,6 +1951,7 @@
   },
   "universal": [
     "padding",
+    "safeAreaPadding",
     "frame",
     "aspectRatio",
     "grow",

@@ -216,6 +216,7 @@ import {
 import { deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
+import { SafeAreaPadded } from './safe-area';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
   MotionWrapper,
@@ -1265,6 +1266,7 @@ function drawNode(
     (layers[0] as Layer).glass === undefined &&
     !(layers[0] as Layer).blur &&
     !(layers[0] as Layer).concentric &&
+    (layers[0] as Layer).safeArea === 0 &&
     (layers[0] as Layer).overlays.length === 0;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
@@ -1398,6 +1400,7 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
     concentric: false,
     curve: undefined,
     blur: false,
+    safeArea: 0,
     overlays: [],
     corners: 0,
     follows: [],
@@ -1681,6 +1684,19 @@ function wrapLayer(
     () => boxStyle(layer, flex, p),
     () => boxVariants(layer, flex, p),
   );
+  if (layer.safeArea !== 0) {
+    // A view padded by the device's safe area, which it reads as it renders; a press is a host around it.
+    const outer = behaviour && !p.pressable ? behaviour : null;
+    const padded = drawHost(
+      SafeAreaPadded,
+      out,
+      { ...outer, safeArea: layer.safeArea, key: behaviour && p.pressable ? undefined : key },
+      ...children,
+    );
+    return behaviour && p.pressable
+      ? drawOutermost(box, hostFor(p), AROUND, { ...behaviour, key }, padded)
+      : padded;
+  }
   return drawOutermost(box, behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
 }
 

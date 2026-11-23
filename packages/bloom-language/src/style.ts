@@ -48,6 +48,7 @@ import {
   type CornerCurve,
   type OpacityName,
   type Edge,
+  type SafeAreaEdge,
   type FontFamilyName,
   type FontName,
   type TrackingName,
@@ -395,6 +396,11 @@ export interface Layer {
   curve: CornerCurve | undefined;
   /** A `blur()` layer: Bloom's `BlurIsland` draws it. */
   blur: boolean;
+  /**
+   * A `safeAreaPadding()` layer: the sides it pads by the device's safe area,
+   * a bit each (`SAFE_AREA_BITS`); its view reads the insets (`SafeAreaPadded`).
+   */
+  safeArea: number;
   /** Views drawn over (and, `behind`, under) what the layer holds: \`overlay()\` and \`background(view)\`. */
   overlays: Extract<Modifier, { kind: 'overlay' }>[];
   /** The corners the layer's `corner()`s round, a bit each (`CORNER_BITS`). */
@@ -460,6 +466,17 @@ function cornerRadius(style: Resolved, corner: CornerModifier): void {
 /** The radius keys a per-side corner writes: a glass or an island takes one radius, so it has none of these. */
 export const SIDE_RADII: readonly string[] = CORNER_RADIUS.map(([, key]) => key);
 
+/** The sides `safeAreaPadding()` pads, a bit each: top, bottom, left, right. */
+export const SAFE_AREA_BITS: Record<SafeAreaEdge, number> = {
+  all: 0b1111,
+  top: 0b0001,
+  bottom: 0b0010,
+  horizontal: 0b1100,
+  vertical: 0b0011,
+  left: 0b0100,
+  right: 0b1000,
+};
+
 const EDGE_BITS: Record<Edge, number> = {
   all: 0b1111,
   horizontal: 0b1100,
@@ -481,6 +498,8 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const rank = LAYER_RANK[modifier.kind];
   const current = layers[layers.length - 1];
   const edges = modifier.kind === 'padding' ? EDGE_BITS[modifier.edge] : 0;
+  // A safe-area padding is a view of its own (it reads the insets): it joins no other, and none joins it.
+  const safeArea = modifier.kind === 'safeAreaPadding' ? SAFE_AREA_BITS[modifier.edge] : 0;
   const corners = modifier.kind === 'corner' ? CORNER_BITS[modifier.side] : 0;
   // A second padding of an edge (or corner of a corner) the view has wraps it; other edges join it.
   const repeats =
@@ -505,7 +524,14 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const clipped = clip !== undefined && clip.length > 0;
   // Overlays stack: a second one joins the first, over it (or, behind, under it).
   const sameKind = repeats && modifier.kind !== 'overlay';
-  if (current === undefined || rank < current.rank || sameKind || clipped) {
+  if (
+    current === undefined ||
+    rank < current.rank ||
+    sameKind ||
+    clipped ||
+    safeArea !== 0 ||
+    current.safeArea !== 0
+  ) {
     layers.push({
       modifiers: [modifier],
       variants: [],
@@ -516,6 +542,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
       concentric,
       curve,
       blur,
+      safeArea,
       overlays: overlay ? [overlay] : [],
       corners,
       follows: clipped ? clip : [],
@@ -572,6 +599,7 @@ export function addVariantToLayers(
       concentric: false,
       curve: undefined,
       blur: false,
+      safeArea: 0,
       overlays: [],
       corners: 0,
       follows: [],
@@ -681,6 +709,8 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
       case 'glass':
       case 'blur':
       case 'overlay':
+      // The insets are the safe-area view's own, read as it renders (`SafeAreaPadded`).
+      case 'safeAreaPadding':
         break;
     }
   }

@@ -370,6 +370,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | Modifier | Values |
 | --- | --- |
 | `padding(edge?, v)` | space: `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl`…`5xl`, or a numeric token (`'1'` `'6'` `'10'` `'14'` `'28'` `'44'` `'56'` `'96'`…); `-lg`, `-6` and the like pull outward (a margin) |
+| `safeAreaPadding(edge?)` | the device's safe-area insets (`react-native-safe-area-context`) as padding on those sides: `all` (the default), `top`, `bottom`, `horizontal`, `vertical`, `left`, `right` (physical: the insets are the device's); a view of its own, so a padding beside it adds to it (see [Layout](#layout)) |
 | `spacing(v)` | space: the gap between a stack's children |
 | `horizontalSpacing(v)`, `verticalSpacing(v)` | space: the gap along one axis only, over `spacing`'s: between children side by side (`columnGap`, `gap-x-*`) or one above another and between wrapped lines (`rowGap`, `gap-y-*`) |
 | `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap; new screens use `spacing()` |
@@ -480,6 +481,14 @@ VStack(...).background('surface').corner('xl').shadow('m')
   `gap`.
 - **Self alignment.** `alignSelf` is the view's own place across its parent's
   axis, over the parent's `align`. `mx-auto` in a column is `alignSelf('center')`.
+- **Safe area.** `.safeAreaPadding(edge?)` is SwiftUI's: the view padded by
+  the device's safe area on those sides, as an app pads by
+  `useSafeAreaInsets()` (`paddingTop: insets.top`). It reads the insets as it
+  renders (none outside a `SafeAreaProvider`) and is a view of its own, so a
+  padding beside it adds to it: `paddingTop: insets.top + 24` is
+  `.safeAreaPadding('top').padding('top', '2xl')`. The insets are the device's
+  physical ones, not what a Bloom header or bar has already taken
+  (`useContentSafeAreaInsets()`).
 - **Auto margins.** `.margin(edge, 'auto')` takes the free space on that side,
   as React Native's and CSS's `margin: auto` do: `.margin('leading', 'auto')`
   pushes the view to its row's trailing end (Tailwind's `ms-auto`), and
