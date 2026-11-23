@@ -835,7 +835,6 @@ function PageHeaderComponent({
     <Button
       appearance={navigationPresentation ? 'plain' : 'outline'}
       tone="neutral"
-      size={floating ? FLOATING_CONTROL_SIZE : undefined}
       icon={backCount == null ? RiArrowLeftLine : undefined}
       leadingIcon={backCount != null ? RiArrowLeftLine : undefined}
       accessibilityLabel={
@@ -850,7 +849,13 @@ function PageHeaderComponent({
 
   const leadingControls = (
     <>
-      {backButton}
+      {floating && backButton ? (
+        // The back control floats with the header's other controls: the window draws its lens, and it
+        // is Bloom's floating size, as they are.
+        <LensMaterialProvider value="lens">{backButton}</LensMaterialProvider>
+      ) : (
+        backButton
+      )}
       {history ? (
         <LensMaterialProvider value={floating ? 'lens' : 'surface'}>
           <BloomScope size={floating ? FLOATING_CONTROL_SIZE : undefined}>
