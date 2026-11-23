@@ -1129,6 +1129,7 @@ export const ENUMS = {
   ],
   "engagementTone": [
     "primary",
+    "vivid",
     "secondary",
     "tertiary",
     "success",

@@ -58,7 +58,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("linkTone", &["primary", "secondary", "text"]),
     ("appearance", &["solid", "subtle", "outline", "plain"]),
     ("tone", &["neutral", "accent", "vivid", "support", "action", "success", "warning", "danger", "info"]),
-    ("engagementTone", &["primary", "secondary", "tertiary", "success", "warning", "error", "info"]),
+    ("engagementTone", &["primary", "vivid", "secondary", "tertiary", "success", "warning", "error", "info"]),
     ("controlSize", &["xs", "sm", "md", "lg"]),
     ("glassMaterial", &["regular", "clear"]),
     ("glassTransition", &["matchedGeometry", "materialize"]),
