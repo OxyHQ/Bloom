@@ -5,7 +5,8 @@
  */
 import { useEffect, useImperativeHandle, useState } from 'react';
 import type React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { Button } from '../button/Button';
 import { PageHeader } from '../page-header/PageHeader';
 import { BlurIsland } from '../blur';
@@ -402,6 +403,42 @@ describe('a Surface with the lens material', () => {
     );
     expect(screen.getByTestId('native-lens')).toBeTruthy();
     expect(screen.getByText('Panel')).toBeTruthy();
+  });
+
+  it('draws no emulated edge on the lens: a paint inside it keeps its fill, a lens button its shade off', () => {
+    // A selection painted on the glass (a bar's highlight): its fill only, no rim or sheen.
+    const screen = wrap(
+      <Surface material="lens">
+        <SurfacePaint fill="#ff0000" testID="selection" />
+      </Surface>,
+    );
+    const selection = StyleSheet.flatten(screen.getByTestId('selection').props.style);
+    expect(selection.backgroundColor).toBe('#ff0000');
+    expect(selection.boxShadow).toBeUndefined();
+    screen.unmount();
+    // Off the lens the same paint keeps its edge.
+    const off = wrap(<SurfacePaint fill="#ff0000" testID="selection" />);
+    expect(StyleSheet.flatten(off.getByTestId('selection').props.style).boxShadow).toBeTruthy();
+    off.unmount();
+    // A lens button: the engine draws its shadow, the button none of its own.
+    const alone = wrap(
+      <Button material="lens" testID="share">
+        Share
+      </Button>,
+    );
+    const pressable = alone.getByTestId('share').props.style;
+    const box = StyleSheet.flatten(
+      typeof pressable === 'function' ? pressable({ pressed: false, hovered: false }) : pressable,
+    );
+    expect(box.boxShadow).toBeUndefined();
+    alone.unmount();
+    // Off the lens the same button keeps its shade.
+    const plain = wrap(<Button testID="share">Share</Button>);
+    const own = plain.getByTestId('share').props.style;
+    expect(
+      StyleSheet.flatten(typeof own === 'function' ? own({ pressed: false, hovered: false }) : own)
+        .boxShadow,
+    ).toBeTruthy();
   });
 
   it('keeps the shared paint without the prop', () => {
