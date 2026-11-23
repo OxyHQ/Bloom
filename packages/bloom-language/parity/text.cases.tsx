@@ -436,6 +436,12 @@ const named: ParityCase[] = [
     language: () => L.Text('Small').font('11'),
     bloom: () => <Text style={{ fontSize: 11 }}>Small</Text>,
   },
+  // The sizes Mention writes outside the ramp.
+  ...(['9', '12.5', '28', '42', '96'] as const).map((size) => ({
+    name: `size ${size}`,
+    language: () => L.Text('Sized').font(size),
+    bloom: () => <Text style={{ fontSize: Number(size) }}>Sized</Text>,
+  })),
 ].map((c) => ({ ...c, language: () => toElement(c.language()) }));
 
 /**

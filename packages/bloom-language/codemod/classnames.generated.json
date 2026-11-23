@@ -3280,10 +3280,8 @@
   "text-[28px]": {
    "count": 7,
    "apps": 4,
-   "status": "token",
-   "scale": "font",
-   "value": "28px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('28')"
   },
   "text-background": {
    "count": 7,
@@ -4064,10 +4062,8 @@
   "text-[12.5px]": {
    "count": 5,
    "apps": 2,
-   "status": "token",
-   "scale": "font",
-   "value": "12.5px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('12.5')"
   },
   "text-[20px]": {
    "count": 5,
@@ -4620,10 +4616,8 @@
   "text-[9px]": {
    "count": 4,
    "apps": 2,
-   "status": "token",
-   "scale": "font",
-   "value": "9px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('9')"
   },
   "text-body-2-regular": {
    "count": 4,
@@ -5642,10 +5636,8 @@
   "text-white/85": {
    "count": 3,
    "apps": 3,
-   "status": "token",
-   "scale": "opacity",
-   "value": "white at 85%",
-   "language": ".foreground('white/…')"
+   "status": "mapped",
+   "language": ".foreground('white/85')"
   },
   "text-willo-on-blue": {
    "count": 3,
@@ -5900,10 +5892,8 @@
   "bg-background/85": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "opacity",
-   "value": "--background at 85%",
-   "language": ".background('background/…')"
+   "status": "mapped",
+   "language": ".background('background/85')"
   },
   "bg-bad/12": {
    "count": 2,
@@ -7350,10 +7340,8 @@
   "text-[42px]": {
    "count": 2,
    "apps": 2,
-   "status": "token",
-   "scale": "font",
-   "value": "42px",
-   "language": ".font(…)"
+   "status": "mapped",
+   "language": ".font('42')"
   },
   "text-balance": {
    "count": 2,
@@ -8843,7 +8831,7 @@
    "status": "token",
    "scale": "font",
    "value": "28px / 34px",
-   "language": ".font(…)"
+   "language": ".font('28') (line height 34px has no rung)"
   },
   "gap-16": {
    "count": 1,
@@ -11623,7 +11611,7 @@
    "status": "token",
    "scale": "font",
    "value": "28px / 34px",
-   "language": ".font(…)"
+   "language": ".font('28') (line height 34px has no rung)"
   },
   "text-neutral-600": {
    "count": 1,

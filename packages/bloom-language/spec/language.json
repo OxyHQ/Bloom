@@ -94,13 +94,18 @@
       "3xl": 26,
       "4xl": 32,
       "5xl": 40,
+      "9": 9,
       "11": 11,
+      "12.5": 12.5,
       "14": 14,
       "16": 16,
       "18": 18,
       "24": 24,
+      "28": 28,
       "30": 30,
-      "36": 36
+      "36": 36,
+      "42": 42,
+      "96": 96
     },
     "leading": {
       "tight": 1.15,
@@ -189,14 +194,17 @@
       "70": 0.7,
       "75": 0.75,
       "80": 0.8,
+      "85": 0.85,
       "90": 0.9,
       "opaque": 1
     },
     "borderWidth": {
-      "$comment": "A line's width: a border, a ring, a shape's outline, a signature's stroke. Bloom's rungs, then exact widths named by their value: '3' (the 3px ring), '4' (border-4), '2.5' (Bloom's own signature stroke).",
+      "$comment": "A line's width: a border, a ring, a shape's outline, a signature's stroke. Bloom's rungs, then exact widths named by their value: '0.5' and '1.5' (the half-point and point-and-a-half borders apps write), '3' (the 3px ring), '4' (border-4), '2.5' (Bloom's own signature stroke). '0.5' is a fixed half point; 'hairline' is the platform's thinnest line.",
       "hairline": "hairline",
       "thin": 1,
       "thick": 2,
+      "0.5": 0.5,
+      "1.5": 1.5,
       "2.5": 2.5,
       "3": 3,
       "4": 4

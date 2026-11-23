@@ -76,13 +76,17 @@ export const CORNER = {
   "full": 9999
 } as const;
 export const FONT_SIZE = {
+  "9": 9,
   "11": 11,
   "14": 14,
   "16": 16,
   "18": 18,
   "24": 24,
+  "28": 28,
   "30": 30,
   "36": 36,
+  "42": 42,
+  "96": 96,
   "2xs": 10,
   "xs": 12,
   "sm": 13,
@@ -92,7 +96,8 @@ export const FONT_SIZE = {
   "2xl": 22,
   "3xl": 26,
   "4xl": 32,
-  "5xl": 40
+  "5xl": 40,
+  "12.5": 12.5
 } as const;
 export const LEADING = {
   "tight": 1.15,
@@ -181,6 +186,7 @@ export const OPACITY = {
   "70": 0.7,
   "75": 0.75,
   "80": 0.8,
+  "85": 0.85,
   "90": 0.9,
   "transparent": 0,
   "half": 0.5,
@@ -192,6 +198,8 @@ export const BORDER_WIDTH = {
   "hairline": "hairline",
   "thin": 1,
   "thick": 2,
+  "0.5": 0.5,
+  "1.5": 1.5,
   "2.5": 2.5
 } as const;
 export const HIT_SLOP = {

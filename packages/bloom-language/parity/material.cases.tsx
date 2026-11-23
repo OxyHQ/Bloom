@@ -554,6 +554,25 @@ const named: ParityCase[] = [
     ),
   },
   {
+    // The half-point and point-and-a-half borders and the 85% fade Mention writes.
+    name: 'a half-point border, 85% opaque',
+    language: () => toElement(L.VStack().border('border', '0.5').opacity('85')),
+    bloom: () => (
+      <Themed>
+        {(c) => <RN.View style={{ borderWidth: 0.5, borderColor: c.border, opacity: 0.85 }} />}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a point-and-a-half bottom border',
+    language: () => toElement(L.VStack().border('border', '1.5', 'bottom')),
+    bloom: () => (
+      <Themed>
+        {(c) => <RN.View style={{ borderBottomWidth: 1.5, borderBottomColor: c.border }} />}
+      </Themed>
+    ),
+  },
+  {
     name: 'an 80% opaque box',
     language: () => toElement(L.VStack().opacity('80')),
     bloom: () => <RN.View style={{ opacity: 0.8 }} />,
