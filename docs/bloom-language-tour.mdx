@@ -1,0 +1,622 @@
+---
+title: Bloom language tour
+description: The Bloom language topic by topic, from views and modifiers to navigation, glass, data and platforms, with examples the CI compiles.
+---
+
+# Bloom language tour
+
+One topic per section, each with an example that compiles: CI runs every
+`check` block of this page through the language compiler and TypeScript
+(`packages/bloom-language/scripts/check-doc-examples.mjs`). Start with
+[getting started](bloom-language-getting-started.mdx) for the setup. The
+reference lists every [node](bloom-language-nodes.mdx),
+[modifier](bloom-language-modifiers.mdx) and [token](bloom-language-tokens.mdx);
+[the design document](bloom-language.mdx) says how each part is drawn and why.
+
+## Views and stacks
+
+A view is a function of its props that returns nodes. `view()` makes one; its
+body runs as a React component, so it may call hooks.
+
+```tsx check
+import { HStack, Icon, Spacer, Text, VStack, view } from '@oxy.so/bloom-language';
+import { RiArrowRightSLine } from '@oxy.so/bloom/icons/RiArrowRightSLine';
+
+export const SettingRow = view(function SettingRow({ title, value }: { title: string; value: string }) {
+  return HStack(
+    VStack(Text(title).font('body'), Text(value).font('caption-1').foreground('muted')).spacing('2xs'),
+    Spacer(),
+    Icon(RiArrowRightSLine).size('sm').foreground('muted'),
+  )
+    .spacing('sm')
+    .padding('md');
+});
+
+// Used like any node: a view takes one props object.
+export const Settings = view(function Settings() {
+  return VStack(SettingRow({ title: 'Language', value: 'English' }), SettingRow({ title: 'Theme', value: 'System' }));
+});
+```
+
+- **Stacks.** `HStack` and `VStack` lay children out along an axis; `ZStack`
+  draws them over one another, the stack as big as its largest child.
+  `Spacer()` takes the free room. `Group(...)` is several children with no box.
+- **Children** are nodes, `null`, `false` or arrays of those. Strings and
+  numbers go in `Text`. Write `count ? Text(count) : null`, never
+  `count && Text(count)` (a count of 0 would be a bare `0`; it does not type).
+- **Lists of children** are one position: `items.map((item) => Row({ item }).id(item.id))`.
+  `.id()` keys each item, as React's `key`.
+- **Nodes are data.** A chain returns a new node each call and never changes
+  the one it is called on, so a node can be shared and branched.
+- **JSX inside.** `Embed(<Anything />)` places a React element the language
+  has no node for; `toElement(node)` draws a node inside JSX.
+
+## Modifiers and order
+
+A modifier returns the view changed. Order is nesting, as in SwiftUI:
+
+```tsx check
+import { Text, VStack } from '@oxy.so/bloom-language';
+
+// The fill covers the padding: one view.
+export const filled = VStack(Text('Inside')).padding('md').background('card').corner('lg');
+// The padding sits outside the fill: two views.
+export const spaced = VStack(Text('Inside')).background('card').corner('lg').padding('md');
+// A corner sets the radius; .clipped() clips the content to it.
+export const clipped = VStack(Text('Inside')).corner('lg').clipped();
+```
+
+- Within one view the layers go padding, frame, background or glass, border,
+  corner, opacity. A chain in that order is one native view; a modifier
+  against the order wraps what came before it.
+- **Text traits are inherited** (`foreground`, `font`, `weight`, `leading`,
+  `tracking`): set on a stack, they reach every `Text` and `Icon` inside it,
+  through nested views.
+- **Placement** (`grow`, `shrink`, `alignSelf`, `position`) and press, hover
+  and accessibility props always go on the view's outermost box.
+- **Each node takes its own modifiers.** `Text` has `.lines()`, a stack has
+  `.spacing()`, and every node has the universal ones (padding, frame,
+  background, border, corner, opacity, shadow, glass, press, accessibility,
+  screen chrome, animation). `HStack().lines(2)` is a type and compile error.
+  [The node reference](bloom-language-nodes.mdx) lists what each takes.
+
+## Tokens
+
+Every value is a token, never a pixel or a colour:
+
+```tsx check
+import { Button, Text, VStack, defineTokens } from '@oxy.so/bloom-language';
+
+// An app's own values, named once: still a name at each use.
+export const brand = defineTokens({ color: { brand: '#1877f2' }, space: { gutter: 18 } });
+
+export const card = VStack(
+  Text('Weekly report').font('headline').weight('semibold'),
+  Text('Your numbers are up.').foreground('muted/70'),
+  Button(Text('Open')).size('sm').tint('accent'),
+)
+  .padding('horizontal', brand.space.gutter)
+  .padding('vertical', 'md')
+  .background('card')
+  .border('border', 'hairline')
+  .corner('xl')
+  .shadow('s');
+```
+
+- **Named rungs are the design scale**: space `none` `2xs` `xs` `sm` `md`
+  `lg` `xl`…, corners, the type ramp (`body`, `headline`, `title-2`,
+  `caption-1`…), weights, colour roles (`foreground`, `muted`, `primary`,
+  `card`, `border`, `error`…). Use these first.
+- **Numeric tokens** are exact values apps already write (`'44'`, `'6'`),
+  named by their value, still a closed set the compiler checks.
+- **A colour at an opacity** is `'role/opacity'` (`'muted/70'`,
+  `'primary/10'`).
+- **App tokens** (`defineTokens`) cover space, icon and avatar sizes,
+  leading, motion and brand colours. A hex or a number at a call site does not
+  compile.
+- **Each node has its own sets**: a `Button`'s `.size()` is the control size
+  (`xs` `sm` `md` `lg`), an `Avatar`'s its avatar rungs, an `Icon`'s the icon
+  rungs. Keep normal app scale at `md`.
+- [Every set and its values](bloom-language-tokens.mdx).
+
+## Variants
+
+`.when(condition, v => v…)` overrides what the chain set before it while the
+condition holds: a breakpoint, the scheme, the view's own state, a platform or
+an app's boolean.
+
+```tsx check
+import { HStack, Text, VStack } from '@oxy.so/bloom-language';
+
+export function Tile({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
+  return HStack(Text('Plan'))
+    .padding('sm')
+    .background('mutedFill')
+    .corner('lg')
+    .onPress(onSelect)
+    .when('md', (v) => v.padding('lg'))
+    .when('hovered', (v) => v.background('secondary'))
+    .when('pressed', (v) => v.opacity('70'))
+    .when(selected, (v) => v.background('primary').foreground('onPrimary'));
+}
+
+export const columns = VStack(Text('A'), Text('B'))
+  .axis('vertical')
+  .when('md', (v) => v.axis('horizontal').justify('between'));
+```
+
+| Condition | Holds |
+| --- | --- |
+| `sm` `md` `lg` `xl` `2xl` | the window at that breakpoint or wider |
+| `dark` | the dark scheme |
+| `hovered` `focused` `pressed` | the view's own state (`focused` is keyboard focus) |
+| `disabled` | the view's own `.disabled()`, inherited too |
+| `web` `native` `ios` `android` | the platform |
+| a boolean | the app's own condition |
+
+Only style varies (box, text, placement, elevation, geometry); a press or a
+name inside `when()` is a compile error. Variants nest:
+`.when('md', (v) => v.when('hovered', …))`. No view body re-runs when a
+condition changes: CSS answers on the web, the drawing leaf on native.
+
+## Bindings
+
+A control's value is a **binding**: `readonly [value, setValue]`, which is
+what `useState` returns. The screen owns the value; the control reads and
+writes it, as SwiftUI's `$value`.
+
+```tsx check
+import { useState } from 'react';
+import { Button, Field, Option, Picker, Segmented, TextEditor, TextField, Text, Toggle, VStack, HStack, Spacer } from '@oxy.so/bloom-language';
+
+export function ProfileForm({ save }: { save: (profile: { name: string; bio: string }) => void }) {
+  const [name, setName] = useState('');
+  const bio = useState('');
+  const visibility = useState<'public' | 'private'>('public');
+  const country = useState<string | undefined>(undefined);
+  const notify = useState(true);
+  return VStack(
+    Field('Name', TextField([name, setName], 'Name').placeholder('Ada Lovelace')).required(),
+    TextEditor(bio, 'Bio').maxLength(280).showCount(),
+    Segmented(visibility, Option('public', 'Public'), Option('private', 'Private')).label('Visibility'),
+    Picker(country, Option('pt', 'Portugal'), Option('es', 'Spain')).placeholder('Country').label('Country'),
+    HStack(Text('Notifications'), Spacer(), Toggle(notify).label('Notifications')),
+    Button(Text('Save')).disabled(name.trim() === '').onPress(() => save({ name, bio: bio[0] })),
+  ).spacing('md');
+}
+```
+
+- A node's **main value** is its constructor's binding (`TextField(text)`,
+  `Toggle(isOn)`, `Picker(selection)`). Every **other value** it edits is a
+  modifier taking a binding: `.presented([open, setOpen])`, `.focused(...)`,
+  `.expanded(...)`, `.query(...)`, `.refreshable([refreshing, setRefreshing])`.
+- A modifier left unchained leaves the value to Bloom (uncontrolled); there is
+  no change handler alone.
+- A store's value binds too: `TextField([draft.title, setTitle], 'Title')`.
+
+## Environment
+
+A view sets values on everything inside it, as SwiftUI's environment does.
+
+```tsx check
+import { Button, HStack, Text, VStack, defineEnvironment, useEnvironment, view } from '@oxy.so/bloom-language';
+
+export const Compact = defineEnvironment('compact', false);
+
+const Meta = view(function Meta({ text }: { text: string }) {
+  return useEnvironment(Compact) ? null : Text(text).foreground('muted');
+});
+
+export function Toolbar({ saving }: { saving: boolean }) {
+  return VStack(
+    HStack(Button(Text('Undo')), Button(Text('Redo'))).buttonStyle('subtle').controlSize('sm'),
+    Meta({ text: 'Saved a minute ago' }),
+  )
+    .disabled(saving)
+    .environment(Compact, true);
+}
+```
+
+- **Built-in values** on every view: `.disabled()` (every control inside takes
+  no input), `.controlSize()` (every control that names no size),
+  `.buttonStyle()` (every `Button` that names no style). A node's own value
+  always wins.
+- **Text traits** are environment too: `VStack(...).foreground('muted')`.
+- **An app's values**: `defineEnvironment(name, default)` at module scope,
+  `.environment(key, value)` to set, `useEnvironment(key)` in a `view()` body
+  to read. Values are plain (tokens, strings, numbers, booleans).
+
+## Custom modifiers
+
+`defineModifier` names a recipe of modifiers, as SwiftUI's `ViewModifier`:
+
+```tsx check
+import { Text, VStack, defineModifier, type InkToken } from '@oxy.so/bloom-language';
+
+export const sectionCard = defineModifier((v) =>
+  v.padding('md').background('card').corner('lg').cornerCurve('smooth').shadow('s'),
+);
+export const tag = defineModifier((v, tone: InkToken) => v.padding('horizontal', 'xs').background(tone).corner('full'));
+
+export const section = VStack(Text('Beta').modifier(tag, 'primary/10'), Text('Details')).modifier(sectionCard);
+```
+
+A recipe is a pure function of the view: no hooks, tokens only, universal
+modifiers (so it applies to any view). A module-scope recipe is static, so the
+compiler hoists chains that use it. A recipe several apps repeat belongs in
+Bloom, not in each app.
+
+## Layout
+
+```tsx check
+import { Avatar, Badge, Button, HStack, Icon, Text, VStack, ViewThatFits, ZStack, Fill } from '@oxy.so/bloom-language';
+import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';
+
+export const header = HStack(Avatar('https://example.com/a.png').size('md'), Text('Ana Lima'))
+  .justify('between')
+  .wrap()
+  .spacing('sm');
+
+export const panel = VStack(Text('Panel'))
+  .frame({ width: 'full', maxWidth: '1/2' })
+  .alignSelf('center')
+  .padding('lg');
+
+export const avatarWithCount = Avatar('https://example.com/a.png')
+  .size('lg')
+  .overlay(Badge(3).tint('danger'), 'top-trailing');
+
+export const card = ZStack(Fill().background('mutedFill'), Text('Over the fill'))
+  .alignment('bottom-leading')
+  .overlay(Button(Icon(RiCloseLine)).label('Close'), 'top-trailing');
+
+export const progress = ViewThatFits('horizontal', Text('12 of 40 done'), Text('12/40'));
+```
+
+- `justify` distributes along the axis (`start` `center` `end` `between`
+  `around` `evenly`), `align` places children across it, `spacing` is the
+  gap, `wrap()` flows onto more lines, `axis()` flips a stack (with a
+  breakpoint variant: `flex-col md:flex-row`).
+- `frame({ width, height, min…, max… })` takes space rungs or a length of
+  the parent (`full`, `1/2`, `1/3`…), or `fit`.
+- `.overlay(view, alignment)` and `.background(view, alignment)` put a view
+  over or under this one; `.position(edges)` pins a view absolutely;
+  `.offset({ x, y })` shifts it without moving its siblings.
+- A `ZStack` places its children at its `.alignment()` (`center` by default);
+  `Fill()` covers the whole stack.
+- `ViewThatFits(axis, ...candidates)` draws the first candidate that fits
+  (content, not breakpoints; keep it to three or fewer, the compiler warns).
+
+## Lists
+
+```tsx check
+import { useCallback } from 'react';
+import { Avatar, HStack, ListItem, ScrollView, Text, VStack, VirtualList, type VirtualListRow } from '@oxy.so/bloom-language';
+
+interface Person { id: string; name: string; role: string; avatar: string }
+
+// A handful: a scroll of rows, each keyed.
+export function Team({ people }: { people: Person[] }) {
+  return ScrollView(
+    people.map((p) => ListItem(p.name).supporting(p.role).prefix(Avatar(p.avatar).size('md')).id(p.id)),
+  ).spacing('xs');
+}
+
+// Many: a virtual list (FlashList on native, a virtualizer on the web).
+export function Directory({ people, more }: { people: Person[]; more: () => void }) {
+  const row = useCallback(
+    ({ item }: VirtualListRow<Person>) =>
+      HStack(Avatar(item.avatar).size('md'), VStack(Text(item.name), Text(item.role).foreground('muted'))).spacing('sm').padding('md'),
+    [],
+  );
+  return VirtualList(people, row).itemKey((p: Person) => p.id).estimatedItemSize(64).onEndReached(more).screen();
+}
+```
+
+- `ListItem(title)` is Bloom's row: `.supporting()`, `.prefix()`,
+  `.trailing()`, `.onPress()`, `.swipeActions()`, `.checkable(binding)`.
+  `PersonRow`, `ConversationRow`, `MailRow` are its recipes over Bloom's data.
+- `List(entries)` draws Bloom's list data with separators and empty states.
+- `VirtualList(data, row)`: keep `row` stable (module scope or
+  `useCallback`) so rows re-render only when their item changes.
+  `.screen()` makes it its screen's scroller (header fade, bottom bar fold).
+- A glass per row breaks the [Liquid Glass rules](#liquid-glass-rules).
+- With bloom-data, the list's ids come from `useList` ([Data](#data)).
+
+## Navigation
+
+`@oxy.so/bloom-language/router` makes route files out of the language;
+expo-router's files stay the URL map, so deep links and typed routes are
+untouched.
+
+```tsx check
+// app/(app)/_layout.tsx
+import { RiQuillPenLine } from '@oxy.so/bloom/icons/RiQuillPenLine';
+import { AppLayout, Sheet, Stack, layout } from '@oxy.so/bloom-language/router';
+
+export default layout(function App() {
+  return AppLayout(Stack('(tabs)', Sheet('compose'), 'post/[id]')).primaryAction(RiQuillPenLine, 'Compose', 'compose');
+});
+```
+
+```tsx check
+// app/(app)/(tabs)/_layout.tsx
+import { TabView, layout } from '@oxy.so/bloom-language/router';
+
+export default layout(() => TabView());
+```
+
+```tsx check
+// app/(app)/(tabs)/index.tsx
+import { useState } from 'react';
+import { Button, Icon, ListItem, ScrollView, Text, VStack } from '@oxy.so/bloom-language';
+import { navigate, screen } from '@oxy.so/bloom-language/router';
+import { RiFilter3Line } from '@oxy.so/bloom/icons/RiFilter3Line';
+
+export default screen(function Home() {
+  const [filtering, setFiltering] = useState(false);
+  return ScrollView(
+    ListItem('First post').onPress(navigate('/post/[id]', { id: '1' })),
+    ListItem('Second post').onPress(navigate('/post/[id]', { id: '2' })),
+  )
+    .title('Home')
+    .titleDisplay('large')
+    .toolbar(Button(Icon(RiFilter3Line)).label('Filters').onPress(() => setFiltering(true)))
+    .sheet(filtering, () => VStack(Text('Filters')).padding('lg'), { onDismiss: () => setFiltering(false) });
+});
+```
+
+| Node | What it is |
+| --- | --- |
+| `layout(body)`, `screen(body)` | a route file's default export; the body may call hooks |
+| `AppLayout(navigator)` | Bloom's `AppShell` (sidebar, bottom bar, FAB); `.primaryAction()`, `.bottomBar(shown)`, `.panels()` |
+| `Stack(...routes)` | a stack: the native stack on iOS, predictive back on Android, in place on the web |
+| `Sheet(name)` | a route presented as a sheet (the system page sheet on iOS) |
+| `TabView()` | tabs: the system tab bar on iOS, Bloom's pager elsewhere |
+| `navigate(href, params?)` | a press that pushes a route: `.onPress(navigate('/post/[id]', { id }))` |
+
+**A screen's chrome** is modifiers on its body's root: `.title()`,
+`.titleDisplay('large')`, `.subtitle()`, `.toolbar(...)`,
+`.toolbarLeading(...)`, `.header(...)`, `.footer(...)`, `.onBack()`,
+`.sheet(open, content, options)`, `.floatingAction(FAB(...))`,
+`.onReselect()`. Toolbars hold at most three `ToolbarGroup`s.
+
+## Overlays
+
+What a view presents is a modifier on it, shown while its binding holds:
+
+```tsx check
+import { useState } from 'react';
+import { Alert, Button, ConfirmationDialog, Dialog, Icon, Item, Popover, Text, toast } from '@oxy.so/bloom-language';
+import { RiInformationLine } from '@oxy.so/bloom/icons/RiInformationLine';
+
+export function DeleteButton({ remove }: { remove: () => void }) {
+  const confirming = useState(false);
+  return Button(Text('Delete'))
+    .style('subtle')
+    .tint('danger')
+    .onPress(() => confirming[1](true))
+    .alert(
+      confirming,
+      Alert('Delete post?').message('It cannot be undone.').confirmLabel('Delete').destructive().onConfirm(remove),
+    );
+}
+
+export function ShareButton() {
+  const sharing = useState(false);
+  return Button(Text('Share'))
+    .onPress(() => sharing[1](true))
+    .dialog(sharing, Dialog(Text('Copy the link')).title('Share').presentAt('bottom', { md: 'center' }));
+}
+
+export function Details({ summary }: { summary: string }) {
+  return Button(Icon(RiInformationLine))
+    .shape('circle')
+    .label('Details')
+    .popover(useState(false), Popover(Text(summary)).label('Details').side('bottom', 'end'));
+}
+
+export function MoreActions({ archive }: { archive: () => void }) {
+  const asking = useState(false);
+  return Button(Text('More'))
+    .onPress(() => asking[1](true))
+    .confirmationDialog(asking, ConfirmationDialog('Post actions', Item('Archive').onPress(archive)));
+}
+
+export const saved = () => toast.success('Saved');
+```
+
+`.alert()`, `.dialog()`, `.popover()`, `.confirmationDialog()` and the
+screen's `.sheet()` are drawn beside the view; dismissing writes the binding
+false. A component that *is* a dialog returns
+`Dialog(...).presented([open, onClose])`. Toasts are events (`toast(...)`,
+`toast.success(...)`), not views. `ConnectionStatus()` goes once near the root.
+
+## Animation and gestures
+
+Motion is a token too (Bloom's `select`, `expand`, `pop`, `fade`…, or an
+app's `defineTokens({ motion })`). A view says what animates and with what:
+
+```tsx check
+import { Button, HStack, Icon, Text, VStack, animate, move, opacity, useMappedValue, useMotionValue } from '@oxy.so/bloom-language';
+import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line';
+
+export function Like({ liked, toggle }: { liked: boolean; toggle: () => void }) {
+  return Button(Icon(RiHeart3Line))
+    .label('Like')
+    .scale(liked ? 'swell' : 'full')
+    .animation('pop', liked)
+    .pressScale()
+    .onPress(toggle);
+}
+
+export function Banner({ shown }: { shown: boolean }) {
+  return shown ? Text('Saved').transition(move('top', 'md').combined(opacity)).id('banner') : null;
+}
+
+export function Drawer() {
+  const y = useMotionValue(0);
+  const dim = useMappedValue(y, [0, 300], [1, 0.9]);
+  return VStack(HStack(Text('Drag me')))
+    .offset({ y })
+    .scale(dim)
+    .drag(y, { axis: 'y', min: 0, onEnd: ({ value }) => animate(y, value > 120 ? 300 : 0, 'expand') });
+}
+```
+
+- `.animation(motion, value?)` plays changes to geometry and opacity (and
+  variants) when `value` changes; `.animatesColors()` opts colours in.
+- `.transition(t)` is insertion and removal (`opacity`, `scale('dip')`,
+  `move(edge, distance)`, `.combined()`, `asymmetric()`); a removal plays on a
+  keyed child.
+- `.keyframes(k, trigger)`, `.phases(phases, trigger, build)`,
+  `.repeatForever('spin' | 'pulse')`, `.matchedGeometry(id, ns)` with
+  `useNamespace()` (or `transitionNamespace()` between screens),
+  `.contentTransition('numeric')` on a count.
+- Gestures are modifiers: `.drag()`, `.pinch()`, `.swipe()`,
+  `.onDoubleTap()`. A `MotionValue` ties a gesture to geometry; apps never
+  write a worklet.
+
+## Glass
+
+Glass is SwiftUI's `glassEffect`: Liquid Glass on iOS 26, the lens on Android
+and OxyOS, Bloom's frosted `Surface` on the web.
+
+```tsx check
+import { Button, HStack, Icon, Text, regular, clear } from '@oxy.so/bloom-language';
+import { RiShareLine } from '@oxy.so/bloom/icons/RiShareLine';
+
+export const chip = Text('Live').padding('horizontal', 'sm').padding('vertical', 'xs').glass().corner('full');
+export const tinted = HStack(Text('Recording')).padding('sm').glass(regular.tint('error', 'medium')).corner('lg');
+export const overPhoto = Button(Icon(RiShareLine)).label('Share').glass(clear.dimmed());
+```
+
+### Glass groups
+
+Nearby glasses go in one `GlassGroup`, so they render together and blend:
+
+```tsx check
+import { useState } from 'react';
+import { Button, GlassGroup, HStack, Icon, useNamespace } from '@oxy.so/bloom-language';
+import { RiMarkPenLine } from '@oxy.so/bloom/icons/RiMarkPenLine';
+import { RiPencilLine } from '@oxy.so/bloom/icons/RiPencilLine';
+
+export function Tools() {
+  const ns = useNamespace();
+  const [marking, setMarking] = useState(false);
+  return GlassGroup(
+    HStack(
+      Button(Icon(RiPencilLine)).label('Draw').glass().glassID('pencil', ns).onPress(() => setMarking(!marking)),
+      marking ? Button(Icon(RiMarkPenLine)).label('Highlight').glass().glassID('marker', ns) : null,
+    ).spacing('xl'),
+  )
+    .blend('xl')
+    .animation('expand', marking);
+}
+```
+
+`.blend(space)`: glasses closer than it flow into one shape.
+`.glassID(id, ns)`: a glass that arrives grows out of where its id was.
+`.glassUnion(id, ns)`: glasses with one id are one shape.
+
+### Materials
+
+| Material | Use |
+| --- | --- |
+| `.glass()` (`regular`) | chrome over content: bars, floating buttons, headers |
+| `.glass(regular.tint(role, opacity?))` | the one prominent control (opacities `subtle` `dim` `medium` `strong`) |
+| `.glass(clear)` | over media; dim it (`clear.dimmed()`) or tint it |
+| `.glass(identity)` | no glass, same chain (`editing ? regular : identity`) |
+| `Button(...).style('glass' \| 'glassProminent')` | a control on glass |
+| `.blur()` | Bloom's floating island (not glass) |
+
+A material is never faded: an opacity on a glass or its ancestor is a
+compile warning.
+
+### Liquid Glass rules
+
+Apple's guidance, held by the compiler within one expression:
+
+| Rule | Compiler |
+| --- | --- |
+| No glass on glass | error |
+| Glass is chrome, not content (not inside a scroll, list or card) | warning; `.inContent()` says it is on purpose |
+| Nearby glasses share one `GlassGroup` | warning |
+| Every icon-only control has a `.label()` | error |
+| At most three `ToolbarGroup`s; text and icon actions apart | warning |
+| Clear glass over media is dimmed or tinted | warning |
+| One tinted glass per group, bar or toolbar | warning |
+| At most 12 glasses per module; no glass per list item | warning |
+
+## Data
+
+`@oxy.so/bloom-data` is the data layer: records by id in memory, ordered
+lists, sources that fill them, optimistic actions, realtime and a durable copy
+(SQLite on native, IndexedDB on the web). A view reads it with hooks, and
+re-renders only for the fields it read.
+
+```tsx check
+import { action, entity, list, source, useEntity, useList } from '@oxy.so/bloom-data';
+import { Button, ListItem, ScrollView, Text, view } from '@oxy.so/bloom-language';
+
+interface Note { id: string; title: string; done: boolean }
+
+export const NoteEntity = entity<Note>('note', { id: (n) => n.id });
+export const Notes = list('notes', { of: NoteEntity });
+export const notes = source(Notes, {
+  key: () => 'all',
+  load: async () => ({ items: [{ id: '1', title: 'Buy milk', done: false }], cursor: null }),
+});
+export const complete = action({
+  key: (id: string) => `complete:${id}`,
+  optimistic: (id) => NoteEntity.merge(id, { done: true }),
+  run: async (_id: string) => {},
+});
+
+const NoteRow = view(function NoteRow({ id }: { id: string }) {
+  const note = useEntity(NoteEntity, id);
+  return note
+    ? ListItem(note.title).trailing(note.done ? Text('Done').foreground('muted') : Button(Text('Done')).onPress(() => complete(id)))
+    : null;
+});
+
+export const NoteList = view(function NoteList() {
+  const all = useList(notes);
+  return ScrollView(all.ids.map((id) => NoteRow({ id }).id(id)));
+});
+```
+
+`entity` holds records, `list` orders ids, `source` loads pages (retries,
+staleness, offline pause, refetch on focus), `action` applies an optimistic
+change, runs the call, then settles or rolls back. The whole model, the
+persisters and the boot read are in [Bloom data](bloom-data.mdx).
+
+## Platforms
+
+The language draws each platform's own component where it has one, and
+Bloom's everywhere else; the same chain runs on all four.
+
+| | iOS | Android | OxyOS | Web |
+| --- | --- | --- | --- | --- |
+| Glass | Liquid Glass (`expo-glass-effect`, iOS 26), `expo-blur` before | the lens (`@oxy.so/bloom-lens`, Android 13+) | the lens | Bloom `Surface` (frosted) |
+| Menu | SwiftUI `Menu` (`@expo/ui`) | the lens menu | the lens menu | Bloom's menu |
+| Stack | the native stack and navigation bar | predictive back | predictive back | the route in place, document scroll |
+| Tabs | the system tab bar | Bloom's pager | Bloom's pager | Bloom's pager |
+| Sheet | the system sheet | Bloom's sheet | Bloom's sheet | Bloom's dialog |
+| Styles | React Native styles from the tokens | same | same | a generated atomic stylesheet |
+
+- Without an optional peer, the language draws Bloom's component in its place.
+- `.when('ios', …)` and the other platform conditions are settled at render.
+- iOS paths are typechecked and tested against stand-ins; Android is verified
+  on a Pixel and the web in Chrome (see
+  [Platform components](bloom-language.mdx#platform-components)).
+
+## Accessibility
+
+- `.label()` names a view for assistive technology; an icon-only `Button` or
+  `FAB` without one does not compile.
+- `.hint()`, `.role()` (`button`, `link`, `header`, `tab`…), `.headingLevel()`
+  for the screen title, `.accessibilityOnly()` (read, not drawn).
+- Controls announce their state (`.pressed()`, a toggle, a checkbox).
+- `.hitSlop()` widens a small target; keep controls at `md` size.
+- Reduced motion stops loops and press scale on its own.

@@ -114,6 +114,12 @@ jobs:
           for package in packages/bloom-text packages/bloom-editor packages/bloom-language packages/bloom-language-compiler packages/bloom-data; do
             (cd "$package" && bun run build && bun run typescript && bun run test)
           done
+      # The language guides' `check` examples (getting started, the tour, from
+      # JSX, the agents' cheat sheet) through the compiler built above and
+      # TypeScript, so a guide never teaches code that does not build. The
+      # generated reference's freshness is the language's own test above.
+      - name: Language guide examples compile
+        run: cd packages/bloom-language && bun run check:docs
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
       # Bun, Node ESM, Node CommonJS and a node16 typecheck, pulling no React.
       - name: Colour engine subpath

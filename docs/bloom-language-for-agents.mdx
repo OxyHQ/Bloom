@@ -1,0 +1,155 @@
+---
+title: Bloom language for AI agents
+description: A compact, exact cheat sheet for writing Bloom language code that compiles the first time. Read it before writing or changing a language screen.
+---
+
+# Bloom language for AI agents
+
+Read this before writing language code. Everything below compiles (CI checks
+the `check` blocks); the full lists are in the generated reference:
+[nodes](bloom-language-nodes.mdx), [modifiers](bloom-language-modifiers.mdx),
+[tokens](bloom-language-tokens.mdx). Installed apps have these pages at
+`node_modules/@oxy.so/bloom/docs/`.
+
+## The rules
+
+1. **A view is a function that returns nodes.** `view(function Name(props) { return … })`.
+   Hooks are allowed in the body. A route file default-exports
+   `screen(function Name() { … })` or `layout(() => …)` from
+   `@oxy.so/bloom-language/router`.
+2. **Style is modifiers, chained; order is nesting.** `.padding('md').background('card')`
+   fills the padding; `.background('card').padding('md')` pads outside the fill.
+3. **Every value is a token string.** Never a number, a hex or a style
+   object: `.padding('md')`, not `.padding(12)`; `.foreground('muted')`, not
+   `'#666'`. Missing value: `defineTokens({ space: { gutter: 18 } })` and use
+   `t.space.gutter`.
+4. **Each node takes only its own modifiers plus the universal ones.** Look the
+   node up in [the node reference](bloom-language-nodes.mdx) before chaining.
+   `Text` has `.lines()`, stacks have `.spacing()` / `.align()` / `.justify()`.
+5. **Inputs take bindings**: `[value, setValue]`, i.e. `useState(...)` itself.
+6. **Presentation is a modifier on the trigger**: `.alert(binding, Alert(...))`,
+   `.dialog(...)`, `.popover(...)`, `.sheet(open, () => content, { onDismiss })`.
+7. **Text traits inherit** (`foreground`, `font`, `weight`, `leading`,
+   `tracking`): set them on the stack, not on every `Text`.
+8. **Icons are components**, imported one per file:
+   `import { RiHeart3Line } from '@oxy.so/bloom/icons/RiHeart3Line'`, then
+   `Icon(RiHeart3Line)`. An icon-only `Button`/`FAB` needs `.label('…')`.
+9. **Glass is chrome**: headers, bars, floating controls. Not in lists, cards
+   or scroll content; neighbours go in one `GlassGroup`; at most one tinted.
+10. **Bloom-first**: if Bloom has the component, use its node; for anything
+    else wrap the element: `Embed(<Thing />)`. No `className`, no `style`,
+    no NativeWind.
+
+## Imports
+
+```ts
+import { view, HStack, VStack, ZStack, Spacer, Group, Text, Icon, Image, Button, Avatar, Badge,
+  Card, ListItem, List, VirtualList, ScrollView, TextField, Toggle, Picker, Option, Segmented, Field,
+  Alert, Dialog, Popover, GlassGroup, regular, clear, defineTokens, defineModifier, defineEnvironment,
+  useEnvironment, useNamespace, useMotionValue, animate, toast, Embed, toElement } from '@oxy.so/bloom-language';
+import { layout, screen, Stack, TabView, Sheet, AppLayout, navigate } from '@oxy.so/bloom-language/router';
+import { entity, list, source, action, useEntity, useList } from '@oxy.so/bloom-data';
+```
+
+## A screen, complete
+
+```tsx check
+import { useState } from 'react';
+import { Button, Field, HStack, Icon, ListItem, ScrollView, Spacer, Text, TextField, Toggle, VStack } from '@oxy.so/bloom-language';
+import { navigate, screen } from '@oxy.so/bloom-language/router';
+import { RiAddLine } from '@oxy.so/bloom/icons/RiAddLine';
+
+interface Item { id: string; title: string; detail: string }
+
+export default screen(function Items() {
+  const [items, setItems] = useState<Item[]>([]);
+  const title = useState('');
+  const urgent = useState(false);
+  const [adding, setAdding] = useState(false);
+  const add = () => {
+    setItems((all) => [...all, { id: String(all.length + 1), title: title[0], detail: urgent[0] ? 'Urgent' : 'Later' }]);
+    setAdding(false);
+  };
+  return ScrollView(
+    items.length === 0 ? Text('Nothing yet').foreground('muted').padding('lg') : null,
+    items.map((item) => ListItem(item.title).supporting(item.detail).onPress(navigate('/items/[id]', { id: item.id })).id(item.id)),
+  )
+    .title('Items')
+    .toolbar(Button(Icon(RiAddLine)).label('Add item').onPress(() => setAdding(true)))
+    .sheet(
+      adding,
+      () =>
+        VStack(
+          Field('Title', TextField(title, 'Title')),
+          HStack(Text('Urgent'), Spacer(), Toggle(urgent).label('Urgent')),
+          Button(Text('Add')).disabled(title[0] === '').onPress(add),
+        )
+          .spacing('md')
+          .padding('lg'),
+      { onDismiss: () => setAdding(false) },
+    );
+});
+```
+
+## Common mistakes
+
+| Wrong | Right | Why |
+| --- | --- | --- |
+| `.padding(12)` | `.padding('md')` | tokens only |
+| `.foreground('#888')` | `.foreground('muted')` or an app colour token | colours are roles |
+| `.font('footnote')` | `.font('caption-1')` | the ramp's names ([font](bloom-language-tokens.mdx#font)) |
+| `count && Text(count)` | `count ? Text(String(count)) : null` | 0 would draw a bare `0` |
+| `HStack(a, b).lines(1)` | `Text(…).lines(1)` | `lines` is `Text`'s |
+| `Button(Icon(X))` | `Button(Icon(X)).label('Share')` | icon-only needs a label (compile error) |
+| `Button(…).size('medium')` | `Button(…).size('md')` | node token set ([controlSize](bloom-language-tokens.mdx#controlsize)) |
+| `Avatar(src).size('2xl')` | `.size('xl')` | avatar rungs are `xs` `sm` `md` `lg` `xl` |
+| `TextField(value, …)` | `TextField([value, setValue], …)` | a binding, not a value |
+| `<Pressable>` around a node | `.onPress(fn)` | presses are modifiers |
+| `.onPress(() => router.push('/x'))` | `.onPress(navigate('/x'))` | the panel-aware navigator |
+| `.when('hover', …)` | `.when('hovered', …)` | condition names |
+| `.when('md', v => v.onPress(…))` | handlers outside `when()` | variants change style only |
+| `.opacity('half')` on a glass | no opacity on glass | a material is never faded |
+| `ZStack(a, b.alignment('top-leading'))` | `ZStack(a, b).alignment('top-leading')` or `.overlay(b, 'top-leading')` | alignment is the stack's |
+| a new arrow as `VirtualList`'s row each render | a `useCallback` or module-scope row | rows re-render only when their item changes |
+
+## Core tokens
+
+{/* BEGIN GENERATED: core tokens (packages/bloom-language/scripts/generate-reference.mjs) */}
+| Set | Tokens (named rungs; numeric ones in the reference) | Used by |
+| --- | --- | --- |
+| [space](bloom-language-tokens.mdx#space) | `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `4xl` `5xl` | padding, spacing, margin, frame, offset; `-md` pulls outward |
+| [corner](bloom-language-tokens.mdx#corner) | `none` `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `full` `concentric` `infinite` | `.corner()` |
+| [font](bloom-language-tokens.mdx#font) | `large-title` `display-1` `display-2` `display-3` `display-4` `title-1` `title-2` `title-3` `headline` `body` `body-2` `caption-1` `caption-2` `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `4xl` `5xl` `mono` | `.font()`: a type-ramp step, a size rung, or `mono` |
+| [weight](bloom-language-tokens.mdx#weight) | `light` `regular` `medium` `semibold` `bold` `extrabold` | `.weight()` |
+| [leading](bloom-language-tokens.mdx#leading) | `tight` `close` `snug` `easy` `normal` `relaxed` | `.leading()` |
+| [color](bloom-language-tokens.mdx#color) | `foreground` `muted` `textTertiary` `primary` `primaryText` `onPrimary` `secondary` `onSecondary` `tertiary` `onTertiary` `background` `surface` `popover` `border` `input` `success` `successText` `warning` `warningText` `error` `info` `mutedFill` `card` `destructive` `white` `black` `transparent` `onSurface` `accent` `errorText` `infoText` | foreground, background, border, ring; a role at an opacity is `role/70` |
+| [opacity](bloom-language-tokens.mdx#opacity) | `transparent` `half` `opaque` | `.opacity()` and colour opacities |
+| [shadow](bloom-language-tokens.mdx#shadow) | `s` `m` `floating` | `.shadow()` |
+| [alignment](bloom-language-tokens.mdx#alignment) | `start` `center` `end` `stretch` `baseline` | a stack's `.align()`, a view's `.alignSelf()` |
+| [justify](bloom-language-tokens.mdx#justify) | `start` `center` `end` `between` `around` `evenly` | a stack's `.justify()` |
+| [overlayAlignment](bloom-language-tokens.mdx#overlayalignment) | `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing` | `.overlay()`, `.background(view)`, a ZStack's `.alignment()` |
+| [edge](bloom-language-tokens.mdx#edge) | `all` `horizontal` `vertical` `top` `bottom` `leading` `trailing` `left` `right` | the edge of padding, margin and border |
+| [controlSize](bloom-language-tokens.mdx#controlsize) | `xs` `sm` `md` `lg` | a control's `.size()` and `.controlSize()` |
+| [tone](bloom-language-tokens.mdx#tone) | `neutral` `accent` `vivid` `support` `action` `success` `warning` `danger` `info` | a control's `.tint()` |
+| [buttonStyle](bloom-language-tokens.mdx#buttonstyle) | `solid` `subtle` `outline` `plain` `glass` `glassProminent` | a Button's `.style()` and `.buttonStyle()` |
+| [avatarSize](bloom-language-tokens.mdx#avatarsize) | `xs` `sm` `md` `lg` `xl` | an Avatar's `.size()` |
+| [iconSize](bloom-language-tokens.mdx#iconsize) | `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` | an Icon's `.size()` |
+| [glassOpacity](bloom-language-tokens.mdx#glassopacity) | `subtle` `dim` `medium` `strong` | a glass tint: `regular.tint(role, opacity)` |
+| [motion](bloom-language-tokens.mdx#motion) | `press` `select` `expand` `present` `dismiss` `fade` `slide` `thumb` `pop` `roll` `enter` `exit` `restack` `spin` `pulse` | `.animation()`, `animate()`, transitions |
+| [condition](bloom-language-tokens.mdx#condition) | `sm` `md` `lg` `xl` `2xl` `dark` `hovered` `focused` `pressed` `disabled` `web` `native` `ios` `android` | `.when(condition, v => …)` |
+{/* END GENERATED */}
+
+## Where to look
+
+| Need | Read |
+| --- | --- |
+| What modifiers a node takes, its token sets | [nodes](bloom-language-nodes.mdx) |
+| What a modifier takes | [modifiers](bloom-language-modifiers.mdx) |
+| Every value of a token set | [tokens](bloom-language-tokens.mdx) |
+| How a topic works (layout, variants, navigation, glass, data…) | [the tour](bloom-language-tour.mdx) |
+| Moving JSX or `className` | [from JSX](bloom-language-from-jsx.mdx), [className table](bloom-language-classnames.mdx) |
+| How something is drawn per platform, and why | [design document](bloom-language.mdx) |
+| A compiler error | its `= docs:` line links the exact entry |
+
+Verify before you finish: the app's typecheck and its Jest (with the compiler
+transformer) both reject a wrong modifier or token.

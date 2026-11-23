@@ -10,7 +10,9 @@
  *   read, and its own modifiers;
  * - `docs/bloom-language-modifiers.mdx`: every modifier, its parameters with
  *   their token sets, its signature, and the nodes that take it;
- * - `docs/bloom-language-tokens.mdx`: every token set and its values.
+ * - `docs/bloom-language-tokens.mdx`: every token set and its values;
+ * - the core tokens block of `docs/bloom-language-for-agents.mdx` (the rest
+ *   of that page is written by hand).
  *
  * Each item is a heading whose anchor is its name lowercased
  * (`bloom-language-modifiers.mdx#childspacing`), which the compiler's
@@ -491,6 +493,57 @@ function tokensPage() {
   return lines;
 }
 
+// The cheat sheet's core tokens: a generated block inside the hand-written page.
+
+const AGENTS_DOC = 'bloom-language-for-agents.mdx';
+const BEGIN =
+  '{/* BEGIN GENERATED: core tokens (packages/bloom-language/scripts/generate-reference.mjs) */}';
+const END = '{/* END GENERATED */}';
+
+/** The sets a screen reaches for most, named rungs only: what an agent needs to hand. */
+const CORE = [
+  ['space', 'padding, spacing, margin, frame, offset; `-md` pulls outward'],
+  ['corner', '`.corner()`'],
+  ['font', '`.font()`: a type-ramp step, a size rung, or `mono`'],
+  ['weight', '`.weight()`'],
+  ['leading', '`.leading()`'],
+  ['color', 'foreground, background, border, ring; a role at an opacity is `role/70`'],
+  ['opacity', '`.opacity()` and colour opacities'],
+  ['shadow', '`.shadow()`'],
+  ['alignment', "a stack's `.align()`, a view's `.alignSelf()`"],
+  ['justify', "a stack's `.justify()`"],
+  ['overlayAlignment', "`.overlay()`, `.background(view)`, a ZStack's `.alignment()`"],
+  ['edge', 'the edge of padding, margin and border'],
+  ['controlSize', "a control's `.size()` and `.controlSize()`"],
+  ['tone', "a control's `.tint()`"],
+  ['buttonStyle', "a Button's `.style()` and `.buttonStyle()`"],
+  ['avatarSize', "an Avatar's `.size()`"],
+  ['iconSize', "an Icon's `.size()`"],
+  ['glassOpacity', 'a glass tint: `regular.tint(role, opacity)`'],
+  ['motion', '`.animation()`, `animate()`, transitions'],
+  ['condition', '`.when(condition, v => …)`'],
+];
+
+function coreTokens() {
+  const named = (set) => displayOrder(tokenSets[set]).filter((t) => !/^-?[\d.]+(px|em)?$/.test(t));
+  return [
+    '| Set | Tokens (named rungs; numeric ones in the reference) | Used by |',
+    '| --- | --- | --- |',
+    ...CORE.map(([set, use]) => {
+      const tokens = named(set).filter((t) => !(set === 'shadow' && t.includes(' ')));
+      return `| ${tokenLink(set, AGENTS_DOC)} | ${tokens.map((t) => code(t)).join(' ')} | ${use} |`;
+    }),
+  ];
+}
+
+function withCoreTokens(page) {
+  const start = page.indexOf(BEGIN);
+  const end = page.indexOf(END);
+  if (start < 0 || end < start)
+    throw new Error(`${AGENTS_DOC}: the generated core tokens block is missing`);
+  return `${page.slice(0, start + BEGIN.length)}\n${coreTokens().join('\n')}\n${page.slice(end)}`;
+}
+
 // ── Output ───────────────────────────────────────────────────────
 
 const pages = {
@@ -498,14 +551,20 @@ const pages = {
   [MODIFIERS_DOC]: modifiersPage(),
   [TOKENS_DOC]: tokensPage(),
 };
+const agentsPath = join(repoRoot, 'docs', AGENTS_DOC);
+const agentsPage = readFileSync(agentsPath, 'utf8');
+pages[AGENTS_DOC] = withCoreTokens(agentsPage).split('\n');
 
 const stale = [];
 for (const [name, lines] of Object.entries(pages)) {
   const path = join(repoRoot, 'docs', name);
-  const text = `${lines
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trimEnd()}\n`;
+  const text =
+    name === AGENTS_DOC
+      ? lines.join('\n')
+      : `${lines
+          .join('\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trimEnd()}\n`;
   if (check) {
     let current = '';
     try {
