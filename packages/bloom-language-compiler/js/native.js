@@ -21,6 +21,9 @@ const PLATFORMS = {
   'win32-x64': 'win32-x64-msvc',
 };
 const PACKAGE = '@oxy.so/bloom-language-compiler';
+/** Where setting the compiler up (and a platform without a build) is explained. */
+const SETUP_DOC =
+  'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-getting-started.mdx#the-compiler';
 const WASI = `${PACKAGE}-wasm32-wasi`;
 
 function candidates() {
@@ -50,7 +53,8 @@ function load() {
     }
   }
   throw new Error(
-    `No Bloom language compiler loads on ${process.platform}-${process.arch}:\n  ${failures.join('\n  ')}`,
+    `No Bloom language compiler loads on ${process.platform}-${process.arch}:\n  ${failures.join('\n  ')}\n` +
+      `Build it from a checkout (bun run build in packages/bloom-language-compiler), or install the prebuilt package for this platform. See ${SETUP_DOC}`,
   );
 }
 
@@ -59,5 +63,8 @@ const { addon, binary } = load();
 /** The binary's digest: a cache key part, so a new compiler invalidates cached transforms. */
 const digest = crypto.createHash('sha1').update(fs.readFileSync(binary)).digest('hex');
 
-/** `binary` names the build that loaded (a local one, a platform package's, or the WASI module). */
-module.exports = { compile: addon.compile, digest, binary };
+/**
+ * `binary` names the build that loaded (a local one, a platform package's, or
+ * the WASI module); `docLinks()` lists every docs link a diagnostic can carry.
+ */
+module.exports = { compile: addon.compile, docLinks: addon.docLinks, digest, binary };
