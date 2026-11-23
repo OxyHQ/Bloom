@@ -24,6 +24,7 @@
  * `33.3333%` third), a unitless 0 length is 0px,
  * `font-weight: normal` is 400; an em letter-spacing is px of the element's
  * size; a colour mixed with transparent is that colour at the mix's alpha;
+ * a box shadow's colours are the browser's 8-bit rgba, a transparent layer left out;
  * and `letter-spacing` 0 or `font-weight` 400 written where no ancestor
  * declares either is the initial value it would inherit; an inherited text
  * property declared at the value its parent gives it is what it inherits.
@@ -141,6 +142,54 @@ function px(value: string): string {
   );
 }
 
+/** A CSS colour as `[r, g, b, alpha 0–255]`, or undefined when it is no plain colour. */
+function rgba(colour: string): [number, number, number, number] | undefined {
+  const hex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.exec(colour)?.[1];
+  if (hex) {
+    const digits = hex.length <= 4 ? [...hex].map((d) => d + d) : hex.match(/../g);
+    const [r, g, b, a = 255] = (digits ?? []).map((d) => Number.parseInt(d, 16));
+    return [r as number, g as number, b as number, a];
+  }
+  const fn = /^rgba?\(([^)]*)\)$/.exec(colour)?.[1];
+  if (!fn) return colour === 'transparent' ? [0, 0, 0, 0] : undefined;
+  const [r, g, b, a = '1'] = fn.split(/[\s,/]+/).filter(Boolean);
+  const alpha = a.endsWith('%') ? Number(a.slice(0, -1)) / 100 : Number(a);
+  return [Number(r), Number(g), Number(b), Math.round(alpha * 255)];
+}
+
+/**
+ * A box shadow as the browser paints it: each layer's colour as the browser
+ * computes it, at its 8-bit alpha (`#0000001a` and `rgb(0 0 0 / 0.1)` are one
+ * `rgba(0, 0, 0, 0.1)`, lightningcss lowering one to the other), and a layer in
+ * a fully transparent colour left out, as it draws nothing (Tailwind's unset
+ * `--tw-ring-shadow` layers, `0 0 #0000`).
+ */
+function boxShadow(value: string): string {
+  if (value === 'none') return value;
+  const layers = value.split(/,(?![^()]*\))/).map((layer) =>
+    layer
+      .trim()
+      .split(/\s+(?![^(]*\))/)
+      .map((part) => {
+        const colour = rgba(part);
+        return colour ? { colour } : { part };
+      }),
+  );
+  const drawn = layers.filter((layer) => !layer.some((p) => p.colour?.[3] === 0));
+  if (drawn.length === 0) return 'none';
+  return drawn
+    .map((layer) =>
+      layer
+        .map((p) =>
+          p.colour
+            ? `rgba(${p.colour[0]}, ${p.colour[1]}, ${p.colour[2]}, ${Number((p.colour[3] / 255).toFixed(3))})`
+            : p.part,
+        )
+        .join(' '),
+    )
+    .join(', ');
+}
+
 interface Dom {
   tag: string;
   attributes: Record<string, string>;
@@ -191,6 +240,7 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
     css['flex-basis'] = basis;
     delete css.flex;
   }
+  if (css['box-shadow'] !== undefined) css['box-shadow'] = boxShadow(css['box-shadow']);
   if (css.overflow !== undefined) {
     const [x, y] = css.overflow.split(/\s+/);
     css['overflow-x'] = x as string;

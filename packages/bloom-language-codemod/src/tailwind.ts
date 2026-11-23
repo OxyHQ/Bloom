@@ -7,7 +7,7 @@
  * to Bloom's source and every other package (`tailwindcss`, `nativewind`…) to
  * Bloom's `node_modules`.
  */
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { compile } from '@tailwindcss/node';
@@ -91,4 +91,26 @@ export async function tailwind(
     customJsResolver: resolveJs,
   });
   return { build: (classes) => compiler.build([...classes]) };
+}
+
+/**
+ * The class candidates in a package's built JavaScript, as an app's `@source`
+ * glob over it (`node_modules/@oxy.so/bloom/lib/**\/*.{js,jsx}`) hands them to
+ * Tailwind: every word of each file, split at whitespace, quotes and template
+ * holes. Tailwind writes CSS only for the words that are utilities, so a word
+ * that is not one adds nothing.
+ */
+export function packageCandidates(dir: string): string[] {
+  const words = new Set<string>();
+  const walk = (at: string) => {
+    for (const name of readdirSync(at)) {
+      const path = join(at, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (/\.jsx?$/.test(name))
+        for (const word of readFileSync(path, 'utf8').split(/[\s"'`]+|\$\{|\}/))
+          if (word) words.add(word);
+    }
+  };
+  walk(dir);
+  return [...words].sort();
 }

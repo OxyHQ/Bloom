@@ -331,7 +331,22 @@ and dark:
   it, in Bloom's base face, `parity/support/app-text.ts`) over the app's
   Tailwind stylesheet, compiled for native
   with the preset's `inlineRem: 16`, and in the jsdom document on the web.
-- **After:** the chain the codemod wrote.
+  Bloom is this checkout's, with app-preset 6.9's `BloomNativeWindTheme`
+  restated (`parity/support/nativewind-theme.tsx`): Bloom 23 no longer hands
+  its tokens to NativeWind, so an app with classes left mounts it on native.
+- **Before, a class on a Bloom component:** Bloom 23 has no `className`
+  (`no-nativewind.mdx`), so a region that hands one to a Bloom component
+  (`<Text className>`, `contentContainerClassName`; `bloom22` on the case) is
+  drawn with the last Bloom that took it: Bloom 22 (22.1.11, the package's
+  `bloom-22` devDependency, from the source it ships), under its own provider
+  (`parity/support/native-frames.tsx`, `web-frames.tsx`). The app's stylesheet
+  then holds Bloom 22's own classes too, as the app compiles them (its
+  `@source` over Bloom's lib). What Bloom 23 changed on its own in those
+  components is listed in `parity/support/bloom-23-changes.ts`, each with its
+  commit and the one value it adds; the Bloom 22 tree takes it only where the
+  after tree has exactly that value at the same place, and the package's suite
+  fails when a listed change is no longer met.
+- **After:** the chain the codemod wrote, over this checkout's Bloom.
 - **Holes:** every value carried over (a handler, a text run, an embedded
   element, a condition, an array of data) is the same stand-in on both
   sides, so a region is rendered without the app around it. An element's type
@@ -345,7 +360,9 @@ one value are folded first, each a rule React Native or the browser applies
 (`parity/support/normalize.ts`, `parity/support/web-css.ts`): shorthands as
 longhands, a border side with no width as no side, React Native's defaults
 where nothing inherits them, rem at 16px, `calc()` evaluated, lengths at
-Chrome's 1/64 px, a third as `33.3333%`.
+Chrome's 1/64 px, a third as `33.3333%`, a box shadow's colours at the
+browser's 8-bit alpha with its transparent layers left out (Tailwind's unset
+ring layers, `0 0 #0000`).
 
 A colour at an opacity (`.background('mutedFill/30')`) is written inline as a
 `color-mix()` of a variable, which jsdom's style probe drops, so the web suite

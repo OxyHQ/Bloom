@@ -13,13 +13,14 @@
  * does not (`@oxy.so/app-preset`) from a checkout of it.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 
-import { corpusModule } from './corpus';
+import { BEFORE_BLOOM, corpusModule } from './corpus';
 import { overriddenClasses } from './overrides';
 import { report } from './report';
 import { loadTable } from './table';
-import { tailwind } from './tailwind';
+import { packageCandidates, tailwind } from './tailwind';
 import { type FileResult, transformSource } from './transform';
 
 const IGNORED =
@@ -90,7 +91,13 @@ async function main(): Promise<void> {
     const fixtures = results.flatMap(({ result }) => result.fixtures);
     writeFileSync(join(out, 'fixtures.generated.json'), `${JSON.stringify(fixtures, null, 1)}\n`);
     writeFileSync(join(out, 'corpus.generated.tsx'), corpusModule(fixtures, out));
-    const used = new Set(fixtures.flatMap((f) => f.classes));
+    // The app's classes in the corpus, and the before side's Bloom's own, which
+    // the app compiles too (its `@source` over Bloom's lib).
+    const before = dirname(createRequire(__filename).resolve(`${BEFORE_BLOOM}/package.json`));
+    const used = new Set([
+      ...fixtures.flatMap((f) => f.classes),
+      ...packageCandidates(join(before, 'lib/module')),
+    ]);
     const css = cssEntry
       ? (await tailwind(readFileSync(cssEntry, 'utf8'), cssEntry, roots)).build([...used])
       : '';

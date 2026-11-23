@@ -250,27 +250,41 @@ function reactIds(text: string): string {
 
 const MARK = 'data-parity-subject';
 
+/** The provider an element is drawn under on the web, in `scheme`. */
+export type WebFrame = (element: ReactNode, scheme: Scheme) => ReactNode;
+
 /**
  * What `element` draws in the document, under Bloom's provider in `scheme`
  * (with `prepaint`, its web prepaint: theme colours as Bloom's paint
- * variables): its own elements, then what it portals into the document's body.
+ * variables), or under `frame` (another Bloom's provider): its own elements,
+ * then what it portals into the document's body.
  */
-export function webTree(element: ReactNode, scheme: Scheme = 'light', prepaint = false): unknown {
+export function webTree(
+  element: ReactNode,
+  scheme: Scheme = 'light',
+  prepaint = false,
+  frame?: WebFrame,
+): unknown {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
+  const subject = <div {...{ [MARK]: '' }}>{element}</div>;
   act(() => {
     root.render(
-      <BloomThemeProvider fonts={false} mode={scheme} prepaintTheme={prepaint ? {} : undefined}>
-        <div {...{ [MARK]: '' }}>{element}</div>
-      </BloomThemeProvider>,
+      frame ? (
+        frame(subject, scheme)
+      ) : (
+        <BloomThemeProvider fonts={false} mode={scheme} prepaintTheme={prepaint ? {} : undefined}>
+          {subject}
+        </BloomThemeProvider>
+      ),
     );
   });
-  const subject = container.querySelector(`[${MARK}]`) as Element;
+  const marked = container.querySelector(`[${MARK}]`) as Element;
   const rules = styleRules();
   ids = new Map();
-  const scope = ancestorScope(subject, rules);
-  const tree = Array.from(subject.children).map((child) => walk(child, rules, scope));
+  const scope = ancestorScope(marked, rules);
+  const tree = Array.from(marked.children).map((child) => walk(child, rules, scope));
   // What the element portals out of its tree (a sheet, a dialog) is drawn in
   // the document's other roots; each is compared with its own inheritance.
   for (const root of Array.from(document.body.children)) {
