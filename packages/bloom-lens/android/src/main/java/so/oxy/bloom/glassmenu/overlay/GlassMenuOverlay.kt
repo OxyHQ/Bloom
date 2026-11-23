@@ -109,8 +109,18 @@ internal class GlassMenuOverlay private constructor(
     if (anchorsMoved()) {
       if (!isDirty) recordGlass()
     } else if (!isDirty) {
-      for (anchor in anchors) if (drawnHere(anchor) && anchor.isDirty) anchor.refreshContent()
+      for (anchor in anchors) if (drawnHere(anchor) && (anchor.isDirty || anchor.contentStale)) anchor.refreshContent()
     }
+    return true
+  }
+
+  // A view inside [anchor]'s content redrew (GlassMenuAndroidView.onDescendantInvalidated): when that content is drawn
+  // here, the window is asked for a frame and the pre-draw records the content again; no view in the page is marked.
+  // False when it is not drawn here, or this overlay draws nothing yet: the change goes up the page as usual.
+  fun takeContent(anchor: GlassMenuAndroidView, target: View): Boolean {
+    if (!supportsGlass || !isAttachedToWindow || !isHardwareAccelerated || !drawnHere(anchor)) return false
+    val window = root.parent ?: return false
+    window.onDescendantInvalidated(root, target)
     return true
   }
 
