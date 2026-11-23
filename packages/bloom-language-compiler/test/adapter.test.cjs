@@ -36,7 +36,7 @@ test('a wrong token throws the rendered diagnostic with its position', () => {
       );
       assert.deepEqual(error.docs, [
         'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-modifiers.mdx#padding',
-        'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#tokens',
+        'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#padding',
       ]);
       return true;
     },
