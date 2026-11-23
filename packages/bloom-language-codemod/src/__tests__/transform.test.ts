@@ -401,6 +401,21 @@ const styles = StyleSheet.create({ strip: { height: 44 } });
     expect(code).toContain(".frame({ height: '44' })");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Button:style', 'unknown']);
   });
+  it('draws a Chip’s leading and trailing views, by either of Bloom’s names, around its label', () => {
+    const result = run(`import { Chip } from '@oxy.so/bloom/chip';
+import { RiArrowDownSLine } from '@oxy.so/bloom/icons';
+import { Icon, toElement } from '@oxy.so/bloom-language';
+export const A = () => <Chip startIcon={on ? toElement(Icon(A).size('sm')) : toElement(Icon(B).size('sm'))} trailingIcon={RiArrowDownSLine}>Later</Chip>;
+export const B = () => <Chip leading={<Art />} endIcon={<Art />}>Site</Chip>;
+export const C = () => <Chip leadingIcon={RiArrowDownSLine} startIcon={<Art />}>Both</Chip>;
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      "LChip(Embed(on ? toElement(Icon(A).size('sm')) : toElement(Icon(B).size('sm'))), Text('Later'), LIcon(RiArrowDownSLine))",
+    );
+    expect(code).toContain("LChip(Embed(<Art />), Text('Site'), Embed(<Art />))");
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Chip:startIcon']);
+  });
   it('makes a DropdownMenu tree a Menu drawn as Bloom’s dropdown', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';
 import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';

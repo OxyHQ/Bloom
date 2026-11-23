@@ -114,6 +114,13 @@ the element JSX with the reason `Node:prop`.
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
 | `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
 
+A `Chip`'s glyphs and views are its children around its label, as the
+language's Chip reads them: `leadingIcon` and `trailingIcon` are bare `Icon`s,
+and a view in either slot (`leading` or Bloom's `startIcon`, `trailing` or
+`endIcon`, which Bloom draws in the same slot) is that view, before or after
+the `Text`. A glyph and a view on one side, or both names of one slot, are a
+reason, since Bloom draws only one of them.
+
 A `Button`'s, a `Card`'s and a `Tabs`' static `style` (an object literal, a
 module StyleSheet's style, or a list of them) is the node's box: Bloom draws
 these components' `style` on their outer view, where the language draws a

@@ -132,7 +132,19 @@ export type Param =
     }
   | { readonly text: true | string }
   | { readonly options: Readonly<Record<string, Form | readonly [key: string, form: Form]>> }
-  | { readonly label: { readonly leading?: string; readonly trailing?: string } };
+  | {
+      /**
+       * Its label from its text, with a glyph before or after it (an icon prop),
+       * or a view there (an element prop, each of the names given: Bloom reads
+       * either into the same slot).
+       */
+      readonly label: {
+        readonly leading?: string;
+        readonly trailing?: string;
+        readonly leadingViews?: readonly string[];
+        readonly trailingViews?: readonly string[];
+      };
+    };
 
 export interface ComponentRule {
   /** The language constructor. */
@@ -673,7 +685,17 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   // parity/containers.cases.tsx, Chip: an `Icon` before its `Text` leads it, one after trails it.
   '@oxy.so/bloom/chip#Chip': {
     node: 'Chip',
-    params: [{ label: { leading: 'leadingIcon', trailing: 'trailingIcon' } }],
+    // Bloom draws `leading` (or `startIcon`) and `trailing` (or `endIcon`) in the glyph's slot.
+    params: [
+      {
+        label: {
+          leading: 'leadingIcon',
+          trailing: 'trailingIcon',
+          leadingViews: ['leading', 'startIcon'],
+          trailingViews: ['trailing', 'endIcon'],
+        },
+      },
+    ],
     props: {
       // `inverted` is Bloom's chip variant; the appearances are its `appearance`, which
       // Bloom reads over a variant of the same name (`solid`, `subtle`).

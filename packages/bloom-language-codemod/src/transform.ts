@@ -1846,9 +1846,24 @@ export function transformSource(source: string, options: TransformOptions): File
           const { name } = value[0] as { name: string };
           return { $: 'view', view: { type: 'icon', component: name, mods: [], key: null } };
         };
-        const leading = glyph(param.label.leading);
+        /** A view in the glyph's slot: one of the element props naming it, and no glyph beside it. */
+        const slotView = (props: readonly string[] = [], icon: Value | null): Value | null => {
+          const named = props.filter((prop) => given.has(prop));
+          for (const prop of named) consumed.add(prop);
+          if (named.length === 0) return icon;
+          const value =
+            named.length === 1 && !icon
+              ? valuesOf('view', given.get(named[0] as string))
+              : undefined;
+          if (value?.length !== 1) {
+            unmapped(named[0] as string);
+            return icon;
+          }
+          return value[0] as Value;
+        };
+        const leading = slotView(param.label.leadingViews, glyph(param.label.leading));
         const text = textOf(node.children);
-        const trailing = glyph(param.label.trailing);
+        const trailing = slotView(param.label.trailingViews, glyph(param.label.trailing));
         if (leading) args.push(leading);
         if (text !== undefined)
           args.push({

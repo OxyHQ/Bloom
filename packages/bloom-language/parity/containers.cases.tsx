@@ -496,6 +496,30 @@ const chips: ParityCase[] = [
     ),
   },
   {
+    // Bloom's `startIcon` and `endIcon` are the same slots as `leading` and `trailing`.
+    name: 'Chip with a startIcon and an endIcon',
+    language: () =>
+      toElement(
+        C.Chip(L.Icon(RiTimeLine).size('sm').foreground('primary'), L.Text('Later'), L.Badge(2))
+          .size('xl')
+          .style('subtle'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Chip
+            size="xl"
+            appearance="subtle"
+            startIcon={<RiTimeLine size="sm" fill={c.primary} />}
+            endIcon={<Badge content={2} />}
+          >
+            Later
+          </Chip>
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'Chip with a view after its label',
     language: () => toElement(C.Chip(L.Text('Site'), L.Badge(1)).style('solid').tint('success')),
     bloom: () => (
