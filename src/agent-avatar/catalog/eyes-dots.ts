@@ -3,16 +3,16 @@ import { packedVectorAsset } from '../vector-pack';
 
 /** eyes "dots": lazy, 12 shared payloads. */
 export default packedVectorAsset(() => import('../vector-assets/eyes-dots.json'), {
-  ab1122887742be19: () => import('../vector-assets/blobs/ab1122887742be19.json'),
-  '0f4e7d1f02ada548': () => import('../vector-assets/blobs/0f4e7d1f02ada548.json'),
-  '576f8715babab96e': () => import('../vector-assets/blobs/576f8715babab96e.json'),
-  '37b9456865a6e596': () => import('../vector-assets/blobs/37b9456865a6e596.json'),
-  '51e991a9fd988624': () => import('../vector-assets/blobs/51e991a9fd988624.json'),
-  f96ffb10296f295c: () => import('../vector-assets/blobs/f96ffb10296f295c.json'),
-  a5feec7871ee0f5d: () => import('../vector-assets/blobs/a5feec7871ee0f5d.json'),
-  '080fbb4016cfaebf': () => import('../vector-assets/blobs/080fbb4016cfaebf.json'),
-  a3258fedb3f08c79: () => import('../vector-assets/blobs/a3258fedb3f08c79.json'),
-  bb35c27bf9744363: () => import('../vector-assets/blobs/bb35c27bf9744363.json'),
-  b04206c2f44bff54: () => import('../vector-assets/blobs/b04206c2f44bff54.json'),
-  ab00b492ef0016db: () => import('../vector-assets/blobs/ab00b492ef0016db.json'),
+  '58125e676d68f3f0': () => import('../vector-assets/blobs/58125e676d68f3f0.json'),
+  f4e6efa21b10ed8f: () => import('../vector-assets/blobs/f4e6efa21b10ed8f.json'),
+  '037d08f4a033ab61': () => import('../vector-assets/blobs/037d08f4a033ab61.json'),
+  a04e84e2a95987a5: () => import('../vector-assets/blobs/a04e84e2a95987a5.json'),
+  cb5e0dbfbc5a9ae6: () => import('../vector-assets/blobs/cb5e0dbfbc5a9ae6.json'),
+  '04b939f99bcc8d4d': () => import('../vector-assets/blobs/04b939f99bcc8d4d.json'),
+  ea288734ed93df9a: () => import('../vector-assets/blobs/ea288734ed93df9a.json'),
+  '201ec81fe4593a89': () => import('../vector-assets/blobs/201ec81fe4593a89.json'),
+  f81ae1807b48c9ab: () => import('../vector-assets/blobs/f81ae1807b48c9ab.json'),
+  bb1bf8ac0296a1a4: () => import('../vector-assets/blobs/bb1bf8ac0296a1a4.json'),
+  '0ebdd99ff6a74c2c': () => import('../vector-assets/blobs/0ebdd99ff6a74c2c.json'),
+  d3ebd4793130cfb5: () => import('../vector-assets/blobs/d3ebd4793130cfb5.json'),
 });
