@@ -2239,7 +2239,9 @@ export class Node {
   blur(): Node {
     return this.with({ kind: 'blur', key: 'blur' });
   }
-  foreground(value: InkToken): Node {
+  foreground(value: InkToken | undefined): Node {
+    // No ink of its own (SwiftUI's `foregroundColor(nil)`): what is around it holds.
+    if (value === undefined) return this;
     return this.with({ kind: 'foreground', key: `fg:${tokenKey(value)}`, value });
   }
   font(value: FontName): Node {
@@ -4278,7 +4280,8 @@ export class Node {
   loadingIndicator(value: ViewNode | null): Node {
     return this.set('loadingIndicator', value);
   }
-  hoverForeground(value: ColorToken): Node {
+  hoverForeground(value: ColorToken | undefined): Node {
+    if (value === undefined) return this;
     return this.set('hoverForeground', value);
   }
   menuStyle(value: MenuStyle): Node {
@@ -4629,8 +4632,12 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `corner` names its radius.
    */
   blur(): Self;
-  /** Text and icon colour for this view and everything inside it; a role, or a role at an opacity token (`'muted/70'`). */
-  foreground(value: InkToken): Self;
+  /**
+   * Text and icon colour for this view and everything inside it; a role, or a
+   * role at an opacity token (`'muted/70'`). `undefined` is no ink of its own
+   * (SwiftUI's `foregroundColor(nil)`): `.foreground(invalid ? 'error' : undefined)`.
+   */
+  foreground(value: InkToken | undefined): Self;
   /** A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size. */
   font(value: FontName): Self;
   weight(value: WeightName): Self;
@@ -5059,9 +5066,9 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
   loadingIndicator(value: ViewNode | null): ButtonView;
   /**
    * Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at
-   * rest is `.foreground(role)` (Bloom's `color`).
+   * rest is `.foreground(role)` (Bloom's `color`); `undefined` is Bloom's own.
    */
-  hoverForeground(value: ColorToken): ButtonView;
+  hoverForeground(value: ColorToken | undefined): ButtonView;
   /**
    * Bloom's appearance, or a glass style: `glass` (the button on glass, its
    * ink the neutral tone's) and `glassProminent` (on glass tinted with its

@@ -122,6 +122,14 @@ bottom inset plus a space token's points (`insets.top + 24`) is
 view. Any other sum, or insets handed in as a prop, is a reason. Its parity
 draws both sides under a phone's insets (47 top, 34 bottom).
 
+A `Button`'s `color` and `hoverColor` are `.foreground(role)` and
+`.hoverForeground(role)` when they are a theme colour read from `useTheme()`,
+a choice of them by a plain condition (`undefined` for Bloom's own ink), or a
+`const` holding either (Mention's toolbar: `const tint = invalid ?
+theme.colors.error : active ? theme.colors.primary : undefined` is
+`.foreground(invalid ? 'error' : active ? 'primary' : undefined)`). Its parity
+writes the `const`'s value in its place, each condition true and then false.
+
 A `Chip`'s glyphs and views are its children around its label, as the
 language's Chip reads them: `leadingIcon` and `trailingIcon` are bare `Icon`s,
 and a view in either slot (`leading` or Bloom's `startIcon`, `trailing` or

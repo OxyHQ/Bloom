@@ -438,6 +438,22 @@ export function C() {
     expect(result.fixtures[0]?.insets).toBe(true);
     expect(result.fixtures[0]?.before).toContain('PARITY_INSETS.top + 24');
   });
+  it('follows a Button’s ink held in a const back to the theme’s roles', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A({ invalid, active }) {
+  const theme = useTheme();
+  const tint = invalid ? theme.colors.error : active ? theme.colors.primary : undefined;
+  return <Button color={tint} hoverColor={tint}>Go</Button>;
+}
+`);
+    expect(flat(result.code)).toContain(
+      ".foreground(invalid ? 'error' : active ? 'primary' : undefined).hoverForeground(invalid ? 'error' : active ? 'primary' : undefined)",
+    );
+    expect(result.fixtures.map((f) => f.before).join()).toContain(
+      'color={(true ? parityTheme.colors.error',
+    );
+  });
   it('makes a DropdownMenu tree a Menu drawn as Bloom’s dropdown', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';
 import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';

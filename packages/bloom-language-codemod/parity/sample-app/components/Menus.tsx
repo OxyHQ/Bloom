@@ -9,6 +9,7 @@ import {
 } from '@oxy.so/bloom/dropdown-menu';
 import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';
 import { Icon, toElement } from '@oxy.so/bloom-language';
+import { useTheme } from '@oxy.so/bloom/theme';
 
 export function PostMore({ share, block }: { share: () => void; block: () => void }) {
   return (
@@ -29,5 +30,21 @@ export function PostMore({ share, block }: { share: () => void; block: () => voi
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+// A toolbar button whose ink a const holds: the theme's colours by a condition.
+export function ToolbarAction({ invalid, active }: { invalid: boolean; active: boolean }) {
+  const theme = useTheme();
+  const tint = invalid ? theme.colors.error : active ? theme.colors.primary : undefined;
+  return (
+    <Button
+      appearance="plain"
+      tone="neutral"
+      iconOnly
+      leadingIcon={RiMoreFill}
+      color={tint}
+      hoverColor={tint}
+    />
   );
 }

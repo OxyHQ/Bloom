@@ -354,7 +354,14 @@ type Tagged =
   /** A list's row as a named function, embedded as it is called: `(info) => Embed(renderPost(info))`. */
   | { readonly $: 'renderer'; readonly fn: Carried }
   | { readonly $: 'absent' }
-  | { readonly $: 'null' };
+  | { readonly $: 'null' }
+  /** One of two values by a condition, as the app chose (`invalid ? 'error' : undefined`). */
+  | {
+      readonly $: 'choose';
+      readonly test: Carried;
+      readonly then: Value;
+      readonly otherwise: Value;
+    };
 
 const isCarried = (value: Value): value is Carried =>
   typeof value === 'object' && 'hole' in value && 'node' in value;
@@ -797,6 +804,50 @@ export function transformSource(source: string, options: TransformOptions): File
       { name: 'safeAreaPadding', args: [side] },
       { name: 'padding', args: [side, beyond] },
     ];
+  };
+  /** Each `{name}` in a JSX attribute where `name` is a `const`: its initialiser (a Button's ink held in a variable). */
+  const constInits = new Map<AnyNode, AnyNode>();
+  recast.visit(ast, {
+    visitJSXAttribute(path) {
+      const expression = n.JSXExpressionContainer.check(path.node.value)
+        ? path.node.value.expression
+        : undefined;
+      if (n.Identifier.check(expression)) {
+        const bindings = scopeOf(path, expression.name)?.getBindings()[expression.name];
+        let at = bindings?.length === 1 ? bindings[0] : undefined;
+        while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+        if (at?.parent?.node.kind === 'const' && n.Identifier.check(at.node.id) && at.node.init)
+          constInits.set(expression, at.node.init);
+      }
+      this.traverse(path);
+    },
+  });
+  /**
+   * A colour as the role it is painted from: a theme colour read from
+   * `useTheme()`, a choice of them by a plain condition (`undefined` for none),
+   * or a `const` holding one.
+   */
+  /** The `const` reads `roleOf` followed: the before side writes their initialiser in their place. */
+  const roleConstReads = new Set<AnyNode>();
+  const roleOf = (expression: AnyNode): Value | undefined => {
+    const role = themeRoles.get(expression);
+    if (role) return role;
+    if (n.Identifier.check(expression) && expression.name === 'undefined') return { $: 'absent' };
+    if (n.Identifier.check(expression) && constInits.has(expression)) {
+      const held = roleOf(constInits.get(expression));
+      if (held !== undefined) roleConstReads.add(expression);
+      return held;
+    }
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const then = roleOf(expression.consequent);
+      const otherwise = roleOf(expression.alternate);
+      if (then !== undefined && otherwise !== undefined)
+        return { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
+    }
+    return undefined;
   };
   /** A language view placed as an element: `toElement(view)`, as a file partly in the language writes it. */
   const isToElement = (expression: AnyNode) => {
@@ -2887,14 +2938,10 @@ export function transformSource(source: string, options: TransformOptions): File
           ],
         });
       // Its inks, each a theme colour read as its role.
-      else if (
-        (name === 'color' || name === 'hoverColor') &&
-        expression &&
-        themeRoles.get(expression)
-      )
+      else if ((name === 'color' || name === 'hoverColor') && expression && roleOf(expression))
         props.push({
           name: name === 'color' ? 'foreground' : 'hoverForeground',
-          args: [themeRoles.get(expression) as string],
+          args: [roleOf(expression) as Value],
         });
       else if (name === 'leadingIcon' && icon(value)) leading = icon(value) as string;
       else if (name === 'trailingIcon' && icon(value)) trailing = icon(value) as string;
@@ -3117,6 +3164,8 @@ export function transformSource(source: string, options: TransformOptions): File
           return 'undefined';
         case 'null':
           return 'null';
+        case 'choose':
+          return `${carry(value.test)} ? ${printValue(value.then, carry)} : ${printValue(value.otherwise, carry)}`;
       }
     }
     return printArg(value as Arg);
@@ -3133,6 +3182,11 @@ export function transformSource(source: string, options: TransformOptions): File
       else if (value.$ === 'binding') for (const v of value.binding) carriedOfValue(v, out);
       else if (value.$ === 'renderer') out.push(value.fn);
       else if (value.$ === 'options') for (const [, v] of value.entries) carriedOfValue(v, out);
+      else if (value.$ === 'choose') {
+        out.push(value.test);
+        carriedOfValue(value.then, out);
+        carriedOfValue(value.otherwise, out);
+      }
     }
   }
 
@@ -3293,6 +3347,38 @@ export function transformSource(source: string, options: TransformOptions): File
           text: `parityTheme.colors.${read.property.name}`,
         });
       }
+    // A `const` holding the ink is its initialiser on the before side, its conditions the holes and its colours the theme's.
+    for (const read of roleConstReads) {
+      if (read.start < node.start || read.end > node.end) continue;
+      const init = constInits.get(read);
+      const inner: { start: number; end: number; text: string }[] = [];
+      // A condition both inks read is one span.
+      for (const c of carried)
+        if (
+          c.node.start >= init.start &&
+          c.node.end <= init.end &&
+          !inner.some((span) => span.start === c.node.start)
+        )
+          inner.push({ start: c.node.start, end: c.node.end, text: hole(c) });
+      for (const [themeRead] of themeRoles)
+        if (themeRead.start >= init.start && themeRead.end <= init.end) {
+          themed = true;
+          inner.push({
+            start: themeRead.start,
+            end: themeRead.end,
+            text: `parityTheme.colors.${themeRead.property.name}`,
+          });
+        }
+      inner.sort((a, b) => a.start - b.start);
+      let text = '';
+      let from = init.start as number;
+      for (const span of inner) {
+        text += source.slice(from, span.start) + span.text;
+        from = span.end;
+      }
+      text += source.slice(from, init.end);
+      spans.push({ start: read.start, end: read.end, text: `(${text})` });
+    }
     // A constant the chain names as an app colour is its colour on the before side, drawn without the module.
     const colors = colorsOf(ir);
     for (const color of colors)
