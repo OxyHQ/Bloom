@@ -3453,7 +3453,7 @@ The index down the side that jumps between sections.
 Each item's key (its index by default).
 
 - Parameters: a value
-- Signature: `.itemKey(value: (item: never, index: number) => string)`
+- Signature: `.itemKey(value: (item: T, index: number) => string)`
 - Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `itemType`
@@ -3461,7 +3461,7 @@ Each item's key (its index by default).
 Each item's recycling type (FlashList's `getItemType`).
 
 - Parameters: a value
-- Signature: `.itemType(value: (item: never, index: number) => string | number | undefined)`
+- Signature: `.itemType(value: (item: T, index: number) => string | number | undefined)`
 - Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `estimatedItemSize`

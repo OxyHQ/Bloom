@@ -1065,7 +1065,7 @@ Takes only the modifiers above (no universal modifiers).
 
 Token sets:
 
-- `.tint()`: [engagementTone](bloom-language-tokens.mdx#engagementtone), `'primary'`, `'secondary'`, `'tertiary'`, `'success'`, `'warning'`, `'error'`, `'info'`
+- `.tint()`: [engagementTone](bloom-language-tokens.mdx#engagementtone), `'primary'`, `'vivid'`, `'secondary'`, `'tertiary'`, `'success'`, `'warning'`, `'error'`, `'info'`
 
 Modifiers:
 
@@ -2380,7 +2380,7 @@ Modifiers:
 - [`.style()`](bloom-language-modifiers.mdx#style) `(value: RatingStyle)`: `compact` (default): one star; `stars`: five, filled to the value.
 - [`.showsValue()`](bloom-language-modifiers.mdx#showsvalue) `(value: boolean)`: `false` hides the drawn number; the accessible name keeps it.
 - [`.starSize()`](bloom-language-modifiers.mdx#starsize) `(value: SpaceToken)`: The star's edge, apart from the text's size.
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The stars and the value (and the count, unless `countTint`): over a brand colour.
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The stars and the value (and the count, unless `countTint`): over a brand colour.
 - [`.starTint()`](bloom-language-modifiers.mdx#startint) `(value: ColorToken)`: The filled stars alone.
 - [`.countTint()`](bloom-language-modifiers.mdx#counttint) `(value: ColorToken)`: The count alone.
 - [`.emptyTint()`](bloom-language-modifiers.mdx#emptytint) `(value: ColorToken)`: The unfilled part of each star (`stars`).
@@ -2443,7 +2443,7 @@ Modifiers:
 - [`.valueText()`](bloom-language-modifiers.mdx#valuetext) `(value: string)`: The reading a screen reader says (`4 of 5`); the share of the track in the locale by default.
 - [`.indeterminate()`](bloom-language-modifiers.mdx#indeterminate) `(value?: boolean)`: The amount is not known yet: a segment sweeps (a quarter of the ring turns) and it reports no value.
 - [`.decorative()`](bloom-language-modifiers.mdx#decorative) `()`: A bar or ring with no role, hidden from assistive technology: the drawing inside a control that names itself.
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The filled part's colour role (the accent by default).
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The filled part's colour role (the accent by default).
 - [`.trackTint()`](bloom-language-modifiers.mdx#tracktint) `(value: ColorToken)`: The rail behind the fill (neutral by default).
 - [`.thickness()`](bloom-language-modifiers.mdx#thickness) `(value: SpaceToken)`: The bar's height, or the ring's stroke.
 - [`.fillDuration()`](bloom-language-modifiers.mdx#fillduration) `(value: DurationName)`: Web: how long the fill eases to a new value (native snaps); none by default.
@@ -2468,7 +2468,7 @@ Modifiers:
 - [`.valueText()`](bloom-language-modifiers.mdx#valuetext) `(value: string)`: The reading a screen reader says (`4 of 5`); the share of the track in the locale by default.
 - [`.indeterminate()`](bloom-language-modifiers.mdx#indeterminate) `(value?: boolean)`: The amount is not known yet: a segment sweeps (a quarter of the ring turns) and it reports no value.
 - [`.decorative()`](bloom-language-modifiers.mdx#decorative) `()`: A bar or ring with no role, hidden from assistive technology: the drawing inside a control that names itself.
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The filled part's colour role (the accent by default).
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The filled part's colour role (the accent by default).
 - [`.trackTint()`](bloom-language-modifiers.mdx#tracktint) `(value: ColorToken)`: The rail behind the fill (neutral by default).
 - [`.thickness()`](bloom-language-modifiers.mdx#thickness) `(value: SpaceToken)`: The bar's height, or the ring's stroke.
 - [`.fillDuration()`](bloom-language-modifiers.mdx#fillduration) `(value: DurationName)`: Web: how long the fill eases to a new value (native snaps); none by default.
@@ -2492,7 +2492,7 @@ Token sets:
 
 Modifiers:
 
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The filled side's colour role (the accent by default).
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The filled side's colour role (the accent by default).
 - [`.trackTint()`](bloom-language-modifiers.mdx#tracktint) `(value: ColorToken)`: The empty side's (neutral by default).
 - [`.thickness()`](bloom-language-modifiers.mdx#thickness) `(value: SpaceToken)`: The bar's height (6 by default).
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(value: Child)`: What sits at the end of the label row (a trophy).
@@ -2665,8 +2665,8 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.itemKey()`](bloom-language-modifiers.mdx#itemkey) `(value: (item: never, index: number) => string)`: Each item's key (its index by default).
-- [`.itemType()`](bloom-language-modifiers.mdx#itemtype) `(value: (item: never, index: number) => string | number | undefined)`: Each item's recycling type (FlashList's `getItemType`).
+- [`.itemKey()`](bloom-language-modifiers.mdx#itemkey) `(value: (item: T, index: number) => string)`: Each item's key (its index by default).
+- [`.itemType()`](bloom-language-modifiers.mdx#itemtype) `(value: (item: T, index: number) => string | number | undefined)`: Each item's recycling type (FlashList's `getItemType`).
 - [`.estimatedItemSize()`](bloom-language-modifiers.mdx#estimateditemsize) `(value: number)`: The engine's first estimate of a row's height, in px.
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`: Items per row.
 - [`.onEndReached()`](bloom-language-modifiers.mdx#onendreached) `(action: () => void, threshold?: number)`: Called near the end, `threshold` viewports from it.
@@ -3130,7 +3130,7 @@ Token sets:
 Modifiers:
 
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: SpaceToken)`: Its width and height (`2xl`, 24, by default).
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The stroke's colour (`success` by default).
+- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The stroke's colour (`success` by default).
 
 And every universal modifier.
 
@@ -3589,7 +3589,7 @@ Modifiers:
 - [`.emptyState()`](bloom-language-modifiers.mdx#emptystate) `(value: TableContent)`: What fills the empty band with no rows.
 - [`.minWidth()`](bloom-language-modifiers.mdx#minwidth) `(value: SpaceToken)`: The table's narrowest width: a narrower container scrolls it sideways.
 - [`.style()`](bloom-language-modifiers.mdx#style) `(value: DataTableStyle)`: `table` (default) or the dashboards' `inset` rows.
-- [`.labels()`](bloom-language-modifiers.mdx#labels) `(value: DataTableLabels)`
+- [`.labels()`](bloom-language-modifiers.mdx#labels) `(value: DataTableLabels<T>)`
 
 And every universal modifier.
 
