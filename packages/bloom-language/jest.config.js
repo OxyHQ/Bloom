@@ -28,7 +28,8 @@ module.exports = {
     '^@oxy.so/bloom/styles$': `${support}/bloom-styles.ts`,
     '^@oxy.so/bloom/typography$': `${support}/bloom-typography.ts`,
     '^@oxy.so/bloom/icons/shared$': `${support}/bloom-icons.ts`,
-    '^@oxy.so/bloom/icons/Ri[A-Za-z0-9]+$': `${support}/bloom-icon-modules.ts`,
+    // Any glyph's own subpath (`icons/RiMenuLine`, `icons/MenuIcon`, `icons/SiSubstack`).
+    '^@oxy.so/bloom/icons/[A-Z][A-Za-z0-9]+$': `${support}/bloom-icon-modules.ts`,
     '^@oxy.so/bloom/avatar$': `${support}/bloom-avatar.ts`,
     '^@oxy.so/bloom/hooks$': `${support}/bloom-hooks.ts`,
     '^@oxy.so/bloom/shapes$': `${support}/bloom-shapes.ts`,
