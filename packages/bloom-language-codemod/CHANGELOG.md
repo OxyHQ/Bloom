@@ -16,4 +16,5 @@ It is 0.x on purpose: the Bloom components it maps grow with each release, and a
 ### Added
 
 - The CLI, `bloom-language-codemod`: the report (`report.md`, `report.generated.json`), the converted files (`--write` in place) and the parity corpus (`--fixtures`).
+- A README for the npm page.
 - The library entry: `transformSource`, `report`, `loadTable`, `overriddenClasses` and `tailwind`.

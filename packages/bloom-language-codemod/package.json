@@ -1,7 +1,6 @@
 {
   "name": "@oxy.so/bloom-language-codemod",
   "version": "0.1.0",
-  "private": true,
   "description": "Moves an app's NativeWind className JSX and Bloom JSX to Bloom's UI language, only where the rendered result stays identical, and proves it with the language's parity harness.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
@@ -9,6 +8,14 @@
     "url": "git+https://github.com/OxyHQ/Bloom.git",
     "directory": "packages/bloom-language-codemod"
   },
+  "homepage": "https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-codemod.mdx",
+  "keywords": [
+    "bloom",
+    "codemod",
+    "nativewind",
+    "tailwind",
+    "react-native"
+  ],
   "bin": {
     "bloom-language-codemod": "lib/cli.js"
   },
@@ -24,6 +31,7 @@
   "files": [
     "lib",
     "CHANGELOG.md",
+    "README.md",
     "LICENSE"
   ],
   "engines": {
