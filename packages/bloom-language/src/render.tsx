@@ -233,6 +233,7 @@ import { NumericRoll, TextRoll } from './motion/text-roll';
 import { DepthStack } from './depth-stack';
 import { resolveAnchor, resolveDelay, resolveRotation, resolveScale } from './motion/tokens';
 import { PRESS_HOST_STYLE, ServerStyleSheet } from '@oxy.so/bloom/styles';
+import { SEE } from './docs';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -894,7 +895,7 @@ function navigationPress(env: Env, to: Navigation): () => void {
     if (env.navigate) env.navigate(to.href, to.params);
     else if (process.env.NODE_ENV !== 'production') {
       console.warn(
-        `[Bloom language] navigate('${to.href}') was pressed outside a router layout() or screen(): it goes nowhere.`,
+        `[Bloom language] navigate('${to.href}') was pressed outside a router layout() or screen(): it goes nowhere. See ${SEE.navigation}`,
       );
     }
   };
@@ -1690,7 +1691,7 @@ function materialRadius(style: Resolved): { corner: StyleValue | undefined; reso
     delete resolved[key];
     warnOnce(
       'side-radius',
-      '[Bloom language] a glass or an island takes one radius: a corner of some sides only (.corner(r, side)) is left out on it.',
+      `[Bloom language] a glass or an island takes one radius: a corner of some sides only (.corner(r, side)) is left out on it. See ${SEE.corner}`,
     );
   }
   return { corner, resolved };
@@ -2036,7 +2037,7 @@ function drawScrollContent(
   const content = plan(new Node('stack', CONTENT_VIEW, children, modifiers), ctx.env);
   if (content.layers.length > 1)
     throw new Error(
-      'bloom-language: a scroll view’s content view is one view; give its modifiers in layer order (padding before frame)',
+      `bloom-language: a scroll view’s content view is one view; give its modifiers in layer order (padding before frame). See ${SEE.contentView}`,
     );
   const out = stackOut(content, 'vertical', content.layers[0], flexKey(content), undefined);
   return drawHost(
@@ -2827,7 +2828,9 @@ function drawPresentedDialog(
 ): ReactElement {
   const presented = ownValue(p, 'presented');
   if (presented === undefined)
-    throw new Error('bloom-language: a Dialog is a view only with .presented(isPresented)');
+    throw new Error(
+      `bloom-language: a Dialog is a view only with .presented(isPresented). See ${SEE.overlays}`,
+    );
   return drawDialog(
     { isPresented: presented.value, content: node },
     (children) => renderChildren(children, inner),

@@ -109,7 +109,9 @@ function chromeOf(root: Child): ScreenChrome {
 
 export function ScreenHost({ root }: { root: Child }) {
   const chrome = chromeOf(root);
-  const system = useSystemBar() && chrome.header !== null && !chrome.custom;
+  // Undecided (the navigator is read after the first render): no header yet, in the page or the bar.
+  const bar = useSystemBar();
+  const system = bar === true && chrome.header !== null && !chrome.custom;
   const header = chrome.header ? toElement(chrome.header) : undefined;
   const footer = chrome.footer;
   const footerOptions = footer?.options as ScreenFooter | undefined;
@@ -125,7 +127,7 @@ export function ScreenHost({ root }: { root: Child }) {
         kind={values.screenKind as ScreenKind | undefined}
         scroll={values.screenScroll as ScreenScroll | undefined}
         documentScroll={values.documentScroll as boolean | undefined}
-        header={system ? undefined : header}
+        header={bar === undefined || system ? undefined : header}
         headerPlacement={values.headerPlacement as ChromePlacement | undefined}
         underlay={values.underlay ? toElement(values.underlay as Child) : undefined}
         primaryAction={action ? toElement(action.content) : undefined}

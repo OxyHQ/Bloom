@@ -460,7 +460,16 @@
       "danger",
       "info"
     ],
-    "engagementTone": ["primary", "secondary", "tertiary", "success", "warning", "error", "info"],
+    "engagementTone": [
+      "primary",
+      "vivid",
+      "secondary",
+      "tertiary",
+      "success",
+      "warning",
+      "error",
+      "info"
+    ],
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
     "glassTransition": ["matchedGeometry", "materialize"],
@@ -469,6 +478,7 @@
     "insetEdge": ["top", "bottom"],
     "toolbarSpacer": ["fixed", "flexible"],
     "contentFit": ["cover", "contain", "fill", "none", "scale-down"],
+    "mediaContentFit": ["contain", "cover"],
     "justify": ["start", "center", "end", "between", "around", "evenly"],
     "axis": ["horizontal", "vertical"],
     "ringExtra": ["none"],
@@ -500,6 +510,7 @@
       "bottom-trailing"
     ],
     "headerPresentation": ["floating", "bar", "navigation"],
+    "settingsPresentation": ["bar", "floating"],
     "headerTone": ["default", "onImage"],
     "scrimFalloff": ["smooth", "linear"],
     "titleReveal": ["auto", "always", "onScroll", "onDock"],
@@ -552,6 +563,7 @@
     "alertDefault": ["confirm", "cancel"],
     "floatingSide": ["top", "bottom", "left", "right"],
     "floatingAlign": ["start", "center", "end"],
+    "dividerAlign": ["start", "center", "end"],
     "gridFlow": ["rows", "columns"],
     "shapeName": [
       "circle",
@@ -953,6 +965,7 @@
     "stepperSize": ["sm", "md"],
     "stepperStyle": ["separate", "outline"],
     "tooltipSide": ["top", "bottom"],
+    "mapControlsAlign": ["start", "end"],
     "tooltipSize": ["sm", "md"],
     "otpCharacters": ["numeric", "alphanumeric"],
     "dragAction": ["copy", "move", "link"],
@@ -1094,6 +1107,12 @@
       "lensBlur": 0.5,
       "iosStyle": "clear"
     }
+  },
+  "glassValue": {
+    "$comment": "A glass value's methods (regular.tint('primary', 'subtle')): their parameter types, as in modifiers. A tint is a colour role alone, at a glassOpacity.",
+    "tint": ["colorRole", "glassOpacity?"],
+    "dimmed": [],
+    "interactive": ["boolean?"]
   },
   "toneRole": {
     "$comment": "The colour role a solid control of each Bloom tone fills with: an untinted glass under a solid Button or FAB takes it as its tint (null: the glass stays neutral).",
@@ -2011,7 +2030,7 @@
     "phases"
   ],
   "nodes": {
-    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, and the densities its density() takes: its Bloom component's own names for them }",
+    "$comment": "kind: { constructors, own modifiers beyond the universal ones (universal: false takes only its own), the token sets its size(), tint(), style() and shape() read, the densities its density() takes (its Bloom component's own names for them), and params: its own modifiers whose parameters it takes narrower than the modifier's own (each its parameter types, as in modifiers; view and boolean: a view or a boolean, never a token) }",
     "stack": {
       "constructors": ["HStack", "VStack"],
       "modifiers": [
@@ -2112,7 +2131,7 @@
     "image": {
       "constructors": ["Image"],
       "modifiers": ["contentFit", "aspectRatio", "tint", "crossFade", "onLoad", "onError"],
-      "tint": "color"
+      "tint": "colorRole"
     },
     "fill": {
       "constructors": ["Fill"],
@@ -2200,7 +2219,8 @@
     "divider": {
       "constructors": ["Divider"],
       "modifiers": ["lineStyle", "align", "spacing", "tint"],
-      "tint": "color"
+      "tint": "colorRole",
+      "params": { "align": ["dividerAlign"] }
     },
     "alert": {
       "constructors": ["Alert"],
@@ -2239,7 +2259,8 @@
         "sideGutter",
         "maxHeightRatio",
         "presented"
-      ]
+      ],
+      "params": { "padding": ["space"] }
     },
     "popover": {
       "constructors": ["Popover"],
@@ -2358,7 +2379,8 @@
       "constructors": ["GroupedSection"],
       "modifiers": ["title", "caption", "style", "separator", "radius", "density"],
       "densities": ["comfortable", "compact"],
-      "style": "groupedSectionStyle"
+      "style": "groupedSectionStyle",
+      "params": { "separator": ["groupedSeparator"] }
     },
     "groupedSectionItem": {
       "constructors": ["GroupedSectionItem"],
@@ -2627,7 +2649,8 @@
       "constructors": ["Option"],
       "universal": false,
       "modifiers": ["description", "disabled", "testID", "leadingView", "tint", "foreground"],
-      "tint": "color"
+      "tint": "colorRole",
+      "params": { "foreground": ["colorRole"] }
     },
     "search": {
       "constructors": ["Search"],
@@ -2731,7 +2754,8 @@
         "footer",
         "progress",
         "label"
-      ]
+      ],
+      "params": { "material": ["sheetMaterial"] }
     },
     "sidebar": {
       "constructors": ["Sidebar"],
@@ -2819,7 +2843,8 @@
     "rail": {
       "constructors": ["Rail"],
       "universal": false,
-      "modifiers": ["selection", "header", "footer", "width", "testID"]
+      "modifiers": ["selection", "header", "footer", "width", "testID"],
+      "params": { "width": ["space"] }
     },
     "railItem": {
       "constructors": ["RailItem"],
@@ -2844,7 +2869,8 @@
     "settings": {
       "constructors": ["SettingsModal"],
       "universal": false,
-      "modifiers": ["presented", "selection", "initialView", "presentation", "testID"]
+      "modifiers": ["presented", "selection", "initialView", "presentation", "testID"],
+      "params": { "presentation": ["settingsPresentation"] }
     },
     "settingsGroup": {
       "constructors": ["SettingsGroup"],
@@ -2870,7 +2896,8 @@
         "keepMounted",
         "presented",
         "testID"
-      ]
+      ],
+      "params": { "width": ["space"] }
     },
     "destination": {
       "constructors": ["Destination"],
@@ -2995,7 +3022,8 @@
     "settingsSelect": {
       "constructors": ["SettingsSelect"],
       "modifiers": ["compact", "size", "disabled", "width"],
-      "size": "controlSize"
+      "size": "controlSize",
+      "params": { "width": ["space"] }
     },
     "settingsTextField": {
       "constructors": ["SettingsTextField"],
@@ -3107,7 +3135,8 @@
         "reveal",
         "revealMotion"
       ],
-      "tint": "color"
+      "tint": "color",
+      "params": { "barCorner": ["cornerRadius"] }
     },
     "meterRing": {
       "constructors": ["MeterRing", "ProgressRing"],
@@ -3138,13 +3167,15 @@
     "tableHeader": { "constructors": ["TableHeader"], "modifiers": [] },
     "tableColumn": {
       "constructors": ["TableColumn"],
-      "modifiers": ["width", "share", "minWidth", "align", "sort", "prefix"]
+      "modifiers": ["width", "share", "minWidth", "align", "sort", "prefix"],
+      "params": { "align": ["tableAlign"] }
     },
     "tableBody": { "constructors": ["TableBody"], "modifiers": ["emptyState"] },
     "tableRow": { "constructors": ["TableRow"], "modifiers": ["selected"] },
     "tableCell": {
       "constructors": ["TableCell"],
-      "modifiers": ["width", "share", "minWidth", "align"]
+      "modifiers": ["width", "share", "minWidth", "align"],
+      "params": { "align": ["tableAlign"] }
     },
     "listItem": {
       "constructors": ["ListItem", "PersonRow", "CallRow", "ConversationRow"],
@@ -3214,7 +3245,8 @@
         "loadingRows",
         "safeAreaInset",
         "safeAreaBar"
-      ]
+      ],
+      "params": { "separator": ["listSeparator"] }
     },
     "virtualList": {
       "constructors": ["VirtualList"],
@@ -3237,7 +3269,8 @@
         "keyboardTaps",
         "safeAreaInset",
         "safeAreaBar"
-      ]
+      ],
+      "params": { "refreshable": ["value"] }
     },
     "listSelectionBar": {
       "constructors": ["ListSelectionBar"],
@@ -3260,9 +3293,14 @@
         "contentInset",
         "page",
         "labels"
-      ]
+      ],
+      "params": { "align": ["carouselAlign"] }
     },
-    "carouselItem": { "constructors": ["CarouselItem"], "modifiers": ["width"] },
+    "carouselItem": {
+      "constructors": ["CarouselItem"],
+      "modifiers": ["width"],
+      "params": { "width": ["space"] }
+    },
     "carouselDots": {
       "constructors": ["CarouselDots"],
       "modifiers": ["shape", "style", "max", "labels"],
@@ -3323,7 +3361,11 @@
       "size": "controlSize"
     },
     "accordionItem": { "constructors": ["AccordionItem"], "modifiers": ["disabled"] },
-    "accordionTrigger": { "constructors": ["AccordionTrigger"], "modifiers": ["indicator"] },
+    "accordionTrigger": {
+      "constructors": ["AccordionTrigger"],
+      "modifiers": ["indicator"],
+      "params": { "indicator": ["view"] }
+    },
     "accordionContent": { "constructors": ["AccordionContent"], "modifiers": [] },
     "code": { "constructors": ["Code"], "modifiers": [] },
     "pre": { "constructors": ["Pre"], "modifiers": ["language", "lineNumbers"] },
@@ -3383,7 +3425,8 @@
     "tooltip": {
       "constructors": ["Tooltip"],
       "modifiers": ["presented", "side", "openDelay", "size"],
-      "size": "tooltipSize"
+      "size": "tooltipSize",
+      "params": { "side": ["tooltipSide"] }
     },
     "breadcrumb": {
       "constructors": ["Breadcrumb"],
@@ -3500,7 +3543,8 @@
     },
     "mediaInsetBorder": {
       "constructors": ["MediaInsetBorder"],
-      "modifiers": ["opaque", "mediaCorner"]
+      "modifiers": ["opaque", "mediaCorner"],
+      "params": { "mediaCorner": ["cornerRadius"] }
     },
     "factStrip": { "constructors": ["FactStrip"], "modifiers": ["minItemWidth", "contentInset"] },
     "fact": {
@@ -3543,7 +3587,8 @@
     },
     "hoverCard": {
       "constructors": ["HoverCard"],
-      "modifiers": ["presented", "openDelay", "closeDelay", "side", "align", "padded", "disabled"]
+      "modifiers": ["presented", "openDelay", "closeDelay", "side", "align", "padded", "disabled"],
+      "params": { "side": ["tooltipSide"], "align": ["floatingAlign"] }
     },
     "expandableText": {
       "constructors": ["ExpandableText"],
@@ -3588,13 +3633,19 @@
     },
     "mediaFlightHost": {
       "constructors": ["MediaFlightHost"],
-      "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"]
+      "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"],
+      "params": { "contentFit": ["mediaContentFit"] }
     },
     "mediaSurface": {
       "constructors": ["MediaSurface"],
-      "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"]
+      "modifiers": ["contentFit", "nativeControls", "surfaceType", "flightId", "videoSlot"],
+      "params": { "contentFit": ["mediaContentFit"] }
     },
-    "mediaPoster": { "constructors": ["MediaPoster"], "modifiers": ["contentFit"] },
+    "mediaPoster": {
+      "constructors": ["MediaPoster"],
+      "modifiers": ["contentFit"],
+      "params": { "contentFit": ["mediaContentFit"] }
+    },
     "emptyMediaSurface": { "constructors": ["EmptyMediaSurface"], "modifiers": [] },
     "avatarAnchor": { "constructors": ["AvatarAnchor"], "modifiers": [] },
     "avatarFlightLayer": {
@@ -3645,7 +3696,8 @@
         "sourceAnchors",
         "labels"
       ],
-      "style": "galleryStyle"
+      "style": "galleryStyle",
+      "params": { "mediaCorner": ["cornerRadius"] }
     },
     "meetingScheduler": {
       "constructors": ["MeetingScheduler"],
@@ -3701,7 +3753,8 @@
         "cell",
         "sortable",
         "sortsDescendingFirst"
-      ]
+      ],
+      "params": { "basis": ["space"], "align": ["tableAlign"] }
     },
     "dataTableFilter": { "constructors": ["DataTableFilter"], "modifiers": ["disabled"] },
     "dataTableSearch": { "constructors": ["DataTableSearch"], "modifiers": ["placeholder"] },
@@ -3762,7 +3815,8 @@
     "reactionPicker": {
       "constructors": ["ReactionPicker"],
       "modifiers": ["size", "surface"],
-      "size": "reactionPickerSize"
+      "size": "reactionPickerSize",
+      "params": { "surface": ["boolean?"] }
     },
     "messageContextMenu": { "constructors": ["MessageContextMenu"], "modifiers": ["presented"] },
     "areaChartCard": {
@@ -3827,16 +3881,27 @@
     },
     "composerPill": {
       "constructors": ["ComposerPill"],
-      "modifiers": ["disabled", "surface", "frosted", "model", "effort", "voiceState", "permission"]
+      "modifiers": [
+        "disabled",
+        "surface",
+        "frosted",
+        "model",
+        "effort",
+        "voiceState",
+        "permission"
+      ],
+      "params": { "surface": ["boolean?"] }
     },
     "composerPanelStatusTab": { "constructors": ["ComposerPanelStatusTab"], "modifiers": [] },
     "aiChatShell": {
       "constructors": ["AiChatShell"],
-      "modifiers": ["sidebarSurface", "sidebarScrollbarSide", "surface", "navOpen", "panelOpen"]
+      "modifiers": ["sidebarSurface", "sidebarScrollbarSide", "surface", "navOpen", "panelOpen"],
+      "params": { "surface": ["boolean?"] }
     },
     "aiChatContainer": {
       "constructors": ["AiChatContainer"],
-      "modifiers": ["surface", "floatingChrome"]
+      "modifiers": ["surface", "floatingChrome"],
+      "params": { "surface": ["boolean?"] }
     },
     "aiChatThread": { "constructors": ["AiChatThread"], "modifiers": [] },
     "aiChatUserMessage": { "constructors": ["AiChatUserMessage"], "modifiers": [] },
@@ -3891,7 +3956,8 @@
     "agentLogWorkingRow": { "constructors": ["AgentLogWorkingRow"], "modifiers": [] },
     "composerLoader": {
       "constructors": ["ComposerLoader"],
-      "modifiers": ["gradient", "blend", "bloomOnly", "surface"]
+      "modifiers": ["gradient", "blend", "bloomOnly", "surface"],
+      "params": { "surface": ["boolean?"] }
     },
     "conversationSidebar": {
       "constructors": ["ConversationSidebar"],
@@ -4184,7 +4250,11 @@
       "modifiers": ["style"],
       "style": "mapAttributionStyle"
     },
-    "mapControls": { "constructors": ["MapControls"], "modifiers": ["axis", "align", "tilted"] },
+    "mapControls": {
+      "constructors": ["MapControls"],
+      "modifiers": ["axis", "align", "tilted"],
+      "params": { "align": ["mapControlsAlign"] }
+    },
     "locationPuck": {
       "constructors": ["LocationPuck"],
       "modifiers": ["style"],
@@ -4360,7 +4430,8 @@
     "multiAgentChat": { "constructors": ["MultiAgentChat"], "modifiers": [] },
     "agentChatHistory": {
       "constructors": ["AgentChatHistory"],
-      "modifiers": ["surface", "query", "selection"]
+      "modifiers": ["surface", "query", "selection"],
+      "params": { "surface": ["boolean?"] }
     },
     "agentChat": {
       "constructors": ["AgentChat"],

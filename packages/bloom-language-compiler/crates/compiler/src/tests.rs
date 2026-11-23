@@ -150,7 +150,7 @@ fn image_options_are_checked_against_the_spec() {
     let fit = compiled("export const x = (src) => Image(src).contentFit('stretch');\n");
     assert_eq!(fit.diagnostics[0].message, "Unknown contentFit token 'stretch' for .contentFit()");
     let tint = compiled("export const x = (src) => Image(src).tint('neutral');\n");
-    assert_eq!(tint.diagnostics[0].message, "Unknown color token 'neutral' for .tint()");
+    assert_eq!(tint.diagnostics[0].message, "Unknown colorRole token 'neutral' for .tint()");
     let size = compiled("export const x = (src) => Image(src).size('lg');\n");
     assert_eq!(size.diagnostics[0].message, "Image has no modifier .size()");
 }
@@ -350,6 +350,8 @@ fn a_colour_at_a_named_opacity_checks_both_halves() {
     assert!(valid.diagnostics.is_empty() && valid.hoisted == 1);
     let opacity = compiled("export const x = () => HStack().foreground('muted/65');\n");
     assert_eq!(opacity.diagnostics[0].message, "Unknown opacity token '65' for .foreground()");
+    let ring = compiled("export const x = () => HStack().ring('primary/40', 'thin');\n");
+    assert!(ring.diagnostics.is_empty(), "{:?}", ring.diagnostics.first().map(|d| &d.rendered));
     let role = compiled("export const x = () => HStack().background('grey/faint');\n");
     assert_eq!(role.diagnostics[0].message, "Unknown color token 'grey/faint' for .background()");
 }
@@ -437,7 +439,12 @@ fn the_button_leftovers_are_checked() {
     // A button's densities are Bloom's control densities, not a row's content ones.
     let output = check("export const x = () => Button(Text('a')).density('comfortable');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown density token 'comfortable' for .density()");
-    assert_eq!(output.diagnostics[0].help.as_deref(), Some("density tokens: default, compact"));
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some(
+            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 26 more; density tokens: default, compact"
+        )
+    );
 }
 
 #[test]
@@ -694,7 +701,7 @@ fn wave_two_controls_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("RadioGroup(on).style('grid')", "Unknown radioStyle token 'grid' for .style()"),
-        ("Option('a', 'A').tint('lime')", "Unknown color token 'lime' for .tint()"),
+        ("Option('a', 'A').tint('lime')", "Unknown colorRole token 'lime' for .tint()"),
         ("Chip().style('ghost')", "Unknown chipStyle token 'ghost' for .style()"),
         ("Chip().role('switch')", "Unknown role token 'switch' for .role()"),
         ("GroupedSectionIcon(I).tint('lime')", "Unknown accentTone token 'lime' for .tint()"),
@@ -1106,7 +1113,7 @@ fn rows_and_lists_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("List([]).separator('dashed')", "Unknown separator token 'dashed' for .separator()"),
+        ("List([]).separator('dashed')", "Unknown listSeparator token 'dashed' for .separator()"),
         ("ListItem('a').compactPadding('tight')", "Unknown space token 'tight' for .compactPadding()"),
         ("ListItem('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("ListItem('a').density('default')", "Unknown density token 'default' for .density()"),
@@ -1240,7 +1247,7 @@ fn tooltips_breadcrumbs_and_heatmaps_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("Tooltip(t, 'a').side('middle')", "Unknown floatingSide token 'middle' for .side()"),
+        ("Tooltip(t, 'a').side('middle')", "Unknown tooltipSide token 'middle' for .side()"),
         ("Tooltip(t, 'a').size('lg')", "Unknown tooltipSize token 'lg' for .size()"),
         ("ActivityHeatmap(t).cellSize('big')", "Unknown space token 'big' for .cellSize()"),
         ("Breadcrumb().side('top')", "Breadcrumb has no modifier .side()"),
@@ -1430,7 +1437,7 @@ fn media_inset_borders_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("MediaInsetBorder().mediaCorner('huge')", "Unknown corner token 'huge' for .mediaCorner()"),
+        ("MediaInsetBorder().mediaCorner('huge')", "Unknown cornerRadius token 'huge' for .mediaCorner()"),
         ("MediaInsetBorder().contentFit('cover')", "MediaInsetBorder has no modifier .contentFit()"),
     ];
     for (chain, message) in cases {
@@ -1523,7 +1530,7 @@ fn hover_cards_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("HoverCard(Text('a'), Text('b')).side('middle')", "Unknown floatingSide token 'middle' for .side()"),
+        ("HoverCard(Text('a'), Text('b')).side('middle')", "Unknown tooltipSide token 'middle' for .side()"),
         ("HoverCard(Text('a'), Text('b')).actions(t)", "HoverCard has no modifier .actions()"),
     ];
     for (chain, message) in cases {
@@ -3027,7 +3034,7 @@ fn a_glass_value_is_checked_through_its_methods_and_hoists() {
     assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
     assert_eq!(output.hoisted, 1);
     let wrong = glass("export const x = () => HStack().glass(regular.interactive(false).tint('blue'));\n");
-    assert_eq!(messages(&wrong.diagnostics), ["Unknown color token 'blue' for .tint()"]);
+    assert_eq!(messages(&wrong.diagnostics), ["Unknown colorRole token 'blue' for .tint()"]);
 }
 
 const ENVIRONMENT_IMPORTS: &str =
@@ -3225,4 +3232,303 @@ fn the_lens_budget_and_a_glass_per_item() {
     assert_eq!(messages(&many.warnings), ["13 glasses in one module: past the budget of 12"]);
     let list = rules("export const x = (items) => VStack(items.map((item) => Text(item).glass()));\n");
     assert_eq!(messages(&list.warnings), ["a glass per item of a list"]);
+}
+
+// ── Doc links: every problem points at the section that explains it ──────
+
+/// A diagnostic's links, without the docs folder in front.
+fn links(diagnostic: &crate::Diagnostic) -> Vec<&str> {
+    diagnostic
+        .docs
+        .iter()
+        .map(|url| url.strip_prefix(crate::DOCS_BASE).expect("a link into the docs"))
+        .collect()
+}
+
+#[test]
+fn a_wrong_token_links_its_modifier_and_its_token_set() {
+    let output = compiled("export const x = () => Text('a').weight('heavy');\n");
+    let diagnostic = &output.diagnostics[0];
+    assert_eq!(
+        links(diagnostic),
+        ["bloom-language-modifiers.mdx#weight", "bloom-language-tokens.mdx#weight"]
+    );
+    assert!(
+        diagnostic.rendered.ends_with(
+            "= docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-modifiers.mdx#weight\n  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#weight"
+        ),
+        "{}",
+        diagnostic.rendered
+    );
+    // A set the compiler composes (`padding`'s: the space scale and its negatives) has its own section.
+    let padding = compiled("export const x = () => HStack().padding('mdd');\n");
+    assert_eq!(
+        links(&padding.diagnostics[0]),
+        ["bloom-language-modifiers.mdx#padding", "bloom-language-tokens.mdx#padding"]
+    );
+    // A node's own set (a button's styles) is a token set of its own.
+    let style = compile(
+        "import { Button, Text } from '@oxy.so/bloom-language';\nexport const x = () => Button(Text('a')).style('shiny');\n",
+        "row.tsx",
+    );
+    assert_eq!(
+        links(&style.diagnostics[0]),
+        ["bloom-language-modifiers.mdx#style", "bloom-language-tokens.mdx#buttonstyle"]
+    );
+}
+
+#[test]
+fn a_token_of_another_set_names_the_modifiers_that_take_it() {
+    let output = compiled("export const x = () => Text('a').weight('primary');\n");
+    let help = output.diagnostics[0].help.as_deref().unwrap();
+    assert!(
+        help.starts_with(
+            "'primary' is one of the color tokens, for .background(), .border(), .foreground() and "
+        ),
+        "{help}"
+    );
+    assert!(help.contains("; weight tokens: light, regular,"), "{help}");
+}
+
+#[test]
+fn a_name_in_another_case_or_spelling_is_suggested() {
+    use crate::diagnostics::suggest;
+    let ramp = ["large-title-regular", "body-regular"];
+    assert_eq!(suggest("largeTitleRegular", &ramp).as_deref(), Some("did you mean 'large-title-regular'?"));
+    assert_eq!(suggest("large_title_regular", &ramp).as_deref(), Some("did you mean 'large-title-regular'?"));
+    assert_eq!(suggest("CHILDSPACING", &["childSpacing"]).as_deref(), Some("did you mean 'childSpacing'?"));
+    assert_eq!(suggest("nothing", &ramp), None);
+}
+
+#[test]
+fn an_unknown_modifier_links_its_node_and_names_the_nodes_that_take_it() {
+    let output = compiled("export const x = () => Text('a').childSpacing('md');\n");
+    let diagnostic = &output.diagnostics[0];
+    assert_eq!(diagnostic.message, "Text has no modifier .childSpacing()");
+    let help = diagnostic.help.as_deref().unwrap();
+    assert!(help.contains(" take .childSpacing(); Text modifiers: "), "{help}");
+    assert_eq!(
+        links(diagnostic),
+        ["bloom-language-nodes.mdx#text", "bloom-language-modifiers.mdx#childspacing"]
+    );
+    // A name no node takes links the node alone.
+    let unknown = compiled("export const x = () => HStack().sparkle();\n");
+    assert_eq!(links(&unknown.diagnostics[0]), ["bloom-language-nodes.mdx#stack"]);
+}
+
+#[test]
+fn an_arity_error_shows_the_signature() {
+    let output = compiled("export const x = () => HStack().padding('horizontal', 'md', 'lg');\n");
+    let diagnostic = &output.diagnostics[0];
+    assert_eq!(diagnostic.message, ".padding() takes 1 to 2 argument(s), not 3");
+    assert_eq!(
+        diagnostic.help.as_deref(),
+        Some("write it .padding(edge?, padding): a parameter marked ? is optional")
+    );
+    assert_eq!(links(diagnostic), ["bloom-language-modifiers.mdx#padding"]);
+}
+
+#[test]
+fn liquid_glass_problems_link_the_rules() {
+    let on_glass = glass("export const x = () => VStack(HStack(Text('a')).glass()).glass();\n");
+    assert_eq!(
+        links(&on_glass.diagnostics[0]),
+        ["bloom-language-tour.mdx#liquid-glass-rules", "bloom-language-tour.mdx#glass-groups"]
+    );
+    let scrolling = glass("export const x = () => ScrollView(HStack(Text('a')).glass());\n");
+    assert_eq!(
+        links(&scrolling.warnings[0]),
+        ["bloom-language-tour.mdx#liquid-glass-rules", "bloom-language-modifiers.mdx#incontent"]
+    );
+    assert!(scrolling.warnings[0].rendered.contains("= docs: https://"));
+    let loose = glass(
+        "export const x = () => HStack(Button(Text('a')).glass(), Button(Text('b')).glass(regular.interactive(false)));\n",
+    );
+    assert_eq!(
+        links(&loose.warnings[0]),
+        ["bloom-language-tour.mdx#glass-groups", "bloom-language-nodes.mdx#glassgroup"]
+    );
+    let label = glass("export const x = () => Button(Icon(RiShareLine));\n");
+    assert_eq!(
+        links(&label.diagnostics[0]),
+        ["bloom-language-tour.mdx#accessibility", "bloom-language-modifiers.mdx#label"]
+    );
+}
+
+#[test]
+fn toolbar_layout_environment_and_motion_problems_link_their_tour_section() {
+    let many = toolbar(
+        "const S = Button(Icon(RiShareLine)).label('Share');\nexport const x = () => Header('Edit').toolbar(ToolbarGroup(S), ToolbarGroup(S), ToolbarGroup(S), ToolbarGroup(S));\n",
+    );
+    assert_eq!(links(&many.warnings[0])[0], "bloom-language-tour.mdx#navigation");
+    let fits = compile(
+        "import { Text, ViewThatFits } from '@oxy.so/bloom-language';\nexport const x = () => ViewThatFits('horizontal', Text('a'), Text('b'), Text('c'), Text('d'));\n",
+        "row.tsx",
+    );
+    assert_eq!(
+        links(&fits.warnings[0]),
+        ["bloom-language-tour.mdx#layout", "bloom-language-nodes.mdx#viewthatfits"]
+    );
+    let wrong = environment(
+        "const Compact = defineEnvironment('compact', false);\nexport const x = () => VStack().environment(Compact, 'yes');\n",
+    );
+    assert_eq!(links(&wrong.diagnostics[0])[0], "bloom-language-tour.mdx#environment");
+    assert!(wrong.diagnostics[0].help.as_deref().unwrap().ends_with("pass a boolean"));
+    let named = environment("const name = 'c';\nexport const Compact = defineEnvironment(name, false);\n");
+    assert_eq!(links(&named.diagnostics[0]), ["bloom-language-tour.mdx#environment"]);
+    let motion = gesture(
+        "export function Row() {\n  const y = useMotionValue(0);\n  return Text('t').padding(y);\n}\n",
+    );
+    assert_eq!(
+        links(&motion.diagnostics[0]),
+        ["bloom-language-tour.mdx#animation-and-gestures", "bloom-language-modifiers.mdx#padding"]
+    );
+}
+
+#[test]
+fn a_build_function_s_refusal_links_what_it_may_set() {
+    let variant = compiled("export const x = () => Text('a').when('md', (v) => v.onPress(() => {}));\n");
+    assert_eq!(links(&variant.diagnostics[0]), ["bloom-language-tour.mdx#variants"]);
+    let custom = modifier("export const two = defineModifier((v) => v.padding('md').lines(2));\n");
+    assert_eq!(links(&custom.diagnostics[0]), ["bloom-language-tour.mdx#custom-modifiers"]);
+}
+
+#[test]
+fn every_link_is_to_a_reference_or_tour_section() {
+    let all = crate::doc_links();
+    assert!(all.iter().all(|url| url.starts_with(crate::DOCS_BASE) && url.contains(".mdx#")));
+    for expected in [
+        "bloom-language-nodes.mdx#applayout",
+        "bloom-language-modifiers.mdx#childspacing",
+        "bloom-language-tokens.mdx#controlsize",
+        "bloom-language-tour.mdx#liquid-glass-rules",
+    ] {
+        assert!(all.contains(&format!("{}{expected}", crate::DOCS_BASE)), "{expected}");
+    }
+}
+
+/// The statements of `source` (each starting at an offset of `starts`) the
+/// checker refuses.
+fn refused_statements(source: &str, starts: &[usize]) -> std::collections::HashSet<usize> {
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();
+    assert!(!parsed.diagnostics.has_errors(), "the probe parses");
+    let program = parsed.program;
+    let scoping = oxc_semantic::SemanticBuilder::new().build(&program).semantic.into_scoping();
+    let module = crate::module::Module::read(&program, &scoping).expect("the probe imports the language");
+    crate::check::check_program(&program, &module, &scoping)
+        .errors
+        .iter()
+        .map(|problem| starts.partition_point(|&start| start <= problem.span.start as usize) - 1)
+        .collect()
+}
+
+/// For every token parameter the runtime's types are checked against (each
+/// node's own, the universal modifiers', a glass value's methods), the
+/// compiler accepts exactly the literals the types take. The table is
+/// generated with the type checks (`generate-type-checks.mjs`), from the one
+/// spec, so neither side can drift from the other.
+///
+/// Each parameter is probed with every literal it takes, and with a witness of
+/// every other set: a token of that set the parameter does not take, and a
+/// colour role at an opacity. The compiler takes or refuses a written token by
+/// the set it reads for the parameter, so a refused witness is that whole
+/// set refused.
+#[test]
+fn every_token_parameter_takes_exactly_what_the_runtime_types_take() {
+    use std::collections::{BTreeSet, HashSet};
+
+    use crate::spec::TOKEN_SETS;
+    use crate::token_params::{TOKEN_PARAMS, TokenParam};
+
+    let set = |name: &str| -> &'static [&'static str] {
+        TOKEN_SETS.iter().find(|(set, _)| *set == name).map(|(_, tokens)| *tokens).expect("a token set")
+    };
+    let at_opacity: Vec<String> = set("color")
+        .iter()
+        .flat_map(|role| set("opacity").iter().map(move |o| format!("{role}/{o}")))
+        .collect();
+    let constructors: BTreeSet<&str> = TOKEN_PARAMS.iter().map(|param| param.constructor).collect();
+    let imports = format!(
+        "import {{ {}, regular }} from '@oxy.so/bloom-language';\n",
+        constructors.into_iter().collect::<Vec<_>>().join(", ")
+    );
+    let probe = |param: &TokenParam| -> Vec<String> {
+        let mut expected: HashSet<&str> =
+            param.sets.iter().flat_map(|name| set(name).iter().copied()).collect();
+        expected.extend(param.tokens.iter().copied());
+        if param.opacity {
+            expected.extend(at_opacity.iter().map(String::as_str));
+        }
+        let mut candidates: BTreeSet<&str> = expected.iter().copied().collect();
+        candidates.extend(
+            TOKEN_SETS
+                .iter()
+                .filter_map(|(_, tokens)| tokens.iter().copied().find(|token| !expected.contains(token))),
+        );
+        candidates.extend(["primary/40", "primary/nope", "nope"]);
+        let mut source = imports.clone();
+        let mut starts = vec![0];
+        for candidate in &candidates {
+            starts.push(source.len());
+            source.push_str(&param.call.replace('@', &format!("{candidate:?}")));
+            source.push_str(";\n");
+        }
+        let refused = refused_statements(&source, &starts);
+        let mut mismatches = Vec::new();
+        for (index, candidate) in candidates.iter().enumerate() {
+            let accepted = !refused.contains(&(index + 1));
+            if accepted != expected.contains(candidate) {
+                let verdict =
+                    if accepted { "accepted; the types refuse it" } else { "refused; the types take it" };
+                mismatches.push(format!("{} `{}`: '{candidate}' {verdict}", param.label, param.call));
+            }
+        }
+        mismatches
+    };
+    // Four threads: each parameter is a module of its own.
+    let chunk = TOKEN_PARAMS.len().div_ceil(4);
+    let mismatches: Vec<String> = std::thread::scope(|scope| {
+        let probe = &probe;
+        let workers: Vec<_> = TOKEN_PARAMS
+            .chunks(chunk)
+            .map(|params| scope.spawn(move || params.iter().flat_map(probe).collect::<Vec<_>>()))
+            .collect();
+        workers.into_iter().flat_map(|worker| worker.join().expect("a probe thread")).collect()
+    });
+    assert!(
+        mismatches.is_empty(),
+        "{} literals the compiler and the runtime's types disagree on:\n{}",
+        mismatches.len(),
+        mismatches.iter().take(60).cloned().collect::<Vec<_>>().join("\n")
+    );
+}
+
+#[test]
+fn a_node_takes_its_own_narrower_parameters_as_the_runtime_does() {
+    let imports = "import { AccordionTrigger, Dialog, Divider, HStack, Image, ReactionPicker, Tooltip, VirtualList, regular } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t, b, f) => [Image(t).tint('primary'), Divider().align('end').tint('border'), Tooltip(t, 'a').side('bottom'), Dialog().padding('lg'), HStack().glass(regular.tint('primary', 'subtle').interactive(false)), ReactionPicker(f).surface(false), VirtualList(t).refreshable(b)];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        // Painted by the role's name alone: no opacity.
+        ("Image(t).tint('primary/40')", "Unknown colorRole token 'primary/40' for .tint()"),
+        ("HStack().glass(regular.tint('primary/40'))", "Unknown colorRole token 'primary/40' for .tint()"),
+        ("HStack().glass(regular.tint('primary', 'subtle', 'x'))", ".tint() takes 1 to 2 argument(s), not 3"),
+        ("HStack().glass(regular.interactive('yes'))", ".interactive() takes a boolean here, not 'yes'"),
+        ("Divider().align('stretch')", "Unknown dividerAlign token 'stretch' for .align()"),
+        ("Tooltip(t, 'a').side('left')", "Unknown tooltipSide token 'left' for .side()"),
+        ("Tooltip(t, 'a').side('top', 'start')", ".side() takes 1 argument(s), not 2"),
+        ("Dialog().padding('horizontal', 'lg')", ".padding() takes 1 argument(s), not 2"),
+        ("Dialog().padding('-lg')", "Unknown space token '-lg' for .padding()"),
+        ("AccordionTrigger(t).indicator('check')", ".indicator() takes a view here, not 'check'"),
+        ("ReactionPicker(t).surface('card')", ".surface() takes a boolean here, not 'card'"),
+        ("VirtualList(t).refreshable(t, 'primary')", ".refreshable() takes 1 argument(s), not 2"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{chain}");
+    }
 }

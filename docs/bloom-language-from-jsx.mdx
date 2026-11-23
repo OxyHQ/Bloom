@@ -1,0 +1,143 @@
+---
+title: From JSX and NativeWind to the Bloom language
+description: Move an app's Bloom JSX and NativeWind className to the Bloom language: what maps to what, the codemod that does it with proof, and the order to do it in.
+---
+
+# From JSX and NativeWind to the Bloom language
+
+The language draws Bloom's own components, so a screen moved to it looks the
+same. Most of the move is mechanical and the
+[codemod](bloom-language-codemod.mdx) does it, converting only what it proves
+renders the same and leaving the rest as JSX with a reason. This page is the
+mapping a person or an agent needs to read the result and finish the rest.
+
+## Side by side
+
+```tsx
+// Before: Bloom JSX with NativeWind classes
+import { View, Pressable } from 'react-native';
+import { Text } from '@oxy.so/bloom/typography';
+import { Avatar } from '@oxy.so/bloom/avatar';
+
+export function PersonRow({ person, onOpen }: Props) {
+  return (
+    <Pressable onPress={onOpen} className="flex-row items-center gap-2 p-3 active:opacity-70 md:p-4">
+      <Avatar source={person.avatar} size="lg" />
+      <View className="flex-1 gap-0.5">
+        <Text variant="body-semibold">{person.name}</Text>
+        <Text className="text-muted-foreground" numberOfLines={1}>{person.role}</Text>
+      </View>
+    </Pressable>
+  );
+}
+```
+
+```tsx check
+// After: the language
+import { Avatar, HStack, Text, VStack, view } from '@oxy.so/bloom-language';
+
+interface Person { name: string; role: string; avatar: string }
+
+export const PersonRow = view(function PersonRow({ person, onOpen }: { person: Person; onOpen: () => void }) {
+  return HStack(
+    Avatar(person.avatar).size('lg'),
+    VStack(Text(person.name).font('body').weight('semibold'), Text(person.role).foreground('muted').lines(1))
+      .spacing('2xs')
+      .flex('1'),
+  )
+    .align('center')
+    .spacing('sm')
+    .padding('md')
+    .onPress(onOpen)
+    .when('pressed', (v) => v.opacity('70'))
+    .when('md', (v) => v.padding('lg'));
+});
+```
+
+## The mapping
+
+| JSX | Language |
+| --- | --- |
+| `<View>` / `<View className="flex-row">` | `VStack(…)` / `HStack(…)` |
+| `<Pressable onPress>` | a stack with `.onPress()` (`navigate(href)` for a route) |
+| Bloom `<Text variant="body-semibold">` | `Text(…).font('body').weight('semibold')` |
+| React Native `<Text>` | `RawText(…)` while moving; `Text` for new code |
+| `<Button variant="ghost" color="danger">` | `Button(Text('…')).style(…).tint('danger')` ([node](bloom-language-nodes.mdx#button)) |
+| `<RiHeart3Line size="sm" />` | `Icon(RiHeart3Line).size('sm')` |
+| `{cond && <A/>}`, `{cond ? <A/> : <B/>}` | `cond ? A : null`, `cond ? A : B` |
+| `{items.map(i => <Row key={i.id} />)}` | `items.map((i) => Row({ i }).id(i.id))` |
+| a component with no node yet | `Embed(<Component />)` |
+| `useState` + `value`/`onChangeText` | a binding: `TextField(useState(''), 'Name')` |
+| `<Dialog open onClose>` next to its trigger | `.dialog([open, setOpen], Dialog(…))` on the trigger |
+| a route file returning JSX | `export default screen(function Name() { … })` |
+| `_layout.tsx` with `<Stack>` / `<Tabs>` | `layout(() => Stack())`, `layout(() => TabView())` |
+| `style={{ padding: 12 }}` | `.padding('md')`: every value is a token |
+
+## className to modifiers
+
+| Class | Modifier |
+| --- | --- |
+| `p-3`, `px-4`, `pt-2` | `.padding('md')`, `.padding('horizontal', 'lg')`, `.padding('top', 'sm')` |
+| `gap-2` | `.spacing('sm')` |
+| `flex-1` | `.flex('1')` (`.grow()` is React Native's `flex: 1`) |
+| `items-center`, `justify-between` | `.align('center')`, `.justify('between')` |
+| `w-full`, `max-w-md` | `.frame({ width: 'full' })`, `.frame({ maxWidth: '448' })` |
+| `bg-card`, `text-muted-foreground`, `bg-primary/10` | `.background('card')`, `.foreground('muted')`, `.background('primary/10')` |
+| `rounded-xl`, `rounded-full` | `.corner('xl')`, `.corner('infinite')` |
+| `border border-border` | `.border('border', 'thin')` |
+| `shadow-sm` | Tailwind's shadow by its exact box-shadow (the table's token); Bloom's elevation `.shadow('s' \| 'm' \| 'floating')` in new code |
+| `opacity-60` | `.opacity('60')` |
+| `absolute top-2 right-2` | `.position({ top: 'sm', right: 'sm' })` |
+| `overflow-hidden` | `.clipped()` |
+| `md:`, `dark:`, `hover:`, `active:`, `web:` | `.when('md' \| 'dark' \| 'hovered' \| 'pressed' \| 'web', (v) => …)` |
+| `animate-spin`, `transition-colors` | `.repeatForever('spin')`, `.animation(m).animatesColors()` |
+| `sr-only` | `.accessibilityOnly()` |
+
+Every class the apps use is in [the className table](bloom-language-classnames.mdx),
+with the classes that need a named token, an app token or a modifier the
+language does not have yet. A raw value never becomes a number: an exact
+value apps write is a numeric token (`p-1.5` is `.padding('6')`), and a value
+only one app writes is that app's `defineTokens`.
+
+## Running the codemod
+
+The codemod (`packages/bloom-language-codemod`, not published: it runs from
+a Bloom checkout) reads the app, writes converted files and a report, and
+builds a parity corpus that renders each converted region before and after,
+native and web, light and dark:
+
+```bash
+# in a Bloom worktree, after bun install
+cd packages/bloom-language-codemod
+bun src/cli.ts ~/Oxy/MyApp/packages/frontend --out /tmp/codemod --fixtures
+# read /tmp/codemod/report.md, run the parity suites on the corpus,
+# then --write in a branch of the app
+```
+
+The full flags, the proof and the review checklist are in
+[the codemod guide](bloom-language-codemod.mdx#running-it-on-an-app).
+
+## The order
+
+1. **Drop NativeWind for Bloom.** Bloom 23 has no NativeWind; an app keeps it
+   only for its own `className`. Wrap the tree in app-preset's
+   `BloomNativeWindTheme` once, inside `BloomProvider`, while classes remain
+   ([Bloom without NativeWind](no-nativewind.mdx#app-side)).
+2. **Add the compiler** to Metro and Jest
+   ([getting started](bloom-language-getting-started.mdx#the-compiler)).
+3. **Run the codemod**, review `report.md`, prove the corpus, `--write` in a
+   branch, typecheck and format.
+4. **Move what stayed JSX by hand**, a component at a time, starting with the
+   ones most `Embed`s wrap. Route files become `layout()` and `screen()`.
+5. **Remove NativeWind** when no `className` is left: the dependency,
+   `base.css`, the Tailwind config and `BloomNativeWindTheme`. app-preset 6.9
+   leaves NativeWind out of Metro once the app no longer lists it.
+
+## What not to do
+
+- Do not wrap a language view in a JSX `View` to style it; chain the modifier.
+- Do not reach for `style={}`: the language has no raw style. A value the
+  scales lack is an app token (`defineTokens`).
+- Do not keep a `Pressable` around a node for a press: `.onPress()`.
+- Do not port component by component into new app components when Bloom has
+  the node; the node is the Bloom component (Bloom-first).

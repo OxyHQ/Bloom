@@ -5,7 +5,7 @@ import {
 } from '@oxy.so/bloom/animated-check';
 
 import { Node, type ViewModifiers } from '../node';
-import { resolveSpace, type ColorName, type SpaceToken } from '../tokens';
+import { resolveSpace, type ColorToken, type SpaceToken } from '../tokens';
 import type { ControlRenderer } from './draw';
 
 /** A checkmark that draws itself: confirmation for something that just finished (Bloom `animated-check`). */
@@ -16,7 +16,7 @@ export interface AnimatedCheckView extends ViewModifiers<AnimatedCheckView> {
   /** Its width and height (`2xl`, 24, by default). */
   size(value: SpaceToken): AnimatedCheckView;
   /** The stroke's colour (`success` by default). */
-  tint(value: ColorName): AnimatedCheckView;
+  tint(value: ColorToken): AnimatedCheckView;
 }
 
 /**
@@ -54,7 +54,7 @@ export const ANIMATED_CHECKS: Record<AnimatedCheckKind, ControlRenderer> = {
           trigger: (d.node.props as { trigger: unknown }).trigger,
           size: size === undefined ? undefined : resolveSpace(size),
         },
-        { color: d.own('tint')?.value as ColorName | undefined },
+        { color: d.own('tint')?.value as ColorToken | undefined },
       ),
     );
   },

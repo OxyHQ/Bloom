@@ -1,0 +1,193 @@
+---
+title: Bloom language release
+description: The release of the Bloom language (Bloom 23 and the language packages' 1.0.0), each version and why, the order across Bloom, oxy, Gemies and Mention with the checks each step needs, and what follows.
+---
+
+# Bloom language release
+
+Status, 2026-11-23: the owner approved publishing the language. It ships in
+Bloom [#848](https://github.com/OxyHQ/Bloom/pull/848) (`release/bloom-23`:
+`feat/bloom-language-final` rebased onto `main` plus the release commit),
+with oxy [#2313](https://github.com/OxyHQ/oxy/pull/2313) giving the shared
+release its prebuilt step. This page records what ships there and plans what
+follows. A version merged to a repository's `main` is the release, once CI
+passed on that commit; nothing here publishes.
+
+## Release notes (for the owner)
+
+- **The Bloom language ships.** Bloom interfaces written as SwiftUI writes
+  them: a view is a function, its look a chain of modifiers in order, every
+  value a Bloom token. It draws Bloom's own components, so a screen looks the
+  same as its JSX, and each platform's own where it has one (Liquid Glass and
+  SwiftUI menus on iOS, the lens on Android and OxyOS, a generated stylesheet
+  on the web). 521 nodes, 648 modifiers, held equal to Bloom by the parity
+  suites on native and web and in Chrome.
+- **A compiler** checks every chain at build time (a wrong modifier or token,
+  Apple's Liquid Glass rules), says the fix and links the docs, and hoists
+  static chains. Prebuilt for every desktop platform; no Rust to install.
+- **Bloom data** (0.1.0) is the data layer: records, lists, sources,
+  optimistic actions, realtime, SQLite and IndexedDB copies. Services 15 and
+  the Gemies SDK 10 move onto it next.
+- **Bloom 23** has no NativeWind. The look is unchanged; the `className`
+  props are gone. Apps keep their own classes through app-preset's
+  `BloomNativeWindTheme` until the codemod moves them.
+- **For developers and agents:** getting started, a tour, a migration guide
+  and a cheat sheet for agents, every example compiled in CI; a reference
+  generated from the spec; a Storybook `Language` section
+  (`feat/bloom-language-dx`, after #848); a create-oxy-app template on the
+  language (oxy `feat/create-oxy-app-language`, create-oxy-app 0.10.0).
+
+## Versions
+
+What #848 publishes, in the release's order:
+
+| Package | From | To | Why |
+| --- | --- | --- | --- |
+| `@oxy.so/bloom-lens` | unpublished | **1.0.0** | New: the Android 13+ lens material (an Expo module), Bloom's optional peer `>=1.0.0`. It is the material Bloom and the language draw on Android and OxyOS, a stable contract between the two. |
+| `@oxy.so/bloom` | 22.1.11 | **23.0.0** | Major: every `className`/`*ClassName` prop, `useColorScopeStyle` and `initCssInteropDarkMode` removed; peers changed (`nativewind` and `react-native-css` removed, Reanimated `>=4.6.0` and Gesture Handler `>=3.3.0` raised, `@oxy.so/bloom-lens` added, optional). No subpath removed; `./blur` and `./image` are new. |
+| `@oxy.so/bloom-data` | unpublished | **0.1.0** | New, and 0.x on purpose: persistence bounds, invalidation and durable actions are still landing, so its consumers (services 15, Gemies SDK 10) take `^0.1.0` and a minor may still change them. |
+| `@oxy.so/bloom-language` | private | **1.0.0** | New: a complete API with every node and modifier in the spec, the compiler and the types agreeing, and parity on every family; Mention already runs on it. Peer `@oxy.so/bloom` `>=23.0.0`. |
+| `@oxy.so/bloom-language-compiler-{linux-x64-gnu, linux-arm64-gnu, darwin-x64, darwin-arm64, win32-x64-msvc, wasm32-wasi}` | new | **1.0.0** | The prebuilt addons and the WASI fallback, in lockstep with the compiler that loads them. |
+| `@oxy.so/bloom-language-compiler` | private | **1.0.0** | New, in lockstep with the language: its checks are the language's spec, its tables generated from the same file. |
+| `@oxy.so/bloom-language-codemod` | private | stays private | It resolves Bloom's checkout by relative path and its own parity corpus is red (90 of 284 cases, on `feat/bloom-language-final` too, outside CI). It runs from a Bloom checkout as documented; publishing it is follow-up work. |
+
+After #848, the developer-experience branch (`feat/bloom-language-dx`:
+these guides, the generated reference, the Storybook tour, the compiler's
+doc links and the per-node type checks) ships as a Bloom minor (the docs ship
+in `@oxy.so/bloom`) and a compiler and language minor.
+
+## Order
+
+The hard edges: `bloom-data` before services 15 before the Gemies SDK 10;
+Bloom 23 and the compiler's platform packages before any app on the
+language. There is no cycle.
+
+### 0. Before #848 merges (owner)
+
+- **Trusted publishing for new names.** A public package npm has never seen
+  fails the release at `publish` until its trusted publisher is configured
+  (oxy `docs/npm-releases.md`, "A brand-new package"): the ten new names
+  (`bloom-lens`, `bloom-data`, `bloom-language`, `bloom-language-compiler`
+  and its six platform packages) each need their first version published
+  once by the owner and a trusted publisher configured (organization
+  `OxyHQ`, repository `Bloom`, workflow `release-packages.yml`, environment
+  `npm`). Merged earlier, the release stops at `@oxy.so/bloom-lens`, the
+  first in its order, and nothing publishes.
+- **The compiler's platform packages need a release path.** The release's
+  build job is one Linux runner with no Rust; the addons are built per
+  platform by `language-compiler-binaries.yml`, which never publishes. oxy
+  [#2313](https://github.com/OxyHQ/oxy/pull/2313)
+  (`ci/release-prebuilt-artifacts`) adds `prebuilt_artifacts` to the shared
+  `npm-release.yml`; Bloom's `release-packages.yml` calls
+  `language-compiler-binaries.yml` (`release: true`) when the compiler's
+  version is not on npm, and the release downloads the addons before it
+  packs. The platform packages are committed napi manifests and workspaces
+  (`packages/bloom-language-compiler/npm/*`), so the release plans them before
+  the compiler. #2313 merges first, in oxy.
+
+### 1. oxy: app-preset 6.9.0 (independent)
+
+PR `feat/app-preset-no-nativewind` → `main`. app-preset applies NativeWind
+only to an app that lists it, and adds `BloomNativeWindTheme`
+(`./nativewind-theme`). It has no Bloom 23 dependency, so it can ship any
+time, and apps need it before they take Bloom 23. Checks: oxy `ci.yml`
+(`Guards`, `Package Tests (platform)`, `Package Tests (apps)`) and the merge
+queue's required `CI complete`.
+
+### 2. Bloom: #848, Bloom 23.0.0 and the language 1.0.0
+
+`release/bloom-23` → `main`, carrying the version bumps, the `private` flags
+removed, the language's `@oxy.so/bloom` peer at `>=23.0.0`, the changelogs and
+the release workflow's prebuilt step. Checks, in `validate.yml`, required
+through `CI complete`:
+
+- `Build, package and types`: Biome, `bun run build` (generators,
+  `verify:package`, task catalog), `bun run typescript`, generated sources
+  committed;
+- `Language packages` (a job of its own, 45 minutes): Bloom's build, the Rust
+  toolchain, the crate quarantine audit, `cargo fmt` and `clippy`, the
+  compiler's addon (`build:addon`), then the language, the compiler and Bloom
+  data built, typechecked and tested (the language's parity suites; the
+  compiler's cargo tests, adapters and fixtures parity);
+- `Tests (1/5)` … `Tests (5/5)`;
+- `Android (legacy)`, `Android (default)`, `Android (predictive)`.
+
+The merge queue runs them on the merged commit; the release run then
+publishes in the order of the table above.
+
+### 2b. Bloom: the developer experience (after #848)
+
+`feat/bloom-language-dx`, rebased onto `release/bloom-23` and then onto
+`main`, with a Bloom minor and a compiler and language minor: the guides, the
+generated reference (`node scripts/generate-reference.mjs --check` in the
+language's tests), the guides' examples (`bun run check:docs`, a step of the
+`Language packages` job), the Storybook tour, the compiler's doc links and the
+per-node type checks.
+
+### 3. oxy: services 15.0.0
+
+PR `feat/services-bloom-data` → `main`, after `bloom-data` 0.1.0 is on npm:
+its dev dependency (already `0.1.0`) and peer (`>=0.1.0`, better `^0.1.0`
+while 0.x) resolve, and the lockfile is regenerated (CI installs frozen). `@oxy.so/core` needs no bump (no change
+under `packages/core`). Checks: oxy `ci.yml`, `CI complete`. Services still
+uses `className` (about 370 sites) and so still needs NativeWind in the app:
+its own views work on Bloom 23 through `BloomNativeWindTheme`, but **it
+passes `className` to Bloom components** (`Button`, `Card`), whose prop Bloom
+23 removed: an app typechecking against services 15 and Bloom 23 fails with
+14 errors inside services' `src` (measured by scaffolding the language
+template against local packs). Before it publishes, services moves those
+sites to `style` (or the language) and adds Bloom 23 to its CI's Bloom
+range; moving the rest to the language is its own PR after this.
+
+### 4. oxy: create-oxy-app with the language template
+
+PR `feat/create-oxy-app-language` → `main` (a minor bump): the language
+template (`layout()`/`screen()` routes, a bloom-data list, a form with
+bindings, glass chrome, no NativeWind). It needs every version its template
+pins on npm (Bloom `^23.0.0`, the language and compiler `^1.0.0`, bloom-data
+`^0.1.0`, app-preset `^6.9.0`, services `^15.0.0`), since its range check
+resolves them; until then its `pending-releases` list excuses only their
+E404. Verified against local packs: the scaffolded app's Jest passes and
+its own code typechecks; its typecheck is green once services 15 drops the
+`className` it passes to Bloom (step 3). Checks: oxy `ci.yml` (create-oxy-app's
+tests, Biome, doctor), `CI complete`.
+
+### 5. Gemies: `@gemies/sdk` 10.0.0
+
+PR `feat/gemies-sdk-services-15` → `main`, after services 15: the root
+catalog moves to services 15 and adds `bloom-data`, the lockfile is
+regenerated. Gemies has no merge queue; its required checks are `Changes`,
+`Lint & Test`, `Frontend Typecheck`, `Build API`, `Integrations (Postgres)`,
+`API (Postgres)` and `Deploy Script Tests`. The Gemies app itself
+(`packages/app`, about 255 `className` uses) stays on Bloom 22 until it
+takes `BloomNativeWindTheme` or the codemod.
+
+### 6. Mention on the language
+
+PR `feat/mention-on-language` → `main`, after Bloom 23 and the language
+packages (with the compiler's platform packages) are on npm: the frontend
+declares `@oxy.so/bloom-language`, `-compiler` and `@oxy.so/bloom-data`
+(today they come from local `file:` overrides that must not be committed),
+the catalog moves Bloom to `^23.0.0`, the lockfile is regenerated. Mention
+can stay on services 14 and SDK 9.1 for this step (SDK 9 caps services
+below 15) and move to services 15 and SDK 10 together in a second PR.
+Checks: `Build, lint and typecheck`, `Test <pkg>`, `Test backend`,
+`Frontend bundle baseline`, `Frontend bundle budget`, `Browser gate (e2e)`,
+`CI complete` (merge queue).
+
+## What follows
+
+- **The fleet.** Every other app pins an exact Bloom 22 or older with
+  NativeWind (Nilo, Inbox, Allo, Vibbr, Alia, CrowdSource, Willo, Peable,
+  the website, Moovo, Move, Authenticator, Atlas, Syra, FAIRWallet, Astro,
+  and oxy's own catalog at 22.1.1). Nothing moves by itself. Each app, one PR
+  at a time: app-preset 6.9 and `BloomNativeWindTheme`, Bloom 23, then the
+  compiler and the codemod, then removing NativeWind when no class is left
+  ([From JSX](bloom-language-from-jsx.mdx#the-order)).
+- **oxy's daily check.** `services-against-latest-bloom.yml` turns red if
+  Bloom 23 breaks services; watch it after step 2.
+- **Services on the language.** Its `className` sites move with the codemod,
+  then services drops NativeWind from its optional peers.
+- **The docs follow the code.** The reference regenerates from the spec, and
+  the guides' examples compile in CI, so a change that breaks either fails
+  its PR.

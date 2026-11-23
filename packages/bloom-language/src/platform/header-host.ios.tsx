@@ -19,7 +19,15 @@
  *
  * NOT VERIFIED: written without an iOS build (no Mac on this machine).
  */
-import { createContext, useContext, type ComponentType, type Context, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useState,
+  type ComponentType,
+  type Context,
+  type ReactNode,
+} from 'react';
 
 import {
   isNode,
@@ -76,17 +84,29 @@ function loadRouter() {
 
 const NO_NAVIGATION = createContext<NavigationLike | undefined>(undefined);
 
-/** Whether a header here is the system navigation bar: the screen is a native stack's. */
-export function useSystemBar(): boolean {
+/**
+ * Whether a header here is the system navigation bar: the screen is a native
+ * stack's. The navigator is read after render, in a layout effect (React
+ * Navigation's state is never read while rendering), so the answer is
+ * `undefined` for the first render of a screen in a navigator and settles
+ * before anything is painted; outside a navigator it is `false` at once.
+ */
+export function useSystemBar(): boolean | undefined {
   const loaded = loadRouter();
   // Whether expo-router loaded is fixed for the process, so the hook order never changes.
   const navigation = useContext(loaded ? loaded.context : NO_NAVIGATION);
-  return navigation?.getState?.()?.type === 'stack';
+  const [system, setSystem] = useState<boolean | undefined>(navigation ? undefined : false);
+  useLayoutEffect(() => {
+    setSystem(navigation?.getState?.()?.type === 'stack');
+  }, [navigation]);
+  return system;
 }
 
 export function HeaderHost(props: NodeHostProps) {
   const system = useSystemBar();
   const loaded = loadRouter();
+  // Undecided until the layout effect reads the navigator: nothing, rather than a PageHeader to take down.
+  if (system === undefined) return null;
   if (!system || !loaded || valuesOf(props.node).inPage === true) {
     return <PageHeaderHost {...props} />;
   }

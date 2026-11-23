@@ -12,15 +12,19 @@ use oxc_semantic::Scoping;
 use oxc_span::{GetSpan, Span};
 
 use crate::diagnostics::suggest;
+use crate::docs::{Doc, Tour};
 use crate::module::{Binding, Literal, Module};
 use crate::spec::{
-    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS,
+    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, GLASS_VALUE, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS,
+    VARIANT_MODIFIERS,
 };
 
 pub struct Problem {
     pub span: Span,
     pub message: String,
     pub help: Option<String>,
+    /// The docs that explain it, the most precise first.
+    pub docs: Vec<Doc>,
 }
 
 fn tokens(set: &str) -> &'static [&'static str] {
@@ -58,6 +62,7 @@ pub fn check_program(program: &Program, module: &Module, scoping: &Scoping) -> C
                  glass in a GlassGroup, and keep glass to the navigation layer"
                     .into(),
             ),
+            docs: vec![Doc::Tour(Tour::LiquidGlassRules), Doc::Tour(Tour::GlassGroups)],
         });
     }
     checker.checked
@@ -189,6 +194,7 @@ impl Checker<'_> {
                      .style('glassProminent'), the rest untinted"
                         .into(),
                 ),
+                docs: vec![Doc::Tour(Tour::LiquidGlassRules)],
             });
         }
     }
@@ -214,6 +220,7 @@ impl Checker<'_> {
                          .glass(clear.dimmed()), or a tint"
                             .into(),
                     ),
+                    docs: vec![Doc::Tour(Tour::LiquidGlassRules), Doc::modifier("glass")],
                 });
             }
             if self.place.in_list && !glass.in_content {
@@ -225,6 +232,7 @@ impl Checker<'_> {
                          .inContent()"
                             .into(),
                     ),
+                    docs: vec![Doc::Tour(Tour::LiquidGlassRules), Doc::modifier("inContent")],
                 });
             }
             if self.place.in_glass {
@@ -234,6 +242,7 @@ impl Checker<'_> {
                     help: Some(
                         "Liquid Glass is one layer: drop this .glass(), or put both side by side in a GlassGroup".into(),
                     ),
+                    docs: vec![Doc::Tour(Tour::LiquidGlassRules), Doc::Tour(Tour::GlassGroups)],
                 });
             } else if self.place.in_content && !glass.in_content {
                 self.checked.warnings.push(Problem {
@@ -244,6 +253,7 @@ impl Checker<'_> {
                          says so with .inContent()"
                             .into(),
                     ),
+                    docs: vec![Doc::Tour(Tour::LiquidGlassRules), Doc::modifier("inContent")],
                 });
             }
         }
@@ -264,6 +274,7 @@ impl Checker<'_> {
                     help: Some(
                         "wrap them in GlassGroup(...): nearby glass renders together, blends and morphs as one".into(),
                     ),
+                    docs: vec![Doc::Tour(Tour::GlassGroups), Doc::Node("glassGroup")],
                 });
             }
         }
@@ -295,6 +306,7 @@ impl Checker<'_> {
                     span: call.span,
                     message: format!("{groups} toolbar groups: a toolbar has at most three"),
                     help: Some("Apple: aim for a maximum of three groups; move the rest into a menu".into()),
+                    docs: vec![Doc::Tour(Tour::Navigation), Doc::Node("toolbarGroup")],
                 });
             }
         }
@@ -308,6 +320,7 @@ impl Checker<'_> {
                 help: Some(
                     "each candidate is laid out once more to measure it: keep to three, and small".into(),
                 ),
+                docs: vec![Doc::Tour(Tour::Layout), Doc::Node("viewThatFits")],
             });
         }
         if chain_kind(expression, module, scoping) != "toolbarGroup" {
@@ -335,6 +348,7 @@ impl Checker<'_> {
                 help: Some(
                     "Apple: keep actions with text labels apart; put them in groups of their own".into(),
                 ),
+                docs: vec![Doc::Tour(Tour::Navigation), Doc::Node("toolbarGroup")],
             });
         }
     }
@@ -459,6 +473,7 @@ fn unlabelled_icon_control(expression: &Expression, module: &Module, scoping: &S
         span: root.span,
         message: format!("an icon-only {name} has no .label()"),
         help: Some(format!("name what it does: {name}(Icon(…)).label('Share')")),
+        docs: vec![Doc::Tour(Tour::Accessibility), Doc::modifier("label")],
     })
 }
 
@@ -490,11 +505,14 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
     let holds_glass = root.is_some_and(|root| holds_glass(&root.arguments, module, scoping));
     for (modifier, span, arguments, call_span) in modifiers.into_iter().rev() {
         if !spec.modifiers.contains(&modifier) {
-            let help = format!("{name} modifiers: {}", spec.modifiers.join(", "));
+            let list = format!("{name} modifiers: {}", spec.modifiers.join(", "));
+            let elsewhere = taken_elsewhere(modifier).map(|takers| format!("{takers}; "));
+            let help = format!("{}{list}", elsewhere.unwrap_or_default());
             return Err(Problem {
                 span,
                 message: format!("{name} has no modifier .{modifier}()"),
                 help: Some(with_suggestion(suggest(modifier, spec.modifiers), help)),
+                docs: [Some(Doc::Node(kind)), Doc::find_modifier(modifier)].into_iter().flatten().collect(),
             });
         }
         check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
@@ -510,6 +528,7 @@ fn check_chain(expression: &Expression, module: &Module, scoping: &Scoping) -> R
                      .glass() view itself, which fades the material's own layers instead"
                         .into(),
                 ),
+                docs: vec![Doc::Tour(Tour::LiquidGlassRules), Doc::modifier(modifier)],
             });
         }
     }
@@ -535,6 +554,7 @@ fn check_define_environment(
                 span: call.span,
                 message: "defineEnvironment() takes its name as a string literal".into(),
                 help: Some("const Compact = defineEnvironment('compact', false)".into()),
+                docs: vec![Doc::Tour(Tour::Environment)],
             });
         }
     }
@@ -553,6 +573,7 @@ fn check_define_environment(
             "defineEnvironment() takes a literal default: a string, a number, a boolean, null or undefined"
                 .into(),
         help: Some("an environment value is a token or a plain value, never a style or an object".into()),
+        docs: vec![Doc::Tour(Tour::Environment)],
     })
 }
 
@@ -567,7 +588,11 @@ fn check_environment(arguments: &[Argument], module: &Module, scoping: &Scoping)
         Some(found) if found != expected => Err(Problem {
             span: value.span(),
             message: format!(".environment() sets a {} value to a {}", expected.name(), found.name()),
-            help: Some("the value has the type of the key's default (defineEnvironment)".into()),
+            help: Some(format!(
+                "the value has the type of the key's default (defineEnvironment): pass a {}",
+                expected.name()
+            )),
+            docs: vec![Doc::Tour(Tour::Environment), Doc::modifier("environment")],
         }),
         _ => Ok(()),
     }
@@ -664,24 +689,58 @@ fn check_arguments(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
-    let params = MODIFIERS.iter().find(|(name, _)| *name == modifier).map_or(&[][..], |(_, params)| params);
-    let required = params.iter().filter(|param| !param.ends_with('?')).count();
-    let variadic = params.contains(&"children");
-    if !variadic && (arguments.len() < required || arguments.len() > params.len()) {
-        let expected = if required == params.len() {
-            required.to_string()
-        } else {
-            format!("{required} to {}", params.len())
-        };
-        return Err(Problem {
-            span: call_span,
-            message: format!(".{modifier}() takes {expected} argument(s), not {}", arguments.len()),
-            help: None,
-        });
+    let params = params_of(spec, modifier);
+    check_arity(modifier, params, arguments.len(), call_span, Doc::modifier(modifier))?;
+    for (param, value) in paired(params, arguments) {
+        check_value(modifier, param, value, spec, module, scoping)?;
     }
-    // Optional parameters take the arguments beyond the required ones, in order.
+    Ok(())
+}
+
+/// The node's own parameters for `modifier` where it takes them narrower, else the modifier's.
+fn params_of(spec: &NodeSpec, modifier: &str) -> &'static [&'static str] {
+    spec.params
+        .iter()
+        .chain(MODIFIERS)
+        .find(|(name, _)| *name == modifier)
+        .map_or(&[][..], |(_, params)| params)
+}
+
+/// `.name()` takes as many arguments as `params` has, less the optional ones.
+fn check_arity(name: &str, params: &[&str], count: usize, call_span: Span, doc: Doc) -> Result<(), Problem> {
+    let required = params.iter().filter(|param| !param.ends_with('?')).count();
+    if params.contains(&"children") || (required..=params.len()).contains(&count) {
+        return Ok(());
+    }
+    let expected = if required == params.len() {
+        required.to_string()
+    } else {
+        format!("{required} to {}", params.len())
+    };
+    let signature = format!(".{name}({})", params.join(", "));
+    let help = if required == params.len() {
+        format!("write it {signature}")
+    } else {
+        format!("write it {signature}: a parameter marked ? is optional")
+    };
+    Err(Problem {
+        span: call_span,
+        message: format!(".{name}() takes {expected} argument(s), not {count}"),
+        help: Some(help),
+        docs: vec![doc],
+    })
+}
+
+/// Each argument with its parameter type: optional parameters take the
+/// arguments beyond the required ones, in order.
+fn paired<'p, 'e, 'a>(
+    params: &'p [&'p str],
+    arguments: &'e [Argument<'a>],
+) -> Vec<(&'p str, &'e Expression<'a>)> {
+    let required = params.iter().filter(|param| !param.ends_with('?')).count();
     let mut optional = arguments.len().saturating_sub(required);
     let mut arguments = arguments.iter();
+    let mut pairs = Vec::new();
     for param in params {
         let param = match param.strip_suffix('?') {
             Some(param) if optional > 0 => {
@@ -692,11 +751,54 @@ fn check_arguments(
             None => param,
         };
         let Some(argument) = arguments.next() else { break };
-        let Some(value) = argument.as_expression() else { continue };
-        check_value(modifier, param, value, spec, module, scoping)?;
+        if let Some(value) = argument.as_expression() {
+            pairs.push((param, value));
+        }
+    }
+    pairs
+}
+
+/// A parameter that takes no token (a view, a boolean): a string written there is never one.
+fn check_no_token(name: &str, param: &str, value: &Expression, doc: Doc) -> Result<(), Problem> {
+    let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
+    Err(Problem {
+        span: literal.span,
+        message: format!(".{name}() takes a {param} here, not '{}'", literal.value.display()),
+        help: Some(format!("pass a {param}: .{name}() takes no token on this node")),
+        docs: vec![doc],
+    })
+}
+
+/// A glass value's methods (`regular.tint('primary', 'subtle')`), outermost
+/// first: each one's arguments, as the spec types them.
+fn check_glass_value(call: &CallExpression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let mut current = Some(call);
+    while let Some(call) = current {
+        let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
+        if !module.is_glass_value(&member.object, scoping) {
+            return Ok(());
+        }
+        let method = member.property.name.as_str();
+        if let Some((_, params)) = GLASS_VALUE.iter().find(|(name, _)| *name == method) {
+            check_arity(method, params, call.arguments.len(), call.span, Doc::modifier("glass"))?;
+            for (param, value) in paired(params, &call.arguments) {
+                if NO_TOKEN.contains(&param) {
+                    check_no_token(method, param, value, Doc::modifier("glass"))?;
+                } else if param != "value" {
+                    check_token(method, Doc::modifier("glass"), param, value)?;
+                }
+            }
+        }
+        current = match member.object.without_parentheses() {
+            Expression::CallExpression(inner) => Some(&**inner),
+            _ => None,
+        };
     }
     Ok(())
 }
+
+/// Parameter types that take no token.
+const NO_TOKEN: &[&str] = &["view", "boolean"];
 
 fn check_value(
     modifier: &str,
@@ -713,6 +815,7 @@ fn check_value(
                 span: value.span(),
                 message: format!(".{modifier}() moves a MotionValue; a mapped one only follows another"),
                 help: Some(format!(".{modifier}() the value it maps, and bind the mapped one")),
+                docs: vec![Doc::Tour(Tour::AnimationAndGestures), Doc::modifier(modifier)],
             });
         }
         return if motion_value || !is_literal(value) {
@@ -722,6 +825,7 @@ fn check_value(
                 span: value.span(),
                 message: format!(".{modifier}() takes a MotionValue"),
                 help: Some("const y = useMotionValue(0), from '@oxy.so/bloom-language'".into()),
+                docs: vec![Doc::Tour(Tour::AnimationAndGestures), Doc::modifier(modifier)],
             })
         };
     }
@@ -730,6 +834,7 @@ fn check_value(
     }
     match param {
         "value" | "children" | "namespace" => Ok(()),
+        param if NO_TOKEN.contains(&param) => check_no_token(modifier, param, value, Doc::modifier(modifier)),
         "variant" => check_variant(value, spec, module, scoping),
         // A phase's build: the chain on its view sets geometry and opacity only.
         "phaseBuild" => check_phase(value, spec, module, scoping),
@@ -744,6 +849,7 @@ fn check_value(
                 } else {
                     "declare it once with defineKeyframes([...frames], motion)".into()
                 }),
+                docs: vec![Doc::modifier(modifier), Doc::Tour(Tour::AnimationAndGestures)],
             }),
             _ => Ok(()),
         },
@@ -765,44 +871,23 @@ fn check_value(
                             suggest(key, keys),
                             format!("{modifier} keys: {}", keys.join(", ")),
                         )),
+                        docs: vec![Doc::modifier(modifier)],
                     });
                 }
                 // An offset's axis may follow a `MotionValue` in place of its token.
                 if !(param == "offset" && module.is_motion_value_ref(&property.value, scoping)) {
-                    check_token(modifier, set, &property.value)?;
+                    check_token(modifier, Doc::modifier(modifier), set, &property.value)?;
                 }
             }
             Ok(())
         }
         "glass" => match value.without_parentheses() {
-            Expression::CallExpression(call) => {
-                // Each method of the value (`regular.tint('primary').interactive(false)`).
-                let mut current = Some(&**call);
-                while let Some(call) = current {
-                    let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
-                    if !module.is_glass_value(&member.object, scoping) {
-                        return Ok(());
-                    }
-                    if member.property.name == "tint" {
-                        let mut arguments = call.arguments.iter().filter_map(Argument::as_expression);
-                        if let Some(color) = arguments.next() {
-                            check_token("tint", "color", color)?;
-                        }
-                        if let Some(opacity) = arguments.next() {
-                            check_token("tint", "glassOpacity", opacity)?;
-                        }
-                    }
-                    current = match member.object.without_parentheses() {
-                        Expression::CallExpression(inner) => Some(&**inner),
-                        _ => None,
-                    };
-                }
-                Ok(())
-            }
+            Expression::CallExpression(call) => check_glass_value(call, module, scoping),
             Expression::StringLiteral(literal) => Err(Problem {
                 span: literal.span,
                 message: format!(".glass() takes a glass value, not '{}'", literal.value.display()),
                 help: Some("import { regular, clear } from '@oxy.so/bloom-language'".into()),
+                docs: vec![Doc::modifier("glass"), Doc::Tour(Tour::Glass)],
             }),
             _ => Ok(()),
         },
@@ -811,7 +896,7 @@ fn check_value(
             Expression::ArrayExpression(array) => {
                 for element in &array.elements {
                     if let Some(color) = element.as_expression() {
-                        check_token(modifier, "color", color)?;
+                        check_token(modifier, Doc::modifier(modifier), "color", color)?;
                     }
                 }
                 Ok(())
@@ -820,17 +905,22 @@ fn check_value(
                 span: literal.span,
                 message: format!(".{modifier}() takes a list of colours, not '{}'", literal.value.display()),
                 help: Some(format!(".{modifier}(['{}', …])", literal.value.display())),
+                docs: vec![Doc::modifier(modifier)],
             }),
             _ => Ok(()),
         },
-        "size" => spec.size.map_or(Ok(()), |set| check_token(modifier, set, value)),
-        "tint" => spec.tint.map_or(Ok(()), |set| check_token(modifier, set, value)),
-        "style" => spec.style.map_or(Ok(()), |set| check_token(modifier, set, value)),
-        "shape" => spec.shape.map_or(Ok(()), |set| check_token(modifier, set, value)),
-        "blend" => check_token(modifier, spec.blend.unwrap_or("blend"), value),
+        "size" => spec.size.map_or(Ok(()), |set| check_token(modifier, Doc::modifier(modifier), set, value)),
+        "tint" => spec.tint.map_or(Ok(()), |set| check_token(modifier, Doc::modifier(modifier), set, value)),
+        "style" => {
+            spec.style.map_or(Ok(()), |set| check_token(modifier, Doc::modifier(modifier), set, value))
+        }
+        "shape" => {
+            spec.shape.map_or(Ok(()), |set| check_token(modifier, Doc::modifier(modifier), set, value))
+        }
+        "blend" => check_token(modifier, Doc::modifier(modifier), spec.blend.unwrap_or("blend"), value),
         // A density is the node's own: each node lists Bloom's names for its densities.
-        "density" => check_in(modifier, "density", spec.densities, value),
-        set => check_token(modifier, set, value),
+        "density" => check_density(modifier, spec, value),
+        set => check_token(modifier, Doc::modifier(modifier), set, value),
     }
 }
 
@@ -850,6 +940,7 @@ fn check_variant(
         refused: &|modifier| format!("A variant cannot change .{modifier}()"),
         takes: "a variant changes",
         tokens_only: true,
+        doc: Doc::Tour(Tour::Variants),
     };
     check_built(value, spec, &build, module, scoping)
 }
@@ -868,6 +959,7 @@ fn check_phase(
         refused: &|modifier| format!("A phase cannot change .{modifier}()"),
         takes: "a phase changes",
         tokens_only: true,
+        doc: Doc::Tour(Tour::AnimationAndGestures),
     };
     check_built(value, spec, &build, module, scoping)
 }
@@ -887,6 +979,7 @@ fn check_define_modifier(expression: &Expression, module: &Module, scoping: &Sco
         refused: &|modifier| format!("A modifier cannot chain .{modifier}(): it applies to any view"),
         takes: "a modifier chains the universal modifiers",
         tokens_only: false,
+        doc: Doc::Tour(Tour::CustomModifiers),
     };
     check_built(body, view, &build, module, scoping)
 }
@@ -900,6 +993,7 @@ fn check_content_view(value: &Expression, module: &Module, scoping: &Scoping) ->
         refused: &|modifier| format!("A content view cannot take .{modifier}()"),
         takes: "a content view takes",
         tokens_only: false,
+        doc: Doc::modifier("contentView"),
     };
     check_built(value, node("stack"), &build, module, scoping)
 }
@@ -919,6 +1013,8 @@ struct Build<'a> {
     takes: &'a str,
     /// Geometry by token only (a variant's, a phase's): a MotionValue moves the view itself.
     tokens_only: bool,
+    /// Where what it may set is explained.
+    doc: Doc,
 }
 
 /// The chain a build function (`(v) => v…`) returns on its first parameter:
@@ -972,6 +1068,7 @@ fn check_built(
                     suggest(modifier, build.allowed),
                     format!("{}: {}", build.takes, build.allowed.join(", ")),
                 )),
+                docs: vec![build.doc],
             });
         }
         // A variant varies geometry by token: a view that follows a MotionValue moves by the value.
@@ -987,6 +1084,7 @@ fn check_built(
                     "a variant changes geometry by token; bind the MotionValue outside when() and move it with animate()"
                         .into(),
                 ),
+                docs: vec![build.doc, Doc::Tour(Tour::AnimationAndGestures)],
             });
         }
         check_arguments(modifier, arguments, spec, call_span, module, scoping)?;
@@ -1028,37 +1126,133 @@ fn motion_value_for_token(modifier: &str, param: &str, span: Span) -> Problem {
              token"
                 .into(),
         ),
+        docs: vec![Doc::Tour(Tour::AnimationAndGestures), Doc::modifier(modifier)],
     }
 }
 
 /// A string literal must be one of `set`'s tokens; anything else is the runtime's.
 /// A colour may name an opacity after its role (`'muted/faded'`): both halves are checked.
-fn check_token(modifier: &str, set: &str, value: &Expression) -> Result<(), Problem> {
+/// `doc` is where the modifier is explained; the token set's own section follows it.
+fn check_token(modifier: &str, doc: Doc, set: &str, value: &Expression) -> Result<(), Problem> {
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
     let token = literal.value.as_str().unwrap_or_default();
-    match token.split_once('/') {
-        Some((role, opacity)) if set == "color" && tokens("color").contains(&role) => {
-            known(modifier, "opacity", tokens("opacity"), opacity, literal.span)
+    let (set, token) = match token.split_once('/') {
+        // A ring's colour is a colour too: `.ring('primary/40')` paints the role at 40%.
+        Some((role, opacity)) if (set == "color" || set == "ring") && tokens("color").contains(&role) => {
+            ("opacity", opacity)
         }
-        _ => known(modifier, set, tokens(set), token, literal.span),
-    }
+        _ => (set, token),
+    };
+    let docs = vec![doc, Doc::tokens(set).unwrap_or(Doc::Tour(Tour::Tokens))];
+    known(modifier, set, tokens(set), token, literal.span, docs, || token_elsewhere(token, set))
 }
 
-/// A token written out is one of `names`, the set a node lists itself (its densities).
-fn check_in(modifier: &str, set: &str, names: &[&str], value: &Expression) -> Result<(), Problem> {
+/// A density written out is one the node lists itself.
+fn check_density(modifier: &str, spec: &NodeSpec, value: &Expression) -> Result<(), Problem> {
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
-    known(modifier, set, names, literal.value.as_str().unwrap_or_default(), literal.span)
+    let token = literal.value.as_str().unwrap_or_default();
+    let docs = vec![Doc::modifier(modifier), Doc::Node(spec.kind)];
+    let elsewhere = || {
+        let takers: Vec<String> = NODES
+            .iter()
+            .filter(|node| node.densities.contains(&token))
+            .filter_map(|node| node.constructors.first().map(|constructor| constructor.to_string()))
+            .collect();
+        (!takers.is_empty()).then(|| format!("'{token}' is a density of {}", listed(&takers)))
+    };
+    known(modifier, "density", spec.densities, token, literal.span, docs, elsewhere)
 }
 
-fn known(modifier: &str, set: &str, names: &[&str], token: &str, span: Span) -> Result<(), Problem> {
+fn known(
+    modifier: &str,
+    set: &str,
+    names: &[&str],
+    token: &str,
+    span: Span,
+    docs: Vec<Doc>,
+    elsewhere: impl FnOnce() -> Option<String>,
+) -> Result<(), Problem> {
     if names.contains(&token) {
         return Ok(());
     }
+    let list = format!("{set} tokens: {}", names.join(", "));
+    let help = match elsewhere() {
+        Some(elsewhere) => format!("{elsewhere}; {list}"),
+        None => list,
+    };
     Err(Problem {
         span,
         message: format!("Unknown {set} token '{token}' for .{modifier}()"),
-        help: Some(with_suggestion(suggest(token, names), format!("{set} tokens: {}", names.join(", ")))),
+        help: Some(with_suggestion(suggest(token, names), help)),
+        docs,
     })
+}
+
+/// How many takers a hint names before it counts the rest.
+const TAKERS_SHOWN: usize = 3;
+
+/// `'bold' is one of the weight tokens, for .weight()`: of the other token
+/// sets that have the token, the one the most modifiers (or nodes' own
+/// modifiers) take, and those takers.
+fn token_elsewhere(token: &str, set: &str) -> Option<String> {
+    let (name, takers) = TOKEN_SETS
+        .iter()
+        .filter(|(name, tokens)| *name != set && tokens.contains(&token))
+        .map(|(name, _)| (name, takers_of_set(name)))
+        .filter(|(_, takers)| !takers.is_empty())
+        .min_by_key(|(_, takers)| std::cmp::Reverse(takers.len()))?;
+    Some(format!("'{token}' is one of the {name} tokens, for {}", listed(&takers)))
+}
+
+/// The modifiers with a parameter of `set`, then the nodes' own modifiers that read it.
+fn takers_of_set(set: &str) -> Vec<String> {
+    let has = |params: &[&str]| params.iter().any(|param| param.trim_end_matches('?') == set);
+    let mut takers: Vec<String> = MODIFIERS
+        .iter()
+        .filter(|(_, params)| has(params))
+        .map(|(modifier, _)| format!(".{modifier}()"))
+        .collect();
+    for node in NODES {
+        let Some(constructor) = node.constructors.first() else { continue };
+        let own = [("size", node.size), ("tint", node.tint), ("style", node.style), ("shape", node.shape)];
+        takers.extend(
+            own.iter()
+                .filter(|(_, own)| *own == Some(set))
+                .map(|(modifier, _)| format!("{constructor}().{modifier}()")),
+        );
+        takers.extend(
+            node.params
+                .iter()
+                .filter(|(_, params)| has(params))
+                .map(|(modifier, _)| format!("{constructor}().{modifier}()")),
+        );
+    }
+    takers
+}
+
+/// `HStack, VStack and Grid take .childSpacing()`: the constructors of the
+/// node kinds that take a modifier this one does not.
+fn taken_elsewhere(modifier: &str) -> Option<String> {
+    let takers: Vec<String> = NODES
+        .iter()
+        .filter(|node| node.modifiers.contains(&modifier))
+        .flat_map(|node| node.constructors.iter().map(|constructor| constructor.to_string()))
+        .collect();
+    let verb = if takers.len() == 1 { "takes" } else { "take" };
+    (!takers.is_empty()).then(|| format!("{} {verb} .{modifier}()", listed(&takers)))
+}
+
+/// The first few of `items`, and how many more.
+fn listed(items: &[String]) -> String {
+    match items {
+        [] => String::new(),
+        [only] => only.clone(),
+        _ if items.len() <= TAKERS_SHOWN => {
+            let (last, first) = items.split_last().expect("two or more");
+            format!("{} and {last}", first.join(", "))
+        }
+        _ => format!("{} and {} more", items[..TAKERS_SHOWN].join(", "), items.len() - TAKERS_SHOWN),
+    }
 }
 
 fn with_suggestion(suggestion: Option<String>, list: String) -> String {

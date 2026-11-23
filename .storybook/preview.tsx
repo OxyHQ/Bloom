@@ -168,6 +168,9 @@ const preview: Preview = {
           'Patterns',
           ['Account', 'Forms', 'Chat', 'Agents', 'Productivity', '*'],
           'Templates',
+          // The Bloom language: the tour (docs/bloom-language-tour.mdx), then its parity with Bloom.
+          'Language',
+          ['Tour', 'Parity', 'Parity frame'],
           'Labs',
         ],
         method: 'alphabetical',
