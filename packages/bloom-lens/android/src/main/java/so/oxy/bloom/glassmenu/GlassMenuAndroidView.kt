@@ -397,6 +397,23 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
 
   internal fun iconView(slot: Int): View? = iconHost()?.getChildAt(slot)
 
+  // Set when a view inside redrew while the overlay draws this view's content: the overlay records the content again
+  // before the next frame (refreshContent).
+  internal var contentStale = false
+
+  // Content the overlay draws is not in the page, so a view inside that redraws (an animated avatar in a header
+  // trigger) marks nothing in the page: the overlay records the content again and the window draws a frame. Marked up
+  // the page, every view above it took the change as its own, and a parent that redraws itself for a child that did
+  // (Compose's interop holder: the pager's page) drew its whole page again, a damage of the whole window, on every
+  // frame of the child.
+  override fun onDescendantInvalidated(child: View, target: View) {
+    if (overlayDrawsChildren && overlay?.takeContent(this, target) == true) {
+      contentStale = true
+      return
+    }
+    super.onDescendantInvalidated(child, target)
+  }
+
   override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
     if (child.getTag(R.id.view_tag_native_id) == IconHostId) return false
     return super.drawChild(canvas, child, drawingTime)
@@ -422,6 +439,7 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
   // recording anything else.
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   internal fun refreshContent() {
+    contentStale = false
     val node = contentNode as? RenderNode ?: return
     val recording = node.beginRecording(width, height)
     super.dispatchDraw(recording)
@@ -439,6 +457,7 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
     node.setTranslationX(0f)
     node.setTranslationY(0f)
     node.setRenderEffect(null)
+    contentStale = false
     val recording = node.beginRecording(width, height)
     super.dispatchDraw(recording)
     node.endRecording()

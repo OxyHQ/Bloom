@@ -394,7 +394,31 @@
      }
      if (drawsGlass) {
        when (event.actionMasked) {
-@@ -182,7 +404,28 @@
+@@ -175,6 +397,23 @@
+ 
+   internal fun iconView(slot: Int): View? = iconHost()?.getChildAt(slot)
+ 
++  // Set when a view inside redrew while the overlay draws this view's content: the overlay records the content again
++  // before the next frame (refreshContent).
++  internal var contentStale = false
++
++  // Content the overlay draws is not in the page, so a view inside that redraws (an animated avatar in a header
++  // trigger) marks nothing in the page: the overlay records the content again and the window draws a frame. Marked up
++  // the page, every view above it took the change as its own, and a parent that redraws itself for a child that did
++  // (Compose's interop holder: the pager's page) drew its whole page again, a damage of the whole window, on every
++  // frame of the child.
++  override fun onDescendantInvalidated(child: View, target: View) {
++    if (overlayDrawsChildren && overlay?.takeContent(this, target) == true) {
++      contentStale = true
++      return
++    }
++    super.onDescendantInvalidated(child, target)
++  }
++
+   override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
+     if (child.getTag(R.id.view_tag_native_id) == IconHostId) return false
+     return super.drawChild(canvas, child, drawingTime)
+@@ -182,7 +421,29 @@
  
    override fun dispatchDraw(canvas: Canvas) {
      if (overlayDrawsChildren) return
@@ -416,6 +440,7 @@
 +  // recording anything else.
 +  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 +  internal fun refreshContent() {
++    contentStale = false
 +    val node = contentNode as? RenderNode ?: return
 +    val recording = node.beginRecording(width, height)
 +    super.dispatchDraw(recording)
@@ -423,7 +448,15 @@
    }
  
    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@@ -236,6 +479,16 @@
+@@ -196,6 +457,7 @@
+     node.setTranslationX(0f)
+     node.setTranslationY(0f)
+     node.setRenderEffect(null)
++    contentStale = false
+     val recording = node.beginRecording(width, height)
+     super.dispatchDraw(recording)
+     node.endRecording()
+@@ -236,6 +498,16 @@
      val target = overlay ?: return
      if (items.isEmpty() || this.width == 0 || this.height == 0) return
      if (menuActive && target.menuSession?.expanded == true) return
@@ -440,7 +473,7 @@
      val pressed = if (followsPress) pressedRect(target) else null
      val through = pressed ?: if (x != null && y != null && width != null && height != null) {
        RectF(
-@@ -275,11 +528,12 @@
+@@ -275,11 +547,12 @@
    internal fun onSessionFinished() {
      menuActive = false
      invalidate()
@@ -454,7 +487,7 @@
      const val PressMemory = 1000L
      const val MorphFromPress = "press"
      const val PressRadius = 22f
-@@ -287,5 +541,8 @@
+@@ -287,5 +560,8 @@
      const val LightLift = .055f
      const val LightPool = .07f
      const val LightRimLift = .3f
@@ -475,7 +508,7 @@
  
    init {
      setWillNotDraw(false)
-@@ -91,26 +94,33 @@
+@@ -91,26 +94,43 @@
      viewTreeObserver.removeOnPreDrawListener(this)
      Choreographer.getInstance().removeFrameCallback(this)
      framePending = false
@@ -495,7 +528,7 @@
 +    if (anchorsMoved()) {
 +      if (!isDirty) recordGlass()
 +    } else if (!isDirty) {
-+      for (anchor in anchors) if (drawnHere(anchor) && anchor.isDirty) anchor.refreshContent()
++      for (anchor in anchors) if (drawnHere(anchor) && (anchor.isDirty || anchor.contentStale)) anchor.refreshContent()
 +    }
      return true
    }
@@ -506,10 +539,19 @@
 -      if (child !== this && child.isDirty) return true
 -    }
 -    return false
--  }
++  // A view inside [anchor]'s content redrew (GlassMenuAndroidView.onDescendantInvalidated): when that content is drawn
++  // here, the window is asked for a frame and the pre-draw records the content again; no view in the page is marked.
++  // False when it is not drawn here, or this overlay draws nothing yet: the change goes up the page as usual.
++  fun takeContent(anchor: GlassMenuAndroidView, target: View): Boolean {
++    if (!supportsGlass || !isAttachedToWindow || !isHardwareAccelerated || !drawnHere(anchor)) return false
++    val window = root.parent ?: return false
++    window.onDescendantInvalidated(root, target)
++    return true
+   }
+ 
 +  private fun drawnHere(anchor: GlassMenuAndroidView): Boolean =
 +    (anchor.drawsGlass && !anchor.inPlace) || session?.anchor === anchor
- 
++
    private fun anchorsMoved(): Boolean {
      var moved = false
      for (anchor in anchors) {
@@ -518,7 +560,7 @@
        anchorRect(anchor, probe)
        val alpha = if (anchor.isShown) anchor.effectiveAlpha() else 0f
        if (probe != anchor.placement || alpha != anchor.placementAlpha) {
-@@ -118,32 +128,51 @@
+@@ -118,32 +138,51 @@
          anchor.placementAlpha = alpha
          moved = true
        }
@@ -578,7 +620,7 @@
      if (!anchor.isShown || anchor.width == 0 || anchor.height == 0) return
      val opacity = anchor.effectiveAlpha()
      if (opacity <= 0f) return
-@@ -167,10 +196,13 @@
+@@ -167,10 +206,13 @@
      state.config = anchor.config
      state.trigger = anchor.triggerConfig
      anchor.applyLight(state, restRect, 1f)
@@ -596,7 +638,7 @@
      val content = anchor.recordContent()
      content.alpha = opacity
      content.setScaleX(state.incoming.width() / anchor.width)
-@@ -265,8 +297,12 @@
+@@ -265,8 +307,12 @@
      lastFrameNanos = frameTimeNanos
      var running = false
      for (anchor in anchors) {
