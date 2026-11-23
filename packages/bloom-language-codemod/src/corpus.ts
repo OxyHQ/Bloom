@@ -1,8 +1,7 @@
 /**
  * The parity corpus as a module: each fixture's two sides as functions, the
  * before side drawn by NativeWind's own components (react-native-css, as the
- * app's Babel preset rewrites React Native's imports; its Text in Bloom's base
- * face, as `@oxy.so/app-preset` bundles it) and Bloom's, the after
+ * app's Babel preset rewrites React Native's imports) and Bloom's, the after
  * side by the language. `parity/corpus.*.test.tsx` renders them.
  */
 import { join, relative } from 'node:path';
@@ -10,15 +9,13 @@ import { join, relative } from 'node:path';
 import { LANGUAGE_PACKAGE } from './table';
 import type { Fixture, Source } from './transform';
 
-const APP_TEXT = join(__dirname, '../parity/support/app-text');
 /** What `screen()` draws a body's root with. */
 const SCREEN_HOST = join(LANGUAGE_PACKAGE, 'src/router/screen-host');
 
 const NATIVEWIND: Record<string, string> = {
   View: 'react-native-css/components/View',
   Pressable: 'react-native-css/components/Pressable',
-  // NativeWind's Text as the app preset bundles it, in Bloom's base face.
-  Text: APP_TEXT,
+  Text: 'react-native-css/components/Text',
   Image: 'react-native-css/components/Image',
 };
 
@@ -32,7 +29,6 @@ function relativeTo(dir: string, module: string): string {
 function origin(source: Source, dir: string): { module: string; name: string } {
   if (source.module === 'react-native') {
     const module = NATIVEWIND[source.imported];
-    if (module === APP_TEXT) return { module: relativeTo(dir, module), name: source.imported };
     if (module) return { module, name: source.imported };
   }
   if (source.module === '@oxy.so/bloom/icons')

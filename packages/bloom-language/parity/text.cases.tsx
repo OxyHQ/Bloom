@@ -37,7 +37,6 @@ import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import type { ColorName, FontSizeName, TextStyleName, TypeFamily, WeightName } from '../src/tokens';
 import { type ParityCase, Themed, ThemedRgb } from './support/cases';
-import { BaseFontText } from './support/base-font';
 
 /** Web CSS react-native-web passes through, which React Native's style types do not name. */
 const webCss = (style: Record<string, string>) => style as RN.TextStyle;
@@ -584,7 +583,7 @@ const tracked: ParityCase[] = [
   },
 ];
 
-/** React Native's own Text, as an app draws it (`support/base-font`): its base face, then only what the chain names. */
+/** React Native's own Text: only what the chain names. */
 const raw: ParityCase[] = [
   {
     // Mention's upload progress: a text read as a progress bar's value.
@@ -594,24 +593,21 @@ const raw: ParityCase[] = [
         L.RawText('40%').role('progressbar').accessibilityValue({ min: 0, max: 100, now: 40 }),
       ),
     bloom: () => (
-      <BaseFontText
-        accessibilityRole="progressbar"
-        accessibilityValue={{ min: 0, max: 100, now: 40 }}
-      >
+      <RN.Text accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: 40 }}>
         40%
-      </BaseFontText>
+      </RN.Text>
     ),
   },
   {
     // Mention's attachment cards announce their status as a polite live region.
     name: 'RawText, a polite live region',
     language: () => toElement(L.RawText('Raw').liveRegion('polite')),
-    bloom: () => <BaseFontText accessibilityLiveRegion="polite">Raw</BaseFontText>,
+    bloom: () => <RN.Text accessibilityLiveRegion="polite">Raw</RN.Text>,
   },
   {
     name: 'RawText, bare',
     language: () => toElement(L.RawText('Raw')),
-    bloom: () => <BaseFontText>Raw</BaseFontText>,
+    bloom: () => <RN.Text>Raw</RN.Text>,
   },
   {
     name: 'RawText, a size, a line height, a weight and an ink',
@@ -620,11 +616,11 @@ const raw: ParityCase[] = [
     bloom: () => (
       <Themed>
         {(c) => (
-          <BaseFontText
+          <RN.Text
             style={{ fontSize: 14, lineHeight: 20, fontWeight: '600', color: c[paint('muted')] }}
           >
             Raw
-          </BaseFontText>
+          </RN.Text>
         )}
       </Themed>
     ),
@@ -635,9 +631,9 @@ const raw: ParityCase[] = [
       toElement(L.VStack(L.RawText('a ', L.RawText('b').weight('bold')).lines(2)).padding('sm')),
     bloom: () => (
       <RN.View style={{ paddingTop: 8, paddingBottom: 8, paddingStart: 8, paddingEnd: 8 }}>
-        <BaseFontText numberOfLines={2} ellipsizeMode="tail">
-          a <BaseFontText style={{ fontWeight: '700' }}>b</BaseFontText>
-        </BaseFontText>
+        <RN.Text numberOfLines={2} ellipsizeMode="tail">
+          a <RN.Text style={{ fontWeight: '700' }}>b</RN.Text>
+        </RN.Text>
       </RN.View>
     ),
   },
@@ -646,7 +642,7 @@ const raw: ParityCase[] = [
     language: () => toElement(L.Text('a ', L.RawText('b'))),
     bloom: () => (
       <Text>
-        a <BaseFontText>b</BaseFontText>
+        a <RN.Text>b</RN.Text>
       </Text>
     ),
   },
@@ -657,7 +653,7 @@ const raw: ParityCase[] = [
     bloom: () => (
       <RN.View>
         <Text style={{ textAlign: 'left' }}>a</Text>
-        <BaseFontText style={{ textAlign: 'right' }}>b</BaseFontText>
+        <RN.Text style={{ textAlign: 'right' }}>b</RN.Text>
       </RN.View>
     ),
   },
@@ -699,7 +695,7 @@ const raw: ParityCase[] = [
   {
     name: 'RawText in a family of its own',
     language: () => toElement(L.RawText('Raw').font('mono')),
-    bloom: () => <BaseFontText style={fontFamilyStyle('mono')}>Raw</BaseFontText>,
+    bloom: () => <RN.Text style={fontFamilyStyle('mono')}>Raw</RN.Text>,
   },
 ];
 

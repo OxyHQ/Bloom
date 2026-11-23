@@ -1,14 +1,6 @@
 import React from 'react';
 
-/**
- * Whether a text is inside another, as React Native's `Text` provides it to what
- * it draws: an app's base-face Text (`@oxy.so/app-preset`'s `metro/base-font`)
- * reads it to leave a nested text its parent's family.
- */
-export const unstable_TextAncestorContext = React.createContext(false);
-
-/** A host stand-in; `provides`, when given, is a context it sets to true for its children. */
-const createComponent = (name: string, provides?: React.Context<boolean>) => {
+const createComponent = (name: string) => {
   const Component = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
     const {
       children,
@@ -43,15 +35,14 @@ const createComponent = (name: string, provides?: React.Context<boolean>) => {
     if (onPress) elementProps.onPress = disabled ? undefined : onPress;
     if (style !== undefined) elementProps.style = style;
 
-    const host = React.createElement(name, elementProps, children as React.ReactNode);
-    return provides ? React.createElement(provides.Provider, { value: true }, host) : host;
+    return React.createElement(name, elementProps, children as React.ReactNode);
   });
   Component.displayName = name;
   return Component;
 };
 
 export const View = createComponent('View');
-export const Text = createComponent('Text', unstable_TextAncestorContext);
+export const Text = createComponent('Text');
 export const Image = createComponent('Image') as ReturnType<typeof createComponent> & {
   getSize: (uri: string, success?: (width: number, height: number) => void) => void;
   getSizeWithHeaders: (

@@ -70,7 +70,7 @@ import { RiMoreFill as I60 } from '@oxy.so/bloom/icons/RiMoreFill';
 import { RiShareLine as I61 } from '@oxy.so/bloom/icons/RiShareLine';
 import { withAlpha as I62 } from '@oxy.so/bloom/theme';
 import { RiArrowRightLine as I63 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I64 } from '../support/app-text';
+import { Text as I64 } from 'react-native-css/components/Text';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });

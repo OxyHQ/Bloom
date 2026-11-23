@@ -303,7 +303,7 @@ high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`).
 | `HStack` / `VStack` / `ZStack` | React Native `View` (`Pressable` when it takes presses or hovers); a `ZStack`'s children in one box of slots (see [Layout](#layout)) |
 | `Spacer` | `View` with `flex: 1` |
 | `Text` | Bloom `Text` (or the typography component its `textStyle` names), its ramp font as `variant`. A nested `Text` is a React Native span inside it. |
-| `RawText` | React Native's own `Text` as an app draws it: Bloom's base face (as `@oxy.so/app-preset` 6.8.0's `metro/base-font` gives every React Native `Text`: Inter on Android and iOS when no text is around it, the document's family on the web), then only what its chain names (no Bloom size or ink), as a span. What a screen moved from React Native's `Text` draws; new screens use `Text`. |
+| `RawText` | React Native's own `Text`: only what its chain names (no Bloom family, size or ink), as a span, so a text that names no family draws the platform face (Roboto on Android, San Francisco on iOS, react-native-web's system stack on the web). What a screen moved from React Native's `Text` draws; new screens use `Text`, which is Inter. |
 | `Icon` | the Bloom icon component, at a size rung, filled with the foreground |
 | `Avatar` | Bloom `Avatar` (with a presence, `AvatarPresence`) |
 | `AvatarGroup` / `Badge` / `IconCircle` / `Loading` | Bloom `AvatarGroup` / `Badge` / `IconCircle` / `Loading` |
@@ -380,6 +380,8 @@ generated from the spec, not by scanning (no PostCSS plugin).
 Fonts are Bloom's: a language `Text` is Bloom's `Text`, so it takes Bloom's
 families (Inter, the display face for titles), its desktop scale under a
 `TypographyScope` and its own ink when no colour is set (see [Text](#text)).
+`RawText` is React Native's own `Text` and takes none of them: with no family
+of its own it draws the platform face.
 
 ## Modifiers
 
@@ -913,6 +915,14 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   Markdown nests its runs: it writes only what its own chain names (a weight,
   an ink, a link) and inherits the rest, so a span of an `h1` keeps the
   heading's size.
+- **Raw text.** `RawText(...runs)` is React Native's own `Text`, not Bloom's:
+  it writes only what its chain names, so a text that names no family draws
+  the platform face (Roboto on Android, San Francisco on iOS,
+  react-native-web's system stack on the web), not Inter. It is what the
+  codemod writes for a React Native `Text`, so the move changes no pixel: a
+  face the app's bundler gives React Native's `Text` (`@oxy.so/app-preset`'s
+  `baseFont`) reaches `RawText` alike. New screens use `Text`. Inside a `Text`
+  it is a span that inherits its parent's face.
 
 - **Digits and breaking.** `.monospacedDigit()` draws digits of one width
   (`tabular-nums`, React Native's `fontVariant`). `.wordBreak('all')` lets a
@@ -5253,7 +5263,7 @@ with its reason. Nothing else is missing.
   `flex()`, `childSpacing()` (Tailwind's `space-x`/`space-y`), hit testing
   (`true`, `false`, `'children'`, `'self'`), text styles (`textTertiary`
   among the roles, tabular figures, `textAlign('left' | 'right')`), links,
-  truncation, and `RawText` (React Native's own Text in Bloom's base face).
+  truncation, and `RawText` (React Native's own Text).
   On native a class's fixed colour at an opacity, a leading and a tracking
   are drawn as NativeWind's compiler rounded them, and on the web a colour
   at an opacity is an ink (`var(--bl-…)`) a variant can override. An app
