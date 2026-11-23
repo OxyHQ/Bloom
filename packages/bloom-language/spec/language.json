@@ -1145,7 +1145,7 @@
     ["shadow"]
   ],
   "objects": {
-    "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it).",
+    "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it); orToken: one token of the set on its own is the object too.",
     "refresh": {
       "keys": ["refreshing", "onRefresh"],
       "tokens": "value"
@@ -1168,6 +1168,12 @@
     },
     "offset": { "keys": ["x", "y"], "tokens": "padding" },
     "placement": { "keys": ["sm", "md", "lg", "xl"], "tokens": "dialogPlacement" },
+    "refreshTint": {
+      "$comment": "A refresh control's tint by the platform that paints it: iOS's tintColor, Android's colors. One colour on its own paints both.",
+      "keys": ["ios", "android"],
+      "tokens": "color",
+      "orToken": true
+    },
     "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
   },
   "variants": {
@@ -1603,7 +1609,7 @@
     "contentClearance": ["space"],
     "navigationScope": ["navigationScope"],
     "contentMargins": ["edge?", "space"],
-    "refreshable": ["refresh", "color?"],
+    "refreshable": ["refresh", "refreshTint?"],
     "onEndReached": ["value", "value?"],
     "scrollIndicators": ["scrollIndicators", "axis?"],
     "scrollDismissesKeyboard": ["keyboardDismiss"],

@@ -290,7 +290,7 @@ export type {
   SpaceToken,
   WeightName,
 } from './tokens';
-export type { Binding, Bound, Refresh, RefreshAction } from './binding';
+export type { Binding, Bound, Refresh, RefreshAction, RefreshTint } from './binding';
 export type { AnyDensity, Density, DensityNode } from './tokens';
 export {
   SettingsDateField,

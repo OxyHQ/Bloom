@@ -218,10 +218,11 @@ export function C() {
     expect(flat(result.code)).toContain(
       "toElement(ScrollView().refreshable({ refreshing: busy, onRefresh: () => { reload(); } }).scrollIndicators('visible', 'horizontal'))",
     );
-    // A tintColor alone tints iOS only; the language's tint paints Android's colours too.
-    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'ScrollView:refreshControl',
-    ]);
+    // A tintColor alone tints iOS only: the tint of that platform.
+    expect(flat(result.code)).toContain(
+      "toElement(ScrollView().refreshable({ refreshing: busy, onRefresh: reload }, { ios: 'primary' }))",
+    );
+    expect(result.unconverted).toEqual([]);
   });
   it('reads a static content container style as content margins', () => {
     const result = run(`import { StyleSheet } from 'react-native';

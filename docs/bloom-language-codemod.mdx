@@ -167,10 +167,10 @@ A scroll view's `refreshControl` of React Native's `RefreshControl` is
 `.refreshable(binding, tint)`: the binding is its `refreshing` and a setter a
 pull calls with `true`, which calls `onRefresh` with no arguments, as React
 Native does (`() => onRefresh()`; a function of no parameters is carried as
-it is). Its tint paints the control's `tintColor` and `colors` from one role,
-so a `tintColor` and `colors` of the same theme colour are its tint, and a
-`tintColor` alone (iOS only, Android's spinner left the platform's) stays
-JSX. `showsVerticalScrollIndicator={false}` is
+it is). Its tint paints the control's `tintColor` (iOS) and `colors`
+(Android): a `tintColor` and `colors` of the same theme colour are one role,
+and each alone, or two colours, the tint of its platform (`tintColor` alone is
+`{ ios: 'primary' }`, Android's spinner keeping its look). `showsVerticalScrollIndicator={false}` is
 `.scrollIndicators('hidden', 'vertical')` (`true` is `'visible'`; horizontal
 alike).
 A static `contentContainerStyle` of paddings and a gap, each a space token

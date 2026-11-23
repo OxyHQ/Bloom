@@ -8,7 +8,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { RefreshControl, type StyleProp, type ViewStyle } from 'react-native';
 import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 
-import { refreshing } from '../binding';
+import { refreshing, type RefreshTint } from '../binding';
 import type { Edge, Modifier, Node } from '../node';
 import { type Paint, Painted } from '../paint';
 import { valuesOf } from '../platform/values';
@@ -77,24 +77,31 @@ function indicators(value: ScrollIndicators): boolean | undefined {
   return value === 'automatic' ? undefined : value === 'visible';
 }
 
-const refreshPaints = new Map<ColorToken, Paint>();
+const refreshPaints = new Map<string, Paint>();
+
+/** A role, or a role at an opacity, as a paint's colour. */
+function colorOf(tint: ColorToken) {
+  const { role: name, opacity } = role(tint);
+  return opacity === undefined ? ([name] as const) : ([name, opacity] as const);
+}
 
 /**
- * A refresh control's tint: its `tintColor` (iOS) and its `colors` (Android)
- * from one role, as an app hands it its theme's colour. One paint per token.
+ * A refresh control's tint: its `tintColor` (iOS) and its `colors` (Android),
+ * from one role, as an app hands it its theme's colour, or each platform's own.
+ * One paint per tint.
  */
-function refreshPaint(tint: ColorToken): Paint {
-  let paint = refreshPaints.get(tint);
+function refreshPaint(tint: RefreshTint<ColorToken>): Paint {
+  const { ios, android } = typeof tint === 'string' ? { ios: tint, android: tint } : tint;
+  const key = `${ios ?? ''}|${android ?? ''}`;
+  let paint = refreshPaints.get(key);
   if (paint === undefined) {
-    const { role: name, opacity } = role(tint);
-    const color = opacity === undefined ? ([name] as const) : ([name, opacity] as const);
     paint = {
       style: undefined,
       styleRoles: [],
-      propRoles: [['tintColor', ...color]],
-      propLists: [['colors', [color]]],
+      propRoles: ios === undefined ? [] : [['tintColor', ...colorOf(ios)]],
+      propLists: android === undefined ? [] : [['colors', [colorOf(android)]]],
     };
-    refreshPaints.set(tint, paint);
+    refreshPaints.set(key, paint);
   }
   return paint;
 }
@@ -103,8 +110,8 @@ function refreshPaint(tint: ColorToken): Paint {
 interface RefreshProps {
   refreshing: boolean;
   onRefresh: () => void;
-  tintColor: string;
-  colors: string[];
+  tintColor?: string;
+  colors?: string[];
 }
 
 /**

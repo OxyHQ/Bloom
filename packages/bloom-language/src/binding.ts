@@ -37,6 +37,13 @@ export interface RefreshAction {
  */
 export type Refresh = Binding<boolean> | RefreshAction;
 
+/**
+ * A refresh control's tint: one colour role, which iOS's `tintColor` and
+ * Android's `colors` both paint, or each platform's own (`{ ios: 'primary' }`
+ * tints iOS only, Android's spinner keeping its look).
+ */
+export type RefreshTint<C extends string = string> = C | { readonly ios?: C; readonly android?: C };
+
 /** A pull to refresh as React Native's `refreshing` and `onRefresh`. */
 export function refreshing(refresh: Refresh): {
   refreshing: boolean;

@@ -2903,6 +2903,15 @@ export const OBJECTS = {
     ],
     "tokens": "dialogPlacement"
   },
+  "refreshTint": {
+    "$comment": "A refresh control's tint by the platform that paints it: iOS's tintColor, Android's colors. One colour on its own paints both.",
+    "keys": [
+      "ios",
+      "android"
+    ],
+    "tokens": "color",
+    "orToken": true
+  },
   "meterReveal": {
     "keys": [
       "visible",
@@ -3812,7 +3821,7 @@ export const MODIFIERS = {
   ],
   "refreshable": [
     "refresh",
-    "color?"
+    "refreshTint?"
   ],
   "onEndReached": [
     "value",

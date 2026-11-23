@@ -609,11 +609,12 @@ ${Object.entries(nodes)
 ];
 
 /// An object parameter (\`frame({ … })\`, \`position({ … })\`…): its type, the keys it takes,
-/// and the token set every value is in.
-pub const OBJECTS: &[(&str, &[&str], &str)] = &[
+/// the token set every value is in, and whether one token on its own is the object too.
+pub const OBJECTS: &[(&str, &[&str], &str, bool)] = &[
 ${Object.entries(objects)
   .map(
-    ([name, { keys, tokens }]) => `    (${rustStr(name)}, ${rustList(keys)}, ${rustStr(tokens)}),`,
+    ([name, { keys, tokens, orToken }]) =>
+      `    (${rustStr(name)}, ${rustList(keys)}, ${rustStr(tokens)}, ${orToken === true}),`,
   )
   .join('\n')}
 ];

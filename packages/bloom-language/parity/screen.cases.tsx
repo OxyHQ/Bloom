@@ -189,6 +189,39 @@ const scrollViews: ParityCase[] = inScreen([
       </Themed>
     ),
   })),
+  {
+    // Mention's lists: the theme's colour on iOS's spinner only, Android's keeping its look.
+    name: 'pull to refresh tinted on iOS only',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], { ios: 'primary' })),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ScreenScrollView
+            refreshControl={<RefreshControl refreshing onRefresh={noop} tintColor={c.primary} />}
+          >
+            <Text>a</Text>
+          </ScreenScrollView>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'pull to refresh tinted on Android only',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], { android: 'primary' })),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ScreenScrollView
+            refreshControl={<RefreshControl refreshing onRefresh={noop} colors={[c.primary]} />}
+          >
+            <Text>a</Text>
+          </ScreenScrollView>
+        )}
+      </Themed>
+    ),
+  },
 ]);
 
 /**

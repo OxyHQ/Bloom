@@ -605,7 +605,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("contentClearance", &["space"]),
     ("navigationScope", &["navigationScope"]),
     ("contentMargins", &["edge?", "space"]),
-    ("refreshable", &["refresh", "color?"]),
+    ("refreshable", &["refresh", "refreshTint?"]),
     ("onEndReached", &["value", "value?"]),
     ("scrollIndicators", &["scrollIndicators", "axis?"]),
     ("scrollDismissesKeyboard", &["keyboardDismiss"]),
@@ -1501,14 +1501,15 @@ pub const NODES: &[NodeSpec] = &[
 ];
 
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
-/// and the token set every value is in.
-pub const OBJECTS: &[(&str, &[&str], &str)] = &[
-    ("refresh", &["refreshing", "onRefresh"], "value"),
-    ("accessibilityValue", &["min", "max", "now", "text"], "value"),
-    ("accessibilityState", &["selected", "checked", "busy", "expanded", "disabled"], "accessibilityChecked"),
-    ("frame", &["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"], "length"),
-    ("edges", &["top", "bottom", "leading", "trailing", "left", "right"], "padding"),
-    ("offset", &["x", "y"], "padding"),
-    ("placement", &["sm", "md", "lg", "xl"], "dialogPlacement"),
-    ("meterReveal", &["visible", "once", "delay"], "duration"),
+/// the token set every value is in, and whether one token on its own is the object too.
+pub const OBJECTS: &[(&str, &[&str], &str, bool)] = &[
+    ("refresh", &["refreshing", "onRefresh"], "value", false),
+    ("accessibilityValue", &["min", "max", "now", "text"], "value", false),
+    ("accessibilityState", &["selected", "checked", "busy", "expanded", "disabled"], "accessibilityChecked", false),
+    ("frame", &["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"], "length", false),
+    ("edges", &["top", "bottom", "leading", "trailing", "left", "right"], "padding", false),
+    ("offset", &["x", "y"], "padding", false),
+    ("placement", &["sm", "md", "lg", "xl"], "dialogPlacement", false),
+    ("refreshTint", &["ios", "android"], "color", true),
+    ("meterReveal", &["visible", "once", "delay"], "duration", false),
 ];

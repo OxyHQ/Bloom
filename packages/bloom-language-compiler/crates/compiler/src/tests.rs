@@ -759,6 +759,24 @@ fn first_message(output: &crate::Output) -> Option<&str> {
 }
 
 #[test]
+fn a_refresh_tint_is_one_colour_or_each_platform_s() {
+    for tint in
+        ["'primary'", "'muted/70'", "{ ios: 'primary' }", "{ ios: 'primary', android: 'muted' }", "color"]
+    {
+        let fine = chrome(&format!(
+            "export const S = (r, color) => ScrollView(Text('a')).refreshable(r, {tint});\n"
+        ));
+        assert!(fine.diagnostics.is_empty(), "{tint}: {:?}", first_message(&fine));
+    }
+    let token = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, 'blue');\n");
+    assert_eq!(first_message(&token), Some("Unknown color token 'blue' for .refreshable()"));
+    let value = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, { ios: 'blue' });\n");
+    assert_eq!(first_message(&value), Some("Unknown color token 'blue' for .refreshable()"));
+    let key = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, { web: 'primary' });\n");
+    assert_eq!(first_message(&key), Some(".refreshable() has no 'web'"));
+}
+
+#[test]
 fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     let fine = chrome(
         "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable([false, refresh]).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",

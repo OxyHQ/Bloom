@@ -747,9 +747,13 @@ fn check_value(
             }),
             _ => Ok(()),
         },
-        param if OBJECTS.iter().any(|(name, _, _)| *name == param) => {
-            let &(_, keys, set) = OBJECTS.iter().find(|(name, _, _)| *name == param).expect("matched above");
-            let Expression::ObjectExpression(object) = value.without_parentheses() else { return Ok(()) };
+        param if OBJECTS.iter().any(|(name, _, _, _)| *name == param) => {
+            let &(_, keys, set, or_token) =
+                OBJECTS.iter().find(|(name, _, _, _)| *name == param).expect("matched above");
+            let Expression::ObjectExpression(object) = value.without_parentheses() else {
+                // One token on its own is the object too (a refresh tint's one colour).
+                return if or_token { check_token(modifier, set, value) } else { Ok(()) };
+            };
             for property in &object.properties {
                 let ObjectPropertyKind::ObjectProperty(property) = property else { continue };
                 let key = match &property.key {

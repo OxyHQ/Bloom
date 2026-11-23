@@ -2507,8 +2507,8 @@ export function transformSource(source: string, options: TransformOptions): File
    * React Native's `RefreshControl` as a pull to refresh: its `refreshing` and
    * the binding a pull writes `true` to, which calls `onRefresh` with no
    * arguments as React Native does; its `tintColor` and `colors` as the tint
-   * when both are one theme colour, since the tint paints both. A `tintColor`
-   * alone tints iOS only, which no tint draws.
+   * when both are one theme colour, since the tint paints both; each alone, or
+   * two colours, the tint of its platform (`{ ios: 'primary' }`).
    */
   function refreshOf(expression: AnyNode): Value[] | undefined {
     const local = n.JSXElement.check(expression) ? jsxName(expression) : undefined;
@@ -2534,14 +2534,19 @@ export function transformSource(source: string, options: TransformOptions): File
         ['onRefresh', { node: onRefresh, hole: 'handler' }],
       ],
     };
+    // iOS's `tintColor` and Android's `colors` (one theme colour), each the tint of its platform.
+    const ios = tintColor ? themeRoles.get(tintColor) : undefined;
+    const [only, ...others] = n.ArrayExpression.check(colors) ? colors.elements : [];
+    const android = colors && only && !others.length ? themeRoles.get(only) : undefined;
+    if ((tintColor && !ios) || (colors && !android)) return undefined;
     // Its import goes with the element when nothing else draws one.
     convertedLocals.add(local as string);
-    if (!tintColor && !colors) return [binding];
-    const tint = tintColor && themeRoles.get(tintColor);
-    const [only, ...others] = n.ArrayExpression.check(colors) ? colors.elements : [];
-    return tint && only && !others.length && themeRoles.get(only) === tint
-      ? [binding, tint]
-      : undefined;
+    if (!ios && !android) return [binding];
+    if (ios === android) return [binding, ios as string];
+    const entries: [string, Value][] = [];
+    if (ios) entries.push(['ios', ios]);
+    if (android) entries.push(['android', android]);
+    return [binding, { $: 'options', entries }];
   }
 
   /**
