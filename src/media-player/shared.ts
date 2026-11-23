@@ -1,11 +1,6 @@
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
-import {
-  AA_TEXT_CONTRAST,
-  contrastRatio,
-  darkenUntilContrast,
-  relativeLuminance,
-} from '../styles/color-contrast';
+import { AA_TEXT_CONTRAST, darkenUntilContrast } from '../styles/color-contrast';
 import { formatMultiplier } from '../locale/format-number';
 import { IS_WEB } from '../styles/platform';
 
@@ -122,5 +117,3 @@ export const MEDIA_PLAYER_CSS = `
   text-decoration-line: underline;
 }
 `;
-
-export { contrastRatio, relativeLuminance };

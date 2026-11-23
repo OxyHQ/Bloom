@@ -285,5 +285,3 @@ ${FOCUSABLE}:focus-visible {
   }
 }
 `;
-
-export { contrastRatio, relativeLuminance };

@@ -35,12 +35,12 @@ import {
 import { episodeProgressState } from '../media-card/EpisodeCard';
 import { playlistCoverKind } from '../media-card/PlaylistCard';
 import {
-  contrastRatio,
   MEDIA_CARD_CSS,
   resolveCoverTint,
   resolveMediaCardPaint,
   resolvePlayVisibility,
 } from '../media-card/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import { ImageResolverProvider } from '../image-resolver/context';
 import { AA_TEXT_CONTRAST } from '../styles/color-contrast';
 import { parseRgba } from '../theme/color-utils';

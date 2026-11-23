@@ -3,13 +3,7 @@ import type { ImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
 import type { MediaCardLayout, MediaCardPlayButton, MediaCardSize } from './types';
-import {
-  AA_TEXT_CONTRAST,
-  contrastRatio,
-  darken,
-  darkenUntilContrast,
-  relativeLuminance,
-} from '../styles/color-contrast';
+import { AA_TEXT_CONTRAST, darken, darkenUntilContrast } from '../styles/color-contrast';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
 
@@ -289,5 +283,3 @@ ${CARD}:focus-within [data-bloom-media-card-conceal] {
   }
 }
 `;
-
-export { contrastRatio, relativeLuminance };

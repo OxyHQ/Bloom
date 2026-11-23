@@ -20,7 +20,7 @@ import { RiImageAddLine } from '../icons/remix/RiImageAddLine';
 import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiSideBarLine } from '../icons/remix/RiSideBarLine';
 import { RiSparkling2Line } from '../icons/remix/RiSparkling2Line';
-import { withAlpha } from '../composer-panel/shared';
+import { withAlpha } from '../theme/color-utils';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { PanelHeader, PanelPlaceholder } from './AiChatCodePanel';

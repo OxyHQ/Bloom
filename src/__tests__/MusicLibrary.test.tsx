@@ -31,11 +31,11 @@ import {
   TILE_DARK_TEXT,
   TILE_LIGHT_TEXT,
   browseTilePaint,
-  contrastRatio,
   gridColumns,
   libraryMeta,
   resolveMusicLibraryPaint,
 } from '../music-library/shared';
+import { contrastRatio } from '../styles/color-contrast';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

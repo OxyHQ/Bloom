@@ -32,12 +32,12 @@ import {
 } from '../lyrics';
 import { BREAK_DOTS } from '../lyrics/LyricsParts';
 import {
-  contrastRatio,
   isSyncedLyrics,
   lyricLineVariant,
   lyricsPreviewWindow,
   lyricsSizeForWidth,
 } from '../lyrics/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import { TYPE_SCALE } from '../typography/scale';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

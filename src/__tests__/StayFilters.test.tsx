@@ -47,7 +47,8 @@ import {
   priceScaleMapping,
   PRICE_SCALE_POSITIONS,
 } from '../stay-filters/PriceRangeFilter';
-import { contrastRatio, resolveEnergyRatingPaint } from '../stay-filters/EnergyRatingFilter';
+import { resolveEnergyRatingPaint } from '../stay-filters/EnergyRatingFilter';
+import { contrastRatio } from '../styles/color-contrast';
 import { commitRangeField } from '../stay-filters/RangeFields';
 import type { EnergyRating, HousingFeature } from '../stay-filters';
 

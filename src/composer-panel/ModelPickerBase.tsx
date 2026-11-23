@@ -35,9 +35,9 @@ import {
   PICKER_HEIGHT,
   PICKER_WIDTH,
   resolveComposerPalette,
-  withAlpha,
   type ComposerPalette,
 } from './shared';
+import { withAlpha } from '../theme/color-utils';
 import type {
   ModelPickerLabels,
   ModelPickerModel,

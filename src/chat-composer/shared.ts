@@ -101,7 +101,6 @@ export interface ChatComposerPalette {
 }
 
 /** Re-exported from `theme/color-utils`, which owns it (it was copied here). */
-export { withAlpha } from '../theme/color-utils';
 
 export function resolveChatComposerPalette(theme: Theme, backing?: string): ChatComposerPalette {
   const { accent } = resolveButtonRamps(theme);
