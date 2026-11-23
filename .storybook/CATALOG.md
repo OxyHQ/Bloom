@@ -10,6 +10,7 @@ in `preview.tsx`; each CSF file owns its title and stable `meta.id`.
 | Components | Reusable UI grouped by purpose | Actions, inputs, feedback, media, chat messages, agent parts, charts |
 | Patterns | Complete workflows grouped by domain | Account settings, chat screens, agent editors, payments, housing, music |
 | Templates | Full application examples from `templates/` | AI Chat, Housing, Workspace |
+| Language | The Bloom language: the tour, one topic per story, then each node's parity with the Bloom component it draws | Tour, Parity |
 | Labs | Development diagnostics | Avatar runtime review |
 
 ## Choosing a location
