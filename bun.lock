@@ -154,7 +154,7 @@
       "name": "@oxy.so/bloom-language-codemod",
       "version": "0.1.0",
       "bin": {
-        "bloom-language-codemod": "src/cli.ts",
+        "bloom-language-codemod": "lib/cli.js",
       },
       "dependencies": {
         "@babel/parser": "7.29.11",
@@ -168,6 +168,9 @@
         "lightningcss": "1.30.1",
         "nativewind": "5.0.0-rc.0",
         "react-native-css": "3.1.0-rc.0",
+      },
+      "peerDependencies": {
+        "@oxy.so/bloom-language": ">=1.0.0",
       },
     },
     "packages/bloom-language-compiler": {
