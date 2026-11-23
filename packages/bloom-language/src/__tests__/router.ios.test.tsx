@@ -166,6 +166,33 @@ describe('a screen’s header is the system navigation bar', () => {
     expect(copy).toHaveBeenCalledTimes(1);
   });
 
+  it('reads the navigator after render, never while rendering, and the bar is the same', () => {
+    // React Navigation's own test for a read while rendering (it warns on `isFocused()` with it).
+    const { isRenderingComponent } = jest.requireActual<{ isRenderingComponent: () => boolean }>(
+      'expo-router/build/react-navigation/core/isRenderingComponent',
+    );
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const getState = jest.fn(() => {
+      if (isRenderingComponent()) console.warn('navigation.getState() was called while rendering');
+      return { type: 'stack' };
+    });
+    try {
+      const r = mount(
+        createElement(
+          mockNavigation.Provider,
+          { value: { getState } },
+          createElement(Notifications),
+        ),
+      );
+      expect(getState).toHaveBeenCalled();
+      expect(warn).not.toHaveBeenCalled();
+      expect(hosts(r, 'PageHeader')).toHaveLength(0);
+      expect(only(r, 'StackScreen').props.options).toMatchObject({ title: 'Notifications' });
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('outside a native stack (a tab page without its own stack): Bloom’s PageHeader in the page', () => {
     const r = mount(inStack('tab', createElement(Notifications)));
     expect(hosts(r, 'StackScreen')).toHaveLength(0);
