@@ -235,6 +235,8 @@ import {
   GestureMotionNode,
   MotionNode,
   PressMotionNode,
+  PressScaleNode,
+  pressesOnly,
   ThemedMotion,
   scopeOf,
   type AnimationScope,
@@ -1245,9 +1247,11 @@ function drawMoving(
     motion.pinch !== undefined ||
     motion.doubleTap !== undefined
       ? GestureMotionNode
-      : motion.pressScale
-        ? PressMotionNode
-        : MotionNode;
+      : pressesOnly(motion, ctx.animation)
+        ? PressScaleNode
+        : motion.pressScale
+          ? PressMotionNode
+          : MotionNode;
   // Native: a node that animates its colours reads the palette (`ThemedMotion`).
   const themed = motion.colors && !IS_WEB;
   return draw(themed ? ThemedMotion : component, {
