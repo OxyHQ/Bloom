@@ -695,6 +695,11 @@ function plan(node: Node, env: Env): Plan {
       result.own.set('cornerCurve', modifier);
       continue;
     }
+    // An image's aspect ratio is its own (it sizes the image in its box), not its box's.
+    if (node.kind === 'image' && modifier.kind === 'aspectRatio') {
+      result.own.set('aspectRatio', modifier);
+      continue;
+    }
     // A card's clip is its own (Bloom's `clipContent`), not a box around it.
     if (node.kind === 'card' && modifier.kind === 'clipped') {
       result.own.set('clipped', modifier);

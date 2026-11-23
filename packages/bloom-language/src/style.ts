@@ -641,6 +641,10 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
           if (token !== undefined) style[name] = resolveLength(token);
         }
         break;
+      case 'aspectRatio':
+        // In the frame's view: a width or height there sets the other side by the ratio.
+        style.aspectRatio = modifier.value;
+        break;
       case 'background':
         style.backgroundColor = ink(modifier.value);
         break;

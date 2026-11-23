@@ -6874,8 +6874,8 @@
   "overflow-visible": {
    "count": 2,
    "apps": 2,
-   "status": "structure",
-   "language": "a ScrollView (Embed) for scrolling"
+   "status": "drop",
+   "language": "a view draws what overflows it"
   },
   "p-12": {
    "count": 2,
@@ -12104,10 +12104,8 @@
   "z-[3]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "zIndex",
-   "value": "3",
-   "language": ".zIndex(…)"
+   "status": "mapped",
+   "language": ".zIndex('3')"
   },
   "z-[80]": {
    "count": 1,

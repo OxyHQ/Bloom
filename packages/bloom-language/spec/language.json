@@ -257,12 +257,18 @@
       "fit": "fit-content"
     },
     "zIndex": {
-      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value.",
+      "$comment": "Bloom's Z_INDEX (styles/z-index.ts): the stacking levels its own components use; the numeric ones are Tailwind's own z-20, z-30 and z-50 and the exact levels apps write in two or more places (z-[2], z-[60]), each its value; then the levels Mention stacks its video chrome with (3 to 7), and '-1', under its siblings (apps' -z-[1] and zIndex: -1).",
       "base": 0,
       "raised": 1,
       "floating": 10,
       "dropdown": 40,
+      "-1": -1,
       "2": 2,
+      "3": 3,
+      "4": 4,
+      "5": 5,
+      "6": 6,
+      "7": 7,
       "20": 20,
       "30": 30,
       "50": 50,
@@ -1123,7 +1129,7 @@
   },
   "layers": [
     ["padding"],
-    ["frame"],
+    ["frame", "aspectRatio"],
     ["overlay"],
     ["background", "glass", "blur"],
     ["border", "borderStyle", "ring"],
@@ -1944,6 +1950,7 @@
   "universal": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",

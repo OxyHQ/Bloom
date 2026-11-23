@@ -3346,3 +3346,13 @@ fn views_are_content_where_a_component_draws_them() {
     );
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
 }
+
+#[test]
+fn stacking_levels_and_an_aspect_ratio_anywhere() {
+    let ok = compiled(
+        "export const x = (f) => [VStack(Text('a')).zIndex('-1'), HStack(Text('b')).zIndex('7').frame({ width: '1/4' }).aspectRatio(1).onPress(f)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack(Text('a')).zIndex('-2');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown zIndex token '-2' for .zIndex()");
+}

@@ -64,6 +64,16 @@ const placement: ParityCase[] = [
       </RN.View>
     ),
   },
+  ...(['-1', '3', '6', '7'] as const).map((level) => ({
+    // The levels Mention stacks its video chrome with, and one under its siblings.
+    name: `the stacking level ${level}`,
+    language: () => toElement(L.VStack(L.Text('a')).zIndex(level)),
+    bloom: () => (
+      <RN.View style={{ zIndex: Number(level) }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  })),
   {
     name: 'hidden',
     language: () => toElement(L.VStack(L.Text('a')).hidden()),
@@ -875,7 +885,50 @@ const pressFade: ParityCase[] = [
   },
 ];
 
+/** `.aspectRatio()` on any view: React Native's `aspectRatio`, in its frame's view. */
+const aspectRatio: ParityCase[] = [
+  {
+    // Mention's emoji cell: a square that fades when pressed.
+    name: 'a square cell a quarter wide that fades when pressed',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .frame({ width: '1/4' })
+          .aspectRatio(1)
+          .align('center')
+          .justify('center')
+          .onPress(hold)
+          .pressFade(),
+      ),
+    bloom: () => (
+      <RN.TouchableOpacity
+        onPress={hold}
+        style={{ width: '25%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    name: 'a padded landscape box',
+    language: () => toElement(L.VStack().padding('md').frame({ width: 'full' }).aspectRatio(1.6)),
+    bloom: () => (
+      <RN.View
+        style={{
+          paddingTop: space.md,
+          paddingBottom: space.md,
+          paddingStart: space.md,
+          paddingEnd: space.md,
+          width: '100%',
+          aspectRatio: 1.6,
+        }}
+      />
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...aspectRatio,
   ...pressFade,
   ...accessibility,
   ...appLayout,

@@ -283,6 +283,11 @@ export const LENGTH = {
 } as const;
 export const Z_INDEX = {
   "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
   "20": 20,
   "30": 30,
   "50": 50,
@@ -290,7 +295,8 @@ export const Z_INDEX = {
   "base": 0,
   "raised": 1,
   "floating": 10,
-  "dropdown": 40
+  "dropdown": 40,
+  "-1": -1
 } as const;
 export const SHADOW = {
   "s": "0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.10)",
@@ -2608,6 +2614,7 @@ export const TONE_ROLE = {
 export const LAYER_RANK = {
   "padding": 0,
   "frame": 1,
+  "aspectRatio": 1,
   "overlay": 2,
   "background": 3,
   "glass": 3,
@@ -4843,6 +4850,7 @@ export const NODE_MODIFIERS = {
   "stack": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -4958,6 +4966,7 @@ export const NODE_MODIFIERS = {
   "zstack": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5065,6 +5074,7 @@ export const NODE_MODIFIERS = {
   "spacer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5170,6 +5180,7 @@ export const NODE_MODIFIERS = {
   "text": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5289,6 +5300,7 @@ export const NODE_MODIFIERS = {
   "icon": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5395,6 +5407,7 @@ export const NODE_MODIFIERS = {
   "avatar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5507,6 +5520,7 @@ export const NODE_MODIFIERS = {
   "avatarGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5622,6 +5636,7 @@ export const NODE_MODIFIERS = {
   "badge": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5735,6 +5750,7 @@ export const NODE_MODIFIERS = {
   "iconCircle": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5841,6 +5857,7 @@ export const NODE_MODIFIERS = {
   "loading": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -5949,6 +5966,7 @@ export const NODE_MODIFIERS = {
   "skeleton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6054,6 +6072,7 @@ export const NODE_MODIFIERS = {
   "skeletonGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6159,6 +6178,7 @@ export const NODE_MODIFIERS = {
   "image": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6261,7 +6281,6 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "contentFit",
-    "aspectRatio",
     "tint",
     "crossFade",
     "onLoad",
@@ -6270,6 +6289,7 @@ export const NODE_MODIFIERS = {
   "fill": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6375,6 +6395,7 @@ export const NODE_MODIFIERS = {
   "ratio": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6480,6 +6501,7 @@ export const NODE_MODIFIERS = {
   "grid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6590,6 +6612,7 @@ export const NODE_MODIFIERS = {
   "button": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6708,6 +6731,7 @@ export const NODE_MODIFIERS = {
   "shape": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6817,6 +6841,7 @@ export const NODE_MODIFIERS = {
   "buttonGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -6926,6 +6951,7 @@ export const NODE_MODIFIERS = {
   "fab": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7035,6 +7061,7 @@ export const NODE_MODIFIERS = {
   "menu": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7165,6 +7192,7 @@ export const NODE_MODIFIERS = {
   "divider": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7358,6 +7386,7 @@ export const NODE_MODIFIERS = {
   "action": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7466,6 +7495,7 @@ export const NODE_MODIFIERS = {
   "actionBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7577,6 +7607,7 @@ export const NODE_MODIFIERS = {
   "actionGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7682,6 +7713,7 @@ export const NODE_MODIFIERS = {
   "lottie": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7791,6 +7823,7 @@ export const NODE_MODIFIERS = {
   "card": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -7901,6 +7934,7 @@ export const NODE_MODIFIERS = {
   "cardHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8006,6 +8040,7 @@ export const NODE_MODIFIERS = {
   "cardBody": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8111,6 +8146,7 @@ export const NODE_MODIFIERS = {
   "cardFooter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8222,6 +8258,7 @@ export const NODE_MODIFIERS = {
   "row": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8336,6 +8373,7 @@ export const NODE_MODIFIERS = {
   "groupedSection": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8471,6 +8509,7 @@ export const NODE_MODIFIERS = {
   "chip": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8583,6 +8622,7 @@ export const NODE_MODIFIERS = {
   "emptyState": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8698,6 +8738,7 @@ export const NODE_MODIFIERS = {
   "admonition": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8805,6 +8846,7 @@ export const NODE_MODIFIERS = {
   "tabs": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -8924,6 +8966,7 @@ export const NODE_MODIFIERS = {
   "kbd": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9048,6 +9091,7 @@ export const NODE_MODIFIERS = {
   "embed": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9183,6 +9227,7 @@ export const NODE_MODIFIERS = {
   "view": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9302,6 +9347,7 @@ export const NODE_MODIFIERS = {
   "textField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9426,6 +9472,7 @@ export const NODE_MODIFIERS = {
   "textEditor": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9546,6 +9593,7 @@ export const NODE_MODIFIERS = {
   "field": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9654,6 +9702,7 @@ export const NODE_MODIFIERS = {
   "label": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9761,6 +9810,7 @@ export const NODE_MODIFIERS = {
   "toggle": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9868,6 +9918,7 @@ export const NODE_MODIFIERS = {
   "checkbox": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -9978,6 +10029,7 @@ export const NODE_MODIFIERS = {
   "radioGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10086,6 +10138,7 @@ export const NODE_MODIFIERS = {
   "segmented": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10194,6 +10247,7 @@ export const NODE_MODIFIERS = {
   "picker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10310,6 +10364,7 @@ export const NODE_MODIFIERS = {
   "search": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10432,6 +10487,7 @@ export const NODE_MODIFIERS = {
   "chipRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10542,6 +10598,7 @@ export const NODE_MODIFIERS = {
   "cappedChipRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10659,6 +10716,7 @@ export const NODE_MODIFIERS = {
   "tabContent": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10764,6 +10822,7 @@ export const NODE_MODIFIERS = {
   "selectionCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -10879,6 +10938,7 @@ export const NODE_MODIFIERS = {
   "scrollView": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11161,6 +11221,7 @@ export const NODE_MODIFIERS = {
   "scrollArea": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11276,6 +11337,7 @@ export const NODE_MODIFIERS = {
   "scrollSurface": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11427,6 +11489,7 @@ export const NODE_MODIFIERS = {
   "settingsSection": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11535,6 +11598,7 @@ export const NODE_MODIFIERS = {
   "settingsValue": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11642,6 +11706,7 @@ export const NODE_MODIFIERS = {
   "settingsSelect": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11766,6 +11831,7 @@ export const NODE_MODIFIERS = {
   "datePicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11878,6 +11944,7 @@ export const NODE_MODIFIERS = {
   "dateRangePicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -11991,6 +12058,7 @@ export const NODE_MODIFIERS = {
   "calendar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12102,6 +12170,7 @@ export const NODE_MODIFIERS = {
   "rangeCalendar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12214,6 +12283,7 @@ export const NODE_MODIFIERS = {
   "timeField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12324,6 +12394,7 @@ export const NODE_MODIFIERS = {
   "rating": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12441,6 +12512,7 @@ export const NODE_MODIFIERS = {
   "ratingInput": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12549,6 +12621,7 @@ export const NODE_MODIFIERS = {
   "ratingBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12659,6 +12732,7 @@ export const NODE_MODIFIERS = {
   "ratingSummary": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12765,6 +12839,7 @@ export const NODE_MODIFIERS = {
   "meter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12880,6 +12955,7 @@ export const NODE_MODIFIERS = {
   "meterRing": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -12998,6 +13074,7 @@ export const NODE_MODIFIERS = {
   "statBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13108,6 +13185,7 @@ export const NODE_MODIFIERS = {
   "table": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13215,6 +13293,7 @@ export const NODE_MODIFIERS = {
   "tableHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13320,6 +13399,7 @@ export const NODE_MODIFIERS = {
   "tableColumn": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13431,6 +13511,7 @@ export const NODE_MODIFIERS = {
   "tableBody": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13537,6 +13618,7 @@ export const NODE_MODIFIERS = {
   "tableRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13643,6 +13725,7 @@ export const NODE_MODIFIERS = {
   "tableCell": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13752,6 +13835,7 @@ export const NODE_MODIFIERS = {
   "listItem": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -13876,6 +13960,7 @@ export const NODE_MODIFIERS = {
   "mailRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14001,6 +14086,7 @@ export const NODE_MODIFIERS = {
   "list": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14118,6 +14204,7 @@ export const NODE_MODIFIERS = {
   "virtualList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14243,6 +14330,7 @@ export const NODE_MODIFIERS = {
   "listSelectionBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14353,6 +14441,7 @@ export const NODE_MODIFIERS = {
   "carousel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14472,6 +14561,7 @@ export const NODE_MODIFIERS = {
   "carouselItem": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14578,6 +14668,7 @@ export const NODE_MODIFIERS = {
   "carouselDots": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14687,6 +14778,7 @@ export const NODE_MODIFIERS = {
   "markdown": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14796,6 +14888,7 @@ export const NODE_MODIFIERS = {
   "slider": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -14914,6 +15007,7 @@ export const NODE_MODIFIERS = {
   "rangeSlider": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15033,6 +15127,7 @@ export const NODE_MODIFIERS = {
   "accordion": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15141,6 +15236,7 @@ export const NODE_MODIFIERS = {
   "accordionItem": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15246,6 +15342,7 @@ export const NODE_MODIFIERS = {
   "accordionTrigger": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15352,6 +15449,7 @@ export const NODE_MODIFIERS = {
   "accordionContent": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15457,6 +15555,7 @@ export const NODE_MODIFIERS = {
   "code": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15562,6 +15661,7 @@ export const NODE_MODIFIERS = {
   "pre": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15669,6 +15769,7 @@ export const NODE_MODIFIERS = {
   "codeLines": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15779,6 +15880,7 @@ export const NODE_MODIFIERS = {
   "codeBlock": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -15895,6 +15997,7 @@ export const NODE_MODIFIERS = {
   "stepper": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16007,6 +16110,7 @@ export const NODE_MODIFIERS = {
   "stepperRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16121,6 +16225,7 @@ export const NODE_MODIFIERS = {
   "tooltip": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16230,6 +16335,7 @@ export const NODE_MODIFIERS = {
   "breadcrumb": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16339,6 +16445,7 @@ export const NODE_MODIFIERS = {
   "breadcrumbItem": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16450,6 +16557,7 @@ export const NODE_MODIFIERS = {
   "activityHeatmap": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16565,6 +16673,7 @@ export const NODE_MODIFIERS = {
   "tagField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16681,6 +16790,7 @@ export const NODE_MODIFIERS = {
   "fileUpload": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16796,6 +16906,7 @@ export const NODE_MODIFIERS = {
   "video": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -16904,6 +17015,7 @@ export const NODE_MODIFIERS = {
   "inputOtp": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17015,6 +17127,7 @@ export const NODE_MODIFIERS = {
   "colorSwatchPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17122,6 +17235,7 @@ export const NODE_MODIFIERS = {
   "animatedCheck": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17229,6 +17343,7 @@ export const NODE_MODIFIERS = {
   "spinnerIcon": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17336,6 +17451,7 @@ export const NODE_MODIFIERS = {
   "contextMenu": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17443,6 +17559,7 @@ export const NODE_MODIFIERS = {
   "collapsible": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17551,6 +17668,7 @@ export const NODE_MODIFIERS = {
   "dropZone": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17662,6 +17780,7 @@ export const NODE_MODIFIERS = {
   "mediaInsetBorder": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17769,6 +17888,7 @@ export const NODE_MODIFIERS = {
   "factStrip": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17882,6 +18002,7 @@ export const NODE_MODIFIERS = {
   "sortablePhotoGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -17995,6 +18116,7 @@ export const NODE_MODIFIERS = {
   "choiceList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18108,6 +18230,7 @@ export const NODE_MODIFIERS = {
   "hoverCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18219,6 +18342,7 @@ export const NODE_MODIFIERS = {
   "expandableText": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18327,6 +18451,7 @@ export const NODE_MODIFIERS = {
   "categoryBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18436,6 +18561,7 @@ export const NODE_MODIFIERS = {
   "menubar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18548,6 +18674,7 @@ export const NODE_MODIFIERS = {
   "compositionBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18654,6 +18781,7 @@ export const NODE_MODIFIERS = {
   "phoneInput": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18770,6 +18898,7 @@ export const NODE_MODIFIERS = {
   "mediaFlightHost": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18880,6 +19009,7 @@ export const NODE_MODIFIERS = {
   "mediaSurface": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -18990,6 +19120,7 @@ export const NODE_MODIFIERS = {
   "mediaPoster": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19096,6 +19227,7 @@ export const NODE_MODIFIERS = {
   "emptyMediaSurface": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19201,6 +19333,7 @@ export const NODE_MODIFIERS = {
   "avatarAnchor": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19307,6 +19440,7 @@ export const NODE_MODIFIERS = {
   "inputGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19414,6 +19548,7 @@ export const NODE_MODIFIERS = {
   "inputGroupAddon": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19521,6 +19656,7 @@ export const NODE_MODIFIERS = {
   "notification": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19638,6 +19774,7 @@ export const NODE_MODIFIERS = {
   "linkPreview": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19744,6 +19881,7 @@ export const NODE_MODIFIERS = {
   "socialButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19865,6 +20003,7 @@ export const NODE_MODIFIERS = {
   "meetingScheduler": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -19980,6 +20119,7 @@ export const NODE_MODIFIERS = {
   "inlineMarkdown": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20090,6 +20230,7 @@ export const NODE_MODIFIERS = {
   "dataTable": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20218,6 +20359,7 @@ export const NODE_MODIFIERS = {
   "dataTableFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20323,6 +20465,7 @@ export const NODE_MODIFIERS = {
   "dataTableSearch": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20429,6 +20572,7 @@ export const NODE_MODIFIERS = {
   "dataTableSelect": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20535,6 +20679,7 @@ export const NODE_MODIFIERS = {
   "sortableChipRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20647,6 +20792,7 @@ export const NODE_MODIFIERS = {
   "glassGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20753,6 +20899,7 @@ export const NODE_MODIFIERS = {
   "viewThatFits": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20867,6 +21014,7 @@ export const NODE_MODIFIERS = {
   "agentAvatar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -20977,6 +21125,7 @@ export const NODE_MODIFIERS = {
   "chatComposer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21083,6 +21232,7 @@ export const NODE_MODIFIERS = {
   "compactComposer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21188,6 +21338,7 @@ export const NODE_MODIFIERS = {
   "composerBanner": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21294,6 +21445,7 @@ export const NODE_MODIFIERS = {
   "composerIconButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21402,6 +21554,7 @@ export const NODE_MODIFIERS = {
   "suggestionList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21511,6 +21664,7 @@ export const NODE_MODIFIERS = {
   "voiceRecorder": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21616,6 +21770,7 @@ export const NODE_MODIFIERS = {
   "attachmentMenu": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21724,6 +21879,7 @@ export const NODE_MODIFIERS = {
   "emojiPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21834,6 +21990,7 @@ export const NODE_MODIFIERS = {
   "reactionPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -21941,6 +22098,7 @@ export const NODE_MODIFIERS = {
   "messageContextMenu": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22047,6 +22205,7 @@ export const NODE_MODIFIERS = {
   "areaChartCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22156,6 +22315,7 @@ export const NODE_MODIFIERS = {
   "barListCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22263,6 +22423,7 @@ export const NODE_MODIFIERS = {
   "chartCardSurface": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22369,6 +22530,7 @@ export const NODE_MODIFIERS = {
   "chartHeadline": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22474,6 +22636,7 @@ export const NODE_MODIFIERS = {
   "chartStatTiles": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22580,6 +22743,7 @@ export const NODE_MODIFIERS = {
   "contributionsCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22687,6 +22851,7 @@ export const NODE_MODIFIERS = {
   "heatmapChartCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22796,6 +22961,7 @@ export const NODE_MODIFIERS = {
   "lineChartCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -22905,6 +23071,7 @@ export const NODE_MODIFIERS = {
   "radarChartCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23014,6 +23181,7 @@ export const NODE_MODIFIERS = {
   "sleepScoreCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23120,6 +23288,7 @@ export const NODE_MODIFIERS = {
   "sparkline": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23228,6 +23397,7 @@ export const NODE_MODIFIERS = {
   "stageBarsCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23336,6 +23506,7 @@ export const NODE_MODIFIERS = {
   "stepsCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23444,6 +23615,7 @@ export const NODE_MODIFIERS = {
   "tokensChartCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23552,6 +23724,7 @@ export const NODE_MODIFIERS = {
   "composerPanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23661,6 +23834,7 @@ export const NODE_MODIFIERS = {
   "composerPill": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23772,6 +23946,7 @@ export const NODE_MODIFIERS = {
   "composerPanelStatusTab": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23877,6 +24052,7 @@ export const NODE_MODIFIERS = {
   "aiChatShell": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -23987,6 +24163,7 @@ export const NODE_MODIFIERS = {
   "aiChatContainer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24094,6 +24271,7 @@ export const NODE_MODIFIERS = {
   "aiChatThread": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24199,6 +24377,7 @@ export const NODE_MODIFIERS = {
   "aiChatUserMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24304,6 +24483,7 @@ export const NODE_MODIFIERS = {
   "aiChatAssistantMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24409,6 +24589,7 @@ export const NODE_MODIFIERS = {
   "aiChatMessageLine": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24516,6 +24697,7 @@ export const NODE_MODIFIERS = {
   "aiChatHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24621,6 +24803,7 @@ export const NODE_MODIFIERS = {
   "aiChatMobileHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24726,6 +24909,7 @@ export const NODE_MODIFIERS = {
   "aiChatCodePanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24832,6 +25016,7 @@ export const NODE_MODIFIERS = {
   "aiChatGalleryPanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -24938,6 +25123,7 @@ export const NODE_MODIFIERS = {
   "statCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25044,6 +25230,7 @@ export const NODE_MODIFIERS = {
   "statCards": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25151,6 +25338,7 @@ export const NODE_MODIFIERS = {
   "playButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25259,6 +25447,7 @@ export const NODE_MODIFIERS = {
   "playbackProgress": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25365,6 +25554,7 @@ export const NODE_MODIFIERS = {
   "agentLimitsCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25471,6 +25661,7 @@ export const NODE_MODIFIERS = {
   "usageCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25577,6 +25768,7 @@ export const NODE_MODIFIERS = {
   "agentThinking": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25685,6 +25877,7 @@ export const NODE_MODIFIERS = {
   "agentProgress": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25791,6 +25984,7 @@ export const NODE_MODIFIERS = {
   "agentProgressLoadingText": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -25898,6 +26092,7 @@ export const NODE_MODIFIERS = {
   "agentLogRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26003,6 +26198,7 @@ export const NODE_MODIFIERS = {
   "agentLogShimmerText": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26108,6 +26304,7 @@ export const NODE_MODIFIERS = {
   "agentLogToolCall": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26214,6 +26411,7 @@ export const NODE_MODIFIERS = {
   "agentLogToolCalls": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26319,6 +26517,7 @@ export const NODE_MODIFIERS = {
   "agentLogWorkingRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26424,6 +26623,7 @@ export const NODE_MODIFIERS = {
   "composerLoader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26533,6 +26733,7 @@ export const NODE_MODIFIERS = {
   "conversationSidebar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26654,6 +26855,7 @@ export const NODE_MODIFIERS = {
   "questionnaire": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26761,6 +26963,7 @@ export const NODE_MODIFIERS = {
   "chatBackground": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26869,6 +27072,7 @@ export const NODE_MODIFIERS = {
   "chatDateHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -26975,6 +27179,7 @@ export const NODE_MODIFIERS = {
   "chatEmptyState": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27080,6 +27285,7 @@ export const NODE_MODIFIERS = {
   "chatHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27192,6 +27398,7 @@ export const NODE_MODIFIERS = {
   "chatInfoPanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27300,6 +27507,7 @@ export const NODE_MODIFIERS = {
   "pinnedMessageBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27406,6 +27614,7 @@ export const NODE_MODIFIERS = {
   "scrollToBottomButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27511,6 +27720,7 @@ export const NODE_MODIFIERS = {
   "chatFolderTabs": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27619,6 +27829,7 @@ export const NODE_MODIFIERS = {
   "chatSearchField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27724,6 +27935,7 @@ export const NODE_MODIFIERS = {
   "chatSearchResults": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27829,6 +28041,7 @@ export const NODE_MODIFIERS = {
   "storiesRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -27935,6 +28148,7 @@ export const NODE_MODIFIERS = {
   "storyRing": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28041,6 +28255,7 @@ export const NODE_MODIFIERS = {
   "typingDots": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28147,6 +28362,7 @@ export const NODE_MODIFIERS = {
   "contactMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28255,6 +28471,7 @@ export const NODE_MODIFIERS = {
   "documentGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28361,6 +28578,7 @@ export const NODE_MODIFIERS = {
   "fileMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28470,6 +28688,7 @@ export const NODE_MODIFIERS = {
   "gifMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28579,6 +28798,7 @@ export const NODE_MODIFIERS = {
   "imageMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28688,6 +28908,7 @@ export const NODE_MODIFIERS = {
   "locationMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28796,6 +29017,7 @@ export const NODE_MODIFIERS = {
   "pollMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -28904,6 +29126,7 @@ export const NODE_MODIFIERS = {
   "sharedMediaGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29011,6 +29234,7 @@ export const NODE_MODIFIERS = {
   "stickerMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29119,6 +29343,7 @@ export const NODE_MODIFIERS = {
   "videoMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29229,6 +29454,7 @@ export const NODE_MODIFIERS = {
   "voiceMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29339,6 +29565,7 @@ export const NODE_MODIFIERS = {
   "amenityList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29444,6 +29671,7 @@ export const NODE_MODIFIERS = {
   "hostCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29549,6 +29777,7 @@ export const NODE_MODIFIERS = {
   "listingHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29655,6 +29884,7 @@ export const NODE_MODIFIERS = {
   "listingHeaderAction": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29761,6 +29991,7 @@ export const NODE_MODIFIERS = {
   "listingPhotoGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29867,6 +30098,7 @@ export const NODE_MODIFIERS = {
   "reviewCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -29974,6 +30206,7 @@ export const NODE_MODIFIERS = {
   "mapClusterMarker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30080,6 +30313,7 @@ export const NODE_MODIFIERS = {
   "mapPriceMarker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30187,6 +30421,7 @@ export const NODE_MODIFIERS = {
   "mapSearchAreaButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30292,6 +30527,7 @@ export const NODE_MODIFIERS = {
   "followButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30403,6 +30639,7 @@ export const NODE_MODIFIERS = {
   "shelf": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30510,6 +30747,7 @@ export const NODE_MODIFIERS = {
   "shelfSkeleton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30619,6 +30857,7 @@ export const NODE_MODIFIERS = {
   "subscriptionPlans": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30724,6 +30963,7 @@ export const NODE_MODIFIERS = {
   "subscriptionPrice": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30829,6 +31069,7 @@ export const NODE_MODIFIERS = {
   "userHoverCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -30934,6 +31175,7 @@ export const NODE_MODIFIERS = {
   "cardForm": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31039,6 +31281,7 @@ export const NODE_MODIFIERS = {
   "cardFormCountry": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31144,6 +31387,7 @@ export const NODE_MODIFIERS = {
   "cardFormPostcode": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31249,6 +31493,7 @@ export const NODE_MODIFIERS = {
   "cardFormHostedField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31354,6 +31599,7 @@ export const NODE_MODIFIERS = {
   "checkoutSheet": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31461,6 +31707,7 @@ export const NODE_MODIFIERS = {
   "filterSection": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31567,6 +31814,7 @@ export const NODE_MODIFIERS = {
   "priceRangeFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31673,6 +31921,7 @@ export const NODE_MODIFIERS = {
   "countFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31778,6 +32027,7 @@ export const NODE_MODIFIERS = {
   "toggleChipGroup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31883,6 +32133,7 @@ export const NODE_MODIFIERS = {
   "amenityFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -31988,6 +32239,7 @@ export const NODE_MODIFIERS = {
   "switchFilterRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32093,6 +32345,7 @@ export const NODE_MODIFIERS = {
   "filterFooter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32199,6 +32452,7 @@ export const NODE_MODIFIERS = {
   "filterTriggerButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32305,6 +32559,7 @@ export const NODE_MODIFIERS = {
   "areaRangeFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32410,6 +32665,7 @@ export const NODE_MODIFIERS = {
   "availabilityFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32516,6 +32772,7 @@ export const NODE_MODIFIERS = {
   "featureFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32622,6 +32879,7 @@ export const NODE_MODIFIERS = {
   "floorFilter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32727,6 +32985,7 @@ export const NODE_MODIFIERS = {
   "staySearchCompact": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32832,6 +33091,7 @@ export const NODE_MODIFIERS = {
   "staySearchPanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -32937,6 +33197,7 @@ export const NODE_MODIFIERS = {
   "staySearchStep": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33042,6 +33303,7 @@ export const NODE_MODIFIERS = {
   "destinationSuggestions": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33148,6 +33410,7 @@ export const NODE_MODIFIERS = {
   "guestPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33254,6 +33517,7 @@ export const NODE_MODIFIERS = {
   "tenancyTimeline": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33360,6 +33624,7 @@ export const NODE_MODIFIERS = {
   "leaseSummaryCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33466,6 +33731,7 @@ export const NODE_MODIFIERS = {
   "rentPaymentList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33573,6 +33839,7 @@ export const NODE_MODIFIERS = {
   "maintenanceRequestCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33678,6 +33945,7 @@ export const NODE_MODIFIERS = {
   "documentList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33784,6 +34052,7 @@ export const NODE_MODIFIERS = {
   "evictionReportCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33890,6 +34159,7 @@ export const NODE_MODIFIERS = {
   "evictionTimeline": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -33995,6 +34265,7 @@ export const NODE_MODIFIERS = {
   "placeReviewSummary": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34100,6 +34371,7 @@ export const NODE_MODIFIERS = {
   "writeReviewPrompt": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34205,6 +34477,7 @@ export const NODE_MODIFIERS = {
   "callScreen": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34318,6 +34591,7 @@ export const NODE_MODIFIERS = {
   "callMinimisedPill": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34426,6 +34700,7 @@ export const NODE_MODIFIERS = {
   "groupCallGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34529,12 +34804,12 @@ export const NODE_MODIFIERS = {
     "phases",
     "style",
     "columns",
-    "spacing",
-    "aspectRatio"
+    "spacing"
   ],
   "incomingCallScreen": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34643,6 +34918,7 @@ export const NODE_MODIFIERS = {
   "incomingCallBanner": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34750,6 +35026,7 @@ export const NODE_MODIFIERS = {
   "storyViewer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34856,6 +35133,7 @@ export const NODE_MODIFIERS = {
   "selectedChipsRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -34962,6 +35240,7 @@ export const NODE_MODIFIERS = {
   "newGroupForm": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35068,6 +35347,7 @@ export const NODE_MODIFIERS = {
   "messageBubble": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35178,6 +35458,7 @@ export const NODE_MODIFIERS = {
   "typingBubble": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35283,6 +35564,7 @@ export const NODE_MODIFIERS = {
   "messageList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35388,6 +35670,7 @@ export const NODE_MODIFIERS = {
   "mapScaleBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35494,6 +35777,7 @@ export const NODE_MODIFIERS = {
   "mapControls": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35602,6 +35886,7 @@ export const NODE_MODIFIERS = {
   "locationPuck": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35708,6 +35993,7 @@ export const NODE_MODIFIERS = {
   "navigationBanner": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35813,6 +36099,7 @@ export const NODE_MODIFIERS = {
   "placeCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -35921,6 +36208,7 @@ export const NODE_MODIFIERS = {
   "placeHours": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36027,6 +36315,7 @@ export const NODE_MODIFIERS = {
   "placeInfoList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36132,6 +36421,7 @@ export const NODE_MODIFIERS = {
   "placeTransit": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36237,6 +36527,7 @@ export const NODE_MODIFIERS = {
   "placeListCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36343,6 +36634,7 @@ export const NODE_MODIFIERS = {
   "placeList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36448,6 +36740,7 @@ export const NODE_MODIFIERS = {
   "directionsSteps": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36554,6 +36847,7 @@ export const NODE_MODIFIERS = {
   "placePicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36661,6 +36955,7 @@ export const NODE_MODIFIERS = {
   "mailComposeSurface": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36769,6 +37064,7 @@ export const NODE_MODIFIERS = {
   "mailRecipientField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36875,6 +37171,7 @@ export const NODE_MODIFIERS = {
   "mailMessage": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -36982,6 +37279,7 @@ export const NODE_MODIFIERS = {
   "mailThread": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37089,6 +37387,7 @@ export const NODE_MODIFIERS = {
   "mailQuoteToggle": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37195,6 +37494,7 @@ export const NODE_MODIFIERS = {
   "noteEditorToolbar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37301,6 +37601,7 @@ export const NODE_MODIFIERS = {
   "tripCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37407,6 +37708,7 @@ export const NODE_MODIFIERS = {
   "bookingCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37514,6 +37816,7 @@ export const NODE_MODIFIERS = {
   "bookingBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37620,6 +37923,7 @@ export const NODE_MODIFIERS = {
   "priceBreakdown": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37725,6 +38029,7 @@ export const NODE_MODIFIERS = {
   "homeSearchBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37831,6 +38136,7 @@ export const NODE_MODIFIERS = {
   "searchModeTabs": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -37937,6 +38243,7 @@ export const NODE_MODIFIERS = {
   "propertyTypePicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38043,6 +38350,7 @@ export const NODE_MODIFIERS = {
   "savedSearchCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38148,6 +38456,7 @@ export const NODE_MODIFIERS = {
   "listingActionBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38254,6 +38563,7 @@ export const NODE_MODIFIERS = {
   "mortgageCalculator": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38364,6 +38674,7 @@ export const NODE_MODIFIERS = {
   "rentalActionCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38470,6 +38781,7 @@ export const NODE_MODIFIERS = {
   "saleActionCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38576,6 +38888,7 @@ export const NODE_MODIFIERS = {
   "listingCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38685,6 +38998,7 @@ export const NODE_MODIFIERS = {
   "listingCardGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38791,6 +39105,7 @@ export const NODE_MODIFIERS = {
   "wishlistCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -38897,6 +39212,7 @@ export const NODE_MODIFIERS = {
   "listingPreviewPane": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39003,6 +39319,7 @@ export const NODE_MODIFIERS = {
   "listingQualityMeter": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39108,6 +39425,7 @@ export const NODE_MODIFIERS = {
   "propertyTypeSelector": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39214,6 +39532,7 @@ export const NODE_MODIFIERS = {
   "offeringBadge": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39321,6 +39640,7 @@ export const NODE_MODIFIERS = {
   "priceEstimate": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39427,6 +39747,7 @@ export const NODE_MODIFIERS = {
   "pricePerAreaComparison": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39532,6 +39853,7 @@ export const NODE_MODIFIERS = {
   "projectBoard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39637,6 +39959,7 @@ export const NODE_MODIFIERS = {
   "projectBoardCardContent": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39742,6 +40065,7 @@ export const NODE_MODIFIERS = {
   "boardDragHandle": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39847,6 +40171,7 @@ export const NODE_MODIFIERS = {
   "activityFeed": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -39955,6 +40280,7 @@ export const NODE_MODIFIERS = {
   "orderStatusBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40062,6 +40388,7 @@ export const NODE_MODIFIERS = {
   "orderStatusTimeline": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40169,6 +40496,7 @@ export const NODE_MODIFIERS = {
   "lockup": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40278,6 +40606,7 @@ export const NODE_MODIFIERS = {
   "lockupSkeleton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40385,6 +40714,7 @@ export const NODE_MODIFIERS = {
   "ambientPhoto": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40490,6 +40820,7 @@ export const NODE_MODIFIERS = {
   "calendarView": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40597,6 +40928,7 @@ export const NODE_MODIFIERS = {
   "calendarViewHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40702,6 +41034,7 @@ export const NODE_MODIFIERS = {
   "calendarViewMonthGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40808,6 +41141,7 @@ export const NODE_MODIFIERS = {
   "taskList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -40913,6 +41247,7 @@ export const NODE_MODIFIERS = {
   "webSearch": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41018,6 +41353,7 @@ export const NODE_MODIFIERS = {
   "voiceControls": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41126,6 +41462,7 @@ export const NODE_MODIFIERS = {
   "agentCreator": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41231,6 +41568,7 @@ export const NODE_MODIFIERS = {
   "agentCreatorField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41338,6 +41676,7 @@ export const NODE_MODIFIERS = {
   "agentCreatorSection": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41443,6 +41782,7 @@ export const NODE_MODIFIERS = {
   "agentProfile": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41548,6 +41888,7 @@ export const NODE_MODIFIERS = {
   "agentReplyIdentity": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41653,6 +41994,7 @@ export const NODE_MODIFIERS = {
   "aiProfileCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41761,6 +42103,7 @@ export const NODE_MODIFIERS = {
   "selectedAgentPreview": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41866,6 +42209,7 @@ export const NODE_MODIFIERS = {
   "multiAgentChat": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -41971,6 +42315,7 @@ export const NODE_MODIFIERS = {
   "agentChatHistory": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42079,6 +42424,7 @@ export const NODE_MODIFIERS = {
   "agentChat": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42187,6 +42533,7 @@ export const NODE_MODIFIERS = {
   "routeStops": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42293,6 +42640,7 @@ export const NODE_MODIFIERS = {
   "noteCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42402,6 +42750,7 @@ export const NODE_MODIFIERS = {
   "noteCardSkeleton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42509,6 +42858,7 @@ export const NODE_MODIFIERS = {
   "shareSheet": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42616,6 +42966,7 @@ export const NODE_MODIFIERS = {
   "connectionDots": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42721,6 +43072,7 @@ export const NODE_MODIFIERS = {
   "outlineNav": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42827,6 +43179,7 @@ export const NODE_MODIFIERS = {
   "pagination": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -42932,6 +43285,7 @@ export const NODE_MODIFIERS = {
   "progressiveBlur": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43037,6 +43391,7 @@ export const NODE_MODIFIERS = {
   "addressRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43144,6 +43499,7 @@ export const NODE_MODIFIERS = {
   "addressList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43253,6 +43609,7 @@ export const NODE_MODIFIERS = {
   "paymentMethodMark": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43359,6 +43716,7 @@ export const NODE_MODIFIERS = {
   "paymentMethodRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43465,6 +43823,7 @@ export const NODE_MODIFIERS = {
   "paymentMethodList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43573,6 +43932,7 @@ export const NODE_MODIFIERS = {
   "priceSummary": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43679,6 +44039,7 @@ export const NODE_MODIFIERS = {
   "priceSummaryLine": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43785,6 +44146,7 @@ export const NODE_MODIFIERS = {
   "paymentStatusBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43891,6 +44253,7 @@ export const NODE_MODIFIERS = {
   "paymentStatusBlock": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -43997,6 +44360,7 @@ export const NODE_MODIFIERS = {
   "contactProfileCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44103,6 +44467,7 @@ export const NODE_MODIFIERS = {
   "leadScoreCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44208,6 +44573,7 @@ export const NODE_MODIFIERS = {
   "dealCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44313,6 +44679,7 @@ export const NODE_MODIFIERS = {
   "pipelineColumn": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44418,6 +44785,7 @@ export const NODE_MODIFIERS = {
   "pipelineBoard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44525,6 +44893,7 @@ export const NODE_MODIFIERS = {
   "importantAlertsCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44630,6 +44999,7 @@ export const NODE_MODIFIERS = {
   "patientInfoCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44735,6 +45105,7 @@ export const NODE_MODIFIERS = {
   "recentHiresCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44840,6 +45211,7 @@ export const NODE_MODIFIERS = {
   "cartLine": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -44947,6 +45319,7 @@ export const NODE_MODIFIERS = {
   "cartPanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45055,6 +45428,7 @@ export const NODE_MODIFIERS = {
   "cartPromoField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45160,6 +45534,7 @@ export const NODE_MODIFIERS = {
   "cartTipPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45265,6 +45640,7 @@ export const NODE_MODIFIERS = {
   "menuItemRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45372,6 +45748,7 @@ export const NODE_MODIFIERS = {
   "menuItemOptions": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45479,6 +45856,7 @@ export const NODE_MODIFIERS = {
   "vendorCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45587,6 +45965,7 @@ export const NODE_MODIFIERS = {
   "mediaCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45695,6 +46074,7 @@ export const NODE_MODIFIERS = {
   "songCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45804,6 +46184,7 @@ export const NODE_MODIFIERS = {
   "albumCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -45912,6 +46293,7 @@ export const NODE_MODIFIERS = {
   "artistCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46020,6 +46402,7 @@ export const NODE_MODIFIERS = {
   "playlistCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46128,6 +46511,7 @@ export const NODE_MODIFIERS = {
   "mixCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46236,6 +46620,7 @@ export const NODE_MODIFIERS = {
   "podcastCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46344,6 +46729,7 @@ export const NODE_MODIFIERS = {
   "episodeCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46452,6 +46838,7 @@ export const NODE_MODIFIERS = {
   "audiobookCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46560,6 +46947,7 @@ export const NODE_MODIFIERS = {
   "eventCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46668,6 +47056,7 @@ export const NODE_MODIFIERS = {
   "profileCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46776,6 +47165,7 @@ export const NODE_MODIFIERS = {
   "genreCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46882,6 +47272,7 @@ export const NODE_MODIFIERS = {
   "friendActivityCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -46987,6 +47378,7 @@ export const NODE_MODIFIERS = {
   "quickAccessTile": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47093,6 +47485,7 @@ export const NODE_MODIFIERS = {
   "recapCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47198,6 +47591,7 @@ export const NODE_MODIFIERS = {
   "shareCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47303,6 +47697,7 @@ export const NODE_MODIFIERS = {
   "lyricsView": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47409,6 +47804,7 @@ export const NODE_MODIFIERS = {
   "lyricsPreviewCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47515,6 +47911,7 @@ export const NODE_MODIFIERS = {
   "audienceOverview": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47620,6 +48017,7 @@ export const NODE_MODIFIERS = {
   "streamsChart": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47726,6 +48124,7 @@ export const NODE_MODIFIERS = {
   "topTracksTable": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47831,6 +48230,7 @@ export const NODE_MODIFIERS = {
   "audienceBreakdown": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -47936,6 +48336,7 @@ export const NODE_MODIFIERS = {
   "releaseCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48042,6 +48443,7 @@ export const NODE_MODIFIERS = {
   "releaseStatusBadge": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48148,6 +48550,7 @@ export const NODE_MODIFIERS = {
   "releaseTimeline": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48254,6 +48657,7 @@ export const NODE_MODIFIERS = {
   "trackUploadRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48359,6 +48763,7 @@ export const NODE_MODIFIERS = {
   "trackMetadataForm": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48464,6 +48869,7 @@ export const NODE_MODIFIERS = {
   "artistChipsInput": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48569,6 +48975,7 @@ export const NODE_MODIFIERS = {
   "isrcField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48674,6 +49081,7 @@ export const NODE_MODIFIERS = {
   "creditsEditor": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48779,6 +49187,7 @@ export const NODE_MODIFIERS = {
   "artworkUploader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48884,6 +49293,7 @@ export const NODE_MODIFIERS = {
   "payoutSummaryCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -48989,6 +49399,7 @@ export const NODE_MODIFIERS = {
   "pitchCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49098,6 +49509,7 @@ export const NODE_MODIFIERS = {
   "checkoutSummaryRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49203,6 +49615,7 @@ export const NODE_MODIFIERS = {
   "checkoutSummary": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49308,6 +49721,7 @@ export const NODE_MODIFIERS = {
   "checkoutConfirm": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49414,6 +49828,7 @@ export const NODE_MODIFIERS = {
   "deliverySlotDays": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49520,6 +49935,7 @@ export const NODE_MODIFIERS = {
   "deliverySlotOption": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49625,6 +50041,7 @@ export const NODE_MODIFIERS = {
   "deliverySlotPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49733,6 +50150,7 @@ export const NODE_MODIFIERS = {
   "orderConfirmation": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49839,6 +50257,7 @@ export const NODE_MODIFIERS = {
   "transportControls": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -49950,6 +50369,7 @@ export const NODE_MODIFIERS = {
   "nowPlayingBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50064,6 +50484,7 @@ export const NODE_MODIFIERS = {
   "miniPlayer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50170,6 +50591,7 @@ export const NODE_MODIFIERS = {
   "fullScreenPlayer": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50279,6 +50701,7 @@ export const NODE_MODIFIERS = {
   "playbackSpeedMenu": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50386,6 +50809,7 @@ export const NODE_MODIFIERS = {
   "sleepTimerMenu": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50493,6 +50917,7 @@ export const NODE_MODIFIERS = {
   "devicePicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50598,6 +51023,7 @@ export const NODE_MODIFIERS = {
   "connectBanner": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50703,6 +51129,7 @@ export const NODE_MODIFIERS = {
   "carrierQuoteCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50809,6 +51236,7 @@ export const NODE_MODIFIERS = {
   "carrierQuoteList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -50917,6 +51345,7 @@ export const NODE_MODIFIERS = {
   "earningsSummary": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51023,6 +51452,7 @@ export const NODE_MODIFIERS = {
   "earningsBreakdown": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51128,6 +51558,7 @@ export const NODE_MODIFIERS = {
   "earningsPayoutRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51233,6 +51664,7 @@ export const NODE_MODIFIERS = {
   "jobCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51339,6 +51771,7 @@ export const NODE_MODIFIERS = {
   "jobBoard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51449,6 +51882,7 @@ export const NODE_MODIFIERS = {
   "signaturePad": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51557,6 +51991,7 @@ export const NODE_MODIFIERS = {
   "proofOfDelivery": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51664,6 +52099,7 @@ export const NODE_MODIFIERS = {
   "vehiclePicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51769,6 +52205,7 @@ export const NODE_MODIFIERS = {
   "shipmentLoadPicker": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51874,6 +52311,7 @@ export const NODE_MODIFIERS = {
   "shipmentOptionsList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -51982,6 +52420,7 @@ export const NODE_MODIFIERS = {
   "shipmentRequestForm": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52087,6 +52526,7 @@ export const NODE_MODIFIERS = {
   "rowActions": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52193,6 +52633,7 @@ export const NODE_MODIFIERS = {
   "rowActionButton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52301,6 +52742,7 @@ export const NODE_MODIFIERS = {
   "swipeRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52407,6 +52849,7 @@ export const NODE_MODIFIERS = {
   "themeToggle": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52514,6 +52957,7 @@ export const NODE_MODIFIERS = {
   "libraryPanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52626,6 +53070,7 @@ export const NODE_MODIFIERS = {
   "libraryItem": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52732,6 +53177,7 @@ export const NODE_MODIFIERS = {
   "searchField": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52837,6 +53283,7 @@ export const NODE_MODIFIERS = {
   "topResultCard": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -52942,6 +53389,7 @@ export const NODE_MODIFIERS = {
   "searchResultTabs": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53047,6 +53495,7 @@ export const NODE_MODIFIERS = {
   "recentSearches": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53152,6 +53601,7 @@ export const NODE_MODIFIERS = {
   "browseGrid": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53258,6 +53708,7 @@ export const NODE_MODIFIERS = {
   "queuePanel": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53365,6 +53816,7 @@ export const NODE_MODIFIERS = {
   "queuePanelRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53470,6 +53922,7 @@ export const NODE_MODIFIERS = {
   "recentlyPlayedList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53575,6 +54028,7 @@ export const NODE_MODIFIERS = {
   "trackList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53683,6 +54137,7 @@ export const NODE_MODIFIERS = {
   "trackListHeader": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53790,6 +54245,7 @@ export const NODE_MODIFIERS = {
   "trackRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -53897,6 +54353,7 @@ export const NODE_MODIFIERS = {
   "trackRowSkeleton": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -54003,6 +54460,7 @@ export const NODE_MODIFIERS = {
   "trackListEmpty": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -54108,6 +54566,7 @@ export const NODE_MODIFIERS = {
   "selectionBar": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -54214,6 +54673,7 @@ export const NODE_MODIFIERS = {
   "episodeRow": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",
@@ -54321,6 +54781,7 @@ export const NODE_MODIFIERS = {
   "episodeList": [
     "padding",
     "frame",
+    "aspectRatio",
     "grow",
     "shrink",
     "alignSelf",

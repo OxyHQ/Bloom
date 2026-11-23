@@ -4564,6 +4564,12 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * release with its own timing and curve.
    */
   pressFade(value?: OpacityName): Self;
+  /**
+   * The view's width to its height (`1` square, `1.6` landscape), in its
+   * frame's view: a width or height there, or its stretch, sets the other side
+   * (React Native's `aspectRatio`). An `Image`'s sizes the image in its box.
+   */
+  aspectRatio(value: number): Self;
   label(value: string | undefined): Self;
   hint(value: string | undefined): Self;
   role(value: Role): Self;
