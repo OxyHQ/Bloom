@@ -744,6 +744,8 @@ export interface ValueModifiers {
   onPressItem: ((item: AvatarGroupItem, index: number) => void) | undefined;
   hoverCard: boolean;
   pressScale: true;
+  /** `.pressFade()`: React Native's TouchableOpacity as the press host, at this opacity while pressed (its own default without one). */
+  pressFade: OpacityName | undefined;
   hoverHighlight: boolean | undefined;
   pressed: boolean | AnyBinding;
   colors: readonly [ColorToken, ColorToken];
@@ -3131,6 +3133,9 @@ export class Node {
   pressScale(): Node {
     return this.set('pressScale', true);
   }
+  pressFade(value?: OpacityName): Node {
+    return this.set('pressFade', value);
+  }
   hoverHighlight(value?: boolean): Node {
     return this.set('hoverHighlight', value);
   }
@@ -4540,6 +4545,13 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   hoverGroup(): Self;
   /** A pressable view shrinks slightly under the finger (Bloom `PressableScale`). */
   pressScale(): Self;
+  /**
+   * A pressable view fades while pressed, as React Native's
+   * `TouchableOpacity` fades it (its host): to `opacity` (an opacity token,
+   * `TouchableOpacity`'s own 0.2 without one) at once on touch, and back on
+   * release with its own timing and curve.
+   */
+  pressFade(value?: OpacityName): Self;
   label(value: string | undefined): Self;
   hint(value: string | undefined): Self;
   role(value: Role): Self;

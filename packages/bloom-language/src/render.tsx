@@ -11,6 +11,7 @@ import {
   Platform,
   Pressable,
   Text as RNText,
+  TouchableOpacity,
   View,
   type GestureResponderEvent,
 } from 'react-native';
@@ -86,7 +87,13 @@ import {
   type TextRun,
   type ViewNodeProps,
 } from './node';
-import { ENVIRONMENT, ENVIRONMENT_TAKERS, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
+import {
+  ENVIRONMENT,
+  ENVIRONMENT_TAKERS,
+  LAYER_RANK,
+  OPACITY,
+  TONE_ROLE,
+} from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
@@ -240,7 +247,7 @@ const IS_WEB = Platform.OS === 'web';
 type Host = unknown;
 
 /** The language's own pressable hosts. */
-const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable]);
+const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable, TouchableOpacity]);
 const pressHostOuts = new WeakMap<StyleOut, StyleOut>();
 
 /**
@@ -956,6 +963,8 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
     if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
+    const fade = ownValue(p, 'pressFade');
+    if (fade?.value !== undefined) props.activeOpacity = OPACITY[fade.value];
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
   if (p.onHoverOut) props.onHoverOut = p.onHoverOut;
@@ -1906,9 +1915,13 @@ function propPaint(
   ) as Paint;
 }
 
-/** The outermost box's host: pressable when the view takes presses or hovers. */
+/**
+ * The outermost box's host: pressable when the view takes presses or hovers,
+ * React Native's `TouchableOpacity` when its press fades it (`.pressFade()`).
+ */
 function hostFor(p: Plan): Host {
-  return p.pressable ? Pressable : View;
+  if (!p.pressable) return View;
+  return p.own.has('pressFade') ? TouchableOpacity : Pressable;
 }
 
 function hostProps(

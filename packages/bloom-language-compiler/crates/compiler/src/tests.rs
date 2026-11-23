@@ -3261,3 +3261,13 @@ fn the_accessibility_modifiers_are_checked() {
     let output = compiled("export const x = () => VStack().liveRegion('loud');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown liveRegion token 'loud' for .liveRegion()");
 }
+
+#[test]
+fn a_press_fade_takes_an_opacity_token() {
+    let ok = compiled(
+        "export const x = (f: () => void) => HStack(Text('a')).onPress(f).pressFade('70').pressFade();\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => HStack().pressFade('0.7');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown opacity token '0.7' for .pressFade()");
+}

@@ -215,6 +215,7 @@ Text('Beta').modifier(tag, 'primary/10')
 | `AvatarGroup` / `Badge` / `IconCircle` / `Loading` | Bloom `AvatarGroup` / `Badge` / `IconCircle` / `Loading` |
 | `Skeleton` / `SkeletonGroup` | Bloom's skeleton shapes / `Skeleton.Region` |
 | `.pressScale()` / `.hoverHighlight()` | Bloom `PressableScale` as the pressable host / `SubtleHover` as the stack's first child |
+| `.pressFade(o?)` | React Native's `TouchableOpacity` as the pressable host, its `activeOpacity` the opacity token |
 | `Image` | Bloom `BloomImage` (`@oxy.so/bloom/image`), sized and clipped by its own box (see [Image](#image)) |
 | `Button` | Bloom `Button` (`style` is its appearance, `tint` its tone, `shape` is icon-only: `circle` square, `pill` wide, `fit` grows; see [Button](#button)) |
 | `ButtonGroup` | Bloom `Button.Group` |
@@ -1012,6 +1013,15 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
   of a chain. `SkeletonGroup(...)` is `Skeleton.Region`, named with `.label()`.
 - **`.pressScale()`**: a pressable view shrinks under the finger: its host is
   Bloom's `PressableScale`.
+- **`.pressFade(opacity?)`**: a pressable view fades while pressed, as React
+  Native's `TouchableOpacity` fades it, because that is its host: to the
+  opacity token on touch (`'70'` is `activeOpacity={0.7}`; without one,
+  `TouchableOpacity`'s own 0.2) and back on release, with
+  `TouchableOpacity`'s own timing and curve on each platform (Animated on
+  Android and iOS, react-native-web's opacity transition on the web). The
+  view's layout, fill and accessibility props are the host's, as on a
+  `Pressable`. It is press feedback, as `.pressScale()` is: a view takes one
+  of them.
 - **`.hoverHighlight(active?)`** on a stack: Bloom's `SubtleHover` wash behind
   it. With no argument it answers the pointer (the web; the stack becomes its
   hover group); with `active`, it is a coordinated highlight on every platform.

@@ -9,7 +9,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { hold, type ParityCase, Themed } from './support/cases';
 
 const { space, borderRadius } = tokens;
 
@@ -802,7 +802,71 @@ const accessibility: ParityCase[] = [
   },
 ];
 
+/** `.pressFade()`: React Native's TouchableOpacity is the press host, so its fade is its own. */
+const pressFade: ParityCase[] = [
+  {
+    name: 'a row whose press fades it to 70% (TouchableOpacity)',
+    language: () => toElement(L.HStack(L.Text('a')).padding('md').onPress(hold).pressFade('70')),
+    bloom: () => (
+      <RN.TouchableOpacity
+        onPress={hold}
+        activeOpacity={0.7}
+        style={{
+          flexDirection: 'row',
+          paddingTop: space.md,
+          paddingBottom: space.md,
+          paddingStart: space.md,
+          paddingEnd: space.md,
+        }}
+      >
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    name: 'a press fade at TouchableOpacity’s own opacity, labelled as a button',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).onPress(hold).pressFade().role('button').label('Open')),
+    bloom: () => (
+      <RN.TouchableOpacity onPress={hold} accessibilityRole="button" accessibilityLabel="Open">
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    name: 'a faded, selected row on a fill',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .background('surface')
+          .corner('md')
+          .onPress(hold)
+          .pressFade('85')
+          .accessibilityState({ selected: true }),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.TouchableOpacity
+            onPress={hold}
+            activeOpacity={0.85}
+            accessibilityState={{ selected: true }}
+            style={{
+              flexDirection: 'row',
+              backgroundColor: c.backgroundSecondary,
+              borderRadius: borderRadius.md,
+            }}
+          >
+            <Text>a</Text>
+          </RN.TouchableOpacity>
+        )}
+      </Themed>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...pressFade,
   ...accessibility,
   ...appLayout,
   ...roles,
