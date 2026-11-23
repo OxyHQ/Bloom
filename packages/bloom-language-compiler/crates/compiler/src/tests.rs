@@ -3469,3 +3469,30 @@ fn a_menu_can_be_blooms_dropdown_everywhere() {
     );
     assert_eq!(output.diagnostics[0].message, "Unknown menuStyle token 'inline' for .menuStyle()");
 }
+
+#[test]
+fn a_runtime_chain_into_jsx_becomes_a_root_that_builds_it() {
+    let source = "import { toElement } from '@oxy.so/bloom-language';
+export function Controls({ onTap, onSeek, bar, items }) {
+  return <View>
+    {toElement(VStack(Text('x')).ref(bar).onPress(onSeek))}
+    {items.map((item) => toElement(Text(item).onPress(onTap), item))}
+    {toElement(Text('static'))}
+  </View>;
+}
+";
+    let output = compile(&format!("{IMPORTS}{source}"), "controls.tsx");
+    assert!(output.changed && output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let code = output.code;
+    assert!(
+        code.starts_with("import { LanguageRoot as _BloomRoot } from \"@oxy.so/bloom-language\";"),
+        "{code}"
+    );
+    assert!(code.contains("<_BloomRoot build={() => _bloomStatic0.ref(bar).onPress(onSeek)} />"), "{code}");
+    assert!(code.contains("<_BloomRoot build={() => Text(item).onPress(onTap)} key={item} />"), "{code}");
+    assert!(code.contains("toElement(_bloomStatic"), "a static chain stays hoisted:\n{code}");
+    // A module without JSX keeps its calls.
+    let plain =
+        compile(&format!("{IMPORTS}{}", source.replace("<View>", "[").replace("</View>", "]")), "c.ts");
+    assert!(!plain.code.contains("_BloomRoot"), "{}", plain.code);
+}

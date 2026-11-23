@@ -3490,15 +3490,27 @@ function renderChild(child: Child, ctx: Context, key: string | number | undefine
 
 // ── Entry points ─────────────────────────────────────────────────
 
-interface RootProps {
-  node: Child;
+export interface LanguageRootProps {
+  /** The tree, built where the element is made (`toElement`'s). */
+  node?: Child;
+  /**
+   * Or the function that builds it, run as this boundary renders: what the
+   * language compiler lowers `toElement(chain)` to, so the handlers and refs
+   * a chain takes reach React as one JSX prop. The React Compiler then reads
+   * them as it reads a JSX `onPress` or `ref`, never as arguments a call
+   * might read during render (which costs the whole component its
+   * memoization).
+   */
+  build?: () => Child;
 }
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
-function LanguageRoot({ node }: RootProps): ReactNode {
+export function LanguageRoot({ node, build }: LanguageRootProps): ReactNode {
   const env = useContext(EnvContext);
   const animation = useContext(AnimationContext);
-  return renderChild(node, { env, provided: env, animation, scoped: animation }, undefined);
+  if (build !== undefined) adoptLanguageSheet();
+  const tree = build === undefined ? node : build();
+  return renderChild(tree ?? null, { env, provided: env, animation, scoped: animation }, undefined);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 

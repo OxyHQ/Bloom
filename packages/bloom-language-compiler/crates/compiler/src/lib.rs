@@ -109,18 +109,25 @@ pub fn compile(source: &str, filename: &str) -> Output {
     while source.contains(&prefix) {
         prefix.push('_');
     }
+    let mut root = String::from("_BloomRoot");
+    while source.contains(&root) {
+        root.push('_');
+    }
     let mut compiler = Compiler {
         allocator: &allocator,
         module: &module,
         scoping: &scoping,
         bodies,
         prefix,
+        root,
+        jsx: source_type.is_jsx(),
         depth: 0,
         hoisted: Vec::new(),
         memoized: 0,
+        lowered: 0,
     };
     compiler.visit_program(&mut program);
-    if compiler.hoisted.is_empty() && compiler.memoized == 0 {
+    if compiler.hoisted.is_empty() && compiler.memoized == 0 && compiler.lowered == 0 {
         return Output::unchanged(source, Vec::new(), warnings);
     }
 
@@ -145,6 +152,11 @@ pub fn compile(source: &str, filename: &str) -> Output {
         program.body.push(statement);
     }
     program.body.extend(pending.map(|(_, declaration)| declaration));
+    if compiler.lowered > 0 {
+        let import = format!("import {{ LanguageRoot as {} }} from '{LANGUAGE_MODULE}';", compiler.root);
+        let mut statements = compiler.parse_statements(&import, Span::default());
+        program.body.insert(0, statements.remove(0));
+    }
 
     let printed = Codegen::new()
         .with_options(CodegenOptions { source_map_path: Some(filename.into()), ..CodegenOptions::default() })
@@ -206,9 +218,58 @@ struct Compiler<'a, 's> {
     /// (body index to declare it before, its name, the expression).
     hoisted: Vec<(usize, String, Expression<'a>)>,
     memoized: usize,
+    /// The local name of the language's `LanguageRoot`, imported when a `toElement` is lowered.
+    root: String,
+    /// Whether the module is JSX (TSX), so a `toElement(chain)` can become an element.
+    jsx: bool,
+    /// How many `toElement(chain)` calls became `<LanguageRoot build={() => chain} />`.
+    lowered: usize,
 }
 
 impl<'a> Compiler<'a, '_> {
+    /// Whether `expression` is `toElement(chain)` (and an optional key) whose
+    /// chain runs at render: what `lower_to_element` rewrites.
+    fn lowers(&self, expression: &Expression<'a>) -> bool {
+        let Expression::CallExpression(call) = expression.without_parentheses() else { return false };
+        self.depth > 0
+            && self.jsx
+            && self.module.resolve(&call.callee, self.scoping) == Some(Binding::ToElement)
+            && (1..=2).contains(&call.arguments.len())
+            && call.arguments.iter().all(|argument| argument.as_expression().is_some())
+            && call.arguments.first().and_then(Argument::as_expression).is_some_and(|chain| {
+                self.module.is_chain(chain, self.scoping)
+                    && self.module.static_after(chain, self.scoping).is_none()
+            })
+    }
+
+    /// `toElement(chain, key)` becomes `<LanguageRoot build={() => chain} key={key} />`.
+    ///
+    /// The React Compiler checks every argument of a call made during render as
+    /// something the callee might read then: a press handler that reads a ref
+    /// (`ref.current?.measure()`), or a ref given to `.ref()`, makes it give up
+    /// on the whole component, and every `useCallback` and `useMemo` in it
+    /// becomes a hook slot of its own. A JSX prop is not read during render, so
+    /// the chain is built as the boundary renders, from one prop the React
+    /// Compiler memoizes like any other. Static chains are hoisted instead.
+    fn lower_to_element(&mut self, expression: &mut Expression<'a>) {
+        let span = expression.span();
+        let Expression::CallExpression(call) = expression.without_parentheses_mut() else { return };
+        let mut values: Vec<Option<Expression<'a>>> = Vec::new();
+        for argument in call.arguments.iter_mut() {
+            let mut value = argument.to_expression_mut().take_in(&self.allocator);
+            self.visit_expression(&mut value);
+            values.push(Some(value));
+        }
+        let key = if values.len() == 2 { " key={__bloomHole}" } else { "" };
+        let text = self.allocator.alloc_str(&format!("<{} build={{() => __bloomHole}}{key} />", self.root));
+        let mut element =
+            Parser::new(self.allocator, text, SourceType::jsx()).parse_expression().expect("an element");
+        SpanRetarget(span).visit_expression(&mut element);
+        HoleFiller { values: &mut values }.visit_expression(&mut element);
+        *expression = element;
+        self.lowered += 1;
+    }
+
     /// Visit a chain: hoist it when static, else hoist what is static inside it
     /// (its arguments' chains, and its longest static prefix).
     fn visit_chain(&mut self, expression: &mut Expression<'a>) {
@@ -283,6 +344,10 @@ impl<'a> Compiler<'a, '_> {
 
 impl<'a> VisitMut<'a> for Compiler<'a, '_> {
     fn visit_expression(&mut self, expression: &mut Expression<'a>) {
+        if self.lowers(expression) {
+            self.lower_to_element(expression);
+            return;
+        }
         if !self.module.is_chain(expression, self.scoping) {
             walk_mut::walk_expression(self, expression);
             return;

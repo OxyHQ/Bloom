@@ -73,7 +73,8 @@ export {
 export type { EnvironmentValue } from './environment';
 export { defineModifier, ViewModifier } from './modifier';
 export type { GlassMaterial, GlassTransition } from './glass';
-export { LanguageStyles, toElement } from './render';
+export { LanguageRoot, LanguageStyles, toElement } from './render';
+export type { LanguageRootProps } from './render';
 export { defineKeyframes } from './motion/keyframes';
 export type { KeyframesValue } from './motion/keyframes';
 export type { Frame as Keyframe } from './motion/keyframes';
