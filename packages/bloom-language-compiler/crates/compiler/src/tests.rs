@@ -110,7 +110,9 @@ export function helper(text) {
 ";
     let code = compiled(source).code;
     assert!(
-        code.contains("view((props) => {\n\t\"use memo\";\n\treturn Text(props.name).font(\"body\");\n})"),
+        code.contains(
+            "view((props) => {\n\t\"use memo\";\n\treturn () => Text(props.name).font(\"body\");\n})"
+        ),
         "{code}"
     );
     assert!(code.contains("function PostRow(props) {\n\t\"use memo\";"), "{code}");
@@ -3498,4 +3500,23 @@ export function Controls({ onTap, onSeek, bar, items }) {
     let plain =
         compile(&format!("{IMPORTS}{}", source.replace("<View>", "[").replace("</View>", "]")), "c.ts");
     assert!(!plain.code.contains("_BloomRoot"), "{}", plain.code);
+}
+
+#[test]
+fn a_view_body_returns_a_function_that_builds_its_runtime_chain() {
+    let source = "export const Bar = view(function Bar({ bar, onSeek, label }) {
+  if (!label) return Text('none');
+  const seek = () => bar.current.measure(onSeek);
+  return VStack(Text(label)).ref(bar).onPress(seek);
+});
+export const Inline = view(({ onSeek }) => Text('x').onPress(onSeek));
+";
+    let code = compiled(source).code;
+    assert!(code.contains("if (!label) return _bloomStatic0;"), "a static return is hoisted:\n{code}");
+    assert!(code.contains("return () => VStack(Text(label)).ref(bar).onPress(seek);"), "{code}");
+    assert!(
+        code.contains("const seek = () => bar.current.measure(onSeek);"),
+        "a nested function keeps its own return:\n{code}"
+    );
+    assert!(code.contains("\"use memo\";\n\treturn () => _bloomStatic1.onPress(onSeek);"), "{code}");
 }

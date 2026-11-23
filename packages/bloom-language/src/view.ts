@@ -28,6 +28,12 @@ const NO_PROPS = Object.freeze({});
  * `.animation()` in scope) arrives through one context, which changes only
  * where an environment modifier or a scope changes it.
  *
+ * A body may return a function that builds its tree instead of the tree:
+ * what the language compiler lowers a returned chain to, so a press handler
+ * that reads a ref, or a ref given to `.ref()`, does not cost the body its
+ * React Compiler memoization (a returned function is not called during the
+ * body's render, as an argument of a chain's call might be).
+ *
  * **React Compiler.** Expo runs the React Compiler in `infer` mode, which
  * finds components by JSX or hook calls; a body that returns chains has
  * neither, so naming it is not enough. The language compiler marks every
@@ -35,14 +41,15 @@ const NO_PROPS = Object.freeze({});
  * language compiler, write the directive yourself.
  */
 export function view<P extends object = Record<string, never>>(
-  body: (props: P) => Child,
+  body: (props: P) => Child | (() => Child),
 ): (...props: Record<string, never> extends P ? [props?: P] : [props: P]) => ComposedView {
   // A factory of components is what `view()` is: called once per view, at
   // module scope, never inside a render.
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
     const env = useContext(EnvContext);
-    return renderBody(body(props), env, env.animation);
+    const built = body(props);
+    return renderBody(typeof built === 'function' ? built() : built, env, env.animation);
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost) as unknown as ComponentType<object>;

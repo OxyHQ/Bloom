@@ -360,24 +360,94 @@ impl<'a> VisitMut<'a> for Compiler<'a, '_> {
     }
 
     fn visit_function(&mut self, function: &mut Function<'a>, flags: ScopeFlags) {
+        let body = self.bodies.spans.contains(&function.span)
+            || function.id.as_ref().is_some_and(|id| self.bodies.symbols.contains(&id.symbol_id()));
+        if body && let Some(statements) = &mut function.body {
+            self.thunks().visit_function_body(statements);
+        }
         self.depth += 1;
         walk_mut::walk_function(self, function, flags);
         self.depth -= 1;
-        let body = self.bodies.spans.contains(&function.span)
-            || function.id.as_ref().is_some_and(|id| self.bodies.symbols.contains(&id.symbol_id()));
         if body && let Some(statements) = &mut function.body {
             self.opt_in_to_memo(statements);
         }
     }
 
     fn visit_arrow_function_expression(&mut self, arrow: &mut ArrowFunctionExpression<'a>) {
+        let body = self.bodies.spans.contains(&arrow.span);
+        if body {
+            let mut thunks = self.thunks();
+            match &mut arrow.body {
+                ArrowFunctionBody::FunctionBody(statements) => thunks.visit_function_body(statements),
+                // `(props) => chain`: the returned expression.
+                returned => thunks.thunk(returned.to_expression_mut()),
+            }
+        }
         self.depth += 1;
         walk_mut::walk_arrow_function_expression(self, arrow);
         self.depth -= 1;
-        if self.bodies.spans.contains(&arrow.span) {
+        if body {
             self.opt_in_arrow_to_memo(arrow);
         }
     }
+}
+
+impl<'a> Compiler<'a, '_> {
+    fn thunks(&self) -> ReturnThunks<'a, '_> {
+        ReturnThunks { allocator: self.allocator, module: self.module, scoping: self.scoping, lowered: 0 }
+    }
+}
+
+/// A view body's returned chain, as a function that builds it: `return chain`
+/// becomes `return () => chain` (`view()` calls it as the body's host
+/// renders).
+///
+/// The body runs as its host renders, and the language compiler opts it into
+/// the React Compiler (`"use memo"`). That compiler checks every argument of a
+/// call made during render as something the callee might read then: a press
+/// handler that reads a ref, or a ref given to `.ref()`, makes it give up on
+/// the whole body, and its `useCallback`s and `useMemo`s become hook slots of
+/// their own. A returned function is not called during the body's render, so
+/// the body compiles and memoizes the function by what the chain reads, as
+/// `toElement`'s lowering does with a JSX prop. Only the body's own returns
+/// of a chain that runs at render are lowered; a static chain is hoisted.
+struct ReturnThunks<'a, 's> {
+    allocator: &'a Allocator,
+    module: &'s Module,
+    scoping: &'s Scoping,
+    lowered: usize,
+}
+
+impl<'a> ReturnThunks<'a, '_> {
+    fn thunk(&mut self, expression: &mut Expression<'a>) {
+        if !self.module.is_chain(expression, self.scoping)
+            || self.module.static_after(expression, self.scoping).is_some()
+        {
+            return;
+        }
+        let span = expression.span();
+        let chain = expression.take_in(&self.allocator);
+        let mut arrow = Parser::new(self.allocator, "() => __bloomHole", SourceType::mjs())
+            .parse_expression()
+            .expect("an arrow");
+        SpanRetarget(span).visit_expression(&mut arrow);
+        let mut values = [Some(chain)];
+        HoleFiller { values: &mut values }.visit_expression(&mut arrow);
+        *expression = arrow;
+        self.lowered += 1;
+    }
+}
+
+impl<'a> VisitMut<'a> for ReturnThunks<'a, '_> {
+    fn visit_return_statement(&mut self, statement: &mut oxc_ast::ast::ReturnStatement<'a>) {
+        if let Some(argument) = &mut statement.argument {
+            self.thunk(argument);
+        }
+    }
+
+    // A nested function's returns are its own.
+    fn visit_function(&mut self, _function: &mut Function<'a>, _flags: ScopeFlags) {}
+    fn visit_arrow_function_expression(&mut self, _arrow: &mut ArrowFunctionExpression<'a>) {}
 }
 
 /// Puts a moved expression where the parsed text named `__bloomHole`.
