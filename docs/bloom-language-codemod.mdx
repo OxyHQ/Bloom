@@ -299,10 +299,13 @@ which draws Bloom's DropdownMenu on every platform, as the app's JSX does: a
 `Item(text)` with `.onPress()`, `variant="destructive"` `.destructive()`,
 `disabled`, `keepOpen` and `testID`; its `leading`, a language glyph
 `toElement(Icon(icon).size(s).foreground(f))`, is `.icon(icon).iconSize(s).iconForeground(f)`.
-The language's menu holds its own open state, so a menu the app opens itself
-(`open`, `onOpenChange`) stays JSX (`DropdownMenu:props`), and so does any
-other shape (a radio group, rows from a component or a condition, a trigger
-that is a component's children).
+A `DropdownMenuLabel` over a `DropdownMenuRadioGroup` (or a radio group
+alone) is a section of choices, `Section(...items).title(label).selection([value,
+onValueChange])`, each `DropdownMenuRadioItem` an `Item(text).tag(value)` with
+its glyph, `disabled`, `keepOpen` and `testID`. A menu the app opens itself
+(`open` and `onOpenChange`, nothing else) is `.presented([open, onOpenChange])`;
+any other prop stays JSX (`DropdownMenu:props`), as does any other shape (rows
+from a component or a condition, a trigger that is a component's children).
 
 Kept as JSX with their reason (`KEPT`): `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's
 `AppLayout(navigator)` with `.shellLayout()` and `.panels(Panel(id, content))`).

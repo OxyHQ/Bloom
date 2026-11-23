@@ -12,6 +12,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -19,6 +21,8 @@ import {
   DropdownMenuTrigger,
   type DropdownMenuCheckboxItemProps,
   type DropdownMenuItemProps,
+  type DropdownMenuRadioGroupProps,
+  type DropdownMenuRadioItemProps,
   type DropdownMenuSubContentProps,
   type DropdownMenuSubTriggerProps,
 } from '@oxy.so/bloom/dropdown-menu';
@@ -37,8 +41,17 @@ import type { MenuHostProps } from './host.types';
 
 const NOOP = () => {};
 
-export function DropdownMenuHost({ trigger, rows, actions, label, testID, render }: MenuHostProps) {
-  const [open, setOpen] = useState(false);
+export function DropdownMenuHost({
+  trigger,
+  rows,
+  actions,
+  label,
+  presented,
+  testID,
+  render,
+}: MenuHostProps) {
+  const own = useState(false);
+  const [open, setOpen] = presented ?? own;
   const { choose, running } = useMenuChoice(actions);
   return (
     <>
@@ -108,6 +121,8 @@ interface Shortcut {
 export interface MenuParts {
   Item: ComponentType<DropdownMenuItemProps & Shortcut>;
   CheckboxItem: ComponentType<DropdownMenuCheckboxItemProps & Shortcut>;
+  RadioGroup: ComponentType<DropdownMenuRadioGroupProps>;
+  RadioItem: ComponentType<DropdownMenuRadioItemProps & Shortcut>;
   Label: ComponentType<{ children?: ReactNode }>;
   Separator: ComponentType<Record<string, never>>;
   Group: ComponentType<{ children?: ReactNode }>;
@@ -119,6 +134,8 @@ export interface MenuParts {
 const DROPDOWN_PARTS: MenuParts = {
   Item: DropdownMenuItem,
   CheckboxItem: DropdownMenuCheckboxItem,
+  RadioGroup: DropdownMenuRadioGroup,
+  RadioItem: DropdownMenuRadioItem,
   Label: DropdownMenuLabel,
   Separator: DropdownMenuSeparator,
   Group: DropdownMenuGroup,
@@ -142,11 +159,23 @@ export function drawMenuRows(
 }
 
 function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNode {
-  const { Item, CheckboxItem, Label, Separator, Group, Sub, SubTrigger, SubContent } = parts;
+  const { Item, CheckboxItem, RadioGroup, RadioItem, Label, Separator, Group } = parts;
+  const { Sub, SubTrigger, SubContent } = parts;
   switch (row.kind) {
     case 'divider':
       return <Separator />;
     case 'section':
+      // A section of choices is its title over a radio group of its rows, as an app writes
+      // `DropdownMenuLabel` then `DropdownMenuRadioGroup`.
+      if (row.selection)
+        return (
+          <>
+            {row.title ? <Label>{row.title}</Label> : null}
+            <RadioGroup value={row.selection.value} onValueChange={row.selection.set}>
+              {drawMenuRows(row.rows, leading, parts)}
+            </RadioGroup>
+          </>
+        );
       return (
         <Group>
           {row.title ? <Label>{row.title}</Label> : null}
@@ -164,6 +193,19 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
       );
     case 'item': {
       const shortcut = row.shortcut === undefined ? undefined : { shortcut: row.shortcut };
+      if (row.value !== undefined)
+        return (
+          <RadioItem
+            value={row.value}
+            leading={leading(row, row.destructive)}
+            disabled={row.disabled}
+            keepOpen={row.keepOpen}
+            testID={row.testID}
+            {...shortcut}
+          >
+            {row.title}
+          </RadioItem>
+        );
       return row.checked === undefined ? (
         <Item
           leading={leading(row, row.destructive)}

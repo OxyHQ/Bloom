@@ -5225,6 +5225,13 @@ export interface MenuView extends ViewModifiers<MenuView> {
    * default.
    */
   menuStyle(value: MenuStyle): MenuView;
+  /**
+   * The menu open through a binding, SwiftUI's `isPresented`: the app opens it
+   * (setting `true`) as its trigger's press does, and hears it close (`false`).
+   * The system menu on iOS opens only from its trigger, so a presented menu is
+   * Bloom's menu there.
+   */
+  presented(value: Binding<boolean>): MenuView;
 }
 /** What a menu holds: rows, and at most one `menu()` content. */
 export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | DividerView;
@@ -5279,6 +5286,17 @@ export interface MenuSubmenuView extends ViewNode {
 export interface MenuSectionView extends ViewNode {
   /** A quiet heading above the section's rows. */
   title(value: string): MenuSectionView;
+  /**
+   * One of the section's rows chosen, as SwiftUI's `Picker` in a `Menu` (a
+   * `UIMenu` of single selection): each tagged `Item` in it is a choice whose
+   * tag is its value, marked while the binding holds it; choosing one sets the
+   * binding. `undefined` is no row chosen. Bloom's menus draw a radio group
+   * (`DropdownMenuRadioGroup`), the lens menu a check on the chosen row, iOS
+   * the system's inline picker.
+   */
+  selection<T extends string>(
+    value: readonly [value: T | undefined, set: (value: T) => void],
+  ): MenuSectionView;
 }
 /**
  * Bloom `Divider`: a line across its stack, vertical in an `HStack`. A label

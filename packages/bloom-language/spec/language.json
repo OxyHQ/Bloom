@@ -2266,7 +2266,7 @@
     },
     "menu": {
       "constructors": ["Menu"],
-      "modifiers": ["actions", "menuStyle"]
+      "modifiers": ["actions", "menuStyle", "presented"]
     },
     "menuItem": {
       "constructors": ["Item"],
@@ -2294,7 +2294,7 @@
     "menuSection": {
       "constructors": ["Section"],
       "universal": false,
-      "modifiers": ["title"]
+      "modifiers": ["title", "selection"]
     },
     "divider": {
       "constructors": ["Divider"],

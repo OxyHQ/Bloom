@@ -6,6 +6,8 @@ import {
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuSub,
   ContextMenuSubContent,
@@ -63,6 +65,8 @@ export function ContextMenu(content: Child, ...rows: readonly unknown[]): Contex
 const PARTS: MenuParts = {
   Item: ContextMenuItem,
   CheckboxItem: ContextMenuCheckboxItem,
+  RadioGroup: ContextMenuRadioGroup,
+  RadioItem: ContextMenuRadioItem,
   Label: ContextMenuLabel,
   Separator: ContextMenuSeparator,
   Group: ContextMenuGroup,

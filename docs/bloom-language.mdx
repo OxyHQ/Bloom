@@ -1477,8 +1477,8 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 
 **Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.iconSize`, `.iconForeground`,
 `.subtitle`, `.destructive`, `.disabled`, `.checked`, `.keepOpen`, `.onPress`),
-`Submenu` (one level; `.icon`, `.iconSize`, `.iconForeground`, `.disabled`), `Section` (`.title`, set apart from the rows beside it)
-and `Divider`. A row's glyph is a 20pt Bloom icon in the menu's quiet ink (the
+`Submenu` (one level; `.icon`, `.iconSize`, `.iconForeground`, `.disabled`), `Section` (`.title`, set apart from the rows beside it;
+`.selection()`, a section of choices, below) and `Divider`. A row's glyph is a 20pt Bloom icon in the menu's quiet ink (the
 negative ink for a destructive row; the row's own ink on the lens menu). A row
 sizes and inks its own with `.iconSize(size)` (an icon rung or a numeric size,
 `'22'`) and `.iconForeground(role)`, over those: Bloom's dropdown, context and
@@ -1531,6 +1531,39 @@ Menu(MORE, PostMenu({ post }))
   as they are (tagged, or with handlers) are the system's. Each row, submenu
   and toggle shows its icon's SF Symbol (see [Icons on iOS](#icons-on-ios)); an
   icon without one draws no glyph.
+
+**Opened by the app.** `.presented([isOpen, setOpen])` opens the menu through
+a binding, as SwiftUI's `isPresented`: setting `true` opens it as its trigger's
+press does, and it sets `false` as it closes (`.presented([false, set])` keeps it
+shut). Bloom's menus take it as `DropdownMenu`'s `open` and `onOpenChange`; the
+lens menu opens and closes its base from it and reports its own opening and
+closing; the system menu on iOS opens only from its trigger, so a presented
+menu is Bloom's menu there.
+
+**Choices.** A `Section` with a `.selection(binding)` is one choice among its
+rows, as SwiftUI's `Picker` in a `Menu` is: each row is an `Item` whose
+`.tag()` is its value (as a picker row's `tag`), marked while the binding holds
+it, and choosing it sets the binding. `undefined` is no row chosen. Its rows are
+its choices only: a row that is no tagged `Item` is refused, by the compiler
+where it can see the row and by the runtime always.
+
+```ts
+Menu(
+  trigger,
+  Section(Item(t('Everyone')).tag('public'), Item(t('Private mention')).tag('direct'))
+    .title(t('Who can see this post'))
+    .selection([audience, setAudience]),
+)
+```
+
+Bloom's menus (the dropdown, context and menubar menus) draw the title as a
+label over a radio group (`DropdownMenuLabel`, then `DropdownMenuRadioGroup` of
+`DropdownMenuRadioItem`s, each with its glyph, `.disabled()`, `.keepOpen()` and
+`testID`), exactly as an app writes it; the lens menu (Android, OxyOS) a check
+on the chosen row; the system menu on iOS SwiftUI's inline `Picker` in a
+`Section` (a `UIMenu` of single selection), each choice a `Label` tagged with its
+value, which dismisses as a whole: the menu stays open only when every choice
+`.keepOpen()`s.
 
 **Tagged rows.** A row can name its action instead of holding a handler, and
 the menu takes what its tags do as an `actions()` view. The rows are plain data

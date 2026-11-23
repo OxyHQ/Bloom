@@ -7416,7 +7416,8 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "actions",
-    "menuStyle"
+    "menuStyle",
+    "presented"
   ],
   "menuItem": [
     "icon",
@@ -7440,7 +7441,8 @@ export const NODE_MODIFIERS = {
     "testID"
   ],
   "menuSection": [
-    "title"
+    "title",
+    "selection"
   ],
   "divider": [
     "padding",

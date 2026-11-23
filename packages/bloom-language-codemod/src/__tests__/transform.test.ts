@@ -651,13 +651,48 @@ export const A = () => (
     </DropdownMenuContent>
   </DropdownMenu>
 );
-export const B = () => <DropdownMenu open={open} onOpenChange={setOpen}><DropdownMenuTrigger asChild label="x"><Button /></DropdownMenuTrigger><DropdownMenuContent label="x" /></DropdownMenu>;
+export const B = () => <DropdownMenu open={open} onOpenChange={setOpen}><DropdownMenuTrigger asChild label="x"><Button iconOnly appearance="plain" leadingIcon={RiMoreFill} accessibilityLabel="x" /></DropdownMenuTrigger><DropdownMenuContent label="x"><DropdownMenuItem onPress={share}>Share</DropdownMenuItem></DropdownMenuContent></DropdownMenu>;
+export const C = () => <DropdownMenu open={open} onOpenChange={setOpen} modal><DropdownMenuTrigger asChild label="x"><Button /></DropdownMenuTrigger><DropdownMenuContent label="x" /></DropdownMenu>;
 `);
     expect(flat(result.code)).toContain(
       "LtoElement(Menu(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').label(t('more')), Item(t('share')).icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(share), Divider(), Item('Block').destructive().onPress(block)).label(t('more')).menuStyle('dropdown'))",
     );
-    expect(result.code).not.toContain('DropdownMenuItem,');
+    expect(flat(result.code)).toContain(
+      ".label('x').menuStyle('dropdown').presented([open, setOpen])",
+    );
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['DropdownMenu:props']);
+  });
+  it('makes a label over a radio group a Section of choices', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { RiMoreFill } from '@oxy.so/bloom/icons';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@oxy.so/bloom/dropdown-menu';
+export const A = () => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild label="Audience">
+      <Button iconOnly appearance="plain" leadingIcon={RiMoreFill} accessibilityLabel="Audience" />
+    </DropdownMenuTrigger>
+    <DropdownMenuContent label="Audience">
+      <DropdownMenuLabel>{t('who')}</DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={audience} onValueChange={(value) => setAudience(value)}>
+        <DropdownMenuRadioItem value="public">Everyone</DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="direct" keepOpen>{t('direct')}</DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain(
+      "Section(Item('Everyone').tag('public'), Item(t('direct')).tag('direct').keepOpen()).title(t('who')).selection([audience, (value) => setAudience(value)])",
+    );
+    expect(result.code).not.toContain('DropdownMenuRadioItem');
   });
   it('takes a language view placed with toElement() as a Screen’s header', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';

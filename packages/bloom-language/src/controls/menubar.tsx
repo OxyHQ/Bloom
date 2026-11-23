@@ -6,6 +6,8 @@ import {
   MenubarGroup,
   MenubarItem,
   MenubarLabel,
+  MenubarRadioGroup,
+  MenubarRadioItem,
   MenubarMenu as BloomMenubarMenu,
   MenubarSeparator,
   MenubarSub,
@@ -66,6 +68,8 @@ export function MenubarMenu(title: string, ...rows: readonly unknown[]): Menubar
 const PARTS: MenuParts = {
   Item: MenubarItem,
   CheckboxItem: MenubarCheckboxItem,
+  RadioGroup: MenubarRadioGroup,
+  RadioItem: MenubarRadioItem,
   Label: MenubarLabel,
   Separator: MenubarSeparator,
   Group: MenubarGroup,

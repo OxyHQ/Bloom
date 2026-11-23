@@ -2571,6 +2571,7 @@ function renderHost(
         rows: node.children,
         actions: ownValue(p, 'actions')?.value,
         label: p.label,
+        presented: ownValue(p, 'presented')?.value,
         testID: p.testID,
         render: (child: Child) => renderChild(child, ctx, undefined),
       });

@@ -3100,11 +3100,16 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       return out;
     };
-    if (attributes(node)?.size !== 0)
+    // A menu the app opens itself (`open` and `onOpenChange`) is `.presented([open, onOpenChange])`.
+    const menuProps = attributes(node);
+    const opened = menuProps?.get('open');
+    const onOpenChange = menuProps?.get('onOpenChange');
+    const presented = opened && onOpenChange && menuProps?.size === 2;
+    if (menuProps?.size !== 0 && !presented)
       return fail(
         'props',
         'props',
-        'a menu the app opens itself (`open`, `onOpenChange`): the language’s menu holds its own open state',
+        'a menu with props besides `open` and `onOpenChange`, its `.presented()` binding',
       );
     const [trigger, content, ...rest] = elements(node) ?? [];
     if (
@@ -3141,46 +3146,48 @@ export function transformSource(source: string, options: TransformOptions): File
     const triggerView = view ? convert(view) : undefined;
     if (!triggerView || others.length || !('ir' in triggerView))
       return fail('trigger', 'trigger', 'a trigger that is no one view the codemod converts');
-    const rows: Value[] = [];
-    for (const row of elements(content) ?? [undefined]) {
-      if (
-        part(row) === 'DropdownMenuSeparator' &&
-        attributes(row)?.size === 0 &&
-        !elements(row)?.length
-      ) {
-        rows.push({
-          $: 'view',
-          view: {
-            type: 'component',
-            node: 'Divider',
-            within: undefined,
-            args: [],
-            props: [],
-            key: null,
-          },
-        });
-        continue;
-      }
-      const props = row && part(row) === 'DropdownMenuItem' ? attributes(row) : undefined;
-      const texts = (row?.children as AnyNode[] | undefined)?.filter(
+    /** One text child as a row's title: a literal, or the string it carries. */
+    const titleOf = (element: AnyNode): Value | undefined => {
+      const texts = (element?.children as AnyNode[] | undefined)?.filter(
         (child) => !(n.JSXText.check(child) && cleanJsxText(child.value) === ''),
       );
       const text = texts?.length === 1 ? texts[0] : undefined;
-      const title: Value | undefined = n.JSXText.check(text)
+      return n.JSXText.check(text)
         ? cleanJsxText(text.value)
         : n.JSXExpressionContainer.check(text) && !n.JSXEmptyExpression.check(text.expression)
           ? (staticString(text) ?? { node: text.expression, hole: 'string' })
           : undefined;
+    };
+    type RowView = { $: 'view'; view: Ir };
+    const rowView = (node: string, args: Value[], props: PropMod[]): RowView => ({
+      $: 'view',
+      view: { type: 'component', node, within: undefined, args, props, key: null },
+    });
+    /**
+     * An item, or a radio item (`radio`): its value is the row's tag, the
+     * choice it is in its section of choices.
+     */
+    const itemRow = (row: AnyNode, radio: boolean): RowView | { reasons: Reason[] } => {
+      const props =
+        row && part(row) === (radio ? 'DropdownMenuRadioItem' : 'DropdownMenuItem')
+          ? attributes(row)
+          : undefined;
+      const title = titleOf(row);
       if (!props || title === undefined)
         return fail('row', 'row', 'a row that is no item with one text, or a separator');
       const mods: PropMod[] = [];
       for (const [name, value] of props) {
         const expression = value ? attributeExpression(value) : undefined;
-        if (name === 'onPress' && expression)
+        if (name === 'onPress' && expression && !radio)
           mods.push({ name, args: [{ node: expression, hole: 'handler' }] });
-        else if (name === 'variant' && staticString(value) === 'destructive')
+        else if (name === 'value' && expression && radio)
+          mods.push({
+            name: 'tag',
+            args: [staticString(value) ?? { node: expression, hole: 'string' }],
+          });
+        else if (name === 'variant' && staticString(value) === 'destructive' && !radio)
           mods.push({ name: 'destructive', args: [] });
-        else if (name === 'variant' && staticString(value) === 'default') continue;
+        else if (name === 'variant' && staticString(value) === 'default' && !radio) continue;
         else if ((name === 'disabled' || name === 'keepOpen') && value === null)
           mods.push({ name, args: [] });
         else if (name === 'testID' && staticString(value) !== undefined)
@@ -3201,17 +3208,77 @@ export function transformSource(source: string, options: TransformOptions): File
             `an item's \`${name}\` (or its form here) has no mapping`,
           );
       }
-      rows.push({
-        $: 'view',
-        view: {
-          type: 'component',
-          node: 'Item',
-          within: undefined,
-          args: [title],
-          props: mods,
-          key: null,
-        },
-      });
+      // The tag first, as a choice is written: `Item(title).tag(value)`.
+      mods.sort((a, b) => Number(b.name === 'tag') - Number(a.name === 'tag'));
+      return rowView('Item', [title], mods);
+    };
+    const rows: Value[] = [];
+    /** Elements the menu holds below its content's rows (a radio group's items). */
+    const nested: AnyNode[] = [];
+    const contentRows = elements(content) ?? [undefined];
+    for (let index = 0; index < contentRows.length; index++) {
+      const row = contentRows[index];
+      if (
+        part(row) === 'DropdownMenuSeparator' &&
+        attributes(row)?.size === 0 &&
+        !elements(row)?.length
+      ) {
+        rows.push(rowView('Divider', [], []));
+        continue;
+      }
+      // A label over a radio group, or a radio group alone: a Section of choices,
+      // `Section(...items).title(label).selection([value, onValueChange])`.
+      const labelled =
+        part(row) === 'DropdownMenuLabel' &&
+        part(contentRows[index + 1]) === 'DropdownMenuRadioGroup' &&
+        attributes(row)?.size === 0;
+      const group = labelled ? contentRows[index + 1] : row;
+      if (part(group) === 'DropdownMenuRadioGroup') {
+        const title = labelled ? titleOf(row) : undefined;
+        const groupProps = attributes(group);
+        const value = groupProps?.get('value');
+        const set = groupProps?.get('onValueChange');
+        const items = elements(group);
+        if (
+          (labelled && title === undefined) ||
+          !value ||
+          !set ||
+          groupProps?.size !== 2 ||
+          !items?.length
+        )
+          return fail(
+            'radio-group',
+            'radio-group',
+            'a radio group that is no `value` and `onValueChange` over radio items, under one label',
+          );
+        const choices: Value[] = [];
+        for (const item of items) {
+          const choice = itemRow(item, true);
+          if ('reasons' in choice) return choice;
+          choices.push(choice);
+        }
+        nested.push(...items);
+        const sectionProps: PropMod[] = [];
+        if (title !== undefined) sectionProps.push({ name: 'title', args: [title] });
+        sectionProps.push({
+          name: 'selection',
+          args: [
+            {
+              $: 'binding',
+              binding: [
+                { node: attributeExpression(value), hole: 'string' },
+                { node: attributeExpression(set), hole: 'handler' },
+              ],
+            },
+          ],
+        });
+        rows.push(rowView('Section', choices, sectionProps));
+        if (labelled) index++;
+        continue;
+      }
+      const item = itemRow(row, false);
+      if ('reasons' in item) return item;
+      rows.push(item);
     }
     const props: PropMod[] = [];
     if (label) {
@@ -3228,7 +3295,20 @@ export function transformSource(source: string, options: TransformOptions): File
       props.push({ name: 'testID', args: [text] });
     }
     props.push({ name: 'menuStyle', args: ['dropdown'] });
-    for (const element of [trigger, content, ...(elements(content) ?? [])])
+    if (presented)
+      props.push({
+        name: 'presented',
+        args: [
+          {
+            $: 'binding',
+            binding: [
+              { node: attributeExpression(opened), hole: 'boolean' },
+              { node: attributeExpression(onOpenChange), hole: 'handler' },
+            ],
+          },
+        ],
+      });
+    for (const element of [trigger, content, ...(elements(content) ?? []), ...nested])
       results.set(element, {
         ir: { type: 'component', node: 'Menu', within: undefined, args: [], props: [], key: null },
       });

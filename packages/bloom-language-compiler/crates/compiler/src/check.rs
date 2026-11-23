@@ -121,6 +121,9 @@ impl<'a> Visit<'a> for Checker<'_> {
         }
         let glass = self.check_glass(expression);
         self.check_toolbar(expression);
+        if let Some(problem) = untagged_choice(expression, self.module, self.scoping) {
+            self.checked.errors.push(problem);
+        }
         // The chain's own calls were checked together; their arguments are visited
         // for the chains inside them, never the chain's own prefix again. Its
         // children (the constructor's arguments) are inside it: in its glass, its
@@ -339,6 +342,31 @@ impl Checker<'_> {
             });
         }
     }
+}
+
+/// A row of a menu `Section` with a `.selection()` that is no tagged `Item`: the
+/// runtime refuses it (`readMenuRows`), as each row of a section of choices is
+/// one choice, its tag its value. A row the compiler cannot see (a list, a
+/// name) is the runtime's to check.
+fn untagged_choice(expression: &Expression, module: &Module, scoping: &Scoping) -> Option<Problem> {
+    if chain_kind(expression, module, scoping) != "menuSection"
+        || !modifier_calls(expression).iter().any(|(name, _)| *name == "selection")
+    {
+        return None;
+    }
+    let root = root_call(expression)?;
+    root.arguments.iter().filter_map(Argument::as_expression).find_map(|row| {
+        if !module.is_chain(row, scoping) {
+            return None;
+        }
+        let tagged = chain_kind(row, module, scoping) == "menuItem"
+            && modifier_calls(row).iter().any(|(name, _)| *name == "tag");
+        (!tagged).then(|| Problem {
+            span: row.span(),
+            message: "a Section with a .selection() holds its choices only".into(),
+            help: Some("each row is a choice: Item(title).tag(value)".into()),
+        })
+    })
 }
 
 /// The constructor call at the root of a chain.

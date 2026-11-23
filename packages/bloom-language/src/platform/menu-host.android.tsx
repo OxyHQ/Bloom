@@ -49,6 +49,7 @@ function LensMenuHost({
   trigger: given,
   rows,
   actions,
+  presented,
   testID,
   render,
   lens,
@@ -69,6 +70,7 @@ function LensMenuHost({
       nodes={rows}
       choose={choose}
       config={config}
+      presented={presented}
       testID={testID}
       render={render}
       lens={lens}
@@ -102,6 +104,7 @@ function LensMenuOpener({
   nodes,
   choose,
   config,
+  presented,
   testID,
   render,
   lens,
@@ -110,6 +113,7 @@ function LensMenuOpener({
   nodes: MenuHostProps['rows'];
   choose: ((tag: string) => void) | undefined;
   config: LensMenuConfig;
+  presented: MenuHostProps['presented'];
   testID: string | undefined;
   render: MenuHostProps['render'];
   lens: Lens;
@@ -118,12 +122,21 @@ function LensMenuOpener({
   const deferred = builtOnOpen(nodes);
   const [building, setBuilding] = useState(false);
   const rows = deferred && !building ? NO_ROWS : readMenuRows(nodes, choose);
+  /** Whether the engine's menu is open, as it last said. */
+  const shown = useRef(false);
   const menu =
     rows.length > 0
       ? {
           rows: toLensRows(rows, render),
           config,
           fontFamily: MENU_FONT_FAMILY,
+          // A presented menu tells its binding as it opens and closes.
+          onOpenChange: presented
+            ? (open: boolean) => {
+                shown.current = open;
+                if (open !== presented[0]) presented[1](open);
+              }
+            : undefined,
           onClosed: deferred ? () => setBuilding(false) : undefined,
         }
       : null;
@@ -141,6 +154,14 @@ function LensMenuOpener({
         setBuilding(true);
       }
     : () => handle?.open();
+  // A presented menu follows its binding: the app opens it, or closes it, as its trigger does.
+  const wanted = presented?.[0];
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a change of the binding's value moves the menu
+  useLayoutEffect(() => {
+    if (wanted === undefined || wanted === shown.current) return;
+    if (wanted) open();
+    else handle?.close();
+  }, [wanted]);
   return <View testID={testID}>{render(pressableTrigger(trigger, open))}</View>;
 }
 

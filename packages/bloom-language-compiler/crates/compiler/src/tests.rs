@@ -385,6 +385,38 @@ fn a_colour_at_a_named_opacity_checks_both_halves() {
 }
 
 #[test]
+fn a_section_of_choices_holds_tagged_items() {
+    const CHOICE_NAMES: &str = "Menu, Item, Section, Divider, Text";
+    let ok = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (a, set) => Menu(Text('a'), Section(Item('A').tag('a'), Item('B').tag('b').keepOpen()).title('Who').selection([a, set]));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let untagged = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (a, set) => Menu(Text('a'), Section(Item('A').tag('a'), Item('B')).selection([a, set]));\n",
+    );
+    assert_eq!(untagged.diagnostics[0].message, "a Section with a .selection() holds its choices only");
+    let divider = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (a, set) => Menu(Text('a'), Section(Divider()).selection([a, set]));\n",
+    );
+    assert_eq!(divider.diagnostics[0].message, "a Section with a .selection() holds its choices only");
+    let plain = compiled_with(
+        CHOICE_NAMES,
+        "export const x = () => Menu(Text('a'), Section(Item('B'), Divider()).title('t'));\n",
+    );
+    assert!(plain.diagnostics.is_empty());
+    let presented = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (open, set) => Menu(Text('a'), Item('B')).presented([open, set]);\n",
+    );
+    assert!(presented.diagnostics.is_empty());
+    let unpresented = compiled_with(CHOICE_NAMES, "export const x = () => Item('B').presented(true);\n");
+    assert_eq!(unpresented.diagnostics[0].message, "Item has no modifier .presented()");
+}
+
+#[test]
 fn tracking_and_the_faces_are_checked() {
     let valid =
         compiled("export const x = () => Text('x').font('mono').font('caption-1').tracking('wider');\n");
