@@ -18,6 +18,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
 import { lens } from './lens-stub';
+import { LENS_FROST } from '../floating/lens/lens-frost';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -130,10 +131,12 @@ describe('DropdownMenu as the native lens menu', () => {
       </DropdownMenu>,
     );
     expect(props()).toMatchObject({ fontFamily: 'Inter' });
-    // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
-    // morphing out of untinted glass.
+    // Bloom's colours and frost on the engine's own glass: the panel at its transparency and
+    // frosted as a menu (Liquid Glass grown large), a plain trigger morphing out of untinted glass
+    // frosted as a control.
     expect(props()?.config?.tintOpacity).toBeUndefined();
-    expect(props()?.triggerConfig).toBeUndefined();
+    expect(props()?.config?.blur).toBe(LENS_FROST.panel);
+    expect(props()?.triggerConfig).toEqual({ blur: LENS_FROST.control });
     expect(props()?.items.map((item) => item.title)).toEqual(['Share']);
     fireEvent.press(screen.getByText('Open'));
     expect(lens.handle.open).toHaveBeenCalledTimes(1);

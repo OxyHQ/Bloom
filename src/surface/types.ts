@@ -11,6 +11,11 @@ export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   /** Native material sheen. Defaults to true. */
   sheen?: boolean;
   /**
+   * Web: how much the backdrop is frosted, a CSS blur in px (24 by default). A glass frosts less
+   * than the floating material (Liquid Glass's `regular` and `clear`). Native ignores it.
+   */
+  frost?: number;
+  /**
    * `'lens'` draws the surface with the native lens where the device has one (Android 13+) and keeps
    * the shared paint elsewhere. One floating surface over content (a panel, a dialog card), never a
    * surface that repeats in a scrolling list: the lens is drawn by the window, so it does not follow

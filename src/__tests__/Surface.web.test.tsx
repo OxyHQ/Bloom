@@ -236,6 +236,19 @@ it('can turn the edge light off without dropping the glass', () => {
   expect(pane.style.getPropertyValue('--bloom-surface-highlight-filter')).toBe('none');
 });
 
+it('frosts the backdrop by its frost, and only the blur changes', () => {
+  act(() => root.render(<Surface testID="glass" frost={3} />));
+  const glass = container.querySelector('[data-testid="glass"]') as HTMLElement;
+  const filter = glass.style.getPropertyValue('--bloom-surface-filter');
+  expect(filter).toBe(SURFACE_FILTER.replace('blur(24px)', 'blur(3px)'));
+  act(() => root.render(<Surface testID="glass" />));
+  expect(
+    (container.querySelector('[data-testid="glass"]') as HTMLElement).style.getPropertyValue(
+      '--bloom-surface-filter',
+    ),
+  ).toBe(SURFACE_FILTER);
+});
+
 // The rim owns the edge even on semantic outline buttons.
 it.each(['solid', 'subtle', 'outline'] as const)(
   'keeps %s semantic borders transparent in every state',

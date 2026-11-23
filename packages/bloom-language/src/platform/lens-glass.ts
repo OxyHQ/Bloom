@@ -7,7 +7,8 @@ import type { ColorName } from '../tokens';
 import type { LensTriggerConfig } from './lens';
 
 /**
- * A glass value as the lens engine draws it: the material's frost, and the
+ * A glass value as the lens engine draws it: the material's frost (its blur
+ * radius in dp at rest, the spec's `lensBlur`), and the
  * tint (a variant's `fill` while it holds, else the glass's own, else
  * `fallback`, the fill of the control it is under) at the named transparency,
  * or at the engine's own when none is named.

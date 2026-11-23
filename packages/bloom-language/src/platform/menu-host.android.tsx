@@ -20,6 +20,7 @@ import { resolveSurfaceLevel, useSurfaceFill } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
 import { fontFamilyStyle } from '@oxy.so/bloom/typography';
 
+import { GLASS } from '../generated/spec.generated';
 import { glassTriggerConfig } from './lens-glass';
 import { useMenuChoice } from './menu-actions';
 import { DropdownMenuHost } from './menu-dropdown';
@@ -61,6 +62,8 @@ function LensMenuHost({
   const config = useMemo(() => {
     const surface = resolveSurfaceLevel(theme, 1);
     return {
+      // A menu is regular glass grown large: it frosts more than its trigger (the spec's `lensMenuBlur`).
+      blur: GLASS.regular.lensMenuBlur,
       tintColor: surface.background,
       textColor: surface.text,
       mutedColor: surface.textSecondary,

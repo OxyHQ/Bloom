@@ -85,7 +85,7 @@ import {
   type TextRun,
   type ViewNodeProps,
 } from './node';
-import { ENVIRONMENT, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
+import { ENVIRONMENT, GLASS, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
 import { regular, type GlassValue } from './glass';
 import { getPlatformGlass } from './platform/glass-host';
 import { MenuHost } from './platform/menu-host';
@@ -1182,6 +1182,8 @@ function wrapLayer(
       radius: surfaceRadius,
       ...(layer.curve ? { cornerCurve: layer.curve } : null),
       ...(glass.sheen ? null : { sheen: false }),
+      // The web frosts the backdrop as the material does (Liquid Glass blurs it slightly).
+      frost: GLASS[glass.material].webBlur,
       ...outer,
       key: ownKey,
     };

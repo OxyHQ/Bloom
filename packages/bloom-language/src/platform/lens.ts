@@ -36,12 +36,14 @@ export type LensRow =
 export interface LensTriggerConfig {
   tintColor?: string;
   tintOpacity?: number;
-  /** The engine's frost, a multiplier of its own. */
+  /** The frost at rest, a blur radius in dp (the spec's `lensBlur`; the engine's own is 1). */
   blur?: number;
 }
 
-/** The panel's tint and the rows' ink; a missing colour keeps the engine's own. */
+/** The panel's frost, its tint and the rows' ink; a missing value keeps the engine's own. */
 export interface LensMenuConfig {
+  /** The panel's frost, a blur radius in dp (the spec's `lensMenuBlur`; the engine's own is 16). */
+  blur?: number;
   tintColor?: string;
   textColor?: string;
   mutedColor?: string;

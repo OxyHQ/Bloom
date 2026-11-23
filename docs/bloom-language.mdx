@@ -793,17 +793,24 @@ is what is left where it cannot:
 
 - **Android and OxyOS:** the lens engine (`BloomLensMenu` with no rows, from
   `@oxy.so/bloom-lens`), on Android 13+ in a binary that has the module. The
-  material's frost is the spec's `lensBlur` (`regular` 1, `clear` 0.5, a
-  multiplier of the engine's own); the tint is the role at the named opacity,
-  else the engine's own. The lens belongs to the fixed layer (a header, a bar,
+  material frosts as Liquid Glass does: what is behind it is blurred slightly
+  and bent at its edges. Its frost is the spec's `lensBlur`, the engine's blur
+  radius in dp (`regular` 5, about 3 dp of sigma; `clear` 2), and a menu that
+  grows out of it frosts more (`lensMenuBlur`, 24); Bloom's own lens controls
+  take the same values (`LENS_FROST`). The tint is the role at the named
+  opacity, else the engine's own. The lens belongs to the fixed layer (a header, a bar,
   a floating button): the window draws it, so it does not follow a scroll
   view's overscroll, and each one is drawn every frame.
 - **iOS:** Liquid Glass (`expo-glass-effect`'s `GlassView`, iOS 26), its style
-  the spec's `iosStyle`, the tint as a colour with the token's opacity,
-  interactive under a control; before iOS 26, `expo-blur`'s system material
-  under the tint. Both are optional.
-- **Web:** Surface, Bloom's frosted material (`blur(24px)` with the measured
-  saturation and contrast under the tint). The web has no glass.
+  the spec's `iosStyle` (the system frosts `regular` and `clear` itself), the
+  tint as a colour with the token's opacity, interactive under a control;
+  before iOS 26, `expo-blur`'s system material under the tint (the spec's
+  `iosFallback`: thin for `regular`, ultra-thin for `clear`). Both are
+  optional.
+- **Web:** Surface, Bloom's frosted material with the measured saturation and
+  contrast under the tint, frosted as the glass is (Surface's `frost`, the
+  spec's `webBlur`: `blur(3px)` for `regular`, `blur(1.5px)` for `clear`,
+  against Surface's own 24px). The web has no glass.
 
 A glass's variants (its frame, border, corner and fill; see
 [Variants](#variants)) reach each platform's glass as its props: the lens's
