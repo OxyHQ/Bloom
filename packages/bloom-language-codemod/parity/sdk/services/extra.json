@@ -1,0 +1,263 @@
+[
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx",
+    "line": 91,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full max-w-[448px] self-center gap-6 ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', alignSelf: 'center', gap: 24 }, { maxWidth: 448 }]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx#inSplit",
+    "line": 91,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full max-w-[448px] self-center gap-6 md:max-w-none",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', alignSelf: 'center', gap: 24 }, md ? null : { maxWidth: 448 }]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx#framed",
+    "line": 108,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full self-center md:max-w-[880px] md:flex-row md:rounded-3xl md:border md:border-border md:bg-card md:overflow-hidden",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', alignSelf: 'center' }, md && { maxWidth: 880, flexDirection: 'row', overflow: 'hidden', borderRadius: 24, borderWidth: 1, borderColor: t.border, backgroundColor: t.card }]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx#bare",
+    "line": 108,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full self-center md:max-w-[880px] md:flex-row md:gap-8",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', alignSelf: 'center' }, md && { maxWidth: 880, flexDirection: 'row', gap: 32 }]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx",
+    "line": 112,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "md:flex-1 md:basis-0 md:min-w-0",
+    "props": {},
+    "style": {},
+    "styleExpr": "md ? { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } : null"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx",
+    "line": 113,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "md:p-8",
+    "props": {},
+    "style": {},
+    "styleExpr": "md ? { padding: 32 } : null"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx#aside-framed",
+    "line": 116,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "hidden md:flex md:flex-1 md:basis-0 md:min-w-0 items-center justify-center overflow-hidden p-8 ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 32 }, md ? { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } : { display: 'none' }, null]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyAuthScreen.tsx#aside-bare",
+    "line": 116,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "hidden md:flex md:flex-1 md:basis-0 md:min-w-0 items-center justify-center overflow-hidden p-8 rounded-[20px]",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 32 }, md ? { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } : { display: 'none' }, { borderRadius: 20 }]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxySignInPanel.tsx",
+    "line": 803,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "gap-6 md:hidden",
+    "props": {},
+    "style": {},
+    "styleExpr": "md ? { display: 'none' } : { gap: 24 }"
+  },
+  {
+    "file": "src/ui/components/setupFlow/OxySetupFlow.tsx",
+    "line": 265,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full self-center gap-6 max-w-[448px] ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', maxWidth: 448, alignSelf: 'center', gap: 24 }, null]"
+  },
+  {
+    "file": "src/ui/components/setupFlow/OxySetupFlow.tsx#wide",
+    "line": 265,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full self-center gap-6 max-w-[448px] md:max-w-[880px]",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', maxWidth: 448, alignSelf: 'center', gap: 24 }, md ? { maxWidth: 880 } : null]"
+  },
+  {
+    "file": "src/ui/components/fileManagement/FileViewer.tsx",
+    "line": 196,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1 relative bg-bg",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ position: 'relative', flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { backgroundColor: t.background }]"
+  },
+  {
+    "file": "src/ui/components/fileManagement/FileViewer.tsx#image",
+    "line": 196,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1 relative ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ position: 'relative', flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, null]"
+  },
+  {
+    "file": "src/ui/screens/fileManagement/PhotoPickerSection.tsx",
+    "line": 299,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1 rounded-radius-8 overflow-hidden bg-[#111111]",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%', overflow: 'hidden', borderRadius: 8, backgroundColor: '#111111' }, null]"
+  },
+  {
+    "file": "src/ui/screens/fileManagement/PhotoPickerSection.tsx#dim",
+    "line": 299,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1 rounded-radius-8 overflow-hidden bg-[#111111] opacity-60",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%', overflow: 'hidden', borderRadius: 8, backgroundColor: '#111111' }, { opacity: 0.6 }]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyEmailAccountChoice.tsx#0",
+    "line": 67,
+    "attr": "className",
+    "element": "Pressable",
+    "source": "react-native",
+    "imported": "Pressable",
+    "className": "flex-row items-center gap-[12px] rounded-[14px] p-[8px] ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 8 }, null, null]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyEmailAccountChoice.tsx#1",
+    "line": 67,
+    "attr": "className",
+    "element": "Pressable",
+    "source": "react-native",
+    "imported": "Pressable",
+    "className": "flex-row items-center gap-[12px] rounded-[14px] p-[8px] bg-fill ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 8 }, { backgroundColor: t.card }, null]"
+  },
+  {
+    "file": "src/ui/components/signIn/OxyEmailAccountChoice.tsx#2",
+    "line": 67,
+    "attr": "className",
+    "element": "Pressable",
+    "source": "react-native",
+    "imported": "Pressable",
+    "className": "flex-row items-center gap-[12px] rounded-[14px] p-[8px]  opacity-50",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, padding: 8 }, null, { opacity: 0.5 }]"
+  },
+  {
+    "file": "src/ui/components/authChooser/AccountsMenuView.tsx#0",
+    "line": 170,
+    "attr": "className",
+    "element": "PressableScale",
+    "source": "@oxy.so/bloom/pressable-scale",
+    "imported": "PressableScale",
+    "className": "flex-1 min-w-0 flex-row items-center gap-space-12 py-space-12",
+    "props": {
+      "accessibilityRole": "button"
+    },
+    "style": {},
+    "styleExpr": "[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%', minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }, null]"
+  },
+  {
+    "file": "src/ui/components/authChooser/AccountsMenuView.tsx#1",
+    "line": 170,
+    "attr": "className",
+    "element": "PressableScale",
+    "source": "@oxy.so/bloom/pressable-scale",
+    "imported": "PressableScale",
+    "className": "flex-1 min-w-0 flex-row items-center gap-space-12 py-space-12 opacity-60",
+    "props": {
+      "accessibilityRole": "button"
+    },
+    "style": {},
+    "styleExpr": "[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%', minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }, { opacity: 0.6 }]"
+  },
+  {
+    "file": "src/ui/screens/trust/TrustAboutScreen.tsx (BenefitList)",
+    "line": 45,
+    "attr": "className",
+    "element": "Card",
+    "source": "@oxy.so/bloom/card",
+    "imported": "Card",
+    "className": "mb-space-24",
+    "props": {
+      "radius": "radius-20",
+      "border": "hairline",
+      "elevation": "s",
+      "appearance": "outline"
+    },
+    "style": {},
+    "styleExpr": "{ marginBottom: 24 }"
+  }
+]

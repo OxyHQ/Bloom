@@ -154,7 +154,10 @@ function foldStyle(
     delete style[logical];
   }
   for (const [key, value] of Object.entries(style)) {
-    if (typeof value === 'number') style[key] = Number(value.toPrecision(12));
+    // A pill: React Native clamps a corner to half the box's smaller side, so `rounded-full`'s
+    // 9007199254740990 and Bloom's pill radius 9999 draw the same corner on any box under 19998pt.
+    if (typeof value === 'number' && /Radius$/.test(key) && value >= 9999) style[key] = 9999;
+    else if (typeof value === 'number') style[key] = Number(value.toPrecision(12));
     if (typeof value !== 'string') continue;
     // A short hex colour is its long form: `#fff` is `#ffffff`, `#fff9` is `#ffffff99`.
     const short = /^#([0-9a-f]{3,4})$/i.exec(value);
@@ -214,6 +217,16 @@ function fold(
     }
     props.style = foldStyle(props.style as Record<string, unknown>, text, inText);
     if (Object.keys(props.style as object).length === 0) delete props.style;
+  }
+  // A scroll view's content container is a View React Native draws from this style.
+  if (props.contentContainerStyle && typeof props.contentContainerStyle === 'object') {
+    props.contentContainerStyle = foldStyle(
+      props.contentContainerStyle as Record<string, unknown>,
+      false,
+      false,
+    );
+    if (Object.keys(props.contentContainerStyle as object).length === 0)
+      delete props.contentContainerStyle;
   }
   // A span writing what the Text around it already gives it draws what it inherits.
   const style = (props.style ?? {}) as Record<string, unknown>;

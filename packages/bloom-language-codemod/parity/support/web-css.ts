@@ -251,6 +251,12 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
     const percent = /^(-?[\d.]+)%$/.exec(value);
     if (percent) css[name] = `${Number(Number(percent[1]).toFixed(4))}%`;
   }
+  // A pill: the browser clamps a corner to half the box, so `rounded-full`'s calc(infinity)
+  // (33554432px) and Bloom's pill radius 9999px draw the same corner on any box under 19998px.
+  for (const [name, value] of Object.entries(css)) {
+    const px = /^([\d.]+)px$/.exec(value);
+    if (/radius$/.test(name) && px && Number(px[1]) >= 9999) css[name] = '9999px';
+  }
   for (const [name, value] of Object.entries(css))
     if (
       value === '0' &&

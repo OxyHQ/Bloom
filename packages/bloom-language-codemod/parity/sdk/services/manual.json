@@ -1,0 +1,8 @@
+{
+  "src/ui/components/accountSettings/AccountSettings.tsx:350": { "colourless": true },
+  "src/ui/screens/AccountMembersScreen.tsx:271": { "colourless": true },
+  "src/ui/screens/AccountMembersScreen.tsx:383": { "colourless": true },
+  "src/ui/screens/AccountMembersScreen.tsx:473": { "colourless": true },
+  "src/ui/screens/CreateAccountScreen.tsx:447": { "colourless": true },
+  "src/ui/screens/CreateAccountScreen.tsx:468": { "colourless": true }
+}

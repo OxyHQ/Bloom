@@ -52,7 +52,12 @@ it('resolves', () => {
   const { StyleCollection } = require(
     join(BASE, 'node_modules/react-native-css/dist/commonjs/native-internal/index.js'),
   );
-  StyleCollection.inject(compile(css, {}).stylesheet());
+  // An app on the Oxy preset compiles at a 16px rem (app-preset metro, `inlineRem: 16`); Bloom's own
+  // classes were resolved at NativeWind's default. RESOLVE_INLINE_REM picks the app's.
+  const inlineRem = process.env.RESOLVE_INLINE_REM
+    ? Number(process.env.RESOLVE_INLINE_REM)
+    : undefined;
+  StyleCollection.inject(compile(css, inlineRem ? { inlineRem } : {}).stylesheet());
   const { View } = require(
     join(BASE, 'node_modules/react-native-css/dist/commonjs/components/View'),
   );
