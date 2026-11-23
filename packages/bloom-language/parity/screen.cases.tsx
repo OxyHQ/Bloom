@@ -759,6 +759,20 @@ const wrappers: ParityCase[] = [
     ),
   },
   {
+    name: 'a screen kept above the keyboard, filled by Tailwind’s flex-1',
+    language: () => <ScreenHost root={L.Text('a').header(false).keyboardAvoiding('1')} />,
+    bloom: () => (
+      <KeyboardAvoidingView
+        style={{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }}
+        behavior={KEYBOARD_BEHAVIOR}
+      >
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </KeyboardAvoidingView>
+    ),
+  },
+  {
     name: 'a titled screen inside an app’s provider',
     language: () => <ScreenHost root={L.Text('a').title('Saved').provider(Dock)} />,
     bloom: () => (

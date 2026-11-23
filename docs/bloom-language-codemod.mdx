@@ -272,7 +272,8 @@ as `screen()` does.
 What a route wraps its Screen in is the root's screen modifiers, innermost
 first, as the chain wraps them: `<BloomColorScope mode={m} asChild>` (only
 those two props) is `.colorScope(m)`, a `<KeyboardAvoidingView>` whose style
-reads as React Native's fill (`flex: 1`) and whose behavior is React Native's
+reads as a fill (React Native's `flex: 1`, or Tailwind's `flex-1` as
+`.keyboardAvoiding('1')`) and whose behavior is React Native's
 (`Platform.OS === 'ios' ? 'padding' : 'height'`) is `.keyboardAvoiding()`, and
 a `…Provider` with no props (Bloom's `HeaderDockProvider`, an app's own) is
 `.provider(Name)`. Their imports go where nothing else reads them. The parity
@@ -337,7 +338,10 @@ module `StyleSheet`'s style, or a list of them) is read as the Tailwind
 utilities that write the same declarations (`gap: 12` is `gap-3`), so it lands
 through the className table. React Native's `flex: 1` is no utility (Tailwind's
 `flex-1` is grow, shrink and a 0% basis): it is `.grow()`, which writes
-`flex: 1` itself. React Native's `StyleSheet.absoluteFill`, as the style or
+`flex: 1` itself. A grow, a shrink and a basis that are one of Tailwind's flex utilities
+(`flexGrow: 1, flexShrink: 1, flexBasis: '0%'`) are `.flex('1')`, and a style
+held in a module constant (`const ROW = { … } satisfies ViewStyle`) is read as
+a StyleSheet's style is. React Native's `StyleSheet.absoluteFill`, as the style or
 spread in one (`{ ...StyleSheet.absoluteFill, zIndex: 2 }`), is its
 declarations (`absolute inset-0`), `.position()` on every edge; the parity's
 before side writes them out. A Text's `fontSize` is `.font()` of the token of

@@ -921,6 +921,40 @@ export function transformSource(source: string, options: TransformOptions): File
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
 
+  /**
+   * Module-level `const NAME = { … }` (a style held in a constant, `satisfies`
+   * or `as` a type left out), by name: read as a StyleSheet's style is.
+   */
+  const styleConstants = new Map<string, AnyNode>();
+  for (const statement of ast.program.body as AnyNode[]) {
+    const declaration = n.ExportNamedDeclaration.check(statement)
+      ? statement.declaration
+      : statement;
+    if (!n.VariableDeclaration.check(declaration) || declaration.kind !== 'const') continue;
+    for (const declarator of declaration.declarations as AnyNode[]) {
+      let init = declarator.init;
+      while (init && (init.type === 'TSSatisfiesExpression' || init.type === 'TSAsExpression'))
+        init = init.expression;
+      if (n.Identifier.check(declarator.id) && n.ObjectExpression.check(init))
+        styleConstants.set(declarator.id.name, init);
+    }
+  }
+  /** Each name that reads a module style constant (not a name that shadows it): the constant's object. */
+  const styleConstantReads = new Map<AnyNode, AnyNode>();
+  if (styleConstants.size > 0)
+    recast.visit(ast, {
+      visitIdentifier(path) {
+        const parent = path.parent?.node;
+        const declares = n.VariableDeclarator.check(parent) && parent.id === path.node;
+        if (
+          !declares &&
+          styleConstants.has(path.node.name) &&
+          scopeOf(path, path.node.name)?.isGlobal
+        )
+          styleConstantReads.set(path.node, styleConstants.get(path.node.name));
+        this.traverse(path);
+      },
+    });
   /** React Native's `StyleSheet.absoluteFill`, read from the module's `StyleSheet`. */
   const isAbsoluteFill = (node: AnyNode) =>
     !!styleSheetLocal &&
@@ -953,6 +987,15 @@ export function transformSource(source: string, options: TransformOptions): File
         continue;
       }
       let object = part;
+      // A module constant holding a style is its object, written out on the before side.
+      if (styleConstantReads.has(part)) {
+        const style = styleUtilities(styleConstantReads.get(part), read, isAbsoluteFill);
+        if (!style.ok) return style;
+        classes.push(...style.classes);
+        mods.push(...style.mods);
+        literals.set(part, style.literal);
+        continue;
+      }
       const referenced =
         n.MemberExpression.check(part) &&
         !part.computed &&
@@ -1136,14 +1179,13 @@ export function transformSource(source: string, options: TransformOptions): File
         return reason('a keyboard avoiding view with props `.keyboardAvoiding()` does not draw');
       const style = named.get('style');
       const fill = style ? staticStyle(attributeExpression(style), () => undefined) : undefined;
-      if (
-        !fill?.ok ||
-        fill.classes.length > 0 ||
-        fill.mods.length !== 1 ||
-        fill.mods[0]?.mod.name !== 'grow'
-      )
+      const filled =
+        fill?.ok && fill.classes.length === 0 && fill.mods.length === 1
+          ? fill.mods[0]?.mod
+          : undefined;
+      if (filled?.name !== 'grow' && filled?.name !== 'flex')
         return reason(
-          'a style other than the fill `.keyboardAvoiding()` draws (React Native’s `flex: 1`)',
+          'a style other than a fill `.keyboardAvoiding()` draws (React Native’s `flex: 1`, or a flex token)',
         );
       const behavior = attributeExpression(named.get('behavior'));
       if (!isKeyboardBehavior(behavior))
@@ -1151,7 +1193,9 @@ export function transformSource(source: string, options: TransformOptions): File
           "a behavior other than React Native’s (`Platform.OS === 'ios' ? 'padding' : 'height'`)",
         );
       keyboardBehaviors.add(behavior);
-      return { mod: { name: 'keyboardAvoiding', args: [] } };
+      return {
+        mod: { name: 'keyboardAvoiding', args: filled.name === 'flex' ? [...filled.args] : [] },
+      };
     }
     if (source && /Provider$/.test(local) && !source.module.startsWith('react-native')) {
       if (named.size > 0) return reason('a provider with props: `.provider()` draws one with none');

@@ -660,7 +660,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("initialHeaderHeight", &["space"]),
     ("initialFooterHeight", &["space"]),
     ("colorScope", &["colorScopeMode"]),
-    ("keyboardAvoiding", &[]),
+    ("keyboardAvoiding", &["flex?"]),
     ("provider", &["value"]),
     ("scrollbar", &["scrollbarVisibility"]),
     ("scrollbarSide", &["scrollbarSide"]),

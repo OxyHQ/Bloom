@@ -229,6 +229,31 @@ function utility(key: string, value: AnyNode): string | undefined {
   return undefined;
 }
 
+const FLEX_KEYS = ['flexGrow', 'flexShrink', 'flexBasis'];
+const FLEX = Object.entries(scales.flex as Record<string, unknown>).filter(
+  ([name]) => name !== '$comment',
+) as [string, [number | null, number | null, string | null]][];
+
+/** A style's literal grow, shrink and basis, all three, as the flex token that writes them, or undefined. */
+function flexToken(object: AnyNode): string | undefined {
+  const values = new Map<string, unknown>();
+  for (const property of object.properties)
+    if (
+      (n.ObjectProperty.check(property) || n.Property.check(property)) &&
+      n.Identifier.check(property.key) &&
+      FLEX_KEYS.includes(property.key.name) &&
+      (n.NumericLiteral.check(property.value) || n.StringLiteral.check(property.value))
+    )
+      values.set(property.key.name, property.value.value);
+  if (values.size !== 3) return undefined;
+  return FLEX.find(
+    ([, [grow, shrink, basis]]) =>
+      grow === values.get('flexGrow') &&
+      shrink === values.get('flexShrink') &&
+      basis === values.get('flexBasis'),
+  )?.[0];
+}
+
 /**
  * React Native's `StyleSheet.absoluteFill`: pinned to every edge of its parent
  * (`absolute inset-0`), and the declarations it holds, written out for the
@@ -254,7 +279,17 @@ export function styleUtilities(
   const classes: string[] = [];
   const mods: { subject: string; mod: Mod }[] = [];
   let literal = recast.print(object).code;
+  // A grow, shrink and basis that are one of Tailwind's flex utilities (`flex-1`) are `.flex()`.
+  const flex = flexToken(object);
+  if (flex) mods.push({ subject: 'flexBasis', mod: { name: 'flex', args: [flex] } });
   for (const property of object.properties) {
+    if (
+      flex &&
+      (n.ObjectProperty.check(property) || n.Property.check(property)) &&
+      n.Identifier.check(property.key) &&
+      FLEX_KEYS.includes(property.key.name)
+    )
+      continue;
     if (n.SpreadElement.check(property) && isAbsoluteFill?.(property.argument)) {
       classes.push(...ABSOLUTE_FILL.classes);
       literal = literal.replace(recast.print(property).code, ABSOLUTE_FILL.literal);

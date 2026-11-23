@@ -443,6 +443,14 @@ export function Boost() {
       ".header(false).screenScroll('auto').colorScope(dark ? 'dark' : undefined).provider(HeaderDockProvider)",
     );
     expect(flat(result.code)).toContain('.header(false).keyboardAvoiding()');
+    const tailwind = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { KeyboardAvoidingView, Platform } from 'react-native';
+const FILL = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' } satisfies object;
+export default function Boost() {
+  return <KeyboardAvoidingView style={FILL} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}><Screen><Hole /></Screen></KeyboardAvoidingView>;
+}
+`);
+    expect(flat(tailwind.code)).toContain(".keyboardAvoiding('1')");
     // Their imports go: nothing else reads them.
     expect(result.code).not.toMatch(/BloomColorScope|KeyboardAvoidingView|Platform/);
     // The before side draws React Native's own Platform, and the scope's mode is a hole on both sides.
@@ -463,7 +471,7 @@ export function C() { return <DockProvider value={1}><Screen /></DockProvider>; 
         u.reasons[0]?.why.split(':')[1]?.trim().slice(0, 24),
       ]),
     ).toEqual([
-      ['screen:wrapped', 'a style other than the f'],
+      ['screen:wrapped', 'a behavior other than Re'],
       ['screen:wrapped', 'a colour scope is `.colo'],
       ['screen:wrapped', 'a provider with props'],
     ]);

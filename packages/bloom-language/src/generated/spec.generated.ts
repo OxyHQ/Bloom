@@ -3979,7 +3979,9 @@ export const MODIFIERS = {
   "colorScope": [
     "colorScopeMode"
   ],
-  "keyboardAvoiding": [],
+  "keyboardAvoiding": [
+    "flex?"
+  ],
   "provider": [
     "value"
   ],

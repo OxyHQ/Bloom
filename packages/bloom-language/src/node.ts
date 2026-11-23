@@ -658,8 +658,8 @@ export interface ValueModifiers {
   initialFooterHeight: SpaceToken;
   /** The screen's own scheme (`undefined`: the app's), a `BloomColorScope` around it. */
   colorScope: ColorScopeMode | undefined;
-  /** The screen kept above the keyboard, React Native's `KeyboardAvoidingView` around it. */
-  keyboardAvoiding: true;
+  /** The screen kept above the keyboard, React Native's `KeyboardAvoidingView` around it: its fill, or React Native's `flex: 1`. */
+  keyboardAvoiding: FlexName | undefined;
   /** A provider (a component of children) drawn around the screen. */
   provider: ScreenProvider;
   scrollDismissesKeyboard: KeyboardDismiss;
@@ -2864,8 +2864,8 @@ export class Node {
   colorScope(value: ColorScopeMode | undefined): Node {
     return this.set('colorScope', value);
   }
-  keyboardAvoiding(): Node {
-    return this.set('keyboardAvoiding', true);
+  keyboardAvoiding(fill?: FlexName): Node {
+    return this.set('keyboardAvoiding', fill);
   }
   provider(value: ScreenProvider): Node {
     return this.set('provider', value);
@@ -4567,8 +4567,10 @@ export interface ScreenModifiers<Self> {
    * The screen kept above the keyboard: React Native's `KeyboardAvoidingView`
    * around it, filling, padded on iOS and resized elsewhere, as React Native
    * recommends. SwiftUI avoids the keyboard by default; React Native does not.
+   * It fills with React Native's `flex: 1`, or with a flex token (`'1'` is
+   * Tailwind's `flex-1`, `flex: 1 1 0%`, as `.flex()` writes it).
    */
-  keyboardAvoiding(): Self;
+  keyboardAvoiding(fill?: FlexName): Self;
   /**
    * A provider around the screen (a React component that draws its children:
    * Bloom's `HeaderDockProvider`, an app's own context the screen's header and

@@ -951,7 +951,7 @@ const POSITION_EDGE: Record<keyof PositionEdges, string> = {
 };
 
 /** Tailwind's flex utility as the longhands NativeWind writes. */
-function flexStyle(style: Resolved, value: FlexName): void {
+export function flexStyle(style: Resolved, value: FlexName): void {
   const [grow, shrink, basis] = FLEX[value] as readonly [
     number | null,
     number | null,

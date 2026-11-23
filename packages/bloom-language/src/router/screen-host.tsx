@@ -22,10 +22,12 @@ import {
   type ScreenHeader,
 } from '../node';
 import { valuesOf } from '../platform/values';
+import { flexStyle } from '../style';
 import { toElement } from '../render';
 import {
   resolveSpace,
   type ChromePlacement,
+  type FlexName,
   type ColorPreset,
   type NavigationScope,
   type ScreenKind,
@@ -159,6 +161,18 @@ export function ScreenHost({ root }: { root: Child }) {
 /** What `.keyboardAvoiding()` draws: React Native's own fill and, on iOS, a padding (elsewhere the view resizes). */
 const KEYBOARD_FILL = { flex: 1 } as const;
 const KEYBOARD_BEHAVIOR = Platform.OS === 'ios' ? 'padding' : 'height';
+/** A flex token's fill, as `.flex()` writes it, once per token. */
+const fills = new Map<FlexName, object>();
+function flexFill(name: FlexName): object {
+  let fill = fills.get(name);
+  if (fill === undefined) {
+    const style = {};
+    flexStyle(style, name);
+    fill = Object.freeze(style);
+    fills.set(name, fill);
+  }
+  return fill;
+}
 
 /**
  * The Screen inside what the root's `.colorScope()`, `.keyboardAvoiding()`
@@ -177,7 +191,10 @@ function wrapped(root: Child, screen: ReactElement): ReactElement {
       );
     else if (modifier.kind === 'keyboardAvoiding')
       out = (
-        <KeyboardAvoidingView style={KEYBOARD_FILL} behavior={KEYBOARD_BEHAVIOR}>
+        <KeyboardAvoidingView
+          style={modifier.value === undefined ? KEYBOARD_FILL : flexFill(modifier.value)}
+          behavior={KEYBOARD_BEHAVIOR}
+        >
           {out}
         </KeyboardAvoidingView>
       );
