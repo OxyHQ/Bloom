@@ -2235,12 +2235,14 @@ export function transformSource(source: string, options: TransformOptions): File
     const { refreshing, onRefresh, tintColor, colors, ...rest } = Object.fromEntries(given);
     if (Object.keys(rest).length || !refreshing || !onRefresh || hasJsx(refreshing))
       return undefined;
-    // A function of no parameters ignores the `true` a pull writes; a named one is called with none.
-    const action = actionOf(onRefresh);
-    if (!action) return undefined;
+    // The refreshing value and the action a pull runs, as written: `{ refreshing, onRefresh }`.
+    if (hasJsx(onRefresh)) return undefined;
     const binding: Value = {
-      $: 'binding',
-      binding: [{ node: refreshing, hole: 'boolean' }, action],
+      $: 'options',
+      entries: [
+        ['refreshing', { node: refreshing, hole: 'boolean' }],
+        ['onRefresh', { node: onRefresh, hole: 'handler' }],
+      ],
     };
     // Its import goes with the element when nothing else draws one.
     convertedLocals.add(local as string);

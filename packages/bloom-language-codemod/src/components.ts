@@ -23,7 +23,7 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `icon`: a Bloom icon component, by name;
  * - `literal`: a boolean literal (bare is `true`), through the rule's map (`'true'`, `'false'`);
  * - `refresh`: React Native's `RefreshControl` element, as a pull to refresh's
- *   binding and tint (`.refreshable([refreshing, () => onRefresh()], tint)`);
+ *   value, action and tint (`.refreshable({ refreshing, onRefresh }, tint)`);
  * - `contentStyle`: a static content container style of paddings and a gap, as
  *   `.contentMargins(edge, token)` and `.spacing(token)`;
  * - `items`: an array of data (any expression but an element or a string), carried as it is;

@@ -213,10 +213,10 @@ export function C() {
 }
 `);
     expect(flat(result.code)).toContain(
-      "toElement(ScrollView().refreshable([busy, () => reload()], 'primary').scrollIndicators('hidden', 'vertical'))",
+      "toElement(ScrollView().refreshable({ refreshing: busy, onRefresh: reload }, 'primary').scrollIndicators('hidden', 'vertical'))",
     );
     expect(flat(result.code)).toContain(
-      "toElement(ScrollView().refreshable([busy, () => { reload(); }]).scrollIndicators('visible', 'horizontal'))",
+      "toElement(ScrollView().refreshable({ refreshing: busy, onRefresh: () => { reload(); } }).scrollIndicators('visible', 'horizontal'))",
     );
     // A tintColor alone tints iOS only; the language's tint paints Android's colours too.
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
