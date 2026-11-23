@@ -1,26 +1,27 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
- * bloom-language-codemod <app dir> [--css <entry>] [--write] [--out <dir>] [--fixtures]
+ * bloom-language-codemod <app dir> [--css <entry>] [--write] [--out <dir>] [--package <name>=<dir>] [--fixtures]
  *
  * Reads every .tsx under <app dir> (tests and stories left out), converts what
  * converts exactly, and writes the report (`report.generated.json`, `report.md`) to
  * <out>. With `--write` the files are rewritten in place; without it the
  * converted files go to <out>/files. `--css` is the app's NativeWind entry
  * (default: global.css or styles/global.css); its theme is checked against
- * Bloom's for every class (see overrides.ts). `--fixtures` writes the parity
- * corpus (<out>/corpus.generated.tsx, fixtures.generated.json and the app's stylesheet app.generated.css).
- * `--package <name>=<dir>` resolves a CSS package the app installs and Bloom
- * does not (`@oxy.so/app-preset`) from a checkout of it.
+ * Bloom's for every class (see overrides.ts). `--package <name>=<dir>` resolves
+ * a CSS package the app imports from a checkout of it (`@oxy.so/app-preset`)
+ * when the app's own install does not hold it. `--fixtures` also writes the
+ * parity corpus (<out>/corpus.generated.tsx, fixtures.generated.json and the
+ * app's stylesheet app.generated.css), which the parity suites render from a
+ * Bloom checkout.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 
 import { BEFORE_BLOOM, corpusModule } from './corpus';
 import { overriddenClasses } from './overrides';
 import { report } from './report';
 import { loadTable } from './table';
-import { packageCandidates, tailwind } from './tailwind';
+import { packageCandidates, packageRoot, tailwind } from './tailwind';
 import { type FileResult, transformSource } from './transform';
 
 const IGNORED =
@@ -42,8 +43,33 @@ function arg(name: string): string | undefined {
   return at >= 0 ? process.argv[at + 1] : undefined;
 }
 
+const USAGE = `Usage: bloom-language-codemod <app dir> [options]
+
+Moves the app's NativeWind className JSX and Bloom JSX to the Bloom language
+where the result renders the same, and reports why the rest stays JSX.
+
+Options:
+  --out <dir>              where the report and converted files go
+                           (default: <app dir>/.bloom-language-codemod)
+  --write                  rewrite the app's files in place
+  --css <entry>            the app's NativeWind CSS entry
+                           (default: global.css or styles/global.css)
+  --package <name>=<dir>   read a CSS package the app imports from <dir>
+  --fixtures               also write the parity corpus (proven from a Bloom checkout)
+  -h, --help               show this help
+`;
+
 async function main(): Promise<void> {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) {
+    process.stdout.write(USAGE);
+    return;
+  }
   const app = resolve(process.argv[2] ?? '.');
+  if (!existsSync(app) || !statSync(app).isDirectory()) {
+    process.stderr.write(`bloom-language-codemod: ${app} is not a directory\n\n${USAGE}`);
+    process.exitCode = 1;
+    return;
+  }
   const out = resolve(arg('--out') ?? join(app, '.bloom-language-codemod'));
   const write = process.argv.includes('--write');
   const withFixtures = process.argv.includes('--fixtures');
@@ -92,8 +118,13 @@ async function main(): Promise<void> {
     writeFileSync(join(out, 'fixtures.generated.json'), `${JSON.stringify(fixtures, null, 1)}\n`);
     writeFileSync(join(out, 'corpus.generated.tsx'), corpusModule(fixtures, out));
     // The app's classes in the corpus, and the before side's Bloom's own, which
-    // the app compiles too (its `@source` over Bloom's lib).
-    const before = dirname(createRequire(__filename).resolve(`${BEFORE_BLOOM}/package.json`));
+    // the app compiles too (its `@source` over Bloom's lib). That Bloom is a
+    // devDependency: the corpus is proven from a Bloom checkout.
+    const before = packageRoot(BEFORE_BLOOM, [__dirname]);
+    if (before === undefined)
+      throw new Error(
+        `--fixtures needs ${BEFORE_BLOOM} (Bloom 22, the before side's Bloom), which a Bloom checkout installs: run it there`,
+      );
     const used = new Set([
       ...fixtures.flatMap((f) => f.classes),
       ...packageCandidates(join(before, 'lib/module')),
