@@ -39,6 +39,8 @@ export interface StubNative {
   colorScheme?: string;
   fontFamily?: string;
   triggerConfig?: { tintColor?: string; tintOpacity?: number; absorb?: unknown; jelly?: number };
+  /** The colour a lens drawn in its place samples; undefined for one the window draws. */
+  restBackdrop?: string;
   config?: Record<string, unknown>;
   onItemSelect: (event: { nativeEvent: { id: string; index?: number } }) => void;
   onMenuOpenChange: (event: { nativeEvent: { open: boolean } }) => void;
@@ -95,6 +97,7 @@ function LensBase(props: {
   colorScheme?: string;
   cornerRadius?: number;
   config?: StubNative['triggerConfig'];
+  restBackdrop?: string;
   children?: ReactNode;
 }) {
   const [menu, setMenu] = useState<LensMenu | null>(null);
@@ -107,6 +110,7 @@ function LensBase(props: {
     colorScheme: props.colorScheme,
     fontFamily: menu?.fontFamily,
     triggerConfig: props.config,
+    restBackdrop: props.restBackdrop,
     config: menu?.config as Record<string, unknown> | undefined,
     onItemSelect: (event) => {
       const row = find(rows, event.nativeEvent.id);

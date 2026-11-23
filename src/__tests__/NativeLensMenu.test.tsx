@@ -369,13 +369,15 @@ describe('a ButtonGroup with the lens material', () => {
     expect(lens.handle.open).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the shared surface without the lens prop', () => {
+  it('is the lens without the prop too, drawn in its place against the surface it sits on', () => {
     const screen = wrap(
       <Button.Group accessibilityLabel="Actions">
         <Button>Share</Button>
       </Button.Group>,
     );
-    expect(screen.queryByTestId('native-lens')).toBeNull();
+    // One lens for the group: its button is inside it and draws none of its own.
+    expect(screen.getAllByTestId('native-lens')).toHaveLength(1);
+    expect(props()?.restBackdrop).toBeTruthy();
   });
 });
 
@@ -386,11 +388,15 @@ describe('a floating PageHeader', () => {
         <Button>Share</Button>
       </Button.Group>
     );
+    // Floating: the window draws the group's lens over what moves behind it.
     const floating = wrap(<PageHeader title="Inbox" actions={actions} />);
     expect(floating.getAllByTestId('native-lens').length).toBeGreaterThan(0);
+    expect(props()?.restBackdrop).toBeUndefined();
     floating.unmount();
+    // A bar: the same lens, drawn in its place against the bar.
     const bar = wrap(<PageHeader title="Inbox" presentation="bar" actions={actions} />);
-    expect(bar.queryByTestId('native-lens')).toBeNull();
+    expect(bar.getAllByTestId('native-lens').length).toBeGreaterThan(0);
+    expect(props()?.restBackdrop).toBeTruthy();
   });
 });
 
@@ -432,13 +438,17 @@ describe('a Surface with the lens material', () => {
     );
     expect(box.boxShadow).toBeUndefined();
     alone.unmount();
-    // Off the lens the same button keeps its shade.
+    // Every button with a material is the lens: one in the page is drawn in its place, with no shade
+    // and no paint of its own.
     const plain = wrap(<Button testID="share">Share</Button>);
+    expect(plain.getByTestId('native-lens')).toBeTruthy();
+    expect(props()?.restBackdrop).toBeTruthy();
+    expect(plain.UNSAFE_queryAllByType(SurfacePaint)).toHaveLength(0);
     const own = plain.getByTestId('share').props.style;
     expect(
       StyleSheet.flatten(typeof own === 'function' ? own({ pressed: false, hovered: false }) : own)
         .boxShadow,
-    ).toBeTruthy();
+    ).toBeUndefined();
   });
 
   it('keeps the shared paint without the prop', () => {

@@ -16,7 +16,7 @@ import { BloomScope, useBloomAppearance } from '../appearance';
 import { useBloomControlDensity } from '../appearance/context';
 
 import { useThemeRecipe } from '../theme/use-theme-paint';
-import { hairlineOn, useSurfaceFillRecipe } from '../styles/surface-levels';
+import { hairlineOn, useSurfaceFill, useSurfaceFillRecipe } from '../styles/surface-levels';
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
@@ -170,14 +170,21 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
     ));
     // The group's one material: its own Surface, or, with `material="lens"` on a device that has the
     // native lens, the lens itself behind the items. The items draw their content either way.
+    // Where the device has the lens the group is drawn by it, as every button is: by the window in
+    // a floating region, else in its place against the surface it sits on.
     const regionMaterial = useControlMaterial();
-    const lensAvailable = useLensAvailable();
-    const lens = (material ?? regionMaterial) === 'lens' && lensAvailable;
+    const lens = useLensAvailable();
+    const backing = useSurfaceFill();
+    const restBackdrop = (material ?? regionMaterial) === 'lens' ? undefined : backing;
     const frame = (content: ReactNode) => {
       if (lens) {
         const split = splitLensStyle(style);
         return (
-          <LensButtonHost radius={BUTTON_RADIUS} style={{ alignSelf: 'flex-start', ...split.host }}>
+          <LensButtonHost
+            radius={BUTTON_RADIUS}
+            restBackdrop={restBackdrop}
+            style={{ alignSelf: 'flex-start', ...split.host }}
+          >
             <View
               role="group"
               accessibilityLabel={accessibilityLabel}
