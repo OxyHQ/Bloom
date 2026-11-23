@@ -396,6 +396,7 @@ import {
   type PaddingToken,
   type MarginToken,
   type BorderStyleName,
+  type LiveRegion,
   type SpaceToken,
   type ControlSize,
   type InsetEdge,
@@ -500,6 +501,14 @@ export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
+/** `.accessibilityState()`: what assistive technology reads of a view's state. */
+export interface AccessibilityState {
+  readonly selected?: boolean;
+  readonly checked?: boolean | 'mixed';
+  readonly busy?: boolean;
+  readonly expanded?: boolean;
+  readonly disabled?: boolean;
+}
 /** `.childSpacing()`: the margin after each child but the last, along an axis (Tailwind's `space-x`/`space-y`). */
 export interface ChildSpacing {
   readonly axis: Axis;
@@ -1552,6 +1561,13 @@ export type Modifier =
   | { readonly kind: 'label'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'hint'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'role'; readonly key: string; readonly value: Role }
+  | {
+      readonly kind: 'accessibilityState';
+      readonly key: string;
+      readonly value: AccessibilityState;
+    }
+  | { readonly kind: 'liveRegion'; readonly key: string; readonly value: LiveRegion }
+  | { readonly kind: 'accessibilityHidden'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'hitSlop'; readonly key: string; readonly value: HitSlopName }
   | { readonly kind: 'testID'; readonly key: string; readonly value: string }
   | { readonly kind: 'id'; readonly key: string; readonly value: string | number }
@@ -2386,6 +2402,15 @@ export class Node {
   }
   role(value: Role): Node {
     return this.with({ kind: 'role', key: `role:${value}`, value });
+  }
+  accessibilityState(value: AccessibilityState): Node {
+    return this.with({ kind: 'accessibilityState', key: 'a11yState', value });
+  }
+  liveRegion(value: LiveRegion): Node {
+    return this.with({ kind: 'liveRegion', key: `live:${value}`, value });
+  }
+  accessibilityHidden(value = true): Node {
+    return this.with({ kind: 'accessibilityHidden', key: `a11yHidden:${value}`, value });
   }
   hitSlop(value: HitSlopName): Node {
     return this.with({ kind: 'hitSlop', key: `hitSlop:${value}`, value });
@@ -4518,6 +4543,20 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   label(value: string | undefined): Self;
   hint(value: string | undefined): Self;
   role(value: Role): Self;
+  /**
+   * What assistive technology reads of the view's state: `selected`,
+   * `checked` (or `'mixed'`), `busy`, `expanded`, `disabled` (React Native's
+   * `accessibilityState`, as an app writes it).
+   */
+  accessibilityState(value: AccessibilityState): Self;
+  /** A change inside the view is announced: `polite`, `assertive` or `none` (`accessibilityLiveRegion`). */
+  liveRegion(value: LiveRegion): Self;
+  /**
+   * Hidden from screen readers, with everything inside it: on Android and iOS
+   * `accessibilityElementsHidden` and `importantForAccessibility:
+   * 'no-hide-descendants'`, on the web `aria-hidden`. `false` reads it again.
+   */
+  accessibilityHidden(value?: boolean): Self;
   hitSlop(value: HitSlopName): Self;
   testID(value: string): Self;
   /** A Bloom `Badge` attached to the view, at the badge's `placement` (the top right by default). */

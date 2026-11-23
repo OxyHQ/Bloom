@@ -918,6 +918,19 @@ function ownValue<K extends Modifier['kind']>(
 }
 
 /**
+ * `.accessibilityHidden()`: Android's and iOS's own props, hiding what is
+ * inside too; the web's `aria-hidden` (react-native-web drops the native ones).
+ */
+const HIDDEN = Object.freeze(
+  IS_WEB
+    ? { 'aria-hidden': true }
+    : { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' },
+);
+const SHOWN = Object.freeze(
+  IS_WEB ? {} : { accessibilityElementsHidden: false, importantForAccessibility: 'auto' },
+);
+
+/**
  * The accessibility and press props of a view, for whichever host ends up
  * outermost; `undefined` when it has none, so a bare node never gets a host
  * of its own.
@@ -929,6 +942,12 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.role !== undefined) props.accessibilityRole = ROLE[p.role];
   // Press feedback is Bloom's PressableScale, which a button is.
   else if (p.pressable && p.motion?.pressScale) props.accessibilityRole = 'button';
+  const state = ownValue(p, 'accessibilityState')?.value;
+  if (state !== undefined) props.accessibilityState = state;
+  const live = ownValue(p, 'liveRegion')?.value;
+  if (live !== undefined) props.accessibilityLiveRegion = live;
+  const hidden = ownValue(p, 'accessibilityHidden')?.value;
+  if (hidden !== undefined) Object.assign(props, hidden ? HIDDEN : SHOWN);
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
   if (p.pressable) {

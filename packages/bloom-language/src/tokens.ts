@@ -146,6 +146,8 @@ export type Edge = (typeof ENUMS.edge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
 /** A border's line: `solid`, `dashed` or `dotted` (React Native's `borderStyle`). */
 export type BorderStyleName = (typeof ENUMS.borderStyle)[number];
+/** How assistive technology announces a change inside a view (React Native's `accessibilityLiveRegion`). */
+export type LiveRegion = (typeof ENUMS.liveRegion)[number];
 export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 /** A plain link button's ink (Bloom `Button`'s `linkTone`). */

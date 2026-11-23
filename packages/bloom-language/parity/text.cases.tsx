@@ -549,6 +549,12 @@ const tracked: ParityCase[] = [
 /** React Native's own Text, as an app draws it (`support/base-font`): its base face, then only what the chain names. */
 const raw: ParityCase[] = [
   {
+    // Mention's attachment cards announce their status as a polite live region.
+    name: 'RawText, a polite live region',
+    language: () => toElement(L.RawText('Raw').liveRegion('polite')),
+    bloom: () => <BaseFontText accessibilityLiveRegion="polite">Raw</BaseFontText>,
+  },
+  {
     name: 'RawText, bare',
     language: () => toElement(L.RawText('Raw')),
     bloom: () => <BaseFontText>Raw</BaseFontText>,

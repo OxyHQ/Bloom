@@ -538,6 +538,8 @@
     "cornerExtra": ["concentric", "infinite"],
     "zIndexExtra": ["auto"],
     "marginExtra": ["auto"],
+    "liveRegion": ["polite", "assertive", "none"],
+    "accessibilityChecked": ["mixed"],
     "borderStyle": ["solid", "dashed", "dotted"],
     "cornerCurve": ["round", "smooth"],
     "cornerSide": [
@@ -1129,6 +1131,10 @@
   ],
   "objects": {
     "$comment": "The object parameters: the keys each takes, and the token set of every value.",
+    "accessibilityState": {
+      "keys": ["selected", "checked", "busy", "expanded", "disabled"],
+      "tokens": "accessibilityChecked"
+    },
     "frame": {
       "keys": ["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"],
       "tokens": "length"
@@ -1350,6 +1356,9 @@
     "hoverGroup": [],
     "label": ["value"],
     "hint": ["value"],
+    "accessibilityState": ["accessibilityState"],
+    "liveRegion": ["liveRegion"],
+    "accessibilityHidden": ["value?"],
     "role": ["role"],
     "hitSlop": ["hitSlop"],
     "testID": ["value"],
@@ -1968,6 +1977,9 @@
     "label",
     "hint",
     "role",
+    "accessibilityState",
+    "liveRegion",
+    "accessibilityHidden",
     "hitSlop",
     "testID",
     "badge",

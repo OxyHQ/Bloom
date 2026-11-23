@@ -658,8 +658,7 @@ const appLayout: ParityCase[] = [
   },
   {
     name: 'a physical auto margin on the left (marginLeft: auto)',
-    language: () =>
-      toElement(L.HStack(L.Text('a'), L.VStack(L.Text('b')).margin('left', 'auto'))),
+    language: () => toElement(L.HStack(L.Text('a'), L.VStack(L.Text('b')).margin('left', 'auto'))),
     bloom: () => (
       <RN.View style={{ flexDirection: 'row' }}>
         <Text>a</Text>
@@ -675,7 +674,12 @@ const appLayout: ParityCase[] = [
     bloom: () => (
       <RN.View>
         <RN.View
-          style={{ marginTop: 'auto', marginBottom: 'auto', marginStart: 'auto', marginEnd: 'auto' }}
+          style={{
+            marginTop: 'auto',
+            marginBottom: 'auto',
+            marginStart: 'auto',
+            marginEnd: 'auto',
+          }}
         >
           <Text>a</Text>
         </RN.View>
@@ -734,7 +738,72 @@ const appLayout: ParityCase[] = [
   })),
 ];
 
+/** Hidden from screen readers: each platform's own props (react-native-web drops the native ones). */
+const HIDDEN =
+  RN.Platform.OS === 'web'
+    ? ({ 'aria-hidden': true } as const)
+    : ({
+        accessibilityElementsHidden: true,
+        importantForAccessibility: 'no-hide-descendants',
+      } as const);
+
+/** State, live regions and hiding, as an app writes them on React Native's views. */
+const accessibility: ParityCase[] = [
+  {
+    name: 'an accessibility state (selected, busy)',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).accessibilityState({ selected: true, busy: false })),
+    bloom: () => (
+      <RN.View accessibilityState={{ selected: true, busy: false }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a mixed checked state',
+    language: () => toElement(L.HStack(L.Text('a')).accessibilityState({ checked: 'mixed' })),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }} accessibilityState={{ checked: 'mixed' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a polite live region',
+    language: () => toElement(L.VStack(L.Text('a')).liveRegion('polite')),
+    bloom: () => (
+      <RN.View accessibilityLiveRegion="polite">
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'hidden from screen readers, with what is inside',
+    language: () => toElement(L.VStack(L.Text('a')).accessibilityHidden()),
+    bloom: () => (
+      <RN.View {...HIDDEN}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'read again (accessibilityHidden(false))',
+    language: () => toElement(L.VStack(L.Text('a')).accessibilityHidden(false)),
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View accessibilityElementsHidden={false} importantForAccessibility="auto">
+          <Text>a</Text>
+        </RN.View>
+      ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...accessibility,
   ...appLayout,
   ...roles,
   ...tailwind,

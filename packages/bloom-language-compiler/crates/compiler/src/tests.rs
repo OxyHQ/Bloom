@@ -3244,3 +3244,20 @@ fn the_layout_apps_write_is_checked() {
     let output = compiled("export const x = () => Text('a').font('12.4');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown font token '12.4' for .font()");
 }
+
+#[test]
+fn the_accessibility_modifiers_are_checked() {
+    let ok = compiled(
+        "export const x = (on: boolean) => VStack(Text('a').liveRegion('polite')).accessibilityState({ selected: on, checked: 'mixed', busy: false }).accessibilityHidden().accessibilityHidden(on);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack().accessibilityState({ pressed: true });\n");
+    assert_eq!(output.diagnostics[0].message, ".accessibilityState() has no 'pressed'");
+    let output = compiled("export const x = () => VStack().accessibilityState({ checked: 'partly' });\n");
+    assert_eq!(
+        output.diagnostics[0].message,
+        "Unknown accessibilityChecked token 'partly' for .accessibilityState()"
+    );
+    let output = compiled("export const x = () => VStack().liveRegion('loud');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown liveRegion token 'loud' for .liveRegion()");
+}
