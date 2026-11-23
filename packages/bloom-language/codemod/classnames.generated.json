@@ -2976,10 +2976,8 @@
   "rounded-[15px]": {
    "count": 8,
    "apps": 4,
-   "status": "token",
-   "scale": "corner",
-   "value": "15px",
-   "language": ".corner(…)"
+   "status": "mapped",
+   "language": ".corner('15')"
   },
   "row-start-1": {
    "count": 8,
@@ -11036,10 +11034,8 @@
   "rounded-[7px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "corner",
-   "value": "7px",
-   "language": ".corner(…)"
+   "status": "mapped",
+   "language": ".corner('7')"
   },
   "rounded-b-[28px]": {
    "count": 1,

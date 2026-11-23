@@ -268,7 +268,8 @@ function corner(name, side) {
   if (value === undefined) return deadKey(name, 'radius');
   const sideArg = side ? `, '${side}'` : '';
   if (value === Infinity) return mapped(`.corner('infinite'${sideArg})`);
-  if (value === 9999) return mapped(`.corner('full'${sideArg})`);
+  // 999 rounds every box under 1998pt to its full round, as 9999 does: it draws as `full`.
+  if (value === 9999 || value === 999) return mapped(`.corner('full'${sideArg})`);
   const name2 = rung(scales.corner, value);
   return name2
     ? mapped(`.corner('${name2}'${sideArg})`)

@@ -554,6 +554,17 @@ const named: ParityCase[] = [
     ),
   },
   {
+    // The 7pt and 15pt corners Mention writes (a count badge, a media card).
+    name: 'a 7pt corner',
+    language: () => toElement(L.VStack().corner('7')),
+    bloom: () => <RN.View style={{ borderRadius: 7 }} />,
+  },
+  {
+    name: 'a 15pt corner on the top',
+    language: () => toElement(L.VStack().corner('15', 'top')),
+    bloom: () => <RN.View style={{ borderTopStartRadius: 15, borderTopEndRadius: 15 }} />,
+  },
+  {
     // The half-point and point-and-a-half borders and the 85% fade Mention writes.
     name: 'a half-point border, 85% opaque',
     language: () => toElement(L.VStack().border('border', '0.5').opacity('85')),

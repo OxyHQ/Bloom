@@ -60,8 +60,10 @@ export const SPACE = {
 } as const;
 export const CORNER = {
   "6": 6,
+  "7": 7,
   "10": 10,
   "14": 14,
+  "15": 15,
   "18": 18,
   "22": 22,
   "none": 0,
