@@ -17,3 +17,6 @@ scripts/native-check/legacy/.gradle/
 scripts/native-check/legacy/build/
 scripts/native-check/app/build/
 scripts/native-check/.kotlin/
+
+# The language guides' examples, written by packages/bloom-language/scripts/check-doc-examples.mjs.
+packages/bloom-language/.doc-examples/

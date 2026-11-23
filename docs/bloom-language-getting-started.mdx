@@ -1,0 +1,217 @@
+---
+title: Bloom language, getting started
+description: Install the Bloom language, add its compiler to Metro, Jest and Vite, and write a first screen.
+---
+
+# Bloom language: getting started
+
+The Bloom language writes Bloom interfaces the way SwiftUI writes them: a view
+is a function, its look is a chain of modifiers applied in order, and every
+value is a Bloom token. It draws Bloom's own components, so a screen written in
+it looks like the same screen written in JSX.
+
+```tsx check
+import { Avatar, HStack, Spacer, Text, VStack, view } from '@oxy.so/bloom-language';
+
+export const PersonRow = view(function PersonRow({ name, role, avatar }: { name: string; role: string; avatar: string }) {
+  return HStack(
+    Avatar(avatar).size('lg'),
+    VStack(Text(name).font('body').weight('semibold'), Text(role).foreground('muted')).spacing('2xs'),
+    Spacer(),
+  )
+    .spacing('sm')
+    .padding('md');
+});
+```
+
+This page installs it, wires the compiler and writes a first screen. Then read
+[the tour](bloom-language-tour.mdx); the reference lists every
+[node](bloom-language-nodes.mdx), [modifier](bloom-language-modifiers.mdx) and
+[token](bloom-language-tokens.mdx). An agent writing language code starts with
+[the cheat sheet](bloom-language-for-agents.mdx). An app that already has JSX
+moves with [From JSX and NativeWind](bloom-language-from-jsx.mdx).
+
+The fastest start is a new app: `bun create oxy-app my-app --language`
+scaffolds an Expo app on the language with routes, a data-backed list, a form
+and glass chrome (create-oxy-app's language template).
+
+## Install
+
+| Package | What it is |
+| --- | --- |
+| `@oxy.so/bloom` | Bloom: the components, tokens and themes the language draws. No NativeWind. |
+| `@oxy.so/bloom-language` | The language: nodes, modifiers, `view()`, and the router (`@oxy.so/bloom-language/router`). |
+| `@oxy.so/bloom-language-compiler` | A build-time pre-pass (Rust, shipped prebuilt): checks every chain and hoists static ones. A dev dependency. |
+| `@oxy.so/bloom-data` | Optional: the data layer (records, lists, sources, optimistic actions). |
+
+```sh
+bun add @oxy.so/bloom @oxy.so/bloom-language @oxy.so/bloom-data
+bun add -d @oxy.so/bloom-language-compiler
+```
+
+Peers are Bloom's (React Native 0.81+, React 19, Reanimated 4.6+, Gesture
+Handler 3.3+, safe-area-context 5) and, optional, the platform components the
+language draws where they exist: `expo-router` (the router), `expo-glass-effect`
+and `@expo/ui` (Liquid Glass and SwiftUI controls on iOS), `expo-blur` (iOS
+before 26) and `@oxy.so/bloom-lens` (the glass on Android and OxyOS). Without
+one, the language draws Bloom's own component in its place.
+
+An app needs no NativeWind, Tailwind, react-native-css or `base.css` for Bloom
+or the language. `@oxy.so/app-preset` 6.9 leaves NativeWind out of Metro when
+the app does not list it.
+
+## The compiler
+
+The runtime interprets every chain by itself; the compiler is what makes a
+mistake a build error instead of a surprise, and what makes static chains
+free. It runs in front of the host's own transformer:
+
+- **checks** every chain against the spec: a modifier the node does not take,
+  a token outside its set, a wrong argument count, the
+  [Liquid Glass rules](bloom-language-tour.mdx#liquid-glass-rules). Each
+  message points at the source, says the fix and links its doc;
+- **hoists** a chain whose inputs are literals, imports and module constants
+  to module scope, so it is built once;
+- **adds `"use memo"`** to every `view()` body, so the React Compiler memoises it.
+
+Installing it needs no Rust: a prebuilt addon per platform comes as an optional
+dependency (Linux x64 and arm64, macOS x64 and arm64, Windows x64) and a WASI
+build covers the rest. When the addon fails to load the build stops with the
+reason; reinstalling with optional dependencies enabled fixes it.
+
+### Metro
+
+```js
+// metro.config.js
+const { createOxyMetroConfig } = require('@oxy.so/app-preset/metro');
+const { withBloomLanguage } = require('@oxy.so/bloom-language-compiler/metro');
+
+module.exports = withBloomLanguage(createOxyMetroConfig(__dirname));
+```
+
+`withBloomLanguage(config)` wraps whichever transformer the config already
+uses, and composes the source maps, so stack traces point at your source.
+Modules that never import `@oxy.so/bloom-language` are passed through.
+
+### Jest
+
+```js
+// jest.config.js
+const preset = require('jest-expo/jest-preset');
+
+module.exports = {
+  ...preset,
+  transform: {
+    ...preset.transform,
+    // The compiler in front of the preset's own Babel transform.
+    '\\.[jt]sx?$': [
+      require.resolve('@oxy.so/bloom-language-compiler/jest'),
+      { upstream: preset.transform['\\.[jt]sx?$'] },
+    ],
+  },
+};
+```
+
+`upstream` is the transformer the compiler hands the compiled module to
+(`babel-jest` by default) and its options. A test then fails on the same
+chain the build would.
+
+### Vite (web)
+
+There is no Vite plugin package; the compiler's `/compile` entry is the whole
+of one:
+
+```js
+// vite.config.mjs
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { compileModule } = require('@oxy.so/bloom-language-compiler/compile');
+
+const bloomLanguage = {
+  name: 'bloom-language',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!/\.[jt]sx?$/.test(id) || id.includes('/node_modules/')) return null;
+    const out = compileModule(code, id); // throws the rendered diagnostic on an error
+    return out && { code: out.code, map: out.map };
+  },
+};
+
+export default { plugins: [bloomLanguage /* , react(), … the Bloom Vite recipe */] };
+```
+
+The rest of the Vite host (react-native-web aliases, worklets) is Bloom's
+[Vite recipe](vite.mdx). The language needs no CSS build: its stylesheet is
+generated from the spec and adopted at run time.
+
+### TypeScript
+
+Nothing to configure: each node's type exposes only its own modifiers, and
+each modifier only its token set, so the editor completes `Button(…).size('`
+with `xs`, `sm`, `md`, `lg` and rejects `.padding(12)`.
+
+## The root
+
+Bloom's provider goes around the app once, as for JSX. With Expo Router the
+root layout stays JSX; every other route file is a language `layout()` or
+`screen()`:
+
+```tsx
+// app/_layout.tsx
+import { Slot } from 'expo-router';
+import { BloomProvider } from '@oxy.so/bloom/provider';
+
+export default function Root() {
+  return (
+    <BloomProvider mode="system" colorPreset="teal" locale="en">
+      <Slot />
+    </BloomProvider>
+  );
+}
+```
+
+```tsx check
+// app/(app)/_layout.tsx
+import { layout, Stack } from '@oxy.so/bloom-language/router';
+
+export default layout(() => Stack());
+```
+
+A server-rendered web app gets the language's stylesheet in its HTML from the
+outermost `layout()`; outside the router, put `LanguageStyles` once around the
+tree. Inside JSX, `toElement(node)` draws a language node.
+
+## A first screen
+
+```tsx check
+// app/(app)/index.tsx
+import { useState } from 'react';
+import { Button, Field, Text, TextField, Toggle, HStack, Spacer, VStack } from '@oxy.so/bloom-language';
+import { screen } from '@oxy.so/bloom-language/router';
+
+export default screen(function Welcome() {
+  const name = useState('');
+  const updates = useState(true);
+  const [saved, setSaved] = useState(false);
+  return VStack(
+    Text(saved ? `Welcome, ${name[0]}` : 'Tell us your name').font('title-2').weight('bold'),
+    Field('Name', TextField(name, 'Name').placeholder('Ada Lovelace')),
+    HStack(Text('Product updates'), Spacer(), Toggle(updates).label('Product updates')),
+    Button(Text('Continue')).style('solid').disabled(name[0].trim() === '').onPress(() => setSaved(true)),
+  )
+    .spacing('lg')
+    .padding('lg')
+    .title('Welcome');
+});
+```
+
+- `screen()` makes the route's component; its body may call hooks.
+- `useState` returns `[value, setValue]`, which is a binding: `TextField` and
+  `Toggle` read and write it.
+- `.title()` on the body's root is the screen's chrome, as SwiftUI's
+  `navigationTitle`.
+- Every value is a token: `'lg'` is Bloom's 16 pt space rung, `'title-2'` a
+  type-ramp step, `'muted'` a colour role. `.padding(16)` does not compile.
+
+Run it with `bunx expo start`. The next steps are the [tour](bloom-language-tour.mdx)
+and, when a screen needs a component, the [node reference](bloom-language-nodes.mdx).
