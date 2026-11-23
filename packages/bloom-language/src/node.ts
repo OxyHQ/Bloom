@@ -4,7 +4,6 @@ import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
   GestureResponderEvent,
-  Insets,
   LayoutChangeEvent,
   View,
 } from 'react-native';
@@ -2018,7 +2017,6 @@ export interface ActionOptions {
   readonly pop?: boolean;
   readonly rollCount?: boolean;
   readonly busy?: boolean;
-  readonly hitSlop?: Insets | number;
   readonly accessibilityActions?: readonly AccessibilityActionInfo[];
   readonly onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
 }

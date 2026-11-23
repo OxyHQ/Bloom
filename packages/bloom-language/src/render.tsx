@@ -2764,8 +2764,7 @@ function renderHost(
         popOnActivate: options.pop,
         rollCount: options.rollCount,
         busy: options.busy,
-        // `.hitSlop()` over the constructor's own option.
-        hitSlop: p.hitSlop ?? options.hitSlop,
+        hitSlop: p.hitSlop,
         accessibilityActions: options.accessibilityActions,
         onAccessibilityAction: options.onAccessibilityAction,
         testID: p.testID,
