@@ -856,6 +856,14 @@ export const A = () => (
 `);
     expect(flat(result.code)).toContain("LField('Date', LText('a')).grow()");
   });
+  it('writes a shorthand property’s hole beside its key', () => {
+    const [fixture] = run(`import { View } from 'react-native';
+export function A({ width, height }) {
+  return <View style={{ width, height }} />;
+}
+`).fixtures;
+    expect(fixture?.before).toBe('<View style={{ width: 37, height: 43 }} />');
+  });
   it('rounds a radius of half a square’s side as full', () => {
     const result = run(`import { View } from 'react-native';
 export function A({ size, w }) {

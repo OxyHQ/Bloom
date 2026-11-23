@@ -1126,6 +1126,14 @@ export function transformSource(source: string, options: TransformOptions): File
 
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
+  /** Each shorthand property's value (`{ width }`), which shares its key's place in the source. */
+  const shorthandValues = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitObjectProperty(path) {
+      if (path.node.shorthand) shorthandValues.add(path.node.value);
+      this.traverse(path);
+    },
+  });
   /** Points a style's chain draws without carrying them (a half-square radius's side): holes on the before side. */
   const heldPoints = new Set<AnyNode>();
 
@@ -4392,10 +4400,11 @@ export function transformSource(source: string, options: TransformOptions): File
     // The source of the region, each carried value replaced by its hole.
     let before = '';
     let at = node.start as number;
+    // A shorthand property's value is its key too (`{ width }`): the hole is written beside the key.
     const spans: { start: number; end: number; text: string }[] = carried.map((c) => ({
       start: c.node.start,
       end: c.node.end,
-      text: hole(c),
+      text: shorthandValues.has(c.node) ? `${c.node.name}: ${hole(c)}` : hole(c),
     }));
     if (removed) spans.push({ start: removed.start, end: removed.end, text: '' });
     for (const side of heldPoints)
