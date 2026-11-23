@@ -20,6 +20,7 @@ bun run storybook           # component playground on :6006
 - [`docs/agent-task-index.mdx`](docs/agent-task-index.mdx): task to guide routing. [`docs/ui-architecture.mdx`](docs/ui-architecture.mdx): read before UI, sizing, layout or consumer work.
 - [`docs/app-conventions.mdx`](docs/app-conventions.mdx): the Bloom-first rules every consuming app follows, plus the CSS-token and Expo Router contracts.
 - [`docs/verification.mdx`](docs/verification.mdx): Node/Jest, native-resolution and consumer-install hazards. `docs/audits/` is dated evidence, not a current contract.
+- The Bloom language (`packages/bloom-language`, `-compiler`, `-codemod`, `packages/bloom-data`): app code in it starts at [`docs/bloom-language-for-agents.mdx`](docs/bloom-language-for-agents.mdx); the reference (`docs/bloom-language-{nodes,modifiers,tokens}.mdx`) is generated from `packages/bloom-language/spec/language.json`, never edited by hand.
 - Entry points: `src/<family>/` (one folder per component family), `scripts/` (generators and verifiers), `package.json#exports`.
 
 ## Conventions

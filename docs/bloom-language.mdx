@@ -26,6 +26,13 @@ has a component of its own the language draws that one: SwiftUI and the system
 components on iOS, the lens on Android and OxyOS (see
 [Platform components](#platform-components)).
 
+This page is the design: how each part is drawn and why. To learn and use the
+language read the guides: [getting started](bloom-language-getting-started.mdx),
+[the tour](bloom-language-tour.mdx), [from JSX and NativeWind](bloom-language-from-jsx.mdx)
+and [the cheat sheet for agents](bloom-language-for-agents.mdx); the generated
+reference lists every [node](bloom-language-nodes.mdx),
+[modifier](bloom-language-modifiers.mdx) and [token](bloom-language-tokens.mdx).
+
 ## Syntax
 
 ```ts
@@ -141,7 +148,7 @@ A view sets values on everything inside it, as SwiftUI's environment does:
 set once on the container, read by every control within.
 
 ```ts
-Form(...).disabled(saving)                 // every control inside takes no input
+VStack(...).disabled(saving)               // every control inside takes no input
 Toolbar(...).controlSize('sm')             // every Button, FAB, field… that names no size
 HStack(a, b, c).buttonStyle('glass')       // every Button that names no style
 

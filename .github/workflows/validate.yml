@@ -189,6 +189,12 @@ jobs:
       # here, so a transform change that alters it fails the step below.
       - name: Codemod corpus is current
         run: cd packages/bloom-language-codemod && bun run corpus
+      # The language guides' `check` examples (getting started, the tour, from
+      # JSX, the agents' cheat sheet) through the compiler's addon built above and
+      # TypeScript, so a guide never teaches code that does not build. The
+      # generated reference's freshness is the language's own test above.
+      - name: Language guide examples compile
+        run: cd packages/bloom-language && bun run check:docs
       - name: Generated sources are committed
         run: |
           git diff --exit-code
