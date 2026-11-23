@@ -217,7 +217,7 @@ import {
   type Role,
   type TextStyleName,
 } from './tokens';
-import { deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
+import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { SafeAreaPadded } from './safe-area';
@@ -231,7 +231,6 @@ import {
   type Transform,
 } from '@oxy.so/bloom/motion';
 import {
-  AnimationContext,
   GestureMotionNode,
   MotionNode,
   PressMotionNode,
@@ -1054,7 +1053,7 @@ interface Context {
   inRow?: boolean;
   /** The `.animation()` in scope, from this view or above it, across `view()` bodies. */
   animation: AnimationScope | undefined;
-  /** The scope `AnimationContext` holds at this point of the React tree. */
+  /** The scope `EnvContext` carries at this point of the React tree (`Env.animation`). */
   scoped: AnimationScope | undefined;
 }
 
@@ -2973,17 +2972,15 @@ function drawPresentedDialog(
 
 /**
  * A `view()` node: its component with the props it was called with, under
- * an `EnvContext` provider only when the environment here differs from the
- * one already provided, and an `AnimationContext` one only when the
- * animation scope does.
+ * an `EnvContext` provider only when the environment here, or the animation
+ * scope, differs from the one already provided: the `.animation()` in scope
+ * reaches the body, as it reaches the nodes of this one.
  */
 function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
   const { component, props } = node.props as ViewNodeProps;
   let element: ReactElement = draw(component, props as Record<string, unknown>);
-  if (ctx.env !== ctx.provided) element = draw(EnvContext.Provider, { value: ctx.env }, element);
-  // The `.animation()` in scope reaches the body, as it reaches the nodes of this one.
-  if (ctx.animation !== ctx.scoped)
-    element = draw(AnimationContext.Provider, { value: ctx.animation }, element);
+  if (ctx.env !== ctx.provided || ctx.animation !== ctx.scoped)
+    element = draw(EnvContext.Provider, { value: carrying(ctx.env, ctx.animation) }, element);
   return key === undefined ? element : cloneElement(element, { key });
 }
 
@@ -3506,8 +3503,9 @@ export interface LanguageRootProps {
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
 export function LanguageRoot({ node, build }: LanguageRootProps): ReactNode {
+  // One context: the environment, with the animation scope it carries.
   const env = useContext(EnvContext);
-  const animation = useContext(AnimationContext);
+  const animation = env.animation;
   if (build !== undefined) adoptLanguageSheet();
   const tree = build === undefined ? node : build();
   return renderChild(tree ?? null, { env, provided: env, animation, scoped: animation }, undefined);

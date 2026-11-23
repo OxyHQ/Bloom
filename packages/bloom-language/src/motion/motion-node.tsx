@@ -1,5 +1,4 @@
 import {
-  createContext,
   createElement,
   Fragment,
   useContext,
@@ -60,14 +59,6 @@ export interface AnimationScope {
   readonly value: unknown;
   readonly gated: boolean;
 }
-
-/**
- * The `.animation()` in scope where a `view()` is placed: its body's nodes
- * play their changes with it, as the nodes of the body it is placed in do.
- * Provided only where the scope differs from the one already provided.
- */
-export const AnimationContext = createContext<AnimationScope | undefined>(undefined);
-AnimationContext.displayName = 'BloomAnimationScope';
 
 const scopes = new Map<string, AnimationScope>();
 

@@ -2,7 +2,6 @@ import { memo, useContext, type ComponentType, type ReactNode } from 'react';
 
 import { Node, type Child, type ComposedView } from './node';
 import { EnvContext } from './env';
-import { AnimationContext } from './motion/motion-node';
 import { renderBody } from './render';
 
 const NO_CHILDREN: readonly Child[] = [];
@@ -25,8 +24,9 @@ const NO_PROPS = Object.freeze({});
  * compares props (key by key, `Object.is` each), so it is ONE fiber, and the
  * body re-runs only when a prop changes. The theme is not an input: colours
  * are painted by the leaves that draw them, so a theme switch re-runs no
- * body. The environment (the text traits set above the view) arrives through
- * context, which changes only where an environment modifier changes it.
+ * body. The environment (the text traits set above the view, and the
+ * `.animation()` in scope) arrives through one context, which changes only
+ * where an environment modifier or a scope changes it.
  *
  * **React Compiler.** Expo runs the React Compiler in `infer` mode, which
  * finds components by JSX or hook calls; a body that returns chains has
@@ -41,7 +41,8 @@ export function view<P extends object = Record<string, never>>(
   // module scope, never inside a render.
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
-    return renderBody(body(props), useContext(EnvContext), useContext(AnimationContext));
+    const env = useContext(EnvContext);
+    return renderBody(body(props), env, env.animation);
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost) as unknown as ComponentType<object>;
