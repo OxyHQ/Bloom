@@ -11,8 +11,8 @@ export interface SurfaceProps extends Omit<ViewProps, 'style' | 'children'> {
   /** Native material sheen. Defaults to true. */
   sheen?: boolean;
   /**
-   * Web: how much the backdrop is frosted, a CSS blur in px (24 by default). A glass frosts less
-   * than the floating material (Liquid Glass's `regular` and `clear`). Native ignores it.
+   * Web: how much the backdrop is frosted, a CSS blur in px (24 by default). The language's regular
+   * and clear materials frost less than the floating material. Native ignores it.
    */
   frost?: number;
   /**

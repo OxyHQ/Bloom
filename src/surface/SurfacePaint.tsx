@@ -138,7 +138,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   const increasedContrast = useIncreasedContrast();
   // A platform's own material under a floating surface (`material`: OxyOS).
   const platformMaterial = usePlatformMaterial();
-  // Inside a lens base the engine draws the glass: its rim, light and shadow. The paint keeps its
+  // Inside a lens base the engine draws the material: its rim, light and shadow. The paint keeps its
   // fill and draws no edge of its own, or the two read as a second border at the top and bottom.
   const onLens = useInLensBase();
   const rim = rimProp && !onLens;
