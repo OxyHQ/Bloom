@@ -22,10 +22,11 @@ import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
 import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
 import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
 import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
-import { Button as BloomButton } from '@oxy.so/bloom/button';
+import { Button as BloomButton, FLOATING_CONTROL_SIZE } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
-import { Fab as BloomFab } from '@oxy.so/bloom/fab';
+import type { BloomSize } from '@oxy.so/bloom/appearance';
+import { Fab as BloomFab, FAB_SHAPES, fabCornerRadius, useFabDiameter } from '@oxy.so/bloom/fab';
 import { BlurIsland } from '@oxy.so/bloom/blur';
 import { useScreenVisible } from '@oxy.so/bloom/screen';
 import { Sticker } from '@oxy.so/bloom/sticker';
@@ -163,6 +164,7 @@ import {
   type AvatarSizeName,
   type ColorName,
   type ColorToken,
+  type FabShape,
   type IconSizeToken,
   type Role,
   type TextStyleName,
@@ -296,7 +298,13 @@ interface Plan {
   id: string | number | undefined;
   own: Map<Modifier['kind'], Modifier>;
   /** A Button or FAB on glass: the glass draws its fill, tinted `controlTint` when the glass has no tint. */
-  control: { tint: ColorName | undefined } | undefined;
+  control:
+    | {
+        tint: ColorName | undefined;
+        /** A FAB's silhouette and size rung: its glass takes the same corner. */
+        fab?: { shape: FabShape; size: BloomSize | undefined };
+      }
+    | undefined;
   /** Present when the node has a motion modifier: it is then drawn by `MotionNode`. */
   motion: MotionPlan | undefined;
 }
@@ -549,7 +557,14 @@ function plan(node: Node): Plan {
   if (result.own.has('hoverHighlight') && ownValue(result, 'hoverHighlight')?.value === undefined)
     result.hoverGroup = true;
   if ((node.kind === 'button' || node.kind === 'fab') && result.layers.some((l) => l.glass)) {
-    result.control = { tint: controlTint(node.kind, result) };
+    const shape = ownValue(result, 'shape')?.value as FabShape | undefined;
+    result.control = {
+      tint: controlTint(node.kind, result),
+      fab:
+        node.kind === 'fab' && shape !== undefined && shape !== 'circle'
+          ? { shape, size: ownValue(result, 'size')?.value as BloomSize | undefined }
+          : undefined,
+    };
   }
   if (moving) result.motion = motionPlan(node, result.layers);
   return result;
@@ -646,8 +661,7 @@ function controlTint(kind: 'button' | 'fab', p: Plan): ColorName | undefined {
   const appearance = (p.own.get('style') as { value?: string } | undefined)?.value ?? 'solid';
   if (appearance !== 'solid') return undefined;
   const tone = (p.own.get('tint') as { value?: string } | undefined)?.value;
-  const role =
-    TONE_ROLE[(tone ?? (kind === 'fab' ? 'action' : 'accent')) as keyof typeof TONE_ROLE];
+  const role = TONE_ROLE[(tone ?? 'accent') as keyof typeof TONE_ROLE];
   return role ?? undefined;
 }
 
@@ -1167,7 +1181,14 @@ function wrapLayer(
           },
         ]),
       );
-      const drawn = drawHost(PlatformGlass, paint ? painted(out, paint) : out, props, ...children);
+      const fab = p.control?.fab;
+      if (fab) Object.assign(props, { fabShape: fab.shape, fabSize: fab.size });
+      const drawn = drawHost(
+        fab ? fabShaped(PlatformGlass) : PlatformGlass,
+        paint ? painted(out, paint) : out,
+        props,
+        ...children,
+      );
       return behaviour && p.pressable
         ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, drawn)
         : drawn;
@@ -1206,7 +1227,14 @@ function wrapLayer(
           },
         ]),
     );
-    const surface = drawHost(Surface, paint ? painted(out, paint) : out, props, ...children);
+    const fab = p.control?.fab;
+    if (fab) Object.assign(props, { fabShape: fab.shape, fabSize: fab.size });
+    const surface = drawHost(
+      fab ? fabShaped(Surface) : Surface,
+      paint ? painted(out, paint) : out,
+      props,
+      ...children,
+    );
     return behaviour && p.pressable
       ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, surface)
       : surface;
@@ -1301,6 +1329,32 @@ function materialRadius(style: Resolved): { corner: StyleValue | undefined; reso
     );
   }
   return { corner, resolved };
+}
+
+const shapedHosts = new WeakMap<object, ComponentType<Record<string, unknown>>>();
+
+/**
+ * A glass host in a FAB's shape: the corner of its silhouette at the FAB's diameter, which only its
+ * place knows (the bar's height beside a bottom bar, else its size's), read where it is drawn. The
+ * lens takes the radius as its base's corner, so the press and a menu's morph follow it too.
+ */
+function fabShaped(host: object): ComponentType<Record<string, unknown>> {
+  let shaped = shapedHosts.get(host);
+  if (shaped === undefined) {
+    const Host = host as unknown as ComponentType<Record<string, unknown>>;
+    const curve = host === Surface ? 'cornerCurve' : undefined;
+    shaped = function FabShapedGlass({ fabShape, fabSize, ...props }: Record<string, unknown>) {
+      const shape = fabShape as FabShape;
+      const diameter = useFabDiameter(fabSize as BloomSize | undefined);
+      const corner = { radius: fabCornerRadius(shape, diameter) };
+      return createElement(
+        Host,
+        curve ? { ...props, ...corner, [curve]: FAB_SHAPES[shape].curve } : { ...props, ...corner },
+      );
+    };
+    shapedHosts.set(host, shaped);
+  }
+  return shaped;
 }
 
 const warned = new Set<string>();
@@ -1839,7 +1893,8 @@ function renderHost(
       Object.assign(props, {
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
-        size: ownValue(p, 'size')?.value,
+        // A button on glass is Bloom's one floating size (44), whatever its chain says.
+        size: p.control ? FLOATING_CONTROL_SIZE : ownValue(p, 'size')?.value,
         leadingIcon: inked ? undefined : icon,
         icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
         trailingIcon: trailing,
@@ -1907,6 +1962,7 @@ function renderHost(
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
         size: ownValue(p, 'size')?.value,
+        shape: ownValue(p, 'shape')?.value,
         icon,
         label,
         disabled: ownValue(p, 'disabled')?.value,

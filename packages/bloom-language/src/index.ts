@@ -69,6 +69,7 @@ export type {
   BorderEdge,
   BottomBarView,
   ButtonShape,
+  FabShape,
   ButtonGroupView,
   ShapeImageSource,
   ShapeView,

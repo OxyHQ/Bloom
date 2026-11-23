@@ -1,4 +1,4 @@
-/** One shared Surface paint per group, with actual Buttons sharing that material. */
+/** One shared Surface paint per `material="surface"` group (a group opts out of the lens), with actual Buttons sharing that material. */
 import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -24,7 +24,7 @@ const hairlineCount = (tree: unknown) =>
 describe('Button.Group, surface', () => {
   it('paints ONE material for the whole group and none on the items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <Button.Group accessibilityLabel="Actions" testID="group">
+      <Button.Group material="surface" accessibilityLabel="Actions" testID="group">
         <Button testID="a" iconOnly accessibilityLabel="Search" />
         <Button testID="b" iconOnly accessibilityLabel="Share" />
       </Button.Group>,
@@ -40,7 +40,7 @@ describe('Button.Group, surface', () => {
 
   it('keeps the group a named group, and draws a divider between items by default', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <Button.Group accessibilityLabel="Actions" testID="group">
+      <Button.Group material="surface" accessibilityLabel="Actions" testID="group">
         <Button testID="a" iconOnly accessibilityLabel="Search" />
         <Button testID="b" iconOnly accessibilityLabel="Share" />
       </Button.Group>,
@@ -61,7 +61,12 @@ describe('Button.Group, surface', () => {
     // sentence in a doc with nothing behind it.
     const group = (dividers: boolean) =>
       renderWithTheme(
-        <Button.Group dividers={dividers} testID="group" accessibilityLabel="Actions">
+        <Button.Group
+          material="surface"
+          dividers={dividers}
+          testID="group"
+          accessibilityLabel="Actions"
+        >
           <Button testID="a" iconOnly accessibilityLabel="Search" />
           <Button testID="b" iconOnly accessibilityLabel="Share" />
         </Button.Group>,
@@ -72,7 +77,7 @@ describe('Button.Group, surface', () => {
 
   it('does not clip — an island that clips loses its shadow on iOS', () => {
     const { getByTestId } = renderWithTheme(
-      <Button.Group accessibilityLabel="Actions" testID="group">
+      <Button.Group material="surface" accessibilityLabel="Actions" testID="group">
         <Button testID="a" iconOnly accessibilityLabel="Search" />
       </Button.Group>,
     );
@@ -81,7 +86,7 @@ describe('Button.Group, surface', () => {
 
   it('keeps joined geometry and clips only the inner row', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <Button.Group testID="group" accessibilityLabel="Align">
+      <Button.Group material="surface" testID="group" accessibilityLabel="Align">
         <Button testID="a">Left</Button>
         <Button testID="b">Right</Button>
       </Button.Group>,
@@ -99,10 +104,10 @@ describe('Button.Group, surface', () => {
 it('inherits compact density while explicit group and item sizes win', () => {
   const screen = renderWithTheme(
     <BloomScope size="sm">
-      <Button.Group accessibilityLabel="Inherited">
+      <Button.Group material="surface" accessibilityLabel="Inherited">
         <Button testID="inherited">A</Button>
       </Button.Group>
-      <Button.Group size="md" accessibilityLabel="Override">
+      <Button.Group material="surface" size="md" accessibilityLabel="Override">
         <Button testID="group-size">B</Button>
         <Button size="sm" testID="item-size">
           C
@@ -117,7 +122,7 @@ it('inherits compact density while explicit group and item sizes win', () => {
 
 it('adds an inset material only for checked items', () => {
   const { getByTestId, toJSON } = renderWithTheme(
-    <Button.Group testID="group">
+    <Button.Group material="surface" testID="group">
       <Button testID="selected" pressed>
         Day
       </Button>
@@ -141,7 +146,7 @@ it('adds an inset material only for checked items', () => {
 function selectionFixture(checked: readonly string[], removeFirst = false) {
   return (
     <BloomThemeProvider mode="light" colorPreset="teal">
-      <Button.Group testID="moving-group">
+      <Button.Group material="surface" testID="moving-group">
         {!removeFirst ? (
           <Button key="day" testID="day" pressed={checked.includes('day')}>
             Day

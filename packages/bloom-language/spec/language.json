@@ -362,6 +362,7 @@
     "borderEdge": ["all", "top", "bottom", "leading", "trailing"],
     "role": ["button", "link", "header", "image", "text", "none"],
     "buttonShape": ["circle", "pill", "fit"],
+    "fabShape": ["circle", "rounded", "squircle"],
     "linkTone": ["primary", "secondary", "text"],
     "density": ["default", "compact"],
     "appearance": ["solid", "subtle", "outline", "plain"],
@@ -992,10 +993,11 @@
     },
     "fab": {
       "constructors": ["FAB"],
-      "modifiers": ["style", "size", "tint", "disabled", "collapsed"],
+      "modifiers": ["style", "shape", "size", "tint", "disabled", "collapsed"],
       "size": "controlSize",
       "tint": "tone",
-      "style": "appearance"
+      "style": "appearance",
+      "shape": "fabShape"
     },
     "menu": {
       "constructors": ["Menu"],

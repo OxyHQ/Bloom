@@ -39,6 +39,7 @@ const meta: Meta<typeof Fab> = {
       control: 'select',
       options: ['xs', 'sm', 'md', 'lg'],
     },
+    shape: { control: 'select', options: ['circle', 'rounded', 'squircle'] },
     collapsed: { control: 'boolean' },
     disabled: { control: 'boolean' },
   },
@@ -59,6 +60,17 @@ export const Surface: Story = {
 /** Extended FAB: icon + label pill. */
 export const Extended: Story = {
   args: { label: 'Compose' },
+};
+
+/** The three silhouettes: a circle (the default), a rounded square and a squircle. */
+export const Shapes: Story = {
+  render: (args) => (
+    <View style={{ flexDirection: 'row', gap: 16, padding: 16 }}>
+      <Fab {...args} shape="circle" testID="fab-circle" />
+      <Fab {...args} shape="rounded" testID="fab-rounded" />
+      <Fab {...args} shape="squircle" testID="fab-squircle" />
+    </View>
+  ),
 };
 
 /** Compact 48-point action using the common size vocabulary. */

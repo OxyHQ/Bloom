@@ -44,6 +44,7 @@ import {
   type ZIndexName,
   type ButtonLinkTone,
   type ButtonShape,
+  type FabShape,
   type ControlDensity,
   type ContentFit,
   type DurationName,
@@ -98,6 +99,7 @@ export type {
   Justify,
   OverlayAlignment,
   ButtonShape,
+  FabShape,
   ContentFit,
   Edge,
   HeaderPresentation,
@@ -392,7 +394,11 @@ export type Modifier =
       readonly key: string;
       readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
     }
-  | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | ShapeName }
+  | {
+      readonly kind: 'shape';
+      readonly key: string;
+      readonly value: ButtonShape | FabShape | ShapeName;
+    }
   | {
       readonly kind: 'tint';
       readonly key: string;
@@ -838,7 +844,7 @@ export class Node {
   style(value: BloomAppearance | BadgeStyle | LoadingStyle): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
-  shape(value: ButtonShape | ShapeName): Node {
+  shape(value: ButtonShape | FabShape | ShapeName): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
   tint(value: EngagementTone | BloomTone | ColorName | AvatarColor): Node {
@@ -1571,6 +1577,11 @@ export interface ButtonGroupView extends ViewModifiers<ButtonGroupView> {
  */
 export interface FabView extends ViewModifiers<FabView> {
   style(value: BloomAppearance): FabView;
+  /**
+   * The silhouette: `circle` (the default), `rounded` (a rounded square) or `squircle` (a rounded square
+   * with Apple's continuous corner). Its glass, the press and a menu's morph take the same shape.
+   */
+  shape(value: FabShape): FabView;
   size(value: BloomSize): FabView;
   tint(value: BloomTone): FabView;
   disabled(value?: boolean): FabView;

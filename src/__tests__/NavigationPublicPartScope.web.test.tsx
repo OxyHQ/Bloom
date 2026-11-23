@@ -60,7 +60,7 @@ it('keeps fixed navigation geometry independent of the app control size scope', 
       header: getComputedStyle(element('header-bar')).minHeight,
       tabs: Array.from(element('tabs').querySelectorAll<HTMLElement>('*'))
         .map((node) => getComputedStyle(node).height)
-        .find((height) => height === '58px'),
+        .find((height) => height === '62px'),
       bottom: getComputedStyle(element('bottom')).height,
     });
     act(() => root.render(<Subject size="xs" />));
@@ -68,8 +68,8 @@ it('keeps fixed navigation geometry independent of the app control size scope', 
     act(() => root.render(<Subject size="lg" />));
     expect(measure()).toEqual(compact);
     expect(compact.header).toBe('44px');
-    expect(compact.tabs).toBe('58px');
-    expect(compact.bottom).toBe('74px');
+    expect(compact.tabs).toBe('62px');
+    expect(compact.bottom).toBe('78px');
   } finally {
     act(() => root.unmount());
     host.remove();
