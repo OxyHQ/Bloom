@@ -4831,6 +4831,7 @@
       "A Bloom icon's SF Symbol: what iOS's own components (the tab bar, the navigation bar's items, system menus) draw for it.",
       "scripts/generate.mjs checks that each icon is a Bloom icon and each symbol an SF Symbol. An icon with no symbol draws no glyph in a system component; a toolbar item whose glyph has none stays Bloom's own view."
     ],
+    "MenuIcon": "equal",
     "RiAddCircleLine": "plus.circle",
     "RiAddLine": "plus",
     "RiAlertLine": "exclamationmark.triangle",

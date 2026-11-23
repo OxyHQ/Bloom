@@ -21,7 +21,7 @@
  * same style; only the logical edges (`paddingStart`…) are written as CSS
  * logical properties, which react-native-web leaves to per-render localisation.
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -607,18 +607,22 @@ ${Object.entries(objects)
 
 // ── The SF Symbols table ─────────────────────────────────────────
 
-// Both sides of every entry are checked: the icon is one of Bloom's, and the
-// symbol is one SF Symbols names (sf-symbols-typescript, expo-router's own
+// Both sides of every entry are checked: the icon is one of Bloom's (a glyph
+// module in any of Bloom's icon folders: remix, simple-icons, social…), and
+// the symbol is one SF Symbols names (sf-symbols-typescript, expo-router's own
 // list of them).
-const iconsRoot = join(packageRoot, '../../src/icons/remix');
+const iconsRoot = join(packageRoot, '../../src/icons');
+const iconFolders = readdirSync(iconsRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && entry.name !== '__tests__')
+  .map((entry) => join(iconsRoot, entry.name));
+const isBloomIcon = (icon) => iconFolders.some((folder) => existsSync(join(folder, `${icon}.tsx`)));
 const symbolNames = new Set(
   readFileSync(require.resolve('sf-symbols-typescript/dist/index.d.ts'), 'utf8').match(
     /(?<=\| ')[^']+(?=')/g,
   ),
 );
 for (const [icon, symbol] of Object.entries(sfSymbols)) {
-  if (!existsSync(join(iconsRoot, `${icon}.tsx`)))
-    throw new Error(`sfSymbols: ${icon} is not a Bloom icon`);
+  if (!isBloomIcon(icon)) throw new Error(`sfSymbols: ${icon} is not a Bloom icon`);
   if (!symbolNames.has(symbol))
     throw new Error(`sfSymbols: ${icon} → ${symbol} is not an SF Symbol`);
 }
