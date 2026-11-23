@@ -20,11 +20,13 @@ import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 import { Button } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { RiHeart3Line } from '@oxy.so/bloom/icons';
+import { VirtualList } from '@oxy.so/bloom/list';
 import { PressableScale } from '@oxy.so/bloom/pressable-scale';
 import { Text } from '@oxy.so/bloom/typography';
 
 import type { Child } from '../src/node';
 import * as L from '../src/primitives';
+import { VirtualList as LVirtualList } from '../src/controls/list';
 import { LanguageRoot, toElement } from '../src/render';
 import { Themed } from './support/cases';
 
@@ -215,6 +217,11 @@ const CASES: Case[] = [
     jsx: <Text style={{ padding: 4 }}>a</Text>,
   },
   {
+    name: 'a root an Embed’s render function returns (Embed(() => toElement(chain))) and its JSX',
+    node: L.Embed(() => toElement(L.Text('a').padding('xs'))),
+    jsx: <Text style={{ padding: 4 }}>a</Text>,
+  },
+  {
     name: 'the root the compiler lowers toElement to, nested in a tree',
     node: L.Embed(createElement(LanguageRoot, { build: () => L.Text('a').padding('xs') })),
     jsx: <Text style={{ padding: 4 }}>a</Text>,
@@ -252,6 +259,22 @@ describe('a language node costs React no more than the JSX it stands for', () =>
   it('the boundary into the language: one context read, no hook, one fiber', () => {
     const root = less(measured(toElement(L.VStack())), measured(<RN.View />));
     expect(root).toEqual({ fibers: 1, hooks: 0, contexts: 1 });
+  });
+
+  it('a list’s row that returns a root (toElement) and a row of JSX, per row', () => {
+    const row = ({ item }: { item: string }) => toElement(L.Text(item).padding('xs'));
+    const jsxRow = ({ item }: { item: string }) => <Text style={{ padding: 4 }}>{item}</Text>;
+    const language = (items: string[]) =>
+      measured(toElement(LVirtualList(items, row).itemKey(String)));
+    const jsx = (items: string[]) =>
+      measured(<VirtualList data={items} keyExtractor={String} renderItem={jsxRow} />);
+    const perRow = {
+      language: less(language(['a', 'b']), language(['a'])),
+      jsx: less(jsx(['a', 'b']), jsx(['a'])),
+    };
+    // A list that drew no rows would cost nothing on both sides.
+    expect(perRow.jsx.fibers).toBeGreaterThan(0);
+    expect(perRow.language).toEqual(perRow.jsx);
   });
 
   it.each(CASES.map((c) => [c.name, c] as const))('%s', (_name, c) => {

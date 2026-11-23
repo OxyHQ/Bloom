@@ -105,7 +105,7 @@ the element JSX with the reason `Node:prop`.
 | `Tabs` with its `TabsTrigger`s | `Tabs([value, set], TabItem(value, label).count(n)…).style(variant)` |
 | `SegmentedControl` with its `SegmentedControlItem`s (each its `SegmentedControlItemText`) | `Segmented([value, set], Option(value, text)…)`, `type="tabs"` its `.tabs()` |
 | `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
-| `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().onEndReached(action, threshold).screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })` |
+| `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().onEndReached(action, threshold).stickyIndices().screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })` |
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
 | `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
 
@@ -256,7 +256,9 @@ or any other expression embedded as it is (`({ item }) => renderRow(item)` is
 `({ item }) => Embed(renderRow(item))`; a block body stays JSX), and a named
 function is the row itself (`renderItem={renderPost}` is
 `VirtualList(posts, renderPost)`): the language draws the element it returns as
-it is, and the list's `renderItem` keeps its identity while the function does,
+it is (a language root, `toElement(chain)`, as part of the list's tree, with
+no boundary per row; an arrow that returns one is that view:
+`({ item }) => toElement(Cell(item))` is `({ item }) => Cell(item)`), and the list's `renderItem` keeps its identity while the function does,
 so FlashList's memoised rows are not drawn again (a new arrow per render would
 redraw them); its parity draws a stand-in that reads the index. Bloom's `screen={{}}` is `.screen()`, its
 parity drawn in a `Screen` (an object with options stays JSX); `scrollbar`,

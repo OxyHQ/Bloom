@@ -76,6 +76,12 @@ export interface ControlDraw {
   readonly room?: InsetRoom;
   /** A language child, drawn where the control is. */
   render(child: Child): ReactNode;
+  /**
+   * A React element drawn where the control is: a language root
+   * (`toElement(chain)`) as part of this tree, with no boundary of its own;
+   * any other element as it is.
+   */
+  embed(content: ReactNode): ReactNode;
   /** Children, one slot each, as a stack draws them. */
   children(children: readonly Child[]): ReactNode[];
   /**

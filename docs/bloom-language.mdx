@@ -2693,7 +2693,12 @@ one; a `List`'s entries stay Bloom's data, each entry's star with it.
 virtualizer on the web. `row({ item, index })` returns the item's view, or the
 element FlashList's own `renderItem` returns: it is handed FlashList's argument
 as Bloom passes it, so an app's named `renderPost` is the row as it is
-(`VirtualList(posts, renderPost)`), its element drawn unchanged. Keep it stable
+(`VirtualList(posts, renderPost)`), its element drawn unchanged. A row that
+returns a language root (`toElement(chain)`) is drawn as part of the list's
+tree, so a row costs what its JSX does, with no boundary of its own. Write a
+list of language rows this way rather than as Bloom's JSX `VirtualList` whose
+`renderItem` returns `toElement(...)`: there each row is a boundary of its own
+(a component and a context read per row). Keep it stable
 (module scope, or a `useCallback`), and the list keeps its `renderItem`, so the
 engine re-renders a row only when its item changes, as with JSX; a new arrow per
 render would redraw every memoised row. It takes `.contentMargins(edge?, space)`, `.contentGrows(on?)` and
@@ -4658,6 +4663,9 @@ what goes into a node's arguments and options.
 **The language inside JSX.** `toElement(node)` returns a React element. A bare
 `view()` node mounts its component directly. Anything else mounts under one
 boundary component, which takes the environment provided where it is placed.
+A root placed back in a language tree has no boundary: `Embed(toElement(chain))`,
+an `Embed` render function or a `VirtualList` row that returns one, is drawn
+as part of that tree, in the environment provided there.
 
 ## ViewThatFits
 

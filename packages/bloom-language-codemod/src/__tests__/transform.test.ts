@@ -1214,6 +1214,22 @@ export const G = () => <VirtualList data={rows} renderItem={({ item }) => { retu
       'VirtualList:renderItem',
     ]);
   });
+  it('draws a row that returns a language root as that view (no boundary of its own), and its sticky rows', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+import { VStack, toElement } from '@oxy.so/bloom-language';
+export const A = () => (
+  <VirtualList
+    data={cells}
+    renderItem={({ item }) => toElement(VStack(Cell(item)).padding('xs'))}
+    stickyHeaderIndices={sticky ? [0] : undefined}
+  />
+);
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LVirtualList(cells, ({ item }) => VStack(Cell(item)).padding('xs')).stickyIndices(sticky ? [0] : undefined))",
+    );
+    expect(result.unconverted).toEqual([]);
+  });
   it('binds a virtual list to its screen and gathers the engine’s knobs into its tuning', () => {
     const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
 export const A = () => (
