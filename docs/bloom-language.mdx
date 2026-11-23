@@ -406,7 +406,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `glass(material?)` | `regular`, `clear`, `.tint(role, 'subtle' \| 'medium' \| 'strong'?)` |
 | `blur()` | Bloom's floating island (`BlurIsland`) |
 | `onPress`, `onLongPress`, `onHover`, `hoverGroup` | handlers. `onPress(undefined)` keeps the pressable host, out of the focus order. |
-| `accessibilityState(s)`, `liveRegion(r)`, `accessibilityHidden(on?)` | what assistive technology reads: a state (`selected`, `checked` or `'mixed'`, `busy`, `expanded`, `disabled`: React Native's `accessibilityState`); a region whose changes are announced (`polite`, `assertive`, `none`: `accessibilityLiveRegion`); hidden from screen readers with what is inside (see [Layout](#layout)) |
+| `accessibilityState(s)`, `accessibilityValue(v)`, `liveRegion(r)`, `accessibilityHidden(on?)` | what assistive technology reads: a state (`selected`, `checked` or `'mixed'`, `busy`, `expanded`, `disabled`: React Native's `accessibilityState`); a value, a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`; numbers and a text, no tokens); a region whose changes are announced (`polite`, `assertive`, `none`: `accessibilityLiveRegion`); hidden from screen readers with what is inside (see [Layout](#layout)) |
 | `hitSlop(edge?, s)` | how far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`, or an exact slop (`'4'` `'5'`); with a side first (`top` `bottom` `horizontal` `vertical` `left` `right`, physical as React Native's insets are) only that side, a later one of a side over the earlier. Every side alike is one number (`hitSlop={8}`), sides of their own React Native's insets with the sides named. An `Action`'s is its `EngagementAction`'s, over its constructor's `hitSlop` option |
 | `label`, `hint`, `role`, `testID`, `id` | accessibility and identity. `role` is React Native's `accessibilityRole` of the same name: `button` `link` `header` `image` `text` `none` `checkbox` `radio` `tab` `radiogroup` `tablist` `list` `alert` `progressbar` `imagebutton` `summary` |
 | `lines(n)`, `noWrap()`, `truncation`, `selectable`, `textStyle`, `link`, `textAlign`, `italic`, `underline`, `strikethrough`, `textCase`, `monospacedDigit`, `wordBreak` | text only (see [Text](#text)) |
@@ -573,6 +573,9 @@ VStack(...).background('surface').corner('xl').shadow('m')
   React Native's `accessibilityState` and `accessibilityLiveRegion` as an app
   writes them, on every platform: react-native-web reads the live region
   (`aria-live`) and, as for the JSX they replace, no state.
+  `.accessibilityValue({ min, max, now })` or `({ text })` is React Native's
+  `accessibilityValue`, on the same box: a progress or a slider's place in its
+  range, or a value in words.
 - **Read, not drawn.** `.accessibilityOnly()` is Tailwind's `sr-only`: a
   1pt clipped box out of the layout that a screen reader still announces.
   Native has no clip path or white-space, so it is the box alone, as

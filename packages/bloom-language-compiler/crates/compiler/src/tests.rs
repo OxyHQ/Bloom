@@ -3332,7 +3332,8 @@ fn a_submenu_sizes_and_inks_its_own_glyph() {
 
 #[test]
 fn a_search_takes_a_most_characters() {
-    let ok = compiled_with("Search", "export const x = (t) => Search(t).placeholder('Find').maxLength(50);\n");
+    let ok =
+        compiled_with("Search", "export const x = (t) => Search(t).placeholder('Find').maxLength(50);\n");
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
     let output = compiled_with("Search", "export const x = (t) => Search(t).maxLength(50, 2);\n");
     assert_eq!(output.diagnostics[0].message, ".maxLength() takes 1 argument(s), not 2");
@@ -3377,4 +3378,14 @@ fn a_hit_slop_reaches_each_side_its_own_way() {
     assert_eq!(output.diagnostics[0].message, "Unknown physicalEdge token 'leading' for .hitSlop()");
     let output = compiled("export const x = (f) => VStack(Text('a')).onPress(f).hitSlop('10');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown hitSlop token '10' for .hitSlop()");
+}
+
+#[test]
+fn an_accessibility_value_is_checked() {
+    let ok = compiled(
+        "export const x = (p) => [Text('a').role('progressbar').accessibilityValue({ min: 0, max: 100, now: p }), VStack(Text('b')).accessibilityValue({ text: 'Verifying' })];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => Text('a').accessibilityValue({ current: 4 });\n");
+    assert_eq!(output.diagnostics[0].message, ".accessibilityValue() has no 'current'");
 }

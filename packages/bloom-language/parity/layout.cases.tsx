@@ -761,6 +761,29 @@ const HIDDEN =
 /** State, live regions and hiding, as an app writes them on React Native's views. */
 const accessibility: ParityCase[] = [
   {
+    name: 'an accessibility value as a range',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .role('progressbar')
+          .accessibilityValue({ min: 0, max: 100, now: 40 }),
+      ),
+    bloom: () => (
+      <RN.View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: 40 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'an accessibility value as a text',
+    language: () => toElement(L.VStack(L.Text('a')).accessibilityValue({ text: 'Verifying' })),
+    bloom: () => (
+      <RN.View accessibilityValue={{ text: 'Verifying' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'an accessibility state (selected, busy)',
     language: () =>
       toElement(L.VStack(L.Text('a')).accessibilityState({ selected: true, busy: false })),

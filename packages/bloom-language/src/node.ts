@@ -510,6 +510,16 @@ export interface AccessibilityState {
   readonly expanded?: boolean;
   readonly disabled?: boolean;
 }
+/**
+ * `.accessibilityValue()`: what assistive technology reads of a view's value:
+ * a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`).
+ */
+export interface AccessibilityValue {
+  readonly min?: number;
+  readonly max?: number;
+  readonly now?: number;
+  readonly text?: string;
+}
 /** `.childSpacing()`: the margin after each child but the last, along an axis (Tailwind's `space-x`/`space-y`). */
 export interface ChildSpacing {
   readonly axis: Axis;
@@ -1572,6 +1582,11 @@ export type Modifier =
   | { readonly kind: 'hint'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'role'; readonly key: string; readonly value: Role }
   | {
+      readonly kind: 'accessibilityValue';
+      readonly key: string;
+      readonly value: AccessibilityValue;
+    }
+  | {
       readonly kind: 'accessibilityState';
       readonly key: string;
       readonly value: AccessibilityState;
@@ -2423,6 +2438,9 @@ export class Node {
   }
   accessibilityState(value: AccessibilityState): Node {
     return this.with({ kind: 'accessibilityState', key: 'a11yState', value });
+  }
+  accessibilityValue(value: AccessibilityValue): Node {
+    return this.with({ kind: 'accessibilityValue', key: 'a11yValue', value });
   }
   liveRegion(value: LiveRegion): Node {
     return this.with({ kind: 'liveRegion', key: `live:${value}`, value });
@@ -4598,6 +4616,12 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `accessibilityState`, as an app writes it).
    */
   accessibilityState(value: AccessibilityState): Self;
+  /**
+   * What assistive technology reads of the view's value: a range (`min`,
+   * `max`, `now`: a progress, a slider) or a text (`'Verifying'`), React
+   * Native's `accessibilityValue` as an app writes it.
+   */
+  accessibilityValue(value: AccessibilityValue): Self;
   /** A change inside the view is announced: `polite`, `assertive` or `none` (`accessibilityLiveRegion`). */
   liveRegion(value: LiveRegion): Self;
   /**

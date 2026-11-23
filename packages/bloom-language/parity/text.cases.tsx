@@ -549,6 +549,24 @@ const tracked: ParityCase[] = [
 /** React Native's own Text, as an app draws it (`support/base-font`): its base face, then only what the chain names. */
 const raw: ParityCase[] = [
   {
+    // Mention's upload progress: a text read as a progress bar's value.
+    name: 'RawText, a progress value',
+    language: () =>
+      toElement(
+        L.RawText('40%')
+          .role('progressbar')
+          .accessibilityValue({ min: 0, max: 100, now: 40 }),
+      ),
+    bloom: () => (
+      <BaseFontText
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: 100, now: 40 }}
+      >
+        40%
+      </BaseFontText>
+    ),
+  },
+  {
     // Mention's attachment cards announce their status as a polite live region.
     name: 'RawText, a polite live region',
     language: () => toElement(L.RawText('Raw').liveRegion('polite')),

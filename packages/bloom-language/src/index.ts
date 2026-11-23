@@ -105,6 +105,7 @@ export type {
   ActionOptions,
   ActionView,
   AccessibilityState,
+  AccessibilityValue,
   Alignment,
   AspectRatioView,
   AvatarGroupView,

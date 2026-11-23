@@ -1143,7 +1143,11 @@
     ["shadow"]
   ],
   "objects": {
-    "$comment": "The object parameters: the keys each takes, and the token set of every value.",
+    "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it).",
+    "accessibilityValue": {
+      "keys": ["min", "max", "now", "text"],
+      "tokens": "value"
+    },
     "accessibilityState": {
       "keys": ["selected", "checked", "busy", "expanded", "disabled"],
       "tokens": "accessibilityChecked"
@@ -1371,6 +1375,7 @@
     "label": ["value"],
     "hint": ["value"],
     "accessibilityState": ["accessibilityState"],
+    "accessibilityValue": ["accessibilityValue"],
     "liveRegion": ["liveRegion"],
     "accessibilityHidden": ["value?"],
     "role": ["role"],
@@ -1998,6 +2003,7 @@
     "hint",
     "role",
     "accessibilityState",
+    "accessibilityValue",
     "liveRegion",
     "accessibilityHidden",
     "hitSlop",

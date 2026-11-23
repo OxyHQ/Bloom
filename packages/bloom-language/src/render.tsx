@@ -991,6 +991,8 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   else if (p.pressable && p.motion?.pressScale) props.accessibilityRole = 'button';
   const state = ownValue(p, 'accessibilityState')?.value;
   if (state !== undefined) props.accessibilityState = state;
+  const value = ownValue(p, 'accessibilityValue')?.value;
+  if (value !== undefined) props.accessibilityValue = value;
   const live = ownValue(p, 'liveRegion')?.value;
   if (live !== undefined) props.accessibilityLiveRegion = live;
   const hidden = ownValue(p, 'accessibilityHidden')?.value;

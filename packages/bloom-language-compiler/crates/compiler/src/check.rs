@@ -767,8 +767,10 @@ fn check_value(
                         )),
                     });
                 }
-                // An offset's axis may follow a `MotionValue` in place of its token.
-                if !(param == "offset" && module.is_motion_value_ref(&property.value, scoping)) {
+                // An offset's axis may follow a `MotionValue` in place of its token; a `value` is no token.
+                if set != "value"
+                    && !(param == "offset" && module.is_motion_value_ref(&property.value, scoping))
+                {
                     check_token(modifier, set, &property.value)?;
                 }
             }
