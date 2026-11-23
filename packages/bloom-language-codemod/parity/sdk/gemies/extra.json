@@ -1,0 +1,212 @@
+[
+  {
+    "file": "src/components/accounts/GemieConnectedAccounts.tsx#first",
+    "line": 41,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "gap-3 py-2.5 pe-2.5 ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ gap: 12, paddingVertical: 10, paddingInlineEnd: 10 }, false]"
+  },
+  {
+    "file": "src/components/accounts/GemieConnectedAccounts.tsx#next",
+    "line": 41,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "gap-3 py-2.5 pe-2.5 border-t border-border",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ gap: 12, paddingVertical: 10, paddingInlineEnd: 10 }, { borderTopWidth: 1, borderColor: t.border }]"
+  },
+  {
+    "file": "src/components/connectors/GemieConnectedConnectors.tsx#first",
+    "line": 134,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "gap-2 py-3 ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ gap: 8, paddingVertical: 12 }, false]"
+  },
+  {
+    "file": "src/components/connectors/GemieConnectedConnectors.tsx#next",
+    "line": 134,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "gap-2 py-3 border-t border-border",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ gap: 8, paddingVertical: 12 }, { borderTopWidth: 1, borderColor: t.border }]"
+  },
+  {
+    "file": "src/components/connectors/GrantSwitchRow.tsx#first",
+    "line": 36,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center gap-2.5 py-2.5 pe-2.5 ",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingInlineEnd: 10 }, false]"
+  },
+  {
+    "file": "src/components/connectors/GrantSwitchRow.tsx#next",
+    "line": 36,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center gap-2.5 py-2.5 pe-2.5 border-t border-border",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingInlineEnd: 10 }, { borderTopWidth: 1, borderColor: t.border }]"
+  },
+  {
+    "file": "src/components/thread/ChatBubble.tsx#row-mine",
+    "line": 96,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full flex-row items-center gap-2 justify-end",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }, { justifyContent: 'flex-end' }]"
+  },
+  {
+    "file": "src/components/thread/ChatBubble.tsx#row-theirs",
+    "line": 96,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "w-full flex-row items-center gap-2 justify-start",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }, false]"
+  },
+  {
+    "file": "src/components/thread/ChatBubble.tsx#mine",
+    "line": 100,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "min-w-0 max-w-[80%] rounded-3xl px-4 py-3",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ minWidth: 0, maxWidth: '80%', borderRadius: 24, paddingHorizontal: 16 }, { paddingVertical: 12 }]"
+  },
+  {
+    "file": "src/components/thread/ChatBubble.tsx#theirs",
+    "line": 100,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "min-w-0 max-w-[80%] rounded-3xl px-4 bg-background-tertiary-default py-2",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ minWidth: 0, maxWidth: '80%', borderRadius: 24, paddingHorizontal: 16 }, { backgroundColor: t.popover, paddingVertical: 8 }]"
+  },
+  {
+    "file": "src/components/thread/ChatBubble.tsx#reactions-mine",
+    "line": 112,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "-mt-2.5 flex-row flex-wrap items-center gap-1 justify-end me-2.5",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ marginTop: -10, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4 }, { justifyContent: 'flex-end', marginInlineEnd: 10 }]"
+  },
+  {
+    "file": "src/components/thread/ChatBubble.tsx#reactions-theirs",
+    "line": 112,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "-mt-2.5 flex-row flex-wrap items-center gap-1 justify-start ms-2.5",
+    "props": {},
+    "style": {},
+    "styleExpr": "[{ marginTop: -10, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4 }, { justifyContent: 'flex-start', marginInlineStart: 10 }]"
+  },
+  {
+    "file": "src/components/thread/ThreadRow.tsx#bubbled",
+    "line": 429,
+    "attr": "className",
+    "element": "Text",
+    "source": "@oxy.so/bloom/typography",
+    "imported": "Text",
+    "className": "text-sm leading-5 text-foreground",
+    "props": {},
+    "style": {},
+    "styleExpr": "{ fontSize: 14, lineHeight: 20, color: t.foreground }"
+  },
+  {
+    "file": "src/components/thread/ThreadRow.tsx#plain",
+    "line": 429,
+    "attr": "className",
+    "element": "Text",
+    "source": "@oxy.so/bloom/typography",
+    "imported": "Text",
+    "className": "text-base leading-7 text-foreground",
+    "props": {},
+    "style": {},
+    "styleExpr": "{ fontSize: 16, lineHeight: 28, color: t.foreground }"
+  },
+  {
+    "file": "src/components/GemieWelcomeMessage.tsx",
+    "line": 49,
+    "attr": "className",
+    "element": "Text",
+    "source": "@oxy.so/bloom/typography",
+    "imported": "Text",
+    "className": "max-w-md shrink text-center text-4xl text-text-primary",
+    "props": {
+      "selectable": false
+    },
+    "style": {},
+    "styleExpr": "{ ...fontFamilyStyle('display'), maxWidth: 448, flexShrink: 1, textAlign: 'center', fontSize: 36, lineHeight: 40, color: t.foreground }"
+  },
+  {
+    "file": "src/components/GemieActivityLine.tsx",
+    "line": 24,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-xs text-primary",
+    "props": {
+      "numberOfLines": 1
+    },
+    "style": {},
+    "styleExpr": "[{ fontSize: 12, lineHeight: 16, color: t.primary }, undefined]"
+  },
+  {
+    "file": "src/components/accounts/GemieConnectedAccounts.tsx (error)",
+    "line": 591,
+    "attr": "className",
+    "element": "Text",
+    "source": "@oxy.so/bloom/typography",
+    "imported": "Text",
+    "className": "text-error-primary",
+    "props": {
+      "variant": "body-2-regular"
+    },
+    "style": {},
+    "styleExpr": "undefined"
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "expression": null,
+    "props": {},
+    "selfClosing": false,
+    "line": 392,
+    "index": 27,
+    "className": "-ml-3",
+    "style": {
+      "marginLeft": -12
+    },
+    "entry": "speakerOverlap (index > 0)"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx (first speaker)",
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "expression": null,
+    "props": {},
+    "selfClosing": false,
+    "line": 392,
+    "index": 27,
+    "className": "",
+    "style": {},
+    "styleExpr": "undefined",
+    "entry": "speakerOverlap (index 0)"
+  },
+  {
+    "file": "src/live/context/LiveRoomContext.tsx",
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "expression": null,
+    "props": {},
+    "selfClosing": false,
+    "line": 155,
+    "index": 0,
+    "className": "web:fixed",
+    "style": {},
+    "styleExpr": "RN.Platform.OS === \"web\" ? { position: \"fixed\" } : {}",
+    "entry": "dock documentScroll (web:fixed)"
+  }
+]

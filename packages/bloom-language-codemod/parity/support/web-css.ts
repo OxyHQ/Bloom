@@ -311,8 +311,21 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
   return { ...node, css, children: node.children.map((child) => fold(child, next)) };
 }
 
+/** Keys in order: the suites assert with toEqual (order does not count) and record JSON strings (it does). */
+function sorted(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sorted);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.keys(value as object)
+      .sort()
+      .map((key) => [key, sorted((value as Record<string, unknown>)[key])]),
+  );
+}
+
 export function normalizeWeb(tree: unknown): unknown {
-  return (tree as (Dom | string)[]).map((node) =>
-    fold(node, { letterSpacing: false, fontWeight: false, values: {} }),
+  return sorted(
+    (tree as (Dom | string)[]).map((node) =>
+      fold(node, { letterSpacing: false, fontWeight: false, values: {} }),
+    ),
   );
 }

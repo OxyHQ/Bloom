@@ -1,0 +1,647 @@
+[
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 187,
+    "index": 0,
+    "attr": "className",
+    "element": "TouchableOpacity",
+    "source": "react-native",
+    "imported": "TouchableOpacity",
+    "className": "w-[200px] max-w-full min-h-[140px] justify-between rounded-2xl border border-border bg-surface p-3",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className", "style", "onPress", "activeOpacity", "disabled"],
+    "style": {
+      "minHeight": 140,
+      "width": 200,
+      "maxWidth": "100%",
+      "justifyContent": "space-between",
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "borderColor": "$border",
+      "backgroundColor": "$surface",
+      "padding": 12
+    },
+    "selfClosing": false,
+    "entry": "surface"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 193,
+    "index": 1,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexGrow": 1,
+      "flexShrink": 1,
+      "flexBasis": "0%"
+    },
+    "selfClosing": false,
+    "entry": "fill"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 195,
+    "index": 2,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "mb-1.5 flex-row",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "marginBottom": 6,
+      "flexDirection": "row"
+    },
+    "selfClosing": false,
+    "entry": "row"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 199,
+    "index": 3,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-sm font-semibold leading-[18px] text-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 2
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "fontSize": 14,
+      "lineHeight": 18,
+      "fontWeight": 600,
+      "color": "$foreground"
+    },
+    "selfClosing": false,
+    "entry": "title"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 203,
+    "index": 4,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "mt-2 gap-1",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "marginTop": 8,
+      "gap": 4
+    },
+    "selfClosing": false,
+    "entry": "stack"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 204,
+    "index": 5,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center gap-1",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexDirection": "row",
+      "alignItems": "center",
+      "gap": 4
+    },
+    "selfClosing": false,
+    "entry": "row2"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 206,
+    "index": 6,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "flex-1 text-[11px] text-muted-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "flexGrow": 1,
+      "flexShrink": 1,
+      "flexBasis": "0%",
+      "fontSize": 11,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 210,
+    "index": 7,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[11px] text-muted-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "fontSize": 11,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText2"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 222,
+    "index": 8,
+    "attr": "className",
+    "element": "TouchableOpacity",
+    "source": "react-native",
+    "imported": "TouchableOpacity",
+    "className": "mb-3 w-full gap-2.5 rounded-2xl border border-border bg-surface p-3",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className", "style", "onPress", "activeOpacity", "disabled"],
+    "style": {
+      "marginBottom": 12,
+      "width": "100%",
+      "gap": 10,
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "borderColor": "$border",
+      "backgroundColor": "$surface",
+      "padding": 12
+    },
+    "selfClosing": false,
+    "entry": "surface2"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 229,
+    "index": 9,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center gap-1.5",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexDirection": "row",
+      "alignItems": "center",
+      "gap": 6
+    },
+    "selfClosing": false,
+    "entry": "row3"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 233,
+    "index": 10,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[13px] text-muted-foreground",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "fontSize": 13,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText3"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 234,
+    "index": 11,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[13px] font-semibold text-muted-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "fontSize": 13,
+      "fontWeight": 600,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText4"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 239,
+    "index": 12,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexGrow": 1,
+      "flexShrink": 1,
+      "flexBasis": "0%"
+    },
+    "selfClosing": true,
+    "entry": "fill"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 246,
+    "index": 13,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[17px] font-bold leading-[22px] text-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 2
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "fontSize": 17,
+      "lineHeight": 22,
+      "fontWeight": 700,
+      "color": "$foreground"
+    },
+    "selfClosing": false,
+    "entry": "title2"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 253,
+    "index": 14,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center gap-2",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexDirection": "row",
+      "alignItems": "center",
+      "gap": 8
+    },
+    "selfClosing": false,
+    "entry": "row4"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 255,
+    "index": 15,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "flex-1 text-[13px] text-muted-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "flexGrow": 1,
+      "flexShrink": 1,
+      "flexBasis": "0%",
+      "fontSize": 13,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText5"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 260,
+    "index": 16,
+    "attr": "className",
+    "element": "TouchableOpacity",
+    "source": "react-native",
+    "imported": "TouchableOpacity",
+    "className": "rounded-full px-4 py-1.5",
+    "expression": null,
+    "props": {
+      "accessibilityRole": "button",
+      "accessibilityLabel": "Join room"
+    },
+    "attrNames": ["className", "style", "onPress", "accessibilityRole", "accessibilityLabel"],
+    "style": {
+      "borderRadius": 9999,
+      "paddingHorizontal": 16,
+      "paddingVertical": 6
+    },
+    "selfClosing": false,
+    "entry": "container"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 266,
+    "index": 17,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[13px] font-bold",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className", "style"],
+    "style": {
+      "fontSize": 13,
+      "fontWeight": 700
+    },
+    "selfClosing": false,
+    "entry": "title3"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 279,
+    "index": 18,
+    "attr": "className",
+    "element": "TouchableOpacity",
+    "source": "react-native",
+    "imported": "TouchableOpacity",
+    "className": "w-full flex-row items-center gap-3 border-b border-border px-3 py-3",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className", "style", "onPress", "activeOpacity", "disabled"],
+    "style": {
+      "width": "100%",
+      "flexDirection": "row",
+      "alignItems": "center",
+      "gap": 12,
+      "borderBottomWidth": 1,
+      "borderColor": "$border",
+      "paddingHorizontal": 12,
+      "paddingVertical": 12
+    },
+    "selfClosing": false,
+    "entry": "row5"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 287,
+    "index": 19,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-1 gap-0.5",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexGrow": 1,
+      "flexShrink": 1,
+      "flexBasis": "0%",
+      "gap": 2
+    },
+    "selfClosing": false,
+    "entry": "container2"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 288,
+    "index": 20,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-baseline gap-1.5",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexDirection": "row",
+      "alignItems": "baseline",
+      "gap": 6
+    },
+    "selfClosing": false,
+    "entry": "row6"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 289,
+    "index": 21,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "shrink text-[15px] font-semibold text-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "flexShrink": 1,
+      "fontSize": 15,
+      "fontWeight": 600,
+      "color": "$foreground"
+    },
+    "selfClosing": false,
+    "entry": "title4"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 293,
+    "index": 22,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "shrink-0 text-[13px] text-muted-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "flexShrink": 0,
+      "fontSize": 13,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText6"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 298,
+    "index": 23,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[13px] text-muted-foreground",
+    "expression": null,
+    "props": {
+      "numberOfLines": 1
+    },
+    "attrNames": ["className", "numberOfLines"],
+    "style": {
+      "fontSize": 13,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText3"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 319,
+    "index": 24,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center gap-1 rounded-[4px] px-2 py-1",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className", "style"],
+    "style": {
+      "flexDirection": "row",
+      "alignItems": "center",
+      "gap": 4,
+      "borderRadius": 4,
+      "paddingHorizontal": 8,
+      "paddingVertical": 4
+    },
+    "selfClosing": false,
+    "entry": "row7"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 323,
+    "index": 25,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[10px] font-bold text-white",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "fontSize": 10,
+      "fontWeight": 700,
+      "color": "#FFFFFF"
+    },
+    "selfClosing": false,
+    "entry": "title5"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 390,
+    "index": 26,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "flex-row items-center",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "flexDirection": "row",
+      "alignItems": "center"
+    },
+    "selfClosing": false,
+    "entry": "row8"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 398,
+    "index": 28,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "-ml-3 items-center justify-center rounded-full border-2 border-surface bg-muted",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className", "style"],
+    "style": {
+      "marginLeft": -12,
+      "alignItems": "center",
+      "justifyContent": "center",
+      "borderRadius": 9999,
+      "borderWidth": 2,
+      "borderColor": "$surface",
+      "backgroundColor": "$muted"
+    },
+    "selfClosing": false,
+    "entry": "centered"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 401,
+    "index": 29,
+    "attr": "className",
+    "element": "Text",
+    "source": "react-native",
+    "imported": "Text",
+    "className": "text-[13px] font-bold text-muted-foreground",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "fontSize": 13,
+      "fontWeight": 700,
+      "color": "$mutedForeground"
+    },
+    "selfClosing": false,
+    "entry": "mutedText7"
+  },
+  {
+    "file": "src/live/components/RoomCard.tsx",
+    "line": 418,
+    "index": 30,
+    "attr": "className",
+    "element": "View",
+    "source": "react-native",
+    "imported": "View",
+    "className": "rounded-full border-2 border-surface",
+    "expression": null,
+    "props": {},
+    "attrNames": ["className"],
+    "style": {
+      "borderRadius": 9999,
+      "borderWidth": 2,
+      "borderColor": "$surface"
+    },
+    "selfClosing": false,
+    "entry": "container3"
+  }
+]

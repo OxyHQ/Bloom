@@ -1,0 +1,15 @@
+{
+  "src/components/RichBlocks.tsx:49": { "style": { "height": 40, "width": 40, "borderRadius": 4 } },
+  "src/components/RichBlocks.tsx:180": {
+    "style": { "aspectRatio": "16/9", "width": "100%", "borderRadius": 8 }
+  },
+  "src/components/thread/TurnAttachments.tsx:156": {
+    "style": { "height": "100%", "width": "100%" }
+  },
+  "src/components/GemieWelcomeMessage.tsx:49": {
+    "skip": "hand: the display family comes from the class"
+  },
+  "src/components/accounts/GemieConnectedAccounts.tsx:591": {
+    "skip": "hand: text-error-primary is no token"
+  }
+}
