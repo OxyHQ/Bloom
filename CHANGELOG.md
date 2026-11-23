@@ -1,5 +1,9 @@
 # Changelog
 
+## 23.1.1
+
+The Bloom language 1.1.1 ships beside it (`@oxy.so/bloom-language`): a root nested in a language tree costs no component or context read, and a fixed colour role paints with no theme read on Android and iOS. Bloom itself is unchanged.
+
 ## 23.1.0
 
 The Bloom language 1.1 ships beside it: `@oxy.so/bloom-language` 1.1.0, `@oxy.so/bloom-language-compiler` 1.1.0 (and its platform packages), `@oxy.so/bloom-language-codemod` 0.2.0 and `@oxy.so/bloom-lens` 1.1.0.

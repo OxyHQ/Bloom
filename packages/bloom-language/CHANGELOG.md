@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1
+
+### Changed
+
+- A language root placed straight into a language tree (`Embed(toElement(chain))`, or the root the compiler lowers `toElement` to) is drawn as part of that tree, in the environment provided at that point: it adds no component and no context read. A grid row that embeds a cell built with `toElement` paid two boundaries per cell.
+- On Android and iOS a fixed colour role (`white`, `black`, `transparent`, at an opacity too: `black/half`) is drawn as its value, as Bloom's theme defines it in every scheme: no `Painted` leaf and no theme read for a style or a glyph that paints with one. The web keeps its CSS variables.
+- The cost gate (`parity/cost.parity.test.tsx`) also asserts a node mounts no more components than its JSX, and covers nested roots, a fixed role at an opacity, a white glyph and a box of computed geometry.
+
 ## 1.1.0
 
 ### Compatibility

@@ -3,6 +3,7 @@ import {
   createContext,
   createElement,
   Fragment,
+  isValidElement,
   useContext,
   type ComponentType,
   type ReactElement,
@@ -136,6 +137,7 @@ import {
   flexOnly,
   cachedStyle,
   emptyPlacement,
+  fixedInk,
   foregroundOf,
   ink,
   isAppColor,
@@ -2132,8 +2134,9 @@ function iconGlyph(
       changed.foreground === undefined ? [] : [[condition, changed.foreground] as const],
     )
     .sort(([a], [b]) => compareLive(a, b));
-  // An app's own colour is the glyph's fill as it is, on every platform.
-  const own = isAppColor(color) ? color.value : undefined;
+  // An app's own colour is the glyph's fill as it is, on every platform; so is
+  // a fixed role's natively (white, black: the same in every theme).
+  const own = isAppColor(color) ? color.value : fixedInk(color);
   if (live.length === 0)
     return own !== undefined
       ? draw(icon, { fill: own, width: size, height: size, key })
@@ -2928,7 +2931,7 @@ function renderHost(
       const element =
         typeof content === 'function'
           ? content((child) => renderChild(child, ctx, undefined))
-          : content;
+          : (inlineRoot(content, ctx) ?? content);
       if (!boxed && !behaviour) {
         return key === undefined ? (element as ReactElement) : draw(Fragment, { key }, element);
       }
@@ -3597,6 +3600,26 @@ export interface LanguageRootProps {
    * memoization).
    */
   build?: () => Child;
+}
+
+/**
+ * A language root placed straight into a language tree (`Embed(toElement(chain))`,
+ * or the root the compiler lowers it to): its tree, drawn in this one with
+ * the environment and animation scope provided at this point, which is what
+ * the boundary would have read, so it adds no component and no context read.
+ */
+function inlineRoot(content: unknown, ctx: Context): ReactNode | undefined {
+  if (!isValidElement(content) || content.type !== LanguageRoot) return undefined;
+  const { node, build } = content.props as LanguageRootProps;
+  if (build !== undefined) adoptLanguageSheet();
+  const tree = build === undefined ? node : build();
+  const here: Context = {
+    env: ctx.provided,
+    provided: ctx.provided,
+    animation: ctx.scoped,
+    scoped: ctx.scoped,
+  };
+  return renderChild(tree ?? null, here, content.key ?? undefined);
 }
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
