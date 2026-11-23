@@ -173,7 +173,7 @@ const CASES: Case[] = [
   {
     name: 'Action and Bloom’s EngagementAction',
     node: L.Action(RiHeart3Line, 'Like').onPress(onPress),
-    jsx: <EngagementAction icon={RiHeart3Line} label="Like" onPress={onPress} />,
+    jsx: <EngagementAction icon={RiHeart3Line} accessibilityLabel="Like" onPress={onPress} />,
     in: ACTION_BAR,
   },
   { name: 'Text and Bloom’s Text', node: L.Text('a'), jsx: <Text>a</Text> },
