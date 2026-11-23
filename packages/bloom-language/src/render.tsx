@@ -178,7 +178,7 @@ import {
   type Planned,
 } from './variants';
 import {
-  Conditioned,
+  leafOf,
   GEOMETRY_KEYS,
   type ListColor,
   isSurfaceFill,
@@ -219,7 +219,7 @@ import {
   type Role,
   type TextStyleName,
 } from './tokens';
-import { deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
+import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { SafeAreaPadded } from './safe-area';
@@ -233,10 +233,11 @@ import {
   type Transform,
 } from '@oxy.so/bloom/motion';
 import {
-  AnimationContext,
   GestureMotionNode,
   MotionNode,
   PressMotionNode,
+  PressScaleNode,
+  pressesOnly,
   ThemedMotion,
   scopeOf,
   type AnimationScope,
@@ -1057,7 +1058,7 @@ interface Context {
   inRow?: boolean;
   /** The `.animation()` in scope, from this view or above it, across `view()` bodies. */
   animation: AnimationScope | undefined;
-  /** The scope `AnimationContext` holds at this point of the React tree. */
+  /** The scope `EnvContext` carries at this point of the React tree (`Env.animation`). */
   scoped: AnimationScope | undefined;
 }
 
@@ -1254,9 +1255,11 @@ function drawMoving(
     motion.pinch !== undefined ||
     motion.doubleTap !== undefined
       ? GestureMotionNode
-      : motion.pressScale
-        ? PressMotionNode
-        : MotionNode;
+      : pressesOnly(motion, ctx.animation)
+        ? PressScaleNode
+        : motion.pressScale
+          ? PressMotionNode
+          : MotionNode;
   // Native: a node that animates its colours reads the palette (`ThemedMotion`).
   const themed = motion.colors && !IS_WEB;
   const props = {
@@ -2119,7 +2122,7 @@ function iconGlyph(
   }
   // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
   const leaf = (props: Record<string, unknown>) =>
-    draw(...surfaced(Conditioned, { host: icon, paint, ...props }, paintsSurface(paint)));
+    draw(...surfaced(leafOf(paint), { host: icon, paint, ...props }, paintsSurface(paint)));
   if (own !== undefined) return leaf({ fill: own, width: size, height: size, key });
   return leaf({ width: size, height: size, key });
 }
@@ -3014,17 +3017,15 @@ function drawPresentedDialog(
 
 /**
  * A `view()` node: its component with the props it was called with, under
- * an `EnvContext` provider only when the environment here differs from the
- * one already provided, and an `AnimationContext` one only when the
- * animation scope does.
+ * an `EnvContext` provider only when the environment here, or the animation
+ * scope, differs from the one already provided: the `.animation()` in scope
+ * reaches the body, as it reaches the nodes of this one.
  */
 function viewElement(node: Node, ctx: Context, key: string | number | undefined): ReactElement {
   const { component, props } = node.props as ViewNodeProps;
   let element: ReactElement = draw(component, props as Record<string, unknown>);
-  if (ctx.env !== ctx.provided) element = draw(EnvContext.Provider, { value: ctx.env }, element);
-  // The `.animation()` in scope reaches the body, as it reaches the nodes of this one.
-  if (ctx.animation !== ctx.scoped)
-    element = draw(AnimationContext.Provider, { value: ctx.animation }, element);
+  if (ctx.env !== ctx.provided || ctx.animation !== ctx.scoped)
+    element = draw(EnvContext.Provider, { value: carrying(ctx.env, ctx.animation) }, element);
   return key === undefined ? element : cloneElement(element, { key });
 }
 
@@ -3526,15 +3527,28 @@ function renderChild(child: Child, ctx: Context, key: string | number | undefine
 
 // ── Entry points ─────────────────────────────────────────────────
 
-interface RootProps {
-  node: Child;
+export interface LanguageRootProps {
+  /** The tree, built where the element is made (`toElement`'s). */
+  node?: Child;
+  /**
+   * Or the function that builds it, run as this boundary renders: what the
+   * language compiler lowers `toElement(chain)` to, so the handlers and refs
+   * a chain takes reach React as one JSX prop. The React Compiler then reads
+   * them as it reads a JSX `onPress` or `ref`, never as arguments a call
+   * might read during render (which costs the whole component its
+   * memoization).
+   */
+  build?: () => Child;
 }
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
-function LanguageRoot({ node }: RootProps): ReactNode {
+export function LanguageRoot({ node, build }: LanguageRootProps): ReactNode {
+  // One context: the environment, with the animation scope it carries.
   const env = useContext(EnvContext);
-  const animation = useContext(AnimationContext);
-  return renderChild(node, { env, provided: env, animation, scoped: animation }, undefined);
+  const animation = env.animation;
+  if (build !== undefined) adoptLanguageSheet();
+  const tree = build === undefined ? node : build();
+  return renderChild(tree ?? null, { env, provided: env, animation, scoped: animation }, undefined);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 

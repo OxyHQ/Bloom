@@ -23,7 +23,7 @@ import {
   Text,
   VStack,
 } from '../primitives';
-import { toElement } from '../render';
+import { LanguageRoot, toElement } from '../render';
 import { view } from '../view';
 import { defineTokens } from '../tokens';
 import { clear, regular } from '../glass';
@@ -62,6 +62,14 @@ function hosts(renderer: ReactTestRenderer, type: string): ReactTestInstance[] {
 }
 
 describe('rendering through React Native hosts', () => {
+  it('a root that builds its chain draws what toElement draws: the compiler’s lowering', () => {
+    const onPress = () => {};
+    const chain = () => VStack(Text('Open')).padding('md').onPress(onPress);
+    const built = mount(createElement(LanguageRoot, { build: chain })).toJSON();
+    expect(built).toEqual(mount(toElement(chain())).toJSON());
+    expect(built).not.toBeNull();
+  });
+
   it('a grid stretches its chart cards only when asked: Bloom’s stretchItems', () => {
     const grid = (node: ReturnType<typeof Grid>) =>
       hosts(mount(toElement(node)), 'ResponsiveGrid')[0]?.props;

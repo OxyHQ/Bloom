@@ -2,7 +2,6 @@ import { memo, useContext, type ComponentType, type ReactNode } from 'react';
 
 import { Node, type Child, type ComposedView } from './node';
 import { EnvContext } from './env';
-import { AnimationContext } from './motion/motion-node';
 import { renderBody } from './render';
 
 const NO_CHILDREN: readonly Child[] = [];
@@ -25,8 +24,15 @@ const NO_PROPS = Object.freeze({});
  * compares props (key by key, `Object.is` each), so it is ONE fiber, and the
  * body re-runs only when a prop changes. The theme is not an input: colours
  * are painted by the leaves that draw them, so a theme switch re-runs no
- * body. The environment (the text traits set above the view) arrives through
- * context, which changes only where an environment modifier changes it.
+ * body. The environment (the text traits set above the view, and the
+ * `.animation()` in scope) arrives through one context, which changes only
+ * where an environment modifier or a scope changes it.
+ *
+ * A body may return a function that builds its tree instead of the tree:
+ * what the language compiler lowers a returned chain to, so a press handler
+ * that reads a ref, or a ref given to `.ref()`, does not cost the body its
+ * React Compiler memoization (a returned function is not called during the
+ * body's render, as an argument of a chain's call might be).
  *
  * **React Compiler.** Expo runs the React Compiler in `infer` mode, which
  * finds components by JSX or hook calls; a body that returns chains has
@@ -35,13 +41,15 @@ const NO_PROPS = Object.freeze({});
  * language compiler, write the directive yourself.
  */
 export function view<P extends object = Record<string, never>>(
-  body: (props: P) => Child,
+  body: (props: P) => Child | (() => Child),
 ): (...props: Record<string, never> extends P ? [props?: P] : [props: P]) => ComposedView {
   // A factory of components is what `view()` is: called once per view, at
   // module scope, never inside a render.
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
-    return renderBody(body(props), useContext(EnvContext), useContext(AnimationContext));
+    const env = useContext(EnvContext);
+    const built = body(props);
+    return renderBody(typeof built === 'function' ? built() : built, env, env.animation);
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost) as unknown as ComponentType<object>;

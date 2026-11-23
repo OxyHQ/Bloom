@@ -7,6 +7,10 @@
 - Checks the new language's chains (its modifiers, tokens and objects, a menu section's choices) against the spec, each diagnostic linked to its docs.
 - A number written out where a token goes is refused with its token as the fix; a geometry parameter (a frame, a pinned edge, a stacking order) takes points computed at render.
 
+### Performance
+
+- Lowers `toElement(chain)` and a `view()` body's returned chain to a root that builds them, so the React Compiler no longer bails on the component; checked against `babel-plugin-react-compiler`.
+
 ## 1.0.0
 
 First release. The build-time optimiser for `@oxy.so/bloom-language`: a Rust pass (Oxc, through a Node addon) in front of Metro's and Jest's own transformers. It is an optimisation; the runtime interprets every chain, and the pass changes only what it proves keeps its meaning.

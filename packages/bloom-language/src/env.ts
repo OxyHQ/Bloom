@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 
+import type { AnimationScope } from './motion/motion-node';
 import type { Modifier } from './node';
 import type { TextTraits } from './style';
 import { isFontFamily } from './tokens';
@@ -45,6 +46,13 @@ export interface Env {
    * controls in a `BlurIsland` do. A glass inside it ends it.
    */
   readonly island?: true;
+  /**
+   * The `.animation()` in scope where a boundary (`toElement`, a `view()`
+   * body) is drawn, carried across it with the rest of the environment, so a
+   * boundary reads one context. Inside a tree the renderer tracks the scope
+   * itself (`Context.animation`); this is only what `EnvContext` carries.
+   */
+  readonly animation?: AnimationScope;
 }
 
 export type Navigate = (
@@ -75,6 +83,29 @@ export function navigatorEnv(navigate: Navigate): Env {
 
 export const EnvContext = createContext<Env>(ROOT_ENV);
 EnvContext.displayName = 'BloomEnvironment';
+
+const carriers = new WeakMap<Env, Map<AnimationScope | undefined, Env>>();
+
+/**
+ * `env` carrying `animation` across a boundary: what `EnvContext` provides
+ * below a node whose environment or animation scope differs from the one
+ * already provided. One object per environment and scope, so a provider's
+ * value changes only when either does; it shares the environment's caches.
+ */
+export function carrying(env: Env, animation: AnimationScope | undefined): Env {
+  if (env.animation === animation) return env;
+  let byScope = carriers.get(env);
+  if (byScope === undefined) {
+    byScope = new Map();
+    carriers.set(env, byScope);
+  }
+  let carrier = byScope.get(animation);
+  if (carrier === undefined) {
+    carrier = { ...env, animation };
+    byScope.set(animation, carrier);
+  }
+  return carrier;
+}
 
 type EnvModifier = Extract<
   Modifier,

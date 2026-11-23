@@ -21,6 +21,11 @@
 
 - `RawText` is React Native's own `Text`, writing only what its chain names: a text that names no family draws the platform face (Roboto on Android, San Francisco on iOS, the system stack on the web), not Bloom's base face.
 
+### Performance
+
+- `toElement(chain)` and a view body's returned chain compile to a function that builds them, so the React Compiler keeps a component that draws the language; a bare view's `toElement` stays a call, with no boundary fiber.
+- A press-only `.pressScale()` holds `PressableScale`'s hooks alone; a painted leaf reads the theme once on native; a boundary reads one context (the environment carries the animation scope); a state-varied leaf subscribes to the window only for a breakpoint variant. A node costs React no more hooks or context reads than its JSX, held by a cost gate in the parity suite.
+
 ## 1.0.0
 
 First release. Bloom's UI language: views as functions, modifiers chained in order (order means nesting), every value a Bloom token. It draws Bloom's own React Native and web components, with parity against hand-written Bloom on native and web, light and dark. See `docs/bloom-language.mdx` in the Bloom repository.
