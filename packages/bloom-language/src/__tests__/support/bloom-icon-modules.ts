@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 
 /**
- * Every `@oxy.so/bloom/icons/Ri*` module at once: each named export is a
+ * Every `@oxy.so/bloom/icons/<Glyph>` module at once: each named export is a
  * stand-in icon of that name, the same component on every import, so a table
  * keyed by icon component (the SF Symbols table) finds it.
  */
