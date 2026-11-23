@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.RenderNode
 import android.os.Build
+import android.view.Choreographer
 import android.os.SystemClock
 import androidx.annotation.RequiresApi
 import so.oxy.bloom.glassmenu.render.GlassStill
@@ -30,9 +31,10 @@ internal class GlassLens(val page: GlassBackdrop) {
   private var askedGeneration = -1
   private var still: GlassStill? = null
 
-  // The node the glass draws for [area] (window px): the region's still, or the page.
+  // The node the glass draws for [area] (window px): the region's still, or the page. A node whose display list hwui
+  // dropped (it left every tree: the window stopped) is recorded again, not drawn empty.
   fun sample(area: Rect): RenderNode {
-    if (area != region || !recorded) {
+    if (area != region || !recorded || !node.hasDisplayList()) {
       region.set(area)
       showPage(SystemClock.uptimeMillis())
     }
@@ -54,9 +56,8 @@ internal class GlassLens(val page: GlassBackdrop) {
   private fun showPage(now: Long) {
     quietSince = now
     generation += 1
-    still?.release()
-    still = null
-    if (!showsStill && recorded && node.left == region.left && node.top == region.top &&
+    letStillGo()
+    if (!showsStill && recorded && node.hasDisplayList() && node.left == region.left && node.top == region.top &&
       node.width == region.width() && node.height == region.height()) return
     node.setPosition(region)
     val canvas = node.beginRecording(region.width(), region.height())
@@ -65,6 +66,15 @@ internal class GlassLens(val page: GlassBackdrop) {
     node.endRecording()
     showsStill = false
     recorded = true
+  }
+
+  // The still is released after the next frame, once the node that drew it draws the page in its place. Released now,
+  // its renderer would let go of the page while nothing else holds it (every other lens at rest on its own still), and
+  // hwui drops the display list of a node that leaves every tree: the page would be empty, and the glass black.
+  private fun letStillGo() {
+    val old = still ?: return
+    still = null
+    Choreographer.getInstance().postFrameCallback { old.release() }
   }
 
   private fun askStill() {

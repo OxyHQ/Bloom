@@ -84,7 +84,9 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
 
   override fun onPreDraw(): Boolean {
     val color = baseColor()
-    val whole = stale || color != recordedColor
+    // hwui drops the display list of a node that has left every tree: the window's (a stopped window), and every lens
+    // and still that held the page. Drawn as it is then, the page is empty and every glass on it draws black.
+    val whole = stale || color != recordedColor || !node.hasDisplayList()
     if (whole) record(color)
     if (lenses.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       dirt.clear()
