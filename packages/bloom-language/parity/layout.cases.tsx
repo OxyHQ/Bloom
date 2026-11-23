@@ -972,7 +972,10 @@ const withInsets = (element: ReactElement) => (
   <SafeAreaInsetsContext.Provider value={INSETS}>{element}</SafeAreaInsetsContext.Provider>
 );
 
-/** `.safeAreaPadding()`: a view padded by the device's insets, as an app pads by `useSafeAreaInsets()`. */
+/**
+ * `.safeAreaPadding()`: a view padded by the device's insets, as an app pads by
+ * `useSafeAreaInsets()`, on the view itself: its fill, flex and own padding stay one view.
+ */
 const safeArea: ParityCase[] = [
   {
     name: 'a column padded by the safe area top and bottom',
@@ -980,9 +983,7 @@ const safeArea: ParityCase[] = [
     bloom: () =>
       withInsets(
         <RN.View style={{ paddingTop: INSETS.top, paddingBottom: INSETS.bottom }}>
-          <RN.View>
-            <Text>a</Text>
-          </RN.View>
+          <Text>a</Text>
         </RN.View>,
       ),
   },
@@ -999,15 +1000,54 @@ const safeArea: ParityCase[] = [
       withInsets(
         <Themed>
           {(c) => (
-            <RN.View style={{ paddingTop: 24, backgroundColor: c.card }}>
-              <RN.View style={{ paddingTop: INSETS.top }}>
-                <RN.View>
-                  <Text>a</Text>
-                </RN.View>
-              </RN.View>
+            <RN.View style={{ paddingTop: INSETS.top + 24, backgroundColor: c.card }}>
+              <Text>a</Text>
             </RN.View>
           )}
         </Themed>,
+      ),
+  },
+  {
+    // Mention's composer: a root that fills the screen on the card fill, clear of both insets.
+    name: 'a filling root on a fill, padded by the safe area top and bottom',
+    language: () =>
+      withInsets(
+        toElement(L.VStack(L.Text('a')).flex('1').safeAreaPadding('vertical').background('card')),
+      ),
+    bloom: () =>
+      withInsets(
+        <Themed>
+          {(c) => (
+            <RN.View
+              style={{
+                flexGrow: 1,
+                flexShrink: 1,
+                flexBasis: '0%',
+                backgroundColor: c.card,
+                paddingTop: INSETS.top,
+                paddingBottom: INSETS.bottom,
+              }}
+            >
+              <Text>a</Text>
+            </RN.View>
+          )}
+        </Themed>,
+      ),
+  },
+  {
+    // A left inset beside a padding across: start and end are logical, the inset physical.
+    name: 'a safe-area left beside a padding across, two views',
+    language: () =>
+      withInsets(
+        toElement(L.VStack(L.Text('a')).safeAreaPadding('left').padding('horizontal', 'lg')),
+      ),
+    bloom: () =>
+      withInsets(
+        <RN.View style={{ paddingStart: 16, paddingEnd: 16 }}>
+          <RN.View style={{ paddingLeft: INSETS.left }}>
+            <Text>a</Text>
+          </RN.View>
+        </RN.View>,
       ),
   },
 ];

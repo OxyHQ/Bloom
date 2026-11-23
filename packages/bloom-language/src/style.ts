@@ -498,17 +498,20 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const rank = LAYER_RANK[modifier.kind];
   const current = layers[layers.length - 1];
   const edges = modifier.kind === 'padding' ? EDGE_BITS[modifier.edge] : 0;
-  // A safe-area padding is a view of its own (it reads the insets): it joins no other, and none joins it.
+  // A safe-area padding pads the view it joins: its inset is added to the view's own
+  // top or bottom padding (`paddingTop: insets.top + 24`), so a fill and a flex stay one view.
   const safeArea = modifier.kind === 'safeAreaPadding' ? SAFE_AREA_BITS[modifier.edge] : 0;
   const corners = modifier.kind === 'corner' ? CORNER_BITS[modifier.side] : 0;
   // A second padding of an edge (or corner of a corner) the view has wraps it; other edges join it.
   const repeats =
     current !== undefined &&
     (modifier.kind === 'padding'
-      ? (current.edges & edges) !== 0
-      : modifier.kind === 'corner'
-        ? (current.corners & corners) !== 0
-        : current.modifiers.some((existing) => existing.kind === modifier.kind));
+      ? (current.edges & edges) !== 0 || sidesMeet(current.safeArea, edges)
+      : modifier.kind === 'safeAreaPadding'
+        ? (current.safeArea & safeArea) !== 0 || sidesMeet(safeArea, current.edges)
+        : modifier.kind === 'corner'
+          ? (current.corners & corners) !== 0
+          : current.modifiers.some((existing) => existing.kind === modifier.kind));
   const glass = modifier.kind === 'glass' ? modifier.value : undefined;
   const concentric = modifier.kind === 'corner' && modifier.value === 'concentric';
   const curve = modifier.kind === 'cornerCurve' ? modifier.value : undefined;
@@ -524,14 +527,7 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const clipped = clip !== undefined && clip.length > 0;
   // Overlays stack: a second one joins the first, over it (or, behind, under it).
   const sameKind = repeats && modifier.kind !== 'overlay';
-  if (
-    current === undefined ||
-    rank < current.rank ||
-    sameKind ||
-    clipped ||
-    safeArea !== 0 ||
-    current.safeArea !== 0
-  ) {
+  if (current === undefined || rank < current.rank || sameKind || clipped) {
     layers.push({
       modifiers: [modifier],
       variants: [],
@@ -553,12 +549,26 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   current.key = `${current.key};${modifier.key}`;
   current.rank = rank;
   current.edges |= edges;
+  current.safeArea |= safeArea;
   current.corners |= corners;
   if (glass) current.glass = glass;
   if (concentric) current.concentric = true;
   if (curve) current.curve = curve;
   if (blur) current.blur = true;
   if (overlay) current.overlays.push(overlay);
+}
+
+/** The left and right safe-area sides (`SAFE_AREA_BITS`), and every side a padding writes across. */
+const SAFE_AREA_ACROSS = 0b1100;
+const EDGES_ACROSS = 0b111100;
+
+/**
+ * Whether a safe-area padding and a padding meet on a side they cannot add on
+ * one view: the left or right inset beside a padding across (its start and end
+ * are logical, the inset physical). Top and bottom add (`SafeAreaPadded`).
+ */
+function sidesMeet(safeArea: number, edges: number): boolean {
+  return (safeArea & SAFE_AREA_ACROSS) !== 0 && (edges & EDGES_ACROSS) !== 0;
 }
 
 /** Whether two box modifiers set the same thing (a padding the same edge, a border the same side). */

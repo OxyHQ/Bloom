@@ -1304,13 +1304,15 @@ function drawNode(
   // A glass layer is a Surface and a blur layer an island, which the host cannot
   // be, and an overlay layer holds its views beside the host; so the host takes
   // the innermost layer only when that layer is plain.
+  // A safe-area layer is the host when the host is a plain column or row, which pads itself by the insets.
   const hostTakesLayer =
     !ownBox &&
     layers.length > 0 &&
     (layers[0] as Layer).glass === undefined &&
     !(layers[0] as Layer).blur &&
     !(layers[0] as Layer).concentric &&
-    (layers[0] as Layer).safeArea === 0 &&
+    ((layers[0] as Layer).safeArea === 0 ||
+      (node.kind === 'stack' && behaviourProps(p) === undefined)) &&
     (layers[0] as Layer).overlays.length === 0;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
@@ -1734,7 +1736,7 @@ function wrapLayer(
     const padded = drawHost(
       SafeAreaPadded,
       out,
-      { ...outer, safeArea: layer.safeArea, key: behaviour && p.pressable ? undefined : key },
+      { ...outer, ...safeAreaProps(layer), key: behaviour && p.pressable ? undefined : key },
       ...children,
     );
     return behaviour && p.pressable
@@ -1742,6 +1744,18 @@ function wrapLayer(
       : padded;
   }
   return drawOutermost(box, behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
+}
+
+/** What `SafeAreaPadded` pads a layer by: its sides, and its own top and bottom padding, which the insets add to. */
+function safeAreaProps(layer: Layer): { safeArea: number; own: { top: number; bottom: number } } {
+  const style = layerStyle(layer);
+  return {
+    safeArea: layer.safeArea,
+    own: {
+      top: typeof style.paddingTop === 'number' ? style.paddingTop : 0,
+      bottom: typeof style.paddingBottom === 'number' ? style.paddingBottom : 0,
+    },
+  };
 }
 
 /** A web list's row: a list item around the child, which draws the list's marker before it. */
@@ -2224,9 +2238,11 @@ function renderHost(
           draw(SubtleHover, wash.value === undefined ? {} : { active: wash.value, native: true }),
         );
       }
-      const host = behaviour ? hostFor(p) : View;
+      const padded = layer !== undefined && layer.safeArea !== 0;
+      const host = behaviour ? hostFor(p) : padded ? SafeAreaPadded : View;
       const props = hostProps(behaviour, key);
       if (marker !== undefined) props.role = 'list';
+      if (padded) Object.assign(props, safeAreaProps(layer));
       return drawOutermost(box, host, out, props, ...children);
     }
     case 'zstack': {
