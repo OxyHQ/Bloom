@@ -5,7 +5,8 @@
  * table's words, which the resolver reports.
  */
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import { parseExpression } from '@babel/parser';
 
 type Expression = ReturnType<typeof parseExpression>;
@@ -44,7 +45,13 @@ export interface Table {
   readonly bareIcon: readonly Mod[];
 }
 
-export const LANGUAGE_PACKAGE = join(__dirname, '../../bloom-language');
+/**
+ * The Bloom language package the codemod writes for: the one installed beside
+ * it (its peer), whose spec, exports and className table it reads.
+ */
+export const LANGUAGE_PACKAGE = dirname(
+  createRequire(__filename).resolve('@oxy.so/bloom-language/package.json'),
+);
 
 function literal(node: Expression): Arg | undefined {
   switch (node.type) {

@@ -14,4 +14,5 @@ First release. Bloom's UI language: views as functions, modifiers chained in ord
 - The core: the node model, `view()`, the environment and custom modifiers, over one spec (runtime tables, the web stylesheet and the compiler's tables, generated from `spec/language.json`).
 - Layout, text, icons, material and glass, buttons, avatars, inputs, platform components, navigation (`@oxy.so/bloom-language/router`), overlays and feedback, app chrome, images, containers, and Bloom's generic and product components as language nodes.
 - Variants, the motion engine's modifiers and gestures, and interop with plain React Native and Bloom JSX.
+- The spec (`spec/language.json`) and the className table (`codemod/classnames.generated.json`) ship with the package, for `@oxy.so/bloom-language-codemod` to read the language the app installs.
 - Pair it with `@oxy.so/bloom-language-compiler` for build-time hoisting and chain checks, and with `@oxy.so/bloom-data` for data and state.

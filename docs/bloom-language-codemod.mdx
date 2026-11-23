@@ -287,13 +287,23 @@ JSX as `dynamic-className`.
 
 ## Running it on an app
 
-The app is read, never changed, unless `--write` is given. In the Bloom
-worktree (`bun install` there first):
+The app is read, never changed, unless `--write` is given. Installed in the
+app (`@oxy.so/bloom-language` beside it, its peer), the CLI runs on Node:
+
+```bash
+npx bloom-language-codemod . --out /tmp/app-codemod
+```
+
+It reads the language the app installs (its spec, exports and className
+table) and compiles the app's CSS entry from the app's own install
+(`tailwindcss`, `nativewind`, `@oxy.so/bloom`, `@oxy.so/app-preset`). The
+parity proof (`--fixtures`, then the suites below) runs from a Bloom worktree
+(`bun install` there first), on an app read from anywhere:
 
 ```bash
 cd packages/bloom-language-codemod
 bun src/cli.ts ~/Oxy/Mention/packages/frontend --out /tmp/mention-codemod --fixtures
-# a CSS package the app installs and Bloom does not:
+# a CSS package the app imports that neither the app's install nor Bloom's holds:
 #   --package @oxy.so/app-preset=~/Oxy/oxy/packages/app-preset
 # the app's CSS entry when it is not global.css or styles/global.css:
 #   --css path/to/global.css

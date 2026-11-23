@@ -47,6 +47,8 @@
   "files": [
     "src",
     "lib",
+    "spec/language.json",
+    "codemod/classnames.generated.json",
     "LICENSE",
     "!**/__tests__/**"
   ],

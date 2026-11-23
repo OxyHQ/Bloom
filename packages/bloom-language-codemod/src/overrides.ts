@@ -8,6 +8,7 @@
  * every declaration its rules write, under the same at-rules, with each
  * `var()` resolved through the root custom properties of that stylesheet.
  */
+import { join } from 'node:path';
 import postcss, { type AtRule, type Container, type Rule } from 'postcss';
 
 import { BLOOM_BASELINE_CSS, type PackageRoots, tailwind } from './tailwind';
@@ -99,8 +100,9 @@ export async function overriddenClasses(
   roots: PackageRoots = {},
 ): Promise<Set<string>> {
   const app = signatures((await tailwind(css, from, roots)).build(candidates), candidates);
+  // Bloom's own entry, its packages read as this package reads them: the Bloom installed beside it.
   const bloom = signatures(
-    (await tailwind(BLOOM_BASELINE_CSS, from)).build(candidates),
+    (await tailwind(BLOOM_BASELINE_CSS, join(__dirname, 'bloom-baseline.css'))).build(candidates),
     candidates,
   );
   const out = new Set<string>();

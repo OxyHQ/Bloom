@@ -4,10 +4,33 @@
   "private": true,
   "description": "Moves an app's NativeWind className JSX and Bloom JSX to Bloom's UI language, only where the rendered result stays identical, and proves it with the language's parity harness.",
   "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-language-codemod"
+  },
   "bin": {
-    "bloom-language-codemod": "src/cli.ts"
+    "bloom-language-codemod": "lib/cli.js"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.19"
   },
   "scripts": {
+    "build": "rm -rf lib && tsc -p tsconfig.build.json && chmod +x lib/cli.js",
     "codemod": "bun src/cli.ts",
     "corpus": "bun src/cli.ts parity/sample-app --out parity/corpus --fixtures && rm -rf parity/corpus/files",
     "typescript": "tsc --noEmit -p .",
@@ -19,10 +42,14 @@
     "postcss": "8.5.30",
     "recast": "0.23.11"
   },
+  "peerDependencies": {
+    "@oxy.so/bloom-language": ">=1.0.0"
+  },
   "devDependencies": {
     "@oxy.so/bloom-language": "workspace:*",
     "bloom-22": "https://registry.npmjs.org/@oxy.so/bloom/-/bloom-22.1.11.tgz",
     "lightningcss": "1.30.1",
+    "nativewind": "5.0.0-rc.0",
     "react-native-css": "3.1.0-rc.0"
   },
   "packageManager": "bun@1.4.3"
