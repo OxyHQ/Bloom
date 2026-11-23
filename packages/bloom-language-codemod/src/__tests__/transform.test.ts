@@ -643,6 +643,18 @@ export const C = () => <VirtualList data={posts} renderItem={renderPost} content
       'VirtualList:contentContainerStyle',
     ]);
   });
+  it('moves a VirtualList’s refreshing and onRefresh as one query-driven refresh', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+import { ListItem } from '@oxy.so/bloom/list';
+export const A = ({ rows, q }) => (
+  <VirtualList data={rows} renderItem={({ item }) => <ListItem title={item} />} refreshing={q.isRefetching} onRefresh={q.refetch} />
+);
+`);
+    expect(flat(result.code)).toContain(
+      '.refreshable({ refreshing: q.isRefetching, onRefresh: q.refetch })',
+    );
+  });
+
   it('moves a Field of several controls and a Chip coloured by an accent tone', () => {
     const result = run(`import { Field } from '@oxy.so/bloom/field';
 import { Chip } from '@oxy.so/bloom/chip';

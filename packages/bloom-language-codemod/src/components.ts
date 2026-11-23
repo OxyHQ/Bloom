@@ -849,6 +849,9 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       ListHeaderComponent: p('headerContent', 'element'),
       ListFooterComponent: p('footerContent', 'element'),
       ListEmptyComponent: p('emptyState', 'element'),
+      // A query-driven pull to refresh: `.refreshable({ refreshing, onRefresh })`, as written.
+      refreshing: { ...p('refreshable', 'boolean'), key: 'refreshing' },
+      onRefresh: { ...p('refreshable', 'handler'), key: 'onRefresh' },
       screen: { ...p('screen', 'empty'), within: '@oxy.so/bloom/screen#Screen' },
       scrollbar: p('scrollbar', 'token', tokens('scrollbarVisibility')),
       keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),
