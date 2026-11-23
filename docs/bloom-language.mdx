@@ -914,7 +914,11 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
 
 - **Content.** An `Icon` before the `Text` is the leading glyph, one after it
   the trailing glyph; the `Text` runs are the label. A glyph with an ink of
-  its own (`Icon(X).foreground(role)`) is drawn as it is.
+  its own (`Icon(X).foreground(role)`) is drawn as it is. A child that is
+  neither an `Icon` nor a `Text` makes the children the button's content,
+  drawn as views in the button (Bloom's `children`), none read as a glyph or
+  label: `Button(Loading().style('inline').size('sm')).label(name)`, or a glyph
+  as content rather than as the button's icon, `Button(Group(Icon(X)))`.
 - **Look.** `.style('solid' | 'subtle' | 'outline' | 'plain')`, `.tint(tone)`
   (Bloom's tones, `vivid` included), `.size('xs'…'lg')`; `.shape('circle')`
   is the square icon-only button, `.shape('pill')` the wide one.
@@ -1076,7 +1080,7 @@ binding on a node that has no such value.
 
 | Node | Bloom | Modifiers |
 | --- | --- | --- |
-| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder`, `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
+| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder` (`null`: none, not even the label Bloom draws in its place otherwise), `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
 | `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, `.focused(binding)`, `.label(name)` (its `accessibilityLabel`, beside the visible `label`), the keyboard modifiers |
 | `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid |
 | `Label(text)` | `Label` | `.size('xs' \| 'sm' \| 'md')`, `.required`, `.disabled` |
@@ -1406,7 +1410,11 @@ bar.
 **Header.** `Header(title)` with `.titleDisplay('large' | 'inline')` (large is
 the ramp's `title-1-bold`), `.subtitle`, `.toolbar(...)`, `.toolbarLeading(...)`,
 `.onBack(fn | null)`, `.scrollEdge('auto' | 'always' | 'none')` (Bloom's
-scrim), `.scrollY` and `.presentation('floating' | 'bar' | 'navigation')`. On
+scrim), `.scrollY` and `.presentation('floating' | 'bar' | 'navigation')`. A
+title or subtitle may be a view (`Header(HStack(Avatar(a), Text(name)))`,
+`.subtitle(Text(handle).foreground('muted'))`): Bloom's `PageHeader` draws it in
+the title's place as it is, and on iOS's system bar a title view is UIKit's
+(`headerTitle`; the system bar draws no subtitle). On
 iOS, in a screen of a native stack, the header sets the screen's options and
 its `Stack.Toolbar`: a `Button` whose glyph has an SF Symbol (or a text label)
 is a bar button, a `Menu` of plain or tagged rows opened from one is a bar

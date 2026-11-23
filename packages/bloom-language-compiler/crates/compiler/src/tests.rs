@@ -3337,3 +3337,12 @@ fn a_search_takes_a_most_characters() {
     let output = compiled_with("Search", "export const x = (t) => Search(t).maxLength(50, 2);\n");
     assert_eq!(output.diagnostics[0].message, ".maxLength() takes 1 argument(s), not 2");
 }
+
+#[test]
+fn views_are_content_where_a_component_draws_them() {
+    let ok = compiled_with(
+        "Header, Text, Button, Loading, Group, Icon, TextField",
+        "export const x = (t) => [Header(Text('Home')).subtitle(Text('3 new')), Button(Loading().style('inline')).label('Ana'), Button(Group(Icon(RiShareLine).size('22'))).label('Share'), TextField(t, 'Name').placeholder(null)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+}

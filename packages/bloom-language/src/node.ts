@@ -604,7 +604,8 @@ export interface ValueModifiers {
   progress: Progress | undefined;
   hide: Progress | undefined;
   titleDisplay: TitleDisplay;
-  subtitle: string | undefined;
+  /** A line under the title; a header's may be a view. */
+  subtitle: string | ViewNode | undefined;
   toolbar: readonly Child[];
   toolbarLeading: readonly Child[];
   onBack: (() => void) | null | undefined;
@@ -660,7 +661,8 @@ export interface ValueModifiers {
   width: SpaceToken | ColumnWidthToken;
   pinning: FooterPinning;
   ignoresSafeArea: boolean;
-  placeholder: string;
+  /** `null`: none at all (a text field's label is not drawn in its place either). */
+  placeholder: string | null;
   filter: ((item: BloomCommandItem, query: string) => boolean) | AnyBinding;
   keywords: readonly string[];
   content: Child | (() => Child);
@@ -2683,7 +2685,7 @@ export class Node {
   titleDisplay(value: TitleDisplay): Node {
     return this.set('titleDisplay', value);
   }
-  subtitle(value: string | undefined): Node {
+  subtitle(value: string | ViewNode | undefined): Node {
     return this.set('subtitle', value);
   }
   toolbar(...value: Child[]): Node {
@@ -2876,7 +2878,7 @@ export class Node {
   ignoresSafeArea(value = true): Node {
     return this.set('ignoresSafeArea', value);
   }
-  placeholder(value: string): Node {
+  placeholder(value: string | null): Node {
     return this.set('placeholder', value);
   }
   query(value: Binding<string>): Node {
@@ -5111,7 +5113,8 @@ export type MenuActionsView = ViewNode;
 export interface HeaderView extends ViewNode {
   /** `large`: the title at the ramp's title step; `inline` (default): the bar's own. */
   titleDisplay(value: TitleDisplay): HeaderView;
-  subtitle(value: string | undefined): HeaderView;
+  /** A line under the title: a text, or a view drawn there as it is. */
+  subtitle(value: string | ViewNode | undefined): HeaderView;
   /** Trailing items, in reading order. */
   toolbar(...value: Child[]): HeaderView;
   /** Leading items, after the back button. */

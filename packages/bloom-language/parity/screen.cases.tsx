@@ -293,6 +293,21 @@ const pageHeaders: ParityCase[] = [
     bloom: () => <PageHeader title="Home" titleAlign={align} />,
   })),
   {
+    name: 'a header titled by a view',
+    language: () => toElement(L.Header(L.Text('Home'))),
+    bloom: () => <PageHeader title={<Text>Home</Text>} />,
+  },
+  {
+    name: 'a header whose subtitle is a view',
+    language: () => toElement(L.Header('Home').subtitle(L.Text('3 new'))),
+    bloom: () => <PageHeader title="Home" subtitle={<Text>3 new</Text>} />,
+  },
+  {
+    name: 'a header with a text subtitle',
+    language: () => toElement(L.Header('Home').subtitle('3 new')),
+    bloom: () => <PageHeader title="Home" subtitle="3 new" />,
+  },
+  {
     name: 'a header with an accessory',
     language: () => toElement(L.Header('Home').accessory(L.Text('Tabs'))),
     bloom: () => <PageHeader title="Home" accessory={<Text>Tabs</Text>} />,

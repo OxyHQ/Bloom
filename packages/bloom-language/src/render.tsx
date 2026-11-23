@@ -2359,10 +2359,14 @@ function renderHost(
     case 'button': {
       const props = hostProps(behaviour, key);
       delete props.focusable;
-      const { icon, glyph, label, trailing } = buttonContent(node.children);
+      const { icon, glyph, label, trailing, content } = buttonContent(node.children);
       const shape = ownValue(p, 'shape')?.value;
       const iconOnly =
-        icon !== undefined && label === undefined && shape !== undefined && shape !== 'fit';
+        !content &&
+        icon !== undefined &&
+        label === undefined &&
+        shape !== undefined &&
+        shape !== 'fit';
       // A glyph in an ink of its own (`Icon(X).foreground(role)`) is drawn as
       // it is; otherwise the button tints its icon with its tone.
       const inked = glyph?.modifiers.some((modifier) => modifier.kind === 'foreground');
@@ -2370,9 +2374,9 @@ function renderHost(
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
         size: ownValue(p, 'size')?.value,
-        leadingIcon: inked ? undefined : icon,
-        icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
-        trailingIcon: trailing,
+        leadingIcon: inked || content ? undefined : icon,
+        icon: inked && glyph && !content ? renderNode(glyph, ctx, undefined) : undefined,
+        trailingIcon: content ? undefined : trailing,
         // A circle is Bloom's square icon button; a pill, its wide one; fit
         // grows with its content, never narrower than it is tall.
         iconOnly: iconOnly ? true : undefined,
@@ -2381,7 +2385,8 @@ function renderHost(
         linkTone: ownValue(p, 'linkTone')?.value,
         inverted: ownValue(p, 'inverted')?.value,
         density: ownValue(p, 'density')?.value,
-        children: label,
+        // Content that is a view (a spinner, a glyph in a `Group`) is the button's children as drawn.
+        children: content ? renderChildren(node.children, ctx) : label,
         disabled: ownValue(p, 'disabled')?.value,
         loading: ownValue(p, 'loading')?.value,
         pressed: ownValue(p, 'pressed')?.value,
@@ -3252,12 +3257,19 @@ function buttonContent(children: readonly Child[]): {
   glyph: Node | undefined;
   label: string | undefined;
   trailing: IconProps['icon'] | undefined;
+  /**
+   * A child that is neither an `Icon` nor a `Text` (a `Loading`, a `Group`
+   * around a glyph): a `Button` then draws its children as its content, as
+   * views, and reads none as its glyph or label.
+   */
+  content: boolean;
 } {
   let icon: IconProps['icon'] | undefined;
   let glyph: Node | undefined;
   let label: string | undefined;
   let trailing: IconProps['icon'] | undefined;
-  for (const child of flatten(children)) {
+  const nodes = flatten(children);
+  for (const child of nodes) {
     if (child.kind === 'icon') {
       if (label !== undefined) trailing ??= (child.props as IconProps).icon;
       else if (icon === undefined) {
@@ -3272,7 +3284,8 @@ function buttonContent(children: readonly Child[]): {
       label = label === undefined ? text : `${label} ${text}`;
     }
   }
-  return { icon, glyph, label, trailing };
+  const content = nodes.some((child) => child.kind !== 'icon' && child.kind !== 'text');
+  return { icon, glyph, label, trailing, content };
 }
 
 function flatten(children: readonly Child[]): Node[] {

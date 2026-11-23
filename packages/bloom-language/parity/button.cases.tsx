@@ -1,4 +1,5 @@
 import { Button } from '@oxy.so/bloom/button';
+import { Loading } from '@oxy.so/bloom/loading';
 import { RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
 
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
@@ -70,6 +71,41 @@ const content: ParityCase[] = [
             icon={<RiHeart3Line width={20} height={20} fill={c.error} />}
             accessibilityLabel="Like"
           />
+        )}
+      </Themed>
+    ),
+  },
+  // Content that is a view is the button's children as drawn (Mention's privacy rows).
+  {
+    name: 'a spinner as its content',
+    language: () =>
+      toElement(
+        L.Button(L.Loading().style('inline').size('sm'))
+          .size('sm')
+          .style('subtle')
+          .tint('neutral')
+          .label('Ana'),
+      ),
+    bloom: () => (
+      <Button size="sm" appearance="subtle" tone="neutral" accessibilityLabel="Ana">
+        <Loading variant="inline" size="sm" />
+      </Button>
+    ),
+  },
+  {
+    name: 'a glyph as its content, in a group',
+    language: () =>
+      toElement(
+        L.Button(L.Group(L.Icon(RiHeart3Line).size('22').foreground('primary')))
+          .size('sm')
+          .label('Add'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Button size="sm" accessibilityLabel="Add">
+            <RiHeart3Line width={22} height={22} fill={c.primary} />
+          </Button>
         )}
       </Themed>
     ),

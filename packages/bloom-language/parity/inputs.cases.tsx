@@ -368,6 +368,11 @@ const fields: ParityCase[] = [
       <TextFieldInput label="Name" value="" onValueChange={set} placeholder="Your name" />
     ),
   },
+  {
+    name: 'TextField with no placeholder at all',
+    language: () => toElement(L.TextField(empty, 'Name').placeholder(null)),
+    bloom: () => <TextFieldInput label="Name" value="" onValueChange={set} placeholder={null} />,
+  },
   ...ENUMS.controlSize.map((size) => ({
     name: `TextField size ${size}`,
     language: () => toElement(L.TextField(text, 'Name').size(size)),

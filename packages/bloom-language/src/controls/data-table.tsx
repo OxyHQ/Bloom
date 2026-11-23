@@ -258,7 +258,7 @@ export const DATA_TABLES: Record<DataTableKind, ControlRenderer> = {
         label={label}
         value={value[0]}
         onValueChange={value[1]}
-        placeholder={d.own('placeholder')?.value}
+        placeholder={d.own('placeholder')?.value as string | undefined}
         testID={d.testID}
       />,
     );

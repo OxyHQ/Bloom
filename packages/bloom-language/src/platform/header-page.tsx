@@ -7,7 +7,7 @@
 import type { ComponentType } from 'react';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 
-import type { Child, HeadingLevel, Node, ScrollOffset } from '../node';
+import { type Child, type HeadingLevel, isNode, type Node, type ScrollOffset } from '../node';
 import { type Paint, Painted } from '../paint';
 import { role } from '../style';
 import type {
@@ -29,9 +29,9 @@ const LARGE_TITLE = 'title-1-bold' as const;
 export function readHeader(node: Node) {
   const values = valuesOf(node);
   return {
-    title: (node.props as { title?: string }).title,
+    title: (node.props as { title?: string | Node }).title,
     display: (values.titleDisplay as TitleDisplay | undefined) ?? 'inline',
-    subtitle: values.subtitle as string | undefined,
+    subtitle: values.subtitle as string | Node | undefined,
     toolbar: (values.toolbar as readonly Child[] | undefined) ?? [],
     leading: (values.toolbarLeading as readonly Child[] | undefined) ?? [],
     onBack: values.onBack as (() => void) | null | undefined,
@@ -75,9 +75,10 @@ function scrimPaint(color: ColorToken): Paint {
 export function PageHeaderHost({ node, render }: NodeHostProps) {
   const header = readHeader(node);
   const props = {
-    title: header.title,
+    // A title or subtitle that is a view is drawn in its place as it is.
+    title: isNode(header.title) ? render(header.title) : header.title,
     titleVariant: header.display === 'large' ? LARGE_TITLE : undefined,
-    subtitle: header.subtitle,
+    subtitle: isNode(header.subtitle) ? render(header.subtitle) : header.subtitle,
     presentation: header.presentation,
     scrim: header.scrollEdge,
     scrollY: header.scrollY,

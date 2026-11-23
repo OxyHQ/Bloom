@@ -145,7 +145,8 @@ interface TextInputModifiers<Self> {
 export interface TextFieldView
   extends ViewModifiers<TextFieldView>,
     TextInputModifiers<TextFieldView> {
-  placeholder(value: string): TextFieldView;
+  /** Shown while the field is empty; `null` shows none (not even the label, which Bloom draws in its place otherwise). */
+  placeholder(value: string | null): TextFieldView;
   size(value: BloomSize): TextFieldView;
   disabled(value?: boolean): TextFieldView;
   /** Painted as wrong (the error ring) and announced as invalid. */
@@ -738,7 +739,8 @@ const chosenMark = (item: unknown) => (item as PickerItem | undefined)?.leading 
 
 const picker: ControlRenderer = (d) => {
   const [value, setValue] = (d.node.props as ChoiceProps).selection;
-  const placeholder = d.own('placeholder')?.value;
+  // A picker's placeholder is a text (`PickerView.placeholder`); only a text field's takes `null`.
+  const placeholder = d.own('placeholder')?.value as string | undefined;
   const presented = d.own('presented')?.value;
   const items = optionsOf(d.node.children).map(({ node, props, group }): PickerItem => {
     const leading = lastOf(node, 'leadingView')?.value;
