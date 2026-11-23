@@ -29,6 +29,15 @@ test('a wrong token throws the rendered diagnostic with its position', () => {
       assert.equal(error.column, 82);
       assert.match(error.message, /Unknown padding token 'mdd' for \.padding\(\)/);
       assert.match(error.message, /did you mean 'md'\?/);
+      // Metro and Jest print the message: the section that explains the modifier is in it.
+      assert.match(
+        error.message,
+        /\n {2}= docs: https:\/\/github\.com\/OxyHQ\/Bloom\/blob\/main\/docs\/bloom-language-modifiers\.mdx#padding$/m,
+      );
+      assert.deepEqual(error.docs, [
+        'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-modifiers.mdx#padding',
+        'https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tour.mdx#tokens',
+      ]);
       return true;
     },
   );
@@ -87,4 +96,5 @@ export function Feed() {
   }
   assert.equal(said.length, 1);
   assert.match(said[0], /^warning\[bloom\]: glass in scrolling content/);
+  assert.match(said[0], /= docs: https:\/\/\S+\/bloom-language-tour\.mdx#liquid-glass-rules$/m);
 });
