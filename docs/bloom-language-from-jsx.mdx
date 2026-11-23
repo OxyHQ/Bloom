@@ -101,12 +101,15 @@ only one app writes is that app's `defineTokens`.
 
 ## Running the codemod
 
-`@oxy.so/bloom-language-codemod` reads the app, writes converted files and a
-report, and builds a parity corpus that renders each converted region before
-and after, native and web, light and dark:
+The codemod (`packages/bloom-language-codemod`, not published: it runs from
+a Bloom checkout) reads the app, writes converted files and a report, and
+builds a parity corpus that renders each converted region before and after,
+native and web, light and dark:
 
 ```bash
-bunx @oxy.so/bloom-language-codemod packages/frontend --out /tmp/codemod --fixtures
+# in a Bloom worktree, after bun install
+cd packages/bloom-language-codemod
+bun src/cli.ts ~/Oxy/MyApp/packages/frontend --out /tmp/codemod --fixtures
 # read /tmp/codemod/report.md, run the parity suites on the corpus,
 # then --write in a branch of the app
 ```
