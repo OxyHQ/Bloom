@@ -63,7 +63,7 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
   };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
-  enums: {
+  enums: Readonly<Record<string, readonly string[]>> & {
     role: readonly string[];
     fontFamily: readonly string[];
     appColorName: readonly string[];
@@ -388,6 +388,8 @@ type Tagged =
   | { readonly $: 'null' }
   /** A component by its name, as the file imports it (an app's provider around a screen). */
   | { readonly $: 'component'; readonly name: string }
+  /** A value the language exports, by its name (`identity`, no glass), imported as the views are. */
+  | { readonly $: 'language'; readonly name: string }
   /** One of two values by a condition, as the app chose (`invalid ? 'error' : undefined`). */
   | {
       readonly $: 'choose';
@@ -481,6 +483,8 @@ export interface TransformOptions {
 }
 
 const LANGUAGE_MODULE = '@oxy.so/bloom-language';
+/** Bloom's floating action button. */
+const FAB_MODULE = '@oxy.so/bloom/fab';
 /** Bloom's dropdown menu and its parts. */
 const DROPDOWN = '@oxy.so/bloom/dropdown-menu';
 const SCREEN_KEY = '@oxy.so/bloom/screen#Screen';
@@ -1646,6 +1650,7 @@ export function transformSource(source: string, options: TransformOptions): File
       };
     if (kind === 'button') return convertButton(node);
     if (kind === 'kept' && screenRoutes.has(node)) return convertScreen(node);
+    if (kind === 'kept' && sources.get(local)?.module === FAB_MODULE) return convertFab(node);
     if (kind === 'kept' && sources.get(local)?.module === DROPDOWN)
       return convertDropdownMenu(node);
     if (kind === 'kept') {
@@ -3426,6 +3431,88 @@ export function transformSource(source: string, options: TransformOptions): File
     };
   }
 
+  /**
+   * Bloom's `Fab` as `FAB(Icon(icon), Text(label)).glass(identity)`
+   * (parity/button.cases.tsx): the language's FAB is on glass, so an app's
+   * solid Fab names no glass. Its `icon` is the glyph, its `label` the
+   * extended label, `accessibilityLabel` its `.label()`, and `size`,
+   * `appearance`, `tone`, `disabled`, `collapsed`, `onPress` and `testID` the
+   * modifiers of the same meaning.
+   */
+  function convertFab(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
+    const reasons: Reason[] = [];
+    const fail = (subject: string, why: string) => {
+      reasons.push({ subject, code: `Fab:${subject}`, why });
+      return { reasons };
+    };
+    if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
+      return fail('children', 'children: a Fab draws its icon and label props');
+    const views: Value[] = [];
+    const props: PropMod[] = [];
+    const TOKENS: Readonly<Record<string, readonly [modifier: string, set: string]>> = {
+      size: ['size', 'controlSize'],
+      appearance: ['style', 'appearance'],
+      tone: ['tint', 'tone'],
+    };
+    let icon: Value | undefined;
+    let label: Value | undefined;
+    for (const attribute of node.openingElement.attributes as AnyNode[]) {
+      if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+        return fail('spread', 'spread props: the codemod cannot see what they set');
+      const name = attribute.name.name as string;
+      const { value } = attribute;
+      const expression = value ? attributeExpression(value) : undefined;
+      const text = staticString(value);
+      if (
+        name === 'icon' &&
+        n.Identifier.check(expression) &&
+        kindOf(sources.get(expression.name)) === 'icon'
+      )
+        icon = {
+          $: 'view',
+          view: { type: 'icon', component: expression.name, mods: [], key: null },
+        };
+      else if (name === 'label' && expression && !hasJsx(expression))
+        label = text ?? { node: expression, hole: 'string' };
+      else if (name === 'accessibilityLabel' && expression && !hasJsx(expression))
+        props.push({ name: 'label', args: [text ?? { node: expression, hole: 'string' }] });
+      else if (TOKENS[name] && text !== undefined && spec.enums[TOKENS[name][1]]?.includes(text))
+        props.push({ name: TOKENS[name][0], args: [text] });
+      else if ((name === 'disabled' || name === 'collapsed') && (value === null || expression))
+        props.push({
+          name,
+          args: [value === null ? true : { node: expression, hole: 'boolean' }],
+        });
+      else if (name === 'onPress' && expression)
+        props.push({ name, args: [{ node: expression, hole: 'handler' }] });
+      else if (name === 'testID' && text !== undefined) props.push({ name, args: [text] });
+      else return fail(name, `a Fab's \`${name}\` (or its form here) has no mapping`);
+    }
+    if (icon === undefined) return fail('icon', 'a Fab with no icon the codemod reads');
+    views.push(icon);
+    if (label !== undefined)
+      views.push({
+        $: 'view',
+        view: {
+          type: 'text',
+          raw: false,
+          resolved: { axis: 'column', mods: [], variants: [] },
+          choice: null,
+          props: [],
+          key: null,
+          runs: [
+            typeof label === 'string'
+              ? { type: 'string', value: label }
+              : { type: 'expr', value: label as Carried },
+          ],
+        },
+      });
+    props.push({ name: 'glass', args: [{ $: 'language', name: 'identity' }] });
+    return {
+      ir: { type: 'component', node: 'FAB', within: undefined, args: views, props, key: null },
+    };
+  }
+
   /** A row's glyph as the language writes it, `toElement(Icon(icon).size(s).foreground(f))`, as the row's modifiers. */
   function menuGlyph(expression: AnyNode): PropMod[] | undefined {
     if (!isToElement(expression) || expression.arguments.length !== 1) return undefined;
@@ -3769,6 +3856,8 @@ export function transformSource(source: string, options: TransformOptions): File
           return 'undefined';
         case 'component':
           return value.name;
+        case 'language':
+          return lang(value.name);
         case 'null':
           return 'null';
         case 'choose':

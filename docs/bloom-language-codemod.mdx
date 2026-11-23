@@ -306,6 +306,14 @@ nothing moves into the Screen by hand, then the component converts), or in a
 component with a return that is no Screen (`screen:returns`: `null`, another
 view, a choice of views).
 
+Bloom's `Fab` is `FAB(Icon(icon), Text(label)).glass(identity)`: the language's
+FAB is on glass, so an app's solid Fab names none (parity/button.cases.tsx).
+Its `accessibilityLabel` is `.label()`, and `size`, `appearance`, `tone`,
+`disabled`, `collapsed`, `onPress` and `testID` the modifiers of the same
+meaning; anything else (`iconSize`, a spread) keeps it JSX. Bloom's
+`PageFooter` is `PageFooter(...children)` with its `actions` as `.toolbar()`,
+`position` as `.pinning()` and `scrim` as `.scrollEdge()`.
+
 A `DropdownMenu` tree is `Menu(trigger, ...rows).label(label).menuStyle('dropdown')`,
 which draws Bloom's DropdownMenu on every platform, as the app's JSX does: a
 `DropdownMenuTrigger asChild` around one view the codemod converts, and a

@@ -1,9 +1,11 @@
 import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
+import { Fab } from '@oxy.so/bloom/fab';
 import { Loading } from '@oxy.so/bloom/loading';
-import { RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
+import { RiAddLine, RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
 
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
+import { identity } from '../src/glass';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { type ParityCase, Themed } from './support/cases';
@@ -374,7 +376,38 @@ const boxed: ParityCase[] = [
   },
 ];
 
+/**
+ * `FAB`: Bloom's `Fab`, its glyph an `Icon` child and its extended label a
+ * `Text` one; with no glass (`identity`), Bloom's own solid FAB, as an app's
+ * `<Fab>` draws it.
+ */
+const fabs: ParityCase[] = [
+  {
+    // Mention's feeds and saved pages: the page's own action.
+    name: 'a FAB with its glyph and name',
+    language: () =>
+      toElement(
+        L.FAB(L.Icon(RiAddLine)).size('md').label('Create feed').onPress(onPress).glass(identity),
+      ),
+    bloom: () => (
+      <Fab size="md" icon={RiAddLine} accessibilityLabel="Create feed" onPress={onPress} />
+    ),
+  },
+  {
+    name: 'an extended FAB, collapsed',
+    language: () =>
+      toElement(
+        L.FAB(L.Icon(RiAddLine), L.Text('Compose'))
+          .collapsed(true)
+          .onPress(onPress)
+          .glass(identity),
+      ),
+    bloom: () => <Fab icon={RiAddLine} label="Compose" collapsed onPress={onPress} />,
+  },
+];
+
 export const BUTTON_CASES: ParityCase[] = [
+  ...fabs,
   ...boxed,
   ...matrix,
   ...sizes,

@@ -410,6 +410,17 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       testID: p('testID', 'string'),
     },
   },
+  // parity/navigation.cases.tsx: the page's footer, its actions its toolbar.
+  '@oxy.so/bloom/page-footer#PageFooter': {
+    node: 'PageFooter',
+    children: true,
+    props: {
+      actions: p('toolbar', 'view'),
+      position: p('pinning', 'token', tokens('footerPinning')),
+      scrim: p('scrollEdge', 'token', tokens('scrollEdge')),
+      testID: p('testID', 'string'),
+    },
+  },
   // parity/settings.cases.tsx.
   '@oxy.so/bloom/settings-modal#SettingsSection': {
     node: 'SettingsSection',
@@ -974,6 +985,8 @@ export const REMOVED: Readonly<Record<string, string>> = {
  * draws them, but not as a node a region can hold in their place.
  */
 export const KEPT: Readonly<Record<string, string>> = {
+  '@oxy.so/bloom/fab#Fab':
+    'a Bloom Fab is the language’s `FAB(Icon(icon), Text(label)).glass(identity)`, its solid fill: it converts with its icon and label props (`convertFab`)',
   '@oxy.so/bloom/dropdown-menu#DropdownMenu':
     "a Bloom DropdownMenu is the language’s `Menu(trigger, ...rows).menuStyle('dropdown')`: it converts with its trigger and its rows (`convertDropdownMenu`)",
   '@oxy.so/bloom/screen#Screen':

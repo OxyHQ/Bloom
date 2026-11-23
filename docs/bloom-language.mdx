@@ -1471,7 +1471,7 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 | --- | --- | --- | --- |
 | `Menu` | the lens menu | the system menu (SwiftUI `Menu` through `@expo/ui`) | Bloom `DropdownMenu` |
 | `Button` | Bloom `Button`; on glass, on the lens | Bloom `Button`; on glass, on Liquid Glass | Bloom `Button`; on glass, on Surface |
-| `FAB` | Bloom `Fab` on the lens | Bloom `Fab` on Liquid Glass | Bloom `Fab` on Surface |
+| `FAB` | Bloom `Fab` on the lens | Bloom `Fab` on Liquid Glass | Bloom `Fab` on Surface; `.glass(identity)`: Bloom's solid `Fab` everywhere, as an app's `<Fab>` draws it |
 | `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`, `Stack.Toolbar`) | Bloom `PageHeader` |
 | `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur); an app's tabs are the system tab bar (see [Navigation](#navigation)) | Bloom `BottomBar` |
 

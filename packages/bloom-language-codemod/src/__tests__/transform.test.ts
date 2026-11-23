@@ -513,6 +513,32 @@ export const A = ({ tab, setTab }) => (
     expect(code).toContain("frame({ height: '38', minWidth: '76' })");
     expect(code).toContain(".frame({ height: '38' })");
   });
+  it('makes Bloom’s Fab a FAB with no glass, its icon and label its content', () => {
+    const result = run(`import { Fab } from '@oxy.so/bloom/fab';
+import { RiAddLine } from '@oxy.so/bloom/icons';
+export const A = () => <Fab size="md" onPress={create} icon={RiAddLine} accessibilityLabel={t('create')} />;
+export const B = () => <Fab icon={RiAddLine} label="Compose" collapsed={hidden} />;
+export const C = () => <Fab icon={RiAddLine} iconSize={20} />;
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      "FAB(Icon(RiAddLine)).size('md').onPress(create).label(t('create')).glass(identity)",
+    );
+    expect(code).toContain(
+      "FAB(Icon(RiAddLine), Text('Compose')).collapsed(hidden).glass(identity)",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Fab:iconSize']);
+  });
+  it('makes Bloom’s PageFooter a PageFooter, its actions its toolbar', () => {
+    const result = run(`import { PageFooter } from '@oxy.so/bloom/page-footer';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = () => <PageFooter scrim="always" actions={<Text>Save</Text>}><Text>2 selected</Text></PageFooter>;
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain(
+      "LPageFooter(LText('2 selected')).scrollEdge('always').toolbar(LText('Save'))",
+    );
+  });
   it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ marginTop: 12, overflow: 'visible' }} />;
