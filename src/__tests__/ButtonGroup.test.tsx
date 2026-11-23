@@ -23,7 +23,12 @@ describe('Button.Group', () => {
       // Fabric flattens a view with no stacking context and mounts its children
       // in the nearest ancestor that has one: a role and a label are not one.
       const { getByTestId } = renderWithTheme(
-        <Button.Group testID="group" accessibilityLabel="Back and forward" separated={separated}>
+        <Button.Group
+          material="surface"
+          testID="group"
+          accessibilityLabel="Back and forward"
+          separated={separated}
+        >
           <Button iconOnly accessibilityLabel="Back" />
           <Button iconOnly accessibilityLabel="Forward" />
         </Button.Group>,
@@ -37,7 +42,7 @@ describe('Button.Group', () => {
   it('is one rimmed surface with inset separators between items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
       <View testID="host">
-        <Button.Group testID="group">
+        <Button.Group material="surface" testID="group">
           <Button>Left</Button>
           <Button>Center</Button>
           <Button>Right</Button>
@@ -53,7 +58,7 @@ describe('Button.Group', () => {
 
   it('sizes items from the group: 36 medium, 32 small', () => {
     const { getByTestId } = renderWithTheme(
-      <Button.Group size="sm">
+      <Button.Group material="surface" size="sm">
         <Button testID="item">One</Button>
         <Button testID="icon" iconOnly accessibilityLabel="Add" />
       </Button.Group>,
@@ -65,7 +70,7 @@ describe('Button.Group', () => {
   it('presses, and announces selection with both spellings', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <Button.Group>
+      <Button.Group material="surface">
         <Button testID="item" pressed onPress={onPress}>
           Week
         </Button>
@@ -82,7 +87,7 @@ describe('Button.Group', () => {
     // `aria-pressed="false"` on a plain action announces a state it does not
     // have — "not pressed" on an attach button that fires and is done.
     const screen = renderWithTheme(
-      <Button.Group accessibilityLabel="Format">
+      <Button.Group material="surface" accessibilityLabel="Format">
         <Button testID="action" onPress={() => {}}>
           Attach
         </Button>
@@ -101,7 +106,7 @@ describe('Button.Group', () => {
   it('keeps controlled changes and disabled state on the real Button', () => {
     const change = jest.fn();
     const screen = renderWithTheme(
-      <Button.Group>
+      <Button.Group material="surface">
         <Button testID="selected" pressed onPressedChange={change}>
           B
         </Button>
@@ -118,7 +123,13 @@ describe('Button.Group', () => {
   describe('separated', () => {
     it('is one pill cut into segments: one surface, no hairlines, a 2px gap, ends clipped', () => {
       const { getByTestId, toJSON } = renderWithTheme(
-        <Button.Group separated size="xs" testID="group" accessibilityLabel="Actions">
+        <Button.Group
+          material="surface"
+          separated
+          size="xs"
+          testID="group"
+          accessibilityLabel="Actions"
+        >
           <Button iconOnly accessibilityLabel="One" />
           <Button iconOnly accessibilityLabel="Two" />
           <Button iconOnly accessibilityLabel="Three" />
@@ -140,7 +151,7 @@ describe('Button.Group', () => {
 
     it('makes the items straight segments: only the group’s ends are rounded', () => {
       const { getByTestId } = renderWithTheme(
-        <Button.Group separated size="xs">
+        <Button.Group material="surface" separated size="xs">
           <Button testID="item">One</Button>
         </Button.Group>,
       );
@@ -149,7 +160,7 @@ describe('Button.Group', () => {
 
     it('makes an icon-only item 1.5 times as wide as tall, never a circle', () => {
       const { getByTestId } = renderWithTheme(
-        <Button.Group separated size="xs">
+        <Button.Group material="surface" separated size="xs">
           <Button iconOnly testID="item" accessibilityLabel="One" />
         </Button.Group>,
       );
@@ -160,7 +171,7 @@ describe('Button.Group', () => {
     it('sizes items 24 at xs, 32 at sm and 36 at md', () => {
       const heights = (['xs', 'sm', 'md'] as const).map((size) => {
         const { getByTestId } = renderWithTheme(
-          <Button.Group separated size={size}>
+          <Button.Group material="surface" separated size={size}>
             <Button testID="item">Pill</Button>
           </Button.Group>,
         );
@@ -177,7 +188,7 @@ it.each(['xs', 'sm', 'md', 'lg'] as const)(
     const screen = renderWithTheme(
       <View>
         <Button size={size} iconOnly accessibilityLabel="Standalone" testID="standalone" />
-        <Button.Group size={size}>
+        <Button.Group material="surface" size={size}>
           <Button iconOnly accessibilityLabel="Grouped" testID="grouped" />
         </Button.Group>
       </View>,
@@ -193,7 +204,7 @@ it('composes layout callbacks while measuring selection and blocks loading toggl
   const onLayout = jest.fn();
   const onPressedChange = jest.fn();
   const screen = renderWithTheme(
-    <Button.Group testID="group">
+    <Button.Group material="surface" testID="group">
       <Button testID="toggle" pressed onLayout={onLayout} onPressedChange={onPressedChange}>
         Toggle
       </Button>

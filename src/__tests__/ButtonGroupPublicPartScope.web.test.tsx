@@ -24,7 +24,7 @@ function Subject({
   nested?: boolean;
 }) {
   const makeGroup = (id: string, size?: 'xs' | 'md', item?: 'xs') => (
-    <Button.Group size={size} accessibilityLabel="Actions">
+    <Button.Group material="surface" size={size} accessibilityLabel="Actions">
       <Button size={item} testID={id}>
         <Text>Select</Text>
       </Button>
