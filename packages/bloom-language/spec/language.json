@@ -460,7 +460,7 @@
       "danger",
       "info"
     ],
-    "engagementTone": ["primary", "secondary", "tertiary", "success", "warning", "error", "info"],
+    "engagementTone": ["primary", "vivid", "secondary", "tertiary", "success", "warning", "error", "info"],
     "controlSize": ["xs", "sm", "md", "lg"],
     "glassMaterial": ["regular", "clear"],
     "glassTransition": ["matchedGeometry", "materialize"],
