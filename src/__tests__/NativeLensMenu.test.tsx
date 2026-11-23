@@ -20,6 +20,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme';
 import { lens } from './lens-stub';
 import { LENS_FROST } from '../floating/lens/lens-frost';
+import { LensMaterialProvider } from '../floating/lens/lens-material';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -411,6 +412,28 @@ describe('a Surface with the lens material', () => {
     );
     expect(screen.getByTestId('native-lens')).toBeTruthy();
     expect(screen.getByText('Panel')).toBeTruthy();
+  });
+
+  it('in the page, is drawn in its place, so it scrolls and clips with the content', () => {
+    // A feed's compose prompt on the lens: drawn by the window, it slid over the header and the
+    // status bar as the feed scrolled (Mention's Home, Pixel 8a).
+    const screen = wrap(
+      <Surface material="lens">
+        <Text>Prompt</Text>
+      </Surface>,
+    );
+    expect(props()?.restBackdrop).toBeTruthy();
+    screen.unmount();
+    // In a floating region the window draws it, over what moves behind.
+    const floating = wrap(
+      <LensMaterialProvider value="lens">
+        <Surface material="lens">
+          <Text>Bar</Text>
+        </Surface>
+      </LensMaterialProvider>,
+    );
+    expect(props()?.restBackdrop).toBeUndefined();
+    floating.unmount();
   });
 
   it('draws no emulated edge on the lens: a paint inside it keeps its fill, a lens button its shade off', () => {
