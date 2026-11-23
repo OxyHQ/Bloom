@@ -254,10 +254,20 @@ nothing moves into the Screen by hand, then the component converts), or in a
 component with a return that is no Screen (`screen:returns`: `null`, another
 view, a choice of views).
 
-Kept as JSX with their reason (`KEPT`):
-`DropdownMenu` with its parts (the language's `Menu` is the platform's own menu
-on Android and iOS, Bloom's DropdownMenu only on the web and as a fallback),
-and `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's
+A `DropdownMenu` tree is `Menu(trigger, ...rows).label(label).menuStyle('dropdown')`,
+which draws Bloom's DropdownMenu on every platform, as the app's JSX does: a
+`DropdownMenuTrigger asChild` around one view the codemod converts, and a
+`DropdownMenuContent` with the trigger's label (and a static `testID`) holding
+`DropdownMenuItem`s and `DropdownMenuSeparator`s (`Divider()`). An item is
+`Item(text)` with `.onPress()`, `variant="destructive"` `.destructive()`,
+`disabled`, `keepOpen` and `testID`; its `leading`, a language glyph
+`toElement(Icon(icon).size(s).foreground(f))`, is `.icon(icon).iconSize(s).iconForeground(f)`.
+The language's menu holds its own open state, so a menu the app opens itself
+(`open`, `onOpenChange`) stays JSX (`DropdownMenu:props`), and so does any
+other shape (a radio group, rows from a component or a condition, a trigger
+that is a component's children).
+
+Kept as JSX with their reason (`KEPT`): `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's
 `AppLayout(navigator)` with `.shellLayout()` and `.panels(Panel(id, content))`).
 `AppShellMenuButton` has no node yet and is listed with the other unmapped
 Bloom components. Components removed in Bloom 22 (`SettingsRow`,

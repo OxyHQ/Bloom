@@ -100,7 +100,7 @@ export const B = () => <DropdownMenu />;
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
       'screen:wrapped',
       'GroupedSectionItem:leftInset',
-      'kept:DropdownMenu',
+      'DropdownMenu:children',
     ]);
   });
   it('keeps an input that reads an enclosing shell’s context', () => {
@@ -400,6 +400,39 @@ const styles = StyleSheet.create({ strip: { height: 44 } });
     expect(code).toContain(".axis('horizontal').padding('all', 'lg').spacing('md')");
     expect(code).toContain(".frame({ height: '44' })");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Button:style', 'unknown']);
+  });
+  it('makes a DropdownMenu tree a Menu drawn as Bloom’s dropdown', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';
+import { Icon, toElement } from '@oxy.so/bloom-language';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@oxy.so/bloom/dropdown-menu';
+export const A = () => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild label={t('more')}>
+      <Button iconOnly appearance="plain" leadingIcon={RiMoreFill} accessibilityLabel={t('more')} />
+    </DropdownMenuTrigger>
+    <DropdownMenuContent label={t('more')}>
+      <DropdownMenuItem leading={toElement(Icon(RiShareLine).size('sm').foreground('primary'))} onPress={share}>
+        {t('share')}
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem variant="destructive" onPress={block}>Block</DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+export const B = () => <DropdownMenu open={open} onOpenChange={setOpen}><DropdownMenuTrigger asChild label="x"><Button /></DropdownMenuTrigger><DropdownMenuContent label="x" /></DropdownMenu>;
+`);
+    expect(flat(result.code)).toContain(
+      "LtoElement(Menu(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').label(t('more')), Item(t('share')).icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(share), Divider(), Item('Block').destructive().onPress(block)).label(t('more')).menuStyle('dropdown'))",
+    );
+    expect(result.code).not.toContain('DropdownMenuItem,');
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['DropdownMenu:props']);
   });
   it('takes a language view placed with toElement() as a Screen’s header', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';

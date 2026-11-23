@@ -947,7 +947,7 @@ export const REMOVED: Readonly<Record<string, string>> = {
  */
 export const KEPT: Readonly<Record<string, string>> = {
   '@oxy.so/bloom/dropdown-menu#DropdownMenu':
-    'the language’s `Menu` is the platform’s menu (the lens menu on Android, SwiftUI’s on iOS), Bloom’s DropdownMenu only on the web and as a fallback; no parity case pairs it with a DropdownMenu and its parts',
+    "a Bloom DropdownMenu is the language’s `Menu(trigger, ...rows).menuStyle('dropdown')`: it converts with its trigger and its rows (`convertDropdownMenu`)",
   '@oxy.so/bloom/screen#Screen':
     'a Bloom Screen is what a `screen()` body returns in the language, its chrome the modifiers of what each branch returns: a component whose every return is a Screen converts whole (`SCREEN`)',
   '@oxy.so/bloom/app-shell#AppShell':

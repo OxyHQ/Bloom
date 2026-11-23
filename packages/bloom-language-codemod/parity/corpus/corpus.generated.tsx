@@ -58,8 +58,16 @@ import { PressableScale as I50 } from '@oxy.so/bloom/pressable-scale';
 import { ChatSearchField as I51 } from '@oxy.so/bloom/chat-list';
 import { Text as I52 } from '@oxy.so/bloom/typography';
 import { Dialog as I53 } from '@oxy.so/bloom/dialog';
-import { RiArrowRightLine as I54 } from '@oxy.so/bloom/icons/RiArrowRightLine';
-import { Text as I55 } from '../support/app-text';
+import { DropdownMenu as I54 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuTrigger as I55 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuContent as I56 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuItem as I57 } from '@oxy.so/bloom/dropdown-menu';
+import { DropdownMenuSeparator as I58 } from '@oxy.so/bloom/dropdown-menu';
+import { Icon as I59 } from '@oxy.so/bloom-language';
+import { RiMoreFill as I60 } from '@oxy.so/bloom/icons/RiMoreFill';
+import { RiShareLine as I61 } from '@oxy.so/bloom/icons/RiShareLine';
+import { RiArrowRightLine as I62 } from '@oxy.so/bloom/icons/RiArrowRightLine';
+import { Text as I63 } from '../support/app-text';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
 
@@ -558,6 +566,27 @@ export const CASES = [
     after: () => { const View = I9; const Text = I52; const Dialog = I53; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
   },
   {
+    name: "components/Menus.tsx:15",
+    before: () => { const DropdownMenu = I54; const DropdownMenuTrigger = I55; const Button = I13; const DropdownMenuContent = I56; const DropdownMenuItem = I57; const DropdownMenuSeparator = I58; const Icon = I59; const RiMoreFill = I60; const RiShareLine = I61; return (<DropdownMenu>
+      <DropdownMenuTrigger asChild label="More">
+        <Button iconOnly appearance="plain" leadingIcon={RiMoreFill} accessibilityLabel="More" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent label="More">
+        <DropdownMenuItem
+          leading={toElement(Icon(RiShareLine).size('sm').foreground('primary'))}
+          onPress={() => {}}
+        >
+          Share
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onPress={() => {}}>
+          Block
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>); },
+    after: () => { const DropdownMenu = I54; const DropdownMenuTrigger = I55; const Button = I13; const DropdownMenuContent = I56; const DropdownMenuItem = I57; const DropdownMenuSeparator = I58; const Icon = I59; const RiMoreFill = I60; const RiShareLine = I61; const { Icon: LIcon, Button: LButton, Item, Divider, Menu } = L;  return (toElement(Menu(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))); },
+  },
+  {
     name: "components/Rows.tsx:19",
     before: () => { const Pressable = I49; const RiHeart3Line = I29; const View = I9; const Text = I52; return (<Pressable onPress={() => {}} className="flex-row items-center gap-3 px-4 py-3 active:opacity-70">
       <RiHeart3Line size="sm" />
@@ -572,7 +601,7 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:41",
-    before: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I54; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
+    before: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I62; return (<View className="rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6">
       <Text className="font-semibold text-foreground">Card</Text>
       {<Hole n="0" />}
       <Switch checked={true} onCheckedChange={() => {}} size="sm" accessibilityLabel="Notify" />
@@ -580,7 +609,7 @@ export const CASES = [
         {'Next'}
       </Button>
     </View>); },
-    after: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I54; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
+    after: () => { const View = I9; const Text = I52; const Switch = I3; const Button = I13; const RiArrowRightLine = I62; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton } = L;  return (toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n="0" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))); },
   },
   {
     name: "components/Rows.tsx:54 (false)",
@@ -609,11 +638,11 @@ export const CASES = [
   },
   {
     name: "components/Rows.tsx:68",
-    before: () => { const View = I9; const NativeText = I55; const Text = I52; return (<View className="flex-1 mt-2">
+    before: () => { const View = I9; const NativeText = I63; const Text = I52; return (<View className="flex-1 mt-2">
       <NativeText className="text-sm">{"React Native's own Text"}</NativeText>
       <View className="rounded-xl bg-card" style={{ height: 4 }} />
     </View>); },
-    after: () => { const View = I9; const NativeText = I55; const Text = I52; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
+    after: () => { const View = I9; const NativeText = I63; const Text = I52; const { HStack, Icon, VStack, Text: LText, toElement, Embed, Toggle, Button: LButton, RawText } = L;  return (toElement(VStack(RawText('React Native\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))); },
   },
   {
     name: "components/Rows.tsx:85 (false)",

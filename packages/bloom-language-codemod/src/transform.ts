@@ -439,6 +439,8 @@ export interface TransformOptions {
 }
 
 const LANGUAGE_MODULE = '@oxy.so/bloom-language';
+/** Bloom's dropdown menu and its parts. */
+const DROPDOWN = '@oxy.so/bloom/dropdown-menu';
 const SCREEN_KEY = '@oxy.so/bloom/screen#Screen';
 
 /**
@@ -1150,6 +1152,8 @@ export function transformSource(source: string, options: TransformOptions): File
       };
     if (kind === 'button') return convertButton(node);
     if (kind === 'kept' && screenRoutes.has(node)) return convertScreen(node);
+    if (kind === 'kept' && sources.get(local)?.module === DROPDOWN)
+      return convertDropdownMenu(node);
     if (kind === 'kept') {
       const source = sources.get(local) as Source;
       const removed = REMOVED[`${source.module}#${source.imported}`];
@@ -2510,6 +2514,222 @@ export function transformSource(source: string, options: TransformOptions): File
     return hasJsx(run.expression) ? undefined : { node: run.expression, hole: 'string' };
   }
 
+  /**
+   * Bloom's `DropdownMenu` tree as `Menu(trigger, ...rows).menuStyle('dropdown')`,
+   * which draws Bloom's DropdownMenu on every platform (parity/context-menu.cases.tsx):
+   * a `DropdownMenuTrigger asChild` around one view the codemod converts, and a
+   * `DropdownMenuContent` of `DropdownMenuItem`s and `DropdownMenuSeparator`s
+   * (`Divider()`), with the trigger's label (`.label()`). The menu holds its
+   * own open state, so a menu the app opens itself (`open`) stays JSX. An
+   * item's `leading` is a language glyph, `toElement(Icon(icon).size(s).foreground(f))`:
+   * the row's `.icon()`, `.iconSize()` and `.iconForeground()`.
+   */
+  function convertDropdownMenu(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
+    const reasons: Reason[] = [];
+    const fail = (subject: string, code: string, why: string) => {
+      reasons.push({ subject, code: `DropdownMenu:${code}`, why });
+      return { reasons };
+    };
+    const part = (element: AnyNode) => {
+      const local = n.JSXElement.check(element) ? jsxName(element) : undefined;
+      const source = local ? sources.get(local) : undefined;
+      return source?.module === DROPDOWN ? source.imported : undefined;
+    };
+    const elements = (parent: AnyNode): AnyNode[] | undefined => {
+      const out: AnyNode[] = [];
+      for (const child of parent.children as AnyNode[]) {
+        if (n.JSXText.check(child) && cleanJsxText(child.value) === '') continue;
+        if (!n.JSXElement.check(child)) return undefined;
+        out.push(child);
+      }
+      return out;
+    };
+    const attributes = (element: AnyNode) => {
+      const out = new Map<string, AnyNode>();
+      for (const attribute of element.openingElement.attributes as AnyNode[]) {
+        if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+          return undefined;
+        out.set(attribute.name.name, attribute.value);
+      }
+      return out;
+    };
+    if (attributes(node)?.size !== 0)
+      return fail(
+        'props',
+        'props',
+        'a menu the app opens itself (`open`, `onOpenChange`): the language’s menu holds its own open state',
+      );
+    const [trigger, content, ...rest] = elements(node) ?? [];
+    if (
+      part(trigger) !== 'DropdownMenuTrigger' ||
+      part(content) !== 'DropdownMenuContent' ||
+      rest.length
+    )
+      return fail('children', 'children', 'children that are no trigger and content');
+    const triggerProps = attributes(trigger);
+    const contentProps = attributes(content);
+    const label = triggerProps?.get('label');
+    if (
+      !triggerProps?.has('asChild') ||
+      [...triggerProps.keys()].some((key) => key !== 'asChild' && key !== 'label')
+    )
+      return fail(
+        'trigger',
+        'trigger',
+        'a trigger that is not `asChild`, or with props besides its label',
+      );
+    const labelText = (value: AnyNode | undefined) =>
+      value === undefined ? undefined : source.slice(value.start, value.end);
+    if (
+      !contentProps ||
+      labelText(contentProps.get('label')) !== labelText(label) ||
+      [...contentProps.keys()].some((key) => key !== 'label' && key !== 'testID')
+    )
+      return fail(
+        'content',
+        'content',
+        'a content whose label is not its trigger’s, or with other props',
+      );
+    const [view, ...others] = elements(trigger) ?? [];
+    const triggerView = view ? convert(view) : undefined;
+    if (!triggerView || others.length || !('ir' in triggerView))
+      return fail('trigger', 'trigger', 'a trigger that is no one view the codemod converts');
+    const rows: Value[] = [];
+    for (const row of elements(content) ?? [undefined]) {
+      if (
+        part(row) === 'DropdownMenuSeparator' &&
+        attributes(row)?.size === 0 &&
+        !elements(row)?.length
+      ) {
+        rows.push({
+          $: 'view',
+          view: {
+            type: 'component',
+            node: 'Divider',
+            within: undefined,
+            args: [],
+            props: [],
+            key: null,
+          },
+        });
+        continue;
+      }
+      const props = row && part(row) === 'DropdownMenuItem' ? attributes(row) : undefined;
+      const texts = (row?.children as AnyNode[] | undefined)?.filter(
+        (child) => !(n.JSXText.check(child) && cleanJsxText(child.value) === ''),
+      );
+      const text = texts?.length === 1 ? texts[0] : undefined;
+      const title: Value | undefined = n.JSXText.check(text)
+        ? cleanJsxText(text.value)
+        : n.JSXExpressionContainer.check(text) && !n.JSXEmptyExpression.check(text.expression)
+          ? (staticString(text) ?? { node: text.expression, hole: 'string' })
+          : undefined;
+      if (!props || title === undefined)
+        return fail('row', 'row', 'a row that is no item with one text, or a separator');
+      const mods: PropMod[] = [];
+      for (const [name, value] of props) {
+        const expression = value ? attributeExpression(value) : undefined;
+        if (name === 'onPress' && expression)
+          mods.push({ name, args: [{ node: expression, hole: 'handler' }] });
+        else if (name === 'variant' && staticString(value) === 'destructive')
+          mods.push({ name: 'destructive', args: [] });
+        else if (name === 'variant' && staticString(value) === 'default') continue;
+        else if ((name === 'disabled' || name === 'keepOpen') && value === null)
+          mods.push({ name, args: [] });
+        else if (name === 'testID' && staticString(value) !== undefined)
+          mods.push({ name, args: [staticString(value) as string] });
+        else if (name === 'leading' && expression) {
+          const glyph = menuGlyph(expression);
+          if (!glyph)
+            return fail(
+              name,
+              'leading',
+              'a leading view that is no `toElement(Icon(icon).size(s).foreground(f))`',
+            );
+          mods.unshift(...glyph);
+        } else
+          return fail(
+            name,
+            `item:${name}`,
+            `an item's \`${name}\` (or its form here) has no mapping`,
+          );
+      }
+      rows.push({
+        $: 'view',
+        view: {
+          type: 'component',
+          node: 'Item',
+          within: undefined,
+          args: [title],
+          props: mods,
+          key: null,
+        },
+      });
+    }
+    const props: PropMod[] = [];
+    if (label) {
+      const expression = attributeExpression(label);
+      props.push({
+        name: 'label',
+        args: [staticString(label) ?? { node: expression, hole: 'string' }],
+      });
+    }
+    const testID = contentProps.get('testID');
+    if (testID) {
+      const text = staticString(testID);
+      if (text === undefined) return fail('testID', 'testID', 'a testID set at runtime');
+      props.push({ name: 'testID', args: [text] });
+    }
+    props.push({ name: 'menuStyle', args: ['dropdown'] });
+    for (const element of [trigger, content, ...(elements(content) ?? [])])
+      results.set(element, {
+        ir: { type: 'component', node: 'Menu', within: undefined, args: [], props: [], key: null },
+      });
+    return {
+      ir: {
+        type: 'component',
+        node: 'Menu',
+        within: undefined,
+        args: [{ $: 'view', view: triggerView.ir }, ...rows],
+        props,
+        key: null,
+      },
+    };
+  }
+
+  /** A row's glyph as the language writes it, `toElement(Icon(icon).size(s).foreground(f))`, as the row's modifiers. */
+  function menuGlyph(expression: AnyNode): PropMod[] | undefined {
+    if (!isToElement(expression) || expression.arguments.length !== 1) return undefined;
+    const chain: [string, AnyNode][] = [];
+    let at: AnyNode = expression.arguments[0];
+    while (n.CallExpression.check(at) && n.MemberExpression.check(at.callee)) {
+      if (at.arguments.length !== 1 || !n.Identifier.check(at.callee.property)) return undefined;
+      chain.unshift([at.callee.property.name, at.arguments[0]]);
+      at = at.callee.object;
+    }
+    const callee = n.CallExpression.check(at) ? at.callee : undefined;
+    const base = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+    const icon = at?.arguments?.[0];
+    if (
+      base?.module !== LANGUAGE_MODULE ||
+      base.imported !== 'Icon' ||
+      at.arguments.length !== 1 ||
+      !n.Identifier.check(icon) ||
+      kindOf(sources.get(icon.name)) !== 'icon'
+    )
+      return undefined;
+    const size = chain.find(([name]) => name === 'size')?.[1];
+    const ink = chain.find(([name]) => name === 'foreground')?.[1];
+    // Both named: the menu's own glyph (`md`, quiet) is drawn otherwise.
+    if (chain.length !== 2 || staticString(size) === undefined || staticString(ink) === undefined)
+      return undefined;
+    return [
+      { name: 'icon', args: [{ $: 'icon', name: icon.name }] },
+      { name: 'iconSize', args: [staticString(size) as string] },
+      { name: 'iconForeground', args: [staticString(ink) as string] },
+    ];
+  }
+
   /** Bloom's `Button`, as the language's Button parity cases draw it (`packages/bloom-language/parity/button.cases.tsx`). */
   function convertButton(node: AnyNode): { ir: Ir } | { reasons: Reason[] } {
     const reasons: Reason[] = [];
@@ -3010,6 +3230,12 @@ export function transformSource(source: string, options: TransformOptions): File
       [...uncommented(before).matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
     ))
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
+    // A language view the before side already writes (a menu row's `toElement(Icon(…))`).
+    for (const match of uncommented(before).matchAll(/\b([A-Z][\w]*)\(/g)) {
+      const local = match[1] as string;
+      if (sources.get(local)?.module === LANGUAGE_MODULE)
+        bindings[local] = sources.get(local) as Source;
+    }
     for (const match of uncommented(after).matchAll(/\b([A-Z][\w]*)\b/g)) {
       const local = match[1] as string;
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;

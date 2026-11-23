@@ -1,15 +1,19 @@
 {
   "app": "parity/sample-app",
-  "files": 5,
-  "changedFiles": 5,
-  "candidates": 152,
-  "converted": 152,
-  "regions": 52,
+  "files": 6,
+  "changedFiles": 6,
+  "candidates": 154,
+  "converted": 154,
+  "regions": 53,
   "rate": 100,
   "overridden": [],
   "bloomComponents": {
     "@oxy.so/bloom/segmented-control#SegmentedControlItemText": 5,
-    "@oxy.so/bloom/text-field#TextFieldIcon": 1
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuItem": 2,
+    "@oxy.so/bloom/text-field#TextFieldIcon": 1,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuTrigger": 1,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuContent": 1,
+    "@oxy.so/bloom/dropdown-menu#DropdownMenuSeparator": 1
   },
   "patterns": [],
   "unconverted": []
