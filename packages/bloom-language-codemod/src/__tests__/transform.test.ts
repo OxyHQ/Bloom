@@ -548,6 +548,34 @@ export const B = ({ on }) => <Chip size={on ? 'lg' : undefined}>B</Chip>;
     expect(code).toContain(".size('xl').tint(on ? 'danger' : undefined)");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Chip:size']);
   });
+  it('resolves a side’s margin over its axis’s, and removes the styles it leaves unread', () => {
+    const result = run(`import { StyleSheet, View } from 'react-native';
+const ROW = { flexDirection: 'row' } as const;
+export const A = () => <View style={styles.box} />;
+export const B = () => <View style={ROW} />;
+export const C = ({ s }) => <View style={[styles.kept, s]} />;
+const styles = StyleSheet.create({
+  box: { marginHorizontal: 8, marginLeft: 4, marginVertical: 12 },
+  kept: { padding: 4 },
+  never: { padding: 8 },
+});
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      "VStack().margin('right', 'sm').margin('left', 'xs').margin('vertical', 'md')",
+    );
+    expect(code).not.toContain('box:');
+    expect(code).not.toContain('const ROW');
+    expect(code).toContain('kept: { padding: 4 }');
+    expect(code).toContain('never: { padding: 8 }');
+  });
+  it('removes a StyleSheet the conversion leaves empty, and its import', () => {
+    const result = run(`import { StyleSheet, View } from 'react-native';
+export const A = () => <View style={styles.box} />;
+const styles = StyleSheet.create({ box: { padding: 4 } });
+`);
+    expect(result.code).not.toContain('StyleSheet');
+  });
   it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ marginTop: 12, overflow: 'visible' }} />;
@@ -657,7 +685,7 @@ export const C = () => <Chip leadingIcon={RiArrowDownSLine} startIcon={<Art />}>
 `);
     const code = flat(result.code);
     expect(code).toContain(
-      "LChip(Embed(on ? toElement(Icon(A).size('sm')) : toElement(Icon(B).size('sm'))), Text('Later'), LIcon(RiArrowDownSLine))",
+      "LChip(Embed(on ? toElement(Icon(A).size('sm')) : toElement(Icon(B).size('sm'))), Text('Later'), Icon(RiArrowDownSLine))",
     );
     expect(code).toContain("LChip(Embed(<Art />), Text('Site'), Embed(<Art />))");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Chip:startIcon']);
@@ -744,7 +772,7 @@ export const B = () => <DropdownMenu open={open} onOpenChange={setOpen}><Dropdow
 export const C = () => <DropdownMenu open={open} onOpenChange={setOpen} modal><DropdownMenuTrigger asChild label="x"><Button /></DropdownMenuTrigger><DropdownMenuContent label="x" /></DropdownMenu>;
 `);
     expect(flat(result.code)).toContain(
-      "LtoElement(Menu(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').label(t('more')), Item(t('share')).icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(share), Divider(), Item('Block').destructive().onPress(block)).label(t('more')).menuStyle('dropdown'))",
+      "toElement(Menu(LButton(Icon(RiMoreFill)).shape('circle').style('plain').label(t('more')), Item(t('share')).icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(share), Divider(), Item('Block').destructive().onPress(block)).label(t('more')).menuStyle('dropdown'))",
     );
     expect(flat(result.code)).toContain(
       ".label('x').menuStyle('dropdown').presented([open, setOpen])",
@@ -795,7 +823,7 @@ export function Edit({ loading }) {
 `);
     const code = flat(result.code);
     expect(code).toContain('if (loading) return VStack().header(Embed(header));');
-    expect(code).toContain("return VStack().header(Embed(toElement(Header('Edit').inPage())));");
+    expect(code).toContain("return VStack().header(Header('Edit').inPage());");
     expect(result.unconverted).toEqual([]);
   });
   it('makes any component whose every return is a Screen a screen(), wherever it is declared', () => {

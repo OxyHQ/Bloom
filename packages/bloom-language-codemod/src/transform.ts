@@ -657,9 +657,16 @@ export function transformSource(source: string, options: TransformOptions): File
     },
   });
 
-  /** A language name, aliased when the file already uses it. */
+  /** The language names the file already imports, by their local name (`Embed`, `toElement`). */
+  const importedLanguage = new Map<string, string>();
+  for (const [local, source] of sources)
+    if (source.module === LANGUAGE_MODULE || source.module === `${LANGUAGE_MODULE}/router`)
+      importedLanguage.set(source.imported, local);
+  /** A language name: the file's own import of it, else one added, aliased when the file already uses the name. */
   const usedLanguage = new Map<string, string>();
   const lang = (name: string) => {
+    const imported = importedLanguage.get(name);
+    if (imported) return imported;
     let local = usedLanguage.get(name);
     if (!local) {
       local = declared.has(name) ? `L${name}` : name;
@@ -3748,13 +3755,87 @@ export function transformSource(source: string, options: TransformOptions): File
     return { type: 'embed', content: { node: expression, hole: 'element' } };
   }
 
+  // ── styles left unread ───────────────────────────────────────────────
+
+  /**
+   * How often each module style is read: a StyleSheet's style by
+   * `sheet.key`, a module style constant by its name (its declaration not counted).
+   */
+  function styleReadsIn(root: AnyNode): Map<string, number> {
+    const reads = new Map<string, number>();
+    const count = (name: string) => reads.set(name, (reads.get(name) ?? 0) + 1);
+    recast.visit(root, {
+      visitMemberExpression(path) {
+        const { object, property } = path.node;
+        if (
+          !path.node.computed &&
+          n.Identifier.check(object) &&
+          n.Identifier.check(property) &&
+          styleSheets.get(object.name)?.has(property.name)
+        )
+          count(`${object.name}.${property.name}`);
+        this.traverse(path);
+      },
+      visitIdentifier(path) {
+        const parent = path.parent?.node;
+        const declares = n.VariableDeclarator.check(parent) && parent.id === path.node;
+        const member =
+          (n.MemberExpression.check(parent) && parent.property === path.node && !parent.computed) ||
+          (n.ObjectProperty.check(parent) && parent.key === path.node && !parent.computed);
+        if (!declares && !member && styleConstants.has(path.node.name)) count(path.node.name);
+        this.traverse(path);
+      },
+    });
+    return reads;
+  }
+
+  /**
+   * The module styles the conversion leaves unread: a StyleSheet's style, or a
+   * module style constant, that an element read before the walk and nothing
+   * reads now is removed (a style never read before stays: not the
+   * conversion's). A StyleSheet left empty goes with its declaration, its
+   * `StyleSheet` import then pruned as a converted component's is. An
+   * exported style is the module's API and stays.
+   */
+  function removeUnreadStyles(before: ReadonlyMap<string, number>): void {
+    const after = styleReadsIn(ast);
+    const unread = (name: string) => (before.get(name) ?? 0) > 0 && !after.get(name);
+    const body = ast.program.body as AnyNode[];
+    for (const statement of [...body]) {
+      if (!n.VariableDeclaration.check(statement) || statement.kind !== 'const') continue;
+      statement.declarations = statement.declarations.filter((declarator: AnyNode) => {
+        if (!n.Identifier.check(declarator.id)) return true;
+        const name = declarator.id.name as string;
+        if (styleConstants.has(name)) return !unread(name);
+        const sheet = styleSheets.get(name);
+        const object = sheet ? declarator.init.arguments[0] : undefined;
+        if (!object) return true;
+        object.properties = object.properties.filter(
+          (property: AnyNode) =>
+            !(n.Identifier.check(property.key) && unread(`${name}.${property.key.name}`)),
+        );
+        if (object.properties.length > 0) return true;
+        if (styleSheetLocal) convertedLocals.add(styleSheetLocal);
+        return false;
+      });
+      if (statement.declarations.length === 0) body.splice(body.indexOf(statement), 1);
+    }
+  }
+
   // ── printing ─────────────────────────────────────────────────────────
 
   /** Prints the chain; with `holes`, each carried value is its hole. */
   function print(ir: Ir, carry: (c: Carried) => string, root = false): string {
     switch (ir.type) {
-      case 'embed':
-        return `${lang('Embed')}(${carry(ir.content)})`;
+      case 'embed': {
+        const text = carry(ir.content);
+        const shown = ir.content.node.__carried ?? ir.content.node;
+        // A language view the file placed with toElement() is that view: `Embed(toElement(v))` is
+        // `v`. (A fixture's hole stands for the element, so there it stays embedded.)
+        if (isToElement(shown) && shown.arguments.length === 1 && text === recast.print(shown).code)
+          return recast.print(shown.arguments[0]).code;
+        return `${lang('Embed')}(${text})`;
+      }
       case 'comment':
         return ir.text;
       case 'screen':
@@ -4312,6 +4393,8 @@ export function transformSource(source: string, options: TransformOptions): File
   }
   /** The routes whose Screens converted: each becomes `screen(function …)`. */
   const routes = new Set<AnyNode>();
+  // The module styles elements read before the walk: what it leaves unread goes after it.
+  const stylesReadBefore = styleReadsIn(ast);
   recast.visit(ast, visitor);
   for (const fn of routes) {
     const { statement, name } = screenDeclarations.get(fn) as { statement: AnyNode; name: string };
@@ -4349,6 +4432,7 @@ export function transformSource(source: string, options: TransformOptions): File
   const converted = [...counted].filter((node) => convertedNodes.has(node)).length;
 
   if (regions > 0) {
+    removeUnreadStyles(stylesReadBefore);
     // Imports: the language's names in, and the converted components' out when nothing else uses them.
     const remaining = new Map<string, number>();
     recast.visit(ast, {

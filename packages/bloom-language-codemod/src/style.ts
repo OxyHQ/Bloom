@@ -264,6 +264,71 @@ export const ABSOLUTE_FILL = {
   literal: "position: 'absolute', left: 0, right: 0, top: 0, bottom: 0",
 } as const;
 
+/** Each physical side a padding or margin key sets, and how specific it is (React Native's precedence). */
+const EDGE_KEYS: Readonly<Record<string, { sides: readonly string[]; rank: number }>> = {
+  '': { sides: ['Top', 'Bottom', 'Left', 'Right'], rank: 0 },
+  Horizontal: { sides: ['Left', 'Right'], rank: 1 },
+  Vertical: { sides: ['Top', 'Bottom'], rank: 1 },
+  Top: { sides: ['Top'], rank: 2 },
+  Bottom: { sides: ['Bottom'], rank: 2 },
+  Left: { sides: ['Left'], rank: 2 },
+  Right: { sides: ['Right'], rank: 2 },
+};
+
+/**
+ * A style's paddings and margins as React Native resolves them when keys of
+ * one side meet (`marginHorizontal: 8, marginLeft: 4`): a side's own key over
+ * its axis's, an axis's over the whole, whatever their order. Where they
+ * meet, a key overridden on a side is the sides it still holds, each its own
+ * (`marginLeft: 4, marginRight: 8`), so no two utilities set one side; every
+ * other key stays as written. A
+ * `Start` or `End` key beside them is left to the conflict it is.
+ */
+function sidesResolved(properties: readonly AnyNode[]): AnyNode[] {
+  const out = [...properties];
+  for (const prefix of ['padding', 'margin']) {
+    const own = out.filter(
+      (property) =>
+        (n.ObjectProperty.check(property) || n.Property.check(property)) &&
+        !property.computed &&
+        n.Identifier.check(property.key) &&
+        property.key.name.startsWith(prefix) &&
+        EDGE_KEYS[property.key.name.slice(prefix.length)] !== undefined,
+    );
+    const set = new Map<string, { rank: number; value: AnyNode }>();
+    let meet = false;
+    for (const property of own) {
+      const { sides, rank } = EDGE_KEYS[property.key.name.slice(prefix.length)] as {
+        sides: readonly string[];
+        rank: number;
+      };
+      for (const side of sides) {
+        const prior = set.get(side);
+        if (prior) meet = true;
+        if (!prior || rank >= prior.rank) set.set(side, { rank, value: property.value });
+      }
+    }
+    if (!meet) continue;
+    // A key that holds every side it names stays; one a more specific key overrides is the
+    // sides it still holds, each its own key.
+    for (const property of own) {
+      const { sides } = EDGE_KEYS[property.key.name.slice(prefix.length)] as {
+        sides: readonly string[];
+      };
+      const held = sides.filter((side) => set.get(side)?.value === property.value);
+      if (held.length === sides.length) continue;
+      const keys = held.map((side) =>
+        recast.types.builders.objectProperty(
+          recast.types.builders.identifier(`${prefix}${side}`),
+          property.value,
+        ),
+      );
+      out.splice(out.indexOf(property), 1, ...keys);
+    }
+  }
+  return out;
+}
+
 /**
  * A spread in a style the caller reads: the utilities and modifiers it writes,
  * and what it is on the before side (`StyleSheet.absoluteFill` is its
@@ -297,7 +362,7 @@ export function styleUtilities(
   // A grow, shrink and basis that are one of Tailwind's flex utilities (`flex-1`) are `.flex()`.
   const flex = flexToken(object);
   if (flex) mods.push({ subject: 'flexBasis', mod: { name: 'flex', args: [flex] } });
-  for (const property of object.properties) {
+  for (const property of sidesResolved(object.properties)) {
     if (
       flex &&
       (n.ObjectProperty.check(property) || n.Property.check(property)) &&

@@ -614,11 +614,11 @@ export const CASES = [
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>); },
-    after: () => { const DropdownMenu = I54; const DropdownMenuTrigger = I55; const Button = I13; const DropdownMenuContent = I56; const DropdownMenuItem = I57; const DropdownMenuSeparator = I58; const Icon = I59; const RiMoreFill = I60; const RiShareLine = I61; const { Icon: LIcon, Button: LButton, Item, Divider, Menu } = L;  return (toElement(Menu(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))); },
+    after: () => { const DropdownMenu = I54; const DropdownMenuTrigger = I55; const Button = I13; const DropdownMenuContent = I56; const DropdownMenuItem = I57; const DropdownMenuSeparator = I58; const Icon = I59; const RiMoreFill = I60; const RiShareLine = I61; const { Button: LButton, Item, Divider, Menu } = L;  return (toElement(Menu(LButton(Icon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))); },
   },
   {
     name: "components/Menus.tsx:41 (false)",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const RiMoreFill = I60; return (<Button
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const Icon = I59; const RiMoreFill = I60; return (<Button
       appearance="plain"
       tone="neutral"
       iconOnly
@@ -626,11 +626,11 @@ export const CASES = [
       color={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}
       hoverColor={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}
     />); } return (<Before />); },
-    after: () => { const Button = I13; const RiMoreFill = I60; const { Icon: LIcon, Button: LButton, Item, Divider, Menu, toElement: LtoElement } = L;  return (toElement(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(false ? 'error' : false ? 'primary' : undefined).hoverForeground(false ? 'error' : false ? 'primary' : undefined))); },
+    after: () => { const Button = I13; const Icon = I59; const RiMoreFill = I60; const { Button: LButton, Item, Divider, Menu } = L;  return (toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(false ? 'error' : false ? 'primary' : undefined).hoverForeground(false ? 'error' : false ? 'primary' : undefined))); },
   },
   {
     name: "components/Menus.tsx:41",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const RiMoreFill = I60; return (<Button
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const Icon = I59; const RiMoreFill = I60; return (<Button
       appearance="plain"
       tone="neutral"
       iconOnly
@@ -638,7 +638,7 @@ export const CASES = [
       color={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}
       hoverColor={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}
     />); } return (<Before />); },
-    after: () => { const Button = I13; const RiMoreFill = I60; const { Icon: LIcon, Button: LButton, Item, Divider, Menu, toElement: LtoElement } = L;  return (toElement(LButton(LIcon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(true ? 'error' : true ? 'primary' : undefined).hoverForeground(true ? 'error' : true ? 'primary' : undefined))); },
+    after: () => { const Button = I13; const Icon = I59; const RiMoreFill = I60; const { Button: LButton, Item, Divider, Menu } = L;  return (toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(true ? 'error' : true ? 'primary' : undefined).hoverForeground(true ? 'error' : true ? 'primary' : undefined))); },
   },
   {
     name: "components/Rows.tsx:19",

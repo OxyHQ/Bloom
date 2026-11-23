@@ -306,6 +306,21 @@ nothing moves into the Screen by hand, then the component converts), or in a
 component with a return that is no Screen (`screen:returns`: `null`, another
 view, a choice of views).
 
+A style's paddings and margins resolve as React Native resolves them where
+keys of one side meet: a side's own key (`marginLeft`) over its axis's
+(`marginHorizontal`), an axis's over the whole (`margin`), whatever their
+order; an overridden key is the sides it still holds, each its own, so
+`{ marginHorizontal: 8, marginLeft: 4 }` is `.margin('right', 'sm').margin('left', 'xs')`.
+A `Start` or `End` key beside them stays the conflict it is.
+
+A file partly in the language keeps its own imports of the language's names
+(no `Icon as LIcon`, no second `toElement`), and a language view it placed
+with `toElement()` among converted views is that view: `Embed(toElement(v))`
+is `v`. A StyleSheet's style or a module style constant that an element read
+before the conversion and nothing reads after it is removed, and a StyleSheet
+left empty goes with its declaration and, when nothing else reads it, its
+`StyleSheet` import; a style read by nothing before, or exported, stays.
+
 A token prop chosen by a plain condition (`size={compact ? 'sm' : 'md'}`) is
 that choice; where the modifier takes `undefined` as no value of its own (a
 Chip's `color` and `tone`, `.tint()`), a branch of none is too
