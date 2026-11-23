@@ -7,14 +7,15 @@
  *
  * The binding is gone. This file records what that did and did NOT buy, because
  * the obvious conclusion — "the gallery no longer needs a provider" — is wrong:
- * once the pager mounts, the gallery renders three Bloom icons, and every Bloom
- * icon calls `useTheme()` unconditionally through `useCommonSVGProps`. So the
- * requirement survives; it just moved to something that genuinely uses the hook.
+ * once the open settles, the gallery renders its chrome — three Bloom icons —
+ * and every Bloom icon calls `useTheme()` unconditionally through
+ * `useCommonSVGProps`. So the requirement survives; it just moved to something
+ * that genuinely uses the hook.
  *
- * The icon path is NOT reachable from here — all three icons sit behind
- * `pagerReady`, which is set when the open animation settles, and that animation
- * does not run in this environment. Rather than assert something this
- * environment cannot see, the last test measures the icons DIRECTLY.
+ * The open is held in flight here (`holdAnimations`), which is the state this
+ * file can speak for: the pager and its media are mounted, the chrome is not.
+ * Rather than assert something past that, the last test measures the icons
+ * DIRECTLY.
  */
 import type React from 'react';
 import { createRef } from 'react';
@@ -26,6 +27,7 @@ import { ZoomableMediaGallery } from '../zoomable-media-gallery';
 import type { ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
 import { RiUpload2Line as ShareIcon } from '../icons';
 import { hostNodes } from './support/rendered-style';
+import { holdAnimations } from './support/held-animations';
 
 const IMAGES = [{ uri: 'https://cloud.oxy.so/a.jpg', alt: 'First' }];
 
@@ -74,12 +76,18 @@ describe('what a missing BloomThemeProvider costs', () => {
   });
 
   it('the gallery opens with no provider, as far as the pager', () => {
+    const flights = holdAnimations();
     const { ref, toJSON } = renderGallery();
-    expect(() => {
-      act(() => {
-        ref.current?.open(IMAGES, 0);
-      });
-    }).not.toThrow();
+    try {
+      expect(() => {
+        act(() => {
+          ref.current?.open(IMAGES, 0);
+        });
+      }).not.toThrow();
+      expect(flights.held()).toBeGreaterThan(0);
+    } finally {
+      flights.restore();
+    }
 
     // It really opened, rather than opening to nothing — otherwise "did not
     // throw" would be true of a gallery that rendered no subtree at all.
