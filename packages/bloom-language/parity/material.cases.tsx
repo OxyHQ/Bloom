@@ -373,6 +373,25 @@ const surface: ParityCase[] = [
 
 const dividers: ParityCase[] = [
   { name: 'Divider', language: () => toElement(L.Divider()), bloom: () => <Divider /> },
+  {
+    // A vertical line outside a row: its own axis over its stack's.
+    name: 'a vertical Divider outside an HStack',
+    language: () => toElement(L.VStack(L.Divider().axis('vertical'))),
+    bloom: () => (
+      <RN.View>
+        <Divider vertical />
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a horizontal Divider inside an HStack',
+    language: () => toElement(L.HStack(L.Divider().axis('horizontal'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Divider />
+      </RN.View>
+    ),
+  },
   ...(['single', 'double', 'fill'] as const).flatMap((style) => [
     {
       name: `Divider ${style}`,

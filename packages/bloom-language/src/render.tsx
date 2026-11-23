@@ -2735,6 +2735,7 @@ function renderHost(
     case 'divider': {
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
       const spacing = ownValue(p, 'spacing')?.value;
+      const axis = ownValue(p, 'axis')?.value as 'horizontal' | 'vertical' | undefined;
       const [label] = node.children;
       const content = dividerLabel(label, ctx);
       const out = boxOf('component', 'DV');
@@ -2742,7 +2743,8 @@ function renderHost(
         Object.assign(props, {
           variant: ownValue(p, 'lineStyle')?.value,
           align: ownValue(p, 'align')?.value,
-          vertical: inRow || undefined,
+          // Across its stack: vertical in a row, unless its own `.axis()` says which way it runs.
+          vertical: (axis === undefined ? inRow : axis === 'vertical') || undefined,
           spacing: spacing === undefined ? undefined : resolveSpace(spacing),
         });
         return drawHost(

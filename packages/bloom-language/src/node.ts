@@ -1386,7 +1386,11 @@ export type Modifier =
   | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'basis'; readonly key: string; readonly value: LengthToken }
   | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName | MotionValue }
-  | { readonly kind: 'allowsHitTesting'; readonly key: string; readonly value: HitTesting }
+  | {
+      readonly kind: 'allowsHitTesting';
+      readonly key: string;
+      readonly value: HitTesting | undefined;
+    }
   | { readonly kind: 'accessibilityOnly'; readonly key: string }
   | {
       readonly kind: 'overlay';
@@ -2187,7 +2191,7 @@ export class Node {
   scale(value: ScaleName | MotionValue): Node {
     return this.with({ kind: 'scale', key: `scale:${geometryKey(value)}`, value });
   }
-  allowsHitTesting(value: HitTesting): Node {
+  allowsHitTesting(value: HitTesting | undefined): Node {
     return this.with({ kind: 'allowsHitTesting', key: `hit:${value}`, value });
   }
   accessibilityOnly(): Node {
@@ -4646,9 +4650,11 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `false`: touches and the pointer pass through the view and everything
    * inside it, to what is under it. `'children'`: through the view, not what
    * is inside it (React Native's `box-none`); `'self'`: the view takes them,
-   * what is inside it does not (`box-only`).
+   * what is inside it does not (`box-only`). `undefined` sets none (React
+   * Native's `pointerEvents={undefined}`), so a hit testing chosen at render
+   * (`.allowsHitTesting(split ? 'children' : undefined)`) is drawn only while it holds.
    */
-  allowsHitTesting(value: HitTesting): Self;
+  allowsHitTesting(value: HitTesting | undefined): Self;
   /**
    * Read by assistive technology and not drawn: a 1pt clipped box out of the
    * layout (Tailwind's `sr-only`). A screen reader still announces it.
@@ -5323,6 +5329,12 @@ export interface DividerView extends ViewModifiers<DividerView> {
   spacing(value: SpaceToken): DividerView;
   /** The line's colour role; the neutral separator by default. */
   tint(value: ColorName): DividerView;
+  /**
+   * Which way the line runs, over its stack's (vertical in an `HStack`,
+   * horizontal elsewhere): `.axis('vertical')` is a vertical line outside a
+   * row (Bloom `Divider vertical`), as in a `ZStack` or an `Embed`'s view.
+   */
+  axis(value: Axis): DividerView;
 }
 /** Bloom `Fill`: its children over the whole of the view it is in (an absolute inset). */
 export type FillView = ViewModifiers<FillView>;

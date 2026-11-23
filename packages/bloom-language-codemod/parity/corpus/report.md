@@ -1,8 +1,8 @@
 # Bloom language codemod: parity/sample-app
 
 - Files: 8 read, 8 changed
-- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 160
-- Converted: 160 (100.0%), in 57 regions
+- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 161
+- Converted: 161 (100.0%), in 58 regions
 - Classes the app's theme draws differently from Bloom's: 0
 
 ## Why elements stayed JSX

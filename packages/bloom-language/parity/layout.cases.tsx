@@ -358,6 +358,34 @@ const small: ParityCase[] = [
         </RN.View>
       ),
   },
+  ...[true, false].map((split) => ({
+    // Mention's notification row: what is inside takes touches only while its gestures split.
+    name: `hit testing chosen at render (${split})`,
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('sm')
+          .allowsHitTesting(split ? 'children' : undefined),
+      ),
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View pointerEvents={split ? 'box-none' : undefined} style={{ padding: 8 }}>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View
+          style={{
+            paddingTop: 8,
+            paddingBottom: 8,
+            paddingStart: 8,
+            paddingEnd: 8,
+            ...(split ? { pointerEvents: 'box-none' as const } : {}),
+          }}
+        >
+          <Text>a</Text>
+        </RN.View>
+      ),
+  })),
   ...(
     [
       ['children', 'box-none'],

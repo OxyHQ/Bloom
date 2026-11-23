@@ -197,6 +197,16 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
     css['overflow-y'] = (y ?? x) as string;
     delete css.overflow;
   }
+  // Accepted folds: an explicit `overflow: visible` is CSS's initial value, and a corner of
+  // exactly half a square box is a full one (`full`, 9999px), as both draw it.
+  for (const axis of ['overflow-x', 'overflow-y'])
+    if (css[axis] === 'visible') delete css[axis];
+  const side = css.width;
+  if (side !== undefined && side === css.height && /^[\d.]+px$/.test(side)) {
+    const half = `${Number.parseFloat(side) / 2}px`;
+    for (const corner of ['top-left', 'top-right', 'bottom-right', 'bottom-left'])
+      if (css[`border-${corner}-radius`] === half) css[`border-${corner}-radius`] = '9999px';
+  }
   for (const [name, value] of Object.entries(css)) {
     const percent = /^(-?[\d.]+)%$/.exec(value);
     if (percent) css[name] = `${Number(Number(percent[1]).toFixed(4))}%`;

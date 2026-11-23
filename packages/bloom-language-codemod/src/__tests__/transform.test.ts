@@ -576,6 +576,34 @@ const styles = StyleSheet.create({ box: { padding: 4 } });
 `);
     expect(result.code).not.toContain('StyleSheet');
   });
+  it('reads a pointerEvents chosen at render as the hit testing it chooses', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = ({ split }) => <View pointerEvents={split ? 'box-none' : undefined} className="p-2" />;
+export const B = ({ on }) => <View pointerEvents={on ? 'none' : 'auto'} />;
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".allowsHitTesting(split ? 'children' : undefined)");
+    expect(code).toContain('.allowsHitTesting(on ? false : true)');
+    expect(result.unconverted).toEqual([]);
+  });
+  it('reads a theme colour at an opacity as the role at that opacity token', () => {
+    const result = run(`import { View } from 'react-native';
+import { useTheme, withAlpha } from '@oxy.so/bloom/theme';
+export function A({ on }) {
+  const theme = useTheme();
+  return <View style={{ backgroundColor: withAlpha(theme.colors.primary, 0.1), borderColor: withAlpha(theme.colors.primary, 0.33), borderWidth: 1 }} />;
+}
+export function B() {
+  const theme = useTheme();
+  return <View style={{ backgroundColor: withAlpha(theme.colors.primary, 0.1) }} />;
+}
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".background('primary/10')");
+    expect(result.fixtures.at(-1)?.bindings.withAlpha?.module).toBe('@oxy.so/bloom/theme');
+    // 0.33 is no opacity token: the element stays.
+    expect(result.unconverted).toHaveLength(1);
+  });
   it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ marginTop: 12, overflow: 'visible' }} />;

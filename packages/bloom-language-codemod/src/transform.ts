@@ -906,6 +906,20 @@ export function transformSource(source: string, options: TransformOptions): File
       if (then !== undefined && otherwise !== undefined)
         return { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
     }
+    // Bloom's `withAlpha(colors.primary, 0.1)` or `tokenAlpha(tokens.primary, 0.1)`: the role at
+    // that opacity token, `'primary/10'` (the web paints it from the language's ink sheet).
+    const callee = n.CallExpression.check(expression) ? expression.callee : undefined;
+    const alpha = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+    if (
+      alpha?.module === '@oxy.so/bloom/theme' &&
+      (alpha.imported === 'withAlpha' || alpha.imported === 'tokenAlpha') &&
+      expression.arguments.length === 2
+    ) {
+      const role = roleOf(expression.arguments[0]);
+      const opacity = OPACITY_TOKEN.get(staticNumber(expression.arguments[1]) as number);
+      if (typeof role === 'string' && !role.includes('/') && opacity !== undefined)
+        return `${role}/${opacity}`;
+    }
     return undefined;
   };
   /** A language view placed as an element: `toElement(view)`, as a file partly in the language writes it. */
@@ -1841,8 +1855,9 @@ export function transformSource(source: string, options: TransformOptions): File
             const text = textDeclaration(key, read);
             if (text) return text;
           }
-          const role = themeRoles.get(read);
-          if (!role || insideOf(node, [COLOR_SCOPE])) return undefined;
+          // A role, or a role at an opacity (`withAlpha(colors.primary, 0.1)`).
+          const role = roleOf(read);
+          if (typeof role !== 'string' || insideOf(node, [COLOR_SCOPE])) return undefined;
           if (key === 'backgroundColor') return { name: 'background', args: [role] };
           if (key === 'color' && (kind === 'bloomText' || kind === 'rnText'))
             return { name: 'foreground', args: [role] };
@@ -1877,7 +1892,7 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       // What takes touches: `none` nothing (SwiftUI's `allowsHitTesting(false)`), `box-none` what is inside only, `box-only` the view only.
       if (name === 'pointerEvents' && (kind === 'view' || kind === 'pressable')) {
-        const hitTesting = HIT_TESTING[staticString(value) ?? ''];
+        const hitTesting = hitTestingOf(attributeExpression(value));
         if (hitTesting !== undefined) props.push({ name: 'allowsHitTesting', args: [hitTesting] });
         else fail(name, 'prop:pointerEvents', 'a pointerEvents set at runtime');
         continue;
@@ -3753,6 +3768,31 @@ export function transformSource(source: string, options: TransformOptions): File
         };
     }
     return { type: 'embed', content: { node: expression, hole: 'element' } };
+  }
+
+  /**
+   * React Native's `pointerEvents` as the language's hit testing: a static
+   * value, or values (and none, `undefined`) chosen by a plain condition
+   * (`split ? 'box-none' : undefined`). `auto` alone stays JSX, the default.
+   */
+  function hitTestingOf(expression: AnyNode): Value | undefined {
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const branch = (node: AnyNode): Value | undefined =>
+        n.Identifier.check(node) && node.name === 'undefined'
+          ? { $: 'absent' }
+          : staticString(node) === 'auto'
+            ? true
+            : hitTestingOf(node);
+      const then = branch(expression.consequent);
+      const otherwise = branch(expression.alternate);
+      return then === undefined || otherwise === undefined
+        ? undefined
+        : { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
+    }
+    return HIT_TESTING[staticString(expression) ?? ''];
   }
 
   // ── styles left unread ───────────────────────────────────────────────

@@ -71,11 +71,6 @@ does not keeps the element JSX. Each class goes through the className table
 Measured on the corpus and kept as reasons (`measuredDifference` and
 `rounding` in `src/resolve.ts`):
 
-- A colour at an opacity (`bg-primary/10`, `text-white/60`): the language
-  writes it inline on the web as a `color-mix()`, and react-native-web's
-  `normalizeColor` drops any colour that is not a `var()`, so nothing is
-  drawn. The Chrome check below renders the mix directly, past
-  react-native-web, so it does not see this; the jsdom web suite does.
 - `text-white/70` and the like: NativeWind writes a fixed colour at an opacity
   as an 8-bit hex alpha, rounded down (`#ffffffb2`), where `0.7` is 178.5/255.
 - A line height as a ratio or a letter spacing in em whose product has more
@@ -320,6 +315,19 @@ is `v`. A StyleSheet's style or a module style constant that an element read
 before the conversion and nothing reads after it is removed, and a StyleSheet
 left empty goes with its declaration and, when nothing else reads it, its
 `StyleSheet` import; a style read by nothing before, or exported, stays.
+
+A View's or a Pressable's `pointerEvents` is `.allowsHitTesting()`: `none`
+`false`, `box-none` `'children'`, `box-only` `'self'`, and values chosen by a
+plain condition that choice, `undefined` none and `auto` `true`
+(`split ? 'box-none' : undefined` is `.allowsHitTesting(split ? 'children' : undefined)`).
+
+A theme colour at an opacity, Bloom's `withAlpha(colors.primary, 0.1)` or
+`tokenAlpha(tokens.primary, 0.1)` of a `useTheme()` or `useColorTokens()` read,
+is the role at that opacity token, `.background('primary/10')`: native paints
+the role's colour at that alpha, as `withAlpha` does, and the web the
+language's ink (`var(--bl-primary-10)`, declared in its ink sheet), which
+react-native-web keeps; the corpus holds it equal on both (`Menus.tsx`'s
+labeler tab), and an opacity that is no token keeps the element JSX.
 
 A token prop chosen by a plain condition (`size={compact ? 'sm' : 'md'}`) is
 that choice; where the modifier takes `undefined` as no value of its own (a

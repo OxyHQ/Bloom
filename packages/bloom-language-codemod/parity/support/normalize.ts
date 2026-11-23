@@ -193,6 +193,15 @@ function foldStyle(
     if (style.flexDirection === 'column') delete style.flexDirection;
     if (style.position === 'relative') delete style.position;
   }
+  // Accepted folds: an explicit `overflow: 'visible'` is the default a view draws without
+  // one, and a corner of exactly half a square box is a full one (`full`, 9999), as both draw it.
+  if (style.overflow === 'visible') delete style.overflow;
+  if (
+    typeof style.width === 'number' &&
+    style.width === style.height &&
+    style.borderRadius === style.width / 2
+  )
+    style.borderRadius = 9999;
   if (text && !span) {
     if (style.fontWeight === '400' || style.fontWeight === 'normal') delete style.fontWeight;
     if (style.letterSpacing === 0) delete style.letterSpacing;

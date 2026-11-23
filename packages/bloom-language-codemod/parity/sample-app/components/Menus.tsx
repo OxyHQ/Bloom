@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 // Menus drawn as Bloom's dropdown on every platform: a trigger and its rows.
 import { Button } from '@oxy.so/bloom/button';
 import {
@@ -9,7 +10,7 @@ import {
 } from '@oxy.so/bloom/dropdown-menu';
 import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';
 import { Icon, toElement } from '@oxy.so/bloom-language';
-import { useTheme } from '@oxy.so/bloom/theme';
+import { useTheme, withAlpha } from '@oxy.so/bloom/theme';
 
 export function PostMore({ share, block }: { share: () => void; block: () => void }) {
   return (
@@ -45,6 +46,20 @@ export function ToolbarAction({ invalid, active }: { invalid: boolean; active: b
       leadingIcon={RiMoreFill}
       color={tint}
       hoverColor={tint}
+    />
+  );
+}
+
+/** Mention's labeler tab: the open one on the theme's primary at 10%. */
+export function LabelerTab() {
+  const theme = useTheme();
+  return (
+    <View
+      style={{
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        backgroundColor: withAlpha(theme.colors.primary, 0.1),
+      }}
     />
   );
 }

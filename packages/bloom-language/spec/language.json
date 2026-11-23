@@ -2301,7 +2301,7 @@
     },
     "divider": {
       "constructors": ["Divider"],
-      "modifiers": ["lineStyle", "align", "spacing", "tint"],
+      "modifiers": ["lineStyle", "align", "spacing", "tint", "axis"],
       "tint": "color"
     },
     "alert": {

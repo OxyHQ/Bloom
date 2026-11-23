@@ -2101,7 +2101,7 @@
   "appColors": null
  },
  {
-  "name": "components/Menus.tsx:16",
+  "name": "components/Menus.tsx:17",
   "before": "<DropdownMenu>\n      <DropdownMenuTrigger asChild label=\"More\">\n        <Button iconOnly appearance=\"plain\" leadingIcon={RiMoreFill} accessibilityLabel=\"More\" />\n      </DropdownMenuTrigger>\n      <DropdownMenuContent label=\"More\">\n        <DropdownMenuItem\n          leading={toElement(Icon(RiShareLine).size('sm').foreground('primary'))}\n          onPress={() => {}}\n        >\n          Share\n        </DropdownMenuItem>\n        <DropdownMenuSeparator />\n        <DropdownMenuItem variant=\"destructive\" onPress={() => {}}>\n          Block\n        </DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>",
   "after": "toElement(Menu(LButton(Icon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))",
   "bindings": {
@@ -2156,7 +2156,7 @@
   "appColors": null
  },
  {
-  "name": "components/Menus.tsx:41 (false)",
+  "name": "components/Menus.tsx:42 (false)",
   "before": "<Button\n      appearance=\"plain\"\n      tone=\"neutral\"\n      iconOnly\n      leadingIcon={RiMoreFill}\n      color={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}\n      hoverColor={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}\n    />",
   "after": "toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(false ? 'error' : false ? 'primary' : undefined).hoverForeground(false ? 'error' : false ? 'primary' : undefined))",
   "bindings": {
@@ -2187,7 +2187,7 @@
   "appColors": null
  },
  {
-  "name": "components/Menus.tsx:41",
+  "name": "components/Menus.tsx:42",
   "before": "<Button\n      appearance=\"plain\"\n      tone=\"neutral\"\n      iconOnly\n      leadingIcon={RiMoreFill}\n      color={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}\n      hoverColor={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}\n    />",
   "after": "toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(true ? 'error' : true ? 'primary' : undefined).hoverForeground(true ? 'error' : true ? 'primary' : undefined))",
   "bindings": {
@@ -2209,6 +2209,34 @@
    "Item",
    "Divider",
    "Menu"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Menus.tsx:57",
+  "before": "<View\n      style={{\n        paddingHorizontal: 12,\n        paddingVertical: 8,\n        backgroundColor: withAlpha(parityTheme.colors.primary, 0.1),\n      }}\n    />",
+  "after": "toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "withAlpha": {
+    "module": "@oxy.so/bloom/theme",
+    "imported": "withAlpha"
+   }
+  },
+  "language": [
+   "Button: LButton",
+   "Item",
+   "Divider",
+   "Menu",
+   "VStack"
   ],
   "classes": [],
   "within": [],

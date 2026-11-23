@@ -453,6 +453,23 @@ fn a_chip_s_tone_is_chosen_at_render() {
 }
 
 #[test]
+fn a_hit_testing_is_chosen_at_render() {
+    let ok =
+        compiled("export const x = (split) => VStack().allowsHitTesting(split ? 'children' : undefined);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let bad = compiled("export const x = () => VStack().allowsHitTesting('box-none');\n");
+    assert!(bad.diagnostics[0].message.contains("'box-none'"), "{}", bad.diagnostics[0].message);
+}
+
+#[test]
+fn a_divider_runs_either_way() {
+    let ok = compiled_with("Divider, VStack", "export const x = () => VStack(Divider().axis('vertical'));\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let bad = compiled_with("Divider", "export const x = () => Divider().axis('across');\n");
+    assert!(bad.diagnostics[0].message.contains("'across'"), "{}", bad.diagnostics[0].message);
+}
+
+#[test]
 fn a_clip_is_turned_on_or_off() {
     let ok = compiled("export const x = () => VStack().clipped().padding('md').clipped(false);\n");
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));

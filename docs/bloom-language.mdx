@@ -662,9 +662,14 @@ VStack(...).background('surface').corner('xl').shadow('m')
   (`pointer-events-none`); `true` takes them again. `'children'` lets them
   through the view's outermost box but not what is inside it (React Native's
   `box-none`, a scrim whose buttons still press), and `'self'` takes them on
-  that box and not inside it (`box-only`). react-native-web drops an
-  inline `pointerEvents`, so on the web a Bloom component's is a box of its own
-  around it.
+  that box and not inside it (`box-only`). `undefined` sets none, as React
+  Native's `pointerEvents={undefined}`, so `.allowsHitTesting(split ?
+  'children' : undefined)` lets touches through only while it holds. On the
+  web each is the class react-native-web's own `pointerEvents` prop draws
+  (`box-none`: `pointer-events: none` on the view, `auto` on each child), held
+  equal to it by the layout parity, a value chosen at render included;
+  react-native-web drops an inline `pointerEvents`, so on the web a Bloom
+  component's is a box of its own around it.
 - **Drawn, not read.** `.accessibilityHidden()` hides the view and everything
   inside it from screen readers, each platform its own way: on Android and iOS
   `accessibilityElementsHidden` and `importantForAccessibility:
@@ -988,7 +993,7 @@ Card(
   'fill')`, `.align('start' | 'center' | 'end')` (the label's place),
   `.spacing(space)` (the room on each side), `.tint(role)` (the line). A label
   `Text` with nothing of its own is Bloom's divider label (its type and ink);
-  any other view is drawn as it is. In a `Menu` it is the line between rows.
+  any other view is drawn as it is. In a `Menu` it is the line between rows. `.axis('vertical')` or `.axis('horizontal')` says which way the line runs over its stack's (Bloom's `vertical`): a vertical line outside an `HStack`.
 - **`Fill(...)`** covers the whole of the view it is in (a scrim, an overlay).
 - **`AspectRatio(ratio, ...)`** is its parent's width and the height `ratio`
   (width over height) gives; a ratio that is not one yet (`0 / 0` before an

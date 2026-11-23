@@ -7566,7 +7566,8 @@ export const NODE_MODIFIERS = {
     "lineStyle",
     "align",
     "spacing",
-    "tint"
+    "tint",
+    "axis"
   ],
   "alert": [
     "message",
