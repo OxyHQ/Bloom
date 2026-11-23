@@ -50,6 +50,9 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
     iconSize: Record<string, number>;
     opacity: Record<string, number>;
     hitSlop: Record<string, number>;
+    space: Record<string, number>;
+    corner: Record<string, number>;
+    fontSize: Record<string, number>;
   };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
@@ -160,6 +163,13 @@ const ROLE_OF_THEME_COLOR = new Map<string, string>();
 for (const [role, entry] of Object.entries(spec.colors))
   if (Array.isArray(entry) && !ROLE_OF_THEME_COLOR.has(entry[0]))
     ROLE_OF_THEME_COLOR.set(entry[0], role);
+/** Each canonical colour token, as `useColorTokens()` names it (`mutedForeground`), as the role painted from it. */
+const ROLE_OF_COLOR_TOKEN = new Map<string, string>();
+for (const [role, entry] of Object.entries(spec.colors))
+  if (Array.isArray(entry)) {
+    const token = entry[1].replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+    if (!ROLE_OF_COLOR_TOKEN.has(token)) ROLE_OF_COLOR_TOKEN.set(token, role);
+  }
 const ICON_SIZES = Object.entries(spec.scales.iconSize);
 /** A glyph size in points (`28`) as the icon size token of its value (`'xl'`), a named rung over a numeric one. */
 const ICON_SIZE_TOKEN = new Map<number, string>();
@@ -304,6 +314,13 @@ interface AppColor {
   readonly constant?: string;
   /** Where the icon's fill reads the constant. */
   readonly read?: AnyNode;
+}
+
+/** A style chosen by a condition: the utilities each branch adds. */
+interface StyleChoice {
+  readonly test: AnyNode;
+  readonly whenTrue: readonly string[];
+  readonly whenFalse: readonly string[];
 }
 
 /** React Native's `pointerEvents` as the language's hit testing (`auto` is the default, left as JSX). */
@@ -673,6 +690,13 @@ export function transformSource(source: string, options: TransformOptions): File
    * theme colour, resolved through the scope it is read in.
    */
   const themeRoles = new Map<AnyNode, string>();
+  const useColorTokensLocals = new Set(
+    [...sources]
+      .filter(([, s]) => s.module === '@oxy.so/bloom/theme' && s.imported === 'useColorTokens')
+      .map(([local]) => local),
+  );
+  /** The theme reads that are `useColorTokens()`'s (`colorTokens.border`), not `useTheme()`'s. */
+  const colorTokenReads = new Set<AnyNode>();
   const useThemeLocals = new Set(
     [...sources]
       .filter(([, s]) => s.module === '@oxy.so/bloom/theme' && s.imported === 'useTheme')
@@ -691,7 +715,7 @@ export function transformSource(source: string, options: TransformOptions): File
     }
   };
   /** What `name` is bound to where `path` reads it: Bloom's theme, its colours, or neither. */
-  const boundTo = (path: AnyNode, name: string): 'theme' | 'colors' | undefined => {
+  const boundTo = (path: AnyNode, name: string): 'theme' | 'colors' | 'tokens' | undefined => {
     const bindings = scopeOf(path, name)?.getBindings()[name];
     if (bindings?.length !== 1) return undefined;
     // `const theme = useTheme()`, or `const { colors } = useTheme()` (the property's value is the binding).
@@ -702,10 +726,13 @@ export function transformSource(source: string, options: TransformOptions): File
       !init ||
       !n.CallExpression.check(init) ||
       !n.Identifier.check(init.callee) ||
-      !useThemeLocals.has(init.callee.name) ||
       at.parent?.node.kind !== 'const'
     )
       return undefined;
+    // `const colorTokens = useColorTokens()`: the theme's canonical colours by token.
+    if (useColorTokensLocals.has(init.callee.name))
+      return n.Identifier.check(at.node.id) && at.node.id.name === name ? 'tokens' : undefined;
+    if (!useThemeLocals.has(init.callee.name)) return undefined;
     if (n.Identifier.check(at.node.id) && at.node.id.name === name) return 'theme';
     if (
       n.ObjectPattern.check(at.node.id) &&
@@ -724,7 +751,7 @@ export function transformSource(source: string, options: TransformOptions): File
   };
   /** Each `styles.x` read where `styles` is the module's StyleSheet (not a name that shadows it). */
   const moduleStyleReads = new Set<AnyNode>();
-  if (useThemeLocals.size > 0 || styleSheets.size > 0)
+  if (useThemeLocals.size > 0 || useColorTokensLocals.size > 0 || styleSheets.size > 0)
     recast.visit(ast, {
       visitMemberExpression(path) {
         const { object, property, computed } = path.node;
@@ -745,6 +772,11 @@ export function transformSource(source: string, options: TransformOptions): File
             boundTo(path, object.object.name) === 'theme';
           const colors = n.Identifier.check(object) && boundTo(path, object.name) === 'colors';
           if (role && (colorsOf || colors)) themeRoles.set(path.node, role);
+          const token = ROLE_OF_COLOR_TOKEN.get(property.name);
+          if (token && n.Identifier.check(object) && boundTo(path, object.name) === 'tokens') {
+            themeRoles.set(path.node, token);
+            colorTokenReads.add(path.node);
+          }
         }
         this.traverse(path);
       },
@@ -955,6 +987,34 @@ export function transformSource(source: string, options: TransformOptions): File
         this.traverse(path);
       },
     });
+  /** Bloom's `tokens` (`@oxy.so/bloom/styles`), by its local name in the file. */
+  const bloomTokens = [...sources].find(
+    ([, s]) => s.module === '@oxy.so/bloom/styles' && s.imported === 'tokens',
+  )?.[0];
+  /** Bloom's scales the language holds, by their name in `tokens`. */
+  const TOKEN_SCALES: Record<string, Record<string, unknown>> = {
+    space: spec.scales.space,
+    borderRadius: spec.scales.corner,
+    fontSize: spec.scales.fontSize,
+  };
+  /** `tokens.space.sm` (`tokens.borderRadius.xs`, `tokens.fontSize._2xl`): the rung's points, the spec's own. */
+  const bloomTokenNumber = (node: AnyNode): number | undefined => {
+    const scale = node?.object;
+    if (
+      !bloomTokens ||
+      !n.MemberExpression.check(node) ||
+      node.computed ||
+      !n.MemberExpression.check(scale) ||
+      scale.computed ||
+      !n.Identifier.check(scale.object) ||
+      scale.object.name !== bloomTokens ||
+      !n.Identifier.check(scale.property) ||
+      !n.Identifier.check(node.property)
+    )
+      return undefined;
+    const value = TOKEN_SCALES[scale.property.name]?.[node.property.name.replace(/^_/, '')];
+    return typeof value === 'number' ? value : undefined;
+  };
   /** React Native's `StyleSheet.absoluteFill`, read from the module's `StyleSheet`. */
   const isAbsoluteFill = (node: AnyNode) =>
     !!styleSheetLocal &&
@@ -965,21 +1025,72 @@ export function transformSource(source: string, options: TransformOptions): File
     n.Identifier.check(node.property) &&
     node.property.name === 'absoluteFill';
 
+  /** No style: a branch of a choice that adds none. */
+  const noStyle = (node: AnyNode) =>
+    n.NullLiteral.check(node) ||
+    (n.BooleanLiteral.check(node) && !node.value) ||
+    (n.Identifier.check(node) && node.name === 'undefined');
+  /**
+   * A list part chosen by a plain condition: `test && style` or `test ? a : b`,
+   * its branches (null where it adds no style).
+   */
+  function styleBranches(
+    part: AnyNode,
+  ): { test: AnyNode; branches: [AnyNode | null, AnyNode | null] } | undefined {
+    const plain = (test: AnyNode) => isPlainRead(test) || isBooleanForm(test);
+    if (n.LogicalExpression.check(part) && part.operator === '&&' && plain(part.left))
+      return { test: part.left, branches: [part.right, null] };
+    if (n.ConditionalExpression.check(part) && plain(part.test))
+      return {
+        test: part.test,
+        branches: [
+          noStyle(part.consequent) ? null : part.consequent,
+          noStyle(part.alternate) ? null : part.alternate,
+        ],
+      };
+    return undefined;
+  }
+
   /** A static style (an object literal, a module StyleSheet's style, or a list of them) as utilities. */
   function staticStyle(
     expression: AnyNode,
     read: StyleRead,
   ):
-    | { ok: true; classes: string[]; mods: { subject: string; mod: Mod }[] }
+    | {
+        ok: true;
+        classes: string[];
+        mods: { subject: string; mod: Mod }[];
+        choice?: StyleChoice;
+      }
     | { ok: false; subject: string; why: string } {
     const parts: AnyNode[] = n.ArrayExpression.check(expression)
       ? expression.elements
       : [expression];
     const classes: string[] = [];
     const mods: { subject: string; mod: Mod }[] = [];
+    let choice: StyleChoice | undefined;
     // A StyleSheet's style is its literal on the before side; an inline object stays as written.
     const literals = new Map<AnyNode, string>();
     for (const part of parts) {
+      // A style chosen by a plain condition (`!focused && styles.dim`, `compact ? A : B`): each
+      // branch's utilities, chosen as a className is (`dynamic-className`).
+      const chosen = styleBranches(part);
+      if (chosen) {
+        if (choice) return { ok: false, subject: 'style', why: 'a style with two choices' };
+        const [whenTrue, whenFalse] = chosen.branches.map((branch) =>
+          branch ? staticStyle(branch, read) : { ok: true as const, classes: [], mods: [] },
+        ) as [ReturnType<typeof staticStyle>, ReturnType<typeof staticStyle>];
+        if (!whenTrue.ok) return whenTrue;
+        if (!whenFalse.ok) return whenFalse;
+        if (whenTrue.mods.length || whenFalse.mods.length || whenTrue.choice || whenFalse.choice)
+          return {
+            ok: false,
+            subject: 'style',
+            why: 'a style chosen at runtime whose branches write more than utilities',
+          };
+        choice = { test: chosen.test, whenTrue: whenTrue.classes, whenFalse: whenFalse.classes };
+        continue;
+      }
       // React Native's own fill, pinned to every edge: its declarations, written out on the before side.
       if (isAbsoluteFill(part)) {
         classes.push(...ABSOLUTE_FILL.classes);
@@ -989,7 +1100,12 @@ export function transformSource(source: string, options: TransformOptions): File
       let object = part;
       // A module constant holding a style is its object, written out on the before side.
       if (styleConstantReads.has(part)) {
-        const style = styleUtilities(styleConstantReads.get(part), read, isAbsoluteFill);
+        const style = styleUtilities(
+          styleConstantReads.get(part),
+          read,
+          isAbsoluteFill,
+          bloomTokenNumber,
+        );
         if (!style.ok) return style;
         classes.push(...style.classes);
         mods.push(...style.mods);
@@ -1007,7 +1123,9 @@ export function transformSource(source: string, options: TransformOptions): File
           ? styleSheets.get(sheet.name)?.get(property.name)
           : undefined;
       }
-      const style = object ? styleUtilities(object, read, isAbsoluteFill) : undefined;
+      const style = object
+        ? styleUtilities(object, read, isAbsoluteFill, bloomTokenNumber)
+        : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
       if (!style.ok) return style;
       classes.push(...style.classes);
@@ -1015,7 +1133,7 @@ export function transformSource(source: string, options: TransformOptions): File
       if (referenced) literals.set(part, style.literal);
     }
     for (const [part, literal] of literals) styleLiterals.set(part, literal);
-    return { ok: true, classes, mods };
+    return { ok: true, classes, mods, choice };
   }
 
   /**
@@ -1522,6 +1640,7 @@ export function transformSource(source: string, options: TransformOptions): File
     /** The utilities a static `style` writes, read with the className. */
     const styleClasses: string[] = [];
     const styleMods: { subject: string; mod: Mod }[] = [];
+    let styleChoice: StyleChoice | undefined;
     /** An icon's `width`, `height` and `fill`. */
     const iconProps = new Map<string, AnyNode>();
     /** A TouchableOpacity: its press fades it (`.pressFade()`), at its `activeOpacity` token. */
@@ -1664,6 +1783,7 @@ export function transformSource(source: string, options: TransformOptions): File
         if (style.ok) {
           styleClasses.push(...style.classes);
           styleMods.push(...style.mods);
+          styleChoice = style.choice;
         } else fail(style.subject, 'style', style.why);
         continue;
       }
@@ -1691,6 +1811,18 @@ export function transformSource(source: string, options: TransformOptions): File
       fail(name, `prop:${name}`, `the prop \`${name}\` has no mapping`);
     }
 
+    // A style chosen by a condition is the className choice it writes: what each branch adds.
+    if (styleChoice) {
+      if (other)
+        fail('style', 'dynamic-className', 'a className and a style both chosen at runtime');
+      else {
+        other = {
+          test: { node: styleChoice.test, hole: 'condition' },
+          className: [className, ...styleChoice.whenFalse].filter(Boolean).join(' '),
+        };
+        className = [className, ...styleChoice.whenTrue].filter(Boolean).join(' ');
+      }
+    }
     for (const token of `${className} ${other?.className ?? ''}`.split(/\s+/).filter(Boolean))
       classes.add(token);
     if (styleClasses.length) {
@@ -3576,7 +3708,9 @@ export function transformSource(source: string, options: TransformOptions): File
         spans.push({
           start: read.start,
           end: read.end,
-          text: `parityTheme.colors.${read.property.name}`,
+          text: colorTokenReads.has(read)
+            ? `parityTokens.${read.property.name}`
+            : `parityTheme.colors.${read.property.name}`,
         });
       }
     // A `const` holding the ink is its initialiser on the before side, its conditions the holes and its colours the theme's.
@@ -3598,7 +3732,9 @@ export function transformSource(source: string, options: TransformOptions): File
           inner.push({
             start: themeRead.start,
             end: themeRead.end,
-            text: `parityTheme.colors.${themeRead.property.name}`,
+            text: colorTokenReads.has(themeRead)
+              ? `parityTokens.${themeRead.property.name}`
+              : `parityTheme.colors.${themeRead.property.name}`,
           });
         }
       inner.sort((a, b) => a.start - b.start);

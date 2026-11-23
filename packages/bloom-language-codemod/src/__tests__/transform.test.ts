@@ -400,6 +400,48 @@ const styles = StyleSheet.create({ tap: { ...StyleSheet.absoluteFill, zIndex: 2 
       "position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 2",
     );
   });
+  it('reads a style chosen by a condition as the className choice it writes', () => {
+    const result = run(`import { StyleSheet, View } from 'react-native';
+export const A = ({ compact }) => <View style={compact ? styles.tight : styles.loose} />;
+export const B = ({ open }) => <View style={[styles.row, open && styles.pad]} />;
+const styles = StyleSheet.create({
+  tight: { flexDirection: 'row', gap: 4 },
+  loose: { flexDirection: 'row', gap: 8 },
+  row: { flexDirection: 'row' },
+  pad: { padding: 16 },
+});
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain("HStack().spacing(compact ? 'xs' : 'sm')");
+    expect(flat(result.code)).toContain(
+      "HStack().when(Boolean(open), (v) => v.padding('all', 'lg'))",
+    );
+    expect(result.fixtures.filter((f) => f.name.endsWith('(false)'))).toHaveLength(2);
+  });
+  it('reads a colour from useColorTokens() as its role', () => {
+    const result = run(`import { Text, View } from 'react-native';
+import { useColorTokens } from '@oxy.so/bloom/theme';
+export function A({ active }) {
+  const colorTokens = useColorTokens();
+  return <View style={{ backgroundColor: colorTokens.muted }}><Text style={{ color: colorTokens.mutedForeground }}>a</Text></View>;
+}
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain(".foreground('muted')");
+    expect(flat(result.code)).toContain(".background('mutedFill')");
+    expect(result.fixtures[0]?.before).toContain('parityTokens.muted');
+  });
+  it('reads Bloom’s tokens and a style constant in a style', () => {
+    const result = run(`import { View } from 'react-native';
+import { tokens } from '@oxy.so/bloom/styles';
+const ROW = { flexDirection: 'row', gap: tokens.space.sm, paddingHorizontal: tokens.space._2xl, borderRadius: tokens.borderRadius.xs } satisfies object;
+export const A = () => <View style={ROW} />;
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain(
+      "HStack().padding('horizontal', '2xl').corner('xs').spacing('sm')",
+    );
+  });
   it('reads a text’s fontSize and lineHeight as its size and line tokens', () => {
     const result = run(`import { Text } from 'react-native';
 import { StyleSheet } from 'react-native';

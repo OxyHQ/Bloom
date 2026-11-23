@@ -273,6 +273,8 @@ export function styleUtilities(
   object: AnyNode,
   read?: StyleRead,
   isAbsoluteFill?: (node: AnyNode) => boolean,
+  /** A value that is a number the codemod knows (Bloom's `tokens.space.sm`), or undefined. */
+  numberOf?: (node: AnyNode) => number | undefined,
 ): StyleResult {
   if (!n.ObjectExpression.check(object))
     return { ok: false, subject: 'style', why: 'a style that is no object literal' };
@@ -302,20 +304,27 @@ export function styleUtilities(
     )
       return { ok: false, subject: 'style', why: 'a style built at runtime' };
     const key = property.key.name as string;
-    const mod = direct(key, property.value) ?? read?.(key, property.value);
+    const known = numberOf?.(property.value);
+    const value =
+      known === undefined
+        ? property.value
+        : known < 0
+          ? recast.types.builders.unaryExpression('-', recast.types.builders.numericLiteral(-known))
+          : recast.types.builders.numericLiteral(known);
+    const mod = direct(key, value) ?? read?.(key, value);
     if (mod) {
       for (const one of Array.isArray(mod) ? mod : [mod]) mods.push({ subject: key, mod: one });
       continue;
     }
     // `inset` is its four edges, as React Native resolves it.
     if (key === 'inset') {
-      const edges = ['top', 'right', 'bottom', 'left'].map((edge) => utility(edge, property.value));
+      const edges = ['top', 'right', 'bottom', 'left'].map((edge) => utility(edge, value));
       if (edges.every((edge) => edge !== undefined)) {
         classes.push(...(edges as string[]));
         continue;
       }
     }
-    const found = utility(key, property.value);
+    const found = utility(key, value);
     if (!found)
       return {
         ok: false,
