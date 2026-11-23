@@ -817,6 +817,12 @@ fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
         first_message(&indicators),
         Some("Unknown scrollIndicators token 'never' for .scrollIndicators()")
     );
+    let wrapped = chrome(
+        "export const S = (dark, Dock) => Text('a').colorScope(dark ? 'dark' : undefined).keyboardAvoiding().provider(Dock);\n",
+    );
+    assert!(wrapped.diagnostics.is_empty(), "{:?}", first_message(&wrapped));
+    let scope = chrome("export const S = () => Text('a').colorScope('dim');\n");
+    assert_eq!(first_message(&scope), Some("Unknown colorScopeMode token 'dim' for .colorScope()"));
     let scroll = chrome("export const S = () => Text('a').screenScroll('page');\n");
     assert_eq!(first_message(&scroll), Some("Unknown screenScroll token 'page' for .screenScroll()"));
     let margin = chrome("export const S = () => ScrollView(Text('a')).contentMargins('sideways', 'md');\n");

@@ -355,6 +355,8 @@ type Tagged =
   | { readonly $: 'renderer'; readonly fn: Carried }
   | { readonly $: 'absent' }
   | { readonly $: 'null' }
+  /** A component by its name, as the file imports it (an app's provider around a screen). */
+  | { readonly $: 'component'; readonly name: string }
   /** One of two values by a condition, as the app chose (`invalid ? 'error' : undefined`). */
   | {
       readonly $: 'choose';
@@ -1033,6 +1035,138 @@ export function transformSource(source: string, options: TransformOptions): File
     const source = local ? sources.get(local) : undefined;
     return source?.module === '@oxy.so/bloom/screen' && source.imported === 'Screen';
   };
+  /**
+   * A route's return around its Screen, peeled to the Screen: each element
+   * around it with the Screen (or the next one in) as its only child is a
+   * screen modifier the language draws around the Screen, innermost first,
+   * as the chain's order wraps them. `<BloomColorScope mode asChild>` is
+   * `.colorScope(mode)`, a `<KeyboardAvoidingView>` filling (`flex: 1`) with
+   * React Native's behavior (`Platform.OS === 'ios' ? 'padding' : 'height'`)
+   * `.keyboardAvoiding()`, and a `…Provider` with no props (Bloom's
+   * `HeaderDockProvider`, an app's own) `.provider(Name)`. Anything else around it is the reason it stays JSX.
+   */
+  type Peeled =
+    | { readonly screen: AnyNode; readonly mods: readonly PropMod[] }
+    | { readonly screen: AnyNode; readonly reason: Reason };
+  const peeled = new Map<AnyNode, Peeled | undefined>();
+  function peelScreen(node: AnyNode): Peeled | undefined {
+    if (peeled.has(node)) return peeled.get(node);
+    let result: Peeled | undefined;
+    if (isScreenElement(node)) result = { screen: node, mods: [] };
+    else if (n.JSXElement.check(node)) {
+      const children = (node.children as AnyNode[]).filter(
+        (child) => !(n.JSXText.check(child) && !child.value.trim()),
+      );
+      const inner = children.length === 1 ? peelScreen(children[0]) : undefined;
+      if (inner && 'mods' in inner) {
+        const wrapper = screenWrapper(node);
+        result =
+          'mod' in wrapper
+            ? { screen: inner.screen, mods: [...inner.mods, wrapper.mod] }
+            : { screen: inner.screen, reason: wrapper.reason };
+      } else result = inner;
+    }
+    peeled.set(node, result);
+    return result;
+  }
+  /** The one element a wrapper around a route's Screen holds. */
+  const peelChild = (node: AnyNode): AnyNode =>
+    (node.children as AnyNode[]).find((child) => n.JSXElement.check(child));
+  /** One element around a route's Screen as its screen modifier, or why it is none. */
+  function screenWrapper(node: AnyNode): { mod: PropMod } | { reason: Reason } {
+    const local = jsxName(node) ?? 'an element';
+    const source = sources.get(local);
+    const reason = (why: string) => ({
+      reason: {
+        subject: 'Screen',
+        code: 'screen:wrapped',
+        why: `inside \`${local}\`: ${why}`,
+      },
+    });
+    const attributes = (node.openingElement.attributes as AnyNode[]).filter((a) =>
+      n.JSXAttribute.check(a),
+    );
+    if (attributes.length !== node.openingElement.attributes.length)
+      return reason('spread props: the codemod cannot see what they set');
+    const named = new Map<string, AnyNode>(
+      attributes.map((a) => [a.name.name as string, a.value] as const),
+    );
+    const only = (...names: string[]) => [...named.keys()].every((name) => names.includes(name));
+    if (source?.module === '@oxy.so/bloom/theme' && source.imported === 'BloomColorScope') {
+      const asChild = named.get('asChild');
+      const mode = named.get('mode');
+      if (!only('asChild', 'mode') || !named.has('asChild') || !named.has('mode'))
+        return reason(
+          'a colour scope is `.colorScope(mode)` when it takes only `mode` and `asChild` (a preset, a seed or its own view are its own)',
+        );
+      const bare =
+        asChild === null ||
+        (n.JSXExpressionContainer.check(asChild) &&
+          n.BooleanLiteral.check(asChild.expression) &&
+          asChild.expression.value === true);
+      if (!bare) return reason('a colour scope that is no `asChild` draws a view of its own');
+      const scheme = staticString(mode);
+      if (scheme !== undefined && scheme !== 'light' && scheme !== 'dark')
+        return reason(`a scheme \`${scheme}\` that is neither light nor dark`);
+      return {
+        mod: {
+          name: 'colorScope',
+          args: [scheme ?? { node: attributeExpression(mode), hole: 'string' }],
+        },
+      };
+    }
+    if (source?.module === 'react-native' && source.imported === 'KeyboardAvoidingView') {
+      if (!only('style', 'behavior'))
+        return reason('a keyboard avoiding view with props `.keyboardAvoiding()` does not draw');
+      const style = named.get('style');
+      const fill = style ? staticStyle(attributeExpression(style), () => undefined) : undefined;
+      if (
+        !fill?.ok ||
+        fill.classes.length > 0 ||
+        fill.mods.length !== 1 ||
+        fill.mods[0]?.mod.name !== 'grow'
+      )
+        return reason(
+          'a style other than the fill `.keyboardAvoiding()` draws (React Native’s `flex: 1`)',
+        );
+      const behavior = attributeExpression(named.get('behavior'));
+      if (!isKeyboardBehavior(behavior))
+        return reason(
+          "a behavior other than React Native’s (`Platform.OS === 'ios' ? 'padding' : 'height'`)",
+        );
+      keyboardBehaviors.add(behavior);
+      return { mod: { name: 'keyboardAvoiding', args: [] } };
+    }
+    if (source && /Provider$/.test(local) && !source.module.startsWith('react-native')) {
+      if (named.size > 0) return reason('a provider with props: `.provider()` draws one with none');
+      return { mod: { name: 'provider', args: [{ $: 'component', name: local }] } };
+    }
+    return reason(
+      '`screen()` wraps the whole component, so what is around the Screen would draw inside it (a colour scope, a keyboard avoiding view and an app’s provider are screen modifiers)',
+    );
+  }
+  /** `Platform.OS === 'ios' ? 'padding' : 'height'`, React Native's behavior, as a route writes it. */
+  const isKeyboardBehavior = (expression: AnyNode) => {
+    if (!n.ConditionalExpression.check(expression)) return false;
+    const { test, consequent, alternate }: AnyNode = expression;
+    const platform =
+      n.BinaryExpression.check(test) && test.operator === '===' ? test.left : undefined;
+    return (
+      n.MemberExpression.check(platform) &&
+      n.Identifier.check(platform.object) &&
+      sources.get(platform.object.name)?.module === 'react-native' &&
+      sources.get(platform.object.name)?.imported === 'Platform' &&
+      n.Identifier.check(platform.property) &&
+      platform.property.name === 'OS' &&
+      staticString(test.right) === 'ios' &&
+      staticString(consequent) === 'padding' &&
+      staticString(alternate) === 'height'
+    );
+  };
+  /** The behaviors a converted keyboard avoiding view wrote: the parity's before side writes React Native's own `Platform`. */
+  const keyboardBehaviors = new Set<AnyNode>();
+  /** Each route's Screen: the return around it, and the screen modifiers what is around it draws. */
+  const screenOuter = new Map<AnyNode, { outer: AnyNode; mods: readonly PropMod[] }>();
   /** Where each module-level name is read outside a function, before its own statement. */
   const readsBefore = (name: string, statement: AnyNode) => {
     let early = false;
@@ -1083,9 +1217,17 @@ export function transformSource(source: string, options: TransformOptions): File
           return false;
         },
       });
-    if (!returned.length || !returned.every(isScreenElement)) continue;
+    const screens = returned.map(peelScreen);
+    if (!returned.length || !screens.every((p) => p !== undefined)) continue;
+    // A Screen inside an element that is no screen modifier stays JSX, with what keeps it.
+    const kept = screens.find((p): p is Peeled & { reason: Reason } => 'reason' in (p as Peeled));
+    if (kept) {
+      for (const p of screens as Peeled[])
+        earlyScreens.set(p.screen, 'reason' in p ? p.reason : kept.reason);
+      continue;
+    }
     if (readsBefore(name, statement)) {
-      for (const node of returned)
+      for (const { screen: node } of screens as Peeled[])
         earlyScreens.set(node, {
           subject: 'Screen',
           code: 'screen:read-early',
@@ -1093,7 +1235,11 @@ export function transformSource(source: string, options: TransformOptions): File
         });
       continue;
     }
-    for (const node of returned) screenRoutes.set(node, fn);
+    returned.forEach((outer, i) => {
+      const { screen, mods } = screens[i] as Peeled & { mods: readonly PropMod[] };
+      screenRoutes.set(screen, fn);
+      if (outer !== screen) screenOuter.set(screen, { outer, mods });
+    });
     screenDeclarations.set(fn, { statement, name });
   }
 
@@ -1107,21 +1253,27 @@ export function transformSource(source: string, options: TransformOptions): File
     visitJSXElement(path) {
       const node = path.node;
       if (isScreenElement(node) && !screenRoutes.has(node) && !earlyScreens.has(node)) {
-        const parent = path.parent?.node;
+        // Past what its screen modifiers draw (a colour scope, a keyboard avoiding view, a provider).
+        let at = path;
+        while (
+          n.JSXElement.check(at.parent?.node) &&
+          peelScreen(at.parent.node)?.screen === node &&
+          'mods' in (peelScreen(at.parent.node) as Peeled)
+        )
+          at = at.parent;
+        const outer = at.node;
+        const parent = at.parent?.node;
         const name = (element: AnyNode) => `\`${jsxName(element) ?? 'an element'}\``;
         const beside = n.JSXFragment.check(parent)
           ? (parent.children as AnyNode[]).filter(
-              (child) => child !== node && n.JSXElement.check(child),
+              (child) => child !== outer && n.JSXElement.check(child),
             )
           : [];
+        const wrapper = n.JSXElement.check(parent) ? screenWrapper(parent) : undefined;
         screenPlaces.set(
           node,
-          n.JSXElement.check(parent)
-            ? {
-                subject: 'Screen',
-                code: 'screen:wrapped',
-                why: `inside ${name(parent)}: \`screen()\` wraps the whole component, so what is around the Screen would draw inside it`,
-              }
+          wrapper && 'reason' in wrapper
+            ? wrapper.reason
             : beside.length
               ? {
                   subject: 'Screen',
@@ -1690,6 +1842,7 @@ export function transformSource(source: string, options: TransformOptions): File
     const props = inner.ir.props;
     if (!props.some((prop) => prop.name === 'header'))
       props.unshift({ name: 'header', args: [false] });
+    props.push(...(screenOuter.get(node)?.mods ?? []));
     return { ir: { type: 'screen', content: root, props } };
   }
 
@@ -3167,6 +3320,8 @@ export function transformSource(source: string, options: TransformOptions): File
           return carry(value.fn);
         case 'absent':
           return 'undefined';
+        case 'component':
+          return value.name;
         case 'null':
           return 'null';
         case 'choose':
@@ -3334,6 +3489,14 @@ export function transformSource(source: string, options: TransformOptions): File
     for (const [read, literal] of styleLiterals)
       if (read.start >= node.start && read.end <= node.end)
         spans.push({ start: read.start, end: read.end, text: literal });
+    // React Native's keyboard behavior reads its `Platform`, the corpus's own on the before side.
+    for (const behavior of keyboardBehaviors)
+      if (behavior.start >= node.start && behavior.end <= node.end)
+        spans.push({
+          start: behavior.test.left.object.start,
+          end: behavior.test.left.object.end,
+          text: 'RN.Platform',
+        });
     // An inset the chain pads by is the corpus's on the before side, both sides drawn under it.
     let insets = false;
     for (const [read, side] of insetReads)
@@ -3503,7 +3666,17 @@ export function transformSource(source: string, options: TransformOptions): File
         appColors.set(color.name, color);
         lang('defineTokens');
       }
-      if (options.fixtures) fixture(node, ir, rootKey);
+      // A route's Screen inside what its screen modifiers draw is the return around it, whole.
+      const outer = ir.type === 'screen' ? screenOuter.get(node)?.outer : undefined;
+      if (options.fixtures) fixture(outer ?? node, ir, rootKey);
+      // What wrapped the Screen is its modifiers now: its imports go where nothing else reads them.
+      if (outer)
+        for (let at = outer; at !== node; at = peelChild(at)) {
+          convertedLocals.add(jsxName(at) as string);
+          for (const behavior of keyboardBehaviors)
+            if (behavior.start >= at.start && behavior.end <= at.end)
+              convertedLocals.add(behavior.test.left.object.name);
+        }
       // Regions inside the values it carries (an embedded element's children, an array's elements).
       for (const c of carriedOf(ir)) {
         if (c.hole === 'element' || c.hole === 'items') {
@@ -3523,11 +3696,13 @@ export function transformSource(source: string, options: TransformOptions): File
           : `${lang('toElement')}(${chain}${rootKey ? `, ${carry(rootKey)}` : ''})`;
       // Parsed by recast, so the comments the chain carries are printed where they are.
       const expression = recast.parse(`${code};`, { parser: babelTs }).program.body[0].expression;
-      const parent = path.parent?.node;
+      let at = path;
+      while (outer && at.node !== outer) at = at.parent;
+      const parent = at.parent?.node;
       const inJsx =
         parent &&
         (n.JSXElement.check(parent) || n.JSXFragment.check(parent) || n.JSXAttribute.check(parent));
-      path.replace(
+      at.replace(
         inJsx ? recast.types.builders.jsxExpressionContainer(expression as AnyNode) : expression,
       );
       return false;

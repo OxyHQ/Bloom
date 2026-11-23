@@ -885,6 +885,7 @@
     "shellLayout": ["workspace", "collection-detail", "feed", "deck", "catalog", "map-browser"],
     "shellPresentation": ["continuous", "framed", "floating"],
     "panelRole": ["main", "collection", "detail", "inspector", "context", "canvas"],
+    "colorScopeMode": ["light", "dark"],
     "colorPreset": [
       "teal",
       "blue",
@@ -1664,6 +1665,9 @@
     "screenActive": ["value?"],
     "initialHeaderHeight": ["space"],
     "initialFooterHeight": ["space"],
+    "colorScope": ["colorScopeMode"],
+    "keyboardAvoiding": [],
+    "provider": ["value"],
     "scrollbar": ["scrollbarVisibility"],
     "scrollbarSide": ["scrollbarSide"],
     "stickyHeader": ["value"],
@@ -2081,6 +2085,9 @@
     "screenActive",
     "initialHeaderHeight",
     "initialFooterHeight",
+    "colorScope",
+    "keyboardAvoiding",
+    "provider",
     "fullScreenCover",
     "glassID",
     "glassUnion",
@@ -2604,7 +2611,10 @@
         "seed",
         "screenActive",
         "initialHeaderHeight",
-        "initialFooterHeight"
+        "initialFooterHeight",
+        "colorScope",
+        "keyboardAvoiding",
+        "provider"
       ]
     },
     "view": {

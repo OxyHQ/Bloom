@@ -254,6 +254,7 @@ import {
   type FrameLength,
   type Points,
   type ZIndexValue,
+  type ColorScopeMode,
   type OverlayAlignment,
   type ShadowName,
   type ScaleName,
@@ -655,6 +656,12 @@ export interface ValueModifiers {
   screenActive: boolean;
   initialHeaderHeight: SpaceToken;
   initialFooterHeight: SpaceToken;
+  /** The screen's own scheme (`undefined`: the app's), a `BloomColorScope` around it. */
+  colorScope: ColorScopeMode | undefined;
+  /** The screen kept above the keyboard, React Native's `KeyboardAvoidingView` around it. */
+  keyboardAvoiding: true;
+  /** A provider (a component of children) drawn around the screen. */
+  provider: ScreenProvider;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
   detached: boolean;
@@ -2854,6 +2861,15 @@ export class Node {
   initialFooterHeight(value: SpaceToken): Node {
     return this.set('initialFooterHeight', value);
   }
+  colorScope(value: ColorScopeMode | undefined): Node {
+    return this.set('colorScope', value);
+  }
+  keyboardAvoiding(): Node {
+    return this.set('keyboardAvoiding', true);
+  }
+  provider(value: ScreenProvider): Node {
+    return this.set('provider', value);
+  }
   contentMargins(edgeOrValue: Edge | SpaceToken, value?: SpaceToken): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
     const token = value === undefined ? (edgeOrValue as SpaceToken) : value;
@@ -4540,7 +4556,31 @@ export interface ScreenModifiers<Self> {
   initialHeaderHeight(value: SpaceToken): Self;
   /** The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included). */
   initialFooterHeight(value: SpaceToken): Self;
+  /**
+   * The screen in a colour scheme of its own (Bloom's `BloomColorScope`, its
+   * `mode`, around the Screen with `asChild`): a dark reel or camera over a
+   * light app. `undefined` is the app's scheme, the scope still drawn, so a
+   * scheme that changes at render never remounts the screen.
+   */
+  colorScope(mode: ColorScopeMode | undefined): Self;
+  /**
+   * The screen kept above the keyboard: React Native's `KeyboardAvoidingView`
+   * around it, filling, padded on iOS and resized elsewhere, as React Native
+   * recommends. SwiftUI avoids the keyboard by default; React Native does not.
+   */
+  keyboardAvoiding(): Self;
+  /**
+   * A provider around the screen (a React component that draws its children:
+   * Bloom's `HeaderDockProvider`, an app's own context the screen's header and
+   * content share). Each
+   * of these three wraps what the root's modifiers before it drew, in chain
+   * order, as SwiftUI's modifiers do: the last one is outermost.
+   */
+  provider(component: ScreenProvider): Self;
 }
+
+/** A provider a screen is drawn inside: a component that draws its children. */
+export type ScreenProvider = ComponentType<{ children?: ReactNode }>;
 
 export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   padding(value: PaddingToken): Self;

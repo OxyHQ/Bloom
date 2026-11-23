@@ -6,8 +6,10 @@
  * sheet over it (see sheet-bloom.tsx: Bloom's Dialog or BottomSheet, the system
  * sheet on iOS).
  */
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Screen } from '@oxy.so/bloom/screen';
+import { BloomColorScope } from '@oxy.so/bloom/theme';
 
 import { Header } from '../primitives';
 import {
@@ -118,37 +120,73 @@ export function ScreenHost({ root }: { root: Child }) {
   const clearance = values.contentClearance as SpaceToken | undefined;
   const headerHeight = values.initialHeaderHeight as SpaceToken | undefined;
   const footerHeight = values.initialFooterHeight as SpaceToken | undefined;
+  const screen = (
+    <Screen
+      testID={chrome.testID}
+      kind={values.screenKind as ScreenKind | undefined}
+      scroll={values.screenScroll as ScreenScroll | undefined}
+      documentScroll={values.documentScroll as boolean | undefined}
+      header={system ? undefined : header}
+      headerPlacement={values.headerPlacement as ChromePlacement | undefined}
+      underlay={values.underlay ? toElement(values.underlay as Child) : undefined}
+      primaryAction={action ? toElement(action.content) : undefined}
+      primaryActionPlacement={action?.options?.placement}
+      primaryActionVisibility={action?.options?.visibility}
+      contentClearance={clearance === undefined ? undefined : resolveSpace(clearance)}
+      navigationScope={values.navigationScope as NavigationScope | undefined}
+      colorPreset={values.colorPreset as ColorPreset | undefined}
+      seed={values.seed as string | undefined}
+      active={values.screenActive as boolean | undefined}
+      headerHeight={headerHeight === undefined ? undefined : resolveSpace(headerHeight)}
+      bottomBarHeight={footerHeight === undefined ? undefined : resolveSpace(footerHeight)}
+      reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
+      bottomBar={footer ? toElement(footer.content) : undefined}
+      bottomBarPlacement={footerOptions?.placement}
+      bottomBarKeyboardBehavior={footerOptions?.keyboard}
+    >
+      {toElement(chrome.content)}
+    </Screen>
+  );
   return (
     <>
-      <Screen
-        testID={chrome.testID}
-        kind={values.screenKind as ScreenKind | undefined}
-        scroll={values.screenScroll as ScreenScroll | undefined}
-        documentScroll={values.documentScroll as boolean | undefined}
-        header={system ? undefined : header}
-        headerPlacement={values.headerPlacement as ChromePlacement | undefined}
-        underlay={values.underlay ? toElement(values.underlay as Child) : undefined}
-        primaryAction={action ? toElement(action.content) : undefined}
-        primaryActionPlacement={action?.options?.placement}
-        primaryActionVisibility={action?.options?.visibility}
-        contentClearance={clearance === undefined ? undefined : resolveSpace(clearance)}
-        navigationScope={values.navigationScope as NavigationScope | undefined}
-        colorPreset={values.colorPreset as ColorPreset | undefined}
-        seed={values.seed as string | undefined}
-        active={values.screenActive as boolean | undefined}
-        headerHeight={headerHeight === undefined ? undefined : resolveSpace(headerHeight)}
-        bottomBarHeight={footerHeight === undefined ? undefined : resolveSpace(footerHeight)}
-        reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
-        bottomBar={footer ? toElement(footer.content) : undefined}
-        bottomBarPlacement={footerOptions?.placement}
-        bottomBarKeyboardBehavior={footerOptions?.keyboard}
-      >
-        {toElement(chrome.content)}
-      </Screen>
+      {wrapped(root, screen)}
       {system ? header : null}
       {sheetsOf(chrome.sheets)}
     </>
   );
+}
+
+/** What `.keyboardAvoiding()` draws: React Native's own fill and, on iOS, a padding (elsewhere the view resizes). */
+const KEYBOARD_FILL = { flex: 1 } as const;
+const KEYBOARD_BEHAVIOR = Platform.OS === 'ios' ? 'padding' : 'height';
+
+/**
+ * The Screen inside what the root's `.colorScope()`, `.keyboardAvoiding()`
+ * and `.provider()` draw around it, in chain order: each wraps the ones
+ * before it, as SwiftUI's modifiers do. Its header and sheets stay beside it.
+ */
+function wrapped(root: Child, screen: ReactElement): ReactElement {
+  if (!isNode(root)) return screen;
+  let out = screen;
+  for (const modifier of root.modifiers) {
+    if (modifier.kind === 'colorScope')
+      out = (
+        <BloomColorScope mode={modifier.value} asChild>
+          {out}
+        </BloomColorScope>
+      );
+    else if (modifier.kind === 'keyboardAvoiding')
+      out = (
+        <KeyboardAvoidingView style={KEYBOARD_FILL} behavior={KEYBOARD_BEHAVIOR}>
+          {out}
+        </KeyboardAvoidingView>
+      );
+    else if (modifier.kind === 'provider') {
+      const Provider = modifier.value;
+      out = <Provider>{out}</Provider>;
+    }
+  }
+  return out;
 }
 
 /** Each `.sheet()` modifier, in order: a sheet's place among them is its identity. */

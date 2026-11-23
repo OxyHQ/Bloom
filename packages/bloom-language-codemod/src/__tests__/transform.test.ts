@@ -384,6 +384,58 @@ export function Other() { return <Scope><Screen /></Scope>; }
       'screen:wrapped',
     ]);
   });
+  it('draws what a route wraps its Screen in as screen modifiers, innermost first', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { BloomColorScope } from '@oxy.so/bloom/theme';
+import { KeyboardAvoidingView, Platform } from 'react-native';
+import { HeaderDockProvider } from '@/components/HeaderDock';
+export default function Saved() {
+  return (
+    <HeaderDockProvider>
+      <BloomColorScope mode={dark ? 'dark' : undefined} asChild>
+        <Screen scroll="auto"><Hole /></Screen>
+      </BloomColorScope>
+    </HeaderDockProvider>
+  );
+}
+export function Boost() {
+  return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <Screen><Hole /></Screen>
+    </KeyboardAvoidingView>
+  );
+}
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain(
+      ".header(false).screenScroll('auto').colorScope(dark ? 'dark' : undefined).provider(HeaderDockProvider)",
+    );
+    expect(flat(result.code)).toContain('.header(false).keyboardAvoiding()');
+    // Their imports go: nothing else reads them.
+    expect(result.code).not.toMatch(/BloomColorScope|KeyboardAvoidingView|Platform/);
+    // The before side draws React Native's own Platform, and the scope's mode is a hole on both sides.
+    const boost = result.fixtures.find((f) => f.before.includes('KeyboardAvoidingView'));
+    expect(boost?.before).toContain("RN.Platform.OS === 'ios'");
+    const kept = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { BloomColorScope } from '@oxy.so/bloom/theme';
+import { KeyboardAvoidingView } from 'react-native';
+import { DockProvider } from './dock';
+const FILL = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' };
+export function A() { return <KeyboardAvoidingView style={FILL} behavior="padding"><Screen /></KeyboardAvoidingView>; }
+export function B() { return <BloomColorScope colorPreset="teal" asChild><Screen /></BloomColorScope>; }
+export function C() { return <DockProvider value={1}><Screen /></DockProvider>; }
+`);
+    expect(
+      kept.unconverted.map((u) => [
+        u.reasons[0]?.code,
+        u.reasons[0]?.why.split(':')[1]?.trim().slice(0, 24),
+      ]),
+    ).toEqual([
+      ['screen:wrapped', 'a style other than the f'],
+      ['screen:wrapped', 'a colour scope is `.colo'],
+      ['screen:wrapped', 'a provider with props'],
+    ]);
+  });
   it('draws a Button’s, a Card’s and a Tabs’ static style as the node’s box', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';
 import { Card } from '@oxy.so/bloom/card';

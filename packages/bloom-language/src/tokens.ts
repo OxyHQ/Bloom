@@ -185,6 +185,8 @@ export type ChromePlacement = (typeof ENUMS.chromePlacement)[number];
 export type NavigationScope = (typeof ENUMS.navigationScope)[number];
 /** One of Bloom's colour presets (`AppColorName`), a screen's own recipe. */
 export type ColorPreset = (typeof ENUMS.colorPreset)[number];
+/** A colour scope's scheme (Bloom `BloomColorScope`'s `mode`): its own light or dark, whatever the app's. */
+export type ColorScopeMode = (typeof ENUMS.colorScopeMode)[number];
 export type ActionPlacement = (typeof ENUMS.actionPlacement)[number];
 export type ScrollIndicators = (typeof ENUMS.scrollIndicators)[number];
 export type KeyboardDismiss = (typeof ENUMS.keyboardDismiss)[number];

@@ -1,9 +1,9 @@
 import { type ReactNode, useState } from 'react';
-import { RefreshControl, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, View } from 'react-native';
 import { EdgeScrim, PageHeader, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
 import { Screen, ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 import { tokens, useSurfaceFill } from '@oxy.so/bloom/styles';
-import { withAlpha } from '@oxy.so/bloom/theme';
+import { BloomColorScope, withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { ENUMS } from '../src/generated/spec.generated';
@@ -728,7 +728,67 @@ const groups: ParityCase[] = [
   },
 ];
 
+/** An app's own provider of children, as Mention's header dock is. */
+function Dock({ children }: { children?: ReactNode }) {
+  return <View testID="dock">{children}</View>;
+}
+const KEYBOARD_BEHAVIOR = Platform.OS === 'ios' ? 'padding' : 'height';
+
+/** What a screen's root draws around its Screen: a colour scope, the keyboard's room, an app's provider. */
+const wrappers: ParityCase[] = [
+  ...(['dark', 'light', undefined] as const).map((mode) => ({
+    name: `a screen in its own scheme (${mode ?? 'the app’s'})`,
+    language: () => <ScreenHost root={L.Text('a').header(false).colorScope(mode)} />,
+    bloom: () => (
+      <BloomColorScope mode={mode} asChild>
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </BloomColorScope>
+    ),
+  })),
+  {
+    name: 'a screen kept above the keyboard',
+    language: () => <ScreenHost root={L.Text('a').header(false).keyboardAvoiding()} />,
+    bloom: () => (
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={KEYBOARD_BEHAVIOR}>
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </KeyboardAvoidingView>
+    ),
+  },
+  {
+    name: 'a titled screen inside an app’s provider',
+    language: () => <ScreenHost root={L.Text('a').title('Saved').provider(Dock)} />,
+    bloom: () => (
+      <Dock>
+        <Screen header={<PageHeader title="Saved" presentation="floating" />}>
+          <Text>a</Text>
+        </Screen>
+      </Dock>
+    ),
+  },
+  {
+    // In chain order: the provider is outermost, the scope inside it.
+    name: 'a dark screen inside an app’s provider, wrapped in chain order',
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).colorScope('dark').provider(Dock)} />
+    ),
+    bloom: () => (
+      <Dock>
+        <BloomColorScope mode="dark" asChild>
+          <Screen>
+            <Text>a</Text>
+          </Screen>
+        </BloomColorScope>
+      </Dock>
+    ),
+  },
+];
+
 export const SCREEN_CASES: ParityCase[] = [
+  ...wrappers,
   ...scrollViews,
   ...insets,
   ...contentViews,

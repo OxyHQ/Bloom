@@ -269,9 +269,22 @@ The component converts whole: one Screen that stays JSX keeps the others JSX
 (`screen:route`). Its parity draws the root with the language's `ScreenHost`,
 as `screen()` does.
 
+What a route wraps its Screen in is the root's screen modifiers, innermost
+first, as the chain wraps them: `<BloomColorScope mode={m} asChild>` (only
+those two props) is `.colorScope(m)`, a `<KeyboardAvoidingView>` whose style
+reads as React Native's fill (`flex: 1`) and whose behavior is React Native's
+(`Platform.OS === 'ios' ? 'padding' : 'height'`) is `.keyboardAvoiding()`, and
+a `…Provider` with no props (Bloom's `HeaderDockProvider`, an app's own) is
+`.provider(Name)`. Their imports go where nothing else reads them. The parity
+draws the same elements around the Screen on the before side, the scope's
+mode a hole on both sides and the behavior read from the corpus's
+`RN.Platform`.
+
 A Screen stays JSX, with what keeps it, when `screen()` would draw something
-else: inside an element (`screen:wrapped`: a provider or a colour scope around
-the Screen would draw inside it), beside views in a fragment
+else: inside any other element, or one of these that draws what the modifier
+does not (`screen:wrapped`, the element and what differs: a colour scope with
+a preset, a keyboard avoiding view filled by Tailwind's `flex-1`, a provider
+with props), beside views in a fragment
 (`screen:beside`: an `SEO` head element beside the Screen; one that draws
 nothing moves into the Screen by hand, then the component converts), or in a
 component with a return that is no Screen (`screen:returns`: `null`, another

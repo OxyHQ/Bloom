@@ -1938,6 +1938,20 @@ modifiers above (see [Navigation](#navigation)), the rest of Bloom `Screen`:
 | `.screenActive(false)` | `active={false}`: a retained screen drives no scroll, chrome or reselect |
 | `.initialHeaderHeight(space)`, `.initialFooterHeight(space)` | `headerHeight`, `bottomBarHeight`: the chrome's heights before it measures itself (safe area included) |
 
+Three more draw around the `Screen`, as a route's JSX wrapped it:
+
+| Modifier | Around Bloom `Screen` |
+| --- | --- |
+| `.colorScope('light' \| 'dark' \| undefined)` | `<BloomColorScope mode asChild>`: the screen in a scheme of its own (a dark reel or camera in a light app); `undefined` is the app's, the scope still drawn so a scheme chosen at render never remounts the screen |
+| `.keyboardAvoiding()` | React Native's `<KeyboardAvoidingView>`: filling (`flex: 1`), padded on iOS and resized elsewhere, as React Native recommends (SwiftUI avoids the keyboard itself; React Native does not) |
+| `.provider(Component)` | a provider of children around the screen (Bloom's `<HeaderDockProvider>`, or an app's own): a context the screen's header and content share |
+
+Each wraps what the root's modifiers before it drew, in chain order, as
+SwiftUI's modifiers do, so the last is outermost:
+`.colorScope('dark').provider(HeaderDock)` is the dock around the scope around
+the Screen. The header on iOS (the system bar) and the sheets stay beside the
+Screen, as they do without them.
+
 The insets are Bloom `Screen`'s own: the header and the footer measure
 themselves, the safe area comes from the screen's context, and the content
 pads its ends clear of both. The keyboard is the footer's
