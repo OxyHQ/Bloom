@@ -23,7 +23,7 @@ import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
 import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
 import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
 import { hoverGroupProps, SubtleHover } from '@oxy.so/bloom/subtle-hover';
-import { Button as BloomButton, GLASS_CONTROL_SIZE } from '@oxy.so/bloom/button';
+import { Button as BloomButton, FLOATING_CONTROL_SIZE } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
 import { Fab as BloomFab, FAB_SHAPES, fabCornerRadius, useFabDiameter } from '@oxy.so/bloom/fab';
@@ -618,13 +618,13 @@ const GLASS_STYLES: Readonly<Record<string, readonly Modifier[]>> = {
 
 /**
  * A glass-styled button's size when its chain and its environment name none: Bloom's glass rung
- * (`GLASS_CONTROL_SIZE`, 44pt), Apple's Liquid Glass button. It comes first, so a `.size()` or a
+ * (`FLOATING_CONTROL_SIZE`, 44pt), Apple's Liquid Glass button. It comes first, so a `.size()` or a
  * `.controlSize()` above wins.
  */
 const GLASS_SIZE: Modifier = {
   kind: 'size',
-  key: `size:${GLASS_CONTROL_SIZE}`,
-  value: GLASS_CONTROL_SIZE,
+  key: `size:${FLOATING_CONTROL_SIZE}`,
+  value: FLOATING_CONTROL_SIZE,
 } as Modifier;
 
 /** A button's chain with a glass style written out (see `GLASS_STYLES`). */

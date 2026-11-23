@@ -111,7 +111,7 @@ export const StoryRing = 'StoryRing';
 export const TypingDots = 'TypingDots';
 /** Bloom's FAB shapes and glass rung, read from its source. */
 export { FAB_SHAPES, fabCornerRadius } from '../../../../../src/fab/constants';
-export const GLASS_CONTROL_SIZE = 'lg';
+export const FLOATING_CONTROL_SIZE = 'lg';
 /** A FAB's diameter as Bloom resolves it outside a bottom bar: its size's (`md` by default). */
 export function useFabDiameter(size?: 'xs' | 'sm' | 'md' | 'lg'): number {
   return FAB_METRICS[size ?? 'md'].diameter;
