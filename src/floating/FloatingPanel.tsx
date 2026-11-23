@@ -90,7 +90,7 @@ import { usePlacementBoundary } from '../overlay/placement-boundary';
 import { useSurfaceMaterial } from '../surface/use-surface-material.web';
 import { surfacePresenceStyle, useSurfacePresenceContent } from '../surface/use-surface-presence';
 import { Portal } from '../portal/index.web';
-import { StyledView } from '../styles/styled-primitives';
+import { AriaView } from '../styles/aria-hosts';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import { WEB_OVERFLOW_CLIP, WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
@@ -121,8 +121,8 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
  */
 const PANEL_CURVE = surfaceStyle({ curve: SURFACE_SHAPES.menu.curve });
 
-/** `StyledView` for its `listbox` role, which React Native's `Role` lacks. */
-const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
+/** `AriaView` for its `listbox` role, which React Native's `Role` lacks. */
+const AnimatedPanel = Animated.createAnimatedComponent(AriaView);
 
 /** The hook the surface material's stylesheet paints the panel through (`useSurfaceMaterial`). */
 const MATERIAL_HOOK = webDataSet({ 'bloom-floating-surface': '' });

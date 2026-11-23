@@ -1,7 +1,6 @@
 import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import { Text, View } from 'react-native';
-import { StyledView } from '../../styles/styled-primitives';
 import { BoardPresenceList } from '../BoardPresence';
 import type { ProjectTicket } from '../types';
 
@@ -35,7 +34,7 @@ it('keeps the gesture owner alive beyond its visual exit until a long drag ends'
   act(() => jest.advanceTimersByTime(1200));
   expect(screen.getByText('ghost-a', { includeHiddenElements: true })).toBeTruthy();
   const retained = screen
-    .UNSAFE_getAllByType(StyledView)
+    .UNSAFE_getAllByType(View)
     .find((node) => node.props.accessibilityElementsHidden);
   expect(retained?.props.pointerEvents).toBe('auto');
   expect(retained?.props.inert).toBeUndefined();

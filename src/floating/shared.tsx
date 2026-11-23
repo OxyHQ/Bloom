@@ -44,7 +44,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { StyledPressable, type WebAriaProps } from '../styles/styled-primitives';
+import { AriaPressable, type WebAriaProps } from '../styles/aria-hosts';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { FOCUS_SETTLE_MS } from '../hooks/use-accessibility-focus';
 import {
@@ -287,7 +287,7 @@ export function MenuRowShell({
     : null;
 
   return (
-    <StyledPressable
+    <AriaPressable
       ref={navigation.inPopup ? rowRef : undefined}
       nativeID={nativeID}
       onLayout={onLayout}
@@ -440,7 +440,7 @@ export function MenuRowShell({
           on a direct flex child of the row, and a slot view would absorb them. */}
         {trailing}
       </MenuRowInkContext.Provider>
-    </StyledPressable>
+    </AriaPressable>
   );
 }
 

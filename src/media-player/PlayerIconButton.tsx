@@ -4,7 +4,7 @@ import { View, type GestureResponderEvent, type StyleProp, type ViewStyle } from
 import { Button } from '../button';
 import type { BloomIconComponent } from '../icons/icon-component';
 import { resolveMediaControlsPaint } from '../media-controls/shared';
-import type { WebAriaProps } from '../styles/styled-primitives';
+import type { WebAriaProps } from '../styles/aria-hosts';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { RefComponent } from '../styles/native-refs';

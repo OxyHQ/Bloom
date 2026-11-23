@@ -35,7 +35,7 @@ import { ROW_CURSOR } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
@@ -662,7 +662,7 @@ export function SelectItem({
   const highlighted = !disabled && (hovered || focused || isSelected);
 
   return (
-    <StyledPressable
+    <AriaPressable
       ref={ref}
       role="option"
       {...({ dataSet: { bloomSelectOption: '' } } as Record<string, unknown>)}
@@ -702,7 +702,7 @@ export function SelectItem({
         {leading}
         {children}
       </ItemContext.Provider>
-    </StyledPressable>
+    </AriaPressable>
   );
 }
 

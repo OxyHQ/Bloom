@@ -36,7 +36,7 @@ import { StyleSheet, type PointerEvent, View, type StyleProp, type ViewStyle } f
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { mergeRefs } from '../hooks/merge-refs';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import type { OverlayTriggerProps, TriggerHandleProps } from './types';
 import { PrimaryTriggerStateContext } from './context';
 
@@ -242,7 +242,7 @@ export function TriggerSlot({
   const control = asChild ? (
     cloneTrigger(children, handle)
   ) : (
-    <StyledPressable {...handle}>{children}</StyledPressable>
+    <AriaPressable {...handle}>{children}</AriaPressable>
   );
   return (
     <View

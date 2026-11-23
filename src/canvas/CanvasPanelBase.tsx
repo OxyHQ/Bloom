@@ -30,7 +30,7 @@ import { ScreenScope } from '../layout/screen-scope';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { ScrollOffsetProvider } from '../layout/scroll-offset';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTouchInput } from '../styles/pointer';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -343,7 +343,7 @@ export function createCanvasPanel(
             <ScrollOffsetProvider value={scrollY}>
               <GestureDetector gesture={handlePan} touchAction="none">
                 <View style={{ display: lateral ? 'none' : 'flex' }}>
-                  <StyledPressable
+                  <AriaPressable
                     ref={handleRef}
                     {...keyProps}
                     onPress={() => moveTo(SNAPS[(SNAPS.indexOf(snap) + 1) % 3]!)}
@@ -384,7 +384,7 @@ export function createCanvasPanel(
                         backgroundColor: colors.textTertiary,
                       }}
                     />
-                  </StyledPressable>
+                  </AriaPressable>
                 </View>
               </GestureDetector>
               <GestureDetector gesture={headerPan} touchAction={lateral ? 'auto' : 'none'}>

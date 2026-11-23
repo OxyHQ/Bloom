@@ -13,7 +13,7 @@ import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { resolvePhoto } from '../listing-card/shared';
 import { useImageResolver } from '../image-resolver/context';
-import type { WebAriaProps } from '../styles/styled-primitives';
+import type { WebAriaProps } from '../styles/aria-hosts';
 import { useTheme } from '../theme/use-theme';
 import { resolveTrackListPaint } from './shared';
 import type { TrackMenuItem } from './types';

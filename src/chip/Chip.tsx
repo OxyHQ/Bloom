@@ -26,7 +26,7 @@ import {
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CHIP_GEOMETRY, resolveChipPaint, resolveChipRing } from './shared';
 import type { ChipProps } from './types';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { IS_WEB } from '../styles/platform';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -359,7 +359,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
         : null;
 
     const button = (
-      <StyledPressable
+      <AriaPressable
         ref={ref}
         // The DOM hook the adopted sheet above hangs off.
         //
@@ -436,7 +436,7 @@ const ChipComponent = forwardRef<ComponentRef<typeof View>, ChipProps>(function 
       >
         {onClose ? null : material}
         {content}
-      </StyledPressable>
+      </AriaPressable>
     );
     if (!onClose) return button;
     // Selection and removal are sibling controls, never nested buttons.

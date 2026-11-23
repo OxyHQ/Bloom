@@ -4,7 +4,7 @@ import type { GestureResponderEvent, View } from 'react-native';
 
 import { Button } from '../button';
 import type { ButtonIconComponent } from '../button';
-import type { WebAriaProps } from '../styles/styled-primitives';
+import type { WebAriaProps } from '../styles/aria-hosts';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { resolveQueuePanelPaint } from './shared';

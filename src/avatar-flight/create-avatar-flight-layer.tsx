@@ -6,7 +6,7 @@ import {
   type ComponentType,
   type PropsWithChildren,
 } from 'react';
-import { Platform, useWindowDimensions, type View } from 'react-native';
+import { Platform, useWindowDimensions, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -19,12 +19,12 @@ import Animated, {
 
 import { AgentAvatar } from '../agent-avatar';
 import { OverlayRoot } from '../overlay';
-import { StyledImage, StyledView } from '../styles/styled-primitives';
+import { BloomImage } from '../image';
 import { avatarFlightPoint, measureAvatar } from './geometry';
 import type { ActiveAvatarFlight, AvatarFlightLayerState, AvatarRect } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 const EASE_OUT = Easing.bezier(0.22, 1, 0.36, 1);
 const DEFAULT_DURATION = 800;
@@ -39,7 +39,7 @@ const TRACK_FRAMES = 90;
 function Figure({ flight, paused = true }: { flight: ActiveAvatarFlight; paused?: boolean }) {
   const { width, height } = flight.from;
   return flight.snapshot ? (
-    <StyledImage
+    <BloomImage
       source={flight.snapshot}
       accessible={false}
       contentFit="contain"
@@ -173,7 +173,7 @@ function Flights({ layer }: { layer: AvatarFlightLayerState }) {
 
   return (
     <OverlayRoot testID="avatar-flight-layer">
-      <StyledView
+      <View
         ref={surface}
         collapsable={false}
         pointerEvents="none"
@@ -193,7 +193,7 @@ function Flights({ layer }: { layer: AvatarFlightLayerState }) {
               />
             ) : (
               // Waiting for its target to mount: parked where it left.
-              <StyledView
+              <View
                 key={flight.spec.key}
                 pointerEvents="none"
                 style={{
@@ -205,10 +205,10 @@ function Flights({ layer }: { layer: AvatarFlightLayerState }) {
                 }}
               >
                 <Figure flight={placed} />
-              </StyledView>
+              </View>
             );
           })}
-      </StyledView>
+      </View>
     </OverlayRoot>
   );
 }

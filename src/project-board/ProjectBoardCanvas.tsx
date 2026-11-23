@@ -4,7 +4,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import Animated from 'react-native-reanimated';
 import { PageHeader } from '../page-header/PageHeader';
 import { useDirectionProps } from '../hooks/use-is-rtl';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { useColorTokens } from '../theme/color-tokens';
@@ -148,7 +148,7 @@ export function ProjectBoardCanvas<Item>({
                 {...{ dataSet: { 'bloom-board-item': itemId } }}
               >
                 {dragMode === 'card' && (present || retained) && engine.canMove ? (
-                  <StyledPressable
+                  <AriaPressable
                     nativeID={binding.nativeID}
                     accessibilityRole="button"
                     accessibilityLabel={
@@ -189,7 +189,7 @@ export function ProjectBoardCanvas<Item>({
                     }}
                   >
                     {card}
-                  </StyledPressable>
+                  </AriaPressable>
                 ) : (
                   card
                 )}

@@ -11,7 +11,7 @@ import { PageHeader } from './.source/page-header';
 import { Textarea } from './.source/textarea';
 import { Button } from './.source/button';
 import { Text } from './.source/typography';
-import { StyledView as View } from './.source/styles/styled-primitives';
+import { AriaView as View } from './.source/styles/aria-hosts';
 import { DetailDialogLab } from './DetailDialogLab';
 
 interface SelectionTrace {
