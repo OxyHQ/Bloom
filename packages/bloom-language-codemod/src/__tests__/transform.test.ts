@@ -539,6 +539,15 @@ export const A = () => <PageFooter scrim="always" actions={<Text>Save</Text>}><T
       "LPageFooter(LText('2 selected')).scrollEdge('always').toolbar(LText('Save'))",
     );
   });
+  it('reads a Chip’s colour chosen at render, none a branch of it', () => {
+    const result = run(`import { Chip } from '@oxy.so/bloom/chip';
+export const A = ({ on }) => <Chip size="xl" color={on ? 'error' : undefined}>Sensitive</Chip>;
+export const B = ({ on }) => <Chip size={on ? 'lg' : undefined}>B</Chip>;
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".size('xl').tint(on ? 'danger' : undefined)");
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Chip:size']);
+  });
   it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ marginTop: 12, overflow: 'visible' }} />;

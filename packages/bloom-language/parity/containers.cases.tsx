@@ -528,6 +528,21 @@ const chips: ParityCase[] = [
       </Chip>
     ),
   },
+  ...[true, false].map((sensitive) => ({
+    // Mention's composer: the sensitive chip paints red only while the post is marked.
+    name: `Chip whose colour is chosen at render (${sensitive})`,
+    language: () =>
+      toElement(
+        C.Chip(L.Text('Sensitive'))
+          .size('xl')
+          .tint(sensitive ? 'danger' : undefined),
+      ),
+    bloom: () => (
+      <Chip size="xl" color={sensitive ? 'error' : undefined}>
+        Sensitive
+      </Chip>
+    ),
+  })),
   {
     name: 'Chip',
     language: () => toElement(C.Chip(L.Text('Design'))),

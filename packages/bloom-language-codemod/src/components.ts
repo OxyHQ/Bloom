@@ -88,6 +88,11 @@ export interface PropRule {
    * to `.onEndReached(action, threshold)`); given without this prop, it is a reason.
    */
   readonly with?: readonly [prop: string, form: Form];
+  /**
+   * A token whose modifier takes `undefined` as no value of its own (a Chip's
+   * `.tint()`): a token or none chosen by a plain condition is that choice.
+   */
+  readonly unset?: boolean;
   /** Fixed arguments after the value (`showsVerticalScrollIndicator` to `.scrollIndicators(value, 'vertical')`). */
   readonly args?: readonly Arg[];
   /**
@@ -716,9 +721,9 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       // Bloom reads over a variant of the same name (`solid`, `subtle`).
       variant: p('style', 'token', { inverted: 'inverted', solid: 'solid', subtle: 'subtle' }),
       appearance: p('style', 'token', tokens('appearance')),
-      tone: p('tint', 'token', tokens('tone')),
+      tone: { ...p('tint', 'token', tokens('tone')), unset: true },
       // An accent tone is the Bloom tone Bloom's Chip paints it in (`bloomToneOf`).
-      color: p('tint', 'token', ACCENT_TONE),
+      color: { ...p('tint', 'token', ACCENT_TONE), unset: true },
       size: p('size', 'token', tokens('chipSize')),
       hue: p('hue', 'token', tokens('chipHue')),
       selected: p('selected', 'flag'),

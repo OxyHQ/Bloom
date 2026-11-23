@@ -1594,7 +1594,8 @@ export type Modifier =
         | RentOutstandingTone
         | AccentTone
         | EngagementBarTone
-        | PriceLineTone;
+        | PriceLineTone
+        | undefined;
     }
   | {
       readonly kind: 'count';
@@ -2440,7 +2441,8 @@ export class Node {
       | RentOutstandingTone
       | AccentTone
       | EngagementBarTone
-      | PriceLineTone,
+      | PriceLineTone
+      | undefined,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }

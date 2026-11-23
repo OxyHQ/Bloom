@@ -306,6 +306,11 @@ nothing moves into the Screen by hand, then the component converts), or in a
 component with a return that is no Screen (`screen:returns`: `null`, another
 view, a choice of views).
 
+A token prop chosen by a plain condition (`size={compact ? 'sm' : 'md'}`) is
+that choice; where the modifier takes `undefined` as no value of its own (a
+Chip's `color` and `tone`, `.tint()`), a branch of none is too
+(`color={sensitive ? 'error' : undefined}` is `.tint(sensitive ? 'danger' : undefined)`).
+
 Bloom's `Fab` is `FAB(Icon(icon), Text(label)).glass(identity)`: the language's
 FAB is on glass, so an app's solid Fab names none (parity/button.cases.tsx).
 Its `accessibilityLabel` is `.label()`, and `size`, `appearance`, `tone`,

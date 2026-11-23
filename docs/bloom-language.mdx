@@ -2412,7 +2412,7 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   modifiers as its own style. `GroupedSectionDivider().inset(space)` is a line
   between rows; `GroupedSectionCollapse(open, ...rows)` reveals and hides rows
   in place.
-- **Chip.** `.style()`, `.tint()`, `.size('xs'…'2xl')`, `.hue()`,
+- **Chip.** `.style()`, `.tint()` (`undefined` is no tone of its own, so `.tint(sensitive ? 'danger' : undefined)` paints only while it holds), `.size('xs'…'2xl')`, `.hue()`,
   `.toggle(binding)` (a filter chip: checked through its binding),
   `.selected()`, `.onClose(remove, label?)`, `.disabled()`, `.onPress()`,
   `.role('checkbox' | 'radio' | 'tab')` (what it is to assistive technology).

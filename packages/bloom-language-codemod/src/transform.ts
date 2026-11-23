@@ -2505,7 +2505,7 @@ export function transformSource(source: string, options: TransformOptions): File
         else if (mark) props.push({ name: prop.modifier, args: [] });
         continue;
       }
-      const values = prop ? valuesOf(prop.form, value, prop.map) : undefined;
+      const values = prop ? valuesOf(prop.form, value, prop.map, prop.unset) : undefined;
       if (!prop || !values) {
         unmapped(name);
         continue;
@@ -2715,6 +2715,7 @@ export function transformSource(source: string, options: TransformOptions): File
     form: Form,
     value: AnyNode,
     map?: Readonly<Record<string, string>>,
+    unset?: boolean,
   ): Value[] | undefined {
     if (value === null)
       // A bare prop is `true`.
@@ -2734,6 +2735,29 @@ export function transformSource(source: string, options: TransformOptions): File
         return hasJsx(expression) ? undefined : [{ node: expression, hole: 'string' }];
       }
       case 'token': {
+        // Tokens chosen by a plain condition (`sensitive ? 'error' : 'default'`) are that choice;
+        // none is a branch only where the modifier takes `undefined` (`unset`).
+        if (
+          n.ConditionalExpression.check(expression) &&
+          (isPlainRead(expression.test) || isBooleanForm(expression.test))
+        ) {
+          const branch = (node: AnyNode): Value | undefined =>
+            unset && noStyle(node) && !n.BooleanLiteral.check(node)
+              ? { $: 'absent' }
+              : valuesOf('token', node, map)?.[0];
+          const then = branch(expression.consequent);
+          const otherwise = branch(expression.alternate);
+          return then === undefined || otherwise === undefined
+            ? undefined
+            : [
+                {
+                  $: 'choose',
+                  test: { node: expression.test, hole: 'condition' },
+                  then,
+                  otherwise,
+                },
+              ];
+        }
         // A token is a static string, or a static number of points (`spacing={12}`).
         const number = staticNumber(value);
         const text = staticString(value) ?? (number === undefined ? undefined : String(number));

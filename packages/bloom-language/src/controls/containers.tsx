@@ -261,7 +261,12 @@ export interface GroupedSectionCollapseView extends ViewNode {
 export interface ChipView extends ViewModifiers<ChipView> {
   /** Its look: an appearance, or `inverted`. */
   style(value: ChipStyle): ChipView;
-  tint(value: BloomTone): ChipView;
+  /**
+   * Its tone; `undefined` is no tone of its own (Bloom's neutral), so a tone
+   * chosen at render (`.tint(sensitive ? 'danger' : undefined)`) paints only
+   * while it holds.
+   */
+  tint(value: BloomTone | undefined): ChipView;
   size(value: ChipSize): ChipView;
   hue(value: ChipHue): ChipView;
   /** A filter chip: on or off, through its binding. */

@@ -442,6 +442,17 @@ fn a_tab_sizes_its_box_and_label() {
 }
 
 #[test]
+fn a_chip_s_tone_is_chosen_at_render() {
+    let ok = compiled_with(
+        "Chip, Text",
+        "export const x = (on) => Chip(Text('a')).tint(on ? 'danger' : undefined);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let bad = compiled_with("Chip, Text", "export const x = () => Chip(Text('a')).tint('red');\n");
+    assert!(bad.diagnostics[0].message.contains("'red'"), "{}", bad.diagnostics[0].message);
+}
+
+#[test]
 fn a_clip_is_turned_on_or_off() {
     let ok = compiled("export const x = () => VStack().clipped().padding('md').clipped(false);\n");
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
