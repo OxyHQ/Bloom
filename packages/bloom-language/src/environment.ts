@@ -4,6 +4,7 @@ import { type Env, EnvContext, type EnvironmentValue } from './env';
 import { ENVIRONMENT_TAKERS } from './generated/spec.generated';
 import type { Modifier, NodeKind } from './node';
 import type { ButtonStyle, ControlSize } from './tokens';
+import { SEE } from './docs';
 
 export type { EnvironmentValue };
 
@@ -57,7 +58,9 @@ export function defineEnvironment<T extends EnvironmentValue>(
   defaultValue: T,
 ): EnvironmentKey<Widen<T>> {
   if (name in environmentValues)
-    throw new Error(`[Bloom language] '${name}' is a built-in environment value: use .${name}().`);
+    throw new Error(
+      `[Bloom language] '${name}' is a built-in environment value: use .${name}(). See ${SEE.environment}`,
+    );
   return new EnvironmentKey(name, defaultValue as Widen<T>);
 }
 

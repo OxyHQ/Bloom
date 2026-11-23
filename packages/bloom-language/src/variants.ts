@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 import { VARIANT_MODIFIERS } from './generated/spec.generated';
 import type { Condition, Modifier } from './node';
+import { SEE } from './docs';
 
 /**
  * Variants (`when(condition, (v) => v…)`): the modifiers inside override the
@@ -115,6 +116,6 @@ export function warnNotVaried(modifier: Modifier): void {
   if (process.env.NODE_ENV === 'production' || warned.has(modifier.kind)) return;
   warned.add(modifier.kind);
   console.warn(
-    `[Bloom language] .${modifier.kind}() inside when() is left out: a variant changes style only (${VARIANT_MODIFIERS.join(', ')}).`,
+    `[Bloom language] .${modifier.kind}() inside when() is left out: a variant changes style only (${VARIANT_MODIFIERS.join(', ')}). See ${SEE.variants}`,
   );
 }
