@@ -616,17 +616,6 @@ const GLASS_STYLES: Readonly<Record<string, readonly Modifier[]>> = {
   ],
 };
 
-/**
- * A glass-styled button's size when its chain and its environment name none: Bloom's glass rung
- * (`FLOATING_CONTROL_SIZE`, 44pt), Apple's Liquid Glass button. It comes first, so a `.size()` or a
- * `.controlSize()` above wins.
- */
-const GLASS_SIZE: Modifier = {
-  kind: 'size',
-  key: `size:${FLOATING_CONTROL_SIZE}`,
-  value: FLOATING_CONTROL_SIZE,
-} as Modifier;
-
 /** A button's chain with a glass style written out (see `GLASS_STYLES`). */
 function glassStyled(modifiers: readonly Modifier[], onGlass: boolean): readonly Modifier[] {
   let style: string | undefined;
@@ -634,7 +623,7 @@ function glassStyled(modifiers: readonly Modifier[], onGlass: boolean): readonly
   const styled = style === undefined ? undefined : GLASS_STYLES[style];
   if (styled === undefined) return modifiers;
   const [tint, appearance] = styled as [Modifier, Modifier];
-  const out: Modifier[] = onGlass ? [GLASS_SIZE, tint] : [GLASS_SIZE, FAB_GLASS, tint];
+  const out: Modifier[] = onGlass ? [tint] : [FAB_GLASS, tint];
   for (const modifier of modifiers)
     out.push(modifier.kind === 'style' && GLASS_STYLES[modifier.value] ? appearance : modifier);
   return out;
@@ -2400,7 +2389,8 @@ function renderHost(
       Object.assign(props, {
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
-        size: ownValue(p, 'size')?.value,
+        // A button on glass is Bloom's one floating size (44), whatever its chain says.
+        size: p.control ? FLOATING_CONTROL_SIZE : ownValue(p, 'size')?.value,
         leadingIcon: inked ? undefined : icon,
         icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
         trailingIcon: trailing,

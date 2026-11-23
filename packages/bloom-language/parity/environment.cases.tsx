@@ -106,7 +106,7 @@ const environment: ParityCase[] = [
 
 /**
  * The glass button styles: the button on glass (Bloom's shared material), as the chain they stand for draws it,
- * at the glass rung (`lg`, 44pt: Apple's Liquid Glass button) unless the chain or the environment names a size.
+ * at Bloom's one floating size (`lg`, 44pt: Apple's Liquid Glass button), whatever size the chain names.
  */
 const glassStyles: ParityCase[] = [
   {
@@ -165,11 +165,11 @@ const glassStyles: ParityCase[] = [
     ),
   },
   {
-    name: 'a glass button takes the size its chain names over the glass rung',
+    name: 'a glass button is the floating size whatever size its chain names',
     language: () => toElement(L.Button(L.Text('Done')).style('glass').size('sm')),
     bloom: () => (
       <Surface>
-        <Button size="sm" appearance="subtle" tone="neutral" material="shared">
+        <Button size="lg" appearance="subtle" tone="neutral" material="shared">
           Done
         </Button>
       </Surface>
