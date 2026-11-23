@@ -111,6 +111,7 @@ export default screen(function Items() {
 | `.opacity('half')` on a glass | no opacity on glass | a material is never faded |
 | `ZStack(a, b.alignment('top-leading'))` | `ZStack(a, b).alignment('top-leading')` or `.overlay(b, 'top-leading')` | alignment is the stack's |
 | a new arrow as `VirtualList`'s row each render | a `useCallback` or module-scope row | rows re-render only when their item changes |
+| Bloom's JSX `<VirtualList renderItem={() => toElement(row)}>` | `VirtualList(items, row)` in the language | a language row has no boundary of its own (a component and a context read less per row) |
 
 ## Core tokens
 

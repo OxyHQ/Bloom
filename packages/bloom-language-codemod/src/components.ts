@@ -909,6 +909,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       numColumns: p('columns', 'number'),
       onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
       restorationKey: p('restorationKey', 'string'),
+      stickyHeaderIndices: p('stickyIndices', 'items'),
       ListHeaderComponent: p('headerContent', 'element'),
       ListFooterComponent: p('footerContent', 'element'),
       ListEmptyComponent: p('emptyState', 'element'),

@@ -81,7 +81,8 @@ export type VirtualListRow<T> = VirtualListRenderItemInfo<T>;
 
 /**
  * A list's row: the view of an item, or FlashList's own `renderItem` (an
- * app's named `renderPost`), whose element is drawn as it is.
+ * app's named `renderPost`), whose element is drawn as it is (a language
+ * root, `toElement(chain)`, as part of the list's tree).
  */
 export type VirtualListRowFn<T> = (info: VirtualListRow<T>) => Child | ReactElement;
 
@@ -301,7 +302,7 @@ function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
 
 interface LanguageVirtualListProps {
   readonly row: VirtualListRowFn<unknown>;
-  readonly render: (child: Child) => ReactNode;
+  readonly draw: Pick<ControlDraw, 'render' | 'embed'>;
   readonly [prop: string]: unknown;
 }
 
@@ -309,15 +310,19 @@ interface LanguageVirtualListProps {
  * Bloom's `VirtualList` with a `renderItem` that keeps its identity while
  * `row` does, as an app's `useCallback` does: the engine re-renders a row only
  * when its item changes. The latest renderer draws a view, in the list's
- * environment; an element (FlashList's own `renderItem`) is the row as it is.
+ * environment; an element (FlashList's own `renderItem`) is the row as it is,
+ * a language root (`toElement(chain)`) drawn as part of the list's tree, so a
+ * row has no boundary of its own.
  */
-function LanguageVirtualList({ row, render, ...props }: LanguageVirtualListProps): ReactElement {
-  const latest = useRef(render);
-  latest.current = render;
+function LanguageVirtualList({ row, draw, ...props }: LanguageVirtualListProps): ReactElement {
+  const latest = useRef(draw);
+  latest.current = draw;
   const renderItem = useCallback(
     (info: VirtualListRow<unknown>) => {
       const out = row(info);
-      return (isValidElement(out) ? out : latest.current(out)) as ReactElement | null;
+      return (
+        isValidElement(out) ? latest.current.embed(out) : latest.current.render(out)
+      ) as ReactElement | null;
     },
     [row],
   );
@@ -417,7 +422,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
     const container = withRoom(containerStyle(d.node, d.own('spacing')?.value), d.room);
     if (container !== undefined) props.contentContainerStyle = container;
     props.row = row;
-    props.render = d.render;
+    props.draw = d;
     return d.component(LanguageVirtualList, props);
   },
   listSelectionBar: (d) => {

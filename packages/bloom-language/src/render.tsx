@@ -2928,10 +2928,12 @@ function renderHost(
     }
     case 'embed': {
       const { content } = node.props as EmbedProps;
-      const element =
+      const element = drawEmbedded(
         typeof content === 'function'
           ? content((child) => renderChild(child, ctx, undefined))
-          : (inlineRoot(content, ctx) ?? content);
+          : content,
+        ctx,
+      );
       if (!boxed && !behaviour) {
         return key === undefined ? (element as ReactElement) : draw(Fragment, { key }, element);
       }
@@ -3036,6 +3038,7 @@ function renderHost(
             : element,
         pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
+        embed: (content) => drawEmbedded(content, ctx),
         children: (children) => renderChildren(children, ctx),
         press: (value) => pressOf(value, ctx.env),
         role: p.role,
@@ -3620,6 +3623,15 @@ function inlineRoot(content: unknown, ctx: Context): ReactNode | undefined {
     scoped: ctx.scoped,
   };
   return renderChild(tree ?? null, here, content.key ?? undefined);
+}
+
+/**
+ * A React element placed in a language tree (an `Embed`'s, what a row or a
+ * render function returns): a language root drawn as part of the tree
+ * (`inlineRoot`), any other element as it is.
+ */
+function drawEmbedded(content: ReactNode, ctx: Context): ReactNode {
+  return inlineRoot(content, ctx) ?? content;
 }
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
