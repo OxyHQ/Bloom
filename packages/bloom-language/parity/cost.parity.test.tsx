@@ -13,7 +13,7 @@
  * A JSX side that paints a theme colour reads the theme as an app does
  * (`Themed`: one `useThemePaint()`), so a painted node may read once.
  */
-import type { ReactElement, ReactNode } from 'react';
+import { createElement, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
@@ -25,7 +25,7 @@ import { Text } from '@oxy.so/bloom/typography';
 
 import type { Child } from '../src/node';
 import * as L from '../src/primitives';
-import { toElement } from '../src/render';
+import { LanguageRoot, toElement } from '../src/render';
 import { Themed } from './support/cases';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -209,6 +209,39 @@ const CASES: Case[] = [
       </RN.View>
     ),
   },
+  {
+    name: 'a root nested in a tree (Embed(toElement(chain))) and its JSX',
+    node: L.Embed(toElement(L.Text('a').padding('xs'))),
+    jsx: <Text style={{ padding: 4 }}>a</Text>,
+  },
+  {
+    name: 'the root the compiler lowers toElement to, nested in a tree',
+    node: L.Embed(createElement(LanguageRoot, { build: () => L.Text('a').padding('xs') })),
+    jsx: <Text style={{ padding: 4 }}>a</Text>,
+  },
+  {
+    name: 'a fixed role at an opacity (.background black/half) and its hex',
+    node: L.VStack(L.Text('a')).padding('xs').background('black/half'),
+    jsx: (
+      <RN.View style={{ padding: 4, backgroundColor: '#00000080' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a white glyph and a glyph filled white',
+    node: L.Icon(RiHeart3Line).foreground('white'),
+    jsx: <RiHeart3Line size="md" fill="#ffffff" />,
+  },
+  {
+    name: 'a box of computed geometry (frame and margin) and a View',
+    node: L.VStack(L.Text('a')).frame({ width: 120 }).margin('right', '1'),
+    jsx: (
+      <RN.View style={{ width: 120, marginRight: 4 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
 ];
 
 describe('a language node costs React no more than the JSX it stands for', () => {
@@ -230,5 +263,6 @@ describe('a language node costs React no more than the JSX it stands for', () =>
     const jsx = less(measured(container.jsx(c.jsx)), measured(container.jsx()));
     expect(language.hooks).toBeLessThanOrEqual(jsx.hooks);
     expect(language.contexts).toBeLessThanOrEqual(jsx.contexts);
+    expect(language.fibers).toBeLessThanOrEqual(jsx.fibers);
   });
 });

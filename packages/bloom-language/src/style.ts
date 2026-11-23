@@ -205,6 +205,26 @@ export function ink(token: InkToken): RoleRef | string {
   return typeof token === 'string' ? role(token) : token.value;
 }
 
+/**
+ * A fixed role's colour as a value, natively: white, black and transparent are
+ * the same in every theme (Bloom's `buildTheme` writes them as constants), so
+ * a style or a glyph that paints with one draws it as it is, with no `Painted`
+ * leaf and no theme read. At an opacity it is the hex with the alpha in 8
+ * bits, as `styleColor` writes it (paint.ts). `undefined` for any other role,
+ * and on the web, whose roles are CSS variables the document paints.
+ */
+export function fixedInk(token: InkToken): string | undefined {
+  if (typeof token !== 'string' || Platform.OS === 'web') return undefined;
+  const { role: name, opacity } = role(token);
+  const fixed: string | null = COLORS[name].web;
+  if (fixed === 'transparent') return opacity === undefined ? fixed : undefined;
+  if (fixed === null || !fixed.startsWith('#')) return undefined;
+  if (opacity === undefined) return fixed;
+  return `${fixed}${Math.round(Math.fround(opacity) * 255)
+    .toString(16)
+    .padStart(2, '0')}`;
+}
+
 /** An app's own colour (`defineTokens({ color })`), not a Bloom role. */
 export function isAppColor(value: unknown): value is AppToken<'color'> {
   return typeof value === 'object' && value !== null && (value as AppToken).scale === 'color';
@@ -223,7 +243,9 @@ function split(resolved: Resolved): {
   const roles: (readonly [string, ColorName, number?])[] = [];
   for (const key of Object.keys(resolved)) {
     const value = resolved[key] as StyleValue;
-    if (isRole(value))
+    const fixed = isRole(value) ? fixedInk(value.token) : undefined;
+    if (fixed !== undefined) values[key] = fixed;
+    else if (isRole(value))
       roles.push(
         value.opacity === undefined ? [key, value.role] : [key, value.role, value.opacity],
       );
