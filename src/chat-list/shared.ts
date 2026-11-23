@@ -1,7 +1,6 @@
 import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { CHAT_INDICATORS_MESSAGES } from '../chat-indicators/messages';
 import type { MessageDeliveryStatus } from '../chat-indicators/types';
-import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { RiContactsBookLine } from '../icons/remix/RiContactsBookLine';
 import { RiFileGifLine } from '../icons/remix/RiFileGifLine';
 import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
@@ -87,9 +86,6 @@ export const CHAT_ROW_GEOMETRY: Record<ChatListDensity, ChatRowGeometry> = {
   },
 };
 
-/** Corner radius of a row's hover/selected fill. */
-export const CHAT_ROW_RADIUS = 12;
-
 // The swipe's thresholds and pane width live in `swipe-row/constants.ts` —
 // this family drags through `SwipeRow` and owns none of that geometry.
 
@@ -113,9 +109,6 @@ export const CHAT_ATTACHMENT_ICONS: Record<ChatAttachmentKind, ChatIconComponent
   contact: RiContactsBookLine,
   poll: RiListCheck3,
 };
-
-/** The glyph of an empty conversations list. */
-export const CHAT_EMPTY_ICON = RiChat3Line;
 
 // ---------------------------------------------------------------------------
 //  Paint

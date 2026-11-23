@@ -43,7 +43,6 @@ const ENTER_TRANSLATE_Y: Record<ToastPosition, number> = {
 
 /** Exit stays near its resting slot instead of throwing the card offscreen. */
 const EXIT_TRANSLATE_Y_SINGLE = 12;
-export const EXIT_DURATION = MOTION.exit.duration;
 
 const enters = new Map<ToastPosition, KeyframesValue>();
 

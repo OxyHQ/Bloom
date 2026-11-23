@@ -1,13 +1,7 @@
 import type React from 'react';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { ViewRef } from '../styles/native-refs';
-import {
-  StyleSheet,
-  View,
-  type LayoutChangeEvent,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,7 +9,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { G, Path } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -202,33 +196,6 @@ export function useSidebarWebCss(): void {
 
 export function webHook(kind: 'ring' | 'offset' | 'inset' = 'ring'): Record<string, unknown> {
   return IS_WEB ? { dataSet: { bloomSidebar: kind } } : {};
-}
-
-// ---------------------------------------------------------------------------
-//  Painting helpers
-// ---------------------------------------------------------------------------
-
-let gradientIds = 0;
-
-/** A top-to-bottom gradient fill (opaque stops — react-native-svg drops alpha). */
-export function GradientFill({ from, to, radius }: { from: string; to: string; radius: number }) {
-  const id = useMemo(() => `bloom-sidebar-gradient${gradientIds++}`, []);
-  return (
-    <View
-      pointerEvents="none"
-      style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
-    >
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-        <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={from} />
-            <Stop offset="1" stopColor={to} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
-      </Svg>
-    </View>
-  );
 }
 
 const AVATAR_TYPE = {

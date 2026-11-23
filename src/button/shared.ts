@@ -489,12 +489,6 @@ export function resolveCanonicalButtonPalette(
   };
 }
 
-/** `linear-gradient(180deg, top, bottom)`, or a flat one for a solid state. */
-export function paintToCssImage(paint: ButtonStatePaint): string {
-  const [top, bottom] = paint.gradient ?? [paint.background, paint.background];
-  return `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)`;
-}
-
 /** Elements are content; function, memo and forwardRef icons are components. */
 export function isIconComponent(
   icon: ReactNode | ButtonIconComponent,
