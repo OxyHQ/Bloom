@@ -1,0 +1,37 @@
+{
+  "name": "@oxy.so/bloom-language-compiler-wasm32-wasi",
+  "version": "1.0.0",
+  "cpu": [
+    "wasm32"
+  ],
+  "main": "bloom-language-compiler.wasi.cjs",
+  "files": [
+    "bloom-language-compiler.wasm32-wasi.wasm",
+    "bloom-language-compiler.wasi.cjs",
+    "bloom-language-compiler.wasi.d.cts",
+    "bloom-language-compiler.wasi-browser.js",
+    "wasi-worker.mjs",
+    "wasi-worker-browser.mjs"
+  ],
+  "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=23.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-language-compiler"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "types": "bloom-language-compiler.wasi.d.cts",
+  "browser": "bloom-language-compiler.wasi-browser.js",
+  "type": "module",
+  "dependencies": {
+    "@napi-rs/wasm-runtime": "~1.2.7",
+    "@emnapi/core": "2.0.0-beta.3",
+    "@emnapi/runtime": "2.0.0-beta.3"
+  }
+}

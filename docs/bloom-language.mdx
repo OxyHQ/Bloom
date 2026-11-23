@@ -9,7 +9,12 @@ Bloom's UI language is a way to write Bloom interfaces in TypeScript the way
 SwiftUI writes them in Swift: a component is a function, and its look is a chain
 of modifiers applied in order. Every modifier value is a Bloom token, never a
 pixel or a colour. The package is `packages/bloom-language`
-(`@oxy.so/bloom-language`, a working name). It is not published.
+(`@oxy.so/bloom-language`, published from 1.0.0 beside Bloom 23):
+
+```bash
+bun add @oxy.so/bloom-language @oxy.so/bloom-data
+bun add -d @oxy.so/bloom-language-compiler   # optional: wrap metro.config with withBloomLanguage
+```
 
 The language renders through React Native and react-native-web, using Bloom's
 existing components and tokens, so a screen written in it looks the same as the
@@ -4848,17 +4853,23 @@ about what a token means, and its output is the same program on every platform.
 and web, and compares the committed trees on mount, after a re-render, and after
 a theme switch; each fixture also pins how many chains the compiler hoists.
 
-**Distribution.** Installing the compiler needs no Rust. CI (the `Language
-compiler binaries` workflow) builds the addon with napi-rs for linux x64 and
-arm64 (glibc), darwin x64 and arm64 and win32 x64, and a `wasm32-wasip1-threads`
-build; packs each as a platform package beside the compiler
-(`@oxy.so/bloom-language-compiler-<platform>`, its optional dependencies, by
-`scripts/pack-prebuilt.mjs`); and installs the packs on each platform with no
+**Distribution.** Installing the compiler needs no Rust. Its platform
+packages (`@oxy.so/bloom-language-compiler-<platform>`, its optional
+dependencies) are committed manifests under `npm/`, written by
+`bun run generate:platforms` (napi-rs) and held to it by
+`test/platform-packages.test.mjs`; run it after a version bump. CI (the
+`Language compiler binaries` workflow) builds the addon with napi-rs for linux
+x64 and arm64 (glibc), darwin x64 and arm64 and win32 x64, and a
+`wasm32-wasip1-threads` build; packs each into its platform package
+(`scripts/pack-prebuilt.mjs`); and installs the packs on each platform with no
 cargo on PATH, where the addon and the WASI build compile every fixture alike
 (`scripts/verify-prebuilt.cjs`). The loader (`js/native.js`) takes a build from
-the checkout, else the platform's package, else the WASI build (a musl Linux,
-or a platform with no addon). Nothing is published: the packs are the run's
-artifacts, ready for the release workflow.
+the checkout (`bun run build:addon`), else the platform's package, else the
+WASI build (a musl Linux, or a platform with no addon). The release
+(`release-packages.yml`) runs that workflow when the compiler's version is not
+on npm yet, stages each addon in its platform package
+(`scripts/stage-prebuilt.mjs`) and hands them to Oxy's shared release, which
+publishes the platform packages before the compiler.
 
 ## Built and not built
 

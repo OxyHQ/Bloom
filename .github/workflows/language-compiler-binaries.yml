@@ -1,34 +1,44 @@
 name: Language compiler binaries
 
 # Builds the Bloom language compiler's prebuilt addons, one per platform, and
-# its WASI fallback; packs them as the platform packages a release would
-# publish beside @oxy.so/bloom-language-compiler (its optional dependencies);
-# then installs the packs on each platform with no Rust on PATH and compiles
-# the fixtures through them. It publishes nothing: the packs are this run's
-# artifacts. (packages/bloom-language-compiler: js/native.js loads them,
-# scripts/pack-prebuilt.mjs packs them, scripts/verify-prebuilt.cjs checks an
-# install.)
+# its WASI fallback; packs them as the platform packages beside
+# @oxy.so/bloom-language-compiler (its optional dependencies, committed under
+# packages/bloom-language-compiler/npm); then installs the packs on each
+# platform with no Rust on PATH and compiles the fixtures through them. It
+# publishes nothing. (js/native.js loads them, scripts/pack-prebuilt.mjs packs
+# them, scripts/verify-prebuilt.cjs checks an install.)
 #
-# Only a change to the compiler (or to this workflow) runs it: five runners per
-# run, and the org's free plan shares 20 concurrent jobs across every repo.
+# release-packages.yml calls it with `release: true` when the compiler's
+# version is not on npm yet: each build is then also staged at its repository
+# path (`release-prebuilt-<target>`, scripts/stage-prebuilt.mjs), which Oxy's
+# shared release downloads into its checkout before it packs, so the release
+# publishes exactly the addons this run built and verified.
+#
+# Otherwise only a pull request that changes the compiler (or this workflow)
+# runs it: five runners per run, and the org's free plan shares 20 concurrent
+# jobs across every repo. main is not rebuilt on push; a new compiler version
+# is rebuilt and verified by the release that publishes it.
 
 on:
   pull_request:
     paths:
       - packages/bloom-language-compiler/**
       - .github/workflows/language-compiler-binaries.yml
-  push:
-    branches: [main]
-    paths:
-      - packages/bloom-language-compiler/**
-      - .github/workflows/language-compiler-binaries.yml
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      release:
+        description: Also stage each build at its repository path for the release
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: language-compiler-binaries-${{ github.ref }}
+  # A call from the release runs under the caller's workflow name, so it never
+  # cancels (or is cancelled by) a pull request's own run.
+  group: language-compiler-binaries-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -80,6 +90,16 @@ jobs:
             packages/bloom-language-compiler/dist/*.wasi.d.cts
             packages/bloom-language-compiler/dist/*.wasi-browser.js
             packages/bloom-language-compiler/dist/wasi-worker*.mjs
+          if-no-files-found: error
+      - name: Stage the build in its platform package, for the release
+        if: inputs.release
+        run: bun packages/bloom-language-compiler/scripts/stage-prebuilt.mjs packages/bloom-language-compiler/dist "$RUNNER_TEMP/prebuilt"
+      # A directory keeps its tree: the release downloads it into its checkout's root.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: inputs.release
+        with:
+          name: release-prebuilt-${{ matrix.target }}
+          path: ${{ runner.temp }}/prebuilt/
           if-no-files-found: error
 
   pack:

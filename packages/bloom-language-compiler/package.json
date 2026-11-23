@@ -1,7 +1,6 @@
 {
   "name": "@oxy.so/bloom-language-compiler",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
   "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
@@ -18,16 +17,16 @@
   },
   "files": [
     "js",
-    "bloom-language-compiler.node",
     "LICENSE"
   ],
   "scripts": {
-    "build": "./scripts/build-addon.sh",
+    "build:addon": "./scripts/build-addon.sh",
     "typescript": "tsc --noEmit -p .",
-    "test": "cargo test --locked && node --test test/adapter.test.cjs && jest",
+    "test": "cargo test --locked && node --test test/adapter.test.cjs test/platform-packages.test.mjs && jest",
     "lint:rust": "cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
     "audit:crates": "python3 scripts/audit-crate-ages.py Cargo.lock",
     "build:prebuilt": "napi build --platform --release --manifest-path crates/node/Cargo.toml --package bloom_language_compiler_node --no-dts-header",
+    "generate:platforms": "napi create-npm-dirs --npm-dir npm && for dir in npm/*/; do cp LICENSE \"$dir\"; done",
     "pack:prebuilt": "node scripts/pack-prebuilt.mjs"
   },
   "dependencies": {
@@ -55,5 +54,16 @@
       "x86_64-pc-windows-msvc",
       "wasm32-wasip1-threads"
     ]
+  },
+  "optionalDependencies": {
+    "@oxy.so/bloom-language-compiler-linux-x64-gnu": "workspace:*",
+    "@oxy.so/bloom-language-compiler-linux-arm64-gnu": "workspace:*",
+    "@oxy.so/bloom-language-compiler-darwin-x64": "workspace:*",
+    "@oxy.so/bloom-language-compiler-darwin-arm64": "workspace:*",
+    "@oxy.so/bloom-language-compiler-win32-x64-msvc": "workspace:*",
+    "@oxy.so/bloom-language-compiler-wasm32-wasi": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

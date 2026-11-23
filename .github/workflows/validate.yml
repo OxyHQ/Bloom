@@ -109,10 +109,14 @@ jobs:
       # test runs its Rust tests, its adapters and the parity suite (every
       # fixture rendered interpreted and compiled, native and web); the
       # language's checks that the spec's generated outputs are current.
+      # The compiler's tests load the addon built from this checkout
+      # (`build:addon`); it has no `build`, so the release builds no Rust and
+      # ships the addons of its platform packages instead.
       - name: Workspace package builds, typecheck and test
         run: |
+          (cd packages/bloom-language-compiler && bun run build:addon)
           for package in packages/bloom-text packages/bloom-editor packages/bloom-language packages/bloom-language-compiler packages/bloom-data; do
-            (cd "$package" && bun run build && bun run typescript && bun run test)
+            (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
           done
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
       # Bun, Node ESM, Node CommonJS and a node16 typecheck, pulling no React.
