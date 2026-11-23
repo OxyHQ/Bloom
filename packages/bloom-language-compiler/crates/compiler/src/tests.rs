@@ -1054,6 +1054,16 @@ fn a_screen_s_colour_activity_and_starting_heights_are_checked_against_the_spec(
 }
 
 #[test]
+fn a_screen_s_fill_and_its_own_top_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (atTop, toTop, black) => Text('a').screenBackground('background').screenBackground('primary/10').screenBackground(black).reselectTop(atTop, toTop);\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let fill = chrome("export const S = () => Text('a').screenBackground('#000000');\n");
+    assert_eq!(first_message(&fill), Some("Unknown color token '#000000' for .screenBackground()"));
+}
+
+#[test]
 fn the_rest_of_the_layout_family_is_checked_against_the_spec() {
     let fine = chrome(
         "export const L = (reveal, resize) => [ScrollArea(Text('a')).contentMargins('horizontal', 'lg').spacing('sm').axis('horizontal').scrollbar('hover').scrollbarSide('start').size('md').keyboardTaps('handled').frame({ height: '48' }), ScrollSurface(Text('b')).stickyHeader(Text('h')).stickyFooter(Text('f')).fadeHeight('lg').fadeBottom(false).matchSurfacePaint().style('secondary').label('Messages'), AutoHideBar(Text('bar'), Text('body')).summary('oxy.so').collapsed().onReveal(reveal).peek(false).barHeight('44').collapsedHeight('xl').label('Show').testID('c'), ResizeHandle(resize).axis('horizontal').style('pill').thickness('14').onResizeStart(reveal).onResizeEnd(reveal).onNudge(resize).label('Resize').testID('r')];\n",

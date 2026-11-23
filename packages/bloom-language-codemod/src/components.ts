@@ -71,7 +71,11 @@ export type Form =
   | 'className'
   | 'style'
   | 'textStyle'
-  | 'content';
+  | 'content'
+  /** A style that is its fill alone (`{ backgroundColor }`): a role or an app colour. */
+  | 'fill'
+  /** Bloom Screen's `reselect` handler: `.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`. */
+  | 'reselect';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -1035,6 +1039,8 @@ export const SCREEN: ComponentRule = {
     contentClearance: p('contentClearance', 'token', SPACE),
     navigationScope: p('navigationScope', 'token', tokens('navigationScope')),
     colorPreset: p('colorPreset', 'token', tokens('colorPreset')),
+    style: p('screenBackground', 'fill'),
+    reselect: p('onReselect', 'reselect'),
     testID: p('testID', 'string'),
   },
 };

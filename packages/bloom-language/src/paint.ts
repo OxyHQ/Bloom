@@ -17,6 +17,7 @@ import {
 } from '@oxy.so/bloom/theme';
 
 import { COLORS } from './generated/spec.generated';
+import type { RoleRef } from './style';
 import { adoptInk } from './web-sheet';
 import type { ColorName } from './tokens';
 import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './variants';
@@ -190,6 +191,17 @@ function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> |
     byPaint.set(paint, props);
   }
   return props;
+}
+
+/**
+ * A colour as Bloom's theme hands it to a component that does colour math
+ * with it (a Screen's fill, which publishes its surface): a role as the
+ * theme's RGB colour (`useTheme().colors`), at its opacity; an app colour as written.
+ */
+export function themeColor(colors: ThemeColors, value: RoleRef | string): string {
+  if (typeof value === 'string') return value;
+  const rgb = colors[COLORS[value.role].paint];
+  return value.opacity === undefined ? rgb : withAlpha(rgb, value.opacity);
 }
 
 interface PaintedProps {

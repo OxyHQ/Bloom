@@ -766,6 +766,50 @@ export function A({ itemSize, count, index }) {
     expect(fixture?.after).toContain(".zIndex(43).position({ right: 'lg', top: 49 })");
     expect(fixture?.insets).toBe(false);
   });
+  it('fills a Screen with a role or an app colour, and says where a reel’s top is', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { BloomColorScope, useTheme } from '@oxy.so/bloom/theme';
+import { Text } from '@oxy.so/bloom/typography';
+export default function Reel({ empty, toTop, retry }) {
+  const theme = useTheme();
+  return (
+    <Screen
+      reselect={{ isAtTop: () => true, scrollToTop: toTop, refresh: retry }}
+      style={{ backgroundColor: empty ? theme.colors.background : '#000000' }}
+    >
+      <Text>Reel</Text>
+    </Screen>
+  );
+}
+export function Half({ toTop }) {
+  return (
+    <Screen reselect={{ scrollToTop: toTop }}>
+      <Text>Half</Text>
+    </Screen>
+  );
+}
+export function Scoped() {
+  const theme = useTheme();
+  return (
+    <BloomColorScope mode="dark" asChild>
+      <Screen style={{ backgroundColor: theme.colors.background }}>
+        <Text>Scoped</Text>
+      </Screen>
+    </BloomColorScope>
+  );
+}
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      ".onReselect(retry).reselectTop(() => true, toTop).screenBackground(empty ? 'background' : appColors.color.hex000000)",
+    );
+    expect(code).toContain("defineTokens({ color: { hex000000: '#000000' } })");
+    // Where the top is without how to go there, and a role read outside the scope it paints in.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'screen:reselect',
+      'screen:style',
+    ]);
+  });
   it('rounds a radius of half a square’s side as full', () => {
     const result = run(`import { View } from 'react-native';
 export function A({ size, w }) {

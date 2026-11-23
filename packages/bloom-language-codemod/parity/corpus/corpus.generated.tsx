@@ -72,6 +72,9 @@ import { RiArrowRightLine as I63 } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { Text as I64 } from '../support/app-text';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
+const T1 = L.defineTokens({ color: {"hex000000":"#000000"} });
+const T2 = L.defineTokens({ color: {"hex000000":"#000000"} });
+const T3 = L.defineTokens({ color: {"hex000":"#000"} });
 
 /** The insets of a phone with a notch and a home bar. */
 const PARITY_INSETS = { top: 47, bottom: 34, left: 0, right: 0 };
@@ -602,7 +605,7 @@ export const CASES = [
     after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))); },
   },
   {
-    name: "components/Geometry.tsx:33",
+    name: "components/Geometry.tsx:32",
     before: () => { const View = I9; return (<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />); },
     after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
   },
@@ -675,6 +678,33 @@ export const CASES = [
       }}
     />); } return (<Before />); },
     after: () => { const View = I9; const withAlpha = I62; const { Button: LButton, Item, Divider, Menu, VStack } = L;  return (toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))); },
+  },
+  {
+    name: "components/ReelRoute.tsx:8 (false)",
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Screen = I11; const Text = I52; return (<Screen
+      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
+      style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}
+    >
+      <Text>Reel</Text>
+    </Screen>); } return (<Before />); },
+    after: () => { const Screen = I11; const Text = I52; const { defineTokens, Text: LText } = L; const appColors = T1; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)} />); },
+  },
+  {
+    name: "components/ReelRoute.tsx:8",
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Screen = I11; const Text = I52; return (<Screen
+      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}
+      style={{ backgroundColor: true ? parityTheme.colors.background : '#000000' }}
+    >
+      <Text>Reel</Text>
+    </Screen>); } return (<Before />); },
+    after: () => { const Screen = I11; const Text = I52; const { defineTokens, Text: LText } = L; const appColors = T2; return (<ScreenHost root={LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(true ? 'background' : appColors.color.hex000000)} />); },
+  },
+  {
+    name: "components/ReelRoute.tsx:18",
+    before: () => { const Screen = I11; const Text = I52; return (<Screen scroll="none" style={{ backgroundColor: '#000' }}>
+      <Text>Camera</Text>
+    </Screen>); },
+    after: () => { const Screen = I11; const Text = I52; const { defineTokens, Text: LText } = L; const appColors = T3; return (<ScreenHost root={LText('Camera').header(false).screenScroll('none').screenBackground(appColors.color.hex000)} />); },
   },
   {
     name: "components/Rows.tsx:19",

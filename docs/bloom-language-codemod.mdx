@@ -134,6 +134,15 @@ borderRadius: size / 2`, the side one expression and no minimum beside it) is
 draws as half of it. Its parity writes one hole per expression, so a square
 stays square and the radius is half the hole on the before side.
 
+A route's Screen `style` that is its fill alone (`{ backgroundColor }`) is
+`.screenBackground(color)`: a theme colour read from `useTheme()` is its role
+(outside a `BloomColorScope` around the Screen, where the role would paint the
+scope's scheme), a colour written out an app colour, and a plain choice
+between them that choice (Mention's reel: `.screenBackground(empty ?
+'background' : appColors.color.hex000000)`). Its `reselect` object is
+`.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`, each handler
+as written; `isAtTop` without `scrollToTop`, or the reverse, is a reason.
+
 A `Button`'s `color` and `hoverColor` are `.foreground(role)` and
 `.hoverForeground(role)` when they are a theme colour read from `useTheme()`,
 a choice of them by a plain condition (`undefined` for Bloom's own ink), or a

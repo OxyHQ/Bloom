@@ -166,6 +166,7 @@ export type {
   Progress,
   Role,
   ScrollEdge,
+  ReselectTop,
   ScreenFooter,
   ScrollContentView,
   ScrollViewNode,

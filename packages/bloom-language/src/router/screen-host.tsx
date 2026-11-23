@@ -6,10 +6,10 @@
  * sheet over it (see sheet-bloom.tsx: Bloom's Dialog or BottomSheet, the system
  * sheet on iOS).
  */
-import type { ReactElement, ReactNode } from 'react';
+import { type ComponentProps, type ReactElement, type ReactNode, useMemo } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Screen } from '@oxy.so/bloom/screen';
-import { BloomColorScope } from '@oxy.so/bloom/theme';
+import { BloomColorScope, useTheme } from '@oxy.so/bloom/theme';
 
 import { Header } from '../primitives';
 import {
@@ -18,11 +18,14 @@ import {
   type Child,
   type HeadingLevel,
   type Modifier,
+  type ReselectTop,
   type ScreenFooter,
   type ScreenHeader,
 } from '../node';
 import { valuesOf } from '../platform/values';
-import { flexStyle } from '../style';
+import { ink, flexStyle } from '../style';
+import { themeColor } from '../paint';
+import type { InkToken } from '../tokens';
 import { toElement } from '../render';
 import {
   resolveSpace,
@@ -122,33 +125,42 @@ export function ScreenHost({ root }: { root: Child }) {
   const clearance = values.contentClearance as SpaceToken | undefined;
   const headerHeight = values.initialHeaderHeight as SpaceToken | undefined;
   const footerHeight = values.initialFooterHeight as SpaceToken | undefined;
-  const screen = (
-    <Screen
-      testID={chrome.testID}
-      kind={values.screenKind as ScreenKind | undefined}
-      scroll={values.screenScroll as ScreenScroll | undefined}
-      documentScroll={values.documentScroll as boolean | undefined}
-      header={system ? undefined : header}
-      headerPlacement={values.headerPlacement as ChromePlacement | undefined}
-      underlay={values.underlay ? toElement(values.underlay as Child) : undefined}
-      primaryAction={action ? toElement(action.content) : undefined}
-      primaryActionPlacement={action?.options?.placement}
-      primaryActionVisibility={action?.options?.visibility}
-      contentClearance={clearance === undefined ? undefined : resolveSpace(clearance)}
-      navigationScope={values.navigationScope as NavigationScope | undefined}
-      colorPreset={values.colorPreset as ColorPreset | undefined}
-      seed={values.seed as string | undefined}
-      active={values.screenActive as boolean | undefined}
-      headerHeight={headerHeight === undefined ? undefined : resolveSpace(headerHeight)}
-      bottomBarHeight={footerHeight === undefined ? undefined : resolveSpace(footerHeight)}
-      reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
-      bottomBar={footer ? toElement(footer.content) : undefined}
-      bottomBarPlacement={footerOptions?.placement}
-      bottomBarKeyboardBehavior={footerOptions?.keyboard}
-    >
-      {toElement(chrome.content)}
-    </Screen>
-  );
+  const top = values.reselectTop as ReselectTop | undefined;
+  const reselect =
+    chrome.onReselect || top
+      ? { refresh: chrome.onReselect, isAtTop: top?.isAtTop, scrollToTop: top?.scrollToTop }
+      : undefined;
+  const background = values.screenBackground as InkToken | undefined;
+  const props: ComponentProps<typeof Screen> = {
+    testID: chrome.testID,
+    kind: values.screenKind as ScreenKind | undefined,
+    scroll: values.screenScroll as ScreenScroll | undefined,
+    documentScroll: values.documentScroll as boolean | undefined,
+    header: system ? undefined : header,
+    headerPlacement: values.headerPlacement as ChromePlacement | undefined,
+    underlay: values.underlay ? toElement(values.underlay as Child) : undefined,
+    primaryAction: action ? toElement(action.content) : undefined,
+    primaryActionPlacement: action?.options?.placement,
+    primaryActionVisibility: action?.options?.visibility,
+    contentClearance: clearance === undefined ? undefined : resolveSpace(clearance),
+    navigationScope: values.navigationScope as NavigationScope | undefined,
+    colorPreset: values.colorPreset as ColorPreset | undefined,
+    seed: values.seed as string | undefined,
+    active: values.screenActive as boolean | undefined,
+    headerHeight: headerHeight === undefined ? undefined : resolveSpace(headerHeight),
+    bottomBarHeight: footerHeight === undefined ? undefined : resolveSpace(footerHeight),
+    reselect,
+    bottomBar: footer ? toElement(footer.content) : undefined,
+    bottomBarPlacement: footerOptions?.placement,
+    bottomBarKeyboardBehavior: footerOptions?.keyboard,
+    children: toElement(chrome.content),
+  };
+  const screen =
+    background === undefined ? (
+      <Screen {...props} />
+    ) : (
+      <FilledScreen {...props} background={background} />
+    );
   return (
     <>
       {wrapped(root, screen)}
@@ -156,6 +168,21 @@ export function ScreenHost({ root }: { root: Child }) {
       {sheetsOf(chrome.sheets)}
     </>
   );
+}
+
+/**
+ * A Screen with a fill of its own (`.screenBackground()`): its colour as Bloom's
+ * theme gives it, the leaf that reads the theme, so a theme switch re-renders
+ * it and not the content handed in.
+ */
+function FilledScreen({
+  background,
+  ...props
+}: ComponentProps<typeof Screen> & { background: InkToken }): ReactElement {
+  const { colors } = useTheme();
+  const fill = themeColor(colors, ink(background));
+  const style = useMemo(() => ({ backgroundColor: fill }), [fill]);
+  return <Screen {...props} style={style} />;
 }
 
 /** What `.keyboardAvoiding()` draws: React Native's own fill and, on iOS, a padding (elsewhere the view resizes). */

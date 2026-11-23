@@ -1983,6 +1983,8 @@ modifiers above (see [Navigation](#navigation)), the rest of Bloom `Screen`:
 | `.colorPreset(name)` | `colorPreset`: one of Bloom's presets (`AppColorName`), the screen's own recipe for its content, panel and shell, restored when it leaves |
 | `.seed('#rrggbb')` | `seed`: the colours from one RGB seed (a colour the person chose), over the preset |
 | `.screenActive(false)` | `active={false}`: a retained screen drives no scroll, chrome or reselect |
+| `.screenBackground(color)` | `style={{ backgroundColor }}`: the screen's own fill behind its header and content, the surface its chrome is painted for (a reel's or a camera's black); a role is the theme's colour (`useTheme().colors`), an app colour as written |
+| `.reselectTop(isAtTop, scrollToTop)` | `reselect`'s `isAtTop` and `scrollToTop`, beside `.onReselect()`'s `refresh`: where the top is for a screen that drives its own scroll (a reel, whose top is its first slide); without it the scroller in front answers |
 | `.initialHeaderHeight(space)`, `.initialFooterHeight(space)` | `headerHeight`, `bottomBarHeight`: the chrome's heights before it measures itself (safe area included) |
 
 Three more draw around the `Screen`, as a route's JSX wrapped it:

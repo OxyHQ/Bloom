@@ -654,6 +654,10 @@ export interface ValueModifiers {
   colorPreset: ColorPreset;
   seed: string;
   screenActive: boolean;
+  /** The screen's own fill (Bloom `Screen`'s `style.backgroundColor`): a dark reel's or camera's black. */
+  screenBackground: InkToken;
+  /** Where a screen that drives its own scroll has its top (Bloom `Screen`'s `reselect`). */
+  reselectTop: ReselectTop;
   initialHeaderHeight: SpaceToken;
   initialFooterHeight: SpaceToken;
   /** The screen's own scheme (`undefined`: the app's), a `BloomColorScope` around it. */
@@ -2863,6 +2867,12 @@ export class Node {
   screenActive(value = true): Node {
     return this.set('screenActive', value);
   }
+  screenBackground(value: InkToken): Node {
+    return this.set('screenBackground', value);
+  }
+  reselectTop(isAtTop: () => boolean, scrollToTop: () => void): Node {
+    return this.set('reselectTop', { isAtTop, scrollToTop });
+  }
   initialHeaderHeight(value: SpaceToken): Node {
     return this.set('initialHeaderHeight', value);
   }
@@ -4563,6 +4573,20 @@ export interface ScreenModifiers<Self> {
    * screen (`false`) drives no scroll, chrome or reselect. `true` by default.
    */
   screenActive(value?: boolean): Self;
+  /**
+   * The screen's own fill, behind its header and content (Bloom `Screen`'s
+   * `style.backgroundColor`, the surface its chrome is painted for): a role,
+   * which Bloom's theme gives as its colour, or an app colour (a reel's black).
+   */
+  screenBackground(value: InkToken): Self;
+  /**
+   * Where the top is for a screen that drives its own scroll (a reel, whose
+   * top is its first slide), and how to go back there: reselecting it away
+   * from the top calls `scrollToTop`, and at the top `.onReselect()` (Bloom
+   * `Screen`'s `reselect`, its `isAtTop` and `scrollToTop`). Without it the
+   * scroller in front answers.
+   */
+  reselectTop(isAtTop: () => boolean, scrollToTop: () => void): Self;
   /** The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included). */
   initialHeaderHeight(value: SpaceToken): Self;
   /** The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included). */
@@ -4594,6 +4618,12 @@ export interface ScreenModifiers<Self> {
 
 /** A provider a screen is drawn inside: a component that draws its children. */
 export type ScreenProvider = ComponentType<{ children?: ReactNode }>;
+
+/** Where a screen that drives its own scroll has its top (`.reselectTop()`). */
+export interface ReselectTop {
+  readonly isAtTop: () => boolean;
+  readonly scrollToTop: () => void;
+}
 
 export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   padding(value: PaddingToken): Self;

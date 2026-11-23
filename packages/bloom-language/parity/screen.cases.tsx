@@ -5,13 +5,17 @@ import { Screen, ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bl
 import { tokens, useSurfaceFill } from '@oxy.so/bloom/styles';
 import { BloomColorScope, withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
+import { defineTokens } from '../src/tokens';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import type { ScrollViewNode } from '../src/node';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { ScreenHost } from '../src/router/screen-host';
-import { type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
+
+/** An app's own colours, as Mention's reel paints its screen. */
+const REEL = defineTokens({ color: { black: '#000000' } });
 
 const { space } = tokens;
 const noop = () => {};
@@ -543,6 +547,30 @@ const screens: ParityCase[] = [
       <Screen colorPreset="teal" seed="#8e5137">
         <Text>a</Text>
       </Screen>
+    ),
+  },
+  {
+    name: 'a screen filled with an app colour (a reel’s black)',
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).screenBackground(REEL.color.black)} />
+    ),
+    bloom: () => (
+      <Screen style={{ backgroundColor: '#000000' }}>
+        <Text>a</Text>
+      </Screen>
+    ),
+  },
+  {
+    name: 'a screen filled with a role, as the theme gives it',
+    language: () => <ScreenHost root={L.Text('a').header(false).screenBackground('background')} />,
+    bloom: () => (
+      <ThemedRgb>
+        {(colors) => (
+          <Screen style={{ backgroundColor: colors.background }}>
+            <Text>a</Text>
+          </Screen>
+        )}
+      </ThemedRgb>
     ),
   },
   {

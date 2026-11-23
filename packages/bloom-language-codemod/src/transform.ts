@@ -390,6 +390,8 @@ type Tagged =
   | { readonly $: 'null' }
   /** A component by its name, as the file imports it (an app's provider around a screen). */
   | { readonly $: 'component'; readonly name: string }
+  /** An app colour, a token of the file's colour table (`appColors.color.hex000`). */
+  | { readonly $: 'appColor'; readonly color: AppColor }
   /** A value the language exports, by its name (`identity`, no glass), imported as the views are. */
   | { readonly $: 'language'; readonly name: string }
   /** One of two values by a condition, as the app chose (`invalid ? 'error' : undefined`). */
@@ -1001,6 +1003,30 @@ export function transformSource(source: string, options: TransformOptions): File
         return `${role}/${opacity}`;
     }
     return undefined;
+  };
+  /**
+   * A colour as a modifier's value: a theme colour as its role (outside a
+   * colour scope, where the role would paint the scope's scheme), a colour
+   * written out as an app colour, or a plain choice between them
+   * (`empty ? theme.colors.background : '#000000'`).
+   */
+  const inkOf = (node: AnyNode, expression: AnyNode): Value | undefined => {
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const then = inkOf(node, expression.consequent);
+      const otherwise = inkOf(node, expression.alternate);
+      return then === undefined || otherwise === undefined
+        ? undefined
+        : { $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise };
+    }
+    const role = roleOf(expression);
+    if (typeof role === 'string') return insideOf(node, [COLOR_SCOPE]) ? undefined : role;
+    const value = staticString(expression);
+    if (value === undefined || !isAppColorValue(value) || colorConstants.has(appColorName(value)))
+      return undefined;
+    return { $: 'appColor', color: { name: appColorName(value), value } };
   };
   /** A language view placed as an element: `toElement(view)`, as a file partly in the language writes it. */
   const isToElement = (expression: AnyNode) => {
@@ -2593,6 +2619,18 @@ export function transformSource(source: string, options: TransformOptions): File
         else styled.push(...box.mods);
         continue;
       }
+      if (prop?.form === 'fill') {
+        const ink = value ? fillOf(node, attributeExpression(value)) : undefined;
+        if (ink === undefined) unmapped(name);
+        else props.push({ name: prop.modifier, args: [ink] });
+        continue;
+      }
+      if (prop?.form === 'reselect') {
+        const handlers = value ? reselectOf(attributeExpression(value)) : undefined;
+        if (!handlers) unmapped(name);
+        else props.push(...handlers);
+        continue;
+      }
       if (prop?.form === 'textStyle') {
         const text = value ? partTextStyleOf(attributeExpression(value)) : undefined;
         if (text) props.push(...text);
@@ -3117,6 +3155,49 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     if (object !== expression) styleLiterals.set(expression, recast.print(object).code);
     return mods;
+  }
+
+  /** A style that is a fill alone (`{ backgroundColor: '#000' }`) as its colour (`inkOf`). */
+  function fillOf(node: AnyNode, expression: AnyNode): Value | undefined {
+    const [property, ...rest] = n.ObjectExpression.check(expression) ? expression.properties : [];
+    if (
+      rest.length ||
+      !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+      property.computed ||
+      !n.Identifier.check(property.key) ||
+      property.key.name !== 'backgroundColor'
+    )
+      return undefined;
+    return inkOf(node, property.value);
+  }
+
+  /**
+   * Bloom Screen's `reselect` (`{ refresh, isAtTop, scrollToTop }`, each as
+   * written) as `.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`:
+   * where the top is comes with how to go there, both or neither.
+   */
+  function reselectOf(expression: AnyNode): PropMod[] | undefined {
+    if (!n.ObjectExpression.check(expression)) return undefined;
+    const handlers = new Map<string, Carried>();
+    for (const property of expression.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key) ||
+        !['refresh', 'isAtTop', 'scrollToTop'].includes(property.key.name) ||
+        hasJsx(property.value)
+      )
+        return undefined;
+      handlers.set(property.key.name, { node: property.value, hole: 'handler' });
+    }
+    const [refresh, isAtTop, scrollToTop] = ['refresh', 'isAtTop', 'scrollToTop'].map((key) =>
+      handlers.get(key),
+    );
+    if (Boolean(isAtTop) !== Boolean(scrollToTop)) return undefined;
+    const mods: PropMod[] = [];
+    if (refresh) mods.push({ name: 'onReselect', args: [refresh] });
+    if (isAtTop && scrollToTop) mods.push({ name: 'reselectTop', args: [isAtTop, scrollToTop] });
+    return mods.length ? mods : undefined;
   }
 
   /**
@@ -4094,6 +4175,8 @@ export function transformSource(source: string, options: TransformOptions): File
           return 'null';
         case 'choose':
           return `${carry(value.test)} ? ${printValue(value.then, carry)} : ${printValue(value.otherwise, carry)}`;
+        case 'appColor':
+          return `${appColorTable}.color.${value.color.name}`;
       }
     }
     return printArg(value as Arg, carry);
@@ -4420,8 +4503,17 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The app colours a region's icons paint with. */
   function colorsOf(ir: Ir): AppColor[] {
     const found: AppColor[] = [];
+    const inValue = (value: Value) => {
+      if (!isTagged(value)) return;
+      if (value.$ === 'appColor') found.push(value.color);
+      else if (value.$ === 'choose') {
+        inValue(value.then);
+        inValue(value.otherwise);
+      }
+    };
     const visit = (at: Ir) => {
       if (at.type === 'icon' && at.color) found.push(at.color);
+      if ('props' in at) for (const prop of at.props) for (const arg of prop.args) inValue(arg);
       for (const child of childrenOf(at)) visit(child);
     };
     visit(ir);
