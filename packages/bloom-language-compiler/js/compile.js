@@ -5,8 +5,9 @@ const LANGUAGE_MODULE = '@oxy.so/bloom-language';
 /**
  * Compile one module, or return `null` when it has nothing to compile.
  * A wrong token or modifier throws an error whose message is the compiler's
- * rendered diagnostic, with the position Metro and Jest show in their frames;
- * a warning is printed with `console.warn`.
+ * rendered diagnostic (its help and a `= docs:` link to the section that
+ * explains it), with the position Metro and Jest show in their frames, and
+ * the links as `error.docs`; a warning is printed with `console.warn`.
  *
  * @param {string} source
  * @param {string} filename
@@ -24,6 +25,7 @@ function compileModule(source, filename) {
     error.filename = filename;
     error.lineNumber = first.line;
     error.column = first.column - 1;
+    error.docs = output.diagnostics.flatMap((d) => d.docs ?? []);
     throw error;
   }
   return output.changed ? { code: output.code, map: output.map, hoisted: output.hoisted } : null;
