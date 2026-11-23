@@ -27,7 +27,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { tokenSetsOf, withoutComment } from './token-sets.mjs';
+import { NO_TOKEN, tokenSetsOf, withoutComment } from './token-sets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, '..');
@@ -51,6 +51,7 @@ const objects = withoutComment(spec.objects);
 const modifiers = withoutComment(spec.modifiers);
 const nodes = withoutComment(spec.nodes);
 const universal = new Set(spec.universal);
+const glassValue = withoutComment(spec.glassValue);
 
 const NODES_DOC = 'bloom-language-nodes.mdx';
 const MODIFIERS_DOC = 'bloom-language-modifiers.mdx';
@@ -242,7 +243,9 @@ function paramType(param, from) {
   if (objects[name]) {
     return `${code(`{ ${objects[name].keys.join(', ')} }`)}, each ${tokenLink(objects[name].tokens, from)}${optional}`;
   }
-  return `${name === 'value' ? 'a value' : code(name)}${optional}`;
+  if (name === 'value') return `a value${optional}`;
+  if (NO_TOKEN.includes(name)) return `a ${name}, no token${optional}`;
+  return `${code(name)}${optional}`;
 }
 
 function frontmatter(title, description) {
@@ -303,8 +306,13 @@ function nodesPage() {
           members.get(name) ?? (universal.has(name) ? universalMembers.get(name) : undefined);
         const signatures = declared?.map((d) => code(`(${d.params})`)).join(' or ') ?? '';
         const doc = declared?.find((d) => d.doc)?.doc;
+        // A node that takes a modifier narrower than the modifier's own says what it takes.
+        const narrower = node.params?.[name];
+        const takes = narrower
+          ? ` (here: ${narrower.length ? narrower.map((p) => paramType(p, NODES_DOC)).join('; ') : 'no parameters'})`
+          : '';
         lines.push(
-          `- ${modifierLink(name, NODES_DOC)}${signatures ? ` ${signatures}` : ''}${doc ? `: ${prose(doc)}` : ''}`,
+          `- ${modifierLink(name, NODES_DOC)}${signatures ? ` ${signatures}` : ''}${takes}${doc ? `: ${prose(doc)}` : ''}`,
         );
       }
       lines.push('');
@@ -377,6 +385,27 @@ function modifiersPage() {
     } else {
       lines.push(
         `- Taken by: ${by.length ? by.map((k) => nodeLink(k, MODIFIERS_DOC)).join(', ') : 'no node'}`,
+      );
+    }
+    const narrower = Object.entries(nodes).filter(([, node]) => node.params?.[name]);
+    if (narrower.length) {
+      lines.push(
+        `- Narrower on: ${narrower
+          .map(
+            ([kind, node]) =>
+              `${nodeLink(kind, MODIFIERS_DOC)} (${node.params[name].map((p) => paramType(p, MODIFIERS_DOC)).join('; ') || 'no parameters'})`,
+          )
+          .join(', ')}`,
+      );
+    }
+    if (name === 'glass') {
+      lines.push(
+        `- A glass value's methods: ${Object.entries(glassValue)
+          .map(
+            ([method, params]) =>
+              `${code(`.${method}()`)} (${params.length ? params.map((p) => paramType(p, MODIFIERS_DOC)).join('; ') : 'no parameters'})`,
+          )
+          .join(', ')}`,
       );
     }
     if (spec.variants.modifiers.includes(name)) {
@@ -470,7 +499,21 @@ function tokensPage() {
         ['size', 'tint', 'style', 'shape', 'blend'].some((slot) => node[slot] === set),
       )
       .map(([kind]) => nodeLink(kind, TOKENS_DOC));
+    const own = Object.entries(nodes).flatMap(([kind, node]) =>
+      Object.entries(node.params ?? {})
+        .filter(([, params]) => params.some((p) => p.replace(/\?$/, '') === set))
+        .map(([name]) => `${nodeLink(kind, TOKENS_DOC)} ${code(`.${name}()`)}`),
+    );
+    const glassUsers = Object.entries(glassValue)
+      .filter(([, params]) => params.some((p) => p.replace(/\?$/, '') === set))
+      .map(([name]) => code(`regular.${name}()`));
     lines.push('');
+    if (set === 'colorRole') {
+      lines.push(
+        `A colour role alone: never at an opacity, nor an app colour. What a node paints by the role's name takes it.`,
+        '',
+      );
+    }
     if (set === 'color') {
       lines.push(
         `A colour token is a role above (on native the theme's colour named first, on the web the CSS variable), a role at an opacity of the ${tokenLink('opacity', TOKENS_DOC)} scale (${code("'primary/10'")}), or an app colour from ${code('defineTokens({ color })')}.`,
@@ -478,6 +521,8 @@ function tokensPage() {
       );
     }
     if (users.length) lines.push(`Taken by: ${users.join(', ')}.`, '');
+    if (own.length) lines.push(`Taken by these nodes' own parameters: ${own.join(', ')}.`, '');
+    if (glassUsers.length) lines.push(`Taken by a glass value's ${glassUsers.join(', ')}.`, '');
     if (readers.length)
       lines.push(
         `Read by these nodes' ${code('.size()')}/${code('.tint()')}/${code('.style()')}/${code('.shape()')}: ${readers.join(', ')}.`,

@@ -22,6 +22,7 @@ Every node takes these, except the 65 nodes that take only their own ([menuItem]
 - Parameters: [edge](bloom-language-tokens.mdx#edge) (optional); [padding](bloom-language-tokens.mdx#padding)
 - Signature: `.padding(value: PaddingToken)` or `.padding(edge: Edge, value: PaddingToken)`
 - Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
+- Narrower on: [dialog](bloom-language-nodes.mdx#dialog) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
 - `padding` tokens: 110, listed under [padding](bloom-language-tokens.mdx#padding)
@@ -139,6 +140,7 @@ Its length along its parent's axis before free space is shared (`flex-basis`): a
 - Parameters: [length](bloom-language-tokens.mdx#length)
 - Signature: `.basis(value: LengthToken)`
 - Taken by: every node (universal), and [dataColumn](bloom-language-nodes.mdx#datacolumn)
+- Narrower on: [dataColumn](bloom-language-nodes.mdx#datacolumn) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `length` tokens: 65, listed under [length](bloom-language-tokens.mdx#length)
 
@@ -248,6 +250,7 @@ A glass material behind the view: `regular` (the default) or `clear`, optionally
 - Parameters: `glass` (optional)
 - Signature: `.glass(value?: GlassValue)`
 - Taken by: every node (universal)
+- A glass value's methods: `.tint()` ([colorRole](bloom-language-tokens.mdx#colorrole); [glassOpacity](bloom-language-tokens.mdx#glassopacity) (optional)), `.dimmed()` (no parameters), `.interactive()` (a boolean, no token (optional))
 
 ### `blur`
 
@@ -264,6 +267,7 @@ Text and icon colour for this view and everything inside it; a role, or a role a
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.foreground(value: InkToken)`
 - Taken by: every node (universal), and [option](bloom-language-nodes.mdx#option)
+- Narrower on: [option](bloom-language-nodes.mdx#option) ([colorRole](bloom-language-tokens.mdx#colorrole))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
 
@@ -319,6 +323,7 @@ The children's place across the axis.
 - Parameters: [alignment](bloom-language-tokens.mdx#alignment)
 - Signature: `.align(value: Alignment)`
 - Taken by: [stack](bloom-language-nodes.mdx#stack), [divider](bloom-language-nodes.mdx#divider), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carousel](bloom-language-nodes.mdx#carousel), [hoverCard](bloom-language-nodes.mdx#hovercard), [dataColumn](bloom-language-nodes.mdx#datacolumn), [mapControls](bloom-language-nodes.mdx#mapcontrols)
+- Narrower on: [divider](bloom-language-nodes.mdx#divider) ([dividerAlign](bloom-language-tokens.mdx#divideralign)), [tableColumn](bloom-language-nodes.mdx#tablecolumn) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [tableCell](bloom-language-nodes.mdx#tablecell) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [carousel](bloom-language-nodes.mdx#carousel) ([carouselAlign](bloom-language-tokens.mdx#carouselalign)), [hoverCard](bloom-language-nodes.mdx#hovercard) ([floatingAlign](bloom-language-tokens.mdx#floatingalign)), [dataColumn](bloom-language-nodes.mdx#datacolumn) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [mapControls](bloom-language-nodes.mdx#mapcontrols) ([mapControlsAlign](bloom-language-tokens.mdx#mapcontrolsalign))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `alignment` tokens: `'start'`, `'center'`, `'end'`, `'stretch'`, `'baseline'`
 
@@ -383,6 +388,7 @@ How the image fills its box. Defaults to `cover`.
 - Parameters: [contentFit](bloom-language-tokens.mdx#contentfit)
 - Signature: `.contentFit(value: ContentFit)`
 - Taken by: [image](bloom-language-nodes.mdx#image), [video](bloom-language-nodes.mdx#video), [mediaFlightHost](bloom-language-nodes.mdx#mediaflighthost), [mediaSurface](bloom-language-nodes.mdx#mediasurface), [mediaPoster](bloom-language-nodes.mdx#mediaposter)
+- Narrower on: [mediaFlightHost](bloom-language-nodes.mdx#mediaflighthost) ([mediaContentFit](bloom-language-tokens.mdx#mediacontentfit)), [mediaSurface](bloom-language-nodes.mdx#mediasurface) ([mediaContentFit](bloom-language-tokens.mdx#mediacontentfit)), [mediaPoster](bloom-language-nodes.mdx#mediaposter) ([mediaContentFit](bloom-language-tokens.mdx#mediacontentfit))
 - `contentFit` tokens: `'cover'`, `'contain'`, `'fill'`, `'none'`, `'scale-down'`
 
 ### `aspectRatio`
@@ -590,6 +596,7 @@ The side of the view it opens on, and its alignment along that side.
 - Parameters: [floatingSide](bloom-language-tokens.mdx#floatingside); [floatingAlign](bloom-language-tokens.mdx#floatingalign) (optional)
 - Signature: `.side(side: FloatingSide, align?: FloatingAlign)`
 - Taken by: [popover](bloom-language-nodes.mdx#popover), [tooltip](bloom-language-nodes.mdx#tooltip), [hoverCard](bloom-language-nodes.mdx#hovercard)
+- Narrower on: [tooltip](bloom-language-nodes.mdx#tooltip) ([tooltipSide](bloom-language-tokens.mdx#tooltipside)), [hoverCard](bloom-language-nodes.mdx#hovercard) ([tooltipSide](bloom-language-tokens.mdx#tooltipside))
 - `floatingSide` tokens: `'top'`, `'bottom'`, `'left'`, `'right'`
 - `floatingAlign` tokens: `'start'`, `'center'`, `'end'`
 
@@ -840,6 +847,7 @@ The page's scroll offset, when the header is not in a Bloom `Screen`.
 - Parameters: [headerPresentation](bloom-language-tokens.mdx#headerpresentation)
 - Signature: `.presentation(value: HeaderPresentation)`
 - Taken by: [header](bloom-language-nodes.mdx#header), [settings](bloom-language-nodes.mdx#settings), [chatHeader](bloom-language-nodes.mdx#chatheader)
+- Narrower on: [settings](bloom-language-nodes.mdx#settings) ([settingsPresentation](bloom-language-tokens.mdx#settingspresentation))
 - `headerPresentation` tokens: `'floating'`, `'bar'`, `'navigation'`
 
 ### `header`
@@ -1318,6 +1326,7 @@ What sets the rows apart: `space`, a `line`, or `none`.
 - Parameters: [separator](bloom-language-tokens.mdx#separator)
 - Signature: `.separator(value: GroupedSeparator)`
 - Taken by: [groupedSection](bloom-language-nodes.mdx#groupedsection), [list](bloom-language-nodes.mdx#list)
+- Narrower on: [groupedSection](bloom-language-nodes.mdx#groupedsection) ([groupedSeparator](bloom-language-tokens.mdx#groupedseparator)), [list](bloom-language-nodes.mdx#list) ([listSeparator](bloom-language-tokens.mdx#listseparator))
 - `separator` tokens: `'space'`, `'line'`, `'none'`, `'inset'`
 
 ### `value`
@@ -2160,6 +2169,7 @@ Its mark: `check` or `radio` (by default, what it is).
 - Parameters: [selectionIndicator](bloom-language-tokens.mdx#selectionindicator)
 - Signature: `.indicator(value: SelectionIndicator)`
 - Taken by: [selectionCard](bloom-language-nodes.mdx#selectioncard), [accordionTrigger](bloom-language-nodes.mdx#accordiontrigger)
+- Narrower on: [accordionTrigger](bloom-language-nodes.mdx#accordiontrigger) (a view, no token)
 - `selectionIndicator` tokens: `'check'`, `'radio'`
 
 ### `fade`
@@ -2308,6 +2318,7 @@ Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the a
 - Parameters: a value; [color](bloom-language-tokens.mdx#color) (optional)
 - Signature: `.refreshable(value: Binding<boolean>, tint?: ColorToken)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [virtualList](bloom-language-nodes.mdx#virtuallist)
+- Narrower on: [virtualList](bloom-language-nodes.mdx#virtuallist) (a value)
 - `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
 
 ### `onEndReached`
@@ -2361,6 +2372,7 @@ Bloom's optical `surface` (default) or the plain backing fill (`flat`).
 - Parameters: [buttonMaterial](bloom-language-tokens.mdx#buttonmaterial)
 - Signature: `.material(value: SheetMaterial)`
 - Taken by: [bottomSheet](bloom-language-nodes.mdx#bottomsheet), [followButton](bloom-language-nodes.mdx#followbutton)
+- Narrower on: [bottomSheet](bloom-language-nodes.mdx#bottomsheet) ([sheetMaterial](bloom-language-tokens.mdx#sheetmaterial))
 - `buttonMaterial` tokens: `'surface'`, `'flat'`, `'shared'`, `'lens'`
 
 ### `sizing`
@@ -2452,6 +2464,7 @@ A quiet word at its end (a count, a time).
 - Parameters: [sidebarSurface](bloom-language-tokens.mdx#sidebarsurface); a value (optional)
 - Signature: `.surface(value: SidebarSurface)`
 - Taken by: [sidebar](bloom-language-nodes.mdx#sidebar), [reactionPicker](bloom-language-nodes.mdx#reactionpicker), [composerPill](bloom-language-nodes.mdx#composerpill), [aiChatShell](bloom-language-nodes.mdx#aichatshell), [aiChatContainer](bloom-language-nodes.mdx#aichatcontainer), [composerLoader](bloom-language-nodes.mdx#composerloader), [agentChatHistory](bloom-language-nodes.mdx#agentchathistory)
+- Narrower on: [reactionPicker](bloom-language-nodes.mdx#reactionpicker) (a boolean, no token (optional)), [composerPill](bloom-language-nodes.mdx#composerpill) (a boolean, no token (optional)), [aiChatShell](bloom-language-nodes.mdx#aichatshell) (a boolean, no token (optional)), [aiChatContainer](bloom-language-nodes.mdx#aichatcontainer) (a boolean, no token (optional)), [composerLoader](bloom-language-nodes.mdx#composerloader) (a boolean, no token (optional)), [agentChatHistory](bloom-language-nodes.mdx#agentchathistory) (a boolean, no token (optional))
 - `sidebarSurface` tokens: `'card'`, `'plain'`, `'docked'`
 
 ### `searchable`
@@ -2489,6 +2502,7 @@ Its width; Bloom's 80 by default.
 - Parameters: [columnWidth](bloom-language-tokens.mdx#columnwidth)
 - Signature: `.width(value: SpaceToken)`
 - Taken by: [rail](bloom-language-nodes.mdx#rail), [panel](bloom-language-nodes.mdx#panel), [settingsSelect](bloom-language-nodes.mdx#settingsselect), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carouselItem](bloom-language-nodes.mdx#carouselitem), [dataColumn](bloom-language-nodes.mdx#datacolumn)
+- Narrower on: [rail](bloom-language-nodes.mdx#rail) ([space](bloom-language-tokens.mdx#space)), [panel](bloom-language-nodes.mdx#panel) ([space](bloom-language-tokens.mdx#space)), [settingsSelect](bloom-language-nodes.mdx#settingsselect) ([space](bloom-language-tokens.mdx#space)), [carouselItem](bloom-language-nodes.mdx#carouselitem) ([space](bloom-language-tokens.mdx#space))
 - `columnWidth` tokens: 56, listed under [columnWidth](bloom-language-tokens.mdx#columnwidth)
 
 ### `pinning`
@@ -3239,6 +3253,7 @@ The track's and the fill's corner; half the thickness (a capsule) by default.
 - Parameters: [corner](bloom-language-tokens.mdx#corner)
 - Signature: `.barCorner(value: Exclude<CornerName, 'concentric'>)`
 - Taken by: [meter](bloom-language-nodes.mdx#meter)
+- Narrower on: [meter](bloom-language-nodes.mdx#meter) ([cornerRadius](bloom-language-tokens.mdx#cornerradius))
 - `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'10'`, `'14'`, `'18'`, `'22'`
 
 ### `backdrop`
@@ -4038,6 +4053,7 @@ The corner of the media it edges, so the hairline follows it (Bloom's `sm` by de
 - Parameters: [corner](bloom-language-tokens.mdx#corner)
 - Signature: `.mediaCorner(value: Exclude<CornerName, 'concentric'>)`
 - Taken by: [mediaInsetBorder](bloom-language-nodes.mdx#mediainsetborder), [gallery](bloom-language-nodes.mdx#gallery)
+- Narrower on: [mediaInsetBorder](bloom-language-nodes.mdx#mediainsetborder) ([cornerRadius](bloom-language-tokens.mdx#cornerradius)), [gallery](bloom-language-nodes.mdx#gallery) ([cornerRadius](bloom-language-tokens.mdx#cornerradius))
 - `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'10'`, `'14'`, `'18'`, `'22'`
 
 ### `minItemWidth`

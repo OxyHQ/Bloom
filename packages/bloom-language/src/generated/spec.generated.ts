@@ -1179,6 +1179,10 @@ export const ENUMS = {
     "none",
     "scale-down"
   ],
+  "mediaContentFit": [
+    "contain",
+    "cover"
+  ],
   "justify": [
     "start",
     "center",
@@ -1225,6 +1229,10 @@ export const ENUMS = {
     "floating",
     "bar",
     "navigation"
+  ],
+  "settingsPresentation": [
+    "bar",
+    "floating"
   ],
   "headerTone": [
     "default",
@@ -1347,6 +1355,11 @@ export const ENUMS = {
     "right"
   ],
   "floatingAlign": [
+    "start",
+    "center",
+    "end"
+  ],
+  "dividerAlign": [
     "start",
     "center",
     "end"
@@ -2067,6 +2080,10 @@ export const ENUMS = {
   "tooltipSide": [
     "top",
     "bottom"
+  ],
+  "mapControlsAlign": [
+    "start",
+    "end"
   ],
   "tooltipSize": [
     "sm",
