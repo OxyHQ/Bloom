@@ -350,6 +350,8 @@ fn a_colour_at_a_named_opacity_checks_both_halves() {
     assert!(valid.diagnostics.is_empty() && valid.hoisted == 1);
     let opacity = compiled("export const x = () => HStack().foreground('muted/65');\n");
     assert_eq!(opacity.diagnostics[0].message, "Unknown opacity token '65' for .foreground()");
+    let ring = compiled("export const x = () => HStack().ring('primary/40', 'thin');\n");
+    assert!(ring.diagnostics.is_empty(), "{:?}", ring.diagnostics.first().map(|d| &d.rendered));
     let role = compiled("export const x = () => HStack().background('grey/faint');\n");
     assert_eq!(role.diagnostics[0].message, "Unknown color token 'grey/faint' for .background()");
 }
