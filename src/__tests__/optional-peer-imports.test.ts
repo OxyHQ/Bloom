@@ -79,11 +79,6 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'react-dom',
-    file: 'teleport/PortalView.tsx',
-    why: 'vendored from react-native-teleport 1.2.0 and deliberately unmodified — their web portal IS `createPortal` into a container it created outside React. Their file layout makes the bare name the web one (`.native` is the fork), so this file is only ever reached by a web bundler, which has react-native-web and therefore react-dom',
-  },
-  {
-    peer: 'react-dom',
     file: 'floating/menu-sub-flyout.tsx',
     why: "`flushSync` inside a view transition: the swap from one submenu to its sibling must be in the DOM before the transition snapshots it. The flyout is web-only by construction (each family's web fork passes it to `createMenuRows`; native uses `menu-sub-inline`), so only a web bundler reaches it, which has react-native-web and therefore react-dom",
   },

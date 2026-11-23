@@ -273,7 +273,6 @@ const SUBPATHS = /** @type {const} */ ([
   // `Select`.
   ['./preferences/haptics-setting-row', 'preferences/haptics-setting-row.ts'],
   ['./preferences/video-autoplay-setting-row', 'preferences/video-autoplay-setting-row.ts'],
-  ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
   ['./motion', 'motion/index.ts'],
