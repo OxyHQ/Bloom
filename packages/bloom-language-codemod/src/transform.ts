@@ -46,16 +46,28 @@ type AnyNode = any;
 const n = recast.types.namedTypes;
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
-  scales: { iconSize: Record<string, number> };
+  scales: { iconSize: Record<string, number>; opacity: Record<string, number> };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
-  enums: { role: readonly string[]; appColorName: readonly string[] };
+  enums: {
+    role: readonly string[];
+    appColorName: readonly string[];
+    liveRegion: readonly string[];
+  };
   contentView: { modifiers: readonly string[] };
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
 /** What a scroll view's content view takes: the layout of one view. */
 const CONTENT_VIEW = new Set(spec.contentView.modifiers);
+/** React Native's `accessibilityLiveRegion` values, each the language's `.liveRegion()` of its name. */
+const LIVE_REGIONS = new Set(spec.enums.liveRegion);
+/** An opacity (`0.7`) as the opacity token of its value (`'70'`): a `TouchableOpacity`'s `activeOpacity`. */
+const OPACITY_TOKEN = new Map(
+  Object.entries(spec.scales.opacity)
+    .filter(([name]) => name !== '$comment')
+    .map(([name, value]) => [value, name]),
+);
 /** A Bloom theme colour (`theme.colors.textSecondary`) as the role painted from it (`muted`). */
 const ROLE_OF_THEME_COLOR = new Map<string, string>();
 for (const [role, entry] of Object.entries(spec.colors))
@@ -110,7 +122,9 @@ interface Carried {
     | 'key'
     | 'items'
     /** A list's named row function, called with the argument Bloom hands it (`renderPost(info)`). */
-    | 'renderer';
+    | 'renderer'
+    /** An `accessibilityState` object. */
+    | 'state';
   /** For a key: its attribute, which a fixture's root leaves out (a key is no part of what draws). */
   readonly attribute?: AnyNode;
 }
@@ -350,6 +364,8 @@ function kindOf(source: Source | undefined): Kind | undefined {
   if (source.module === 'react-native') {
     if (source.imported === 'View') return 'view';
     if (source.imported === 'Pressable') return 'pressable';
+    // A TouchableOpacity is a pressable whose press fades it: `.pressFade()`.
+    if (source.imported === 'TouchableOpacity') return 'pressable';
     if (source.imported === 'Text') return 'rnText';
     if (source.imported === 'Image') return 'rnImage';
     return undefined;
@@ -958,6 +974,11 @@ export function transformSource(source: string, options: TransformOptions): File
     const styleMods: { subject: string; mod: Mod }[] = [];
     /** An icon's `width`, `height` and `fill`. */
     const iconProps = new Map<string, AnyNode>();
+    /** A TouchableOpacity: its press fades it (`.pressFade()`), at its `activeOpacity` token. */
+    const fades =
+      kind === 'pressable' &&
+      (sources.get(local) as Source | undefined)?.imported === 'TouchableOpacity';
+    let fade: string | undefined;
     for (const attribute of node.openingElement.attributes) {
       if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name)) {
         fail('{...spread}', 'spread', 'spread props: the codemod cannot see what they set');
@@ -1018,6 +1039,28 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       if (kind === 'pressable' && name === 'disabled') {
         props.push({ name: 'disabled', args: [{ node: expression, hole: 'boolean' }] });
+        continue;
+      }
+      if (fades && name === 'activeOpacity') {
+        const token = OPACITY_TOKEN.get(staticNumber(value) as number);
+        if (token === undefined)
+          fail(
+            name,
+            'prop:activeOpacity',
+            'an activeOpacity that is no opacity token, or set at runtime',
+          );
+        else fade = token;
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessibilityLiveRegion') {
+        const region = staticString(value);
+        if (region !== undefined && LIVE_REGIONS.has(region))
+          props.push({ name: 'liveRegion', args: [region] });
+        else fail(name, 'prop:accessibilityLiveRegion', 'a live region set at runtime');
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessibilityState') {
+        props.push({ name: 'accessibilityState', args: [{ node: expression, hole: 'state' }] });
         continue;
       }
       if ((kind === 'bloomText' || kind === 'rnText') && name === 'numberOfLines') {
@@ -1254,6 +1297,7 @@ export function transformSource(source: string, options: TransformOptions): File
     if (!resolution.ok || reasons.length) return { reasons };
     if (isPressableScale(sources.get(local) as Source))
       props.push({ name: 'pressScale', args: [] });
+    if (fades) props.push({ name: 'pressFade', args: fade === undefined ? [] : [fade] });
     return { ir: { type: 'stack', resolved: resolution.value, choice, props, key, children } };
   }
 
@@ -2581,6 +2625,7 @@ export function transformSource(source: string, options: TransformOptions): File
     key: (i: number) => `'k${i}'`,
     number: () => '2',
     boolean: () => 'true',
+    state: () => '{ selected: true, busy: false }',
     handler: () => '() => {}',
     action: () => '(() => {})',
     element: (i: number) => `<Hole n="${i}" />`,

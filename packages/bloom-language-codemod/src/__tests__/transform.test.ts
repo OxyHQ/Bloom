@@ -643,6 +643,24 @@ export const C = () => <VirtualList data={posts} renderItem={renderPost} content
       'VirtualList:contentContainerStyle',
     ]);
   });
+  it('draws a TouchableOpacity as a pressable stack whose press fades it, with its accessibility state and live region', () => {
+    const result = run(`import { TouchableOpacity, Text } from 'react-native';
+export const A = ({ open, on }) => (
+  <TouchableOpacity className="flex-row p-4" onPress={open} activeOpacity={0.7} accessibilityState={{ selected: on }}>
+    <Text accessibilityLiveRegion="polite">a</Text>
+  </TouchableOpacity>
+);
+export const B = ({ open }) => <TouchableOpacity onPress={open}><Text>b</Text></TouchableOpacity>;
+export const C = ({ open, o }) => <TouchableOpacity onPress={open} activeOpacity={o}><Text>c</Text></TouchableOpacity>;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(HStack(RawText('a').liveRegion('polite')).padding('all', 'lg').onPress(open).accessibilityState({ selected: on }).pressFade('70'))",
+    );
+    expect(flat(result.code)).toContain(
+      "toElement(VStack(RawText('b')).onPress(open).pressFade())",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:activeOpacity']);
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');
