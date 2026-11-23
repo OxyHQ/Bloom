@@ -9,6 +9,8 @@ import type { ReactElement } from 'react';
 
 export interface CorpusCase {
   name: string;
+  /** The before side hands a class to a Bloom component: it is drawn with Bloom 22 (`parity/support/*-frames.tsx`). */
+  bloom22: boolean;
   before: () => ReactElement;
   after: () => ReactElement;
 }

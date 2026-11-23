@@ -86,22 +86,33 @@ function normalize(node: ReactTestRendererJSON | string): HostTree | string {
   };
 }
 
+/** The app root an element is drawn in: Bloom's provider and portal host, in `scheme`. */
+export type NativeFrame = (element: ReactNode, scheme: Scheme) => ReactNode;
+
+/** This checkout's Bloom root: its provider, and the portal host an app root mounts on native. */
+const bloomFrame: NativeFrame = (element, scheme) => (
+  <BloomThemeProvider fonts={false} mode={scheme}>
+    <PortalProvider>
+      {element}
+      <PortalOutlet />
+    </PortalProvider>
+  </BloomThemeProvider>
+);
+
 /**
  * What `element` commits, under Bloom's provider in `scheme`, with the portal
  * host an app root mounts on native: what a modal portals is drawn after the
- * element, as the app's outlet draws it.
+ * element, as the app's outlet draws it. `frame` is another root (another
+ * Bloom's), drawn the same way.
  */
-export function nativeTree(element: ReactNode, scheme: Scheme = 'light'): unknown {
+export function nativeTree(
+  element: ReactNode,
+  scheme: Scheme = 'light',
+  frame: NativeFrame = bloomFrame,
+): unknown {
   let renderer!: TestRenderer.ReactTestRenderer;
   act(() => {
-    renderer = TestRenderer.create(
-      <BloomThemeProvider fonts={false} mode={scheme}>
-        <PortalProvider>
-          {element}
-          <PortalOutlet />
-        </PortalProvider>
-      </BloomThemeProvider>,
-    );
+    renderer = TestRenderer.create(<>{frame(element, scheme)}</>);
   });
   const json = renderer.toJSON();
   ids = new Map();
