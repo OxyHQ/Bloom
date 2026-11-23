@@ -9,7 +9,6 @@ import type { Binding } from '../binding';
 import { Node, type ViewModifiers } from '../node';
 import type { TimedMotionToken } from '../motion/tokens';
 import type {
-  ColorName,
   ColorToken,
   RatingCountStyle,
   RatingInputSize,
@@ -68,7 +67,7 @@ export interface RatingView extends ViewModifiers<RatingView> {
   /** The star's edge, apart from the text's size. */
   starSize(value: SpaceToken): RatingView;
   /** The stars and the value (and the count, unless `countTint`): over a brand colour. */
-  tint(value: ColorName): RatingView;
+  tint(value: ColorToken): RatingView;
   /** The filled stars alone. */
   starTint(value: ColorToken): RatingView;
   /** The count alone. */
@@ -152,7 +151,7 @@ export const RATINGS: Record<RatingKind, ControlRenderer> = {
       newLabel: labels?.new,
     });
     return d.painted(BloomRating, props, {
-      color: d.own('tint')?.value as ColorName | undefined,
+      color: d.own('tint')?.value as ColorToken | undefined,
       starColor: d.own('starTint')?.value,
       countColor: d.own('countTint')?.value,
       emptyStarColor: d.own('emptyTint')?.value,
