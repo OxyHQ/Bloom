@@ -5,7 +5,11 @@ import { useGroupedButton } from './use-grouped-button';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
-import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
+import {
+  useControlMaterial,
+  useFloatingControl,
+  useLensAvailable,
+} from '../floating/lens/lens-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
   type ComponentRef,
@@ -43,6 +47,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
+  FLOATING_CONTROL_SIZE,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
   isIconComponent,
@@ -419,7 +424,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       stopPropagation = false,
       appearance: appearanceProp,
       tone: toneProp,
-      size: sizeProp,
+      size: requestedSize,
       density: densityProp,
       style,
       textStyle,
@@ -470,6 +475,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const appearance = appearanceProp ?? 'solid';
     const regionMaterial = useControlMaterial();
     const material = materialProp ?? regionMaterial;
+    // A floating control (on the lens) is the floating size, whatever its caller says.
+    const sizeProp = useFloatingControl(materialProp) ? FLOATING_CONTROL_SIZE : requestedSize;
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },

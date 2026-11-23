@@ -26,6 +26,17 @@ export function useControlMaterial(): ControlMaterial {
 }
 
 /**
+ * Whether a control floats: its material, said by its prop or by its region (a floating header, a
+ * toolbar, a bar), is the lens, whether or not the lens can draw it here. A floating control is
+ * Bloom's one floating size (`FLOATING_CONTROL_SIZE`, 44), whatever size it is given: the control
+ * decides it, never its caller.
+ */
+export function useFloatingControl(material: string | undefined): boolean {
+  const region = useContext(LensMaterialContext);
+  return (material ?? region) === 'lens';
+}
+
+/**
  * Whether a control may be drawn by the lens here: the native lens exists, the control is not inside
  * a lens base (a lens is never drawn inside a lens), and this is not a separate
  * window (a `<Modal>`: Dialog, BottomSheet), where there is no content behind to refract and the lens
