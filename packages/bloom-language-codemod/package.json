@@ -1,0 +1,28 @@
+{
+  "name": "@oxy.so/bloom-language-codemod",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Moves an app's NativeWind className JSX and Bloom JSX to Bloom's UI language, only where the rendered result stays identical, and proves it with the language's parity harness.",
+  "license": "SEE LICENSE IN LICENSE",
+  "bin": {
+    "bloom-language-codemod": "src/cli.ts"
+  },
+  "scripts": {
+    "codemod": "bun src/cli.ts",
+    "corpus": "bun src/cli.ts parity/sample-app --out parity/corpus --fixtures && rm -rf parity/corpus/files",
+    "typescript": "tsc --noEmit -p .",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@babel/parser": "7.29.11",
+    "@tailwindcss/node": "4.3.3",
+    "postcss": "8.5.30",
+    "recast": "0.23.11"
+  },
+  "devDependencies": {
+    "@oxy.so/bloom-language": "workspace:*",
+    "lightningcss": "1.30.1",
+    "react-native-css": "3.1.0-rc.0"
+  },
+  "packageManager": "bun@1.4.3"
+}
