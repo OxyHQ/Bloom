@@ -55,7 +55,7 @@ import {
   type ShrinkPriority,
   type FlexName,
   type HitTesting,
-  type PaddingToken,
+  type MarginToken,
   type SpaceToken,
   type TextAlignment,
   type TextCase,
@@ -650,6 +650,9 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         style[`${prefix}Color`] = ink(modifier.value);
         break;
       }
+      case 'borderStyle':
+        style.borderStyle = modifier.value;
+        break;
       case 'corner':
         cornerRadius(style, modifier);
         break;
@@ -741,7 +744,7 @@ export interface Placement {
   basis: LengthToken | undefined;
   flex: FlexName | undefined;
   /** Margins, in order: a later one of a side replaces an earlier one. */
-  margin: readonly (readonly [Edge, PaddingToken])[];
+  margin: readonly (readonly [Edge, MarginToken])[];
   allowsHitTesting: HitTesting | undefined;
   accessibilityOnly: boolean;
   /**
@@ -919,7 +922,7 @@ function flexStyle(style: Resolved, value: FlexName): void {
 function marginStyle(style: Resolved, margin: Placement['margin']): void {
   for (const [edge, token] of margin) {
     const bits = EDGE_BITS[edge];
-    const value = resolveSpace(token);
+    const value = token === 'auto' ? token : resolveSpace(token);
     if (bits & 0b0001) style.marginTop = value;
     if (bits & 0b0010) style.marginBottom = value;
     if (bits & 0b0100) style.marginStart = value;
@@ -992,6 +995,10 @@ export function placeStyle(place: Placement): Resolved {
 /** A stack's own layout: what its constructor and its stack modifiers say. */
 export interface StackLayout {
   spacing: SpaceToken | undefined;
+  /** `.horizontalSpacing()`: the gap between children side by side (`columnGap`). */
+  horizontalSpacing: SpaceToken | undefined;
+  /** `.verticalSpacing()`: the gap between children one above another (`rowGap`). */
+  verticalSpacing: SpaceToken | undefined;
   /** `.childSpacing()`: a margin after each child but the last; the web's only (see `layoutStyle`). */
   childSpacing: ChildSpacing | undefined;
   align: Alignment | undefined;
@@ -1013,10 +1020,22 @@ const JUSTIFY: Record<Justify, string> = {
 /** The stack modifiers. */
 export type StackModifier = Extract<
   Modifier,
-  { kind: 'spacing' | 'childSpacing' | 'align' | 'justify' | 'wrap' | 'axis' }
+  {
+    kind:
+      | 'spacing'
+      | 'horizontalSpacing'
+      | 'verticalSpacing'
+      | 'childSpacing'
+      | 'align'
+      | 'justify'
+      | 'wrap'
+      | 'axis';
+  }
 >;
 export const STACK_KINDS: ReadonlySet<string> = new Set([
   'spacing',
+  'horizontalSpacing',
+  'verticalSpacing',
   'childSpacing',
   'align',
   'justify',
@@ -1028,6 +1047,8 @@ export const STACK_KINDS: ReadonlySet<string> = new Set([
 export function layoutOf(modifiers: readonly StackModifier[]): StackLayout {
   const layout: StackLayout = {
     spacing: undefined,
+    horizontalSpacing: undefined,
+    verticalSpacing: undefined,
     childSpacing: undefined,
     align: undefined,
     justify: undefined,
@@ -1047,6 +1068,9 @@ export function layoutStyle(layout: StackLayout): Resolved {
     style.flexDirection = layout.axis === 'horizontal' ? 'row' : 'column';
   if (layout.justify !== undefined) style.justifyContent = JUSTIFY[layout.justify];
   if (layout.spacing !== undefined) style.gap = resolveSpace(layout.spacing);
+  if (layout.horizontalSpacing !== undefined)
+    style.columnGap = resolveSpace(layout.horizontalSpacing);
+  if (layout.verticalSpacing !== undefined) style.rowGap = resolveSpace(layout.verticalSpacing);
   // Tailwind's space-x/space-y: on the web its rule for the children (a class of the
   // language's sheet, `childSpacingX` / `childSpacingY`); NativeWind writes none on native.
   if (layout.childSpacing !== undefined && IS_WEB) {

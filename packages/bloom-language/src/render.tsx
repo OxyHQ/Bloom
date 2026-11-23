@@ -1996,13 +1996,15 @@ function stackOut(
 ): StyleOut {
   const layout = {
     spacing: ownValue(p, 'spacing')?.value,
+    horizontalSpacing: ownValue(p, 'horizontalSpacing')?.value,
+    verticalSpacing: ownValue(p, 'verticalSpacing')?.value,
     childSpacing: ownValue(p, 'childSpacing')?.value,
     align: ownValue(p, 'align')?.value,
     justify: ownValue(p, 'justify')?.value,
     wrap: ownValue(p, 'wrap')?.value,
     axis: ownValue(p, 'axis')?.value,
   };
-  const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layer?.key ?? ''}|${flex}`;
+  const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'horizontalSpacing')?.key ?? ''}|${ownValue(p, 'verticalSpacing')?.key ?? ''}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layer?.key ?? ''}|${flex}`;
   return cachedStyle(
     'host',
     styleKey,

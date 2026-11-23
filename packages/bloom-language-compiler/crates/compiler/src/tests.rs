@@ -3226,3 +3226,21 @@ fn the_lens_budget_and_a_glass_per_item() {
     let list = rules("export const x = (items) => VStack(items.map((item) => Text(item).glass()));\n");
     assert_eq!(messages(&list.warnings), ["a glass per item of a list"]);
 }
+
+#[test]
+fn the_layout_apps_write_is_checked() {
+    // Auto margins, a gap per axis, a border's line, and the numeric tokens Mention writes.
+    let ok = compiled(
+        "export const x = () => HStack(Text('a').font('12.5'), VStack().margin('leading', 'auto').margin('auto')).horizontalSpacing('lg').verticalSpacing('6').border('border', '0.5').borderStyle('dashed').opacity('85');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    // `auto` is a margin's alone: a padding has no free space to take.
+    let output = compiled("export const x = () => HStack().padding('auto');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'auto' for .padding()");
+    let output = compiled("export const x = () => HStack().borderStyle('double');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown borderStyle token 'double' for .borderStyle()");
+    let output = compiled("export const x = () => Text('a').horizontalSpacing('lg');\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .horizontalSpacing()");
+    let output = compiled("export const x = () => Text('a').font('12.4');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown font token '12.4' for .font()");
+}

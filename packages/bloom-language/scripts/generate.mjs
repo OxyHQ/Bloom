@@ -303,6 +303,7 @@ for (const edge of ['Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
     valueClass(`margin${edge}`, value);
     if (value > 0) valueClass(`margin${edge}`, -value);
   }
+  valueClass(`margin${edge}`, 'auto');
 }
 for (const property of [
   'width',
@@ -312,6 +313,9 @@ for (const property of [
   'maxWidth',
   'maxHeight',
   'gap',
+  // `.horizontalSpacing()` and `.verticalSpacing()`: a stack's gap along one axis.
+  'columnGap',
+  'rowGap',
 ]) {
   for (const value of spaceValues) valueClass(property, value);
 }
@@ -355,6 +359,7 @@ for (const value of spaceValues) {
 }
 for (const value of numbers(scales.opacity)) valueClass('opacity', value);
 // Borders: react-native-web's hairline is 1px.
+for (const value of enums.borderStyle) valueClass('borderStyle', value);
 for (const edge of ['', 'Top', 'Bottom', 'Start', 'End', 'Left', 'Right']) {
   valueClass(`border${edge}Width`, 1);
   for (const role of Object.keys(colors)) roleClass(`border${edge}Color`, role);
@@ -504,6 +509,8 @@ const negative = Object.keys(scales.space).map((name) => `-${name}`);
 const tokenSets = {
   space: Object.keys(scales.space),
   padding: [...Object.keys(scales.space), ...negative],
+  // A margin takes `auto` besides: the free space on that side (Tailwind's `ml-auto`).
+  margin: [...Object.keys(scales.space), ...negative, ...enums.marginExtra],
   length: [...Object.keys(scales.space), ...Object.keys(scales.length)],
   zIndex: [...Object.keys(scales.zIndex), ...enums.zIndexExtra],
   shadow: Object.keys(scales.shadow),

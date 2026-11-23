@@ -394,6 +394,8 @@ import {
   type TrackingName,
   type OpacityName,
   type PaddingToken,
+  type MarginToken,
+  type BorderStyleName,
   type SpaceToken,
   type ControlSize,
   type InsetEdge,
@@ -1307,7 +1309,7 @@ export type Modifier =
       readonly kind: 'margin';
       readonly key: string;
       readonly edge: Edge;
-      readonly value: PaddingToken;
+      readonly value: MarginToken;
     }
   | { readonly kind: 'alignSelf'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'position'; readonly key: string; readonly value: PositionEdges }
@@ -1370,6 +1372,7 @@ export type Modifier =
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
+  | { readonly kind: 'borderStyle'; readonly key: string; readonly value: BorderStyleName }
   | {
       readonly kind: 'corner';
       readonly key: string;
@@ -1386,6 +1389,8 @@ export type Modifier =
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
   | { readonly kind: 'tracking'; readonly key: string; readonly value: TrackingName }
   | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken }
+  | { readonly kind: 'horizontalSpacing'; readonly key: string; readonly value: SpaceToken }
+  | { readonly kind: 'verticalSpacing'; readonly key: string; readonly value: SpaceToken }
   | { readonly kind: 'childSpacing'; readonly key: string; readonly value: ChildSpacing }
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'alignment'; readonly key: string; readonly value: OverlayAlignment }
@@ -2058,9 +2063,9 @@ export class Node {
   flex(value: FlexName): Node {
     return this.with({ kind: 'flex', key: `flex:${value}`, value });
   }
-  margin(edgeOrValue: Edge | PaddingToken, value?: PaddingToken): Node {
+  margin(edgeOrValue: Edge | MarginToken, value?: MarginToken): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
-    const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
+    const token = value === undefined ? (edgeOrValue as MarginToken) : value;
     return this.with({ kind: 'margin', key: `m:${edge}:${tokenKey(token)}`, edge, value: token });
   }
   alignSelf(value: Alignment): Node {
@@ -2140,6 +2145,9 @@ export class Node {
       edge,
     });
   }
+  borderStyle(value: BorderStyleName): Node {
+    return this.with({ kind: 'borderStyle', key: `bs:${value}`, value });
+  }
   corner(value: CornerName, side: CornerSide = 'all'): Node {
     const key = side === 'all' ? `r:${value}` : `r:${value}:${side}`;
     return this.with({ kind: 'corner', key, value, side });
@@ -2173,6 +2181,12 @@ export class Node {
   }
   spacing(value: SpaceToken): Node {
     return this.with({ kind: 'spacing', key: `gap:${tokenKey(value)}`, value });
+  }
+  horizontalSpacing(value: SpaceToken): Node {
+    return this.with({ kind: 'horizontalSpacing', key: `gapx:${tokenKey(value)}`, value });
+  }
+  verticalSpacing(value: SpaceToken): Node {
+    return this.with({ kind: 'verticalSpacing', key: `gapy:${tokenKey(value)}`, value });
   }
   childSpacing(axis: Axis, space: SpaceToken): Node {
     return this.with({
@@ -4401,9 +4415,13 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * 0%), `auto`, `initial`, `none`, and `grow` (`flex-grow: 1` alone).
    */
   flex(value: FlexName): Self;
-  /** Room outside the box, on every edge or one (`top`, `leading`, `left`…): a margin, on the view itself. */
-  margin(value: PaddingToken): Self;
-  margin(edge: Edge, value: PaddingToken): Self;
+  /**
+   * Room outside the box, on every edge or one (`top`, `leading`, `left`…): a
+   * margin, on the view itself. `auto` takes the free space on that side
+   * (`.margin('leading', 'auto')` pushes the view to the trailing end, Tailwind's `ms-auto`).
+   */
+  margin(value: MarginToken): Self;
+  margin(edge: Edge, value: MarginToken): Self;
   /** Clips what it draws to its bounds, rounded by its corner (SwiftUI's `clipped()`): a corner alone does not clip. */
   clipped(): Self;
   shrink(value: ShrinkPriority): Self;
@@ -4443,6 +4461,8 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   /** A view over this one, the size of this one as drawn so far, placed at `alignment` (centred by default). */
   overlay(content: ViewNode, alignment?: OverlayAlignment): Self;
   border(value: InkToken, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /** The border's line: `solid` (the default), `dashed` or `dotted` (React Native's `borderStyle`). */
+  borderStyle(value: BorderStyleName): Self;
   /** A ring outside the box (an outline, which takes no room): a role, `thin` by default, `offset` from the edge; `none` removes one. */
   ring(value: InkToken | 'none', width?: BorderWidthName, offset?: SpaceToken): Self;
   /** Bloom's elevation under the box: `s`, `m` or `floating`. */
@@ -4641,6 +4661,10 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
 export interface StackView extends ViewModifiers<StackView> {
   /** The gap between children. */
   spacing(value: SpaceToken): StackView;
+  /** The gap between children side by side (`columnGap`, Tailwind's `gap-x-*`), over `spacing`'s. */
+  horizontalSpacing(value: SpaceToken): StackView;
+  /** The gap between children one above another, and between wrapped lines (`rowGap`, Tailwind's `gap-y-*`), over `spacing`'s. */
+  verticalSpacing(value: SpaceToken): StackView;
   /**
    * Tailwind's `space-x-*`/`space-y-*` exactly as NativeWind draws them: on the
    * web a margin after every child but the last, along `axis` (the inline end,
@@ -5152,6 +5176,10 @@ export interface ScrollContentView
   > {
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollContentView;
+  /** The gap between children side by side (`columnGap`). */
+  horizontalSpacing(value: SpaceToken): ScrollContentView;
+  /** The gap between children one above another (`rowGap`). */
+  verticalSpacing(value: SpaceToken): ScrollContentView;
   /** The children's place across the axis. */
   align(value: Alignment): ScrollContentView;
   /** How the children spread along the axis. */

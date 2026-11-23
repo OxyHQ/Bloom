@@ -641,7 +641,101 @@ const roles: ParityCase[] = ENUMS.role.map((role) => ({
   ),
 }));
 
+/** What Mention's screens write that the language lacked: auto margins, a gap per axis, a border's line. */
+const appLayout: ParityCase[] = [
+  {
+    name: 'an auto leading margin pushes a view to the trailing end (ms-auto)',
+    language: () =>
+      toElement(L.HStack(L.Text('a'), L.VStack(L.Text('b')).margin('leading', 'auto'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <RN.View style={{ marginStart: 'auto' }}>
+          <Text>b</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a physical auto margin on the left (marginLeft: auto)',
+    language: () =>
+      toElement(L.HStack(L.Text('a'), L.VStack(L.Text('b')).margin('left', 'auto'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <RN.View style={{ marginLeft: 'auto' }}>
+          <Text>b</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'auto margins all round centre a view',
+    language: () => toElement(L.VStack(L.VStack(L.Text('a')).margin('auto'))),
+    bloom: () => (
+      <RN.View>
+        <RN.View
+          style={{ marginTop: 'auto', marginBottom: 'auto', marginStart: 'auto', marginEnd: 'auto' }}
+        >
+          <Text>a</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a gap per axis on a wrapping row (columnGap, rowGap)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'), L.Text('b'), L.Text('c'))
+          .wrap()
+          .horizontalSpacing('lg')
+          .verticalSpacing('xs'),
+      ),
+    bloom: () => (
+      <RN.View
+        style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: space.lg, rowGap: space.xs }}
+      >
+        <Text>a</Text>
+        <Text>b</Text>
+        <Text>c</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a column with a numeric vertical gap',
+    language: () => toElement(L.VStack(L.Text('a'), L.Text('b')).verticalSpacing('6')),
+    bloom: () => (
+      <RN.View style={{ rowGap: 6 }}>
+        <Text>a</Text>
+        <Text>b</Text>
+      </RN.View>
+    ),
+  },
+  ...(['dashed', 'dotted'] as const).map((line) => ({
+    name: `a ${line} border`,
+    language: () =>
+      toElement(L.VStack(L.Text('a')).border('border', 'thin').borderStyle(line).corner('md')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              borderWidth: 1,
+              borderColor: c.border,
+              borderStyle: line,
+              borderRadius: borderRadius.md,
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  })),
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...appLayout,
   ...roles,
   ...tailwind,
   ...distribution,

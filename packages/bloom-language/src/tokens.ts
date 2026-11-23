@@ -144,6 +144,8 @@ export type GlassOpacityName = keyof typeof GLASS_OPACITY;
 export type DurationName = keyof typeof DURATION;
 export type Edge = (typeof ENUMS.edge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
+/** A border's line: `solid`, `dashed` or `dotted` (React Native's `borderStyle`). */
+export type BorderStyleName = (typeof ENUMS.borderStyle)[number];
 export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
 /** A plain link button's ink (Bloom `Button`'s `linkTone`). */
@@ -502,6 +504,8 @@ export type SpaceToken = SpaceName | AppToken<'space'>;
 /** A frame's length: a space rung or an app's own, or a length relative to the parent. */
 export type LengthToken = SpaceToken | LengthName;
 export type PaddingToken = SpaceName | NegativeSpaceName | AppToken<'space'>;
+/** A margin: a padding's tokens, or `auto`, the free space on that side (Tailwind's `ml-auto`). */
+export type MarginToken = PaddingToken | (typeof ENUMS.marginExtra)[number];
 export type IconSizeToken = IconSizeName | AppToken<'iconSize'>;
 /** An avatar rung, or an app's own diameter (Bloom's avatar takes any; it is 40 with none). */
 export type AvatarSizeToken = AvatarSizeName | AppToken<'avatarSize'>;
