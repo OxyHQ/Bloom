@@ -54,6 +54,9 @@ export interface MenuSubmenuRow {
   id: string;
   title: string;
   icon: IconComponent | undefined;
+  /** The glyph's own size and ink (`.iconSize()`, `.iconForeground()`), over the menu's. */
+  iconSize: IconSizeToken | undefined;
+  iconForeground: InkToken | undefined;
   disabled: boolean;
   testID: string | undefined;
   rows: MenuRowData[];
@@ -136,6 +139,8 @@ export function readMenuRows(
           id,
           title: (node.props as { title: string }).title,
           icon: values.icon as IconComponent | undefined,
+          iconSize: values.iconSize as IconSizeToken | undefined,
+          iconForeground: values.iconForeground as InkToken | undefined,
           disabled: values.disabled === true,
           testID: values.testID as string | undefined,
           rows: readMenuRows(node.children, choose, `${id}.`),

@@ -296,6 +296,8 @@ export interface SearchView extends ViewModifiers<SearchView>, TextInputModifier
   trigger(value: ButtonView): SearchView;
   /** An action at the field's end (a voice search). */
   trailing(...value: Child[]): SearchView;
+  /** The most characters the field takes (React Native's `maxLength`). */
+  maxLength(value: number): SearchView;
 }
 
 const NO_CHILDREN: readonly Child[] = [];

@@ -7152,6 +7152,8 @@ export const NODE_MODIFIERS = {
   ],
   "menuSubmenu": [
     "icon",
+    "iconSize",
+    "iconForeground",
     "disabled",
     "testID"
   ],
@@ -10419,6 +10421,7 @@ export const NODE_MODIFIERS = {
     "onSubmit",
     "onClearText",
     "autoFocus",
+    "maxLength",
     "trigger",
     "trailing",
     "focused"

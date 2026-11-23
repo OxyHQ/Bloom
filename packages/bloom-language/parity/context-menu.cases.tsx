@@ -83,6 +83,45 @@ export const CONTEXT_MENU_CASES: readonly ParityCase[] = [
     ),
   },
   {
+    // A submenu's own glyph size and ink, as an item's (Mention's 22pt rows).
+    name: 'an open context menu whose submenu sizes and inks its own glyph',
+    isolated: true,
+    language: () =>
+      toElement(
+        L.ContextMenu(
+          area(),
+          L.Submenu('Share', L.Item('Email').onPress(set))
+            .icon(RiShareLine)
+            .iconSize('22')
+            .iconForeground('foreground'),
+        ).presentedAt([AT, set]),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ContextMenu anchor={AT} onAnchorChange={set}>
+            <ContextMenuTrigger>{bloomArea()}</ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger
+                  leading={<RiShareLine width={22} height={22} fill={c.text} />}
+                  disabled={false}
+                >
+                  Share
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent label="Share">
+                  <ContextMenuItem variant="default" onPress={set}>
+                    Email
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+            </ContextMenuContent>
+          </ContextMenu>
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'a context menu on a view',
     language: () =>
       toElement(

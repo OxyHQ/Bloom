@@ -3305,3 +3305,35 @@ fn a_menu_row_sizes_and_inks_its_own_glyph() {
     let output = compiled("export const x = () => Item('Copy').iconForeground('#fff');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown color token '#fff' for .iconForeground()");
 }
+
+/// `body` compiled with `names` imported from the language (and the icons it names).
+fn compiled_with(names: &str, body: &str) -> crate::Output {
+    compile(
+        &format!(
+            "import {{ {names} }} from '@oxy.so/bloom-language';\nimport {{ RiShareLine }} from '@oxy.so/bloom/icons/RiShareLine';\n{body}"
+        ),
+        "row.tsx",
+    )
+}
+
+#[test]
+fn a_submenu_sizes_and_inks_its_own_glyph() {
+    let names = "Menu, Submenu, Item, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = () => Menu(Text('More'), Submenu('Share', Item('Email')).icon(RiShareLine).iconSize('22').iconForeground('primary'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => Submenu('Share').iconSize('23');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token '23' for .iconSize()");
+    let output = compiled_with(names, "export const x = () => Submenu('Share').iconForeground('#fff');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#fff' for .iconForeground()");
+}
+
+#[test]
+fn a_search_takes_a_most_characters() {
+    let ok = compiled_with("Search", "export const x = (t) => Search(t).placeholder('Find').maxLength(50);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with("Search", "export const x = (t) => Search(t).maxLength(50, 2);\n");
+    assert_eq!(output.diagnostics[0].message, ".maxLength() takes 1 argument(s), not 2");
+}

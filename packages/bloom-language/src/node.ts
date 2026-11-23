@@ -5047,6 +5047,18 @@ export interface MenuItemView extends ViewNode {
 }
 export interface MenuSubmenuView extends ViewNode {
   icon(value: IconComponent): MenuSubmenuView;
+  /**
+   * The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's
+   * 20pt, as an `Item`'s. Bloom's menus draw it; the lens menu's submenus and
+   * the system menu on iOS draw their own.
+   */
+  iconSize(value: IconSizeToken): MenuSubmenuView;
+  /**
+   * The glyph's ink, a colour role, over the menu's quiet ink, as an `Item`'s.
+   * Bloom's menus draw it; the lens menu's submenus and the system menu on iOS
+   * draw their own.
+   */
+  iconForeground(value: InkToken): MenuSubmenuView;
   disabled(value?: boolean): MenuSubmenuView;
   testID(value: string): MenuSubmenuView;
 }

@@ -2228,7 +2228,7 @@
     "menuSubmenu": {
       "constructors": ["Submenu"],
       "universal": false,
-      "modifiers": ["icon", "disabled", "testID"]
+      "modifiers": ["icon", "iconSize", "iconForeground", "disabled", "testID"]
     },
     "menuSection": {
       "constructors": ["Section"],
@@ -2684,6 +2684,7 @@
         "onSubmit",
         "onClearText",
         "autoFocus",
+        "maxLength",
         "trigger",
         "trailing",
         "focused"

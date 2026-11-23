@@ -1087,7 +1087,7 @@ binding on a node that has no such value.
 | `Picker(selection, ...options)` | `Select`: its trigger (`SelectValue`, `SelectIcon`) and its list (`SelectItem` with its indicator and text) | `.placeholder`, `.size`, `.disabled`, `.presented(isOpen)` (its list open through a binding: Bloom's controlled `open`); `.label()` names it |
 | `Option(value, label)` | an option of the three above | `.description` (a radio's), `.disabled`, `.testID`, `.leadingView(...)` (a picker row's mark), `.tint(role)` and `.foreground(role)` (a swatch's colour and its chosen dot) |
 | `OptionGroup(label, ...options)` | a picker's `SelectGroup` with its `SelectLabel`, heading its first row | none |
-| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, `.onClearText(action)` (the clear button's press: the screen empties its text, and its tokens), the keyboard modifiers |
+| `Search(text)` | `Search` | `.placeholder`, `.size`, `.disabled`, `.collapsible('auto'?)` (a button that opens the field), `.presented(isOpen)`, `.tokens(tokens)` (removing a token writes the binding), `.trigger(Button)`, `.trailing(...)`, `.focused(binding)`, `.submitLabel`, `.onSubmit`, `.onClearText(action)` (the clear button's press: the screen empties its text, and its tokens), `.maxLength(n)` (the most characters it takes), the keyboard modifiers |
 
 - **The box.** A field's box modifiers (`frame`, `padding`…) are its shell's
   style, as an app writes `<TextField style>`; a picker's are its trigger's;
@@ -1320,13 +1320,15 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 
 **Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.iconSize`, `.iconForeground`,
 `.subtitle`, `.destructive`, `.disabled`, `.checked`, `.keepOpen`, `.onPress`),
-`Submenu` (one level), `Section` (`.title`, set apart from the rows beside it)
+`Submenu` (one level; `.icon`, `.iconSize`, `.iconForeground`, `.disabled`), `Section` (`.title`, set apart from the rows beside it)
 and `Divider`. A row's glyph is a 20pt Bloom icon in the menu's quiet ink (the
 negative ink for a destructive row; the row's own ink on the lens menu). A row
 sizes and inks its own with `.iconSize(size)` (an icon rung or a numeric size,
 `'22'`) and `.iconForeground(role)`, over those: Bloom's dropdown, context and
 menubar menus and the lens menu (Android, OxyOS) draw them; the system menu on
-iOS draws its SF Symbol at its own size and ink. Rows built from hooks, or costly to build, go in one
+iOS draws its SF Symbol at its own size and ink. A `Submenu` takes the same two
+for its own glyph; Bloom's menus draw them, and the lens menu's submenus draw
+no glyph. Rows built from hooks, or costly to build, go in one
 `menu()` content, whose body runs only while the menu is open:
 
 ```ts
