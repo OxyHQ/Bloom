@@ -32,7 +32,7 @@ This page installs it, wires the compiler and writes a first screen. Then read
 moves with [From JSX and NativeWind](bloom-language-from-jsx.mdx).
 
 The fastest start is a new app: `bun create oxy-app my-app --language`
-scaffolds an Expo app on the language with routes, a data-backed list, a form
+(create-oxy-app 0.10) scaffolds an Expo app on the language with routes, a data-backed list, a form
 and glass chrome (create-oxy-app's language template).
 
 ## Install
@@ -42,7 +42,7 @@ and glass chrome (create-oxy-app's language template).
 | `@oxy.so/bloom` | Bloom: the components, tokens and themes the language draws. No NativeWind. |
 | `@oxy.so/bloom-language` | The language: nodes, modifiers, `view()`, and the router (`@oxy.so/bloom-language/router`). |
 | `@oxy.so/bloom-language-compiler` | A build-time pre-pass (Rust, shipped prebuilt): checks every chain and hoists static ones. A dev dependency. |
-| `@oxy.so/bloom-data` | Optional: the data layer (records, lists, sources, optimistic actions). |
+| `@oxy.so/bloom-data` | Optional: the data layer (records, lists, sources, optimistic actions). 0.x: its persistence bounds and durable actions are still settling. |
 
 ```sh
 bun add @oxy.so/bloom @oxy.so/bloom-language @oxy.so/bloom-data
