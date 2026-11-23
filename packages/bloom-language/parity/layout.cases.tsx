@@ -781,9 +781,7 @@ const accessibility: ParityCase[] = [
     name: 'an accessibility value as a range',
     language: () =>
       toElement(
-        L.VStack(L.Text('a'))
-          .role('progressbar')
-          .accessibilityValue({ min: 0, max: 100, now: 40 }),
+        L.VStack(L.Text('a')).role('progressbar').accessibilityValue({ min: 0, max: 100, now: 40 }),
       ),
     bloom: () => (
       <RN.View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: 40 }}>
@@ -994,10 +992,7 @@ const safeArea: ParityCase[] = [
     language: () =>
       withInsets(
         toElement(
-          L.VStack(L.Text('a'))
-            .safeAreaPadding('top')
-            .padding('top', '2xl')
-            .background('card'),
+          L.VStack(L.Text('a')).safeAreaPadding('top').padding('top', '2xl').background('card'),
         ),
       ),
     bloom: () =>
@@ -1042,12 +1037,7 @@ const hitSlop: ParityCase[] = [
     // Mention's upvote: five points up, down and to the left, none to the right.
     name: 'a press whose sides reach their own slops',
     language: () =>
-      toElement(
-        L.VStack(L.Text('a'))
-          .onPress(hold)
-          .hitSlop('5')
-          .hitSlop('right', 'none'),
-      ),
+      toElement(L.VStack(L.Text('a')).onPress(hold).hitSlop('5').hitSlop('right', 'none')),
     bloom: () => (
       <RN.Pressable onPress={hold} hitSlop={{ top: 5, bottom: 5, left: 5, right: 0 }}>
         <Text>a</Text>

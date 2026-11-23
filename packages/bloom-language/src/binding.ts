@@ -42,7 +42,8 @@ export function refreshing(refresh: Refresh): {
   refreshing: boolean;
   onRefresh: () => void;
 } {
-  if ('onRefresh' in refresh) return { refreshing: refresh.refreshing, onRefresh: refresh.onRefresh };
+  if ('onRefresh' in refresh)
+    return { refreshing: refresh.refreshing, onRefresh: refresh.onRefresh };
   const [value, set] = refresh;
   return { refreshing: value, onRefresh: () => set(true) };
 }

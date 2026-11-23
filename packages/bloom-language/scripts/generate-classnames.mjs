@@ -609,7 +609,8 @@ function resolve(utility) {
   if ((m = /^bg-(.+)$/.exec(utility))) return color(m[1], (r) => `.background(${r})`);
   if ((m = /^rounded(?:-(tl|tr|bl|br|ss|se|es|ee|t|b|l|r|s|e))?(?:-(.+))?$/.exec(utility)))
     return corner(m[2] ?? '', m[1] && CORNER_SIDE[m[1]]);
-  if ((m = /^border-(solid|dashed|dotted)$/.exec(utility))) return mapped(`.borderStyle('${m[1]}')`);
+  if ((m = /^border-(solid|dashed|dotted)$/.exec(utility)))
+    return mapped(`.borderStyle('${m[1]}')`);
   if ((m = /^border(?:-([xytbserl]))?(?:-(\d+|hairline|\[\d+(?:\.\d+)?px\]))?$/.exec(utility))) {
     const edge = {
       '': 'all',

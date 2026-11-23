@@ -553,9 +553,7 @@ const raw: ParityCase[] = [
     name: 'RawText, a progress value',
     language: () =>
       toElement(
-        L.RawText('40%')
-          .role('progressbar')
-          .accessibilityValue({ min: 0, max: 100, now: 40 }),
+        L.RawText('40%').role('progressbar').accessibilityValue({ min: 0, max: 100, now: 40 }),
       ),
     bloom: () => (
       <BaseFontText
