@@ -958,12 +958,15 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
   if (p.pressable) {
+    const fade = ownValue(p, 'pressFade');
     // A view whose press handler is absent stays the same host, out of the tab order
-    // (a pressable is focusable by default).
-    if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
+    // (a pressable is focusable by default). A press that fades is TouchableOpacity's,
+    // whose focus is its own: on Android and iOS none without a press, on the web
+    // focusable unless disabled, as the TouchableOpacity an app writes.
+    if (fade !== undefined) props.onPress = p.onPress;
+    else if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
-    const fade = ownValue(p, 'pressFade');
     if (fade?.value !== undefined) props.activeOpacity = OPACITY[fade.value];
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;

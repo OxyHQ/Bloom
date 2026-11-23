@@ -1025,7 +1025,10 @@ placeholder), `.onPressItem(fn)`, `.hoverCard()`, and `.label()` to name it.
   Android and iOS, react-native-web's opacity transition on the web). The
   view's layout, fill and accessibility props are the host's, as on a
   `Pressable`. It is press feedback, as `.pressScale()` is: a view takes one
-  of them.
+  of them. Its focus is `TouchableOpacity`'s own: with `.onPress(undefined)`
+  it is out of the focus order on Android and iOS and focusable on the web,
+  as the `TouchableOpacity` an app writes (a `Pressable` without a press is
+  out of it everywhere).
 - **`.hoverHighlight(active?)`** on a stack: Bloom's `SubtleHover` wash behind
   it. With no argument it answers the pointer (the web; the stack becomes its
   hover group); with `active`, it is a coordinated highlight on every platform.

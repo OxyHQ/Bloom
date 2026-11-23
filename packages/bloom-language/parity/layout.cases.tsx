@@ -834,6 +834,16 @@ const pressFade: ParityCase[] = [
     ),
   },
   {
+    // TouchableOpacity's own focus: none on Android and iOS without a press, focusable on the web.
+    name: 'a press fade whose press is absent keeps TouchableOpacity’s focus',
+    language: () => toElement(L.VStack(L.Text('a')).onPress(undefined).pressFade()),
+    bloom: () => (
+      <RN.TouchableOpacity onPress={undefined}>
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
     name: 'a faded, selected row on a fill',
     language: () =>
       toElement(
