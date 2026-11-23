@@ -3271,3 +3271,15 @@ fn a_press_fade_takes_an_opacity_token() {
     let output = compiled("export const x = () => HStack().pressFade('0.7');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown opacity token '0.7' for .pressFade()");
 }
+
+#[test]
+fn a_virtual_list_takes_content_margins_and_a_gap() {
+    let ok = compiled(
+        "import { VirtualList } from '@oxy.so/bloom-language';\nexport const x = (row: never) => VirtualList([], row).contentMargins('horizontal', 'lg').contentMargins('6').spacing('sm');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled(
+        "import { VirtualList } from '@oxy.so/bloom-language';\nexport const x = (row: never) => VirtualList([], row).contentMargins('bottom', '-lg');\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "Unknown space token '-lg' for .contentMargins()");
+}

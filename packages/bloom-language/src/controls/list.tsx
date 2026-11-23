@@ -6,7 +6,6 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import type { ViewStyle } from 'react-native';
 import { withRoom } from '../chrome/safe-area-inset';
 import {
   List as BloomList,
@@ -31,6 +30,7 @@ import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
 import {
   resolveSpace,
   type Density,
+  type Edge,
   type InsetEdge,
   type KeyboardDismiss,
   type KeyboardTaps,
@@ -38,7 +38,7 @@ import {
   type ScrollbarVisibility,
   type SpaceToken,
 } from '../tokens';
-import { DISMISS_MODE } from '../chrome/scroll-view-host';
+import { DISMISS_MODE, containerStyle } from '../chrome/scroll-view-host';
 import type { ControlDraw, ControlRenderer } from './draw';
 
 /** Rows, lists and the virtualized list (Bloom `list`). */
@@ -165,6 +165,11 @@ export interface ListView extends ViewModifiers<ListView> {
 }
 /** Bloom `VirtualList`: FlashList (or FlatList) on native, the virtualizer on the web. */
 export interface VirtualListView extends ViewModifiers<VirtualListView> {
+  /** Room around the rows inside the scroll: `contentContainerStyle`'s padding, on every edge or one (a later margin of an edge replaces the earlier). */
+  contentMargins(value: SpaceToken): VirtualListView;
+  contentMargins(edge: Edge, value: SpaceToken): VirtualListView;
+  /** The gap between the rows: `contentContainerStyle`'s `gap`. */
+  spacing(value: SpaceToken): VirtualListView;
   /** A view pinned at the list's top or bottom, the content padded by its height (SwiftUI's `safeAreaInset`). */
   safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): VirtualListView;
   /** A `safeAreaInset` that is a bar, with Bloom's scroll edge scrim under it (SwiftUI's `safeAreaBar`). */
@@ -400,12 +405,10 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       props.onEndReachedThreshold = end.threshold;
     }
     if (refresh !== undefined) Object.assign(props, refreshing(refresh));
-    // Views pinned at its edges: its content makes room for them.
-    if (d.room !== undefined)
-      props.contentContainerStyle = withRoom(
-        props.contentContainerStyle as ViewStyle | undefined,
-        d.room,
-      );
+    // Its content margins and gap, as every scroll of the language's, then the
+    // room for views pinned at its edges.
+    const container = withRoom(containerStyle(d.node, d.own('spacing')?.value), d.room);
+    if (container !== undefined) props.contentContainerStyle = container;
     props.row = row;
     props.render = d.render;
     return d.component(LanguageVirtualList, props);

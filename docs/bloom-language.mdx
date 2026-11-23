@@ -2400,7 +2400,11 @@ as Bloom passes it, so an app's named `renderPost` is the row as it is
 (`VirtualList(posts, renderPost)`), its element drawn unchanged. Keep it stable
 (module scope, or a `useCallback`), and the list keeps its `renderItem`, so the
 engine re-renders a row only when its item changes, as with JSX; a new arrow per
-render would redraw every memoised row. It takes `.itemKey()`, `.itemType()` (FlashList's recycling type),
+render would redraw every memoised row. It takes `.contentMargins(edge?, space)` and
+`.spacing(space)`, its `contentContainerStyle`'s padding and `gap`, as every
+scroll of the language's takes them (`paddingHorizontal: 16, gap: 8` is
+`.contentMargins('horizontal', 'lg').spacing('sm')`; the room for views pinned
+at its edges adds to that padding), `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
 `.refreshable([refreshing, setRefreshing])`, `.stickyIndices()`,
 `.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()`,

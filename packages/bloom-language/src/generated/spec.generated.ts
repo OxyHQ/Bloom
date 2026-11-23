@@ -14205,6 +14205,8 @@ export const NODE_MODIFIERS = {
     "modifier",
     "confirmationDialog",
     "phases",
+    "contentMargins",
+    "spacing",
     "itemKey",
     "itemType",
     "estimatedItemSize",

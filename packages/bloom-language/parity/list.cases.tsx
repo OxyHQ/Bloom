@@ -315,6 +315,38 @@ const lists: ParityCase[] = [
 
 const virtual: ParityCase[] = [
   {
+    // What an app's contentContainerStyle wrote: its padding and gap.
+    name: 'a virtual list with content margins and a gap',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .itemKey(keyOf)
+          .contentMargins('horizontal', 'lg')
+          .contentMargins('bottom', '2xl')
+          .spacing('sm'),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }}
+      />
+    ),
+  },
+  {
+    name: 'a virtual list with a numeric padding all round',
+    language: () => toElement(L.VirtualList(NAMES, nameRow).itemKey(keyOf).contentMargins('6')),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        contentContainerStyle={{ padding: 6 }}
+      />
+    ),
+  },
+  {
     name: 'a virtual list',
     language: () => toElement(L.VirtualList(NAMES, nameRow).itemKey(keyOf)),
     bloom: () => (
