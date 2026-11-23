@@ -37,7 +37,7 @@ import {
   type Resolved,
   resolveClassName,
 } from './resolve';
-import { type StyleRead, styleUtilities, textDeclaration } from './style';
+import { ABSOLUTE_FILL, type StyleRead, styleUtilities, textDeclaration } from './style';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
@@ -921,6 +921,16 @@ export function transformSource(source: string, options: TransformOptions): File
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
 
+  /** React Native's `StyleSheet.absoluteFill`, read from the module's `StyleSheet`. */
+  const isAbsoluteFill = (node: AnyNode) =>
+    !!styleSheetLocal &&
+    n.MemberExpression.check(node) &&
+    !node.computed &&
+    n.Identifier.check(node.object) &&
+    node.object.name === styleSheetLocal &&
+    n.Identifier.check(node.property) &&
+    node.property.name === 'absoluteFill';
+
   /** A static style (an object literal, a module StyleSheet's style, or a list of them) as utilities. */
   function staticStyle(
     expression: AnyNode,
@@ -936,6 +946,12 @@ export function transformSource(source: string, options: TransformOptions): File
     // A StyleSheet's style is its literal on the before side; an inline object stays as written.
     const literals = new Map<AnyNode, string>();
     for (const part of parts) {
+      // React Native's own fill, pinned to every edge: its declarations, written out on the before side.
+      if (isAbsoluteFill(part)) {
+        classes.push(...ABSOLUTE_FILL.classes);
+        literals.set(part, `{ ${ABSOLUTE_FILL.literal} }`);
+        continue;
+      }
       let object = part;
       const referenced =
         n.MemberExpression.check(part) &&
@@ -948,7 +964,7 @@ export function transformSource(source: string, options: TransformOptions): File
           ? styleSheets.get(sheet.name)?.get(property.name)
           : undefined;
       }
-      const style = object ? styleUtilities(object, read) : undefined;
+      const style = object ? styleUtilities(object, read, isAbsoluteFill) : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
       if (!style.ok) return style;
       classes.push(...style.classes);
@@ -3568,6 +3584,13 @@ export function transformSource(source: string, options: TransformOptions): File
       [...uncommented(before).matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
     ))
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
+    // A Bloom or React Native value the before side reads (`tokens.hitSlop.md`).
+    for (const match of uncommented(before).matchAll(/(?<![.\w])([a-z]\w*)\./g)) {
+      const local = match[1] as string;
+      const module = sources.get(local)?.module ?? '';
+      if (module.startsWith('@oxy.so/bloom/') || module === 'react-native')
+        bindings[local] = sources.get(local) as Source;
+    }
     // A language view the before side already writes (a menu row's `toElement(Icon(…))`).
     for (const match of uncommented(before).matchAll(/\b([A-Z][\w]*)\(/g)) {
       const local = match[1] as string;

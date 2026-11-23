@@ -384,6 +384,22 @@ export function Other() { return <Scope><Screen /></Scope>; }
       'screen:wrapped',
     ]);
   });
+  it('reads StyleSheet.absoluteFill, alone or spread in a style, as a view pinned to every edge', () => {
+    const result = run(`import { Pressable, StyleSheet, View } from 'react-native';
+export const A = () => <View style={StyleSheet.absoluteFill} pointerEvents="box-none" />;
+export const B = () => <Pressable style={styles.tap} onPress={go} />;
+const styles = StyleSheet.create({ tap: { ...StyleSheet.absoluteFill, zIndex: 2 } });
+`);
+    expect(result.unconverted).toEqual([]);
+    expect(flat(result.code)).toContain(
+      "VStack().position({ top: 'none', right: 'none', bottom: 'none', left: 'none' })",
+    );
+    // The before side draws React Native's fill written out, with no StyleSheet in scope.
+    const tap = result.fixtures.find((f) => f.before.includes('Pressable'));
+    expect(tap?.before).toContain(
+      "position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 2",
+    );
+  });
   it('reads a text’s fontSize and lineHeight as its size and line tokens', () => {
     const result = run(`import { Text } from 'react-native';
 import { StyleSheet } from 'react-native';

@@ -230,15 +230,36 @@ function utility(key: string, value: AnyNode): string | undefined {
 }
 
 /**
- * An object literal of a style as utilities, and the literal itself (for the
- * parity's before side, where `styles.x` is not in scope).
+ * React Native's `StyleSheet.absoluteFill`: pinned to every edge of its parent
+ * (`absolute inset-0`), and the declarations it holds, written out for the
+ * parity's before side.
  */
-export function styleUtilities(object: AnyNode, read?: StyleRead): StyleResult {
+export const ABSOLUTE_FILL = {
+  classes: ['absolute', 'top-0', 'right-0', 'bottom-0', 'left-0'],
+  literal: "position: 'absolute', left: 0, right: 0, top: 0, bottom: 0",
+} as const;
+
+/**
+ * An object literal of a style as utilities, and the literal itself (for the
+ * parity's before side, where `styles.x` is not in scope). A spread of
+ * `StyleSheet.absoluteFill` (`isAbsoluteFill`) is its declarations.
+ */
+export function styleUtilities(
+  object: AnyNode,
+  read?: StyleRead,
+  isAbsoluteFill?: (node: AnyNode) => boolean,
+): StyleResult {
   if (!n.ObjectExpression.check(object))
     return { ok: false, subject: 'style', why: 'a style that is no object literal' };
   const classes: string[] = [];
   const mods: { subject: string; mod: Mod }[] = [];
+  let literal = recast.print(object).code;
   for (const property of object.properties) {
+    if (n.SpreadElement.check(property) && isAbsoluteFill?.(property.argument)) {
+      classes.push(...ABSOLUTE_FILL.classes);
+      literal = literal.replace(recast.print(property).code, ABSOLUTE_FILL.literal);
+      continue;
+    }
     if (
       !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
       property.computed ||
@@ -268,5 +289,5 @@ export function styleUtilities(object: AnyNode, read?: StyleRead): StyleResult {
       };
     classes.push(found);
   }
-  return { ok: true, classes, mods, literal: recast.print(object).code };
+  return { ok: true, classes, mods, literal };
 }
