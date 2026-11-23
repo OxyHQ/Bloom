@@ -68,7 +68,10 @@ export function createSettingsSelect({
 }
 
 // Padding, never a height: a fixed height left 15.5dp for a 20dp line on
-// Android and cut the value in half. The text sets the height.
+// Android and cut the value in half. The text sets the height. The sides are
+// the size's own (`SELECT_TRIGGER_SIZE_STYLE`, 12 at `md`): Bloom 22's size
+// class wrote them as start and end, which outrank left and right, so the 8 this
+// once set here never drew, on Android or the web.
 const styles = StyleSheet.create({
-  trigger: { gap: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 5, paddingBottom: 5 },
+  trigger: { gap: 4, paddingTop: 5, paddingBottom: 5 },
 });

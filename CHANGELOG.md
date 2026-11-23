@@ -27,6 +27,7 @@ Bloom's UI language ships with this major, as its own packages released from thi
 
 ### Fixed
 
+- `SettingsSelect`'s compact trigger keeps the select size's side padding (12 at `md`), as Bloom 22 drew it on Android and the web; the move off NativeWind had made its sides 8.
 - The custom-colour popover's edge highlight (the agent creator's colour picker) follows the popover's 24px corners. It was computed for 16px corners while the panel drew 24px, so the highlight ran off the rounded edge.
 - The native `reveal` navigation drawer clears the device's top and bottom edges the shell frame leaves it. Without `safeArea` it ran under the status bar; with it, geometry is unchanged.
 
