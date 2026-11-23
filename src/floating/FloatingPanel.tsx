@@ -108,7 +108,7 @@ import { useMenuPalette } from './menu-palette';
 import { pushFloatingEscape } from './escape-stack';
 import { FloatingTreeProvider, useFloatingTree } from './floating-tree';
 import type { FloatingPanelProps, FloatingSide } from './types';
-import { rectOf } from './use-anchor-rect';
+import { observeSize, rectOf } from './use-anchor-rect';
 import { useFrameThrottle } from './use-frame-throttle';
 import { useCommonMessages } from '../locale/common-messages';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
@@ -450,18 +450,25 @@ export function FloatingPanel({
     window.addEventListener('scroll', schedule, true);
     // A panel resized by its divider moves the box the surface is fitted
     // against without a window `resize` or a `scroll`.
-    const boundaryNode = boundary?.current;
-    const observer =
-      boundaryNode instanceof Element && typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(schedule)
-        : null;
-    if (observer && boundaryNode instanceof Element) observer.observe(boundaryNode);
+    const fitted = observeSize(boundary?.current, schedule);
     return () => {
       window.removeEventListener('resize', schedule);
       window.removeEventListener('scroll', schedule, true);
-      observer?.disconnect();
+      fitted?.disconnect();
     };
   }, [phase, schedule, boundary]);
+
+  // The surface's own size decides where it goes (a side flips, an `end` or
+  // `center` alignment offsets by it), and it can change after it was placed:
+  // its text's web font lands, its content changes. It is re-placed then, as
+  // `useAnchorRect` re-measures a trigger that changed size. Its own effect: the
+  // panel node lands a render after the panel mounts, and the listeners above
+  // stay registered once per open.
+  useEffect(() => {
+    if (phase !== 'open') return;
+    const own = observeSize(panelNode, schedule);
+    return () => own?.disconnect();
+  }, [phase, schedule, panelNode]);
 
   // Where the panel ended up, which is what both the slide and the origin
   // describe. Held across the exit with the placement itself.
