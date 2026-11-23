@@ -144,8 +144,8 @@ function direct(key: string, value: AnyNode): Mod | undefined {
   return undefined;
 }
 
-/** A declaration the caller reads as a modifier (a theme colour as its role), or undefined. */
-export type StyleRead = (key: string, value: AnyNode) => Mod | undefined;
+/** A declaration the caller reads as modifiers (a theme colour as its role, an inset's padding), or undefined. */
+export type StyleRead = (key: string, value: AnyNode) => Mod | readonly Mod[] | undefined;
 
 export type StyleResult =
   | {
@@ -199,7 +199,7 @@ export function styleUtilities(object: AnyNode, read?: StyleRead): StyleResult {
     const key = property.key.name as string;
     const mod = direct(key, property.value) ?? read?.(key, property.value);
     if (mod) {
-      mods.push({ subject: key, mod });
+      for (const one of Array.isArray(mod) ? mod : [mod]) mods.push({ subject: key, mod: one });
       continue;
     }
     // `inset` is its four edges, as React Native resolves it.

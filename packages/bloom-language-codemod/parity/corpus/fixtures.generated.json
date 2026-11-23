@@ -35,6 +35,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -73,6 +74,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -115,6 +117,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -160,6 +163,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -203,6 +207,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -246,6 +251,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -288,6 +294,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -328,6 +335,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -364,6 +372,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -418,6 +427,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -465,6 +475,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -529,6 +540,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -603,6 +615,7 @@
    "@oxy.so/bloom/engagement-bar#EngagementBar"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -663,6 +676,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -731,6 +745,7 @@
   ],
   "within": [],
   "themed": true,
+  "insets": false,
   "screen": false,
   "appColors": {
    "table": "appColors",
@@ -788,6 +803,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -838,6 +854,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -889,6 +906,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -945,6 +963,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -997,6 +1016,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1055,6 +1075,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": true,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1113,6 +1134,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1179,6 +1201,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1249,6 +1272,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1317,6 +1341,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1374,6 +1399,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1432,6 +1458,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1501,6 +1528,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1572,6 +1600,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1634,6 +1663,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1694,6 +1724,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1767,6 +1798,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1828,6 +1860,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1897,6 +1930,7 @@
   ],
   "within": [],
   "themed": true,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1930,6 +1964,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1956,6 +1991,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1989,6 +2025,53 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Insets.tsx:12",
+  "before": "<Text>Compose</Text>",
+  "after": "toElement(LText('Compose'))",
+  "bindings": {
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Insets.tsx:20",
+  "before": "<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>\n      <Text>Welcome</Text>\n    </View>",
+  "after": "toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "toElement",
+   "VStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": true,
   "screen": false,
   "appColors": null
  },
@@ -2044,6 +2127,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2088,6 +2172,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2140,6 +2225,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2176,6 +2262,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2212,6 +2299,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2249,6 +2337,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2290,6 +2379,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2335,6 +2425,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2380,6 +2471,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2412,6 +2504,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2445,6 +2538,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2493,6 +2587,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2541,6 +2636,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2572,6 +2668,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2603,6 +2700,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2623,6 +2721,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2656,6 +2755,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2693,6 +2793,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2734,6 +2835,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2775,6 +2877,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  }

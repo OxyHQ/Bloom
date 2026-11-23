@@ -508,10 +508,11 @@ function finish(
       fail(`${subject(prior)} ${subject(mod)}`, 'corner-overlap', 'two corners of one corner');
   });
 
-  // Any other modifier twice is decided by Tailwind's rule order.
+  // Any other modifier twice is decided by Tailwind's rule order. (A safe-area padding is one per side, from its style key.)
   const seen = new Map<string, Mod>();
   for (const mod of mods) {
-    if (['padding', 'margin', 'border', 'corner', 'when'].includes(mod.name)) continue;
+    if (['padding', 'margin', 'border', 'corner', 'when', 'safeAreaPadding'].includes(mod.name))
+      continue;
     const prior = seen.get(mod.name);
     if (prior)
       fail(`${subject(prior)} ${subject(mod)}`, 'conflict', `two classes set .${mod.name}()`);

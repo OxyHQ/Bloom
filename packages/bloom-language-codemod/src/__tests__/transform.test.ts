@@ -416,6 +416,28 @@ export const C = () => <Chip leadingIcon={RiArrowDownSLine} startIcon={<Art />}>
     expect(code).toContain("LChip(Embed(<Art />), Text('Site'), Embed(<Art />))");
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Chip:startIcon']);
   });
+  it('pads by the device’s insets as .safeAreaPadding(), a padding beyond it on the same view', () => {
+    const result = run(`import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+export function A() {
+  const insets = useSafeAreaInsets();
+  return <View style={{ paddingTop: insets.top + 24, paddingBottom: insets.bottom }} />;
+}
+export function B({ insets }) {
+  return <View style={{ paddingTop: insets.top }} />;
+}
+export function C() {
+  const insets = useSafeAreaInsets();
+  return <View style={{ paddingTop: insets.top + 5 }} />;
+}
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(VStack().safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom'))",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['style', 'style']);
+    expect(result.fixtures[0]?.insets).toBe(true);
+    expect(result.fixtures[0]?.before).toContain('PARITY_INSETS.top + 24');
+  });
   it('makes a DropdownMenu tree a Menu drawn as Bloom’s dropdown', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';
 import { RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';

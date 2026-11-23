@@ -64,11 +64,13 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
       const [module, imported] = key.split('#') as [string, string];
       return alias({ module, imported });
     });
-    const open = within.map((local) => `<${local}>{`).join('');
-    const close = within
-      .map((local) => `}</${local}>`)
-      .reverse()
-      .join('');
+    // A region that pads by the device's insets is drawn under the corpus's, on both sides.
+    const inset = fixture.insets ? ['<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{'] : [];
+    const open = [...inset, ...within.map((local) => `<${local}>{`)].join('');
+    const close = [
+      ...within.map((local) => `}</${local}>`).reverse(),
+      ...(fixture.insets ? ['}</SafeAreaInsetsContext.Provider>'] : []),
+    ].join('');
     // A before side that reads the theme is a component, so it reads it where it is drawn.
     const before = fixture.themed
       ? `function Before() { const parityTheme = useParityTheme(); ${bindings} return (${fixture.before}); } return (${open}<Before />${close});`
@@ -95,6 +97,7 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     "import * as L from '@oxy.so/bloom-language';",
     "import { toElement } from '@oxy.so/bloom-language';",
     "import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';",
+    "import { SafeAreaInsetsContext } from 'react-native-safe-area-context';",
     `import { ScreenHost } from '${relativeTo(dir, SCREEN_HOST)}';`,
     ...[...imports].map(([key, local]) => {
       const [module, name] = key.split('#');
@@ -102,6 +105,9 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     }),
     '',
     ...(tables.length ? [...tables, ''] : []),
+    '/** The insets of a phone with a notch and a home bar. */',
+    'const PARITY_INSETS = { top: 47, bottom: 34, left: 0, right: 0 };',
+    '',
     'function Hole({ n }: { n: string }) {',
     "  return <RN.View testID={'hole-' + n} />;",
     '}',

@@ -1,14 +1,15 @@
 # Bloom language codemod: parity/sample-app
 
-- Files: 6 read, 6 changed
-- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 154
-- Converted: 154 (100.0%), in 53 regions
+- Files: 7 read, 7 changed
+- Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 158
+- Converted: 157 (99.4%), in 55 regions
 - Classes the app's theme draws differently from Bloom's: 0
 
 ## Why elements stayed JSX
 
 | Reason | Elements | Most frequent |
 | --- | ---: | --- |
+| style | 1 | `style` 1 |
 
 ## Bloom components left as JSX
 
@@ -25,3 +26,4 @@ Not mapped by the codemod yet (each needs its prop rules and parity first):
 
 ## Each element
 
+- components/Insets.tsx:11 `<View>`: `style` (style: a style that is no object literal)

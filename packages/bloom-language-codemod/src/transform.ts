@@ -406,6 +406,8 @@ export interface Fixture {
   readonly within: readonly string[];
   /** The before side reads Bloom's theme (`parityTheme`, its `useTheme()`): a fill the chain names by role. */
   readonly themed: boolean;
+  /** The before side pads by the device's insets: both sides are drawn under the corpus's (`PARITY_INSETS`). */
+  readonly insets: boolean;
   /** The after side is a route's body root, drawn by the language's `ScreenHost` as `screen()` draws it. */
   readonly screen: boolean;
   /** The app colours the chain paints with: the table's local name and each token's colour. */
@@ -742,6 +744,60 @@ export function transformSource(source: string, options: TransformOptions): File
   /** A className chosen at runtime, by its expression: both branches' classes, which the parity's stylesheet holds. */
   const choiceClasses = new Map<AnyNode, string>();
 
+  /**
+   * Each `insets.top` (`bottom`, `left`, `right`) where `insets` is a `const`
+   * holding `useSafeAreaInsets()` (react-native-safe-area-context): the device's
+   * inset on that side, which `.safeAreaPadding(side)` pads by.
+   */
+  const insetReads = new Map<AnyNode, 'top' | 'bottom' | 'left' | 'right'>();
+  recast.visit(ast, {
+    visitMemberExpression(path) {
+      const { object, property } = path.node;
+      const side =
+        !path.node.computed && n.Identifier.check(property) ? (property.name as string) : '';
+      if (n.Identifier.check(object) && ['top', 'bottom', 'left', 'right'].includes(side)) {
+        const bindings = scopeOf(path, object.name)?.getBindings()[object.name];
+        let at = bindings?.length === 1 ? bindings[0] : undefined;
+        while (at && !n.VariableDeclarator.check(at.node)) at = at.parent;
+        const init = at?.node.init;
+        const callee = n.CallExpression.check(init) ? init.callee : undefined;
+        const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+        if (
+          at?.parent?.node.kind === 'const' &&
+          n.Identifier.check(at.node.id) &&
+          init.arguments.length === 0 &&
+          source?.module === 'react-native-safe-area-context' &&
+          source.imported === 'useSafeAreaInsets'
+        )
+          insetReads.set(path.node, side as 'top' | 'bottom' | 'left' | 'right');
+      }
+      this.traverse(path);
+    },
+  });
+  /**
+   * A padding by the device's inset, as `.safeAreaPadding(side)`: `paddingTop:
+   * insets.top`, or `insets.top + 24` with a padding of the space token beyond it
+   * on the same view (a top or bottom one: the language adds them).
+   */
+  const insetPadding = (key: string, value: AnyNode): Mod[] | undefined => {
+    const side = {
+      paddingTop: 'top',
+      paddingBottom: 'bottom',
+      paddingLeft: 'left',
+      paddingRight: 'right',
+    }[key];
+    if (!side) return undefined;
+    const sum = n.BinaryExpression.check(value) && value.operator === '+' ? value : undefined;
+    const inset = sum ? sum.left : value;
+    if (insetReads.get(inset) !== side) return undefined;
+    if (!sum) return [{ name: 'safeAreaPadding', args: [side] }];
+    const beyond = n.NumericLiteral.check(sum.right) ? SPACE[String(sum.right.value)] : undefined;
+    if (beyond === undefined || (side !== 'top' && side !== 'bottom')) return undefined;
+    return [
+      { name: 'safeAreaPadding', args: [side] },
+      { name: 'padding', args: [side, beyond] },
+    ];
+  };
   /** A language view placed as an element: `toElement(view)`, as a file partly in the language writes it. */
   const isToElement = (expression: AnyNode) => {
     const callee = n.CallExpression.check(expression) ? expression.callee : undefined;
@@ -1328,6 +1384,8 @@ export function transformSource(source: string, options: TransformOptions): File
       if (name === 'style' && kind !== 'icon') {
         // A theme colour read from `useTheme()` here is its role, as an icon's fill is.
         const read: StyleRead = (key, read) => {
+          const inset = insetPadding(key, read);
+          if (inset) return inset;
           const role = themeRoles.get(read);
           if (!role || insideOf(node, [COLOR_SCOPE])) return undefined;
           if (key === 'backgroundColor') return { name: 'background', args: [role] };
@@ -3217,6 +3275,13 @@ export function transformSource(source: string, options: TransformOptions): File
     for (const [read, literal] of styleLiterals)
       if (read.start >= node.start && read.end <= node.end)
         spans.push({ start: read.start, end: read.end, text: literal });
+    // An inset the chain pads by is the corpus's on the before side, both sides drawn under it.
+    let insets = false;
+    for (const [read, side] of insetReads)
+      if (read.start >= node.start && read.end <= node.end) {
+        insets = true;
+        spans.push({ start: read.start, end: read.end, text: `PARITY_INSETS.${side}` });
+      }
     // A theme colour the chain names by its role is read from the theme the before side is drawn in.
     let themed = false;
     for (const [read] of themeRoles)
@@ -3274,6 +3339,7 @@ export function transformSource(source: string, options: TransformOptions): File
       // A route's Screen is the Screen its nodes are drawn in.
       within: withinOf(ir).filter((key) => ir.type !== 'screen' || key !== SCREEN_KEY),
       themed,
+      insets,
       screen: ir.type === 'screen',
       appColors: colors.length
         ? {

@@ -3,6 +3,7 @@ import * as RN from 'react-native';
 import * as L from '@oxy.so/bloom-language';
 import { toElement } from '@oxy.so/bloom-language';
 import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { ScreenHost } from '../../../bloom-language/src/router/screen-host';
 import { SettingsSection as I0 } from '@oxy.so/bloom/settings-modal';
 import { GroupedSection as I1 } from '@oxy.so/bloom/grouped-section';
@@ -70,6 +71,9 @@ import { RiArrowRightLine as I62 } from '@oxy.so/bloom/icons/RiArrowRightLine';
 import { Text as I63 } from '../support/app-text';
 
 const T0 = L.defineTokens({ color: {"STAR":"#F5A623","hexfff":"#fff","white":"white","VEIL":"rgba(255,255,255,0.72)"} });
+
+/** The insets of a phone with a notch and a home bar. */
+const PARITY_INSETS = { top: 47, bottom: 34, left: 0, right: 0 };
 
 function Hole({ n }: { n: string }) {
   return <RN.View testID={'hole-' + n} />;
@@ -564,6 +568,18 @@ export const CASES = [
       </Dialog>
     </View>); },
     after: () => { const View = I9; const Text = I52; const Dialog = I53; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
+  },
+  {
+    name: "components/Insets.tsx:12",
+    before: () => { const Text = I52; return (<Text>Compose</Text>); },
+    after: () => { const Text = I52; const { Text: LText } = L;  return (toElement(LText('Compose'))); },
+  },
+  {
+    name: "components/Insets.tsx:20",
+    before: () => { const View = I9; const Text = I52; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>
+      <Text>Welcome</Text>
+    </View>}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I9; const Text = I52; const { Text: LText, toElement, VStack } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
     name: "components/Menus.tsx:15",
