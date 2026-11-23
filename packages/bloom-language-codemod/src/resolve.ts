@@ -49,6 +49,7 @@ interface Spec {
   environment: { traits: string[] };
   universal: string[];
   nodes: Record<string, { modifiers: string[] }>;
+  enums: { fontFamily: string[] };
 }
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as Spec;
 
@@ -57,6 +58,8 @@ spec.layers.forEach((names, index) => {
   for (const name of names) LAYER.set(name, index);
 });
 const TRAITS = new Set(spec.environment.traits);
+/** The faces `.font()` takes beside a size (`mono`, `display`). */
+const FONT_FAMILY = new Set(spec.enums.fontFamily);
 /** The modifiers a `when()` variant can change; any other is left out of it. */
 const VARIES = new Set(spec.variants.modifiers);
 /** Conditions that hold, or not, as the view renders: a platform. */
@@ -509,15 +512,18 @@ function finish(
       fail(`${subject(prior)} ${subject(mod)}`, 'corner-overlap', 'two corners of one corner');
   });
 
-  // Any other modifier twice is decided by Tailwind's rule order. (A safe-area padding is one per side, from its style key.)
+  // Any other modifier twice is decided by Tailwind's rule order. (A safe-area padding is one per side, from its style key;
+  // a face, `.font('mono')`, and a size, `.font('96')`, are two things a text keeps both of.)
   const seen = new Map<string, Mod>();
   for (const mod of mods) {
     if (['padding', 'margin', 'border', 'corner', 'when', 'safeAreaPadding'].includes(mod.name))
       continue;
-    const prior = seen.get(mod.name);
+    const key =
+      mod.name === 'font' && FONT_FAMILY.has(mod.args[0] as string) ? 'font family' : mod.name;
+    const prior = seen.get(key);
     if (prior)
       fail(`${subject(prior)} ${subject(mod)}`, 'conflict', `two classes set .${mod.name}()`);
-    seen.set(mod.name, mod);
+    seen.set(key, mod);
   }
 
   const measuredFrom = kind === 'text' ? unsized(mods) : undefined;

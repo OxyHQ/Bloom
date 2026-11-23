@@ -467,6 +467,19 @@ const styles = StyleSheet.create({ day: { fontSize: 28, lineHeight: 32, fontWeig
       'lineHeight',
     ]);
   });
+  it('reads Bloom’s fontFamilyStyle spread in a style as the face, beside a numeric size', () => {
+    const result = run(`import { StyleSheet } from 'react-native';
+import { Text, fontFamilyStyle } from '@oxy.so/bloom/typography';
+export const A = () => <Text style={styles.countdown}>3</Text>;
+export const B = () => <Text style={{ ...fontFamilyStyle('serif'), fontSize: 96 }}>b</Text>;
+const styles = StyleSheet.create({
+  countdown: { ...fontFamilyStyle('display'), fontSize: 96, lineHeight: 96, fontWeight: '700' },
+});
+`);
+    expect(flat(result.code)).toContain(".font('display').font('96').leading('96px')");
+    expect(result.unconverted.map((u) => u.reasons[0]?.why)).toEqual(['a style built at runtime']);
+    expect(result.fixtures[0]?.bindings.fontFamilyStyle?.module).toBe('@oxy.so/bloom/typography');
+  });
   it('draws what a route wraps its Screen in as screen modifiers, innermost first', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';
 import { BloomColorScope } from '@oxy.so/bloom/theme';

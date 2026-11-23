@@ -265,14 +265,27 @@ export const ABSOLUTE_FILL = {
 } as const;
 
 /**
+ * A spread in a style the caller reads: the utilities and modifiers it writes,
+ * and what it is on the before side (`StyleSheet.absoluteFill` is its
+ * declarations written out; a Bloom call such as `fontFamilyStyle('display')`
+ * stays as written, its function bound there).
+ */
+export interface SpreadStyle {
+  readonly classes: readonly string[];
+  readonly mods: readonly Mod[];
+  /** The spread's declarations, written out on the before side; unset: the spread as written. */
+  readonly literal?: string;
+}
+
+/**
  * An object literal of a style as utilities, and the literal itself (for the
- * parity's before side, where `styles.x` is not in scope). A spread of
- * `StyleSheet.absoluteFill` (`isAbsoluteFill`) is its declarations.
+ * parity's before side, where `styles.x` is not in scope). A spread `spreadOf`
+ * reads is what it writes; any other is a style built at runtime.
  */
 export function styleUtilities(
   object: AnyNode,
   read?: StyleRead,
-  isAbsoluteFill?: (node: AnyNode) => boolean,
+  spreadOf?: (node: AnyNode) => SpreadStyle | undefined,
   /** A value that is a number the codemod knows (Bloom's `tokens.space.sm`), or undefined. */
   numberOf?: (node: AnyNode) => number | undefined,
 ): StyleResult {
@@ -292,9 +305,12 @@ export function styleUtilities(
       FLEX_KEYS.includes(property.key.name)
     )
       continue;
-    if (n.SpreadElement.check(property) && isAbsoluteFill?.(property.argument)) {
-      classes.push(...ABSOLUTE_FILL.classes);
-      literal = literal.replace(recast.print(property).code, ABSOLUTE_FILL.literal);
+    const spread = n.SpreadElement.check(property) ? spreadOf?.(property.argument) : undefined;
+    if (spread) {
+      classes.push(...spread.classes);
+      for (const mod of spread.mods) mods.push({ subject: 'fontFamily', mod });
+      if (spread.literal !== undefined)
+        literal = literal.replace(recast.print(property).code, spread.literal);
       continue;
     }
     if (

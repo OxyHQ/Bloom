@@ -550,7 +550,7 @@
     "textCase": ["uppercase", "lowercase", "capitalize"],
     "wordBreak": ["all", "words"],
     "listMarker": ["disc", "decimal"],
-    "fontFamily": ["mono"],
+    "fontFamily": ["mono", "display"],
     "cornerExtra": ["concentric", "infinite"],
     "zIndexExtra": ["auto"],
     "marginExtra": ["auto"],

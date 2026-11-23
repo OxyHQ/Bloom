@@ -1139,7 +1139,7 @@ export interface TextTraits {
   foreground: InkToken | undefined;
   /** The size: a ramp step or a size rung. */
   font: Exclude<FontName, FontFamilyName> | undefined;
-  /** The face beside the size (`.font('mono')`); Bloom's own when unset. */
+  /** The face beside the size (`.font('mono')`, `.font('display')`); Bloom's own when unset. */
   family: FontFamilyName | undefined;
   weight: WeightName | undefined;
   leading: LeadingToken | undefined;
@@ -1178,8 +1178,15 @@ export function textVariants(traits: TextTraits): VariantStyles {
 /** Digits of one width: React Native's `fontVariant`, the web's `font-variant`. */
 const TABULAR: readonly string[] = Object.freeze(['tabular-nums']);
 
-/** Each family's face, as Bloom's `Text` sets it for `font-mono`. */
-const FAMILY: Record<FontFamilyName, string> = { mono: fontFamilyStyle('mono').fontFamily };
+/**
+ * Each family's face, as Bloom's `Text` sets it: `font-mono`'s, and the display
+ * face its big ramp steps take (BlomusModernus; on Android and iOS Bloom's text
+ * host draws the cut the weight selects), for a size off the ramp.
+ */
+const FAMILY: Record<FontFamilyName, string> = {
+  mono: fontFamilyStyle('mono').fontFamily,
+  display: fontFamilyStyle('display').fontFamily,
+};
 
 /**
  * React Native's `Text` as an Oxy app draws it: `@oxy.so/app-preset` (6.8.0,

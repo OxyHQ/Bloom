@@ -364,7 +364,10 @@ before side writes them out. A Text's `fontSize` is `.font()` of the token of
 its points (a named rung over a numeric token: `15` is `'md'`), its
 `lineHeight` `.leading()` of the px line (`'20px'`), and its `fontWeight`
 Tailwind's `font-*` (`'700'` is `.weight('bold')`); a size or a line no token
-holds is a reason. A `backgroundColor`, or a Text's `color`, read from Bloom's
+holds is a reason. A spread of Bloom's `fontFamilyStyle('mono')` or
+`fontFamilyStyle('display')` is the face, `.font('mono')` or `.font('display')`
+(a face and a size are two things a text keeps, no conflict); the before side
+calls the function itself. A `backgroundColor`, or a Text's `color`, read from Bloom's
 `useTheme()` in the component (outside a `BloomColorScope` around the
 element) is `.background(role)` or `.foreground(role)`, as an icon's fill is.
 These join the classes' modifiers, so a class setting the same thing is a

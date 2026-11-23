@@ -37,7 +37,13 @@ import {
   type Resolved,
   resolveClassName,
 } from './resolve';
-import { ABSOLUTE_FILL, type StyleRead, styleUtilities, textDeclaration } from './style';
+import {
+  ABSOLUTE_FILL,
+  type SpreadStyle,
+  type StyleRead,
+  styleUtilities,
+  textDeclaration,
+} from './style';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
@@ -58,6 +64,7 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
   colors: Record<string, [themeKey: string, css: string] | string>;
   enums: {
     role: readonly string[];
+    fontFamily: readonly string[];
     appColorName: readonly string[];
     liveRegion: readonly string[];
   };
@@ -1024,6 +1031,30 @@ export function transformSource(source: string, options: TransformOptions): File
     node.object.name === styleSheetLocal &&
     n.Identifier.check(node.property) &&
     node.property.name === 'absoluteFill';
+  /** Bloom's `fontFamilyStyle` (`@oxy.so/bloom/typography`), by its local name in the file. */
+  const fontFamilyStyleLocal = [...sources].find(
+    ([, s]) => s.module === '@oxy.so/bloom/typography' && s.imported === 'fontFamilyStyle',
+  )?.[0];
+  /**
+   * A spread a style reads: `StyleSheet.absoluteFill`'s edges, and Bloom's
+   * `fontFamilyStyle('mono' | 'display')`, the face the language's
+   * `.font('mono')` and `.font('display')` set (the same family on every platform).
+   */
+  const spreadOf = (node: AnyNode): SpreadStyle | undefined => {
+    if (isAbsoluteFill(node))
+      return { classes: ABSOLUTE_FILL.classes, mods: [], literal: ABSOLUTE_FILL.literal };
+    if (
+      fontFamilyStyleLocal &&
+      n.CallExpression.check(node) &&
+      n.Identifier.check(node.callee) &&
+      node.callee.name === fontFamilyStyleLocal &&
+      node.arguments.length === 1 &&
+      n.StringLiteral.check(node.arguments[0]) &&
+      spec.enums.fontFamily.includes(node.arguments[0].value)
+    )
+      return { classes: [], mods: [{ name: 'font', args: [node.arguments[0].value] }] };
+    return undefined;
+  };
 
   /** No style: a branch of a choice that adds none. */
   const noStyle = (node: AnyNode) =>
@@ -1124,7 +1155,7 @@ export function transformSource(source: string, options: TransformOptions): File
         const style = styleUtilities(
           styleConstantReads.get(part),
           read,
-          isAbsoluteFill,
+          spreadOf,
           bloomTokenNumber,
         );
         if (!style.ok) return style;
@@ -1144,9 +1175,7 @@ export function transformSource(source: string, options: TransformOptions): File
           ? styleSheets.get(sheet.name)?.get(property.name)
           : undefined;
       }
-      const style = object
-        ? styleUtilities(object, read, isAbsoluteFill, bloomTokenNumber)
-        : undefined;
+      const style = object ? styleUtilities(object, read, spreadOf, bloomTokenNumber) : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
       if (!style.ok) return style;
       classes.push(...style.classes);
@@ -3804,8 +3833,8 @@ export function transformSource(source: string, options: TransformOptions): File
       [...uncommented(before).matchAll(/<\/?([A-Z][\w]*)/g)].map((m) => m[1] as string),
     ))
       if (sources.has(local)) bindings[local] = sources.get(local) as Source;
-    // A Bloom or React Native value the before side reads (`tokens.hitSlop.md`).
-    for (const match of uncommented(before).matchAll(/(?<![.\w])([a-z]\w*)\./g)) {
+    // A Bloom or React Native value the before side reads or calls (`tokens.hitSlop.md`, `fontFamilyStyle('display')`).
+    for (const match of uncommented(before).matchAll(/(?:^|[^\w.]|\.\.\.)([a-z]\w*)[.(]/g)) {
       const local = match[1] as string;
       const module = sources.get(local)?.module ?? '';
       if (module.startsWith('@oxy.so/bloom/') || module === 'react-native')

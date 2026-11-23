@@ -1333,7 +1333,8 @@ export const ENUMS = {
     "decimal"
   ],
   "fontFamily": [
-    "mono"
+    "mono",
+    "display"
   ],
   "cornerExtra": [
     "concentric",

@@ -538,6 +538,40 @@ const tracked: ParityCase[] = [
     bloom: () => <Text style={{ fontSize: 12, ...fontFamilyStyle('mono') }}>12</Text>,
   },
   {
+    // Mention's camera countdown: Tailwind's text-8xl in bold, in the display face.
+    name: 'a numeric size in the display face',
+    language: () =>
+      toElement(
+        L.Text('3').font('96').leading('96px').weight('bold').foreground('white').font('display'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Text
+            style={{
+              ...fontFamilyStyle('display'),
+              color: c[paint('white')],
+              fontSize: 96,
+              lineHeight: 96,
+              fontWeight: '700',
+            }}
+          >
+            3
+          </Text>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'the display face, then a size, from the stack',
+    language: () => toElement(L.VStack(L.Text('42')).font('display').font('42')),
+    bloom: () => (
+      <RN.View>
+        <Text style={{ fontSize: 42, ...fontFamilyStyle('display') }}>42</Text>
+      </RN.View>
+    ),
+  },
+  {
     // At rest a numeric content transition is the plain text: the roll's pieces exist only while it plays.
     name: 'a numeric count at rest',
     language: () =>

@@ -4690,7 +4690,11 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * (SwiftUI's `foregroundColor(nil)`): `.foreground(invalid ? 'error' : undefined)`.
    */
   foreground(value: InkToken | undefined): Self;
-  /** A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size. */
+  /**
+   * A ramp step or a size rung; or a face, which keeps the size: `mono`, Bloom's
+   * monospaced face, or `display`, the face of Bloom's big ramp steps, for a
+   * numeric size (`.font('96').font('display')`).
+   */
   font(value: FontName): Self;
   weight(value: WeightName): Self;
   leading(value: LeadingToken): Self;

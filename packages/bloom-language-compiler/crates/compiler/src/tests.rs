@@ -385,10 +385,12 @@ fn a_colour_at_a_named_opacity_checks_both_halves() {
 }
 
 #[test]
-fn tracking_and_the_mono_face_are_checked() {
+fn tracking_and_the_faces_are_checked() {
     let valid =
         compiled("export const x = () => Text('x').font('mono').font('caption-1').tracking('wider');\n");
     assert!(valid.diagnostics.is_empty() && valid.hoisted == 1);
+    let display = compiled("export const x = () => Text('3').font('96').font('display').weight('bold');\n");
+    assert!(display.diagnostics.is_empty() && display.hoisted == 1);
     let tracking = compiled("export const x = () => Text('x').tracking('loose');\n");
     assert_eq!(tracking.diagnostics[0].message, "Unknown tracking token 'loose' for .tracking()");
     let font = compiled("export const x = () => Text('x').font('serif');\n");
