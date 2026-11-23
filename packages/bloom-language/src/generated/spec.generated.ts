@@ -3827,6 +3827,9 @@ export const MODIFIERS = {
     "edge?",
     "space"
   ],
+  "contentGrows": [
+    "value?"
+  ],
   "refreshable": [
     "refresh",
     "refreshTint?"
@@ -11540,6 +11543,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "contentMargins",
+    "contentGrows",
     "spacing",
     "refreshable",
     "onEndReached",
@@ -11830,6 +11834,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "contentMargins",
+    "contentGrows",
     "spacing",
     "axis",
     "scrollbar",
@@ -11953,6 +11958,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "contentMargins",
+    "contentGrows",
     "spacing",
     "axis",
     "scrollbar",
@@ -14995,6 +15001,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "contentMargins",
+    "contentGrows",
     "spacing",
     "itemKey",
     "itemType",

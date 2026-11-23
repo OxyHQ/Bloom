@@ -1947,6 +1947,7 @@ inside a screen, as Bloom's is.
 | Modifier | Bloom `ScreenScrollView` |
 | --- | --- |
 | `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
+| `.contentGrows(on?)` | `contentContainerStyle`'s `flexGrow: 1`: the content container grows to fill the scroll, so content shorter than the viewport (an empty state) centres or sits at its end; `on` a condition (`items.length === 0`) grows it only while it holds. A `ScrollArea`, a `ScrollSurface` and a `VirtualList` take it too |
 | `.refreshable([refreshing, setRefreshing], tint?)`, `.refreshable({ refreshing, onRefresh }, tint?)` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed. Or a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`), passed as they are. `tint`, a colour role (or a role at an opacity), is its `tintColor` and `colors={[…]}`, painted from the theme as an app writes `tintColor={theme.colors.primary} colors={[theme.colors.primary]}`; `{ ios, android }` is each platform's own (`{ ios: 'primary' }` is `tintColor` alone: Android's spinner keeps its look) |
 | `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden', axis?)` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator`, or only the one `axis` (`'vertical'` or `'horizontal'`) names: `showsVerticalScrollIndicator={false}` alone is `.scrollIndicators('hidden', 'vertical')` |
@@ -2635,7 +2636,7 @@ as Bloom passes it, so an app's named `renderPost` is the row as it is
 (`VirtualList(posts, renderPost)`), its element drawn unchanged. Keep it stable
 (module scope, or a `useCallback`), and the list keeps its `renderItem`, so the
 engine re-renders a row only when its item changes, as with JSX; a new arrow per
-render would redraw every memoised row. It takes `.contentMargins(edge?, space)` and
+render would redraw every memoised row. It takes `.contentMargins(edge?, space)`, `.contentGrows(on?)` and
 `.spacing(space)`, its `contentContainerStyle`'s padding and `gap`, as every
 scroll of the language's takes them (`paddingHorizontal: 16, gap: 8` is
 `.contentMargins('horizontal', 'lg').spacing('sm')`; the room for views pinned

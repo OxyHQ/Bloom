@@ -1293,6 +1293,8 @@ export interface ValueModifiers {
   search: readonly [text: AnyBinding, options?: ShareSheetSearchOptions];
   stage: AnyBinding;
   destination: AnyBinding;
+  /** The scroll's content container grows to fill it (`flexGrow: 1`). */
+  contentGrows: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -2869,6 +2871,9 @@ export class Node {
   }
   provider(value: ScreenProvider): Node {
     return this.set('provider', value);
+  }
+  contentGrows(value = true): Node {
+    return this.set('contentGrows', value);
   }
   contentMargins(edgeOrValue: Edge | SpaceToken, value?: SpaceToken): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
@@ -5455,6 +5460,13 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
    * scroll edge scrim under it, so the content fades as it scrolls beneath.
    */
   safeAreaBar(edge: InsetEdge, view: ViewNode): ScrollViewNode;
+  /**
+   * The content container grows to fill the scroll (`flexGrow: 1` on React
+   * Native's `contentContainerStyle`), so content shorter than the viewport
+   * (an empty state) can centre or sit at its bottom; `false` (an
+   * `items.length === 0` written as a boolean) leaves it the content's height.
+   */
+  contentGrows(on?: boolean): ScrollViewNode;
   /** Room around the content, inside the scroll (the content container's padding). */
   contentMargins(value: SpaceToken): ScrollViewNode;
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
@@ -5827,6 +5839,13 @@ interface ScrollAreaModifiers<Self> extends ViewModifiers<Self> {
    * scroll edge scrim under it, so the content fades as it scrolls beneath.
    */
   safeAreaBar(edge: InsetEdge, view: ViewNode): Self;
+  /**
+   * The content container grows to fill the scroll (`flexGrow: 1` on React
+   * Native's `contentContainerStyle`), so content shorter than the viewport
+   * (an empty state) can centre or sit at its bottom; `false` (an
+   * `items.length === 0` written as a boolean) leaves it the content's height.
+   */
+  contentGrows(on?: boolean): Self;
   /** Room around the content, inside the scroll (the content container's padding). */
   contentMargins(value: SpaceToken): Self;
   contentMargins(edge: Edge, value: SpaceToken): Self;

@@ -1615,6 +1615,7 @@
     "contentClearance": ["space"],
     "navigationScope": ["navigationScope"],
     "contentMargins": ["edge?", "space"],
+    "contentGrows": ["value?"],
     "refreshable": ["refresh", "refreshTint?"],
     "onEndReached": ["value", "value?"],
     "scrollIndicators": ["scrollIndicators", "axis?"],
@@ -2823,6 +2824,7 @@
       "constructors": ["ScrollView"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "refreshable",
         "onEndReached",
@@ -3027,6 +3029,7 @@
       "constructors": ["ScrollArea"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "axis",
         "scrollbar",
@@ -3043,6 +3046,7 @@
       "constructors": ["ScrollSurface"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "axis",
         "scrollbar",
@@ -3338,6 +3342,7 @@
       "constructors": ["VirtualList"],
       "modifiers": [
         "contentMargins",
+        "contentGrows",
         "spacing",
         "itemKey",
         "itemType",

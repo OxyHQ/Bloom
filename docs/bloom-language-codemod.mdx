@@ -175,8 +175,17 @@ and each alone, or two colours, the tint of its platform (`tintColor` alone is
 alike).
 A static `contentContainerStyle` of paddings and a gap, each a space token
 (`{ padding: 16, gap: 12 }`), is `.contentMargins(edge, token)` and
-`.spacing(token)`: the language's content container style holds the same keys.
-A `VirtualList`'s is moved alike, and a `Dialog`'s `onDismissed` is
+`.spacing(token)`: the language's content container style holds the same keys;
+its `flexGrow: 1` is `.contentGrows()`, and a style of only that grow chosen by a
+plain condition (`items.length === 0 ? EMPTY_CONTENT : undefined`, a module
+constant written out on the before side) `.contentGrows(condition)`.
+A `VirtualList`'s is moved alike. Its `ListHeaderComponent`,
+`ListFooterComponent` and `ListEmptyComponent` are `.headerContent()`,
+`.footerContent()` and `.emptyState()` of an element (converted), a fragment, a
+`const` holding an element, what a render function returns (`renderEmpty()`:
+a lowercase callee, as a component is never called) embedded, or an element or
+none chosen by a plain condition (`loading ? <Spinner /> : null`); a bare name
+may be a component and stays a reason. A `Dialog`'s `onDismissed` is
 `.onDismissed(handler)`.
 A static `contentContainerClassName` is `.contentView((v) => v…)`, the scroll
 view's content view: Bloom lays the class out in a view of its own inside the

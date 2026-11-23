@@ -166,6 +166,8 @@ export interface ListView extends ViewModifiers<ListView> {
 /** Bloom `VirtualList`: FlashList (or FlatList) on native, the virtualizer on the web. */
 export interface VirtualListView extends ViewModifiers<VirtualListView> {
   /** Room around the rows inside the scroll: `contentContainerStyle`'s padding, on every edge or one (a later margin of an edge replaces the earlier). */
+  /** The content container grows to fill the list (`flexGrow: 1`): an empty state centres in it. */
+  contentGrows(on?: boolean): VirtualListView;
   contentMargins(value: SpaceToken): VirtualListView;
   contentMargins(edge: Edge, value: SpaceToken): VirtualListView;
   /** The gap between the rows: `contentContainerStyle`'s `gap`. */

@@ -54,12 +54,14 @@ const containerStyles = new Map<string, ViewStyle>();
 export function containerStyle(node: Node, spacing: SpaceToken | undefined): ViewStyle | undefined {
   let key = spacing === undefined ? '' : `g:${tokenKey(spacing)}`;
   const margins: Extract<Modifier, { kind: 'contentMargins' }>[] = [];
+  let grows = false;
   for (const modifier of node.modifiers) {
     if (modifier.kind === 'contentMargins') {
       margins.push(modifier);
       key += `|${modifier.key}`;
-    }
+    } else if (modifier.kind === 'contentGrows') grows = modifier.value;
   }
+  if (grows) key += '|grow';
   if (key === '') return undefined;
   let style = containerStyles.get(key);
   if (style === undefined) {
@@ -67,6 +69,7 @@ export function containerStyle(node: Node, spacing: SpaceToken | undefined): Vie
     // A later margin of an edge replaces the earlier one.
     for (const margin of margins) out[EDGE_PADDING[margin.edge]] = resolveSpace(margin.value);
     if (spacing !== undefined) out.gap = resolveSpace(spacing);
+    if (grows) out.flexGrow = 1;
     style = Object.freeze(out) as ViewStyle;
     containerStyles.set(key, style);
   }

@@ -417,6 +417,17 @@ fn a_section_of_choices_holds_tagged_items() {
 }
 
 #[test]
+fn a_scroll_s_content_grows() {
+    let ok = compiled_with(
+        "ScrollView, VirtualList, Text",
+        "export const x = (items, row) => [ScrollView(Text('a')).contentGrows(), VirtualList(items, row).contentGrows(items.length === 0)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let text = compiled("export const x = () => Text('a').contentGrows();\n");
+    assert_eq!(text.diagnostics[0].message, "Text has no modifier .contentGrows()");
+}
+
+#[test]
 fn a_clip_is_turned_on_or_off() {
     let ok = compiled("export const x = () => VStack().clipped().padding('md').clipped(false);\n");
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));

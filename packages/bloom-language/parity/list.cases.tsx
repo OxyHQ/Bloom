@@ -354,6 +354,42 @@ const virtual: ParityCase[] = [
     ),
   },
   {
+    // Mention's notifications: the content grows to the list only while it is empty.
+    name: 'a virtual list whose content grows while it is empty',
+    language: () =>
+      toElement(
+        L.VirtualList([] as string[], nameRow)
+          .itemKey(keyOf)
+          .contentGrows([].length === 0)
+          .emptyState(L.Text('Nothing yet')),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={[] as string[]}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        contentContainerStyle={{ flexGrow: 1 }}
+        ListEmptyComponent={<Text>Nothing yet</Text>}
+      />
+    ),
+  },
+  {
+    name: 'a virtual list whose content keeps its height',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .itemKey(keyOf)
+          .contentGrows(NAMES.length === 0),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+      />
+    ),
+  },
+  {
     name: 'a virtual list with a numeric padding all round',
     language: () => toElement(L.VirtualList(NAMES, nameRow).itemKey(keyOf).contentMargins('6')),
     bloom: () => (

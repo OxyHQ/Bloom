@@ -2785,13 +2785,7 @@ export function transformSource(source: string, options: TransformOptions): File
           ? undefined
           : [{ node: expression, hole: 'items' }];
       case 'element':
-        if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
-        // A fragment, a language view's element, or a `const` holding an element, is drawn as it is.
-        return n.JSXFragment.check(expression) ||
-          isToElement(expression) ||
-          elementReads.has(expression)
-          ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
-          : undefined;
+        return elementPropOf(expression);
       case 'row': {
         const row = rowOf(expression);
         return row === undefined ? undefined : [row];
@@ -2799,6 +2793,38 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'placement':
         return placementOf(value);
     }
+  }
+
+  /**
+   * An element prop as a view: an element converted; a fragment, a language
+   * view's element, a `const` holding an element, or what a render function
+   * returns (`renderEmpty()`, a lowercase callee: a component is never called)
+   * drawn as it is; an element or none chosen by a plain condition (`loading ?
+   * <Spinner /> : null`) as that choice.
+   */
+  function elementPropOf(expression: AnyNode): Value[] | undefined {
+    if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
+    if (
+      n.ConditionalExpression.check(expression) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const branch = (node: AnyNode): Value | undefined =>
+        noStyle(node) ? { $: 'null' } : elementPropOf(node)?.[0];
+      const then = branch(expression.consequent);
+      const otherwise = branch(expression.alternate);
+      if (then === undefined || otherwise === undefined) return undefined;
+      return [{ $: 'choose', test: { node: expression.test, hole: 'condition' }, then, otherwise }];
+    }
+    const rendered =
+      n.CallExpression.check(expression) &&
+      n.Identifier.check(expression.callee) &&
+      /^[a-z]/.test(expression.callee.name);
+    return n.JSXFragment.check(expression) ||
+      isToElement(expression) ||
+      elementReads.has(expression) ||
+      rendered
+      ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
+      : undefined;
   }
 
   /**
@@ -2854,9 +2880,21 @@ export function transformSource(source: string, options: TransformOptions): File
    * container style holds the same keys.
    */
   function contentStyleOf(expression: AnyNode): PropMod[] | undefined {
+    // Content that grows while a condition holds (`empty ? { flexGrow: 1 } : undefined`):
+    // `.contentGrows(condition)`, the style itself nothing but the grow.
+    if (
+      n.ConditionalExpression.check(expression) &&
+      noStyle(expression.alternate) &&
+      (isPlainRead(expression.test) || isBooleanForm(expression.test))
+    ) {
+      const grown = contentStyleOf(expression.consequent);
+      return grown?.length === 1 && grown[0]?.name === 'contentGrows'
+        ? [{ name: 'contentGrows', args: [{ node: expression.test, hole: 'condition' }] }]
+        : undefined;
+    }
     const object = moduleStyleReads.has(expression)
       ? styleSheets.get(expression.object.name)?.get(expression.property.name)
-      : expression;
+      : (styleConstantReads.get(expression) ?? expression);
     if (!n.ObjectExpression.check(object)) return undefined;
     const mods: PropMod[] = [];
     for (const property of object.properties) {
@@ -2866,6 +2904,11 @@ export function transformSource(source: string, options: TransformOptions): File
         !n.Identifier.check(property.key)
       )
         return undefined;
+      // A content container that grows to the scroll: `.contentGrows()`.
+      if (property.key.name === 'flexGrow' && staticNumber(property.value) === 1) {
+        mods.push({ name: 'contentGrows', args: [] });
+        continue;
+      }
       const token = SPACE[String(staticNumber(property.value))];
       const key = property.key.name as string;
       const edge = key === 'gap' ? undefined : CONTENT_EDGE[key];

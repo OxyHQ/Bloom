@@ -230,6 +230,7 @@ import { ScreenScrollView } from '@oxy.so/bloom/screen';
 export const A = () => <ScreenScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }} />;
 export const B = () => <ScreenScrollView contentContainerStyle={styles.content} />;
 export const D = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 1 }} />;
+export const E = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 2 }} />;
 const styles = StyleSheet.create({ content: { padding: 16 } });
 `);
     expect(result.code).toContain(
@@ -237,6 +238,7 @@ const styles = StyleSheet.create({ content: { padding: 16 } });
     );
     expect(result.code).toContain("toElement(ScrollView().contentMargins('lg'))");
     expect(result.fixtures[1]?.before).toContain('contentContainerStyle={{ padding: 16 }}');
+    expect(result.code).toContain('toElement(ScrollView().contentGrows())');
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
       'ScrollView:contentContainerStyle',
     ]);
@@ -466,6 +468,29 @@ const styles = StyleSheet.create({ day: { fontSize: 28, lineHeight: 32, fontWeig
       'fontSize',
       'lineHeight',
     ]);
+  });
+  it('reads a growing content container and an empty state a render function or a condition draws', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+import { ScreenScrollView } from '@oxy.so/bloom/screen';
+import { Text } from '@oxy.so/bloom/typography';
+const EMPTY_CONTENT = { flexGrow: 1 } as const;
+export const A = ({ items, renderEmpty }) => (
+  <VirtualList
+    data={items}
+    renderItem={({ item }) => <Text>{item}</Text>}
+    contentContainerStyle={items.length === 0 ? EMPTY_CONTENT : undefined}
+    ListEmptyComponent={renderEmpty()}
+    ListFooterComponent={loading ? <Text>More</Text> : null}
+  />
+);
+export const B = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}><Text>a</Text></ScreenScrollView>;
+`);
+    const code = flat(result.code);
+    expect(code).toContain('.contentGrows(items.length === 0)');
+    expect(code).toContain('.emptyState(Embed(renderEmpty()))');
+    expect(code).toContain(".footerContent(loading ? LText('More') : null)");
+    expect(code).toContain(".contentGrows().contentMargins('bottom', '2xl')");
+    expect(result.unconverted).toEqual([]);
   });
   it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
     const result = run(`import { View } from 'react-native';
@@ -1008,7 +1033,7 @@ export const E = ({ open }) => <Dialog open={open} label="E" />;
 import { VirtualList } from '@oxy.so/bloom/list';
 export const A = ({ open, onClose, gone }) => <Dialog open={open} onClose={onClose} onDismissed={gone} label="A" />;
 export const B = () => <VirtualList data={posts} renderItem={renderPost} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }} />;
-export const C = () => <VirtualList data={posts} renderItem={renderPost} contentContainerStyle={{ flexGrow: 1 }} />;
+export const C = () => <VirtualList data={posts} renderItem={renderPost} contentContainerStyle={{ flexShrink: 1 }} />;
 `);
     expect(flat(result.code)).toContain(
       "toElement(LDialog().onDismissed(gone).label('A').presented([open, () => onClose()]))",

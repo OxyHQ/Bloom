@@ -79,6 +79,17 @@ const scrollViews: ParityCase[] = inScreen([
     ),
   },
   {
+    // Mention's pokes: `contentContainerStyle={{ flexGrow: 1, paddingBottom: … }}`.
+    name: 'content that grows to the scroll, with a bottom margin',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).contentGrows().contentMargins('bottom', '2xl')),
+    bloom: () => (
+      <ScreenScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: space._2xl }}>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
+  {
     name: 'margins on every edge',
     language: () => toElement(L.ScrollView(L.Text('a')).contentMargins('xl')),
     bloom: () => (
