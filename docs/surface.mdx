@@ -248,7 +248,10 @@ Native ignores it.
 
 `<Surface material="lens">` draws the surface with the native lens on Android 13+ (the engine in
 `@oxy.so/bloom-lens`) and keeps the shared paint on every other platform. It is for one floating
-surface over content, such as a panel. Three measured limits decide where it is allowed:
+surface over content, such as a panel. The engine draws the glass's rim, light and shadow, so nothing
+on the lens draws an edge of its own: a paint inside a lens base (a bar's selection highlight, a
+selected item of a lens group) keeps its fill only, and a lens button has no drop shade. Three measured
+limits decide where it is allowed:
 
 - **Not in a list.** Sixty live lenses inside a scroll measured 21% dropped frames, against 1.9% for the
   shared paint. A surface that repeats (a card in a feed) stays `material="surface"`.
