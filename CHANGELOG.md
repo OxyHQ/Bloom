@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- The Bloom language guides ship in `docs/`: `bloom-language-getting-started.mdx` (install, the compiler in Metro, Jest and Vite, a first screen), `bloom-language-tour.mdx`, `bloom-language-from-jsx.mdx` and `bloom-language-for-agents.mdx`, every `check` example compiled by the language compiler and TypeScript in CI; and the reference generated from the language's spec, `bloom-language-nodes.mdx`, `bloom-language-modifiers.mdx` and `bloom-language-tokens.mdx`. Storybook has a `Language` section led by the tour.
+
 ## 23.0.0
 
 Bloom's UI language ships with this major, as its own packages released from this repository: `@oxy.so/bloom-language` 1.0.0, `@oxy.so/bloom-language-compiler` 1.0.0 (with its prebuilt platform packages and WASI fallback), `@oxy.so/bloom-data` 0.1.0 and `@oxy.so/bloom-lens` 1.0.0. See `docs/bloom-language.mdx`.
