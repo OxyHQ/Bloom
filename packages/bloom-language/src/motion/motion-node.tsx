@@ -1,5 +1,4 @@
 import {
-  createContext,
   createElement,
   Fragment,
   useContext,
@@ -60,14 +59,6 @@ export interface AnimationScope {
   readonly value: unknown;
   readonly gated: boolean;
 }
-
-/**
- * The `.animation()` in scope where a `view()` is placed: its body's nodes
- * play their changes with it, as the nodes of the body it is placed in do.
- * Provided only where the scope differs from the one already provided.
- */
-export const AnimationContext = createContext<AnimationScope | undefined>(undefined);
-AnimationContext.displayName = 'BloomAnimationScope';
 
 const scopes = new Map<string, AnimationScope>();
 
@@ -565,6 +556,56 @@ export function PressMotionNode(props: MotionNodeProps): ReactNode {
   );
 }
 PressMotionNode.displayName = 'BloomPressMotion';
+
+/**
+ * Whether a node's only motion is its press feedback: no animation in scope,
+ * nothing it plays, no colours to ease. Such a node is `PressScaleNode`'s.
+ */
+export function pressesOnly(motion: MotionPlan, scope: AnimationScope | undefined): boolean {
+  return (
+    motion.pressScale &&
+    scope === undefined &&
+    motion.animation === undefined &&
+    !motion.colors &&
+    motion.transition === undefined &&
+    motion.keyframes === undefined &&
+    motion.loop === undefined &&
+    motion.matched === undefined &&
+    motion.bound === undefined &&
+    motion.drag === undefined &&
+    motion.swipe === undefined &&
+    motion.pinch === undefined &&
+    motion.doubleTap === undefined
+  );
+}
+
+const PRESS_REF: RefObject<unknown> = Object.freeze({ current: null });
+const NO_PRESS_PROPS = Object.freeze({});
+
+/**
+ * A node whose only motion is `.pressScale()`: the hooks Bloom's
+ * `PressableScale` holds (reduced motion and the press's one shared value and
+ * mapper) and nothing else, so a pressable chain costs what the component it
+ * stands for does. It draws what `PressMotionNode` draws when nothing plays.
+ */
+export function PressScaleNode({ motion, content }: MotionNodeProps): ReactNode {
+  const reduced = usePrefersReducedMotion();
+  const press = usePressScale(!reduced, motion.transform, SCALE.pressed);
+  const owns = press.onPressIn !== undefined;
+  const style: unknown[] = [];
+  // Native: the press's mapper writes the resting transform before its scale.
+  if (motion.transform.length > 0 && !owns) style.push({ transform: motion.transform });
+  if (motion.anchor !== undefined) style.push(anchorStyle(motion.anchor));
+  style.push(press.style);
+  return content({
+    ref: PRESS_REF,
+    style,
+    props: owns ? { onPressIn: press.onPressIn, onPressOut: press.onPressOut } : NO_PRESS_PROPS,
+    active: true,
+    playId: undefined,
+  });
+}
+PressScaleNode.displayName = 'BloomPressScale';
 
 const NO_SWIPE = () => {};
 

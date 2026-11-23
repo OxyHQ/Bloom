@@ -110,7 +110,9 @@ export function helper(text) {
 ";
     let code = compiled(source).code;
     assert!(
-        code.contains("view((props) => {\n\t\"use memo\";\n\treturn Text(props.name).font(\"body\");\n})"),
+        code.contains(
+            "view((props) => {\n\t\"use memo\";\n\treturn () => Text(props.name).font(\"body\");\n})"
+        ),
         "{code}"
     );
     assert!(code.contains("function PostRow(props) {\n\t\"use memo\";"), "{code}");
@@ -3945,4 +3947,53 @@ fn a_menu_can_be_blooms_dropdown_everywhere() {
         "export const x = () => Menu(Text('More'), Item('Copy')).menuStyle('inline');\n",
     );
     assert_eq!(output.diagnostics[0].message, "Unknown menuStyle token 'inline' for .menuStyle()");
+}
+
+#[test]
+fn a_runtime_chain_into_jsx_becomes_a_root_that_builds_it() {
+    let source = "import { toElement } from '@oxy.so/bloom-language';
+const Row = view((props) => Text('row').onPress(props.onTap));
+export function Controls({ onTap, onSeek, bar, items }) {
+  return <View>
+    {toElement(VStack(Text('x')).ref(bar).onPress(onSeek))}
+    {items.map((item) => toElement(Text(item).onPress(onTap), item))}
+    {toElement(Text('static'))}
+    {toElement(Row({ onTap }))}
+  </View>;
+}
+";
+    let output = compile(&format!("{IMPORTS}{source}"), "controls.tsx");
+    assert!(output.changed && output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    let code = output.code;
+    assert!(
+        code.starts_with("import { LanguageRoot as _BloomRoot } from \"@oxy.so/bloom-language\";"),
+        "{code}"
+    );
+    assert!(code.contains("<_BloomRoot build={() => _bloomStatic1.ref(bar).onPress(onSeek)} />"), "{code}");
+    assert!(code.contains("<_BloomRoot build={() => Text(item).onPress(onTap)} key={item} />"), "{code}");
+    assert!(code.contains("toElement(_bloomStatic"), "a static chain stays hoisted:\n{code}");
+    assert!(code.contains("toElement(Row({ onTap }))"), "a bare view mounts itself:\n{code}");
+    // A module without JSX keeps its calls.
+    let plain =
+        compile(&format!("{IMPORTS}{}", source.replace("<View>", "[").replace("</View>", "]")), "c.ts");
+    assert!(!plain.code.contains("_BloomRoot"), "{}", plain.code);
+}
+
+#[test]
+fn a_view_body_returns_a_function_that_builds_its_runtime_chain() {
+    let source = "export const Bar = view(function Bar({ bar, onSeek, label }) {
+  if (!label) return Text('none');
+  const seek = () => bar.current.measure(onSeek);
+  return VStack(Text(label)).ref(bar).onPress(seek);
+});
+export const Inline = view(({ onSeek }) => Text('x').onPress(onSeek));
+";
+    let code = compiled(source).code;
+    assert!(code.contains("if (!label) return _bloomStatic0;"), "a static return is hoisted:\n{code}");
+    assert!(code.contains("return () => VStack(Text(label)).ref(bar).onPress(seek);"), "{code}");
+    assert!(
+        code.contains("const seek = () => bar.current.measure(onSeek);"),
+        "a nested function keeps its own return:\n{code}"
+    );
+    assert!(code.contains("\"use memo\";\n\treturn () => _bloomStatic1.onPress(onSeek);"), "{code}");
 }

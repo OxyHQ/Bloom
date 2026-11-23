@@ -29,6 +29,8 @@ pub enum Binding {
     Constructor { kind: &'static str, name: &'static str },
     /// The language's `view`.
     View,
+    /// The language's `toElement`: a chain into JSX.
+    ToElement,
     /// The language's `defineTokens`.
     DefineTokens,
     /// The language's `defineEnvironment`.
@@ -387,6 +389,7 @@ impl Module {
 fn language_export(name: &str) -> Binding {
     match name {
         "view" => Binding::View,
+        "toElement" => Binding::ToElement,
         "defineTokens" => Binding::DefineTokens,
         "defineEnvironment" => Binding::DefineEnvironment,
         "defineModifier" => Binding::DefineModifier,

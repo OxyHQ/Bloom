@@ -192,8 +192,7 @@ export function paintsSurface(paint: Paint): boolean {
 
 /** A painted leaf for `paint`: `Conditioned` with live variants, else `Painted`, `OnSurface` when it paints the surface fill. */
 export function paintedLeaf(props: LeafProps & { paint: Paint }): [unknown, LeafProps] {
-  const leaf = props.paint.variants !== undefined ? Conditioned : Painted;
-  return surfaced(leaf, props, paintsSurface(props.paint));
+  return surfaced(leafOf(props.paint), props, paintsSurface(props.paint));
 }
 
 /** A prop painted from a role (an icon's `fill`), at its opacity: what an app hands Bloom. */
@@ -291,7 +290,21 @@ export function themeColor(colors: ThemeColors, value: RoleRef | string): string
   return value.opacity === undefined ? rgb : withAlpha(rgb, value.opacity);
 }
 
-interface PaintedProps {
+/**
+ * The two palettes a leaf paints from, in one theme read on native: the
+ * paint (what a final style takes) and the theme (its RGB colours for colour
+ * math, and its scheme). Native has no prepaint, so its paint is the theme's
+ * own colours (Bloom's `use-paint-colors.native.ts`); the web's paint may be
+ * the prepainted document's CSS variables, a read of its own.
+ */
+const usePalettes: () => { paint: ThemeColors; theme: ReturnType<typeof useTheme> } = IS_WEB
+  ? () => ({ paint: useThemePaint(), theme: useTheme() })
+  : () => {
+      const theme = useTheme();
+      return { paint: theme.colors, theme };
+    };
+
+export interface PaintedProps {
   host: ComponentType<Record<string, unknown>> | string;
   paint: Paint;
   /** The surface fill, handed in by `OnSurface` when the paint names it. */
@@ -307,8 +320,9 @@ interface PaintedProps {
  * through context, past every memoized view in between).
  */
 export function Painted({ host, paint, surface, ...props }: PaintedProps): ReactElement {
-  const painted = paintProps(withSurface(useThemePaint(), surface), paint);
-  const lists = listProps(withSurface(useTheme().colors, surface), paint);
+  const { paint: colors, theme } = usePalettes();
+  const painted = paintProps(withSurface(colors, surface), paint);
+  const lists = listProps(withSurface(theme.colors, surface), paint);
   // A moving host's motion style (`Outer`) comes after the painted one.
   if (props.style !== undefined && painted.style !== undefined) {
     return createElement(host, {
@@ -401,32 +415,68 @@ function conditionedProps(
   return props;
 }
 
+/** The props a varied paint draws under `tier`, the scheme and the state of the view it belongs to. */
+function picked(
+  { host, paint, surface, ...props }: PaintedProps,
+  tier: Tier,
+  state: Interaction,
+): ReactElement {
+  const { paint: palette, theme } = usePalettes();
+  const colors = withSurface(palette, surface);
+  let holding = 0;
+  (paint.variants ?? []).forEach((variant, index) => {
+    if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
+  });
+  const chosen = conditionedProps(colors, paint, holding);
+  const lists = listProps(withSurface(theme.colors, surface), paint);
+  // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
+  if (props.style !== undefined && chosen.style !== undefined) {
+    return createElement(host, {
+      ...props,
+      ...chosen,
+      ...lists,
+      style: [chosen.style, props.style],
+    });
+  }
+  return createElement(host, { ...props, ...chosen, ...lists });
+}
+
 /**
  * A `Painted` leaf whose style has live variants (native): it reads what they
  * hold on (the window's breakpoint tier, the scheme, the state of the view it
  * belongs to) and draws the props built once for that set. A resize re-renders
  * it only across a breakpoint, a press only the leaves of the pressed view.
  */
-export function Conditioned({ host, paint, surface, ...props }: PaintedProps): ReactElement {
-  const colors = withSurface(useThemePaint(), surface);
-  const theme = useTheme();
-  const tier = useWindowBreakpoint();
-  const state = useContext(InteractionContext);
-  let holding = 0;
-  (paint.variants ?? []).forEach((variant, index) => {
-    if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
-  });
-  const picked = conditionedProps(colors, paint, holding);
-  const lists = listProps(withSurface(theme.colors, surface), paint);
-  // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
-  if (props.style !== undefined && picked.style !== undefined) {
-    return createElement(host, {
-      ...props,
-      ...picked,
-      ...lists,
-      style: [picked.style, props.style],
-    });
-  }
-  return createElement(host, { ...props, ...picked, ...lists });
+export function Conditioned(props: PaintedProps): ReactElement {
+  return picked(props, useWindowBreakpoint(), useContext(InteractionContext));
 }
 Conditioned.displayName = 'BloomConditioned';
+
+/**
+ * A `Conditioned` leaf whose variants answer no breakpoint (a pressed or a
+ * dark style): it subscribes to no window size, so it holds no hook.
+ */
+export function StateConditioned(props: PaintedProps): ReactElement {
+  return picked(props, 'base', useContext(InteractionContext));
+}
+StateConditioned.displayName = 'BloomConditioned';
+
+const tiered = new WeakMap<Paint, boolean>();
+
+/** Whether a paint varies with the window: a variant with a breakpoint term. */
+function answersTier(paint: Paint): boolean {
+  let answers = tiered.get(paint);
+  if (answers === undefined) {
+    answers = (paint.variants ?? []).some((variant) =>
+      termsOf(variant.condition).some((term) => (TIERS as readonly string[]).includes(term)),
+    );
+    tiered.set(paint, answers);
+  }
+  return answers;
+}
+
+/** The leaf that draws `paint`: a `Painted` one, or a `Conditioned` one when it has live variants. */
+export function leafOf(paint: Paint): (props: PaintedProps) => ReactElement {
+  if (paint.variants === undefined) return Painted;
+  return answersTier(paint) ? Conditioned : StateConditioned;
+}
