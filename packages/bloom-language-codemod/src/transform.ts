@@ -59,11 +59,26 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
     liveRegion: readonly string[];
   };
   contentView: { modifiers: readonly string[] };
+  nodes: Record<
+    string,
+    { constructors?: readonly string[]; modifiers?: readonly string[]; universal?: false } | string
+  >;
+  universal: readonly string[];
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
 /** What a scroll view's content view takes: the layout of one view. */
 const CONTENT_VIEW = new Set(spec.contentView.modifiers);
+/** The modifiers each constructor's node takes: its own, and the universal ones unless it opts out. */
+const NODE_MODIFIERS = new Map<string, ReadonlySet<string>>();
+for (const node of Object.values(spec.nodes)) {
+  if (typeof node === 'string') continue;
+  const taken = new Set([
+    ...(node.modifiers ?? []),
+    ...(node.universal === false ? [] : spec.universal),
+  ]);
+  for (const constructor of node.constructors ?? []) NODE_MODIFIERS.set(constructor, taken);
+}
 /** React Native's `accessibilityLiveRegion` values, each the language's `.liveRegion()` of its name. */
 const LIVE_REGIONS = new Set(spec.enums.liveRegion);
 /** An opacity (`0.7`) as the opacity token of its value (`'70'`): a `TouchableOpacity`'s `activeOpacity`. */
@@ -831,6 +846,40 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     for (const [part, literal] of literals) styleLiterals.set(part, literal);
     return { ok: true, classes, mods };
+  }
+
+  /**
+   * A Bloom component's static `style` as its node's box, for a component
+   * that draws its `style` on its outer view, where the language draws a
+   * node's box: each declaration through the className table as a View's
+   * (`padding: 16` is `.padding('lg')`, `gap: 12` `.spacing('md')`,
+   * `flexDirection: 'row'` `.axis('horizontal')`), every modifier one the node
+   * takes. A colour, a variant or a value no token writes is a reason.
+   */
+  function componentStyle(
+    expression: AnyNode,
+    node: string,
+  ): { mods: PropMod[] } | { reasons: Reason[] } {
+    const reason = (subject: string, why: string) => ({
+      reasons: [{ subject, code: `${node}:style`, why }],
+    });
+    const style = staticStyle(expression, () => undefined);
+    if (!style.ok) return reason(style.subject, style.why);
+    const resolution = resolveClassName(style.classes.join(' '), 'view', options.table, {
+      overridden: options.overridden,
+    });
+    if (!resolution.ok) return { reasons: [...resolution.reasons] };
+    if (resolution.value.variants.length) return reason('style', 'a style with a variant');
+    const mods: Mod[] = [
+      ...(resolution.value.axis === 'row' ? [{ name: 'axis', args: ['horizontal'] }] : []),
+      ...resolution.value.mods,
+      ...style.mods.map(({ mod }) => mod),
+    ];
+    const taken = NODE_MODIFIERS.get(node);
+    const outside = mods.find((mod) => !taken?.has(mod.name));
+    if (outside)
+      return reason('style', `a style that is \`.${outside.name}()\`, which ${node} does not take`);
+    return { mods: mods.map((mod) => ({ name: mod.name, args: [...mod.args] as Value[] })) };
   }
 
   /** Each element's nearest enclosing element in the file. */
@@ -1853,6 +1902,8 @@ export function transformSource(source: string, options: TransformOptions): File
       for (const option of Object.keys(prop.options ?? {}))
         if (given.has(option)) consumed.add(option);
     }
+    /** Its `style`, the node's box: chained after its own modifiers. */
+    const styled: PropMod[] = [];
     for (const [name, value] of given) {
       if (consumed.has(name)) continue;
       const differs = rule.differs?.[name];
@@ -1867,6 +1918,13 @@ export function transformSource(source: string, options: TransformOptions): File
         if (!view) unmapped(name);
         else if ('reasons' in view) reasons.push(...view.reasons);
         else props.push({ name: prop.modifier, args: [view] });
+        continue;
+      }
+      if (prop?.form === 'style') {
+        const box = value ? componentStyle(attributeExpression(value), rule.node) : undefined;
+        if (!box) unmapped(name);
+        else if ('reasons' in box) reasons.push(...box.reasons);
+        else styled.push(...box.mods);
         continue;
       }
       if (prop?.form === 'contentStyle') {
@@ -1964,6 +2022,7 @@ export function transformSource(source: string, options: TransformOptions): File
     )
       unmapped('children');
     for (const name of rule.always ?? []) props.push({ name, args: [] });
+    props.push(...styled);
     // An optional argument left out at the end (children included) is no argument.
     while (args.length > 0 && isAbsent(args[args.length - 1] as Value)) args.pop();
     if (reasons.length) return { reasons };
@@ -2457,6 +2516,8 @@ export function transformSource(source: string, options: TransformOptions): File
     const fail = (subject: string, code: string, why: string) =>
       reasons.push({ subject, code, why });
     const props: PropMod[] = [];
+    /** Its `style`, the button's box: chained after its own modifiers. */
+    const styled: PropMod[] = [];
     let key: Carried | null = null;
     let leading: string | null = null;
     let trailing: string | null = null;
@@ -2556,8 +2617,13 @@ export function transformSource(source: string, options: TransformOptions): File
           name: 'testID',
           args: [staticString(value) ?? { node: expression, hole: 'string' }],
         });
-      else fail(name, `button:${name}`, `Button's \`${name}\` (or its form here) has no mapping`);
+      else if (name === 'style' && expression) {
+        const box = componentStyle(expression, 'Button');
+        if ('reasons' in box) reasons.push(...box.reasons);
+        else styled.push(...box.mods);
+      } else fail(name, `button:${name}`, `Button's \`${name}\` (or its form here) has no mapping`);
     }
+    props.push(...styled);
     const shape = flags.has('iconOnly')
       ? flags.has('wide')
         ? 'pill'

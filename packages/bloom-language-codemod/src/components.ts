@@ -34,6 +34,10 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  *   parameter as written; an element its view, any other expression embedded), or a named function, carried
  *   as it is (`VirtualList(posts, renderPost)`), its identity kept;
  * - `empty`: an empty object literal (`screen={{}}`), as the bare modifier;
+ * - `style`: a static style (an object literal, a module StyleSheet's style, or
+ *   a list of them) as the node's box, each declaration through the className
+ *   table as a View's, for a component that draws `style` on its outer view
+ *   (the modifier name is unused);
  * - `className`: a static className laid out in a view of its own, as the
  *   modifiers of that view's build function (`.contentView((v) => v.padding('lg'))`),
  *   each class through the className table;
@@ -62,6 +66,7 @@ export type Form =
   | 'placement'
   | 'empty'
   | 'className'
+  | 'style'
   | 'content';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
@@ -458,6 +463,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       clipContent: p('clipped', 'mark'),
       disabled: p('disabled', 'flag'),
       onPress: p('onPress', 'handler'),
+      style: p('box', 'style'),
       ...NAMED,
     },
   },
@@ -753,6 +759,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       pressOpenTab: p('pressOpenTab', 'token', tokens('pressOpenTab')),
       label: p('label', 'string'),
       testID: p('testID', 'string'),
+      style: p('box', 'style'),
     },
   },
   '@oxy.so/bloom/tabs#TabsTrigger': {

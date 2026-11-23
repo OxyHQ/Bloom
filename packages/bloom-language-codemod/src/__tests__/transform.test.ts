@@ -383,6 +383,24 @@ export function Other() { return <Scope><Screen /></Scope>; }
       'screen:wrapped',
     ]);
   });
+  it('draws a Button’s, a Card’s and a Tabs’ static style as the node’s box', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { Card } from '@oxy.so/bloom/card';
+import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
+import { StyleSheet } from 'react-native';
+export const A = () => <Button style={{ alignSelf: 'flex-start', marginTop: 8 }}>Follow</Button>;
+export const B = () => <Card style={{ padding: 16, gap: 12, flexDirection: 'row' }}><Hole /></Card>;
+export const C = () => <Tabs value={t} onValueChange={setT} style={styles.strip}><TabsTrigger value="a" label="A" /></Tabs>;
+export const D = () => <Button style={{ gap: 4 }}>Gap</Button>;
+export const E = () => <Card style={{ padding: 17 }} />;
+const styles = StyleSheet.create({ strip: { height: 44 } });
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".alignSelf('start').margin('top', 'sm')");
+    expect(code).toContain(".axis('horizontal').padding('all', 'lg').spacing('md')");
+    expect(code).toContain(".frame({ height: '44' })");
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['Button:style', 'unknown']);
+  });
   it('takes a language view placed with toElement() as a Screen’s header', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';
 import { Header, toElement } from '@oxy.so/bloom-language';

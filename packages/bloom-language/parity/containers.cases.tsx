@@ -99,6 +99,20 @@ const cards: ParityCase[] = [
     ),
   },
   {
+    // Mention's application cards: a padded card whose content is a column with a gap.
+    name: 'Card padded, its content spaced',
+    language: () => toElement(C.Card(L.Badge(1), L.Badge(2)).padding('lg').spacing('md')),
+    bloom: () => (
+      // An app's `padding: 16` is these four edges, as React Native draws it.
+      <Card
+        style={{ paddingTop: 16, paddingBottom: 16, paddingStart: 16, paddingEnd: 16, gap: 12 }}
+      >
+        <Badge content={1} />
+        <Badge content={2} />
+      </Card>
+    ),
+  },
+  {
     name: 'Card with its parts',
     language: () =>
       toElement(
@@ -674,6 +688,22 @@ const tabs: ParityCase[] = [
       ),
     bloom: () => (
       <Tabs label="Profile sections" value="posts" onValueChange={setTab}>
+        <TabsTrigger value="posts" label="Posts" />
+        <TabsTrigger value="replies" label="Replies" />
+      </Tabs>
+    ),
+  },
+  {
+    // An app's `style` on the strip is its box: Bloom's Tabs takes it on the strip's outer view.
+    name: 'Tabs with a style: the strip height',
+    language: () =>
+      toElement(
+        C.Tabs(['posts', setTab], C.TabItem('posts', 'Posts'), C.TabItem('replies', 'Replies'))
+          .style('underline')
+          .frame({ height: '44' }),
+      ),
+    bloom: () => (
+      <Tabs value="posts" onValueChange={setTab} variant="underline" style={{ height: 44 }}>
         <TabsTrigger value="posts" label="Posts" />
         <TabsTrigger value="replies" label="Replies" />
       </Tabs>

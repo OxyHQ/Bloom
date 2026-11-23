@@ -353,7 +353,29 @@ const leftovers: ParityCase[] = [
   },
 ];
 
+/** A button's box as an app's `style` writes it: Bloom's `style` is the button's outer box. */
+const boxed: ParityCase[] = [
+  {
+    name: 'a style placing the button: self alignment and a margin',
+    language: () =>
+      toElement(L.Button(L.Text('Follow')).alignSelf('start').margin('top', 'sm').onPress(onPress)),
+    bloom: () => (
+      <Button style={{ alignSelf: 'flex-start', marginTop: 8 }} onPress={onPress}>
+        Follow
+      </Button>
+    ),
+  },
+  {
+    name: 'a style sizing the button: full width and a height',
+    language: () =>
+      toElement(L.Button(L.Text('Sign in')).frame({ width: 'full', height: '48' }).corner('full')),
+    // `full` is 9999, which rounds a button as an app's 999 does.
+    bloom: () => <Button style={{ width: '100%', height: 48, borderRadius: 9999 }}>Sign in</Button>,
+  },
+];
+
 export const BUTTON_CASES: ParityCase[] = [
+  ...boxed,
   ...matrix,
   ...sizes,
   ...content,
