@@ -91,32 +91,14 @@ jobs:
       - name: Verify packed chart card consumer entries
         run: node scripts/verify-chart-card-entries.mjs
       - run: bun run typescript
-      # The language compiler is Rust (Oxc needs 1.97+). Pinned, so a new
-      # stable never changes what CI builds; rustup ships with the runner.
-      - name: Rust toolchain for the language compiler
-        run: |
-          rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
-          rustup default 1.99.0
-      # Cargo has no stable minimum-release-age, so the lockfile is audited
-      # against the same 7-day quarantine bunfig.toml applies to npm.
-      - name: Language compiler crates are past the quarantine
-        run: cd packages/bloom-language-compiler && bun run audit:crates
-      - name: Language compiler Rust format and lint
-        run: cd packages/bloom-language-compiler && bun run lint:rust
       # The separately published workspace packages build, typecheck and test
       # in dependency order (the root jest config ignores packages/). This
-      # gates their release; the release itself runs no tests. The compiler's
-      # test runs its Rust tests, its adapters and the parity suite (every
-      # fixture rendered interpreted and compiled, native and web); the
-      # language's checks that the spec's generated outputs are current.
-      # The compiler's tests load the addon built from this checkout
-      # (`build:addon`); it has no `build`, so the release builds no Rust and
-      # ships the addons of its platform packages instead.
+      # gates their release; the release itself runs no tests. The language
+      # packages have their own job (`language`).
       - name: Workspace package builds, typecheck and test
         run: |
-          (cd packages/bloom-language-compiler && bun run build:addon)
-          for package in packages/bloom-text packages/bloom-editor packages/bloom-language packages/bloom-language-compiler packages/bloom-data; do
-            (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
+          for package in packages/bloom-text packages/bloom-editor; do
+            (cd "$package" && bun run build && bun run typescript && bun run test)
           done
       # The built `@oxy.so/bloom/color-engine` subpath, as a server loads it:
       # Bun, Node ESM, Node CommonJS and a node16 typecheck, pulling no React.
@@ -142,6 +124,61 @@ jobs:
           node --test scripts/test-avatar-vector-pack.mjs \
             scripts/test-avatar-vector-compaction.mjs scripts/test-avatar-vector-package.mjs
           node scripts/verify-avatar-bundle-size.mjs
+      - name: Generated sources are committed
+        run: |
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
+
+  # The language packages: the language (with its parity suite, every family
+  # rendered as the language and as hand-written Bloom, native and web), the
+  # compiler (Rust, its adapters and its own parity suite) and Bloom data. Their
+  # suites outgrow the build job's budget, so they run beside it.
+  language:
+    name: Language packages
+    needs: provenance
+    if: ${{ !cancelled() && needs.provenance.outputs.verified != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile --ignore-scripts
+      # The language builds and typechecks against Bloom's built package.
+      - run: bun run build
+      # The language compiler is Rust (Oxc needs 1.97+). Pinned, so a new
+      # stable never changes what CI builds; rustup ships with the runner.
+      - name: Rust toolchain for the language compiler
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.99.0
+      # Cargo has no stable minimum-release-age, so the lockfile is audited
+      # against the same 7-day quarantine bunfig.toml applies to npm.
+      - name: Language compiler crates are past the quarantine
+        run: cd packages/bloom-language-compiler && bun run audit:crates
+      - name: Language compiler Rust format and lint
+        run: cd packages/bloom-language-compiler && bun run lint:rust
+      # The language packages build, typecheck and test in dependency order.
+      # This gates their release; the release itself runs no tests. The compiler's
+      # test runs its Rust tests, its adapters and the parity suite (every
+      # fixture rendered interpreted and compiled, native and web); the
+      # language's checks that the spec's generated outputs are current.
+      # The compiler's tests load the addon built from this checkout
+      # (`build:addon`); it has no `build`, so the release builds no Rust and
+      # ships the addons of its platform packages instead.
+      - name: Language package builds, typecheck and test
+        run: |
+          (cd packages/bloom-language-compiler && bun run build:addon)
+          for package in packages/bloom-language packages/bloom-language-compiler packages/bloom-data; do
+            (cd "$package" && bun run --if-present build && bun run typescript && bun run test)
+          done
       - name: Generated sources are committed
         run: |
           git diff --exit-code
@@ -351,7 +388,7 @@ jobs:
   ci-complete:
     name: CI complete
     if: always()
-    needs: [provenance, build, tests, android]
+    needs: [provenance, build, language, tests, android]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -375,7 +412,7 @@ jobs:
             verified=
           fi
 
-          for job in build tests android; do
+          for job in build language tests android; do
             result="$(jq -r --arg job "$job" '.[$job].result' <<<"$RESULTS")"
             if [ "$verified" = true ]; then
               [ "$result" = skipped ] || failures+=("$job ran on a queue-verified push: $result")
