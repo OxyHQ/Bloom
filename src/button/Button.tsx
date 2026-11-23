@@ -497,7 +497,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           : geometry.iconSize;
     const lensAvailable = useLensAvailable();
     const lens = material === 'lens' && lensAvailable;
-    // On the lens (its own or an enclosing base's) the engine draws the glass's shadow and rim.
+    // On the lens (its own or an enclosing base's) the engine draws the shadow and rim.
     const onLens = useInLensBase() || lens;
     const palette = useMemo(
       () =>

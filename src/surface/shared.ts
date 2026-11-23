@@ -91,8 +91,8 @@ const FROSTED_OPTICS = new Map<string, SurfaceOptics>();
 
 /**
  * The web material's optics for a scheme. `frost` (CSS px) blurs the backdrop
- * by that much instead of `SURFACE_BLUR_PX`: a glass that frosts less than the
- * floating material (Liquid Glass's regular and clear).
+ * by that much instead of `SURFACE_BLUR_PX`: a lighter frost than the floating
+ * material's (the language's regular and clear materials).
  */
 export function resolveSurfaceOptics(isDark: boolean, frost?: number): SurfaceOptics {
   const optics = isDark ? DARK_OPTICS : LIGHT_OPTICS;
