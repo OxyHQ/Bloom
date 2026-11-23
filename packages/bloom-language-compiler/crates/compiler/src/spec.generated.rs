@@ -301,6 +301,9 @@ pub const VARIANT_MODIFIERS: &[&str] = &["padding", "frame", "background", "bord
 /// The loops (`.repeatForever(loop)`) whose frames change opacity: each one fades the view.
 pub const FADING_LOOPS: &[&str] = &["pulse"];
 
+/// The parameters that take points (a number the view computes as it renders) besides their tokens.
+pub const POINT_PARAMS: &[&str] = &["frame", "edges", "zIndex"];
+
 /// What a scroll view's content view (`.contentView(v => v…)`) sets: the layout of one view.
 pub const CONTENT_VIEW_MODIFIERS: &[&str] = &["padding", "spacing", "horizontalSpacing", "verticalSpacing", "align", "justify", "wrap", "axis", "frame", "flex", "grow", "shrink", "basis", "alignSelf"];
 

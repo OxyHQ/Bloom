@@ -192,8 +192,9 @@ fn placement_keys_and_tokens_are_checked() {
     assert_eq!(output.diagnostics[0].message, ".position() has no 'rihgt'");
     let output = compiled("export const x = () => HStack().offset({ x: '2xs', y: 'big' });\n");
     assert_eq!(output.diagnostics[0].message, "Unknown padding token 'big' for .offset()");
+    // A level written out is a token; points are a stacking order computed at render.
     let output = compiled("export const x = () => HStack().zIndex(10);\n");
-    assert!(output.diagnostics.is_empty(), "a number is the runtime's to reject");
+    assert_eq!(output.diagnostics[0].message, ".zIndex() takes zIndex tokens, not the number 10");
     let output = compiled("export const x = () => HStack().zIndex('top');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown zIndex token 'top' for .zIndex()");
     let output = compiled("export const x = () => HStack().justify('middle');\n");
@@ -254,6 +255,35 @@ fn the_small_modifiers_and_numeric_tokens_are_checked() {
     assert_eq!(output.diagnostics[0].message, "Unknown wordBreak token 'anywhere' for .wordBreak()");
     let output = compiled("export const x = () => Text('a').listMarker('disc');\n");
     assert_eq!(output.diagnostics[0].message, "Text has no modifier .listMarker()");
+}
+
+#[test]
+fn geometry_takes_points_computed_at_render_and_never_a_number_written_out() {
+    // A frame's lengths, a pinned view's edges and its stacking order take points the view computes.
+    let ok = compiled(
+        "export function Cell({ size, top, order }) {\n  return VStack(Text('a')).frame({ width: size, height: size, maxWidth: 'full' }).position({ top: top + 8, right: 'lg' }).zIndex(order);\n}\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    // A number written out is a token.
+    let output = compiled("export const x = () => VStack().frame({ width: 44 });\n");
+    assert_eq!(output.diagnostics[0].message, ".frame() takes length tokens, not the number 44");
+    let output = compiled("export const x = () => VStack().position({ top: -8 });\n");
+    assert_eq!(output.diagnostics[0].message, ".position() takes padding tokens, not the number -8");
+    let output = compiled("export const x = () => VStack().zIndex(2);\n");
+    assert_eq!(output.diagnostics[0].message, ".zIndex() takes zIndex tokens, not the number 2");
+    // Spacing, type and colour stay tokens: a number is never theirs.
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some("a number written out is a token ('2'); points are a value the view computes as it renders")
+    );
+    let output = compiled("export const x = () => VStack().padding(12);\n");
+    assert_eq!(output.diagnostics[0].message, ".padding() takes padding tokens, not the number 12");
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some("write the token ('12'); .padding() takes tokens only")
+    );
+    let output = compiled("export const x = () => Text('a').font(15);\n");
+    assert_eq!(output.diagnostics[0].message, ".font() takes font tokens, not the number 15");
 }
 
 #[test]

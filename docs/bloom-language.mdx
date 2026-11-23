@@ -8,7 +8,9 @@ description: Views as functions and modifiers chained in order, every value a Bl
 Bloom's UI language is a way to write Bloom interfaces in TypeScript the way
 SwiftUI writes them in Swift: a component is a function, and its look is a chain
 of modifiers applied in order. Every modifier value is a Bloom token, never a
-pixel or a colour. The package is `packages/bloom-language`
+pixel or a colour; only geometry the view computes as it renders (a size, a
+pinned edge, a stacking order) is a number of points (see
+[Styles computed at runtime](#styles-computed-at-runtime)). The package is `packages/bloom-language`
 (`@oxy.so/bloom-language`, a working name). It is not published.
 
 The language renders through React Native and react-native-web, using Bloom's
@@ -201,6 +203,98 @@ Text('Beta').modifier(tag, 'primary/10')
   like the chain it stands for.
 - **Where shared ones go.** A recipe several apps repeat belongs in Bloom
   (Bloom-first), not re-spelled in each app.
+- **Handed in.** `.modifier(undefined)` applies none, so a view whose part a
+  caller may style takes a recipe as a prop (`look?: ViewModifier`) and chains
+  `.modifier(look)` as it is (see [Styles computed at runtime](#styles-computed-at-runtime)).
+
+## Styles computed at runtime
+
+Every value is a token, but some of what an app's JSX styles is only known as
+it renders: a cell's width from its container, a card's size from its props,
+an inset, a role chosen by state, a style a caller hands in. Each kind has one
+form in the language, chosen as SwiftUI chooses it, with the rules that hold
+everywhere else: no rendered value changes, styles stay static where they can,
+and no layout goes to state.
+
+Measured on Mention (the codemod at this commit, `style` kept 222 elements):
+
+| Kind | Elements | The language |
+| --- | ---: | --- |
+| A static style the codemod did not read: a module constant or `StyleSheet` style held in a list, a choice between two of them (`compact ? styles.a : styles.b`), `StyleSheet.absoluteFill`, `tokens.space.sm` | 44 | Tokens, as any static style: the codemod's to read (below) |
+| A static value off Tailwind's scale: an `rgba()` scrim, a radius of half a fixed side, an app constant (`HPAD`), a font size and its line | 36 | Tokens: an app colour, `'full'`, a numeric token; the codemod's to read |
+| A theme colour read at render: `useColorTokens()`, `theme.colors.*` in a list or chosen by state, `withAlpha(…)`, a hook that builds the app's ink styles | 73 | A role, chosen at render where the state chooses it: `.background(active ? 'primary' : 'card')`, `'primary/10'` for `withAlpha(primary, 0.1)` |
+| A style a caller hands in (`style`, `style?.handle`, `rowStyle`, a spread of props) | 26 | Modifiers, not a style object: the caller chains them on the view it places; a part inside takes a `ViewModifier` |
+| Geometry computed at render: a size from props or a measurement, a pinned edge, a stacking order, a playback fraction | 20 | Points: `.frame({ width: itemSize })`, `.position({ left })`, `.zIndex(count - index)`; a fraction that moves with playback is a `MotionValue` or Bloom's progress |
+| Safe-area and bar insets | 11 | `.safeAreaPadding()` for a padding; points for a pinned edge (`.position({ top: insets.top + 8 })`) |
+| Spacing computed at render (an indent times a depth, an offset of the header's rows) | 7 | Stays JSX: spacing is a token, chosen at render (`compact ? 'none' : 'md'`), never arithmetic |
+| A colour from data (an artwork's accent, a severity's hex) | 4 | A closed set is an app colour table indexed at render (`.background(severity.color[level])`); an open one (an artwork's accent) stays JSX |
+| A style of the press state (`({ pressed }) => …`) | 1 | `.when('pressed', (v) => …)` |
+
+No element among them animates a style or transforms by a value computed at
+render: Mention's moving views are the engine's already (`MotionValue`, see
+[Animations](#animations)).
+
+**Points: geometry takes numbers computed at render.** SwiftUI's `.frame`,
+`.position` and `.zIndex` take any `CGFloat` and `Double`; so do the
+language's, for geometry alone: a frame's six lengths, a pinned view's edges
+and its stacking order take a number of points (`Points`) besides their tokens.
+
+```ts
+const Cell = view(function Cell({ item, size }: { item: Media; size: number }) {
+  return Image(item.thumb).frame({ width: size, height: size }).clipped();
+});
+CheckoutBadge().position({ top: insets.top + 8, right: 'lg' })
+Avatar(actor.avatar).zIndex(shown.length - index)
+```
+
+- **Only what the view computes.** A number written out is a token: `.frame({
+  width: 44 })` is a compile error (`'44'`), as a `MotionValue` written out is,
+  so a static frame stays one static, hoisted chain. Points are for a value
+  the view works out as it renders: a size from a prop, an inset, a column's
+  width from its container.
+- **Spacing, type and colour stay tokens.** A padding, a margin, a gap, a font
+  and a colour take no number: they are the design's scale, and a value
+  chosen at render is a token chosen at render.
+- **How it renders.** Points are a value like an app token's: the style is
+  cached by the number (`#117.5` in its key), so one view drawn at the same
+  size again costs a lookup, and on the web a number with no class is inline
+  beside the classes. A value that moves every frame (a drag, a scrubber, a
+  playback fraction) is a `MotionValue`, which no style caches.
+- **Not a layout read back.** A width the app measured with `onLayout` and kept
+  in state is still that: the language draws it, but a `Grid`, a fraction of
+  the parent (`'1/3'`) or `.aspectRatio()` says the layout without a second
+  pass, and is the form for new screens.
+- **The spec.** `points.params` names them (`frame`, `edges`, `zIndex`); the
+  compiler holds every other parameter to tokens and rejects a number written
+  out anywhere, with the token to write.
+
+**A style a caller hands in is modifiers.** In SwiftUI a caller modifies the
+view it places, and a view never takes a style object. So it is here:
+
+- **On the view itself:** the caller chains it on the node it places,
+  `PodcastCard({ podcast }).margin('bottom', 'md')`, and a `view()` node takes
+  the universal modifiers around its body (see [`view()`](#view)). A component
+  that took `style` only to place its root drops the prop.
+- **On a part inside:** the view takes a recipe, `look?: ViewModifier`, and
+  chains `.modifier(look)` on that part (`undefined` applies none). The caller
+  names the recipe once at module scope, `const handleLook =
+  defineModifier((v) => v.padding('horizontal', 'xs'))`, so it is the same
+  value on every render and the view's props stay equal.
+- **Never a raw style.** A view that passes a style object through to a host
+  stays JSX: a style object holds pixels and colours no token names, which
+  the language's chains would carry unchecked.
+
+**A colour chosen at render is a role chosen at render.** A theme read
+(`useTheme().colors.primary`, `useColorTokens().border`) is that role, and a
+condition between two is the condition between two roles, the modifier the
+same: `.border(isActive ? 'primary' : 'border', 'thin')`. Bloom's
+`withAlpha(colors.primary, 0.1)` is `'primary/10'`. An app's own palette chosen
+by a key is an app colour table (`defineTokens({ color: { low: '#64748b',
+high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`).
+
+**Insets.** `.safeAreaPadding()` pads by the device's insets (see
+[Layout](#layout)); a view pinned below the inset is pinned by points,
+`.position({ top: insets.top + 8 })`.
 
 ## Rendering
 
@@ -375,7 +469,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `horizontalSpacing(v)`, `verticalSpacing(v)` | space: the gap along one axis only, over `spacing`'s: between children side by side (`columnGap`, `gap-x-*`) or one above another and between wrapped lines (`rowGap`, `gap-y-*`) |
 | `childSpacing(axis, v)` | Tailwind's `space-x-*`/`space-y-*` as NativeWind draws them: on the web Tailwind's own rule, a margin after each child but the last along the axis (inline end, or block end); on Android and iOS nothing, as NativeWind writes no rule for a child selector. Not a gap; new screens use `spacing()` |
 | `justify(j)`, `wrap()`, `axis(a)` | a stack's distribution: `start` `center` `end` `between` `around` `evenly`; lines that wrap; `horizontal` or `vertical` over its constructor's (see [Layout](#layout)) |
-| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5` |
+| `frame({ width, height, min…, max… })` | space, or a length of the parent: `full`, `1/2` `1/3` `2/3` `1/4` `3/4` `1/5` `2/5` `3/5`, or points computed at render (`{ width: itemSize }`; see [Styles computed at runtime](#styles-computed-at-runtime)) |
 | `frame({ width: 'fit' })` | as wide (or tall) as its content: `fit-content` (`w-fit`) |
 | `aspectRatio(r)` | the view's width to its height (`1`, `1.6`), React Native's `aspectRatio`, in its frame's view: the frame's width or height (or the view's stretch) sets the other side. Any view, a pressable one included; an `Image`'s sizes the image in its box |
 | `grow()`, `shrink(p)`, `basis(l)` | `never` `normal` `first`; a frame length, its `flex-basis` |
@@ -383,8 +477,8 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
 | `clipped()` | clips what the view draws to its bounds and its corner |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)) |
-| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native); out of the layout |
+| `position({ top, bottom, leading, trailing, left, right })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also points computed at render (`{ top: insets.top + 8 }`) |
+| `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
 | `scale(s)` | drawn scaled about its anchor (its centre unless `anchor` says otherwise): Bloom's `dip` 0.7, `pressed` 0.98, `full`, `swell` 1.2, or a percent (`'95'` `'105'`…) |
 | `anchor(a)` | the point the view scales and rotates about (SwiftUI's `anchor:`, Tailwind's `origin-*`): `center` `top` `bottom` `leading` `trailing` `top-leading` `top-trailing` `bottom-leading` `bottom-trailing`; leading and trailing are left and right, as an offset's x |
 | `allowsHitTesting(on)`, `accessibilityOnly()` | `false`: touches pass through it and everything in it; `'children'`: only what is inside it takes them, `'self'`: only the view; read by a screen reader and not drawn (`sr-only`) |

@@ -5,7 +5,7 @@
 
 use oxc_ast::ast::{
     Argument, ArrowFunctionBody, BindingPattern, CallExpression, Expression, IdentifierReference,
-    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
+    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement, UnaryOperator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
@@ -14,7 +14,8 @@ use oxc_span::{GetSpan, Span};
 use crate::diagnostics::suggest;
 use crate::module::{Binding, Literal, Module};
 use crate::spec::{
-    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS,
+    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, POINT_PARAMS, TOKEN_SETS,
+    VARIANT_MODIFIERS,
 };
 
 pub struct Problem {
@@ -772,6 +773,11 @@ fn check_value(
                     });
                 }
                 // An offset's axis may follow a `MotionValue` in place of its token; a `value` is no token.
+                if let Some(number) =
+                    written_number(&property.value).filter(|_| POINT_PARAMS.contains(&param))
+                {
+                    return Err(written_number_problem(modifier, set, &number, true, property.value.span()));
+                }
                 if set != "value"
                     && !(param == "offset" && module.is_motion_value_ref(&property.value, scoping))
                 {
@@ -836,7 +842,10 @@ fn check_value(
         "blend" => check_token(modifier, spec.blend.unwrap_or("blend"), value),
         // A density is the node's own: each node lists Bloom's names for its densities.
         "density" => check_in(modifier, "density", spec.densities, value),
-        set => check_token(modifier, set, value),
+        set => match written_number(value).filter(|_| POINT_PARAMS.contains(&set)) {
+            Some(number) => Err(written_number_problem(modifier, set, &number, true, value.span())),
+            None => check_token(modifier, set, value),
+        },
     }
 }
 
@@ -1040,6 +1049,9 @@ fn motion_value_for_token(modifier: &str, param: &str, span: Span) -> Problem {
 /// A string literal must be one of `set`'s tokens; anything else is the runtime's.
 /// A colour may name an opacity after its role (`'muted/faded'`): both halves are checked.
 fn check_token(modifier: &str, set: &str, value: &Expression) -> Result<(), Problem> {
+    if let Some(number) = written_number(value) {
+        return Err(written_number_problem(modifier, set, &number, false, value.span()));
+    }
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
     let token = literal.value.as_str().unwrap_or_default();
     match token.split_once('/') {
@@ -1047,6 +1059,38 @@ fn check_token(modifier: &str, set: &str, value: &Expression) -> Result<(), Prob
             known(modifier, "opacity", tokens("opacity"), opacity, literal.span)
         }
         _ => known(modifier, set, tokens(set), token, literal.span),
+    }
+}
+
+/// A number written out where a token goes. A parameter that takes points
+/// (`POINT_PARAMS`: a frame, an edge, a stacking order) takes them computed at
+/// render; one written out is its token.
+fn written_number_problem(modifier: &str, set: &str, number: &str, points: bool, span: Span) -> Problem {
+    Problem {
+        span,
+        message: format!(".{modifier}() takes {set} tokens, not the number {number}"),
+        help: Some(if points {
+            format!(
+                "a number written out is a token ('{number}'); points are a value the view computes as it renders"
+            )
+        } else {
+            format!("write the token ('{number}'); .{modifier}() takes tokens only")
+        }),
+    }
+}
+
+/// A number written out (`44`, `-8`) where a token goes: a frame, an edge and a
+/// stacking order take points the view computes as it renders, never a literal.
+fn written_number(value: &Expression) -> Option<String> {
+    match value.without_parentheses() {
+        Expression::NumericLiteral(number) => Some(number.value.to_string()),
+        Expression::UnaryExpression(unary) if unary.operator == UnaryOperator::UnaryNegation => {
+            match unary.argument.without_parentheses() {
+                Expression::NumericLiteral(number) => Some(format!("-{}", number.value)),
+                _ => None,
+            }
+        }
+        _ => None,
     }
 }
 

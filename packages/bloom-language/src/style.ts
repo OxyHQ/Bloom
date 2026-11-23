@@ -39,7 +39,7 @@ import {
   type LengthToken,
   type Justify,
   type OverlayAlignment,
-  type ZIndexName,
+  type ZIndexValue,
   type ShadowName,
   type ColorName,
   type AppToken,
@@ -783,7 +783,7 @@ export interface Placement {
   shrink: ShrinkPriority | undefined;
   alignSelf: Alignment | undefined;
   position: PositionEdges | undefined;
-  zIndex: ZIndexName | undefined;
+  zIndex: ZIndexValue | undefined;
   hidden: boolean | undefined;
   basis: LengthToken | undefined;
   flex: FlexName | undefined;
@@ -1024,7 +1024,8 @@ export function placeStyle(place: Placement): Resolved {
   // `auto` is Tailwind's z-auto: the web's z-index: auto; NativeWind writes nothing on native.
   if (place.zIndex === 'auto') {
     if (IS_WEB) style.zIndex = 'auto';
-  } else if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
+  } else if (typeof place.zIndex === 'number') style.zIndex = place.zIndex;
+  else if (place.zIndex !== undefined) style.zIndex = Z_INDEX[place.zIndex];
   if (place.hidden !== undefined) style.display = place.hidden ? 'none' : 'flex';
   if (place.allowsHitTesting !== undefined)
     style.pointerEvents = POINTER_EVENTS[`${place.allowsHitTesting}`];

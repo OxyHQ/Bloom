@@ -250,13 +250,16 @@ import {
   type Condition,
   type Justify,
   type LengthToken,
+  type EdgeDistance,
+  type FrameLength,
+  type Points,
+  type ZIndexValue,
   type OverlayAlignment,
   type ShadowName,
   type ScaleName,
   type CornerSide,
   type WordBreak,
   type ListMarker,
-  type ZIndexName,
   type ButtonLinkTone,
   type ButtonShape,
   type AnyDensity,
@@ -1292,25 +1295,31 @@ export type ValueModifier = {
   };
 }[keyof ValueModifiers];
 
-/** A frame's lengths: space rungs, app tokens, or lengths relative to the parent (`full`, `1/2`…). */
+/**
+ * A frame's lengths: space rungs, app tokens, lengths relative to the parent
+ * (`full`, `1/2`…), or points computed at render (`.frame({ width: itemSize })`).
+ */
 export interface FrameSpec {
-  width?: LengthToken;
-  height?: LengthToken;
-  minWidth?: LengthToken;
-  minHeight?: LengthToken;
-  maxWidth?: LengthToken;
-  maxHeight?: LengthToken;
+  width?: FrameLength;
+  height?: FrameLength;
+  minWidth?: FrameLength;
+  minHeight?: FrameLength;
+  maxWidth?: FrameLength;
+  maxHeight?: FrameLength;
 }
 
-/** A pinned view's distance from each edge of its parent (`none` touches it; `-sm` pulls past it). */
+/**
+ * A pinned view's distance from each edge of its parent (`none` touches it;
+ * `-sm` pulls past it), or points computed at render (`insets.top + 8`).
+ */
 export interface PositionEdges {
-  top?: PaddingToken;
-  bottom?: PaddingToken;
-  leading?: PaddingToken;
-  trailing?: PaddingToken;
+  top?: EdgeDistance;
+  bottom?: EdgeDistance;
+  leading?: EdgeDistance;
+  trailing?: EdgeDistance;
   /** A physical side, the same in a right-to-left layout. */
-  left?: PaddingToken;
-  right?: PaddingToken;
+  left?: EdgeDistance;
+  right?: EdgeDistance;
 }
 
 /** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
@@ -1364,7 +1373,7 @@ export type Modifier =
   | { readonly kind: 'alignSelf'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'position'; readonly key: string; readonly value: PositionEdges }
   | { readonly kind: 'offset'; readonly key: string; readonly value: OffsetSpec }
-  | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexName }
+  | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexValue }
   | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'basis'; readonly key: string; readonly value: LengthToken }
   | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName | MotionValue }
@@ -2156,8 +2165,8 @@ export class Node {
       value,
     });
   }
-  zIndex(value: ZIndexName): Node {
-    return this.with({ kind: 'zIndex', key: `z:${value}`, value });
+  zIndex(value: ZIndexValue): Node {
+    return this.with({ kind: 'zIndex', key: `z:${tokenKey(value)}`, value });
   }
   hidden(value = true): Node {
     return this.with({ kind: 'hidden', key: `hidden:${value}`, value });
@@ -3317,7 +3326,8 @@ export class Node {
   controlSize(value: ControlSize): Node {
     return this.environment(environmentValues.controlSize, value);
   }
-  modifier<A extends readonly unknown[]>(value: ViewModifier<A>, ...args: A): Node {
+  modifier<A extends readonly unknown[]>(value: ViewModifier<A> | undefined, ...args: A): Node {
+    if (value === undefined) return this;
     return value.apply(this as unknown as AnyView, ...args) as unknown as Node;
   }
   buttonStyle(value: ButtonStyle): Node {
@@ -4438,7 +4448,7 @@ const OFFSET_KEYS = OBJECTS.offset.keys;
 function objectKey<T extends object>(value: T, keys: readonly string[]): string {
   const parts: string[] = [];
   for (const name of keys) {
-    const token = (value as Record<string, string | AppToken | undefined>)[name];
+    const token = (value as Record<string, string | AppToken | Points | undefined>)[name];
     if (token !== undefined) parts.push(`${name}=${tokenKey(token)}`);
   }
   return parts.join(',');
@@ -4571,7 +4581,7 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   /** Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. */
   offset(value: OffsetSpec): Self;
   /** Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`. */
-  zIndex(value: ZIndexName): Self;
+  zIndex(value: ZIndexValue): Self;
   /** Leaves the layout (`display: none`) while staying mounted; `hidden(false)` puts it back, as a variant does. */
   hidden(value?: boolean): Self;
   /** Its length along its parent's axis before free space is shared (`flex-basis`): a space rung, a length of the parent, or `fit`. */
@@ -4821,8 +4831,12 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   environment<T extends EnvironmentValue>(key: EnvironmentKey<T>, value: T): Self;
   /** The size every control inside takes when it names none (Bloom's control rungs). */
   controlSize(value: ControlSize): Self;
-  /** Applies a named recipe of modifiers (`defineModifier`), with its arguments. */
-  modifier<A extends readonly unknown[]>(value: ViewModifier<A>, ...args: A): Self;
+  /**
+   * Applies a named recipe of modifiers (`defineModifier`), with its arguments.
+   * `undefined` applies none, so a view that takes a recipe from its caller
+   * (`handle?: ViewModifier`) chains `.modifier(props.handle)` as it is.
+   */
+  modifier<A extends readonly unknown[]>(value: ViewModifier<A> | undefined, ...args: A): Self;
   /** The style every `Button` inside takes when it names none (`glass` and `glassProminent` included). */
   buttonStyle(value: ButtonStyle): Self;
   /**

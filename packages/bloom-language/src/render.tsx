@@ -201,7 +201,7 @@ import {
   resolveSpace,
   type ShapeName,
   type AvatarSizeToken,
-  type LengthToken,
+  type FrameLength,
   type CornerName,
   type SpaceToken,
   resolveIconSize,
@@ -3107,7 +3107,7 @@ function drawSkeleton(
     if (modifier.kind === 'frame') frame = { ...frame, ...modifier.value };
     if (modifier.kind === 'corner') corner = modifier.value;
   }
-  const length = (token: LengthToken | undefined) =>
+  const length = (token: FrameLength | undefined) =>
     token === undefined ? undefined : resolveLength(token);
   const props: Record<string, unknown> = { key };
   if (shape === 'text') {

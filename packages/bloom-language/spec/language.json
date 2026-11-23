@@ -1177,6 +1177,10 @@
     },
     "meterReveal": { "keys": ["visible", "once", "delay"], "tokens": "duration" }
   },
+  "points": {
+    "$comment": "The parameters that take points besides their tokens: a number the view computes as it renders (a size from a prop, a column's width from its container, an inset), as SwiftUI's .frame, .position and .zIndex take any CGFloat and Double. Geometry only: a frame's lengths, a pinned view's edges, its stacking order. Spacing, type and colour stay tokens, and a number written out is a token ('44'), never a literal (the compiler rejects one).",
+    "params": ["frame", "edges", "zIndex"]
+  },
   "variants": {
     "$comment": [
       "when(condition, v => v…): the modifiers inside override the values the chain set before it, while the condition holds.",

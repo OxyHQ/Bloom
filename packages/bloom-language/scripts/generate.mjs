@@ -53,6 +53,11 @@ const sfSymbols = withoutComment(spec.sfSymbols);
 const easing = withoutComment(spec.easing);
 const motion = withoutComment(spec.motion);
 const loops = withoutComment(spec.loops);
+// The parameters that take points besides their tokens: each one an object or a modifier's own set.
+const pointParams = spec.points.params;
+for (const param of pointParams)
+  if (!(param in objects) && !Object.values(modifiers).some((params) => params.includes(param)))
+    throw new Error(`points: ${param} is no object and no modifier's parameter`);
 
 /** A motion token with its easing resolved to its curve: a Bloom `MotionSpec`. */
 const motionSpecs = Object.fromEntries(
@@ -588,6 +593,9 @@ pub const VARIANT_MODIFIERS: &[&str] = ${rustList(spec.variants.modifiers)};
 pub const FADING_LOOPS: &[&str] = ${rustList(
   Object.keys(loops).filter((name) => loops[name].frames.some((frame) => 'opacity' in frame)),
 )};
+
+/// The parameters that take points (a number the view computes as it renders) besides their tokens.
+pub const POINT_PARAMS: &[&str] = ${rustList(pointParams)};
 
 /// What a scroll view's content view (\`.contentView(v => v…)\`) sets: the layout of one view.
 pub const CONTENT_VIEW_MODIFIERS: &[&str] = ${rustList(spec.contentView.modifiers)};

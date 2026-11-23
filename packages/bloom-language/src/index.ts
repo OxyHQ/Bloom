@@ -291,7 +291,15 @@ export type {
   WeightName,
 } from './tokens';
 export type { Binding, Bound, Refresh, RefreshAction, RefreshTint } from './binding';
-export type { AnyDensity, Density, DensityNode } from './tokens';
+export type {
+  AnyDensity,
+  Density,
+  DensityNode,
+  EdgeDistance,
+  FrameLength,
+  Points,
+  ZIndexValue,
+} from './tokens';
 export {
   SettingsDateField,
   SettingsSection,

@@ -1086,7 +1086,82 @@ const hitSlop: ParityCase[] = [
   },
 ];
 
+/**
+ * Points computed at render: a frame's lengths, a pinned view's edges and its
+ * stacking order take a number the view works out (Mention's grid cell, a
+ * card's width from its props, a badge under the top inset, a facepile's order).
+ */
+const CELL = 117.5;
+const points: ParityCase[] = [
+  {
+    name: 'a frame of points computed at render',
+    language: () => toElement(L.VStack(L.Text('a')).frame({ width: CELL, height: CELL })),
+    bloom: () => (
+      <RN.View style={{ width: CELL, height: CELL }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'points beside tokens in one frame, on a clipped corner',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .frame({ width: CELL * 2, maxWidth: 'full', minHeight: '160' })
+          .corner('lg')
+          .clipped(),
+      ),
+    bloom: () => (
+      <RN.View
+        style={{
+          width: CELL * 2,
+          maxWidth: '100%',
+          minHeight: 160,
+          borderRadius: borderRadius.lg,
+          overflow: 'hidden',
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a view pinned by points beside a token',
+    language: () =>
+      withInsets(toElement(L.VStack(L.Text('a')).position({ top: INSETS.top + 8, right: 'lg' }))),
+    bloom: () =>
+      withInsets(
+        <RN.View style={{ position: 'absolute', top: INSETS.top + 8, right: space.lg }}>
+          <Text>a</Text>
+        </RN.View>,
+      ),
+  },
+  {
+    name: 'stacking orders computed at render',
+    language: () =>
+      toElement(
+        L.HStack(
+          [0, 1, 2].map((index) =>
+            L.VStack(L.Text(String(index)))
+              .zIndex(3 - index)
+              .id(String(index)),
+          ),
+        ),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        {[0, 1, 2].map((index) => (
+          <RN.View key={index} style={{ zIndex: 3 - index }}>
+            <Text>{String(index)}</Text>
+          </RN.View>
+        ))}
+      </RN.View>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...points,
   ...hitSlop,
   ...safeArea,
   ...aspectRatio,
