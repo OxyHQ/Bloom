@@ -189,6 +189,11 @@ export const TONE_ROLE = ${ts(withoutComment(spec.toneRole))} as const;
 /** A box modifier's place in one view's stack of effects (see style.ts, layers). */
 export const LAYER_RANK = ${ts(layerRank)} as const;
 
+/** The nodes whose own \`aspectRatio\` sizes what they draw (an image, a call grid's tiles), never their box. */
+export const OWN_ASPECT_RATIO: readonly string[] = ${ts(
+  Object.keys(nodes).filter((kind) => nodes[kind].modifiers.includes('aspectRatio')),
+)};
+
 /** The traits a view hands everything inside it. */
 export const ENVIRONMENT = ${ts(spec.environment.traits)} as const;
 export const ENVIRONMENT_DEFAULTS = ${ts(spec.environment.defaults)} as const;

@@ -91,6 +91,7 @@ import {
   ENVIRONMENT,
   ENVIRONMENT_TAKERS,
   LAYER_RANK,
+  OWN_ASPECT_RATIO,
   OPACITY,
   TONE_ROLE,
 } from './generated/spec.generated';
@@ -698,8 +699,8 @@ function plan(node: Node, env: Env): Plan {
       result.own.set('cornerCurve', modifier);
       continue;
     }
-    // An image's aspect ratio is its own (it sizes the image in its box), not its box's.
-    if (node.kind === 'image' && modifier.kind === 'aspectRatio') {
+    // An image's or a call grid's aspect ratio is its own (it sizes what it draws), not its box's.
+    if (modifier.kind === 'aspectRatio' && OWN_ASPECT_RATIO.includes(node.kind)) {
       result.own.set('aspectRatio', modifier);
       continue;
     }

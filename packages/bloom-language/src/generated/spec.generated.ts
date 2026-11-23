@@ -2642,6 +2642,12 @@ export const LAYER_RANK = {
   "shadow": 7
 } as const;
 
+/** The nodes whose own `aspectRatio` sizes what they draw (an image, a call grid's tiles), never their box. */
+export const OWN_ASPECT_RATIO: readonly string[] = [
+  "image",
+  "groupCallGrid"
+];
+
 /** The traits a view hands everything inside it. */
 export const ENVIRONMENT = [
   "foreground",
