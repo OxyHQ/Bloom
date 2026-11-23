@@ -27,6 +27,13 @@ export function buttonTouchVisualInset(visualHeight: number, touch: boolean): nu
   return IS_WEB && touch ? Math.max(0, (BUTTON_TOUCH_TARGET - visualHeight) / 2) : 0;
 }
 
+/**
+ * The size of a control on floating glass: a floating header's controls and groups, and the language's glass
+ * button styles. `lg` (44pt), Apple's Liquid Glass bar button, measured at 44pt on iOS 26 and 27: the standard
+ * tap target is the glass itself.
+ */
+export const GLASS_CONTROL_SIZE: ButtonResolvedSize = 'lg';
+
 /** Every size is a full pill. */
 export const BUTTON_RADIUS = borderRadius.full;
 

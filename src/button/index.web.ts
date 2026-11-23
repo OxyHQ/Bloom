@@ -4,6 +4,7 @@
 // changing that barrel or the set of web-forked subpaths.
 
 export { Button } from './Button.web';
+export { GLASS_CONTROL_SIZE } from './shared';
 
 export type {
   ButtonProps,
