@@ -101,8 +101,6 @@ export const ROW_RADIUS = 10;
 export { CHAT_CONTENT_MAX_WIDTH as COLUMN_MAX_WIDTH } from '../styles/chat-layout';
 /** `w-[260px]` — the history rail. */
 export const RAIL_WIDTH = 260;
-/** `size-7` — header and message action buttons. */
-export const ACTION_SIZE = 28;
 /** `w-[190px] p-2` — the chat and row menus. */
 export const SMALL_MENU_STYLE = { width: 190, minWidth: 190, padding: 8 } as const;
 /** `w-[248px] p-2.5` — the account menu. */

@@ -67,11 +67,6 @@ const SYSTEM_FAMILY = {
         : 'sans-serif',
 };
 
-/** Shared by Bloom text and every control composed from it. */
-export function useTypographySystemFamily() {
-  return useContext(TypographyContext).mode === 'system' ? SYSTEM_FAMILY : undefined;
-}
-
 /** Whether text below is drawn in the desktop text styles (`TypographyScale`). */
 export function useDesktopTypography(): boolean {
   return useContext(TypographyContext).scale === 'desktop';

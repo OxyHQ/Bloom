@@ -1,6 +1,5 @@
 import { space } from '../styles/tokens';
 
-import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
 import { formatGregorian } from '../locale/format-date';
 import { pickMessages } from '../locale/messages';
 import {
@@ -24,9 +23,6 @@ import type {
   MailSwipeActions,
 } from './types';
 import { MAIL_LIST_MESSAGES } from './messages';
-
-/** The glyph an empty inbox draws. */
-export const MAIL_EMPTY_ICON = RiInbox2Line;
 
 // ---------------------------------------------------------------------------
 //  Geometry — the whole difference between the densities
@@ -225,11 +221,6 @@ export function resolveMailPaint(theme: Theme, surface: string): MailPaint {
     negative: resolveAccentColors(theme.colors, 'error', 'outlined').foreground,
     ...surfaceTextOn(theme, surface),
   };
-}
-
-/** A label dot's fill: the tone's SOLID pair, so it reads at 8px. */
-export function labelDotColor(theme: Theme, label: MailLabel): string {
-  return resolveAccentColors(theme.colors, label.tone ?? 'default', 'solid').background;
 }
 
 /** The glyph colour an action's tone paints on the row. */
