@@ -8,8 +8,11 @@ export const FAB_METRICS = {
   lg: { diameter: 64, iconSize: 32, labelVariant: 'title-3-medium' },
 } as const;
 
-/** A FAB's silhouette: a circle (the default), a rounded square, or a squircle. */
+/** A FAB's silhouette: a squircle (the default), a rounded square, or a circle. */
 export type FabShape = 'circle' | 'rounded' | 'squircle';
+
+/** The silhouette a FAB takes when its caller names none: Apple's continuous-corner square. */
+export const DEFAULT_FAB_SHAPE: FabShape = 'squircle';
 
 /**
  * Each shape's corner, a fraction of the FAB's diameter, and its curve. `rounded` is a square with

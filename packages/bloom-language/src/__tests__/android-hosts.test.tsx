@@ -26,6 +26,10 @@ import { clear, regular } from '../glass';
 import { GLASS } from '../generated/spec.generated';
 // Bloom's own lens frost, read from its source, so the language's regular glass and Bloom's lens controls agree.
 import { LENS_FROST } from '../../../../src/floating/lens/lens-frost';
+// Bloom's own lens tint for a solid control and its FAB's default shape, read from its source, so the two agree.
+import { LENS_FILL_TINT } from '../../../../src/floating/lens/lens-tint';
+import { DEFAULT_FAB_SHAPE } from '../../../../src/fab/constants';
+import { CONTROL_FILL_OPACITY } from '../platform/lens-glass';
 import { menu } from '../primitives';
 import { toElement } from '../render';
 import { resolveCorner } from '../tokens';
@@ -134,8 +138,10 @@ describe('glass is the lens', () => {
     // The solid fill tints the glass as Bloom's own lens control does (Apple's glassProminent).
     expect(only(r, 'BloomLensMenu').props.triggerConfig).toMatchObject({
       tintColor: LIGHT.primary,
-      tintOpacity: 0.96,
+      tintOpacity: 0.8,
     });
+    // Bloom's lens control tints at the same strength.
+    expect(CONTROL_FILL_OPACITY).toBe(LENS_FILL_TINT);
     expect(hosts(r, 'Pressable')).toHaveLength(0);
   });
 
@@ -152,8 +158,7 @@ describe('glass is the lens', () => {
       material: 'shared',
     });
     expect(only(r, 'BloomLensMenu').props).toMatchObject({
-      cornerRadius: undefined,
-      triggerConfig: { tintColor: LIGHT.primary, tintOpacity: 0.96 },
+      triggerConfig: { tintColor: LIGHT.primary, tintOpacity: 0.8 },
     });
     const tinted = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))));
     expect(hosts(tinted, 'BloomLensMenu')).toHaveLength(1);
@@ -164,12 +169,21 @@ describe('glass is the lens', () => {
     });
   });
 
-  it('a FAB’s shape is its lens’s corner: 28% of its diameter, a circle by default', () => {
+  it('a FAB’s shape is its lens’s corner: 28% of its diameter, a squircle by default', () => {
     for (const shape of ['rounded', 'squircle'] as const) {
       const r = mount(toElement(FAB(Icon(Glyph)).shape(shape).label('Compose')));
       expect(only(r, 'BloomFab').props.shape).toBe(shape);
       expect(only(r, 'BloomLensMenu').props.cornerRadius).toBe(14);
     }
+    // Unnamed, it is Bloom `Fab`'s default: a squircle, its lens the same corner.
+    const plain = mount(toElement(FAB(Icon(Glyph)).label('Compose')));
+    expect(DEFAULT_FAB_SHAPE).toBe('squircle');
+    expect(only(plain, 'BloomFab').props.shape).toBe(DEFAULT_FAB_SHAPE);
+    expect(only(plain, 'BloomLensMenu').props.cornerRadius).toBe(14);
+    // A circle is the capsule the lens draws when it is given no corner.
+    const circle = mount(toElement(FAB(Icon(Glyph)).shape('circle').label('Compose')));
+    expect(only(circle, 'BloomFab').props.shape).toBe('circle');
+    expect(only(circle, 'BloomLensMenu').props.cornerRadius).toBeUndefined();
   });
 });
 

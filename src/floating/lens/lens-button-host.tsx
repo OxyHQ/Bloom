@@ -8,6 +8,7 @@ import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../theme/use-theme';
 import { LENS_FROST } from './lens-frost';
+import { LENS_FILL_TINT } from './lens-tint';
 import { useLensAvailable } from './lens-material';
 import { getNativeLens } from './native-lens';
 
@@ -122,7 +123,7 @@ export function LensButtonHost({
   const config = useMemo(
     () => ({
       blur: LENS_FROST.control,
-      ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null),
+      ...(tint ? { tintColor: tint, tintOpacity: LENS_FILL_TINT } : null),
       ...(jelly === undefined ? null : { jelly }),
     }),
     [tint, jelly],

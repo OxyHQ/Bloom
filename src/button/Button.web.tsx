@@ -11,7 +11,12 @@ import { resolveSurfaceLayer } from '../surface/use-surface-layer';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { useButtonLayout } from './use-button-layout.web';
 import { useLongPress } from './use-long-press.web';
-import { resolveSurfaceOptics, surfaceContrastEdge, surfaceOpticsVars } from '../surface/shared';
+import {
+  resolveSurfaceOptics,
+  surfaceContrastEdge,
+  surfaceOpticsVars,
+  translucentTint,
+} from '../surface/shared';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import type { GestureResponderEvent, View } from 'react-native';
 import { SURFACE_HAIRLINE_VAR, surfaceMaterialCss } from '../surface/web-material';
@@ -565,7 +570,13 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ).foreground,
         ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
         ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
-        ['--bloom-btn-bg' as string]: bodyPaint.background,
+        // On the lens a solid fill tints the frost as a tinted surface does, so the frost shows
+        // through it, as it does through the native lens. Reduced transparency keeps the opaque
+        // `solidFill`.
+        ['--bloom-btn-bg' as string]:
+          material === 'lens' && appearance === 'solid'
+            ? translucentTint(bodyPaint.background)
+            : bodyPaint.background,
         ['--bloom-surface-solid' as string]: solidFill,
         // A button that draws its own border keeps it as its edge.
         [SURFACE_HAIRLINE_VAR as string]:
@@ -635,6 +646,8 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       disabled,
       loading,
       className,
+      material,
+      appearance,
     ]);
 
     const handleClick = useCallback(

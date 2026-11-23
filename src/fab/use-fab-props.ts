@@ -2,7 +2,7 @@ import { createElement, useContext } from 'react';
 import { useBloomAppearance } from '../appearance/context';
 import { resolveButtonPalette } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
-import { FAB_METRICS, FAB_SHAPES, fabCornerRadius } from './constants';
+import { DEFAULT_FAB_SHAPE, FAB_METRICS, FAB_SHAPES, fabCornerRadius } from './constants';
 import { surfaceStyle } from '../shapes/surface-style';
 import { FabDiameterContext } from './fab-diameter';
 import { FabLabel } from './FabLabel';
@@ -23,7 +23,7 @@ export function useFabProps({
   icon,
   iconSize,
   size,
-  shape = 'circle',
+  shape = DEFAULT_FAB_SHAPE,
   collapsed = false,
   tone,
   appearance = 'solid',

@@ -30,6 +30,7 @@ import {
   useLensBaseMenu,
 } from './native-lens';
 import { LENS_FROST } from './lens-frost';
+import { LENS_FILL_TINT } from './lens-tint';
 import type { ParsedLensMenu } from './parse-lens-menu';
 import { useLensTint } from './use-lens-tint';
 
@@ -266,7 +267,7 @@ export function LensTrigger({
   const triggerConfig = useMemo(
     () => ({
       blur: LENS_FROST.control,
-      ...(fill ? { tintColor: fill, tintOpacity: 0.96 } : null),
+      ...(fill ? { tintColor: fill, tintOpacity: LENS_FILL_TINT } : null),
     }),
     [fill],
   );

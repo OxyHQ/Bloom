@@ -7,13 +7,13 @@ import type { ColorName } from '../tokens';
 import type { LensTriggerConfig } from './lens';
 
 /**
- * How much of a solid control's fill tints the glass it is on: Bloom's own lens
- * control (`LensButtonHost`) tints with a solid fill at 0.96, Apple's
- * `glassProminent`. The engine's own for a control is 0, which left a FAB and a
- * `glassProminent` button untinted on Android while iOS and the web drew them
- * filled.
+ * How much of a solid control's fill tints the glass it is on: Apple's tinted glass
+ * (`glassProminent`), the fill's colour with a fifth of the glass still showing through.
+ * Bloom's own lens control (`LensButtonHost`) tints at the same strength (its `LENS_FILL_TINT`),
+ * and the tests hold the two together. The engine's own for a control is 0, which left a FAB and a
+ * `glassProminent` button untinted on Android while iOS and the web drew them filled.
  */
-const CONTROL_FILL_OPACITY = 0.96;
+export const CONTROL_FILL_OPACITY = 0.8;
 
 /**
  * A glass value as the lens engine draws it: the material's frost (its blur
