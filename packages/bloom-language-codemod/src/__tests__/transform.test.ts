@@ -93,12 +93,12 @@ export const B = () => <ChatEmptyState title="None" illustration={<Art />} />;
     const result = run(`import { GroupedSectionItem } from '@oxy.so/bloom/grouped-section';
 import { Screen } from '@oxy.so/bloom/screen';
 import { DropdownMenu } from '@oxy.so/bloom/dropdown-menu';
-export const A = () => <Screen><GroupedSectionItem title="B" leftInset={8} /></Screen>;
+export const A = () => <Scope><Screen><GroupedSectionItem title="B" leftInset={8} /></Screen></Scope>;
 export const B = () => <DropdownMenu />;
 `);
     expect(result.changed).toBe(false);
     expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
-      'kept:Screen',
+      'screen:wrapped',
       'GroupedSectionItem:leftInset',
       'kept:DropdownMenu',
     ]);
@@ -365,11 +365,70 @@ export default function Route({ id }) {
       'screen:footer',
       'screen:route',
     ]);
-    const named = run(`import { Screen } from '@oxy.so/bloom/screen';
-export default function Route() { return <Screen />; }
-Route.options = {};
+    const mixed = run(`import { Screen } from '@oxy.so/bloom/screen';
+export default function Route({ id }) { if (!id) return null; return <Screen />; }
 `);
-    expect(named.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['kept:Screen']);
+    expect(mixed.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['screen:returns']);
+    const early = run(`import { Screen } from '@oxy.so/bloom/screen';
+const Routes = [Route];
+function Route() { return <Screen />; }
+`);
+    expect(early.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['screen:read-early']);
+    const around = run(`import { Screen } from '@oxy.so/bloom/screen';
+export default function Route() { return <><Seo /><Screen /></>; }
+export function Other() { return <Scope><Screen /></Scope>; }
+`);
+    expect(around.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'screen:beside',
+      'screen:wrapped',
+    ]);
+  });
+  it('takes a language view placed with toElement() as a Screen’s header', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { Header, toElement } from '@oxy.so/bloom-language';
+import { View } from 'react-native';
+export function Edit({ loading }) {
+  const header = toElement(Header('Edit').inPage());
+  if (loading) return <Screen header={header}><View /></Screen>;
+  return <Screen header={toElement(Header('Edit').inPage())}><View /></Screen>;
+}
+`);
+    const code = flat(result.code);
+    expect(code).toContain('if (loading) return VStack().header(Embed(header));');
+    expect(code).toContain("return VStack().header(Embed(toElement(Header('Edit').inPage())));");
+    expect(result.unconverted).toEqual([]);
+  });
+  it('makes any component whose every return is a Screen a screen(), wherever it is declared', () => {
+    const result = run(`import { Screen } from '@oxy.so/bloom/screen';
+import { View } from 'react-native';
+/** The list, behind its gate. */
+function ListScreen({ id }: { id: string }) {
+  if (!id) return <Screen><View /></Screen>;
+  return <Screen scroll="content"><View /></Screen>;
+}
+export default function Route() { return <Gate><ListScreen id="a" /></Gate>; }
+export const Sheet = () => <Screen><View /></Screen>;
+const Saved = () => {
+  return <Screen><View /></Screen>;
+};
+export default Saved;
+export default function Named() { return <Screen><View /></Screen>; }
+Named.options = {};
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      "/** The list, behind its gate. */ const ListScreen = screen(function ListScreen({ id }: { id: string }) { if (!id) return VStack().header(false); return VStack().header(false).screenScroll('content'); });",
+    );
+    expect(code).toContain(
+      'export const Sheet = screen(function Sheet() { return VStack().header(false); });',
+    );
+    expect(code).toContain(
+      'const Saved = screen(function Saved() { return VStack().header(false); }); export default Saved;',
+    );
+    expect(code).toContain(
+      'const Named = screen(function Named() { return VStack().header(false); }); export default Named; Named.options = {};',
+    );
+    expect(result.unconverted).toEqual([]);
   });
   it('paints a static colour fill as an app colour, declared once after the constants it reads', () => {
     const result = run(`import { View } from 'react-native';

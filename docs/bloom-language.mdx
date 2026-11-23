@@ -1554,9 +1554,25 @@ PostRow({ id }).onPress(navigate('/p/[id]', { id }))
 
 **`layout(body)`, `screen(body)`.** A route file's default export. The body
 runs as the route's component, so it may call hooks; a screen a route renders
-with props (a post's id) is a `screen()` whose body takes them. Both provide the
+with props (a post's id), a gate's inner screen or a sheet's, is a `screen()`
+whose body takes them. Both provide the
 environment's navigator (Bloom's panel-aware router, so a deck panel's routes
 push in that panel on the web), which `navigate()` presses go through.
+
+`screen()` wraps the whole component: it draws the one Bloom `Screen`, and
+each branch of its body (a loading, an error, the content) returns its content
+with the chrome it shows. The Screen stays mounted from one branch to the
+next, as React keeps one `<Screen>` that each branch of a component returns.
+
+```ts
+export default screen(function EditList() {
+  const { list, loading, error } = useList();
+  const header = Header(t('lists.edit')).backLabel(t('common.back')).inPage();
+  if (loading) return ScrollView(Embed(<FormSkeleton />)).header(header);
+  if (error) return ErrorState(error).header(header);
+  return ScrollView(...list.members.map(MemberRow)).header(header);
+});
+```
 
 **`AppLayout(navigator)`.** Bloom's `AppShell` around the navigator. The shell
 draws its navigation from the `TabPagerProvider` above it (the sidebar's rows

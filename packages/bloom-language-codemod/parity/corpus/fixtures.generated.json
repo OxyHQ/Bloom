@@ -1002,8 +1002,8 @@
  },
  {
   "name": "components/Components.tsx:394",
-  "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={(() => {})}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
-  "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
+  "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={() => {}}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
   "bindings": {
    "ScreenScrollView": {
     "module": "@oxy.so/bloom/screen",

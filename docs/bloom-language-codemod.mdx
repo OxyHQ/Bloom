@@ -202,10 +202,18 @@ are data carried as they are. `detached` and `panelStyle` have no modifier.
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).
 
-A route's `Screen` is its `screen()` body (`SCREEN`): a default-exported
-function component (named, not async, with no return type, its name read
-nowhere else) whose every return is a Bloom `Screen` becomes
-`export default screen(function Name(props) { … })`, each `Screen` the body's
+A `Screen` is what a `screen()` body returns (`SCREEN`). `screen()` wraps the
+whole component, and each branch (a loading, an error, the content) returns
+its content with its chrome. A module-level function component whose every
+return is a Bloom `Screen` becomes a `screen()`: a function declaration
+(exported or not) or a `const` holding an arrow or a function expression,
+named with a capital, not async, with no return type. A default export read
+nowhere else is `export default screen(function Name(props) { … })`; any
+other is `const Name = screen(function Name(props) { … })` where it was
+declared, so a gate's inner screen, a sheet's screen and a route's
+`Name.options` keep their name. A component whose name is read before its
+declaration, outside a function, stays JSX (`screen:read-early`): a `const`
+is not yet defined there. Each `Screen` is the body's
 root: its one child, or a `Group` of its children when it has several (a
 comment or a condition among them, or one condition), a fragment's children
 each one of them, as React draws them; the Screen's props are the root's
@@ -218,12 +226,22 @@ other value (a name that may hold `undefined`, where Bloom draws no bar) is a
 reason (`screen:bottomBar`). No `header` is `.header(false)`; a header element is its view, so
 Bloom's PageHeader is `.header(Header(…).inPage())`, the Screen's own header
 on every platform (a bare `Header` is the system bar on iOS in a native
-stack), and a `const` holding the element is `.header(Embed(header))`.
-The route converts whole: one Screen that stays JSX keeps the others JSX
+stack), and a `const` holding the element, or a language view placed with
+`toElement()` (`header={toElement(Header(…).inPage())}`), is
+`.header(Embed(header))`.
+The component converts whole: one Screen that stays JSX keeps the others JSX
 (`screen:route`). Its parity draws the root with the language's `ScreenHost`,
 as `screen()` does.
 
-Kept as JSX with their reason (`KEPT`): a `Screen` anywhere else, and
+A Screen stays JSX, with what keeps it, when `screen()` would draw something
+else: inside an element (`screen:wrapped`: a provider or a colour scope around
+the Screen would draw inside it), beside views in a fragment
+(`screen:beside`: an `SEO` head element beside the Screen; one that draws
+nothing moves into the Screen by hand, then the component converts), or in a
+component with a return that is no Screen (`screen:returns`: `null`, another
+view, a choice of views).
+
+Kept as JSX with their reason (`KEPT`):
 `DropdownMenu` with its parts (the language's `Menu` is the platform's own menu
 on Android and iOS, Bloom's DropdownMenu only on the web and as a fallback),
 and `AppShell`, `AppShellPanels` and `AppShellPanel` (a layout route's

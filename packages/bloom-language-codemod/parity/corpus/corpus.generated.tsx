@@ -331,7 +331,7 @@ export const CASES = [
       refreshControl={
         <RefreshControl
           refreshing={true}
-          onRefresh={(() => {})}
+          onRefresh={() => {}}
           tintColor={parityTheme.colors.primary}
           colors={[parityTheme.colors.primary]}
         />
@@ -341,7 +341,7 @@ export const CASES = [
     >
       {<Hole n="0" />}
     </ScreenScrollView>); } return (<I11>{<Before />}</I11>); },
-    after: () => { const ScreenScrollView = I8; const RefreshControl = I39; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
+    after: () => { const ScreenScrollView = I8; const RefreshControl = I39; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader } = L;  return (<I11>{toElement(ScrollView(Embed(<Hole n="0" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))}</I11>); },
   },
   {
     name: "components/Components.tsx:421",

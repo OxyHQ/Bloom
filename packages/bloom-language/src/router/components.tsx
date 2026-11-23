@@ -52,7 +52,9 @@ export function layout(body: () => Child): ComponentType {
 }
 
 /**
- * A screen: its body's root view is the screen's content (a `Group` of several
+ * A screen: it wraps the whole component, drawing one Bloom `Screen` whichever
+ * branch the body returns (a loading, an error, the content); the root a
+ * branch returns is the screen's content (a `Group` of several
  * views is several of the Screen's children), and the root's
  * screen modifiers are its chrome (`title`, `titleDisplay`, `subtitle`,
  * `header`, `toolbar`, `toolbarLeading`, `onBack`, `backLabel`,

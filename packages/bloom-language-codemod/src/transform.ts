@@ -725,7 +725,16 @@ export function transformSource(source: string, options: TransformOptions): File
   /** A className chosen at runtime, by its expression: both branches' classes, which the parity's stylesheet holds. */
   const choiceClasses = new Map<AnyNode, string>();
 
-  /** Each `{name}` in JSX where `name` is a `const` holding an element (`const header = <PageHeader … />`). */
+  /** A language view placed as an element: `toElement(view)`, as a file partly in the language writes it. */
+  const isToElement = (expression: AnyNode) => {
+    const callee = n.CallExpression.check(expression) ? expression.callee : undefined;
+    const source = n.Identifier.check(callee) ? sources.get(callee.name) : undefined;
+    return source?.module === LANGUAGE_MODULE && source.imported === 'toElement';
+  };
+  /**
+   * Each `{name}` in JSX where `name` is a `const` holding an element
+   * (`const header = <PageHeader … />`, or `toElement(Header(…))`).
+   */
   const elementReads = new Set<AnyNode>();
   recast.visit(ast, {
     visitJSXExpressionContainer(path) {
@@ -738,7 +747,9 @@ export function transformSource(source: string, options: TransformOptions): File
       if (
         at?.parent?.node.kind === 'const' &&
         n.Identifier.check(at.node.id) &&
-        (n.JSXElement.check(at.node.init) || n.JSXFragment.check(at.node.init))
+        (n.JSXElement.check(at.node.init) ||
+          n.JSXFragment.check(at.node.init) ||
+          isToElement(at.node.init))
       )
         elementReads.add(expression);
       this.traverse(path);
@@ -844,41 +855,131 @@ export function transformSource(source: string, options: TransformOptions): File
   }
 
   /**
-   * Each route's Screen: a default-exported function component (named, not
-   * async, no return type, its name read nowhere else) whose every return is a
+   * Each screen: a module-level function component whose every return is a
    * Bloom Screen becomes `screen(function …)`, each Screen its body's root.
+   * `screen()` wraps the whole component, so its branches (a loading, an
+   * error, the content) each return their content and chrome. A component is
+   * a function declaration (exported or not) or a `const` holding an arrow or
+   * a function expression, named with a capital, not async, with no return
+   * type; a `const` or a declaration whose name is read becomes
+   * `const Name = screen(function Name …)`, so its name is never read before
+   * the module has defined it.
    */
   const screenRoutes = new Map<AnyNode, AnyNode>();
-  for (const statement of ast.program.body as AnyNode[]) {
-    const fn: AnyNode = n.ExportDefaultDeclaration.check(statement)
-      ? statement.declaration
-      : undefined;
-    if (!n.FunctionDeclaration.check(fn) || !fn.id || fn.async || fn.generator || fn.returnType)
-      continue;
-    const returned: AnyNode[] = [];
-    recast.visit(fn.body, {
-      visitFunction: () => false,
-      visitReturnStatement(path) {
-        returned.push(path.node.argument);
-        return false;
-      },
-    });
-    const isScreen = (node: AnyNode) => {
-      const local = n.JSXElement.check(node) ? jsxName(node) : undefined;
-      const source = local ? sources.get(local) : undefined;
-      return source?.module === '@oxy.so/bloom/screen' && source.imported === 'Screen';
-    };
-    const name = fn.id.name as string;
-    let named = 0;
+  /** Where each screen's function is declared: the statement that holds it, and its name. */
+  const screenDeclarations = new Map<AnyNode, { statement: AnyNode; name: string }>();
+  /** The Screens of a component whose name is read before it is declared. */
+  const earlyScreens = new Map<AnyNode, Reason>();
+  const isScreenElement = (node: AnyNode) => {
+    const local = n.JSXElement.check(node) ? jsxName(node) : undefined;
+    const source = local ? sources.get(local) : undefined;
+    return source?.module === '@oxy.so/bloom/screen' && source.imported === 'Screen';
+  };
+  /** Where each module-level name is read outside a function, before its own statement. */
+  const readsBefore = (name: string, statement: AnyNode) => {
+    let early = false;
     recast.visit(ast, {
+      visitFunction: () => false,
       visitIdentifier(path) {
-        if (path.node.name === name) named++;
+        if (path.node.name === name && ((path.node as AnyNode).start as number) < statement.start)
+          early = true;
         this.traverse(path);
       },
     });
-    if (returned.length && returned.every(isScreen) && named === 1)
-      for (const node of returned) screenRoutes.set(node, fn);
+    return early;
+  };
+  for (const statement of ast.program.body as AnyNode[]) {
+    const declaration: AnyNode =
+      n.ExportDefaultDeclaration.check(statement) || n.ExportNamedDeclaration.check(statement)
+        ? statement.declaration
+        : statement;
+    let fn: AnyNode | undefined;
+    let name: string | undefined;
+    if (n.FunctionDeclaration.check(declaration)) {
+      fn = declaration;
+      name = declaration.id?.name as string | undefined;
+    } else if (
+      n.VariableDeclaration.check(declaration) &&
+      declaration.kind === 'const' &&
+      declaration.declarations.length === 1
+    ) {
+      const declarator: AnyNode = declaration.declarations[0];
+      if (
+        n.Identifier.check(declarator.id) &&
+        !declarator.id.typeAnnotation &&
+        (n.ArrowFunctionExpression.check(declarator.init) ||
+          (n.FunctionExpression.check(declarator.init) && !declarator.init.id))
+      ) {
+        fn = declarator.init;
+        name = declarator.id.name;
+      }
+    }
+    if (!fn || !name || !/^[A-Z]/.test(name) || fn.async || fn.generator || fn.returnType) continue;
+    const returned: AnyNode[] = [];
+    if (!n.BlockStatement.check(fn.body)) returned.push(fn.body);
+    else
+      recast.visit(fn.body, {
+        visitFunction: () => false,
+        visitReturnStatement(path) {
+          returned.push(path.node.argument);
+          return false;
+        },
+      });
+    if (!returned.length || !returned.every(isScreenElement)) continue;
+    if (readsBefore(name, statement)) {
+      for (const node of returned)
+        earlyScreens.set(node, {
+          subject: 'Screen',
+          code: 'screen:read-early',
+          why: `\`${name}\` is read before its declaration, where \`const ${name} = screen(…)\` is not yet defined`,
+        });
+      continue;
+    }
+    for (const node of returned) screenRoutes.set(node, fn);
+    screenDeclarations.set(fn, { statement, name });
   }
+
+  /**
+   * Why a Screen that is no screen's return stays JSX: what is around it, or
+   * the component's other returns. `screen()` wraps the whole component, so a
+   * view beside the Screen or around it would draw inside it.
+   */
+  const screenPlaces = new Map<AnyNode, Reason>(earlyScreens);
+  recast.visit(ast, {
+    visitJSXElement(path) {
+      const node = path.node;
+      if (isScreenElement(node) && !screenRoutes.has(node) && !earlyScreens.has(node)) {
+        const parent = path.parent?.node;
+        const name = (element: AnyNode) => `\`${jsxName(element) ?? 'an element'}\``;
+        const beside = n.JSXFragment.check(parent)
+          ? (parent.children as AnyNode[]).filter(
+              (child) => child !== node && n.JSXElement.check(child),
+            )
+          : [];
+        screenPlaces.set(
+          node,
+          n.JSXElement.check(parent)
+            ? {
+                subject: 'Screen',
+                code: 'screen:wrapped',
+                why: `inside ${name(parent)}: \`screen()\` wraps the whole component, so what is around the Screen would draw inside it`,
+              }
+            : beside.length
+              ? {
+                  subject: 'Screen',
+                  code: 'screen:beside',
+                  why: `beside ${beside.map(name).join(', ')}: \`screen()\` wraps the whole component, so a view beside the Screen would draw inside it (one that draws nothing, a head element, moves into the Screen by hand)`,
+                }
+              : {
+                  subject: 'Screen',
+                  code: 'screen:returns',
+                  why: 'a return of its component that is no Screen (`null`, another view, a choice): `screen()` would draw a Screen around it',
+                },
+        );
+      }
+      this.traverse(path);
+    },
+  });
 
   /**
    * An icon's fill as the chain paints it: a Bloom theme colour read from
@@ -1011,11 +1112,11 @@ export function transformSource(source: string, options: TransformOptions): File
                 code: `removed:${source.imported}`,
                 why: `removed in Bloom 22: use ${removed}`,
               }
-            : {
+            : (screenPlaces.get(node) ?? {
                 subject: local,
                 code: `kept:${source.imported}`,
                 why: KEPT[`${source.module}#${source.imported}`] as string,
-              },
+              }),
         ],
       };
     }
@@ -2080,8 +2181,10 @@ export function transformSource(source: string, options: TransformOptions): File
           : [{ node: expression, hole: 'items' }];
       case 'element':
         if (n.JSXElement.check(expression)) return [{ $: 'view', view: elementView(expression) }];
-        // A fragment, or a `const` holding an element, is drawn as it is.
-        return n.JSXFragment.check(expression) || elementReads.has(expression)
+        // A fragment, a language view's element, or a `const` holding an element, is drawn as it is.
+        return n.JSXFragment.check(expression) ||
+          isToElement(expression) ||
+          elementReads.has(expression)
           ? [{ $: 'view', view: { type: 'embed', content: { node: expression, hole: 'element' } } }]
           : undefined;
       case 'row': {
@@ -3000,14 +3103,38 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The routes whose Screens converted: each becomes `screen(function …)`. */
   const routes = new Set<AnyNode>();
   recast.visit(ast, visitor);
-  for (const statement of ast.program.body as AnyNode[])
-    if (n.ExportDefaultDeclaration.check(statement) && routes.has(statement.declaration)) {
-      const fn: AnyNode = statement.declaration;
-      const b = recast.types.builders;
-      const body = b.functionExpression(fn.id, fn.params, fn.body);
-      body.typeParameters = fn.typeParameters;
-      statement.declaration = b.callExpression(b.identifier(lang('screen')), [body]);
+  for (const fn of routes) {
+    const { statement, name } = screenDeclarations.get(fn) as { statement: AnyNode; name: string };
+    const b = recast.types.builders;
+    const id = b.identifier(name);
+    // An arrow's expression body is the one return of its function.
+    const block = n.BlockStatement.check(fn.body)
+      ? fn.body
+      : b.blockStatement([b.returnStatement(fn.body)]);
+    const body = b.functionExpression(id, fn.params, block);
+    body.typeParameters = fn.typeParameters;
+    const call = b.callExpression(b.identifier(lang('screen')), [body]);
+    const program = ast.program.body as AnyNode[];
+    const at = program.indexOf(statement);
+    let named = 0;
+    recast.visit(ast, {
+      visitIdentifier(path) {
+        if (path.node.name === name) named++;
+        this.traverse(path);
+      },
+    });
+    if (n.ExportDefaultDeclaration.check(statement) && named === 1) {
+      // A default export read nowhere else is the call itself.
+      statement.declaration = call;
+      continue;
     }
+    const constant = b.variableDeclaration('const', [b.variableDeclarator(id, call)]);
+    if (!n.ExportNamedDeclaration.check(statement)) constant.comments = statement.comments;
+    if (n.ExportDefaultDeclaration.check(statement))
+      program.splice(at, 1, constant, b.exportDefaultDeclaration(b.identifier(name)));
+    else if (n.ExportNamedDeclaration.check(statement)) statement.declaration = constant;
+    else program.splice(at, 1, constant);
+  }
 
   const converted = [...counted].filter((node) => convertedNodes.has(node)).length;
 
