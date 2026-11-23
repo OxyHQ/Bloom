@@ -7,6 +7,7 @@ import {
 } from '@oxy.so/bloom/motion';
 
 import type { MotionToken } from './tokens';
+import { SEE } from '../docs';
 
 /**
  * Bloom's motion values, as the language binds them: a number a gesture
@@ -72,7 +73,7 @@ export function useMappedValue(
 ): MotionValue {
   if (input.length < 2 || input.length !== output.length) {
     throw new Error(
-      'bloom-language: useMappedValue takes two ranges of the same length, at least 2',
+      `bloom-language: useMappedValue takes two ranges of the same length, at least 2. See ${SEE.animation}`,
     );
   }
   const from = useSameNumbers(input);

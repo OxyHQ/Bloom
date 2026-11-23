@@ -12,6 +12,7 @@ import {
   type ScaleName,
 } from './tokens';
 import { REST, type TrackProperty, type Tracks, tracksKeyframes } from './tracks';
+import { SEE } from '../docs';
 
 /** A phase's geometry and opacity, as numbers. */
 export type Pose = Partial<Record<TrackProperty, number>>;
@@ -29,7 +30,7 @@ export function poseOf(modifiers: readonly Modifier[]): Pose {
     if (!PHASED.has(modifier.kind)) {
       if (process.env.NODE_ENV !== 'production')
         console.warn(
-          `[Bloom language] a phase changes geometry and opacity only: .${modifier.kind}() is left out.`,
+          `[Bloom language] a phase changes geometry and opacity only: .${modifier.kind}() is left out. See ${SEE.animation}`,
         );
       continue;
     }

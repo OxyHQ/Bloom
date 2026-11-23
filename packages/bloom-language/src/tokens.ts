@@ -32,6 +32,7 @@ import {
   WEIGHT,
   Z_INDEX,
 } from './generated/spec.generated';
+import { SEE } from './docs';
 
 /**
  * The token vocabulary of the language. Every modifier value is one of these
@@ -483,7 +484,7 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, A
       }
       if (scale === 'color' && !isAppColorValue(String(entries[name])))
         throw new Error(
-          `[Bloom language] defineTokens: color.${name} is no colour both platforms paint alike (a hex, an rgb() or rgba() of numbers, or a CSS colour name)`,
+          `[Bloom language] defineTokens: color.${name} is no colour both platforms paint alike (a hex, an rgb() or rgba() of numbers, or a CSS colour name). See ${SEE.tokens}`,
         );
       nextAppToken += 1;
       named[name] = Object.freeze({
