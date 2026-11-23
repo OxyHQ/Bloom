@@ -100,12 +100,12 @@ describe('useTabBarFootprint', () => {
   });
 
   it('measures the bar plus its gap where there is no bottom inset', () => {
-    // 58pt bar + the 16pt EDGE_GAP the gap never goes below.
-    expect(footprintFor(0)).toBe(74);
+    // 62pt bar + the 16pt EDGE_GAP the gap never goes below.
+    expect(footprintFor(0)).toBe(78);
   });
 
   it('measures more on a device with a home indicator', () => {
-    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(92);
+    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(96);
   });
 
   it('clears the OS band in full rather than sitting inside it', () => {
@@ -115,7 +115,7 @@ describe('useTabBarFootprint', () => {
     // the system draws its gesture handle in, with the handle running through
     // the bar. The gap must reach the top of the reserved band, never stop short
     // of it.
-    const gap = footprintFor(GESTURE_HANDLE_INSET) - 58;
+    const gap = footprintFor(GESTURE_HANDLE_INSET) - 62;
     expect(gap).toBeGreaterThanOrEqual(GESTURE_HANDLE_INSET);
   });
 
@@ -124,15 +124,15 @@ describe('useTabBarFootprint', () => {
     // FAB anchored by `bottom` supplies its own. A margin folded in here would
     // lift every consumer's FAB off its intended position, and would make
     // "footprint" mean two different things in one file.
-    expect(footprintFor(0)).toBe(58 + 16);
-    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(58 + HOME_INDICATOR_INSET);
+    expect(footprintFor(0)).toBe(62 + 16);
+    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(62 + HOME_INDICATOR_INSET);
   });
 
   it('already includes the inset — adding insets.bottom would double-count it', () => {
     // The gap already spans the inset, so the footprint grows by what the inset
     // adds OVER the floor — never by the inset on top of a number that contained
     // it. A consumer writing `footprint + insets.bottom` would account 126pt for
-    // a 92pt bar.
+    // a 96pt bar.
     const grown = footprintFor(HOME_INDICATOR_INSET) - footprintFor(0);
     expect(grown).toBe(HOME_INDICATOR_INSET - 16);
     expect(grown).toBeLessThan(HOME_INDICATOR_INSET);

@@ -25,7 +25,8 @@ const cases = [
       testID="media"
     />,
     [
-      ['media-minimise', 36],
+      // A floating header's control: the 44pt floating rung.
+      ['media-minimise', 44],
       ['media-controls-mute', 56],
       ['media-controls-end', 56],
     ],
@@ -66,7 +67,8 @@ const cases = [
       testID="media"
     />,
     [
-      ['media-close', 36],
+      // A floating header's control: the 44pt floating rung.
+      ['media-close', 44],
       ['media-send', 36],
       ['media-react-❤️', 36],
     ],

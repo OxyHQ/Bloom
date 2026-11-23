@@ -11,7 +11,7 @@ import type { TabBarItem, TabBarProps } from '../tab-bar/types';
 /**
  * `blur` — turning the bar's bottom band off, and tuning it.
  *
- * The band is full-bleed and 118pt tall at a zero bottom inset (the bar's own
+ * The band is full-bleed and 122pt tall at a zero bottom inset (the bar's own
  * bottom gap + its expanded height + the bleed above it), so ANY chrome a screen
  * floats near the bottom edge sits inside it and is blurred: a video scrubber, a
  * compose FAB, a QR-scan button. No consumer can escape it from the outside —
@@ -126,7 +126,7 @@ describe('TabBar blur', () => {
     expect(style.left).toBe(0);
     expect(style.right).toBe(0);
     expect(style.height).toBe(BAND_HEIGHT);
-    expect(BAND_HEIGHT).toBe(118);
+    expect(BAND_HEIGHT).toBe(122);
   });
 
   it('treats blur={true} as exactly the default', () => {
@@ -140,7 +140,7 @@ describe('TabBar blur', () => {
   });
 
   it('leaves no empty node behind with blur={false}', () => {
-    // Not merely "invisible": an absolutely-positioned 118pt view that renders
+    // Not merely "invisible": an absolutely-positioned 122pt view that renders
     // nothing is still a node, still a rect, and still something to reason about
     // when debugging why a FAB is not reachable.
     expect(children(barRoot(renderBar())).length).toBe(2);

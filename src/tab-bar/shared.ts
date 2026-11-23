@@ -26,7 +26,7 @@ import type { TabBarItem, TabBarTheme } from './types';
 // ---------------------------------------------------------------------------
 
 /**
- * The bar's height: Apple's Liquid Glass tab bar (iOS 26 and 27), measured at 62pt on an iPhone Air and an
+ * The bar's height: Apple's tab bar (iOS 26 and 27), measured at 62pt on an iPhone Air and an
  * iPhone 17 Pro, the same height as the search circle beside it. A FAB beside the bar takes it too.
  */
 export const EXPANDED_HEIGHT = 62;
@@ -90,8 +90,8 @@ export const LONG_PRESS_MIN_DURATION = 500;
  * the bar follows `BloomThemeProvider` for free:
  *
  *   - the selected tab's icon and label take the accent (`primary`), the others
- *     the foreground that reads on the glass (`text`), as Apple's tab bar does;
- *   - the highlight is a neutral darkening of the glass, never a colour: the
+ *     the foreground that reads on the material (`text`), as Apple's tab bar does;
+ *   - the highlight is a neutral darkening of the material, never a colour: the
  *     `shadow` token (black at 10% light / 30% dark), translucent, so the
  *     material shows through it (the selected tab of Apple's tab bar);
  *   - the card token is painted at 72% on the web (opaque on native); explicit tint alpha is preserved;

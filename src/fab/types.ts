@@ -14,7 +14,7 @@ export interface FabProps
   size?: FabSize;
   /**
    * The silhouette: `circle` (the default), `rounded` (a rounded square) or `squircle` (a rounded
-   * square with Apple's continuous corner). The glass, its press and a menu's morph follow it.
+   * square with Apple's continuous corner). The lens, its press and a menu's morph follow it.
    */
   shape?: FabShape;
   icon?: ButtonIconComponent;
