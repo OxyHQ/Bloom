@@ -40,6 +40,11 @@ export function tokenSetsOf(spec) {
     scale: Object.keys(scales.scale),
     ring: [...Object.keys(colors), ...enums.ringExtra],
     corner: [...Object.keys(scales.corner), ...enums.cornerExtra],
+    // A radius in points: no `concentric`, which is a corner relative to the parent's.
+    cornerRadius: [
+      ...Object.keys(scales.corner),
+      ...enums.cornerExtra.filter((name) => name !== 'concentric'),
+    ],
     columnWidth: [...Object.keys(scales.space), ...enums.columnWidthExtra],
     // `.separator()` is a grouped section's and a list's: either's separators.
     separator: [...new Set([...enums.groupedSeparator, ...enums.listSeparator])],
@@ -48,6 +53,8 @@ export function tokenSetsOf(spec) {
     leading: [...Object.keys(scales.leading), ...Object.keys(scales.leadingPx)],
     tracking: [...Object.keys(scales.tracking), ...Object.keys(scales.trackingPx)],
     color: Object.keys(colors),
+    // A colour role alone, never at an opacity: what a node paints by the role's name.
+    colorRole: Object.keys(colors),
     borderWidth: Object.keys(scales.borderWidth),
     opacity: Object.keys(scales.opacity),
     hitSlop: Object.keys(scales.hitSlop),
@@ -67,4 +74,17 @@ export function tokenSetsOf(spec) {
     loop: Object.keys(loops),
     ...enums,
   };
+}
+
+/** Parameter types that take no token: a view, a boolean. A string written there is never valid. */
+export const NO_TOKEN = ['view', 'boolean'];
+
+/**
+ * A node's own parameters for modifier `name`: the node's `params` where it
+ * takes them narrower than the modifier (`Tooltip().side()` takes `top` or
+ * `bottom` alone), else the modifier's. The runtime's types, the compiler and
+ * the reference all read a node's parameters through this.
+ */
+export function paramsOf(spec, node, name) {
+  return node.params?.[name] ?? spec.modifiers[name] ?? [];
 }

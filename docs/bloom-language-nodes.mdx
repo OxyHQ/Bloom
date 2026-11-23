@@ -731,7 +731,7 @@ Takes the universal modifiers.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
 
 Modifiers:
 
@@ -910,12 +910,12 @@ Takes only the modifiers above (no universal modifiers).
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
 
 Modifiers:
 
 - [`.lineStyle()`](bloom-language-modifiers.mdx#linestyle) `(value: DividerStyle)`: `single` (default) hairline, `double` framing hairlines, or a `fill` strip.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: 'start' | 'center' | 'end')`: Where the label sits on the line.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: 'start' | 'center' | 'end')` (here: [dividerAlign](bloom-language-tokens.mdx#divideralign)): Where the label sits on the line.
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The space on each side of the line, along its stack.
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: The line's colour role; the neutral separator by default.
 
@@ -959,7 +959,7 @@ Modifiers:
 - [`.footer()`](bloom-language-modifiers.mdx#footer) `(content: Child)`: A view pinned under the content (Bloom's `footer`).
 - [`.page()`](bloom-language-modifiers.mdx#page) `(value: DialogScreenFrame)`: A page of a dialog that navigates (Bloom's `frame`: its key, header and travel).
 - [`.frame()`](bloom-language-modifiers.mdx#frame) `(value: DialogFrame)`: Its width and its ceiling.
-- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: SpaceToken)`: The padding around its content (Bloom's `contentPadding`).
+- [`.padding()`](bloom-language-modifiers.mdx#padding) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space)): The padding around its content (Bloom's `contentPadding`).
 - [`.sideGutter()`](bloom-language-modifiers.mdx#sidegutter) `(value: SpaceToken)`: The least room kept beside it on a narrow screen (Bloom's `minSideGutter`).
 - [`.maxHeightRatio()`](bloom-language-modifiers.mdx#maxheightratio) `(value: number)`: Its height ceiling, as a fraction of the window's (`0.9`).
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(isPresented: Binding<boolean>)`: The dialog as a view of its own, shown while `isPresented` holds; dismissing it sets it false. It ends the chain: what a component that is a dialog returns, its binding handed in by the caller.
@@ -1207,7 +1207,7 @@ Modifiers:
 
 - [`.caption()`](bloom-language-modifiers.mdx#caption) `(value: string)`: The note under the rows (Bloom's `footer`).
 - [`.style()`](bloom-language-modifiers.mdx#style) `(value: GroupedSectionStyle)`: `filled` (a card) or `plain` (rows on the page).
-- [`.separator()`](bloom-language-modifiers.mdx#separator) `(value: GroupedSeparator)`: What sets the rows apart: `space`, a `line`, or `none`.
+- [`.separator()`](bloom-language-modifiers.mdx#separator) `(value: GroupedSeparator)` (here: [groupedSeparator](bloom-language-tokens.mdx#groupedseparator)): What sets the rows apart: `space`, a `line`, or `none`.
 - [`.radius()`](bloom-language-modifiers.mdx#radius) `(value: CardRadius)`
 - [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'groupedSection'>)`: Its rows' rhythm, reaching every row in it.
 
@@ -1642,7 +1642,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `.tint()`: [colorRole](bloom-language-tokens.mdx#colorrole), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
 
 Modifiers:
 
@@ -1651,7 +1651,7 @@ Modifiers:
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 - [`.leadingView()`](bloom-language-modifiers.mdx#leadingview) `(...value: Child[])`: A mark before the label in a picker's row, and in its trigger while it is the one chosen.
 - [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorName)`: A swatch radio's colour (`RadioGroup(...).style('swatch')`).
-- [`.foreground()`](bloom-language-modifiers.mdx#foreground) `(value: ColorName)`: The chosen swatch's centre dot, readable on its colour (white by default).
+- [`.foreground()`](bloom-language-modifiers.mdx#foreground) `(value: ColorName)` (here: [colorRole](bloom-language-tokens.mdx#colorrole)): The chosen swatch's centre dot, readable on its colour (white by default).
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1805,7 +1805,7 @@ Modifiers:
 
 - [`.detached()`](bloom-language-modifiers.mdx#detached) `(value?: boolean)`: Inset from the screen's edges with every corner rounded; full width with a rounded top by default.
 - [`.dragIndicator()`](bloom-language-modifiers.mdx#dragindicator) `(value: DragIndicator)`: The drag handle at its top: `visible` (default) or `hidden`.
-- [`.material()`](bloom-language-modifiers.mdx#material) `(value: SheetMaterial)`: Bloom's optical `surface` (default) or the plain backing fill (`flat`).
+- [`.material()`](bloom-language-modifiers.mdx#material) `(value: SheetMaterial)` (here: [sheetMaterial](bloom-language-tokens.mdx#sheetmaterial)): Bloom's optical `surface` (default) or the plain backing fill (`flat`).
 - [`.scrollable()`](bloom-language-modifiers.mdx#scrollable) `(value?: boolean)`: The body scrolls inside the sheet (default); `false` when the body owns its own list.
 - [`.sizing()`](bloom-language-modifiers.mdx#sizing) `(value: SheetSizing)`: `content` (default) fits the body's height; `fill` gives a list a bounded viewport.
 - [`.interactiveDismissDisabled()`](bloom-language-modifiers.mdx#interactivedismissdisabled) `(value?: boolean)`: A drag down does not dismiss it.
@@ -1931,7 +1931,7 @@ Modifiers:
 - [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: Binding<string>)`: The id of the active item: a binding, an item's press writing it.
 - [`.header()`](bloom-language-modifiers.mdx#header) `(value: ViewNode)`: Pinned above the items (a brand mark).
 - [`.footer()`](bloom-language-modifiers.mdx#footer) `(content: Child)`: Pinned below the items (an account control).
-- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)`: Its width; Bloom's 80 by default.
+- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space)): Its width; Bloom's 80 by default.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 
 Takes only the modifiers above (no universal modifiers).
@@ -1993,7 +1993,7 @@ Modifiers:
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: Presented: a binding, told `false` when the reader closes it.
 - [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: Binding<string>)`: The id of the page shown: a binding, its navigation writing it.
 - [`.initialView()`](bloom-language-modifiers.mdx#initialview) `(value: SettingsView)`: Where a narrow screen starts: the `navigation` list (default) or the `page`.
-- [`.presentation()`](bloom-language-modifiers.mdx#presentation) `(value: 'bar' | 'floating')`: Its header: a `bar` (default) or the `floating` capsule.
+- [`.presentation()`](bloom-language-modifiers.mdx#presentation) `(value: 'bar' | 'floating')` (here: [settingsPresentation](bloom-language-tokens.mdx#settingspresentation)): Its header: a `bar` (default) or the `floating` capsule.
 - [`.testID()`](bloom-language-modifiers.mdx#testid) `(value: string)`
 
 Takes only the modifiers above (no universal modifiers).
@@ -2031,7 +2031,7 @@ Modifiers:
 
 - [`.panelRole()`](bloom-language-modifiers.mdx#panelrole) `(value: PanelRole)`: What the panel is: `main`, `collection`, `detail`, `inspector`, `context` or `canvas` (each with Bloom's widths).
 - [`.label()`](bloom-language-modifiers.mdx#label) `(value: string | undefined)`: Its name; an inspector's must have one.
-- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)`
+- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space))
 - [`.minWidth()`](bloom-language-modifiers.mdx#minwidth) `(value: SpaceToken)`
 - [`.maxWidth()`](bloom-language-modifiers.mdx#maxwidth) `(value: SpaceToken)`
 - [`.resizable()`](bloom-language-modifiers.mdx#resizable) `(value?: boolean)`: The reader can drag its edge.
@@ -2246,7 +2246,7 @@ Modifiers:
 
 - [`.compact()`](bloom-language-modifiers.mdx#compact) `(value?: boolean)`: Padded to sit inside a row (default); `false` keeps a field's size.
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: BloomSize)`: The trigger's size; the nearest Bloom scope's by default.
-- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)`: The web dropdown's width; the native sheet sizes itself.
+- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space)): The web dropdown's width; the native sheet sizes itself.
 
 And every universal modifier.
 
@@ -2447,7 +2447,7 @@ Modifiers:
 - [`.trackTint()`](bloom-language-modifiers.mdx#tracktint) `(value: ColorToken)`: The rail behind the fill (neutral by default).
 - [`.thickness()`](bloom-language-modifiers.mdx#thickness) `(value: SpaceToken)`: The bar's height, or the ring's stroke.
 - [`.fillDuration()`](bloom-language-modifiers.mdx#fillduration) `(value: DurationName)`: Web: how long the fill eases to a new value (native snaps); none by default.
-- [`.barCorner()`](bloom-language-modifiers.mdx#barcorner) `(value: Exclude<CornerName, 'concentric'>)`: The track's and the fill's corner; half the thickness (a capsule) by default.
+- [`.barCorner()`](bloom-language-modifiers.mdx#barcorner) `(value: Exclude<CornerName, 'concentric'>)` (here: [cornerRadius](bloom-language-tokens.mdx#cornerradius)): The track's and the fill's corner; half the thickness (a capsule) by default.
 - [`.reveal()`](bloom-language-modifiers.mdx#reveal) `(value: MeterReveal)`: The fill's entrance, which never changes the accessible measurement.
 - [`.revealMotion()`](bloom-language-modifiers.mdx#revealmotion) `(value: TimedMotionToken)`: How the fill enters: a timed motion token (Bloom's 300ms ease by default).
 
@@ -2530,7 +2530,7 @@ Modifiers:
 - [`.width()`](bloom-language-modifiers.mdx#width) `(value: ColumnWidthToken)`: A fixed width, or `fit` to hug the content. Wins over `share`.
 - [`.share()`](bloom-language-modifiers.mdx#share) `(value: number)`: Its share of the remaining width (1 by default).
 - [`.minWidth()`](bloom-language-modifiers.mdx#minwidth) `(value: SpaceToken)`: The narrowest a shared column gets.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: TableAlign)`: Where its content sits: `start` (default), `center` or `end`.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: TableAlign)` (here: [tableAlign](bloom-language-tokens.mdx#tablealign)): Where its content sits: `start` (default), `center` or `end`.
 - [`.sort()`](bloom-language-modifiers.mdx#sort) `(direction: TableSort, action: () => void)`: The header is a sort button: its direction (`none` draws no chevron) and what pressing it does.
 - [`.prefix()`](bloom-language-modifiers.mdx#prefix) `(value: Child)`: What sits before the label, outside the sort button (a select-all checkbox).
 
@@ -2565,7 +2565,7 @@ Modifiers:
 - [`.width()`](bloom-language-modifiers.mdx#width) `(value: ColumnWidthToken)`: A fixed width, or `fit` to hug the content. Wins over `share`.
 - [`.share()`](bloom-language-modifiers.mdx#share) `(value: number)`: Its share of the remaining width (1 by default).
 - [`.minWidth()`](bloom-language-modifiers.mdx#minwidth) `(value: SpaceToken)`: The narrowest a shared column gets.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: TableAlign)`: Where its content sits: `start` (default), `center` or `end`.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: TableAlign)` (here: [tableAlign](bloom-language-tokens.mdx#tablealign)): Where its content sits: `start` (default), `center` or `end`.
 
 And every universal modifier.
 
@@ -2644,7 +2644,7 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.separator()`](bloom-language-modifiers.mdx#separator) `(value: ListSeparator)`: Between rows: `none`, a full `line`, or an `inset` line (default).
+- [`.separator()`](bloom-language-modifiers.mdx#separator) `(value: ListSeparator)` (here: [listSeparator](bloom-language-tokens.mdx#listseparator)): Between rows: `none`, a full `line`, or an `inset` line (default).
 - [`.scrollable()`](bloom-language-modifiers.mdx#scrollable) `(value?: boolean)`: The list scrolls itself (it is laid out in the page by default).
 - [`.scrollHeight()`](bloom-language-modifiers.mdx#scrollheight) `(value: SpaceToken)`: A scrolling list's viewport height.
 - [`.stickyHeaders()`](bloom-language-modifiers.mdx#stickyheaders) `(value?: boolean)`: Section titles stick while their rows scroll.
@@ -2670,7 +2670,7 @@ Modifiers:
 - [`.estimatedItemSize()`](bloom-language-modifiers.mdx#estimateditemsize) `(value: number)`: The engine's first estimate of a row's height, in px.
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`: Items per row.
 - [`.onEndReached()`](bloom-language-modifiers.mdx#onendreached) `(action: () => void, threshold?: number)`: Called near the end, `threshold` viewports from it.
-- [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Binding<boolean>)`: Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done).
+- [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Binding<boolean>)` (here: a value): Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done).
 - [`.stickyIndices()`](bloom-language-modifiers.mdx#stickyindices) `(value: readonly number[])`: The indices whose rows stick to the top.
 - [`.restorationKey()`](bloom-language-modifiers.mdx#restorationkey) `(value: string)`: Where its scroll position is kept across visits.
 - [`.headerContent()`](bloom-language-modifiers.mdx#headercontent) `(value: Child)`
@@ -2715,7 +2715,7 @@ Modifiers:
 - [`.arrowsInset()`](bloom-language-modifiers.mdx#arrowsinset) `(value: SpaceToken)`: How far overlay arrows sit from the edges.
 - [`.hidesUnavailableArrows()`](bloom-language-modifiers.mdx#hidesunavailablearrows) `()`: Hide an arrow that has nowhere to go (kept, disabled, by default).
 - [`.dots()`](bloom-language-modifiers.mdx#dots) `(value?: boolean)`: The position dots under the slides.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: CarouselAlign)`: Where a slide snaps: `start` (default) or `center`.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: CarouselAlign)` (here: [carouselAlign](bloom-language-tokens.mdx#carouselalign)): Where a slide snaps: `start` (default) or `center`.
 - [`.spacing()`](bloom-language-modifiers.mdx#spacing) `(value: SpaceToken)`: The gap between slides.
 - [`.contentInset()`](bloom-language-modifiers.mdx#contentinset) `(value: SpaceToken)`: The room before the first slide and after the last.
 - [`.page()`](bloom-language-modifiers.mdx#page) `(value: Binding<number>)`: The slide shown, and what a move sets.
@@ -2729,7 +2729,7 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)`
+- [`.width()`](bloom-language-modifiers.mdx#width) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space))
 
 And every universal modifier.
 
@@ -2851,7 +2851,7 @@ Takes the universal modifiers.
 
 Modifiers:
 
-- [`.indicator()`](bloom-language-modifiers.mdx#indicator) `(value: Child)`: A glyph of its own in place of the chevron.
+- [`.indicator()`](bloom-language-modifiers.mdx#indicator) `(value: Child)` (here: a view, no token): A glyph of its own in place of the chevron.
 
 And every universal modifier.
 
@@ -2971,7 +2971,7 @@ Token sets:
 Modifiers:
 
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: Whether the bubble shows, and what showing and hiding it set.
-- [`.side()`](bloom-language-modifiers.mdx#side) `(value: TooltipSide)`: The side of its trigger: `bottom` (default) or `top`.
+- [`.side()`](bloom-language-modifiers.mdx#side) `(value: TooltipSide)` (here: [tooltipSide](bloom-language-tokens.mdx#tooltipside)): The side of its trigger: `bottom` (default) or `top`.
 - [`.openDelay()`](bloom-language-modifiers.mdx#opendelay) `(value: DurationName)`: How long the pointer rests before it shows: a duration token (a desktop's own wait, `'1000'`, by default).
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: TooltipSize)`: `sm` or `md`; the nearest Bloom scope's by default.
 
@@ -3195,7 +3195,7 @@ And every universal modifier.
 Modifiers:
 
 - [`.opaque()`](bloom-language-modifiers.mdx#opaque) `(value?: boolean)`: The full-contrast border, to line up with opaque borders beside it (softened by default).
-- [`.mediaCorner()`](bloom-language-modifiers.mdx#mediacorner) `(value: Exclude<CornerName, 'concentric'>)`: The corner of the media it edges, so the hairline follows it (Bloom's `sm` by default).
+- [`.mediaCorner()`](bloom-language-modifiers.mdx#mediacorner) `(value: Exclude<CornerName, 'concentric'>)` (here: [cornerRadius](bloom-language-tokens.mdx#cornerradius)): The corner of the media it edges, so the hairline follows it (Bloom's `sm` by default).
 
 And every universal modifier.
 
@@ -3283,8 +3283,8 @@ Modifiers:
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(value: Binding<boolean>)`: Whether the card shows, and what showing and hiding it set.
 - [`.openDelay()`](bloom-language-modifiers.mdx#opendelay) `(value: DurationName)`: How long the pointer rests before it opens: a duration token (`'400'` by default; the web's).
 - [`.closeDelay()`](bloom-language-modifiers.mdx#closedelay) `(value: DurationName)`: How long it stays after the pointer leaves: a duration token (`fast` by default; the web's).
-- [`.side()`](bloom-language-modifiers.mdx#side) `(value: TooltipSide)`: The side of the trigger: `bottom` (default) or `top`.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: 'start' | 'center' | 'end')`: How the card lines up with the trigger along that side.
+- [`.side()`](bloom-language-modifiers.mdx#side) `(value: TooltipSide)` (here: [tooltipSide](bloom-language-tokens.mdx#tooltipside)): The side of the trigger: `bottom` (default) or `top`.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: 'start' | 'center' | 'end')` (here: [floatingAlign](bloom-language-tokens.mdx#floatingalign)): How the card lines up with the trigger along that side.
 - [`.padded()`](bloom-language-modifiers.mdx#padded) `(value: boolean)`: `false`: the card draws no surface of its own (its content paints one).
 
 And every universal modifier.
@@ -3386,7 +3386,7 @@ Takes only the modifiers above (no universal modifiers).
 
 Modifiers:
 
-- [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)`
+- [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)` (here: [mediaContentFit](bloom-language-tokens.mdx#mediacontentfit))
 - [`.nativeControls()`](bloom-language-modifiers.mdx#nativecontrols) `(value: boolean)`: The platform's playback controls over a video.
 - [`.surfaceType()`](bloom-language-modifiers.mdx#surfacetype) `(value: VideoSurfaceType)`: Android's video surface: `textureView` (default; it clips and transforms) or `surfaceView`.
 - [`.flightId()`](bloom-language-modifiers.mdx#flightid) `(value: string)`: The flight this surface lands from: it shows its poster while that flight is in the air.
@@ -3400,7 +3400,7 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)`
+- [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)` (here: [mediaContentFit](bloom-language-tokens.mdx#mediacontentfit))
 - [`.nativeControls()`](bloom-language-modifiers.mdx#nativecontrols) `(value: boolean)`: The platform's playback controls over a video.
 - [`.surfaceType()`](bloom-language-modifiers.mdx#surfacetype) `(value: VideoSurfaceType)`: Android's video surface: `textureView` (default; it clips and transforms) or `surfaceView`.
 - [`.flightId()`](bloom-language-modifiers.mdx#flightid) `(value: string)`: The flight this surface lands from: it shows its poster while that flight is in the air.
@@ -3414,7 +3414,7 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)`
+- [`.contentFit()`](bloom-language-modifiers.mdx#contentfit) `(value: MediaFit)` (here: [mediaContentFit](bloom-language-tokens.mdx#mediacontentfit))
 
 And every universal modifier.
 
@@ -3526,7 +3526,7 @@ Modifiers:
 - [`.page()`](bloom-language-modifiers.mdx#page) `(value: Binding<number>)`: The page shown: where it opens, and what swiping sets (the first by default).
 - [`.style()`](bloom-language-modifiers.mdx#style) `(value: GalleryStyle)`: `overlay` (default) or `page`.
 - [`.pageIndicator()`](bloom-language-modifiers.mdx#pageindicator) `(value: GalleryIndicator)`
-- [`.mediaCorner()`](bloom-language-modifiers.mdx#mediacorner) `(value: Exclude<CornerName, 'concentric'>)`: The media's corner, as its thumbnails have it; `full` is a circle at every size (an avatar).
+- [`.mediaCorner()`](bloom-language-modifiers.mdx#mediacorner) `(value: Exclude<CornerName, 'concentric'>)` (here: [cornerRadius](bloom-language-tokens.mdx#cornerradius)): The media's corner, as its thumbnails have it; `full` is a circle at every size (an avatar).
 - [`.nativeControls()`](bloom-language-modifiers.mdx#nativecontrols) `(value: boolean)`: The platform's playback controls on a video page (off: a video opens as a moving picture).
 - [`.videoOverlay()`](bloom-language-modifiers.mdx#videooverlay) `(value: (media: GalleryVideo) => Child)`: Status or actions of your own over the active video.
 - [`.sourceAnchors()`](bloom-language-modifiers.mdx#sourceanchors) `(value: readonly (string | undefined)[])`: The media-flight anchors (`MediaFlightHost` ids) its items open from and fly back to, by index: without one, an item fades in and out at the centre.
@@ -3603,8 +3603,8 @@ Modifiers:
 - [`.width()`](bloom-language-modifiers.mdx#width) `(value: ColumnWidthToken)`: A fixed width, or `fit` to hug the content.
 - [`.share()`](bloom-language-modifiers.mdx#share) `(value: number)`: Its share of the remaining width.
 - [`.minWidth()`](bloom-language-modifiers.mdx#minwidth) `(value: SpaceToken)`: The narrowest a shared column gets.
-- [`.basis()`](bloom-language-modifiers.mdx#basis) `(value: SpaceToken)`: A preferred width that grows and shrinks in proportion with the other columns'.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: TableAlign)`
+- [`.basis()`](bloom-language-modifiers.mdx#basis) `(value: SpaceToken)` (here: [space](bloom-language-tokens.mdx#space)): A preferred width that grows and shrinks in proportion with the other columns'.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: TableAlign)` (here: [tableAlign](bloom-language-tokens.mdx#tablealign))
 - [`.cell()`](bloom-language-modifiers.mdx#cell) `(value: (context: DataTableCellContext<T>) => Child)`: Draws the cell (the row's value as body text by default).
 - [`.sortable()`](bloom-language-modifiers.mdx#sortable) `(value?: boolean)`: Whether its header sorts (it does when the column has a value).
 - [`.sortsDescendingFirst()`](bloom-language-modifiers.mdx#sortsdescendingfirst) `(value?: boolean)`: The first press sorts descending (numbers and dates do by default).
@@ -3848,7 +3848,7 @@ Token sets:
 Modifiers:
 
 - [`.size()`](bloom-language-modifiers.mdx#size) `(value: ReactionPickerSize)`
-- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)`: `false` draws the emoji without their pill surface.
+- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): `false` draws the emoji without their pill surface.
 
 And every universal modifier.
 
@@ -4078,7 +4078,7 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)`: `false` draws it without its own surface (on a surface of yours).
+- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): `false` draws it without its own surface (on a surface of yours).
 - [`.frosted()`](bloom-language-modifiers.mdx#frosted) `(value?: boolean)`: A frosted pill over what is behind it.
 - [`.model()`](bloom-language-modifiers.mdx#model) `(value: Bound<ComposerPillProps, 'model'>)`
 - [`.effort()`](bloom-language-modifiers.mdx#effort) `(value: Bound<ComposerPillProps, 'effort'>)`
@@ -4101,7 +4101,7 @@ Modifiers:
 
 - [`.sidebarSurface()`](bloom-language-modifiers.mdx#sidebarsurface) `(value: SidebarSurface)`: The sidebar's edge: a `card`, `plain` or `docked`.
 - [`.sidebarScrollbarSide()`](bloom-language-modifiers.mdx#sidebarscrollbarside) `(value: ScrollbarSide)`: The side the sidebar's web scrollbar is drawn on: `end` or `start`.
-- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)`: `false` draws the shell without its own surface (on a surface of yours).
+- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): `false` draws the shell without its own surface (on a surface of yours).
 - [`.navOpen()`](bloom-language-modifiers.mdx#navopen) `(value: Bound<AiChatShellProps, 'navOpen'>)`
 - [`.panelOpen()`](bloom-language-modifiers.mdx#panelopen) `(value: Bound<AiChatShellProps, 'panelOpen'>)`
 
@@ -4113,7 +4113,7 @@ And every universal modifier.
 
 Modifiers:
 
-- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)`: `false` draws the chat without its own surface.
+- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): `false` draws the chat without its own surface.
 - [`.floatingChrome()`](bloom-language-modifiers.mdx#floatingchrome) `(value?: boolean)`: The header and composer float over the thread.
 
 And every universal modifier.
@@ -4344,7 +4344,7 @@ Modifiers:
 - [`.gradient()`](bloom-language-modifiers.mdx#gradient) `(colors: readonly [InkToken, InkToken, InkToken, InkToken])`: Its four colours, left to right: colour roles or an app's own colours.
 - [`.blend()`](bloom-language-modifiers.mdx#blend) `(value: Blend)`: How the light composites over what is beneath it (`screen` reads as light on a surface).
 - [`.bloomOnly()`](bloom-language-modifiers.mdx#bloomonly) `(value?: boolean)`: The wide bloom alone, with no line or tight glow.
-- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)`: The pill's surface (and its shadow) behind the light: drawn by default.
+- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): The pill's surface (and its shadow) behind the light: drawn by default.
 
 And every universal modifier.
 
@@ -5327,7 +5327,7 @@ And every universal modifier.
 Modifiers:
 
 - [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: The groups in a column (`vertical`, default) or a row.
-- [`.align()`](bloom-language-modifiers.mdx#align) `(value: MapControlsAlign)`: The edge the stack hugs: `end` (default) or `start`.
+- [`.align()`](bloom-language-modifiers.mdx#align) `(value: MapControlsAlign)` (here: [mapControlsAlign](bloom-language-tokens.mdx#mapcontrolsalign)): The edge the stack hugs: `end` (default) or `start`.
 - [`.tilted()`](bloom-language-modifiers.mdx#tilted) `(value: Bound<MapControlsProps, 'tilted'>)`: The map, tilted: a binding; bound, the tilt button draws and writes it.
 
 And every universal modifier.
@@ -5983,7 +5983,7 @@ Takes the universal modifiers.
 
 Modifiers:
 
-- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)`: `.surface(false)`: drawn on a surface of the host's (Bloom's `framed={false}`).
+- [`.surface()`](bloom-language-modifiers.mdx#surface) `(value?: boolean)` (here: a boolean, no token (optional)): `.surface(false)`: drawn on a surface of the host's (Bloom's `framed={false}`).
 - [`.query()`](bloom-language-modifiers.mdx#query) `(value: Bound<AgentChatHistoryProps, 'query'>)`
 - [`.selection()`](bloom-language-modifiers.mdx#selection) `(value: Bound<AgentChatHistoryProps, 'activeId'>)`: The open thread's id: a binding, a thread's press writing it.
 

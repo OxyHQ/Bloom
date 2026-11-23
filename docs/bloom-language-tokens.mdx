@@ -7,11 +7,11 @@ description: Every token set of the Bloom language and its values. Generated fro
 
 # Bloom language tokens
 
-Every value a modifier takes is a token of a named set: a Bloom rung, never a pixel or a colour. A numeric token (`'44'`) is an exact value apps write, named by its value. An app adds its own space, size, leading, motion and colour tokens with `defineTokens` ([tokens in the tour](bloom-language-tour.mdx#tokens)). The sets below are the ones the compiler checks a literal against (265); where the spec gives a token a value (points, a colour role's theme key and CSS variable, a motion's timing) it is shown.
+Every value a modifier takes is a token of a named set: a Bloom rung, never a pixel or a colour. A numeric token (`'44'`) is an exact value apps write, named by its value. An app adds its own space, size, leading, motion and colour tokens with `defineTokens` ([tokens in the tour](bloom-language-tour.mdx#tokens)). The sets below are the ones the compiler checks a literal against (271); where the spec gives a token a value (points, a colour role's theme key and CSS variable, a motion's timing) it is shown.
 
 ## Index
 
-[space](#space), [padding](#padding), [length](#length), [zIndex](#zindex), [shadow](#shadow), [scale](#scale), [ring](#ring), [corner](#corner), [columnWidth](#columnwidth), [separator](#separator), [font](#font), [weight](#weight), [leading](#leading), [tracking](#tracking), [color](#color), [borderWidth](#borderwidth), [opacity](#opacity), [hitSlop](#hitslop), [shrink](#shrink), [flex](#flex), [alignment](#alignment), [iconSize](#iconsize), [avatarSize](#avatarsize), [glassOpacity](#glassopacity), [duration](#duration), [rotation](#rotation), [motion](#motion), [timedMotion](#timedmotion), [typeRamp](#typeramp), [anchor](#anchor), [loop](#loop), [edge](#edge), [borderEdge](#borderedge), [role](#role), [buttonShape](#buttonshape), [linkTone](#linktone), [appearance](#appearance), [tone](#tone), [engagementTone](#engagementtone), [controlSize](#controlsize), [glassMaterial](#glassmaterial), [glassTransition](#glasstransition), [buttonStyle](#buttonstyle), [titleVisibility](#titlevisibility), [insetEdge](#insetedge), [toolbarSpacer](#toolbarspacer), [contentFit](#contentfit), [justify](#justify), [axis](#axis), [ringExtra](#ringextra), [condition](#condition), [overlayAlignment](#overlayalignment), [headerPresentation](#headerpresentation), [headerTone](#headertone), [scrimFalloff](#scrimfalloff), [titleReveal](#titlereveal), [titleDisplay](#titledisplay), [scrollEdge](#scrolledge), [textStyle](#textstyle), [truncation](#truncation), [textAlign](#textalign), [textCase](#textcase), [wordBreak](#wordbreak), [listMarker](#listmarker), [fontFamily](#fontfamily), [cornerExtra](#cornerextra), [zIndexExtra](#zindexextra), [cornerCurve](#cornercurve), [cornerSide](#cornerside), [dividerStyle](#dividerstyle), [dialogPlacement](#dialogplacement), [alertDefault](#alertdefault), [floatingSide](#floatingside), [floatingAlign](#floatingalign), [gridFlow](#gridflow), [shapeName](#shapename), [avatarColor](#avatarcolor), [presence](#presence), [iconCircleSize](#iconcirclesize), [avatarLayout](#avatarlayout), [avatarOverflow](#avataroverflow), [badgeStyle](#badgestyle), [badgeSize](#badgesize), [badgePlacement](#badgeplacement), [cardRadius](#cardradius), [cardElevation](#cardelevation), [cardBorder](#cardborder), [groupedSectionStyle](#groupedsectionstyle), [groupedSeparator](#groupedseparator), [chipSize](#chipsize), [chipHue](#chiphue), [emptyStateStyle](#emptystatestyle), [emptyStateMedia](#emptystatemedia), [admonitionStyle](#admonitionstyle), [tabsStyle](#tabsstyle), [kbdSize](#kbdsize), [loadingStyle](#loadingstyle), [contentTransition](#contenttransition), [swipeDirection](#swipedirection), [keyboard](#keyboard), [autocapitalize](#autocapitalize), [contentType](#contenttype), [submitLabel](#submitlabel), [textareaResize](#textarearesize), [labelSize](#labelsize), [radioStyle](#radiostyle), [segmentedStyle](#segmentedstyle), [searchCollapse](#searchcollapse), [chipStyle](#chipstyle), [accentTone](#accenttone), [selectionIndicator](#selectionindicator), [keyboardTaps](#keyboardtaps), [screenScroll](#screenscroll), [screenKind](#screenkind), [chromePlacement](#chromeplacement), [navigationScope](#navigationscope), [actionPlacement](#actionplacement), [scrollIndicators](#scrollindicators), [keyboardDismiss](#keyboarddismiss), [hitTesting](#hittesting), [appColorName](#appcolorname), [dragIndicator](#dragindicator), [sheetMaterial](#sheetmaterial), [sheetSizing](#sheetsizing), [sidebarVariant](#sidebarvariant), [sidebarSurface](#sidebarsurface), [sidebarSize](#sidebarsize), [footerPinning](#footerpinning), [settingsView](#settingsview), [shellLayout](#shelllayout), [shellPresentation](#shellpresentation), [panelRole](#panelrole), [colorPreset](#colorpreset), [scrollbarVisibility](#scrollbarvisibility), [scrollbarSide](#scrollbarside), [scrollbarSize](#scrollbarsize), [scrollSurfaceStyle](#scrollsurfacestyle), [resizeHandleStyle](#resizehandlestyle), [modePresentation](#modepresentation), [teamPlacement](#teamplacement), [hourFormat](#hourformat), [timeFieldSize](#timefieldsize), [ratingSize](#ratingsize), [ratingStyle](#ratingstyle), [ratingCountStyle](#ratingcountstyle), [ratingInputSize](#ratinginputsize), [meterCap](#metercap), [tableSize](#tablesize), [tableAlign](#tablealign), [tableSort](#tablesort), [columnWidthExtra](#columnwidthextra), [listSeparator](#listseparator), [arrowsPlacement](#arrowsplacement), [arrowsVisibility](#arrowsvisibility), [carouselAlign](#carouselalign), [dotsShape](#dotsshape), [dotsStyle](#dotsstyle), [markdownSize](#markdownsize), [codeLinesSize](#codelinessize), [stepperSize](#steppersize), [stepperStyle](#stepperstyle), [tooltipSide](#tooltipside), [tooltipSize](#tooltipsize), [otpCharacters](#otpcharacters), [dragAction](#dragaction), [expandableTextStyle](#expandabletextstyle), [videoSurface](#videosurface), [notificationStatus](#notificationstatus), [liveRole](#liverole), [socialButtonSize](#socialbuttonsize), [socialButtonStyle](#socialbuttonstyle), [socialIntent](#socialintent), [galleryStyle](#gallerystyle), [galleryIndicator](#galleryindicator), [dataTableStyle](#datatablestyle), [agentMood](#agentmood), [composerButtonTone](#composerbuttontone), [attachmentLayout](#attachmentlayout), [reactionPickerSize](#reactionpickersize), [areaVariant](#areavariant), [chartShape](#chartshape), [radarVariant](#radarvariant), [sparklineTone](#sparklinetone), [aiChatLineTone](#aichatlinetone), [statCardsVariant](#statcardsvariant), [playButtonSize](#playbuttonsize), [playButtonStyle](#playbuttonstyle), [playbackTimes](#playbacktimes), [agentThinkingStyle](#agentthinkingstyle), [agentThinkingTone](#agentthinkingtone), [chatBackgroundStyle](#chatbackgroundstyle), [chatDateHeaderStyle](#chatdateheaderstyle), [chatInfoPanelStyle](#chatinfopanelstyle), [chatStatusTone](#chatstatustone), [messageTone](#messagetone), [fileMessageStyle](#filemessagestyle), [videoMessageStyle](#videomessagestyle), [listingHeaderSize](#listingheadersize), [listingPhotoLayout](#listingphotolayout), [mapMarkerState](#mapmarkerstate), [mapPriceMarkerSize](#mappricemarkersize), [followButtonSize](#followbuttonsize), [shelfLayout](#shelflayout), [priceScale](#pricescale), [featureFilterStyle](#featurefilterstyle), [filterTriggerSize](#filtertriggersize), [guestPickerSize](#guestpickersize), [tenancyLayout](#tenancylayout), [rentOutstandingTone](#rentoutstandingtone), [callMode](#callmode), [callControlSize](#callcontrolsize), [groupCallLayout](#groupcalllayout), [incomingCallAnswer](#incomingcallanswer), [selectedChipsLayout](#selectedchipslayout), [messagePosition](#messageposition), [messageMediaFit](#messagemediafit), [mapAttributionStyle](#mapattributionstyle), [locationPuckMode](#locationpuckmode), [placeCardStyle](#placecardstyle), [directionsDensity](#directionsdensity), [mailComposeStyle](#mailcomposestyle), [noteToolbarSize](#notetoolbarsize), [tripCardOrientation](#tripcardorientation), [searchModeTabsStyle](#searchmodetabsstyle), [mortgageLayout](#mortgagelayout), [listingCardLayout](#listingcardlayout), [offeringBadgeSize](#offeringbadgesize), [offeringBadgeStyle](#offeringbadgestyle), [activityFeedGrouping](#activityfeedgrouping), [orderStatusBarStyle](#orderstatusbarstyle), [lockupSize](#lockupsize), [engagementBarTone](#engagementbartone), [titleAlign](#titlealign), [titleLayout](#titlelayout), [titleAppearance](#titleappearance), [dismissIcon](#dismissicon), [contentAlignment](#contentalignment), [primaryActionPlacement](#primaryactionplacement), [railLabels](#raillabels), [railSelection](#railselection), [modesPresentation](#modespresentation), [blend](#blend), [buttonMaterial](#buttonmaterial), [radarLegend](#radarlegend), [methodTitleAlign](#methodtitlealign), [voiceSize](#voicesize), [noteCardLayout](#notecardlayout), [shareSheetSize](#sharesheetsize), [outlineNavStyle](#outlinenavstyle), [choiceListStyle](#choiceliststyle), [priceLineTone](#pricelinetone), [paymentStatusStyle](#paymentstatusstyle), [pipelineLayout](#pipelinelayout), [mediaCardSize](#mediacardsize), [mediaCardLayout](#mediacardlayout), [lyricsSize](#lyricssize), [releaseCardLayout](#releasecardlayout), [releaseStatusBadgeSize](#releasestatusbadgesize), [transportSize](#transportsize), [transportStyle](#transportstyle), [rowActionStyle](#rowactionstyle), [themeToggleStyle](#themetogglestyle), [libraryItemStyle](#libraryitemstyle), [queuePanelStyle](#queuepanelstyle), [selectionBarPlacement](#selectionbarplacement)
+[space](#space), [padding](#padding), [length](#length), [zIndex](#zindex), [shadow](#shadow), [scale](#scale), [ring](#ring), [corner](#corner), [cornerRadius](#cornerradius), [columnWidth](#columnwidth), [separator](#separator), [font](#font), [weight](#weight), [leading](#leading), [tracking](#tracking), [color](#color), [colorRole](#colorrole), [borderWidth](#borderwidth), [opacity](#opacity), [hitSlop](#hitslop), [shrink](#shrink), [flex](#flex), [alignment](#alignment), [iconSize](#iconsize), [avatarSize](#avatarsize), [glassOpacity](#glassopacity), [duration](#duration), [rotation](#rotation), [motion](#motion), [timedMotion](#timedmotion), [typeRamp](#typeramp), [anchor](#anchor), [loop](#loop), [edge](#edge), [borderEdge](#borderedge), [role](#role), [buttonShape](#buttonshape), [linkTone](#linktone), [appearance](#appearance), [tone](#tone), [engagementTone](#engagementtone), [controlSize](#controlsize), [glassMaterial](#glassmaterial), [glassTransition](#glasstransition), [buttonStyle](#buttonstyle), [titleVisibility](#titlevisibility), [insetEdge](#insetedge), [toolbarSpacer](#toolbarspacer), [contentFit](#contentfit), [mediaContentFit](#mediacontentfit), [justify](#justify), [axis](#axis), [ringExtra](#ringextra), [condition](#condition), [overlayAlignment](#overlayalignment), [headerPresentation](#headerpresentation), [settingsPresentation](#settingspresentation), [headerTone](#headertone), [scrimFalloff](#scrimfalloff), [titleReveal](#titlereveal), [titleDisplay](#titledisplay), [scrollEdge](#scrolledge), [textStyle](#textstyle), [truncation](#truncation), [textAlign](#textalign), [textCase](#textcase), [wordBreak](#wordbreak), [listMarker](#listmarker), [fontFamily](#fontfamily), [cornerExtra](#cornerextra), [zIndexExtra](#zindexextra), [cornerCurve](#cornercurve), [cornerSide](#cornerside), [dividerStyle](#dividerstyle), [dialogPlacement](#dialogplacement), [alertDefault](#alertdefault), [floatingSide](#floatingside), [floatingAlign](#floatingalign), [dividerAlign](#divideralign), [gridFlow](#gridflow), [shapeName](#shapename), [avatarColor](#avatarcolor), [presence](#presence), [iconCircleSize](#iconcirclesize), [avatarLayout](#avatarlayout), [avatarOverflow](#avataroverflow), [badgeStyle](#badgestyle), [badgeSize](#badgesize), [badgePlacement](#badgeplacement), [cardRadius](#cardradius), [cardElevation](#cardelevation), [cardBorder](#cardborder), [groupedSectionStyle](#groupedsectionstyle), [groupedSeparator](#groupedseparator), [chipSize](#chipsize), [chipHue](#chiphue), [emptyStateStyle](#emptystatestyle), [emptyStateMedia](#emptystatemedia), [admonitionStyle](#admonitionstyle), [tabsStyle](#tabsstyle), [kbdSize](#kbdsize), [loadingStyle](#loadingstyle), [contentTransition](#contenttransition), [swipeDirection](#swipedirection), [keyboard](#keyboard), [autocapitalize](#autocapitalize), [contentType](#contenttype), [submitLabel](#submitlabel), [textareaResize](#textarearesize), [labelSize](#labelsize), [radioStyle](#radiostyle), [segmentedStyle](#segmentedstyle), [searchCollapse](#searchcollapse), [chipStyle](#chipstyle), [accentTone](#accenttone), [selectionIndicator](#selectionindicator), [keyboardTaps](#keyboardtaps), [screenScroll](#screenscroll), [screenKind](#screenkind), [chromePlacement](#chromeplacement), [navigationScope](#navigationscope), [actionPlacement](#actionplacement), [scrollIndicators](#scrollindicators), [keyboardDismiss](#keyboarddismiss), [hitTesting](#hittesting), [appColorName](#appcolorname), [dragIndicator](#dragindicator), [sheetMaterial](#sheetmaterial), [sheetSizing](#sheetsizing), [sidebarVariant](#sidebarvariant), [sidebarSurface](#sidebarsurface), [sidebarSize](#sidebarsize), [footerPinning](#footerpinning), [settingsView](#settingsview), [shellLayout](#shelllayout), [shellPresentation](#shellpresentation), [panelRole](#panelrole), [colorPreset](#colorpreset), [scrollbarVisibility](#scrollbarvisibility), [scrollbarSide](#scrollbarside), [scrollbarSize](#scrollbarsize), [scrollSurfaceStyle](#scrollsurfacestyle), [resizeHandleStyle](#resizehandlestyle), [modePresentation](#modepresentation), [teamPlacement](#teamplacement), [hourFormat](#hourformat), [timeFieldSize](#timefieldsize), [ratingSize](#ratingsize), [ratingStyle](#ratingstyle), [ratingCountStyle](#ratingcountstyle), [ratingInputSize](#ratinginputsize), [meterCap](#metercap), [tableSize](#tablesize), [tableAlign](#tablealign), [tableSort](#tablesort), [columnWidthExtra](#columnwidthextra), [listSeparator](#listseparator), [arrowsPlacement](#arrowsplacement), [arrowsVisibility](#arrowsvisibility), [carouselAlign](#carouselalign), [dotsShape](#dotsshape), [dotsStyle](#dotsstyle), [markdownSize](#markdownsize), [codeLinesSize](#codelinessize), [stepperSize](#steppersize), [stepperStyle](#stepperstyle), [tooltipSide](#tooltipside), [mapControlsAlign](#mapcontrolsalign), [tooltipSize](#tooltipsize), [otpCharacters](#otpcharacters), [dragAction](#dragaction), [expandableTextStyle](#expandabletextstyle), [videoSurface](#videosurface), [notificationStatus](#notificationstatus), [liveRole](#liverole), [socialButtonSize](#socialbuttonsize), [socialButtonStyle](#socialbuttonstyle), [socialIntent](#socialintent), [galleryStyle](#gallerystyle), [galleryIndicator](#galleryindicator), [dataTableStyle](#datatablestyle), [agentMood](#agentmood), [composerButtonTone](#composerbuttontone), [attachmentLayout](#attachmentlayout), [reactionPickerSize](#reactionpickersize), [areaVariant](#areavariant), [chartShape](#chartshape), [radarVariant](#radarvariant), [sparklineTone](#sparklinetone), [aiChatLineTone](#aichatlinetone), [statCardsVariant](#statcardsvariant), [playButtonSize](#playbuttonsize), [playButtonStyle](#playbuttonstyle), [playbackTimes](#playbacktimes), [agentThinkingStyle](#agentthinkingstyle), [agentThinkingTone](#agentthinkingtone), [chatBackgroundStyle](#chatbackgroundstyle), [chatDateHeaderStyle](#chatdateheaderstyle), [chatInfoPanelStyle](#chatinfopanelstyle), [chatStatusTone](#chatstatustone), [messageTone](#messagetone), [fileMessageStyle](#filemessagestyle), [videoMessageStyle](#videomessagestyle), [listingHeaderSize](#listingheadersize), [listingPhotoLayout](#listingphotolayout), [mapMarkerState](#mapmarkerstate), [mapPriceMarkerSize](#mappricemarkersize), [followButtonSize](#followbuttonsize), [shelfLayout](#shelflayout), [priceScale](#pricescale), [featureFilterStyle](#featurefilterstyle), [filterTriggerSize](#filtertriggersize), [guestPickerSize](#guestpickersize), [tenancyLayout](#tenancylayout), [rentOutstandingTone](#rentoutstandingtone), [callMode](#callmode), [callControlSize](#callcontrolsize), [groupCallLayout](#groupcalllayout), [incomingCallAnswer](#incomingcallanswer), [selectedChipsLayout](#selectedchipslayout), [messagePosition](#messageposition), [messageMediaFit](#messagemediafit), [mapAttributionStyle](#mapattributionstyle), [locationPuckMode](#locationpuckmode), [placeCardStyle](#placecardstyle), [directionsDensity](#directionsdensity), [mailComposeStyle](#mailcomposestyle), [noteToolbarSize](#notetoolbarsize), [tripCardOrientation](#tripcardorientation), [searchModeTabsStyle](#searchmodetabsstyle), [mortgageLayout](#mortgagelayout), [listingCardLayout](#listingcardlayout), [offeringBadgeSize](#offeringbadgesize), [offeringBadgeStyle](#offeringbadgestyle), [activityFeedGrouping](#activityfeedgrouping), [orderStatusBarStyle](#orderstatusbarstyle), [lockupSize](#lockupsize), [engagementBarTone](#engagementbartone), [titleAlign](#titlealign), [titleLayout](#titlelayout), [titleAppearance](#titleappearance), [dismissIcon](#dismissicon), [contentAlignment](#contentalignment), [primaryActionPlacement](#primaryactionplacement), [railLabels](#raillabels), [railSelection](#railselection), [modesPresentation](#modespresentation), [blend](#blend), [buttonMaterial](#buttonmaterial), [radarLegend](#radarlegend), [methodTitleAlign](#methodtitlealign), [voiceSize](#voicesize), [noteCardLayout](#notecardlayout), [shareSheetSize](#sharesheetsize), [outlineNavStyle](#outlinenavstyle), [choiceListStyle](#choiceliststyle), [priceLineTone](#pricelinetone), [paymentStatusStyle](#paymentstatusstyle), [pipelineLayout](#pipelinelayout), [mediaCardSize](#mediacardsize), [mediaCardLayout](#mediacardlayout), [lyricsSize](#lyricssize), [releaseCardLayout](#releasecardlayout), [releaseStatusBadgeSize](#releasestatusbadgesize), [transportSize](#transportsize), [transportStyle](#transportstyle), [rowActionStyle](#rowactionstyle), [themeToggleStyle](#themetogglestyle), [libraryItemStyle](#libraryitemstyle), [queuePanelStyle](#queuepanelstyle), [selectionBarPlacement](#selectionbarplacement)
 
 ## Sets
 
@@ -76,6 +76,8 @@ Every value a modifier takes is a token of a named set: a Bloom rung, never a pi
 | `'1200'` | 1200 |
 
 Taken by: [`.ring()`](bloom-language-modifiers.mdx#ring), [`.childSpacing()`](bloom-language-modifiers.mdx#childspacing), [`.spacing()`](bloom-language-modifiers.mdx#spacing), [`.minCellWidth()`](bloom-language-modifiers.mdx#mincellwidth), [`.safeAreaInset()`](bloom-language-modifiers.mdx#safeareainset), [`.sideOffset()`](bloom-language-modifiers.mdx#sideoffset), [`.contentInset()`](bloom-language-modifiers.mdx#contentinset), [`.inset()`](bloom-language-modifiers.mdx#inset), [`.ringInset()`](bloom-language-modifiers.mdx#ringinset), [`.sideGutter()`](bloom-language-modifiers.mdx#sidegutter), [`.contentClearance()`](bloom-language-modifiers.mdx#contentclearance), [`.contentMargins()`](bloom-language-modifiers.mdx#contentmargins), [`.minWidth()`](bloom-language-modifiers.mdx#minwidth), [`.maxWidth()`](bloom-language-modifiers.mdx#maxwidth), [`.initialHeaderHeight()`](bloom-language-modifiers.mdx#initialheaderheight), [`.initialFooterHeight()`](bloom-language-modifiers.mdx#initialfooterheight), [`.fadeHeight()`](bloom-language-modifiers.mdx#fadeheight), [`.barHeight()`](bloom-language-modifiers.mdx#barheight), [`.collapsedHeight()`](bloom-language-modifiers.mdx#collapsedheight), [`.thickness()`](bloom-language-modifiers.mdx#thickness), [`.starSize()`](bloom-language-modifiers.mdx#starsize), [`.labelWidth()`](bloom-language-modifiers.mdx#labelwidth), [`.compactPadding()`](bloom-language-modifiers.mdx#compactpadding), [`.scrollHeight()`](bloom-language-modifiers.mdx#scrollheight), [`.arrowsInset()`](bloom-language-modifiers.mdx#arrowsinset), [`.thumbSize()`](bloom-language-modifiers.mdx#thumbsize), [`.cellSize()`](bloom-language-modifiers.mdx#cellsize), [`.minItemWidth()`](bloom-language-modifiers.mdx#minitemwidth).
+
+Taken by these nodes' own parameters: [dialog](bloom-language-nodes.mdx#dialog) `.padding()`, [rail](bloom-language-nodes.mdx#rail) `.width()`, [panel](bloom-language-nodes.mdx#panel) `.width()`, [settingsSelect](bloom-language-nodes.mdx#settingsselect) `.width()`, [carouselItem](bloom-language-nodes.mdx#carouselitem) `.width()`, [dataColumn](bloom-language-nodes.mdx#datacolumn) `.basis()`.
 
 Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [shape](bloom-language-nodes.mdx#shape), [meterRing](bloom-language-nodes.mdx#meterring), [colorSwatchPicker](bloom-language-nodes.mdx#colorswatchpicker), [animatedCheck](bloom-language-nodes.mdx#animatedcheck), [glassGroup](bloom-language-nodes.mdx#glassgroup), [composerIconButton](bloom-language-nodes.mdx#composericonbutton).
 
@@ -237,6 +239,12 @@ Taken by: [`.ring()`](bloom-language-modifiers.mdx#ring).
 
 Taken by: [`.corner()`](bloom-language-modifiers.mdx#corner), [`.barCorner()`](bloom-language-modifiers.mdx#barcorner), [`.mediaCorner()`](bloom-language-modifiers.mdx#mediacorner).
 
+### `cornerRadius`
+
+`'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'infinite'`, `'6'`, `'10'`, `'14'`, `'18'`, `'22'`
+
+Taken by these nodes' own parameters: [meter](bloom-language-nodes.mdx#meter) `.barCorner()`, [mediaInsetBorder](bloom-language-nodes.mdx#mediainsetborder) `.mediaCorner()`, [gallery](bloom-language-nodes.mdx#gallery) `.mediaCorner()`.
+
 ### `columnWidth`
 
 `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'fit'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
@@ -351,7 +359,19 @@ A colour token is a role above (on native the theme's colour named first, on the
 
 Taken by: [`.background()`](bloom-language-modifiers.mdx#background), [`.border()`](bloom-language-modifiers.mdx#border), [`.foreground()`](bloom-language-modifiers.mdx#foreground), [`.scrimColor()`](bloom-language-modifiers.mdx#scrimcolor), [`.colors()`](bloom-language-modifiers.mdx#colors), [`.fill()`](bloom-language-modifiers.mdx#fill), [`.stroke()`](bloom-language-modifiers.mdx#stroke), [`.fade()`](bloom-language-modifiers.mdx#fade), [`.refreshable()`](bloom-language-modifiers.mdx#refreshable), [`.band()`](bloom-language-modifiers.mdx#band), [`.starTint()`](bloom-language-modifiers.mdx#startint), [`.countTint()`](bloom-language-modifiers.mdx#counttint), [`.emptyTint()`](bloom-language-modifiers.mdx#emptytint), [`.trackTint()`](bloom-language-modifiers.mdx#tracktint), [`.backdrop()`](bloom-language-modifiers.mdx#backdrop), [`.fillTint()`](bloom-language-modifiers.mdx#filltint), [`.thumbTint()`](bloom-language-modifiers.mdx#thumbtint), [`.activeTint()`](bloom-language-modifiers.mdx#activetint), [`.bubbleTint()`](bloom-language-modifiers.mdx#bubbletint), [`.contentTint()`](bloom-language-modifiers.mdx#contenttint), [`.placeholderTint()`](bloom-language-modifiers.mdx#placeholdertint), [`.senderTint()`](bloom-language-modifiers.mdx#sendertint).
 
-Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [image](bloom-language-nodes.mdx#image), [divider](bloom-language-nodes.mdx#divider), [option](bloom-language-nodes.mdx#option), [rating](bloom-language-nodes.mdx#rating), [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [animatedCheck](bloom-language-nodes.mdx#animatedcheck), [spinnerIcon](bloom-language-nodes.mdx#spinnericon), [composerBanner](bloom-language-nodes.mdx#composerbanner), [barListCard](bloom-language-nodes.mdx#barlistcard), [contributionsCard](bloom-language-nodes.mdx#contributionscard), [heatmapChartCard](bloom-language-nodes.mdx#heatmapchartcard), [lineChartCard](bloom-language-nodes.mdx#linechartcard), [stepsCard](bloom-language-nodes.mdx#stepscard), [tokensChartCard](bloom-language-nodes.mdx#tokenschartcard), [chatBackground](bloom-language-nodes.mdx#chatbackground), [typingDots](bloom-language-nodes.mdx#typingdots), [callScreen](bloom-language-nodes.mdx#callscreen), [callMinimisedPill](bloom-language-nodes.mdx#callminimisedpill), [incomingCallScreen](bloom-language-nodes.mdx#incomingcallscreen), [incomingCallBanner](bloom-language-nodes.mdx#incomingcallbanner), [placeListCard](bloom-language-nodes.mdx#placelistcard), [wishlistCard](bloom-language-nodes.mdx#wishlistcard), [aiProfileCard](bloom-language-nodes.mdx#aiprofilecard), [deliverySlotDays](bloom-language-nodes.mdx#deliveryslotdays), [deliverySlotPicker](bloom-language-nodes.mdx#deliveryslotpicker), [signaturePad](bloom-language-nodes.mdx#signaturepad), [swipeRow](bloom-language-nodes.mdx#swiperow), [trackList](bloom-language-nodes.mdx#tracklist), [trackListHeader](bloom-language-nodes.mdx#tracklistheader).
+Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [rating](bloom-language-nodes.mdx#rating), [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [animatedCheck](bloom-language-nodes.mdx#animatedcheck), [spinnerIcon](bloom-language-nodes.mdx#spinnericon), [composerBanner](bloom-language-nodes.mdx#composerbanner), [barListCard](bloom-language-nodes.mdx#barlistcard), [contributionsCard](bloom-language-nodes.mdx#contributionscard), [heatmapChartCard](bloom-language-nodes.mdx#heatmapchartcard), [lineChartCard](bloom-language-nodes.mdx#linechartcard), [stepsCard](bloom-language-nodes.mdx#stepscard), [tokensChartCard](bloom-language-nodes.mdx#tokenschartcard), [chatBackground](bloom-language-nodes.mdx#chatbackground), [typingDots](bloom-language-nodes.mdx#typingdots), [callScreen](bloom-language-nodes.mdx#callscreen), [callMinimisedPill](bloom-language-nodes.mdx#callminimisedpill), [incomingCallScreen](bloom-language-nodes.mdx#incomingcallscreen), [incomingCallBanner](bloom-language-nodes.mdx#incomingcallbanner), [placeListCard](bloom-language-nodes.mdx#placelistcard), [wishlistCard](bloom-language-nodes.mdx#wishlistcard), [aiProfileCard](bloom-language-nodes.mdx#aiprofilecard), [deliverySlotDays](bloom-language-nodes.mdx#deliveryslotdays), [deliverySlotPicker](bloom-language-nodes.mdx#deliveryslotpicker), [signaturePad](bloom-language-nodes.mdx#signaturepad), [swipeRow](bloom-language-nodes.mdx#swiperow), [trackList](bloom-language-nodes.mdx#tracklist), [trackListHeader](bloom-language-nodes.mdx#tracklistheader).
+
+### `colorRole`
+
+`'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+
+A colour role alone: never at an opacity, nor an app colour. What a node paints by the role's name takes it.
+
+Taken by these nodes' own parameters: [option](bloom-language-nodes.mdx#option) `.foreground()`.
+
+Taken by a glass value's `regular.tint()`.
+
+Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [image](bloom-language-nodes.mdx#image), [divider](bloom-language-nodes.mdx#divider), [option](bloom-language-nodes.mdx#option).
 
 ### `borderWidth`
 
@@ -480,6 +500,8 @@ Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [avatar](bloom-l
 | `'dim'` | 0.35 |
 | `'medium'` | 0.48 |
 | `'strong'` | 0.72 |
+
+Taken by a glass value's `regular.tint()`.
 
 ### `duration`
 
@@ -733,6 +755,12 @@ Taken by: [`.safeAreaInset()`](bloom-language-modifiers.mdx#safeareainset), [`.s
 
 Taken by: [`.contentFit()`](bloom-language-modifiers.mdx#contentfit).
 
+### `mediaContentFit`
+
+`'contain'`, `'cover'`
+
+Taken by these nodes' own parameters: [mediaFlightHost](bloom-language-nodes.mdx#mediaflighthost) `.contentFit()`, [mediaSurface](bloom-language-nodes.mdx#mediasurface) `.contentFit()`, [mediaPoster](bloom-language-nodes.mdx#mediaposter) `.contentFit()`.
+
 ### `justify`
 
 `'start'`, `'center'`, `'end'`, `'between'`, `'around'`, `'evenly'`
@@ -766,6 +794,12 @@ Taken by: [`.background()`](bloom-language-modifiers.mdx#background), [`.overlay
 `'floating'`, `'bar'`, `'navigation'`
 
 Taken by: [`.presentation()`](bloom-language-modifiers.mdx#presentation).
+
+### `settingsPresentation`
+
+`'bar'`, `'floating'`
+
+Taken by these nodes' own parameters: [settings](bloom-language-nodes.mdx#settings) `.presentation()`.
 
 ### `headerTone`
 
@@ -887,6 +921,14 @@ Taken by: [`.side()`](bloom-language-modifiers.mdx#side).
 
 Taken by: [`.side()`](bloom-language-modifiers.mdx#side).
 
+Taken by these nodes' own parameters: [hoverCard](bloom-language-nodes.mdx#hovercard) `.align()`.
+
+### `dividerAlign`
+
+`'start'`, `'center'`, `'end'`
+
+Taken by these nodes' own parameters: [divider](bloom-language-nodes.mdx#divider) `.align()`.
+
 ### `gridFlow`
 
 `'rows'`, `'columns'`
@@ -974,6 +1016,8 @@ Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [groupedSection]
 ### `groupedSeparator`
 
 `'space'`, `'line'`, `'none'`
+
+Taken by these nodes' own parameters: [groupedSection](bloom-language-nodes.mdx#groupedsection) `.separator()`.
 
 ### `chipSize`
 
@@ -1173,6 +1217,8 @@ Taken by: [`.dragIndicator()`](bloom-language-modifiers.mdx#dragindicator).
 
 `'surface'`, `'flat'`
 
+Taken by these nodes' own parameters: [bottomSheet](bloom-language-nodes.mdx#bottomsheet) `.material()`.
+
 ### `sheetSizing`
 
 `'content'`, `'fill'`
@@ -1329,6 +1375,8 @@ Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [table](bloom-la
 
 `'start'`, `'center'`, `'end'`
 
+Taken by these nodes' own parameters: [tableColumn](bloom-language-nodes.mdx#tablecolumn) `.align()`, [tableCell](bloom-language-nodes.mdx#tablecell) `.align()`, [dataColumn](bloom-language-nodes.mdx#datacolumn) `.align()`.
+
 ### `tableSort`
 
 `'ascending'`, `'descending'`, `'none'`
@@ -1343,6 +1391,8 @@ Taken by: [`.sort()`](bloom-language-modifiers.mdx#sort).
 
 `'none'`, `'line'`, `'inset'`
 
+Taken by these nodes' own parameters: [list](bloom-language-nodes.mdx#list) `.separator()`.
+
 ### `arrowsPlacement`
 
 `'header'`, `'overlay'`, `'footer'`
@@ -1356,6 +1406,8 @@ Taken by: [`.arrowsVisibility()`](bloom-language-modifiers.mdx#arrowsvisibility)
 ### `carouselAlign`
 
 `'start'`, `'center'`
+
+Taken by these nodes' own parameters: [carousel](bloom-language-nodes.mdx#carousel) `.align()`.
 
 ### `dotsShape`
 
@@ -1396,6 +1448,14 @@ Read by these nodes' `.size()`/`.tint()`/`.style()`/`.shape()`: [stepper](bloom-
 ### `tooltipSide`
 
 `'top'`, `'bottom'`
+
+Taken by these nodes' own parameters: [tooltip](bloom-language-nodes.mdx#tooltip) `.side()`, [hoverCard](bloom-language-nodes.mdx#hovercard) `.side()`.
+
+### `mapControlsAlign`
+
+`'start'`, `'end'`
+
+Taken by these nodes' own parameters: [mapControls](bloom-language-nodes.mdx#mapcontrols) `.align()`.
 
 ### `tooltipSize`
 

@@ -26,7 +26,7 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { tokenSetsOf, typeFamiliesOf, withoutComment } from './token-sets.mjs';
+import { NO_TOKEN, paramsOf, tokenSetsOf, typeFamiliesOf, withoutComment } from './token-sets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, '..');
@@ -97,6 +97,32 @@ for (const [kind, node] of Object.entries(nodes)) {
       : [...new Set([...spec.universal, ...node.modifiers])];
   for (const name of node.constructors) constructors[name] = kind;
 }
+
+const tokenSetNames = new Set(Object.keys(tokenSetsOf(spec)));
+/** Every parameter type a signature may name: the modifiers' own, a token set, an object, a view or a boolean. */
+const paramTypes = new Set([
+  ...Object.values(modifiers).flatMap((params) => params.map((param) => param.replace(/\?$/, ''))),
+  ...tokenSetNames,
+  ...Object.keys(objects),
+  ...NO_TOKEN,
+]);
+const checkParams = (where, params) => {
+  for (const param of params) {
+    if (!paramTypes.has(param.replace(/\?$/, '')))
+      throw new Error(`${where}: unknown parameter type ${param}`);
+  }
+};
+for (const [kind, node] of Object.entries(nodes)) {
+  for (const [name, params] of Object.entries(node.params ?? {})) {
+    if (!node.modifiers.includes(name))
+      throw new Error(`nodes.${kind}.params.${name}: the node does not list .${name}()`);
+    if (modifiers[name] === undefined)
+      throw new Error(`nodes.${kind}.params.${name}: no such modifier`);
+    checkParams(`nodes.${kind}.params.${name}`, params);
+  }
+}
+const glassValue = withoutComment(spec.glassValue);
+for (const [name, params] of Object.entries(glassValue)) checkParams(`glassValue.${name}`, params);
 
 /** The node kinds that take each environment value: they list its modifier (from its token set). */
 const environmentTakers = Object.fromEntries(
@@ -507,8 +533,9 @@ const rust = `//! ${HEADER}
 //! the compiler never resolves a token, it only proves one is valid.
 
 /// A node kind: the constructors that make it, every modifier it takes, the
-/// densities its \`density()\` takes, and the token sets its \`size()\`,
-/// \`tint()\`, \`style()\`, \`shape()\` and \`blend()\` read.
+/// densities its \`density()\` takes, the token sets its \`size()\`,
+/// \`tint()\`, \`style()\`, \`shape()\` and \`blend()\` read, and its own
+/// parameters for the modifiers it takes narrower than the modifier's.
 pub struct NodeSpec {
     pub kind: &'static str,
     pub constructors: &'static [&'static str],
@@ -519,6 +546,7 @@ pub struct NodeSpec {
     pub style: Option<&'static str>,
     pub shape: Option<&'static str>,
     pub blend: Option<&'static str>,
+    pub params: &'static [(&'static str, &'static [&'static str])],
 }
 
 /// Token set name → its token names.
@@ -550,8 +578,19 @@ pub const NODES: &[NodeSpec] = &[
 ${Object.entries(nodes)
   .map(
     ([kind, node]) =>
-      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, densities: ${rustList(node.densities ?? [])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)}, blend: ${rustOption(node.blend)} },`,
+      `    NodeSpec { kind: ${rustStr(kind)}, constructors: ${rustList(node.constructors)}, modifiers: ${rustList(nodeModifiers[kind])}, densities: ${rustList(node.densities ?? [])}, size: ${rustOption(node.size)}, tint: ${rustOption(node.tint)}, style: ${rustOption(node.style)}, shape: ${rustOption(node.shape)}, blend: ${rustOption(node.blend)}, params: &[${Object.keys(
+        node.params ?? {},
+      )
+        .map((name) => `(${rustStr(name)}, ${rustList(paramsOf(spec, node, name))})`)
+        .join(', ')}] },`,
   )
+  .join('\n')}
+];
+
+/// A glass value's methods (\`regular.tint('primary', 'subtle')\`) → their parameter types.
+pub const GLASS_VALUE: &[(&str, &[&str])] = &[
+${Object.entries(glassValue)
+  .map(([name, params]) => `    (${rustStr(name)}, ${rustList(params)}),`)
   .join('\n')}
 ];
 

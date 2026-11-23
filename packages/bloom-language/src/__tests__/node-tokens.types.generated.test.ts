@@ -11,6 +11,7 @@ import { join } from 'node:path';
 
 import type { MotionSpec, SurfaceTransition } from '@oxy.so/bloom/motion';
 
+import type { GlassValue } from '../glass';
 import type * as Language from '../index';
 import type { ViewModifiers, ViewNode } from '../node';
 import type * as Router from '../router';
@@ -26,6 +27,7 @@ type S = {
   "scale": "95" | "99" | "103" | "105" | "110" | "dip" | "pressed" | "full" | "swell";
   "ring": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "none";
   "corner": "6" | "10" | "14" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "concentric" | "infinite";
+  "cornerRadius": "6" | "10" | "14" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "infinite";
   "columnWidth": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "44" | "48" | "56" | "64" | "72" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "fit";
   "separator": "space" | "line" | "none" | "inset";
   "font": "large-title" | "display-1" | "display-2" | "display-3" | "display-4" | "title-1" | "title-2" | "title-3" | "headline" | "body" | "body-2" | "caption-1" | "caption-2" | "11" | "14" | "16" | "18" | "24" | "30" | "36" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "mono";
@@ -33,6 +35,7 @@ type S = {
   "leading": "tight" | "close" | "snug" | "easy" | "normal" | "relaxed" | "14px" | "16px" | "18px" | "20px" | "22px" | "24px" | "28px" | "32px" | "36px" | "40px";
   "tracking": "tight" | "wide" | "wider" | "widest" | "-0.02em" | "-0.01em" | "0.04em" | "-0.5px" | "-0.4px" | "-0.2px" | "0.5px" | "1.5px" | "2px";
   "color": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText";
+  "colorRole": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText";
   "borderWidth": "3" | "4" | "hairline" | "thin" | "thick" | "2.5";
   "opacity": "10" | "20" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "90" | "transparent" | "half" | "opaque";
   "hitSlop": "sm" | "md" | "lg";
@@ -65,12 +68,14 @@ type S = {
   "insetEdge": "top" | "bottom";
   "toolbarSpacer": "fixed" | "flexible";
   "contentFit": "cover" | "contain" | "fill" | "none" | "scale-down";
+  "mediaContentFit": "contain" | "cover";
   "justify": "start" | "center" | "end" | "between" | "around" | "evenly";
   "axis": "horizontal" | "vertical";
   "ringExtra": "none";
   "condition": "sm" | "md" | "lg" | "xl" | "2xl" | "dark" | "hovered" | "focused" | "pressed" | "disabled" | "web" | "native" | "ios" | "android";
   "overlayAlignment": "center" | "top" | "bottom" | "leading" | "trailing" | "top-leading" | "top-trailing" | "bottom-leading" | "bottom-trailing";
   "headerPresentation": "floating" | "bar" | "navigation";
+  "settingsPresentation": "bar" | "floating";
   "headerTone": "default" | "onImage";
   "scrimFalloff": "smooth" | "linear";
   "titleReveal": "auto" | "always" | "onScroll" | "onDock";
@@ -92,6 +97,7 @@ type S = {
   "alertDefault": "confirm" | "cancel";
   "floatingSide": "top" | "bottom" | "left" | "right";
   "floatingAlign": "start" | "center" | "end";
+  "dividerAlign": "start" | "center" | "end";
   "gridFlow": "rows" | "columns";
   "shapeName": "circle" | "squircle" | "square" | "slanted" | "arch" | "semicircle" | "oval" | "pill" | "triangle" | "arrow" | "fan" | "diamond" | "clamshell" | "pentagon" | "gem" | "very-sunny" | "sunny" | "4-sided-cookie" | "6-sided-cookie" | "7-sided-cookie" | "9-sided-cookie" | "12-sided-cookie" | "4-leaf-clover" | "8-leaf-clover" | "burst" | "soft-burst" | "boom" | "soft-boom" | "flower" | "puffy" | "puffy-diamond" | "ghost-ish" | "pixel-circle" | "pixel-triangle" | "bun" | "heart";
   "avatarColor": "neutral" | "blue" | "lime" | "pink";
@@ -180,6 +186,7 @@ type S = {
   "stepperSize": "sm" | "md";
   "stepperStyle": "separate" | "outline";
   "tooltipSide": "top" | "bottom";
+  "mapControlsAlign": "start" | "end";
   "tooltipSize": "sm" | "md";
   "otpCharacters": "numeric" | "alphanumeric";
   "dragAction": "copy" | "move" | "link";
@@ -284,8 +291,8 @@ type S = {
   "queuePanelStyle": "panel" | "sheet";
   "selectionBarPlacement": "floating" | "inline";
 };
-/** A colour: a role, or a role at an opacity. */
-type Color = S['color'] | `${S['color']}/${S['opacity']}`;
+/** A colour role at an opacity (`'muted/70'`). */
+type AtOpacity = `${S['color']}/${S['opacity']}`;
 
 type Ctor<C extends string> = C extends keyof typeof Language
   ? (typeof Language)[C]
@@ -310,6 +317,8 @@ type At<F, I extends string> = Exclude<
 >;
 /** Each overload's last parameter. */
 type Last<F> = Signatures<F> extends infer T ? (T extends readonly [...unknown[], infer L] ? L : never) : never;
+/** How many arguments each overload takes. */
+type Lengths<F> = Signatures<F> extends infer T ? (T extends readonly unknown[] ? T['length'] : never) : never;
 /** The first parameter of each two-parameter overload. */
 type Lead<F> = Signatures<F> extends infer T ? (T extends readonly [infer E, unknown] ? E : never) : never;
 
@@ -349,15 +358,15 @@ type UniversalChecks = [
   Expect<"margin(padding) takes AppToken<'space'>", Takes<Last<Any['margin']>, AppToken<'space'>>>,
   Expect<"scale(scale)", Ok<At<Any['scale'], '0'>, S['scale']>>,
   Expect<"allowsHitTesting(hitTesting)", Ok<At<Any['allowsHitTesting'], '0'>, S['hitTesting']>>,
-  Expect<"background(color)", Ok<At<Any['background'], '0'>, Color>>,
+  Expect<"background(color)", Ok<At<Any['background'], '0'>, S['color'] | AtOpacity>>,
   Expect<"background(color) takes AppToken<'color'>", Takes<At<Any['background'], '0'>, AppToken<'color'>>>,
   Expect<"background(overlayAlignment)", Ok<At<Any['background'], '1'>, S['overlayAlignment']>>,
   Expect<"overlay(overlayAlignment)", Ok<At<Any['overlay'], '1'>, S['overlayAlignment']>>,
-  Expect<"border(color)", Ok<At<Any['border'], '0'>, Color>>,
+  Expect<"border(color)", Ok<At<Any['border'], '0'>, S['color'] | AtOpacity>>,
   Expect<"border(color) takes AppToken<'color'>", Takes<At<Any['border'], '0'>, AppToken<'color'>>>,
   Expect<"border(borderWidth)", Ok<At<Any['border'], '1'>, S['borderWidth']>>,
   Expect<"border(borderEdge)", Ok<At<Any['border'], '2'>, S['borderEdge']>>,
-  Expect<"ring(ring)", Ok<At<Any['ring'], '0'>, Color | S['ringExtra']>>,
+  Expect<"ring(ring)", Ok<At<Any['ring'], '0'>, S['ring'] | AtOpacity>>,
   Expect<"ring(ring) takes AppToken<'color'>", Takes<At<Any['ring'], '0'>, AppToken<'color'>>>,
   Expect<"ring(borderWidth)", Ok<At<Any['ring'], '1'>, S['borderWidth']>>,
   Expect<"ring(space)", Ok<At<Any['ring'], '2'>, S['space']>>,
@@ -367,7 +376,7 @@ type UniversalChecks = [
   Expect<"cornerCurve(cornerCurve)", Ok<At<Any['cornerCurve'], '0'>, S['cornerCurve']>>,
   Expect<"opacity(opacity)", Ok<At<Any['opacity'], '0'>, S['opacity']>>,
   Expect<"shadow(shadow)", Ok<At<Any['shadow'], '0'>, S['shadow']>>,
-  Expect<"foreground(color)", Ok<At<Any['foreground'], '0'>, Color>>,
+  Expect<"foreground(color)", Ok<At<Any['foreground'], '0'>, S['color'] | AtOpacity>>,
   Expect<"foreground(color) takes AppToken<'color'>", Takes<At<Any['foreground'], '0'>, AppToken<'color'>>>,
   Expect<"font(font)", Ok<At<Any['font'], '0'>, S['font']>>,
   Expect<"weight(weight)", Ok<At<Any['weight'], '0'>, S['weight']>>,
@@ -492,7 +501,7 @@ type skeletonGroupChecks = [
 type imageChecks = [
   Expect<'image: the universal modifiers', Universal<View<'Image'>>>,
   Expect<"image.contentFit(contentFit)", Ok<At<View<'Image'>['contentFit'], '0'>, S['contentFit']>>,
-  Expect<"image.tint(tint: color)", Ok<At<View<'Image'>['tint'], '0'>, S['color']>>,
+  Expect<"image.tint(tint: colorRole)", Ok<At<View<'Image'>['tint'], '0'>, S['colorRole']>>,
   Expect<"image.crossFade(duration)", Ok<At<View<'Image'>['crossFade'], '0'>, S['duration']>>,
 ];
 
@@ -519,8 +528,8 @@ type buttonChecks = [
   Expect<"button.shape(shape: buttonShape)", Ok<At<View<'Button'>['shape'], '0'>, S['buttonShape']>>,
   Expect<"button.size(size: controlSize)", Ok<At<View<'Button'>['size'], '0'>, S['controlSize']>>,
   Expect<"button.tint(tint: tone)", Ok<At<View<'Button'>['tint'], '0'>, S['tone']>>,
-  Expect<"button.colors(color)", Ok<At<View<'Button'>['colors'], '0'>, Color>>,
-  Expect<"button.colors(color)", Ok<At<View<'Button'>['colors'], '1'>, Color>>,
+  Expect<"button.colors(color)", Ok<At<View<'Button'>['colors'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"button.colors(color)", Ok<At<View<'Button'>['colors'], '1'>, S['color'] | AtOpacity>>,
   Expect<"button.linkTone(linkTone)", Ok<At<View<'Button'>['linkTone'], '0'>, S['linkTone']>>,
   Expect<"button.density(density)", Ok<At<View<'Button'>['density'], '0'>, "default" | "compact">>,
 ];
@@ -529,8 +538,8 @@ type shapeChecks = [
   Expect<'shape: the universal modifiers', Universal<View<'Shape'>>>,
   Expect<"shape.size(size: space)", Ok<At<View<'Shape'>['size'], '0'>, S['space']>>,
   Expect<"shape.size(size: space) takes AppToken<'space'>", Takes<At<View<'Shape'>['size'], '0'>, AppToken<'space'>>>,
-  Expect<"shape.fill(color)", Ok<At<View<'Shape'>['fill'], '0'>, Color>>,
-  Expect<"shape.stroke(color)", Ok<At<View<'Shape'>['stroke'], '0'>, Color>>,
+  Expect<"shape.fill(color)", Ok<At<View<'Shape'>['fill'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"shape.stroke(color)", Ok<At<View<'Shape'>['stroke'], '0'>, S['color'] | AtOpacity>>,
   Expect<"shape.stroke(borderWidth)", Ok<At<View<'Shape'>['stroke'], '1'>, S['borderWidth']>>,
 ];
 
@@ -554,10 +563,11 @@ type menuChecks = [
 type dividerChecks = [
   Expect<'divider: the universal modifiers', Universal<View<'Divider'>>>,
   Expect<"divider.lineStyle(dividerStyle)", Ok<At<View<'Divider'>['lineStyle'], '0'>, S['dividerStyle']>>,
-  Expect<"divider.align(alignment)", Ok<At<View<'Divider'>['align'], '0'>, 'start' | 'center' | 'end'>>,
+  Expect<"divider.align arity", Same<Lengths<View<'Divider'>['align']>, 1>>,
+  Expect<"divider.align(dividerAlign)", Ok<At<View<'Divider'>['align'], '0'>, S['dividerAlign']>>,
   Expect<"divider.spacing(space)", Ok<At<View<'Divider'>['spacing'], '0'>, S['space']>>,
   Expect<"divider.spacing(space) takes AppToken<'space'>", Takes<At<View<'Divider'>['spacing'], '0'>, AppToken<'space'>>>,
-  Expect<"divider.tint(tint: color)", Ok<At<View<'Divider'>['tint'], '0'>, S['color']>>,
+  Expect<"divider.tint(tint: colorRole)", Ok<At<View<'Divider'>['tint'], '0'>, S['colorRole']>>,
 ];
 
 type alertChecks = [
@@ -566,8 +576,9 @@ type alertChecks = [
 
 type dialogChecks = [
   Expect<"dialog.presentAt(dialogPlacement)", Ok<At<View<'Dialog'>['presentAt'], '0'>, S['dialogPlacement']>>,
-  Expect<"dialog.padding(edge)", Ok<Lead<View<'Dialog'>['padding']>, never>>,
-  Expect<"dialog.padding(padding)", Ok<Last<View<'Dialog'>['padding']>, S['space']>>,
+  Expect<"dialog.padding arity", Same<Lengths<View<'Dialog'>['padding']>, 1>>,
+  Expect<"dialog.padding(space)", Ok<At<View<'Dialog'>['padding'], '0'>, S['space']>>,
+  Expect<"dialog.padding(space) takes AppToken<'space'>", Takes<At<View<'Dialog'>['padding'], '0'>, AppToken<'space'>>>,
   Expect<"dialog.sideGutter(space)", Ok<At<View<'Dialog'>['sideGutter'], '0'>, S['space']>>,
   Expect<"dialog.sideGutter(space) takes AppToken<'space'>", Takes<At<View<'Dialog'>['sideGutter'], '0'>, AppToken<'space'>>>,
 ];
@@ -592,7 +603,7 @@ type headerChecks = [
   Expect<"header.presentation(headerPresentation)", Ok<At<View<'Header'>['presentation'], '0'>, S['headerPresentation']>>,
   Expect<"header.titleAlign(titleAlign)", Ok<At<View<'Header'>['titleAlign'], '0'>, S['titleAlign']>>,
   Expect<"header.tone(headerTone)", Ok<At<View<'Header'>['tone'], '0'>, S['headerTone']>>,
-  Expect<"header.scrimColor(color)", Ok<At<View<'Header'>['scrimColor'], '0'>, Color>>,
+  Expect<"header.scrimColor(color)", Ok<At<View<'Header'>['scrimColor'], '0'>, S['color'] | AtOpacity>>,
   Expect<"header.scrimFalloff(scrimFalloff)", Ok<At<View<'Header'>['scrimFalloff'], '0'>, S['scrimFalloff']>>,
   Expect<"header.titleReveal(titleReveal)", Ok<At<View<'Header'>['titleReveal'], '0'>, S['titleReveal']>>,
 ];
@@ -647,7 +658,8 @@ type rowChecks = [
 type groupedSectionChecks = [
   Expect<'groupedSection: the universal modifiers', Universal<View<'GroupedSection'>, "title">>,
   Expect<"groupedSection.style(style: groupedSectionStyle)", Ok<At<View<'GroupedSection'>['style'], '0'>, S['groupedSectionStyle']>>,
-  Expect<"groupedSection.separator(separator)", Ok<At<View<'GroupedSection'>['separator'], '0'>, S['groupedSeparator']>>,
+  Expect<"groupedSection.separator arity", Same<Lengths<View<'GroupedSection'>['separator']>, 1>>,
+  Expect<"groupedSection.separator(groupedSeparator)", Ok<At<View<'GroupedSection'>['separator'], '0'>, S['groupedSeparator']>>,
   Expect<"groupedSection.radius(cardRadius)", Ok<At<View<'GroupedSection'>['radius'], '0'>, S['cardRadius']>>,
   Expect<"groupedSection.density(density)", Ok<At<View<'GroupedSection'>['density'], '0'>, "comfortable" | "compact">>,
 ];
@@ -658,10 +670,10 @@ type groupedSectionItemChecks = [
   Expect<"groupedSectionItem.padding(padding) takes AppToken<'space'>", Takes<Last<View<'GroupedSectionItem'>['padding']>, AppToken<'space'>>>,
   Expect<"groupedSectionItem.shrink(shrink)", Ok<At<View<'GroupedSectionItem'>['shrink'], '0'>, S['shrink']>>,
   Expect<"groupedSectionItem.alignSelf(alignment)", Ok<At<View<'GroupedSectionItem'>['alignSelf'], '0'>, S['alignment']>>,
-  Expect<"groupedSectionItem.background(color)", Ok<At<View<'GroupedSectionItem'>['background'], '0'>, Color>>,
+  Expect<"groupedSectionItem.background(color)", Ok<At<View<'GroupedSectionItem'>['background'], '0'>, S['color'] | AtOpacity>>,
   Expect<"groupedSectionItem.background(color) takes AppToken<'color'>", Takes<At<View<'GroupedSectionItem'>['background'], '0'>, AppToken<'color'>>>,
   Expect<"groupedSectionItem.background(overlayAlignment)", Ok<At<View<'GroupedSectionItem'>['background'], '1'>, S['overlayAlignment']>>,
-  Expect<"groupedSectionItem.border(color)", Ok<At<View<'GroupedSectionItem'>['border'], '0'>, Color>>,
+  Expect<"groupedSectionItem.border(color)", Ok<At<View<'GroupedSectionItem'>['border'], '0'>, S['color'] | AtOpacity>>,
   Expect<"groupedSectionItem.border(color) takes AppToken<'color'>", Takes<At<View<'GroupedSectionItem'>['border'], '0'>, AppToken<'color'>>>,
   Expect<"groupedSectionItem.border(borderWidth)", Ok<At<View<'GroupedSectionItem'>['border'], '1'>, S['borderWidth']>>,
   Expect<"groupedSectionItem.border(borderEdge)", Ok<At<View<'GroupedSectionItem'>['border'], '2'>, S['borderEdge']>>,
@@ -706,10 +718,10 @@ type errorBoundaryChecks = [
   Expect<"errorBoundary.padding(padding) takes AppToken<'space'>", Takes<Last<View<'ErrorBoundary'>['padding']>, AppToken<'space'>>>,
   Expect<"errorBoundary.shrink(shrink)", Ok<At<View<'ErrorBoundary'>['shrink'], '0'>, S['shrink']>>,
   Expect<"errorBoundary.alignSelf(alignment)", Ok<At<View<'ErrorBoundary'>['alignSelf'], '0'>, S['alignment']>>,
-  Expect<"errorBoundary.background(color)", Ok<At<View<'ErrorBoundary'>['background'], '0'>, Color>>,
+  Expect<"errorBoundary.background(color)", Ok<At<View<'ErrorBoundary'>['background'], '0'>, S['color'] | AtOpacity>>,
   Expect<"errorBoundary.background(color) takes AppToken<'color'>", Takes<At<View<'ErrorBoundary'>['background'], '0'>, AppToken<'color'>>>,
   Expect<"errorBoundary.background(overlayAlignment)", Ok<At<View<'ErrorBoundary'>['background'], '1'>, S['overlayAlignment']>>,
-  Expect<"errorBoundary.border(color)", Ok<At<View<'ErrorBoundary'>['border'], '0'>, Color>>,
+  Expect<"errorBoundary.border(color)", Ok<At<View<'ErrorBoundary'>['border'], '0'>, S['color'] | AtOpacity>>,
   Expect<"errorBoundary.border(color) takes AppToken<'color'>", Takes<At<View<'ErrorBoundary'>['border'], '0'>, AppToken<'color'>>>,
   Expect<"errorBoundary.border(borderWidth)", Ok<At<View<'ErrorBoundary'>['border'], '1'>, S['borderWidth']>>,
   Expect<"errorBoundary.border(borderEdge)", Ok<At<View<'ErrorBoundary'>['border'], '2'>, S['borderEdge']>>,
@@ -800,8 +812,9 @@ type pickerChecks = [
 ];
 
 type optionChecks = [
-  Expect<"option.tint(tint: color)", Ok<At<View<'Option'>['tint'], '0'>, S['color']>>,
-  Expect<"option.foreground(color)", Ok<At<View<'Option'>['foreground'], '0'>, S['color']>>,
+  Expect<"option.tint(tint: colorRole)", Ok<At<View<'Option'>['tint'], '0'>, S['colorRole']>>,
+  Expect<"option.foreground arity", Same<Lengths<View<'Option'>['foreground']>, 1>>,
+  Expect<"option.foreground(colorRole)", Ok<At<View<'Option'>['foreground'], '0'>, S['colorRole']>>,
 ];
 
 type searchChecks = [
@@ -818,7 +831,7 @@ type chipRowChecks = [
   Expect<"chipRow.spacing(space) takes AppToken<'space'>", Takes<At<View<'ChipRow'>['spacing'], '0'>, AppToken<'space'>>>,
   Expect<"chipRow.contentInset(space)", Ok<At<View<'ChipRow'>['contentInset'], '0'>, S['space']>>,
   Expect<"chipRow.contentInset(space) takes AppToken<'space'>", Takes<At<View<'ChipRow'>['contentInset'], '0'>, AppToken<'space'>>>,
-  Expect<"chipRow.fade(color)", Ok<At<View<'ChipRow'>['fade'], '0'>, Color>>,
+  Expect<"chipRow.fade(color)", Ok<At<View<'ChipRow'>['fade'], '0'>, S['color'] | AtOpacity>>,
   Expect<"chipRow.ringInset(space)", Ok<At<View<'ChipRow'>['ringInset'], '0'>, S['space']>>,
   Expect<"chipRow.ringInset(space) takes AppToken<'space'>", Takes<At<View<'ChipRow'>['ringInset'], '0'>, AppToken<'space'>>>,
   Expect<"chipRow.keyboardTaps(keyboardTaps)", Ok<At<View<'ChipRow'>['keyboardTaps'], '0'>, S['keyboardTaps']>>,
@@ -856,7 +869,7 @@ type scrollViewChecks = [
   Expect<"scrollView.contentMargins(space) takes AppToken<'space'>", Takes<Last<View<'ScrollView'>['contentMargins']>, AppToken<'space'>>>,
   Expect<"scrollView.spacing(space)", Ok<At<View<'ScrollView'>['spacing'], '0'>, S['space']>>,
   Expect<"scrollView.spacing(space) takes AppToken<'space'>", Takes<At<View<'ScrollView'>['spacing'], '0'>, AppToken<'space'>>>,
-  Expect<"scrollView.refreshable(color)", Ok<At<View<'ScrollView'>['refreshable'], '1'>, Color>>,
+  Expect<"scrollView.refreshable(color)", Ok<At<View<'ScrollView'>['refreshable'], '1'>, S['color'] | AtOpacity>>,
   Expect<"scrollView.scrollIndicators(scrollIndicators)", Ok<At<View<'ScrollView'>['scrollIndicators'], '0'>, S['scrollIndicators']>>,
   Expect<"scrollView.scrollIndicators(axis)", Ok<At<View<'ScrollView'>['scrollIndicators'], '1'>, S['axis']>>,
   Expect<"scrollView.scrollDismissesKeyboard(keyboardDismiss)", Ok<At<View<'ScrollView'>['scrollDismissesKeyboard'], '0'>, S['keyboardDismiss']>>,
@@ -869,7 +882,8 @@ type scrollViewChecks = [
 
 type bottomSheetChecks = [
   Expect<"bottomSheet.dragIndicator(dragIndicator)", Ok<At<View<'BottomSheet'>['dragIndicator'], '0'>, S['dragIndicator']>>,
-  Expect<"bottomSheet.material(buttonMaterial)", Ok<At<View<'BottomSheet'>['material'], '0'>, S['sheetMaterial']>>,
+  Expect<"bottomSheet.material arity", Same<Lengths<View<'BottomSheet'>['material']>, 1>>,
+  Expect<"bottomSheet.material(sheetMaterial)", Ok<At<View<'BottomSheet'>['material'], '0'>, S['sheetMaterial']>>,
   Expect<"bottomSheet.sizing(sheetSizing)", Ok<At<View<'BottomSheet'>['sizing'], '0'>, S['sheetSizing']>>,
 ];
 
@@ -882,17 +896,22 @@ type sidebarChecks = [
 ];
 
 type railChecks = [
-  Expect<"rail.width(columnWidth)", Ok<At<View<'Rail'>['width'], '0'>, S['space']>>,
+  Expect<"rail.width arity", Same<Lengths<View<'Rail'>['width']>, 1>>,
+  Expect<"rail.width(space)", Ok<At<View<'Rail'>['width'], '0'>, S['space']>>,
+  Expect<"rail.width(space) takes AppToken<'space'>", Takes<At<View<'Rail'>['width'], '0'>, AppToken<'space'>>>,
 ];
 
 type settingsChecks = [
   Expect<"settings.initialView(settingsView)", Ok<At<View<'SettingsModal'>['initialView'], '0'>, S['settingsView']>>,
-  Expect<"settings.presentation(headerPresentation)", Ok<At<View<'SettingsModal'>['presentation'], '0'>, 'floating' | 'bar'>>,
+  Expect<"settings.presentation arity", Same<Lengths<View<'SettingsModal'>['presentation']>, 1>>,
+  Expect<"settings.presentation(settingsPresentation)", Ok<At<View<'SettingsModal'>['presentation'], '0'>, S['settingsPresentation']>>,
 ];
 
 type panelChecks = [
   Expect<"panel.panelRole(panelRole)", Ok<At<View<'Panel'>['panelRole'], '0'>, S['panelRole']>>,
-  Expect<"panel.width(columnWidth)", Ok<At<View<'Panel'>['width'], '0'>, S['space']>>,
+  Expect<"panel.width arity", Same<Lengths<View<'Panel'>['width']>, 1>>,
+  Expect<"panel.width(space)", Ok<At<View<'Panel'>['width'], '0'>, S['space']>>,
+  Expect<"panel.width(space) takes AppToken<'space'>", Takes<At<View<'Panel'>['width'], '0'>, AppToken<'space'>>>,
   Expect<"panel.minWidth(space)", Ok<At<View<'Panel'>['minWidth'], '0'>, S['space']>>,
   Expect<"panel.minWidth(space) takes AppToken<'space'>", Takes<At<View<'Panel'>['minWidth'], '0'>, AppToken<'space'>>>,
   Expect<"panel.maxWidth(space)", Ok<At<View<'Panel'>['maxWidth'], '0'>, S['space']>>,
@@ -942,7 +961,7 @@ type scrollSurfaceChecks = [
   Expect<"scrollSurface.keyboardTaps(keyboardTaps)", Ok<At<View<'ScrollSurface'>['keyboardTaps'], '0'>, S['keyboardTaps']>>,
   Expect<"scrollSurface.fadeHeight(space)", Ok<At<View<'ScrollSurface'>['fadeHeight'], '0'>, S['space']>>,
   Expect<"scrollSurface.fadeHeight(space) takes AppToken<'space'>", Takes<At<View<'ScrollSurface'>['fadeHeight'], '0'>, AppToken<'space'>>>,
-  Expect<"scrollSurface.fade(color)", Ok<At<View<'ScrollSurface'>['fade'], '0'>, Color>>,
+  Expect<"scrollSurface.fade(color)", Ok<At<View<'ScrollSurface'>['fade'], '0'>, S['color'] | AtOpacity>>,
   Expect<"scrollSurface.style(style: scrollSurfaceStyle)", Ok<At<View<'ScrollSurface'>['style'], '0'>, S['scrollSurfaceStyle']>>,
   Expect<"scrollSurface.safeAreaInset(insetEdge)", Ok<At<View<'ScrollSurface'>['safeAreaInset'], '0'>, S['insetEdge']>>,
   Expect<"scrollSurface.safeAreaInset(space)", Ok<At<View<'ScrollSurface'>['safeAreaInset'], '2'>, S['space']>>,
@@ -955,7 +974,7 @@ type autoHideBarChecks = [
   Expect<"autoHideBar.barHeight(space) takes AppToken<'space'>", Takes<At<View<'AutoHideBar'>['barHeight'], '0'>, AppToken<'space'>>>,
   Expect<"autoHideBar.collapsedHeight(space)", Ok<At<View<'AutoHideBar'>['collapsedHeight'], '0'>, S['space']>>,
   Expect<"autoHideBar.collapsedHeight(space) takes AppToken<'space'>", Takes<At<View<'AutoHideBar'>['collapsedHeight'], '0'>, AppToken<'space'>>>,
-  Expect<"autoHideBar.band(color)", Ok<At<View<'AutoHideBar'>['band'], '0'>, Color>>,
+  Expect<"autoHideBar.band(color)", Ok<At<View<'AutoHideBar'>['band'], '0'>, S['color'] | AtOpacity>>,
   Expect<"autoHideBar.peekDelay(duration)", Ok<At<View<'AutoHideBar'>['peekDelay'], '0'>, S['duration']>>,
   Expect<"autoHideBar.unpeekDelay(duration)", Ok<At<View<'AutoHideBar'>['unpeekDelay'], '0'>, S['duration']>>,
   Expect<"autoHideBar.hideMotion(motion)", Ok<At<View<'AutoHideBar'>['hideMotion'], '0'>, S['motion']>>,
@@ -984,7 +1003,9 @@ type settingsValueChecks = [
 type settingsSelectChecks = [
   Expect<'settingsSelect: the universal modifiers', Universal<View<'SettingsSelect'>, "disabled">>,
   Expect<"settingsSelect.size(size: controlSize)", Ok<At<View<'SettingsSelect'>['size'], '0'>, S['controlSize']>>,
-  Expect<"settingsSelect.width(columnWidth)", Ok<At<View<'SettingsSelect'>['width'], '0'>, S['space']>>,
+  Expect<"settingsSelect.width arity", Same<Lengths<View<'SettingsSelect'>['width']>, 1>>,
+  Expect<"settingsSelect.width(space)", Ok<At<View<'SettingsSelect'>['width'], '0'>, S['space']>>,
+  Expect<"settingsSelect.width(space) takes AppToken<'space'>", Takes<At<View<'SettingsSelect'>['width'], '0'>, AppToken<'space'>>>,
 ];
 
 type settingsTextFieldChecks = [
@@ -1021,10 +1042,10 @@ type ratingChecks = [
   Expect<"rating.style(style: ratingStyle)", Ok<At<View<'Rating'>['style'], '0'>, S['ratingStyle']>>,
   Expect<"rating.starSize(space)", Ok<At<View<'Rating'>['starSize'], '0'>, S['space']>>,
   Expect<"rating.starSize(space) takes AppToken<'space'>", Takes<At<View<'Rating'>['starSize'], '0'>, AppToken<'space'>>>,
-  Expect<"rating.tint(tint: color)", Ok<At<View<'Rating'>['tint'], '0'>, Color>>,
-  Expect<"rating.starTint(color)", Ok<At<View<'Rating'>['starTint'], '0'>, Color>>,
-  Expect<"rating.countTint(color)", Ok<At<View<'Rating'>['countTint'], '0'>, Color>>,
-  Expect<"rating.emptyTint(color)", Ok<At<View<'Rating'>['emptyTint'], '0'>, Color>>,
+  Expect<"rating.tint(tint: color)", Ok<At<View<'Rating'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"rating.starTint(color)", Ok<At<View<'Rating'>['starTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"rating.countTint(color)", Ok<At<View<'Rating'>['countTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"rating.emptyTint(color)", Ok<At<View<'Rating'>['emptyTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type ratingInputChecks = [
@@ -1046,33 +1067,34 @@ type ratingSummaryChecks = [
 
 type meterChecks = [
   Expect<'meter: the universal modifiers', Universal<View<'Meter'>>>,
-  Expect<"meter.tint(tint: color)", Ok<At<View<'Meter'>['tint'], '0'>, Color>>,
-  Expect<"meter.trackTint(color)", Ok<At<View<'Meter'>['trackTint'], '0'>, Color>>,
+  Expect<"meter.tint(tint: color)", Ok<At<View<'Meter'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"meter.trackTint(color)", Ok<At<View<'Meter'>['trackTint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"meter.thickness(space)", Ok<At<View<'Meter'>['thickness'], '0'>, S['space']>>,
   Expect<"meter.thickness(space) takes AppToken<'space'>", Takes<At<View<'Meter'>['thickness'], '0'>, AppToken<'space'>>>,
   Expect<"meter.fillDuration(duration)", Ok<At<View<'Meter'>['fillDuration'], '0'>, S['duration']>>,
-  Expect<"meter.barCorner(corner)", Ok<At<View<'Meter'>['barCorner'], '0'>, Exclude<S['corner'], 'concentric'>>>,
+  Expect<"meter.barCorner arity", Same<Lengths<View<'Meter'>['barCorner']>, 1>>,
+  Expect<"meter.barCorner(cornerRadius)", Ok<At<View<'Meter'>['barCorner'], '0'>, S['cornerRadius']>>,
   Expect<"meter.revealMotion(timedMotion)", Ok<At<View<'Meter'>['revealMotion'], '0'>, S['timedMotion']>>,
   Expect<"meter.revealMotion(timedMotion) takes SurfaceTransition", Takes<At<View<'Meter'>['revealMotion'], '0'>, SurfaceTransition>>,
 ];
 
 type meterRingChecks = [
   Expect<'meterRing: the universal modifiers', Universal<View<'MeterRing'>>>,
-  Expect<"meterRing.tint(tint: color)", Ok<At<View<'MeterRing'>['tint'], '0'>, Color>>,
-  Expect<"meterRing.trackTint(color)", Ok<At<View<'MeterRing'>['trackTint'], '0'>, Color>>,
+  Expect<"meterRing.tint(tint: color)", Ok<At<View<'MeterRing'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"meterRing.trackTint(color)", Ok<At<View<'MeterRing'>['trackTint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"meterRing.thickness(space)", Ok<At<View<'MeterRing'>['thickness'], '0'>, S['space']>>,
   Expect<"meterRing.thickness(space) takes AppToken<'space'>", Takes<At<View<'MeterRing'>['thickness'], '0'>, AppToken<'space'>>>,
   Expect<"meterRing.fillDuration(duration)", Ok<At<View<'MeterRing'>['fillDuration'], '0'>, S['duration']>>,
   Expect<"meterRing.size(size: space)", Ok<At<View<'MeterRing'>['size'], '0'>, S['space']>>,
   Expect<"meterRing.size(size: space) takes AppToken<'space'>", Takes<At<View<'MeterRing'>['size'], '0'>, AppToken<'space'>>>,
-  Expect<"meterRing.backdrop(color)", Ok<At<View<'MeterRing'>['backdrop'], '0'>, Color>>,
+  Expect<"meterRing.backdrop(color)", Ok<At<View<'MeterRing'>['backdrop'], '0'>, S['color'] | AtOpacity>>,
   Expect<"meterRing.cap(meterCap)", Ok<At<View<'MeterRing'>['cap'], '0'>, S['meterCap']>>,
 ];
 
 type statBarChecks = [
   Expect<'statBar: the universal modifiers', Universal<View<'StatBar'>>>,
-  Expect<"statBar.tint(tint: color)", Ok<At<View<'StatBar'>['tint'], '0'>, Color>>,
-  Expect<"statBar.trackTint(color)", Ok<At<View<'StatBar'>['trackTint'], '0'>, Color>>,
+  Expect<"statBar.tint(tint: color)", Ok<At<View<'StatBar'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"statBar.trackTint(color)", Ok<At<View<'StatBar'>['trackTint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"statBar.thickness(space)", Ok<At<View<'StatBar'>['thickness'], '0'>, S['space']>>,
   Expect<"statBar.thickness(space) takes AppToken<'space'>", Takes<At<View<'StatBar'>['thickness'], '0'>, AppToken<'space'>>>,
 ];
@@ -1094,7 +1116,8 @@ type tableColumnChecks = [
   Expect<"tableColumn.width(columnWidth) takes AppToken<'space'>", Takes<At<View<'TableColumn'>['width'], '0'>, AppToken<'space'>>>,
   Expect<"tableColumn.minWidth(space)", Ok<At<View<'TableColumn'>['minWidth'], '0'>, S['space']>>,
   Expect<"tableColumn.minWidth(space) takes AppToken<'space'>", Takes<At<View<'TableColumn'>['minWidth'], '0'>, AppToken<'space'>>>,
-  Expect<"tableColumn.align(alignment)", Ok<At<View<'TableColumn'>['align'], '0'>, 'start' | 'center' | 'end'>>,
+  Expect<"tableColumn.align arity", Same<Lengths<View<'TableColumn'>['align']>, 1>>,
+  Expect<"tableColumn.align(tableAlign)", Ok<At<View<'TableColumn'>['align'], '0'>, S['tableAlign']>>,
   Expect<"tableColumn.sort(tableSort)", Ok<At<View<'TableColumn'>['sort'], '0'>, S['tableSort']>>,
 ];
 
@@ -1112,7 +1135,8 @@ type tableCellChecks = [
   Expect<"tableCell.width(columnWidth) takes AppToken<'space'>", Takes<At<View<'TableCell'>['width'], '0'>, AppToken<'space'>>>,
   Expect<"tableCell.minWidth(space)", Ok<At<View<'TableCell'>['minWidth'], '0'>, S['space']>>,
   Expect<"tableCell.minWidth(space) takes AppToken<'space'>", Takes<At<View<'TableCell'>['minWidth'], '0'>, AppToken<'space'>>>,
-  Expect<"tableCell.align(alignment)", Ok<At<View<'TableCell'>['align'], '0'>, 'start' | 'center' | 'end'>>,
+  Expect<"tableCell.align arity", Same<Lengths<View<'TableCell'>['align']>, 1>>,
+  Expect<"tableCell.align(tableAlign)", Ok<At<View<'TableCell'>['align'], '0'>, S['tableAlign']>>,
 ];
 
 type listItemChecks = [
@@ -1131,7 +1155,8 @@ type mailRowChecks = [
 
 type listChecks = [
   Expect<'list: the universal modifiers', Universal<View<'List'>>>,
-  Expect<"list.separator(separator)", Ok<At<View<'List'>['separator'], '0'>, S['listSeparator']>>,
+  Expect<"list.separator arity", Same<Lengths<View<'List'>['separator']>, 1>>,
+  Expect<"list.separator(listSeparator)", Ok<At<View<'List'>['separator'], '0'>, S['listSeparator']>>,
   Expect<"list.scrollHeight(space)", Ok<At<View<'List'>['scrollHeight'], '0'>, S['space']>>,
   Expect<"list.scrollHeight(space) takes AppToken<'space'>", Takes<At<View<'List'>['scrollHeight'], '0'>, AppToken<'space'>>>,
   Expect<"list.safeAreaInset(insetEdge)", Ok<At<View<'List'>['safeAreaInset'], '0'>, S['insetEdge']>>,
@@ -1142,7 +1167,7 @@ type listChecks = [
 
 type virtualListChecks = [
   Expect<'virtualList: the universal modifiers', Universal<View<'VirtualList'>>>,
-  Expect<"virtualList.refreshable(color)", Ok<At<View<'VirtualList'>['refreshable'], '1'>, never>>,
+  Expect<"virtualList.refreshable arity", Same<Lengths<View<'VirtualList'>['refreshable']>, 1>>,
   Expect<"virtualList.scrollbar(scrollbarVisibility)", Ok<At<View<'VirtualList'>['scrollbar'], '0'>, S['scrollbarVisibility']>>,
   Expect<"virtualList.scrollDismissesKeyboard(keyboardDismiss)", Ok<At<View<'VirtualList'>['scrollDismissesKeyboard'], '0'>, S['keyboardDismiss']>>,
   Expect<"virtualList.keyboardTaps(keyboardTaps)", Ok<At<View<'VirtualList'>['keyboardTaps'], '0'>, S['keyboardTaps']>>,
@@ -1161,7 +1186,8 @@ type carouselChecks = [
   Expect<"carousel.arrowsVisibility(arrowsVisibility)", Ok<At<View<'Carousel'>['arrowsVisibility'], '0'>, S['arrowsVisibility']>>,
   Expect<"carousel.arrowsInset(space)", Ok<At<View<'Carousel'>['arrowsInset'], '0'>, S['space']>>,
   Expect<"carousel.arrowsInset(space) takes AppToken<'space'>", Takes<At<View<'Carousel'>['arrowsInset'], '0'>, AppToken<'space'>>>,
-  Expect<"carousel.align(alignment)", Ok<At<View<'Carousel'>['align'], '0'>, 'start' | 'center'>>,
+  Expect<"carousel.align arity", Same<Lengths<View<'Carousel'>['align']>, 1>>,
+  Expect<"carousel.align(carouselAlign)", Ok<At<View<'Carousel'>['align'], '0'>, S['carouselAlign']>>,
   Expect<"carousel.spacing(space)", Ok<At<View<'Carousel'>['spacing'], '0'>, S['space']>>,
   Expect<"carousel.spacing(space) takes AppToken<'space'>", Takes<At<View<'Carousel'>['spacing'], '0'>, AppToken<'space'>>>,
   Expect<"carousel.contentInset(space)", Ok<At<View<'Carousel'>['contentInset'], '0'>, S['space']>>,
@@ -1170,7 +1196,9 @@ type carouselChecks = [
 
 type carouselItemChecks = [
   Expect<'carouselItem: the universal modifiers', Universal<View<'CarouselItem'>>>,
-  Expect<"carouselItem.width(columnWidth)", Ok<At<View<'CarouselItem'>['width'], '0'>, S['space']>>,
+  Expect<"carouselItem.width arity", Same<Lengths<View<'CarouselItem'>['width']>, 1>>,
+  Expect<"carouselItem.width(space)", Ok<At<View<'CarouselItem'>['width'], '0'>, S['space']>>,
+  Expect<"carouselItem.width(space) takes AppToken<'space'>", Takes<At<View<'CarouselItem'>['width'], '0'>, AppToken<'space'>>>,
 ];
 
 type carouselDotsChecks = [
@@ -1192,9 +1220,9 @@ type sliderChecks = [
   Expect<"slider.thickness(space) takes AppToken<'space'>", Takes<At<View<'Slider'>['thickness'], '0'>, AppToken<'space'>>>,
   Expect<"slider.thumbSize(space)", Ok<At<View<'Slider'>['thumbSize'], '0'>, S['space']>>,
   Expect<"slider.thumbSize(space) takes AppToken<'space'>", Takes<At<View<'Slider'>['thumbSize'], '0'>, AppToken<'space'>>>,
-  Expect<"slider.fillTint(color)", Ok<At<View<'Slider'>['fillTint'], '0'>, Color>>,
-  Expect<"slider.trackTint(color)", Ok<At<View<'Slider'>['trackTint'], '0'>, Color>>,
-  Expect<"slider.thumbTint(color)", Ok<At<View<'Slider'>['thumbTint'], '0'>, Color>>,
+  Expect<"slider.fillTint(color)", Ok<At<View<'Slider'>['fillTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"slider.trackTint(color)", Ok<At<View<'Slider'>['trackTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"slider.thumbTint(color)", Ok<At<View<'Slider'>['thumbTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type rangeSliderChecks = [
@@ -1205,9 +1233,9 @@ type rangeSliderChecks = [
   Expect<"rangeSlider.thickness(space) takes AppToken<'space'>", Takes<At<View<'RangeSlider'>['thickness'], '0'>, AppToken<'space'>>>,
   Expect<"rangeSlider.thumbSize(space)", Ok<At<View<'RangeSlider'>['thumbSize'], '0'>, S['space']>>,
   Expect<"rangeSlider.thumbSize(space) takes AppToken<'space'>", Takes<At<View<'RangeSlider'>['thumbSize'], '0'>, AppToken<'space'>>>,
-  Expect<"rangeSlider.fillTint(color)", Ok<At<View<'RangeSlider'>['fillTint'], '0'>, Color>>,
-  Expect<"rangeSlider.trackTint(color)", Ok<At<View<'RangeSlider'>['trackTint'], '0'>, Color>>,
-  Expect<"rangeSlider.thumbTint(color)", Ok<At<View<'RangeSlider'>['thumbTint'], '0'>, Color>>,
+  Expect<"rangeSlider.fillTint(color)", Ok<At<View<'RangeSlider'>['fillTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"rangeSlider.trackTint(color)", Ok<At<View<'RangeSlider'>['trackTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"rangeSlider.thumbTint(color)", Ok<At<View<'RangeSlider'>['thumbTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type accordionChecks = [
@@ -1223,7 +1251,8 @@ type accordionItemChecks = [
 
 type accordionTriggerChecks = [
   Expect<'accordionTrigger: the universal modifiers', Universal<View<'AccordionTrigger'>>>,
-  Expect<"accordionTrigger.indicator(selectionIndicator)", Ok<At<View<'AccordionTrigger'>['indicator'], '0'>, never>>,
+  Expect<"accordionTrigger.indicator arity", Same<Lengths<View<'AccordionTrigger'>['indicator']>, 1>>,
+  Expect<"accordionTrigger.indicator(view)", Ok<At<View<'AccordionTrigger'>['indicator'], '0'>, never>>,
 ];
 
 type accordionContentChecks = [
@@ -1261,8 +1290,8 @@ type stepperRowChecks = [
 
 type tooltipChecks = [
   Expect<'tooltip: the universal modifiers', Universal<View<'Tooltip'>>>,
-  Expect<"tooltip.side(floatingSide)", Ok<At<View<'Tooltip'>['side'], '0'>, 'top' | 'bottom'>>,
-  Expect<"tooltip.side(floatingAlign)", Ok<At<View<'Tooltip'>['side'], '1'>, never>>,
+  Expect<"tooltip.side arity", Same<Lengths<View<'Tooltip'>['side']>, 1>>,
+  Expect<"tooltip.side(tooltipSide)", Ok<At<View<'Tooltip'>['side'], '0'>, S['tooltipSide']>>,
   Expect<"tooltip.openDelay(duration)", Ok<At<View<'Tooltip'>['openDelay'], '0'>, S['duration']>>,
   Expect<"tooltip.size(size: tooltipSize)", Ok<At<View<'Tooltip'>['size'], '0'>, S['tooltipSize']>>,
 ];
@@ -1279,7 +1308,7 @@ type breadcrumbItemChecks = [
 
 type activityHeatmapChecks = [
   Expect<'activityHeatmap: the universal modifiers', Universal<View<'ActivityHeatmap'>>>,
-  Expect<"activityHeatmap.emptyTint(color)", Ok<At<View<'ActivityHeatmap'>['emptyTint'], '0'>, Color>>,
+  Expect<"activityHeatmap.emptyTint(color)", Ok<At<View<'ActivityHeatmap'>['emptyTint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"activityHeatmap.cellSize(space)", Ok<At<View<'ActivityHeatmap'>['cellSize'], '0'>, S['space']>>,
   Expect<"activityHeatmap.cellSize(space) takes AppToken<'space'>", Takes<At<View<'ActivityHeatmap'>['cellSize'], '0'>, AppToken<'space'>>>,
   Expect<"activityHeatmap.spacing(space)", Ok<At<View<'ActivityHeatmap'>['spacing'], '0'>, S['space']>>,
@@ -1316,14 +1345,14 @@ type animatedCheckChecks = [
   Expect<'animatedCheck: the universal modifiers', Universal<View<'AnimatedCheck'>>>,
   Expect<"animatedCheck.size(size: space)", Ok<At<View<'AnimatedCheck'>['size'], '0'>, S['space']>>,
   Expect<"animatedCheck.size(size: space) takes AppToken<'space'>", Takes<At<View<'AnimatedCheck'>['size'], '0'>, AppToken<'space'>>>,
-  Expect<"animatedCheck.tint(tint: color)", Ok<At<View<'AnimatedCheck'>['tint'], '0'>, Color>>,
+  Expect<"animatedCheck.tint(tint: color)", Ok<At<View<'AnimatedCheck'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type spinnerIconChecks = [
   Expect<'spinnerIcon: the universal modifiers', Universal<View<'SpinnerIcon'>>>,
   Expect<"spinnerIcon.size(size: iconSize)", Ok<At<View<'SpinnerIcon'>['size'], '0'>, S['iconSize']>>,
   Expect<"spinnerIcon.size(size: iconSize) takes AppToken<'iconSize'>", Takes<At<View<'SpinnerIcon'>['size'], '0'>, AppToken<'iconSize'>>>,
-  Expect<"spinnerIcon.tint(tint: color)", Ok<At<View<'SpinnerIcon'>['tint'], '0'>, Color>>,
+  Expect<"spinnerIcon.tint(tint: color)", Ok<At<View<'SpinnerIcon'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type contextMenuChecks = [
@@ -1343,7 +1372,8 @@ type dropZoneChecks = [
 
 type mediaInsetBorderChecks = [
   Expect<'mediaInsetBorder: the universal modifiers', Universal<View<'MediaInsetBorder'>>>,
-  Expect<"mediaInsetBorder.mediaCorner(corner)", Ok<At<View<'MediaInsetBorder'>['mediaCorner'], '0'>, Exclude<S['corner'], 'concentric'>>>,
+  Expect<"mediaInsetBorder.mediaCorner arity", Same<Lengths<View<'MediaInsetBorder'>['mediaCorner']>, 1>>,
+  Expect<"mediaInsetBorder.mediaCorner(cornerRadius)", Ok<At<View<'MediaInsetBorder'>['mediaCorner'], '0'>, S['cornerRadius']>>,
 ];
 
 type factStripChecks = [
@@ -1369,9 +1399,10 @@ type hoverCardChecks = [
   Expect<'hoverCard: the universal modifiers', Universal<View<'HoverCard'>, "disabled">>,
   Expect<"hoverCard.openDelay(duration)", Ok<At<View<'HoverCard'>['openDelay'], '0'>, S['duration']>>,
   Expect<"hoverCard.closeDelay(duration)", Ok<At<View<'HoverCard'>['closeDelay'], '0'>, S['duration']>>,
-  Expect<"hoverCard.side(floatingSide)", Ok<At<View<'HoverCard'>['side'], '0'>, 'top' | 'bottom'>>,
-  Expect<"hoverCard.side(floatingAlign)", Ok<At<View<'HoverCard'>['side'], '1'>, never>>,
-  Expect<"hoverCard.align(alignment)", Ok<At<View<'HoverCard'>['align'], '0'>, 'start' | 'center' | 'end'>>,
+  Expect<"hoverCard.side arity", Same<Lengths<View<'HoverCard'>['side']>, 1>>,
+  Expect<"hoverCard.side(tooltipSide)", Ok<At<View<'HoverCard'>['side'], '0'>, S['tooltipSide']>>,
+  Expect<"hoverCard.align arity", Same<Lengths<View<'HoverCard'>['align']>, 1>>,
+  Expect<"hoverCard.align(floatingAlign)", Ok<At<View<'HoverCard'>['align'], '0'>, S['floatingAlign']>>,
 ];
 
 type expandableTextChecks = [
@@ -1383,7 +1414,7 @@ type categoryBarChecks = [
   Expect<'categoryBar: the universal modifiers', Universal<View<'CategoryBar'>>>,
   Expect<"categoryBar.spacing(space)", Ok<At<View<'CategoryBar'>['spacing'], '0'>, S['space']>>,
   Expect<"categoryBar.spacing(space) takes AppToken<'space'>", Takes<At<View<'CategoryBar'>['spacing'], '0'>, AppToken<'space'>>>,
-  Expect<"categoryBar.backdrop(color)", Ok<At<View<'CategoryBar'>['backdrop'], '0'>, Color>>,
+  Expect<"categoryBar.backdrop(color)", Ok<At<View<'CategoryBar'>['backdrop'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type menubarChecks = [
@@ -1401,19 +1432,22 @@ type phoneInputChecks = [
 
 type mediaFlightHostChecks = [
   Expect<'mediaFlightHost: the universal modifiers', Universal<View<'MediaFlightHost'>>>,
-  Expect<"mediaFlightHost.contentFit(contentFit)", Ok<At<View<'MediaFlightHost'>['contentFit'], '0'>, 'contain' | 'cover'>>,
+  Expect<"mediaFlightHost.contentFit arity", Same<Lengths<View<'MediaFlightHost'>['contentFit']>, 1>>,
+  Expect<"mediaFlightHost.contentFit(mediaContentFit)", Ok<At<View<'MediaFlightHost'>['contentFit'], '0'>, S['mediaContentFit']>>,
   Expect<"mediaFlightHost.surfaceType(videoSurface)", Ok<At<View<'MediaFlightHost'>['surfaceType'], '0'>, S['videoSurface']>>,
 ];
 
 type mediaSurfaceChecks = [
   Expect<'mediaSurface: the universal modifiers', Universal<View<'MediaSurface'>>>,
-  Expect<"mediaSurface.contentFit(contentFit)", Ok<At<View<'MediaSurface'>['contentFit'], '0'>, 'contain' | 'cover'>>,
+  Expect<"mediaSurface.contentFit arity", Same<Lengths<View<'MediaSurface'>['contentFit']>, 1>>,
+  Expect<"mediaSurface.contentFit(mediaContentFit)", Ok<At<View<'MediaSurface'>['contentFit'], '0'>, S['mediaContentFit']>>,
   Expect<"mediaSurface.surfaceType(videoSurface)", Ok<At<View<'MediaSurface'>['surfaceType'], '0'>, S['videoSurface']>>,
 ];
 
 type mediaPosterChecks = [
   Expect<'mediaPoster: the universal modifiers', Universal<View<'MediaPoster'>>>,
-  Expect<"mediaPoster.contentFit(contentFit)", Ok<At<View<'MediaPoster'>['contentFit'], '0'>, 'contain' | 'cover'>>,
+  Expect<"mediaPoster.contentFit arity", Same<Lengths<View<'MediaPoster'>['contentFit']>, 1>>,
+  Expect<"mediaPoster.contentFit(mediaContentFit)", Ok<At<View<'MediaPoster'>['contentFit'], '0'>, S['mediaContentFit']>>,
 ];
 
 type emptyMediaSurfaceChecks = [
@@ -1455,7 +1489,8 @@ type socialButtonChecks = [
 type galleryChecks = [
   Expect<"gallery.style(style: galleryStyle)", Ok<At<View<'Gallery'>['style'], '0'>, S['galleryStyle']>>,
   Expect<"gallery.pageIndicator(galleryIndicator)", Ok<At<View<'Gallery'>['pageIndicator'], '0'>, S['galleryIndicator']>>,
-  Expect<"gallery.mediaCorner(corner)", Ok<At<View<'Gallery'>['mediaCorner'], '0'>, Exclude<S['corner'], 'concentric'>>>,
+  Expect<"gallery.mediaCorner arity", Same<Lengths<View<'Gallery'>['mediaCorner']>, 1>>,
+  Expect<"gallery.mediaCorner(cornerRadius)", Ok<At<View<'Gallery'>['mediaCorner'], '0'>, S['cornerRadius']>>,
 ];
 
 type meetingSchedulerChecks = [
@@ -1480,8 +1515,11 @@ type dataColumnChecks = [
   Expect<"dataColumn.width(columnWidth) takes AppToken<'space'>", Takes<At<View<'DataColumn'>['width'], '0'>, AppToken<'space'>>>,
   Expect<"dataColumn.minWidth(space)", Ok<At<View<'DataColumn'>['minWidth'], '0'>, S['space']>>,
   Expect<"dataColumn.minWidth(space) takes AppToken<'space'>", Takes<At<View<'DataColumn'>['minWidth'], '0'>, AppToken<'space'>>>,
-  Expect<"dataColumn.basis(length)", Ok<At<View<'DataColumn'>['basis'], '0'>, S['space']>>,
-  Expect<"dataColumn.align(alignment)", Ok<At<View<'DataColumn'>['align'], '0'>, 'start' | 'center' | 'end'>>,
+  Expect<"dataColumn.basis arity", Same<Lengths<View<'DataColumn'>['basis']>, 1>>,
+  Expect<"dataColumn.basis(space)", Ok<At<View<'DataColumn'>['basis'], '0'>, S['space']>>,
+  Expect<"dataColumn.basis(space) takes AppToken<'space'>", Takes<At<View<'DataColumn'>['basis'], '0'>, AppToken<'space'>>>,
+  Expect<"dataColumn.align arity", Same<Lengths<View<'DataColumn'>['align']>, 1>>,
+  Expect<"dataColumn.align(tableAlign)", Ok<At<View<'DataColumn'>['align'], '0'>, S['tableAlign']>>,
 ];
 
 type dataTableFilterChecks = [
@@ -1532,7 +1570,7 @@ type compactComposerChecks = [
 
 type composerBannerChecks = [
   Expect<'composerBanner: the universal modifiers', Universal<View<'ComposerBanner'>>>,
-  Expect<"composerBanner.tint(tint: color)", Ok<At<View<'ComposerBanner'>['tint'], '0'>, Color>>,
+  Expect<"composerBanner.tint(tint: color)", Ok<At<View<'ComposerBanner'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type composerIconButtonChecks = [
@@ -1566,7 +1604,8 @@ type emojiPickerChecks = [
 type reactionPickerChecks = [
   Expect<'reactionPicker: the universal modifiers', Universal<View<'ReactionPicker'>>>,
   Expect<"reactionPicker.size(size: reactionPickerSize)", Ok<At<View<'ReactionPicker'>['size'], '0'>, S['reactionPickerSize']>>,
-  Expect<"reactionPicker.surface(sidebarSurface)", Ok<At<View<'ReactionPicker'>['surface'], '0'>, never>>,
+  Expect<"reactionPicker.surface arity", Same<Lengths<View<'ReactionPicker'>['surface']>, 0 | 1>>,
+  Expect<"reactionPicker.surface(boolean)", Ok<At<View<'ReactionPicker'>['surface'], '0'>, never>>,
 ];
 
 type messageContextMenuChecks = [
@@ -1581,7 +1620,7 @@ type areaChartCardChecks = [
 
 type barListCardChecks = [
   Expect<'barListCard: the universal modifiers', Universal<View<'BarListCard'>>>,
-  Expect<"barListCard.tint(tint: color)", Ok<At<View<'BarListCard'>['tint'], '0'>, Color>>,
+  Expect<"barListCard.tint(tint: color)", Ok<At<View<'BarListCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type chartCardSurfaceChecks = [
@@ -1600,20 +1639,20 @@ type chartStatTilesChecks = [
 
 type contributionsCardChecks = [
   Expect<'contributionsCard: the universal modifiers', Universal<View<'ContributionsCard'>>>,
-  Expect<"contributionsCard.tint(tint: color)", Ok<At<View<'ContributionsCard'>['tint'], '0'>, Color>>,
+  Expect<"contributionsCard.tint(tint: color)", Ok<At<View<'ContributionsCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type heatmapChartCardChecks = [
   Expect<'heatmapChartCard: the universal modifiers', Universal<View<'HeatmapChartCard'>>>,
-  Expect<"heatmapChartCard.tint(tint: color)", Ok<At<View<'HeatmapChartCard'>['tint'], '0'>, Color>>,
-  Expect<"heatmapChartCard.activeTint(color)", Ok<At<View<'HeatmapChartCard'>['activeTint'], '0'>, Color>>,
+  Expect<"heatmapChartCard.tint(tint: color)", Ok<At<View<'HeatmapChartCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"heatmapChartCard.activeTint(color)", Ok<At<View<'HeatmapChartCard'>['activeTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type lineChartCardChecks = [
   Expect<'lineChartCard: the universal modifiers', Universal<View<'LineChartCard'>>>,
   Expect<"lineChartCard.shape(shape: chartShape)", Ok<At<View<'LineChartCard'>['shape'], '0'>, S['chartShape']>>,
-  Expect<"lineChartCard.tint(tint: color)", Ok<At<View<'LineChartCard'>['tint'], '0'>, Color>>,
-  Expect<"lineChartCard.activeTint(color)", Ok<At<View<'LineChartCard'>['activeTint'], '0'>, Color>>,
+  Expect<"lineChartCard.tint(tint: color)", Ok<At<View<'LineChartCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"lineChartCard.activeTint(color)", Ok<At<View<'LineChartCard'>['activeTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type radarChartCardChecks = [
@@ -1638,14 +1677,14 @@ type stageBarsCardChecks = [
 
 type stepsCardChecks = [
   Expect<'stepsCard: the universal modifiers', Universal<View<'StepsCard'>>>,
-  Expect<"stepsCard.tint(tint: color)", Ok<At<View<'StepsCard'>['tint'], '0'>, Color>>,
-  Expect<"stepsCard.activeTint(color)", Ok<At<View<'StepsCard'>['activeTint'], '0'>, Color>>,
+  Expect<"stepsCard.tint(tint: color)", Ok<At<View<'StepsCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"stepsCard.activeTint(color)", Ok<At<View<'StepsCard'>['activeTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type tokensChartCardChecks = [
   Expect<'tokensChartCard: the universal modifiers', Universal<View<'TokensChartCard'>>>,
-  Expect<"tokensChartCard.tint(tint: color)", Ok<At<View<'TokensChartCard'>['tint'], '0'>, Color>>,
-  Expect<"tokensChartCard.activeTint(color)", Ok<At<View<'TokensChartCard'>['activeTint'], '0'>, Color>>,
+  Expect<"tokensChartCard.tint(tint: color)", Ok<At<View<'TokensChartCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"tokensChartCard.activeTint(color)", Ok<At<View<'TokensChartCard'>['activeTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type composerPanelChecks = [
@@ -1654,7 +1693,8 @@ type composerPanelChecks = [
 
 type composerPillChecks = [
   Expect<'composerPill: the universal modifiers', Universal<View<'ComposerPill'>, "disabled">>,
-  Expect<"composerPill.surface(sidebarSurface)", Ok<At<View<'ComposerPill'>['surface'], '0'>, never>>,
+  Expect<"composerPill.surface arity", Same<Lengths<View<'ComposerPill'>['surface']>, 0 | 1>>,
+  Expect<"composerPill.surface(boolean)", Ok<At<View<'ComposerPill'>['surface'], '0'>, never>>,
 ];
 
 type composerPanelStatusTabChecks = [
@@ -1665,12 +1705,14 @@ type aiChatShellChecks = [
   Expect<'aiChatShell: the universal modifiers', Universal<View<'AiChatShell'>>>,
   Expect<"aiChatShell.sidebarSurface(sidebarSurface)", Ok<At<View<'AiChatShell'>['sidebarSurface'], '0'>, S['sidebarSurface']>>,
   Expect<"aiChatShell.sidebarScrollbarSide(scrollbarSide)", Ok<At<View<'AiChatShell'>['sidebarScrollbarSide'], '0'>, S['scrollbarSide']>>,
-  Expect<"aiChatShell.surface(sidebarSurface)", Ok<At<View<'AiChatShell'>['surface'], '0'>, never>>,
+  Expect<"aiChatShell.surface arity", Same<Lengths<View<'AiChatShell'>['surface']>, 0 | 1>>,
+  Expect<"aiChatShell.surface(boolean)", Ok<At<View<'AiChatShell'>['surface'], '0'>, never>>,
 ];
 
 type aiChatContainerChecks = [
   Expect<'aiChatContainer: the universal modifiers', Universal<View<'AiChatContainer'>>>,
-  Expect<"aiChatContainer.surface(sidebarSurface)", Ok<At<View<'AiChatContainer'>['surface'], '0'>, never>>,
+  Expect<"aiChatContainer.surface arity", Same<Lengths<View<'AiChatContainer'>['surface']>, 0 | 1>>,
+  Expect<"aiChatContainer.surface(boolean)", Ok<At<View<'AiChatContainer'>['surface'], '0'>, never>>,
 ];
 
 type aiChatThreadChecks = [
@@ -1773,7 +1815,8 @@ type agentLogWorkingRowChecks = [
 type composerLoaderChecks = [
   Expect<'composerLoader: the universal modifiers', Universal<View<'ComposerLoader'>>>,
   Expect<"composerLoader.blend(blend)", Ok<At<View<'ComposerLoader'>['blend'], '0'>, S['blend']>>,
-  Expect<"composerLoader.surface(sidebarSurface)", Ok<At<View<'ComposerLoader'>['surface'], '0'>, never>>,
+  Expect<"composerLoader.surface arity", Same<Lengths<View<'ComposerLoader'>['surface']>, 0 | 1>>,
+  Expect<"composerLoader.surface(boolean)", Ok<At<View<'ComposerLoader'>['surface'], '0'>, never>>,
 ];
 
 type conversationSidebarChecks = [
@@ -1797,7 +1840,7 @@ type questionnaireChecks = [
 type chatBackgroundChecks = [
   Expect<'chatBackground: the universal modifiers', Universal<View<'ChatBackground'>>>,
   Expect<"chatBackground.style(style: chatBackgroundStyle)", Ok<At<View<'ChatBackground'>['style'], '0'>, S['chatBackgroundStyle']>>,
-  Expect<"chatBackground.tint(tint: color)", Ok<At<View<'ChatBackground'>['tint'], '0'>, Color>>,
+  Expect<"chatBackground.tint(tint: color)", Ok<At<View<'ChatBackground'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type chatDateHeaderChecks = [
@@ -1859,14 +1902,14 @@ type storyRingChecks = [
 
 type typingDotsChecks = [
   Expect<'typingDots: the universal modifiers', Universal<View<'TypingDots'>>>,
-  Expect<"typingDots.tint(tint: color)", Ok<At<View<'TypingDots'>['tint'], '0'>, Color>>,
+  Expect<"typingDots.tint(tint: color)", Ok<At<View<'TypingDots'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type contactMessageChecks = [
   Expect<'contactMessage: the universal modifiers', Universal<View<'ContactMessage'>>>,
   Expect<"contactMessage.tint(tint: messageTone)", Ok<At<View<'ContactMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"contactMessage.bubbleTint(color)", Ok<At<View<'ContactMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"contactMessage.contentTint(color)", Ok<At<View<'ContactMessage'>['contentTint'], '0'>, Color>>,
+  Expect<"contactMessage.bubbleTint(color)", Ok<At<View<'ContactMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"contactMessage.contentTint(color)", Ok<At<View<'ContactMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type documentGridChecks = [
@@ -1877,38 +1920,38 @@ type fileMessageChecks = [
   Expect<'fileMessage: the universal modifiers', Universal<View<'FileMessage'>>>,
   Expect<"fileMessage.style(style: fileMessageStyle)", Ok<At<View<'FileMessage'>['style'], '0'>, S['fileMessageStyle']>>,
   Expect<"fileMessage.tint(tint: messageTone)", Ok<At<View<'FileMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"fileMessage.bubbleTint(color)", Ok<At<View<'FileMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"fileMessage.contentTint(color)", Ok<At<View<'FileMessage'>['contentTint'], '0'>, Color>>,
+  Expect<"fileMessage.bubbleTint(color)", Ok<At<View<'FileMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"fileMessage.contentTint(color)", Ok<At<View<'FileMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type gifMessageChecks = [
   Expect<'gifMessage: the universal modifiers', Universal<View<'GifMessage'>>>,
   Expect<"gifMessage.tint(tint: messageTone)", Ok<At<View<'GifMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"gifMessage.bubbleTint(color)", Ok<At<View<'GifMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"gifMessage.contentTint(color)", Ok<At<View<'GifMessage'>['contentTint'], '0'>, Color>>,
-  Expect<"gifMessage.placeholderTint(color)", Ok<At<View<'GifMessage'>['placeholderTint'], '0'>, Color>>,
+  Expect<"gifMessage.bubbleTint(color)", Ok<At<View<'GifMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"gifMessage.contentTint(color)", Ok<At<View<'GifMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"gifMessage.placeholderTint(color)", Ok<At<View<'GifMessage'>['placeholderTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type imageMessageChecks = [
   Expect<'imageMessage: the universal modifiers', Universal<View<'ImageMessage'>>>,
   Expect<"imageMessage.tint(tint: messageTone)", Ok<At<View<'ImageMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"imageMessage.bubbleTint(color)", Ok<At<View<'ImageMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"imageMessage.contentTint(color)", Ok<At<View<'ImageMessage'>['contentTint'], '0'>, Color>>,
-  Expect<"imageMessage.placeholderTint(color)", Ok<At<View<'ImageMessage'>['placeholderTint'], '0'>, Color>>,
+  Expect<"imageMessage.bubbleTint(color)", Ok<At<View<'ImageMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"imageMessage.contentTint(color)", Ok<At<View<'ImageMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"imageMessage.placeholderTint(color)", Ok<At<View<'ImageMessage'>['placeholderTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type locationMessageChecks = [
   Expect<'locationMessage: the universal modifiers', Universal<View<'LocationMessage'>>>,
   Expect<"locationMessage.tint(tint: messageTone)", Ok<At<View<'LocationMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"locationMessage.bubbleTint(color)", Ok<At<View<'LocationMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"locationMessage.contentTint(color)", Ok<At<View<'LocationMessage'>['contentTint'], '0'>, Color>>,
+  Expect<"locationMessage.bubbleTint(color)", Ok<At<View<'LocationMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"locationMessage.contentTint(color)", Ok<At<View<'LocationMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type pollMessageChecks = [
   Expect<'pollMessage: the universal modifiers', Universal<View<'PollMessage'>>>,
   Expect<"pollMessage.tint(tint: messageTone)", Ok<At<View<'PollMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"pollMessage.bubbleTint(color)", Ok<At<View<'PollMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"pollMessage.contentTint(color)", Ok<At<View<'PollMessage'>['contentTint'], '0'>, Color>>,
+  Expect<"pollMessage.bubbleTint(color)", Ok<At<View<'PollMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"pollMessage.contentTint(color)", Ok<At<View<'PollMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type sharedMediaGridChecks = [
@@ -1920,24 +1963,24 @@ type sharedMediaGridChecks = [
 type stickerMessageChecks = [
   Expect<'stickerMessage: the universal modifiers', Universal<View<'StickerMessage'>>>,
   Expect<"stickerMessage.tint(tint: messageTone)", Ok<At<View<'StickerMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"stickerMessage.bubbleTint(color)", Ok<At<View<'StickerMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"stickerMessage.contentTint(color)", Ok<At<View<'StickerMessage'>['contentTint'], '0'>, Color>>,
+  Expect<"stickerMessage.bubbleTint(color)", Ok<At<View<'StickerMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"stickerMessage.contentTint(color)", Ok<At<View<'StickerMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type videoMessageChecks = [
   Expect<'videoMessage: the universal modifiers', Universal<View<'VideoMessage'>>>,
   Expect<"videoMessage.style(style: videoMessageStyle)", Ok<At<View<'VideoMessage'>['style'], '0'>, S['videoMessageStyle']>>,
   Expect<"videoMessage.tint(tint: messageTone)", Ok<At<View<'VideoMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"videoMessage.bubbleTint(color)", Ok<At<View<'VideoMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"videoMessage.contentTint(color)", Ok<At<View<'VideoMessage'>['contentTint'], '0'>, Color>>,
-  Expect<"videoMessage.placeholderTint(color)", Ok<At<View<'VideoMessage'>['placeholderTint'], '0'>, Color>>,
+  Expect<"videoMessage.bubbleTint(color)", Ok<At<View<'VideoMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"videoMessage.contentTint(color)", Ok<At<View<'VideoMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"videoMessage.placeholderTint(color)", Ok<At<View<'VideoMessage'>['placeholderTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type voiceMessageChecks = [
   Expect<'voiceMessage: the universal modifiers', Universal<View<'VoiceMessage'>>>,
   Expect<"voiceMessage.tint(tint: messageTone)", Ok<At<View<'VoiceMessage'>['tint'], '0'>, S['messageTone']>>,
-  Expect<"voiceMessage.bubbleTint(color)", Ok<At<View<'VoiceMessage'>['bubbleTint'], '0'>, Color>>,
-  Expect<"voiceMessage.contentTint(color)", Ok<At<View<'VoiceMessage'>['contentTint'], '0'>, Color>>,
+  Expect<"voiceMessage.bubbleTint(color)", Ok<At<View<'VoiceMessage'>['bubbleTint'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"voiceMessage.contentTint(color)", Ok<At<View<'VoiceMessage'>['contentTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type amenityListChecks = [
@@ -2153,14 +2196,14 @@ type writeReviewPromptChecks = [
 type callScreenChecks = [
   Expect<'callScreen: the universal modifiers', Universal<View<'CallScreen'>>>,
   Expect<"callScreen.style(style: callMode)", Ok<At<View<'CallScreen'>['style'], '0'>, S['callMode']>>,
-  Expect<"callScreen.tint(tint: color)", Ok<At<View<'CallScreen'>['tint'], '0'>, Color>>,
+  Expect<"callScreen.tint(tint: color)", Ok<At<View<'CallScreen'>['tint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"callScreen.size(size: callControlSize)", Ok<At<View<'CallScreen'>['size'], '0'>, S['callControlSize']>>,
 ];
 
 type callMinimisedPillChecks = [
   Expect<'callMinimisedPill: the universal modifiers', Universal<View<'CallMinimisedPill'>>>,
   Expect<"callMinimisedPill.style(style: callMode)", Ok<At<View<'CallMinimisedPill'>['style'], '0'>, S['callMode']>>,
-  Expect<"callMinimisedPill.tint(tint: color)", Ok<At<View<'CallMinimisedPill'>['tint'], '0'>, Color>>,
+  Expect<"callMinimisedPill.tint(tint: color)", Ok<At<View<'CallMinimisedPill'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type groupCallGridChecks = [
@@ -2173,14 +2216,14 @@ type groupCallGridChecks = [
 type incomingCallScreenChecks = [
   Expect<'incomingCallScreen: the universal modifiers', Universal<View<'IncomingCallScreen'>>>,
   Expect<"incomingCallScreen.style(style: callMode)", Ok<At<View<'IncomingCallScreen'>['style'], '0'>, S['callMode']>>,
-  Expect<"incomingCallScreen.tint(tint: color)", Ok<At<View<'IncomingCallScreen'>['tint'], '0'>, Color>>,
+  Expect<"incomingCallScreen.tint(tint: color)", Ok<At<View<'IncomingCallScreen'>['tint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"incomingCallScreen.answerStyle(incomingCallAnswer)", Ok<At<View<'IncomingCallScreen'>['answerStyle'], '0'>, S['incomingCallAnswer']>>,
 ];
 
 type incomingCallBannerChecks = [
   Expect<'incomingCallBanner: the universal modifiers', Universal<View<'IncomingCallBanner'>>>,
   Expect<"incomingCallBanner.style(style: callMode)", Ok<At<View<'IncomingCallBanner'>['style'], '0'>, S['callMode']>>,
-  Expect<"incomingCallBanner.tint(tint: color)", Ok<At<View<'IncomingCallBanner'>['tint'], '0'>, Color>>,
+  Expect<"incomingCallBanner.tint(tint: color)", Ok<At<View<'IncomingCallBanner'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type storyViewerChecks = [
@@ -2200,7 +2243,7 @@ type messageBubbleChecks = [
   Expect<'messageBubble: the universal modifiers', Universal<View<'MessageBubble'>>>,
   Expect<"messageBubble.groupPosition(messagePosition)", Ok<At<View<'MessageBubble'>['groupPosition'], '0'>, S['messagePosition']>>,
   Expect<"messageBubble.mediaFit(messageMediaFit)", Ok<At<View<'MessageBubble'>['mediaFit'], '0'>, S['messageMediaFit']>>,
-  Expect<"messageBubble.senderTint(color)", Ok<At<View<'MessageBubble'>['senderTint'], '0'>, Color>>,
+  Expect<"messageBubble.senderTint(color)", Ok<At<View<'MessageBubble'>['senderTint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type typingBubbleChecks = [
@@ -2219,7 +2262,8 @@ type mapScaleBarChecks = [
 type mapControlsChecks = [
   Expect<'mapControls: the universal modifiers', Universal<View<'MapControls'>>>,
   Expect<"mapControls.axis(axis)", Ok<At<View<'MapControls'>['axis'], '0'>, S['axis']>>,
-  Expect<"mapControls.align(alignment)", Ok<At<View<'MapControls'>['align'], '0'>, 'start' | 'end'>>,
+  Expect<"mapControls.align arity", Same<Lengths<View<'MapControls'>['align']>, 1>>,
+  Expect<"mapControls.align(mapControlsAlign)", Ok<At<View<'MapControls'>['align'], '0'>, S['mapControlsAlign']>>,
 ];
 
 type locationPuckChecks = [
@@ -2250,7 +2294,7 @@ type placeTransitChecks = [
 
 type placeListCardChecks = [
   Expect<'placeListCard: the universal modifiers', Universal<View<'PlaceListCard'>>>,
-  Expect<"placeListCard.tint(tint: color)", Ok<At<View<'PlaceListCard'>['tint'], '0'>, Color>>,
+  Expect<"placeListCard.tint(tint: color)", Ok<At<View<'PlaceListCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type placeListChecks = [
@@ -2357,7 +2401,7 @@ type listingCardGridChecks = [
 
 type wishlistCardChecks = [
   Expect<'wishlistCard: the universal modifiers', Universal<View<'WishlistCard'>>>,
-  Expect<"wishlistCard.tint(tint: color)", Ok<At<View<'WishlistCard'>['tint'], '0'>, Color>>,
+  Expect<"wishlistCard.tint(tint: color)", Ok<At<View<'WishlistCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type listingPreviewPaneChecks = [
@@ -2480,7 +2524,7 @@ type agentReplyIdentityChecks = [
 
 type aiProfileCardChecks = [
   Expect<'aiProfileCard: the universal modifiers', Universal<View<'AiProfileCard'>>>,
-  Expect<"aiProfileCard.tint(tint: color)", Ok<At<View<'AiProfileCard'>['tint'], '0'>, Color>>,
+  Expect<"aiProfileCard.tint(tint: color)", Ok<At<View<'AiProfileCard'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type selectedAgentPreviewChecks = [
@@ -2493,7 +2537,8 @@ type multiAgentChatChecks = [
 
 type agentChatHistoryChecks = [
   Expect<'agentChatHistory: the universal modifiers', Universal<View<'AgentChatHistory'>>>,
-  Expect<"agentChatHistory.surface(sidebarSurface)", Ok<At<View<'AgentChatHistory'>['surface'], '0'>, never>>,
+  Expect<"agentChatHistory.surface arity", Same<Lengths<View<'AgentChatHistory'>['surface']>, 0 | 1>>,
+  Expect<"agentChatHistory.surface(boolean)", Ok<At<View<'AgentChatHistory'>['surface'], '0'>, never>>,
 ];
 
 type agentChatChecks = [
@@ -2826,7 +2871,7 @@ type checkoutConfirmChecks = [
 
 type deliverySlotDaysChecks = [
   Expect<'deliverySlotDays: the universal modifiers', Universal<View<'DeliverySlotDays'>, "disabled">>,
-  Expect<"deliverySlotDays.tint(tint: color)", Ok<At<View<'DeliverySlotDays'>['tint'], '0'>, Color>>,
+  Expect<"deliverySlotDays.tint(tint: color)", Ok<At<View<'DeliverySlotDays'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type deliverySlotOptionChecks = [
@@ -2835,7 +2880,7 @@ type deliverySlotOptionChecks = [
 
 type deliverySlotPickerChecks = [
   Expect<'deliverySlotPicker: the universal modifiers', Universal<View<'DeliverySlotPicker'>, "disabled">>,
-  Expect<"deliverySlotPicker.tint(tint: color)", Ok<At<View<'DeliverySlotPicker'>['tint'], '0'>, Color>>,
+  Expect<"deliverySlotPicker.tint(tint: color)", Ok<At<View<'DeliverySlotPicker'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type orderConfirmationChecks = [
@@ -2913,7 +2958,7 @@ type jobBoardChecks = [
 
 type signaturePadChecks = [
   Expect<'signaturePad: the universal modifiers', Universal<View<'SignaturePad'>, "disabled">>,
-  Expect<"signaturePad.tint(tint: color)", Ok<At<View<'SignaturePad'>['tint'], '0'>, Color>>,
+  Expect<"signaturePad.tint(tint: color)", Ok<At<View<'SignaturePad'>['tint'], '0'>, S['color'] | AtOpacity>>,
   Expect<"signaturePad.strokeWidth(borderWidth)", Ok<At<View<'SignaturePad'>['strokeWidth'], '0'>, S['borderWidth']>>,
 ];
 
@@ -2949,7 +2994,7 @@ type rowActionButtonChecks = [
 
 type swipeRowChecks = [
   Expect<'swipeRow: the universal modifiers', Universal<View<'SwipeRow'>>>,
-  Expect<"swipeRow.tint(tint: color)", Ok<At<View<'SwipeRow'>['tint'], '0'>, Color>>,
+  Expect<"swipeRow.tint(tint: color)", Ok<At<View<'SwipeRow'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type themeToggleChecks = [
@@ -3004,13 +3049,13 @@ type recentlyPlayedListChecks = [
 type trackListChecks = [
   Expect<'trackList: the universal modifiers', Universal<View<'TrackList'>>>,
   Expect<"trackList.density(density)", Ok<At<View<'TrackList'>['density'], '0'>, "comfortable" | "compact">>,
-  Expect<"trackList.tint(tint: color)", Ok<At<View<'TrackList'>['tint'], '0'>, Color>>,
+  Expect<"trackList.tint(tint: color)", Ok<At<View<'TrackList'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type trackListHeaderChecks = [
   Expect<'trackListHeader: the universal modifiers', Universal<View<'TrackListHeader'>>>,
   Expect<"trackListHeader.density(density)", Ok<At<View<'TrackListHeader'>['density'], '0'>, "comfortable" | "compact">>,
-  Expect<"trackListHeader.tint(tint: color)", Ok<At<View<'TrackListHeader'>['tint'], '0'>, Color>>,
+  Expect<"trackListHeader.tint(tint: color)", Ok<At<View<'TrackListHeader'>['tint'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type trackRowChecks = [
@@ -3040,8 +3085,17 @@ type episodeListChecks = [
   Expect<'episodeList: the universal modifiers', Universal<View<'EpisodeList'>>>,
 ];
 
+type GlassValueChecks = [
+  Expect<"glass.tint arity", Same<Lengths<GlassValue['tint']>, 1 | 2>>,
+  Expect<"glass.tint(colorRole)", Ok<At<GlassValue['tint'], '0'>, S['colorRole']>>,
+  Expect<"glass.tint(glassOpacity)", Ok<At<GlassValue['tint'], '1'>, S['glassOpacity']>>,
+  Expect<"glass.dimmed arity", Same<Lengths<GlassValue['dimmed']>, 0>>,
+  Expect<"glass.interactive arity", Same<Lengths<GlassValue['interactive']>, 0 | 1>>,
+  Expect<"glass.interactive(boolean)", Ok<At<GlassValue['interactive'], '0'>, never>>,
+];
+
 describe('node token types', () => {
-  it('are current with the spec (the checks above are tsc’s)', () => {
+  it('are current with the spec, as is the compiler’s table of them (the checks above are tsc’s)', () => {
     const script = join(__dirname, '../../scripts/generate-type-checks.mjs');
     expect(() => execFileSync(process.execPath, [script, '--check'], { stdio: 'pipe' })).not.toThrow();
   });

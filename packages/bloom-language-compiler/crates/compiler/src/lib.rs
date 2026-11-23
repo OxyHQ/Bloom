@@ -344,3 +344,7 @@ impl<'a> VisitMut<'a> for SpanRetarget {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+#[rustfmt::skip]
+#[path = "token_params.generated.rs"]
+mod token_params;

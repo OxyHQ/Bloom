@@ -15,7 +15,8 @@ use crate::diagnostics::suggest;
 use crate::docs::{Doc, Tour};
 use crate::module::{Binding, Literal, Module};
 use crate::spec::{
-    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS, VARIANT_MODIFIERS,
+    CONTENT_VIEW_MODIFIERS, FADING_LOOPS, GLASS_VALUE, MODIFIERS, NODES, NodeSpec, OBJECTS, TOKEN_SETS,
+    VARIANT_MODIFIERS,
 };
 
 pub struct Problem {
@@ -688,31 +689,58 @@ fn check_arguments(
     module: &Module,
     scoping: &Scoping,
 ) -> Result<(), Problem> {
-    let params = MODIFIERS.iter().find(|(name, _)| *name == modifier).map_or(&[][..], |(_, params)| params);
-    let required = params.iter().filter(|param| !param.ends_with('?')).count();
-    let variadic = params.contains(&"children");
-    if !variadic && (arguments.len() < required || arguments.len() > params.len()) {
-        let expected = if required == params.len() {
-            required.to_string()
-        } else {
-            format!("{required} to {}", params.len())
-        };
-        let signature = format!(".{modifier}({})", params.join(", "));
-        let help = if required == params.len() {
-            format!("write it {signature}")
-        } else {
-            format!("write it {signature}: a parameter marked ? is optional")
-        };
-        return Err(Problem {
-            span: call_span,
-            message: format!(".{modifier}() takes {expected} argument(s), not {}", arguments.len()),
-            help: Some(help),
-            docs: vec![Doc::modifier(modifier)],
-        });
+    let params = params_of(spec, modifier);
+    check_arity(modifier, params, arguments.len(), call_span, Doc::modifier(modifier))?;
+    for (param, value) in paired(params, arguments) {
+        check_value(modifier, param, value, spec, module, scoping)?;
     }
-    // Optional parameters take the arguments beyond the required ones, in order.
+    Ok(())
+}
+
+/// The node's own parameters for `modifier` where it takes them narrower, else the modifier's.
+fn params_of(spec: &NodeSpec, modifier: &str) -> &'static [&'static str] {
+    spec.params
+        .iter()
+        .chain(MODIFIERS)
+        .find(|(name, _)| *name == modifier)
+        .map_or(&[][..], |(_, params)| params)
+}
+
+/// `.name()` takes as many arguments as `params` has, less the optional ones.
+fn check_arity(name: &str, params: &[&str], count: usize, call_span: Span, doc: Doc) -> Result<(), Problem> {
+    let required = params.iter().filter(|param| !param.ends_with('?')).count();
+    if params.contains(&"children") || (required..=params.len()).contains(&count) {
+        return Ok(());
+    }
+    let expected = if required == params.len() {
+        required.to_string()
+    } else {
+        format!("{required} to {}", params.len())
+    };
+    let signature = format!(".{name}({})", params.join(", "));
+    let help = if required == params.len() {
+        format!("write it {signature}")
+    } else {
+        format!("write it {signature}: a parameter marked ? is optional")
+    };
+    Err(Problem {
+        span: call_span,
+        message: format!(".{name}() takes {expected} argument(s), not {count}"),
+        help: Some(help),
+        docs: vec![doc],
+    })
+}
+
+/// Each argument with its parameter type: optional parameters take the
+/// arguments beyond the required ones, in order.
+fn paired<'p, 'e, 'a>(
+    params: &'p [&'p str],
+    arguments: &'e [Argument<'a>],
+) -> Vec<(&'p str, &'e Expression<'a>)> {
+    let required = params.iter().filter(|param| !param.ends_with('?')).count();
     let mut optional = arguments.len().saturating_sub(required);
     let mut arguments = arguments.iter();
+    let mut pairs = Vec::new();
     for param in params {
         let param = match param.strip_suffix('?') {
             Some(param) if optional > 0 => {
@@ -723,11 +751,54 @@ fn check_arguments(
             None => param,
         };
         let Some(argument) = arguments.next() else { break };
-        let Some(value) = argument.as_expression() else { continue };
-        check_value(modifier, param, value, spec, module, scoping)?;
+        if let Some(value) = argument.as_expression() {
+            pairs.push((param, value));
+        }
+    }
+    pairs
+}
+
+/// A parameter that takes no token (a view, a boolean): a string written there is never one.
+fn check_no_token(name: &str, param: &str, value: &Expression, doc: Doc) -> Result<(), Problem> {
+    let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
+    Err(Problem {
+        span: literal.span,
+        message: format!(".{name}() takes a {param} here, not '{}'", literal.value.display()),
+        help: Some(format!("pass a {param}: .{name}() takes no token on this node")),
+        docs: vec![doc],
+    })
+}
+
+/// A glass value's methods (`regular.tint('primary', 'subtle')`), outermost
+/// first: each one's arguments, as the spec types them.
+fn check_glass_value(call: &CallExpression, module: &Module, scoping: &Scoping) -> Result<(), Problem> {
+    let mut current = Some(call);
+    while let Some(call) = current {
+        let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
+        if !module.is_glass_value(&member.object, scoping) {
+            return Ok(());
+        }
+        let method = member.property.name.as_str();
+        if let Some((_, params)) = GLASS_VALUE.iter().find(|(name, _)| *name == method) {
+            check_arity(method, params, call.arguments.len(), call.span, Doc::modifier("glass"))?;
+            for (param, value) in paired(params, &call.arguments) {
+                if NO_TOKEN.contains(&param) {
+                    check_no_token(method, param, value, Doc::modifier("glass"))?;
+                } else if param != "value" {
+                    check_token(method, Doc::modifier("glass"), param, value)?;
+                }
+            }
+        }
+        current = match member.object.without_parentheses() {
+            Expression::CallExpression(inner) => Some(&**inner),
+            _ => None,
+        };
     }
     Ok(())
 }
+
+/// Parameter types that take no token.
+const NO_TOKEN: &[&str] = &["view", "boolean"];
 
 fn check_value(
     modifier: &str,
@@ -763,6 +834,7 @@ fn check_value(
     }
     match param {
         "value" | "children" | "namespace" => Ok(()),
+        param if NO_TOKEN.contains(&param) => check_no_token(modifier, param, value, Doc::modifier(modifier)),
         "variant" => check_variant(value, spec, module, scoping),
         // A phase's build: the chain on its view sets geometry and opacity only.
         "phaseBuild" => check_phase(value, spec, module, scoping),
@@ -810,30 +882,7 @@ fn check_value(
             Ok(())
         }
         "glass" => match value.without_parentheses() {
-            Expression::CallExpression(call) => {
-                // Each method of the value (`regular.tint('primary').interactive(false)`).
-                let mut current = Some(&**call);
-                while let Some(call) = current {
-                    let Expression::StaticMemberExpression(member) = &call.callee else { return Ok(()) };
-                    if !module.is_glass_value(&member.object, scoping) {
-                        return Ok(());
-                    }
-                    if member.property.name == "tint" {
-                        let mut arguments = call.arguments.iter().filter_map(Argument::as_expression);
-                        if let Some(color) = arguments.next() {
-                            check_token("tint", Doc::modifier("glass"), "color", color)?;
-                        }
-                        if let Some(opacity) = arguments.next() {
-                            check_token("tint", Doc::modifier("glass"), "glassOpacity", opacity)?;
-                        }
-                    }
-                    current = match member.object.without_parentheses() {
-                        Expression::CallExpression(inner) => Some(&**inner),
-                        _ => None,
-                    };
-                }
-                Ok(())
-            }
+            Expression::CallExpression(call) => check_glass_value(call, module, scoping),
             Expression::StringLiteral(literal) => Err(Problem {
                 span: literal.span,
                 message: format!(".glass() takes a glass value, not '{}'", literal.value.display()),
@@ -1157,9 +1206,10 @@ fn token_elsewhere(token: &str, set: &str) -> Option<String> {
 
 /// The modifiers with a parameter of `set`, then the nodes' own modifiers that read it.
 fn takers_of_set(set: &str) -> Vec<String> {
+    let has = |params: &[&str]| params.iter().any(|param| param.trim_end_matches('?') == set);
     let mut takers: Vec<String> = MODIFIERS
         .iter()
-        .filter(|(_, params)| params.iter().any(|param| param.trim_end_matches('?') == set))
+        .filter(|(_, params)| has(params))
         .map(|(modifier, _)| format!(".{modifier}()"))
         .collect();
     for node in NODES {
@@ -1168,6 +1218,12 @@ fn takers_of_set(set: &str) -> Vec<String> {
         takers.extend(
             own.iter()
                 .filter(|(_, own)| *own == Some(set))
+                .map(|(modifier, _)| format!("{constructor}().{modifier}()")),
+        );
+        takers.extend(
+            node.params
+                .iter()
+                .filter(|(_, params)| has(params))
                 .map(|(modifier, _)| format!("{constructor}().{modifier}()")),
         );
     }

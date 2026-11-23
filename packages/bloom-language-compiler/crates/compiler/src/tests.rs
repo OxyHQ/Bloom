@@ -150,7 +150,7 @@ fn image_options_are_checked_against_the_spec() {
     let fit = compiled("export const x = (src) => Image(src).contentFit('stretch');\n");
     assert_eq!(fit.diagnostics[0].message, "Unknown contentFit token 'stretch' for .contentFit()");
     let tint = compiled("export const x = (src) => Image(src).tint('neutral');\n");
-    assert_eq!(tint.diagnostics[0].message, "Unknown color token 'neutral' for .tint()");
+    assert_eq!(tint.diagnostics[0].message, "Unknown colorRole token 'neutral' for .tint()");
     let size = compiled("export const x = (src) => Image(src).size('lg');\n");
     assert_eq!(size.diagnostics[0].message, "Image has no modifier .size()");
 }
@@ -701,7 +701,7 @@ fn wave_two_controls_are_checked() {
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("RadioGroup(on).style('grid')", "Unknown radioStyle token 'grid' for .style()"),
-        ("Option('a', 'A').tint('lime')", "Unknown color token 'lime' for .tint()"),
+        ("Option('a', 'A').tint('lime')", "Unknown colorRole token 'lime' for .tint()"),
         ("Chip().style('ghost')", "Unknown chipStyle token 'ghost' for .style()"),
         ("Chip().role('switch')", "Unknown role token 'switch' for .role()"),
         ("GroupedSectionIcon(I).tint('lime')", "Unknown accentTone token 'lime' for .tint()"),
@@ -1113,7 +1113,7 @@ fn rows_and_lists_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("List([]).separator('dashed')", "Unknown separator token 'dashed' for .separator()"),
+        ("List([]).separator('dashed')", "Unknown listSeparator token 'dashed' for .separator()"),
         ("ListItem('a').compactPadding('tight')", "Unknown space token 'tight' for .compactPadding()"),
         ("ListItem('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("ListItem('a').density('default')", "Unknown density token 'default' for .density()"),
@@ -1247,7 +1247,7 @@ fn tooltips_breadcrumbs_and_heatmaps_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("Tooltip(t, 'a').side('middle')", "Unknown floatingSide token 'middle' for .side()"),
+        ("Tooltip(t, 'a').side('middle')", "Unknown tooltipSide token 'middle' for .side()"),
         ("Tooltip(t, 'a').size('lg')", "Unknown tooltipSize token 'lg' for .size()"),
         ("ActivityHeatmap(t).cellSize('big')", "Unknown space token 'big' for .cellSize()"),
         ("Breadcrumb().side('top')", "Breadcrumb has no modifier .side()"),
@@ -1437,7 +1437,7 @@ fn media_inset_borders_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("MediaInsetBorder().mediaCorner('huge')", "Unknown corner token 'huge' for .mediaCorner()"),
+        ("MediaInsetBorder().mediaCorner('huge')", "Unknown cornerRadius token 'huge' for .mediaCorner()"),
         ("MediaInsetBorder().contentFit('cover')", "MediaInsetBorder has no modifier .contentFit()"),
     ];
     for (chain, message) in cases {
@@ -1530,7 +1530,7 @@ fn hover_cards_are_checked() {
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("HoverCard(Text('a'), Text('b')).side('middle')", "Unknown floatingSide token 'middle' for .side()"),
+        ("HoverCard(Text('a'), Text('b')).side('middle')", "Unknown tooltipSide token 'middle' for .side()"),
         ("HoverCard(Text('a'), Text('b')).actions(t)", "HoverCard has no modifier .actions()"),
     ];
     for (chain, message) in cases {
@@ -3034,7 +3034,7 @@ fn a_glass_value_is_checked_through_its_methods_and_hoists() {
     assert!(output.diagnostics.is_empty(), "{:?}", messages(&output.diagnostics));
     assert_eq!(output.hoisted, 1);
     let wrong = glass("export const x = () => HStack().glass(regular.interactive(false).tint('blue'));\n");
-    assert_eq!(messages(&wrong.diagnostics), ["Unknown color token 'blue' for .tint()"]);
+    assert_eq!(messages(&wrong.diagnostics), ["Unknown colorRole token 'blue' for .tint()"]);
 }
 
 const ENVIRONMENT_IMPORTS: &str =
@@ -3404,5 +3404,131 @@ fn every_link_is_to_a_reference_or_tour_section() {
         "bloom-language-tour.mdx#liquid-glass-rules",
     ] {
         assert!(all.contains(&format!("{}{expected}", crate::DOCS_BASE)), "{expected}");
+    }
+}
+
+/// The statements of `source` (each starting at an offset of `starts`) the
+/// checker refuses.
+fn refused_statements(source: &str, starts: &[usize]) -> std::collections::HashSet<usize> {
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();
+    assert!(!parsed.diagnostics.has_errors(), "the probe parses");
+    let program = parsed.program;
+    let scoping = oxc_semantic::SemanticBuilder::new().build(&program).semantic.into_scoping();
+    let module = crate::module::Module::read(&program, &scoping).expect("the probe imports the language");
+    crate::check::check_program(&program, &module, &scoping)
+        .errors
+        .iter()
+        .map(|problem| starts.partition_point(|&start| start <= problem.span.start as usize) - 1)
+        .collect()
+}
+
+/// For every token parameter the runtime's types are checked against (each
+/// node's own, the universal modifiers', a glass value's methods), the
+/// compiler accepts exactly the literals the types take. The table is
+/// generated with the type checks (`generate-type-checks.mjs`), from the one
+/// spec, so neither side can drift from the other.
+///
+/// Each parameter is probed with every literal it takes, and with a witness of
+/// every other set: a token of that set the parameter does not take, and a
+/// colour role at an opacity. The compiler takes or refuses a written token by
+/// the set it reads for the parameter, so a refused witness is that whole
+/// set refused.
+#[test]
+fn every_token_parameter_takes_exactly_what_the_runtime_types_take() {
+    use std::collections::{BTreeSet, HashSet};
+
+    use crate::spec::TOKEN_SETS;
+    use crate::token_params::{TOKEN_PARAMS, TokenParam};
+
+    let set = |name: &str| -> &'static [&'static str] {
+        TOKEN_SETS.iter().find(|(set, _)| *set == name).map(|(_, tokens)| *tokens).expect("a token set")
+    };
+    let at_opacity: Vec<String> = set("color")
+        .iter()
+        .flat_map(|role| set("opacity").iter().map(move |o| format!("{role}/{o}")))
+        .collect();
+    let constructors: BTreeSet<&str> = TOKEN_PARAMS.iter().map(|param| param.constructor).collect();
+    let imports = format!(
+        "import {{ {}, regular }} from '@oxy.so/bloom-language';\n",
+        constructors.into_iter().collect::<Vec<_>>().join(", ")
+    );
+    let probe = |param: &TokenParam| -> Vec<String> {
+        let mut expected: HashSet<&str> =
+            param.sets.iter().flat_map(|name| set(name).iter().copied()).collect();
+        expected.extend(param.tokens.iter().copied());
+        if param.opacity {
+            expected.extend(at_opacity.iter().map(String::as_str));
+        }
+        let mut candidates: BTreeSet<&str> = expected.iter().copied().collect();
+        candidates.extend(
+            TOKEN_SETS
+                .iter()
+                .filter_map(|(_, tokens)| tokens.iter().copied().find(|token| !expected.contains(token))),
+        );
+        candidates.extend(["primary/40", "primary/nope", "nope"]);
+        let mut source = imports.clone();
+        let mut starts = vec![0];
+        for candidate in &candidates {
+            starts.push(source.len());
+            source.push_str(&param.call.replace('@', &format!("{candidate:?}")));
+            source.push_str(";\n");
+        }
+        let refused = refused_statements(&source, &starts);
+        let mut mismatches = Vec::new();
+        for (index, candidate) in candidates.iter().enumerate() {
+            let accepted = !refused.contains(&(index + 1));
+            if accepted != expected.contains(candidate) {
+                let verdict =
+                    if accepted { "accepted; the types refuse it" } else { "refused; the types take it" };
+                mismatches.push(format!("{} `{}`: '{candidate}' {verdict}", param.label, param.call));
+            }
+        }
+        mismatches
+    };
+    // Four threads: each parameter is a module of its own.
+    let chunk = TOKEN_PARAMS.len().div_ceil(4);
+    let mismatches: Vec<String> = std::thread::scope(|scope| {
+        let probe = &probe;
+        let workers: Vec<_> = TOKEN_PARAMS
+            .chunks(chunk)
+            .map(|params| scope.spawn(move || params.iter().flat_map(probe).collect::<Vec<_>>()))
+            .collect();
+        workers.into_iter().flat_map(|worker| worker.join().expect("a probe thread")).collect()
+    });
+    assert!(
+        mismatches.is_empty(),
+        "{} literals the compiler and the runtime's types disagree on:\n{}",
+        mismatches.len(),
+        mismatches.iter().take(60).cloned().collect::<Vec<_>>().join("\n")
+    );
+}
+
+#[test]
+fn a_node_takes_its_own_narrower_parameters_as_the_runtime_does() {
+    let imports = "import { AccordionTrigger, Dialog, Divider, HStack, Image, ReactionPicker, Tooltip, VirtualList, regular } from '@oxy.so/bloom-language';\n";
+    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
+    let valid = check(
+        "export const x = (t, b, f) => [Image(t).tint('primary'), Divider().align('end').tint('border'), Tooltip(t, 'a').side('bottom'), Dialog().padding('lg'), HStack().glass(regular.tint('primary', 'subtle').interactive(false)), ReactionPicker(f).surface(false), VirtualList(t).refreshable(b)];\n",
+    );
+    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
+    let cases = [
+        // Painted by the role's name alone: no opacity.
+        ("Image(t).tint('primary/40')", "Unknown colorRole token 'primary/40' for .tint()"),
+        ("HStack().glass(regular.tint('primary/40'))", "Unknown colorRole token 'primary/40' for .tint()"),
+        ("HStack().glass(regular.tint('primary', 'subtle', 'x'))", ".tint() takes 1 to 2 argument(s), not 3"),
+        ("HStack().glass(regular.interactive('yes'))", ".interactive() takes a boolean here, not 'yes'"),
+        ("Divider().align('stretch')", "Unknown dividerAlign token 'stretch' for .align()"),
+        ("Tooltip(t, 'a').side('left')", "Unknown tooltipSide token 'left' for .side()"),
+        ("Tooltip(t, 'a').side('top', 'start')", ".side() takes 1 argument(s), not 2"),
+        ("Dialog().padding('horizontal', 'lg')", ".padding() takes 1 argument(s), not 2"),
+        ("Dialog().padding('-lg')", "Unknown space token '-lg' for .padding()"),
+        ("AccordionTrigger(t).indicator('check')", ".indicator() takes a view here, not 'check'"),
+        ("ReactionPicker(t).surface('card')", ".surface() takes a boolean here, not 'card'"),
+        ("VirtualList(t).refreshable(t, 'primary')", ".refreshable() takes 1 argument(s), not 2"),
+    ];
+    for (chain, message) in cases {
+        let output = check(&format!("export const x = (t) => {chain};\n"));
+        assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{chain}");
     }
 }

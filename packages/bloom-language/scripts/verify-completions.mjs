@@ -34,7 +34,7 @@ const CASES = [
   { code: "HStack().padding('horizontal', '|')", expected: sets.padding },
   { code: "Text('').font('|')", expected: sets.font },
   { code: "Text('').foreground('|')", expected: colors },
-  { code: "VStack().glass(regular.tint('|'))", expected: sets.color },
+  { code: "VStack().glass(regular.tint('|'))", expected: sets.colorRole },
   // A navigation node and a product node: their own sets.
   { code: "Sidebar().size('|')", expected: sets[nodes.sidebar.size] },
   { code: "Sidebar().variant('|')", expected: sets.sidebarVariant },
