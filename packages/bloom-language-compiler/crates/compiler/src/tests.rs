@@ -437,7 +437,12 @@ fn the_button_leftovers_are_checked() {
     // A button's densities are Bloom's control densities, not a row's content ones.
     let output = check("export const x = () => Button(Text('a')).density('comfortable');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown density token 'comfortable' for .density()");
-    assert_eq!(output.diagnostics[0].help.as_deref(), Some("density tokens: default, compact"));
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some(
+            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 26 more; density tokens: default, compact"
+        )
+    );
 }
 
 #[test]
@@ -3225,4 +3230,177 @@ fn the_lens_budget_and_a_glass_per_item() {
     assert_eq!(messages(&many.warnings), ["13 glasses in one module: past the budget of 12"]);
     let list = rules("export const x = (items) => VStack(items.map((item) => Text(item).glass()));\n");
     assert_eq!(messages(&list.warnings), ["a glass per item of a list"]);
+}
+
+// ── Doc links: every problem points at the section that explains it ──────
+
+/// A diagnostic's links, without the docs folder in front.
+fn links(diagnostic: &crate::Diagnostic) -> Vec<&str> {
+    diagnostic
+        .docs
+        .iter()
+        .map(|url| url.strip_prefix(crate::DOCS_BASE).expect("a link into the docs"))
+        .collect()
+}
+
+#[test]
+fn a_wrong_token_links_its_modifier_and_its_token_set() {
+    let output = compiled("export const x = () => Text('a').weight('heavy');\n");
+    let diagnostic = &output.diagnostics[0];
+    assert_eq!(
+        links(diagnostic),
+        ["bloom-language-modifiers.mdx#weight", "bloom-language-tokens.mdx#weight"]
+    );
+    assert!(
+        diagnostic.rendered.ends_with(
+            "= docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-modifiers.mdx#weight\n  = docs: https://github.com/OxyHQ/Bloom/blob/main/docs/bloom-language-tokens.mdx#weight"
+        ),
+        "{}",
+        diagnostic.rendered
+    );
+    // A set the compiler composes (`padding`'s: the space scale and its negatives) is its modifier's.
+    let padding = compiled("export const x = () => HStack().padding('mdd');\n");
+    assert_eq!(
+        links(&padding.diagnostics[0]),
+        ["bloom-language-modifiers.mdx#padding", "bloom-language-tour.mdx#tokens"]
+    );
+    // A node's own set (a button's styles) is a token set of its own.
+    let style = compile(
+        "import { Button, Text } from '@oxy.so/bloom-language';\nexport const x = () => Button(Text('a')).style('shiny');\n",
+        "row.tsx",
+    );
+    assert_eq!(
+        links(&style.diagnostics[0]),
+        ["bloom-language-modifiers.mdx#style", "bloom-language-tokens.mdx#buttonstyle"]
+    );
+}
+
+#[test]
+fn a_token_of_another_set_names_the_modifiers_that_take_it() {
+    let output = compiled("export const x = () => Text('a').weight('primary');\n");
+    let help = output.diagnostics[0].help.as_deref().unwrap();
+    assert!(
+        help.starts_with(
+            "'primary' is one of the color tokens, for .background(), .border(), .foreground() and "
+        ),
+        "{help}"
+    );
+    assert!(help.contains("; weight tokens: light, regular,"), "{help}");
+}
+
+#[test]
+fn a_name_in_another_case_or_spelling_is_suggested() {
+    use crate::diagnostics::suggest;
+    let ramp = ["large-title-regular", "body-regular"];
+    assert_eq!(suggest("largeTitleRegular", &ramp).as_deref(), Some("did you mean 'large-title-regular'?"));
+    assert_eq!(suggest("large_title_regular", &ramp).as_deref(), Some("did you mean 'large-title-regular'?"));
+    assert_eq!(suggest("CHILDSPACING", &["childSpacing"]).as_deref(), Some("did you mean 'childSpacing'?"));
+    assert_eq!(suggest("nothing", &ramp), None);
+}
+
+#[test]
+fn an_unknown_modifier_links_its_node_and_names_the_nodes_that_take_it() {
+    let output = compiled("export const x = () => Text('a').childSpacing('md');\n");
+    let diagnostic = &output.diagnostics[0];
+    assert_eq!(diagnostic.message, "Text has no modifier .childSpacing()");
+    let help = diagnostic.help.as_deref().unwrap();
+    assert!(help.contains(" take .childSpacing(); Text modifiers: "), "{help}");
+    assert_eq!(
+        links(diagnostic),
+        ["bloom-language-nodes.mdx#text", "bloom-language-modifiers.mdx#childspacing"]
+    );
+    // A name no node takes links the node alone.
+    let unknown = compiled("export const x = () => HStack().sparkle();\n");
+    assert_eq!(links(&unknown.diagnostics[0]), ["bloom-language-nodes.mdx#stack"]);
+}
+
+#[test]
+fn an_arity_error_shows_the_signature() {
+    let output = compiled("export const x = () => HStack().padding('horizontal', 'md', 'lg');\n");
+    let diagnostic = &output.diagnostics[0];
+    assert_eq!(diagnostic.message, ".padding() takes 1 to 2 argument(s), not 3");
+    assert_eq!(
+        diagnostic.help.as_deref(),
+        Some("write it .padding(edge?, padding): a parameter marked ? is optional")
+    );
+    assert_eq!(links(diagnostic), ["bloom-language-modifiers.mdx#padding"]);
+}
+
+#[test]
+fn liquid_glass_problems_link_the_rules() {
+    let on_glass = glass("export const x = () => VStack(HStack(Text('a')).glass()).glass();\n");
+    assert_eq!(
+        links(&on_glass.diagnostics[0]),
+        ["bloom-language-tour.mdx#liquid-glass-rules", "bloom-language-tour.mdx#glass-groups"]
+    );
+    let scrolling = glass("export const x = () => ScrollView(HStack(Text('a')).glass());\n");
+    assert_eq!(
+        links(&scrolling.warnings[0]),
+        ["bloom-language-tour.mdx#liquid-glass-rules", "bloom-language-modifiers.mdx#incontent"]
+    );
+    assert!(scrolling.warnings[0].rendered.contains("= docs: https://"));
+    let loose = glass(
+        "export const x = () => HStack(Button(Text('a')).glass(), Button(Text('b')).glass(regular.interactive(false)));\n",
+    );
+    assert_eq!(
+        links(&loose.warnings[0]),
+        ["bloom-language-tour.mdx#glass-groups", "bloom-language-nodes.mdx#glassgroup"]
+    );
+    let label = glass("export const x = () => Button(Icon(RiShareLine));\n");
+    assert_eq!(
+        links(&label.diagnostics[0]),
+        ["bloom-language-tour.mdx#accessibility", "bloom-language-modifiers.mdx#label"]
+    );
+}
+
+#[test]
+fn toolbar_layout_environment_and_motion_problems_link_their_tour_section() {
+    let many = toolbar(
+        "const S = Button(Icon(RiShareLine)).label('Share');\nexport const x = () => Header('Edit').toolbar(ToolbarGroup(S), ToolbarGroup(S), ToolbarGroup(S), ToolbarGroup(S));\n",
+    );
+    assert_eq!(links(&many.warnings[0])[0], "bloom-language-tour.mdx#navigation");
+    let fits = compile(
+        "import { Text, ViewThatFits } from '@oxy.so/bloom-language';\nexport const x = () => ViewThatFits('horizontal', Text('a'), Text('b'), Text('c'), Text('d'));\n",
+        "row.tsx",
+    );
+    assert_eq!(
+        links(&fits.warnings[0]),
+        ["bloom-language-tour.mdx#layout", "bloom-language-nodes.mdx#viewthatfits"]
+    );
+    let wrong = environment(
+        "const Compact = defineEnvironment('compact', false);\nexport const x = () => VStack().environment(Compact, 'yes');\n",
+    );
+    assert_eq!(links(&wrong.diagnostics[0])[0], "bloom-language-tour.mdx#environment");
+    assert!(wrong.diagnostics[0].help.as_deref().unwrap().ends_with("pass a boolean"));
+    let named = environment("const name = 'c';\nexport const Compact = defineEnvironment(name, false);\n");
+    assert_eq!(links(&named.diagnostics[0]), ["bloom-language-tour.mdx#environment"]);
+    let motion = gesture(
+        "export function Row() {\n  const y = useMotionValue(0);\n  return Text('t').padding(y);\n}\n",
+    );
+    assert_eq!(
+        links(&motion.diagnostics[0]),
+        ["bloom-language-tour.mdx#animation-and-gestures", "bloom-language-modifiers.mdx#padding"]
+    );
+}
+
+#[test]
+fn a_build_function_s_refusal_links_what_it_may_set() {
+    let variant = compiled("export const x = () => Text('a').when('md', (v) => v.onPress(() => {}));\n");
+    assert_eq!(links(&variant.diagnostics[0]), ["bloom-language-tour.mdx#variants"]);
+    let custom = modifier("export const two = defineModifier((v) => v.padding('md').lines(2));\n");
+    assert_eq!(links(&custom.diagnostics[0]), ["bloom-language-tour.mdx#custom-modifiers"]);
+}
+
+#[test]
+fn every_link_is_to_a_reference_or_tour_section() {
+    let all = crate::doc_links();
+    assert!(all.iter().all(|url| url.starts_with(crate::DOCS_BASE) && url.contains(".mdx#")));
+    for expected in [
+        "bloom-language-nodes.mdx#applayout",
+        "bloom-language-modifiers.mdx#childspacing",
+        "bloom-language-tokens.mdx#controlsize",
+        "bloom-language-tour.mdx#liquid-glass-rules",
+    ] {
+        assert!(all.contains(&format!("{}{expected}", crate::DOCS_BASE)), "{expected}");
+    }
 }

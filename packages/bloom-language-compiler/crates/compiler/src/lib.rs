@@ -21,6 +21,7 @@
 
 mod check;
 mod diagnostics;
+mod docs;
 mod module;
 #[rustfmt::skip]
 #[path = "spec.generated.rs"]
@@ -42,6 +43,7 @@ use oxc_syntax::scope::ScopeFlags;
 use oxc_syntax::symbol::SymbolId;
 
 pub use diagnostics::{Diagnostic, Severity};
+pub use docs::{DOCS_BASE, links as doc_links};
 pub use module::LANGUAGE_MODULE;
 use module::{Binding, Module};
 
@@ -91,6 +93,7 @@ pub fn compile(source: &str, filename: &str) -> Output {
                     problem.span,
                     problem.message,
                     problem.help,
+                    &problem.docs,
                 )
             })
             .collect()
