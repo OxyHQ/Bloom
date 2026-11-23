@@ -24,7 +24,7 @@ const PACKAGE = join(__dirname, '..');
 
 const rootMapper = root.moduleNameMapper;
 
-/** Bloom's subpaths as its source, as the language's devDependency on `file:../..` resolves them. */
+/** Bloom's subpaths as its source, as the workspace's link to Bloom's root resolves them. */
 const bloomSource = {
   '^@oxy.so/bloom-language$': `${PACKAGE}/src/index.ts`,
   '^@oxy.so/bloom/icons/(Ri[A-Za-z0-9]+)$': '<rootDir>/src/icons/remix/$1',
