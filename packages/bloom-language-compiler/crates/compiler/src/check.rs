@@ -1088,7 +1088,10 @@ fn check_token(modifier: &str, doc: Doc, set: &str, value: &Expression) -> Resul
     let Expression::StringLiteral(literal) = value.without_parentheses() else { return Ok(()) };
     let token = literal.value.as_str().unwrap_or_default();
     let (set, token) = match token.split_once('/') {
-        Some((role, opacity)) if set == "color" && tokens("color").contains(&role) => ("opacity", opacity),
+        // A ring's colour is a colour too: `.ring('primary/40')` paints the role at 40%.
+        Some((role, opacity)) if (set == "color" || set == "ring") && tokens("color").contains(&role) => {
+            ("opacity", opacity)
+        }
         _ => (set, token),
     };
     let docs = vec![doc, Doc::tokens(set).unwrap_or(Doc::Tour(Tour::Tokens))];
