@@ -12,7 +12,6 @@ import { Node, type Child, type Progress, type ViewModifiers } from '../node';
 import {
   resolveCorner,
   resolveSpace,
-  type ColorName,
   type ColorToken,
   type CornerName,
   type DurationName,
@@ -80,7 +79,7 @@ interface MeterModifiers<Self> {
   /** A bar or ring with no role, hidden from assistive technology: the drawing inside a control that names itself. */
   decorative(): Self;
   /** The filled part's colour role (the accent by default). */
-  tint(value: ColorName): Self;
+  tint(value: ColorToken): Self;
   /** The rail behind the fill (neutral by default). */
   trackTint(value: ColorToken): Self;
   /** The bar's height, or the ring's stroke. */
@@ -115,7 +114,7 @@ export interface MeterRingView extends ViewModifiers<MeterRingView>, MeterModifi
 /** Bloom `StatBar`: a labelled bar, with a range or a split under it. */
 export interface StatBarView extends ViewModifiers<StatBarView> {
   /** The filled side's colour role (the accent by default). */
-  tint(value: ColorName): StatBarView;
+  tint(value: ColorToken): StatBarView;
   /** The empty side's (neutral by default). */
   trackTint(value: ColorToken): StatBarView;
   /** The bar's height (6 by default). */
