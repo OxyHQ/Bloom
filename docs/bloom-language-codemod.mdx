@@ -148,7 +148,13 @@ layout is its own: `flexDirection: 'row'` is `.axis('horizontal')`, `gap`
 declaration the node does not take (a Button's `gap`) is a reason
 (`Button:style`), and so is a colour or a value no token writes. A tab's own
 `style` and `textStyle` have no modifier: Mention's tab strip writes heights
-and widths no token holds (38, 76).
+and widths no token holds (38, 76). A `TabsTrigger`'s `style` is its `TabItem`'s
+`.frame()` and `.padding()` alike, and its `textStyle` (a `fontSize` and
+`lineHeight` of the spec's tokens, and a `fontWeight`, chosen by a plain
+condition or not) `.font()`, `.leading()` and `.weight()`. A frame length on
+the spacing scale that no app writes as a class (so the table has no row:
+`height: 38` is `h-9.5`) is the frame the table writes for the steps it holds,
+when its points are a space token (`.frame({ height: '38' })`).
 
 A binding takes the setter Bloom reads (`onValueChange`, else `onChangeText`);
 both given is a reason. Some rules hold only where the Bloom component reads

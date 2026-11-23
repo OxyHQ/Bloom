@@ -10,11 +10,13 @@ export const SPACE = {
   "28": 28,
   "30": 30,
   "36": 36,
+  "38": 38,
   "44": 44,
   "48": 48,
   "56": 56,
   "64": 64,
   "72": 72,
+  "76": 76,
   "80": 80,
   "96": 96,
   "120": 120,
@@ -9331,7 +9333,12 @@ export const NODE_MODIFIERS = {
     "iconOnly",
     "reorderable",
     "trailing",
-    "onLongPress"
+    "onLongPress",
+    "frame",
+    "padding",
+    "font",
+    "leading",
+    "weight"
   ],
   "kbd": [
     "padding",

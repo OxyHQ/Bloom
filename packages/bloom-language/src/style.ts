@@ -621,6 +621,30 @@ export function addVariantToLayers(
   target.key += `;?${condition ?? ''}${modifier.key}`;
 }
 
+/**
+ * A part's own box, drawn by the Bloom component it is a part of (a tab's
+ * `TabsTrigger` style): its paddings and frame, in chain order, as one view's.
+ * `undefined` when the chain sets neither.
+ */
+export function partBoxStyle(modifiers: readonly Modifier[]): Resolved | undefined {
+  const box = modifiers.filter(
+    (modifier): modifier is Extract<LayerModifier, { kind: 'padding' | 'frame' }> =>
+      modifier.kind === 'padding' || modifier.kind === 'frame',
+  );
+  if (box.length === 0) return undefined;
+  const style: Resolved = {};
+  for (const modifier of box) {
+    if (modifier.kind === 'padding')
+      paddingStyle(style, modifier.edge, resolveSpace(modifier.value));
+    else
+      for (const name of Object.keys(modifier.value) as (keyof FrameSpec)[]) {
+        const token = modifier.value[name];
+        if (token !== undefined) style[name] = resolveLength(token);
+      }
+  }
+  return style;
+}
+
 export function paddingStyle(style: Resolved, edge: Edge, value: number): void {
   // Negative padding pulls the box outward: a margin, as SwiftUI draws it.
   const prefix = value < 0 ? 'margin' : 'padding';

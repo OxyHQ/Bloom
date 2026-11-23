@@ -41,6 +41,9 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `className`: a static className laid out in a view of its own, as the
  *   modifiers of that view's build function (`.contentView((v) => v.padding('lg'))`),
  *   each class through the className table;
+ * - `textStyle`: a part's label style of a `fontSize`, `lineHeight` and
+ *   `fontWeight` (a weight chosen by a plain condition included), as `.font()`,
+ *   `.leading()` and `.weight()` (the modifier name is unused);
  * - `content`: a text (as `string`), or an element as a view (as `view`): a
  *   header's title or subtitle;
  * - `placement`: Bloom's responsive placement, a static token
@@ -67,6 +70,7 @@ export type Form =
   | 'empty'
   | 'className'
   | 'style'
+  | 'textStyle'
   | 'content';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
@@ -800,6 +804,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       trailing: p('trailing', 'view'),
       onLongPress: p('onLongPress', 'handler'),
       testID: p('testID', 'string'),
+      style: p('box', 'style'),
+      textStyle: p('label', 'textStyle'),
     },
   },
   // parity/inputs.cases.tsx, Segmented (SegmentedControl): its items are its options.

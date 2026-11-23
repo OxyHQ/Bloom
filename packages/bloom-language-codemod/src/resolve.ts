@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
+import { type Arg, type Entry, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
 /** What draws the className: a React Native View, Pressable or a Bloom Text. */
 export type HostKind = 'view' | 'pressable' | 'text';
@@ -58,6 +58,36 @@ spec.layers.forEach((names, index) => {
   for (const name of names) LAYER.set(name, index);
 });
 const TRAITS = new Set(spec.environment.traits);
+/** A frame side's Tailwind prefix, as the frame key the language names. */
+const FRAME_PREFIX: Readonly<Record<string, string>> = {
+  w: 'width',
+  h: 'height',
+  'min-w': 'minWidth',
+  'min-h': 'minHeight',
+  'max-w': 'maxWidth',
+  'max-h': 'maxHeight',
+};
+/** The spec's space tokens by points, a named rung over a numeric token of the same value. */
+const SPACE_BY_POINTS = new Map<number, string>();
+for (const [name, points] of Object.entries(spec.scales.space ?? {}))
+  if (typeof points === 'number' && (!/^\d/.test(name) || !SPACE_BY_POINTS.has(points)))
+    SPACE_BY_POINTS.set(points, name);
+
+/**
+ * A frame length of Tailwind's spacing scale that no app writes as a class
+ * (so the table has no row for it) but a style writes (`height: 38` is
+ * `h-9.5`), whose points are a space token: the frame the table writes for
+ * the steps it holds (`h-11` is `.frame({ height: '44' })`).
+ */
+function frameStep(utility: string): Entry | undefined {
+  const match = /^(min-w|min-h|max-w|max-h|w|h)-(\d+(?:\.\d+)?)$/.exec(utility);
+  const token = match ? SPACE_BY_POINTS.get(Number(match[2]) * 4) : undefined;
+  if (!match || token === undefined) return undefined;
+  const frame = { [FRAME_PREFIX[match[1] as string] as string]: token };
+  const mods = [{ name: 'frame', args: [frame] }];
+  return { status: 'mapped', language: `.frame({ ${Object.keys(frame)[0]}: '${token}' })`, mods };
+}
+
 /** The faces `.font()` takes beside a size (`mono`, `display`). */
 const FONT_FAMILY = new Set(spec.enums.fontFamily);
 /** The modifiers a `when()` variant can change; any other is left out of it. */
@@ -315,7 +345,7 @@ export function resolveClassName(
       );
       continue;
     }
-    const entry = table.utilities.get(utility);
+    const entry = table.utilities.get(utility) ?? frameStep(utility);
     if (!entry) {
       fail(token, 'unknown', 'not in the className table');
       continue;

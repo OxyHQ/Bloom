@@ -428,6 +428,20 @@ fn a_scroll_s_content_grows() {
 }
 
 #[test]
+fn a_tab_sizes_its_box_and_label() {
+    let ok = compiled_with(
+        "Tabs, TabItem",
+        "export const x = (b, open) => Tabs(b, TabItem('a', 'A').frame({ height: '38', minWidth: '76' }).padding('left', 'md').font('md').leading('18px').weight(open ? 'bold' : 'medium'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let ink = compiled_with("TabItem", "export const x = () => TabItem('a', 'A').foreground('muted');\n");
+    assert_eq!(ink.diagnostics[0].message, "TabItem has no modifier .foreground()");
+    let height =
+        compiled_with("TabItem", "export const x = () => TabItem('a', 'A').frame({ height: '37' });\n");
+    assert!(height.diagnostics[0].message.contains("'37'"), "{}", height.diagnostics[0].message);
+}
+
+#[test]
 fn a_clip_is_turned_on_or_off() {
     let ok = compiled("export const x = () => VStack().clipped().padding('md').clipped(false);\n");
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));

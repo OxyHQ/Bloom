@@ -1,4 +1,5 @@
 import { createElement, Fragment, type ErrorInfo, type ReactElement, type ReactNode } from 'react';
+import type { TextStyle } from 'react-native';
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
 import {
   AdmonitionContent,
@@ -45,6 +46,7 @@ import {
   Node,
   type ButtonView,
   type Child,
+  type FrameSpec,
   type IconComponent,
   type Press,
   type TextProps,
@@ -53,10 +55,17 @@ import {
 } from '../node';
 import { paintedHost } from '../painted-host';
 import type { PressOpenTab } from '../tokens';
-import { layoutOf, layoutStyle, type StackModifier } from '../style';
+import { layoutOf, layoutStyle, partBoxStyle, type StackModifier } from '../style';
 import {
   type Alignment,
   type Axis,
+  type Edge,
+  type FontFamilyName,
+  type FontName,
+  type LeadingToken,
+  type PaddingToken,
+  type WeightName,
+  resolveFont,
   type CardRadius,
   type Density,
   type InkToken,
@@ -337,6 +346,15 @@ export interface TabItemView<V extends string = string> extends ViewNode {
   trailing(...value: Child[]): TabItemView<V>;
   /** A long press: the tab's own menu. */
   onLongPress(value: Press | undefined): TabItemView<V>;
+  /** The tab's own box (`TabsTrigger`'s `style`): its size, over Bloom's. */
+  frame(value: FrameSpec): TabItemView<V>;
+  /** The tab's own padding (`TabsTrigger`'s `style`), over Bloom's. */
+  padding(value: PaddingToken): TabItemView<V>;
+  padding(edge: Edge, value: PaddingToken): TabItemView<V>;
+  /** Its label's size, line and weight (`TabsTrigger`'s `textStyle`), over Bloom's. */
+  font(value: Exclude<FontName, 'mono' | 'display'>): TabItemView<V>;
+  leading(value: LeadingToken): TabItemView<V>;
+  weight(value: WeightName): TabItemView<V>;
 }
 /** Bloom `TabsContent`: what a tab shows, inside the strip, while its tab is chosen. */
 export type TabContentView = ViewModifiers<TabContentView>;
@@ -813,6 +831,16 @@ function admonition(d: ControlDraw): ReactElement {
   );
 }
 
+/** A tab's label's own size, line and weight, as Bloom's `TabsTrigger` takes them (`textStyle`). */
+function tabText(item: Node): TextStyle | undefined {
+  const font = lastOf(item, 'font')?.value as Exclude<FontName, FontFamilyName> | undefined;
+  const leading = lastOf(item, 'leading')?.value as LeadingToken | undefined;
+  const weight = lastOf(item, 'weight')?.value as WeightName | undefined;
+  if (font === undefined && leading === undefined && weight === undefined) return undefined;
+  // A weight is one of React Native's own (`'700'`), as `resolveFont` resolves it from the spec.
+  return resolveFont(font, weight, leading) as TextStyle;
+}
+
 function tabs(d: ControlDraw): ReactElement {
   const [value, setValue] = (d.node.props as TabsProps).selection;
   // Its tabs and what they show, in order: a `TabContent` is drawn as the language draws a view.
@@ -831,6 +859,8 @@ function tabs(d: ControlDraw): ReactElement {
       reorderable: lastOf(item, 'reorderable')?.value,
       trailing: slot(d, lastOf(item, 'trailing')?.value),
       onLongPress: d.press(lastOf(item, 'onLongPress')?.value as Press | undefined),
+      style: partBoxStyle(item.modifiers),
+      textStyle: tabText(item),
     });
   });
   return d.component(

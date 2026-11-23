@@ -492,6 +492,27 @@ export const B = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 1, p
     expect(code).toContain(".contentGrows().contentMargins('bottom', '2xl')");
     expect(result.unconverted).toEqual([]);
   });
+  it('reads a tab’s style and textStyle as its box and label', () => {
+    const result = run(`import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
+export const A = ({ tab, setTab }) => (
+  <Tabs value={tab} onValueChange={setTab} variant="underline" style={{ height: 38 }}>
+    <TabsTrigger
+      value="posts"
+      label="Posts"
+      style={{ height: 38, minWidth: 76, paddingLeft: 12, paddingRight: 12, paddingTop: 0, paddingBottom: 0 }}
+      textStyle={{ fontSize: 15, lineHeight: 18, fontWeight: tab === 'posts' ? '700' : '500' }}
+    />
+  </Tabs>
+);
+`);
+    expect(result.unconverted).toEqual([]);
+    const code = flat(result.code);
+    expect(code).toContain(
+      ".font('md').leading('18px').weight(tab === 'posts' ? 'bold' : 'medium')",
+    );
+    expect(code).toContain("frame({ height: '38', minWidth: '76' })");
+    expect(code).toContain(".frame({ height: '38' })");
+  });
   it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ marginTop: 12, overflow: 'visible' }} />;

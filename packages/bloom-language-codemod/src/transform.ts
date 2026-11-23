@@ -59,6 +59,7 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
     space: Record<string, number>;
     corner: Record<string, number>;
     fontSize: Record<string, number>;
+    weight: Record<string, string>;
   };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
@@ -77,6 +78,12 @@ const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'
 };
 /** The roles the universal `.role()` takes, each React Native's `accessibilityRole` of its name. */
 const ROLES = new Set(spec.enums.role);
+/** A React Native `fontWeight` as the spec's weight of that value (`'700'` is `bold`). */
+const WEIGHT_BY_VALUE: Readonly<Record<string, string>> = {
+  ...Object.fromEntries(Object.entries(spec.scales.weight).map(([name, value]) => [value, name])),
+  bold: 'bold',
+  normal: 'regular',
+};
 /** What a scroll view's content view takes: the layout of one view. */
 const CONTENT_VIEW = new Set(spec.contentView.modifiers);
 /** The modifiers each constructor's node takes: its own, and the universal ones unless it opts out. */
@@ -2473,6 +2480,12 @@ export function transformSource(source: string, options: TransformOptions): File
         else styled.push(...box.mods);
         continue;
       }
+      if (prop?.form === 'textStyle') {
+        const text = value ? partTextStyleOf(attributeExpression(value)) : undefined;
+        if (text) props.push(...text);
+        else unmapped(name);
+        continue;
+      }
       if (prop?.form === 'contentStyle') {
         const margins = value ? contentStyleOf(attributeExpression(value)) : undefined;
         if (margins) props.push(...margins);
@@ -2871,6 +2884,52 @@ export function transformSource(source: string, options: TransformOptions): File
     if (n.Identifier.check(expression) || n.MemberExpression.check(expression))
       return { node: expression, hole: 'action' };
     return undefined;
+  }
+
+  /**
+   * A part's label style (a tab's `textStyle`), an object literal of a
+   * `fontSize` and `lineHeight` of the spec's tokens and a `fontWeight`, as
+   * `.font()`, `.leading()` and `.weight()`; a weight chosen by a plain
+   * condition (`open ? '700' : '500'`) is the weight it chooses.
+   */
+  function partTextStyleOf(expression: AnyNode): PropMod[] | undefined {
+    if (!n.ObjectExpression.check(expression)) return undefined;
+    const weightOf = (node: AnyNode): Value | undefined => {
+      const text =
+        staticString(node) ?? (n.NumericLiteral.check(node) ? String(node.value) : undefined);
+      if (text !== undefined) return WEIGHT_BY_VALUE[text];
+      if (
+        n.ConditionalExpression.check(node) &&
+        (isPlainRead(node.test) || isBooleanForm(node.test))
+      ) {
+        const then = weightOf(node.consequent);
+        const otherwise = weightOf(node.alternate);
+        return then === undefined || otherwise === undefined
+          ? undefined
+          : { $: 'choose', test: { node: node.test, hole: 'condition' }, then, otherwise };
+      }
+      return undefined;
+    };
+    const mods: PropMod[] = [];
+    for (const property of expression.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key)
+      )
+        return undefined;
+      const key = property.key.name as string;
+      if (key === 'fontWeight') {
+        const weight = weightOf(property.value);
+        if (weight === undefined) return undefined;
+        mods.push({ name: 'weight', args: [weight] });
+        continue;
+      }
+      const mod = textDeclaration(key, property.value);
+      if (!mod) return undefined;
+      mods.push({ name: mod.name, args: [...mod.args] });
+    }
+    return mods;
   }
 
   /**

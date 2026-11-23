@@ -733,6 +733,59 @@ const tabs: ParityCase[] = [
       </Tabs>
     ),
   },
+  {
+    // Mention's home tabs: each tab's box and label its own, the open one bold.
+    name: 'Tabs whose tabs size their box and label',
+    language: () => {
+      const tab = (value: string, label: string) =>
+        C.TabItem(value, label)
+          .frame({ height: '38', minWidth: '76' })
+          .padding('left', 'md')
+          .padding('right', 'md')
+          .padding('vertical', 'none')
+          .font('md')
+          .leading('18px')
+          .weight(value === 'posts' ? 'bold' : 'medium');
+      return toElement(
+        C.Tabs(['posts', setTab], tab('posts', 'Posts'), tab('replies', 'Replies'))
+          .style('underline')
+          .pressOpenTab('reselect')
+          .frame({ height: '38' }),
+      );
+    },
+    bloom: () => {
+      const style = {
+        height: 38,
+        minWidth: 76,
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 0,
+        paddingBottom: 0,
+      };
+      return (
+        <Tabs
+          value="posts"
+          onValueChange={setTab}
+          variant="underline"
+          pressOpenTab="reselect"
+          style={{ height: 38 }}
+        >
+          <TabsTrigger
+            value="posts"
+            label="Posts"
+            style={style}
+            textStyle={{ fontSize: 15, lineHeight: 18, fontWeight: '700' }}
+          />
+          <TabsTrigger
+            value="replies"
+            label="Replies"
+            style={style}
+            textStyle={{ fontSize: 15, lineHeight: 18, fontWeight: '500' }}
+          />
+        </Tabs>
+      );
+    },
+  },
   ...ENUMS.pressOpenTab.map((press) => ({
     // Mention's feed tabs: pressing the open tab takes its content back to the top.
     name: `Tabs whose open tab, pressed, does ${press}`,

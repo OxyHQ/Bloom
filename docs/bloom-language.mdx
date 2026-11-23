@@ -2439,7 +2439,13 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 - **Tabs.** `.style('underline' | 'pill' | 'filled')`, `.fullWidth()`,
   `.label()` (the strip's name); a `TabItem` takes `.icon()`, `.count()`,
   `.disabled()`, `.testID()`, `.iconOnly()`, `.reorderable()`, `.trailing()`
-  (a control in its chrome, not its press) and `.onLongPress()`; the strip's
+  (a control in its chrome, not its press) and `.onLongPress()`, and its own
+  box and label over Bloom's: `.frame()` and `.padding()` are `TabsTrigger`'s
+  `style`, `.font()`, `.leading()` and `.weight()` its `textStyle` (Mention's
+  home tabs: `.frame({ height: '38', minWidth: '76' }).padding('left', 'md')
+  .padding('right', 'md').padding('vertical', 'none').font('md').leading('18px')
+  .weight(open ? 'bold' : 'medium')`, the 38pt strip and 76pt tab the space
+  tokens `'38'` and `'76'`); the strip's
   `.onReorder(from, to)` keeps a new order and `.dragTranslation(value)` is a
   swipe's travel the underline follows. What each tab shows is
   `TabContent(value, ...)` inside the strip (Bloom's `TabsContent`), or a
