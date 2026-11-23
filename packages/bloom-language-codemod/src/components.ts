@@ -264,6 +264,19 @@ const TEXT_INPUT = {
   maxLength: p('maxLength', 'number'),
 } as const;
 
+/** Bloom's accent tones as the Bloom tones they paint in (`appearance/colors.ts`, `PALETTE` read backwards). */
+const ACCENT_TONE: Readonly<Record<string, string>> = {
+  default: 'neutral',
+  primary: 'accent',
+  vivid: 'vivid',
+  secondary: 'support',
+  tertiary: 'action',
+  success: 'success',
+  warning: 'warning',
+  error: 'danger',
+  info: 'info',
+};
+
 /** The props a node takes from its press and name (`d.props()`). */
 const NAMED = {
   accessibilityLabel: p('label', 'string'),
@@ -490,6 +503,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       error: p('error', 'string'),
       required: p('required', 'flag'),
       disabled: p('disabled', 'flag'),
+      multiple: p('multiple', 'flag'),
       testID: p('testID', 'string'),
     },
   },
@@ -650,10 +664,13 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     node: 'Chip',
     params: [{ label: { leading: 'leadingIcon', trailing: 'trailingIcon' } }],
     props: {
-      // `inverted` is Bloom's chip variant; the appearances are its `appearance`.
-      variant: p('style', 'token', { inverted: 'inverted' }),
+      // `inverted` is Bloom's chip variant; the appearances are its `appearance`, which
+      // Bloom reads over a variant of the same name (`solid`, `subtle`).
+      variant: p('style', 'token', { inverted: 'inverted', solid: 'solid', subtle: 'subtle' }),
       appearance: p('style', 'token', tokens('appearance')),
       tone: p('tint', 'token', tokens('tone')),
+      // An accent tone is the Bloom tone Bloom's Chip paints it in (`bloomToneOf`).
+      color: p('tint', 'token', ACCENT_TONE),
       size: p('size', 'token', tokens('chipSize')),
       hue: p('hue', 'token', tokens('chipHue')),
       selected: p('selected', 'flag'),

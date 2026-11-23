@@ -643,6 +643,20 @@ export const C = () => <VirtualList data={posts} renderItem={renderPost} content
       'VirtualList:contentContainerStyle',
     ]);
   });
+  it('moves a Field of several controls and a Chip coloured by an accent tone', () => {
+    const result = run(`import { Field } from '@oxy.so/bloom/field';
+import { Chip } from '@oxy.so/bloom/chip';
+export const A = () => (
+  <Field label="Type" multiple>
+    <Chip variant="subtle" color="error">Remote</Chip>
+  </Field>
+);
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LField('Type', LChip(Text('Remote')).style('subtle').tint('danger')).multiple())",
+    );
+  });
+
   it('reads a radius, a stacking level and an aspect ratio by value, overflow: visible as the default and inset as its edges', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ borderRadius: 999, zIndex: 6, aspectRatio: 1, overflow: 'visible' }} />;
