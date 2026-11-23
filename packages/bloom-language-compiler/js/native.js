@@ -54,7 +54,7 @@ function load() {
   }
   throw new Error(
     `No Bloom language compiler loads on ${process.platform}-${process.arch}:\n  ${failures.join('\n  ')}\n` +
-      `Build it from a checkout (bun run build in packages/bloom-language-compiler), or install the prebuilt package for this platform. See ${SETUP_DOC}`,
+      `Build it from a checkout (bun run build:addon in packages/bloom-language-compiler), or install the prebuilt package for this platform. See ${SETUP_DOC}`,
   );
 }
 
