@@ -205,6 +205,9 @@ export const BORDER_WIDTH = {
   "2.5": 2.5
 } as const;
 export const HIT_SLOP = {
+  "4": 4,
+  "5": 5,
+  "none": 0,
   "sm": 6,
   "md": 8,
   "lg": 12
@@ -1082,7 +1085,7 @@ export const COLORS = {
 } as const;
 
 export const ENUMS = {
-  "safeAreaEdge": [
+  "physicalEdge": [
     "all",
     "top",
     "bottom",
@@ -2887,7 +2890,7 @@ export const MODIFIERS = {
     "padding"
   ],
   "safeAreaPadding": [
-    "safeAreaEdge?"
+    "physicalEdge?"
   ],
   "frame": [
     "frame"
@@ -3127,6 +3130,7 @@ export const MODIFIERS = {
     "role"
   ],
   "hitSlop": [
+    "physicalEdge?",
     "hitSlop"
   ],
   "testID": [

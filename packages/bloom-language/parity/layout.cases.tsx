@@ -977,7 +977,47 @@ const safeArea: ParityCase[] = [
   },
 ];
 
+/** `.hitSlop()`: one slop on every side, or each side's (React Native's insets). */
+const hitSlop: ParityCase[] = [
+  {
+    name: 'a press that reaches a slop beyond every side',
+    language: () => toElement(L.VStack(L.Text('a')).onPress(hold).hitSlop('md')),
+    bloom: () => (
+      <RN.Pressable onPress={hold} hitSlop={8}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    // Mention's video scrubber: taller to the finger, not wider.
+    name: 'a press that reaches beyond its top and bottom only',
+    language: () => toElement(L.VStack(L.Text('a')).onPress(hold).hitSlop('vertical', 'md')),
+    bloom: () => (
+      <RN.Pressable onPress={hold} hitSlop={{ top: 8, bottom: 8 }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    // Mention's upvote: five points up, down and to the left, none to the right.
+    name: 'a press whose sides reach their own slops',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .onPress(hold)
+          .hitSlop('5')
+          .hitSlop('right', 'none'),
+      ),
+    bloom: () => (
+      <RN.Pressable onPress={hold} hitSlop={{ top: 5, bottom: 5, left: 5, right: 0 }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...hitSlop,
   ...safeArea,
   ...aspectRatio,
   ...pressFade,

@@ -3364,5 +3364,17 @@ fn a_view_is_padded_by_the_safe_area() {
     );
     assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
     let output = compiled("export const x = () => VStack(Text('a')).safeAreaPadding('leading');\n");
-    assert_eq!(output.diagnostics[0].message, "Unknown safeAreaEdge token 'leading' for .safeAreaPadding()");
+    assert_eq!(output.diagnostics[0].message, "Unknown physicalEdge token 'leading' for .safeAreaPadding()");
+}
+
+#[test]
+fn a_hit_slop_reaches_each_side_its_own_way() {
+    let ok = compiled(
+        "export const x = (f) => [VStack(Text('a')).onPress(f).hitSlop('md'), VStack(Text('b')).onPress(f).hitSlop('vertical', '5').hitSlop('right', 'none')];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = (f) => VStack(Text('a')).onPress(f).hitSlop('leading', 'md');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown physicalEdge token 'leading' for .hitSlop()");
+    let output = compiled("export const x = (f) => VStack(Text('a')).onPress(f).hitSlop('10');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown hitSlop token '10' for .hitSlop()");
 }

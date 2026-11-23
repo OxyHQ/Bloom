@@ -618,7 +618,7 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     expect(named(CORNER)).toEqual(unprefixed(tokens.borderRadius));
     expect(named(FONT_SIZE)).toEqual(unprefixed(tokens.fontSize));
     expect(LEADING).toEqual(tokens.lineHeight);
-    expect(HIT_SLOP).toEqual(tokens.hitSlop);
+    expect(named(HIT_SLOP)).toEqual({ none: 0, ...tokens.hitSlop });
     // The language names Bloom's one disabled fade neutrally: it is any half opacity, not only a disabled control's.
     expect(OPACITY.half).toBe(tokens.DISABLED_OPACITY);
     expect(named(DURATION)).toEqual(tokens.animation.duration);

@@ -263,7 +263,7 @@ import {
   type ContentFit,
   type DurationName,
   type Edge,
-  type SafeAreaEdge,
+  type PhysicalEdge,
   type Role,
   type ShrinkPriority,
   type FlexName,
@@ -1320,7 +1320,7 @@ export type Modifier =
       readonly edge: Edge;
       readonly value: PaddingToken;
     }
-  | { readonly kind: 'safeAreaPadding'; readonly key: string; readonly edge: SafeAreaEdge }
+  | { readonly kind: 'safeAreaPadding'; readonly key: string; readonly edge: PhysicalEdge }
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
   | { readonly kind: 'flex'; readonly key: string; readonly value: FlexName }
@@ -1578,7 +1578,12 @@ export type Modifier =
     }
   | { readonly kind: 'liveRegion'; readonly key: string; readonly value: LiveRegion }
   | { readonly kind: 'accessibilityHidden'; readonly key: string; readonly value: boolean }
-  | { readonly kind: 'hitSlop'; readonly key: string; readonly value: HitSlopName }
+  | {
+      readonly kind: 'hitSlop';
+      readonly key: string;
+      readonly edge: PhysicalEdge;
+      readonly value: HitSlopName;
+    }
   | { readonly kind: 'testID'; readonly key: string; readonly value: string }
   | { readonly kind: 'id'; readonly key: string; readonly value: string | number }
   | {
@@ -2080,7 +2085,7 @@ export class Node {
     const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
     return this.with({ kind: 'padding', key: `p:${edge}:${tokenKey(token)}`, edge, value: token });
   }
-  safeAreaPadding(edge: SafeAreaEdge = 'all'): Node {
+  safeAreaPadding(edge: PhysicalEdge = 'all'): Node {
     return this.with({ kind: 'safeAreaPadding', key: `sa:${edge}`, edge });
   }
   frame(value: FrameSpec): Node {
@@ -2425,8 +2430,10 @@ export class Node {
   accessibilityHidden(value = true): Node {
     return this.with({ kind: 'accessibilityHidden', key: `a11yHidden:${value}`, value });
   }
-  hitSlop(value: HitSlopName): Node {
-    return this.with({ kind: 'hitSlop', key: `hitSlop:${value}`, value });
+  hitSlop(edgeOrValue: PhysicalEdge | HitSlopName, value?: HitSlopName): Node {
+    const edge: PhysicalEdge = value === undefined ? 'all' : (edgeOrValue as PhysicalEdge);
+    const token = value === undefined ? (edgeOrValue as HitSlopName) : value;
+    return this.with({ kind: 'hitSlop', key: `hitSlop:${edge}:${token}`, edge, value: token });
   }
   testID(value: string): Node {
     return this.with({ kind: 'testID', key: 'testID', value });
@@ -4460,7 +4467,7 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * (`react-native-safe-area-context`), a view of its own, so a padding beside
    * it adds to it. The sides are physical: the insets are the device's.
    */
-  safeAreaPadding(edge?: SafeAreaEdge): Self;
+  safeAreaPadding(edge?: PhysicalEdge): Self;
   frame(value: FrameSpec): Self;
   /** Takes the free space along its parent's axis. */
   grow(): Self;
@@ -4599,7 +4606,14 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * 'no-hide-descendants'`, on the web `aria-hidden`. `false` reads it again.
    */
   accessibilityHidden(value?: boolean): Self;
+  /**
+   * How far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`,
+   * or an exact slop (`'4'` `'5'`). With a side first (`top`, `bottom`,
+   * `horizontal`, `vertical`, `left`, `right`: physical, as React Native's
+   * insets are) only that side; a later one of a side replaces the earlier.
+   */
   hitSlop(value: HitSlopName): Self;
+  hitSlop(edge: PhysicalEdge, value: HitSlopName): Self;
   testID(value: string): Self;
   /** A Bloom `Badge` attached to the view, at the badge's `placement` (the top right by default). */
   badge(value: BadgeView): Self;

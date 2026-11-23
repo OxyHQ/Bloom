@@ -212,9 +212,13 @@
       "4": 4
     },
     "hitSlop": {
+      "$comment": "Bloom's hit slops (styles/tokens.ts), 'none' (an edge that reaches no further, as space's), and the exact slops Mention gives an edge, '4' and '5', each named by its value.",
+      "none": 0,
       "sm": 6,
       "md": 8,
-      "lg": 12
+      "lg": 12,
+      "4": 4,
+      "5": 5
     },
     "shrink": {
       "never": 0,
@@ -432,7 +436,7 @@
     "infoText": ["infoSubtleForeground", "info-text"]
   },
   "enums": {
-    "safeAreaEdge": ["all", "top", "bottom", "horizontal", "vertical", "left", "right"],
+    "physicalEdge": ["all", "top", "bottom", "horizontal", "vertical", "left", "right"],
     "edge": [
       "all",
       "horizontal",
@@ -1291,7 +1295,7 @@
   "modifiers": {
     "$comment": "name: parameter types, in order. A trailing ? is optional; padding takes (value) or (edge, value). motionValue: a MotionValue (useMotionValue); scale, offset and rotation take one in place of a token. colors: a list of colours, each a color token (a role, a role at an opacity) or an app colour.",
     "padding": ["edge?", "padding"],
-    "safeAreaPadding": ["safeAreaEdge?"],
+    "safeAreaPadding": ["physicalEdge?"],
     "frame": ["frame"],
     "grow": [],
     "shrink": ["shrink"],
@@ -1370,7 +1374,7 @@
     "liveRegion": ["liveRegion"],
     "accessibilityHidden": ["value?"],
     "role": ["role"],
-    "hitSlop": ["hitSlop"],
+    "hitSlop": ["physicalEdge?", "hitSlop"],
     "testID": ["value"],
     "id": ["value"],
     "disabled": ["value?"],

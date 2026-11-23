@@ -48,7 +48,7 @@ import {
   type CornerCurve,
   type OpacityName,
   type Edge,
-  type SafeAreaEdge,
+  type PhysicalEdge,
   type FontFamilyName,
   type FontName,
   type TrackingName,
@@ -467,7 +467,7 @@ function cornerRadius(style: Resolved, corner: CornerModifier): void {
 export const SIDE_RADII: readonly string[] = CORNER_RADIUS.map(([, key]) => key);
 
 /** The sides `safeAreaPadding()` pads, a bit each: top, bottom, left, right. */
-export const SAFE_AREA_BITS: Record<SafeAreaEdge, number> = {
+export const SAFE_AREA_BITS: Record<PhysicalEdge, number> = {
   all: 0b1111,
   top: 0b0001,
   bottom: 0b0010,

@@ -210,6 +210,7 @@ import {
   type ListMarker,
   type IconSizeToken,
   type InkToken,
+  type PhysicalEdge,
   type Role,
   type TextStyleName,
 } from './tokens';
@@ -343,7 +344,8 @@ interface Plan {
   label: string | undefined;
   hint: string | undefined;
   role: Role | undefined;
-  hitSlop: number | undefined;
+  /** How far a press reaches: one slop on every side, or each side's (React Native's `Insets`). */
+  hitSlop: number | HitSlopInsets | undefined;
   testID: string | undefined;
   id: string | number | undefined;
   own: Map<Modifier['kind'], Modifier>;
@@ -766,7 +768,7 @@ function plan(node: Node, env: Env): Plan {
         result.role = modifier.value;
         break;
       case 'hitSlop':
-        result.hitSlop = HIT_SLOP[modifier.value];
+        result.hitSlop = withHitSlop(result.hitSlop, modifier.edge, HIT_SLOP[modifier.value]);
         break;
       case 'testID':
         result.testID = modifier.value;
@@ -793,6 +795,38 @@ function plan(node: Node, env: Env): Plan {
   if (moving || result.place.variants.some(([, modifier]) => GEOMETRY_KINDS.has(modifier.kind)))
     result.motion = motionPlan(node, result.layers);
   return result;
+}
+
+type HitSlopInsets = { top?: number; bottom?: number; left?: number; right?: number };
+
+/** Each side of a physical edge, as React Native's `Insets` names it. */
+const HIT_SLOP_SIDES: Record<PhysicalEdge, readonly (keyof HitSlopInsets)[]> = {
+  all: ['top', 'bottom', 'left', 'right'],
+  top: ['top'],
+  bottom: ['bottom'],
+  horizontal: ['left', 'right'],
+  vertical: ['top', 'bottom'],
+  left: ['left'],
+  right: ['right'],
+};
+
+/**
+ * A hit slop with one more `.hitSlop()`: every side is one number (as Bloom
+ * writes `hitSlop={8}`); a side of its own makes it React Native's insets,
+ * with only the sides the chain names, a later one of a side over the earlier.
+ */
+function withHitSlop(
+  current: number | HitSlopInsets | undefined,
+  edge: PhysicalEdge,
+  value: number,
+): number | HitSlopInsets {
+  if (edge === 'all') return value;
+  const insets: HitSlopInsets =
+    typeof current === 'number'
+      ? { top: current, bottom: current, left: current, right: current }
+      : { ...current };
+  for (const side of HIT_SLOP_SIDES[edge]) insets[side] = value;
+  return insets;
 }
 
 /**
@@ -2718,7 +2752,8 @@ function renderHost(
         popOnActivate: options.pop,
         rollCount: options.rollCount,
         busy: options.busy,
-        hitSlop: options.hitSlop,
+        // `.hitSlop()` over the constructor's own option.
+        hitSlop: p.hitSlop ?? options.hitSlop,
         accessibilityActions: options.accessibilityActions,
         onAccessibilityAction: options.onAccessibilityAction,
         testID: p.testID,
