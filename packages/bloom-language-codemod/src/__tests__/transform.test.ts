@@ -643,6 +643,30 @@ export const C = () => <VirtualList data={posts} renderItem={renderPost} content
       'VirtualList:contentContainerStyle',
     ]);
   });
+  it('moves a hit slop per side, an accessibility value, a ref and a layout handler', () => {
+    const result = run(`import { Pressable, View, Text } from 'react-native';
+import { tokens } from '@oxy.so/bloom/styles';
+export const A = ({ open, r, f }) => (
+  <Pressable onPress={open} hitSlop={tokens.hitSlop.md} ref={r} onLayout={f}>
+    <Text accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: 4 }}>a</Text>
+  </Pressable>
+);
+export const B = ({ open }) => <Pressable onPress={open} hitSlop={{ top: 5, bottom: 5, left: 5, right: 0 }}><Text>b</Text></Pressable>;
+export const C = ({ open }) => <Pressable onPress={open} hitSlop={{ top: 8, bottom: 8 }}><Text>c</Text></Pressable>;
+export const D = ({ open }) => <Pressable onPress={open} hitSlop={10}><Text>d</Text></Pressable>;
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".onPress(open).hitSlop('md').ref(r).onLayout(f)");
+    expect(code).toContain('.accessibilityValue({ min: 0, max: 100, now: 4 })');
+    expect(code).toContain(
+      "toElement(VStack(RawText('b')).onPress(open).hitSlop('vertical', '5').hitSlop('left', '5').hitSlop('right', 'none'))",
+    );
+    expect(code).toContain(
+      "toElement(VStack(RawText('c')).onPress(open).hitSlop('vertical', 'md'))",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['prop:hitSlop']);
+  });
+
   it('draws a TouchableOpacity as a pressable stack whose press fades it, with its accessibility state and live region', () => {
     const result = run(`import { TouchableOpacity, Text } from 'react-native';
 export const A = ({ open, on }) => (
@@ -670,7 +694,9 @@ export const C = () => <View className="border-dashed" />;
     expect(flat(result.code)).toContain(
       "toElement(HStack(VStack().margin('left', 'auto')).wrap().horizontalSpacing('lg').verticalSpacing('xs'))",
     );
-    expect(flat(result.code)).toContain("toElement(VStack().margin('left', 'auto').verticalSpacing('sm'))");
+    expect(flat(result.code)).toContain(
+      "toElement(VStack().margin('left', 'auto').verticalSpacing('sm'))",
+    );
     expect(flat(result.code)).toContain("toElement(VStack().borderStyle('dashed'))");
   });
   it('follows React’s rule for JSX text', () => {

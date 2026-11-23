@@ -23,6 +23,8 @@ is `toElement`'s second argument, a child's `.id()`).
 | Bloom `PressableScale` (`@oxy.so/bloom/pressable-scale`), as a `Pressable` | the same stack with `.pressScale()`; its `targetScale` is a reason |
 | React Native's `TouchableOpacity`, as a `Pressable` | the same stack with `.pressFade(token)`, its `activeOpacity` the opacity token of its value (`0.7` is `'70'`; none, `.pressFade()`); an `activeOpacity` that is no token, or set at runtime, is a reason |
 | `accessibilityState`, `accessibilityLiveRegion` on a view, a pressable or a text | `.accessibilityState(state)` (the object as written), `.liveRegion(region)`; `accessibilityElementsHidden`, `importantForAccessibility` and `aria-hidden` stay reasons: `.accessibilityHidden()` writes each platform's own form, which none of an app's single forms draws on every platform |
+| `accessibilityValue`, `ref`, `onLayout` on a view, a pressable or a text | `.accessibilityValue(value)`, `.ref(r)` and `.onLayout(f)`, each as written |
+| `hitSlop` on a view, a pressable or a text | `.hitSlop(token)` for one slop (a number of a hit slop token, `8` is `'md'`, or Bloom's `tokens.hitSlop.md`); an object of static sides is a call per pair of equal opposite sides, or per side, only the sides it names (`{ top: 8, bottom: 8 }` is `.hitSlop('vertical', 'md')`, a 0 side `'none'`); a side that is no token, or a slop set at runtime, is a reason |
 | Bloom `Text` (`@oxy.so/bloom/typography`), its `variant` and `numberOfLines` | `Text(…runs)`, `.font()` / `.weight()`, `.lines()` |
 | Bloom's typography components (`Muted`, `H2`, `Small`…), without a `className` | `Text(…runs).textStyle('muted')` |
 | a Bloom component with a rule (`src/components.ts`, below) | its node, prop by prop |

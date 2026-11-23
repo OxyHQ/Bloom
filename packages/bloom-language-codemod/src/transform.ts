@@ -46,7 +46,11 @@ type AnyNode = any;
 const n = recast.types.namedTypes;
 
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as {
-  scales: { iconSize: Record<string, number>; opacity: Record<string, number> };
+  scales: {
+    iconSize: Record<string, number>;
+    opacity: Record<string, number>;
+    hitSlop: Record<string, number>;
+  };
   typeRamp: Record<string, unknown>;
   colors: Record<string, [themeKey: string, css: string] | string>;
   enums: {
@@ -68,6 +72,74 @@ const OPACITY_TOKEN = new Map(
     .filter(([name]) => name !== '$comment')
     .map(([name, value]) => [value, name]),
 );
+/** A hit slop in points (`8`) as the hit slop token of its value (`'md'`); a name of Bloom's (`tokens.hitSlop.md`) as itself. */
+const HIT_SLOP = Object.fromEntries(
+  Object.entries(spec.scales.hitSlop).filter(([name]) => name !== '$comment'),
+) as Record<string, number>;
+const HIT_SLOP_TOKEN = new Map(Object.entries(HIT_SLOP).map(([name, value]) => [value, name]));
+
+/** One side's slop: a static number, or Bloom's `tokens.hitSlop.<name>`, as its token. */
+function hitSlopToken(value: AnyNode): string | undefined {
+  const number = staticNumber(value);
+  if (number !== undefined) return HIT_SLOP_TOKEN.get(number);
+  const expression = n.JSXExpressionContainer.check(value) ? value.expression : value;
+  if (
+    n.MemberExpression.check(expression) &&
+    !expression.computed &&
+    n.Identifier.check(expression.property) &&
+    n.MemberExpression.check(expression.object) &&
+    n.Identifier.check(expression.object.property) &&
+    expression.object.property.name === 'hitSlop' &&
+    expression.property.name in HIT_SLOP
+  )
+    return expression.property.name;
+  return undefined;
+}
+
+/**
+ * React Native's `hitSlop` as `.hitSlop()` calls: one slop is one call; an
+ * object of static sides is a call per pair of equal opposite sides (or per
+ * side), only the sides it names. Undefined when any side is no token.
+ */
+function hitSlopCalls(value: AnyNode): Arg[][] | undefined {
+  const one = hitSlopToken(value);
+  if (one !== undefined) return [[one]];
+  const object = n.JSXExpressionContainer.check(value) ? value.expression : value;
+  if (!n.ObjectExpression.check(object)) return undefined;
+  const sides: Record<string, string> = {};
+  for (const property of object.properties) {
+    if (
+      !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+      property.computed ||
+      !n.Identifier.check(property.key) ||
+      !['top', 'bottom', 'left', 'right'].includes(property.key.name)
+    )
+      return undefined;
+    const token = hitSlopToken(property.value);
+    if (token === undefined) return undefined;
+    sides[property.key.name] = token;
+  }
+  const { top, bottom, left, right } = sides;
+  if (top !== undefined && top === bottom && bottom === left && left === right) return [[top]];
+  const calls: Arg[][] = [];
+  const pair = (
+    edge: string,
+    a: string | undefined,
+    b: string | undefined,
+    sideA: string,
+    sideB: string,
+  ) => {
+    if (a !== undefined && a === b) calls.push([edge, a]);
+    else {
+      if (a !== undefined) calls.push([sideA, a]);
+      if (b !== undefined) calls.push([sideB, b]);
+    }
+  };
+  pair('vertical', top, bottom, 'top', 'bottom');
+  pair('horizontal', left, right, 'left', 'right');
+  return calls;
+}
+
 /** A Bloom theme colour (`theme.colors.textSecondary`) as the role painted from it (`muted`). */
 const ROLE_OF_THEME_COLOR = new Map<string, string>();
 for (const [role, entry] of Object.entries(spec.colors))
@@ -123,7 +195,7 @@ interface Carried {
     | 'items'
     /** A list's named row function, called with the argument Bloom hands it (`renderPost(info)`). */
     | 'renderer'
-    /** An `accessibilityState` object. */
+    /** An `accessibilityState` or `accessibilityValue` object. */
     | 'state';
   /** For a key: its attribute, which a fixture's root leaves out (a key is no part of what draws). */
   readonly attribute?: AnyNode;
@@ -1061,6 +1133,26 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       if (kind !== 'icon' && name === 'accessibilityState') {
         props.push({ name: 'accessibilityState', args: [{ node: expression, hole: 'state' }] });
+        continue;
+      }
+      if (kind !== 'icon' && name === 'accessibilityValue') {
+        props.push({ name: 'accessibilityValue', args: [{ node: expression, hole: 'state' }] });
+        continue;
+      }
+      // The escape hatches, on the view's outermost box as React Native's own.
+      if (kind !== 'icon' && (name === 'ref' || name === 'onLayout')) {
+        props.push({ name, args: [{ node: expression, hole: 'handler' }] });
+        continue;
+      }
+      if (kind !== 'icon' && name === 'hitSlop') {
+        const calls = hitSlopCalls(value);
+        if (calls === undefined)
+          fail(
+            name,
+            'prop:hitSlop',
+            'a hit slop whose sides are no hit slop tokens, or set at runtime',
+          );
+        else for (const args of calls) props.push({ name: 'hitSlop', args });
         continue;
       }
       if ((kind === 'bloomText' || kind === 'rnText') && name === 'numberOfLines') {
