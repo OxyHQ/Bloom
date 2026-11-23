@@ -3432,7 +3432,9 @@ export const MODIFIERS = {
   "outline": [
     "cardBorder"
   ],
-  "clipped": [],
+  "clipped": [
+    "value?"
+  ],
   "leadingView": [
     "children"
   ],

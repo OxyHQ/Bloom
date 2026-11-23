@@ -635,8 +635,8 @@ function resolve(utility) {
     return name ? mapped(`.opacity('${name}')`) : token('opacity', `${value}`, '.opacity(…)');
   }
   if (utility === 'overflow-hidden') return mapped('.clipped()');
-  // A view draws what overflows it, as React Native's and react-native-web's views do by default.
-  if (utility === 'overflow-visible') return drop('a view draws what overflows it');
+  // Written out as NativeWind writes it, over a clip the view would otherwise have.
+  if (utility === 'overflow-visible') return mapped('.clipped(false)');
   if (/^overflow-/.test(utility)) return structure('a ScrollView (Embed) for scrolling');
   // What the language says by other means, or does not say.
   if (utility === 'cursor-pointer') return drop('a pressable view takes the pointer');

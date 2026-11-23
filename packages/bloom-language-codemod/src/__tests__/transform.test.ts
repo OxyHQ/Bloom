@@ -467,6 +467,14 @@ const styles = StyleSheet.create({ day: { fontSize: 28, lineHeight: 32, fontWeig
       'lineHeight',
     ]);
   });
+  it('writes out overflow: visible as .clipped(false), in a style and a class', () => {
+    const result = run(`import { View } from 'react-native';
+export const A = () => <View style={{ marginTop: 12, overflow: 'visible' }} />;
+export const B = () => <View className="overflow-visible p-2" />;
+`);
+    expect(flat(result.code)).toContain("VStack().clipped(false).margin('top', 'md')");
+    expect(flat(result.code)).toContain("VStack().padding('all', 'sm').clipped(false)");
+  });
   it('reads Bloom’s fontFamilyStyle spread in a style as the face, beside a numeric size', () => {
     const result = run(`import { StyleSheet } from 'react-native';
 import { Text, fontFamilyStyle } from '@oxy.so/bloom/typography';
@@ -1071,7 +1079,7 @@ export const A = () => (
     );
   });
 
-  it('reads a radius, a stacking level and an aspect ratio by value, overflow: visible as the default and inset as its edges', () => {
+  it('reads a radius, a stacking level and an aspect ratio by value, overflow: visible written out and inset as its edges', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => <View style={{ borderRadius: 999, zIndex: 6, aspectRatio: 1, overflow: 'visible' }} />;
 export const B = () => <View style={{ borderRadius: 15, zIndex: -1 }} />;
@@ -1079,7 +1087,9 @@ export const C = () => <View style={{ position: 'absolute', inset: 0, borderRadi
 export const D = () => <View style={{ borderRadius: 13 }} />;
 `);
     const code = flat(result.code);
-    expect(code).toContain("toElement(VStack().aspectRatio(1).corner('full').zIndex('6'))");
+    expect(code).toContain(
+      "toElement(VStack().aspectRatio(1).clipped(false).corner('full').zIndex('6'))",
+    );
     expect(code).toContain("toElement(VStack().corner('15').zIndex('-1'))");
     expect(code).toContain(
       "toElement(VStack().corner('7').position({ top: 'none', right: 'none', bottom: 'none', left: 'none' }))",

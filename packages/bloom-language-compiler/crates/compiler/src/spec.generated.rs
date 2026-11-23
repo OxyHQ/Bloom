@@ -480,7 +480,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("radius", &["cardRadius"]),
     ("elevation", &["cardElevation"]),
     ("outline", &["cardBorder"]),
-    ("clipped", &[]),
+    ("clipped", &["value?"]),
     ("leadingView", &["children"]),
     ("selected", &["value?"]),
     ("highlighted", &["value?"]),

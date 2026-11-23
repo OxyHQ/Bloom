@@ -158,7 +158,7 @@ export interface CardView extends ViewModifiers<CardView> {
   /** Its own stroke over its appearance's: `none`, `hairline`, `thin` or `medium`. */
   outline(value: CardBorder): CardView;
   /** Clips its content to its corner. */
-  clipped(): CardView;
+  clipped(on?: boolean): CardView;
   disabled(value?: boolean): CardView;
   /** Its content laid out side by side (`horizontal`) or one above another (the default), as a stack's. */
   axis(value: Axis): CardView;
@@ -612,7 +612,7 @@ function card(d: ControlDraw): ReactElement {
       cornerCurve: d.own('cornerCurve')?.value,
       elevation: d.own('elevation')?.value,
       border: d.own('outline')?.value,
-      clipContent: d.own('clipped') === undefined ? undefined : true,
+      clipContent: d.own('clipped')?.value || undefined,
       disabled: d.own('disabled')?.value,
     },
     ...d.children(d.node.children),

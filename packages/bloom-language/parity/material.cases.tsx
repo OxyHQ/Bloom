@@ -698,6 +698,12 @@ const named: ParityCase[] = [
     language: () => toElement(L.VStack().corner(rung).clipped()),
     bloom: () => <RN.View style={{ borderRadius: value, overflow: 'hidden' }} />,
   })),
+  {
+    // Mention's media preview: React Native's `overflow: 'visible'` written out.
+    name: 'a view that draws what overflows it',
+    language: () => toElement(L.VStack().margin('top', 'md').clipped(false)),
+    bloom: () => <RN.View style={{ marginTop: space.md, overflow: 'visible' }} />,
+  },
 ];
 
 /** `.blur()`: Bloom's floating island, a capsule unless a corner names its radius. */

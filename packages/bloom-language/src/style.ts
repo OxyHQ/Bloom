@@ -519,7 +519,8 @@ export function addToLayers(layers: Layer[], modifier: LayerModifier): void {
   const overlay = modifier.kind === 'overlay' ? modifier : undefined;
   // A shadow never shares a view with a clip (iOS clips a view's own shadow): after a clipped corner it wraps.
   const clip =
-    modifier.kind === 'shadow' && current?.modifiers.some((existing) => existing.kind === 'clipped')
+    modifier.kind === 'shadow' &&
+    current?.modifiers.some((existing) => existing.kind === 'clipped' && existing.value)
       ? current?.modifiers.filter(
           (existing): existing is CornerModifier => existing.kind === 'corner',
         )
@@ -699,7 +700,7 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
         cornerRadius(style, modifier);
         break;
       case 'clipped':
-        style.overflow = 'hidden';
+        style.overflow = modifier.value ? 'hidden' : 'visible';
         break;
       case 'cornerCurve':
         // Bloom's platform-adaptive corner (`shapes/surface-style`): the curve alone, on the radius beside it.

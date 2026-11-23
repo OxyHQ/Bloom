@@ -849,7 +849,7 @@ export interface ValueModifiers {
   radius: CardRadius;
   elevation: CardElevation;
   outline: CardBorder;
-  clipped: true;
+  clipped: boolean;
   leadingView: readonly Child[];
   selected: boolean | AnyBinding;
   highlighted: boolean;
@@ -3560,8 +3560,8 @@ export class Node {
   outline(value: CardBorder): Node {
     return this.set('outline', value);
   }
-  clipped(): Node {
-    return this.set('clipped', true);
+  clipped(value = true): Node {
+    return this.set('clipped', value);
   }
   leadingView(...value: Child[]): Node {
     return this.set('leadingView', value);
@@ -4609,8 +4609,13 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    */
   margin(value: MarginToken): Self;
   margin(edge: Edge, value: MarginToken): Self;
-  /** Clips what it draws to its bounds, rounded by its corner (SwiftUI's `clipped()`): a corner alone does not clip. */
-  clipped(): Self;
+  /**
+   * Clips what it draws to its bounds, rounded by its corner (SwiftUI's
+   * `clipped()`): a corner alone does not clip. `.clipped(false)` draws what
+   * overflows it, React Native's `overflow: 'visible'` written out, over a clip
+   * the view would otherwise have (an earlier `.clipped()`, a variant's).
+   */
+  clipped(on?: boolean): Self;
   shrink(value: ShrinkPriority): Self;
   /** Its own place across its parent's axis, over the parent's `align`. */
   alignSelf(value: Alignment): Self;

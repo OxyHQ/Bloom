@@ -1486,7 +1486,7 @@
     "radius": ["cardRadius"],
     "elevation": ["cardElevation"],
     "outline": ["cardBorder"],
-    "clipped": [],
+    "clipped": ["value?"],
     "leadingView": ["children"],
     "selected": ["value?"],
     "highlighted": ["value?"],

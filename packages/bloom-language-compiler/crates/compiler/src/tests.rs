@@ -417,6 +417,14 @@ fn a_section_of_choices_holds_tagged_items() {
 }
 
 #[test]
+fn a_clip_is_turned_on_or_off() {
+    let ok = compiled("export const x = () => VStack().clipped().padding('md').clipped(false);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let two = compiled("export const x = () => VStack().clipped(false, true);\n");
+    assert_eq!(two.diagnostics[0].message, ".clipped() takes 0 to 1 argument(s), not 2");
+}
+
+#[test]
 fn tracking_and_the_faces_are_checked() {
     let valid =
         compiled("export const x = () => Text('x').font('mono').font('caption-1').tracking('wider');\n");
