@@ -209,9 +209,18 @@ function specifiersOf(file: string, text: string): string[] {
 
 const familyOf = (file: string): string => relative(SRC, file).split('/')[0] ?? '';
 
-/** Family → how many suites reach into it, by RESOLVING a relative import. */
-function suiteCounts(): Map<string, number> {
-  const out = new Map<string, number>();
+/**
+ * The families some suite reaches into, by RESOLVING a relative import.
+ *
+ * Whether, not how many: the matrix is committed, and a count changed with
+ * every suite added anywhere that imports a family (one new theme test moved
+ * `theme` from 720 to 721), so each such PR made every queued PR's matrix
+ * stale and dropped it from the merge queue. A family gaining its first suite
+ * or losing its last is what `family-coverage.test.ts` gates, and all this
+ * column records.
+ */
+function testedFamilies(): Set<string> {
+  const out = new Set<string>();
   for (const file of walk(SRC, /\.(test|spec)\.tsx?$/)) {
     const text = readAll([file]);
     const reached = new Set<string>();
@@ -220,7 +229,7 @@ function suiteCounts(): Map<string, number> {
       if (resolved === null || !resolved.startsWith(SRC)) continue;
       reached.add(familyOf(resolved));
     }
-    for (const family of reached) out.set(family, (out.get(family) ?? 0) + 1);
+    for (const family of reached) out.add(family);
   }
   return out;
 }
@@ -452,7 +461,8 @@ export interface FamilyRow {
   webForked: boolean;
   doc: string | null;
   stories: boolean;
-  suites: number;
+  /** Whether any suite imports the family (`testedFamilies`). */
+  suite: boolean;
   /** Contract key → verdict. `null` when the contract does not apply at all. */
   verdicts: Record<string, Verdict | null>;
 }
@@ -460,7 +470,7 @@ export interface FamilyRow {
 export function matrix(): FamilyRow[] {
   const subs = subpaths();
   const barrel = rootBarrelFamilies();
-  const suites = suiteCounts();
+  const tested = testedFamilies();
   const all = families();
 
   return all.map((family) => {
@@ -479,7 +489,7 @@ export function matrix(): FamilyRow[] {
       webForked: existsSync(join(SRC, family, 'index.web.ts')),
       doc: docStem(family),
       stories: walk(join(SRC, family), /\.stories\.tsx?$/).length > 0,
-      suites: suites.get(family) ?? 0,
+      suite: tested.has(family),
       verdicts,
     };
   });
@@ -565,7 +575,7 @@ export function renderAdoptionMatrix(): string {
     `- **${rows.length} families** in \`src/\`, **${published.length}** published (a subpath, the root barrel, or both). **${rows.filter((r) => r.webForked).length}** carry a web fork.`,
   );
   out.push(
-    `- Docs, stories and suites are gated as a standard by \`src/__tests__/family-coverage.test.ts\`; the per-family counts are in the table below.`,
+    `- Docs, stories and suites are gated as a standard by \`src/__tests__/family-coverage.test.ts\`; the table below says which families have each.`,
   );
   out.push('');
   out.push('| contract | applies to | reads | delegated | n/a¹ | adaptation |');
@@ -626,7 +636,7 @@ export function renderAdoptionMatrix(): string {
     'platform',
     'doc',
     'story',
-    'suites',
+    'suite',
     ...CONTRACTS.map((c) => c.title),
   ];
   out.push(`| ${header.join(' | ')} |`);
@@ -644,7 +654,7 @@ export function renderAdoptionMatrix(): string {
     out.push(
       `| \`${row.family}\` | ${importPath} | ${row.webForked ? 'web fork' : 'universal'} | ${
         row.doc ? `\`${row.doc}.mdx\`` : '—'
-      } | ${row.stories ? 'yes' : '—'} | ${row.suites} | ${cells.join(' | ')} |`,
+      } | ${row.stories ? 'yes' : '—'} | ${row.suite ? 'yes' : '—'} | ${cells.join(' | ')} |`,
     );
   }
   out.push('');
