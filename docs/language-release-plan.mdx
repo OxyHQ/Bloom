@@ -131,8 +131,13 @@ its dev dependency (already `0.1.0`) and peer (`>=0.1.0`, better `^0.1.0`
 while 0.x) resolve, and the lockfile is regenerated (CI installs frozen). `@oxy.so/core` needs no bump (no change
 under `packages/core`). Checks: oxy `ci.yml`, `CI complete`. Services still
 uses `className` (about 370 sites) and so still needs NativeWind in the app:
-it works on Bloom 23 through `BloomNativeWindTheme`; moving it to the
-language is its own PR after this.
+its own views work on Bloom 23 through `BloomNativeWindTheme`, but **it
+passes `className` to Bloom components** (`Button`, `Card`), whose prop Bloom
+23 removed: an app typechecking against services 15 and Bloom 23 fails with
+14 errors inside services' `src` (measured by scaffolding the language
+template against local packs). Before it publishes, services moves those
+sites to `style` (or the language) and adds Bloom 23 to its CI's Bloom
+range; moving the rest to the language is its own PR after this.
 
 ### 4. oxy: create-oxy-app with the language template
 
@@ -142,7 +147,9 @@ bindings, glass chrome, no NativeWind). It needs every version its template
 pins on npm (Bloom `^23.0.0`, the language and compiler `^1.0.0`, bloom-data
 `^0.1.0`, app-preset `^6.9.0`, services `^15.0.0`), since its range check
 resolves them; until then its `pending-releases` list excuses only their
-E404. Checks: oxy `ci.yml` (create-oxy-app's
+E404. Verified against local packs: the scaffolded app's Jest passes and
+its own code typechecks; its typecheck is green once services 15 drops the
+`className` it passes to Bloom (step 3). Checks: oxy `ci.yml` (create-oxy-app's
 tests, Biome, doctor), `CI complete`.
 
 ### 5. Gemies: `@gemies/sdk` 10.0.0
