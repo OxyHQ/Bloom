@@ -6,6 +6,7 @@
 import { Children, type ReactNode } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
+import { useSurfaceFill } from '../../styles/surface-levels';
 import { useTheme } from '../../theme/use-theme';
 import { useLensAvailable } from './lens-material';
 import { getNativeLens } from './native-lens';
@@ -97,13 +98,27 @@ interface LensButtonHostProps {
   radius?: number;
   /** How far the press and the drag deform the lens, a multiplier of the engine's own (1). */
   jelly?: number;
+  /**
+   * The control is in the page's content (a profile's action row, a list), not in a fixed layer: its
+   * lens is drawn in its own place against the surface it sits on (`restBackdrop`), so it scrolls,
+   * clips and stacks with the page; the window would draw it above everything (over the bar).
+   */
+  inContent?: boolean;
   style?: ViewStyle;
   children: ReactNode;
 }
 
-export function LensButtonHost({ tint, radius, jelly, style, children }: LensButtonHostProps) {
+export function LensButtonHost({
+  tint,
+  radius,
+  jelly,
+  inContent,
+  style,
+  children,
+}: LensButtonHostProps) {
   const native = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
+  const surfaceFill = useSurfaceFill();
   if (!native) return <>{Children.only(children)}</>;
   const { LensBase } = native;
   // The one lens base (the upstream app's lens trigger): what it holds draws no lens of its own,
@@ -112,6 +127,7 @@ export function LensButtonHost({ tint, radius, jelly, style, children }: LensBut
     <LensBase
       colorScheme={dark ? 'dark' : 'light'}
       cornerRadius={radius}
+      restBackdrop={inContent ? surfaceFill : undefined}
       config={
         tint || jelly !== undefined
           ? { ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null), jelly }

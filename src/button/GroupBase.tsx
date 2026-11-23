@@ -34,8 +34,8 @@ import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface
 import { IS_WEB } from '../styles/platform';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
 import {
-  useControlMaterial,
   useFloatingControl,
+  useInFloatingRegion,
   useLensAvailable,
 } from '../floating/lens/lens-material';
 import { useGroupSelection } from './use-group-selection';
@@ -96,7 +96,8 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
     separated = false,
     children,
     accessibilityLabel,
-    material,
+    // A group of controls is one capsule on the lens by default, Bloom's floating size.
+    material = 'lens',
     style,
     testID,
   }: ButtonGroupProps) {
@@ -179,14 +180,18 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
     ));
     // The group's one material: its own Surface, or, with `material="lens"` on a device that has the
     // native lens, the lens itself behind the items. The items draw their content either way.
-    const regionMaterial = useControlMaterial();
     const lensAvailable = useLensAvailable();
-    const lens = (material ?? regionMaterial) === 'lens' && lensAvailable;
+    const inFloatingRegion = useInFloatingRegion();
+    const lens = material === 'lens' && lensAvailable;
     const frame = (content: ReactNode) => {
       if (lens) {
         const split = splitLensStyle(style);
         return (
-          <LensButtonHost radius={BUTTON_RADIUS} style={{ alignSelf: 'flex-start', ...split.host }}>
+          <LensButtonHost
+            radius={BUTTON_RADIUS}
+            inContent={!inFloatingRegion}
+            style={{ alignSelf: 'flex-start', ...split.host }}
+          >
             <View
               role="group"
               accessibilityLabel={accessibilityLabel}

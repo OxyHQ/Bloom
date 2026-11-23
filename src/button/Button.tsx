@@ -8,6 +8,7 @@ import { compositeOnto } from '../surface/shared';
 import {
   useControlMaterial,
   useFloatingControl,
+  useInFloatingRegion,
   useLensAvailable,
 } from '../floating/lens/lens-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
@@ -491,6 +492,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const material = materialProp ?? regionMaterial;
     // A floating control (on the lens) is the floating size, whatever its caller says.
     const sizeProp = useFloatingControl(materialProp) ? FLOATING_CONTROL_SIZE : requestedSize;
+    const inFloatingRegion = useInFloatingRegion();
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
@@ -885,6 +887,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       <LensButtonHost
         tint={appearance === 'solid' ? paint.background : undefined}
         radius={typeof flatRadius === 'number' ? flatRadius : BUTTON_RADIUS}
+        inContent={!inFloatingRegion}
         style={split.host}
       >
         {pressable}

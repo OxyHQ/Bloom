@@ -10,6 +10,7 @@ import { StyleSheet } from 'react-native';
 import { Button } from '../button';
 import { BUTTON_GEOMETRY } from '../button/shared';
 import { LensMaterialProvider } from '../floating/lens/lens-material';
+import { FollowButton } from '../media-header/MediaActionBar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 const heightOf = (screen: ReturnType<typeof render>, testID: string) =>
@@ -59,4 +60,33 @@ it('a floating group and every member are 44, whatever size the group or a membe
   );
   expect(heightOf(screen, 'member-a')).toBe(44);
   expect(heightOf(screen, 'member-b')).toBe(44);
+});
+
+it('a group of controls is one capsule on the lens: in content too, the group and its members are 44', () => {
+  const screen = render(
+    <BloomThemeProvider mode="light">
+      <Button.Group>
+        <Button size="sm" testID="poke">
+          Poke
+        </Button>
+        <Button testID="bell">Bell</Button>
+      </Button.Group>
+      <Button appearance="subtle" tone="neutral" size="sm" testID="row-action">
+        Added
+      </Button>
+    </BloomThemeProvider>,
+  );
+  expect(heightOf(screen, 'poke')).toBe(44);
+  expect(heightOf(screen, 'bell')).toBe(44);
+  // A plain content button keeps its size.
+  expect(heightOf(screen, 'row-action')).toBe(BUTTON_GEOMETRY.sm.height);
+});
+
+it('a follow toggle is a pill on the lens: 44 whatever size it is given', () => {
+  const screen = render(
+    <BloomThemeProvider mode="light">
+      <FollowButton following={false} onFollowChange={() => {}} size="sm" testID="follow" />
+    </BloomThemeProvider>,
+  );
+  expect(heightOf(screen, 'follow')).toBe(44);
 });
