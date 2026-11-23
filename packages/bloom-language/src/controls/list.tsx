@@ -164,44 +164,45 @@ export interface ListView extends ViewModifiers<ListView> {
   loadingRows(value: number): ListView;
 }
 /** Bloom `VirtualList`: FlashList (or FlatList) on native, the virtualizer on the web. */
-export interface VirtualListView extends ViewModifiers<VirtualListView> {
+/** `T` is the data's item type, so `.itemKey()` and `.itemType()` take a typed item. */
+export interface VirtualListView<T = unknown> extends ViewModifiers<VirtualListView<T>> {
   /** A view pinned at the list's top or bottom, the content padded by its height (SwiftUI's `safeAreaInset`). */
-  safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): VirtualListView;
+  safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken): VirtualListView<T>;
   /** A `safeAreaInset` that is a bar, with Bloom's scroll edge scrim under it (SwiftUI's `safeAreaBar`). */
-  safeAreaBar(edge: InsetEdge, view: ViewNode): VirtualListView;
+  safeAreaBar(edge: InsetEdge, view: ViewNode): VirtualListView<T>;
   /** Each item's key (its index by default). */
-  itemKey(value: (item: never, index: number) => string): VirtualListView;
+  itemKey(value: (item: T, index: number) => string): VirtualListView<T>;
   /** Each item's recycling type (FlashList's `getItemType`). */
-  itemType(value: (item: never, index: number) => string | number | undefined): VirtualListView;
+  itemType(value: (item: T, index: number) => string | number | undefined): VirtualListView<T>;
   /** The engine's first estimate of a row's height, in px. */
-  estimatedItemSize(value: number): VirtualListView;
+  estimatedItemSize(value: number): VirtualListView<T>;
   /** Items per row. */
-  columns(value: number): VirtualListView;
+  columns(value: number): VirtualListView<T>;
   /** Called near the end, `threshold` viewports from it. */
-  onEndReached(action: () => void, threshold?: number): VirtualListView;
+  onEndReached(action: () => void, threshold?: number): VirtualListView<T>;
   /** Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). */
-  refreshable(value: Binding<boolean>): VirtualListView;
+  refreshable(value: Binding<boolean>): VirtualListView<T>;
   /** The indices whose rows stick to the top. */
-  stickyIndices(value: readonly number[]): VirtualListView;
+  stickyIndices(value: readonly number[]): VirtualListView<T>;
   /** Where its scroll position is kept across visits. */
-  restorationKey(value: string): VirtualListView;
-  headerContent(value: Child): VirtualListView;
-  footerContent(value: Child): VirtualListView;
-  emptyState(value: Child): VirtualListView;
+  restorationKey(value: string): VirtualListView<T>;
+  headerContent(value: Child): VirtualListView<T>;
+  footerContent(value: Child): VirtualListView<T>;
+  emptyState(value: Child): VirtualListView<T>;
   /** The engine's tuning knobs, honoured by the engine that knows them. */
-  tuning(value: VirtualListTuning): VirtualListView;
+  tuning(value: VirtualListTuning): VirtualListView<T>;
   /**
    * The list is its screen's scroller, without a `ScrollView` around it: the
    * header's fade, the bottom bar's fold, the reselect and the insets bind to
    * it (Bloom's `screen`, `{}` by default). It must be inside a screen.
    */
-  screen(options?: VirtualListScreen): VirtualListView;
+  screen(options?: VirtualListScreen): VirtualListView<T>;
   /** When the native scroll indicator shows (`never` hides it); on the web the screen's scroller owns the bar. */
-  scrollbar(value: ScrollbarVisibility): VirtualListView;
+  scrollbar(value: ScrollbarVisibility): VirtualListView<T>;
   /** A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `never` by default. */
-  scrollDismissesKeyboard(value: KeyboardDismiss): VirtualListView;
+  scrollDismissesKeyboard(value: KeyboardDismiss): VirtualListView<T>;
   /** Whether a tap with the keyboard up reaches the row: `handled` by a control, `always`, or `never` (default). */
-  keyboardTaps(value: KeyboardTaps): VirtualListView;
+  keyboardTaps(value: KeyboardTaps): VirtualListView<T>;
 }
 /** Bloom `ListSelectionBar`: the count selected, select all, clear and the bulk actions. */
 export interface ListSelectionBarView extends ViewModifiers<ListSelectionBarView> {
@@ -250,7 +251,7 @@ export function SectionedList(sections: readonly ListSection[]): ListView {
 export function VirtualList<T>(
   data: readonly T[] | null | undefined,
   row: VirtualListRowFn<T>,
-): VirtualListView {
+): VirtualListView<T> {
   return new Node('virtualList', { data, row }, []);
 }
 /** Bloom `ListSelectionBar`: `count` of `total` selected. */
