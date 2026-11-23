@@ -1,6 +1,7 @@
 import { useSurfacePresence } from '../surface/use-surface-presence';
 import { GlyphAttention } from './GlyphAttention';
 import { resolveButtonOverrides } from './shared';
+import { useFloatingControl } from '../floating/lens/lens-material';
 import { Group } from './Group.web';
 import { useGroupedButton } from './use-grouped-button';
 import { resolvePaintMode } from '../theme/paint';
@@ -43,6 +44,7 @@ import {
   buttonTouchVisualInset,
   BUTTON_SHADOW,
   BUTTON_TRANSITION_MS,
+  FLOATING_CONTROL_SIZE,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
   LINK_BUTTON_UNDERLINE_OFFSET,
@@ -307,14 +309,14 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       attention,
       decoration,
       loadingIndicator,
-      material = 'surface',
+      material: materialProp,
       children: childrenProp,
       disabled = false,
       pressed: togglePressed,
       stopPropagation = false,
       appearance: appearanceProp,
       tone: toneProp,
-      size: sizeProp,
+      size: requestedSize,
       density: densityProp,
       style,
       textStyle,
@@ -380,6 +382,9 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const resolvedId = id ?? `bloom-btn-${reactId}`;
 
     const appearance = appearanceProp ?? 'solid';
+    const material = materialProp ?? 'surface';
+    // A floating control (in a floating region) is the floating size, whatever its caller says.
+    const sizeProp = useFloatingControl(materialProp) ? FLOATING_CONTROL_SIZE : requestedSize;
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },

@@ -20,6 +20,7 @@ import { hairlineOn, useSurfaceFillRecipe } from '../styles/surface-levels';
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
+  FLOATING_CONTROL_SIZE,
   buttonTouchVisualInset,
   resolveButtonGeometry,
   resolveCanonicalButtonPalette,
@@ -32,7 +33,11 @@ import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selec
 import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
 import { IS_WEB } from '../styles/platform';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
+import {
+  useControlMaterial,
+  useFloatingControl,
+  useLensAvailable,
+} from '../floating/lens/lens-material';
 import { useGroupSelection } from './use-group-selection';
 import type { SurfaceProps } from '../surface/types';
 import type { ButtonGroupProps } from './types';
@@ -110,8 +115,10 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
       { size: canonicalSize },
       { size: 'md', tone: 'neutral' },
     );
-    const inheritedSize = scopedSize;
-    const size = inheritedSize;
+    // A floating group (on the lens) is the floating size, whatever its caller says, and so is
+    // every member: the group decides it, never a member's own `size`.
+    const floating = useFloatingControl(material);
+    const size = floating ? FLOATING_CONTROL_SIZE : scopedSize;
     const visualInset = buttonTouchVisualInset(
       resolveButtonGeometry(size, undefined, density, touch).height,
       touch,
@@ -125,7 +132,10 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
         }
       : undefined;
     const { registry, layout, disabled: selectionDisabled } = useGroupSelection();
-    const context = useMemo(() => ({ size, separated, ...registry }), [size, separated, registry]);
+    const context = useMemo(
+      () => ({ size, separated, floating, ...registry }),
+      [size, separated, floating, registry],
+    );
     const x = useSharedValue(0);
     const y = useSharedValue(0);
     const width = useSharedValue(0);
