@@ -3411,7 +3411,8 @@ fn a_refresh_is_a_binding_or_its_value_and_action() {
         "export const x = (q) => ScrollView(Text('a')).refreshable({ refreshing: q.isRefetching, onPull: q.refetch });\n",
     );
     assert_eq!(output.diagnostics[0].message, ".refreshable() has no 'onPull'");
-    let output = compiled_with(names, "export const x = (b) => ScrollView(Text('a')).refreshable(b, 'teal');\n");
+    let output =
+        compiled_with(names, "export const x = (b) => ScrollView(Text('a')).refreshable(b, 'teal');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown color token 'teal' for .refreshable()");
 }
 
