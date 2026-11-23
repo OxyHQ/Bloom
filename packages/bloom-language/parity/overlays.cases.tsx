@@ -656,6 +656,23 @@ const presentedDialogs: ParityCase[] = [
     ),
   },
   {
+    // onDismissed is a callback, not a look: the dialog draws what Bloom's draws with it.
+    name: 'presented dialog that hears it has finished closing (onDismissed)',
+    isolated: true,
+    language: () =>
+      toElement(
+        O.Dialog(L.Text('Body'))
+          .title('Edit profile')
+          .onDismissed(confirm)
+          .presented([true, setOpen]),
+      ),
+    bloom: () => (
+      <Dialog open onClose={() => setOpen()} onDismissed={confirm} title="Edit profile">
+        <Text>Body</Text>
+      </Dialog>
+    ),
+  },
+  {
     name: 'presented dialog in a stack, beside the button that opens it',
     language: () =>
       toElement(

@@ -3692,6 +3692,9 @@ export const MODIFIERS = {
   "maxHeightRatio": [
     "value"
   ],
+  "onDismissed": [
+    "value"
+  ],
   "screenKind": [
     "screenKind"
   ],
@@ -7288,6 +7291,7 @@ export const NODE_MODIFIERS = {
     "padding",
     "sideGutter",
     "maxHeightRatio",
+    "onDismissed",
     "presented"
   ],
   "popover": [

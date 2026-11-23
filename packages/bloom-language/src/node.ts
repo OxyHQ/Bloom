@@ -854,6 +854,8 @@ export interface ValueModifiers {
   describedBy: string;
   sideGutter: SpaceToken;
   maxHeightRatio: number;
+  /** A dialog's `onDismissed`: once it has finished closing. */
+  onDismissed: () => void;
 
   // Settings rows (controls/settings.tsx)
   muted: boolean | AnyBinding;
@@ -3567,6 +3569,9 @@ export class Node {
   }
   maxHeightRatio(value: number): Node {
     return this.set('maxHeightRatio', value);
+  }
+  onDismissed(value: () => void): Node {
+    return this.set('onDismissed', value);
   }
 
   // Settings rows (controls/settings.tsx)

@@ -3283,3 +3283,13 @@ fn a_virtual_list_takes_content_margins_and_a_gap() {
     );
     assert_eq!(output.diagnostics[0].message, "Unknown space token '-lg' for .contentMargins()");
 }
+
+#[test]
+fn a_dialog_hears_it_has_finished_closing() {
+    let ok = compiled(
+        "import { Dialog } from '@oxy.so/bloom-language';\nexport const x = (open: boolean, set: (v: boolean) => void, gone: () => void) => Dialog(Text('a')).onDismissed(gone).presented([open, set]);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = (gone: () => void) => VStack().onDismissed(gone);\n");
+    assert_eq!(output.diagnostics[0].message, "VStack has no modifier .onDismissed()");
+}

@@ -97,7 +97,7 @@ function SignOutButton() {
 ## Controlled open state
 
 <Callout variant="warning" title="Prefer useDialogControl">
-The controlled path fires `onClose` synchronously on `open` flipping to `false` — ahead of the exit animation. If your `onClose` handler unmounts the consumer (navigates away, removes the dialog from the tree), it races the animation still in flight. `useDialogControl()` doesn't have this footgun: it closes imperatively and only resolves once the exit finishes.
+The controlled path fires `onClose` synchronously on `open` flipping to `false` — ahead of the exit animation. If your `onClose` handler unmounts the consumer (navigates away, removes the dialog from the tree), it races the animation still in flight. `useDialogControl()` doesn't have this footgun: it closes imperatively and only resolves once the exit finishes. In controlled mode, unmount from `onDismissed` instead: it fires once the exit has finished.
 </Callout>
 
 Pass `open` + `onClose` to drive the dialog from external state instead of `useDialogControl`:
@@ -164,6 +164,7 @@ Drop the declarative props entirely — `children` owns every pixel.
 | `actions?` | `DialogAction[]` | — | Confirmation buttons. See [DialogAction](#dialogaction). |
 | `children?` | `React.ReactNode` | — | Custom content rendered after the description. |
 | `onClose?` | `() => void` | — | Fires after the dialog finishes closing. In controlled mode, the host flips `open` to `false`. |
+| `onDismissed?` | `() => void` | — | Fires once the dialog has finished closing, its exit animation done, in either mode (in controlled mode, after the host flipped `open` to `false`). |
 | `contentPadding?` | `number` | `20` | Inner padding of the dialog body (px). Set `0` for custom children that own their insets. |
 | `width?` | `number` | `460` | Side-sheet width (px) on `left`/`right`/`start`/`end` placements. |
 | `maxWidth?` | `number` | `480` | Centered-card max width (px). |

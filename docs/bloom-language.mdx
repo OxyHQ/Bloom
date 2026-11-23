@@ -1597,7 +1597,10 @@ toast.success('Saved')
   key), `.frame({ width, maxWidth })` and `.padding(space)` (its
   `contentPadding`), `.sideGutter(space)` (its `minSideGutter`),
   `.maxHeightRatio(0.9)` (its height ceiling as a fraction of the window's),
-  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`. The widths apps
+  `.dismissOnBackdrop(false)`, `.scrollable()`, `.testID()`,
+  `.onDismissed(action)` (Bloom's `onDismissed`: once the dialog has finished
+  closing, its exit animation done, after its binding turned false; the place
+  to unmount what presented it, as an app's `control.close(callback)` did). The widths apps
   use are numeric tokens (`.frame({ maxWidth: '560' })`); another is an app
   token (`defineTokens({ space: { sheet: 609 } })`).
 - **Popover.** `.label()`, `.side(side, align?)` (`top` `bottom` `left`

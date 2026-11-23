@@ -1559,6 +1559,7 @@
     "describedBy": ["value"],
     "sideGutter": ["space"],
     "maxHeightRatio": ["value"],
+    "onDismissed": ["value"],
     "screenKind": ["screenKind"],
     "screenScroll": ["screenScroll"],
     "documentScroll": ["value?"],
@@ -2272,6 +2273,7 @@
         "padding",
         "sideGutter",
         "maxHeightRatio",
+        "onDismissed",
         "presented"
       ]
     },
