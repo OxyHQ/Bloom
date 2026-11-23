@@ -295,6 +295,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     children: true,
     props: {
       open: { ...p('presented', 'boolean'), closedBy: 'onClose' },
+      onDismissed: p('onDismissed', 'handler'),
       title: p('title', 'string'),
       description: p('message', 'string'),
       label: p('label', 'string'),
@@ -824,6 +825,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       keyExtractor: p('itemKey', 'handler'),
       getItemType: p('itemType', 'handler'),
       estimatedItemSize: p('estimatedItemSize', 'number'),
+      contentContainerStyle: p('contentMargins', 'contentStyle'),
       numColumns: p('columns', 'number'),
       onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
       restorationKey: p('restorationKey', 'string'),

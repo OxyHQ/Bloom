@@ -131,6 +131,8 @@ alike).
 A static `contentContainerStyle` of paddings and a gap, each a space token
 (`{ padding: 16, gap: 12 }`), is `.contentMargins(edge, token)` and
 `.spacing(token)`: the language's content container style holds the same keys.
+A `VirtualList`'s is moved alike, and a `Dialog`'s `onDismissed` is
+`.onDismissed(handler)`.
 A static `contentContainerClassName` is `.contentView((v) => v…)`, the scroll
 view's content view: Bloom lays the class out in a view of its own inside the
 content container, and the language hands Bloom that view's style. Each class

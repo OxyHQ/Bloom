@@ -625,6 +625,24 @@ export const E = ({ open }) => <Dialog open={open} label="E" />;
       ['Dialog:open'],
     ]);
   });
+  it('moves a dialog’s onDismissed and a virtual list’s content padding and gap', () => {
+    const result = run(`import { Dialog } from '@oxy.so/bloom/dialog';
+import { VirtualList } from '@oxy.so/bloom/list';
+export const A = ({ open, onClose, gone }) => <Dialog open={open} onClose={onClose} onDismissed={gone} label="A" />;
+export const B = () => <VirtualList data={posts} renderItem={renderPost} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }} />;
+export const C = () => <VirtualList data={posts} renderItem={renderPost} contentContainerStyle={{ flexGrow: 1 }} />;
+`);
+    expect(flat(result.code)).toContain(
+      "toElement(LDialog().onDismissed(gone).label('A').presented([open, () => onClose()]))",
+    );
+    expect(flat(result.code)).toContain(
+      "toElement(LVirtualList(posts, renderPost).contentMargins('horizontal', 'lg').contentMargins('bottom', '2xl').spacing('sm'))",
+    );
+    // What is no padding or gap stays: the language's content margins are only those.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'VirtualList:contentContainerStyle',
+    ]);
+  });
   it('follows React’s rule for JSX text', () => {
     expect(cleanJsxText('\n   Hello\n   world  \n')).toBe('Hello world');
     expect(cleanJsxText('  a  ')).toBe('  a  ');
