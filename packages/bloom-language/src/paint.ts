@@ -192,6 +192,20 @@ function listProps(colors: ThemeColors, paint: Paint): Record<string, unknown> |
   return props;
 }
 
+/**
+ * The two palettes a leaf paints from, in one theme read on native: the
+ * paint (what a final style takes) and the theme (its RGB colours for colour
+ * math, and its scheme). Native has no prepaint, so its paint is the theme's
+ * own colours (Bloom's `use-paint-colors.native.ts`); the web's paint may be
+ * the prepainted document's CSS variables, a read of its own.
+ */
+const usePalettes: () => { paint: ThemeColors; theme: ReturnType<typeof useTheme> } = IS_WEB
+  ? () => ({ paint: useThemePaint(), theme: useTheme() })
+  : () => {
+      const theme = useTheme();
+      return { paint: theme.colors, theme };
+    };
+
 interface PaintedProps {
   host: ComponentType<Record<string, unknown>> | string;
   paint: Paint;
@@ -206,8 +220,9 @@ interface PaintedProps {
  * through context, past every memoized view in between).
  */
 export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
-  const painted = paintProps(useThemePaint(), paint);
-  const lists = listProps(useTheme().colors, paint);
+  const { paint: colors, theme } = usePalettes();
+  const painted = paintProps(colors, paint);
+  const lists = listProps(theme.colors, paint);
   // A moving host's motion style (`Outer`) comes after the painted one.
   if (props.style !== undefined && painted.style !== undefined) {
     return createElement(host, {
@@ -307,8 +322,7 @@ function conditionedProps(
  * it only across a breakpoint, a press only the leaves of the pressed view.
  */
 export function Conditioned({ host, paint, ...props }: PaintedProps): ReactElement {
-  const colors = useThemePaint();
-  const theme = useTheme();
+  const { paint: colors, theme } = usePalettes();
   const tier = useWindowBreakpoint();
   const state = useContext(InteractionContext);
   let holding = 0;
