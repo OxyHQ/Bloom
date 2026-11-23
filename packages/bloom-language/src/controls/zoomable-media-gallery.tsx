@@ -13,6 +13,7 @@ import type { Binding } from '../binding';
 import { Node, type Child, type ViewNode } from '../node';
 import { type CornerName, resolveCorner } from '../tokens';
 import { type ControlRenderer, lastOf } from './draw';
+import { SEE } from '../docs';
 
 /** The full-screen media viewer, presented by a binding (Bloom `zoomable-media-gallery`). */
 export type GalleryKind = 'gallery';
@@ -53,7 +54,9 @@ export function Gallery(items: readonly GalleryMedia[]): GalleryView {
 
 export const GALLERIES: Record<GalleryKind, ControlRenderer> = {
   gallery: () => {
-    throw new Error('bloom-language: a Gallery is content; present it with .fullScreenCover()');
+    throw new Error(
+      `bloom-language: a Gallery is content; present it with .fullScreenCover(). See ${SEE.overlays}`,
+    );
   },
 };
 
