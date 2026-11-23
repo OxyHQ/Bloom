@@ -2181,20 +2181,6 @@
         "default": "./lib/commonjs/preferences/video-autoplay-setting-row.js"
       }
     },
-    "./teleport": {
-      "react-native": {
-        "types": "./lib/typescript/module/teleport/index.d.ts",
-        "default": "./src/teleport/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/teleport/index.d.ts",
-        "default": "./lib/module/teleport/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/teleport/index.d.ts",
-        "default": "./lib/commonjs/teleport/index.js"
-      }
-    },
     "./pressable-scale": {
       "react-native": {
         "types": "./lib/typescript/module/pressable-scale/index.d.ts",
@@ -5164,9 +5150,6 @@
       ],
       "preferences/video-autoplay-setting-row": [
         "./lib/typescript/module/preferences/video-autoplay-setting-row.d.ts"
-      ],
-      "teleport": [
-        "./lib/typescript/module/teleport/index.d.ts"
       ],
       "pressable-scale": [
         "./lib/typescript/module/pressable-scale/index.d.ts"

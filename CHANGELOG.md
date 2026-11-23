@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- Removed `@oxy.so/bloom/teleport`, the vendored copy of react-native-teleport 1.2.0 that nothing imported (its native views were never in Bloom). The media flight keeps the one piece it used, the web move primitive in `media-flight/media-node.web.ts`.
+
 ## 23.1.1
 
 The Bloom language 1.1.1 ships beside it (`@oxy.so/bloom-language`): a root nested in a language tree costs no component or context read, and a fixed colour role paints with no theme read on Android and iOS. Bloom itself is unchanged.

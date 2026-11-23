@@ -21,8 +21,7 @@ derived source file names its origin in its header.
 
   Component                     License              Used in
   ----------------------------  -------------------  ---------------------------
-  react-native-teleport 1.2.0   MIT                  src/teleport/,
-                                                     src/media-flight/
+  react-native-teleport 1.2.0   MIT                  src/media-flight/
   sonner-native 0.26.4          MIT                  src/toast/
   expo-glass-tabs 0.1.1         MIT                  src/tab-bar/,
                                                      src/progressive-blur/

@@ -26,7 +26,7 @@ Shards65/64/64 passed where one193-suite run failed: `bunx jest --watchman=false
 Two consequences, both silent:
 
 - A `.native.*` file can stop compiling and the suite stays green. Precedent in the fleet: **1545 tests passed over a file that did not parse.**
-- Vendored `preset: react-native` suites cannot run unchanged. Teleport tests stay outside the tree, not `.skip`ped into false coverage (`docs/teleport.mdx`).
+- Vendored `preset: react-native` suites cannot run unchanged: keep them outside the tree, never `.skip`ped into false coverage.
 
 **Recorded debt:** a platform config needs native peers installed/mocked; asserting native behavior via a web-resolved file measures the wrong file.
 
