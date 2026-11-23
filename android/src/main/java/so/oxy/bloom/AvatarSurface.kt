@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.os.SystemClock
 import android.util.Base64
 import android.view.Choreographer
 import android.view.View
@@ -18,6 +19,7 @@ import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.Event
 import java.io.ByteArrayOutputStream
+import kotlin.math.floor
 
 /**
  * Draws an agent avatar (`VectorCharacterAvatar` on Android). JS hands it either one frame to show
@@ -164,11 +166,15 @@ class AvatarSurface(context: Context) : View(context) {
       loopIndex = index
       invalidate()
     }
-    // Wake on the vsync the next loop frame is due, not on every one.
+    // Wake on the vsync the next loop frame is due, not on every one. Choreographer runs a delayed
+    // callback on the first frame whose time (ms) has reached `now + delay`, so the delay is measured
+    // from now to the moment the next loop frame is due on this frame's clock: that frame's vsync,
+    // not one before it (an early wake finds the same loop frame and has to wake again).
     val frameSeconds = playing.duration / playing.length
     val wrapped = ((seconds % playing.duration) + playing.duration) % playing.duration
-    val untilNext = ((index + 1) * frameSeconds - wrapped) * 1000.0
-    Choreographer.getInstance().postFrameCallbackDelayed(tick, maxOf(0L, untilNext.toLong() - 4L))
+    val nextDueMs = frameTimeNanos / 1e6 + ((index + 1) * frameSeconds - wrapped) * 1000.0
+    val delay = floor(nextDueMs - SystemClock.uptimeMillis()).toLong()
+    Choreographer.getInstance().postFrameCallbackDelayed(tick, maxOf(0L, delay))
   }
 
   override fun onAttachedToWindow() {
