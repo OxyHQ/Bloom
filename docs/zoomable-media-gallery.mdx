@@ -90,14 +90,20 @@ poster still. A second `VideoView` on the same player would be a duplicate
 surface — the thing this family and `media-flight` are both built to avoid —
 and on a strip it would be one decoder per tile.
 
-One surface swap happens per opening: the pre-pager open surface hands over to
-the pager's active page once the open animation settles.
+Nothing is swapped during the transition. The pager is mounted from the first
+frame of the open and the flight transforms it, so the active page's view paints
+the media from the first frame of the open to the last frame of the close. An
+earlier version flew a separate "open surface" and swapped it for the pager when
+the open settled, then back on dismiss; each swap mounted a new image view that
+showed its placeholder and cross-faded while it flew, which read as a flicker on
+close (Mention profile avatar, Pixel 8a).
 
 ## Which prop decides what
 
 | prop               | decides                                                  |
 | ------------------ | --------------------------------------------------------- |
 | `measureThumb`     | the rect the opening animation grows FROM                 |
+| `hiddenThumbIndex` | which thumbnail to hide while the viewer stands in for it  |
 | `cornerRadius`     | the thumbnail's corner, so the transition matches it       |
 | `indicatorVariant` | `dots` or `thumbnails` for the page indicator              |
 | `videoControls`    | whether video pages show expo-video's transport controls   |
@@ -118,7 +124,31 @@ the thumbnail the user pressed, which tells them *which* image they opened —
 useful precisely in the case where a grid has several similar photos.
 
 It returns a promise because measuring is asynchronous on native. Returning
-`null` is fine and degrades to the fade.
+`null` is fine and degrades to the fade. Measure the PHOTO, not a frame around
+it: a ring or border measured with it makes the flight take off and land that
+much too big.
+
+## `hiddenThumbIndex` keeps the photo on screen once
+
+The transition is one shared value, `flight`, sprung on the UI thread: 0 is the
+media on its thumbnail, 1 is the media fitted on screen. The drag-to-dismiss
+offset rides its fitted end, so a close started mid-open or mid-drag lands on
+the thumbnail by construction. Nothing is timed: the open starts from the commit
+that mounts the overlay, the chrome appears when its spring lands, and the
+viewer unmounts in the close spring's own callback.
+
+Pass a `SharedValue<number>` and the viewer writes into it, on the UI thread,
+the index of the thumbnail it stands in for: set when the open flight starts,
+following the page while swiping, and back to `-1` on the frame the fly-back
+lands, the same frame the viewer hides its own copy. Hide the thumbnail with it
+and keep it mounted, so it comes back decoded:
+
+```tsx
+const hiddenThumb = useSharedValue(-1);
+const photoStyle = useAnimatedStyle(() => ({ opacity: hiddenThumb.value === index ? 0 : 1 }));
+// <Animated.View ref={photoRef} style={photoStyle}>…</Animated.View>
+<ZoomableMediaGallery ref={gallery} measureThumb={measureThumb} hiddenThumbIndex={hiddenThumb} />
+```
 
 ## `alt` is the caption and the accessible text
 

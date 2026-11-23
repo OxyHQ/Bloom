@@ -7,6 +7,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import { Backdrop } from '../overlay';
 import { ZoomableMediaGallery } from '../zoomable-media-gallery';
 import type { GalleryMedia, ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
+import { holdAnimations } from './support/held-animations';
 
 const mockProbes = new Map<string, Array<(ratio: number) => void>>();
 jest.mock('../image-aspect-ratio-cache/aspect-ratio-cache', () => ({
@@ -39,11 +40,11 @@ function fixture() {
     ...api,
     open(items: GalleryMedia[], index = 0) {
       act(() => ref.current?.open(items, index));
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
     },
     close() {
       fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
     },
     startClose() {
       fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
@@ -77,11 +78,18 @@ async function resolveProbe(uri: string, ratio: number, attempt = 0) {
   await act(async () => resolve(ratio));
 }
 
+// The fly-back ends in its animation's callback; holding the callbacks is what
+// keeps a closing image on screen between `startClose()` and `land()`.
+let flights: ReturnType<typeof holdAnimations>;
 beforeEach(() => {
   jest.useFakeTimers();
   mockProbes.clear();
+  flights = holdAnimations();
 });
-afterEach(() => jest.useRealTimers());
+afterEach(() => {
+  flights.restore();
+  jest.useRealTimers();
+});
 
 it('does not let an earlier opening change the current image fit', async () => {
   const api = fixture();
@@ -101,7 +109,7 @@ it('does not resize the closing image when its probe finishes during dismissal',
   const closingBox = api.box('old');
   await resolveProbe('https://example.test/old', 4);
   expect(api.box('old')).toEqual(closingBox);
-  act(() => jest.advanceTimersByTime(1000));
+  act(() => flights.land());
 });
 
 it('does not accept an old probe when the same URI is reopened', async () => {
@@ -163,7 +171,7 @@ it('keeps the active pending page fitted consistently when the opening probe res
   expect(api.box('second page')).toEqual(pagerBox);
   await resolveProbe('https://example.test/second', 1);
   expect(api.box('second page')).toEqual(pagerBox);
-  act(() => jest.advanceTimersByTime(1000));
+  act(() => flights.land());
 });
 
 it('keeps each pending page independent until its own probe resolves', async () => {

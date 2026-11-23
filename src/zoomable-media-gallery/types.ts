@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { SharedValue } from 'react-native-reanimated';
 import type { MeasuredRect, MediaSurfaceImage, MediaSurfaceVideo } from '../media-flight/types';
 
 /**
@@ -132,4 +133,14 @@ export interface ZoomableMediaGalleryProps {
    * on for a viewer whose job is watching rather than glancing.
    */
   videoControls?: boolean;
+  /**
+   * The thumbnail the open viewer stands in for, as an index into the opened
+   * items, or `-1` when none — written by the viewer on the UI thread. Hide the
+   * thumbnail whose index it holds (`opacity: 0` in an animated style) and the
+   * photo is never on screen twice: it is set when the open flight starts,
+   * follows the page while swiping, and goes back to `-1` on the very frame the
+   * fly-back lands, the frame the viewer's own copy disappears. Keep the
+   * thumbnail mounted while hidden, so nothing reloads when it comes back.
+   */
+  hiddenThumbIndex?: SharedValue<number>;
 }
