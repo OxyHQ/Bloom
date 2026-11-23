@@ -3139,6 +3139,12 @@ export const MODIFIERS = {
   "accessibilityValue": [
     "accessibilityValue"
   ],
+  "stopPropagation": [
+    "value?"
+  ],
+  "multiple": [
+    "value?"
+  ],
   "ref": [
     "value"
   ],
@@ -6836,7 +6842,9 @@ export const NODE_MODIFIERS = {
     "colors",
     "linkTone",
     "inverted",
-    "density"
+    "density",
+    "iconSize",
+    "stopPropagation"
   ],
   "shape": [
     "padding",
@@ -8079,7 +8087,11 @@ export const NODE_MODIFIERS = {
     "tint",
     "radius",
     "elevation",
-    "outline"
+    "outline",
+    "axis",
+    "spacing",
+    "align",
+    "justify"
   ],
   "cardHeader": [
     "padding",
@@ -9907,7 +9919,8 @@ export const NODE_MODIFIERS = {
     "phases",
     "description",
     "error",
-    "required"
+    "required",
+    "multiple"
   ],
   "label": [
     "padding",

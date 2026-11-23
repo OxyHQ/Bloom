@@ -30,7 +30,14 @@ import {
   GroupedSectionIcon,
   GroupedSectionItem,
 } from '@oxy.so/bloom/grouped-section';
-import { RiArrowRightLine, RiHeart3Line, RiInbox2Line, RiSettings3Line } from '@oxy.so/bloom/icons';
+import {
+  RiArrowDownSLine,
+  RiArrowRightLine,
+  RiHeart3Line,
+  RiInbox2Line,
+  RiSettings3Line,
+  RiTimeLine,
+} from '@oxy.so/bloom/icons';
 import { Item } from '@oxy.so/bloom/item';
 import { Kbd } from '@oxy.so/bloom/kbd';
 import { tokens } from '@oxy.so/bloom/styles';
@@ -66,6 +73,31 @@ const CARD_RADII: readonly (readonly [C.CardRadius, CardRadius])[] = [
 // ── Card ─────────────────────────────────────────────────────────
 
 const cards: ParityCase[] = [
+  {
+    // Mention's stat cards: a row of content, spread and centred, with a gap.
+    name: 'Card laying its content out in a row',
+    language: () =>
+      toElement(
+        C.Card(L.Badge(1), L.Badge(2))
+          .axis('horizontal')
+          .align('center')
+          .justify('between')
+          .spacing('md'),
+      ),
+    bloom: () => (
+      <Card
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: tokens.space.md,
+        }}
+      >
+        <Badge content={1} />
+        <Badge content={2} />
+      </Card>
+    ),
+  },
   {
     name: 'Card with its parts',
     language: () =>
@@ -421,6 +453,43 @@ const grouped: ParityCase[] = [
 // ── Chip ─────────────────────────────────────────────────────────
 
 const chips: ParityCase[] = [
+  {
+    // Mention's composer chips: a glyph in its own size and ink before the label, an arrow after it.
+    name: 'Chip with an inked glyph before its label and an arrow after it',
+    language: () =>
+      toElement(
+        C.Chip(
+          L.Icon(RiTimeLine).size('sm').foreground('primary'),
+          L.Text('Schedule'),
+          L.Icon(RiArrowDownSLine),
+        )
+          .size('xl')
+          .style('subtle'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Chip
+            size="xl"
+            appearance="subtle"
+            leading={<RiTimeLine size="sm" fill={c.primary} />}
+            trailingIcon={RiArrowDownSLine}
+          >
+            Schedule
+          </Chip>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'Chip with a view after its label',
+    language: () => toElement(C.Chip(L.Text('Site'), L.Badge(1)).style('solid').tint('success')),
+    bloom: () => (
+      <Chip appearance="solid" tone="success" trailing={<Badge content={1} />}>
+        Site
+      </Chip>
+    ),
+  },
   {
     name: 'Chip',
     language: () => toElement(C.Chip(L.Text('Design'))),

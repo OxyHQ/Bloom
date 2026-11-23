@@ -589,6 +589,16 @@ const forms: ParityCase[] = [
     ),
   },
   {
+    name: 'Field of several controls',
+    language: () => toElement(L.Field('Wi-Fi', L.Toggle(on), L.Toggle(on)).multiple()),
+    bloom: () => (
+      <Field label="Wi-Fi" multiple>
+        <Switch checked onCheckedChange={set} />
+        <Switch checked onCheckedChange={set} />
+      </Field>
+    ),
+  },
+  {
     name: 'Field with an error, required',
     language: () =>
       toElement(L.Field('Email', L.TextField(empty, 'Email')).error('Enter an email').required()),
@@ -644,9 +654,7 @@ const searches: ParityCase[] = [
   {
     name: 'Search with a most characters',
     language: () => toElement(L.Search(empty).placeholder('Search posts').maxLength(50)),
-    bloom: () => (
-      <Search value="" onValueChange={set} placeholder="Search posts" maxLength={50} />
-    ),
+    bloom: () => <Search value="" onValueChange={set} placeholder="Search posts" maxLength={50} />,
   },
   {
     name: 'Search with text, named',

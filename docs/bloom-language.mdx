@@ -959,6 +959,13 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
 - **State.** `.loading()`, `.disabled()`, `.pressed(on)` (a toggle,
   announced as pressed), `.link(href)` (an anchor on the web, opened on
   native), `.lines(n)`, `.underline()` (at rest).
+  `.accessibilityState({ expanded })` on a button is Bloom's `aria-expanded`
+  (a menu trigger's open state; Bloom writes the button's own accessibility
+  state).
+- **Glyph and press.** `.iconSize(size)` is the glyph's size over its size's
+  own (an icon rung, `xl` is 28, or a numeric size), Bloom's `iconSize`.
+  `.stopPropagation()` keeps its press from reaching a pressable around it on
+  the web (a button in a pressable row); native presses never bubble.
 - **On glass** it keeps its own press, ink and name; the glass draws its fill
   (see [Glass](#glass)).
 - **Glass styles.** `.style('glass')` and `.style('glassProminent')` are
@@ -1111,7 +1118,7 @@ binding on a node that has no such value.
 | --- | --- | --- |
 | `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder` (`null`: none, not even the label Bloom draws in its place otherwise), `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
 | `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, `.focused(binding)`, `.label(name)` (its `accessibilityLabel`, beside the visible `label`), the keyboard modifiers |
-| `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid |
+| `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid; `.multiple()` for a field of several controls (chips, two inputs), whose label names the group (Bloom's `multiple`) |
 | `Label(text)` | `Label` | `.size('xs' \| 'sm' \| 'md')`, `.required`, `.disabled` |
 | `Toggle(isOn)` | `Switch` | `.size`, `.tint(tone)`, `.disabled`; `.label()` names it (a switch draws no words) |
 | `Checkbox(isOn, label?)` | `Checkbox` | `.description`, `.size`, `.tint`, `.disabled`, `.readOnly()`, `.indeterminate()` |
@@ -2179,11 +2186,11 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 
 | Node | Draws |
 | --- | --- |
-| `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts |
+| `Card(...)`, `CardHeader` / `CardBody` / `CardFooter(...)`, `CardTitle` / `CardDescription(text)` | Bloom `Card` and its parts; a card lays its children out as a stack does, `.axis()`, `.spacing()`, `.align()`, `.justify()`, in the view Bloom's Card holds them in (its `style`) |
 | `Row(title?)` | Bloom `Item` (the list row; `Item` is the menu's row) |
 | `GroupedSection(...rows)`, `GroupedSectionItem(title)` | Bloom `GroupedSection`, `GroupedSectionItem` |
 | `GroupedSectionIcon(icon)`, `GroupedSectionDivider()`, `GroupedSectionCollapse(open, ...rows)` | Bloom `GroupedSectionIcon`, `GroupedSectionDivider`, `GroupedSectionCollapse` |
-| `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs |
+| `Chip(...content)` | Bloom `Chip`: the `Text` is its label, an `Icon` before or after it its glyphs; a glyph with a size or ink of its own (`Icon(X).size('sm').foreground('primary')`), or any other view, before or after the label is drawn as it is (Bloom's `leading` and `trailing`) |
 | `ChipRow(...chips)`, `CappedChipRow(...chips)` | Bloom `ChipRow` (scrolls sideways), `CappedChipRow` (wraps, the rest behind "+N") |
 | `EmptyState(title?, ...content)` | Bloom `EmptyState` (the content between its explanation and its actions) |
 | `SelectionCard(title, ...body)` | Bloom `SelectionCard` |

@@ -75,6 +75,57 @@ const content: ParityCase[] = [
       </Themed>
     ),
   },
+  {
+    // Mention's post menu: a 28pt glyph on a large icon button.
+    name: 'a glyph of its own size',
+    language: () =>
+      toElement(
+        L.Button(L.Icon(RiMoreFill))
+          .style('plain')
+          .size('lg')
+          .shape('circle')
+          .iconSize('xl')
+          .label('More'),
+      ),
+    bloom: () => (
+      <Button
+        appearance="plain"
+        size="lg"
+        leadingIcon={RiMoreFill}
+        iconOnly
+        iconSize={28}
+        accessibilityLabel="More"
+      />
+    ),
+  },
+  {
+    name: 'a press that goes no further',
+    language: () => toElement(L.Button(L.Text('Accept')).stopPropagation().onPress(onPress)),
+    bloom: () => (
+      <Button stopPropagation onPress={onPress}>
+        Accept
+      </Button>
+    ),
+  },
+  {
+    name: 'a trigger that says it is open',
+    language: () =>
+      toElement(
+        L.Button(L.Icon(RiMoreFill))
+          .shape('circle')
+          .label('Menu')
+          .accessibilityState({ expanded: true }),
+      ),
+    bloom: () => (
+      <Button
+        leadingIcon={RiMoreFill}
+        iconOnly
+        accessibilityLabel="Menu"
+        accessibilityState={{ expanded: true }}
+        aria-expanded
+      />
+    ),
+  },
   // Content that is a view is the button's children as drawn (Mention's privacy rows).
   {
     name: 'a spinner as its content',

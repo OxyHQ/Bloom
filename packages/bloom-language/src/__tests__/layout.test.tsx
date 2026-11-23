@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from 'react';
+import { createElement, createRef, type ReactElement } from 'react';
 import TestRenderer, {
   act,
   type ReactTestInstance,
@@ -9,6 +9,7 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { SHADOW_BOX } from './support/bloom-design-tokens';
 import { LIGHT, PaintContext } from './support/bloom-theme';
 import { Fill, HStack, Shape, Text, VStack, ZStack } from '../primitives';
+import type { ViewInstance } from '../node';
 import { toElement } from '../render';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -297,14 +298,14 @@ describe('the escape hatches', () => {
   };
 
   it('.ref() is the outermost box, .onLayout() its layout handler', () => {
-    const ref = { current: null as unknown };
+    const ref = createRef<ViewInstance>();
     const onLayout = jest.fn();
     const renderer = mountWithRefs(
       toElement(VStack(Text('a')).padding('md').background('surface').ref(ref).onLayout(onLayout)),
     );
     const [outer] = views(renderer);
     expect(outer?.props.onLayout).toBe(onLayout);
-    expect(ref.current).toBe(BOX);
+    expect(ref.current as unknown).toBe(BOX);
   });
 
   it('a callback ref is called with the box', () => {

@@ -1380,6 +1380,8 @@
     "hint": ["value"],
     "accessibilityState": ["accessibilityState"],
     "accessibilityValue": ["accessibilityValue"],
+    "stopPropagation": ["value?"],
+    "multiple": ["value?"],
     "ref": ["value"],
     "onLayout": ["value"],
     "liveRegion": ["liveRegion"],
@@ -2208,7 +2210,9 @@
         "colors",
         "linkTone",
         "inverted",
-        "density"
+        "density",
+        "iconSize",
+        "stopPropagation"
       ],
       "densities": ["default", "compact"],
       "size": "controlSize",
@@ -2392,7 +2396,19 @@
     },
     "card": {
       "constructors": ["Card"],
-      "modifiers": ["style", "tint", "radius", "elevation", "outline", "clipped", "disabled"],
+      "modifiers": [
+        "style",
+        "tint",
+        "radius",
+        "elevation",
+        "outline",
+        "clipped",
+        "disabled",
+        "axis",
+        "spacing",
+        "align",
+        "justify"
+      ],
       "style": "appearance",
       "tint": "tone"
     },
@@ -2655,7 +2671,7 @@
     },
     "field": {
       "constructors": ["Field"],
-      "modifiers": ["description", "error", "required", "disabled"]
+      "modifiers": ["description", "error", "required", "disabled", "multiple"]
     },
     "label": {
       "constructors": ["Label"],

@@ -200,6 +200,8 @@ export interface FieldView extends ViewModifiers<FieldView> {
   error(value: string | null | undefined): FieldView;
   required(value?: boolean): FieldView;
   disabled(value?: boolean): FieldView;
+  /** A field of several controls (chips, two inputs): its label names the group, not one control (Bloom's `multiple`). */
+  multiple(value?: boolean): FieldView;
 }
 
 /** Bloom `Label`: a form label. */
@@ -559,6 +561,7 @@ const field: ControlRenderer = (d) =>
       error: d.own('error')?.value,
       required: d.own('required')?.value,
       disabled: d.own('disabled')?.value,
+      multiple: d.own('multiple')?.value,
       testID: d.testID,
     },
     ...d.children(d.node.children),

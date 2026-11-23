@@ -1,5 +1,5 @@
 import type { MotionValue } from '@oxy.so/bloom/motion';
-import type { ComponentType, ReactNode, Ref } from 'react';
+import type { ComponentRef, ComponentType, ReactNode, Ref } from 'react';
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
@@ -512,6 +512,9 @@ export interface AccessibilityState {
   readonly expanded?: boolean;
   readonly disabled?: boolean;
 }
+/** A React Native view as a ref holds it (`.ref()`). */
+export type ViewInstance = ComponentRef<typeof View>;
+
 /**
  * `.accessibilityValue()`: what assistive technology reads of a view's value:
  * a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`).
@@ -1133,6 +1136,11 @@ export interface ValueModifiers {
   interactive: boolean;
   portrait: boolean;
 
+  /** A press that goes no further than this view on the web (Bloom's `stopPropagation`). */
+  stopPropagation: boolean;
+  /** A field of several controls (Bloom's `multiple`): its label names the group. */
+  multiple: boolean;
+
   // Chat composer (controls/chat-composer.tsx)
   iconSize: IconSizeToken;
   /** A menu row's glyph ink (`.iconForeground()`), over the menu's. */
@@ -1583,7 +1591,7 @@ export type Modifier =
   | { readonly kind: 'label'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'hint'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'role'; readonly key: string; readonly value: Role }
-  | { readonly kind: 'ref'; readonly key: string; readonly value: Ref<View> }
+  | { readonly kind: 'ref'; readonly key: string; readonly value: Ref<ViewInstance> }
   | {
       readonly kind: 'onLayout';
       readonly key: string;
@@ -2447,7 +2455,7 @@ export class Node {
   accessibilityState(value: AccessibilityState): Node {
     return this.with({ kind: 'accessibilityState', key: 'a11yState', value });
   }
-  ref(value: Ref<View>): Node {
+  ref(value: Ref<ViewInstance>): Node {
     return this.with({ kind: 'ref', key: 'ref', value });
   }
   onLayout(value: ((event: LayoutChangeEvent) => void) | undefined): Node {
@@ -4254,6 +4262,12 @@ export class Node {
   iconSize(value: IconSizeToken): Node {
     return this.set('iconSize', value);
   }
+  stopPropagation(value = true): Node {
+    return this.set('stopPropagation', value);
+  }
+  multiple(value = true): Node {
+    return this.set('multiple', value);
+  }
   iconForeground(value: InkToken): Node {
     return this.set('iconForeground', value);
   }
@@ -4642,7 +4656,7 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * instance does (a visibility tracker, a measurement, a DOM lookup on the
    * web). A screen reads and writes state through bindings, not through it.
    */
-  ref(value: Ref<View>): Self;
+  ref(value: Ref<ViewInstance>): Self;
   /**
    * An escape hatch: React Native's `onLayout` on the view's outermost box,
    * called with its frame after each layout that changes it. Laying a view out
@@ -5009,6 +5023,13 @@ export interface ImageView extends ViewModifiers<ImageView> {
   onError(value: ImageErrorHandler | undefined): ImageView;
 }
 export interface ButtonView extends ViewModifiers<ButtonView> {
+  /** Its glyph's size, an icon rung (`xl` is 28) or a numeric size (`'22'`), over its size's own (Bloom's `iconSize`). */
+  iconSize(value: IconSizeToken): ButtonView;
+  /**
+   * Its press goes no further on the web: a button inside a pressable row
+   * presses only itself (Bloom's `stopPropagation`). Native presses never bubble.
+   */
+  stopPropagation(value?: boolean): ButtonView;
   /**
    * Bloom's appearance, or a glass style: `glass` (the button on glass, its
    * ink the neutral tone's) and `glassProminent` (on glass tinted with its

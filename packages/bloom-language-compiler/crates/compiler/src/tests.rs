@@ -3414,3 +3414,17 @@ fn a_refresh_is_a_binding_or_its_value_and_action() {
     let output = compiled_with(names, "export const x = (b) => ScrollView(Text('a')).refreshable(b, 'teal');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown color token 'teal' for .refreshable()");
 }
+
+#[test]
+fn the_component_props_mention_writes_are_checked() {
+    let names = "Button, Card, Chip, Field, Icon, Text, Toggle, Badge";
+    let ok = compiled_with(
+        names,
+        "export const x = (t, f) => [Button(Icon(RiShareLine)).shape('circle').iconSize('xl').stopPropagation().label('Share').onPress(f), Card(Text('a'), Text('b')).axis('horizontal').align('center').justify('between').spacing('md'), Chip(Icon(RiShareLine).size('sm').foreground('primary'), Text('Share'), Badge(1)).size('xl').style('subtle'), Field('Type', Toggle(t), Toggle(t)).multiple()];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => Button(Text('a')).iconSize('28');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token '28' for .iconSize()");
+    let output = compiled_with(names, "export const x = () => Card(Text('a')).axis('row');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown axis token 'row' for .axis()");
+}

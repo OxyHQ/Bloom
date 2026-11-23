@@ -2458,6 +2458,10 @@ function renderHost(
         href: ownValue(p, 'link')?.value,
         numberOfLines: ownValue(p, 'lines')?.value,
         underline: ownValue(p, 'underline') === undefined ? undefined : 'rest',
+        iconSize: iconSizeOf(ownValue(p, 'iconSize')?.value),
+        stopPropagation: ownValue(p, 'stopPropagation')?.value,
+        // A trigger's open state is Bloom's own prop on a Button (it writes its own accessibility state).
+        'aria-expanded': ownValue(p, 'accessibilityState')?.value.expanded,
         material: p.control || ctx.env.island ? 'shared' : undefined,
       });
       const colors = ownValue(p, 'colors')?.value;
@@ -3318,6 +3322,11 @@ const LINK_TARGET = Object.freeze({ target: '_blank', rel: 'noopener noreferrer'
  * A button's content: its first `Icon` before any `Text` is the leading glyph,
  * an `Icon` after a `Text` the trailing one, and the `Text` runs its label.
  */
+/** A glyph size token as the points Bloom's `iconSize` takes. */
+function iconSizeOf(token: IconSizeToken | undefined): number | undefined {
+  return token === undefined ? undefined : resolveIconSize(token);
+}
+
 function buttonContent(children: readonly Child[]): {
   icon: IconProps['icon'] | undefined;
   glyph: Node | undefined;
