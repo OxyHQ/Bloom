@@ -75,6 +75,17 @@ The URL is applied when the player arrives, so the call loads nothing. On native
 it does nothing (`lottie-react-native` needs no WebAssembly), so shared startup
 code can call it without a platform check.
 
+## Frame rate
+
+On the web a playing sticker draws each of its animation's own frames once (the
+Lottie `fr`, usually 30 or 60 a second) rather than an in-between frame on every
+display refresh (dotLottie's `useFrameInterpolation: false`). Measured in
+Chrome with a 30 fps animation on a 60 Hz display: 60 canvas draws a second
+before, 30 after.
+
+On native `lottie-react-native` (7.5) exposes no frame-rate setting, so the
+native player still redraws on every display refresh while it plays.
+
 ## Props
 
 | prop | decides |
@@ -83,7 +94,7 @@ code can call it without a platform check.
 | `fallback` | the still image — required |
 | `size` | square edge, default 128 |
 | `loop` | default true |
-| `paused` | hold the frame, e.g. while scrolled out of view |
+| `paused` | hold the frame, e.g. while scrolled out of view; it already holds while its screen is not in front or the app is in the background |
 | `accessibilityLabel` | the name; a sticker IS its meaning, so pass its emotion |
 | `decorative` | hide it from assistive technology when its container already names it |
 

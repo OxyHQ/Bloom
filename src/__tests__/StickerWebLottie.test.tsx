@@ -40,13 +40,20 @@ jest.mock('@lottiefiles/dotlottie-react', () => {
   };
   function DotLottieReact(props: {
     src: string;
+    useFrameInterpolation?: boolean;
     dotLottieRefCallback?: (next: typeof instance | null) => void;
   }) {
     const { dotLottieRefCallback } = props;
     useEffect(() => {
       dotLottieRefCallback?.(instance);
     }, [dotLottieRefCallback]);
-    return <canvas data-testid="dotlottie" data-src={props.src} />;
+    return (
+      <canvas
+        data-testid="dotlottie"
+        data-src={props.src}
+        data-interpolated={String(props.useFrameInterpolation ?? true)}
+      />
+    );
   }
   return {
     DotLottieReact,
@@ -150,6 +157,16 @@ describe('web Sticker loads its Lottie player on demand', () => {
 
     setLottieWasmUrl(WASM);
     expect(mockState.wasmUrls).toEqual([WASM]);
+  });
+
+  // Interpolated, a looping sticker redrew its canvas on every display refresh
+  // (120 a second on a 120 Hz screen); it draws only its own frames.
+  it('draws the animation at its own frame rate, not the display refresh rate', async () => {
+    mount(<Sticker animation={ANIMATION} fallback={STILL} testID="s" />);
+    await settle();
+    expect(
+      container.querySelector('[data-testid="dotlottie"]')?.getAttribute('data-interpolated'),
+    ).toBe('false');
   });
 
   it('falls back to the still for good when the animation fails to load', async () => {

@@ -7,6 +7,7 @@ import { MediaImage } from '../message-media/parts';
 import type { ComponentType } from 'react';
 import type { LottiePlayerProps, StickerProps } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
+import { useScreenVisible } from '../screen/use-screen-visible';
 
 export interface StickerPlatform {
   /** The platform's Lottie player, or `null` when its optional peer is missing. */
@@ -26,6 +27,10 @@ const TRANSPARENT = 'transparent';
  * this platform, a failed load, a person who asked for reduced motion) the still
  * is simply what remains. Every one of those outcomes looks like a sticker.
  *
+ * It plays only while it can be seen: on a screen that is not in front (a
+ * covered stack scene, another tab page) or in a backgrounded app it holds its
+ * frame, and carries on when it is back in front.
+ *
  * Draws no surface: no background, no radius, no padding. A sticker with a
  * bubble behind it is a picture of a sticker. `StickerMessage` is this plus the
  * chat affordances (press, sending, failed).
@@ -44,6 +49,7 @@ export function createSticker({ loadLottiePlayer, warnLottieUnavailable }: Stick
   }: StickerProps) {
     const { messages } = useMessages(MESSAGE_MEDIA_MESSAGES);
     const reducedMotion = usePrefersReducedMotion();
+    const screenVisible = useScreenVisible();
     const [loaded, setLoaded] = useState(false);
     const [failed, setFailed] = useState(false);
 
@@ -105,7 +111,7 @@ export function createSticker({ loadLottiePlayer, warnLottieUnavailable }: Stick
             <Player
               uri={animation}
               loop={loop}
-              paused={paused}
+              paused={paused || !screenVisible}
               onLoad={onLoad}
               onError={onError}
               style={{ width: size, height: size }}
