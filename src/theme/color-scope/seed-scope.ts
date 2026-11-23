@@ -9,7 +9,8 @@ import {
 } from '../../design-tokens/color-roles';
 
 /**
- * Every alias `theme.css` declares at `:root` as a reference to a canonical
+ * For apps still using `className` (removed once the fleet has migrated): every
+ * alias the Tailwind token output `theme.css` declares at `:root` as a reference to a canonical
  * token, keyed by the alias name. `--color-divider` is one of these and does not
  * come from the role maps, so it is named here.
  *
@@ -151,8 +152,8 @@ export interface SeedScopeOptions {
  * on web so scoped utilities resolve against the subtree instead of the document
  * root).
  *
- * Scope the returned record onto an element (web: inline `style`; native:
- * NativeWind `VariableContextProvider`) to tint just that subtree — e.g. the
+ * A scope publishes the returned record (web: inline `style` on its element;
+ * native: the scope context `useColorTokens` reads) to tint just that subtree — e.g. the
  * ambient region behind album/artist artwork — without re-theming the whole app.
  */
 export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, string> {

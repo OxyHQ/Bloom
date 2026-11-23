@@ -13,6 +13,7 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { useChatComponents } from './context';
 import { agentCharacter, type Agent, type Conversation } from './data';
 import type { SidebarProps, SidebarTeam } from '../sidebar/types';
+import { createTokenStyles } from '../theme/color-tokens';
 
 export interface ChatSidebarProps {
   sidebarProps?: SidebarProps;
@@ -39,6 +40,7 @@ export interface ChatSidebarProps {
 export function ChatSidebar(props: ChatSidebarProps) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
   const { ConversationSidebar } = useChatComponents();
+  const styles = useStyles();
   const chats = new Map(props.chats.map((chat) => [chat.id, chat]));
   const items = props.chats.map((chat) => {
     const agents = props.agents.filter((a) => chat.agentIds.includes(a.id));
@@ -134,21 +136,28 @@ export function ChatSidebar(props: ChatSidebarProps) {
           label: messages.support,
           icon: RiCustomerService2Line,
           onPress: props.onSupport,
-          style: { height: 36, minHeight: 36, paddingTop: 8, paddingBottom: 8 },
-          className:
-            'justify-start bg-transparent text-text-secondary hover:bg-background-secondary-hover active:bg-background-secondary-hover',
+          style: styles.secondary,
         },
         {
           key: 'settings',
           label: messages.settings,
           icon: RiSettings3Line,
           onPress: props.onSettings,
-          style: { height: 36, minHeight: 36, paddingTop: 8, paddingBottom: 8 },
-          className:
-            'justify-start bg-transparent text-text-secondary hover:bg-background-secondary-hover active:bg-background-secondary-hover',
+          style: styles.secondary,
         },
       ]}
       team={props.team}
     />
   );
 }
+
+/** Support and Settings: compact rows in the secondary text colour. */
+const useStyles = createTokenStyles((t) => ({
+  secondary: {
+    color: t.mutedForeground,
+    height: 36,
+    minHeight: 36,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+}));

@@ -1,4 +1,4 @@
-import type { TextStyle } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
 
 import { useBloomAppearance, type BloomSize } from '../appearance';
 import {
@@ -17,7 +17,7 @@ export function useMenuDensity(size?: BloomSize) {
   return resolveMenuDensity(resolved.size, useTouchInput(), useDesktopPlatform());
 }
 
-/** What `resolveMenuDensity` resolves: a menu's geometry, numbers and classes. */
+/** What `resolveMenuDensity` resolves: a menu's geometry, as numbers and styles. */
 export interface MenuDensity {
   readonly size: BloomSize;
   readonly touch: boolean;
@@ -30,10 +30,10 @@ export interface MenuDensity {
   readonly panelPadding: number;
   /** The panel's corner. */
   readonly panelRadius: number;
-  /** A row's corner inline, or null where `ROW_CLASS`'s `rounded-[10px]` draws it. */
+  /** A row's corner inline, or null where the row's own 10px corner draws it. */
   readonly rowRadius: number | null;
   readonly gap: number;
-  /** Between a row's leading glyph, label and trailing slot: `rowClass`'s `gap-*`, as a number. */
+  /** Between a row's leading glyph, label and trailing slot. */
   readonly itemGap: number;
   readonly separatorMargin: number;
   readonly leadingSize: number;
@@ -45,11 +45,16 @@ export interface MenuDensity {
   readonly glyphSize: number;
   /** The width a menu's panel never goes below (`MENU_WIDTH` off a desktop), unless the caller says. */
   readonly minWidth: number;
-  readonly groupClass: string;
-  readonly panelClass: string;
-  readonly rowClass: string;
-  readonly labelClass: string;
-  readonly separatorClass: string;
+  /** A group of rows: their gap. */
+  readonly groupStyle: ViewStyle;
+  /** A menu panel's padding. */
+  readonly panelStyle: ViewStyle;
+  /** A row's inset, minimum height and gap. */
+  readonly rowStyle: ViewStyle;
+  /** A group label's inset. */
+  readonly labelStyle: TextStyle;
+  /** A separator's one-pixel rule, reaching the panel's edges through its padding. */
+  readonly separatorStyle: ViewStyle;
 }
 
 /**
@@ -67,14 +72,16 @@ export function resolveMenuDensity(
   if (desktop) return resolveDesktopMenuDensity(size);
   const geometry = MENU_GEOMETRY[size];
   const type = CONTROL_LABEL_TYPE[size];
+  const height = Math.max(touch ? 44 : 0, geometry.height);
+  const panelPadding = touch ? 8 : 6;
   return {
     size,
     touch,
     desktop: false,
-    height: Math.max(touch ? 44 : 0, geometry.height),
+    height,
     type,
     rowType: TYPE_SCALE[type],
-    panelPadding: touch ? 8 : 6,
+    panelPadding,
     panelRadius: 16,
     rowRadius: null,
     gap: geometry.rowGap,
@@ -86,11 +93,21 @@ export function resolveMenuDensity(
     indicatorInset: 8,
     glyphSize: 16,
     minWidth: 266,
-    groupClass: geometry.groupClass,
-    panelClass: touch ? 'p-space-8' : 'p-[6px]',
-    rowClass: `${geometry.rowClass}${touch ? ' min-h-[44px]' : ''}`,
-    labelClass: 'px-space-8 py-space-4',
-    separatorClass: `${touch ? '-mx-space-8' : '-mx-[6px]'} ${geometry.separatorMarginClass} h-px`,
+    groupStyle: { gap: geometry.rowGap },
+    panelStyle: { padding: panelPadding },
+    // 8px across; 4px down (5px at `lg`, whose row is 32px of a 22px line).
+    rowStyle: {
+      minHeight: height,
+      gap: geometry.gap,
+      paddingInline: 8,
+      paddingBlock: size === 'lg' ? 5 : 4,
+    },
+    labelStyle: { paddingInline: 8, paddingBlock: 4 },
+    separatorStyle: {
+      marginInline: -panelPadding,
+      marginBlock: geometry.separatorMargin,
+      height: 1,
+    },
   };
 }
 
@@ -115,10 +132,20 @@ function resolveDesktopMenuDensity(size: BloomSize): MenuDensity {
     indicatorInset: g.indicatorInset,
     glyphSize: g.indicator,
     minWidth: g.minWidth,
-    groupClass: g.groupClass,
-    panelClass: g.panelClass,
-    rowClass: g.rowClass,
-    labelClass: g.labelClass,
-    separatorClass: g.separatorClass,
+    groupStyle: { gap: g.rowGap },
+    panelStyle: { padding: g.panelPadding },
+    rowStyle: {
+      minHeight: g.height,
+      gap: g.gap,
+      paddingInline: 8,
+      // A 16px body line in a 22px row.
+      paddingBlock: 3,
+    },
+    labelStyle: { paddingInline: 8, paddingTop: 5, paddingBottom: 3 },
+    separatorStyle: {
+      marginInline: g.separatorMargin,
+      marginBlock: g.separatorMargin,
+      height: 1,
+    },
   };
 }

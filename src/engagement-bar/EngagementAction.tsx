@@ -5,6 +5,7 @@ import { Pressable, Text, type PressableStateCallbackType, type ViewStyle } from
 import { SpinnerIcon } from '../loading/SpinnerIcon';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { IS_WEB } from '../styles/platform';
+import { PRESS_HOST_STYLE } from '../styles/press-host';
 import { ENGAGEMENT_HIT_SLOP } from './constants';
 import { EngagementBarContext, type EngagementPress } from './context';
 import { EngagementCountRoll } from './EngagementCountRoll';
@@ -42,6 +43,12 @@ function EngagementActionComponent({
   tone = 'primary',
   onPress,
   onLongPress,
+  onPressIn,
+  onPressOut,
+  onHoverIn,
+  onHoverOut,
+  onFocus,
+  onBlur,
   accessibilityActions,
   onAccessibilityAction,
   popOnActivate = false,
@@ -49,6 +56,7 @@ function EngagementActionComponent({
   busy = false,
   disabled = false,
   hitSlop = ENGAGEMENT_HIT_SLOP,
+  style,
   testID,
 }: EngagementActionProps) {
   const bar = useContext(EngagementBarContext);
@@ -146,10 +154,19 @@ function EngagementActionComponent({
             }
           : undefined
       }
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      onFocus={onFocus}
+      onBlur={onBlur}
       hitSlop={hitSlop}
-      style={({ pressed }: PressableStateCallbackType) =>
-        pressed && !blocked ? tonePaint.pressed : rest
-      }
+      style={({ pressed }: PressableStateCallbackType) => {
+        const own = pressed && !blocked ? tonePaint.pressed : rest;
+        const drawn = style === undefined ? own : [own, style];
+        // On the web it carries the press host class (styles/press-host.ts).
+        return PRESS_HOST_STYLE === undefined ? drawn : [drawn, PRESS_HOST_STYLE];
+      }}
       testID={testID}
     >
       {/* A lone child, not a one-item list: `Pressable` renders its children beside

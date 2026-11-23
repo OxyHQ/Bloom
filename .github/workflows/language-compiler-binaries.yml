@@ -1,0 +1,185 @@
+name: Language compiler binaries
+
+# Builds the Bloom language compiler's prebuilt addons, one per platform, and
+# its WASI fallback; packs them as the platform packages beside
+# @oxy.so/bloom-language-compiler (its optional dependencies, committed under
+# packages/bloom-language-compiler/npm); then installs the packs on each
+# platform with no Rust on PATH and compiles the fixtures through them. It
+# publishes nothing. (js/native.js loads them, scripts/pack-prebuilt.mjs packs
+# them, scripts/verify-prebuilt.cjs checks an install.)
+#
+# release-packages.yml calls it with `release: true` when the compiler's
+# version is not on npm yet: each build is then also staged at its repository
+# path (`release-prebuilt-<target>`, scripts/stage-prebuilt.mjs), which Oxy's
+# shared release downloads into its checkout before it packs, so the release
+# publishes exactly the addons this run built and verified.
+#
+# Otherwise only a pull request that changes the compiler (or this workflow)
+# runs it: five runners per run, and the org's free plan shares 20 concurrent
+# jobs across every repo. main is not rebuilt on push; a new compiler version
+# is rebuilt and verified by the release that publishes it.
+
+on:
+  pull_request:
+    paths:
+      - packages/bloom-language-compiler/**
+      - .github/workflows/language-compiler-binaries.yml
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release:
+        description: Also stage each build at its repository path for the release
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  # A call from the release runs under the caller's workflow name, so it never
+  # cancels (or is cancelled by) a pull request's own run.
+  group: language-compiler-binaries-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The compiler's pinned toolchain (Oxc needs 1.97+), as validate.yml pins it.
+  RUST_TOOLCHAIN: 1.99.0
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, target: x86_64-unknown-linux-gnu }
+          - { runner: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu }
+          - { runner: macos-15-intel, target: x86_64-apple-darwin }
+          - { runner: macos-15, target: aarch64-apple-darwin }
+          - { runner: windows-2025, target: x86_64-pc-windows-msvc }
+          # The WASI fallback: napi-rs links emnapi (the devDependency) for it.
+          - { runner: ubuntu-24.04, target: wasm32-wasip1-threads }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      # The napi CLI and emnapi are the compiler's devDependencies.
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --target "${{ matrix.target }}"
+          rustup default "$RUST_TOOLCHAIN"
+      - name: Build the addon
+        working-directory: packages/bloom-language-compiler
+        run: bun run build:prebuilt --target "${{ matrix.target }}" --output-dir dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: addon-${{ matrix.target }}
+          path: |
+            packages/bloom-language-compiler/dist/*.node
+            packages/bloom-language-compiler/dist/*.wasm
+            packages/bloom-language-compiler/dist/*.wasi.cjs
+            packages/bloom-language-compiler/dist/*.wasi.d.cts
+            packages/bloom-language-compiler/dist/*.wasi-browser.js
+            packages/bloom-language-compiler/dist/wasi-worker*.mjs
+          if-no-files-found: error
+      - name: Stage the build in its platform package, for the release
+        if: inputs.release
+        run: bun packages/bloom-language-compiler/scripts/stage-prebuilt.mjs packages/bloom-language-compiler/dist "$RUNNER_TEMP/prebuilt"
+      # A directory keeps its tree: the release downloads it into its checkout's root.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: inputs.release
+        with:
+          name: release-prebuilt-${{ matrix.target }}
+          path: ${{ runner.temp }}/prebuilt/
+          if-no-files-found: error
+
+  pack:
+    name: Pack
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: addon-*
+          path: artifacts
+          merge-multiple: true
+      # Every target in package.json's napi.targets: a missing file fails here.
+      - name: Pack the compiler and its platform packages
+        run: node packages/bloom-language-compiler/scripts/pack-prebuilt.mjs artifacts packed
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packed
+          path: packed/*.tgz
+          if-no-files-found: error
+
+  install:
+    name: Install on ${{ matrix.platform }}
+    needs: pack
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, platform: linux-x64-gnu }
+          - { runner: ubuntu-24.04-arm, platform: linux-arm64-gnu }
+          - { runner: macos-15-intel, platform: darwin-x64 }
+          - { runner: macos-15, platform: darwin-arm64 }
+          - { runner: windows-2025, platform: win32-x64-msvc }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: packages/bloom-language-compiler
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packed
+          path: packed
+      - name: Install the packs into an empty project, with no Rust on PATH
+        run: |
+          # No cargo or rustc: an install must need neither.
+          export PATH="$(printf '%s' "$PATH" | tr ':' '\n' | grep -v -i cargo | paste -sd ':' -)"
+          ! command -v cargo
+          mkdir consumer && cd consumer
+          echo '{ "name": "consumer", "private": true }' > package.json
+          npm install --no-audit --no-fund --ignore-scripts \
+            ../packed/oxy.so-bloom-language-compiler-[0-9]*.tgz \
+            ../packed/oxy.so-bloom-language-compiler-${{ matrix.platform }}-[0-9]*.tgz
+          # The WASI package's cpu is wasm32, so npm installs it only when asked.
+          npm install --no-audit --no-fund --ignore-scripts --no-save --force \
+            ../packed/oxy.so-bloom-language-compiler-wasm32-wasi-[0-9]*.tgz
+          cp ../packages/bloom-language-compiler/scripts/verify-prebuilt.cjs .
+          fixtures=../packages/bloom-language-compiler/fixtures
+          # The prebuilt addon loads, and compiles every fixture as the WASI build does.
+          node verify-prebuilt.cjs "$fixtures"
+          # Without it, the compiler falls back to the WASI build.
+          rm -rf "node_modules/@oxy.so/bloom-language-compiler-${{ matrix.platform }}"
+          node verify-prebuilt.cjs "$fixtures" --wasi

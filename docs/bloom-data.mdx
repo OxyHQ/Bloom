@@ -1,0 +1,465 @@
+---
+title: Bloom data
+description: The data and state layer of the Bloom language. Records by id in memory, field-level subscriptions, sources, optimistic actions, realtime and an asynchronous SQLite copy, in @oxy.so/bloom-data.
+---
+
+# Bloom data
+
+`packages/bloom-data` (`@oxy.so/bloom-data`, public, released like the other
+packages here when its version changes on `main`) is the data and state layer of the [Bloom language](./bloom-language.mdx).
+It replaces an app's separate caches (a SQLite table, query pages and snapshot
+maps) with one model, the way SwiftUI pairs `@Observable` with SwiftData. It
+adds no dependency: React is its only peer, and the SQLite copy uses the
+`expo-sqlite` database the app passes in.
+
+## The parts
+
+| Part | SwiftUI and SwiftData | What it is |
+|---|---|---|
+| `entity` | `@Model` | Records of one type, by id, in memory. |
+| `list` | a sorted `@Query` result | Ordered ids into an entity, per key, plus what the source keeps beside them. |
+| `source` | the fetching half of `@Query` | Fills a list (paged) or a record from the server. |
+| `action` | a mutation | An optimistic change, the server call, then settle or roll back. |
+| `realtime` | | Writes a socket's events into the same records. |
+| `useEntity`, `useList`, `useRecord`, `useListState` | `@Observable` reads | Read them, re-rendering only for what changed. |
+
+```ts
+import { action, entity, list, realtime, source } from '@oxy.so/bloom-data';
+
+export const User = entity<PostUser>('user', { id: (u) => u.id, persist: true });
+
+export const Post: Entity<HydratedPost> = entity<HydratedPost>('post', {
+  id: (p) => p.id,
+  refs: { user: User, quotedPost: () => Post, 'boost.originalPost': () => Post },
+  viewerFields: ['viewerState'],
+  persist: { version: 17 },
+});
+
+export const Feed = list('feed', { of: Post, persist: true });
+
+export const feed = source(Feed, {
+  key: (type: FeedType) => type,
+  load: ({ cursor, signal }, type) => api.get(`/feeds/${type}`, { params: { cursor }, signal }),
+});
+
+export const like = action({
+  key: (id: string) => `like:${id}`,
+  optimistic: (id) =>
+    Post.patch(id, (p) => ({
+      viewerState: { isLiked: true },
+      engagement: { likes: p.engagement.likes + 1 },
+    })),
+  run: (id) => api.post(`/posts/${id}/like`),
+  settle: (result, id) => Post.merge(id, result.post),
+});
+
+realtime(socket, {
+  'post:engagement': (e) => Post.merge(e.postId, { engagement: e.counts }),
+});
+```
+
+```tsx
+function Home() {
+  const view = useList(feed, 'for_you'); // ids, state, more(), refresh()
+  return <List data={view.ids} renderItem={({ item }) => <PostRow id={item} />} />;
+}
+
+function PostActions({ id }: { id: string }) {
+  const post = useEntity(Post, id); // re-renders when engagement.likes or viewerState.isLiked changes
+  return <LikeButton count={post?.engagement.likes} active={post?.viewerState.isLiked} />;
+}
+```
+
+Differences from the design proposal, each with its reason:
+
+- A ref to the entity being defined is a function (`() => Post`), and that
+  entity needs its type written out. JavaScript cannot read `Post` inside its
+  own initializer.
+- `load` receives `{ cursor, signal, current }` first and the arguments after
+  it. Cancellation needs the signal, and the arguments are variadic, so
+  nothing could follow them.
+- A list is stored as one row of ordered ids, not one row per position. A page
+  append then rewrites one row.
+- `model()` (one record for app and UI state) is not built yet. It is
+  `entity` with a single id, and nothing has needed it so far.
+- Reads at boot have one synchronous form (`list.loadNow`), for the first
+  frame of a cold start; see [The boot read](#the-boot-read).
+
+## Entities
+
+Records are plain JSON-shaped data and are never mutated. A write builds a new
+value and shares every unchanged part with the old one (structural sharing), so
+an equal answer from the server changes nothing and wakes nobody.
+
+- `put(records, { anonymous })` stores records as the server sent them.
+  `anonymous` marks a payload hydrated for no viewer (a broadcast); the
+  entity's `viewerFields` are then kept from the copy already held.
+- `merge(id, partial)` merges plain objects key by key. `patch(id, fn)` merges
+  a partial computed from the current record. `update(id, fn)` replaces it
+  (`null` removes it).
+- `remove(id)` removes the record from memory, disk and every list of its
+  entity. A list's `dropFromExtra` removes it from what the list keeps beside
+  its ids.
+- `refs` normalise embedded records. On write, the embedded record goes to its
+  own entity and the field keeps its id. On read, it resolves again. One copy
+  serves every record that embeds it, and `referencing(target, id)` finds the
+  records that embed one.
+- `combine(incoming, held)` decides how an incoming record joins the one held
+  (the server's copy, never an optimistic layer). Returning `held` refuses a
+  payload that is worse than what is held, such as one that lost an embedded
+  record; returning a merge keeps what a sparse payload does not carry.
+- `onStore(records)` is told about every record a write stored, whichever path
+  wrote it.
+- A page can carry `related` records: stored, not listed (slice posts, say).
+- `get(id)` returns a plain object with its refs resolved, cached until a
+  dependency changes. Use it outside render. Use the hooks in render.
+
+## Field-level subscriptions
+
+This is the one clever piece, and it follows one rule: record what a reader
+reads, two levels deep, and wake the reader when one of those paths changes.
+
+`useEntity(Post, id)` returns a read-only proxy. Each property read is
+recorded: `engagement.likes` for a nested field, `title` for a top-level one.
+A ref resolves to a proxy over the referenced record, recorded under that
+record. A top-level plain object comes back as a proxy of its own, so reading
+`post.engagement` alone records only whether it is there.
+
+A proxy's identity follows what was read through it: it is replaced exactly
+when a path read through it changed. `memo`, `useMemo` and the React Compiler
+therefore see a new value precisely when what they used changed. A child
+handed `post.engagement` keeps the same object until a field it read changes.
+Reads always see the current record, so the first read of a field returns its
+current value. Values below the second level are returned as stored.
+
+`useEntity(Post, id, select, isEqual)` is the selector form. It returns
+`select(record)` and re-renders when that result changes.
+
+Proxies support spread, `Object.keys` and `JSON.stringify`, and they refuse
+writes. Do not pass one to `structuredClone`; use `Post.get(id)` there.
+
+## Sources
+
+A source has one state per store and key: `status`, `fetchStatus`
+(`fetching` or `paused`), `error`, `failureCount`, `updatedAt` and `origin`
+(`network` or `disk`). React Query's edge cases are carried over on purpose,
+and each has a test in `src/__tests__/source.test.tsx`:
+
+- One request per key at a time. A second caller joins the one in flight.
+- `refresh` supersedes what is in flight, and the late answer of a superseded
+  read is dropped. `more` joins a first page in flight and never appends to a
+  list refreshed since it started. A repeated cursor ends paging.
+- A failure retries with exponential backoff (1s, 2s, 4s, up to 30s; `retry`
+  and `retryDelay` change it). The rows on screen stay through retries and
+  errors.
+- Offline, a read waits (`paused`) and resumes on reconnect. A retry also
+  waits while the app is in the background.
+- `stale` is an age in milliseconds (default 0) or a rule. Fresh data is not
+  read again when a screen mounts; stale data is shown and then read again. A
+  disk copy is always stale.
+- Coming to the front and reconnecting read the stale keys that are on screen
+  (`refetchOnFocus`, `refetchOnReconnect`).
+- A key nobody observes leaves memory after `gcTime` (default 5 minutes). Its
+  disk copy stays.
+- `invalidate(...args)` marks a key stale in the store in scope, whatever its
+  `stale` age, and `invalidateAll()` marks every key of the source. A key on
+  screen (or being read) reads again now; one off screen reads again when it
+  is next observed. Once a read started since answers, `stale` applies again.
+
+`useListState(list, key)` reads a held list without reading it from the
+server. `useList(source, skip)` observes nothing until its arguments are known (the
+signed-in account, say). A list source's `fold(current, extra, mode)` folds each page's `extra` into the
+list's (`first` replaces it, `next` appends). A record source's `load` returns
+the record, or `null` when the server says it is gone, which removes it.
+
+Native apps report the device: `environment.setOnline(netInfo.isConnected !==
+false)` and `environment.setFocused(appState === 'active')`. Web reads the
+browser's events.
+
+## Actions
+
+`optimistic` runs first, and every entity write it makes (`merge`, `patch`,
+`update`) and every list change (`insert`, `remove`, `move`, `prepend`)
+becomes the call's layer: concrete values and list changes held over the
+server's copy, not written into it.
+
+- While the layer stands, server writes to the same fields (a feed refresh, a
+  realtime echo) update the copy beneath it without moving what the reader
+  sees. This replaces a hand-written echo guard for the call's duration.
+- When `run` resolves, the layer is written into the server's copy (the server
+  accepted it) and `settle` writes the server's own answer over it, in one
+  notification.
+- When `run` rejects, the layer goes. That is the rollback: the copy beneath
+  is current, including anything realtime brought in the meantime.
+
+Lists follow the same rule. `list.insert(key, ids, at?)` (default: the end;
+ids already in the list are skipped), `list.remove(key, ids)` and
+`list.move(key, id, to)` inside `optimistic` are held over the list's own
+state: a source page or a refresh that lands meanwhile updates the list
+beneath without moving what the reader sees (a removed id stays hidden, an
+inserted one stays shown). On success the changes are written into the
+list's state, on failure they go. Outside `optimistic` they are plain local
+writes to a held list, and `prepend(key, ids)` is `insert(key, ids, 0)`.
+`list.set` always writes the list's own state, never a layer. Readers
+(`useList`, `useListState`, `List.get`) see the layered list; the durable
+copy keeps only the list's own state.
+
+A `key` names the target of a call. Keys are shared by every action, so a
+like and its undo can use one key.
+
+- While a call with the key is running, a second one resolves to `undefined`
+  at once without running.
+- While a call with the key is still waiting (offline, or for its turn behind
+  other durable calls), a second one replaces it: the waiting call's layer and
+  outbox entry go, its caller gets `undefined`, and the second call goes
+  through. Unstar right after star, offline, leaves one call,
+  `setStarred(id, false)`.
+
+Offline, the optimistic change shows at once and `run` waits for the network;
+`useActionStatus` counts the call as `paused`.
+
+`onRejected(error, ...args)` is told when the server refuses a call (`run`
+threw), after the rollback. It is where the app shows its own error toast:
+a live call's caller also gets the error, but a replayed call has no caller.
+
+### Durable actions: offline writes survive a restart
+
+```ts
+export const setStarred = action({
+  name: 'inbox.star', // stable, unique per app
+  durable: true,
+  key: (id: string, _starred: boolean) => `star:${id}`,
+  optimistic: (id: string, starred: boolean) => Message.merge(id, { starred }),
+  run: (id: string, starred: boolean) => api.put(`/messages/${id}/star`, { starred }),
+});
+```
+
+- A durable action has a `name`, unique per app, and JSON-serialisable
+  arguments.
+- Its arguments state the target, never a toggle: `setStarred(id, true)`, not
+  `toggleStar(id)`. A call can reach the server twice (an answer lost to a
+  restart leaves it in the outbox), and a waiting call is replaced by the
+  newer call with its key; both are safe only when the arguments say the
+  state the server should end in. This is a rule of the API, not checked: the
+  only check (applying `optimistic` twice and comparing) would run app code
+  twice and re-render twice in development.
+- Defining an action again under its name replaces the earlier definition,
+  so a module re-run by Fast Refresh re-registers its actions. Two modules
+  using one name cannot be told from that re-run, so the last definition
+  wins: prefix names by feature (`inbox.star`).
+- Each call is written to the store's outbox before `run`: its id, name,
+  arguments, time and optimistic layer, as plain data. The outbox is one
+  record of the account's durable copy (`bloom-outbox`) that never ages out.
+  It is written after the frame with the rest of the queue.
+- The call leaves the outbox when it settles, or when the server refuses it
+  (`run` threw while online: the layer is dropped and the caller gets the
+  error, as for any action). A call that fails or waits while offline stays,
+  counted as `paused`, and runs again on reconnect.
+- A store's durable calls run one at a time, in call order, so a delete never
+  overtakes the write before it.
+- When a store opens with a durable copy, after its first frame, it reads its
+  outbox and replays each entry in order through the action registered under
+  its name. The entry's layer goes back at once, over the records and lists
+  it changed (read from disk for it), so the reader sees the pending change
+  after a restart; the call then runs when online, under the same settle,
+  rollback and key rules. A replayed call has no caller: a refusal rolls back
+  and goes to `onRejected`.
+- An entry whose action is no longer registered (an app update removed it) is
+  dropped. Each account's outbox is in its own copy, so an account's calls are
+  never replayed in another; a call still queued when its account is left
+  stays in that account's outbox, and `forget` deletes it with the copy.
+
+## Realtime
+
+`realtime(socket, handlers)` queues events as they arrive and applies them
+after the next frame, in arrival order, with one notification. Each event goes
+to the store that was in scope when it arrived. An event that arrived for an
+account that has since been left is dropped.
+
+## Persistence
+
+`sqlitePersister(open)` from `@oxy.so/bloom-data/sqlite` keeps a durable copy
+in one SQLite file. `open` returns expo-sqlite's database:
+`SQLite.openDatabaseSync(name)` to allow the boot read below, or
+`SQLite.openDatabaseAsync(name)` for the asynchronous API alone.
+
+- Writes go out after the frame, in one transaction, from a queue of changed
+  records and lists. Only the server's copy is written, never a layer still in
+  flight. Upserts and deletes are multi-row statements.
+- Reads happen when a screen opens (`useList` and `useRecord` read the disk
+  copy while the network read runs, and concurrent reads of one list share
+  one read) or at boot, never during render. Memory always wins over disk.
+- A changed entity `persist.version` drops that type's rows when the file
+  opens. Rows not written for 7 days are dropped with the first write.
+- `persist: { keep: N }` bounds an entity's rows on disk to the N written
+  last; memory holds whatever is loaded. Each write that stores rows of the
+  type deletes the ones past the bound, so a restart restores only the kept
+  ones (a persisted list keeps only the ids whose records are on disk).
+  Rows written in one batch count as equally new.
+- `persist: { trim(record) }` decides what the durable copy stores of a
+  record, each time it is written there: the record in the same shape (a ref
+  field holds the referenced record's id), or `null` to skip this write (the
+  stored row stays as it was). Memory always keeps the whole record, and a
+  restart restores the trimmed one. A `trim` that throws is reported and the
+  record is not written.
+- Together, `keep` and `trim` are React Query's old `PersistedRootBound`
+  (`maxQueries` and `trim`). `@gemies/sdk`'s conversations use the bound the
+  app had: the 20 written last, each with its last 40 finished, text-only
+  messages, at most 150 KB.
+- `createAccounts({ persister: (account) => ... })` opens one store, and one
+  file, per account. `open(account)` closes the previous store at once: its
+  queued writes still reach its own file, and anything that lands for it later
+  is dropped.
+
+### The boot read
+
+`list.loadNow(key)` is the one synchronous read. It runs at boot, for the
+screen the app opens on, before that screen's tree mounts. It opens the file,
+reads the list with its records in one query, then the records those name (a
+quoted or boosted post), and puts them in memory, so the first frame shows the
+last session. It never runs during render. On a Pixel 8a it takes 6 to 9 ms for
+a 20-post feed. Everything after it is asynchronous, on the same connection.
+
+Why one synchronous read: each expo-sqlite asynchronous call is three or four
+JS-to-native hops (prepare, execute, read, finalize), and each hop's promise
+waits for a free turn of the JS thread. During startup that thread stalls for
+200 to 650 ms at a time (measured with an event-loop lag sampler in a release
+build). A cold start reading the home feed asynchronously therefore got its
+first post from the network, about 5 s later than a synchronous read.
+Cutting the statements per call (open is one script and one read, a list comes
+back with its records in one query) took the queries themselves to 5 to
+240 ms. But opening the file asynchronously still took 1.4 s, inside those
+stalls. The sync read avoids every hop for the one read that decides the first
+frame.
+
+On the web, `indexedDbPersister(name)` from `@oxy.so/bloom-data/indexeddb`
+keeps the copy in IndexedDB, one database per account (expo-sqlite on web
+needs `SharedArrayBuffer`, and so COOP and COEP headers, which break popup
+sign-in). IndexedDB has no synchronous API, so `list.loadNow` finds nothing
+there; `hasIndexedDb()` says whether the runtime has it.
+
+`createAccounts().forget(account)` closes an account's store and deletes its
+copy (`Persister.destroy`): sign-out leaves nothing of the account behind.
+`sqlitePersister(open, remove)` deletes the file with `remove`
+(`() => SQLite.deleteDatabaseAsync(name)`); without it, it empties it.
+
+## Stores, accounts and the server
+
+A `Store` holds one account's data, or one server request's.
+`<DataProvider store>` gives it to the hooks below. Code outside React (an
+action, a handler, a source) acts on the store in scope: the one it captured
+when it started, otherwise the active store. A store makes no timer, listener or
+disk access until it is used, and the hooks pass React a server snapshot, so a
+server render reads a request's own store and nothing else
+(`src/__tests__/server.test.tsx`).
+
+## Plan: the Oxy SDK on the same model
+
+Mention's posts and feeds are on this store
+(Mention `feat/bloom-data-posts`). Users, sessions and every SDK-owned list are
+not yet. They live in `@oxy.so/services`, which peers on `@tanstack/react-query`,
+both React Query persisters, `zustand` and AsyncStorage, so every app keeps
+those in its tree whatever it does itself. The move is its own step:
+
+1. **Publish `@oxy.so/bloom-data`**, or re-export it from
+   `@oxy.so/bloom-language`, so the SDK can depend on it. Until then Mention pins
+   a local pack.
+2. **A `User` entity in the SDK.** `@oxy.so/services` exports
+   `User = entity<User>('user', …)` and writes every user it fetches into it.
+   Apps declare `refs: { user: User }` on their own entities, so one copy of
+   each person serves every post, notification and profile. That retires
+   Mention's `lib/actorCache.ts` and `stores/identityUpdates.ts`.
+   - One guard comes first. A degraded user (the "unresolved author" placeholder
+     an Oxy outage returns) must not replace a resolved one, and a sparse
+     author must not strip the counts and relationship a profile read stored.
+     That is the entity's `combine` rule.
+3. **Sessions open stores.** The SDK's session epoch drives
+   `createAccounts().open(account)`, in place of each app's account-switch
+   boundary. A store per account replaces the SDK's own cache wipes.
+4. **The SDK's queries and mutations move.** About 66 files in
+   `packages/services/src` use React Query or zustand:
+   - user and profile reads become record sources;
+   - lists (followers, sessions, devices) become list sources;
+   - writes become actions;
+   - the zustand stores (follow state, assets, theme) become entities or
+     `model()`, which is built then.
+5. **Transport stays the SDK's.** Sources load through
+   `oxyServices.createLinkedClient()`, and sockets authenticate per handshake
+   with `getAccessToken()`, as today.
+6. **Peers drop.** `@tanstack/react-query`, both persisters, `zustand` and
+   AsyncStorage leave `@oxy.so/services`' peers when the last caller moves, then
+   each app's manifest.
+
+Each step ships on its own, with the SDK's gates and a consumer check in an
+app. During each one, the old and new paths coexist only for the flows being
+moved.
+
+Where it stands: steps 2, 3 (Services writes every person it reads into
+`User`) and 6 (the session opens the stores, `OxyProvider`'s `dataPersister`)
+are on oxy `feat/services-bloom-data`, and Mention runs on the session's store
+(Mention `feat/sdk-bloom-data`). Mention's identity overlay
+(`stores/identityUpdates.ts`) stays: a feed answer hydrated before a profile
+edit carries the old picture as a real value, and nothing in a post's author
+says which copy is newer, so `combine` cannot refuse it. Retiring the overlay
+needs a freshness mark on every embedded user (its `updatedAt`).
+
+What step 4 needed from this package is built: `useRecord(source, skip)`,
+records found by a secondary key (`entity({ index })`, a source with
+`index`), `model()` and `useModel`, `useAction` and `useActionStatus` (an
+offline action waits as `paused`), the IndexedDB copy on the web,
+`createAccounts().forget` (sign-out deletes the account's copy), list changes
+as an action's layer, and the durable outbox: an action marked `durable`
+keeps its calls in the account's copy and replays them after a restart
+([Durable actions](#durable-actions-offline-writes-survive-a-restart)), which
+replaces React Query's persisted paused mutations
+(`accountQueries.mutationKeys` with `setMutationDefaults`).
+
+### Each app's move (step 5)
+
+Services 15 drops `OxyProvider`'s `queryClient` and `accountQueries` and
+React Query itself. Each app below persisted its per-account data through
+`accountQueries`, so it moves that data to bloom-data before taking Services
+15: each declared root becomes entities and lists (records by id) or a
+`model()` (one value per account), read through sources in the account store
+the SDK opens, and its writes become actions. The writes it replayed after a
+restart (the last column) become actions marked `durable`. A root that was memory-only
+becomes an entity or source with no `persist`. Every app also removes
+`queryClient={...}` from `OxyProvider`, its own `QueryClientProvider` if it
+only existed for the SDK, and the persister and AsyncStorage dependencies
+once nothing else uses them.
+
+| App | Declaration | Roots it persisted | Memory-only roots | Offline writes replayed after restart (actions marked `durable`) |
+|---|---|---|---|---|
+| Alia | `packages/app/src/shared/api/query-keys.ts` `ALIA_ACCOUNT_QUERIES` | its own: `alia-agent-profile`, `skills`; `dataVersion`. `conversations`, `conversation` and `conversation-collections` belong to `@gemies/sdk`, which moves them itself | none | email alerts (`EMAIL_ALERTS_MUTATION_KEY`) |
+| Gemies | same module as Alia (`ALIA_ACCOUNT_QUERIES`) | as Alia | none | as Alia |
+| Homiio | inline in `packages/frontend/app/_layout.tsx` | none | `savedSearches` | none |
+| Inbox | `packages/frontend/hooks/queries/queryClient.ts` `INBOX_ACCOUNT_QUERIES` (roots in `queryKeys.ts`) | `messages`, `message`, `thread`, `mailboxes`, `labels`, `settings`, `quota`, `bundles`, `filters`, `templates`, `contacts`, `reminders`, `subscriptions`, `saved-searches`, `daily-brief` | `attachment-url`, `contactSuggestions`, `inbox-ai`, `search`, `smartReplies`, `threadSummary` | star, read, archive, delete, pin (`setMutationDefaults`) |
+| Atlas | `packages/frontend/lib/queryClient.ts` `ATLAS_ACCOUNT_QUERIES` | none | `store-own-review` | review write and delete |
+| Syra | `packages/frontend/lib/queryClient.ts` `SYRA_ACCOUNT_QUERIES`; studio inline | every query (`'all'`) | `search` | none |
+| Clarity | `packages/frontend/lib/account-query-ownership.ts` | none | `notifications`, `subscription`, `subscription-poll` | none |
+| Nilo | `apps/app/lib/offline-cache.ts` `ACCOUNT_QUERIES` | every query (`'all'`); `SHELL_ROOTS` kept for `SHELL_MAX_AGE_MS`, `offlineFirst` | `MEMORY_ONLY_ROOTS`: pages' blocks, comments, databases, forms, AI, search, share links and the rest listed there | none |
+
+`@gemies/sdk` 10.0.0 (Gemies `feat/gemies-sdk-services-15`) moves its own
+conversations and collections onto bloom-data, so the Alia and Gemies apps
+only move their own roots.
+
+Mention moved first (posts and feeds; `feat/sdk-bloom-data`), and its
+identity overlay retires on `User` (`feat/sdk-user-entity`). Every other app
+on Services only adds `@oxy.so/bloom-data` and `expo-sqlite`, and moves the
+Services hooks it calls to their new return shapes (Services' 15.0.0
+changelog lists them).
+
+### Release order
+
+1. `@oxy.so/bloom-data`.
+2. `@gemies/sdk` 10.0.0.
+3. Services 15.
+4. Mention: `feat/bloom-data-posts`, then `feat/sdk-bloom-data`, then
+   `feat/sdk-user-entity`.
+5. The other apps, one at a time.
+
+## Gates
+
+`bun run build`, `bun run typescript` and `bun run test` in
+`packages/bloom-data`. CI runs them in the workspace package loop. The tests use
+Node's built-in SQLite behind the same async interface.

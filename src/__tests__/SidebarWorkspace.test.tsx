@@ -390,4 +390,53 @@ describe('Sidebar tree moves', () => {
     });
     expect(api!.getState()).toEqual({ dragging: null, hover: null });
   });
+
+  it('lifts a row by a long press on Bloom’s gesture layer: its let-go answers the long press, a tap does not', () => {
+    type Handlers = Record<string, ((event: Record<string, unknown>) => void) | undefined>;
+    const onLongPress = jest.fn();
+    const tree: SidebarTree[] = [
+      {
+        key: 'private',
+        label: 'Private',
+        items: [{ key: 'notes', label: 'Notes', draggable: true, onLongPress }],
+      },
+    ];
+    const screen = renderIn(
+      <Sidebar tree={tree} onTreeItemDrop={jest.fn()} showThemeToggle={false} />,
+    );
+    const detector = screen.UNSAFE_root.findAll(
+      (node) =>
+        (node.props.gesture as { __config?: Record<string, unknown> } | undefined)?.__config
+          ?.activateAfterLongPress !== undefined,
+    )[0];
+    const gesture = detector?.props.gesture as {
+      __handlers: Handlers;
+      __config: Record<string, unknown>;
+    };
+    expect(gesture.__config).toMatchObject({ activateAfterLongPress: 350, enabled: true });
+    const h = gesture.__handlers;
+    // A tap: the drag never takes the touch.
+    act(() => {
+      h.onBegin?.({});
+      h.onFinalize?.({});
+    });
+    expect(onLongPress).not.toHaveBeenCalled();
+    // Lifted, and let go where it was.
+    act(() => {
+      h.onBegin?.({});
+      h.onActivate?.({});
+      h.onUpdate?.({ translationY: 1, velocityY: 0, absoluteY: 101 });
+      h.onDeactivate?.({ velocityY: 0, canceled: false });
+      h.onFinalize?.({});
+    });
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+    // Lifted and cancelled: no long press.
+    act(() => {
+      h.onBegin?.({});
+      h.onActivate?.({});
+      h.onDeactivate?.({ velocityY: 0, canceled: true });
+      h.onFinalize?.({});
+    });
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+  });
 });

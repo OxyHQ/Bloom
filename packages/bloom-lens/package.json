@@ -1,0 +1,31 @@
+{
+  "name": "@oxy.so/bloom-lens",
+  "version": "1.0.0",
+  "description": "Bloom's native lens material for Android: the overlay, refraction and motion that menus, selects and prominent controls use when the app's binary has it.",
+  "license": "SEE LICENSE IN LICENSE",
+  "files": [
+    "!android/.gradle",
+    "!android/build",
+    "android",
+    "expo-module.config.json",
+    "patches",
+    "src",
+    "NOTICE"
+  ],
+  "peerDependencies": {
+    "expo": "*",
+    "react-native": "*",
+    "react": "*"
+  },
+  "main": "src/index.ts",
+  "react-native": "src/index.ts",
+  "types": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-lens"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

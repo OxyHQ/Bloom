@@ -15,7 +15,7 @@ RN + Web. Families: `src/<name>/`, published subpaths/root exports
 
 - scripts/generate-platform-exports.mjs owns `package.json#exports`, `#typesVersions` + web barrels. `prebuild` overwrites edits. TS5.9 `moduleResolution: "node"` ignores exports: NO subpath previously typechecked; typesVersions fixes it + is ignored by node16/bundler
 - Wildcards: `./icons/Ri*`, never `./icons/*` (hits `index`: built icons/remix/index.js vs Metro index.ts, not index.tsx; silent mismatch). `existsSync` cannot validate `*`; verify-package.mjs expands tarball patterns, requires IDENTICAL names across conditions
-- Forks have TWO barrels: native index.ts, web index.web.ts (`browser` condition), never `index.native.*`. Exception: three `theme/native-root-vars.*` files; native imports react-native-css/native-internal, absent on web/tsc
+- Forks have TWO barrels: native index.ts, web index.web.ts (`browser` condition), never `index.native.*`.
 - Relative imports ignore export conditions: web-only fork importers use `.web`, neutral bare (`.web` breaks native). Avatar-group hoverCard false pass: one importer correct, another bare; Storybook Vite resolved `.web.tsx`. Old reachability/browser checks missed it; web-fork-reachability.test.ts checks both. docs/avatar-group.mdx
 - Keep `react-native` conditions split into `types` + `default`. Bare strings make consumers typecheck Bloom .tsx + import react-dom/undeclared optional peers
 - Required postbuild `verify:package`: ship all packed exports; RN has no src fallback. No `prepack`/`prepare`: packs never rebuild (`--ignore-scripts`)
@@ -29,6 +29,8 @@ Web loaders: RNW Animated JS-frame renders can starve Suspense retries. Use CSS;
 
 Worklet styles write every key every run (value or `UNSET`): native drops `undefined`/missing keys, keeping the old value. Gate `animated-style-resets.test.ts`; docs/motion.mdx
 
+The worklets Babel plugin workletizes a Gesture Handler 3 hook's config object (`usePanGesture({ … })`) and throws on a spread in it, failing the app's release bundle; nothing in Bloom's own build runs the plugin. Write the config as one literal. Gate `worklets-plugin.test.ts`; docs/motion.mdx (Motion values and gestures)
+
 ## Web fork CSS
 
 - Web forks self-inject required CSS. Consumer-global CSS is insufficient: missing animation-name silently kills motion
@@ -38,7 +40,7 @@ Worklet styles write every key every run (value or `UNSET`): native drops `undef
 
 ## Consumer CSS
 
-Web: Tailwind/NativeWind `@source`-scan Bloom/Services lib/. Standalone Vite needs `@custom-variant web (@supports selector(div > div));`; else bounded desktop panels collapse to 0px while compact works. Missing CSS silently breaks RNW flex/gap/sizes despite inline colors; native unaffected
+Bloom needs none of this (docs/no-nativewind.mdx); it applies to an app's OWN `className` until the codemod moves it. Web: Tailwind/NativeWind `@source`-scan Bloom/Services lib/. Standalone Vite needs `@custom-variant web (@supports selector(div > div));`; else bounded desktop panels collapse to 0px while compact works. Missing CSS silently breaks RNW flex/gap/sizes despite inline colors; native unaffected
 
 Expo/Metro: import @oxy.so/app-preset/css/base.css atop `global.css`, first in app/_layout.tsx, with @tailwindcss/postcss. Vite: @tailwindcss/vite + stylesheet scanning both lib/s. `create-oxy-app` scaffolds it
 
@@ -123,11 +125,20 @@ Two surfaces; CenteredDialog/ResponsiveSheet removed without shims. API/migratio
 - Native tooltip cannot position inside sheets (docs/tooltip.mdx)
 - Desktop windows (macOS/Windows/native ≥`md`): `center` + non-`anchored` `SheetShell` (Select) → session-held dialog/CenteredCard; menus/popovers pass `anchored`, never centred cards. No macOS checks in families. Yoga ignores auto margins on absolute `left`+`right` views (sheets sat bottom-LEFT): centre by insets. docs/dialog.mdx
 
+## Lens menu (floating/lens, bloom-language platform/menu-host.android)
+
+- `packages/bloom-lens` IS the upstream app: engine (`android/`) and menu component (`src/menu`, verbatim) via `sync-from-upstream.sh` + `patches/bloom.patch`, `patches/menu/bloom.patch` only (names Bloom needs, `openWithItems`, `onMenuClosed`); the sync must reproduce the tree. Bloom's menus, glass and lens controls are thin adapters (`lensRows`, colours, Inter); never re-implement trigger, rows or open. A Bloom-side rebuild of the trigger looked and felt different on a Pixel 8a: the owner's verdict
+- One glass mechanism: `LensBase` (`packages/bloom-lens/src/base.tsx`, the upstream glass trigger) is every control's glass (`LensButtonHost`, the language glass host, `LensTrigger`, the language menu host). A group is ONE base: a menu from an item is the group's and morphs out of the whole group (owner: a grouped button's menu "starts from inside"); nothing in a base draws a lens (`useLensAvailable` and `useControlMaterial` read `useInLensBase`). The base holds its first menu's rows (a press is one `open()`); another menu's rows or rows built by the press swap in with `openWithItems`, re-armed when set false. NativeLensMenu.test.tsx (group), android-hosts.test.tsx (real base). Measured, Pixel 8a, 6 feed ⋯ open/close cycles, n=3, before vs after: jank 21.5% vs 20.0%, p90 40 vs 32 ms, JS ticks 2329 vs 2202, RenderThread 1084 vs 1113, PSS 762 vs 761 MB; tap to first morph frame 110 vs 178 ms by screen recording (noisy: 76-143 vs 127-185)
+- Bloom gives colours only; every other value is the upstream app's (panel opacity unset, trigger `absorb` 0.48 s). The morph needs the trigger's OWN lens as its base: the session's source lobe is that lens, so the base flows into the panel. An app-drawn base is trigger CONTENT (stays and fades while a separate lobe grows: "comes out from inside the button", owner, Pixel 8a). A trigger in a scroll draws its rest lens in place (`restBackdrop`, engine patch) against its surface's fill, in a compositing layer: the overlay draws every lens above the window (a feed ⋯ was drawn OVER the bar and FAB), and a live lens in the page cannot sample the window backdrop (the backdrop records the page: RenderNode cycle). Measured, same feed, n=3: in-place lens vs app-drawn base jank 10.2% vs 10.9%, RenderThread 2329 vs 2258 ticks, PSS 778 vs 830 MB (no cost)
+- Feed cost, Pixel 8a, Mention home feed, 20 swipes, n=3 interleaved (medians, mount-on-press vs view-with-trigger + app-drawn base): jank 13.5% vs 11.7%, JS ticks 3222 vs 3313, RenderThread 2288 vs 2417, PSS 698 vs 702 MB: within run-to-run noise (feed content varies more)
+- A video under the lens is a TextureView (`video-view` default): a SurfaceView is outside the hierarchy the lens samples, and the bar over a feed video lost its lens there (Pixel 8a). Same feed with TextureView: jank 10.1% vs 24.2%, RenderThread 2114 vs 2689 (n=2 vs 3; content variance dominates, no cost seen). VideoViewSurface.test.tsx
+- A glass group (the language's `GlassGroup`, SwiftUI's `GlassEffectContainer`) is one base drawn as its glasses, each its own shape: `LensBase members blend` (engine patch: `motion/GlassGroup.kt`, `field/GlassShapes.kt`, `field/RoundedUnion.kt`). A member is the views in the base whose `nativeID` is its key (several views with one key are one shape around them all: a union); the engine finds and measures them before each frame (transforms included, in the base's pixels) and maps them into where the base is drawn now (its press jelly, a menu's source lobe), as the base's content is scaled. The field and shader hold up to 8 shapes: the trigger's first shape stands in the trigger's slot (the source of a morph, else the glass) and the other 7 fold into it by the menu's own smooth union with `k = blend` px, scaled by how much two surfaces face each other (shapes closer than `blend` swell toward each other, closer than `blend / 2` bridge); the CPU Gaussian field does the same for a morph. A base with no members binds a member count of 0 and computes exactly what it did, so no existing glass changes. Motion: a view's own motion moves its glass with it (followed, no spring, so a matched geometry keeps glass and content together); a key that moves to another view takes the glass there on a spring; a member that arrives grows out of the nearest glass and one that leaves goes back into it (`materialize`: out of and into its own centre), spring 0.75 / 0.32 s; a group's first members appear where they are. A menu from a group grows out of the whole base, its glasses squeezed into the lobe with its content. A group with no shape yet draws no glass (never the base's rect). Not supported: a group drawn in place (`restBackdrop`) draws its rect. Where two shapes meet the union's gradient is the mean of normals that face each other, so it shrank toward a neck's middle and the refraction pinched into a cross (Pixel 8a): a group's normal is of unit length, as the morph's blurred field already was; a faint line still shows at a neck's centre, where the normal turns fast. Measured, Pixel 8a, Mention release, 5 interleaved rounds, medians, owner build vs this engine: janky Home 9.5% vs 9.4%, Notifications 17.5% vs 16.1%, profile scroll 1.5% vs 1.8%, a post's ⋯ open/close x10 1.9% vs 2.0%, the profile group's menu 1.5% vs 1.5%; RenderThread and process CPU equal or lower; header buttons, the profile's pill row and the bar with FAB bit-identical (PSNR inf)
+
 ## Theme/tokens
 
 - `BloomThemeHead` is explicit prepaint head exception: shared generated token CSS + preference script, authorized by host nonce/hashes. Runtime styles use adopted sheets; SSR recipes use `ServerStyleSheet` under `ssrStyles`. `useThemePaint` is final style output; `useTheme` stays concrete for color arithmetic/native
 
-BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyColorPresetVars (never raw HSL triples). getResolvedTokens feeds BOTH platforms. Presets: APP_COLOR_PRESETS keys. BloomColorScope emits canonical --x + Tailwind --color-x. Contract: docs/design-tokens.mdx
+BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyColorPresetVars (never raw HSL triples). getResolvedTokens feeds BOTH platforms. Presets: APP_COLOR_PRESETS keys. BloomColorScope emits canonical --x (no --color-x aliases). Contract: docs/design-tokens.mdx
 
 - buildSeedScopeVars withScopeAliases/ROLE vocabulary hazard is import-graph gated (same docs)
 - ColorEngine is NAMESPACE via theme/color-engine/index.ts; ports internal. Servers: SAME barrel as `@oxy.so/bloom/color-engine`, no React/RN, no copy (test-color-engine-subpath.mjs). useTheme/BloomThemeProvider/tokens stay flat for fleet consumers; raw argbFromHex/quantizeImage has no external UI consumers
@@ -141,6 +152,7 @@ BloomThemeProvider sets preset/mode, dark class + full-color CSS vars via applyC
 ## Scroll-edge paint
 
 - Header/footer smooth scrims must remain opaque across measured chrome (including subtitle/accessories/safe area), then fade only in the external tail. A full-box curve let scrolled record text overlap the detail subtitle on Android. EdgeScrim defaults remain full-box for artwork/overflow fades; explicit linear/onImage headers retain that contract. Protect both native gradient and SVG paths, fractional stop precision, dynamic heights: EdgeScrim.test.tsx, PageHeader.test.tsx, PageFooter.test.tsx; scripts/verify-edge-scrim-chrome.mjs.
+- Overflowing chrome needs a non-clipping native parent on Android. Fabric hoists children of a view that is not a stacking context into the nearest one; under react-native-screens that is a Screen that clips each child to its own bounds, so the header slot cut the scrim tail off at alpha ~0.35 (Mention Videos, Pixel 8a; earlier misread as react-native-svg sizing). `Screen`'s root is `collapsable={false}`; the far stop is alpha 0 for every falloff: Screen.test.tsx, EdgeScrim.test.tsx.
 
 ## Material (surface/)
 
@@ -180,8 +192,10 @@ Font hazards: base64 `.woff2` inlining, apply-font-faces.ts empty stub, `FontLoa
 - Platform guards cannot prune optional peers. Inject native adapters into shared factories; docs/screen.mdx
 - Toast engine is vendored: no `sonner`/`sonner-native`/`nanoid`. Web bundles DO import reanimated + gesture-handler
 
-## Style + `className`
+## Style
 
+- ONE mechanism (docs/no-nativewind.mdx): StyleSheet styles from tokens; colours from `useColorTokens()`/`createTokenStyles()` (scope value on native, `var(--x)` on web; adaptive themes differ from `useTheme().colors`, so a colour a class painted reads tokens). No `className`, `styled()` or react-native-css. RNW drops a component's `className`: a Bloom-own class on an RN host silently lost its adopted CSS; use a `dataSet` hook (`webDataSet`). Parity: scripts/no-nativewind (native dump vs NativeWind baseline, Chrome web check)
+- Bullets below that name `className` record hazards of the removed NativeWind path, kept for apps that still style with it
 - Override padding/margin with matching LONGHANDS. RNW ranks paddingHorizontal/marginHorizontal CSS shorthands above left/right despite array order; native differs. SettingsListItem32px leftInset painted8px since release; prop-array tests miss cascade
 - Typography: styled(RNText). With caller className omit inline font-size/line-height/weight/color defaults: react-native-css merges utilities first; inline defeats text/font/leading. Font family may remain
 - className belongs on PARENT-laid-out node. Extra Animated.View press wrapper silently disables native layout classes despite working visual classes/web. One module-scope Animated.createAnimatedComponent shares transform/visuals/style/className (button/Button.tsx)

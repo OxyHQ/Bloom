@@ -3,7 +3,7 @@
  * cannot reach: react-native-web fires `onLayout` from a ResizeObserver jsdom
  * does not have. Here the layout events are fired by hand.
  */
-import React from 'react';
+import type React from 'react';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

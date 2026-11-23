@@ -94,7 +94,7 @@ describe('Button.web', () => {
           href="/ignored"
           autoFocus
           tabIndex={0}
-          className="decoration"
+          dataSet={{ bloomDecoration: '' }}
           size={48}
           iconOnly
           testID="decoration"
@@ -106,7 +106,8 @@ describe('Button.web', () => {
     const visual = container.querySelector('[data-testid="decoration"]') as HTMLElement;
     expect(visual.tagName).toBe('SPAN');
     expect(ref.current).toBe(visual);
-    expect(visual).toHaveClass('bloom-btn', 'decoration');
+    expect(visual).toHaveClass('bloom-btn');
+    expect(visual).toHaveAttribute('data-bloom-decoration', '');
     expect(visual).toHaveAttribute('aria-hidden', 'true');
     expect(visual).not.toHaveAttribute('role');
     expect(visual).not.toHaveAttribute('tabindex');
@@ -309,28 +310,27 @@ describe('Button.web', () => {
     expect(getByText(c, 'Submit')).toBeTruthy();
   });
 
-  it('passes className through so consumer layout classes win', () => {
-    const c = mount(<Button className="w-full custom">Wide</Button>);
+  it('puts its dataSet on the button element as data-* hooks', () => {
+    const c = mount(<Button dataSet={{ bloomCustomAction: '' }}>Wide</Button>);
     const btn = getByRole(c, 'button');
     expect(btn).toHaveClass('bloom-btn');
-    expect(btn).toHaveClass('w-full');
-    expect(btn).toHaveClass('custom');
+    expect(btn).toHaveAttribute('data-bloom-custom-action', '');
   });
 
   // Parity with the native fork's "the button IS the node its parent lays out"
   // suite in `Button.test.tsx`. Both platforms render ONE node, so a caller's
   // layout class reaches the box the parent actually lays out; a wrapper element
   // added here would scope it away exactly the way native's `Animated.View` did.
-  it('renders the classed button as the outermost node — no wrapper element', () => {
+  it('renders the styled button as the outermost node — no wrapper element', () => {
     const c = mount(
       <div data-testid="host">
-        <Button className="flex-1">Wide</Button>
+        <Button style={{ flex: 1 }}>Wide</Button>
       </div>,
     );
     const host = c.querySelector('[data-testid="host"]');
     expect(host?.children).toHaveLength(1);
     expect(host?.firstElementChild?.tagName).toBe('BUTTON');
-    expect(host?.firstElementChild).toHaveClass('flex-1');
+    expect((host?.firstElementChild as HTMLElement).style.flexGrow).toBe('1');
   });
 
   it('applies aria-label from accessibilityLabel', () => {

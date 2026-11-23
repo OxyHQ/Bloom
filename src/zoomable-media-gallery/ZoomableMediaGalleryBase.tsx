@@ -746,7 +746,12 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         ],
       );
 
-      React.useImperativeHandle(ref, () => ({ open }), [open]);
+      // Closing from outside is the same dismissal a press on the backdrop starts.
+      const close = useCallback(() => {
+        if (openRef.current) handleDismiss();
+      }, [handleDismiss]);
+
+      React.useImperativeHandle(ref, () => ({ open, close }), [open, close]);
 
       const panGesture = useMemo(
         () =>

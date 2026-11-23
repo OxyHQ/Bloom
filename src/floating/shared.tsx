@@ -15,12 +15,9 @@ import { KEYBOARD_ACTIVATION, type PopupSubmenu, usePopupNavigationRow } from '.
  *
  * Every menu row used to BE an `Item`, for the good reason that the disabled
  * treatment, the destructive colour and the ARIA state then lived in one place.
- * That is incompatible with expressing a row's shape as classes: `Item` writes
- * its padding, gap, radius, minimum height and background into an inline
- * `style`, and on web an inline style outranks a class whatever the array order
- * — so every geometry class a menu row (or a CALLER) passed would be silently
- * discarded. Conditioning `Item`'s own defaults on the presence of a `className`
- * would push the same trap onto its several dozen other callers.
+ * A menu row's geometry is its own (the density's inset, height and gap, the
+ * checkbox gutter), and bending `Item`'s defaults to it would push the menu's
+ * shape onto its several dozen other callers.
  *
  * So the row is its own one-node pressable here, and the three things `Item` was
  * carrying are each two lines below. `Item` is untouched and still serves every
@@ -29,42 +26,36 @@ import { KEYBOARD_ACTIVATION, type PopupSubmenu, usePopupNavigationRow } from '.
  * ── ONE NODE, NOT TWO ────────────────────────────────────────────────────────
  *
  * `Item` renders a `Pressable` wrapping a `View`: the pressable holds the
- * interaction and the view holds the geometry. A class landing on the pressable
+ * interaction and the view holds the geometry. A style landing on the pressable
  * would then style a box that hugs nothing. `button/Button.tsx` collapsed the
  * same two nodes for the same reason — layout and visuals are one box in the
- * DOM, so a layout class and a visual class cannot land in different places.
+ * DOM, so a layout style and a visual style cannot land in different places.
  */
 import type React from 'react';
 import { type ComponentRef, createContext, useContext, useEffect, useRef } from 'react';
 import {
   AccessibilityInfo,
   Platform,
+  StyleSheet,
+  Text,
+  View,
   type GestureResponderEvent,
   type StyleProp,
-  type View,
   type ViewStyle,
 } from 'react-native';
 
-import {
-  StyledPressable,
-  StyledText,
-  StyledView,
-  type WebAriaProps,
-} from '../styles/styled-primitives';
+import { StyledPressable, type WebAriaProps } from '../styles/styled-primitives';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { FOCUS_SETTLE_MS } from '../hooks/use-accessibility-focus';
 import {
-  ROW_CHEVRON_CLASS,
-  ROW_CLASS,
-  ROW_DESKTOP_ENABLED_CLASS,
-  ROW_DISABLED_CLASS,
-  ROW_DISABLED_DIM_CLASS,
-  ROW_ENABLED_CLASS,
-  ROW_GUTTER_CLASS,
-  ROW_GUTTER_END_CLASS,
-  ROW_INSET_CLASS,
-  ROW_LEADING_CLASS,
-  ROW_TEXT_CLASS,
+  ROW_DISABLED_DIM_STYLE,
+  ROW_GUTTER_END_STYLE,
+  ROW_GUTTER_STYLE,
+  ROW_INSET_STYLE,
+  ROW_LEADING_STYLE,
+  ROW_STYLE,
+  ROW_TEXT_STYLE,
+  ROW_TRAILING_STYLE,
 } from './constants';
 import { useMenuPalette } from './menu-palette';
 import { MENU_FONT_FAMILY } from './menu-type';
@@ -106,22 +97,6 @@ export function MenuRowGlyph({ Icon, fill }: { Icon: BloomIconComponent; fill: s
   const ink = useMenuRowInk();
   const density = useMenuDensity();
   return <Icon width={density.glyphSize} height={density.glyphSize} fill={ink ?? fill} />;
-}
-
-/**
- * Join class strings, dropping the empty ones.
- *
- * Deliberately a CONCATENATION and never a substitution: a caller's `className`
- * is appended to the row's own, so a single layout utility cannot strip the
- * chrome (Bloom AGENTS.md, "Never let a component's own default `className`
- * compete with the caller's"). What the caller then gets is Tailwind's ordinary
- * cascade — two utilities for one property are resolved by the order Tailwind
- * emits them in, not by the order of the attribute — which is the same contract
- * every shadcn consumer already works under, and the `style` prop is still there
- * as the unambiguous override.
- */
-export function cx(...parts: (string | false | null | undefined)[]): string {
-  return parts.filter(Boolean).join(' ');
 }
 
 /**
@@ -200,7 +175,6 @@ export interface MenuRowShellProps {
   /** The submenu this row opens, for a platform popup's keyboard (`popup-navigation.tsx`). */
   submenu?: PopupSubmenu;
   accessibilityLabel?: string;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children?: React.ReactNode;
@@ -250,7 +224,6 @@ export function MenuRowShell({
   onPress,
   submenu,
   accessibilityLabel,
-  className,
   style,
   testID,
   children,
@@ -295,20 +268,6 @@ export function MenuRowShell({
 
   // A desktop platform highlights with the accent, and everything on the row takes its ink.
   const active = highlighted ? palette.rowActive : null;
-  const rowClass = cx(
-    ROW_CLASS,
-    density.rowClass,
-    disabled ? ROW_DISABLED_CLASS : density.desktop ? ROW_DESKTOP_ENABLED_CLASS : ROW_ENABLED_CLASS,
-    disabled && title == null && ROW_DISABLED_DIM_CLASS,
-    gutter === 'leading'
-      ? ROW_GUTTER_CLASS
-      : gutter === 'trailing'
-        ? ROW_GUTTER_END_CLASS
-        : insetToColumn
-          ? ROW_INSET_CLASS
-          : false,
-    className,
-  );
   const labelColor = disabled
     ? palette.textDisabled
     : active
@@ -316,18 +275,16 @@ export function MenuRowShell({
       : destructive
         ? palette.destructive
         : palette.text;
-  // A desktop's row geometry inline as well as in `rowClass`, as the gap below
-  // is, while the caller passes no `className` (which keeps the final say).
-  const desktopGeometry =
-    density.desktop && className == null
-      ? {
-          minHeight: density.height,
-          paddingTop: (density.height - (density.rowType.lineHeight ?? 16)) / 2,
-          paddingBottom: (density.height - (density.rowType.lineHeight ?? 16)) / 2,
-          paddingLeft: 8,
-          paddingRight: 8,
-        }
-      : null;
+  // A desktop's row geometry, over the density's.
+  const desktopGeometry = density.desktop
+    ? {
+        minHeight: density.height,
+        paddingTop: (density.height - (density.rowType.lineHeight ?? 16)) / 2,
+        paddingBottom: (density.height - (density.rowType.lineHeight ?? 16)) / 2,
+        paddingLeft: 8,
+        paddingRight: 8,
+      }
+    : null;
 
   return (
     <StyledPressable
@@ -389,25 +346,33 @@ export function MenuRowShell({
             }
       }
       onBlur={onBlur}
-      className={rowClass}
       style={[
+        ROW_STYLE,
+        density.rowStyle,
+        disabled ? ROW_CURSOR.disabled : density.desktop ? ROW_CURSOR.desktop : ROW_CURSOR.enabled,
+        disabled && title == null ? ROW_DISABLED_DIM_STYLE : null,
+        gutter === 'leading'
+          ? ROW_GUTTER_STYLE
+          : gutter === 'trailing'
+            ? ROW_GUTTER_END_STYLE
+            : insetToColumn
+              ? ROW_INSET_STYLE
+              : null,
         ROW_TRANSITION,
         {
           backgroundColor: highlighted ? (active?.fill ?? palette.rowHighlight) : 'transparent',
           ...desktopGeometry,
           ...(density.rowRadius != null ? { borderRadius: density.rowRadius } : null),
-          // The arrow, not the hand (`ROW_DESKTOP_ENABLED_CLASS`): native spells it `auto`.
+          // The arrow, not the hand (`ROW_CURSOR.desktop`): native spells it `auto`.
           ...(density.desktop && !disabled && Platform.OS !== 'web'
             ? { cursor: 'auto' as const }
             : null),
           ...(gutter === 'leading' || insetToColumn ? { paddingLeft: density.gutter } : null),
           ...(gutter === 'trailing' ? { paddingRight: density.gutter } : null),
           ...(density.touch ? { minHeight: 44 } : null),
-          // The gap inline as well as in `rowClass`: on native the class never
-          // reached the row, and every menu drew its icons against their labels
-          // ("QSearch", Allo on Android). A caller `className` keeps the final
-          // say over the row's geometry, as it does for Select's field.
-          ...(className == null ? { columnGap: density.itemGap } : null),
+          // The gap between the row's icon and its label, on every platform
+          // ("QSearch": a native menu once drew its icons against their labels).
+          columnGap: density.itemGap,
         },
         style,
       ]}
@@ -415,7 +380,7 @@ export function MenuRowShell({
     >
       <MenuRowInkContext.Provider value={active?.text ?? null}>
         {indicator !== undefined ? (
-          <StyledView
+          <View
             pointerEvents="none"
             style={{
               position: 'absolute',
@@ -430,38 +395,44 @@ export function MenuRowShell({
             }}
           >
             {indicator}
-          </StyledView>
+          </View>
         ) : null}
         {leading != null || leadingSpacer ? (
-          <StyledView
-            className={ROW_LEADING_CLASS}
-            style={{ width: density.leadingSize, alignItems: 'center', justifyContent: 'center' }}
+          <View
+            style={[
+              ROW_LEADING_STYLE,
+              { width: density.leadingSize, alignItems: 'center', justifyContent: 'center' },
+            ]}
             {...(leadingSpacer ? { 'aria-hidden': true } : null)}
           >
             {leading}
-          </StyledView>
+          </View>
         ) : null}
         {title != null ? (
-          <StyledText
+          <Text
             numberOfLines={1}
-            // A desktop's menu is as wide as its widest row, so its label counts at
-            // its own width: it grows and shrinks without `flex-1`, whose `flex: 1`
-            // makes Yoga's basis 0 whatever `flexBasis` says (a panel sized by its
-            // content then cut every label at the width floor, OxyOS's dock menu).
-            className={density.desktop ? DESKTOP_ROW_TEXT_CLASS : ROW_TEXT_CLASS}
             // `text-body-medium`, in Inter (a desktop's body, `DESKTOP_TEXT_STYLES.body`).
+            // A desktop's menu is as wide as its widest row, so its label counts at
+            // its own width: it grows and shrinks without a zero basis, which made
+            // a panel sized by its content cut every label at the width floor
+            // (OxyOS's dock menu).
             style={
               density.desktop
                 ? [
+                    DESKTOP_ROW_TEXT_STYLE,
                     { ...density.rowType, ...MENU_FONT_FAMILY },
                     { color: labelColor },
                     DESKTOP_LABEL_FLEX,
                   ]
-                : [{ ...density.rowType, ...MENU_FONT_FAMILY }, { color: labelColor }]
+                : [
+                    ROW_TEXT_STYLE,
+                    { ...density.rowType, ...MENU_FONT_FAMILY },
+                    { color: labelColor },
+                  ]
             }
           >
             {title}
-          </StyledText>
+          </Text>
         ) : (
           children
         )}
@@ -473,24 +444,38 @@ export function MenuRowShell({
   );
 }
 
-/** `ROW_TEXT_CLASS` less `flex-1`: a desktop's label grows and shrinks from its own width. */
-const DESKTOP_ROW_TEXT_CLASS = 'min-w-0';
+/** `ROW_TEXT_STYLE` less its grow: a desktop's label grows and shrinks from its own width. */
+const DESKTOP_ROW_TEXT_STYLE = { minWidth: 0 } as const;
 const DESKTOP_LABEL_FLEX = { flexGrow: 1, flexShrink: 1 } as const;
 
 /**
- * The sub-trigger's chevron slot — `size-4 shrink-0 ms-auto`. A component rather
- * than a class string because both sub-menu forks render it and only the glyph
- * differs.
+ * The row's pointer, web only: the hand over an enabled row, a desktop
+ * platform's arrow (its pointer stays the arrow over a menu, as over a button;
+ * the hand is a link's alone), and `not-allowed` over a disabled one.
+ */
+export const ROW_CURSOR = StyleSheet.create(
+  Platform.OS === 'web'
+    ? {
+        enabled: { cursor: 'pointer' },
+        desktop: { cursor: 'default' as 'auto' },
+        disabled: { cursor: 'not-allowed' as 'auto' },
+      }
+    : { enabled: {}, desktop: {}, disabled: {} },
+);
+
+/**
+ * The sub-trigger's chevron slot, pushed to the trailing edge. A component
+ * because both sub-menu forks render it and only the glyph differs.
  */
 export function MenuRowChevron({ children }: { children: React.ReactNode }) {
-  return <StyledView className={ROW_CHEVRON_CLASS}>{children}</StyledView>;
+  return <View style={ROW_TRAILING_STYLE}>{children}</View>;
 }
 
 /**
- * `justify-between` — what a sub-trigger adds to a row, so its chevron is pushed
- * to the far edge even when the label is short. The target spells the same
- * intent twice (`justify-between` on the row AND `ms-auto` on the chevron); both
- * are kept, because the first is what native's Yoga acts on and the second is
- * what survives a caller replacing the row's justification.
+ * What a sub-trigger adds to a row, so its chevron is pushed to the far edge even
+ * when the label is short. The intent is spelled twice (here AND the chevron's
+ * own `marginInlineStart: 'auto'`); both are kept, because the first is what
+ * native's Yoga acts on and the second is what survives a caller replacing the
+ * row's justification.
  */
-export const SUB_TRIGGER_CLASS = 'justify-between';
+export const SUB_TRIGGER_STYLE = { justifyContent: 'space-between' } as const;

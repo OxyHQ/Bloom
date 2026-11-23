@@ -1,4 +1,5 @@
-import React, { memo, useEffect } from 'react';
+import type React from 'react';
+import { memo, useEffect } from 'react';
 import Animated, {
   Easing,
   interpolate,
@@ -77,7 +78,6 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
   dotCount = DEFAULT_DOT_COUNT,
   dotSize = DEFAULT_DOT_SIZE,
   accessibilityLabel,
-  className,
   style,
   reducedMotion,
 }) => {
@@ -127,7 +127,6 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
       right={right}
       dots={dots}
       accessibilityLabel={accessibilityLabel}
-      className={className}
       style={style}
     />
   );

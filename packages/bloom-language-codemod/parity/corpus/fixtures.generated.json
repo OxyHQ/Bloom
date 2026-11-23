@@ -1,0 +1,2726 @@
+[
+ {
+  "name": "components/Components.tsx:59",
+  "before": "<SettingsSection\n      label={'⟨0⟩'}\n      description={'⟨13⟩'}\n    >\n      <GroupedSection title={'⟨11⟩'} footer={'⟨12⟩'} variant=\"filled\">\n        <GroupedSectionItem\n          title={'⟨1⟩'}\n          description={'⟨2⟩'}\n          rightElement={<Switch checked={true} onCheckedChange={() => {}} />}\n        />\n        <GroupedSectionItem title=\"Language\" value=\"English\" onPress={() => {}} />\n        <GroupedSectionItem\n          title={'⟨6⟩'}\n          description={'⟨7⟩'}\n          descriptionLines={0}\n          wrapControl\n          rightElement={<SpinnerIcon size={20} />}\n        />\n        <GroupedSectionItem\n          title={'⟨8⟩'}\n          destructive\n          showChevron={false}\n          onPress={() => {}}\n        />\n        <GroupedSectionItem title={'⟨10⟩'} titleNumberOfLines={0} disabled />\n      </GroupedSection>\n    </SettingsSection>",
+  "after": "toElement(LSettingsSection('⟨0⟩', LGroupedSection(LGroupedSectionItem('⟨1⟩').description('⟨2⟩').trailing(Toggle([true, () => {}])), LGroupedSectionItem('Language').value('English').onPress(() => {}), LGroupedSectionItem('⟨6⟩').description('⟨7⟩').descriptionLines(0).wrapControl().trailing(LSpinnerIcon().size('md')), LGroupedSectionItem('⟨8⟩').destructive().chevron(false).onPress(() => {}), LGroupedSectionItem('⟨10⟩').lines(0).disabled()).title('⟨11⟩').caption('⟨12⟩').style('filled')).description('⟨13⟩'))",
+  "bindings": {
+   "SettingsSection": {
+    "module": "@oxy.so/bloom/settings-modal",
+    "imported": "SettingsSection"
+   },
+   "GroupedSection": {
+    "module": "@oxy.so/bloom/grouped-section",
+    "imported": "GroupedSection"
+   },
+   "GroupedSectionItem": {
+    "module": "@oxy.so/bloom/grouped-section",
+    "imported": "GroupedSectionItem"
+   },
+   "Switch": {
+    "module": "@oxy.so/bloom/switch",
+    "imported": "Switch"
+   },
+   "SpinnerIcon": {
+    "module": "@oxy.so/bloom/loading",
+    "imported": "SpinnerIcon"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:91",
+  "before": "<SettingsSection>\n      <Card appearance=\"outline\" radius=\"radius-16\" border=\"thin\" elevation=\"none\">\n        <SettingsValueField icon={RiSmartphoneLine}>Pixel 9</SettingsValueField>\n      </Card>\n    </SettingsSection>",
+  "after": "toElement(LSettingsSection(undefined, LCard(SettingsValue('Pixel 9').icon(RiSmartphoneLine)).style('outline').radius('lg').outline('thin').elevation('none')))",
+  "bindings": {
+   "SettingsSection": {
+    "module": "@oxy.so/bloom/settings-modal",
+    "imported": "SettingsSection"
+   },
+   "Card": {
+    "module": "@oxy.so/bloom/card",
+    "imported": "Card"
+   },
+   "SettingsValueField": {
+    "module": "@oxy.so/bloom/settings-modal",
+    "imported": "SettingsValueField"
+   },
+   "RiSmartphoneLine": {
+    "module": "@oxy.so/bloom/icons/RiSmartphoneLine",
+    "imported": "RiSmartphoneLine"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:109",
+  "before": "<ScreenScrollView keyboardShouldPersistTaps=\"handled\">\n      {/* The profile's own fields */}\n      <View className=\"gap-4 p-4\">\n        <TextFieldInput\n          label={'⟨2⟩'}\n          value={'⟨0⟩'}\n          onChangeText={() => {}}\n          placeholder={'⟨3⟩'}\n          maxLength={50}\n          autoCapitalize=\"words\"\n          autoCorrect={false}\n          returnKeyType=\"done\"\n          onSubmitEditing={() => {}}\n        />\n      </View>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(/* The profile's own fields */ VStack(LTextField(['⟨0⟩', () => {}], '⟨2⟩').placeholder('⟨3⟩').maxLength(50).autocapitalize('words').autocorrect(false).submitLabel('done').onSubmit(() => {})).padding('all', 'lg').spacing('lg')).keyboardTaps('handled'))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "TextFieldInput": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextFieldInput"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView"
+  ],
+  "classes": [
+   "gap-4",
+   "p-4"
+  ],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:131",
+  "before": "<ScreenScrollView contentContainerClassName=\"gap-4 px-4 pb-8\">\n      <Muted>{'⟨0⟩'}</Muted>\n      <Button onPress={() => {}}>{'⟨1⟩'}</Button>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LButton(LText('⟨1⟩')).onPress(() => {})).contentView((v) => v.padding('horizontal', 'lg').padding('bottom', '3xl').spacing('lg')))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton"
+  ],
+  "classes": [
+   "gap-4",
+   "px-4",
+   "pb-8"
+  ],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:140",
+  "before": "<ScreenScrollView contentContainerClassName=\"flex-1 items-center justify-center gap-3 px-8\">\n      <Muted>{'⟨0⟩'}</Muted>\n      <Muted>{'⟨1⟩'}</Muted>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LText('⟨1⟩').textStyle('muted')).contentView((v) => v.padding('horizontal', '3xl').flex('1').align('center').justify('center').spacing('md')))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton"
+  ],
+  "classes": [
+   "flex-1",
+   "items-center",
+   "justify-center",
+   "gap-3",
+   "px-8"
+  ],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:149",
+  "before": "<ScreenScrollView\n      contentContainerClassName=\"p-4 gap-4 max-w-2xl w-full self-center\"\n      contentContainerStyle={{ paddingBottom: 40 }}\n    >\n      <Muted>{'⟨0⟩'}</Muted>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(LText('⟨0⟩').textStyle('muted')).contentView((v) => v.padding('all', 'lg').frame({ maxWidth: '672', width: 'full' }).spacing('lg').alignSelf('center')).contentMargins('bottom', '4xl'))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton"
+  ],
+  "classes": [
+   "p-4",
+   "gap-4",
+   "max-w-2xl",
+   "w-full",
+   "self-center"
+  ],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:160",
+  "before": "<ScreenScrollView contentContainerClassName=\"flex-row gap-2 px-1 py-1\">\n      <Muted>{'⟨0⟩'}</Muted>\n      <Muted>{'⟨1⟩'}</Muted>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(LText('⟨0⟩').textStyle('muted'), LText('⟨1⟩').textStyle('muted')).contentView((v) => v.axis('horizontal').padding('horizontal', 'xs').padding('vertical', 'xs').spacing('sm')))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton"
+  ],
+  "classes": [
+   "flex-row",
+   "gap-2",
+   "px-1",
+   "py-1"
+  ],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:169",
+  "before": "<ScreenScrollView contentContainerClassName=\"grow pb-6\">\n      <Muted>{'⟨0⟩'}</Muted>\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(LText('⟨0⟩').textStyle('muted')).contentView((v) => v.padding('bottom', '2xl').flex('grow')))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton"
+  ],
+  "classes": [
+   "grow",
+   "pb-6"
+  ],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:177",
+  "before": "<ChatEmptyState\n      title={'⟨0⟩'}\n      description={'⟨1⟩'}\n      action={<Button onPress={() => {}}>{'⟨2⟩'}</Button>}\n    />",
+  "after": "toElement(LChatEmptyState({ title: '⟨0⟩', description: '⟨1⟩', action: LButton(LText('⟨2⟩')).onPress(() => {}) }))",
+  "bindings": {
+   "ChatEmptyState": {
+    "module": "@oxy.so/bloom/chat-screen",
+    "imported": "ChatEmptyState"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:199",
+  "before": "<ScreenScrollView onEndReached={() => {}} onEndReachedThreshold={0.5}>\n      <Search\n        label={'⟨2⟩'}\n        value={'⟨0⟩'}\n        onChangeText={() => {}}\n        autoCorrect={false}\n      />\n      <Muted numberOfLines={2}>{'⟨3⟩'}</Muted>\n      <Divider spacing={12} />\n      {<Hole n=\"4\" />}\n      <Loading size=\"sm\" variant=\"inline\" />\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(LSearch(['⟨0⟩', () => {}]).label('⟨2⟩').autocorrect(false), LText('⟨3⟩').textStyle('muted').lines(2), LDivider().spacing('md'), Embed(<Hole n=\"4\" />), LLoading().size('sm').style('inline')).onEndReached(() => {}, 0.5))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Search": {
+    "module": "@oxy.so/bloom/search",
+    "imported": "Search"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   },
+   "Divider": {
+    "module": "@oxy.so/bloom/divider",
+    "imported": "Divider"
+   },
+   "Loading": {
+    "module": "@oxy.so/bloom/loading",
+    "imported": "Loading"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading"
+  ],
+  "classes": [],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:209",
+  "before": "<Item\n          \n          title={'⟨0⟩'}\n          subtitle={'⟨1⟩'}\n          leading={<Avatar source={'⟨2⟩'} variant={'⟨3⟩'} size={36} />}\n          trailing={<Badge content={'⟨4⟩'} variant=\"subtle\" size=\"sm\" />}\n          onPress={() => {}}\n        />",
+  "after": "toElement(Row('⟨0⟩').subtitle('⟨1⟩').leadingView(LAvatar('⟨2⟩', { variant: '⟨3⟩' }).size('lg')).trailing(LBadge('⟨4⟩').style('subtle').size('sm')).onPress(() => {}))",
+  "bindings": {
+   "Item": {
+    "module": "@oxy.so/bloom/item",
+    "imported": "Item"
+   },
+   "Avatar": {
+    "module": "@oxy.so/bloom/avatar",
+    "imported": "Avatar"
+   },
+   "Badge": {
+    "module": "@oxy.so/bloom/badge",
+    "imported": "Badge"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:235",
+  "before": "<ResponsiveGrid maxColumns={2} gap={16} testID=\"about\">\n      <Field label={'⟨0⟩'} description={'⟨4⟩'}>\n        <Checkbox checked={true} onCheckedChange={() => {}} label={'⟨3⟩'} />\n      </Field>\n      <Textarea\n        value={'⟨5⟩'}\n        onChangeText={() => {}}\n        placeholder={'⟨7⟩'}\n        rows={4}\n        autoResize\n        maxRows={8}\n        showCount\n        maxLength={500}\n      />\n      <IconCircle icon={RiStarLine} size=\"lg\" />\n    </ResponsiveGrid>",
+  "after": "toElement(Grid(LField('⟨0⟩', LCheckbox([true, () => {}], '⟨3⟩')).description('⟨4⟩'), TextEditor(['⟨5⟩', () => {}]).placeholder('⟨7⟩').rows(4).autoResize(8).showCount().maxLength(500), LIconCircle(RiStarLine).size('lg')).columns(2).spacing('lg').testID('about'))",
+  "bindings": {
+   "ResponsiveGrid": {
+    "module": "@oxy.so/bloom/grid",
+    "imported": "ResponsiveGrid"
+   },
+   "Field": {
+    "module": "@oxy.so/bloom/field",
+    "imported": "Field"
+   },
+   "Checkbox": {
+    "module": "@oxy.so/bloom/checkbox",
+    "imported": "Checkbox"
+   },
+   "Textarea": {
+    "module": "@oxy.so/bloom/textarea",
+    "imported": "Textarea"
+   },
+   "IconCircle": {
+    "module": "@oxy.so/bloom/icon-circle",
+    "imported": "IconCircle"
+   },
+   "RiStarLine": {
+    "module": "@oxy.so/bloom/icons/RiStarLine",
+    "imported": "RiStarLine"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:270",
+  "before": "<View className=\"flex-row items-center gap-2\">\n      <Chip size=\"xl\" appearance=\"subtle\" selected={true} onPress={() => {}}>\n        {'⟨0⟩'}\n      </Chip>\n      <Chip leadingIcon={RiHeart3Line} trailingIcon={RiCloseLine} disabled>\n        Liked\n      </Chip>\n      <EngagementAction\n        icon={RiHeart3Line}\n        activeIcon={RiHeart3Fill}\n        accessibilityLabel={'⟨3⟩'}\n        onPress={() => {}}\n        active={true}\n        count={2}\n        tone=\"error\"\n        popOnActivate\n      />\n    </View>",
+  "after": "toElement(HStack(LChip(LText('⟨0⟩')).size('xl').style('subtle').selected(true).onPress(() => {}), LChip(Icon(RiHeart3Line), LText('Liked'), Icon(RiCloseLine)).disabled(), Action(RiHeart3Line, '⟨3⟩', { activeIcon: RiHeart3Fill, pop: true }).onPress(() => {}).active(true).count(2).tint('error')).align('center').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Chip": {
+    "module": "@oxy.so/bloom/chip",
+    "imported": "Chip"
+   },
+   "EngagementAction": {
+    "module": "@oxy.so/bloom/engagement-bar",
+    "imported": "EngagementAction"
+   },
+   "RiHeart3Line": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Line",
+    "imported": "RiHeart3Line"
+   },
+   "RiCloseLine": {
+    "module": "@oxy.so/bloom/icons/RiCloseLine",
+    "imported": "RiCloseLine"
+   },
+   "RiHeart3Fill": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Fill",
+    "imported": "RiHeart3Fill"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action"
+  ],
+  "classes": [
+   "flex-row",
+   "items-center",
+   "gap-2"
+  ],
+  "within": [
+   "@oxy.so/bloom/engagement-bar#EngagementBar"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:293",
+  "before": "<TextField size=\"lg\" disabled>\n      <TextFieldIcon icon={RiMailLine} />\n      <TextFieldInput\n        label={'⟨2⟩'}\n        value={'⟨0⟩'}\n        onChangeText={() => {}}\n        keyboardType=\"email-address\"\n      />\n    </TextField>",
+  "after": "toElement(LTextField(['⟨0⟩', () => {}], '⟨2⟩').keyboard('email-address').size('lg').disabled().icon(RiMailLine))",
+  "bindings": {
+   "TextField": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextField"
+   },
+   "TextFieldIcon": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextFieldIcon"
+   },
+   "TextFieldInput": {
+    "module": "@oxy.so/bloom/text-field",
+    "imported": "TextFieldInput"
+   },
+   "RiMailLine": {
+    "module": "@oxy.so/bloom/icons/RiMailLine",
+    "imported": "RiMailLine"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:309",
+  "before": "<View className=\"flex-row gap-2\" accessibilityRole=\"header\">\n      <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />\n      <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />\n      <RiStarLine fill={parityTheme.colors.error} />\n      <RiStarLine fill={parityTheme.colors.textTertiary} />\n      <RiStarLine size=\"sm\" fill={'#F5A623'} />\n      <RiHeart3Fill fill=\"#fff\" />\n      <RiHeart3Fill fill=\"white\" />\n      <RiStarLine fill={'rgba(255,255,255,0.72)'} />\n    </View>",
+  "after": "toElement(HStack(Icon(RiHeart3Line).size('md').foreground('muted'), Icon(RiMailLine).size('sm').foreground('primary'), Icon(RiStarLine).foreground('error'), Icon(RiStarLine).foreground('textTertiary'), Icon(RiStarLine).size('sm').foreground(appColors.color.STAR), Icon(RiHeart3Fill).foreground(appColors.color.hexfff), Icon(RiHeart3Fill).foreground(appColors.color.white), Icon(RiStarLine).foreground(appColors.color.VEIL)).spacing('sm').role('header'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "RiHeart3Line": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Line",
+    "imported": "RiHeart3Line"
+   },
+   "RiMailLine": {
+    "module": "@oxy.so/bloom/icons/RiMailLine",
+    "imported": "RiMailLine"
+   },
+   "RiStarLine": {
+    "module": "@oxy.so/bloom/icons/RiStarLine",
+    "imported": "RiStarLine"
+   },
+   "RiHeart3Fill": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Fill",
+    "imported": "RiHeart3Fill"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens"
+  ],
+  "classes": [
+   "flex-row",
+   "gap-2"
+  ],
+  "within": [],
+  "themed": true,
+  "screen": false,
+  "appColors": {
+   "table": "appColors",
+   "color": {
+    "STAR": "#F5A623",
+    "hexfff": "#fff",
+    "white": "white",
+    "VEIL": "rgba(255,255,255,0.72)"
+   }
+  }
+ },
+ {
+  "name": "components/Components.tsx:327",
+  "before": "<View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>\n      <View style={{ flexGrow: 1, gap: 12 }}>{<Hole n=\"0\" />}</View>\n      <View style={[{ width: 24, height: 24 }, { marginLeft: 8 }]} />\n    </View>",
+  "after": "toElement(HStack(VStack(Embed(<Hole n=\"0\" />)).flex('grow').spacing('md'), VStack().frame({ width: '2xl', height: '2xl' }).margin('left', 'sm')).padding('horizontal', 'lg').align('center'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:349",
+  "before": "<Slider\n      value={2}\n      onValueChange={() => {}}\n      label={'⟨2⟩'}\n      min={0.5}\n      max={2}\n      step={0.25}\n      formatValue={() => {}}\n      onSlidingComplete={() => {}}\n    />",
+  "after": "toElement(LSlider([2, () => {}], '⟨2⟩').bounds(0.5, 2).step(0.25).valueFormat(() => {}).onCommit(() => {}))",
+  "bindings": {
+   "Slider": {
+    "module": "@oxy.so/bloom/slider",
+    "imported": "Slider"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:363",
+  "before": "<Admonition type=\"info\">{'⟨0⟩'}</Admonition>",
+  "after": "toElement(LAdmonition(LText('⟨0⟩')).style('info'))",
+  "bindings": {
+   "Admonition": {
+    "module": "@oxy.so/bloom/admonition",
+    "imported": "Admonition"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:368",
+  "before": "<PageHeader\n      title={'⟨0⟩'}\n      backLabel={'⟨1⟩'}\n      onBack={() => {}}\n      titleAlign=\"center\"\n      safeArea={false}\n      actions={<Button onPress={() => {}}>{'⟨3⟩'}</Button>}\n    />",
+  "after": "toElement(LHeader('⟨0⟩').backLabel('⟨1⟩').onBack(() => {}).titleAlign('center').safeArea(false).toolbar(LButton(LText('⟨3⟩')).onPress(() => {})).inPage())",
+  "bindings": {
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:380",
+  "before": "<PageHeader title={'⟨0⟩'} onBack={null} presentation=\"floating\" />",
+  "after": "toElement(LHeader('⟨0⟩').onBack(null).presentation('floating').inPage())",
+  "bindings": {
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:394",
+  "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={(() => {})}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
+  "bindings": {
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "RefreshControl": {
+    "module": "react-native",
+    "imported": "RefreshControl"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader"
+  ],
+  "classes": [],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": true,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:421",
+  "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} variant=\"underline\">\n      {ITEMS.map((item: { id: string; label: string; count?: number }) => (\n        <TabsTrigger key={'k6'} value={'⟨3⟩'} label={'⟨4⟩'} count={2} />\n      ))}\n    </Tabs>",
+  "after": "toElement(LTabs(['⟨0⟩', () => {}], ITEMS.map((item: { id: string; label: string; count?: number }) => TabItem('⟨3⟩', '⟨4⟩').count(2))).style('underline'))",
+  "bindings": {
+   "Tabs": {
+    "module": "@oxy.so/bloom/tabs",
+    "imported": "Tabs"
+   },
+   "TabsTrigger": {
+    "module": "@oxy.so/bloom/tabs",
+    "imported": "TabsTrigger"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:431",
+  "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} fullWidth label={'⟨4⟩'}>\n      <TabsTrigger value=\"posts\" label={'⟨2⟩'} leadingIcon={RiStarLine} />\n      {/* Likes are private. */}\n      <TabsTrigger value=\"likes\" label={'⟨3⟩'} leadingIcon={RiHeart3Line} iconOnly />\n    </Tabs>",
+  "after": "toElement(LTabs(['⟨0⟩', () => {}], TabItem('posts', '⟨2⟩').icon(RiStarLine), /* Likes are private. */ TabItem('likes', '⟨3⟩').icon(RiHeart3Line).iconOnly()).fullWidth().label('⟨4⟩'))",
+  "bindings": {
+   "Tabs": {
+    "module": "@oxy.so/bloom/tabs",
+    "imported": "Tabs"
+   },
+   "TabsTrigger": {
+    "module": "@oxy.so/bloom/tabs",
+    "imported": "TabsTrigger"
+   },
+   "RiStarLine": {
+    "module": "@oxy.so/bloom/icons/RiStarLine",
+    "imported": "RiStarLine"
+   },
+   "RiHeart3Line": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Line",
+    "imported": "RiHeart3Line"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:449",
+  "before": "<View className=\"gap-2\">\n      <SegmentedControl\n        label={'⟨5⟩'}\n        type=\"radio\"\n        size=\"sm\"\n        value={'⟨0⟩'}\n        onChange={() => {}}\n      >\n        <SegmentedControlItem value=\"24h\">\n          <SegmentedControlItemText>{'⟨2⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"7d\" disabled={true}>\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n      <SegmentedControl type=\"tabs\" variant=\"plain\" value={'⟨6⟩'} onValueChange={() => {}}>\n        {ITEMS.map((item) => (\n          <SegmentedControlItem key={'k11'} value={'⟨9⟩'}>\n            <SegmentedControlItemText>{'⟨10⟩'}</SegmentedControlItemText>\n          </SegmentedControlItem>\n        ))}\n      </SegmentedControl>\n    </View>",
+  "after": "toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "SegmentedControl": {
+    "module": "@oxy.so/bloom/segmented-control",
+    "imported": "SegmentedControl"
+   },
+   "SegmentedControlItem": {
+    "module": "@oxy.so/bloom/segmented-control",
+    "imported": "SegmentedControlItem"
+   },
+   "SegmentedControlItemText": {
+    "module": "@oxy.so/bloom/segmented-control",
+    "imported": "SegmentedControlItemText"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented"
+  ],
+  "classes": [
+   "gap-2"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:483",
+  "before": "<Field label={'⟨0⟩'}>\n      <SegmentedControl type=\"radio\" value={'⟨1⟩'} onValueChange={() => {}}>\n        <SegmentedControlItem value=\"month\">\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"year\">\n          <SegmentedControlItemText>{'⟨4⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n    </Field>",
+  "after": "toElement(LField('⟨0⟩', Segmented(['⟨1⟩', () => {}], Option('month', '⟨3⟩'), Option('year', '⟨4⟩'))))",
+  "bindings": {
+   "Field": {
+    "module": "@oxy.so/bloom/field",
+    "imported": "Field"
+   },
+   "SegmentedControl": {
+    "module": "@oxy.so/bloom/segmented-control",
+    "imported": "SegmentedControl"
+   },
+   "SegmentedControlItem": {
+    "module": "@oxy.so/bloom/segmented-control",
+    "imported": "SegmentedControlItem"
+   },
+   "SegmentedControlItemText": {
+    "module": "@oxy.so/bloom/segmented-control",
+    "imported": "SegmentedControlItemText"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:498",
+  "before": "<SettingsSelect\n      label={'⟨0⟩'}\n      value={'⟨1⟩'}\n      onChange={() => {}}\n      items={ITEMS}\n    />",
+  "after": "toElement(LSettingsSelect('⟨0⟩', ['⟨1⟩', () => {}], ITEMS))",
+  "bindings": {
+   "SettingsSelect": {
+    "module": "@oxy.so/bloom/settings-modal/select",
+    "imported": "SettingsSelect"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:512",
+  "before": "<AvatarGroup\n      items={ITEMS}\n      layout=\"conversation\"\n      size={32}\n      max={3}\n      total={2}\n      showInitials\n    />",
+  "after": "toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())",
+  "bindings": {
+   "AvatarGroup": {
+    "module": "@oxy.so/bloom/avatar-group",
+    "imported": "AvatarGroup"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:525",
+  "before": "<View className=\"gap-2\">\n      <List\n        items={ITEMS}\n        separator=\"line\"\n        header={<Muted>{'⟨1⟩'}</Muted>}\n        empty={<Muted>{'⟨2⟩'}</Muted>}\n        testID=\"people\"\n      />\n      <List items={ITEMS} loading={true} loadingCount={2} />\n    </View>",
+  "after": "toElement(VStack(LList(ITEMS).separator('line').headerContent(LText('⟨1⟩').textStyle('muted')).emptyState(LText('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "List": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "List"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList"
+  ],
+  "classes": [
+   "gap-2"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:548",
+  "before": "<VirtualList\n      data={ITEMS}\n      keyExtractor={() => {}}\n      renderItem={({ item, index }) => (\n        <Pressable onPress={() => {}} className=\"px-4 py-3\">\n          <Muted numberOfLines={2}>{'⟨1⟩'}</Muted>\n        </Pressable>\n      )}\n      estimatedItemSize={56}\n      onEndReached={() => {}}\n      onEndReachedThreshold={0.5}\n      ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}\n    />",
+  "after": "toElement(LVirtualList(ITEMS, ({ item, index }) => VStack(LText('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(LText('⟨6⟩').textStyle('muted')))",
+  "bindings": {
+   "VirtualList": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "VirtualList"
+   },
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [
+   "px-4",
+   "py-3"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:574",
+  "before": "<VirtualList\n      data={ITEMS}\n      renderItem={((info) => <Hole n={'1-' + info.index} />)}\n      screen={{}}\n      scrollbar=\"never\"\n      keyboardShouldPersistTaps=\"handled\"\n      keyboardDismissMode=\"on-drag\"\n      overscan={2}\n      removeClippedSubviews\n      maxToRenderPerBatch={10}\n      windowSize={10}\n      initialNumToRender={10}\n      recycleItems\n      maintainVisibleContentPosition={false}\n      drawDistance={400}\n      maxItemsInRecyclePool={24}\n    />",
+  "after": "toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
+  "bindings": {
+   "VirtualList": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "VirtualList"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [],
+  "within": [
+   "@oxy.so/bloom/screen#Screen"
+  ],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:601",
+  "before": "<VirtualList data={ITEMS} renderItem={({ item }) => <Hole n=\"1\" />} />",
+  "after": "toElement(LVirtualList(ITEMS, ({ item }) => Embed(<Hole n=\"1\" />)))",
+  "bindings": {
+   "VirtualList": {
+    "module": "@oxy.so/bloom/list",
+    "imported": "VirtualList"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:606",
+  "before": "<PressableScale\n      onPress={() => {}}\n      accessibilityLabel={'⟨2⟩'}\n      className=\"flex-row items-center gap-3 rounded-xl border border-border bg-surface p-4\"\n    >\n      <Muted>{'⟨0⟩'}</Muted>\n    </PressableScale>",
+  "after": "toElement(HStack(LText('⟨0⟩').textStyle('muted')).padding('all', 'lg').background('surface').border('border', 'thin').corner('md').align('center').spacing('md').onPress(() => {}).label('⟨2⟩').pressScale())",
+  "bindings": {
+   "PressableScale": {
+    "module": "@oxy.so/bloom/pressable-scale",
+    "imported": "PressableScale"
+   },
+   "Muted": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Muted"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList"
+  ],
+  "classes": [
+   "flex-row",
+   "items-center",
+   "gap-3",
+   "rounded-xl",
+   "border",
+   "border-border",
+   "bg-surface",
+   "p-4"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:624",
+  "before": "<ChatSearchField\n      value={'⟨0⟩'}\n      onChangeText={() => {}}\n      onClear={() => {}}\n      placeholder={'⟨2⟩'}\n      accessibilityLabel={'⟨5⟩'}\n      clearLabel={'⟨3⟩'}\n    />",
+  "after": "toElement(LChatSearchField(['⟨0⟩', () => {}], { placeholder: '⟨2⟩', clearLabel: '⟨3⟩', onClear: () => {} }).label('⟨5⟩'))",
+  "bindings": {
+   "ChatSearchField": {
+    "module": "@oxy.so/bloom/chat-list",
+    "imported": "ChatSearchField"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList",
+   "ChatSearchField: LChatSearchField"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:638",
+  "before": "<View\n      className=\"flex-row p-2\"\n      style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}\n    >\n      <Text style={{ color: parityTheme.colors.textSecondary }}>a</Text>\n      <Text className=\"text-sm\" style={{ flex: 1, color: parityTheme.colors.primary }}>\n        b\n      </Text>\n    </View>",
+  "after": "toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader",
+   "TabItem",
+   "Tabs: LTabs",
+   "Option",
+   "Segmented",
+   "SettingsSelect: LSettingsSelect",
+   "AvatarGroup: LAvatarGroup",
+   "List: LList",
+   "VirtualList: LVirtualList",
+   "ChatSearchField: LChatSearchField"
+  ],
+  "classes": [
+   "flex-row",
+   "p-2",
+   "text-sm"
+  ],
+  "within": [],
+  "themed": true,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Dialogs.tsx:8",
+  "before": "<Dialog open={true} onClose={(() => {})} title=\"Post as\" label=\"Post as\">\n      <View className=\"gap-4 p-4\">\n        <Text className=\"text-sm\">Choose an account</Text>\n      </View>\n    </Dialog>",
+  "after": "toElement(LDialog(VStack(LText('Choose an account').font('14').leading('20px')).padding('all', 'lg').spacing('lg')).title('Post as').label('Post as').presented([true, () => (() => {})()]))",
+  "bindings": {
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "Dialog: LDialog"
+  ],
+  "classes": [
+   "gap-4",
+   "p-4",
+   "text-sm"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Dialogs.tsx:18",
+  "before": "<Dialog\n      open={true}\n      onClose={() => {}}\n      label=\"Sources\"\n      placement={{ base: 'bottom', md: 'center' }}\n      contentPadding={0}\n      maxWidth={400}\n      actions={ITEMS}\n      dismissOnBackdrop={false}\n    >\n      <Text>Where it came from</Text>\n    </Dialog>",
+  "after": "toElement(LDialog(LText('Where it came from')).label('Sources').presentAt('bottom', { md: 'center' }).padding('none').frame({ maxWidth: '400' }).buttons(ITEMS).dismissOnBackdrop(false).presented([true, () => {}]))",
+  "bindings": {
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "Dialog: LDialog",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Dialogs.tsx:35",
+  "before": "<View className=\"gap-2\">\n      <Text>Shortcuts</Text>\n      <Dialog\n        open={true}\n        onClose={(() => {})}\n        header={ITEMS}\n        placement=\"center\"\n      >\n        <View className=\"px-5\" />\n      </Dialog>\n    </View>",
+  "after": "toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "Dialog": {
+    "module": "@oxy.so/bloom/dialog",
+    "imported": "Dialog"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "Dialog: LDialog",
+   "toElement"
+  ],
+  "classes": [
+   "gap-2",
+   "px-5"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:19",
+  "before": "<Pressable onPress={() => {}} className=\"flex-row items-center gap-3 px-4 py-3 active:opacity-70\">\n      <RiHeart3Line size=\"sm\" />\n      <View className=\"gap-1\">\n        <Text variant=\"body-semibold\" numberOfLines={1}>\n          {'⟨0⟩'}\n        </Text>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨1⟩'} likes</Text>\n      </View>\n    </Pressable>",
+  "after": "toElement(HStack(Icon(RiHeart3Line).size('sm').foreground('primary'), VStack(LText('⟨0⟩').font('body').weight('semibold').lines(1), LText('⟨1⟩', ' likes').font('14').leading('20px').foreground('muted')).spacing('xs')).padding('horizontal', 'lg').padding('vertical', 'md').align('center').spacing('md').when('pressed', (v) => v.opacity('70')).onPress(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "RiHeart3Line": {
+    "module": "@oxy.so/bloom/icons/RiHeart3Line",
+    "imported": "RiHeart3Line"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText"
+  ],
+  "classes": [
+   "flex-row",
+   "items-center",
+   "gap-3",
+   "px-4",
+   "py-3",
+   "active:opacity-70",
+   "gap-1",
+   "text-sm",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:41",
+  "before": "<View className=\"rounded-2xl overflow-hidden border border-border bg-surface p-4 md:p-6\">\n      <Text className=\"font-semibold text-foreground\">Card</Text>\n      {<Hole n=\"0\" />}\n      <Switch checked={true} onCheckedChange={() => {}} size=\"sm\" accessibilityLabel=\"Notify\" />\n      <Button appearance=\"subtle\" size=\"sm\" trailingIcon={RiArrowRightLine} onPress={() => {}}>\n        {'Next'}\n      </Button>\n    </View>",
+  "after": "toElement(VStack(LText('Card').weight('semibold').foreground('foreground'), Embed(<Hole n=\"0\" />), Toggle([true, () => {}]).size('sm').label('Notify'), LButton(LText('Next'), Icon(RiArrowRightLine)).style('subtle').size('sm').onPress(() => {})).padding('all', 'lg').background('surface').border('border', 'thin').corner('lg').clipped().when('md', (v) => v.padding('all', '2xl')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "Switch": {
+    "module": "@oxy.so/bloom/switch",
+    "imported": "Switch"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "RiArrowRightLine": {
+    "module": "@oxy.so/bloom/icons/RiArrowRightLine",
+    "imported": "RiArrowRightLine"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton"
+  ],
+  "classes": [
+   "rounded-2xl",
+   "overflow-hidden",
+   "border",
+   "border-border",
+   "bg-surface",
+   "p-4",
+   "md:p-6",
+   "font-semibold",
+   "text-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:54 (false)",
+  "before": "<View className=\"gap-2 border-b border-border pb-3\">\n      {false ? <View className=\"h-10 w-full bg-muted\" /> : null}\n      {false && <View className=\"h-px bg-border\" />}\n      {<Hole n=\"2\" />}\n    </View>",
+  "after": "toElement(VStack(false ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, false ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n=\"2\" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton"
+  ],
+  "classes": [
+   "gap-2",
+   "border-b",
+   "border-border",
+   "pb-3",
+   "h-10",
+   "w-full",
+   "bg-muted",
+   "h-px",
+   "bg-border"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:54",
+  "before": "<View className=\"gap-2 border-b border-border pb-3\">\n      {true ? <View className=\"h-10 w-full bg-muted\" /> : null}\n      {true && <View className=\"h-px bg-border\" />}\n      {<Hole n=\"2\" />}\n    </View>",
+  "after": "toElement(VStack(true ? VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill') : null, true ? VStack().frame({ height: '1' }).background('border') : null, Embed(<Hole n=\"2\" />)).padding('bottom', 'md').border('border', 'thin', 'bottom').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton"
+  ],
+  "classes": [
+   "gap-2",
+   "border-b",
+   "border-border",
+   "pb-3",
+   "h-10",
+   "w-full",
+   "bg-muted",
+   "h-px",
+   "bg-border"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:58",
+  "before": "<View  className=\"flex-row justify-between\">\n          <Text className=\"text-xs uppercase tracking-wide text-muted-foreground\">{'⟨0⟩'}</Text>\n        </View>",
+  "after": "toElement(HStack(LText('⟨0⟩').font('xs').leading('16px').textCase('uppercase').tracking('wide').foreground('muted')).justify('between'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton"
+  ],
+  "classes": [
+   "flex-row",
+   "justify-between",
+   "text-xs",
+   "uppercase",
+   "tracking-wide",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:68",
+  "before": "<View className=\"flex-1 mt-2\">\n      <NativeText className=\"text-sm\">{\"React Native's own Text\"}</NativeText>\n      <View className=\"rounded-xl bg-card\" style={{ height: 4 }} />\n    </View>",
+  "after": "toElement(VStack(RawText('React Native\\'s own Text').font('14').leading('20px'), VStack().frame({ height: 'xs' }).background('card').corner('md')).flex('1').margin('top', 'sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "NativeText": {
+    "module": "react-native",
+    "imported": "Text"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "flex-1",
+   "mt-2",
+   "text-sm",
+   "rounded-xl",
+   "bg-card"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:85 (false)",
+  "before": "<Pressable\n      onPress={() => {}}\n      className={\n        false ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'\n      }\n    >\n      <Text\n        className={`text-sm ${false ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}\n      >\n        {'⟨0⟩'}\n      </Text>\n    </Pressable>",
+  "after": "toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(false ? 'semibold' : 'medium').foreground(false ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(false ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "false",
+   "?",
+   "text-sm",
+   "${false",
+   "rounded-full",
+   "bg-primary",
+   "px-3",
+   "py-1.5",
+   "bg-muted",
+   "font-semibold",
+   "text-primary-foreground",
+   "font-medium",
+   "text-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:85",
+  "before": "<Pressable\n      onPress={() => {}}\n      className={\n        true ? 'rounded-full bg-primary px-3 py-1.5' : 'rounded-full bg-muted px-3 py-1.5'\n      }\n    >\n      <Text\n        className={`text-sm ${true ? 'font-semibold text-primary-foreground' : 'font-medium text-foreground'}`}\n      >\n        {'⟨0⟩'}\n      </Text>\n    </Pressable>",
+  "after": "toElement(VStack(LText('⟨0⟩').font('14').leading('20px').weight(true ? 'semibold' : 'medium').foreground(true ? 'onPrimary' : 'foreground')).padding('horizontal', 'md').padding('vertical', '6').background(true ? 'primary' : 'mutedFill').corner('infinite').onPress(() => {}))",
+  "bindings": {
+   "Pressable": {
+    "module": "react-native",
+    "imported": "Pressable"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "true",
+   "?",
+   "text-sm",
+   "${true",
+   "rounded-full",
+   "bg-primary",
+   "px-3",
+   "py-1.5",
+   "bg-muted",
+   "font-semibold",
+   "text-primary-foreground",
+   "font-medium",
+   "text-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:101",
+  "before": "<View pointerEvents=\"none\" className=\"h-10 w-full rounded-lg bg-muted\" />",
+  "after": "toElement(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting(false))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "h-10",
+   "w-full",
+   "rounded-lg",
+   "bg-muted"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:106",
+  "before": "<View pointerEvents=\"box-none\" className=\"p-2\">\n      <View pointerEvents=\"box-only\" className=\"h-10 w-full rounded-lg bg-muted\" />\n      {<Hole n=\"0\" />}\n    </View>",
+  "after": "toElement(VStack(VStack().frame({ height: '4xl', width: 'full' }).background('mutedFill').corner('sm').allowsHitTesting('self'), Embed(<Hole n=\"0\" />)).padding('all', 'sm').allowsHitTesting('children'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "p-2",
+   "h-10",
+   "w-full",
+   "rounded-lg",
+   "bg-muted"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:123 (false)",
+  "before": "<View className={false ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>\n      <Text className={`text-sm ${false ? 'font-bold text-primary' : ''}`}>Row</Text>\n      <View\n        className={`rounded-xl overflow-hidden bg-card ${false ? 'border border-primary' : 'opacity-70'}`}\n      />\n    </View>",
+  "after": "toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(false), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(false), (v) => v.border('primary', 'thin')).when(!false, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(false, (v) => v.border('border', 'thin', 'top')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "false",
+   "?",
+   "text-sm",
+   "${false",
+   "rounded-xl",
+   "overflow-hidden",
+   "bg-card",
+   "border-t",
+   "border-border",
+   "px-4",
+   "py-3",
+   "font-bold",
+   "text-primary",
+   "border",
+   "border-primary",
+   "opacity-70"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:123",
+  "before": "<View className={true ? 'border-t border-border px-4 py-3' : 'px-4 py-3'}>\n      <Text className={`text-sm ${true ? 'font-bold text-primary' : ''}`}>Row</Text>\n      <View\n        className={`rounded-xl overflow-hidden bg-card ${true ? 'border border-primary' : 'opacity-70'}`}\n      />\n    </View>",
+  "after": "toElement(VStack(LText('Row').font('14').leading('20px').when(Boolean(true), (v) => v.weight('bold').foreground('primary')), VStack().background('card').corner('md').clipped().when(Boolean(true), (v) => v.border('primary', 'thin')).when(!true, (v) => v.opacity('70'))).padding('horizontal', 'lg').padding('vertical', 'md').when(true, (v) => v.border('border', 'thin', 'top')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "true",
+   "?",
+   "text-sm",
+   "${true",
+   "rounded-xl",
+   "overflow-hidden",
+   "bg-card",
+   "border-t",
+   "border-border",
+   "px-4",
+   "py-3",
+   "font-bold",
+   "text-primary",
+   "border",
+   "border-primary",
+   "opacity-70"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Rows.tsx:133",
+  "before": "<View className=\"rounded-lg p-4 shadow-sm\" />",
+  "after": "toElement(VStack().padding('all', 'lg').corner('sm').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "Icon",
+   "VStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Toggle",
+   "Button: LButton",
+   "RawText"
+  ],
+  "classes": [
+   "rounded-lg",
+   "p-4",
+   "shadow-sm"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/SettingsRoute.tsx:13",
+  "before": "<Screen header={<PageHeader title={'⟨1⟩'} />}>\n        <Text className=\"text-sm text-muted-foreground\">{'⟨0⟩'}</Text>\n      </Screen>",
+  "after": "LText('⟨0⟩').font('14').leading('20px').foreground('muted').header(Header('⟨1⟩').inPage())",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "Header"
+  ],
+  "classes": [
+   "text-sm",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/SettingsRoute.tsx:17",
+  "before": "<PageHeader title={'⟨0⟩'} />",
+  "after": "toElement(Header('⟨0⟩').inPage())",
+  "bindings": {
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "Header"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/SettingsRoute.tsx:19",
+  "before": "<Screen header={<Hole n=\"1\" />} scroll=\"content\">\n      <ScreenScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>\n        <Text className=\"text-sm\">{'⟨0⟩'}</Text>\n      </ScreenScrollView>\n    </Screen>",
+  "after": "ScrollView(LText('⟨0⟩').font('14').leading('20px')).contentMargins('lg').spacing('md').header(Embed(<Hole n=\"1\" />)).screenScroll('content')",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "Header",
+   "toElement",
+   "ScrollView",
+   "Embed"
+  ],
+  "classes": [
+   "text-sm"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/ThreadRoute.tsx:12",
+  "before": "<Screen header={<PageHeader title={'⟨1⟩'} />}>\n        <>\n          <Text className=\"text-sm\">{'⟨0⟩'}</Text>\n          <View className=\"p-4\" />\n        </>\n      </Screen>",
+  "after": "Group(LText('⟨0⟩').font('14').leading('20px'), VStack().padding('all', 'lg')).header(Header('⟨1⟩').inPage())",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "VStack",
+   "Group",
+   "Header"
+  ],
+  "classes": [
+   "text-sm",
+   "p-4"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/ThreadRoute.tsx:20 (false)",
+  "before": "<Screen\n      scroll=\"content\"\n      bottomBar={<View className=\"px-4 py-2 bg-card\" />}\n      bottomBarPlacement=\"overlay\"\n      bottomBarKeyboardBehavior=\"follow\"\n    >\n      {/* The messages, then a note under them. */}\n      <ScreenScrollView>\n        <Text>{'⟨0⟩'}</Text>\n      </ScreenScrollView>\n      {false ? <Text className=\"text-xs text-muted-foreground\">{'⟨2⟩'}</Text> : null}\n    </Screen>",
+  "after": "Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), false ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "VStack",
+   "Group",
+   "Header",
+   "ScrollView"
+  ],
+  "classes": [
+   "px-4",
+   "py-2",
+   "bg-card",
+   "text-xs",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/ThreadRoute.tsx:20",
+  "before": "<Screen\n      scroll=\"content\"\n      bottomBar={<View className=\"px-4 py-2 bg-card\" />}\n      bottomBarPlacement=\"overlay\"\n      bottomBarKeyboardBehavior=\"follow\"\n    >\n      {/* The messages, then a note under them. */}\n      <ScreenScrollView>\n        <Text>{'⟨0⟩'}</Text>\n      </ScreenScrollView>\n      {true ? <Text className=\"text-xs text-muted-foreground\">{'⟨2⟩'}</Text> : null}\n    </Screen>",
+  "after": "Group(/* The messages, then a note under them. */ ScrollView(LText('⟨0⟩')), true ? LText('⟨2⟩').font('xs').leading('16px').foreground('muted') : null).header(false).screenScroll('content').footer(VStack().padding('horizontal', 'lg').padding('vertical', 'sm').background('card'), { placement: 'overlay', keyboard: 'follow' })",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "ScreenScrollView": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "ScreenScrollView"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "Text: LText",
+   "VStack",
+   "Group",
+   "Header",
+   "ScrollView"
+  ],
+  "classes": [
+   "px-4",
+   "py-2",
+   "bg-card",
+   "text-xs",
+   "text-muted-foreground"
+  ],
+  "within": [],
+  "themed": false,
+  "screen": true,
+  "appColors": null
+ }
+]

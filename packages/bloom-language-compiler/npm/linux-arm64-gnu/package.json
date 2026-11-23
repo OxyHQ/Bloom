@@ -1,0 +1,27 @@
+{
+  "name": "@oxy.so/bloom-language-compiler-linux-arm64-gnu",
+  "version": "1.0.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "bloom-language-compiler.linux-arm64-gnu.node",
+  "files": [
+    "bloom-language-compiler.linux-arm64-gnu.node"
+  ],
+  "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-language-compiler"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

@@ -13,7 +13,7 @@
  * ScrollView's props through untouched; react-native-web drops the prop, which
  * is why `Chip.test.tsx` (the web suite) cannot see it.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { Chip, ChipRow } from '../chip';

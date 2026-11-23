@@ -22,7 +22,7 @@
 
 Components, hooks and design tokens published as `@oxy.so/bloom` through component subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
-Static styling uses NativeWind classes and shared semantic tokens. Dynamic geometry and resolved surface fills use the corresponding component APIs. AppShell and Screen own panel layout, scroll viewports and chrome; applications supply content and controlled state rather than a second layout engine.
+Styling is React Native styles and Bloom's tokens; Bloom needs no NativeWind, react-native-css or Tailwind ([Bloom without NativeWind](docs/no-nativewind.mdx)). Dynamic geometry and resolved surface fills use the corresponding component APIs. AppShell and Screen own panel layout, scroll viewports and chrome; applications supply content and controlled state rather than a second layout engine.
 
 </td>
 <td valign="top" width="50%">
@@ -57,7 +57,6 @@ Always required:
 | `react-native` | `>=0.73.0` |
 | `react-native-safe-area-context` | `>=5.0.0` |
 | `react-native-screens` | `>=3.16.0` |
-| `nativewind` | `>=5.0.0` |
 
 Required by specific surfaces, and by more of them than you would guess:
 
@@ -170,7 +169,7 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 
 | Group | Exports |
 |---|---|
-| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `appearance`, `hooks` |
+| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset` (apps still using `className`), `styles`, `appearance`, `hooks` |
 | App shell and navigation | `app-shell`, `panel-routing`, `screen`, `page-header`, `page-footer`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover`, `engagement-bar`, `share-sheet` |

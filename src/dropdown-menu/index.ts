@@ -15,6 +15,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from './DropdownMenu';
+export { useLensTint } from '../floating/lens/use-lens-tint';
 export type {
   DropdownMenuProps,
   DropdownMenuTriggerProps,

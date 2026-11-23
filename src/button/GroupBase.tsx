@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   type ComponentType,
+  type ReactNode,
 } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -30,17 +31,20 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selection-motion';
 import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
 import { IS_WEB } from '../styles/platform';
+import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
 import { useGroupSelection } from './use-group-selection';
 import type { SurfaceProps } from '../surface/types';
 import type { ButtonGroupProps } from './types';
 import { ButtonGroupContext } from './context';
+import { webDataSet } from '../styles/web-data';
 
 const TOUCH_PAINT_CSS = `
-.bloom-surface.bloom-button-group-touch-paint::before,
-.bloom-surface.bloom-button-group-touch-paint::after {
+[data-bloom-surface][data-bloom-button-group-touch-paint]::before,
+[data-bloom-surface][data-bloom-button-group-touch-paint]::after {
   inset-block: var(--bloom-button-group-visual-inset);
 }
-.bloom-surface.bloom-button-group-touch-paint::before { box-shadow: var(--bloom-button-group-shadow, none); }
+[data-bloom-surface][data-bloom-button-group-touch-paint]::before { box-shadow: var(--bloom-button-group-shadow, none); }
 `;
 
 /** Separators resolve against the material actually published by the group. */
@@ -88,6 +92,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
     separated = false,
     children,
     accessibilityLabel,
+    material,
     style,
     testID,
   }: ButtonGroupProps) {
@@ -112,7 +117,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
       resolveButtonGeometry(size, undefined, density, touch).height,
       touch,
     );
-    const paintClass = visualInset ? 'bloom-button-group-touch-paint' : undefined;
+    const paintHook = visualInset ? webDataSet({ bloomButtonGroupTouchPaint: '' }) : null;
     const paintStyle: WebCssStyle | undefined = visualInset
       ? {
           '--bloom-button-group-visual-inset': `${visualInset}px`,
@@ -163,6 +168,52 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
         {item}
       </Fragment>
     ));
+    // The group's one material: its own Surface, or, with `material="lens"` on a device that has the
+    // native lens, the lens itself behind the items. The items draw their content either way.
+    const regionMaterial = useControlMaterial();
+    const lensAvailable = useLensAvailable();
+    const lens = (material ?? regionMaterial) === 'lens' && lensAvailable;
+    const frame = (content: ReactNode) => {
+      if (lens) {
+        const split = splitLensStyle(style);
+        return (
+          <LensButtonHost radius={BUTTON_RADIUS} style={{ alignSelf: 'flex-start', ...split.host }}>
+            <View
+              role="group"
+              accessibilityLabel={accessibilityLabel}
+              // The group holds its items (GROUP_HOLDS_ITEMS).
+              collapsable={false}
+              testID={testID}
+              style={[{ borderRadius: BUTTON_RADIUS, overflow: 'hidden' }, split.control]}
+            >
+              {content}
+            </View>
+          </LensButtonHost>
+        );
+      }
+      return (
+        <Surface
+          radius={BUTTON_RADIUS}
+          cornerCurve="round"
+          {...paintHook}
+          role="group"
+          accessibilityLabel={accessibilityLabel}
+          // The group holds its items (GROUP_HOLDS_ITEMS).
+          collapsable={false}
+          testID={testID}
+          style={[
+            {
+              alignSelf: 'flex-start',
+              boxShadow: recipe.paint.shadow,
+            },
+            paintStyle,
+            style,
+          ]}
+        >
+          {content}
+        </Surface>
+      );
+    };
     if (separated)
       return (
         <ButtonGroupContext.Provider value={context}>
@@ -172,24 +223,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
             {/* One pill: the group's own Surface paints the rim and shadow once, around the
                 whole, and clips the first segment's start and the last one's end. The segments
                 are flat tints with a hairline of the surface between them. */}
-            <Surface
-              radius={BUTTON_RADIUS}
-              cornerCurve="round"
-              className={paintClass}
-              role="group"
-              accessibilityLabel={accessibilityLabel}
-              // The group holds its items (GROUP_HOLDS_ITEMS).
-              collapsable={false}
-              testID={testID}
-              style={[
-                {
-                  alignSelf: 'flex-start',
-                  boxShadow: recipe.paint.shadow,
-                },
-                paintStyle,
-                style,
-              ]}
-            >
+            {frame(
               <View
                 testID={testID ? `${testID}-items` : undefined}
                 style={{
@@ -201,8 +235,8 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
                 }}
               >
                 {items}
-              </View>
-            </Surface>
+              </View>,
+            )}
           </BloomScope>
         </ButtonGroupContext.Provider>
       );
@@ -211,24 +245,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
         {recipe.sheet}
         {IS_WEB && <ServerStyleSheet id="bloom-button-group-touch-paint" css={TOUCH_PAINT_CSS} />}
         <BloomScope size={size}>
-          <Surface
-            radius={BUTTON_RADIUS}
-            cornerCurve="round"
-            className={paintClass}
-            role="group"
-            accessibilityLabel={accessibilityLabel}
-            // The group holds its items (GROUP_HOLDS_ITEMS).
-            collapsable={false}
-            testID={testID}
-            style={[
-              {
-                alignSelf: 'flex-start',
-                boxShadow: recipe.paint.shadow,
-              },
-              paintStyle,
-              style,
-            ]}
-          >
+          {frame(
             <View
               testID={testID ? `${testID}-items` : undefined}
               style={{
@@ -252,7 +269,7 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
                   ]}
                 >
                   <Surface
-                    className={paintClass}
+                    {...paintHook}
                     radius={BUTTON_RADIUS}
                     cornerCurve="round"
                     fill={
@@ -272,8 +289,8 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
                 </Animated.View>
               ) : null}
               {row}
-            </View>
-          </Surface>
+            </View>,
+          )}
         </BloomScope>
       </ButtonGroupContext.Provider>
     );

@@ -61,7 +61,6 @@ import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useEasedValues } from '../motion/use-eased-values';
-import { StyledView } from '../styles/styled-primitives';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import { MenubarMenuProvider, MenubarScopeProvider, useMenubar, useMenubarMenu } from './context';
 import { createMenubarContent, createMenubarRows } from './declared';
@@ -423,9 +422,8 @@ function PopupMenuLayer({
     >
       {/* The menu as it would be alone: its 1px edge and its padding, its 266px floor and its
           limits. Laid out at its own size whatever the surface's is now. */}
-      <StyledView
+      <View
         onLayout={exiting ? undefined : onLayout}
-        className={props.className}
         style={[
           {
             padding: density.panelPadding + POPUP_PANEL_BORDER,
@@ -438,7 +436,7 @@ function PopupMenuLayer({
         ]}
       >
         {content}
-      </StyledView>
+      </View>
     </View>
   );
 }

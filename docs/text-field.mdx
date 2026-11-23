@@ -326,17 +326,16 @@ colour it always had. Gate: `surface-level-adoption.test.ts`.
 
 Controls use canonical sizes and the shared visual scope. Removed aliases and migration mappings are documented in [Unified component API](/docs/unified-api).
 
-## Layout and surface classes
+## Layout and surface styles
 
-`TextField className` styles the layout host (width, height and padding).
-`chromeClassName` styles the single inset surface (background, border/ring and
+`TextField style` styles the layout host (width, height and padding).
+`chromeStyle` styles the single inset surface (background, border/ring and
 radius). The inset ring occupies no layout space; changing its thickness does
 not change the field's outer dimensions. Both slots preserve their defaults
 when absent. The focus border and disabled/invalid paint retain priority over
-resting classes so field state remains visible. Inside `InputGroup`, the group
+resting styles so field state remains visible. Inside `InputGroup`, the group
 owns the surface and the field's chrome slot is not rendered.
 
-On web, these hosts use base-layer defaults, leaving consumer component and
-utility classes authoritative. A boxless RNW direction carrier preserves the
-logical styles of descendants in RTL. Native resolves each class after that
-host's defaults through the same native CSS compiler as the other primitives.
+On web, these hosts use base-layer defaults under the caller's style. A boxless
+RNW direction carrier preserves the logical styles of descendants in RTL. Native
+applies each style after that host's defaults.

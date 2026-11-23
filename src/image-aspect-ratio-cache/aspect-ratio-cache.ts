@@ -11,7 +11,7 @@
  * vs. a larger lightbox variant), pass the known ratio through explicitly
  * (`GalleryImage.aspectRatio`) instead of relying on cache-key reuse.
  */
-import { getImageSize } from '../image';
+import { getImageSize } from '../image/BloomImage';
 
 /** Fallback ratio used when a remote image's intrinsic size cannot be read. */
 export const DEFAULT_ASPECT_RATIO = 4 / 3;

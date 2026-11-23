@@ -130,8 +130,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   tone: toneProp,
   style,
   labelStyle,
-  className,
-  labelClassName,
+  bare = false,
   accessibilityLabel,
   nativeID,
   testID,
@@ -184,13 +183,10 @@ const RadioComponent = function Radio<Value extends string = string>({
 
   return (
     <RadioHost
-      className={className}
       {...spaceKey}
       {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
       style={[
-        className
-          ? { '--bloom-radio-ring': rowStyle['--bloom-radio-ring'], ...ringOffset }
-          : rowStyle,
+        bare ? { '--bloom-radio-ring': rowStyle['--bloom-radio-ring'], ...ringOffset } : rowStyle,
         style,
       ]}
       onPress={handlePress}
@@ -245,9 +241,9 @@ const RadioComponent = function Radio<Value extends string = string>({
           ) : (
             label && (
               <RadioLabel
-                className={labelClassName}
+                bare={bare}
                 variant={sizeConfig.label}
-                style={[!labelClassName && { color: theme.colors.text }, labelStyle]}
+                style={[!bare && { color: theme.colors.text }, labelStyle]}
               >
                 {label}
               </RadioLabel>
@@ -295,9 +291,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     style,
     labelStyle,
     optionStyle,
-    className,
-    optionClassName,
-    optionLabelClassName,
+    bareOptions = false,
     appearance,
     renderOption,
     variant = 'default',
@@ -408,9 +402,8 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
     <RadioGroupContext.Provider value={{ tabValue, register, onKeyDown, rovingItem }}>
       <RadioGroupHost
         {...direction}
-        className={className}
         style={[
-          !className && {
+          {
             gap: space.sm,
             ...(variant === 'chip' || variant === 'swatch'
               ? { flexDirection: 'row' as const, flexWrap: 'wrap' as const }
@@ -432,12 +425,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
           const checked = option.value === value;
           const optionDisabled = isDisabled || option.disabled === true;
           const state = { checked, disabled: optionDisabled, controlRef: controlRef(option.value) };
-          const optionClasses =
-            typeof optionClassName === 'function' ? optionClassName(state) : optionClassName;
-          const labelClasses =
-            typeof optionLabelClassName === 'function'
-              ? optionLabelClassName(state)
-              : optionLabelClassName;
+          const ownStyle = typeof optionStyle === 'function' ? optionStyle(state) : optionStyle;
           const ownedControl =
             variant === 'swatch' ? (
               <RadioSwatch
@@ -452,8 +440,8 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 description={option.description}
                 disabled={optionDisabled}
                 size={size}
-                style={optionStyle}
-                className={optionClasses}
+                style={ownStyle}
+                bare={bareOptions}
                 testID={option.testID}
               />
             ) : variant === 'chip' ? (
@@ -470,10 +458,9 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 size={size}
                 tone={tone}
                 appearance={appearance}
-                style={optionStyle}
+                style={ownStyle}
+                bare={bareOptions}
                 labelStyle={labelStyle}
-                className={optionClasses}
-                labelClassName={labelClasses}
                 testID={option.testID}
               />
             ) : variant === 'card' ? (
@@ -488,10 +475,9 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 description={option.description}
                 disabled={optionDisabled}
                 tone={tone}
-                style={optionStyle}
+                style={ownStyle}
+                bare={bareOptions}
                 labelStyle={labelStyle}
-                className={optionClasses}
-                labelClassName={labelClasses}
                 testID={option.testID}
               />
             ) : (
@@ -508,9 +494,8 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>(
                 disabled={optionDisabled}
                 tone={tone}
                 labelStyle={labelStyle}
-                style={optionStyle}
-                className={optionClasses}
-                labelClassName={labelClasses}
+                style={ownStyle}
+                bare={bareOptions}
                 testID={option.testID}
               />
             );

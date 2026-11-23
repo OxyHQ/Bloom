@@ -10,13 +10,38 @@ import Animated, {
 import { Search } from '../search';
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
-import { StyledView } from '../styles/styled-primitives';
+import { View } from 'react-native';
+import type { WebCssStyle } from '../styles/web-view-style';
 
 import type { SidebarToolbarProps } from './types';
 import { IS_WEB } from '../styles/platform';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+/** Tailwind's default ease, `cubic-bezier(0.4, 0, 0.2, 1)`. */
+const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+/** The web's actions fade and slide aside as the search opens (CSS transitions). */
+function webActionStyle(open: boolean, rtl: boolean, reduced: boolean): WebCssStyle {
+  return {
+    transitionProperty: reduced ? 'none' : 'opacity,transform',
+    transitionDuration: '200ms',
+    transitionTimingFunction: EASE,
+    ...(open
+      ? { translate: rtl ? '-8px' : '8px', scale: '95% 95%', opacity: 0 }
+      : { translate: '0px', scale: '100% 100%', opacity: 1 }),
+  };
+}
+
+/** The web's search widens across the row in CSS. */
+function webSearchTransition(reduced: boolean): WebCssStyle {
+  return {
+    transitionProperty: reduced ? 'none' : 'width',
+    transitionDuration: '300ms',
+    transitionTimingFunction: EASE,
+  };
+}
 
 /** Between two slots of the row. */
 const SLOT_GAP = 8;
@@ -75,24 +100,24 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
   }, [actionsProgress, rtl]);
   const label = search.accessibilityLabel ?? common.search;
   return (
-    <StyledView
+    <View
       {...direction}
       testID={testID}
-      className="relative shrink-0"
-      style={[{ height }, style]}
+      style={[{ position: 'relative', flexShrink: 0, height }, style]}
       onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
     >
-      <StyledView
+      <View
         testID={testID ? `${testID}-slots` : undefined}
-        className="h-full flex-row gap-2"
         style={{ height: '100%', flexDirection: 'row', gap: SLOT_GAP }}
       >
-        <StyledView aria-hidden style={{ flex: 1, minWidth: 0 }} />
+        <View aria-hidden style={{ flex: 1, minWidth: 0 }} />
         {actions.map((action, index) => (
           <AnimatedView
             key={index}
-            className={`flex ${IS_WEB ? `transition-[opacity,transform] duration-200 motion-reduce:transition-none ${search.open ? `pointer-events-none ${rtl ? '-translate-x-2' : 'translate-x-2'} scale-95 opacity-0` : 'translate-x-0 scale-100 opacity-100'}` : ''}`}
-            style={[{ flex: 1, minWidth: 0 }, !IS_WEB && actionsStyle]}
+            style={[
+              { flex: 1, minWidth: 0 },
+              IS_WEB ? webActionStyle(search.open, rtl, reduced) : actionsStyle,
+            ]}
             pointerEvents={search.open ? 'none' : 'auto'}
             aria-hidden={search.open}
             accessibilityElementsHidden={search.open}
@@ -102,18 +127,21 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
             {action}
           </AnimatedView>
         ))}
-      </StyledView>
+      </View>
       <AnimatedView
         testID={testID ? `${testID}-search` : undefined}
-        className={`absolute inset-y-0 start-0 z-10 overflow-hidden rounded-full ${IS_WEB ? 'transition-[width] duration-300 ease-in-out motion-reduce:transition-none' : ''}`}
         style={[
           {
             position: 'absolute',
+            insetBlock: 0,
+            zIndex: 10,
+            overflow: 'hidden',
             top: 0,
             bottom: 0,
             insetInlineStart: 0,
             borderRadius: 999,
           },
+          IS_WEB ? webSearchTransition(reduced) : null,
           IS_WEB ? { width: search.open ? '100%' : webCollapsedWidth } : searchWidth,
         ]}
       >
@@ -131,6 +159,6 @@ export function SidebarToolbar({ actions = [], search, style, testID }: SidebarT
           triggerProps={{ style: { width: '100%' } }}
         />
       </AnimatedView>
-    </StyledView>
+    </View>
   );
 }

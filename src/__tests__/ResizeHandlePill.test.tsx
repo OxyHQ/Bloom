@@ -5,7 +5,7 @@
  * The web draws its states in CSS (`resize-handle-css.ts`); native holds them
  * in state. Same gestures, keys and semantics as the grip.
  */
-import React from 'react';
+import type React from 'react';
 import * as Native from 'react-native';
 import { StyleSheet } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -102,15 +102,14 @@ describe('the pill resize handle', () => {
     expect(flat(pillOf(screen))).toMatchObject({ width: 36, height: 4 });
   });
 
-  it('keeps the grip as the default, at its own classes', () => {
+  it('keeps the grip as the default, at its own geometry', () => {
     const screen = render(<ResizeHandle testID="handle" onResize={() => {}} />, { wrapper });
     const handle = screen.getByTestId('handle');
     expect(handle.props.dataSet).toEqual({
       bloomResizeHandle: '',
       bloomResizeHandleVariant: 'grip',
     });
-    expect(flat(handle)).not.toHaveProperty('width');
-    expect(flat(handle)).not.toHaveProperty('insetInlineEnd');
+    expect(flat(handle)).toMatchObject({ width: 20, insetInlineEnd: -10, top: 0, bottom: 0 });
   });
 
   it('drags and nudges like the grip', () => {

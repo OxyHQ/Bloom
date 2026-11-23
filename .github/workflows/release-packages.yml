@@ -28,7 +28,54 @@ concurrency:
   queue: max
 
 jobs:
+  # The compiler's platform packages carry addons built on five operating
+  # systems, which the shared release's one Linux build cannot make. When the
+  # compiler's version is not on npm yet, `prebuilt` builds, packs and verifies
+  # them on each platform (language-compiler-binaries.yml) and stages each
+  # addon at its repository path; the release downloads them into its checkout
+  # (`prebuilt_artifacts`) before it packs. Otherwise both are skipped and the
+  # release runs as before. A platform package whose addon is missing fails
+  # the release's tarball inspection, so nothing ships without its build.
+  compiler:
+    name: Is the language compiler's version on npm?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      unpublished: ${{ steps.registry.outputs.unpublished }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: packages/bloom-language-compiler/package.json
+          sparse-checkout-cone-mode: false
+      # Anonymous; a registry that cannot answer counts as unpublished, so
+      # the addons are built rather than missed.
+      - id: registry
+        run: |
+          spec="$(jq -r '"\(.name)@\(.version)"' packages/bloom-language-compiler/package.json)"
+          if npm view "$spec" version --userconfig /dev/null 2>/dev/null | grep -q .; then
+            echo "$spec is on npm"
+            echo unpublished=false >> "$GITHUB_OUTPUT"
+          else
+            echo "$spec is not on npm (or the registry did not answer): building its addons"
+            echo unpublished=true >> "$GITHUB_OUTPUT"
+          fi
+
+  prebuilt:
+    needs: compiler
+    if: needs.compiler.outputs.unpublished == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/language-compiler-binaries.yml
+    with:
+      release: true
+
   release:
+    needs: [compiler, prebuilt]
+    # Runs when the addons were built, or were not needed; never after a failed build.
+    if: ${{ !cancelled() && needs.compiler.result == 'success' && (needs.prebuilt.result == 'success' || needs.prebuilt.result == 'skipped') }}
     permissions:
       actions: read
       contents: write
@@ -36,3 +83,4 @@ jobs:
     uses: OxyHQ/oxy/.github/workflows/npm-release.yml@main
     with:
       ci_workflow: validate.yml
+      prebuilt_artifacts: release-prebuilt-*

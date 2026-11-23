@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import { Children, cloneElement, isValidElement } from 'react';
 
 import { BloomThemeContext } from '../BloomThemeProvider';
 import { ThemeScopeContext } from './context';
@@ -7,18 +7,6 @@ import { useScope } from './use-scope';
 import { useScopePaint } from './paint-vars';
 import type { BloomColorScopeTokens } from './types';
 import type { AppColorName } from '../color-presets';
-import { buildScopeVars } from './style-builder';
-
-/**
- * `buildScopeVars` returns every canonical token already resolved to an sRGB
- * `rgb(...)` string, plus the `--color-*` aliases consumed by Tailwind v4
- * utilities. Scoped onto an element's inline `style`, profile-level NativeWind
- * classes resolve against the subtree preset instead of the document root.
- */
-function buildWebScopeVars(colorPreset: AppColorName, mode: 'light' | 'dark'): React.CSSProperties {
-  return buildScopeVars(colorPreset, mode) as React.CSSProperties;
-}
-
 export interface BloomColorScopeProps {
   /**
    * Preset to apply within this subtree. When `undefined`, the scope publishes
@@ -114,22 +102,4 @@ export function BloomColorScope({
       </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
-}
-
-/**
- * Escape hatch for advanced cases where the wrapping element is owned by the
- * caller. Returns a stable React style object carrying the preset's CSS vars.
- */
-export function useColorScopeStyle(colorPreset: AppColorName): React.CSSProperties {
-  // Hooks first, unconditionally; throw only after they have all run.
-  const parent = useContext(BloomThemeContext);
-  const resolvedMode = parent?.theme.mode ?? 'light';
-  const scopeStyle = useMemo(
-    () => buildWebScopeVars(colorPreset, resolvedMode),
-    [colorPreset, resolvedMode],
-  );
-  if (!parent) {
-    throw new Error('useColorScopeStyle must be used within a <BloomThemeProvider>');
-  }
-  return scopeStyle;
 }

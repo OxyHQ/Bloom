@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { StyledView } from '../styles/styled-primitives';
+import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { AGENT_CREATOR_CARD } from './shared';
 
 export interface AgentCreatorSectionProps {
   /** The section's name, above its card. */
@@ -19,16 +20,18 @@ export interface AgentCreatorSectionProps {
 export function AgentCreatorSection({ title, children }: AgentCreatorSectionProps) {
   const { colors } = useTheme();
   return (
-    <StyledView className="mt-[15px] gap-2">
-      <Text variant="body-2-medium" className="px-3" style={{ color: colors.textSecondary }}>
+    <View style={styles.section}>
+      <Text variant="body-2-medium" style={[styles.title, { color: colors.textSecondary }]}>
         {title}
       </Text>
-      <StyledView
-        className="overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
-        style={{ backgroundColor: colors.backgroundSecondary }}
-      >
+      <View style={[AGENT_CREATOR_CARD, { backgroundColor: colors.backgroundSecondary }]}>
         {children}
-      </StyledView>
-    </StyledView>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  section: { marginTop: 15, gap: 8 },
+  title: { paddingInline: 12 },
+});

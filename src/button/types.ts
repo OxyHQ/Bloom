@@ -75,8 +75,19 @@ export interface ButtonProps {
   /** Keep an embedded action from also activating its parent. Default false. */
   stopPropagation?: boolean;
   appearance?: BloomAppearance;
-  /** Own surface (default), flat fill, or shared material painted by an enclosing control group. */
-  material?: 'surface' | 'flat' | 'shared';
+  /**
+   * Own surface (default), flat fill, shared material painted by an enclosing control group, or
+   * `'lens'`: the native lens (Android 13+, in a binary that has Bloom's lens module), which
+   * draws the fill, tinted by the button's tone, and springs under the finger. Where lens is
+   * not available the button keeps its own surface. A lens button sizes to its content or to
+   * its `width`/`height`.
+   *
+   * Lens belongs to the fixed layer: a header, a toolbar, a floating button. Never inside a
+   * scrolling area, whose overscroll stretch a lens control does not follow, and never one per
+   * row of a list: each lens button is a native view drawn every frame (measured on a Pixel 8a,
+   * 60 at once cost 21% janky frames while scrolling, against 2% on a surface).
+   */
+  material?: 'surface' | 'flat' | 'shared' | 'lens';
   tone?: BloomTone;
   leading?: ReactNode;
   trailing?: ReactNode;
@@ -87,7 +98,12 @@ export interface ButtonProps {
   size?: ButtonSize | number;
   /** Explicit override of the nearest BloomScope's contextual action geometry. */
   density?: BloomControlDensity;
-  style?: StyleProp<ViewStyle>;
+  /**
+   * The button's box. Its text keys (`color`, font, line height) are the
+   * content's: on the web they cascade to the label, glyph and spinner in every
+   * state; native forwards them to the built-in label and icon renderers.
+   */
+  style?: StyleProp<TextStyle>;
   textStyle?: StyleProp<TextStyle>;
 
   /**
@@ -236,7 +252,6 @@ export interface ButtonProps {
   tabIndex?: number;
   hitSlop?: number | { top: number; bottom: number; left: number; right: number };
   testID?: string;
-  className?: string;
 
   // -------------------------------------------------------------------------
   //  Web-only props
@@ -266,9 +281,15 @@ export interface ButtonProps {
    * Render as the child element instead of a `<button>` (web only). Use for
    * link-buttons: `<Button asChild><a href="…">Go</a></Button>` applies the
    * button styling to the `<a>` (or a router `<Link>`). The child receives the
-   * merged `className`, `style`, and the button's event handlers.
+   * button's classes, merged `style`, and the button's event handlers.
    */
   asChild?: boolean;
+  /**
+   * `data-*` attributes on the button's DOM element (web only): a styling hook
+   * an adopted stylesheet's selectors hang off, as react-native-web's `dataSet`
+   * is (`{ bloomStepperAction: '' }` → `data-bloom-stepper-action=""`).
+   */
+  dataSet?: Record<string, string>;
   /**
    * Inline DOM `id` (web only).
    */
@@ -316,8 +337,7 @@ export interface ButtonProps {
    */
   autoFocus?: boolean;
   /**
-   * Stretch the button to fill its container's main axis (web only). Equivalent
-   * to passing `className="w-full"`; provided as a prop for ergonomics.
+   * Stretch the button to fill its container's main axis (web only).
    */
   fullWidth?: boolean;
 }
@@ -345,6 +365,12 @@ export interface ButtonGroupProps {
   dividers?: boolean;
   /** Flat segments with a gap, sharing the outer pill. Default false. */
   separated?: boolean;
+  /**
+   * The group's material. `'surface'` (default) paints it with the shared Surface; `'lens'` draws it with
+   * the native lens where the device has one (Android 13+), and falls back to the Surface elsewhere. Use it
+   * in a fixed layer such as a header or a toolbar, not inside a scrolling list.
+   */
+  material?: 'surface' | 'lens';
   children: React.ReactNode;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

@@ -17,6 +17,8 @@ const COLOR_FIELDS = {
   input: ['borderLight'],
   primary: ['primary', 'tint', 'iconActive'],
   'primary-foreground': ['primaryForeground'],
+  vivid: ['vivid'],
+  'vivid-foreground': ['vividForeground'],
   'primary-subtle': ['primarySubtle'],
   'primary-text': ['primarySubtleForeground'],
   secondary: ['secondary'],
@@ -45,6 +47,9 @@ const COLOR_FIELDS = {
   'info-text': ['infoSubtleForeground'],
   muted: ['contrast50'],
   card: ['card'],
+  destructive: ['destructive'],
+  'surface-foreground': ['surfaceForeground'],
+  accent: ['accent'],
 } satisfies Partial<Record<CanonicalToken, readonly (keyof ThemeColors)[]>>;
 
 /** Preserve unspecified roles; rebuild the full CSS alias layer after exact overrides. */

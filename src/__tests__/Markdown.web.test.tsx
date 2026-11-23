@@ -5,7 +5,7 @@
 // The document through the REAL react-native-web: the elements, roles and
 // attributes a browser (and a screen reader) actually gets.
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

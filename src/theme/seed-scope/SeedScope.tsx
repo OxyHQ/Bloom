@@ -1,12 +1,13 @@
-import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
+import type React from 'react';
+import { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildSeedScopeVars } from '../color-scope/seed-scope';
-import { getVariableContextProvider } from '../color-scope/style-builder';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import type { SchemeVariant } from '../color-engine';
 import { ThemeScopeContext, type ScopeState } from '../color-scope/context';
+import { ColorScopeLayerContext, throughLayer } from '../color-scope/layer';
 
 export interface BloomSeedScopeProps {
   /**
@@ -45,10 +46,9 @@ interface StyleableProps {
 /**
  * Native `<BloomSeedScope>`: scopes a subtree to an ARBITRARY seed colour's
  * palette (the dynamic counterpart of `<BloomColorScope>`, which takes a named
- * preset). Feeds the seed through the colour engine and (1) provides the
- * resulting canonical CSS vars to descendants via react-native-css's
- * `VariableContext` — so `bg-background` / `bg-card` / `var(--primary)` resolve
- * against the seed inside this subtree — and (2) publishes a matching JS `theme`
+ * preset). Feeds the seed through the colour engine and (1) publishes the
+ * resulting tokens on the scope context, so `useColorTokens()` resolves against
+ * the seed inside this subtree, and (2) publishes a matching JS `theme`
  * on `BloomThemeContext`, so `useTheme()`/`useBloomTheme()` consumers inside the
  * subtree also re-theme. The `colorPreset` field is left as the parent's (a seed
  * is not a named preset).
@@ -65,22 +65,8 @@ export function BloomSeedScope({
 }: BloomSeedScopeProps) {
   // Hooks run unconditionally; conditional no-op/throw is applied afterwards.
   const parent = useContext(BloomThemeContext);
+  const Layer = useContext(ColorScopeLayerContext);
   const resolvedMode = parent?.theme.mode ?? 'light';
-
-  const nativeVars = useMemo<Record<string, string> | null>(
-    () =>
-      seed
-        ? buildSeedScopeVars({
-            seed,
-            mode: resolvedMode,
-            variant,
-            contrastLevel,
-            secondarySeed,
-            tertiarySeed,
-          })
-        : null,
-    [seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed],
-  );
 
   const contextValue = useMemo<BloomThemeContextValue | null>(() => {
     if (!parent || !seed) return null;
@@ -107,9 +93,7 @@ export function BloomSeedScope({
     throw new Error('BloomSeedScope must be used within a <BloomThemeProvider>');
   }
   // `seed` undefined => no-op; children inherit the parent scope.
-  if (!nativeVars || !contextValue) return <>{children}</>;
-
-  const VariableProvider = getVariableContextProvider();
+  if (!scopeState || !contextValue) return <>{children}</>;
 
   let content: React.ReactNode;
   if (asChild) {
@@ -126,15 +110,11 @@ export function BloomSeedScope({
     content = <View style={[{ flex: 1 }, style]}>{children}</View>;
   }
 
-  const scoped = VariableProvider ? (
-    <VariableProvider value={nativeVars}>{content}</VariableProvider>
-  ) : (
-    content
-  );
-
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      <ThemeScopeContext.Provider value={scopeState}>{scoped}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={scopeState}>
+        {throughLayer(Layer, scopeState.vars, content)}
+      </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }

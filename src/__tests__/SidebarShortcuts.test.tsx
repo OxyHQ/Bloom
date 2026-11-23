@@ -4,7 +4,7 @@
 // The sidebar binds the shortcuts it displays: a mode's or an item's `shortcut`
 // does what pressing it does, once per key press however many sidebars render
 // the navigation, and never while the user is typing.
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 jest.mock('../styles/platform', () => ({

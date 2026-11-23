@@ -13,8 +13,7 @@ import React, {
   type ComponentType,
   type ComponentRef,
 } from 'react';
-import { Platform, type View as NativeView, type ViewStyle } from 'react-native';
-import { StyledView as View } from '../styles/styled-primitives';
+import { Platform, View, type View as NativeView, type ViewStyle } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { NO_SAFE_AREA_INSETS } from '../hooks/use-css-safe-area-insets';
 import Animated, {
@@ -141,6 +140,22 @@ const FILL: ViewStyle = {
   minHeight: 0,
   minWidth: 0,
 };
+/** A layout group: bounded on both axes, growing and shrinking from its content. */
+const GROUP_BOX: ViewStyle = {
+  minHeight: 0,
+  minWidth: 0,
+  alignSelf: 'stretch',
+  flexGrow: 1,
+  flexShrink: 1,
+};
+/** A row of panels: bounded, stretching them, growing into the group. */
+const ROW_BOX: ViewStyle = { minHeight: 0, minWidth: 0, alignItems: 'stretch', flexGrow: 1 };
+const ROW_VERTICAL: ViewStyle = { flexDirection: 'column' };
+const ROW_HORIZONTAL: ViewStyle = { flexDirection: 'row' };
+/** A document row keeps its content's size; a bounded one shares the group's. */
+const ROW_NATURAL: ViewStyle = { flexShrink: 0 };
+const ROW_SHARED: ViewStyle = { flexShrink: 1, flexBasis: 0 };
+
 export interface PanelLayoutViewProps {
   layout: AppShellPanelLayout;
   shellWidth: number;
@@ -476,6 +491,11 @@ export function createPanelLayoutView(
     const [stickyHeight, setStickyHeight] = useState(0);
     const document = documentFlow && !track.floating;
     const documentFrame = document && (!vertical || alone);
+    // Under the bottom bar a side-by-side or lone panel reaches it: its content
+    // clears the bar and drives it (the shell's navigation motion), and a group
+    // inside it lays out under the bar as the shell's own group does. A stacked
+    // one sits above the group viewport's own clearance.
+    const underBar = !documentFrame && !!region?.underBottomBar && (!vertical || alone);
     const floatingOpen = !!track.floating && !!panel.floating?.open && panel.visible !== false;
     const sticky = !!panel.sticky && documentFrame;
     const parent = React.useContext(ScreenContext);
@@ -812,10 +832,6 @@ export function createPanelLayoutView(
       [panel.id, floatingOpen, active, visibilityReady],
     );
     const renderPanel = (content: React.ReactNode, navigation?: PanelNavigationController) => {
-      // Under the bottom bar a side-by-side panel reaches it: its content clears
-      // the bar and drives it (the shell's navigation motion); a stacked one sits
-      // above the group viewport's own clearance.
-      const underBar = !documentFrame && !!region?.underBottomBar;
       const body = panel.group ? (
         <ScreenHostContext.Provider value={{ ...ancestorHost, active }}>
           {content}
@@ -849,7 +865,6 @@ export function createPanelLayoutView(
         <ContentPanel
           appearance={joined ? 'plain' : panel.appearance}
           chrome={panel.chrome}
-          surfaceClassName={panel.surfaceClassName}
           surfaceColor={panel.surfaceColor}
           framed={
             joined || region?.presentation === 'continuous'
@@ -865,6 +880,7 @@ export function createPanelLayoutView(
           overlaySizing={documentFrame ? 'viewport' : 'panel'}
           overlayInset={documentFrame ? region?.viewportInset : undefined}
           surfaceStyle={[
+            panel.surfaceStyle,
             FILL,
             documentFrame && !sticky && region
               ? {
@@ -1072,6 +1088,7 @@ export function createPanelLayoutView(
             }
             shellWidth={shellWidth}
             gap={gap}
+            underBottomBar={underBar}
             testID={testID ? `${testID}-group` : undefined}
           />
         </PanelDocumentRestorationContext.Provider>,
@@ -1110,7 +1127,12 @@ export function createPanelLayoutView(
     gap,
     testID,
     groupActions,
-  }: PanelLayoutViewProps & { groupActions?: React.ReactNode }) {
+    underBottomBar,
+  }: PanelLayoutViewProps & {
+    groupActions?: React.ReactNode;
+    /** The panel holding this group reaches under the shell's bottom bar. */
+    underBottomBar: boolean;
+  }) {
     const region = useAppShellRegion();
     const parentScope = useContext(PanelCssContext);
     const inheritedResponsiveScope = useContext(PanelResponsiveScopeContext);
@@ -1201,17 +1223,17 @@ export function createPanelLayoutView(
               ...region,
               flow: document ? ('document' as const) : ('bounded' as const),
               bottomReserve: document ? region.bottomReserve : 0,
-              underBottomBar: false,
+              underBottomBar: !document && underBottomBar,
             }
           : null,
-      [region, document],
+      [region, document, underBottomBar],
     );
     return (
       <View
         ref={groupRef}
-        className="min-h-0 min-w-0 self-stretch grow shrink basis-auto"
         {...(parentScope ? { dataSet: { bloomLayout: scope } } : {})}
-        style={
+        style={[
+          GROUP_BOX,
           !document && region?.flow === 'document'
             ? {
                 height: webViewportHeightMinus(
@@ -1220,13 +1242,13 @@ export function createPanelLayoutView(
                 flexGrow: 0,
                 flexShrink: 0,
               }
-            : undefined
-        }
+            : undefined,
+        ]}
       >
         <PanelCssContext.Provider value={parentScope ? scope : null}>
           <PanelResponsiveScopeContext.Provider value={inheritedResponsiveScope ?? parentScope}>
             <AppShellRegionContext.Provider value={nestedRegion}>
-              <BottomEdgeProvider inherit={document}>
+              <BottomEdgeProvider inherit={document || underBottomBar}>
                 <ContentPanelNestingContext.Provider value={false}>
                   <PanelLayoutView
                     layout={layout}
@@ -1601,7 +1623,11 @@ export function createPanelLayoutView(
     const row = (
       <View
         {...(cssScope ? { dataSet: { bloomPanelRow: cssScope } } : {})}
-        className={`min-h-0 min-w-0 items-stretch grow ${vertical ? 'flex-col' : 'flex-row'} ${document || (deck && vertical) ? 'shrink-0 basis-auto' : 'shrink basis-0'}`}
+        style={[
+          ROW_BOX,
+          vertical ? ROW_VERTICAL : ROW_HORIZONTAL,
+          document || (deck && vertical) ? ROW_NATURAL : ROW_SHARED,
+        ]}
       >
         {layout.panels.map((panel, index) => (
           <PanelHost
@@ -1672,7 +1698,11 @@ export function createPanelLayoutView(
         }}
         enabled={deck && !documentHorizontal}
         document={document}
-        bottomInset={vertical && !document && region?.underBottomBar ? bottomEdge : undefined}
+        bottomInset={
+          vertical && visible.length > 1 && !document && region?.underBottomBar
+            ? bottomEdge
+            : undefined
+        }
         testID={testID ? `${testID}-scroll` : undefined}
       >
         {row}

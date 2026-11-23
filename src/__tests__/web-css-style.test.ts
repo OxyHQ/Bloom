@@ -48,6 +48,31 @@ const files = sourceFiles(SRC);
  * web-CSS cast. Anything else is a regression.
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
+  'project-board/ProjectBoardCanvas.tsx': {
+    count: 1,
+    reason:
+      '`COLUMN_RING` is the never-showing ring stack the old `ring-2 ring-inset ring-transparent` class computed: a web box-shadow string list on one side and `[]` on native, as one VALUE-level cast.',
+  },
+  'agent-creator/EmotionPicker.tsx': {
+    count: 1,
+    reason:
+      "`CHIP_MOTION` is Reanimated 4's CSS transition (`transitionProperty`/`Duration`/`TimingFunction`) on an animated host, native only: the keys Reanimated reads are not on RN's `ViewStyle`. It keeps the 150ms colour ease the old `transition-colors` class gave the chip on native.",
+  },
+  'agent-creator/ShapeArc.tsx': {
+    count: 1,
+    reason:
+      "`SLOT_MOTION` is the same Reanimated 4 CSS transition as `EmotionPicker`'s, on the arc's animated slots (native only).",
+  },
+  'agent-creator/AgentPreferencesPanel.tsx': {
+    count: 1,
+    reason:
+      "The preview Button's native host style carries `color`, which the old class put on that host and Button hands to its label; `color` is a `TextStyle` key, so the literal is cast once.",
+  },
+  'styles/rounded-full.ts': {
+    count: 1,
+    reason:
+      "`ROUNDED_FULL` is the radius `rounded-full` drew: `'calc(infinity * 1px)'` on the web, a number on native. A VALUE-level cast like `Rail`'s `100vh`, typed once so every pill reads one constant.",
+  },
   'app-shell/AppShellMenuButton.tsx': {
     count: 1,
     reason:
@@ -69,9 +94,9 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
       'cssRadius narrows a web-only CSS length expression to RN borderRadius at the geometry owner boundary. Native returns numeric corners before this branch; no style object or unsupported key is cast.',
   },
   'styles/web-view-style.ts': {
-    count: 8,
+    count: 9,
     reason:
-      "`cssLength` (the existing EdgeDock adapter relocated here), `WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
+      "`WEB_DISPLAY_GRID`, `cssLength` (the existing EdgeDock adapter relocated here), `WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`, `WEB_SURFACE_STICKY_TOP`, `webSurfaceStickyTopPlus` (measured header clearance plus the inherited panel inset), `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus` and `WEB_OVERFLOW_CLIP` — VALUE-level casts on keys RN does model (`position`, `top`, `height`, `overflow`), just with a narrower union. Their exact names and types are pinned by web-position-fixed.test.ts. They are the documented crossing points and cannot be annotations, because `'fixed'`/`'sticky'`/`100dvh`/`'clip'` have to be writable inside an ordinary style object.",
   },
   'skeleton/Skeleton.tsx': {
     count: 1,

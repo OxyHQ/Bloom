@@ -101,10 +101,30 @@ describe('protected chrome and external fade', () => {
   });
 });
 
+describe('the far edge is exactly transparent', () => {
+  // The fade must end at alpha 0 on its far edge, or that edge reads as a line
+  // across the content. Every falloff, with and without protected chrome, on
+  // the SVG renderer (iOS, web) and the native gradient (Android).
+  const cases = (['smooth', 'linear'] as const).flatMap((falloff) =>
+    [0, 1 / 1.55].flatMap((opaqueFraction) =>
+      (['top', 'bottom'] as const).map((edge) => ({ falloff, opaqueFraction, edge })),
+    ),
+  );
+  it.each(cases)('$falloff, opaqueFraction $opaqueFraction, $edge', (scrim) => {
+    const { toJSON } = render(<EdgeScrim color="#000000" {...scrim} />);
+    const last = hostNodes(toJSON())
+      .filter((node) => String(node.type) === 'Stop')
+      .map((node) => ({ offset: Number(node.props.offset), opacity: node.props.stopOpacity }))
+      .slice(-1);
+    expect(last).toEqual([{ offset: 1, opacity: 0 }]);
+    expect(edgeScrimGradient('#000000', scrim.edge, scrim.falloff, scrim.opaqueFraction)).toMatch(
+      /, rgba\(0, 0, 0, 0\) 100%\)$/,
+    );
+  });
+});
+
 describe('EdgeScrim on Android', () => {
-  // react-native-svg laid the ramp out ~1.55x taller than its box there, so the
-  // box cut it off half-opaque: a hard line across the content at the header's
-  // foot (Commons, Allo; Pixel 8a). Android draws it as the view's own gradient.
+  // Android draws the ramp as the view's own background gradient.
   const previous = Platform.OS;
   beforeEach(() => {
     (Platform as { OS: string }).OS = 'android';

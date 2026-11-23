@@ -1,6 +1,5 @@
 import { useContext } from 'react';
-import { Platform, type ViewStyle } from 'react-native';
-import { StyledView } from '../styles/styled-primitives';
+import { Platform, View, type ViewStyle } from 'react-native';
 import { AppShellPanelContext } from './context';
 import type { AppShellPanelVisibilityProps } from './types';
 
@@ -14,5 +13,5 @@ export function AppShellPanelVisibility({ when, style, ...props }: AppShellPanel
     Platform.OS === 'web' && panel?.cssVisibility
       ? `var(--bloom-panel-${when}-display, ${fallback})`
       : fallback;
-  return <StyledView {...props} style={[style, { display: display as ViewStyle['display'] }]} />;
+  return <View {...props} style={[style, { display: display as ViewStyle['display'] }]} />;
 }

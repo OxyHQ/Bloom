@@ -8,7 +8,7 @@
  * preset with a light primary gets a dark dot rather than a white one on a
  * near-white fill.
  */
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import { render } from '@testing-library/react-native';
 

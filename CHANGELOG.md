@@ -1,5 +1,36 @@
 # Changelog
 
+## 23.0.0
+
+Bloom's UI language ships with this major, as its own packages released from this repository: `@oxy.so/bloom-language` 1.0.0, `@oxy.so/bloom-language-compiler` 1.0.0 (with its prebuilt platform packages and WASI fallback), `@oxy.so/bloom-data` 0.1.0 and `@oxy.so/bloom-lens` 1.0.0. See `docs/bloom-language.mdx`.
+
+### Breaking
+
+- Bloom styles without NativeWind, react-native-css or Tailwind: every component draws React Native styles from tokens (see `docs/no-nativewind.mdx`). The look is unchanged.
+  - Removed: every `className` and `*ClassName` prop (pass `style`, or the language's modifiers), `useColorScopeStyle` and `initCssInteropDarkMode`.
+  - Peers removed: `nativewind` and `react-native-css`. Apps no longer need NativeWind, react-native-css, Tailwind or `@oxy.so/app-preset/base.css` for Bloom.
+  - Kept for apps that still use `className` of their own, until the fleet has migrated: `./design-tokens/theme.css` and `./tailwind-preset`. On native, Bloom no longer publishes its tokens to react-native-css: such an app wraps its tree once in `BloomNativeWindTheme` from `@oxy.so/app-preset` 6.9 or newer, inside `BloomProvider`, so its classes follow the theme and each colour scope. Upgrade an app that still has `className` on native together with that app-preset.
+  - Moving an app's `className` JSX to the language: the className codemod (`packages/bloom-language-codemod`, `docs/bloom-language-codemod.mdx`, `docs/bloom-language-classnames.mdx`) runs from a Bloom checkout; it is not published yet.
+- Peer floors raised: `react-native-reanimated` >= 4.6.0 and `react-native-gesture-handler` >= 3.3.0. Bloom's motion engine and its gesture layer (drags, pinch, double tap; the bottom sheet, sidebar tree rows and sortable chips) are built on Gesture Handler 3.
+- New optional peer `@oxy.so/bloom-lens` (>= 1.0.0): the native lens material on Android 13+. Without it Bloom keeps its own material.
+
+### Added
+
+- `@oxy.so/bloom/theme`: colour tokens and token styles, the one way a component paints: `useColorTokens`, `createTokenStyles`, `tokenAlpha`, `ColorToken`, `ColorTokens`, `ColorScopeLayerContext` and `ColorScopeLayer`; the `transparent`, `surfaceForeground`, `accent`, `destructive`, `white` and `black` theme colours; tone `vivid`, the brand at full strength.
+- `@oxy.so/bloom/blur` publishes the blur family; `BlurIsland` draws the native lens where the device has it.
+- Bloom's motion engine (`@oxy.so/bloom/motion`): springs from a velocity, motion values over shared values, delays, loops and colour transitions, exits played natively after unmount, and a gesture layer of motion values (`usePinch`, `useDoubleTap`, drags that share a scroll view's touches). The pop, the roll, the toast and press feedback run on it.
+- The native lens material on Android 13+ (with `@oxy.so/bloom-lens`): `Select`, `ContextMenu` and `DropdownMenu` present as native glass; `Button material="glass"`; `Surface`, `Fab`, `TabBar`, `ButtonGroup`, `HeaderActions`, a floating `PageHeader`'s controls, `Chip`, `Badge` and the small buttons take the lens; native sheets and dialogs present in the app window.
+- `ScreenScrollView` lays its content out in a view of its own (`contentView`); `List` takes its scroller's content style; `ScrollArea`'s `viewportStyle` reaches the scroller on the web; `fontFamilyStyle` is exported from `@oxy.so/bloom/typography`.
+- `BloomImage`, Bloom's raster renderer (expo-image on a device, react-native's `Image` on web), is public: `@oxy.so/bloom/image` and the root barrel export it with its prop types (`BloomImageProps`, `BloomImageSource`, `BloomImageContentFit`, `BloomImageLoadInfo`, `BloomImageErrorInfo`). See `docs/image.mdx`.
+- `adoptStyleSheet(id, css)` is exported from `@oxy.so/bloom/styles`: the CSP-safe way to put CSS on a web page as a constructed stylesheet, the mechanism Bloom's web forks use.
+- `useScreenActionClaimed()` is exported from `@oxy.so/bloom/app-shell/hooks`: whether the screen in front shows a primary action of its own (`Screen primaryAction`). A floating action the app draws for the shell (a bottom bar's FAB) steps aside while it is `true`, as the shell's own does, so a route with its own action never shows two.
+
+### Fixed
+
+- `SettingsSelect`'s compact trigger draws as Bloom 22 did: on native the select size's sides (12 at `md`) with a 5px top and bottom and a 4px gap; on the web the size's own field (12px sides, 7px top and bottom, an 8px gap at `md`). The move off NativeWind had made its sides 8 everywhere and its web field 5px and 4px.
+- The custom-colour popover's edge highlight (the agent creator's colour picker) follows the popover's 24px corners. It was computed for 16px corners while the panel drew 24px, so the highlight ran off the rounded edge.
+- The native `reveal` navigation drawer clears the device's top and bottom edges the shell frame leaves it. Without `safeArea` it ran under the status bar; with it, geometry is unchanged.
+
 ## 22.1.11
 
 ### Fixed

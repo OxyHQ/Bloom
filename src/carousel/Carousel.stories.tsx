@@ -312,6 +312,8 @@ function ArrowRecipeDemo({ placement }: { placement: 'header' | 'overlay' | 'foo
   const [index, setIndex] = useState(0);
   const [width, setWidth] = useState(440);
   const [count, setCount] = useState(3);
+  const { isDark } = useTheme();
+  const arrowFill = isDark ? '#121212' : '#fff';
   return (
     <Frame width={width}>
       <Button testID="recipe-before" onPress={fn().mockName('onPress')}>
@@ -328,8 +330,23 @@ function ArrowRecipeDemo({ placement }: { placement: 'header' | 'overlay' | 'foo
         showDots={false}
         arrowButtonProps={{
           material: 'flat',
-          className: 'bloom-demo-carousel-arrow',
           iconSize: 20,
+          colors: { background: arrowFill, foreground: isDark ? '#fff' : '#121212' },
+          style: {
+            width: 40,
+            height: 40,
+            minWidth: 40,
+            paddingLeft: 0,
+            paddingRight: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            borderRadius: 9999,
+            borderWidth: 0.5,
+            borderColor: isDark ? '#ffffff1a' : '#183b4e0f',
+            backgroundColor: arrowFill,
+            color: isDark ? '#fff' : '#121212',
+            boxShadow: '0 2px 8px #0000000f',
+          },
         }}
       >
         {Array.from({ length: count }, (_, value) => (

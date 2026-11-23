@@ -161,16 +161,26 @@ export const AuthoredSurface: Story = {
         <Accordion
           value={value}
           onValueChange={setValue}
-          className="bloom-demo-accordion"
-          style={{ maxWidth: '100%' }}
+          style={{ gap: 8, width: 360, maxWidth: '100%' }}
           testID="authored-accordion"
           transition={{ duration: 250, easing: [0.23, 1, 0.32, 1] }}
         >
-          <AccordionItem value="details" className="bloom-demo-accordion-item">
-            <AccordionTrigger className="bloom-demo-accordion-trigger">Details</AccordionTrigger>
+          <AccordionItem value="details" style={{ borderBottomColor: '#5433eb' }}>
+            <AccordionTrigger
+              style={{
+                paddingTop: 16,
+                paddingBottom: 16,
+                paddingLeft: 0,
+                paddingRight: 0,
+                fontSize: 18,
+                lineHeight: 20,
+              }}
+            >
+              Details
+            </AccordionTrigger>
             <AccordionContent
-              className="bloom-demo-accordion-panel"
-              contentClassName="bloom-demo-accordion-body"
+              style={{ backgroundColor: '#eef0f1' }}
+              contentStyle={{ paddingTop: 0, paddingRight: 0, paddingBottom: 16, paddingLeft: 0 }}
             >
               <TextFieldInput label="Expanded input" defaultValue="Retained content" />
               <View style={{ height: 900 }}>

@@ -62,6 +62,14 @@ export type AdaptiveColors = Omit<
   | 'errorForeground'
   | 'warningForeground'
   | 'infoForeground'
+  // What the class vocabulary paints with: `--destructive` and Tailwind's fixed white and
+  // black, which the platform palette does not replace for a `className` either.
+  | 'destructive'
+  | 'white'
+  | 'black'
+  | 'transparent'
+  | 'surfaceForeground'
+  | 'accent'
 >;
 
 const c = (v: unknown): string => v as string;
@@ -119,6 +127,8 @@ function getAndroidColors(): AdaptiveColors | null {
       tertiaryForeground: c(d.onTertiary),
       tertiarySubtle: c(d.tertiaryContainer),
       tertiarySubtleForeground: c(d.onTertiaryContainer),
+      vivid: c(d.primary),
+      vividForeground: c(d.onPrimary),
       tint: c(d.primary),
       icon: c(d.onSurfaceVariant),
       iconActive: c(d.primary),
@@ -174,6 +184,8 @@ function getIOSColors(): AdaptiveColors | null {
       tertiaryForeground: '#FFFFFF',
       tertiarySubtle: c(i.systemGray6),
       tertiarySubtleForeground: c(i.label),
+      vivid: c(i.systemBlue),
+      vividForeground: '#FFFFFF',
       tint: c(i.systemBlue),
       icon: c(i.secondaryLabel),
       iconActive: c(i.systemBlue),

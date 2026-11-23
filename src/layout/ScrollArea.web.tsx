@@ -1,7 +1,6 @@
 import { useCallback, useRef } from 'react';
 import type { ComponentRef, ComponentType } from 'react';
-import type { ScrollView } from 'react-native';
-import { StyledView } from '../styles/styled-primitives';
+import { type ScrollView, View } from 'react-native';
 import { ScrollViewport } from './ScrollViewport';
 import { ScrollBar } from './ScrollBar.web';
 import type { ScrollAreaProps } from './types';
@@ -24,7 +23,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   scrollIndicatorInsets,
   scrollbarSide,
   style,
-  containerClassName,
+  viewportStyle,
   testID,
   ref,
   ...props
@@ -40,9 +39,8 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
   );
 
   return (
-    <StyledView
-      className={`relative min-h-0 min-w-0 ${containerClassName ?? ''}`}
-      style={[{ flexShrink: 1 }, style]}
+    <View
+      style={[{ position: 'relative', minHeight: 0, minWidth: 0, flexShrink: 1 }, style]}
       testID={testID}
     >
       <ScrollViewport
@@ -55,7 +53,7 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
         {...(horizontal ? { horizontal: true } : null)}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 1, flexShrink: 1, minHeight: 0 }}
+        style={[{ flexGrow: 1, flexShrink: 1, minHeight: 0 }, viewportStyle]}
       />
       {viewportOverlay}
       {scrollbar === 'never' ? null : (
@@ -72,6 +70,6 @@ export const ScrollArea: ComponentType<ScrollAreaProps> = function ScrollArea({
           }
         />
       )}
-    </StyledView>
+    </View>
   );
 };

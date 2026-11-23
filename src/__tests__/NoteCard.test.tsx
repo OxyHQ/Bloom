@@ -8,7 +8,7 @@
  * measured against the composite.
  */
 import { resolveSurfaceFill, resolveSurfaceTint } from '../surface/shared';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -396,7 +396,7 @@ describe('the card paints its own surface in both modes', () => {
   it.each(MODES)('publishes the composited fill it actually drew (%s)', (mode) => {
     mount(<NoteCard title="A" tone="info" onPress={() => {}} testID="note" />, mode);
     const surface = surfaceOf('note');
-    const material = surface.querySelector<HTMLElement>('.bloom-surface-paint');
+    const material = surface.querySelector<HTMLElement>('[data-bloom-surface-paint]');
     expect(material).not.toBeNull();
     const drawn = material!.style.getPropertyValue('--bloom-surface-paint-fill');
     expect(surface.style.getPropertyValue('--bloom-surface')).toBe(

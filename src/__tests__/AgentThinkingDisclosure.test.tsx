@@ -6,7 +6,7 @@
 // (`aria-expanded`, `dir`), not props handed back by a stub.
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Text } from 'react-native';

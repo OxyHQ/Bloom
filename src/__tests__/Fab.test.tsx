@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import * as Reanimated from 'react-native-reanimated';
 import * as ReducedMotion from '../hooks/use-prefers-reduced-motion';
 import { Text } from 'react-native';

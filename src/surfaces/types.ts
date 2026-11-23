@@ -90,12 +90,8 @@ export interface SurfacePresentation {
   style?: StyleProp<ViewStyle>;
   /** Style overrides for the side/bottom placement panel surface. */
   panelStyle?: StyleProp<ViewStyle>;
-  /** NativeWind classes for the side/bottom placement panel surface. */
-  panelClassName?: string;
   /** Style for the root overlay (theme-var scope, rail offset, etc.). */
   containerStyle?: StyleProp<ViewStyle>;
-  /** NativeWind classes for the root overlay. */
-  containerClassName?: string;
   /** Accessibility label applied to the surface's dialog role. */
   label?: string;
   /** Stable testID forwarded to the underlying `Dialog`. */

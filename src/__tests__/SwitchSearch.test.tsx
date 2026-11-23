@@ -11,7 +11,8 @@
  * clear button on an empty field is a dead target, and one missing on a full
  * field strands the user with no way back to the unfiltered list.
  */
-import React, { useLayoutEffect } from 'react';
+import type React from 'react';
+import { useLayoutEffect } from 'react';
 import { Animated } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 

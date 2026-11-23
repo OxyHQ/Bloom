@@ -2,7 +2,7 @@
 // scrolls the document (routes stay in document flow); native is one screen and
 // each route's ScreenScrollView is the scroller, never nested in a shell
 // ScrollView — with the bottom bar's clearance handed to it.
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

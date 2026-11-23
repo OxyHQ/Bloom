@@ -1,7 +1,12 @@
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { PanResponder, type LayoutChangeEvent, type PointerEvent } from 'react-native';
-import { StyledView as View } from '../styles/styled-primitives';
+import {
+  PanResponder,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type PointerEvent,
+} from 'react-native';
 
 import { useCommonMessages } from '../locale/common-messages';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -31,6 +36,43 @@ import { dataHook } from '../styles/data-hook';
  * and 55% while dragging, on a strip `thickness` deep (11: a 7px gap and 2px
  * of each pane). Same gestures, keys and semantics.
  */
+const GRIP_BOX = {
+  position: 'absolute',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 2,
+  borderRadius: 4,
+  borderStyle: 'solid',
+  borderWidth: 1,
+} as const;
+
+const HANDLE_STYLES = StyleSheet.create({
+  placed: { position: 'absolute', zIndex: 10, alignItems: 'center' },
+  placedPill: { position: 'absolute', zIndex: 10, alignItems: 'center', justifyContent: 'center' },
+  edgeBottom: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: -10,
+    height: 20,
+    zIndex: 10,
+    alignItems: 'center',
+  },
+  edgeEnd: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    insetInlineEnd: -10,
+    width: 20,
+    zIndex: 10,
+    alignItems: 'center',
+  },
+  gripRow: { ...GRIP_BOX, width: 25, height: 15, marginLeft: -12.5, flexDirection: 'column' },
+  gripColumn: { ...GRIP_BOX, width: 15, height: 25, marginTop: -12.5, flexDirection: 'row' },
+  lineAcross: { width: 13, height: 1 },
+  lineDown: { width: 1, height: 13 },
+});
+
 export function ResizeHandle({
   orientation = 'vertical',
   variant = 'grip',
@@ -237,14 +279,17 @@ export function ResizeHandle({
           ? event.nativeEvent.layout.width
           : event.nativeEvent.layout.height;
       }}
-      className={
+      style={[
         placed
-          ? `absolute z-10 items-center${pill ? ' justify-center' : ''}`
+          ? pill
+            ? HANDLE_STYLES.placedPill
+            : HANDLE_STYLES.placed
           : horizontal
-            ? 'absolute left-0 right-0 -bottom-2.5 h-5 z-10 items-center'
-            : 'absolute top-0 bottom-0 -end-2.5 w-5 z-10 items-center'
-      }
-      style={[strip, style]}
+            ? HANDLE_STYLES.edgeBottom
+            : HANDLE_STYLES.edgeEnd,
+        strip,
+        style,
+      ]}
     >
       {pill ? (
         <View
@@ -264,18 +309,15 @@ export function ResizeHandle({
         <View
           {...dataHook('bloomResizeHandlePill', dragging ? 'dragging' : '')}
           pointerEvents="none"
-          className={
-            horizontal
-              ? 'absolute w-[25px] h-[15px] -ml-[12.5px] flex-col items-center justify-center gap-0.5 rounded-[4px] border'
-              : 'absolute w-[15px] h-[25px] -mt-[12.5px] flex-row items-center justify-center gap-0.5 rounded-[4px] border'
-          }
-          style={grip}
+          style={[horizontal ? HANDLE_STYLES.gripRow : HANDLE_STYLES.gripColumn, grip]}
         >
           {[0, 1, 2].map((line) => (
             <View
               key={line}
-              className={horizontal ? 'w-[13px] h-px' : 'w-px h-[13px]'}
-              style={{ backgroundColor: colors.textTertiary }}
+              style={[
+                horizontal ? HANDLE_STYLES.lineAcross : HANDLE_STYLES.lineDown,
+                { backgroundColor: colors.textTertiary },
+              ]}
             />
           ))}
         </View>

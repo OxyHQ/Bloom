@@ -83,15 +83,13 @@ Every default is resolved INLINE, before the caller's `style`, so `style` overri
 <PopoverContent label="Event details" side="right" style={{ width: 302, borderRadius: 20 }}>
 ```
 
-`className` works too, and this is the part worth knowing. On web an inline style outranks every class, so an inline default would silently beat a caller's `w-[200px]`. `PopoverContent` reads which chrome properties the caller's utilities name — width (`w-*`, `size-*`), `max-w-*`, padding (`p-*`, `px-*`, …), `rounded-*`, border width (`border`, `border-0`, `border-x-2`), border colour (`border-red-500`), `bg-*`, `shadow-*`, `overflow-*`, through `md:`/`dark:` variants and `!` — and leaves THAT default out, so the class is the only rule for it.
-
-Padding and margin are read PER SIDE, because the utilities are: `px-4` claims the left and right and says nothing about the top, so a `pt-*` default stays. The **panel parts** (`PopoverHeader`, `PopoverTitle`, `PopoverDescription`, `PopoverFooter`, `PopoverSeparator`) use the same scan, so `<PopoverSeparator className="bg-red-500" />` paints red and `<PopoverTitle className="mt-1">` keeps its colour.
+The **panel parts** (`PopoverHeader`, `PopoverTitle`, `PopoverDescription`, `PopoverFooter`, `PopoverSeparator`) take a `style` the same way, over their own defaults:
 
 ```tsx
-<PopoverContent label="More actions" className="w-[200px] p-2">
+<PopoverContent label="More actions" style={{ width: 200, paddingTop: 8, paddingBottom: 8, paddingLeft: 8, paddingRight: 8 }}>
 ```
 
-Panel classes still apply to the outer surface. The shared ScrollArea owns child flow and the inherited row gap; use an explicit `style={{ gap: ... }}` only when mixed content genuinely needs a different rhythm. That gap is forwarded to the scroll content. A gap utility on the outer surface does not space its grandchildren.
+A panel `style` applies to the outer surface. The shared ScrollArea owns child flow and the inherited row gap; use an explicit `style={{ gap: ... }}` only when mixed content genuinely needs a different rhythm. That gap is forwarded to the scroll content. 
 
 A padding override from `style` may use the shorthand (`padding: 0`) — the defaults are longhands, and an inline shorthand still replaces them.
 
@@ -127,7 +125,7 @@ This is `FloatingPanel`'s behaviour, so it is every menu, popover and select's; 
 
 ## Native
 
-The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — an 8px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `className`, `style` and `testID` land on that body.
+The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — an 8px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `style` and `testID` land on that body.
 
 On a platform whose adapter reports `popup-surface` (a desktop: OxyOS), the popover is instead a panel beside its trigger in the platform's popup, as a Mac's popover and as the native menus' panels are (`floating/PopupPanel`'s chrome: the menu palette's material, the 16px corner, the density's padding, 266px wide at least). The popup is a `dialog` named by `label`; `side`, `align` and the offsets place it (the platform keeps it on screen, and it may extend beyond the window); the platform takes it through the keyboard — Tab and Shift+Tab go round its controls and never leave it, as a popover's key view loop — and Escape closes it (with `dismissible`), as does a press outside, which the platform's popup always closes on. The screen reader's focus moves into it as it opens and back to the trigger as it closes.
 

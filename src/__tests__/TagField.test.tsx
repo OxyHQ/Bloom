@@ -10,7 +10,8 @@
  * assertions read the emitted attributes and the emitted text, never the props.
  */
 import { materialFill } from './support/material-fill';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -275,6 +276,14 @@ describe('the chips are Bloom chosen-thing pills', () => {
   it('takes the field tone', () => {
     mount(<Harness initial={['tide']} tone="primary" label="Tags" />);
     const paint = resolveAccentColors(THEME.colors, 'primary', 'subtle');
+    expect(rgb(materialFill(byTestId('tags-chip-tide')))).toEqual(rgb(paint.background));
+  });
+
+  // `secondary` and `tertiary` are accent tones the field's type takes; the chip's tone
+  // mapping once had no Bloom tone for either, so mounting one threw.
+  it.each(['secondary', 'tertiary'] as const)('takes the %s tone', (tone) => {
+    mount(<Harness initial={['tide']} tone={tone} label="Tags" />);
+    const paint = resolveAccentColors(THEME.colors, tone, 'subtle');
     expect(rgb(materialFill(byTestId('tags-chip-tide')))).toEqual(rgb(paint.background));
   });
 });

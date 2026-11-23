@@ -1,0 +1,71 @@
+package so.oxy.bloom.glassmenu
+
+import so.oxy.bloom.glassmenu.records.GlassMenuConfigRecord
+import so.oxy.bloom.glassmenu.records.GlassMenuItemRecord
+import so.oxy.bloom.glassmenu.records.GlassMemberRecord
+import so.oxy.bloom.glassmenu.records.GlassTriggerConfigRecord
+import expo.modules.kotlin.modules.Module
+import expo.modules.kotlin.modules.ModuleDefinition
+
+class GlassMenuAndroidModule : Module() {
+  override fun definition() = ModuleDefinition {
+    Name("BloomLensMenu")
+
+    View(GlassMenuAndroidView::class) {
+      Events("onItemSelect", "onMenuOpenChange", "onMenuClosed")
+
+      Prop("items") { view: GlassMenuAndroidView, items: List<GlassMenuItemRecord>? ->
+        view.items = items ?: emptyList()
+      }
+      Prop("lens") { view: GlassMenuAndroidView, glass: Boolean? ->
+        view.glass = glass ?: true
+      }
+      Prop("morph") { view: GlassMenuAndroidView, morph: Boolean? ->
+        view.morph = morph ?: true
+      }
+      Prop("cornerRadius") { view: GlassMenuAndroidView, radius: Float? ->
+        view.cornerRadius = radius
+      }
+      Prop("colorScheme") { view: GlassMenuAndroidView, scheme: String? ->
+        view.colorScheme = scheme ?: "auto"
+      }
+      Prop("menuWidth") { view: GlassMenuAndroidView, width: Float? ->
+        view.menuWidth = width
+      }
+      Prop("fontFamily") { view: GlassMenuAndroidView, family: String? ->
+        view.fontFamily = family
+      }
+      Prop("config") { view: GlassMenuAndroidView, config: GlassMenuConfigRecord? ->
+        view.config = config ?: GlassMenuConfigRecord()
+      }
+      Prop("triggerConfig") { view: GlassMenuAndroidView, config: GlassTriggerConfigRecord? ->
+        view.triggerConfig = config ?: GlassTriggerConfigRecord()
+      }
+      Prop("openWithItems") { view: GlassMenuAndroidView, open: Boolean? ->
+        view.openWithItems = open ?: false
+      }
+      Prop("openOnTap") { view: GlassMenuAndroidView, open: Boolean? ->
+        view.openOnTap = open ?: false
+      }
+      Prop("restBackdrop") { view: GlassMenuAndroidView, color: android.graphics.Color? ->
+        view.restBackdrop = color?.toArgb()
+      }
+      Prop("alignment") { view: GlassMenuAndroidView, alignment: String? ->
+        view.alignment = alignment ?: "auto"
+      }
+      Prop("members") { view: GlassMenuAndroidView, members: List<GlassMemberRecord>? ->
+        view.members = members
+      }
+      Prop("blend") { view: GlassMenuAndroidView, blend: Float? ->
+        view.blend = blend ?: 0f
+      }
+
+      AsyncFunction("open") { view: GlassMenuAndroidView, x: Double?, y: Double?, width: Double?, height: Double? ->
+        view.post { view.open(x, y, width, height) }
+      }
+      AsyncFunction("close") { view: GlassMenuAndroidView ->
+        view.post { view.close() }
+      }
+    }
+  }
+}

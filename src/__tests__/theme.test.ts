@@ -185,6 +185,8 @@ function createMockColors(): ThemeColors {
     warningSubtleForeground: '#B45309',
     infoSubtle: '#eff6ff',
     infoSubtleForeground: '#1D4ED8',
+    vivid: '#00bcd4',
+    vividForeground: '#000000',
     primarySubtle: '#e0f7fa',
     primarySubtleForeground: '#003d44',
     negative: '#B91C1C',
@@ -195,5 +197,11 @@ function createMockColors(): ThemeColors {
     card: '#f5f5f5',
     shadow: 'rgba(0,0,0,0.1)',
     overlay: 'rgba(0,0,0,0.5)',
+    destructive: '#B91C1C',
+    white: '#ffffff',
+    black: '#000000',
+    transparent: 'transparent',
+    surfaceForeground: '#000',
+    accent: '#eee',
   };
 }

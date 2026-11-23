@@ -9,11 +9,10 @@
  * card the way native does — see `HoverCard.tsx`.
  */
 import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
-import type { NativeSyntheticEvent, View } from 'react-native';
+import { View, type NativeSyntheticEvent } from 'react-native';
 
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { StyledView } from '../styles/styled-primitives';
 import {
   HOVER_CARD_CLOSE_DELAY,
   HOVER_CARD_OPEN_DELAY,
@@ -71,13 +70,7 @@ function isFocusVisible(event: FocusLike): boolean {
   }
 }
 
-export function HoverCardTrigger({
-  children,
-  disabled,
-  className,
-  style,
-  testID,
-}: HoverCardTriggerProps) {
+export function HoverCardTrigger({ children, disabled, style, testID }: HoverCardTriggerProps) {
   const card = useHoverCard();
   const { show, hide } = card;
 
@@ -101,9 +94,8 @@ export function HoverCardTrigger({
   );
 
   return (
-    <StyledView
+    <View
       ref={card.anchorRef}
-      className={className}
       style={[{ alignSelf: 'flex-start' }, style]}
       testID={testID}
       onPointerEnter={onPointerEnter}
@@ -116,7 +108,7 @@ export function HoverCardTrigger({
       onBlur={hide}
     >
       {children}
-    </StyledView>
+    </View>
   );
 }
 
@@ -128,7 +120,6 @@ export function HoverCardContent({
   align,
   sideOffset,
   alignOffset,
-  className,
   style,
   testID,
 }: HoverCardContentProps) {
@@ -155,7 +146,6 @@ export function HoverCardContent({
       align={align}
       sideOffset={sideOffset}
       alignOffset={alignOffset}
-      className={className}
       style={style}
       testID={testID}
     >

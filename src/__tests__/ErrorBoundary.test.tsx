@@ -1,4 +1,5 @@
-import React, { type ErrorInfo, type ReactNode } from 'react';
+import type React from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
@@ -24,6 +25,31 @@ describe('ErrorBoundary', () => {
   });
   afterEach(() => {
     errorSpy.mockRestore();
+  });
+
+  it('draws no view of its own without a style, and one box around content and fallback with it', () => {
+    const bare = render(
+      <ErrorBoundary>
+        <MaybeThrow shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+    expect(bare.toJSON()).toMatchObject({ type: 'Text' });
+    const boxed = render(
+      <ErrorBoundary style={{ padding: 12 }} fallback={<Text>fallen</Text>}>
+        <MaybeThrow shouldThrow={false} />
+      </ErrorBoundary>,
+    );
+    expect(boxed.toJSON()).toMatchObject({ type: 'View', props: { style: { padding: 12 } } });
+    boxed.rerender(
+      <ErrorBoundary style={{ padding: 12 }} fallback={<Text>fallen</Text>}>
+        <MaybeThrow shouldThrow />
+      </ErrorBoundary>,
+    );
+    expect(boxed.toJSON()).toMatchObject({
+      type: 'View',
+      props: { style: { padding: 12 } },
+      children: [{ type: 'Text', children: ['fallen'] }],
+    });
   });
 
   it('renders children when no error is thrown', () => {

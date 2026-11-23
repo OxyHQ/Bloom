@@ -12,7 +12,6 @@ import { useTouchInput } from '../styles/pointer';
 import { DISABLED_OPACITY, space } from '../styles/tokens';
 import { Text } from '../typography';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
-import { styled } from 'react-native-css';
 import { resolveAccordionGeometry } from './geometry';
 import { AccordionContext, AccordionItemContext } from './context';
 import { useAccordionState, useAccordionItem, useAccordionMotion } from './use-accordion';
@@ -182,9 +181,11 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 
 // ---- Accordion Content ----
 
-const AccordionContentComponent: React.FC<
-  AccordionContentProps & { contentStyle?: AccordionContentProps['style'] }
-> = ({ children, style, contentStyle }) => {
+const AccordionContentComponent: React.FC<AccordionContentProps> = ({
+  children,
+  style,
+  contentStyle,
+}) => {
   const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
   const geometry = resolveAccordionGeometry(size);
   const { isExpanded, contentId, triggerId } = useContext(AccordionItemContext);
@@ -212,16 +213,14 @@ const AccordionContentComponent: React.FC<
   );
 };
 
-export const Accordion = memo(styled(AccordionComponent, { className: 'style' }));
+export const Accordion = memo(AccordionComponent);
 Accordion.displayName = 'Accordion';
 
-export const AccordionItem = memo(styled(AccordionItemComponent, { className: 'style' }));
+export const AccordionItem = memo(AccordionItemComponent);
 AccordionItem.displayName = 'AccordionItem';
 
-export const AccordionTrigger = memo(styled(AccordionTriggerComponent, { className: 'style' }));
+export const AccordionTrigger = memo(AccordionTriggerComponent);
 AccordionTrigger.displayName = 'AccordionTrigger';
 
-export const AccordionContent = memo(
-  styled(AccordionContentComponent, { className: 'style', contentClassName: 'contentStyle' }),
-);
+export const AccordionContent = memo(AccordionContentComponent);
 AccordionContent.displayName = 'AccordionContent';

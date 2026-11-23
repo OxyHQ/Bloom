@@ -90,11 +90,10 @@ when reporting evidence.
   adoption decision, and legacy AppShellPanels already uses a shared engine.
 - Validate consumer appearance, navigation, scroll restoration, responsive
   transitions and native behavior. Package and release validation remains pending.
-- Resolve the public image API before asking apps to adopt `BloomImage`: the
-  renderer exists inside Bloom but has no public root or subpath export in the
-  checked releases (15.66 and 15.78.3). Atlas has a prepared migration at
-  `/tmp/atlas-composition/image-migration.patch`; verify the intended export
-  contract and package before applying it.
+- `BloomImage` is public from the next release (`@oxy.so/bloom/image` and the
+  root barrel; it had no export through 22.1.10). Atlas has a prepared migration
+  at `/tmp/atlas-composition/image-migration.patch`; verify it against the
+  published package before applying it.
 
 ## Initial repository census
 

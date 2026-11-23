@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useContext,
   useLayoutEffect,
   useMemo,
@@ -251,6 +252,7 @@ export function createHeaderActions({
           >
             <Button.Group
               dividers={false}
+              material="lens"
               accessibilityLabel={accessibilityLabel ?? common.moreActions}
               testID={testID ? `${testID}-group` : undefined}
             >
@@ -283,7 +285,7 @@ export function createHeaderActions({
             </Button.Group>
             <DropdownMenuContent label={label} align="end">
               {menuActions.map((action, index) => (
-                <View key={action.id}>
+                <Fragment key={action.id}>
                   {index > 0 && menuActions[index - 1]?.group !== action.group ? (
                     <DropdownMenuSeparator />
                   ) : null}
@@ -310,7 +312,7 @@ export function createHeaderActions({
                       {action.label}
                     </DropdownMenuItem>
                   )}
-                </View>
+                </Fragment>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>

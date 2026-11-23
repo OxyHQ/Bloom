@@ -12,7 +12,7 @@ const styles = {
   surface: 'bloom-detail-dialog-surface',
 };
 const CSS =
-  '/* React Aria keeps the panel mounted for the shared Genie timeline.\n * Its pixels bend into the bottom-right dock; the shell never slides. */\n.bloom-detail-dialog-panel[data-entering], .bloom-detail-dialog-panel[data-exiting] { animation: bloom-detail-dialog-detail-presence 560ms linear both; }\n.bloom-detail-dialog-panel[data-exiting] { pointer-events: none; }\n@keyframes bloom-detail-dialog-detail-presence {\n  from { opacity: 0.9999; }\n  to { opacity: 1; }\n}\n.bloom-detail-dialog-genie, .bloom-detail-dialog-surface { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; }\n.bloom-detail-dialog-genie { isolation: isolate; }\n/* Start the chart\'s own drawing animation only after the visual bands hand\n * back to the live panel, so it never flashes a completed copy first. */\n.bloom-detail-dialog-genie:not([data-entered="true"]) .bloom-detail-deferred svg {\n  visibility: hidden;\n}\n.bloom-detail-dialog-shadow {\n  position: absolute;\n  inset: 0;\n  border-radius: 24px;\n  pointer-events: none;\n  transform-origin: right bottom;\n  box-shadow: -10px 0 34px rgb(0 0 0 / 0.05), -10px 0 250px rgb(0 0 0 / 0.25);\n}\n.bloom-detail-dialog-bands { position: absolute; inset: 0; pointer-events: none; opacity: 0; }\n.bloom-detail-dialog-band {\n  position: absolute;\n  top: 0;\n  left: 0;\n  overflow: hidden;\n  contain: strict;\n  transform-origin: 0 0;\n  will-change: transform;\n  backface-visibility: hidden;\n}\n@media (prefers-reduced-motion: reduce) {\n  .bloom-detail-dialog-panel[data-entering], .bloom-detail-dialog-panel[data-exiting] { animation: none; }\n}\n';
+  '/* React Aria keeps the panel mounted for the shared Genie timeline.\n * Its pixels bend into the bottom-right dock; the shell never slides. */\n.bloom-detail-dialog-panel[data-entering], .bloom-detail-dialog-panel[data-exiting] { animation: bloom-detail-dialog-detail-presence 560ms linear both; }\n.bloom-detail-dialog-panel[data-exiting] { pointer-events: none; }\n@keyframes bloom-detail-dialog-detail-presence {\n  from { opacity: 0.9999; }\n  to { opacity: 1; }\n}\n.bloom-detail-dialog-genie, .bloom-detail-dialog-surface { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; }\n.bloom-detail-dialog-genie { isolation: isolate; }\n/* Start the chart\'s own drawing animation only after the visual bands hand\n * back to the live panel, so it never flashes a completed copy first. */\n.bloom-detail-dialog-genie:not([data-entered="true"]) [data-bloom-detail-deferred] svg {\n  visibility: hidden;\n}\n.bloom-detail-dialog-shadow {\n  position: absolute;\n  inset: 0;\n  border-radius: 24px;\n  pointer-events: none;\n  transform-origin: right bottom;\n  box-shadow: -10px 0 34px rgb(0 0 0 / 0.05), -10px 0 250px rgb(0 0 0 / 0.25);\n}\n.bloom-detail-dialog-bands { position: absolute; inset: 0; pointer-events: none; opacity: 0; }\n.bloom-detail-dialog-band {\n  position: absolute;\n  top: 0;\n  left: 0;\n  overflow: hidden;\n  contain: strict;\n  transform-origin: 0 0;\n  will-change: transform;\n  backface-visibility: hidden;\n}\n@media (prefers-reduced-motion: reduce) {\n  .bloom-detail-dialog-panel[data-entering], .bloom-detail-dialog-panel[data-exiting] { animation: none; }\n}\n';
 
 const DURATION = 480;
 const FRAMES = 32;
@@ -84,8 +84,8 @@ function rebaseIds(copy: HTMLElement, prefix: string) {
  * gradient fills differently in each perspective-transformed clipping band.
  * A shared bitmap keeps every band on the same paint, at device resolution. */
 async function snapshotDeferredGraphics(source: HTMLDivElement, copy: HTMLDivElement) {
-  const charts = source.querySelectorAll<SVGSVGElement>('.bloom-detail-deferred svg');
-  const copies = copy.querySelectorAll<SVGSVGElement>('.bloom-detail-deferred svg');
+  const charts = source.querySelectorAll<SVGSVGElement>('[data-bloom-detail-deferred] svg');
+  const copies = copy.querySelectorAll<SVGSVGElement>('[data-bloom-detail-deferred] svg');
   await Promise.allSettled(
     Array.from(charts, async (chart, index) => {
       const { width, height } = chart.getBoundingClientRect();
@@ -159,7 +159,7 @@ function copySurface(source: HTMLDivElement, prefix: string) {
     element.style.backdropFilter = 'none';
     element.style.setProperty('--bloom-surface-filter', 'none');
     element.style.setProperty('--bloom-surface-highlight-filter', 'none');
-    if (originals[index]!.closest('.bloom-detail-deferred')) {
+    if (originals[index]!.closest('[data-bloom-detail-deferred]')) {
       element.style.clipPath = getComputedStyle(originals[index]!).clipPath;
     }
     // Cloning preserves the DOM but not an internal scroll position.
@@ -224,7 +224,9 @@ export function DetailDialogMotion({ children }: { children: ReactNode }) {
         // The entrance reveals the live chart after the handoff. Capturing an
         // invisible plot adds SVG serialization, PNG encoding, and two decodes
         // to the cold opening path without contributing any visible pixels.
-        template.querySelectorAll('.bloom-detail-deferred svg').forEach((chart) => chart.remove());
+        template
+          .querySelectorAll('[data-bloom-detail-deferred] svg')
+          .forEach((chart) => chart.remove());
       }
       if (cancelled) return;
       for (let index = 0; index < count; index++) {

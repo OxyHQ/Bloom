@@ -25,7 +25,7 @@ import { BloomScope } from '../appearance';
  * panel (the keyboard then has it, as on the web). The popup goes on tracking the pointer over
  * the trigger while it holds its grab (`trackingRef`). The trigger's own press is unchanged.
  */
-import React, { useCallback, useMemo, useRef, type ComponentRef } from 'react';
+import React, { useCallback, useMemo, useRef, type ComponentRef, type ReactNode } from 'react';
 import type { PointerEvent, View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
@@ -42,6 +42,9 @@ import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { HOVER_CARD_CLOSE_DELAY, HOVER_CARD_OPEN_DELAY } from '../hover-card/constants';
 import { useHoverIntent } from '../hover-card/use-hover-intent';
+import { getNativeLens } from '../floating/lens/native-lens';
+import { parseLensMenu } from '../floating/lens/parse-lens-menu';
+import { LensTrigger, useLensContent, useLensMenu } from '../floating/lens/use-lens-menu';
 import { DropdownMenuProvider, useDropdownMenu } from './context';
 import type {
   DropdownMenuContentProps,
@@ -120,6 +123,17 @@ export function DropdownMenu({
     }),
     [intent, setMenuOpen],
   );
+  const {
+    lens,
+    host: lensHost,
+    contentProvider,
+  } = useLensMenu({
+    children,
+    content: DropdownMenuContent,
+    parse: (props) => parseLensMenu(props.children as ReactNode, rows),
+    open: isOpen,
+    setOpen: setMenuOpen,
+  });
   const value = useMemo(
     () => ({
       open: isOpen,
@@ -129,8 +143,21 @@ export function DropdownMenu({
       activation,
       ...(activation === 'hover' ? { hover } : null),
       onPrimaryOpenChange,
+      lens,
+      lensHost,
+      lensContent: contentProvider,
     }),
-    [isOpen, setMenuOpen, focusIntent, activation, hover, onPrimaryOpenChange],
+    [
+      isOpen,
+      setMenuOpen,
+      focusIntent,
+      activation,
+      hover,
+      onPrimaryOpenChange,
+      lens,
+      lensHost,
+      contentProvider,
+    ],
   );
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
@@ -141,11 +168,13 @@ export function DropdownMenuTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
   pressTrigger,
   restoreFocus,
+  lensTone = 'neutral',
+  lensTint,
+  lens: lensTrigger = false,
 }: DropdownMenuTriggerProps) {
   const menu = useDropdownMenu();
   // Hover opens it only where it is a desktop's popup: never a phone's sheet.
@@ -167,7 +196,7 @@ export function DropdownMenuTrigger({
     (React.isValidElement<{ onPress?: unknown; href?: string }>(children) &&
       (children.props.onPress != null || children.props.href != null));
 
-  return (
+  const trigger = (
     <TriggerSlot
       asChild={asChild}
       pressTrigger={pressTrigger}
@@ -188,11 +217,15 @@ export function DropdownMenuTrigger({
             }
           : undefined
       }
-      className={className}
       style={style}
       testID={testID}
       handle={{
-        onPress: () => menu.setOpen(menu.activation !== 'hover' || !primaryAction),
+        onPress: () => {
+          const open = menu.activation !== 'hover' || !primaryAction;
+          // The native menu morphs out of the touch that opened it: open it here, not through state.
+          if (open && menu.lens) void menu.lens.nativeRef.current?.open();
+          else menu.setOpen(open);
+        },
         onLongPress: menu.activation === 'hover' ? () => menu.setOpen(true) : undefined,
         ...showMenu,
         disabled,
@@ -205,24 +238,36 @@ export function DropdownMenuTrigger({
       {children}
     </TriggerSlot>
   );
+  if (!menu.lensHost || !getNativeLens()) return trigger;
+  return (
+    <LensTrigger
+      lens={menu.lensHost}
+      opensOnTap={!disabled && (menu.activation !== 'hover' || !primaryAction)}
+      triggerLens={lensTrigger || lensTone === 'primary' || lensTint != null}
+      tone={lensTone}
+      tint={lensTint}
+    >
+      {trigger}
+    </LensTrigger>
+  );
 }
 
-export function DropdownMenuContent({
-  children,
-  alignRows,
-  size,
-  label: labelProp,
-  side,
-  align,
-  sideOffset,
-  alignOffset,
-  minWidth,
-  maxWidth,
-  maxHeight,
-  className,
-  style,
-  testID,
-}: DropdownMenuContentProps) {
+export function DropdownMenuContent(props: DropdownMenuContentProps) {
+  const {
+    children,
+    alignRows,
+    size,
+    label: labelProp,
+    side,
+    align,
+    sideOffset,
+    alignOffset,
+    minWidth,
+    maxWidth,
+    maxHeight,
+    style,
+    testID,
+  } = props;
   const density = useMenuDensity(size);
   const common = useCommonMessages();
   const label = labelProp ?? common.menu;
@@ -233,6 +278,13 @@ export function DropdownMenuContent({
     () => ({ close: () => menu.setOpen(false), presentation: PopupSurface ? 'dropdown' : 'sheet' }),
     [menu, PopupSurface],
   );
+
+  // A `Content` rendered by a component of the owner's (one mounted only while the menu is
+  // open) hands its rows to the root, which cannot see them.
+  const lensDraws = useLensContent(menu.lensContent, props);
+
+  // The native lens menu draws the rows itself; the trigger hosts it.
+  if (menu.lens || lensDraws) return null;
 
   if (PopupSurface) {
     // The platform's popup: mounted while open, closed by the platform on an
@@ -260,7 +312,6 @@ export function DropdownMenuContent({
           minWidth={minWidth}
           maxWidth={maxWidth}
           maxHeight={maxHeight}
-          className={className}
           style={style}
           testID={testID}
         >
@@ -279,7 +330,6 @@ export function DropdownMenuContent({
         control={control}
         label={label}
         onClose={onSheetClose}
-        contentClassName={className}
         contentStyle={[{ gap: density.gap }, style]}
         contentTestID={testID}
       >

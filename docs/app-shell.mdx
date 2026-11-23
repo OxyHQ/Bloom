@@ -386,8 +386,16 @@ native screen. The frame protects its top and side edges, including landscape
 notches, and keeps reveal navigation inside the same safe frame. Portaled
 navigation drawers ALWAYS use the device's original insets, with or without
 `safeArea`: they render past every Screen, so nothing else clears them (keyed on
-`safeArea`, Allo's drawer ran under the status bar). Web geometry is unchanged;
-`safeArea` defaults to `false` for existing embedded shells.
+`safeArea`, Allo's drawer ran under the status bar). The full-height `reveal`
+drawer clears the top and bottom device edges the frame leaves it, so without
+`safeArea` it still sits below the status bar while the pages reach behind it.
+Web geometry is unchanged; `safeArea` defaults to `false` for existing embedded shells.
+
+Without `safeArea` the pages own the top edge: each route's `PageHeader` pads its
+controls below the inset while its paint and the scrolling content run behind the
+status bar, edge to edge. With it, the frame pads the top and paints the shell
+background there, so nothing reaches behind the status bar. Semantic layouts turn
+it on; an app whose pages should run edge to edge passes `safeArea={false}`.
 
 When bottom chrome is visible, the bottom-bar slot or floating action retains
 ownership of the bottom inset. Otherwise the frame reserves it. There is no
@@ -880,6 +888,9 @@ capsule and shares its animation; wider placements float it at the bottom-end co
 of the content area, independently of the sidebar. While the screen in front shows a
 `primaryAction` of its own, the shell's floating action steps aside (the sidebar's
 compose row stays): one floating action on screen at a time.
+An action the app draws for the shell itself (the FAB of a `bottomBar` it passes)
+steps aside the same way when it reads `useScreenActionClaimed()` from
+`@oxy.so/bloom/app-shell/hooks`; the Bloom language's `BottomBar` does.
 `header` overrides the default header; `title`, `breadcrumb` and `actions` configure
 that default. `contentMaxWidth` defaults to 1300. `overlay` stays in the screen's
 content tree, before its chrome; dialogs and toasts should use their proper outlets.
@@ -978,7 +989,10 @@ The `bottomBar` slot publishes its measured footprint through the shared bottom-
 For fullscreen video or a child scroller that accounts for the occupied bottom edge itself,
 set `reserveBottomBarSpace={false}`. The visible bar still publishes its measured height
 through the shared edge registry; document/container content receives no duplicate bar padding.
-Native panels then reach under the bar and leave clearance to their scrollers.
+Native panels then reach under the bar and leave clearance to their scrollers. A panel
+that holds a `group` passes this on: the group's side-by-side panels, or its lone one,
+reach under the bar and clear it as the shell's own do. Panels stacked in a vertical group
+sit above the group's single clearance instead, so no screen clears the bar twice.
 
 ProOfferCard retains its animated complementary host and decorative artwork, with shared SurfacePaint beneath it and contextual backing published for descendant controls. Explicit background overrides remain supported.
 
@@ -1061,7 +1075,7 @@ cannot fit, only `activePanel` (or the first eligible panel) is shown. A sole co
 expanded panel fills the available region, overriding its ordinary maximum width.
 `appearance="joined"` draws a shared surface and separators; `separated` draws individual
 surfaces. Appearance is a structural choice: keep it stable to preserve mounted content.
-An individual panel can use `chrome="none"` with `surfaceClassName` for a flat custom
+An individual panel can use `chrome="none"` with `surfaceStyle` for a flat custom
 fill while retaining the same framing, clipping and scroll owner. `surfaceColor`
 publishes that fill to descendant chrome, following `ContentPanel`'s contract.
 For a transparent panel that inherits its enclosing surface, use `appearance="plain"`.

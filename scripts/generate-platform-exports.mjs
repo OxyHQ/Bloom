@@ -54,6 +54,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./provider', 'provider/index.ts'],
   ['./surfaces', 'surfaces/index.ts'],
   ['./surface', 'surface/index.ts'],
+  // The floating island of controls (`BlurIsland`) on the shared material, and the
+  // Android blur target a surface in its own window reads (`BlurTargetProvider`).
+  ['./blur', 'blur/index.ts'],
   ['./concentric', 'concentric/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
   // The host platform's surfaces (`BloomProvider platform={…}`): a popup that
@@ -183,6 +186,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./radio-indicator', 'radio-indicator/index.ts'],
   ['./radio', 'radio/index.ts'],
   ['./error-boundary', 'error-boundary/index.ts'],
+  // The one raster renderer (expo-image on a device, react-native's `Image` on web).
+  ['./image', 'image/index.ts'],
   ['./shapes', 'shapes/index.ts'],
   ['./avatar', 'avatar/index.ts'],
   ['./avatar-group', 'avatar-group/index.ts'],
@@ -723,7 +728,8 @@ function buildExportsField() {
     out[name] = entry;
   }
 
-  // Static CSS artifact for Tailwind v4 / NativeWind CSS-first consumers.
+  // Static CSS artifact for apps still using `className` (Tailwind v4 /
+  // NativeWind CSS-first); removed once the fleet has migrated.
   // Generated from bloomThemeCss() by scripts/generate-theme-css.ts and
   // verified in src/__tests__/design-tokens.test.ts. Shipped from `src/`
   // (included in the package `files` list) so no build copy is needed.

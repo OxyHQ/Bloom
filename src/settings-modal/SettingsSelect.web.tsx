@@ -16,3 +16,4 @@ export const SettingsSelect = createSettingsSelect({
   SelectContent,
   SelectItem,
 });
+// No compact field: on the web the compact trigger is the size's own (`COMPACT_TRIGGER`).

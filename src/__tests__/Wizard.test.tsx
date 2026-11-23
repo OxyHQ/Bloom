@@ -5,7 +5,7 @@
  * segment fills, the progressbar attributes, the heading, and the footer's
  * actions and states.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Platform, Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { BloomScope } from '../appearance';
@@ -9,7 +9,8 @@ import { Sidebar } from '../sidebar';
 import { ContentPanel as NativePanel } from '../content-panel/ContentPanel';
 import { ContentPanel as WebPanel } from '../content-panel/ContentPanel.web';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { resolvedStyle, classNamesOn } from './support/rendered-style';
+import { resolvedStyle } from './support/rendered-style';
+import { mockWindowSize } from './support/window-size';
 
 function Provider({ children }: React.PropsWithChildren) {
   return (
@@ -122,7 +123,6 @@ it.each([undefined, 0, 12.5, 40])(
         borderRadius: expected,
         cornerShape: 'round',
       });
-      expect(classNamesOn(web.getByTestId(id).props.style).join(' ')).not.toContain('radius-28');
     }
   },
 );
@@ -180,7 +180,7 @@ it.each([NativePanel, WebPanel])(
     );
     const surface = view.getByTestId('content-panel-surface');
     expect(resolvedStyle(surface.props.style).boxShadow).toBeUndefined();
-    expect(classNamesOn(surface.props.style).join(' ')).not.toContain('border');
+    expect(resolvedStyle(surface.props.style).borderWidth).toBeUndefined();
     expect(surface.props.dataSet?.bloomPanelMaterial).toBeUndefined();
     expect(view.UNSAFE_queryAllByType(PaintComponent)).toHaveLength(0);
     expect(view.queryByTestId('content-panel-border-frame')).toBeNull();
@@ -188,12 +188,8 @@ it.each([NativePanel, WebPanel])(
 );
 
 it('keeps the configured web radius responsive through every framing breakpoint', () => {
-  for (const [framedFrom, prefix] of [
-    [500, 'min-[500px]'],
-    [640, 'sm'],
-    [768, 'md'],
-    [1024, 'lg'],
-  ] as const) {
+  for (const framedFrom of [500, 640, 768, 1024] as const) {
+    const window = mockWindowSize({ width: framedFrom, height: 900 });
     const view = render(
       <Provider>
         <BloomScope panelRadius={18}>
@@ -207,11 +203,12 @@ it('keeps the configured web radius responsive through every framing breakpoint'
       resolvedStyle(view.getByTestId('content-panel-surface').props.style)['--bloom-panel-radius'],
     ).toBe('18px');
     for (const id of ['content-panel-surface', 'content-panel-content']) {
-      expect(classNamesOn(view.getByTestId(id).props.style).join(' ')).toContain(
-        `${prefix}:rounded-[var(--bloom-panel-radius)]`,
+      expect(resolvedStyle(view.getByTestId(id).props.style).borderRadius).toBe(
+        'var(--bloom-panel-radius)',
       );
     }
     view.unmount();
+    window.mockRestore();
   }
 });
 

@@ -345,7 +345,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       accessibilityHint,
       accessibilityRole,
       testID,
-      className,
+      dataSet,
       type = 'button',
       asChild = false,
       id,
@@ -399,11 +399,17 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const authoredStyle = { ...flattenWebStyle(style), ...childStyle };
     const authoredFlatPaint =
       material === 'flat' &&
-      Boolean(className || authoredStyle.backgroundColor || authoredStyle.backgroundImage);
+      Boolean(authoredStyle.backgroundColor || authoredStyle.backgroundImage);
     const paintHeight =
       typeof authoredStyle.height === 'number' ? authoredStyle.height : geometry.height;
     const touchPaint = !authoredFlatPaint && buttonTouchVisualInset(paintHeight, touch) > 0;
     const visualData = {
+      ...Object.fromEntries(
+        Object.entries(dataSet ?? {}).map(([key, entry]) => [
+          `data-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
+          entry,
+        ]),
+      ),
       'data-bloom-button-loading': loading ? '' : undefined,
       'data-bloom-button-visual-height': paintHeight,
       'data-bloom-button-touch-paint': touchPaint ? '' : undefined,
@@ -579,35 +585,31 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         ['--bloom-btn-border-active' as string]: palette.active.border,
         ['--bloom-btn-border-disabled' as string]: palette.disabled.border,
       };
-      // Keep the existing inline defaults for callers without utilities. When
-      // classes are present, the same defaults come from the base layer.
-      if (!className)
-        Object.assign(base, {
-          height: geometry.height,
-          paddingLeft: paddingHorizontal ?? geometry.paddingHorizontal,
-          paddingRight: paddingHorizontal ?? geometry.paddingHorizontal,
-          borderRadius: BUTTON_RADIUS,
-          fontSize: geometry.fontSize,
-          lineHeight: `${geometry.lineHeight}px`,
-          fontWeight: Number(geometry.fontWeight),
-          letterSpacing: geometry.letterSpacing || undefined,
-        });
+      Object.assign(base, {
+        height: geometry.height,
+        paddingLeft: paddingHorizontal ?? geometry.paddingHorizontal,
+        paddingRight: paddingHorizontal ?? geometry.paddingHorizontal,
+        borderRadius: BUTTON_RADIUS,
+        fontSize: geometry.fontSize,
+        lineHeight: `${geometry.lineHeight}px`,
+        fontWeight: Number(geometry.fontWeight),
+        letterSpacing: geometry.letterSpacing || undefined,
+      });
       if (isSquare) {
         const width = wide ? Math.round(geometry.height * 1.5) : geometry.height;
-        if (!className) Object.assign(base, { width, paddingLeft: 0, paddingRight: 0 });
+        Object.assign(base, { width, paddingLeft: 0, paddingRight: 0 });
         (base as Record<string, unknown>)['--bloom-btn-width'] = `${width}px`;
         (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
       }
       if (isLink && !isSquare) {
         // LinkButton: no container at all — the label's own line box,
         // a 4px gap, and a 4px corner that only the focus ring shows.
-        if (!className)
-          Object.assign(base, {
-            height: undefined,
-            paddingLeft: 0,
-            paddingRight: 0,
-            borderRadius: 4,
-          });
+        Object.assign(base, {
+          height: undefined,
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderRadius: 4,
+        });
         (base as Record<string, unknown>)['--bloom-btn-height'] = 'auto';
         (base as Record<string, unknown>)['--bloom-btn-padding'] = '0px';
         (base as Record<string, unknown>)['--bloom-btn-radius'] = '4px';
@@ -629,7 +631,6 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       togglePressed,
       disabled,
       loading,
-      className,
     ]);
 
     const handleClick = useCallback(
@@ -651,7 +652,6 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       .concat(isLink ? ['bloom-btn--link'] : [])
       .concat(underlineMode === 'none' ? [] : [`bloom-btn--underline-${underlineMode}`])
       .concat(palette.rest.surface ? ['bloom-btn--surface'] : [])
-      .concat(className ? [className] : [])
       .join(' ');
 
     const spinnerColor = loadingColor ?? 'currentColor';

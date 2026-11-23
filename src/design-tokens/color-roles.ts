@@ -8,20 +8,11 @@
  * invented here: a role's value is the `var(--canonical)` reference, so it stays
  * driven by the active light/dark mode and color preset automatically.
  *
- * The maps are consumed by the Bloom Tailwind preset (`tailwind-preset.ts`),
- * which slots them into `theme.extend.{backgroundColor,textColor,borderColor}`.
- * Because the values are `var(--x)` strings, the SAME class names resolve on
- * Tailwind (web) and NativeWind (native): web reads the CSS custom property from
- * `document.documentElement`; native reads it from react-native-css's
- * `rootVariables` family — both populated by Bloom from one pipeline.
- *
- * Web CSS-var contract (see Bloom AGENTS.md): base `--x` tokens already resolve
- * to a FULL `rgb(...)` color at runtime, so the role values reference them with
- * `var(--x)` directly — NEVER `hsl(var(--x))`.
- *
- * ADDITIVE: these are NEW utility names (`bg-fill`, `text-text-tertiary`,
- * `border-border-image`, …). They do not touch the existing app-defined color
- * utilities (`bg-background`, `text-muted-foreground`, …), which keep working.
+ * Each value is a `var(--x)` reference to a canonical token, which resolves to
+ * a full `rgb(...)` colour (never `hsl(var(--x))`). These are the role names the
+ * old Tailwind utilities used (`bg-fill`, `text-text-tertiary`,
+ * `border-border-image`, …); the Bloom language's className table reads them to
+ * map an app's classes onto tokens.
  */
 
 /** A `var(--canonical-token)` reference string. */

@@ -2,6 +2,10 @@ import { GlyphAttention } from './GlyphAttention';
 import { resolveButtonOverrides } from './shared';
 import { Group } from './Group';
 import { useGroupedButton } from './use-grouped-button';
+import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
+import { compositeOnto } from '../surface/shared';
+import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
   type ComponentRef,
@@ -28,7 +32,6 @@ import {
 } from 'react-native';
 import { openExternal, openHref } from '../hooks/link-activation';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { styled } from 'react-native-css';
 
 import { useBloomAppearance, useBloomControlDensity } from '../appearance/context';
 import { useTouchInput } from '../styles/pointer';
@@ -189,15 +192,11 @@ const ANDROID_LINK_HIT_SLOP = growVertical(LINK_HIT_SLOP);
 
 // ---------------------------------------------------------------------------
 //  The button renders ONE node — the same shape the web fork renders (one
-//  `<button>`), so a caller's layout `className` lands on the box its parent
-//  lays out. `styled()` comes from Bloom's own `react-native-css`, and both
-//  wrappers are built ONCE at module scope so the element type is stable.
+//  `<button>`), so a caller's layout `style` lands on the box its parent lays
+//  out.
 // ---------------------------------------------------------------------------
 
-/**
- * Exactly the prop surface `Button` hands to the pressable — narrowing keeps
- * `styled()`'s dot-path mapping type from overflowing the checker (`TS2590`).
- */
+/** Exactly the prop surface `Button` hands to the pressable. */
 type ButtonPressableProps = Pick<
   PressableProps,
   | 'accessibilityActions'
@@ -211,7 +210,6 @@ type ButtonPressableProps = Pick<
   | 'aria-valuenow'
   | 'aria-valuetext'
   | 'onAccessibilityAction'
-  | 'className'
   | 'disabled'
   | 'hitSlop'
   | 'onFocus'
@@ -382,13 +380,6 @@ function ButtonLoading({
   );
 }
 
-const ButtonInterop: ComponentType<ButtonPressableProps> = ButtonPressable;
-const StyledPressable: ComponentType<
-  ButtonPressableProps & React.RefAttributes<ComponentRef<typeof View>>
-> = styled(ButtonInterop, {
-  className: 'style',
-});
-
 const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
   function ButtonComponent(props, ref) {
     const {
@@ -418,7 +409,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       attention,
       decoration,
       loadingIndicator,
-      material = 'surface',
+      material: materialProp,
       onLongPress,
       onPressIn,
       onPressOut,
@@ -458,7 +449,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       onAccessibilityAction,
       hitSlop,
       testID,
-      className,
       'aria-current': ariaCurrent,
       'aria-expanded': ariaExpanded,
       'aria-haspopup': ariaHasPopup,
@@ -478,6 +468,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     });
     const layer = useSurfaceLayer();
     const appearance = appearanceProp ?? 'solid';
+    const regionMaterial = useControlMaterial();
+    const material = materialProp ?? regionMaterial;
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
@@ -502,6 +494,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             ? geometry.iconSize
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
+    const lensAvailable = useLensAvailable();
+    const lens = material === 'lens' && lensAvailable;
     const palette = useMemo(
       () =>
         resolveButtonOverrides(
@@ -604,6 +598,22 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : hovered
               ? palette.hover
               : palette.rest;
+
+    // A button that is the trigger of a lens menu tells it its fill and radius: the menu morphs out
+    // of the button's own shape. The resting paint, composited onto the page, is what it looks like.
+    const reportOrigin = useLensOriginReporter();
+    const restFill = palette.rest.background;
+    const styleRadius = StyleSheet.flatten(style)?.borderRadius;
+    const originRadius = typeof styleRadius === 'number' ? styleRadius : BUTTON_RADIUS;
+    const pageColor = theme.colors.background;
+    useEffect(() => {
+      if (!reportOrigin) return;
+      reportOrigin(
+        restFill === 'transparent'
+          ? null
+          : { tint: compositeOnto(restFill, pageColor), radius: originRadius },
+      );
+    }, [reportOrigin, restFill, originRadius, pageColor]);
     const children =
       typeof childrenProp === 'function' ? childrenProp(paint.foreground) : childrenProp;
 
@@ -736,8 +746,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ? () => (target === '_blank' ? openExternal(href) : openHref(href))
           : undefined));
 
-    return (
-      <StyledPressable
+    const split = lens ? splitLensStyle(style) : null;
+    const pressable = (
+      <ButtonPressable
         interactive={interactive}
         ref={ref}
         onLayout={onLayout}
@@ -751,9 +762,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         {...(tabIndex === undefined
           ? {}
           : { tabIndex: tabIndex < 0 ? (-1 as const) : (0 as const) })}
-        className={className}
         baseStyle={baseStyles}
-        style={style}
+        style={split ? split.control : style}
         onLongPress={isInteractionBlocked ? undefined : onLongPress}
         onPress={
           handlePress
@@ -816,7 +826,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
         testID={testID}
       >
-        {paint.surface ? (
+        {paint.surface && !lens ? (
           <SurfacePaint
             fill={paint.background}
             radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
@@ -843,7 +853,18 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           </ButtonLoading>
         ) : null}
         {decoration}
-      </StyledPressable>
+      </ButtonPressable>
+    );
+    if (!split) return pressable;
+    const flatRadius = StyleSheet.flatten(style)?.borderRadius;
+    return (
+      <LensButtonHost
+        tint={appearance === 'solid' ? paint.background : undefined}
+        radius={typeof flatRadius === 'number' ? flatRadius : BUTTON_RADIUS}
+        style={split.host}
+      >
+        {pressable}
+      </LensButtonHost>
     );
   },
 );

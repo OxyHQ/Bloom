@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -95,7 +95,8 @@ describe('EngagementAction at rest', () => {
       fill: '#FFFFFF',
     });
     expect(resolvedStyle(action.findByProps({ children: '3' }).props.style).color).toBe('#FFFFFF');
-    expect(cost(actions(renderer)[0]!)).toEqual({ fibers: 7, hooks: 1 });
+    // the action + Pressable (2) + the glyph + Text (2), React Native's text-ancestor context and its string
+    expect(cost(actions(renderer)[0]!)).toEqual({ fibers: 8, hooks: 1 });
     expect(animated(renderer)).toHaveLength(0);
     renderer.unmount();
   });
@@ -141,8 +142,8 @@ describe('EngagementAction at rest', () => {
     // the action + Pressable (2) + the glyph
     expect(reply).toEqual({ fibers: 4, hooks: 1 });
     expect(save).toEqual({ fibers: 4, hooks: 1 });
-    // + Text (2) and its string
-    expect(like).toEqual({ fibers: 7, hooks: 1 });
+    // + Text (2), React Native's text-ancestor context (as its Text provides it) and its string
+    expect(like).toEqual({ fibers: 8, hooks: 1 });
     expect(animated(renderer)).toHaveLength(0);
     expect(renderer.root.findByType(ActiveGlyph)).toBeTruthy();
     expect(renderer.root.findByType(ActiveGlyph).props.width).toBe(20);
@@ -167,6 +168,43 @@ describe('EngagementAction at rest', () => {
       disabled: false,
     });
     expect(pressable(renderer, 'Share').props['aria-pressed']).toBeUndefined();
+    renderer.unmount();
+  });
+});
+
+describe('EngagementAction press, hover and focus', () => {
+  it('hands its pressable the six state handlers and draws a style over its own', () => {
+    const handlers = {
+      onPressIn: jest.fn(),
+      onPressOut: jest.fn(),
+      onHoverIn: jest.fn(),
+      onHoverOut: jest.fn(),
+      onFocus: jest.fn(),
+      onBlur: jest.fn(),
+    };
+    const renderer = mount(
+      <EngagementBar>
+        <EngagementAction
+          icon={Glyph}
+          accessibilityLabel="Like"
+          onPress={() => {}}
+          style={{ opacity: 0.7 }}
+          {...handlers}
+        />
+        <EngagementAction icon={Glyph} accessibilityLabel="Reply" onPress={() => {}} />
+      </EngagementBar>,
+    );
+    const like = pressable(renderer, 'Like');
+    for (const [name, handler] of Object.entries(handlers)) {
+      fireEvent(like, name.slice(2, 3).toLowerCase() + name.slice(3));
+      expect(handler).toHaveBeenCalledTimes(1);
+    }
+    const own = (host: ReactTestInstance, pressed: boolean) => host.props.style({ pressed });
+    expect(own(like, false)).toEqual([expect.anything(), { opacity: 0.7 }]);
+    expect(own(like, true)[1]).toEqual({ opacity: 0.7 });
+    // With no style of its own, the action's style is its own, as before.
+    const reply = pressable(renderer, 'Reply');
+    expect(Array.isArray(own(reply, false))).toBe(false);
     renderer.unmount();
   });
 });
@@ -214,7 +252,16 @@ describe('EngagementAction motion', () => {
       // The pop's glyph and ring, and the roll's incoming and outgoing counts.
       expect(animated(renderer)).toHaveLength(4);
       expect(renderer.root.findByType(Glyph).props.width).toBe(vertical ? 28 : 20);
-      act(() => jest.runAllTimers());
+      // Each plays as keyframes on the CSS engine; the action returns to rest
+      // when they end (the glyph's ends the pop, the incoming count's the roll).
+      expect(
+        animated(renderer).every((node) =>
+          node.props.style.flat().some((s: object | null) => s && 'animationName' in s),
+        ),
+      ).toBe(true);
+      act(() => {
+        for (const node of animated(renderer)) node.props.onCSSAnimationEnd?.();
+      });
       expect(animated(renderer)).toHaveLength(0);
       renderer.unmount();
     },

@@ -70,8 +70,7 @@ export function meterValueText(value: number, max: number, locale?: string): str
 //
 //  A meter that eases has to do it in CSS: react-native-web renders a real DOM
 //  node, and an inline style cannot carry a `prefers-reduced-motion` rule. The
-//  hooks are `data-*` attributes through `dataSet` (a `className` never reaches
-//  the DOM — react-native-css consumes it into `style`), and the DURATION rides
+//  hooks are `data-*` attributes through `dataSet`, and the DURATION rides
 //  in on a custom property so one stylesheet serves every caller instead of one
 //  sheet per duration. `adoptStyleSheet` uses a CONSTRUCTED sheet, so a
 //  `style-src 'self'` policy cannot drop the rules (see AGENTS.md). An

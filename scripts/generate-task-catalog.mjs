@@ -57,7 +57,13 @@ const catalog = {
   package: {
     name: pkg.name,
     version: pkg.version,
-    peers: pkg.peerDependencies,
+    // As published: `bun pm pack` writes a `workspace:<range>` peer as its range.
+    peers: Object.fromEntries(
+      Object.entries(pkg.peerDependencies).map(([name, range]) => [
+        name,
+        range.replace(/^workspace:/, ''),
+      ]),
+    ),
     optionalPeers: pkg.peerDependenciesMeta,
   },
   scope:

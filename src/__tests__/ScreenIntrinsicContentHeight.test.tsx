@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+import type React from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 import { makeMutable } from 'react-native-reanimated';
 import { ScreenViewportContext, type ScreenContextValue } from '../screen/context';

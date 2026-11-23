@@ -122,11 +122,12 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
  */
 const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: '@react-native-community/netinfo', file: 'connection-status/netinfo.ts' },
+  { peer: 'expo', file: 'floating/lens/native-lens.ts' },
+  { peer: '@oxy.so/bloom-lens', file: 'floating/lens/native-lens.ts' },
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
   { peer: 'expo-clipboard', file: 'hooks/clipboard-module.ts' },
   { peer: 'expo-sharing', file: 'hooks/sharing-module.ts' },
   { peer: 'expo-web-browser', file: 'hooks/web-browser-module.ts' },
-  { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.native.ts' },
   { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },
   { peer: 'react-native-keyboard-controller', file: 'screen/keyboard-components.ts' },
@@ -150,12 +151,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
  * reason to hide the specifier from a bundler AND nothing to lose if a bundler
  * cannot resolve it.
  */
-const VARIABLE_REQUIRE_ALLOWED: { file: string; why: string }[] = [
-  {
-    file: 'theme/init-css-interop.ts',
-    why: 'react-native-css-interop is neither a dependency nor a declared peer, so the indirection keeps a plain-text specifier out of reach of bundlers that would try to resolve a package Bloom never asked for; the const is in the same scope, so Metro folds it and treats the call as an optional literal anyway, and if a bundler did drop it there is nothing to lose (the `setFlag` it probes for exists in no shipped version, native gets the flag from the host Tailwind build, and web is fixed by the CSS variable set alongside it)',
-  },
-];
+const VARIABLE_REQUIRE_ALLOWED: { file: string; why: string }[] = [];
 
 function sourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

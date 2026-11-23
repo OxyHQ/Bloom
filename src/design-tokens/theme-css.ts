@@ -8,6 +8,10 @@ import { TYPE_SCALE } from '../typography/scale';
 /**
  * Tailwind v4 `@theme` block generator for the Oxy Unified Design Language.
  *
+ * FOR APPS STILL USING `className`; removed once the fleet has migrated. Bloom
+ * itself styles without Tailwind (`docs/no-nativewind.mdx`); this is a token
+ * output, generated from the same scales and roles Bloom's styles read.
+ *
  * Tailwind v4 web apps (auth, console, website) configure their design tokens in
  * CSS via `@theme { --color-X: var(--X); … }` rather than a JS preset. This
  * module produces the exact `@theme` body that mirrors `bloomTailwindPreset`, so

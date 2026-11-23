@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import React from 'react';
+import type React from 'react';
 import { Platform, Text } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { withTiming } from 'react-native-reanimated';

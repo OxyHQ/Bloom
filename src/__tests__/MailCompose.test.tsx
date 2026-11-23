@@ -14,7 +14,7 @@
  * each encodes a direction (`||`, never `??`) that a rendered field cannot
  * distinguish from luck.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

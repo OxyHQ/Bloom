@@ -1,5 +1,5 @@
 import { cardLayout, cardFill } from './support/card-surface';
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';

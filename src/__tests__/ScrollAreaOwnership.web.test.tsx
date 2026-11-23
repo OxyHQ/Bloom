@@ -16,7 +16,7 @@ it('uses one native owner and forwards its ref while sizing the area, with custo
   const ref = createRef<any>();
   act(() =>
     root.render(
-      <ScrollArea ref={ref} testID="area" style={{ height: 300 }} className="grow">
+      <ScrollArea ref={ref} testID="area" style={{ height: 300 }}>
         <div>Content</div>
       </ScrollArea>,
     ),

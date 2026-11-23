@@ -174,7 +174,7 @@ export function createAppShellPanels(
     scroll = 'content',
     appearance,
     chrome,
-    surfaceClassName,
+    surfaceStyle,
     surfaceColor,
     colorPreset,
     errorBoundary = false,
@@ -198,18 +198,20 @@ export function createAppShellPanels(
             maskColor={region.maskColor}
             framed={region.framed || region.revealed}
             chrome={region.revealed ? 'none' : chrome}
-            surfaceClassName={surfaceClassName}
             surfaceColor={surfaceColor}
             fill={!growing}
             // A growing panel's frame is a screen-tall sticky rectangle pinned
             // where the panel starts; a bounded panel's box IS the visible area.
             overlaySizing={growing ? 'viewport' : 'panel'}
             overlayInset={growing ? { top, bottom } : undefined}
-            surfaceStyle={{
-              ...GROW,
-              // A short page still paints one screen of surface; a long one grows.
-              ...(document ? { minHeight: webViewportHeightMinus(top + bottom) } : null),
-            }}
+            surfaceStyle={[
+              surfaceStyle,
+              {
+                ...GROW,
+                // A short page still paints one screen of surface; a long one grows.
+                ...(document ? { minHeight: webViewportHeightMinus(top + bottom) } : null),
+              },
+            ]}
             contentStyle={GROW}
           >
             <View testID={testID} style={GROW}>

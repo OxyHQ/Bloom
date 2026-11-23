@@ -45,7 +45,6 @@ import { useMenuDensity } from '../floating/use-menu-density';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { ScrollArea } from '../layout/ScrollArea.web';
 import { motionCss } from '../motion/spec';
-import { StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { MenubarMenuProvider, MenubarScopeProvider, useMenubar } from './context';
 import { createMenubarContent, createMenubarRows } from './declared';
@@ -243,10 +242,8 @@ function MenubarViewport() {
       onDismiss={() => bar.setValue(undefined)}
       // The layers scroll themselves: each is the menu as it would be alone.
       scroll="external"
-      className={props.className}
       style={[
-        // The edge alone: each layer carries the menu's padding. Inline, so it wins over the
-        // density's padding class whatever order the two sheets are in.
+        // The edge alone: each layer carries the menu's padding.
         NO_PADDING,
         size && { width: size.width, height: size.height },
         // The panel's shadow fades as it always has; its place and size follow the open menu.
@@ -335,7 +332,7 @@ function MenuLayer({
     pointerEvents: exiting ? 'none' : 'auto',
   };
   return (
-    <StyledView
+    <View
       ref={attach}
       collapsable={false}
       aria-hidden={exiting || undefined}
@@ -361,7 +358,7 @@ function MenuLayer({
           </MenubarLeavingScope>
         </MenubarScopeProvider>
       </MenubarMenuProvider>
-    </StyledView>
+    </View>
   );
 }
 

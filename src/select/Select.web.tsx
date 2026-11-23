@@ -16,29 +16,26 @@ import React, {
   useState,
   type ComponentRef,
 } from 'react';
-import { type ScrollView, StyleSheet, type View } from 'react-native';
+import { type ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ScrollArea } from '../layout/ScrollArea.web';
 
 import {
   MENU_WIDTH,
   SELECT_CHEVRON_SIZE,
-  SELECT_ITEM_CLASS,
+  SELECT_ITEM_STYLE,
   SELECT_MAX_HEIGHT,
-  SELECT_TRIGGER_CLASS,
   SELECT_TRIGGER_FIELD_STYLE,
   SELECT_TRIGGER_POPUP,
-  SELECT_TRIGGER_SIZE_CLASS,
   SELECT_TRIGGER_SIZE_STYLE,
-  SELECT_VALUE_CLASS,
 } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { useMenuPalette } from '../floating/menu-palette';
-import { menuType, menuTypeClass } from '../floating/menu-type';
-import { cx } from '../floating/shared';
+import { menuType } from '../floating/menu-type';
+import { ROW_CURSOR } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
@@ -194,6 +191,8 @@ export function Select(props: SelectProps) {
     onValueChange: onValueChangeProp,
     disabled,
     size: sizeProp,
+    open: openProp,
+    onOpenChange,
   } = props;
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
@@ -208,7 +207,13 @@ export function Select(props: SelectProps) {
     { size: 'md', tone: 'neutral' },
   );
   const size = inheritedSize;
-  const [requestedOpen, setIsOpen] = useState(false);
+  // Its own open state, or the caller's when `open` is given (controlled).
+  const [requestedOpen, setIsOpen] = useControllableState<boolean>({
+    value: openProp ?? false,
+    defaultValue: false,
+    controlled: Object.prototype.hasOwnProperty.call(props, 'open'),
+    onChange: (next) => onOpenChange?.(next),
+  });
   const visible = useCollapsibleVisibility();
   const isOpen = visible && requestedOpen;
   useLayoutEffect(() => {
@@ -266,7 +271,6 @@ export function SelectTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   fieldStyle: fieldStyleOverride,
   testID,
@@ -304,16 +308,14 @@ export function SelectTrigger({
   // with no border, height or background at all, so the select was a line
   // of text and a chevron floating on the page.
   const field = (
-    <StyledView
+    <View
       {...({
         dataSet: isDisabled ? { bloomSelectField: '', disabled: '' } : { bloomSelectField: '' },
       } as Record<string, unknown>)}
-      className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[ctx.size], className)}
       style={[
-        // Same inline geometry as the native fork, for a host whose className
-        // pipeline is not wired (the classes still carry it where it is).
-        className ? null : SELECT_TRIGGER_FIELD_STYLE,
-        className ? null : SELECT_TRIGGER_SIZE_STYLE[ctx.size],
+        // The same geometry as the native fork.
+        SELECT_TRIGGER_FIELD_STYLE,
+        SELECT_TRIGGER_SIZE_STYLE[ctx.size],
         fieldStyle,
         fieldStyleOverride,
       ]}
@@ -324,7 +326,7 @@ export function SelectTrigger({
         transition="background-color 200ms ease"
       />
       {children}
-    </StyledView>
+    </View>
   );
 
   const triggerState = useMemo(
@@ -398,7 +400,6 @@ export function SelectValue<T = unknown>({
   children: extractLabel = defaultExtractLabel,
   leading,
   placeholder,
-  className,
   style,
 }: SelectValueProps<T>) {
   const { value } = useSelectContext();
@@ -408,8 +409,7 @@ export function SelectValue<T = unknown>({
 
   const { chosen, display } = resolveSelectDisplay(value, storedItem, extractLabel, placeholder);
   // `text-text-primary`, `text-placeholder` while nothing is chosen,
-  // and `disabled:text-text-tertiary`. Inline only without a caller
-  // `className` — an inline colour outranks a caller's `text-*` utility.
+  // and `disabled:text-text-tertiary`.
   const color = trigger.disabled
     ? palette.trigger.disabledForeground
     : chosen
@@ -417,23 +417,12 @@ export function SelectValue<T = unknown>({
       : palette.textPlaceholder;
 
   const text = (
-    <StyledText
+    <Text
       numberOfLines={1}
-      className={cx(
-        SELECT_VALUE_CLASS[trigger.size],
-        menuTypeClass(VALUE_TYPE[trigger.size], className),
-        className && (chosen ? 'text-foreground' : 'text-muted-foreground'),
-        className,
-      )}
-      style={[
-        styles.valueText,
-        menuType(VALUE_TYPE[trigger.size], className),
-        className ? null : { color },
-        style,
-      ]}
+      style={[styles.valueText, menuType(VALUE_TYPE[trigger.size]), { color }, style]}
     >
       {display}
-    </StyledText>
+    </Text>
   );
   if (leading === undefined) return text;
   return (
@@ -481,7 +470,6 @@ export function SelectContent<T>({
   valueExtractor = defaultItemValueExtractor,
   maxHeight = SELECT_MAX_HEIGHT,
   width,
-  className,
 }: SelectContentProps<T>) {
   const { messages } = useMessages(SELECT_MESSAGES);
   const label = labelProp ?? messages.selectOption;
@@ -611,7 +599,6 @@ export function SelectContent<T>({
         sideOffset={SELECT_OFFSET}
         // `w-[266px]` as a floor, so a narrow trigger still opens the
         // standard menu width while a wide one keeps lining up under its field.
-        // A number rather than the class: this inline `minWidth` would outrank it.
         minWidth={
           width !== undefined
             ? width
@@ -622,7 +609,6 @@ export function SelectContent<T>({
         style={width !== undefined ? { width } : undefined}
         onDismiss={ctx.close}
         surface="listbox"
-        className={className}
       >
         <ScrollArea
           ref={attachList}
@@ -653,7 +639,6 @@ export function SelectItem({
   disabled = false,
   leading,
   children,
-  className,
   style,
 }: SelectItemProps) {
   const density = useMenuDensity();
@@ -700,13 +685,10 @@ export function SelectItem({
         onMouseEnter: disabled ? undefined : onMouseEnter,
         onMouseLeave,
       } as Record<string, (() => void) | undefined>)}
-      className={cx(
-        SELECT_ITEM_CLASS,
-        density.rowClass,
-        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
-        className,
-      )}
       style={[
+        SELECT_ITEM_STYLE,
+        density.rowStyle,
+        disabled ? ROW_CURSOR.disabled : ROW_CURSOR.enabled,
         ROW_TRANSITION,
         {
           backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
@@ -751,8 +733,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
     maxWidth: '100%',
   },
-  // Inline as well as `SELECT_VALUE_CLASS`: the value must give way to the
-  // chevron even where the className pipeline is not wired.
+  // The value gives way to the chevron.
   valueText: {
     flexShrink: 1,
     minWidth: 0,

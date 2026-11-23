@@ -6,11 +6,9 @@
  * height measurement, swipe wrapper and the imperative wiggle handle. The visual
  * row itself is `ToastContent` (or the consumer's `jsx`).
  *
- * W6 — INVARIANT: THE MEASURED `Animated.View` IS `style`-ONLY, NEVER
- * `className`'d. Under react-native-css on web, `onLayout` never fires for a
- * className'd component, which would strand every row at
- * `ESTIMATED_TOAST_HEIGHT` and pile the stack on top of itself. Measurement runs
- * a three-tier ladder — `getBoundingClientRect()` (RN >= 0.83 refs and RN-Web),
+ * W6 — THE MEASURED `Animated.View` MUST REPORT ITS HEIGHT: a row that never
+ * measures is stranded at `ESTIMATED_TOAST_HEIGHT` and piles the stack on top
+ * of itself. Measurement runs a three-tier ladder — `getBoundingClientRect()` (RN >= 0.83 refs and RN-Web),
  * then `measureInWindow` (older New Arch), then `onLayout` as the safety net —
  * so no single platform quirk can silently degrade it. A consumer's `toast.custom`
  * JSX is unaffected: the ref sits on this engine wrapper, not on their element.
@@ -45,18 +43,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { EXIT_DURATION, easeOutQuartFn, useToastLayoutAnimations } from './animations';
+import { easeOutQuartFn, useToastMotion } from './animations';
 import { IS_WEB } from '../styles/platform';
-import {
-  surfacePresenceStyle,
-  useEnteredPresence,
-  useSurfacePresenceContent,
-} from '../surface/use-surface-presence';
-
-const TOAST_CSS_EASE_OUT_QUART = 'cubic-bezier(0.165, 0.84, 0.44, 1)';
+import { MotionView } from '../motion/MotionView';
+import type { Play } from '../motion/play';
 import {
   CLOSE_BUTTON_HIT_AREA,
-  ENTERING_ANIMATION_DURATION,
   STACKING_ANIMATION_DURATION,
   TOAST_MAX_ROW_WIDTH,
   toastDefaults,
@@ -130,430 +122,409 @@ type ToastRowProps = ToastProps & {
   onDismiss: (id: string | number) => void;
 };
 
-export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(function ToastRow(
-  {
-    id,
-    title,
-    jsx,
-    description,
-    icon,
-    duration,
-    variant,
-    action,
-    cancel,
-    close,
-    onDismiss,
-    dismissible = toastDefaults.dismissible,
-    closeButton: closeButtonProp,
-    actionButtonStyle,
-    actionButtonTextStyle,
-    cancelButtonStyle,
-    cancelButtonTextStyle,
-    style,
-    styles: styleOverrides,
-    promiseOptions,
-    position: positionProp,
-    animation,
-    unstyled: unstyledProp,
-    important,
-    onPress,
-    allowFontScaling: allowFontScalingProp,
-    maxFontSizeMultiplier: maxFontSizeMultiplierProp,
-    backgroundComponent: backgroundComponentProp,
-    numberOfToasts,
-    index,
-    orderedToastIds,
-  },
-  ref,
-) {
-  const {
-    closeButton: closeButtonCtx,
-    icons,
-    allowFontScaling: allowFontScalingCtx,
-    maxFontSizeMultiplier: maxFontSizeMultiplierCtx,
-    enableStacking,
-    gap,
-    position: positionCtx,
-    visibleToasts,
-    unstyled: unstyledCtx,
-    toastOptions,
-  } = useToastContext();
-  const { toastHeights, isExpanded, toggleExpand } = useDynamicToastContext();
+export const ToastRow = React.memo(
+  React.forwardRef<ToastRef, ToastRowProps>(function ToastRow(
+    {
+      id,
+      title,
+      jsx,
+      description,
+      icon,
+      duration,
+      variant,
+      action,
+      cancel,
+      close,
+      onDismiss,
+      dismissible = toastDefaults.dismissible,
+      closeButton: closeButtonProp,
+      actionButtonStyle,
+      actionButtonTextStyle,
+      cancelButtonStyle,
+      cancelButtonTextStyle,
+      style,
+      styles: styleOverrides,
+      promiseOptions,
+      position: positionProp,
+      animation,
+      unstyled: unstyledProp,
+      important,
+      onPress,
+      allowFontScaling: allowFontScalingProp,
+      maxFontSizeMultiplier: maxFontSizeMultiplierProp,
+      backgroundComponent: backgroundComponentProp,
+      numberOfToasts,
+      index,
+      orderedToastIds,
+    },
+    ref,
+  ) {
+    const {
+      closeButton: closeButtonCtx,
+      icons,
+      allowFontScaling: allowFontScalingCtx,
+      maxFontSizeMultiplier: maxFontSizeMultiplierCtx,
+      enableStacking,
+      gap,
+      position: positionCtx,
+      visibleToasts,
+      unstyled: unstyledCtx,
+      toastOptions,
+    } = useToastContext();
+    const { toastHeights, isExpanded, toggleExpand } = useDynamicToastContext();
 
-  const position = positionProp ?? positionCtx;
-  const unstyled = unstyledProp ?? toastOptions.unstyled ?? unstyledCtx;
-  const closeButton = closeButtonProp ?? closeButtonCtx;
-  const allowFontScaling = allowFontScalingProp ?? allowFontScalingCtx;
-  const maxFontSizeMultiplier = maxFontSizeMultiplierProp ?? maxFontSizeMultiplierCtx;
-  const backgroundComponent = backgroundComponentProp ?? toastOptions.backgroundComponent;
-  const stackGap = gap ?? toastDefaults.stackGap;
+    const position = positionProp ?? positionCtx;
+    const unstyled = unstyledProp ?? toastOptions.unstyled ?? unstyledCtx;
+    const closeButton = closeButtonProp ?? closeButtonCtx;
+    const allowFontScaling = allowFontScalingProp ?? allowFontScalingCtx;
+    const maxFontSizeMultiplier = maxFontSizeMultiplierProp ?? maxFontSizeMultiplierCtx;
+    const backgroundComponent = backgroundComponentProp ?? toastOptions.backgroundComponent;
+    const stackGap = gap ?? toastDefaults.stackGap;
 
-  const mergedStyles = React.useMemo(
-    () =>
-      mergeToastStyles(toastOptions, styleOverrides, variant ? toastOptions[variant] : undefined),
-    [toastOptions, styleOverrides, variant],
-  );
+    const mergedStyles = React.useMemo(
+      () =>
+        mergeToastStyles(toastOptions, styleOverrides, variant ? toastOptions[variant] : undefined),
+      [toastOptions, styleOverrides, variant],
+    );
 
-  // For top-center the array is reversed, so the front row is index 0.
-  const distanceFromFront = position === 'top-center' ? index : numberOfToasts - 1 - index;
-  const isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts;
+    // For top-center the array is reversed, so the front row is index 0.
+    const distanceFromFront = position === 'top-center' ? index : numberOfToasts - 1 - index;
+    const isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts;
 
-  const { entering, exiting, enterTranslateY } = useToastLayoutAnimations(
-    positionProp,
-    animation,
-    isHiddenByLimit,
-    numberOfToasts,
-  );
+    const motion = useToastMotion(positionProp, animation, isHiddenByLimit, numberOfToasts);
+    // The enter plays once, from the row's first frame.
+    const enterPlay: Play | undefined =
+      motion.enter === undefined
+        ? undefined
+        : {
+            id: 0,
+            keyframes: motion.enter,
+            timing: motion.enter.timing(undefined) as Play['timing'],
+            fill: 'none',
+            material: true,
+            onEnd: undefined,
+          };
 
-  const yPosition = useToastPosition({
-    index,
-    numberOfToasts,
-    enableStacking,
-    position,
-    allToastHeights: toastHeights,
-    gap,
-    orderedToastIds,
-    isExpanded,
-    stackGap,
-  });
-
-  const { width: screenWidth } = useWindowDimensions();
-  // The row is `width: '100%'` up to the cap, so this is its real width.
-  const rowWidth = Math.min(screenWidth, TOAST_MAX_ROW_WIDTH);
-
-  const stackScaleX = useAnimatedTarget(
-    calculateStackScaleX({
+    const yPosition = useToastPosition({
       index,
       numberOfToasts,
       enableStacking,
       position,
+      allToastHeights: toastHeights,
+      gap,
+      orderedToastIds,
       isExpanded,
       stackGap,
-      rowWidth,
-    }),
-    { duration: STACKING_ANIMATION_DURATION, easing: easeOutQuartFn },
-  );
-
-  // Keep the measured child intrinsic. Only its viewport changes height, so a
-  // tall description/custom row cannot protrude behind a shorter front card.
-  // A row that has not measured itself yet is not clipped at all (unbounded,
-  // not `ESTIMATED_TOAST_HEIGHT`: the estimate is no height it ever had), and
-  // its first measurement replaces that rather than animating from it
-  // (`estimated`). Seeded at the estimate instead, a card taller than it was
-  // clipped to the estimate for the length of a stack animation as it appeared.
-  const naturalHeight = toastHeights[id];
-  const visibleHeight = useAnimatedTarget(
-    naturalHeight === undefined
-      ? Number.POSITIVE_INFINITY
-      : calculateToastVisibleHeight({
-          index,
-          numberOfToasts,
-          enableStacking,
-          position,
-          allToastHeights: toastHeights,
-          orderedToastIds,
-          isExpanded,
-        }),
-    {
-      duration: STACKING_ANIMATION_DURATION,
-      easing: easeOutQuartFn,
-      estimated: naturalHeight === undefined,
-    },
-  );
-  const surfaceStyle = StyleSheet.flatten([mergedStyles.toast, style]);
-  const inset = jsx || unstyled ? 0 : space.lg;
-  const leftMargin = surfaceStyle?.marginLeft ?? surfaceStyle?.marginHorizontal ?? inset;
-  const insetLeft = typeof leftMargin === 'number' ? leftMargin : 0;
-  const rightMargin = surfaceStyle?.marginRight ?? surfaceStyle?.marginHorizontal ?? inset;
-  const insetRight = typeof rightMargin === 'number' ? rightMargin : 0;
-  // W14 — THE VIEWPORT BOUNDS THE ROW ONLY WHILE IT CLIPS IT, and its clip
-  // never lays the measured child out shorter. The measured height feeds this
-  // very `maxHeight` (through `visibleHeight`), so the child must be the same
-  // height whatever the viewport is, or the loop never settles. On the web CSS
-  // already keeps a `flex-shrink: 0` child at its content height under a
-  // `max-height`. Yoga does not: it lays a non-scrolling column's children out
-  // within its height (`SizingMode::FitContent`), so a `maxHeight` squeezed the
-  // card's content, `onLayout` reported the squeezed height, and every report
-  // moved the target again. On OxyOS's host a toast never went still (the row
-  // re-laid out ~7 times a second, 77 and 78 in turn, for as long as it stayed).
-  // Hence, natively: no `maxHeight` at all unless the row is clipped, and a
-  // clipped viewport is a SCROLL container, whose children Yoga lays out at
-  // their content's own height (`CalculateLayout.cpp`), and which clips like
-  // `hidden`; it never scrolls (nothing pans it). The web keeps `hidden`: there
-  // `scroll` would draw scrollbars. Gate: `Toaster.test.tsx` (W14).
-  const viewportStyle = useAnimatedStyle(() => {
-    const constrained = naturalHeight !== undefined && visibleHeight.value < naturalHeight - 0.5;
-    return {
-      // maxHeight (not a text transform) clips without squashing typography.
-      maxHeight: constrained ? visibleHeight.value : UNSET,
-      overflow: constrained ? CLIPPING_OVERFLOW : 'visible',
-    };
-  }, [visibleHeight, naturalHeight]);
-
-  const stackTransformStyle = useAnimatedStyle(
-    () => ({
-      transform: [{ translateY: yPosition.value }, { scaleX: stackScaleX.value }],
-    }),
-    [yPosition, stackScaleX],
-  );
-
-  // 0 -> 1 over the enter animation. Seeded at 1 with NO mount-time `withTiming`
-  // whenever `enterTranslateY` is undefined — i.e. whenever `entering` is playing
-  // the enter instead, or reduced motion is on — leaving this style the identity.
-  const enterProgress = useAnimatedTarget(1, {
-    duration: ENTERING_ANIMATION_DURATION,
-    easing: easeOutQuartFn,
-    from: enterTranslateY === undefined ? undefined : 0,
-  });
-  const enterDistance = enterTranslateY ?? 0;
-
-  const wiggleScale = useSharedValue(1);
-  // ONE mapper for both transforms: two animated styles on the same view would
-  // each return a `transform` array and the later one would win outright.
-  // On the web the row only moves: the toast paints the material, so its fade
-  // in and out is its presence (layers through the variables, content piece by
-  // piece) on the measured node, never an opacity above the material.
-  const rowStyle = useAnimatedStyle(
-    () => ({
-      ...(IS_WEB ? null : { opacity: enterProgress.value }),
-      transform: [
-        { translateY: (1 - enterProgress.value) * enterDistance },
-        { scale: wiggleScale.value },
-      ],
-    }),
-    [enterProgress, enterDistance, wiggleScale],
-  );
-
-  const wiggle = React.useCallback(() => {
-    'worklet';
-    wiggleScale.value = withRepeat(
-      withTiming(Math.min(wiggleScale.value * WIGGLE_SCALE, WIGGLE_SCALE), {
-        duration: WIGGLE_DURATION,
-      }),
-      WIGGLE_REPEATS,
-      true,
-    );
-  }, [wiggleScale]);
-
-  const handleWiggle = React.useCallback(() => {
-    // A toast that never auto-closes has no timer to draw attention back to.
-    if (duration === Infinity) {
-      return;
-    }
-    if (wiggleScale.value !== 1) {
-      // Settle back to rest first, otherwise the scale compounds.
-      wiggleScale.value = withTiming(1, { duration: WIGGLE_DURATION }, wiggle);
-      return;
-    }
-    wiggle();
-  }, [wiggle, wiggleScale, duration]);
-
-  React.useImperativeHandle(ref, () => ({ wiggle: handleWiggle }));
-
-  const measuredRef = React.useRef<
-    (React.ComponentRef<typeof View> & { getBoundingClientRect?: () => DOMRect }) | null
-  >(null);
-  const entered = useEnteredPresence(true);
-  const presence = enterTranslateY === undefined || entered ? 1 : 0;
-  useSurfacePresenceContent(measuredRef, {
-    presence,
-    duration: ENTERING_ANIMATION_DURATION,
-    easing: TOAST_CSS_EASE_OUT_QUART,
-    exit: exiting ? EXIT_DURATION : 0,
-  });
-
-  // Tiers 1 and 2 of the ladder — see the W6 note in the file header.
-  React.useLayoutEffect(() => {
-    const node = measuredRef.current;
-    if (!node) {
-      return;
-    }
-
-    if (typeof node.getBoundingClientRect === 'function') {
-      toastStore.setToastHeight(id, node.getBoundingClientRect().height);
-      return;
-    }
-
-    let stale = false;
-    node.measureInWindow((_x, _y, _width, height) => {
-      if (!stale) {
-        toastStore.setToastHeight(id, height);
-      }
     });
-    return () => {
-      stale = true;
-    };
-  }, [id, variant, title, description, jsx]);
 
-  // Tier 3. Also the only tier that reports a LATER resize (a wrapped line, a
-  // font swap) on platforms without a synchronous read.
-  const handleLayout = React.useCallback(
-    ({ nativeEvent }: LayoutChangeEvent) => {
-      const { height } = nativeEvent.layout;
-      if (height > 0) {
-        toastStore.setToastHeight(id, height);
+    const { width: screenWidth } = useWindowDimensions();
+    // The row is `width: '100%'` up to the cap, so this is its real width.
+    const rowWidth = Math.min(screenWidth, TOAST_MAX_ROW_WIDTH);
+
+    const stackScaleX = useAnimatedTarget(
+      calculateStackScaleX({
+        index,
+        numberOfToasts,
+        enableStacking,
+        position,
+        isExpanded,
+        stackGap,
+        rowWidth,
+      }),
+      { duration: STACKING_ANIMATION_DURATION, easing: easeOutQuartFn },
+    );
+
+    // Keep the measured child intrinsic. Only its viewport changes height, so a
+    // tall description/custom row cannot protrude behind a shorter front card.
+    // A row that has not measured itself yet is not clipped at all (unbounded,
+    // not `ESTIMATED_TOAST_HEIGHT`: the estimate is no height it ever had), and
+    // its first measurement replaces that rather than animating from it
+    // (`estimated`). Seeded at the estimate instead, a card taller than it was
+    // clipped to the estimate for the length of a stack animation as it appeared.
+    const naturalHeight = toastHeights[id];
+    const visibleHeight = useAnimatedTarget(
+      naturalHeight === undefined
+        ? Number.POSITIVE_INFINITY
+        : calculateToastVisibleHeight({
+            index,
+            numberOfToasts,
+            enableStacking,
+            position,
+            allToastHeights: toastHeights,
+            orderedToastIds,
+            isExpanded,
+          }),
+      {
+        duration: STACKING_ANIMATION_DURATION,
+        easing: easeOutQuartFn,
+        estimated: naturalHeight === undefined,
+      },
+    );
+    const surfaceStyle = StyleSheet.flatten([mergedStyles.toast, style]);
+    const inset = jsx || unstyled ? 0 : space.lg;
+    const leftMargin = surfaceStyle?.marginLeft ?? surfaceStyle?.marginHorizontal ?? inset;
+    const insetLeft = typeof leftMargin === 'number' ? leftMargin : 0;
+    const rightMargin = surfaceStyle?.marginRight ?? surfaceStyle?.marginHorizontal ?? inset;
+    const insetRight = typeof rightMargin === 'number' ? rightMargin : 0;
+    // W14 — THE VIEWPORT BOUNDS THE ROW ONLY WHILE IT CLIPS IT, and its clip
+    // never lays the measured child out shorter. The measured height feeds this
+    // very `maxHeight` (through `visibleHeight`), so the child must be the same
+    // height whatever the viewport is, or the loop never settles. On the web CSS
+    // already keeps a `flex-shrink: 0` child at its content height under a
+    // `max-height`. Yoga does not: it lays a non-scrolling column's children out
+    // within its height (`SizingMode::FitContent`), so a `maxHeight` squeezed the
+    // card's content, `onLayout` reported the squeezed height, and every report
+    // moved the target again. On OxyOS's host a toast never went still (the row
+    // re-laid out ~7 times a second, 77 and 78 in turn, for as long as it stayed).
+    // Hence, natively: no `maxHeight` at all unless the row is clipped, and a
+    // clipped viewport is a SCROLL container, whose children Yoga lays out at
+    // their content's own height (`CalculateLayout.cpp`), and which clips like
+    // `hidden`; it never scrolls (nothing pans it). The web keeps `hidden`: there
+    // `scroll` would draw scrollbars. Gate: `Toaster.test.tsx` (W14).
+    const viewportStyle = useAnimatedStyle(() => {
+      const constrained = naturalHeight !== undefined && visibleHeight.value < naturalHeight - 0.5;
+      return {
+        // maxHeight (not a text transform) clips without squashing typography.
+        maxHeight: constrained ? visibleHeight.value : UNSET,
+        overflow: constrained ? CLIPPING_OVERFLOW : 'visible',
+      };
+    }, [visibleHeight, naturalHeight]);
+
+    const stackTransformStyle = useAnimatedStyle(
+      () => ({
+        transform: [{ translateY: yPosition.value }, { scaleX: stackScaleX.value }],
+      }),
+      [yPosition, stackScaleX],
+    );
+
+    const wiggleScale = useSharedValue(1);
+    // The wiggle (an attention cue on update) is the row's one shared value.
+    const rowStyle = useAnimatedStyle(
+      () => ({ transform: [{ scale: wiggleScale.value }] }),
+      [wiggleScale],
+    );
+
+    const wiggle = React.useCallback(() => {
+      'worklet';
+      wiggleScale.value = withRepeat(
+        withTiming(Math.min(wiggleScale.value * WIGGLE_SCALE, WIGGLE_SCALE), {
+          duration: WIGGLE_DURATION,
+        }),
+        WIGGLE_REPEATS,
+        true,
+      );
+    }, [wiggleScale]);
+
+    const handleWiggle = React.useCallback(() => {
+      // A toast that never auto-closes has no timer to draw attention back to.
+      if (duration === Infinity) {
+        return;
       }
-    },
-    [id],
-  );
+      if (wiggleScale.value !== 1) {
+        // Settle back to rest first, otherwise the scale compounds.
+        wiggleScale.value = withTiming(1, { duration: WIGGLE_DURATION }, wiggle);
+        return;
+      }
+      wiggle();
+    }, [wiggle, wiggleScale, duration]);
 
-  const onRemove = React.useCallback(() => {
-    onDismiss(id);
-  }, [onDismiss, id]);
+    React.useImperativeHandle(ref, () => ({ wiggle: handleWiggle }));
 
-  const onSwipeBegin = React.useCallback(() => {
-    toastStore.pauseTimer(id);
-  }, [id]);
+    const measuredRef = React.useRef<
+      (React.ComponentRef<typeof View> & { getBoundingClientRect?: () => DOMRect }) | null
+    >(null);
+    // Tiers 1 and 2 of the ladder — see the W6 note in the file header.
+    React.useLayoutEffect(() => {
+      const node = measuredRef.current;
+      if (!node) {
+        return;
+      }
 
-  const onSwipeFinalize = React.useCallback(() => {
-    if (!isExpanded) {
-      toastStore.resumeTimer(id);
-    }
-  }, [id, isExpanded]);
+      if (typeof node.getBoundingClientRect === 'function') {
+        toastStore.setToastHeight(id, node.getBoundingClientRect().height);
+        return;
+      }
 
-  /**
-   * INVARIANT: NO TAP ON A STACKED ROW IS INERT. Every one of them dismisses,
-   * expands or collapses.
-   *
-   * The close-button strip dismisses only when a ✕ is actually THERE to aim at,
-   * which is exactly `closeButton && dismissible` — the same condition
-   * `ToastContent` renders it under, and nothing to do with expansion. Anything
-   * else in the strip falls through to the row's own behaviour rather than being
-   * swallowed: on a collapsed stack it expands, on an expanded one it collapses.
-   *
-   * Guarding the strip on `isExpanded` (as this did until now) made two taps do
-   * nothing at all — the whole strip at default config, where `closeButton` is
-   * `false` so the dismiss branch is unreachable, and the VISIBLE ✕ on a
-   * collapsed stack's front row. On Android that second one has no fallback:
-   * the RNGH tap wins the race against `ToastContent`'s nested close Pressable,
-   * so the ✕ never got its own press either.
-   *
-   * `x` is relative to the row, which is CAPPED at `TOAST_MAX_ROW_WIDTH`.
-   * Measuring the strip from the window edge would put it outside the row
-   * entirely on a wide viewport — do not "simplify" this back to `screenWidth`.
-   *
-   * W13 — the expansion TOGGLE stands down while a mouse is hovering the stack,
-   * because hover already owns expansion there (`use-stack-hover`). Without this
-   * a desktop click would collapse the stack under the cursor and resume the
-   * timers hover had just paused. Dismissing is unaffected, `onPress` always
-   * runs, and `isStackHovered()` is always false on native and on any touch web
-   * device — so press remains the only trigger wherever there is no pointer.
-   */
-  const onSwipePress = React.useCallback(
-    ({ x }: { x: number; y: number }) => {
-      if (enableStacking && numberOfToasts > 1 && position !== 'center') {
-        const inCloseStrip = x > rowWidth - CLOSE_BUTTON_HIT_AREA;
-        if (inCloseStrip && closeButton && dismissible) {
-          onDismiss(id);
-        } else if (!isStackHovered()) {
-          toggleExpand();
+      let stale = false;
+      node.measureInWindow((_x, _y, _width, height) => {
+        if (!stale) {
+          toastStore.setToastHeight(id, height);
         }
+      });
+      return () => {
+        stale = true;
+      };
+    }, [id, variant, title, description, jsx]);
+
+    // Tier 3. Also the only tier that reports a LATER resize (a wrapped line, a
+    // font swap) on platforms without a synchronous read.
+    const handleLayout = React.useCallback(
+      ({ nativeEvent }: LayoutChangeEvent) => {
+        const { height } = nativeEvent.layout;
+        if (height > 0) {
+          toastStore.setToastHeight(id, height);
+        }
+      },
+      [id],
+    );
+
+    const onRemove = React.useCallback(() => {
+      onDismiss(id);
+    }, [onDismiss, id]);
+
+    const onSwipeBegin = React.useCallback(() => {
+      toastStore.pauseTimer(id);
+    }, [id]);
+
+    const onSwipeFinalize = React.useCallback(() => {
+      if (!isExpanded) {
+        toastStore.resumeTimer(id);
       }
-      onPress?.();
-    },
-    [
-      enableStacking,
-      numberOfToasts,
-      position,
-      rowWidth,
-      closeButton,
-      dismissible,
-      onDismiss,
-      id,
-      toggleExpand,
-      onPress,
-    ],
-  );
+    }, [id, isExpanded]);
 
-  // Front row on top: later rows in the stack sit progressively behind.
-  const stackZIndex = position === 'top-center' ? -(index + 1) : -(numberOfToasts - index);
+    /**
+     * INVARIANT: NO TAP ON A STACKED ROW IS INERT. Every one of them dismisses,
+     * expands or collapses.
+     *
+     * The close-button strip dismisses only when a ✕ is actually THERE to aim at,
+     * which is exactly `closeButton && dismissible` — the same condition
+     * `ToastContent` renders it under, and nothing to do with expansion. Anything
+     * else in the strip falls through to the row's own behaviour rather than being
+     * swallowed: on a collapsed stack it expands, on an expanded one it collapses.
+     *
+     * Guarding the strip on `isExpanded` (as this did until now) made two taps do
+     * nothing at all — the whole strip at default config, where `closeButton` is
+     * `false` so the dismiss branch is unreachable, and the VISIBLE ✕ on a
+     * collapsed stack's front row. On Android that second one has no fallback:
+     * the RNGH tap wins the race against `ToastContent`'s nested close Pressable,
+     * so the ✕ never got its own press either.
+     *
+     * `x` is relative to the row, which is CAPPED at `TOAST_MAX_ROW_WIDTH`.
+     * Measuring the strip from the window edge would put it outside the row
+     * entirely on a wide viewport — do not "simplify" this back to `screenWidth`.
+     *
+     * W13 — the expansion TOGGLE stands down while a mouse is hovering the stack,
+     * because hover already owns expansion there (`use-stack-hover`). Without this
+     * a desktop click would collapse the stack under the cursor and resume the
+     * timers hover had just paused. Dismissing is unaffected, `onPress` always
+     * runs, and `isStackHovered()` is always false on native and on any touch web
+     * device — so press remains the only trigger wherever there is no pointer.
+     */
+    const onSwipePress = React.useCallback(
+      ({ x }: { x: number; y: number }) => {
+        if (enableStacking && numberOfToasts > 1 && position !== 'center') {
+          const inCloseStrip = x > rowWidth - CLOSE_BUTTON_HIT_AREA;
+          if (inCloseStrip && closeButton && dismissible) {
+            onDismiss(id);
+          } else if (!isStackHovered()) {
+            toggleExpand();
+          }
+        }
+        onPress?.();
+      },
+      [
+        enableStacking,
+        numberOfToasts,
+        position,
+        rowWidth,
+        closeButton,
+        dismissible,
+        onDismiss,
+        id,
+        toggleExpand,
+        onPress,
+      ],
+    );
 
-  // Exit owns a separate anchor. Its keyframe resets transform, so placing
-  // stackTransformStyle on that node loses the departing row's offset/scale.
-  // Keeping the stack transform inside also preserves it in the web exit clone.
-  return (
-    <Animated.View
-      exiting={exiting}
-      pointerEvents="box-none"
-      style={[styles.anchor, anchorFor(position), { zIndex: stackZIndex }]}
-    >
-      <Animated.View style={stackTransformStyle}>
-        <ToastSwipeHandler
-          onRemove={onRemove}
-          onBegin={onSwipeBegin}
-          onFinalize={onSwipeFinalize}
-          onPress={onSwipePress}
-          // A pending promise toast cannot be swiped away mid-flight.
-          enabled={!promiseOptions && dismissible}
-          style={mergedStyles.toastContainer}
-          unstyled={unstyled}
-          important={important}
-          variant={variant}
-          position={positionProp}
-        >
-          <Animated.View style={rowStyle}>
-            <Animated.View
-              style={[
-                {
-                  marginLeft: insetLeft,
-                  marginRight: insetRight,
-                  borderRadius: surfaceStyle?.borderRadius ?? NOTIFICATION_GEOMETRY.radius,
-                },
-                viewportStyle,
-              ]}
-            >
+    // Front row on top: later rows in the stack sit progressively behind.
+    const stackZIndex = position === 'top-center' ? -(index + 1) : -(numberOfToasts - index);
+
+    // Exit owns a separate anchor. Its keyframe resets transform, so placing
+    // stackTransformStyle on that node loses the departing row's offset/scale.
+    // Keeping the stack transform inside also preserves it in the web exit clone.
+    return (
+      <MotionView
+        exit={motion.exit ? { keyframes: motion.exit, material: true } : null}
+        pointerEvents="box-none"
+        exiting={motion.exiting}
+        style={[styles.anchor, anchorFor(position), { zIndex: stackZIndex }]}
+      >
+        <Animated.View style={stackTransformStyle}>
+          <ToastSwipeHandler
+            onRemove={onRemove}
+            onBegin={onSwipeBegin}
+            onFinalize={onSwipeFinalize}
+            onPress={onSwipePress}
+            // A pending promise toast cannot be swiped away mid-flight.
+            enabled={!promiseOptions && dismissible}
+            style={mergedStyles.toastContainer}
+            unstyled={unstyled}
+            important={important}
+            variant={variant}
+            position={positionProp}
+          >
+            <Animated.View style={rowStyle}>
               <Animated.View
                 style={[
                   {
+                    marginLeft: insetLeft,
+                    marginRight: insetRight,
+                    borderRadius: surfaceStyle?.borderRadius ?? NOTIFICATION_GEOMETRY.radius,
+                  },
+                  viewportStyle,
+                ]}
+              >
+                <MotionView
+                  style={{
                     flexShrink: 0,
                     marginLeft: -Number(insetLeft),
                     marginRight: -Number(insetRight),
-                  },
-                  IS_WEB ? surfacePresenceStyle(presence, ENTERING_ANIMATION_DURATION) : null,
-                ]}
-                ref={measuredRef}
-                onLayout={handleLayout}
-                entering={entering}
-              >
-                {jsx ?? (
-                  <ToastContent
-                    id={id}
-                    title={title}
-                    description={description}
-                    variant={variant}
-                    icon={icon}
-                    icons={icons}
-                    action={action}
-                    cancel={cancel}
-                    close={close}
-                    closeButton={closeButton}
-                    dismissible={dismissible}
-                    promiseOptions={promiseOptions}
-                    styles={mergedStyles}
-                    style={style}
-                    unstyled={unstyled}
-                    onDismiss={onDismiss}
-                    actionButtonStyle={actionButtonStyle ?? toastOptions.actionButtonStyle}
-                    actionButtonTextStyle={
-                      actionButtonTextStyle ?? toastOptions.actionButtonTextStyle
-                    }
-                    cancelButtonStyle={cancelButtonStyle ?? toastOptions.cancelButtonStyle}
-                    cancelButtonTextStyle={
-                      cancelButtonTextStyle ?? toastOptions.cancelButtonTextStyle
-                    }
-                    allowFontScaling={allowFontScaling}
-                    maxFontSizeMultiplier={maxFontSizeMultiplier}
-                    backgroundComponent={backgroundComponent}
-                  />
-                )}
+                  }}
+                  ref={measuredRef}
+                  onLayout={handleLayout}
+                  entering={motion.entering}
+                  play={enterPlay}
+                >
+                  {jsx ?? (
+                    <ToastContent
+                      id={id}
+                      title={title}
+                      description={description}
+                      variant={variant}
+                      icon={icon}
+                      icons={icons}
+                      action={action}
+                      cancel={cancel}
+                      close={close}
+                      closeButton={closeButton}
+                      dismissible={dismissible}
+                      promiseOptions={promiseOptions}
+                      styles={mergedStyles}
+                      style={style}
+                      unstyled={unstyled}
+                      onDismiss={onDismiss}
+                      actionButtonStyle={actionButtonStyle ?? toastOptions.actionButtonStyle}
+                      actionButtonTextStyle={
+                        actionButtonTextStyle ?? toastOptions.actionButtonTextStyle
+                      }
+                      cancelButtonStyle={cancelButtonStyle ?? toastOptions.cancelButtonStyle}
+                      cancelButtonTextStyle={
+                        cancelButtonTextStyle ?? toastOptions.cancelButtonTextStyle
+                      }
+                      allowFontScaling={allowFontScaling}
+                      maxFontSizeMultiplier={maxFontSizeMultiplier}
+                      backgroundComponent={backgroundComponent}
+                    />
+                  )}
+                </MotionView>
               </Animated.View>
             </Animated.View>
-          </Animated.View>
-        </ToastSwipeHandler>
-      </Animated.View>
-    </Animated.View>
-  );
-});
+          </ToastSwipeHandler>
+        </Animated.View>
+      </MotionView>
+    );
+  }),
+);
 
 const styles = StyleSheet.create({
   anchor: {

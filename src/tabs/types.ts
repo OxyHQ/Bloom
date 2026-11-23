@@ -1,3 +1,4 @@
+import type { MotionValue } from '../motion/motion-value';
 import type { ComponentType } from 'react';
 import type { GestureResponderEvent, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -62,6 +63,14 @@ export interface TabsProps {
    * trigger simply leaves the underline where it was, as it always has).
    */
   hasSelection?: boolean;
+  /**
+   * The horizontal finger travel of a swipe that pages between the tabs (a
+   * `MotionValue` the swipe's gesture writes, as `RouterTabs` does). The
+   * underline follows it toward the neighbouring tab without a render; native
+   * reads it on the UI thread. Pair it with the strip's `ref`
+   * ({@link TabsDragController}) for the touch's start and release.
+   */
+  dragTranslation?: MotionValue;
   /** Visual variant for the tab bar. */
   variant?: TabsVariant;
   /**

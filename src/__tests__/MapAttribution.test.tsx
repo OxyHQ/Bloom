@@ -11,7 +11,7 @@
  * translucent pane reports a plausible colour for a slot it is not using. That
  * half is a screenshot check over a pale map, a night map and a photograph.
  */
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

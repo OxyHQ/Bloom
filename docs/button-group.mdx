@@ -71,6 +71,7 @@ state and press cancellation. A wrapper does not require a special group item.
 | `size` | inherited, then `md` | Normal Button size, including `lg`. |
 | `dividers` | `true` | Inset hairlines between joined controls. |
 | `separated` | `false` | Flat segments with a 2px gap in one outer pill; no moving capsule or dividers. Icon segments default to `wide`. |
+| `material` | `surface` | `lens` draws the group with the native lens on Android 13+ (the buttons, dividers, selection and accessibility are unchanged) and keeps the Surface elsewhere. For a fixed layer such as a header or toolbar, not a scrolling list: the lens is drawn by the window, so it does not follow a scroll view's overscroll stretch. [`HeaderActions`](./page-header.mdx) uses it. |
 | `accessibilityLabel` | — | Names the group. |
 | `style`, `testID` | — | Group layout and test handle. |
 

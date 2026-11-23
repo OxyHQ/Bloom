@@ -1,0 +1,415 @@
+import {
+  AgentLimitsCard as BloomAgentLimitsCard,
+  type AgentLimitsCardProps,
+} from '@oxy.so/bloom/agent-limits-card';
+import {
+  AgentLogRow as BloomAgentLogRow,
+  type AgentLogRowProps,
+  AgentLogShimmerText as BloomAgentLogShimmerText,
+  AgentLogToolCall as BloomAgentLogToolCall,
+  type AgentLogToolCallProps,
+  AgentLogToolCalls as BloomAgentLogToolCalls,
+  type AgentLogToolCallsProps,
+  type AgentLogToolCallStatus,
+  AgentLogWorkingRow as BloomAgentLogWorkingRow,
+  type AgentLogWorkingRowProps,
+} from '@oxy.so/bloom/agent-log';
+import {
+  AgentProgress as BloomAgentProgress,
+  AgentProgressLoadingText as BloomAgentProgressLoadingText,
+  type AgentProgressProps,
+} from '@oxy.so/bloom/agent-progress';
+import {
+  AgentThinking as BloomAgentThinking,
+  type AgentThinkingProps,
+} from '@oxy.so/bloom/agent-thinking';
+import {
+  ComposerLoader as BloomComposerLoader,
+  type ComposerLoaderProps,
+} from '@oxy.so/bloom/composer-loader';
+import {
+  ConversationSidebar as BloomConversationSidebar,
+  type ConversationSidebarItem,
+  type ConversationSidebarProps,
+} from '@oxy.so/bloom/conversation-sidebar';
+import {
+  Questionnaire as BloomQuestionnaire,
+  type QuestionnaireProps,
+  type QuestionnaireQuestion,
+} from '@oxy.so/bloom/questionnaire';
+import { UsageCard as BloomUsageCard, type UsageCardProps } from '@oxy.so/bloom/usage-card';
+
+import type { Binding, Bound } from '../binding';
+import { selectionOf } from '../chrome/sidebar-host';
+import { type Child, Node, type ViewModifiers } from '../node';
+import type {
+  AgentThinkingStyle,
+  CardRadius,
+  AgentThinkingTone,
+  Blend,
+  ContentAlignment,
+  DurationName,
+  InkToken,
+  ModesPresentation,
+  PrimaryActionPlacement,
+  RailLabels,
+  RailSelection,
+  ScrollbarSide,
+  SidebarSize,
+  SidebarSurface,
+  SidebarVariant,
+  SpaceToken,
+  TeamPlacement,
+  TypeRampStep,
+} from '../tokens';
+import type { ControlDraw, ControlRenderer } from './draw';
+import { bound, type CornerToken, product } from './product';
+
+/** The agent families apps share: limits and usage, thinking, progress, the log, the loader, the sidebar, the questionnaire. */
+export type AgentKind =
+  | 'agentLimitsCard'
+  | 'usageCard'
+  | 'agentThinking'
+  | 'agentProgress'
+  | 'agentProgressLoadingText'
+  | 'agentLogRow'
+  | 'agentLogShimmerText'
+  | 'agentLogToolCall'
+  | 'agentLogToolCalls'
+  | 'agentLogWorkingRow'
+  | 'composerLoader'
+  | 'conversationSidebar'
+  | 'questionnaire';
+
+type Drawn = 'style' | 'testID';
+
+export type AgentLimitsCardOptions = Omit<
+  AgentLimitsCardProps,
+  Drawn | 'expanded' | 'onExpandedChange'
+>;
+export type UsageCardOptions = Omit<
+  UsageCardProps,
+  Drawn | 'fallback' | 'footer' | 'radius' | 'expanded' | 'onExpandedChange'
+> & {
+  readonly fallback?: Child;
+  readonly footer?: Child;
+  /** Its corner: a card's corner token (Bloom's `radius-28` by default is `3xl`). */
+  readonly radius?: CardRadius;
+};
+export type AgentThinkingOptions = Omit<
+  AgentThinkingProps,
+  Drawn | 'children' | 'variant' | 'tone' | 'open' | 'onOpenChange'
+>;
+export type AgentProgressOptions = Omit<
+  AgentProgressProps,
+  Drawn | 'stepDuration' | 'completionDelay' | 'minimized' | 'onMinimizedChange'
+> & { readonly stepDuration?: DurationName; readonly completionDelay?: DurationName };
+export type AgentLogRowOptions = Omit<AgentLogRowProps, Drawn | 'children'>;
+/** Bloom `AgentLogToolCall`'s data; `content` is what it shows expanded (Bloom's children). */
+export type AgentLogToolCallOptions = Omit<
+  AgentLogToolCallProps,
+  'testID' | 'name' | 'status' | 'children' | 'expanded' | 'onExpandedChange'
+> & { readonly content?: Child };
+export type AgentLogToolCallsOptions = Omit<
+  AgentLogToolCallsProps,
+  'testID' | 'children' | 'accessibilityLabel'
+>;
+export type AgentLogWorkingRowOptions = Omit<AgentLogWorkingRowProps, Drawn | 'label'>;
+/** Bloom `ComposerLoader`'s motion and phase; its radius a corner token, its lengths space tokens. */
+export type ComposerLoaderOptions = Omit<
+  ComposerLoaderProps,
+  Drawn | 'children' | 'colors' | 'radius' | 'line' | 'offset' | 'blend' | 'bloomOnly' | 'surface'
+> & { readonly radius?: CornerToken; readonly line?: SpaceToken; readonly offset?: SpaceToken };
+/** What a conversation sidebar leaves to modifiers: its look. */
+type SidebarLook =
+  | 'variant'
+  | 'size'
+  | 'surface'
+  | 'contentAlignment'
+  | 'primaryActionPlacement'
+  | 'railLabels'
+  | 'railSelection'
+  | 'modesPresentation'
+  | 'scrollbarSide'
+  | 'teamPlacement';
+export type ConversationSidebarOptions = Omit<
+  ConversationSidebarProps,
+  | Drawn
+  | 'conversations'
+  | 'after'
+  | SidebarLook
+  | 'query'
+  | 'onQueryChange'
+  | 'mode'
+  | 'onModeChange'
+  | 'collapsed'
+  | 'onCollapsedChange'
+  | 'searchQuery'
+  | 'onSearchQueryChange'
+  | 'searchOpen'
+  | 'onSearchOpenChange'
+  | 'activeId'
+  | 'onSelect'
+  | 'selected'
+  | 'selectedTreeItem'
+  | 'onNavigate'
+  | 'onTreeItemPress'
+> & { readonly after?: Child };
+export type QuestionnaireOptions = Omit<
+  QuestionnaireProps,
+  Drawn | 'questions' | 'advanceDelay' | 'step' | 'onStepChange' | 'answers' | 'onAnswersChange'
+> & {
+  readonly advanceDelay?: DurationName;
+};
+
+/** Bloom `AgentLimitsCard`: the context window and the plan's usage limits. */
+export interface AgentLimitsCardView extends ViewModifiers<AgentLimitsCardView> {
+  expanded(value: Bound<AgentLimitsCardProps, 'expanded'>): AgentLimitsCardView;
+}
+/** Bloom `UsageCard`: an account's usage and its plan's limits. */
+export interface UsageCardView extends ViewModifiers<UsageCardView> {
+  expanded(value: Bound<UsageCardProps, 'expanded'>): UsageCardView;
+}
+/** Bloom `AgentThinking`: the agent thinking, its reasoning folded under it. */
+export interface AgentThinkingView extends ViewModifiers<AgentThinkingView> {
+  presented(value: Bound<AgentThinkingProps, 'open'>): AgentThinkingView;
+  /** Its mark: `wave` (default), `spin`, `stars` or `infinity`. */
+  style(value: AgentThinkingStyle): AgentThinkingView;
+  /** `subtle`, `default`, `primary` or `accent`. */
+  tint(value: AgentThinkingTone): AgentThinkingView;
+}
+/** Bloom `AgentProgress`: the steps an agent works through. */
+export interface AgentProgressView extends ViewModifiers<AgentProgressView> {
+  minimized(value: Bound<AgentProgressProps, 'minimized'>): AgentProgressView;
+}
+/** Bloom `AgentProgressLoadingText`: a line of text that shimmers while it loads. */
+export interface AgentProgressLoadingTextView extends ViewModifiers<AgentProgressLoadingTextView> {
+  /** At most this many lines. */
+  lines(value: number): AgentProgressLoadingTextView;
+  /** Its step of Bloom's type ramp: `body-regular` by default. */
+  textVariant(value: TypeRampStep): AgentProgressLoadingTextView;
+}
+/** Bloom `AgentLogRow`: a row of an agent's log, on its timeline. */
+export type AgentLogRowView = ViewModifiers<AgentLogRowView>;
+/** Bloom `AgentLogShimmerText`: a log line that shimmers while it runs. */
+export type AgentLogShimmerTextView = ViewModifiers<AgentLogShimmerTextView>;
+/** Bloom `AgentLogToolCall`: one tool call, its status and what it returned. */
+export interface AgentLogToolCallView extends ViewModifiers<AgentLogToolCallView> {
+  expanded(value: Bound<AgentLogToolCallProps, 'expanded'>): AgentLogToolCallView;
+}
+/** Bloom `AgentLogToolCalls`: a turn's tool calls. */
+export type AgentLogToolCallsView = ViewModifiers<AgentLogToolCallsView>;
+/** Bloom `AgentLogWorkingRow`: the row that says the agent is working. */
+export type AgentLogWorkingRowView = ViewModifiers<AgentLogWorkingRowView>;
+/** Bloom `ComposerLoader`: the light that runs round a composer as an agent works. */
+export interface ComposerLoaderView extends ViewModifiers<ComposerLoaderView> {
+  /** Its four colours, left to right: colour roles or an app's own colours. */
+  gradient(colors: readonly [InkToken, InkToken, InkToken, InkToken]): ComposerLoaderView;
+  /** How the light composites over what is beneath it (`screen` reads as light on a surface). */
+  blend(value: Blend): ComposerLoaderView;
+  /** The wide bloom alone, with no line or tight glow. */
+  bloomOnly(value?: boolean): ComposerLoaderView;
+  /** The pill's surface (and its shadow) behind the light: drawn by default. */
+  surface(value?: boolean): ComposerLoaderView;
+}
+/** Bloom `ConversationSidebar`: an agent app's conversations. */
+export interface ConversationSidebarView extends ViewModifiers<ConversationSidebarView> {
+  /**
+   * The id of the selected destination or tree row (the sidebar's own rows,
+   * not a conversation): a binding, as a `Sidebar`'s `.selection()`.
+   */
+  destination(value: Binding<string>): ConversationSidebarView;
+  query(value: Bound<ConversationSidebarProps, 'query'>): ConversationSidebarView;
+  mode(value: Bound<ConversationSidebarProps, 'mode'>): ConversationSidebarView;
+  collapsed(value: Bound<ConversationSidebarProps, 'collapsed'>): ConversationSidebarView;
+  searchQuery(value: Bound<ConversationSidebarProps, 'searchQuery'>): ConversationSidebarView;
+  searchOpen(value: Bound<ConversationSidebarProps, 'searchOpen'>): ConversationSidebarView;
+  /** A `panel` (default), or a `rail` of icons. */
+  style(value: SidebarVariant): ConversationSidebarView;
+  /** Its rows, and the panel's width with them: `md` by default. */
+  size(value: SidebarSize): ConversationSidebarView;
+  /** Its edge: a `card` (default), `plain` or `docked`. */
+  sidebarSurface(value: SidebarSurface): ConversationSidebarView;
+  /** `start` (default) pins the logo at the top; `center` groups the parts. */
+  contentAlignment(value: ContentAlignment): ConversationSidebarView;
+  /** The primary action at the `bottom` (default) or the `top`. */
+  primaryActionPlacement(value: PrimaryActionPlacement): ConversationSidebarView;
+  /** A rail's captions: `visible` or `hidden`. */
+  railLabels(value: RailLabels): ConversationSidebarView;
+  /** A rail's selection: an accent `pill` (default), or the `icon` alone. */
+  railSelection(value: RailSelection): ConversationSidebarView;
+  /** Its modes as a `segmented` control (default) or a two-mode `toggle`. */
+  modesPresentation(value: ModesPresentation): ConversationSidebarView;
+  /** The web scrollbar's side: `end` (default) or `start`. */
+  scrollbarSide(value: ScrollbarSide): ConversationSidebarView;
+  /** The team switcher in the `footer` (default) or the `header`. */
+  teamPlacement(value: TeamPlacement): ConversationSidebarView;
+}
+/** Bloom `Questionnaire`: questions asked one at a time. */
+export interface QuestionnaireView extends ViewModifiers<QuestionnaireView> {
+  step(value: Bound<QuestionnaireProps, 'step'>): QuestionnaireView;
+  answers(value: Bound<QuestionnaireProps, 'answers'>): QuestionnaireView;
+}
+
+export function AgentLimitsCard(options: AgentLimitsCardOptions = {}): AgentLimitsCardView {
+  return new Node('agentLimitsCard', { options }, []);
+}
+export function UsageCard(options: UsageCardOptions = {}): UsageCardView {
+  return new Node('usageCard', { options }, []);
+}
+/** Bloom `AgentThinking`, its reasoning (`reasoning`) shown when it is opened. */
+export function AgentThinking(
+  reasoning?: Child,
+  options: AgentThinkingOptions = {},
+): AgentThinkingView {
+  return new Node('agentThinking', { options }, reasoning === undefined ? [] : [reasoning]);
+}
+export function AgentProgress(options: AgentProgressOptions = {}): AgentProgressView {
+  return new Node('agentProgress', { options }, []);
+}
+export function AgentProgressLoadingText(text: string): AgentProgressLoadingTextView {
+  return new Node('agentProgressLoadingText', { text }, []);
+}
+/** Bloom `AgentLogRow` around `content`; `first` and `last` place it on the timeline. */
+export function AgentLogRow(content: Child, options: AgentLogRowOptions): AgentLogRowView {
+  return new Node('agentLogRow', { options }, [content]);
+}
+export function AgentLogShimmerText(text: string): AgentLogShimmerTextView {
+  return new Node('agentLogShimmerText', { text }, []);
+}
+/** Bloom `AgentLogToolCall`: the tool's name and `running`, `done` or `error`. */
+export function AgentLogToolCall(
+  name: string,
+  status: AgentLogToolCallStatus,
+  options: AgentLogToolCallOptions = {},
+): AgentLogToolCallView {
+  return new Node('agentLogToolCall', { name, status, options }, []);
+}
+/** Bloom `AgentLogToolCalls` of these calls (a list, keyed by `.id()`). */
+export function AgentLogToolCalls(
+  calls: Child,
+  options: AgentLogToolCallsOptions = {},
+): AgentLogToolCallsView {
+  return new Node('agentLogToolCalls', { options }, [calls]);
+}
+export function AgentLogWorkingRow(
+  label: string,
+  options: AgentLogWorkingRowOptions = {},
+): AgentLogWorkingRowView {
+  return new Node('agentLogWorkingRow', { label, options }, []);
+}
+/** Bloom `ComposerLoader` round `content` (the composer). */
+export function ComposerLoader(
+  content: Child,
+  options: ComposerLoaderOptions = {},
+): ComposerLoaderView {
+  return new Node('composerLoader', { options }, [content]);
+}
+/** Bloom `ConversationSidebar` of `conversations`; `active` holds the open one's id, a press writing it. */
+export function ConversationSidebar(
+  conversations: readonly ConversationSidebarItem[],
+  active: Bound<ConversationSidebarProps, 'activeId'>,
+  options: ConversationSidebarOptions = {},
+): ConversationSidebarView {
+  return new Node('conversationSidebar', { conversations, binding: active, options }, []);
+}
+export function Questionnaire(
+  questions: readonly QuestionnaireQuestion[],
+  options: QuestionnaireOptions = {},
+): QuestionnaireView {
+  return new Node('questionnaire', { questions, options }, []);
+}
+
+/** A component whose text is its only child (Bloom takes it as `children`). */
+function text(host: unknown, own: (d: ControlDraw) => Record<string, unknown> = () => ({})) {
+  return (d: ControlDraw) => {
+    const { text: content, options } = d.node.props as { text: string; options?: object };
+    return d.pressAround((props) =>
+      d.component(host, { ...props, ...options, ...own(d) }, content),
+    );
+  };
+}
+
+export const AGENTS: Record<AgentKind, ControlRenderer> = {
+  agentLimitsCard: product(BloomAgentLimitsCard, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+  }),
+  usageCard: product(BloomUsageCard, {
+    bindings: { expanded: ['expanded', 'onExpandedChange'] },
+    slots: ['fallback', 'footer'],
+    radii: ['radius'],
+  }),
+  agentThinking: product(BloomAgentThinking, {
+    bindings: { presented: ['open', 'onOpenChange'] },
+    own: (d) => ({ variant: d.own('style')?.value, tone: d.own('tint')?.value }),
+  }),
+  agentProgress: product(BloomAgentProgress, {
+    bindings: { minimized: ['minimized', 'onMinimizedChange'] },
+    durations: ['stepDuration', 'completionDelay'],
+  }),
+  agentProgressLoadingText: text(BloomAgentProgressLoadingText, (d) => ({
+    numberOfLines: d.own('lines')?.value,
+    variant: d.own('textVariant')?.value,
+  })),
+  agentLogRow: product(BloomAgentLogRow),
+  agentLogShimmerText: text(BloomAgentLogShimmerText),
+  agentLogToolCall: (d) => {
+    const { name, status, options } = d.node.props as {
+      name: string;
+      status: AgentLogToolCallStatus;
+      options: AgentLogToolCallOptions;
+    };
+    const { content, ...rest } = options;
+    return d.component(
+      BloomAgentLogToolCall,
+      {
+        ...d.props(),
+        ...rest,
+        ...bound(d, { expanded: ['expanded', 'onExpandedChange'] }),
+        name,
+        status,
+      },
+      ...(content === undefined ? [] : [d.render(content)]),
+    );
+  },
+  agentLogToolCalls: product(BloomAgentLogToolCalls),
+  agentLogWorkingRow: product(BloomAgentLogWorkingRow),
+  composerLoader: product(BloomComposerLoader, {
+    lengths: ['line', 'offset'],
+    corners: ['radius'],
+    colors: (d) => ({ colors: d.own('gradient')?.value }),
+    own: (d) => ({
+      blend: d.own('blend')?.value as Blend | undefined,
+      bloomOnly: d.own('bloomOnly')?.value,
+      surface: d.own('surface')?.value,
+    }),
+  }),
+  conversationSidebar: product(BloomConversationSidebar, {
+    binding: ['activeId', 'onSelect'],
+    bindings: {
+      query: ['query', 'onQueryChange'],
+      mode: ['mode', 'onModeChange'],
+      collapsed: ['collapsed', 'onCollapsedChange'],
+      searchQuery: ['searchQuery', 'onSearchQueryChange'],
+      searchOpen: ['searchOpen', 'onSearchOpenChange'],
+    },
+    slots: ['after'],
+    own: (d) => ({
+      variant: d.own('style')?.value,
+      size: d.own('size')?.value,
+      surface: d.own('sidebarSurface')?.value,
+      contentAlignment: d.own('contentAlignment')?.value,
+      primaryActionPlacement: d.own('primaryActionPlacement')?.value,
+      railLabels: d.own('railLabels')?.value,
+      railSelection: d.own('railSelection')?.value,
+      modesPresentation: d.own('modesPresentation')?.value,
+      scrollbarSide: d.own('scrollbarSide')?.value,
+      teamPlacement: d.own('teamPlacement')?.value,
+      ...selectionOf(d.own('destination')?.value as Binding<string> | undefined),
+    }),
+  }),
+  questionnaire: product(BloomQuestionnaire, {
+    bindings: { step: ['step', 'onStepChange'], answers: ['answers', 'onAnswersChange'] },
+    durations: ['advanceDelay'],
+  }),
+};

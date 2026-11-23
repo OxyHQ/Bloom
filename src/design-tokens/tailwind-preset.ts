@@ -7,6 +7,10 @@ import {
 } from './component-roles';
 import { TYPE_SCALE } from '../typography/scale';
 /**
+ * FOR APPS STILL USING `className`; removed once the fleet has migrated. Bloom
+ * itself styles without Tailwind or NativeWind (`docs/no-nativewind.mdx`).
+ */
+/**
  * The Bloom Tailwind / NativeWind preset — the SINGLE opt-in that gives every
  * Oxy app the same semantic design-token utility classes.
  *

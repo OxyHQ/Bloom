@@ -14,14 +14,10 @@
  * "fill the parent, derive the height" is what every call site wants — a caller
  * who needs a fixed width passes it through `style`, which lands last.
  *
- * No `className`, and that is the second. `aspectRatio` is the ONE property this
- * component exists to set, and react-native-css merges utilities BEFORE inline
- * style, so a caller writing `className="aspect-video"` would have it silently
- * overwritten by the `ratio` prop with no error anywhere. One owner per
- * property: use this component with `ratio`, or a plain `View` with the class,
- * never both. Wrap it in a `StyledView` for the surrounding layout classes.
+ * One owner for `aspectRatio`, and that is the second: `ratio` sets it, so a
+ * caller does not also set it in `style`. Wrap the box in a `View` for the
+ * surrounding layout.
  */
-import React from 'react';
 import { View } from 'react-native';
 
 import type { AspectRatioProps } from './types';

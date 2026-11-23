@@ -5,13 +5,14 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import { forwardRef, memo } from 'react';
 import type { ComponentRef } from 'react';
-import { styled } from 'react-native-css';
 import { Platform, StyleSheet, type View } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';
 import { SurfacePaint } from './SurfacePaint';
+import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { useLensAvailable } from '../floating/lens/lens-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -23,10 +24,10 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       fill,
       rim = true,
       sheen = true,
+      material: materialProp = 'surface',
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
       style,
-      className,
       accessibilityLabel,
       testID,
       ...hostProps
@@ -41,8 +42,6 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       cornerCurve,
     );
     const concentric = useConcentricGeometry({
-      allowClassRadius: radius === undefined,
-      webClasses: Boolean(className) && resolvedStyle?.borderRadius === undefined,
       radius:
         radius === 'concentric'
           ? 'concentric'
@@ -52,12 +51,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       style: resolvedStyle ?? undefined,
     });
     const geometry =
-      radius === 'concentric' || concentric.hasClassRadius
+      radius === 'concentric'
         ? {
             radius: undefined,
             shape: {
               radius: concentric.radii,
-              curve: radius === 'concentric' ? ('round' as const) : cornerCurve,
+              curve: 'round' as const,
             },
             style: concentric.radiusStyle,
           }
@@ -67,16 +66,18 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     const material = useResolvedSurface({
       fill: override === undefined ? undefined : String(override),
     });
-    return (
+    const lensAvailable = useLensAvailable();
+    const lens = materialProp === 'lens' && lensAvailable;
+    const split = lens ? splitLensStyle(style) : null;
+    const surface = (
       <StyledView
         {...hostProps}
         ref={ref}
-        className={className}
         accessibilityLabel={accessibilityLabel}
         testID={testID}
         style={[
           { position: 'relative' },
-          style,
+          split ? split.control : style,
           {
             backgroundColor: 'transparent',
             ...material.vars,
@@ -85,7 +86,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
           },
         ]}
       >
-        {material.painted ? (
+        {material.painted && !lens ? (
           <SurfacePaint
             rim={rim}
             sheen={sheen}
@@ -96,23 +97,23 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
           />
         ) : null}
         <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>
-          <ConcentricProvider value={concentric.context} variables={concentric.nativeVariables}>
-            {children}
-          </ConcentricProvider>
+          <ConcentricProvider value={concentric.context}>{children}</ConcentricProvider>
         </SurfaceLevelProvider>
       </StyledView>
+    );
+    if (!split) return surface;
+    // The native lens is the material: it draws behind the content (the lens base, whose content
+    // draws no lens of its own).
+    return (
+      <LensButtonHost
+        radius={typeof geometry.radius === 'number' ? geometry.radius : undefined}
+        style={split.host}
+      >
+        {surface}
+      </LensButtonHost>
     );
   },
 );
 
-// Only these two props participate in the interop map; traversing ViewProps'
-// event/ref graph exceeds styled()'s dot-path union (TS2590). Runtime forwarding
-// still belongs to the original component, including its host ref.
-const NativeSurface = styled(
-  SurfaceComponent as React.ComponentType<Pick<SurfaceProps, 'className' | 'style'>>,
-  { className: 'style' },
-) as typeof SurfaceComponent;
-export const Surface: MemoRefComponent<SurfaceProps> = memo(
-  Platform.OS === 'web' ? SurfaceComponent : NativeSurface,
-);
+export const Surface: MemoRefComponent<SurfaceProps> = memo(SurfaceComponent);
 Surface.displayName = 'Surface';

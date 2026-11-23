@@ -51,9 +51,9 @@ interface StyleableProps {
 /**
  * Web `<BloomSeedScope>`: scopes a subtree to an ARBITRARY seed colour's palette
  * (the dynamic counterpart of `<BloomColorScope>`). It (1) writes every canonical
- * `--x` token plus the Tailwind v4 `--color-x` aliases (already resolved to
- * `rgb(...)`) onto the wrapping element's inline `style`, so NativeWind classes
- * inside resolve against the seed palette instead of the document root, and
+ * `--x` token (resolved to `rgb(...)`) onto the wrapping element's inline
+ * `style`, so the tokens inside resolve against the seed palette instead of the
+ * document root, and
  * (2) publishes a matching JS `theme` on `BloomThemeContext` so
  * `useTheme()`/`useBloomTheme()` consumers inside the subtree re-theme too. The
  * `colorPreset` field is left as the parent's (a seed is not a named preset).

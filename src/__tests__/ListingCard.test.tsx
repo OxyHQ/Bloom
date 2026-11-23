@@ -10,7 +10,7 @@
  * verified in a real browser.
  */
 import { materialFill } from './support/material-fill';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -441,9 +441,10 @@ describe('FavoriteButton', () => {
 // ---------------------------------------------------------------------------
 
 describe('ListingCardGrid', () => {
-  // Columns are CONTAINER QUERIES resolved by the browser / react-native-css,
-  // so jsdom (no Tailwind) sees the structure and the classes, never a width.
-  const classOf = (el: Element | null) => el?.getAttribute('class') ?? '';
+  // Columns are CONTAINER QUERIES the browser resolves from the adopted sheet,
+  // so jsdom sees the structure, the hooks and the rules, never a column width.
+  const sheet = () =>
+    [...document.querySelectorAll('style')].map((style) => style.textContent).join('\n');
 
   it('is a container holding a list with one listitem per card', () => {
     mount(
@@ -454,7 +455,8 @@ describe('ListingCardGrid', () => {
       </ListingCardGrid>,
     );
     const grid = byTestId('g');
-    expect(classOf(grid)).toContain('@container');
+    expect(grid.hasAttribute('data-bloom-listing-grid')).toBe(true);
+    expect(sheet()).toContain('[data-bloom-listing-grid] { container-type: inline-size; }');
     const list = grid.querySelector(':scope > [role="list"]');
     expect(list).not.toBeNull();
     expect(list?.querySelectorAll(':scope > [role="listitem"]')).toHaveLength(5);
@@ -463,25 +465,29 @@ describe('ListingCardGrid', () => {
   it.each([
     [
       'results',
-      ['w-full', '@min-[500px]:w-1/2', '@min-[950px]:w-1/3', '@min-[1280px]:w-1/4', 'px-3'],
-      ['-mx-3', 'gap-y-10'],
+      ['100%', '(width >= 500px)', 'calc(1 / 3 * 100%)', '(width >= 1280px)'],
+      '12px',
+      '40px',
     ],
-    [
-      'compact',
-      ['w-1/2', '@min-[640px]:w-1/3', '@min-[950px]:w-1/4', 'px-2'],
-      ['-mx-2', 'gap-y-6'],
-    ],
-  ] as const)('%s: its cells take their columns from the grid width', (density, cell, row) => {
-    mount(
-      <ListingCardGrid density={density} testID="g">
-        <span>a</span>
-      </ListingCardGrid>,
-    );
-    const list = byTestId('g').querySelector(':scope > [role="list"]');
-    for (const name of row) expect(classOf(list).split(' ')).toContain(name);
-    const item = list?.querySelector(':scope > [role="listitem"]') ?? null;
-    for (const name of cell) expect(classOf(item).split(' ')).toContain(name);
-  });
+    ['compact', ['calc(1 / 2 * 100%)', '(width >= 640px)', 'calc(1 / 4 * 100%)'], '8px', '24px'],
+  ] as const)(
+    '%s: its cells take their columns from the grid width',
+    (density, rules, gutter, rowGap) => {
+      mount(
+        <ListingCardGrid density={density} testID="g">
+          <span>a</span>
+        </ListingCardGrid>,
+      );
+      const list = byTestId('g').querySelector(':scope > [role="list"]') as HTMLElement;
+      expect(getComputedStyle(list).rowGap).toBe(rowGap);
+      const item = list.querySelector(':scope > [role="listitem"]') as HTMLElement;
+      expect(item.getAttribute('data-bloom-listing-cell')).toBe(density);
+      expect(getComputedStyle(item).paddingLeft).toBe(gutter);
+      expect(getComputedStyle(item).paddingRight).toBe(gutter);
+      const css = sheet();
+      for (const rule of rules) expect(css).toContain(rule);
+    },
+  );
 
   it('skips what is not an element', () => {
     mount(

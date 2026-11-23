@@ -2,7 +2,7 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { buildTheme } from '../theme/build-theme';
 import { resolveToastColors } from '../toast/use-toast-colors';
 import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
-import React from 'react';
+import type React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 

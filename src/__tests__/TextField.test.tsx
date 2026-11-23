@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { surfacePaintOf } from './support/material-fill';
 import { contrastRatio } from '../styles/color-contrast';
 import {

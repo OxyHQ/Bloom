@@ -1,9 +1,3 @@
-// Side-effect import — must come first. Initializes react-native-css-interop's
-// `darkMode` flag to `'class'` at module load so its MutationObserver doesn't
-// throw "Cannot manually set color scheme, as dark mode is type 'media'" the
-// first time Bloom toggles the dark class on <html>. See ./init-css-interop.
-import './init-css-interop';
-
 import type React from 'react';
 import {
   createContext,
@@ -40,8 +34,7 @@ import { ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
-import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
-import { applyVarsToRootVariables } from './native-root-vars';
+import { buildScopeVars } from './color-scope/style-builder';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { BASE_WEB_CSS, BASE_WEB_CSS_ID } from '../styles/base-web-css';
 import {
@@ -65,6 +58,7 @@ import { useSystemAccessibility } from './system-accessibility';
 import { usePlatformAppearanceState } from '../platform-surface/use-platform-appearance';
 import { useDesktopPlatform } from '../platform-surface/use-desktop-platform';
 import { TypographyPlatformDefault } from '../typography/TypographyScope';
+import { applyThemeAtOnce } from '../motion/theme-switch';
 import type { SurfaceTint } from './color-policy';
 
 const DEFAULT_PRESET: AppColorName = 'oxy';
@@ -106,8 +100,7 @@ declare global {
  * mounted `<BloomThemeProvider>` writes into context A while `useTheme`/`useBloomTheme`/
  * `Toast`/`Dialog` read context B, so `useContext` returns `null` and they throw
  * "must be used within a <BloomThemeProvider>" even when correctly wrapped. This is the
- * same src-vs-lib dual-instance class react-native-css guards its `StyleCollection`/
- * root-variable families against. Anchoring the context on `globalThis` (keyed by the
+ * classic src-vs-lib dual-instance hazard. Anchoring the context on `globalThis` (keyed by the
  * `__oxy_so_bloom_theme_context__` property) collapses all copies onto one object. The
  * `??=` runs `createContext` at most once per process.
  */
@@ -650,12 +643,16 @@ export function BloomThemeProvider({
     // hydration snapshot. The next client snapshot publishes the real theme.
     if (serverPaint) return;
     setColorSchemeSafe(effectiveMode);
-    if (prepaint) applyPrepaintMode(resolved, prepaintTheme?.persistKey ? colorPreset : undefined);
-    applyDarkClass(resolved);
-    applyVarsToDocument(themeVars);
-    if (prepaint) applyVarsToDocument(themePaintVars(themeColors.colors));
-    const background = themeVars['--background'];
-    if (background) applyDocumentTheme(resolved, background);
+    // A switch plays no colour transition (motion/theme-switch.ts).
+    applyThemeAtOnce(() => {
+      if (prepaint)
+        applyPrepaintMode(resolved, prepaintTheme?.persistKey ? colorPreset : undefined);
+      applyDarkClass(resolved);
+      applyVarsToDocument(themeVars);
+      if (prepaint) applyVarsToDocument(themePaintVars(themeColors.colors));
+      const background = themeVars['--background'];
+      if (background) applyDocumentTheme(resolved, background);
+    });
   }, [
     effectiveMode,
     resolved,
@@ -671,16 +668,6 @@ export function BloomThemeProvider({
     applyReducedTransparency(reducedTransparency);
     applyIncreasedContrast(increasedContrast);
   }, [reducedTransparency, increasedContrast]);
-
-  // Native only: publish the same vars into react-native-css's GLOBAL root
-  // variable family so they reach the ENTIRE app tree — navigator screens and
-  // every portal/modal/bottom-sheet that paints outside the provider's React
-  // subtree (and therefore never sees the `VariableContextProvider` vars below).
-  // Web writes the same vars to `document.documentElement` above, so this no-ops
-  // there. Runs before paint via `useIsomorphicLayoutEffect`.
-  useIsomorphicLayoutEffect(() => {
-    applyVarsToRootVariables(themeVars);
-  }, [themeVars]);
 
   // Web: the rules every family relies on (`styles/base-web-css.ts`). A no-op
   // on native and during SSR, where there is no document to adopt into.
@@ -703,12 +690,6 @@ export function BloomThemeProvider({
   const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
   const isGated = shouldAwait && !hydrated;
 
-  // On native, the same record is handed to `VariableContextProvider` so
-  // descendants resolve `var(--primary)` etc. through react-native-css's real
-  // VariableContext. Web writes them to `document.documentElement` above.
-  const nativeVars = useMemo(() => (Platform.OS === 'web' ? null : themeVars), [themeVars]);
-  const VariableProvider = getVariableContextProvider();
-
   const content = (
     <PrepaintThemeContext.Provider value={prepaint ? prepaintTheme : undefined}>
       <ThemeScopeContext.Provider value={scopeState}>
@@ -730,18 +711,11 @@ export function BloomThemeProvider({
     return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
   }
 
-  // The flex wrapper is still needed for layout; the preset vars now flow
-  // through `VariableContextProvider` rather than an (inert) inline-vars style.
-  // If NativeWind isn't installed the wrapper still renders so we never crash.
-  const nativeTree = <View style={[{ flex: 1 }, nativeWrapperStyle]}>{content}</View>;
-
+  // The flex wrapper the native tree lays out in. Its components read the
+  // theme's colour tokens from the scope context (`useColorTokens`).
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      {VariableProvider && nativeVars ? (
-        <VariableProvider value={nativeVars}>{nativeTree}</VariableProvider>
-      ) : (
-        nativeTree
-      )}
+      <View style={[{ flex: 1 }, nativeWrapperStyle]}>{content}</View>
     </BloomThemeContext.Provider>
   );
 }

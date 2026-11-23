@@ -37,7 +37,6 @@ import { useAgentChatPlatform } from './context';
 import {
   ACCOUNT_MENU_STYLE,
   CARD_RADIUS,
-  DENSE_ROW_CLASS,
   RAIL_WIDTH,
   relativeTime,
   ROW_RADIUS,
@@ -434,7 +433,6 @@ function AccountMenu({
                 return (
                   <DropdownMenuItem
                     key={item.key}
-                    className={DENSE_ROW_CLASS}
                     accessibilityLabel={item.label}
                     leading={Icon ? <Icon width={18} height={18} fill={iconColor} /> : undefined}
                     onPress={item.onPress}
@@ -450,7 +448,6 @@ function AccountMenu({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className={DENSE_ROW_CLASS}
               accessibilityLabel={labels.logOut}
               leading={<RiLogoutBoxRLine width={18} height={18} fill={iconColor} />}
               onPress={onLogOut}

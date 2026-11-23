@@ -1,0 +1,148 @@
+diff -ruN a/components/menu-trigger/interface.ts b/components/menu-trigger/interface.ts
+--- a/components/menu-trigger/interface.ts
++++ b/components/menu-trigger/interface.ts
+@@ -8,6 +8,7 @@
+ import type {
+   TMenuAlignment,
+   TMenuConfig,
++  TMenuGroupMember,
+   TMenuScheme,
+   TMenuSelectEvent,
+   TMenuTriggerConfig,
+@@ -18,7 +19,7 @@
+   items: TNativeMenuItem[];
+   onItemSelect?: (event: { nativeEvent: TMenuSelectEvent }) => void;
+   onMenuOpenChange?: (event: { nativeEvent: { open: boolean } }) => void;
+-  glass?: boolean;
++  lens?: boolean;
+   morph?: boolean;
+   cornerRadius?: number;
+   colorScheme?: TMenuScheme;
+@@ -27,6 +28,12 @@
+   alignment?: TMenuAlignment;
+   config?: TMenuConfig;
+   triggerConfig?: TMenuTriggerConfig;
++  openWithItems?: boolean;
++  restBackdrop?: string;
++  openOnTap?: boolean;
++  members?: readonly TMenuGroupMember[];
++  blend?: number;
++  onMenuClosed?: () => void;
+   style?: StyleProp<ViewStyle>;
+   children?: ReactNode;
+ }
+diff -ruN a/components/menu-trigger/menu-trigger.android.tsx b/components/menu-trigger/menu-trigger.android.tsx
+--- a/components/menu-trigger/menu-trigger.android.tsx
++++ b/components/menu-trigger/menu-trigger.android.tsx
+@@ -8,11 +8,17 @@
+ import { NativeMenu } from "./native-menu.android";
+ 
+ const MenuTriggerBase: FC<IMenuTrigger> = ({
+-  glass,
++  lens,
+   morph,
+   cornerRadius,
+   config,
+   openOnPress = true,
++  openWithItems,
++  onMenuClosed,
++  restBackdrop,
++  openOnTap,
++  members,
++  blend,
+   accessibilityLabel,
+   style,
+   children,
+@@ -30,10 +36,16 @@
+       fontFamily={menu?.content.fontFamily}
+       alignment={menu?.content.alignment}
+       config={menu?.content.config}
+-      glass={glass}
++      lens={lens}
+       morph={morph}
+       cornerRadius={cornerRadius}
+       triggerConfig={config}
++      openWithItems={openWithItems}
++      onMenuClosed={onMenuClosed}
++      restBackdrop={restBackdrop}
++      openOnTap={openOnTap}
++      members={members}
++      blend={blend}
+       style={style}
+       onItemSelect={(event: { nativeEvent: TMenuSelectEvent }): void =>
+         menu?.select(event.nativeEvent)
+diff -ruN a/constants/menu.const.ts b/constants/menu.const.ts
+--- a/constants/menu.const.ts
++++ b/constants/menu.const.ts
+@@ -5,7 +5,7 @@
+   dark: { base: "rgba(255, 255, 255, 0.96)", destructive: "#FF5254" },
+   light: { base: "rgba(0, 0, 0, 0.92)", destructive: "#DC1E30" },
+ };
+-const MENU_ICON_HOST_ID: string = "glass-menu-icons";
+-const MENU_NATIVE_VIEW: string = "GlassMenuAndroid";
++const MENU_ICON_HOST_ID: string = "lens-icons";
++const MENU_NATIVE_VIEW: string = "BloomLensMenu";
+ 
+ export { MENU_ICON_COLORS, MENU_ICON_HOST_ID, MENU_NATIVE_VIEW };
+diff -ruN a/interface.ts b/interface.ts
+--- a/interface.ts
++++ b/interface.ts
+@@ -56,6 +56,11 @@
+   morphBlur?: number;
+   tintColor?: string;
+   tintOpacity?: number;
++  // Bloom: the rows' ink (the engine's patch); a missing colour keeps the engine's own.
++  textColor?: string;
++  mutedColor?: string;
++  destructiveColor?: string;
++  separatorColor?: string;
+   saturation?: number;
+   refraction?: number;
+   rim?: number;
+@@ -111,14 +116,36 @@
+   children?: ReactNode;
+ }
+ 
++// Bloom: a glass of a group on one trigger. Views with one key are one shape around them all (a union).
++type TMenuGroupMember = {
++  key: string;
++  // The corner radius in points; unset is a capsule.
++  cornerRadius?: number;
++  // How it arrives and leaves: out of and into the nearest glass (default), or where it is.
++  transition?: "matchedGeometry" | "materialize";
++};
++
+ interface IMenuTrigger {
+-  glass?: boolean;
+-  // Morph from the trigger when it has no glass (glass={false}): the panel grows out of the trigger's rectangle,
++  lens?: boolean;
++  // Morph from the trigger when it has no glass (lens={false}): the panel grows out of the trigger's rectangle,
+   // corner radius and tint, as with glass. Default true. Ignored with glass (a glass trigger always morphs).
+   morph?: boolean;
+   cornerRadius?: number;
+   config?: TMenuTriggerConfig;
+   openOnPress?: boolean;
++  // Bloom: the rows arrive only as the menu opens; the view opens itself with them, again after they are emptied.
++  openWithItems?: boolean;
++  // Bloom: the menu has finished closing (its motion ended).
++  onMenuClosed?: () => void;
++  // Bloom: the colour the trigger sits on. Set, the trigger draws its glass at rest in its place in the view hierarchy
++  // (a trigger in a scroll, under the bars) against that colour; the overlay draws it only while the menu is open.
++  restBackdrop?: string;
++  // Bloom: a tap on the trigger opens the menu natively, with no round trip to JS.
++  openOnTap?: boolean;
++  // Bloom: the trigger is a group of glasses: it draws each member's glass (found by the nativeID of its views), not its
++  // own rect, and they blend within `blend` points.
++  members?: readonly TMenuGroupMember[];
++  blend?: number;
+   accessibilityLabel?: string;
+   style?: StyleProp<ViewStyle>;
+   children?: ReactNode;
+@@ -189,6 +216,7 @@
+   type TMenuColorScheme,
+   type TMenuConfig,
+   type TMenuEntry,
++  type TMenuGroupMember,
+   type TMenuIconName,
+   type TMenuItemIconState,
+   type TMenuMorphOrigin,

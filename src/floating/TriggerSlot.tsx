@@ -32,17 +32,11 @@ import React, {
   useContext,
   useEffect,
 } from 'react';
-import {
-  StyleSheet,
-  type PointerEvent,
-  type View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { StyleSheet, type PointerEvent, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { mergeRefs } from '../hooks/merge-refs';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 import type { OverlayTriggerProps, TriggerHandleProps } from './types';
 import { PrimaryTriggerStateContext } from './context';
 
@@ -89,8 +83,6 @@ export interface TriggerSlotProps {
    * place leaves it to that menu.
    */
   restoreFocus?: boolean;
-  /** Classes for the wrapper box — the node the parent lays out. */
-  className?: string;
   /** Style for the wrapper box. The child styles itself. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -230,7 +222,6 @@ export function TriggerSlot({
   onPointerLeave,
   open,
   restoreFocus = true,
-  className,
   style,
   testID,
 }: TriggerSlotProps) {
@@ -254,14 +245,13 @@ export function TriggerSlot({
     <StyledPressable {...handle}>{children}</StyledPressable>
   );
   return (
-    <StyledView
+    <View
       ref={mergeRefs([ownRef, anchorRef])}
       collapsable={false}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      className={className}
       style={[styles.wrap, style]}
       testID={testID}
     >
@@ -276,7 +266,7 @@ export function TriggerSlot({
       ) : (
         control
       )}
-    </StyledView>
+    </View>
   );
 }
 

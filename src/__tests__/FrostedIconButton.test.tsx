@@ -6,7 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Button } from '../button';
 import { resolveButtonGeometry } from '../button/shared';
 import { pressHost } from './support/press-host';
-import { classNamesOn, renderedChildren, resolvedStyle } from './support/rendered-style';
+import { renderedChildren, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -191,22 +191,21 @@ describe('layout: the button IS the node its parent lays out', () => {
     expect(rendered[0]?.props.accessibilityRole).toBe('button');
   });
 
-  it('lands className, the caller style and the chrome on that one node', () => {
+  it('lands the caller style and the chrome on that one node', () => {
     const { getByTestId } = renderWithTheme(
       <Button
         appearance="outline"
         tone="neutral"
         iconOnly
         testID="fib"
-        className="flex-1"
-        style={{ marginTop: 7 }}
+        style={{ flex: 1, marginTop: 7 }}
         accessibilityLabel="Back"
         icon={(iconProps) => <Text {...iconProps}>x</Text>}
       />,
     );
     const style = getByTestId('fib').props.style;
-    expect(classNamesOn(style)).toContain('flex-1');
     const resolved = resolvedStyle(style);
+    expect(resolved.flex).toBe(1);
     expect(resolved.borderRadius).toBe(9999);
     expect(resolved.marginTop).toBe(7);
     expect(resolved.transform).toBeUndefined();

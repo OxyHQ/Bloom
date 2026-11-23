@@ -6,7 +6,8 @@
  * assertions read emitted DOM attributes and computed styles rather than props.
  */
 import { materialFill } from './support/material-fill';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { getByText } from '@testing-library/dom';
@@ -140,7 +141,7 @@ describe('BookingCard', () => {
     expect(s.paddingTop).toBe('24px');
     expect(s.paddingLeft).toBe('24px');
     expect(s.borderTopWidth).toBe('0px');
-    expect(byTestId('card').querySelector('.bloom-surface-paint')).not.toBeNull();
+    expect(byTestId('card').querySelector('[data-bloom-surface-paint]')).not.toBeNull();
   });
 
   it('without dates: placeholders, "Check availability", no note', () => {

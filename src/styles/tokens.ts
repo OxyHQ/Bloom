@@ -10,8 +10,7 @@ import { RADIUS, SPACING } from '../design-tokens/scales';
  * without one — but only ONE of them may own the numbers, or they disagree. They
  * did: `borderRadius.full` was 999 against `radius-max` 9999, `borderRadius` had
  * no 28 and `RADIUS` had no 16, and each file's own comments claimed to match the
- * other. `scales.ts` is the authority (the Tailwind preset, `theme.css` and
- * `tokens.json` are generated from it); everything below reads it by reference,
+ * other. `scales.ts` is the authority (`tokens.json` is generated from it); everything below reads it by reference,
  * so a rung cannot exist in one spelling and not the other.
  *
  * `fontSize`, `lineHeight`, `animation` and `gradients` stay declared here: the
@@ -53,7 +52,11 @@ export const fontSize = {
  */
 export const lineHeight = {
   tight: 1.15,
+  /** 1.25: the line height apps set with Tailwind's `leading-tight`. */
+  close: 1.25,
   snug: 1.3,
+  /** 1.375: the line height apps set with Tailwind's `leading-snug`. */
+  easy: 1.375,
   normal: 1.5,
   relaxed: 1.625,
 } as const;

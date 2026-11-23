@@ -15,7 +15,7 @@ const mockPending = new Map<
 >();
 let mockThrowUri: string | undefined;
 
-jest.mock('../image', () => ({
+jest.mock('../image/BloomImage', () => ({
   getImageSize: (uri: string) => {
     if (uri === mockThrowUri) throw new Error('synchronous probe failure');
     return new Promise<{ width: number; height: number }>((resolve, reject) => {

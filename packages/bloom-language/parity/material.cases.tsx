@@ -1,0 +1,940 @@
+import * as RN from 'react-native';
+import { type ReactNode, useState } from 'react';
+import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
+import { BlurIsland } from '@oxy.so/bloom/blur';
+import { Button } from '@oxy.so/bloom/button';
+import { ConcentricView } from '@oxy.so/bloom/concentric';
+import { ChartCardSurface } from '@oxy.so/bloom/chart-cards';
+import { Divider } from '@oxy.so/bloom/divider';
+import { Fill } from '@oxy.so/bloom/fill';
+import { ResponsiveGrid } from '@oxy.so/bloom/grid';
+import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
+import { RiHeart3Line } from '@oxy.so/bloom/icons';
+import { surfaceStyle } from '@oxy.so/bloom/shapes';
+import { tokens } from '@oxy.so/bloom/styles';
+import { Surface } from '@oxy.so/bloom/surface';
+import { withAlpha } from '@oxy.so/bloom/theme';
+import { Text } from '@oxy.so/bloom/typography';
+
+import { GLASS_OPACITY } from '../src/generated/spec.generated';
+import { clear, identity, regular } from '../src/glass';
+import * as Charts from '../src/controls/chart-cards';
+import { GlassGroup } from '../src/controls/glass-group';
+import { ToolbarGroup, ToolbarSpacer } from '../src/controls/toolbar-group';
+import { ViewThatFits } from '../src/controls/view-that-fits';
+import * as L from '../src/primitives';
+import { toElement } from '../src/render';
+import { defineTokens } from '../src/tokens';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
+
+const { space, borderRadius } = tokens;
+const TIERS = ['base', 'sm', 'md', 'lg', 'xl', '2xl'];
+
+/** Bloom JSX that reads the window's tier as an app does (`useWindowBreakpoint()`). */
+function Tiered({ children }: { children: (atLeast: (tier: string) => boolean) => ReactNode }) {
+  const tier = useWindowBreakpoint();
+  return children((at) => TIERS.indexOf(tier) >= TIERS.indexOf(at));
+}
+
+const padding = (value: number) => ({
+  paddingTop: value,
+  paddingBottom: value,
+  paddingStart: value,
+  paddingEnd: value,
+});
+
+const onPress = () => {};
+
+interface Held {
+  pressed: boolean;
+  hovered: boolean;
+}
+
+/** Bloom JSX that tracks a pressable's press and hover as an app does, to draw by them. */
+function Tracked({
+  children,
+}: {
+  children: (held: Held, handlers: Record<string, () => void>) => ReactNode;
+}) {
+  const [held, setHeld] = useState<Held>({ pressed: false, hovered: false });
+  const set = (key: keyof Held, on: boolean) => () =>
+    setHeld((current) => (current[key] === on ? current : { ...current, [key]: on }));
+  return children(held, {
+    onPressIn: set('pressed', true),
+    onPressOut: set('pressed', false),
+    onHoverIn: set('hovered', true),
+    onHoverOut: set('hovered', false),
+  });
+}
+
+const surface: ParityCase[] = [
+  {
+    name: 'a button on glass whose glass varies with its press, at rest',
+    language: () =>
+      toElement(
+        L.Button(L.Text('Go'))
+          .onPress(onPress)
+          .glass()
+          .when('pressed', (v) => v.background('error')),
+      ),
+    // The glass's fill is the button's tone; the press the button reports holds none at rest.
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <Surface fill={colors.primary}>
+            <Button material="shared" onPress={onPress}>
+              Go
+            </Button>
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'glass is Bloom’s Surface',
+    language: () => toElement(L.VStack(L.Text('Glass')).glass()),
+    bloom: () => (
+      <Surface>
+        <RN.View>
+          <Text>Glass</Text>
+        </RN.View>
+      </Surface>
+    ),
+  },
+  {
+    name: 'glass with a corner and padding',
+    language: () => toElement(L.VStack(L.Text('Glass')).padding('md').glass().corner('xl')),
+    bloom: () => (
+      <Surface radius={borderRadius.xl} style={padding(space.md)}>
+        <RN.View>
+          <Text>Glass</Text>
+        </RN.View>
+      </Surface>
+    ),
+  },
+  {
+    name: 'a glass whose padding varies: the padding is a view just inside it',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('Glass'))
+          .padding('sm')
+          .glass()
+          .corner('xl')
+          .when('lg', (v) => v.padding('md')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Surface radius={borderRadius.xl}>
+            <RN.View style={padding(atLeast('lg') ? space.md : space.sm)}>
+              <RN.View>
+                <Text>Glass</Text>
+              </RN.View>
+            </RN.View>
+          </Surface>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a glass whose frame, border, corner and fill vary: its own style, radius and fill',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('Glass'))
+          .padding('sm')
+          .glass()
+          .corner('xl')
+          .when('lg', (v) =>
+            v
+              .frame({ width: '96' })
+              .border('border', 'thin')
+              .corner('2xl')
+              .background('primary/40'),
+          ),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Themed>
+            {(c) => (
+              <Surface
+                radius={atLeast('lg') ? borderRadius._2xl : borderRadius.xl}
+                fill={atLeast('lg') ? withAlpha(c.primary, 0.4) : undefined}
+                style={{
+                  ...padding(space.sm),
+                  ...(atLeast('lg') ? { width: 96, borderWidth: 1, borderColor: c.border } : null),
+                }}
+              >
+                <RN.View>
+                  <Text>Glass</Text>
+                </RN.View>
+              </Surface>
+            )}
+          </Themed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a pressable glass whose fill a press and corner a hover vary',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('Glass'))
+          .padding('sm')
+          .onPress(onPress)
+          .glass(regular.tint('primary', 'subtle'))
+          .when('pressed', (v) => v.background('primary'))
+          .when('hovered', (v) => v.corner('2xl')),
+      ),
+    // The box around the glass tracks the press and hover its material's variants answer.
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Tracked>
+            {(held, handlers) => (
+              <RN.Pressable onPress={onPress} {...handlers}>
+                <Surface
+                  fill={held.pressed ? c.primary : withAlpha(c.primary, GLASS_OPACITY.subtle)}
+                  radius={held.hovered ? borderRadius._2xl : undefined}
+                  style={padding(space.sm)}
+                >
+                  <RN.View style={{ flexDirection: 'row' }}>
+                    <Text>Glass</Text>
+                  </RN.View>
+                </Surface>
+              </RN.Pressable>
+            )}
+          </Tracked>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'clear glass',
+    language: () => toElement(L.VStack().glass(clear)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface sheen={false} fill={withAlpha(c.backgroundSecondary, GLASS_OPACITY.subtle)}>
+            <RN.View />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'tinted glass',
+    language: () => toElement(L.VStack().glass(regular.tint('primary'))),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface fill={c.primary}>
+            <RN.View />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'clear glass tinted at medium',
+    language: () => toElement(L.VStack().glass(clear.tint('error', 'medium'))),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface sheen={false} fill={withAlpha(c.error, GLASS_OPACITY.medium)}>
+            <RN.View />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'smooth corners on glass',
+    language: () => toElement(L.VStack().glass().corner('lg').cornerCurve('smooth')),
+    bloom: () => (
+      <Surface radius={borderRadius.lg} cornerCurve="smooth">
+        <RN.View />
+      </Surface>
+    ),
+  },
+  {
+    name: 'smooth corners on a box',
+    language: () =>
+      toElement(L.VStack().background('surface').corner('lg').cornerCurve('smooth').clipped()),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={[
+              {
+                backgroundColor: c.backgroundSecondary,
+                borderRadius: borderRadius.lg,
+                overflow: 'hidden',
+              },
+              surfaceStyle({ curve: 'smooth' }),
+            ]}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a concentric glass in a glass',
+    language: () =>
+      toElement(
+        L.VStack(L.VStack(L.Text('Inner')).padding('sm').glass().corner('concentric'))
+          .padding('sm')
+          .glass()
+          .corner('2xl'),
+      ),
+    bloom: () => (
+      <Surface radius={borderRadius._2xl} style={padding(space.sm)}>
+        <RN.View>
+          <Surface radius="concentric" style={padding(space.sm)}>
+            <RN.View>
+              <Text>Inner</Text>
+            </RN.View>
+          </Surface>
+        </RN.View>
+      </Surface>
+    ),
+  },
+  {
+    name: 'a concentric box whose fill and border a breakpoint varies (lg)',
+    language: () =>
+      toElement(
+        L.VStack(
+          L.VStack(L.Text('Inner'))
+            .background('popover')
+            .corner('concentric')
+            .clipped()
+            .when('lg', (v) => v.background('primary').border('border', 'thin')),
+        )
+          .padding('md')
+          .glass()
+          .corner('xl'),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Themed>
+            {(c) => (
+              <Surface radius={borderRadius.xl} style={padding(space.md)}>
+                <RN.View>
+                  <ConcentricView
+                    radius="concentric"
+                    style={{
+                      backgroundColor: atLeast('lg') ? c.primary : c.backgroundTertiary,
+                      overflow: 'hidden',
+                      ...(atLeast('lg') ? { borderWidth: 1, borderColor: c.border } : null),
+                    }}
+                  >
+                    <RN.View>
+                      <Text>Inner</Text>
+                    </RN.View>
+                  </ConcentricView>
+                </RN.View>
+              </Surface>
+            )}
+          </Themed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a concentric box in a glass',
+    language: () =>
+      toElement(
+        L.VStack(L.VStack(L.Text('Inner')).background('popover').corner('concentric').clipped())
+          .padding('md')
+          .glass()
+          .corner('xl'),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface radius={borderRadius.xl} style={padding(space.md)}>
+            <RN.View>
+              <ConcentricView
+                radius="concentric"
+                style={{ backgroundColor: c.backgroundTertiary, overflow: 'hidden' }}
+              >
+                <RN.View>
+                  <Text>Inner</Text>
+                </RN.View>
+              </ConcentricView>
+            </RN.View>
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+const dividers: ParityCase[] = [
+  { name: 'Divider', language: () => toElement(L.Divider()), bloom: () => <Divider /> },
+  ...(['single', 'double', 'fill'] as const).flatMap((style) => [
+    {
+      name: `Divider ${style}`,
+      language: () => toElement(L.Divider().lineStyle(style)),
+      bloom: () => <Divider variant={style} />,
+    },
+    {
+      name: `Divider ${style}, labelled`,
+      language: () => toElement(L.Divider(L.Text('or')).lineStyle(style)),
+      bloom: () => <Divider variant={style}>or</Divider>,
+    },
+  ]),
+  ...(['start', 'center', 'end'] as const).map((align) => ({
+    name: `Divider label at ${align}`,
+    language: () => toElement(L.Divider(L.Text('Today')).align(align)),
+    bloom: () => <Divider align={align}>Today</Divider>,
+  })),
+  {
+    name: 'Divider with a view for its label',
+    language: () => toElement(L.Divider(L.Icon(RiHeart3Line).size('sm'))),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Divider>
+            <RiHeart3Line size="sm" fill={c.text} />
+          </Divider>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'Divider tinted, spaced',
+    language: () => toElement(L.Divider().tint('primary').spacing('lg')),
+    bloom: () => <Themed>{(c) => <Divider color={c.primary} spacing={space.lg} />}</Themed>,
+  },
+  {
+    name: 'Divider in an HStack is vertical',
+    language: () => toElement(L.HStack(L.Text('a'), L.Divider().spacing('sm'), L.Text('b'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <Divider vertical spacing={space.sm} />
+        <Text>b</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'Divider in a VStack inside an HStack is horizontal',
+    language: () => toElement(L.HStack(L.VStack(L.Divider()))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <RN.View>
+          <Divider />
+        </RN.View>
+      </RN.View>
+    ),
+  },
+];
+
+const grid = defineTokens({ space: { card: 160 } });
+
+const boxes: ParityCase[] = [
+  {
+    name: 'Fill',
+    language: () => toElement(L.VStack(L.Fill(L.Text('Over')))),
+    bloom: () => (
+      <RN.View>
+        <Fill>
+          <Text>Over</Text>
+        </Fill>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'Fill with a scrim',
+    language: () => toElement(L.Fill().background('background').opacity('half')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Fill style={{ backgroundColor: c.background, opacity: tokens.DISABLED_OPACITY }} />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'AspectRatio 16:9',
+    language: () => toElement(L.AspectRatio(16 / 9, L.Text('Media'))),
+    bloom: () => (
+      <AspectRatio ratio={16 / 9}>
+        <Text>Media</Text>
+      </AspectRatio>
+    ),
+  },
+  {
+    name: 'AspectRatio that is not a ratio yet',
+    language: () => toElement(L.AspectRatio(0 / 0)),
+    bloom: () => <AspectRatio ratio={0 / 0} />,
+  },
+  {
+    name: 'AspectRatio, rounded',
+    language: () => toElement(L.AspectRatio(1).corner('lg').clipped().testID('well')),
+    bloom: () => (
+      <AspectRatio
+        ratio={1}
+        testID="well"
+        style={{ borderRadius: borderRadius.lg, overflow: 'hidden' }}
+      />
+    ),
+  },
+  {
+    name: 'Grid',
+    language: () => toElement(L.Grid(L.Text('One'), L.Text('Two'))),
+    bloom: () => (
+      <ResponsiveGrid>
+        <Text>One</Text>
+        <Text>Two</Text>
+      </ResponsiveGrid>
+    ),
+  },
+  {
+    name: 'Grid stretching its chart cards',
+    language: () =>
+      toElement(
+        L.Grid(Charts.ChartCardSurface(L.Text('One')), Charts.ChartCardSurface(L.Text('Two')))
+          .columns(2)
+          .stretchItems(),
+      ),
+    bloom: () => (
+      <ResponsiveGrid maxColumns={2} stretchItems>
+        <ChartCardSurface>
+          <Text>One</Text>
+        </ChartCardSurface>
+        <ChartCardSurface>
+          <Text>Two</Text>
+        </ChartCardSurface>
+      </ResponsiveGrid>
+    ),
+  },
+  {
+    name: 'Grid of three columns, columns flow',
+    language: () =>
+      toElement(
+        L.Grid(L.Text('One'), L.Text('Two'), L.Text('Three'))
+          .columns(3)
+          .spacing('md')
+          .minCellWidth(grid.space.card)
+          .flow('columns'),
+      ),
+    bloom: () => (
+      <ResponsiveGrid maxColumns={3} gap={space.md} minItemWidth={160} flow="columns">
+        <Text>One</Text>
+        <Text>Two</Text>
+        <Text>Three</Text>
+      </ResponsiveGrid>
+    ),
+  },
+];
+
+const named: ParityCase[] = [
+  {
+    // The exact values apps write in two or more places: Tailwind's border-4, z-[60], opacity-45.
+    name: 'a 4px border, a 60 stacking level, 45% opaque',
+    language: () => toElement(L.VStack().border('border', '4').zIndex('60').opacity('45')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View style={{ borderWidth: 4, borderColor: c.border, opacity: 0.45, zIndex: 60 }} />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a 70% opaque, thick-bordered box',
+    language: () => toElement(L.VStack().border('border', 'thick').opacity('70')),
+    bloom: () => (
+      <Themed>
+        {(c) => <RN.View style={{ borderWidth: 2, borderColor: c.border, opacity: 0.7 }} />}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an 80% opaque box',
+    language: () => toElement(L.VStack().opacity('80')),
+    bloom: () => <RN.View style={{ opacity: 0.8 }} />,
+  },
+  // Numeric tokens: exact values carried over from apps (Tailwind's scale and arbitrary values).
+  ...(
+    [
+      ['1', 1],
+      ['6', 6],
+      ['10', 10],
+      ['14', 14],
+      ['28', 28],
+      ['36', 36],
+      ['44', 44],
+      ['48', 48],
+      ['56', 56],
+      ['64', 64],
+      ['96', 96],
+      ['160', 160],
+      ['1200', 1200],
+    ] as const
+  ).flatMap(([rung, value]) => [
+    {
+      name: `padding and spacing ${rung}`,
+      language: () => toElement(L.HStack(L.Spacer(), L.Spacer()).spacing(rung).padding(rung)),
+      bloom: () => (
+        <RN.View style={{ flexDirection: 'row', gap: value, ...padding(value) }}>
+          <RN.View style={{ flex: 1 }} />
+          <RN.View style={{ flex: 1 }} />
+        </RN.View>
+      ),
+    },
+    {
+      name: `pulled out by ${rung}, a frame of ${rung}`,
+      language: () =>
+        toElement(L.VStack().padding('top', `-${rung}`).frame({ width: rung, height: rung })),
+      bloom: () => <RN.View style={{ width: value, height: value, marginTop: -value }} />,
+    },
+  ]),
+  // A fill and a border at a named opacity (`bg-primary/10`, `border-border/60`).
+  {
+    name: 'a fill and a border at a named opacity',
+    language: () => toElement(L.VStack().background('primary/10').border('border/60', 'thin')),
+    // The colour at that alpha: on the web Tailwind's mix with transparent, which the
+    // browser draws as the colour at the mix's alpha (react-native-web takes no mix inline).
+    bloom: () => (
+      <ThemedRgb>
+        {(c) => (
+          <RN.View
+            style={{
+              backgroundColor: withAlpha(c.primary, 0.1),
+              borderWidth: 1,
+              borderColor: withAlpha(c.border, 0.6),
+            }}
+          />
+        )}
+      </ThemedRgb>
+    ),
+  },
+  // A fixed colour at an opacity (`bg-white/70`, `text-black/50`): on native, what NativeWind's
+  // compiler writes, measured (react-native-css, `#ffffffb2` for 70%: the opacity a 32-bit float,
+  // so 0.7 × 255 is 178.49999… and 0.9 × 255 229.49999…); the browser draws the exact mix.
+  ...(
+    [
+      ['10', 0.1, '1a'],
+      ['30', 0.3, '4d'],
+      ['half', 0.5, '80'],
+      ['70', 0.7, 'b2'],
+      ['90', 0.9, 'e5'],
+    ] as const
+  ).map(([name, alpha, hex]) => ({
+    name: `white and black at ${name}`,
+    language: () =>
+      toElement(L.VStack(L.Text('a').foreground(`black/${name}`)).background(`white/${name}`)),
+    bloom: () => (
+      <RN.View
+        style={{
+          backgroundColor:
+            RN.Platform.OS === 'web' ? `rgba(255, 255, 255, ${alpha})` : `#ffffff${hex}`,
+        }}
+      >
+        <Text
+          style={{ color: RN.Platform.OS === 'web' ? `rgba(0, 0, 0, ${alpha})` : `#000000${hex}` }}
+        >
+          a
+        </Text>
+      </RN.View>
+    ),
+  })),
+  ...(
+    [
+      ['20', 0.2],
+      ['40', 0.4],
+      ['60', 0.6],
+      ['90', 0.9],
+    ] as const
+  ).map(([name, value]) => ({
+    name: `opacity ${name}`,
+    language: () => toElement(L.VStack().opacity(name)),
+    bloom: () => <RN.View style={{ opacity: value }} />,
+  })),
+  ...(
+    [
+      ['6', 6],
+      ['10', 10],
+      ['14', 14],
+      ['18', 18],
+      ['22', 22],
+    ] as const
+  ).map(([rung, value]) => ({
+    name: `corner ${rung}`,
+    language: () => toElement(L.VStack().corner(rung).clipped()),
+    bloom: () => <RN.View style={{ borderRadius: value, overflow: 'hidden' }} />,
+  })),
+];
+
+/** `.blur()`: Bloom's floating island, a capsule unless a corner names its radius. */
+const islands: ParityCase[] = [
+  {
+    name: 'blur is Bloom’s BlurIsland',
+    language: () => toElement(L.HStack(L.Text('Island')).padding('sm').blur()),
+    bloom: () => (
+      <BlurIsland style={padding(space.sm)}>
+        <RN.View style={{ flexDirection: 'row' }}>
+          <Text>Island</Text>
+        </RN.View>
+      </BlurIsland>
+    ),
+  },
+  {
+    name: 'a blur with a corner and a smooth curve',
+    language: () => toElement(L.VStack().blur().corner('xl').cornerCurve('smooth')),
+    bloom: () => (
+      <BlurIsland radius={borderRadius.xl} cornerCurve="smooth">
+        <RN.View />
+      </BlurIsland>
+    ),
+  },
+  {
+    name: 'a blur whose frame, corner and fill a breakpoint varies (lg)',
+    language: () =>
+      toElement(
+        L.VStack()
+          .blur()
+          .corner('lg')
+          .when('lg', (v) => v.frame({ width: '96' }).corner('2xl').background('popover')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Themed>
+            {(c) => (
+              <BlurIsland
+                radius={atLeast('lg') ? borderRadius._2xl : borderRadius.lg}
+                style={
+                  atLeast('lg') ? { width: 96, backgroundColor: c.backgroundTertiary } : undefined
+                }
+              >
+                <RN.View />
+              </BlurIsland>
+            )}
+          </Themed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'an island’s buttons share its material',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.Button(L.Text('Reply')).style('plain').onPress(onPress),
+          L.Button(L.Text('Share')).style('plain').onPress(onPress),
+        ).blur(),
+      ),
+    bloom: () => (
+      <BlurIsland>
+        <RN.View style={{ flexDirection: 'row' }}>
+          <Button appearance="plain" material="shared" onPress={onPress}>
+            Reply
+          </Button>
+          <Button appearance="plain" material="shared" onPress={onPress}>
+            Share
+          </Button>
+        </RN.View>
+      </BlurIsland>
+    ),
+  },
+  {
+    name: 'a blur filled from a role',
+    language: () => toElement(L.VStack().background('popover').blur()),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <BlurIsland style={{ backgroundColor: c.backgroundTertiary }}>
+            <RN.View />
+          </BlurIsland>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+/** Glass groups, `identity` and `interactive`: what each draws where the platform has no glass of its own. */
+const glassGroups: ParityCase[] = [
+  {
+    name: 'a glass group is a view around its glasses, each its own Surface',
+    language: () =>
+      toElement(
+        GlassGroup(
+          L.HStack(L.VStack(L.Text('Draw')).glass(), L.VStack(L.Text('Erase')).glass()).spacing(
+            'xl',
+          ),
+        ).blend('xl'),
+      ),
+    bloom: () => (
+      <RN.View>
+        <RN.View style={{ flexDirection: 'row', gap: space.xl }}>
+          <Surface>
+            <RN.View>
+              <Text>Draw</Text>
+            </RN.View>
+          </Surface>
+          <Surface>
+            <RN.View>
+              <Text>Erase</Text>
+            </RN.View>
+          </Surface>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a glass group takes a box of its own',
+    language: () => toElement(GlassGroup(L.VStack(L.Text('Tools')).glass()).padding('md')),
+    bloom: () => (
+      <RN.View style={padding(space.md)}>
+        <Surface>
+          <RN.View>
+            <Text>Tools</Text>
+          </RN.View>
+        </Surface>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'identity glass draws no material and keeps the box',
+    language: () =>
+      toElement(L.VStack(L.Text('Plain')).padding('md').glass(identity).corner('xl').clipped()),
+    bloom: () => (
+      <RN.View style={{ ...padding(space.md), borderRadius: borderRadius.xl, overflow: 'hidden' }}>
+        <Text>Plain</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a glass that says it is not interactive is the same Surface',
+    language: () => toElement(L.VStack(L.Text('Bar')).glass(regular.interactive(false))),
+    bloom: () => (
+      <Surface>
+        <RN.View>
+          <Text>Bar</Text>
+        </RN.View>
+      </Surface>
+    ),
+  },
+];
+
+/** Toolbar groups: one glass around their items; a fixed spacer a small gap, a flexible one the free space. */
+const toolbarGroups: ParityCase[] = [
+  {
+    name: 'a toolbar group is one glass around its items',
+    language: () => toElement(ToolbarGroup(L.Text('Share'), L.Text('Like'))),
+    bloom: () => (
+      <Surface>
+        <RN.View style={{ flexDirection: 'row' }}>
+          <Text>Share</Text>
+          <Text>Like</Text>
+        </RN.View>
+      </Surface>
+    ),
+  },
+  {
+    name: 'toolbar spacers: fixed and flexible',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'), ToolbarSpacer('fixed'), L.Text('b'), ToolbarSpacer('flexible')),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <RN.View style={{ width: space.sm }} />
+        <Text>b</Text>
+        <RN.View style={{ flex: 1 }} />
+      </RN.View>
+    ),
+  },
+];
+
+/**
+ * The first candidate that fits, as an app measures it with React Native: the
+ * box's own width, and each candidate's ideal width in a hidden, unbounded row.
+ */
+function Fits({ candidates }: { candidates: readonly ReactNode[] }) {
+  const [room, setRoom] = useState<number>();
+  const [ideal, setIdeal] = useState<readonly (number | undefined)[]>(() =>
+    candidates.map(() => undefined),
+  );
+  let chosen = 0;
+  if (room !== undefined && ideal.every((value) => value !== undefined)) {
+    const fits = ideal.findIndex((value) => (value as number) <= room);
+    chosen = fits === -1 ? candidates.length - 1 : fits;
+  }
+  return (
+    <RN.View onLayout={(event) => setRoom(event.nativeEvent.layout.width)}>
+      {candidates[chosen]}
+      <RN.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 100000,
+          flexDirection: 'row',
+          opacity: 0,
+        }}
+        pointerEvents="none"
+        aria-hidden
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        {candidates.map((candidate, index) => (
+          <RN.View
+            // biome-ignore lint/suspicious/noArrayIndexKey: a candidate is its place
+            key={index}
+            style={{ alignSelf: 'flex-start' }}
+            onLayout={(event) => {
+              const width = event.nativeEvent.layout.width;
+              setIdeal((last) => last.map((v, i) => (i === index ? width : v)));
+            }}
+          >
+            {candidate}
+          </RN.View>
+        ))}
+      </RN.View>
+    </RN.View>
+  );
+}
+
+const fits: ParityCase[] = [
+  {
+    name: 'ViewThatFits draws the first candidate that fits',
+    language: () =>
+      toElement(
+        L.VStack(
+          ViewThatFits(
+            'horizontal',
+            L.Text('Share this post with everyone you follow'),
+            L.Text('Share'),
+          ),
+        ).frame({ width: '160' }),
+      ),
+    bloom: () => (
+      <RN.View style={{ width: 160 }}>
+        <Fits
+          candidates={[
+            <Text key="a">Share this post with everyone you follow</Text>,
+            <Text key="b">Share</Text>,
+          ]}
+        />
+      </RN.View>
+    ),
+  },
+];
+
+export const MATERIAL_CASES: ParityCase[] = [
+  ...fits,
+  ...surface,
+  ...glassGroups,
+  ...toolbarGroups,
+  ...islands,
+  ...dividers,
+  ...boxes,
+  ...named,
+];

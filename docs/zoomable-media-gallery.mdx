@@ -102,7 +102,9 @@ the pager's active page once the open animation settles.
 | `indicatorVariant` | `dots` or `thumbnails` for the page indicator              |
 | `videoControls`    | whether video pages show expo-video's transport controls   |
 
-`open(items, index, rect?)` takes the whole set and which one to show.
+`open(items, index, rect?)` takes the whole set and which one to show;
+`close()` dismisses the open gallery as a press on its backdrop does (Bloom's
+own handle always has it; a wrapper that forwards only `open` may not).
 
 ## Why it is imperative
 

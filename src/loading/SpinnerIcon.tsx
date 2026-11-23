@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, type ViewStyle } from 'react-native';
+import type React from 'react';
+import { useMemo } from 'react';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
@@ -8,14 +9,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-import { StyledView } from '../styles/styled-primitives';
 import { SQRT2, STEPS_PER_SEGMENT, VIEWBOX } from './morph/constants';
 import { getMorphFrames, morphPathD } from './morph/frames';
 
 interface SpinnerIconProps {
   size?: number;
   color?: string;
-  className?: string;
   style?: ViewStyle;
 }
 
@@ -43,14 +42,13 @@ const CANVAS_VIEWBOX = VIEWBOX * CANVAS_RATIO;
 const CANVAS_MIN = (VIEWBOX - CANVAS_VIEWBOX) / 2;
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-// The class lands on the node the PARENT lays out — the sized box, which carries
-// the caller's `style` — not on the inner `<Svg>`, which is sized from `size`.
-const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
+// The rotating box is the node the PARENT lays out: it carries the caller's
+// `style`; the inner `<Svg>` is sized from `size`.
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   color = 'currentColor',
   size = 26,
-  className,
   style,
 }) => {
   const rotation = useSharedValue(0);
@@ -78,10 +76,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   const canvas = size * CANVAS_RATIO;
 
   return (
-    <AnimatedStyledView
-      className={className}
-      style={[{ width: size, height: size }, styles.box, rotateStyle, style]}
-    >
+    <AnimatedView style={[{ width: size, height: size }, styles.box, rotateStyle, style]}>
       <Svg
         viewBox={`${CANVAS_MIN} ${CANVAS_MIN} ${CANVAS_VIEWBOX} ${CANVAS_VIEWBOX}`}
         width={canvas}
@@ -90,7 +85,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
       >
         <AnimatedPath animatedProps={pathProps} fill={color} />
       </Svg>
-    </AnimatedStyledView>
+    </AnimatedView>
   );
 };
 

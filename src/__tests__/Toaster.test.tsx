@@ -1,4 +1,5 @@
-import React from 'react';
+import { Keyframe } from 'react-native-reanimated';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import { AppState, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
@@ -28,17 +29,49 @@ jest.mock('../portal/index.web', () => ({
   Portal: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-const renderOutlet = (props: ToasterProps = {}) =>
-  render(
+let outlet: ReturnType<typeof render> | undefined;
+const renderOutlet = (props: ToasterProps = {}) => {
+  outlet = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
       <ToastOutlet {...props} />
     </BloomThemeProvider>,
   );
+  return outlet;
+};
 
+/** The hosts playing a toast's exit: keyframes that hold their last frame. */
+const exitsOf = (root: ReturnType<typeof render>['UNSAFE_root']) =>
+  root.findAll(
+    (node) =>
+      typeof node.type === 'string' &&
+      typeof node.props.onCSSAnimationEnd === 'function' &&
+      [node.props.style].flat(4).some((style) => style?.animationFillMode === 'forwards'),
+  );
+
+/**
+ * Runs `run`, then ends every exit it started: a dismissed row stays while its
+ * exit plays on Bloom's motion engine, and the engine's end event (which jest
+ * never fires) is what drops it. `keeps the host mounted for the exit` checks
+ * the row in between.
+ */
+const endExits = () => {
+  if (outlet === undefined) return;
+  const exits = exitsOf(outlet.UNSAFE_root);
+  if (exits.length > 0) act(() => exits.forEach((node) => node.props.onCSSAnimationEnd()));
+};
 const show = (run: () => void) => {
   act(() => {
     run();
   });
+  endExits();
+};
+
+/** Advances the timers (a toast expiring dismisses it), then ends the exits that started. */
+const advance = (ms: number) => {
+  act(() => {
+    jest.advanceTimersByTime(ms);
+  });
+  endExits();
 };
 
 /**
@@ -49,6 +82,13 @@ const show = (run: () => void) => {
  */
 const hostName = (node: { type: unknown }): string =>
   typeof node.type === 'string' ? node.type : '';
+
+/** The host that holds a host: its viewport, past the components between them. */
+const hostParent = <T extends { type: unknown; parent: T | null }>(node: T): T => {
+  let parent = node.parent;
+  while (parent && hostName(parent) === '') parent = parent.parent;
+  return parent as T;
+};
 
 /**
  * Rows are `Animated.View`s; `BloomThemeProvider` contributes a plain `View`
@@ -164,7 +204,7 @@ const rowBoxesOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
  * reaching inside the component for the policy.
  */
 type MockGesture = {
-  __handlers: { onEnd?: (event: { x: number; y: number }) => void };
+  __handlers: { onDeactivate?: (event: { x: number; y: number; canceled: boolean }) => void };
   __members: MockGesture[];
 };
 
@@ -174,8 +214,8 @@ const isMockGesture = (value: unknown): value is MockGesture =>
 /**
  * Fires the tap gesture of one row at a ROW-RELATIVE x, in render order (so the
  * last one is the front of a bottom-anchored stack — the row a real tap lands on).
- * The pan gesture registers `onBegin`/`onChange`/`onFinalize` and no `onEnd`, so
- * `onEnd` identifies the tap unambiguously.
+ * The swipe's pan registers `onBegin`/`onUpdate`/`onFinalize` and no
+ * `onDeactivate`, so `onDeactivate` identifies the tap unambiguously.
  */
 const tapRow = (
   rendered: ReturnType<typeof renderOutlet>,
@@ -188,14 +228,16 @@ const tapRow = (
     return isMockGesture(gesture) ? [gesture] : [];
   });
   const gesture = row === 'front' ? gestures[gestures.length - 1] : gestures[row];
-  const onEnd = gesture?.__members.find((member) => typeof member.__handlers.onEnd === 'function')
-    ?.__handlers.onEnd;
-  if (!onEnd) {
+  const onTap = gesture?.__members.find(
+    (member) => typeof member.__handlers.onDeactivate === 'function',
+  )?.__handlers.onDeactivate;
+  if (!onTap) {
     throw new Error(`no tap gesture found for row ${String(row)}`);
   }
   act(() => {
-    onEnd({ x, y: 20 });
+    onTap({ x, y: 20, canceled: false });
   });
+  endExits();
 };
 
 /** The mocked window is 375 wide, so the row is uncapped and the strip starts here. */
@@ -297,16 +339,24 @@ describe('ToastOutlet', () => {
     });
     expect(viewCountOf(rendered)).toBeGreaterThan(idleViews);
 
-    show(() => {
+    // The row carries no layout animation: its exit plays while the toaster's
+    // Presence keeps it, and it goes when the exit ends.
+    expect(
+      rendered.UNSAFE_root.findAll((node) => node.props.exiting instanceof Keyframe).length,
+    ).toBe(0);
+    act(() => {
       toast.dismiss(id);
     });
-    // Row gone, host still up so the exit animation can play out.
+    expect(rendered.getByText('Bye')).toBeTruthy();
+    const leaving = rendered.UNSAFE_root.find(
+      (node) => typeof node.props.onCSSAnimationEnd === 'function' && typeof node.type === 'string',
+    );
+    act(() => leaving.props.onCSSAnimationEnd());
     expect(rendered.queryByText('Bye')).toBeNull();
+    // Host still up for its grace period.
     expect(viewCountOf(rendered)).toBeGreaterThan(idleViews);
 
-    act(() => {
-      jest.advanceTimersByTime(ENTERING_ANIMATION_DURATION);
-    });
+    advance(ENTERING_ANIMATION_DURATION);
     expect(viewCountOf(rendered)).toBe(idleViews);
     expect(rowsOf(rendered)).toHaveLength(0);
   });
@@ -443,7 +493,7 @@ describe('ToastOutlet', () => {
     expect(flattenStyle(rear.props.style).flexShrink).toBe(0);
     // W14 — natively a clipped viewport is a scroll container, which Yoga lays
     // out at its content's own height; `hidden` would squeeze the rear card.
-    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({
+    expect(flattenStyle(hostParent(rear).props.style)).toMatchObject({
       maxHeight: 54,
       overflow: 'scroll',
     });
@@ -457,7 +507,7 @@ describe('ToastOutlet', () => {
       </BloomThemeProvider>,
     );
     // Unclipped, the viewport sets no bound at all (`UNSET` is `null`).
-    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({
+    expect(flattenStyle(hostParent(rear).props.style)).toMatchObject({
       maxHeight: null,
       overflow: 'visible',
     });
@@ -487,7 +537,7 @@ describe('ToastOutlet', () => {
       id = toast('Copiado', { description: '3 archivos' });
     });
     const measured = measuredRowOf(rendered);
-    const viewport = () => flattenStyle(measured.parent!.props.style);
+    const viewport = () => flattenStyle(hostParent(measured).props.style);
     expect(viewport()).toMatchObject({ maxHeight: null, overflow: 'visible' });
 
     act(() => {
@@ -761,9 +811,7 @@ describe('ToastOutlet', () => {
       });
       expect(toastStore.getSnapshot().isExpanded).toBe(true);
 
-      act(() => {
-        jest.advanceTimersByTime(1);
-      });
+      advance(1);
       expect(toastStore.getSnapshot().isExpanded).toBe(false);
     });
 
@@ -859,9 +907,7 @@ describe('ToastOutlet', () => {
       expect(rendered.queryByText('second')).toBeNull();
 
       expect(toastStore.getSnapshot().isExpanded).toBe(true);
-      act(() => {
-        jest.advanceTimersByTime((toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3);
-      });
+      advance((toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3);
       expect(rendered.queryByText('first')).toBeTruthy();
 
       // Leaving releases the hold: the survivor collapses and resumes.
@@ -870,9 +916,7 @@ describe('ToastOutlet', () => {
         jest.advanceTimersByTime(HOVER_LEAVE_GRACE);
       });
       expect(toastStore.getSnapshot().isExpanded).toBe(false);
-      act(() => {
-        jest.advanceTimersByTime(toastDefaults.duration + ENTERING_ANIMATION_DURATION);
-      });
+      advance(toastDefaults.duration + ENTERING_ANIMATION_DURATION);
       expect(rendered.queryByText('first')).toBeNull();
     });
 
@@ -1113,13 +1157,9 @@ describe('ToastOutlet', () => {
       it('keeps both rows mounted when the second arrives while the first is at rest', () => {
         const rendered = renderOutlet({ enableStacking });
         show(() => toast('first'));
-        act(() => {
-          jest.advanceTimersByTime(GAP);
-        });
+        advance(GAP);
         show(() => toast('second'));
-        act(() => {
-          jest.advanceTimersByTime(REPORT_WINDOW);
-        });
+        advance(REPORT_WINDOW);
 
         expect(rendered.queryByText('first')).toBeTruthy();
         expect(rendered.queryByText('second')).toBeTruthy();
@@ -1129,22 +1169,16 @@ describe('ToastOutlet', () => {
       it('does not shorten the first row: it lives its own full duration, no less', () => {
         const rendered = renderOutlet({ enableStacking });
         show(() => toast('first'));
-        act(() => {
-          jest.advanceTimersByTime(GAP);
-        });
+        advance(GAP);
         show(() => toast('second'));
 
         // One tick short of the first row's own deadline (its duration plus the
         // enter animation's head start), measured from ITS fire, not the second's.
-        act(() => {
-          jest.advanceTimersByTime(toastDefaults.duration + ENTERING_ANIMATION_DURATION - GAP - 1);
-        });
+        advance(toastDefaults.duration + ENTERING_ANIMATION_DURATION - GAP - 1);
         expect(rendered.queryByText('first')).toBeTruthy();
         expect(rowBoxesOf(rendered)).toHaveLength(2);
 
-        act(() => {
-          jest.advanceTimersByTime(1);
-        });
+        advance(1);
         expect(rendered.queryByText('first')).toBeNull();
         expect(rendered.queryByText('second')).toBeTruthy();
         expect(rowBoxesOf(rendered)).toHaveLength(1);
@@ -1153,21 +1187,15 @@ describe('ToastOutlet', () => {
       it('does not extend the first row either, nor cut the second short', () => {
         const rendered = renderOutlet({ enableStacking });
         show(() => toast('first'));
-        act(() => {
-          jest.advanceTimersByTime(GAP);
-        });
+        advance(GAP);
         show(() => toast('second'));
 
         // The second row's own deadline is a full GAP later than the first's.
-        act(() => {
-          jest.advanceTimersByTime(toastDefaults.duration + ENTERING_ANIMATION_DURATION - 1);
-        });
+        advance(toastDefaults.duration + ENTERING_ANIMATION_DURATION - 1);
         expect(rendered.queryByText('first')).toBeNull();
         expect(rendered.queryByText('second')).toBeTruthy();
 
-        act(() => {
-          jest.advanceTimersByTime(1);
-        });
+        advance(1);
         expect(rendered.queryByText('second')).toBeNull();
         expect(rowBoxesOf(rendered)).toHaveLength(0);
       });
@@ -1175,17 +1203,11 @@ describe('ToastOutlet', () => {
       it('holds every row of a three-toast run, one arriving each second', () => {
         const rendered = renderOutlet({ enableStacking });
         show(() => toast('first'));
-        act(() => {
-          jest.advanceTimersByTime(GAP);
-        });
+        advance(GAP);
         show(() => toast('second'));
-        act(() => {
-          jest.advanceTimersByTime(GAP);
-        });
+        advance(GAP);
         show(() => toast('third'));
-        act(() => {
-          jest.advanceTimersByTime(REPORT_WINDOW);
-        });
+        advance(REPORT_WINDOW);
 
         expect(rowBoxesOf(rendered)).toHaveLength(3);
         expect(rendered.queryByText('first')).toBeTruthy();

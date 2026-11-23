@@ -20,7 +20,7 @@ export const RESIZE_HANDLE_CSS = `
 [data-bloom-resize-handle-dragging="on"] [data-bloom-resize-handle-pill] { opacity: 1; }
 [data-bloom-resize-handle] { cursor: col-resize; touch-action: none; outline: none; }
 [data-bloom-resize-handle][aria-orientation="horizontal"] { cursor: row-resize; }
-[data-bloom-resize-handle]:focus-visible [data-bloom-resize-handle-pill] { opacity: 1; outline: 2px solid var(--color-ring, currentColor); outline-offset: 2px; }
+[data-bloom-resize-handle]:focus-visible [data-bloom-resize-handle-pill] { opacity: 1; outline: 2px solid var(--ring, currentColor); outline-offset: 2px; }
 ${PILL_ROOT} [data-bloom-resize-handle-pill] { opacity: 0; }
 ${PILL_ROOT}:hover [data-bloom-resize-handle-pill],
 ${PILL_ROOT}:focus-visible [data-bloom-resize-handle-pill] { opacity: ${PILL_HOVER_OPACITY}; }

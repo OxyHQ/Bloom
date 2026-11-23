@@ -11,7 +11,7 @@ import { Surface } from '../surface/Surface';
 import Svg from 'react-native-svg';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { SURFACE_RIM, SURFACE_SHEEN_SHADOW } from '../surface/shared';
-import { resolvedStyle, classNamesOn, surfaceSheens } from './support/rendered-style';
+import { resolvedStyle, surfaceSheens } from './support/rendered-style';
 
 beforeAll(() => {
   jest.spyOn(StyleSheet, 'flatten').mockImplementation((style) => resolvedStyle(style));
@@ -22,15 +22,10 @@ afterAll(() => {
 
 it('keeps caller layout and clipped paint radius on the same native root', () => {
   const { getByTestId, UNSAFE_queryAllByType } = render(
-    <Surface
-      testID="surface"
-      className="flex-1"
-      style={{ borderRadius: 13, paddingHorizontal: 16 }}
-    />,
+    <Surface testID="surface" style={{ borderRadius: 13, paddingHorizontal: 16 }} />,
   );
   const root = getByTestId('surface');
   expect(resolvedStyle(root.props.style).paddingHorizontal).toBe(16);
-  expect(classNamesOn(root.props.style)).toContain('flex-1');
   expect(UNSAFE_queryAllByType(Svg)).toHaveLength(0);
   const clipped = root.findAll((node) => resolvedStyle(node.props.style).overflow === 'hidden');
   expect(clipped.length).toBeGreaterThan(0);

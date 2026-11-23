@@ -6,7 +6,8 @@
  */
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { SurfaceLevelProvider, useSurfaceFill, surfaceFillOn } from '../styles/surface-levels';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

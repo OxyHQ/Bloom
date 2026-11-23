@@ -91,7 +91,7 @@ wrapping the compositor in another horizontal ScrollView. Column order and
 cross-column ticket movement remain separate: the compositor moves panels;
 Project Board applies its ticket data operations inside them.
 
-Keep static layout and styling in NativeWind classes. Let the compositor resolve
+Keep static layout and styling in StyleSheet styles. Let the compositor resolve
 dynamic geometry through CSS on web and Yoga/Reanimated on native. Do not mirror
 scroll offsets or gesture positions into React state on every frame. Subscribe to
 viewport observations only when domain behavior needs them; ordinary scrolling
@@ -312,7 +312,7 @@ separate operations. See [Motion](/docs/bloom/main/motion).
 keeps joined geometry and dividers while inheriting its enclosing Surface;
 use it for a local workspace inside a Dialog that already owns material.
 Its shared header and panel scroll contracts remain the same. For an individual
-painted panel without raised chrome, use `chrome: 'none'`, `surfaceClassName`
+painted panel without raised chrome, use `chrome: 'none'`, `surfaceStyle`
 and the matching resolved `surfaceColor`. A panel's `appearance: 'plain'` leaves
 that panel transparent and inherits its enclosing fill. Use `BloomScope panelRadius`
 for local corner geometry. Bounded panels clip their actual rounded surface, so
@@ -483,7 +483,7 @@ PageHeader outside that Screen. See [SettingsModal](/docs/bloom/main/settings-mo
 
 For independently scrolling component content, use `ScrollArea` from
 `@oxy.so/bloom/layout`. Its web outer wrapper takes `style`, `containerClassName` and
-`testID`; `className` stays on the actual scroll viewport for compatibility.
+`testID`; `viewportStyle` styles the actual scroll viewport.
 Content padding belongs to `contentContainerStyle` or
 `contentContainerClassName`. Pass processed Reanimated handlers through
 `animatedHandler`; `onScroll` remains an ordinary JS observer. For a virtualized
@@ -584,8 +584,8 @@ so backdrop sampling remains intact.
 Compact presentation follows the enclosing shell's responsive scope, so a narrow
 column inside a desktop workspace does not accidentally become a phone sheet.
 
-Geometry is owned by CSS flexbox on web and Yoga on native. NativeWind classes
-express static structural layout; dynamic flex constraints and gesture values
+Geometry is owned by CSS flexbox on web and Yoga on native. Static styles
+express structural layout; dynamic flex constraints and gesture values
 are applied by the shared renderer. There is no JavaScript water-fill pass in
 normal native layout. Native and browser flex engines can distribute spare space
 differently when unequal minimums bind; minimums remain explicit constraints.

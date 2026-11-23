@@ -1,0 +1,590 @@
+import { type ReactNode, useState } from 'react';
+import * as RN from 'react-native';
+import { Avatar } from '@oxy.so/bloom/avatar';
+import { Button } from '@oxy.so/bloom/button';
+import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
+import { useWindowBreakpoint } from '@oxy.so/bloom/hooks';
+import { tokens } from '@oxy.so/bloom/styles';
+import { useTheme } from '@oxy.so/bloom/theme';
+import { Text } from '@oxy.so/bloom/typography';
+import { RiHeart3Line } from '@oxy.so/bloom/icons';
+
+import * as L from '../src/primitives';
+import { toElement } from '../src/render';
+import { defineTokens } from '../src/tokens';
+import { type ParityCase, Themed } from './support/cases';
+
+const { space } = tokens;
+const padding = (value: number) => ({
+  paddingTop: value,
+  paddingBottom: value,
+  paddingStart: value,
+  paddingEnd: value,
+});
+
+const TIERS = ['base', 'sm', 'md', 'lg', 'xl', '2xl'];
+
+/** Bloom JSX that reads the window's tier as an app does (`useWindowBreakpoint()`). */
+function Tiered({ children }: { children: (atLeast: (tier: string) => boolean) => ReactNode }) {
+  const tier = useWindowBreakpoint();
+  return children((at) => TIERS.indexOf(tier) >= TIERS.indexOf(at));
+}
+
+/** Bloom JSX that reads the scheme as an app does (`useTheme()`). */
+function Schemed({ children }: { children: (dark: boolean) => ReactNode }) {
+  return children(useTheme().isDark);
+}
+
+const onPress = () => {};
+
+/** An app's own colour (`defineTokens({ color })`). */
+const BRAND = defineTokens({ color: { brand: '#1877f2' } }).color.brand;
+
+/** What a press host the language tracks takes on native: a handler for each state its variants answer. */
+const TRACKED =
+  RN.Platform.OS === 'web'
+    ? null
+    : { onPressIn: onPress, onPressOut: onPress, onHoverIn: onPress, onHoverOut: onPress };
+
+/** Bloom JSX's own state style: react-native-web's Pressable hands it the box's press and hover. */
+function stated(fill: string, opacity: number) {
+  return ({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => ({
+    flexDirection: 'row' as const,
+    ...(hovered ? { backgroundColor: fill } : null),
+    ...(pressed ? { opacity } : null),
+  });
+}
+
+interface Held {
+  pressed: boolean;
+  hovered: boolean;
+}
+
+/** Bloom JSX that tracks a component's own press and hover as an app does, to style it by them. */
+function Tracked({
+  children,
+}: {
+  children: (held: Held, handlers: Record<string, () => void>) => ReactNode;
+}) {
+  const [held, setHeld] = useState<Held>({ pressed: false, hovered: false });
+  const set = (key: keyof Held, on: boolean) => () =>
+    setHeld((current) => (current[key] === on ? current : { ...current, [key]: on }));
+  return children(held, {
+    onPressIn: set('pressed', true),
+    onPressOut: set('pressed', false),
+    onHoverIn: set('hovered', true),
+    onHoverOut: set('hovered', false),
+  });
+}
+
+export const VARIANT_CASES: ParityCase[] = [
+  {
+    name: 'a breakpoint variant (md) over a padding',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('sm')
+          .when('md', (v) => v.padding('lg')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <RN.View style={padding(atLeast('md') ? space.lg : space.sm)}>
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a column that is a row from md, hidden below sm',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'), L.Text('b'))
+          .hidden()
+          .when('sm', (v) => v.hidden(false))
+          .when('md', (v) => v.axis('horizontal').justify('between')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <RN.View
+            style={{
+              ...(atLeast('md') ? { flexDirection: 'row', justifyContent: 'space-between' } : null),
+              display: atLeast('sm') ? 'flex' : 'none',
+            }}
+          >
+            <Text>a</Text>
+            <Text>b</Text>
+          </RN.View>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'the dark scheme’s fill and ink',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .background('surface')
+          .foreground('muted')
+          .when('dark', (v) => v.background('popover').foreground('foreground')),
+      ),
+    bloom: () => (
+      <Schemed>
+        {(dark) => (
+          <Themed>
+            {(colors) => (
+              <RN.View
+                style={{
+                  backgroundColor: dark ? colors.backgroundTertiary : colors.backgroundSecondary,
+                }}
+              >
+                <Text style={{ color: dark ? colors.text : colors.textSecondary }}>a</Text>
+              </RN.View>
+            )}
+          </Themed>
+        )}
+      </Schemed>
+    ),
+  },
+  {
+    name: 'a pressed and a hovered variant, at rest (the press host tracks both)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .onPress(onPress)
+          .when('pressed', (v) => v.opacity('70'))
+          .when('hovered', (v) => v.background('surface')),
+      ),
+    // The press host tracks the states its variants answer: on native, by their handlers.
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...TRACKED}
+            style={
+              RN.Platform.OS === 'web'
+                ? stated(colors.backgroundSecondary, 0.7)
+                : { flexDirection: 'row' }
+            }
+          >
+            <Text>a</Text>
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an app colour under a pressed variant (the press host tracks it)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .onPress(onPress)
+          .background('surface')
+          .when('pressed', (v) => v.background(BRAND)),
+      ),
+    // An app colour has no class: on the web too the box tracks its press in JS.
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...(RN.Platform.OS === 'web' ? null : { onPressIn: onPress, onPressOut: onPress })}
+            style={
+              RN.Platform.OS === 'web'
+                ? ({ pressed }: { pressed: boolean }) => ({
+                    flexDirection: 'row',
+                    backgroundColor: pressed ? BRAND.value : colors.backgroundSecondary,
+                  })
+                : { flexDirection: 'row', backgroundColor: colors.backgroundSecondary }
+            }
+          >
+            <Text>a</Text>
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a pressable inside a pressable: each answers its own press and hover',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.Text('a'),
+          L.HStack(L.Text('b'))
+            .padding('sm')
+            .onPress(onPress)
+            .when('pressed', (v) => v.opacity('half'))
+            .when('hovered', (v) => v.background('popover')),
+        )
+          .onPress(onPress)
+          .when('pressed', (v) => v.opacity('70'))
+          .when('hovered', (v) => v.background('surface')),
+      ),
+    // On the web the browser's own state draws both (Chrome checks them held, verify-parity-web.mjs).
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...TRACKED}
+            style={
+              RN.Platform.OS === 'web'
+                ? stated(colors.backgroundSecondary, 0.7)
+                : { flexDirection: 'row' }
+            }
+          >
+            <Text>a</Text>
+            <RN.Pressable
+              onPress={onPress}
+              {...TRACKED}
+              style={
+                RN.Platform.OS === 'web'
+                  ? (state: { pressed: boolean; hovered?: boolean }) => ({
+                      ...padding(space.sm),
+                      ...stated(colors.backgroundTertiary, 0.5)(state),
+                    })
+                  : { flexDirection: 'row', ...padding(space.sm) }
+              }
+            >
+              <Text>b</Text>
+            </RN.Pressable>
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a Bloom pressable inside a pressable: the hover and press are its own',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'), L.Avatar('https://cdn.oxy.so/avatars/ana.jpg').onPress(onPress))
+          .padding('sm')
+          .onPress(onPress)
+          .when('pressed', (v) => v.opacity('70'))
+          .when('hovered', (v) => v.background('surface')),
+      ),
+    // react-native-web's Pressable keeps a hover and a press inside an inner one
+    // from the outer one (Chrome holds both, verify-parity-web.mjs).
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...TRACKED}
+            style={
+              RN.Platform.OS === 'web'
+                ? (state: { pressed: boolean; hovered?: boolean }) => ({
+                    ...padding(space.sm),
+                    ...stated(colors.backgroundSecondary, 0.7)(state),
+                  })
+                : { flexDirection: 'row', ...padding(space.sm) }
+            }
+          >
+            <Text>a</Text>
+            <Avatar source="https://cdn.oxy.so/avatars/ana.jpg" onPress={onPress} />
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'an embedded pressable inside a pressable: the hover and press are its own',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.Text('a'),
+          L.Embed(
+            <RN.Pressable onPress={onPress} style={{ width: 24, height: 24 }}>
+              <Text>b</Text>
+            </RN.Pressable>,
+          ),
+        )
+          .padding('sm')
+          .onPress(onPress)
+          .when('pressed', (v) => v.opacity('70'))
+          .when('hovered', (v) => v.background('surface')),
+      ),
+    // A pressable react-native-web draws is focusable: the stack's CSS leaves its
+    // hover and press to it, as react-native-web's Pressable does (Chrome holds both).
+    bloom: () => (
+      <Themed>
+        {(colors) => (
+          <RN.Pressable
+            onPress={onPress}
+            {...TRACKED}
+            style={
+              RN.Platform.OS === 'web'
+                ? (state: { pressed: boolean; hovered?: boolean }) => ({
+                    ...padding(space.sm),
+                    ...stated(colors.backgroundSecondary, 0.7)(state),
+                  })
+                : { flexDirection: 'row', ...padding(space.sm) }
+            }
+          >
+            <Text>a</Text>
+            <RN.Pressable onPress={onPress} style={{ width: 24, height: 24 }}>
+              <Text>b</Text>
+            </RN.Pressable>
+          </RN.Pressable>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a Bloom component’s breakpoint variant, in its own style',
+    language: () =>
+      toElement(
+        L.Button(L.Text('Save'))
+          .onPress(onPress)
+          .when('md', (v) => v.padding('lg').opacity('70')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Button
+            onPress={onPress}
+            style={atLeast('md') ? { ...padding(space.lg), opacity: 0.7 } : undefined}
+          >
+            Save
+          </Button>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a Bloom component’s dark variant, in its own style',
+    language: () =>
+      toElement(
+        L.Avatar('https://cdn.oxy.so/avatars/ana.jpg').when('dark', (v) => v.opacity('half')),
+      ),
+    bloom: () => (
+      <Schemed>
+        {(dark) => (
+          <Avatar
+            source="https://cdn.oxy.so/avatars/ana.jpg"
+            style={dark ? { opacity: 0.5 } : undefined}
+          />
+        )}
+      </Schemed>
+    ),
+  },
+  {
+    name: 'a variant inside a variant (md, then dark), at rest',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('sm')
+          .when('md', (v) => v.when('dark', (d) => d.padding('lg'))),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <Schemed>
+            {(dark) => (
+              <RN.View style={padding(atLeast('md') && dark ? space.lg : space.sm)}>
+                <Text>a</Text>
+              </RN.View>
+            )}
+          </Schemed>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'an icon whose ink a hover varies, at rest',
+    language: () =>
+      toElement(
+        L.HStack(L.Icon(RiHeart3Line))
+          .onPress(onPress)
+          .foreground('muted')
+          .when('hovered', (v) => v.foreground('primary')),
+      ),
+    // The web answers the hover with CSS: the glyph paints currentColor, its colour a class.
+    // Bloom JSX answers it with react-native-web's hovered state (held in Chrome).
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.Pressable onPress={onPress} style={{ flexDirection: 'row' }}>
+          {(state) => (
+            <RiHeart3Line
+              fill="currentColor"
+              width={20}
+              height={20}
+              style={{
+                color: (state as { hovered?: boolean }).hovered
+                  ? 'var(--primary)'
+                  : 'var(--muted-foreground)',
+              }}
+            />
+          )}
+        </RN.Pressable>
+      ) : (
+        <RN.Pressable
+          onPress={onPress}
+          onHoverIn={onPress}
+          onHoverOut={onPress}
+          style={{ flexDirection: 'row' }}
+        >
+          <Themed>
+            {(colors) => <RiHeart3Line fill={colors.textSecondary} width={20} height={20} />}
+          </Themed>
+        </RN.Pressable>
+      ),
+  },
+  {
+    name: 'an action’s pressed and hovered variants, in its own style',
+    language: () =>
+      toElement(
+        L.ActionBar(
+          L.Action(RiHeart3Line, 'Like')
+            .onPress(onPress)
+            .when('pressed', (v) => v.opacity('70'))
+            .when('hovered', (v) => v.background('surface')),
+        ),
+      ),
+    // The action's own pressable hands its press and hover to its box, which tracks them.
+    bloom: () => (
+      <EngagementBar>
+        <Themed>
+          {(colors) => (
+            <Tracked>
+              {(held, handlers) => (
+                <EngagementAction
+                  icon={RiHeart3Line}
+                  accessibilityLabel="Like"
+                  onPress={onPress}
+                  {...handlers}
+                  style={
+                    held.pressed || held.hovered
+                      ? {
+                          ...(held.hovered
+                            ? { backgroundColor: colors.backgroundSecondary }
+                            : null),
+                          ...(held.pressed ? { opacity: 0.7 } : null),
+                        }
+                      : undefined
+                  }
+                />
+              )}
+            </Tracked>
+          )}
+        </Themed>
+      </EngagementBar>
+    ),
+  },
+  {
+    name: 'a pressed scale and a hovered offset, at rest (each its own component)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .onPress(onPress)
+          .when('pressed', (v) => v.scale('95'))
+          .when('hovered', (v) => v.offset({ y: '-xs' })),
+      ),
+    // The web's held states are compared in Chrome (verify-parity-web.mjs).
+    bloom: () => (
+      <RN.Pressable
+        onPress={onPress}
+        {...TRACKED}
+        style={
+          RN.Platform.OS === 'web'
+            ? ({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => ({
+                flexDirection: 'row' as const,
+                transform: [{ translateY: hovered ? -space.xs : 0 }, { scale: pressed ? 0.95 : 1 }],
+              })
+            : { flexDirection: 'row', transform: [{ translateY: 0 }, { scale: 1 }] }
+        }
+      >
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    name: 'a breakpoint’s scale and turn (md)',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .scale('pressed')
+          .when('md', (v) => v.scale('105').rotation('45')),
+      ),
+    bloom: () => (
+      <Tiered>
+        {(atLeast) => (
+          <RN.View
+            style={{
+              transform: [
+                { rotate: atLeast('md') ? '45deg' : '0deg' },
+                { scale: atLeast('md') ? 1.05 : 0.98 },
+              ],
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Tiered>
+    ),
+  },
+  {
+    name: 'a platform variant',
+    language: () => toElement(L.VStack(L.Text('a')).when('web', (v) => v.padding('lg'))),
+    bloom: () => (
+      <RN.View style={RN.Platform.OS === 'web' ? padding(space.lg) : undefined}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  ...[true, false].flatMap((active): ParityCase[] => [
+    {
+      // The app's own condition: settled as the view renders, its values over the chain's.
+      name: `a variant of the app's own condition (${active})`,
+      language: () =>
+        toElement(
+          L.VStack(L.Text('a'))
+            .padding('sm')
+            .background('mutedFill')
+            .when(active, (v) => v.padding('lg').background('primary')),
+        ),
+      bloom: () => (
+        <Themed>
+          {(c) => (
+            <RN.View
+              style={{
+                ...padding(active ? space.lg : space.sm),
+                backgroundColor:
+                  RN.Platform.OS === 'web'
+                    ? `var(--${active ? 'primary' : 'muted'})`
+                    : active
+                      ? c.primary
+                      : c.contrast50,
+              }}
+            >
+              <Text>a</Text>
+            </RN.View>
+          )}
+        </Themed>
+      ),
+    },
+    {
+      name: `a text trait of the app's own condition (${active})`,
+      language: () => toElement(L.Text('a').when(active, (v) => v.weight('bold'))),
+      bloom: () => <Text style={active ? { fontWeight: '700' } : undefined}>a</Text>,
+    },
+  ]),
+  {
+    name: 'a disabled pressable’s variant',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .onPress(onPress)
+          .disabled()
+          .when('disabled', (v) => v.opacity('half')),
+      ),
+    bloom: () => (
+      <RN.Pressable onPress={onPress} disabled style={{ flexDirection: 'row', opacity: 0.5 }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+];

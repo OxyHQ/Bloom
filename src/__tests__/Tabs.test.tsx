@@ -1,3 +1,4 @@
+import { setMotionValue, useMotionValue, type MotionValue } from '../motion/motion-value';
 import React from 'react';
 import { hairlineOn, surfaceFillOn } from '../styles/surface-levels';
 import type { ReactTestInstance } from 'react-test-renderer';
@@ -491,15 +492,28 @@ describe('Tabs', () => {
 
     function mountStrip(tabs: string[], focused: string, geometry: Map<string, Box>) {
       const dragRef = React.createRef<TabsDragController>();
-      const tree = (next: { tabs: string[]; focused: string }) => (
-        <BloomThemeProvider mode="light" colorPreset="teal">
-          <Tabs testID="tabs" ref={dragRef} hasSelection>
-            {next.tabs.map((tab) => (
-              <TabsTrigger key={tab} value={tab} label={tab} isFocused={tab === next.focused} />
+      // The pager's finger travel, as `RouterTabs` hands it to the strip.
+      const translation: { current: MotionValue | null } = { current: null };
+      function Strip({ tabs: shown, focused: current }: { tabs: string[]; focused: string }) {
+        const value = useMotionValue(0);
+        translation.current = value;
+        return (
+          <Tabs testID="tabs" ref={dragRef} dragTranslation={value} hasSelection>
+            {shown.map((tab) => (
+              <TabsTrigger key={tab} value={tab} label={tab} isFocused={tab === current} />
             ))}
           </Tabs>
+        );
+      }
+      const tree = (next: { tabs: string[]; focused: string }) => (
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Strip tabs={next.tabs} focused={next.focused} />
         </BloomThemeProvider>
       );
+      /** The finger at `x` from where it landed, as the pager's gesture writes it. */
+      const dragTo = (x: number) => {
+        if (translation.current) setMotionValue(translation.current, x);
+      };
       const utils = render(tree({ tabs, focused }), {
         createNodeMock: nodeMockFor(geometry),
       });
@@ -538,7 +552,7 @@ describe('Tabs', () => {
         };
       };
 
-      return { ...utils, dragRef, reportLayout, settle, indicator };
+      return { ...utils, dragRef, dragTo, reportLayout, settle, indicator };
     }
 
     it('follows the active tab when one is INSERTED before it', async () => {
@@ -615,14 +629,45 @@ describe('Tabs', () => {
       for (const tab of ['posts', 'likes', 'lane']) bar.reportLayout(tab);
       await bar.settle();
       // Dragging left reveals the tab to the RIGHT, so this commits `lane`.
-      expect(bar.dragRef.current?.drag(-1000)).toBe('lane');
+      bar.dragRef.current?.begin();
+      expect(bar.dragRef.current?.release(-1000)).toBe('lane');
 
       await bar.settle({ tabs: ['posts', 'likes'], focused: 'likes' });
 
       // `likes` is now last. A phantom `lane` left behind in the geometry would
       // still be found here, and releasing would navigate to a tab that is not
       // on screen.
-      expect(bar.dragRef.current?.drag(-1000)).toBeNull();
+      bar.dragRef.current?.begin();
+      expect(bar.dragRef.current?.release(-1000)).toBeNull();
+    });
+
+    it('follows the pager’s finger toward the neighbour, then folds a commit or springs home', async () => {
+      const geometry = new Map<string, Box>([
+        ['posts', { x: 0, width: 80 }],
+        ['likes', { x: 80, width: 100 }],
+      ]);
+      const bar = mountStrip(['posts', 'likes'], 'posts', geometry);
+      for (const tab of ['posts', 'likes']) bar.reportLayout(tab);
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 0, width: 80 });
+
+      // Halfway to `likes` (the finger goes left, the underline right).
+      bar.dragRef.current?.begin();
+      bar.dragTo(-40);
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 40, width: 90 });
+
+      // Released short of the threshold: nothing commits and it springs home.
+      expect(bar.dragRef.current?.release(-20)).toBeNull();
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 0, width: 80 });
+
+      // Past it: `likes` commits and the underline stays where the finger left it.
+      bar.dragRef.current?.begin();
+      bar.dragTo(-60);
+      expect(bar.dragRef.current?.release(-60)).toBe('likes');
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 60, width: 95 });
     });
 
     it('ignores a zero measurement, which means "not laid out" and not "empty"', async () => {

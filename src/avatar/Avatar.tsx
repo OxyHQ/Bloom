@@ -12,6 +12,7 @@ import { useMessages } from '../locale/messages';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { Z_INDEX } from '../styles/z-index';
+import { PRESS_HOST_STYLE } from '../styles/press-host';
 import { useAvatarPlaceholder } from './context';
 import { AVATAR_MESSAGES } from './messages';
 import { LiveBadge } from './LiveBadge';
@@ -268,8 +269,10 @@ function AvatarImageContent({
   );
 }
 
+/** Pressed, the avatar dims; on the web it also carries the press host class. */
 function avatarPressStyle({ pressed }: PressableStateCallbackType) {
-  return pressed ? styles.pressed : undefined;
+  if (!pressed) return PRESS_HOST_STYLE;
+  return PRESS_HOST_STYLE === undefined ? styles.pressed : [styles.pressed, PRESS_HOST_STYLE];
 }
 
 const AvatarComponent: React.FC<AvatarProps> = ({
@@ -297,6 +300,12 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   reactionKey,
   workingKey,
   onPress,
+  onPressIn,
+  onPressOut,
+  onHoverIn,
+  onHoverOut,
+  onFocus,
+  onBlur,
   live = false,
   hideLiveBadge = false,
   liveLabel: liveLabelProp,
@@ -473,11 +482,17 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     </View>
   );
 
-  if (onPress) {
+  if (onPress || onPressIn || onPressOut || onHoverIn || onHoverOut || onFocus || onBlur) {
     return (
       <Pressable
         onPress={onPress}
-        accessibilityRole="button"
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onHoverIn={onHoverIn}
+        onHoverOut={onHoverOut}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        accessibilityRole={onPress ? 'button' : undefined}
         accessibilityLabel={alt ?? (hasName ? name : undefined)}
         style={avatarPressStyle}
       >

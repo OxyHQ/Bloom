@@ -10,6 +10,7 @@ import { RiCalendarLine } from '../icons/remix/RiCalendarLine';
 import { Button } from '../button';
 import { Text } from '../typography';
 import { List } from '../list';
+import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof Search> = {
   id: 'base-search',
@@ -104,12 +105,27 @@ export const Playground: StoryObj<typeof Search> = {
   },
 };
 
+const DEMO_FIELD = { height: 44, paddingLeft: 12, paddingRight: 12 };
+const DEMO_LAYOUT = { height: 44, paddingLeft: 16, paddingRight: 16 };
+
+/** The demo's inset surface: a blue hairline on a grey fill. */
+function useDemoChrome() {
+  const { isDark } = useTheme();
+  return {
+    borderWidth: 1,
+    borderColor: '#abcdef',
+    borderRadius: 14,
+    backgroundColor: isDark ? '#404040' : '#eef0f1',
+  };
+}
+
 /** Independent layout and surface slots keep the input and clear control intact. */
 export const StyledSlots: Story = {
   render: function StyledSlotsStory() {
     const [value, setValue] = useState('');
     const [disabled, setDisabled] = useState(false);
     const [invalid, setInvalid] = useState(false);
+    const chrome = useDemoChrome();
     return (
       <View style={{ width: 480, gap: 16 }}>
         <Search label="Default search" value="" />
@@ -120,9 +136,9 @@ export const StyledSlots: Story = {
           onClearText={() => setValue('')}
           disabled={disabled}
           invalid={invalid}
-          containerClassName="bloom-demo-search-container"
-          fieldClassName="bloom-demo-search-field"
-          fieldChromeClassName="bloom-demo-search-chrome"
+          containerStyle={{ width: 360, marginTop: 8 }}
+          fieldStyle={DEMO_FIELD}
+          fieldChromeStyle={chrome}
         />
         <Button onPress={() => setDisabled((value) => !value)}>Toggle disabled</Button>
         <Button onPress={() => setInvalid((value) => !value)}>Toggle invalid</Button>
@@ -137,6 +153,7 @@ export const CustomAffordances: Story = {
       'A long search query to verify the clear control never overlaps text',
     );
     const [disabled, setDisabled] = useState(false);
+    const chrome = useDemoChrome();
     return (
       <View style={{ width: 320, gap: 20 }}>
         <Search
@@ -147,8 +164,8 @@ export const CustomAffordances: Story = {
           iconSize={24}
           clearButtonProps={{ size: 24, iconSize: 24 }}
           disabled={disabled}
-          fieldClassName="bloom-demo-search-layout"
-          fieldChromeClassName="bloom-demo-search-chrome"
+          fieldStyle={DEMO_LAYOUT}
+          fieldChromeStyle={chrome}
           style={{ fontSize: 16, lineHeight: 20 }}
         />
         <Button onPress={() => setDisabled((v) => !v)}>Toggle disabled</Button>

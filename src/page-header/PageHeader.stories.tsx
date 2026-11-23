@@ -1,4 +1,5 @@
 import { fn } from 'storybook/test';
+import { useColorTokens } from '../theme/color-tokens';
 import { Search } from '../search';
 import type React from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -513,6 +514,7 @@ export const RevealAfterContentHeading: Story = {
 };
 
 function EditableWorkspaceHeader() {
+  const tokens = useColorTokens();
   const [title, setTitle] = useState('Projects');
   const [view, setView] = useState('board');
   return (
@@ -529,7 +531,7 @@ function EditableWorkspaceHeader() {
                 New
               </Button>
             }
-            accessory={<Text className="text-text-secondary">12 records</Text>}
+            accessory={<Text style={{ color: tokens.mutedForeground }}>12 records</Text>}
           >
             <Tabs value={view} onValueChange={setView}>
               <TabsTrigger value="board" label="Board" />

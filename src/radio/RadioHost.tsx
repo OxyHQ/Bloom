@@ -1,15 +1,15 @@
 import React, { type ComponentRef, forwardRef, type KeyboardEvent, type ReactNode } from 'react';
-import { Platform, type View, type StyleProp, type ViewStyle, type TextStyle } from 'react-native';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { Platform, View, type StyleProp, type ViewStyle, type TextStyle } from 'react-native';
+import { StyledPressable } from '../styles/styled-primitives';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { Text } from '../typography';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
 import type { RefComponent } from '../styles/native-refs';
 
-// RNW's unlayered View reset outranks consumer @layer classes. Radio owns its
-// small DOM hosts so authored classes keep authority, while native uses styled
-// primitives and the same styles/selection logic.
+// Radio owns its small DOM hosts on the web, with base-layer defaults under the
+// caller's style; native uses React Native's primitives and the same styles
+// and selection logic.
 const BASE = `@layer base {
 .bloom-radio-host { box-sizing:border-box; display:flex; flex-shrink:0; min-width:0; border:0 solid; padding:0; margin:0; background:transparent; font:inherit; text-align:start; }
 .bloom-radio-group { display:flex; flex-direction:column; min-width:0; }
@@ -17,7 +17,6 @@ const BASE = `@layer base {
 }`;
 interface HostProps {
   children?: ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
   accessibilityRole?: 'radio';
@@ -55,7 +54,6 @@ export const RadioHost: RefComponent<HostProps> = forwardRef<ComponentRef<typeof
     }
     const {
       children,
-      className,
       style,
       disabled,
       accessibilityLabel,
@@ -95,7 +93,7 @@ export const RadioHost: RefComponent<HostProps> = forwardRef<ComponentRef<typeof
         aria-disabled={disabled || undefined}
         aria-invalid={props['aria-invalid']}
         aria-describedby={props['aria-describedby']}
-        className={['bloom-radio-host', className].filter(Boolean).join(' ')}
+        className="bloom-radio-host"
         style={resolveNativeWebStyle(style)}
         onClick={() => {
           if (!disabled) onPress();
@@ -135,7 +133,6 @@ export const RadioHost: RefComponent<HostProps> = forwardRef<ComponentRef<typeof
 
 interface LayoutProps {
   children?: ReactNode;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   dir?: 'rtl';
   accessibilityRole?: 'radiogroup';
@@ -152,9 +149,8 @@ interface LayoutProps {
 export function RadioGroupHost(props: LayoutProps) {
   useInteractiveWebCss('bloom-radio-host', BASE);
   // Never flattened away from its radios (semantic-containers.test.ts).
-  if (Platform.OS !== 'web') return <StyledView collapsable={false} {...props} />;
+  if (Platform.OS !== 'web') return <View collapsable={false} {...props} />;
   const {
-    className,
     style,
     accessibilityRole,
     accessibilityLabel,
@@ -168,7 +164,7 @@ export function RadioGroupHost(props: LayoutProps) {
       {...aria}
       role={accessibilityRole}
       aria-label={accessibilityLabel}
-      className={['bloom-radio-group', className].filter(Boolean).join(' ')}
+      className="bloom-radio-group"
       style={resolveNativeWebStyle(style)}
       data-testid={testID}
     >
@@ -178,13 +174,14 @@ export function RadioGroupHost(props: LayoutProps) {
 }
 
 export function RadioLabel({
-  className,
+  bare = false,
   style,
   variant,
   children,
   numberOfLines,
 }: {
-  className?: string;
+  /** No default typography on the web: `style` sets the label's type. */
+  bare?: boolean;
   style?: StyleProp<TextStyle>;
   variant: TypeScaleVariant;
   children?: ReactNode;
@@ -192,18 +189,18 @@ export function RadioLabel({
 }) {
   if (Platform.OS !== 'web')
     return (
-      <Text className={className} variant={variant} style={style} numberOfLines={numberOfLines}>
+      <Text variant={variant} style={style} numberOfLines={numberOfLines}>
         {children}
       </Text>
     );
   return (
     <span
-      className={['bloom-radio-label', className].filter(Boolean).join(' ')}
+      className="bloom-radio-label"
       style={{
         ...(numberOfLines === 1
           ? { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
           : {}),
-        ...resolveNativeWebStyle([!className && TYPE_SCALE[variant], style]),
+        ...resolveNativeWebStyle([!bare && TYPE_SCALE[variant], style]),
       }}
     >
       {children}

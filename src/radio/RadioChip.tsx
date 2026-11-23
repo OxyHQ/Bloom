@@ -39,8 +39,7 @@ function RadioChipComponent<Value extends string = string>({
   size: sizeProp,
   tone: toneProp,
   appearance = 'outline',
-  className,
-  labelClassName,
+  bare = false,
   style,
   labelStyle,
   testID,
@@ -84,8 +83,9 @@ function RadioChipComponent<Value extends string = string>({
   }, [checked, disabled, onValueChange, value]);
   const groupItem = useRadioGroupItem(value, disabled, activate);
   const defaultStyle: WebCssStyle = {
-    ...(!className
-      ? ({
+    ...(bare
+      ? null
+      : ({
           minHeight: height,
           minWidth: height,
           borderRadius: borderRadius.full,
@@ -104,8 +104,7 @@ function RadioChipComponent<Value extends string = string>({
           alignSelf: 'flex-start',
           flexShrink: 0,
           opacity: disabled ? DISABLED_OPACITY : 1,
-        } as const)
-      : {}),
+        } as const)),
     '--bloom-radio-chip-ring': theme.colors.primary,
     ...ringOffset,
   };
@@ -113,7 +112,6 @@ function RadioChipComponent<Value extends string = string>({
     <RadioHost
       {...groupItem}
       {...webDataSet({ bloomRadioChip: '' })}
-      className={className}
       style={[defaultStyle, style]}
       onPress={activate}
       onPressIn={onPressIn}
@@ -143,10 +141,10 @@ function RadioChipComponent<Value extends string = string>({
         </View>
       ) : (
         <RadioLabel
-          className={labelClassName}
+          bare={bare}
           variant={size === 'xs' || size === 'sm' ? 'body-2-medium' : 'body-medium'}
           style={[
-            !labelClassName && {
+            !bare && {
               color: foreground,
               ...(checked && appearance === 'plain'
                 ? { textDecorationLine: 'underline' as const }

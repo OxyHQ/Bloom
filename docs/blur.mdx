@@ -19,11 +19,42 @@ Keep shadow on the outer control and clip only the inner paint layer; clipping t
 
 `expo-blur` couples tint and blur intensity; CSS backdrop blur does not. Native and web therefore require separate visual checks whenever their materials change. Android blur must target content in a separate native window. A BlurView inside its own BlurTargetView can crash in native rendering (recursive RenderNode traversal), which is also why no surface mounts its own `BlurView` on Android. On iOS, where a `BlurView` needs no target, floating surfaces draw the system's material (see [Surface](./surface.mdx)). Never expose the app-root target directly to an inline control; only `BlurWindow` inside an actual Modal may publish it. The separate-window check in `blur-target.tsx` preserves that boundary.
 
-`BlurTargetProvider`, `BlurWindow` and `useWindowedBlurTarget` live in `src/blur/` and are internal; `BloomProvider` mounts the provider and `BottomSheet` the window.
+`BlurIsland`, `BlurTargetProvider`, `BlurWindow` and `useWindowedBlurTarget` are published at `@oxy.so/bloom/blur`; `BloomProvider` mounts the provider and `BottomSheet` the window, so an app rarely mounts either itself.
 
 ## Floating islands
 
 `BlurIsland` groups related controls in one translucent pane with flush controls, painted with the same Surface material. It publishes its tint composited against the parent as an estimate for descendants. BloomScope carries density only. Plain sidebar surfaces and navigation rails keep their existing semantics.
+
+On Android 13+ with the native lens installed, an island is drawn by the lens (`material="lens"`, the default): the engine paints the material, its shadow and its light, and the controls inside draw only their content. Everywhere else, and with `material="surface"`, it keeps the Surface paint above. An island that scrolls with its content should be `material="surface"`, because the lens is drawn by the window and does not follow a scroll view's overscroll stretch.
+
+### A bottom toolbar
+
+The bottom toolbar of the current iOS pattern (a circle for a filter, a central pill with the title, a
+circle for search) is three islands in a row, each holding a `Button` with `material="shared"` so the
+island, not the button, owns the material. Where the device has the lens, each island is drawn by it;
+elsewhere each keeps the Surface paint.
+
+```tsx
+import { BlurIsland } from '@oxy.so/bloom/blur';
+
+<View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+  <BlurIsland>
+    <Button iconOnly appearance="plain" material="shared" icon={RiFilterLine} accessibilityLabel="Filter" />
+  </BlurIsland>
+  <View style={{ flex: 1 }}>
+    <BlurIsland style={{ alignSelf: 'stretch' }}>
+      <Button appearance="plain" material="shared" style={{ flex: 1 }}>Inbox</Button>
+    </BlurIsland>
+  </View>
+  <BlurIsland>
+    <Button iconOnly appearance="plain" material="shared" icon={RiSearchLine} accessibilityLabel="Search" />
+  </BlurIsland>
+</View>
+```
+
+A lens with no tint shows what is behind it, so over a saturated background the label is as legible as
+the background lets it be; give the island a tinted `Surface` when the toolbar floats over busy media.
+
 
 ## Shared geometry
 

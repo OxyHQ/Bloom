@@ -1,5 +1,5 @@
 import { useEffect, useRef, useMemo } from 'react';
-import { prefetchImage } from '../image';
+import { prefetchImage } from '../image/BloomImage';
 
 /**
  * Hook to preload images for better perceived performance

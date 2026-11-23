@@ -5,6 +5,7 @@ import type { BloomAppearance, BloomTone } from './types';
 const PALETTE: Record<BloomTone, AccentTone> = {
   neutral: 'default',
   accent: 'primary',
+  vivid: 'vivid',
   support: 'secondary',
   action: 'tertiary',
   success: 'success',
@@ -12,6 +13,21 @@ const PALETTE: Record<BloomTone, AccentTone> = {
   danger: 'error',
   info: 'info',
 };
+
+/** Every Bloom tone as itself, and every accent tone as the Bloom tone `PALETTE` maps onto it. */
+const BLOOM_TONE = Object.fromEntries([
+  ...Object.keys(PALETTE).map((tone) => [tone, tone]),
+  ...Object.entries(PALETTE).map(([tone, accent]) => [accent, tone]),
+]) as Record<AccentTone | BloomTone, BloomTone>;
+
+/**
+ * The Bloom tone an accent tone or a Bloom tone paints in: `PALETTE` read
+ * backwards, so every `AccentTone` a chip or badge takes (`secondary` and
+ * `tertiary` included) reaches the palette `resolveBloomColors` reads.
+ */
+export function bloomToneOf(tone: AccentTone | BloomTone): BloomTone {
+  return BLOOM_TONE[tone];
+}
 
 /** Uses paired semantic colors; never manufactures alpha from a token. */
 export function resolveBloomColors(

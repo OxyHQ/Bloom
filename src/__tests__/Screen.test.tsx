@@ -514,3 +514,20 @@ it('defaults to reserving chrome around a native scroll view', () => {
     },
   );
 });
+
+it('keeps its root a native parent so the header slot can overflow it', () => {
+  // A floating header's scroll-edge fade runs past the header's own box. A
+  // collapsable root let Fabric hoist the header slot into react-native-screens'
+  // Screen, which clips each child to its bounds on Android: the fade stopped
+  // half-opaque at the header's foot (Mention Videos, Pixel 8a).
+  const tree = render(
+    wrap(
+      <Screen testID="screen" headerPlacement="overlay" header={<View />}>
+        <View />
+      </Screen>,
+    ),
+  );
+  const root = tree.getByTestId('screen');
+  expect(root.props.collapsable).toBe(false);
+  expect(root).toContainElement(tree.getByTestId('screen-header'));
+});

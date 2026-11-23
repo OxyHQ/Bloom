@@ -36,7 +36,7 @@ choice control.
 
 `children` renders below the selectable header, outside its pressable element.
 Use that slot for associated fields without nesting one control inside another.
-`className` lays out the outer card. `compact` is content density, independent of
+`style` lays out the outer card. `compact` is content density, independent of
 BloomScope's control size.
 
 ## Card surface
@@ -107,10 +107,7 @@ uses it.
 
 Hand-rolling the chrome means hand-rolling the platform split too, and the
 usual result is a `Platform.OS` branch with slightly different numbers from the
-one next to it. Worse, on web it is tempting to reach for classes —
-`border border-border bg-card` — which are **inert until the consumer wires the
-Tailwind pipeline**. That failure is silent: the card renders as an unbordered
-transparent block, nothing throws, and it looks like a spacing bug.
+one next to it.
 
 `Card` resolves border, radius and shadow from tokens and delegates fill to Surface,
 so the surface paints with or without a consumer's CSS pipeline.
@@ -142,13 +139,19 @@ iOS continuous curves, and circular corners on Android and unsupported browsers.
 Both layers use the same curve; the inner radius accounts for the border width.
 Explicit `radius`, `cornerCurve` and `border` own geometry. With no radius prop, a resolved `style.borderRadius` is used before the family default, matching Surface and BlurIsland. Individual corner radii, border widths and overflow remain controlled by the shape, border and clipping props. `contentStyle` cannot replace the resolved clip geometry.
 
-## `className` and `style` together
+**Web and native differ on purpose for a Card with no corner of its own** (no
+`radius`, no `style.borderRadius`). The web draws it with the concentric corner
+geometry: the host keeps its rung, and its paint and clip take the corners its
+parent leaves it (the material's edge mask follows them). Native draws the rung
+alone. Both are exactly what apps drew before Bloom dropped NativeWind
+([Bloom without NativeWind](./no-nativewind.mdx)); unifying them is a separate,
+visible decision.
 
-`className` resolves to classes and `style` stays inline, side by side on the
-host: `<Card className="p-6" style={{ maxWidth: 372, gap: 20 }} />` keeps both.
-Card reads only inline values (a `backgroundColor` for the surface paint, a
-`borderRadius` when `radius` is unset); a class cannot change what Card paints
-inline — its fill, radius, border and shadow — so use the props for those.
+## What `style` can change
+
+Card reads two values from `style`: a `backgroundColor` for the surface paint,
+and a `borderRadius` when `radius` is unset. Its fill, radius, border and shadow
+are otherwise the props', so use the props for those.
 
 ## Parts
 

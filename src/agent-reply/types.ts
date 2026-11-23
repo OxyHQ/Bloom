@@ -33,7 +33,6 @@ export interface AgentReplyProps {
 export interface AgentReplyBubbleProps {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
-  className?: string;
   /**
    * The font size and line height (px) of the text inside, so the top and bottom padding looks as
    * wide as the sides. Default Bloom's body, 14 on 20.

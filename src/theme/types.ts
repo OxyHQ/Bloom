@@ -64,6 +64,14 @@ export interface ThemeColors {
   infoSubtle: string;
   infoSubtleForeground: string;
 
+  /**
+   * The brand at full strength, a system tint: the seed's own tone and chroma, the same in light
+   * and dark. `primary` is a fill that must carry a white label, so it is deeper; a control that
+   * should read as the brand colour itself (a lens button, a switch) uses this.
+   */
+  vivid: string;
+  /** Black or white, whichever reads on `vivid`. */
+  vividForeground: string;
   primarySubtle: string;
   primarySubtleForeground: string;
   negative: string;
@@ -75,6 +83,23 @@ export interface ThemeColors {
   card: string;
   shadow: string;
   overlay: string;
+
+  /**
+   * `--destructive`, the fill apps paint with `bg-destructive` and `text-destructive`: the
+   * engine's error role, as the CSS variable has it. Not `error` (the policy's status fill)
+   * and not `negative` (which a platform palette replaces).
+   */
+  destructive: string;
+  /** White, the same in every theme: what apps paint with Tailwind's `white`. */
+  white: string;
+  /** Black, the same in every theme: what apps paint with Tailwind's `black`. */
+  black: string;
+  /** Transparent, the same in every theme: Tailwind's `transparent`. */
+  transparent: string;
+  /** `--surface-foreground`, the ink apps paint with `text-surface-foreground`. */
+  surfaceForeground: string;
+  /** `--accent`, the fill apps paint with `bg-accent` (a hover or selected wash). */
+  accent: string;
 }
 
 /**

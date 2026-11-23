@@ -27,7 +27,6 @@ import Animated, {
   useComposedEventHandler,
 } from 'react-native-reanimated';
 import type { ScrollBarProps } from '../layout/types';
-import { StyledView } from '../styles/styled-primitives';
 import { useScreen } from './context';
 import { useScreenViewport } from './context';
 import { useIntrinsicContentHeight } from './use-intrinsic-content-height';
@@ -87,7 +86,7 @@ export function createScreenScrollView(
     handler,
     restoration,
     contentContainerStyle,
-    contentContainerClassName,
+    contentView,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     onLayout,
@@ -146,9 +145,7 @@ export function createScreenScrollView(
         if (publishIntrinsic) {
           const flat = StyleSheet.flatten(contentContainerStyle);
           publishIntrinsic(
-            contentContainerClassName != null || flat?.flexGrow || flat?.flex || flat?.minHeight
-              ? -1
-              : height,
+            contentView || flat?.flexGrow || flat?.flex || flat?.minHeight ? -1 : height,
           );
         }
         onContentSizeChange?.(width, height);
@@ -160,15 +157,14 @@ export function createScreenScrollView(
         viewport,
         publishIntrinsic,
         contentContainerStyle,
-        contentContainerClassName,
+        contentView,
       ],
     );
-    // A class's padding cannot be read back to add the chrome footprint to it, and
-    // an inline padding would override it — so with a class the footprint pads
-    // the scroll content and the class lays out an inner container.
-    const classed = contentContainerClassName != null;
-    const contentStyle = classed ? undefined : StyleSheet.flatten(contentContainerStyle);
-    const insetStyle: StyleProp<ViewStyle> = classed
+    // The chrome footprint adds to the content's own top and bottom padding; a
+    // content view's padding is its own, so the footprint pads the container
+    // around it.
+    const contentStyle = contentView ? undefined : StyleSheet.flatten(contentContainerStyle);
+    const insetStyle: StyleProp<ViewStyle> = contentView
       ? {
           flexGrow: 1,
           paddingTop: scroll.contentInsets.top,
@@ -218,13 +214,7 @@ export function createScreenScrollView(
         automaticallyAdjustContentInsets={false}
         contentContainerStyle={insetStyle}
       >
-        {classed ? (
-          <StyledView className={contentContainerClassName} style={contentContainerStyle}>
-            {children}
-          </StyledView>
-        ) : (
-          children
-        )}
+        {contentView ? <View style={contentContainerStyle}>{children}</View> : children}
       </ScrollContainer>
     );
     return Platform.OS === 'web' ? (
@@ -347,7 +337,8 @@ export function createScreenScrollView(
     handler: _handler,
     restoration,
     contentContainerStyle,
-    contentContainerClassName,
+    // The document's content is one view already: `contentContainerStyle` styles it.
+    contentView: _contentView,
     onEndReached,
     onEndReachedThreshold = DEFAULT_END_REACHED_THRESHOLD,
     onLayout,
@@ -491,17 +482,12 @@ export function createScreenScrollView(
           restoration?.restorePending ? { opacity: 0 } : null,
         ]}
       >
-        <StyledView
-          ref={contentRef}
-          className={contentContainerClassName}
-          style={contentContainerStyle}
-          onLayout={handleContentLayout}
-        >
+        <View ref={contentRef} style={contentContainerStyle} onLayout={handleContentLayout}>
           {children}
           {tracksEnd ? (
             <View ref={endRef} pointerEvents="none" aria-hidden style={END_SENTINEL_STYLE} />
           ) : null}
-        </StyledView>
+        </View>
       </View>
     );
   }

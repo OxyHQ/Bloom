@@ -9,6 +9,7 @@ import { useBloomAppearance } from '../appearance';
 import type React from 'react';
 import {
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
@@ -16,7 +17,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, Text as RNText, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -24,22 +25,18 @@ import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import {
   SELECT_CHEVRON_SIZE,
-  SELECT_ITEM_CLASS,
-  SELECT_TRIGGER_CLASS,
+  SELECT_ITEM_STYLE,
   SELECT_TRIGGER_FIELD_STYLE,
   SELECT_TRIGGER_POPUP,
-  SELECT_TRIGGER_SIZE_CLASS,
   SELECT_TRIGGER_SIZE_STYLE,
-  SELECT_VALUE_CLASS,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
-import { menuType, menuTypeClass } from '../floating/menu-type';
-import { cx } from '../floating/shared';
+import { menuType } from '../floating/menu-type';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
-import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
+import { StyledPressable } from '../styles/styled-primitives';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
@@ -63,6 +60,9 @@ import type {
   SelectTriggerProps,
   SelectValueProps,
 } from './types';
+import { getNativeLens } from '../floating/lens/native-lens';
+import type { ParsedLensMenu } from '../floating/lens/parse-lens-menu';
+import { LensTrigger, type MenuLens, useLensMenu } from '../floating/lens/use-lens-menu';
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
@@ -75,7 +75,11 @@ import { createSelectField } from './SelectField';
 type SelectContextValue = {
   control: DialogControlProps;
   size: NonNullable<SelectProps['size']>;
-} & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'>;
+  /** Native lens (Android 13+): the options as data; the list is then drawn natively. */
+  lens?: MenuLens;
+  /** `open` is the caller's: a press on the trigger reports it rather than opening the sheet. */
+  openControlled?: boolean;
+} & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled' | 'onOpenChange'>;
 
 const SelectContext = createContext<SelectContextValue | null>(null);
 SelectContext.displayName = 'SelectContext';
@@ -114,6 +118,8 @@ export function Select(props: SelectProps) {
     onValueChange: onValueChangeProp,
     disabled,
     size: sizeProp,
+    open: openProp,
+    onOpenChange,
   } = props;
   const [value, onValueChange] = useControllableState<string | undefined>({
     value: valueProp,
@@ -133,11 +139,41 @@ export function Select(props: SelectProps) {
   useLayoutEffect(() => {
     if (!visible) control.close();
   }, [visible, control]);
+  // A controlled `open` drives the sheet; unset, the trigger and the sheet keep their own.
+  const openControlled = Object.prototype.hasOwnProperty.call(props, 'open');
+
   const valueStoreState = useState<unknown>(undefined);
 
+  // The native lens list closes itself; the select has no open state of its own to keep in step.
+  const { lens } = useLensMenu({
+    children,
+    content: SelectContent,
+    parse: (content) =>
+      parseSelectOptions(content as SelectContentProps<unknown>, value, onValueChange),
+    open: false,
+    setOpen: ignoreOpen,
+  });
+  useLayoutEffect(() => {
+    if (!openControlled) return;
+    // The native lens list closes itself; a sheet closes when `open` turns false.
+    if (openProp) {
+      if (lens) void lens.nativeRef.current?.open();
+      else control.open();
+    } else if (!lens) control.close();
+  }, [openControlled, openProp, control, lens]);
+
   const ctx = useMemo<SelectContextValue>(
-    () => ({ control, value, onValueChange, disabled: disabled || !visible, size }),
-    [control, value, onValueChange, disabled, size, visible],
+    () => ({
+      control,
+      value,
+      onValueChange,
+      disabled: disabled || !visible,
+      size,
+      lens,
+      onOpenChange,
+      openControlled,
+    }),
+    [control, value, onValueChange, disabled, size, visible, lens, onOpenChange, openControlled],
   );
 
   return (
@@ -168,12 +204,18 @@ export function SelectTrigger({
   asChild,
   disabled,
   label,
-  className,
   style,
   fieldStyle,
   testID,
 }: SelectTriggerProps) {
-  const { control, size, disabled: rootDisabled } = useSelectContext();
+  const {
+    control,
+    size,
+    disabled: rootDisabled,
+    lens,
+    onOpenChange,
+    openControlled,
+  } = useSelectContext();
   const palette = useMenuPalette();
   const touch = useTouchInput();
   // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
@@ -194,13 +236,10 @@ export function SelectTrigger({
   // what a select trigger looks like even though only one of them opens an
   // anchored list. No hover or focus ring here: native has neither.
   const field = (
-    <StyledView
-      className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[size], className)}
+    <View
       style={[
-        // The geometry inline, not only as classes: with nothing but the
-        // classes the pill drew its value flush against both ends on Android.
-        className ? null : SELECT_TRIGGER_FIELD_STYLE,
-        className ? null : SELECT_TRIGGER_SIZE_STYLE[size],
+        SELECT_TRIGGER_FIELD_STYLE,
+        SELECT_TRIGGER_SIZE_STYLE[size],
         {
           ...(touch ? { minHeight: 44 } : null),
           borderRadius: borderRadius.full,
@@ -215,7 +254,7 @@ export function SelectTrigger({
         radius={selectTriggerPaintRadius(fieldStyle)}
       />
       {children}
-    </StyledView>
+    </View>
   );
 
   const triggerState = useMemo(
@@ -224,32 +263,47 @@ export function SelectTrigger({
     [isDisabled, size],
   );
 
+  const slot = (
+    <TriggerSlot
+      asChild={asChild}
+      style={[styles.triggerSlot, style]}
+      testID={testID}
+      handle={{
+        onPress: () => {
+          onOpenChange?.(true);
+          if (openControlled) return;
+          if (lens) void lens.nativeRef.current?.open();
+          else control.open();
+        },
+        disabled: isDisabled,
+        accessibilityLabel: membership.accessibilityLabel,
+        accessibilityRole: 'button',
+        accessibilityValue: display ? { text: display } : undefined,
+        'aria-haspopup': SELECT_TRIGGER_POPUP,
+        nativeID: membership.nativeID,
+        'aria-describedby': requiredDescription.describedBy,
+        // The field's texts, then "required", as the web's id list orders them.
+        accessibilityHint: joinDescription(
+          [membership.accessibilityHint, requiredDescription.hint],
+          membership.accessibilityLabel,
+        ),
+        'aria-invalid': membership.invalid || undefined,
+      }}
+    >
+      {asChild ? children : field}
+    </TriggerSlot>
+  );
+
   return (
     <SelectTriggerStateContext.Provider value={triggerState}>
       <SelectDisplayContext.Provider value={setDisplay}>
-        <TriggerSlot
-          asChild={asChild}
-          style={[styles.triggerSlot, style]}
-          testID={testID}
-          handle={{
-            onPress: () => control.open(),
-            disabled: isDisabled,
-            accessibilityLabel: membership.accessibilityLabel,
-            accessibilityRole: 'button',
-            accessibilityValue: display ? { text: display } : undefined,
-            'aria-haspopup': SELECT_TRIGGER_POPUP,
-            nativeID: membership.nativeID,
-            'aria-describedby': requiredDescription.describedBy,
-            // The field's texts, then "required", as the web's id list orders them.
-            accessibilityHint: joinDescription(
-              [membership.accessibilityHint, requiredDescription.hint],
-              membership.accessibilityLabel,
-            ),
-            'aria-invalid': membership.invalid || undefined,
-          }}
-        >
-          {asChild ? children : field}
-        </TriggerSlot>
+        {lens && getNativeLens() ? (
+          <LensTrigger lens={lens} opensOnTap={!isDisabled} triggerLens={false} tone="neutral">
+            {slot}
+          </LensTrigger>
+        ) : (
+          slot
+        )}
       </SelectDisplayContext.Provider>
       {requiredDescription.description}
     </SelectTriggerStateContext.Provider>
@@ -264,7 +318,6 @@ export function SelectValue<T = unknown>({
   placeholder,
   children: extractLabel = defaultExtractLabel,
   leading,
-  className,
   style,
 }: SelectValueProps<T>) {
   const { value } = useSelectContext();
@@ -288,7 +341,7 @@ export function SelectValue<T = unknown>({
   }, [tell, spoken]);
   useEffect(() => () => tell?.(undefined), [tell]);
   // Same colours as the web fork: `text-primary`, `text-placeholder`, and the
-  // disabled trigger's `text-tertiary`. Inline only without a caller className.
+  // disabled trigger's `text-tertiary`.
   const color = trigger.disabled
     ? palette.trigger.disabledForeground
     : hasValue
@@ -296,23 +349,12 @@ export function SelectValue<T = unknown>({
       : palette.textPlaceholder;
 
   const text = (
-    <StyledText
+    <RNText
       numberOfLines={1}
-      className={cx(
-        SELECT_VALUE_CLASS[trigger.size],
-        menuTypeClass(VALUE_TYPE[trigger.size], className),
-        className && (hasValue ? 'text-foreground' : 'text-muted-foreground'),
-        className,
-      )}
-      style={[
-        styles.valueText,
-        menuType(VALUE_TYPE[trigger.size], className),
-        className ? null : { color },
-        style,
-      ]}
+      style={[styles.valueText, menuType(VALUE_TYPE[trigger.size]), { color }, style]}
     >
       {display}
-    </StyledText>
+    </RNText>
   );
   if (leading === undefined) return text;
   return (
@@ -354,7 +396,7 @@ export function SelectContent<T>({
   valueExtractor = defaultItemValueExtractor,
   ...props
 }: SelectContentProps<T>) {
-  const { control, size, ...context } = useSelectContext();
+  const { control, size, lens, ...context } = useSelectContext();
   const [, setStoredValue] = useContext(ValueStoreContext);
 
   useLayoutEffect(() => {
@@ -363,6 +405,9 @@ export function SelectContent<T>({
     // instead of the last item it matched.
     setStoredValue(() => item);
   }, [items, context.value, valueExtractor, setStoredValue]);
+
+  // The native lens list draws the options itself; the trigger hosts it.
+  if (lens) return null;
 
   return (
     <BloomScope size={contentSize}>
@@ -375,13 +420,14 @@ export function SelectContent<T>({
         value={context.value}
         onValueChange={context.onValueChange}
         disabled={context.disabled}
+        onOpenChange={context.onOpenChange}
       />
     </BloomScope>
   );
 }
 
 type SelectContentInnerProps<T> = SelectContentProps<T> &
-  Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'> & {
+  Pick<SelectProps, 'value' | 'onValueChange' | 'disabled' | 'onOpenChange'> & {
     control: DialogControlProps;
     size: SelectContextValue['size'];
   };
@@ -393,6 +439,7 @@ function SelectContentInner<T>({
   valueExtractor = defaultItemValueExtractor,
   control,
   size,
+  onOpenChange,
   ...contextValues
 }: SelectContentInnerProps<T>) {
   const theme = useTheme();
@@ -421,13 +468,14 @@ function SelectContentInner<T>({
   return (
     <SheetShell
       control={control}
+      onClose={onOpenChange === undefined ? undefined : () => onOpenChange(false)}
       label={label}
       header={
-        <StyledView className="pt-space-24 pb-space-8 px-space-16">
+        <View style={styles.sheetHeader}>
           <Text variant="title-2-semibold" style={{ color: theme.colors.text }}>
             {label}
           </Text>
-        </StyledView>
+        </View>
       }
     >
       <SelectContext.Provider value={ctx}>
@@ -444,6 +492,37 @@ function SelectContentInner<T>({
   );
 }
 
+const ignoreOpen = () => {};
+
+/**
+ * The options as the native lens list takes them: what `renderItem` returns for each item, when
+ * it is a `SelectItem` (its `label`, `value`, `disabled` and `leading`). Any other element, or a
+ * list that is not made of `SelectItem`s, leaves the vocabulary and the select keeps its sheet.
+ */
+function parseSelectOptions(
+  { items, renderItem, valueExtractor = defaultItemValueExtractor }: SelectContentProps<unknown>,
+  value: string | undefined,
+  onValueChange: (next: string | undefined) => void,
+): ParsedLensMenu | null {
+  const rows: ParsedLensMenu['rows'] = [];
+  for (const [index, item] of items.entries()) {
+    const option = renderItem(item, index, value);
+    if (!isValidElement<SelectItemProps>(option) || option.type !== SelectItem) return null;
+    const { label, value: optionValue, disabled, leading } = option.props;
+    if (typeof label !== 'string') return null;
+    rows.push({
+      kind: 'item',
+      id: valueExtractor(item),
+      title: label,
+      checked: optionValue === value,
+      disabled: disabled || undefined,
+      icon: leading != null && leading !== false ? leading : undefined,
+      onSelect: () => onValueChange(optionValue),
+    });
+  }
+  return rows.length > 0 ? { rows } : null;
+}
+
 // ---------------------------------------------------------------------------
 // SelectItem
 // ---------------------------------------------------------------------------
@@ -454,7 +533,6 @@ export function SelectItem({
   label,
   disabled = false,
   leading,
-  className,
   style,
 }: SelectItemProps) {
   const density = useMenuDensity();
@@ -493,8 +571,9 @@ export function SelectItem({
       onBlur={onBlur}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={onPressOut}
-      className={cx(SELECT_ITEM_CLASS, density.rowClass, className)}
       style={[
+        SELECT_ITEM_STYLE,
+        density.rowStyle,
         {
           backgroundColor: highlighted ? palette.rowHighlight : 'transparent',
           paddingRight: density.gutter,
@@ -542,12 +621,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
     maxWidth: '100%',
   },
-  // Inline as well as `SELECT_VALUE_CLASS`: the value must give way to the
-  // chevron even where the className pipeline is not wired.
+  // The value gives way to the chevron.
   valueText: {
     flexShrink: 1,
     minWidth: 0,
   },
+  sheetHeader: { paddingInline: 16, paddingTop: 24, paddingBottom: 8 },
   flatList: {
     flexGrow: 0,
   },

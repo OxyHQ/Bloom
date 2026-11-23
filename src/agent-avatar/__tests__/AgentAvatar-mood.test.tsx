@@ -3,10 +3,6 @@ import { Path } from 'react-native-svg';
 import { AgentAvatar } from '../AgentAvatar';
 import type { AgentAvatarMood } from '../types';
 
-jest.mock('../../styles/styled-primitives', () => ({
-  StyledView: require('react-native').View,
-  StyledText: require('react-native').Text,
-}));
 // Reduced motion: the avatar draws one still frame per change, so the frame is the settled pose.
 jest.mock('../../hooks/use-prefers-reduced-motion', () => ({
   usePrefersReducedMotion: () => true,

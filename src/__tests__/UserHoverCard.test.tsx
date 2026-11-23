@@ -16,7 +16,7 @@ import {
   useSurfaceLevelValue,
 } from '../styles/surface-levels';
 import { HoverCardSurfaceProvider } from '../hover-card/context';
-import React from 'react';
+import type React from 'react';
 import { Pressable, Text } from 'react-native';
 import { render, fireEvent, within } from '@testing-library/react-native';
 

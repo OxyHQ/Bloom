@@ -31,8 +31,6 @@ const meta: Meta<typeof Dialog> = {
     contentPadding: { control: 'number' },
     dismissOnBackdrop: { control: 'boolean' },
     morph: { control: 'boolean' },
-    panelClassName: { control: 'text' },
-    containerClassName: { control: 'text' },
     label: { control: 'text' },
   },
   id: 'base-dialog',

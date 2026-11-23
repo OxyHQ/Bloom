@@ -36,7 +36,6 @@ export interface AgentCreatorProps {
   agent: AgentCreatorAgent;
   onChange: (agent: AgentCreatorAgent) => void;
   onClose?: () => void;
-  className?: string;
   style?: StyleProp<ViewStyle>;
   /** Native hosts can supply their speech provider's catalog. Web uses local device voices by default. */
   voices?: readonly AgentVoice[];

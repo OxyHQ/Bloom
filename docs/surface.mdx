@@ -238,6 +238,26 @@ and `sheen={false}` to omit the native inset sheen. Both default to true, so
 ordinary surfaces retain their existing optics. Use shared surface presence
 when fading a surface on web; ancestor opacity prevents its backdrop filtering.
 
+## The native lens material
+
+`<Surface material="lens">` draws the surface with the native lens on Android 13+ (the engine in
+`@oxy.so/bloom-lens`) and keeps the shared paint on every other platform. It is for one floating
+surface over content, such as a panel. Three measured limits decide where it is allowed:
+
+- **Not in a list.** Sixty live lenses inside a scroll measured 21% dropped frames, against 1.9% for the
+  shared paint. A surface that repeats (a card in a feed) stays `material="surface"`.
+- **Not in a scroll stretch.** The lens is drawn by the window, so it does not follow a scroll view's
+  overscroll stretch. Use it in a fixed layer.
+- **Not across windows.** Android does not sample one window from another: in a separate native
+  window (a React Native `Modal`, `ComposerPopover`) there is no content behind to refract, and the
+  lens drew an empty dark box (measured on the Pixel 8a). Inside a `BlurWindow` a control that asks for
+  the lens keeps the shared paint on its own, through `useLensAvailable`. On a device with the lens,
+  `Dialog` and `BottomSheet` present in the app window instead of a `Modal`, so their controls take it.
+
+Inside a lens region a control takes the lens through `LensMaterialProvider` (a floating `PageHeader`
+publishes it for its controls); `ButtonGroup`, `BlurIsland` and `Surface` publish `'surface'` for what
+they hold, so a lens is never drawn inside a lens.
+
 ## Reproducible cross-platform comparison
 
 Use the [material comparison fixture](./material-comparison.mdx) for the same

@@ -21,11 +21,14 @@ import { getOrderedToastIds } from './row-geometry';
 import { Positioner } from './Positioner';
 import { ToastHost } from './ToastHost';
 import { ToastRow } from './ToastRow';
+import { Presence } from '../motion/presence';
+import type { PresenceChildProps } from '../motion/leaving';
 import { toastStore } from './toast-store';
 import type {
   DynamicToastContextType,
   StableToastContextType,
   ToasterProps,
+  ToastRef,
   ToastPosition,
   ToastProps,
 } from './types';
@@ -213,10 +216,13 @@ export const Toaster: React.FC<ToasterProps> = ({
 
             return (
               <Positioner key={currentPosition} position={currentPosition} style={positionerStyle}>
-                {toastsForPosition.map((toast, index) => {
-                  const row = (
-                    <ToastRow
+                <Presence
+                  items={toastsForPosition.map((toast, index) => (
+                    <ToastEntry
                       key={toast.id}
+                      exit
+                      wrapper={ToastWrapper}
+                      rowRef={toastStore.getToastRef(toast.id)}
                       {...toast}
                       style={toast.style ?? style}
                       styles={toast.styles ?? styleOverrides}
@@ -224,18 +230,9 @@ export const Toaster: React.FC<ToasterProps> = ({
                       numberOfToasts={toastsForPosition.length}
                       orderedToastIds={orderedToastIds}
                       onDismiss={onDismiss}
-                      ref={toastStore.getToastRef(toast.id)}
                     />
-                  );
-
-                  return ToastWrapper ? (
-                    <ToastWrapper key={toast.id} toastId={toast.id}>
-                      {row}
-                    </ToastWrapper>
-                  ) : (
-                    row
-                  );
-                })}
+                  ))}
+                />
               </Positioner>
             );
           })}
@@ -246,3 +243,20 @@ export const Toaster: React.FC<ToasterProps> = ({
 };
 
 Toaster.displayName = 'Toaster';
+
+type ToastEntryProps = React.ComponentProps<typeof ToastRow> &
+  PresenceChildProps & {
+    wrapper: ToasterProps['ToastWrapper'];
+    rowRef: React.Ref<ToastRef> | undefined;
+  };
+
+/**
+ * One row of a position's stack, in the consumer's `ToastWrapper` when there
+ * is one. Its own element in the `Presence`, so a dismissed row (wrapped or
+ * not) stays for its exit on the web; only the row's anchor reads that it is
+ * leaving, so the memoized row itself does not re-render.
+ */
+function ToastEntry({ wrapper: Wrapper, rowRef, exit: _exit, ...row }: ToastEntryProps) {
+  const element = <ToastRow {...row} ref={rowRef} />;
+  return Wrapper ? <Wrapper toastId={row.id}>{element}</Wrapper> : element;
+}

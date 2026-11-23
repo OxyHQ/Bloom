@@ -7,7 +7,7 @@
  * not have), so every part is given an explicit `layout`.
  */
 import { materialFill } from './support/material-fill';
-import React from 'react';
+import type React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -223,7 +223,7 @@ describe('LeaseSummaryCard', () => {
     mount(<LeaseSummaryCard {...base} layout="wide" testID="l" />, 'dark');
     const card = getComputedStyle(byTestId('l'));
     expect(card.borderTopLeftRadius).toBe('20px');
-    expect(byTestId('l').querySelector('.bloom-surface-paint')).not.toBeNull();
+    expect(byTestId('l').querySelector('[data-bloom-surface-paint]')).not.toBeNull();
     expect(card.paddingLeft).toBe('20px');
   });
 });

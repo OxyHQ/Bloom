@@ -1,0 +1,256 @@
+import * as ExpoVideo from 'expo-video';
+import { provideExpoVideo, type ExpoVideoLike } from '@oxy.so/bloom/media-flight';
+
+import type { ParityCase } from '../../parity/support/cases';
+import { TEXT_CASES } from '../../parity/text.cases';
+import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
+import { MATERIAL_CASES } from '../../parity/material.cases';
+import { AVATAR_CASES } from '../../parity/avatar.cases';
+import { PIECES_CASES } from '../../parity/pieces.cases';
+import { BUTTON_CASES } from '../../parity/button.cases';
+import { LAYOUT_CASES } from '../../parity/layout.cases';
+import { VARIANT_CASES } from '../../parity/variants.cases';
+import { INPUT_CASES } from '../../parity/inputs.cases';
+import { CONTAINER_CASES } from '../../parity/containers.cases';
+import { OVERLAY_CASES } from '../../parity/overlays.cases';
+import { SCREEN_CASES } from '../../parity/screen.cases';
+import { SHEET_CASES } from '../../parity/sheet.cases';
+import { NAVIGATION_CASES } from '../../parity/navigation.cases';
+import { COMMAND_CASES } from '../../parity/command.cases';
+import { SHELL_CASES } from '../../parity/shell.cases';
+import { TOOLBAR_CASES } from '../../parity/toolbar.cases';
+import { SETTINGS_CASES } from '../../parity/settings.cases';
+import { DATE_PICKER_CASES } from '../../parity/date-picker.cases';
+import { RATING_CASES } from '../../parity/rating.cases';
+import { STAT_BAR_CASES } from '../../parity/stat-bar.cases';
+import { STICKER_CASES } from '../../parity/sticker.cases';
+import { TABLE_CASES } from '../../parity/table.cases';
+import { LIST_CASES } from '../../parity/list.cases';
+import { CAROUSEL_CASES } from '../../parity/carousel.cases';
+import { MARKDOWN_CASES } from '../../parity/markdown.cases';
+import { SLIDER_CASES } from '../../parity/slider.cases';
+import { ACCORDION_CASES } from '../../parity/accordion.cases';
+import { CODE_CASES } from '../../parity/code.cases';
+import { STEPPER_CASES } from '../../parity/stepper.cases';
+import { TOOLTIP_CASES } from '../../parity/tooltip.cases';
+import { BREADCRUMB_CASES } from '../../parity/breadcrumb.cases';
+import { ACTIVITY_HEATMAP_CASES } from '../../parity/activity-heatmap.cases';
+import { TAG_FIELD_CASES } from '../../parity/tag-field.cases';
+import { FILE_UPLOAD_CASES } from '../../parity/file-upload.cases';
+import { VIDEO_CASES } from '../../parity/video-view.cases';
+import { INPUT_OTP_CASES } from '../../parity/input-otp.cases';
+import { COLOR_SWATCH_PICKER_CASES } from '../../parity/color-swatch-picker.cases';
+import { ANIMATED_CHECK_CASES } from '../../parity/animated-check.cases';
+import { CONTEXT_MENU_CASES } from '../../parity/context-menu.cases';
+import { COLLAPSIBLE_CASES } from '../../parity/collapsible.cases';
+import { DROP_ZONE_CASES } from '../../parity/drop-zone.cases';
+import { MEDIA_INSET_BORDER_CASES } from '../../parity/media-inset-border.cases';
+import { IMAGE_ASPECT_RATIO_CASES } from '../../parity/image-aspect-ratio-cache.cases';
+import { FACT_STRIP_CASES } from '../../parity/fact-strip.cases';
+import { SORTABLE_MEDIA_CASES } from '../../parity/sortable-media.cases';
+import { CHOICE_LIST_CASES } from '../../parity/choice-list.cases';
+import { VIDEO_PLAYBACK_CASES } from '../../parity/video-playback.cases';
+import { HOVER_CARD_CASES } from '../../parity/hover-card.cases';
+import { EXPANDABLE_TEXT_CASES } from '../../parity/expandable-text.cases';
+import { CATEGORY_BAR_CASES } from '../../parity/category-bar.cases';
+import { MENUBAR_CASES } from '../../parity/menubar.cases';
+import { COMPOSITION_BAR_CASES } from '../../parity/composition-bar.cases';
+import { PHONE_INPUT_CASES } from '../../parity/phone-input.cases';
+import { MEDIA_FLIGHT_CASES } from '../../parity/media-flight.cases';
+import { AVATAR_FLIGHT_CASES } from '../../parity/avatar-flight.cases';
+import { INPUT_GROUP_CASES } from '../../parity/input-group.cases';
+import { NOTIFICATION_CASES } from '../../parity/notification.cases';
+import { LINK_PREVIEW_CASES } from '../../parity/link-preview.cases';
+import { SOCIAL_BUTTON_CASES } from '../../parity/social-button.cases';
+import { GALLERY_CASES } from '../../parity/zoomable-media-gallery.cases';
+import { DATA_TABLE_CASES } from '../../parity/data-table.cases';
+import { SORTABLE_CHIP_ROW_CASES } from '../../parity/sortable-chip-row.cases';
+import { VIEWPORT_CASES } from '../../parity/viewport.cases';
+import { ENVIRONMENT_CASES } from '../../parity/environment.cases';
+import { AGENT_AVATAR_CASES } from '../../parity/agent-avatar.cases';
+import { CHAT_COMPOSER_CASES } from '../../parity/chat-composer.cases';
+import { CHART_CARD_CASES } from '../../parity/chart-cards.cases';
+import { COMPOSER_PANEL_CASES } from '../../parity/composer-panel.cases';
+import { AI_CHAT_CASES } from '../../parity/ai-chat.cases';
+import { STAT_CARD_CASES } from '../../parity/stat-cards.cases';
+import { MEDIA_CONTROL_CASES } from '../../parity/media-controls.cases';
+import { AGENT_CASES } from '../../parity/agents.cases';
+import { CHAT_CASES } from '../../parity/chat.cases';
+import { LISTINGS_MEDIA_CASES } from '../../parity/listings-media.cases';
+import { CARD_FORM_CASES } from '../../parity/card-form.cases';
+import { CHECKOUT_DELIVERY_ORDER_CASES } from '../../parity/checkout-delivery-order.cases';
+import { CHECKOUT_SHEET_CASES } from '../../parity/checkout-sheet.cases';
+import { STAY_FILTER_CASES } from '../../parity/stay-filters.cases';
+import { STAY_SEARCH_CASES } from '../../parity/stay-search.cases';
+import { TENANCY_CASES } from '../../parity/tenancy.cases';
+import { EVICTION_CASES } from '../../parity/eviction.cases';
+import { CALL_UI_CASES } from '../../parity/call-ui.cases';
+import { CHAT_PEOPLE_CASES } from '../../parity/chat-people.cases';
+import { MESSAGE_BUBBLE_CASES } from '../../parity/message-bubble.cases';
+import { MAP_CHROME_CASES } from '../../parity/map-chrome.cases';
+import { PLACE_CASES } from '../../parity/places.cases';
+import { MAIL_CASES } from '../../parity/mail.cases';
+import { BOOKING_CASES } from '../../parity/booking.cases';
+import { HOME_SEARCH_CASES } from '../../parity/home-search.cases';
+import { LISTING_ACTION_CASES } from '../../parity/listing-actions.cases';
+import { LISTING_CARD_CASES } from '../../parity/listing-card.cases';
+import { LISTING_EDITOR_CASES } from '../../parity/listing-editor.cases';
+import { PROPERTY_INSIGHT_CASES } from '../../parity/property-insights.cases';
+import { PROJECT_BOARD_CASES } from '../../parity/project-board.cases';
+import { ACTIVITY_FEED_CASES } from '../../parity/activity-feed.cases';
+import { ORDER_STATUS_CASES } from '../../parity/order-status.cases';
+import { LOCKUP_CASES } from '../../parity/lockup.cases';
+import { CALENDAR_CASES } from '../../parity/calendar.cases';
+import { ENGAGEMENT_CASES } from '../../parity/engagement.cases';
+import { TASK_LIST_CASES } from '../../parity/task-list.cases';
+import { WEB_SEARCH_CASES } from '../../parity/web-search.cases';
+import { VOICE_CASES } from '../../parity/voice.cases';
+import { AGENT_EDITOR_CASES } from '../../parity/agent-editor.cases';
+import { AGENT_CHAT_CASES } from '../../parity/agent-chats.cases';
+import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
+import { GENERIC_CASES } from '../../parity/generic.cases';
+import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
+import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
+import { CRM_CASES } from '../../parity/crm.cases';
+import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
+import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
+import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
+import { LYRICS_CASES } from '../../parity/lyrics.cases';
+import { CREATOR_STUDIO_CASES } from '../../parity/creator-studio.cases';
+import { MEDIA_PLAYER_CASES } from '../../parity/media-player.cases';
+import { LOGISTICS_CASES } from '../../parity/logistics.cases';
+import { MUSIC_LIBRARY_CASES } from '../../parity/music-library.cases';
+import { QUEUE_PANEL_CASES } from '../../parity/queue-panel.cases';
+import { TRACK_LIST_CASES } from '../../parity/track-list.cases';
+
+// The tables draw as a web app does: an ESM bundle hands Bloom expo-video
+// (its optional-peer `require` cannot run here), or a video draws nothing.
+// Bloom types the module by the slice it renders, its player structurally.
+provideExpoVideo(ExpoVideo as unknown as ExpoVideoLike);
+
+/** Every parity family's cases, by the name a story and a frame's URL give it. */
+export const FAMILIES = {
+  text: TEXT_CASES,
+  icons: ICON_CASES,
+  everyIcon: ICON_CASES_EVERY,
+  material: MATERIAL_CASES,
+  avatars: AVATAR_CASES,
+  pieces: PIECES_CASES,
+  buttons: BUTTON_CASES,
+  layout: LAYOUT_CASES,
+  variants: VARIANT_CASES,
+  input: INPUT_CASES,
+  container: CONTAINER_CASES,
+  overlays: OVERLAY_CASES,
+  screen: SCREEN_CASES,
+  sheet: SHEET_CASES,
+  navigation: NAVIGATION_CASES,
+  command: COMMAND_CASES,
+  shell: SHELL_CASES,
+  toolbar: TOOLBAR_CASES,
+  settings: SETTINGS_CASES,
+  datePicker: DATE_PICKER_CASES,
+  rating: RATING_CASES,
+  statBar: STAT_BAR_CASES,
+  sticker: STICKER_CASES,
+  table: TABLE_CASES,
+  list: LIST_CASES,
+  carousel: CAROUSEL_CASES,
+  markdown: MARKDOWN_CASES,
+  slider: SLIDER_CASES,
+  accordion: ACCORDION_CASES,
+  code: CODE_CASES,
+  stepper: STEPPER_CASES,
+  tooltip: TOOLTIP_CASES,
+  breadcrumb: BREADCRUMB_CASES,
+  activityHeatmap: ACTIVITY_HEATMAP_CASES,
+  tagField: TAG_FIELD_CASES,
+  fileUpload: FILE_UPLOAD_CASES,
+  video: VIDEO_CASES,
+  inputOtp: INPUT_OTP_CASES,
+  colorSwatchPicker: COLOR_SWATCH_PICKER_CASES,
+  animatedCheck: ANIMATED_CHECK_CASES,
+  contextMenu: CONTEXT_MENU_CASES,
+  collapsible: COLLAPSIBLE_CASES,
+  dropZone: DROP_ZONE_CASES,
+  mediaInsetBorder: MEDIA_INSET_BORDER_CASES,
+  imageAspectRatio: IMAGE_ASPECT_RATIO_CASES,
+  factStrip: FACT_STRIP_CASES,
+  sortableMedia: SORTABLE_MEDIA_CASES,
+  choiceList: CHOICE_LIST_CASES,
+  videoPlayback: VIDEO_PLAYBACK_CASES,
+  hoverCard: HOVER_CARD_CASES,
+  expandableText: EXPANDABLE_TEXT_CASES,
+  categoryBar: CATEGORY_BAR_CASES,
+  menubar: MENUBAR_CASES,
+  compositionBar: COMPOSITION_BAR_CASES,
+  phoneInput: PHONE_INPUT_CASES,
+  mediaFlight: MEDIA_FLIGHT_CASES,
+  avatarFlight: AVATAR_FLIGHT_CASES,
+  inputGroup: INPUT_GROUP_CASES,
+  notification: NOTIFICATION_CASES,
+  linkPreview: LINK_PREVIEW_CASES,
+  socialButton: SOCIAL_BUTTON_CASES,
+  gallery: GALLERY_CASES,
+  dataTable: DATA_TABLE_CASES,
+  sortableChipRow: SORTABLE_CHIP_ROW_CASES,
+  viewport: VIEWPORT_CASES,
+  environment: ENVIRONMENT_CASES,
+  agentAvatar: AGENT_AVATAR_CASES,
+  chatComposer: CHAT_COMPOSER_CASES,
+  chartCard: CHART_CARD_CASES,
+  composerPanel: COMPOSER_PANEL_CASES,
+  aiChat: AI_CHAT_CASES,
+  statCard: STAT_CARD_CASES,
+  mediaControl: MEDIA_CONTROL_CASES,
+  agent: AGENT_CASES,
+  chat: CHAT_CASES,
+  listingsMedia: LISTINGS_MEDIA_CASES,
+  cardForm: CARD_FORM_CASES,
+  checkoutSheet: CHECKOUT_SHEET_CASES,
+  stayFilter: STAY_FILTER_CASES,
+  staySearch: STAY_SEARCH_CASES,
+  tenancy: TENANCY_CASES,
+  eviction: EVICTION_CASES,
+  callUi: CALL_UI_CASES,
+  chatPeople: CHAT_PEOPLE_CASES,
+  messageBubble: MESSAGE_BUBBLE_CASES,
+  mapChrome: MAP_CHROME_CASES,
+  place: PLACE_CASES,
+  mail: MAIL_CASES,
+  booking: BOOKING_CASES,
+  homeSearch: HOME_SEARCH_CASES,
+  listingAction: LISTING_ACTION_CASES,
+  listingCard: LISTING_CARD_CASES,
+  listingEditor: LISTING_EDITOR_CASES,
+  propertyInsight: PROPERTY_INSIGHT_CASES,
+  projectBoard: PROJECT_BOARD_CASES,
+  activityFeed: ACTIVITY_FEED_CASES,
+  orderStatus: ORDER_STATUS_CASES,
+  lockup: LOCKUP_CASES,
+  calendar: CALENDAR_CASES,
+  engagement: ENGAGEMENT_CASES,
+  taskList: TASK_LIST_CASES,
+  webSearch: WEB_SEARCH_CASES,
+  voice: VOICE_CASES,
+  agentEditor: AGENT_EDITOR_CASES,
+  agentChat: AGENT_CHAT_CASES,
+  routeNoteShare: ROUTE_NOTE_SHARE_CASES,
+  generic: GENERIC_CASES,
+  addressPayment: ADDRESS_PAYMENT_CASES,
+  pricePaymentStatus: PRICE_PAYMENT_STATUS_CASES,
+  crm: CRM_CASES,
+  dashboardCard: DASHBOARD_CARD_CASES,
+  cartMenuVendor: CART_MENU_VENDOR_CASES,
+  checkoutDeliveryOrder: CHECKOUT_DELIVERY_ORDER_CASES,
+  mediaCard: MEDIA_CARD_CASES,
+  lyrics: LYRICS_CASES,
+  creatorStudio: CREATOR_STUDIO_CASES,
+  mediaPlayer: MEDIA_PLAYER_CASES,
+  logistics: LOGISTICS_CASES,
+  musicLibrary: MUSIC_LIBRARY_CASES,
+  queuePanel: QUEUE_PANEL_CASES,
+  trackList: TRACK_LIST_CASES,
+} satisfies Record<string, readonly ParityCase[]>;
+export type Family = keyof typeof FAMILIES;
+export type Side = 'bloom' | 'language';

@@ -5,6 +5,8 @@ export type BloomSize = 'xs' | 'sm' | 'md' | 'lg';
 export type BloomTone =
   | 'neutral'
   | 'accent'
+  /** The brand at full strength (a system tint): `accent` is calmer, deeper, and carries a white label. */
+  | 'vivid'
   | 'support'
   | 'action'
   | 'success'

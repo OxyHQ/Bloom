@@ -58,7 +58,7 @@ export function triggerRectOf(node: ComponentRef<typeof View> | null): FloatingA
   if (process.env.NODE_ENV !== 'production' && !warnedDetachedTrigger) {
     warnedDetachedTrigger = true;
     console.warn(
-      `[Bloom] A menu or popover trigger's anchor wrapper is 0×0 at (${own.left}, ${own.top}) while its \`asChild\` control is laid out elsewhere — the control is positioned out of flow. The surface anchors to the control for now; put position and size on the TRIGGER's \`style\` / \`className\` (the wrapper the surface measures), not on the child.`,
+      `[Bloom] A menu or popover trigger's anchor wrapper is 0×0 at (${own.left}, ${own.top}) while its \`asChild\` control is laid out elsewhere — the control is positioned out of flow. The surface anchors to the control for now; put position and size on the TRIGGER's \`style\` (the wrapper the surface measures), not on the child.`,
     );
   }
   return { top: box.top, bottom: box.bottom, left: box.left, right: box.right };

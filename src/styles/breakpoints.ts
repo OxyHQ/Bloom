@@ -1,6 +1,5 @@
 /**
- * Bloom's responsive breakpoint min-widths (px), matching the Tailwind /
- * NativeWind defaults used across the design system.
+ * Bloom's responsive breakpoint min-widths (px), used across the design system.
  *
  * This is the SINGLE SOURCE OF TRUTH for breakpoint values. Anything that
  * branches on viewport width — the `<Dialog>` responsive `placement` resolver,

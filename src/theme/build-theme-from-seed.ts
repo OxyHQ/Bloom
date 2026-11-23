@@ -90,6 +90,8 @@ function buildSeedThemeValues(
       tertiarySubtle: g('tertiary-subtle'),
       tertiarySubtleForeground: g('tertiary-text'),
 
+      vivid: g('vivid'),
+      vividForeground: g('vivid-foreground'),
       tint: g('primary'),
       icon: g('muted-foreground'),
       iconActive: g('primary'),
@@ -126,6 +128,15 @@ function buildSeedThemeValues(
       card: g('card'),
       shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
       overlay: 'rgba(0, 0, 0, 0.5)',
+
+      // What `bg-destructive`, `text-white`, `bg-transparent`, `text-surface-foreground`
+      // and `bg-accent` paint today: their variables, and Tailwind's fixed colours.
+      destructive: g('destructive'),
+      white: '#ffffff',
+      black: '#000000',
+      transparent: 'transparent',
+      surfaceForeground: g('surface-foreground'),
+      accent: g('accent'),
     },
   };
 }

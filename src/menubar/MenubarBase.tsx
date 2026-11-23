@@ -29,29 +29,25 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Platform, type PointerEvent, StyleSheet, type View as RNView } from 'react-native';
+import { Platform, type PointerEvent, StyleSheet, Text, View } from 'react-native';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { FIELD_REST_BORDER_WIDTH } from '../styles/field-border';
 
 import {
-  MENUBAR_CLASS,
   MENUBAR_RADIUS,
-  MENUBAR_TRIGGER_CLASS,
-  MENUBAR_TRIGGER_OPEN_CLASS,
-  MENUBAR_TRIGGER_TEXT_CLASS,
+  MENUBAR_STYLE,
+  MENUBAR_TRIGGER_STYLE,
   MENU_TRIGGER_POPUP,
 } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { MENU_FONT_FAMILY, menuType } from '../floating/menu-type';
 import { DESKTOP_MENU_GEOMETRY } from '../appearance/control-geometry';
 import { DESKTOP_TEXT_STYLES } from '../typography/desktop-scale';
-import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useMenuFocusIntent, useMenuTriggerKeys, useOpenFocus } from '../floating/menu-keyboard';
 import type { PopupNavigation } from '../floating/popup-navigation';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { StyledText, StyledView } from '../styles/styled-primitives';
 import { usePlatformKeyboard, usePlatformMenuBar } from '../platform-surface/context';
 import {
   type MenubarMenuHandle,
@@ -113,7 +109,6 @@ function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
     onFocusValueChange,
     declareClosedMenus = true,
     label: labelProp,
-    className,
     style,
     testID,
     Viewport,
@@ -137,7 +132,7 @@ function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
   });
   const [menus] = useState(() => new Map<string, MenubarMenuHandle>());
   const [viewport] = useState(() => new MenubarViewportStore());
-  const barRef = useRef<ComponentRef<typeof RNView> | null>(null);
+  const barRef = useRef<ComponentRef<typeof View> | null>(null);
   const leave = useCallback(() => {
     if (focusValue !== undefined) setFocusValue(undefined);
   }, [focusValue, setFocusValue]);
@@ -201,20 +196,14 @@ function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
   return (
     <MenubarProvider value={context}>
       {/* `shadow-s` — the bar is a raised control, not an overlay, so it takes
-          the lighter of Bloom's two elevation roles. It reaches WEB through the
-          class and NATIVE through `barPaint`, because `design-tokens/shadows`
-          is platform-forked and its contract is that a multi-layer
-          `box-shadow` is not something to rely on NativeWind translating to an
-          RN elevation. On web the two agree, so whichever wins paints the
-          same thing. */}
-      <StyledView
+          the lighter of Bloom's two elevation roles, through `barPaint`. */}
+      <View
         ref={barRef}
         collapsable={false}
         role="menubar"
         aria-label={label}
         testID={testID}
-        className={cx(MENUBAR_CLASS, className)}
-        style={[barPaint, style]}
+        style={[MENUBAR_STYLE, barPaint, style]}
       >
         {StyleSheet.flatten(style)?.backgroundColor === undefined ? (
           <SurfacePaint
@@ -225,7 +214,7 @@ function MenubarRoot(props: MenubarProps & { Viewport: ComponentType }) {
         ) : null}
         <MenubarScopeProvider value={scope}>{children}</MenubarScopeProvider>
         <Viewport />
-      </StyledView>
+      </View>
     </MenubarProvider>
   );
 }
@@ -245,7 +234,7 @@ export function MenubarMenu({ children, value, openFocus }: MenubarMenuProps) {
       },
     [scope, id],
   );
-  const anchorRef = useRef<ComponentRef<typeof RNView> | null>(null);
+  const anchorRef = useRef<ComponentRef<typeof View> | null>(null);
   const navigation = useRef<PopupNavigation | null>(null);
   const { setValue, leave, menus } = bar;
   const focusIntent = useMenuFocusIntent();
@@ -322,7 +311,6 @@ function MenubarTriggerButton({
   asChild,
   disabled,
   label,
-  className,
   style,
   testID,
 }: MenubarTriggerProps) {
@@ -356,8 +344,8 @@ function MenubarTriggerButton({
     intent: menu.focusIntent,
   });
 
-  // `flex items-center rounded-md px-2 py-1.5`, plus `bg-accent` while its menu
-  // is open, and `text-sm font-medium` for the label. A menubar trigger is a
+  // Centred, `rounded-md px-2 py-1.5`, the row highlight while its menu is
+  // open, and `text-sm font-medium` for the label. A menubar trigger is a
   // BUTTON with chrome of its own, not a bare hit box — leaving it unstyled is
   // why a Bloom menubar read as loose text against a pill-per-menu bar. The
   // same chrome on both platforms, so the bar reads identically. `asChild`
@@ -367,21 +355,20 @@ function MenubarTriggerButton({
   const lit = menu.open || focused;
   const active = lit ? palette.rowActive : null;
   const trigger = (
-    <StyledView
-      className={cx(MENUBAR_TRIGGER_CLASS, menu.open && MENUBAR_TRIGGER_OPEN_CLASS, className)}
-      style={
+    <View
+      style={[
+        MENUBAR_TRIGGER_STYLE,
         palette.rowActive
           ? {
               backgroundColor: active ? active.fill : 'transparent',
               borderRadius: DESKTOP_MENU_GEOMETRY.rowRadius,
               ...(Platform.OS !== 'web' && !disabled ? { cursor: 'auto' as const } : null),
             }
-          : { backgroundColor: lit ? palette.rowHighlight : 'transparent' }
-      }
+          : { backgroundColor: lit ? palette.rowHighlight : 'transparent' },
+      ]}
     >
       {typeof children === 'string' ? (
-        <StyledText
-          className={MENUBAR_TRIGGER_TEXT_CLASS}
+        <Text
           // `text-body-medium text-text-primary`, in Inter.
           style={[
             palette.rowActive
@@ -391,11 +378,11 @@ function MenubarTriggerButton({
           ]}
         >
           {children}
-        </StyledText>
+        </Text>
       ) : (
         children
       )}
-    </StyledView>
+    </View>
   );
 
   return (

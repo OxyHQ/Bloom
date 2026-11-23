@@ -1,0 +1,122 @@
+{
+  "name": "@oxy.so/bloom-language",
+  "version": "1.0.0",
+  "description": "Bloom's UI language: views as functions, modifiers chained in order, every value a Bloom token. Renders through Bloom's React Native and web components today.",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OxyHQ/Bloom.git",
+    "directory": "packages/bloom-language"
+  },
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/commonjs/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./src/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./router": {
+      "react-native": {
+        "types": "./lib/typescript/module/router/index.d.ts",
+        "default": "./src/router/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/router/index.d.ts",
+        "default": "./lib/module/router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/router/index.d.ts",
+        "default": "./lib/commonjs/router/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "spec/language.json",
+    "codemod/classnames.generated.json",
+    "LICENSE",
+    "!**/__tests__/**"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "build": "bob build",
+    "typescript": "tsc --noEmit -p .",
+    "test": "jest && jest -c parity/jest.config.js",
+    "test:parity": "jest -c parity/jest.config.js",
+    "test:unit": "jest"
+  },
+  "peerDependencies": {
+    "@expo/ui": ">=58.0.0",
+    "@oxy.so/bloom": ">=23.0.0",
+    "expo": "*",
+    "expo-blur": "*",
+    "expo-glass-effect": ">=58.0.0",
+    "expo-router": ">=58.0.0",
+    "react": ">=19.0.0",
+    "react-native": ">=0.81.0",
+    "react-native-reanimated": ">=4.6.0",
+    "react-native-safe-area-context": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@expo/ui": {
+      "optional": true
+    },
+    "expo": {
+      "optional": true
+    },
+    "expo-blur": {
+      "optional": true
+    },
+    "expo-glass-effect": {
+      "optional": true
+    },
+    "expo-router": {
+      "optional": true
+    }
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "exclude": "{**/__tests__/**,**/*.stories.tsx,**/stories/**}",
+    "targets": [
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "packageManager": "bun@1.4.3",
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -951,7 +951,7 @@ describe('EmojiPicker', () => {
         </div>
       </Surface>,
     );
-    expect(container.querySelectorAll('.bloom-surface')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-bloom-surface]')).toHaveLength(1);
     expect(maybe('e-grid')).toBeNull();
     expect(byTestId('e-flow')).toBeDefined();
     const owners = [...container.querySelectorAll<HTMLElement>('*')].filter((node) =>
@@ -1004,7 +1004,7 @@ describe('EmojiPicker', () => {
       />,
     );
     expect(byTestId('upload-content').parentElement?.style.height).toBe('');
-    expect(container.querySelectorAll('.bloom-surface')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-bloom-surface]')).toHaveLength(0);
     expect(maybe('e-grid')).toBeNull();
     mount(
       <EmojiPicker
@@ -1058,9 +1058,9 @@ describe('EmojiPicker', () => {
   it.each(['light', 'dark'] as const)('uses the enclosing material in embedded %s mode', (mode) => {
     mount(<EmojiPicker groups={groups} embedded scrollable={false} testID="e" />, mode);
     expect(byTestId('e').style.paddingLeft).toBe('0px');
-    expect(byTestId('e').classList.contains('bloom-surface')).toBe(false);
+    expect(byTestId('e').hasAttribute('data-bloom-surface')).toBe(false);
     mount(<EmojiPicker groups={groups} scrollable={false} testID="e" />, mode);
-    expect(byTestId('e').classList.contains('bloom-surface')).toBe(true);
+    expect(byTestId('e').hasAttribute('data-bloom-surface')).toBe(true);
     expect(byTestId('e-search').getAttribute('aria-label')).toBe('Search emoji');
   });
 

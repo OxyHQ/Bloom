@@ -8,7 +8,7 @@
  * `AppShellDock.web.test.tsx` covers its markup and
  * `scripts/verify-app-shell-dock.mjs` its motion in Chromium.
  */
-import React from 'react';
+import type React from 'react';
 import * as ReactNative from 'react-native';
 import * as spec from '../motion/spec';
 import { act, render } from '@testing-library/react-native';

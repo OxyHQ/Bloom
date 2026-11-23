@@ -1,0 +1,1787 @@
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import type { BloomImageContentFit } from '@oxy.so/bloom/image';
+import type { AppColorName } from '@oxy.so/bloom/theme';
+import type { AccentTone as BloomAccentTone } from '@oxy.so/bloom/theme';
+import { tokens } from '@oxy.so/bloom/styles';
+import { TYPE_SCALE } from '@oxy.so/bloom/typography';
+import {
+  EASING as BLOOM_EASING,
+  MOTION as BLOOM_MOTION,
+  SCALE as BLOOM_SCALE,
+} from '@oxy.so/bloom/motion';
+import {
+  AVATAR_SIZE,
+  BORDER_WIDTH,
+  COLORS,
+  CORNER,
+  ENUMS,
+  DURATION,
+  EASING,
+  ENVIRONMENT,
+  ENVIRONMENT_DEFAULTS,
+  FONT_SIZE,
+  GLASS_OPACITY,
+  HIT_SLOP,
+  ICON_SIZE,
+  LAYER_RANK,
+  LEADING,
+  LEADING_PX,
+  MOTION,
+  type CONTENT_VIEW_MODIFIERS,
+  type NODE_MODIFIERS,
+  OPACITY,
+  ROTATION,
+  SCALE,
+  SHADOW,
+  SPACE,
+  TYPE_RAMP,
+  TRACKING,
+  TRACKING_PX,
+  Z_INDEX,
+} from '../generated/spec.generated';
+import { RADIUS, SHADOW_BOX } from './support/bloom-design-tokens';
+import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
+import type {
+  ActionBarView,
+  AppLayoutView,
+  NavStackView,
+  RouteView,
+  TabNavigatorView,
+  StickySectionView,
+  ToolbarView,
+  ScrollAreaView,
+  ScrollSurfaceView,
+  AutoHideBarView,
+  ResizeHandleView,
+  SidebarModeView,
+  DestinationView,
+  PanelView,
+  SettingsItemView,
+  SettingsGroupView,
+  SettingsModalView,
+  CommandGroupView,
+  CommandItemView,
+  CommandView,
+  PageFooterView,
+  RailItemView,
+  RailView,
+  TreeItemView,
+  TreeFolderView,
+  TreeSectionView,
+  NavItemView,
+  SidebarView,
+  BottomSheetView,
+  ScrollContentView,
+  ScrollViewNode,
+  ActionGroupView,
+  ActionView,
+  AvatarGroupView,
+  AvatarView,
+  BadgeView,
+  IconCircleView,
+  LoadingView,
+  SkeletonGroupView,
+  SkeletonView,
+  BottomBarView,
+  ButtonGroupView,
+  ButtonView,
+  ShapeView,
+  ComposedView,
+  EmbedView,
+  GroupView,
+  FabView,
+  HeaderView,
+  IconView,
+  ImageView,
+  MenuActionsView,
+  MenuContentView,
+  AspectRatioView,
+  DividerView,
+  FillView,
+  GridView,
+  MenuItemView,
+  MenuSectionView,
+  MenuSubmenuView,
+  MenuView,
+  LottieView,
+  SpacerView,
+  StackView,
+  ZStackView,
+  TabView,
+  TextView,
+} from '../node';
+import type { AgentAvatarView } from '../controls/agent-avatar';
+import type {
+  ChatComposerView,
+  CompactComposerView,
+  ComposerBannerView,
+  ComposerIconButtonView,
+  SuggestionListView,
+  VoiceRecorderView,
+  AttachmentMenuView,
+  EmojiPickerView,
+  ReactionPickerView,
+  MessageContextMenuView,
+} from '../controls/chat-composer';
+import type {
+  AreaChartCardView,
+  BarListCardView,
+  ChartCardSurfaceView,
+  ChartHeadlineView,
+  ChartStatTilesView,
+  ContributionsCardView,
+  HeatmapChartCardView,
+  LineChartCardView,
+  RadarChartCardView,
+  SleepScoreCardView,
+  SparklineView,
+  StageBarsCardView,
+  StepsCardView,
+  TokensChartCardView,
+} from '../controls/chart-cards';
+import type {
+  ComposerPanelView,
+  ComposerPillView,
+  ComposerPanelStatusTabView,
+} from '../controls/composer-panel';
+import type {
+  AiChatShellView,
+  AiChatContainerView,
+  AiChatThreadView,
+  AiChatUserMessageView,
+  AiChatAssistantMessageView,
+  AiChatMessageLineView,
+  AiChatHeaderView,
+  AiChatMobileHeaderView,
+  AiChatCodePanelView,
+  AiChatGalleryPanelView,
+} from '../controls/ai-chat';
+import type { StatCardView, StatCardsView } from '../controls/stat-cards';
+import type { PlayButtonView, PlaybackProgressView } from '../controls/media-controls';
+import type {
+  AgentLimitsCardView,
+  UsageCardView,
+  AgentThinkingView,
+  AgentProgressView,
+  AgentProgressLoadingTextView,
+  AgentLogRowView,
+  AgentLogShimmerTextView,
+  AgentLogToolCallView,
+  AgentLogToolCallsView,
+  AgentLogWorkingRowView,
+  ComposerLoaderView,
+  ConversationSidebarView,
+  QuestionnaireView,
+} from '../controls/agents';
+import type {
+  ChatBackgroundView,
+  ChatDateHeaderView,
+  ChatEmptyStateView,
+  ChatHeaderView,
+  ChatInfoPanelView,
+  PinnedMessageBarView,
+  ScrollToBottomButtonView,
+  ChatFolderTabsView,
+  ChatSearchFieldView,
+  ChatSearchResultsView,
+  StoriesRowView,
+  StoryRingView,
+  TypingDotsView,
+  ContactMessageView,
+  DocumentGridView,
+  FileMessageView,
+  GifMessageView,
+  ImageMessageView,
+  LocationMessageView,
+  PollMessageView,
+  SharedMediaGridView,
+  StickerMessageView,
+  VideoMessageView,
+  VoiceMessageView,
+} from '../controls/chat';
+import type {
+  AmenityListView,
+  HostCardView,
+  ListingHeaderView,
+  ListingHeaderActionView,
+  ListingPhotoGridView,
+  ReviewCardView,
+  MapClusterMarkerView,
+  MapPriceMarkerView,
+  MapSearchAreaButtonView,
+} from '../controls/listings';
+import type {
+  FollowButtonView,
+  ShelfView,
+  ShelfSkeletonView,
+  SubscriptionPlansView,
+  SubscriptionPriceView,
+  UserHoverCardView,
+} from '../controls/media';
+import type {
+  CardFormView,
+  CardFormCountryView,
+  CardFormPostcodeView,
+  CardFormHostedFieldView,
+} from '../controls/card-form';
+import type { CheckoutSheetView } from '../controls/checkout-sheet';
+import type { RouteStopsView } from '../controls/route-stops';
+import type { NoteCardView, NoteCardSkeletonView } from '../controls/note-card';
+import type { ShareSheetView } from '../controls/share-sheet';
+import type {
+  ConnectionDotsView,
+  OutlineNavView,
+  PaginationView,
+  ProgressiveBlurView,
+  RowActionsView,
+  RowActionButtonView,
+  SwipeRowView,
+  ThemeToggleView,
+} from '../controls/generic';
+import type { AddressRowView, AddressListView } from '../controls/address';
+import type {
+  PaymentMethodMarkView,
+  PaymentMethodRowView,
+  PaymentMethodListView,
+} from '../controls/payment-method';
+import type { PriceSummaryView, PriceSummaryLineView } from '../controls/price-breakdown';
+import type { PaymentStatusBarView, PaymentStatusBlockView } from '../controls/payment-status';
+import type {
+  ContactProfileCardView,
+  LeadScoreCardView,
+  DealCardView,
+  PipelineColumnView,
+  PipelineBoardView,
+} from '../controls/crm';
+import type {
+  ImportantAlertsCardView,
+  PatientInfoCardView,
+  RecentHiresCardView,
+} from '../controls/dashboard-cards';
+import type {
+  CartLineView,
+  CartPanelView,
+  CartPromoFieldView,
+  CartTipPickerView,
+} from '../controls/cart-panel';
+import type { MenuItemRowView, MenuItemOptionsView } from '../controls/menu-item';
+import type { VendorCardView } from '../controls/vendor-card';
+import type {
+  MediaCardView,
+  SongCardView,
+  AlbumCardView,
+  ArtistCardView,
+  PlaylistCardView,
+  MixCardView,
+  PodcastCardView,
+  EpisodeCardView,
+  AudiobookCardView,
+  GenreCardView,
+  EventCardView,
+  ProfileCardView,
+  FriendActivityCardView,
+  QuickAccessTileView,
+  RecapCardView,
+  ShareCardView,
+} from '../controls/media-cards';
+import type { LyricsViewView, LyricsPreviewCardView } from '../controls/lyrics';
+import type {
+  ArtistChipsInputView,
+  ArtworkUploaderView,
+  AudienceBreakdownView,
+  AudienceOverviewView,
+  CreditsEditorView,
+  IsrcFieldView,
+  PayoutSummaryCardView,
+  PitchCardView,
+  ReleaseCardView,
+  ReleaseStatusBadgeView,
+  ReleaseTimelineView,
+  StreamsChartView,
+  TopTracksTableView,
+  TrackMetadataFormView,
+  TrackUploadRowView,
+} from '../controls/creator-studio';
+import type {
+  CheckoutSummaryRowView,
+  CheckoutSummaryView,
+  CheckoutConfirmView,
+} from '../controls/checkout-summary';
+import type {
+  DeliverySlotDaysView,
+  DeliverySlotOptionView,
+  DeliverySlotPickerView,
+} from '../controls/delivery-slot';
+import type { OrderConfirmationView } from '../controls/order-confirmation';
+import type {
+  TransportControlsView,
+  NowPlayingBarView,
+  MiniPlayerView,
+  FullScreenPlayerView,
+  PlaybackSpeedMenuView,
+  SleepTimerMenuView,
+  DevicePickerView,
+  ConnectBannerView,
+} from '../controls/media-player';
+import type {
+  CarrierQuoteCardView,
+  CarrierQuoteListView,
+  EarningsSummaryView,
+  EarningsBreakdownView,
+  EarningsPayoutRowView,
+  JobCardView,
+  JobBoardView,
+  SignaturePadView,
+  ProofOfDeliveryView,
+  VehiclePickerView,
+  ShipmentLoadPickerView,
+  ShipmentOptionsListView,
+  ShipmentRequestFormView,
+} from '../controls/logistics';
+import type {
+  LibraryPanelView,
+  LibraryItemView,
+  SearchFieldView,
+  TopResultCardView,
+  SearchResultTabsView,
+  RecentSearchesView,
+  BrowseGridView,
+} from '../controls/music-library';
+import type {
+  QueuePanelView,
+  QueuePanelRowView,
+  RecentlyPlayedListView,
+} from '../controls/queue-panel';
+import type {
+  TrackListView,
+  TrackListHeaderView,
+  TrackRowView,
+  TrackRowSkeletonView,
+  TrackListEmptyView,
+  SelectionBarView,
+  EpisodeRowView,
+  EpisodeListView,
+} from '../controls/track-list';
+import type {
+  FilterSectionView,
+  PriceRangeFilterView,
+  CountFilterView,
+  ToggleChipGroupView,
+  AmenityFilterView,
+  SwitchFilterRowView,
+  FilterFooterView,
+  FilterTriggerButtonView,
+  AreaRangeFilterView,
+  AvailabilityFilterView,
+  FeatureFilterView,
+  FloorFilterView,
+} from '../controls/stay-filters';
+import type {
+  StaySearchCompactView,
+  StaySearchPanelView,
+  StaySearchStepView,
+  DestinationSuggestionsView,
+  GuestPickerView,
+} from '../controls/stay-search';
+import type {
+  TenancyTimelineView,
+  LeaseSummaryCardView,
+  RentPaymentListView,
+  MaintenanceRequestCardView,
+  DocumentListView,
+} from '../controls/tenancy';
+import type { EvictionReportCardView, EvictionTimelineView } from '../controls/eviction';
+import type { PlaceReviewSummaryView, WriteReviewPromptView } from '../controls/place-reviews';
+import type {
+  CallScreenView,
+  CallMinimisedPillView,
+  GroupCallGridView,
+  IncomingCallScreenView,
+  IncomingCallBannerView,
+} from '../controls/call-ui';
+import type {
+  NewGroupFormView,
+  SelectedChipsRowView,
+  StoryViewerView,
+} from '../controls/chat-people';
+import type {
+  MessageBubbleView,
+  MessageListView,
+  TypingBubbleView,
+} from '../controls/message-bubble';
+import type {
+  PlaceCardView,
+  PlaceHoursView,
+  PlaceInfoListView,
+  PlaceTransitView,
+  PlaceListCardView,
+  PlaceListView,
+  DirectionsStepsView,
+  PlacePickerView,
+} from '../controls/places';
+import type {
+  MailComposeSurfaceView,
+  MailRecipientFieldView,
+  MailMessageView,
+  MailThreadView,
+  MailQuoteToggleView,
+  NoteEditorToolbarView,
+} from '../controls/mail';
+import type {
+  MapScaleBarView,
+  MapControlsView,
+  LocationPuckView,
+  NavigationBannerView,
+} from '../controls/map-chrome';
+import type {
+  TripCardView,
+  BookingCardView,
+  BookingBarView,
+  PriceBreakdownView,
+} from '../controls/booking';
+import type {
+  HomeSearchBarView,
+  SearchModeTabsView,
+  PropertyTypePickerView,
+  SavedSearchCardView,
+} from '../controls/home-search';
+import type {
+  ListingActionBarView,
+  MortgageCalculatorView,
+  RentalActionCardView,
+  SaleActionCardView,
+} from '../controls/listing-actions';
+import type {
+  ListingCardView,
+  ListingCardGridView,
+  WishlistCardView,
+} from '../controls/listing-card';
+import type {
+  ListingPreviewPaneView,
+  ListingQualityMeterView,
+  PropertyTypeSelectorView,
+} from '../controls/listing-editor';
+import type { OfferingBadgeView } from '../controls/offering-badge';
+import type { PriceEstimateView, PricePerAreaComparisonView } from '../controls/property-insights';
+import type {
+  ProjectBoardView,
+  ProjectBoardCardContentView,
+  BoardDragHandleView,
+} from '../controls/project-board';
+import type { ActivityFeedView } from '../controls/activity-feed';
+import type {
+  DatePickerView,
+  DateRangePickerView,
+  CalendarPanelView,
+  RangeCalendarView,
+  TimeFieldView,
+  MeetingSchedulerView,
+} from '../controls/date-picker';
+import type {
+  RatingView,
+  RatingInputView,
+  RatingBarView,
+  RatingSummaryView,
+} from '../controls/rating';
+import type { MeterView, MeterRingView, StatBarView } from '../controls/stat-bar';
+import type {
+  TableView,
+  TableHeaderView,
+  TableColumnView,
+  TableBodyView,
+  TableRowView,
+  TableCellView,
+} from '../controls/table';
+import type {
+  ListItemView,
+  MailRowView,
+  ListView,
+  VirtualListView,
+  ListSelectionBarView,
+} from '../controls/list';
+import type { CarouselView, CarouselItemView, CarouselDotsView } from '../controls/carousel';
+import type { InlineMarkdownView, MarkdownView } from '../controls/markdown';
+import type { SliderView, RangeSliderView } from '../controls/slider';
+import type {
+  AccordionView,
+  AccordionItemView,
+  AccordionTriggerView,
+  AccordionContentView,
+} from '../controls/accordion';
+import type { CodeView, PreView, CodeLinesView, CodeBlockView } from '../controls/code';
+import type { StepperView, StepperRowView } from '../controls/stepper';
+import type { TooltipView } from '../controls/tooltip';
+import type { BreadcrumbView, BreadcrumbItemView } from '../controls/breadcrumb';
+import type { ActivityHeatmapView } from '../controls/activity-heatmap';
+import type { TagFieldView } from '../controls/tag-field';
+import type { FileUploadView } from '../controls/file-upload';
+import type { VideoView } from '../controls/video-view';
+import type { SocialButtonView } from '../controls/social-button';
+import type { LinkPreviewView } from '../controls/link-preview';
+import type { GalleryView } from '../controls/zoomable-media-gallery';
+import type { InputGroupView, InputGroupAddonView } from '../controls/input-group';
+import type { NotificationView } from '../controls/notification';
+import type { CompositionBarView } from '../controls/composition-bar';
+import type { PhoneInputView } from '../controls/phone-input';
+import type { AvatarAnchorView, AvatarFlightLayerView } from '../controls/avatar-flight';
+import type { ExpandableTextView } from '../controls/expandable-text';
+import type { CategoryBarView } from '../controls/category-bar';
+import type {
+  MediaFlightLayerView,
+  MediaFlightHostView,
+  MediaSurfaceView,
+  MediaPosterView,
+  EmptyMediaSurfaceView,
+} from '../controls/media-flight';
+import type { FactStripView, FactView } from '../controls/fact-strip';
+import type { ChoiceListView } from '../controls/choice-list';
+import type {
+  VideoPlaybackView,
+  VideoViewabilityView,
+  VideoViewabilityScopeView,
+} from '../controls/video-playback';
+import type { ColorSwatchPickerView } from '../controls/color-swatch-picker';
+import type { InputOtpView } from '../controls/input-otp';
+import type { AnimatedCheckView } from '../controls/animated-check';
+import type { SpinnerIconView } from '../controls/spinner-icon';
+import type { ContextMenuView } from '../controls/context-menu';
+import type { CollapsibleView } from '../controls/collapsible';
+import type { DropZoneView } from '../controls/drop-zone';
+import type { MediaInsetBorderView } from '../controls/media-inset-border';
+import type { SortablePhotoGridView } from '../controls/sortable-media';
+import type { HoverCardView } from '../controls/hover-card';
+import type { MenubarMenuView, MenubarView } from '../controls/menubar';
+import type {
+  DataTableView,
+  DataColumnView,
+  DataTableFilterView,
+  DataTableSearchView,
+  DataTableSelectView,
+} from '../controls/data-table';
+import type { SortableChipRowView, SortableChipView } from '../controls/sortable-chip-row';
+import type { ViewportView } from '../controls/viewport';
+import type { GlassGroupView } from '../controls/glass-group';
+import type { ConfirmationDialogView } from '../controls/confirmation-dialog';
+import type { ToolbarGroupView, ToolbarSpacerView } from '../controls/toolbar-group';
+import type { ViewThatFitsView } from '../controls/view-that-fits';
+import { resolveCardRadius } from '../tokens';
+import type { ColorPreset, ContentFit } from '../tokens';
+import type {
+  SettingsDateFieldView,
+  SettingsSectionView,
+  SettingsSelectView,
+  SettingsTextFieldView,
+  SettingsValueView,
+} from '../controls/settings';
+import type { OrderStatusBarView, OrderStatusTimelineView } from '../controls/order-status';
+import type { LockupSkeletonView, LockupView } from '../controls/lockup';
+import type { AmbientPhotoView } from '../controls/ambient-photo';
+import type {
+  CalendarViewHeaderView,
+  CalendarViewMonthGridView,
+  CalendarViewView,
+} from '../controls/calendar';
+import type { AccentTone } from '../tokens';
+import type { VoiceControlsView } from '../controls/voice';
+import type { WebSearchView } from '../controls/web-search';
+import type { TaskListView } from '../controls/task-list';
+import type {
+  AgentCreatorView,
+  AgentCreatorFieldView,
+  AgentCreatorSectionView,
+} from '../controls/agent-creator';
+import type { AgentProfileView, AgentReplyIdentityView } from '../controls/agent-reply';
+import type { AiProfileCardView } from '../controls/ai-profile-card';
+import type { MultiAgentChatView, SelectedAgentPreviewView } from '../controls/multi-agent-chat';
+import type { AgentChatView, AgentChatHistoryView } from '../controls/agent-chat';
+
+const BLOOM_SRC = join(__dirname, '../../../../src');
+const PACKAGE = join(__dirname, '../..');
+const read = (path: string) => readFileSync(join(BLOOM_SRC, path), 'utf8');
+
+/** A numeric token: an exact value carried over from apps (`'44'`, `'28px'`, `'-0.02em'`), not a design rung. */
+const NUMERIC = /^-?\d+(\.\d+)?(px|em)?$/;
+/** A scale's named rungs: the design scale, which Bloom owns. */
+const named = (scale: Record<string, number>) =>
+  Object.fromEntries(Object.entries(scale).filter(([name]) => !NUMERIC.test(name)));
+
+/** `_2xl` → `2xl`: Bloom's JS keys spell a leading digit with an underscore. */
+const unprefixed = (table: Record<string, unknown>) =>
+  Object.fromEntries(Object.entries(table).map(([key, value]) => [key.replace(/^_/, ''), value]));
+
+describe('the spec is Bloom’s scales, rung for rung', () => {
+  it('space, corner, size, leading and hit slop equal Bloom’s tokens', () => {
+    expect(named(SPACE)).toEqual({ none: 0, ...unprefixed(tokens.space) });
+    expect(named(CORNER)).toEqual(unprefixed(tokens.borderRadius));
+    expect(named(FONT_SIZE)).toEqual(unprefixed(tokens.fontSize));
+    expect(LEADING).toEqual(tokens.lineHeight);
+    expect(HIT_SLOP).toEqual(tokens.hitSlop);
+    // The language names Bloom's one disabled fade neutrally: it is any half opacity, not only a disabled control's.
+    expect(OPACITY.half).toBe(tokens.DISABLED_OPACITY);
+    expect(named(DURATION)).toEqual(tokens.animation.duration);
+  });
+
+  it('a card’s corner tokens are Bloom’s radius names of the same value', () => {
+    const radii = ENUMS.cardRadius.filter((name) => name !== 'panel' && name !== 'concentric');
+    // Every rung of Bloom's radius scale has its corner token, and nothing else does.
+    expect(radii).toHaveLength(Object.keys(RADIUS).length);
+    for (const name of radii) {
+      const bloom = resolveCardRadius(name);
+      expect(bloom in RADIUS).toBe(true);
+      expect(RADIUS[bloom as keyof typeof RADIUS]).toBe(CORNER[name as keyof typeof CORNER]);
+    }
+    expect(resolveCardRadius('panel')).toBe('panel');
+    expect(resolveCardRadius('concentric')).toBe('concentric');
+  });
+
+  it('a numeric token is its own value, in its scale’s unit: an exact value carried over from apps', () => {
+    const scales: [Record<string, number>, string, number][] = [
+      [SPACE, '', 1],
+      [CORNER, '', 1],
+      [FONT_SIZE, '', 1],
+      [LEADING_PX, 'px', 1],
+      [TRACKING, 'em', 1],
+      [TRACKING_PX, 'px', 1],
+      [OPACITY, '', 100],
+      [Z_INDEX, '', 1],
+      [SCALE, '', 100],
+      [BORDER_WIDTH as unknown as Record<string, number>, '', 1],
+      [ROTATION, '', 1],
+      [DURATION, '', 1],
+      [ICON_SIZE, '', 1],
+    ];
+    let checked = 0;
+    for (const [scale, unit, factor] of scales) {
+      for (const [name, value] of Object.entries(scale)) {
+        if (!NUMERIC.test(name)) continue;
+        expect(name).toBe(`${Number((value * factor).toFixed(6))}${unit}`);
+        checked += 1;
+      }
+    }
+    // Vacuity floor: a spec with no numeric tokens checks nothing.
+    expect(checked).toBeGreaterThanOrEqual(50);
+    // Every px line height and tracking is numeric; the named ones are ratios and em.
+    expect(Object.keys(LEADING_PX).every((name) => NUMERIC.test(name))).toBe(true);
+    expect(Object.keys(LEADING).some((name) => NUMERIC.test(name))).toBe(false);
+  });
+
+  it('an image’s content fits are BloomImage’s', () => {
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    // A type error here means spec/language.json and BloomImage's contentFit disagree.
+    const same: Same<ContentFit, BloomImageContentFit> = true;
+    expect(same).toBe(true);
+  });
+
+  it('a screen’s colour presets are Bloom’s AppColorName, name for name', () => {
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    // A type error here means spec/language.json and Bloom's colour presets disagree.
+    const same: Same<ColorPreset, AppColorName> = true;
+    expect(same).toBe(true);
+  });
+
+  it('the accent tones are Bloom’s AccentTone', () => {
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    // A type error here means spec/language.json and Bloom's AccentTone disagree.
+    const same: Same<AccentTone, BloomAccentTone> = true;
+    expect(same).toBe(true);
+  });
+
+  it('the type ramp is Bloom’s TYPE_SCALE, entry for entry', () => {
+    expect(Object.keys(TYPE_RAMP).sort()).toEqual(Object.keys(TYPE_SCALE).sort());
+    for (const [variant, step] of Object.entries(TYPE_SCALE)) {
+      expect(TYPE_RAMP[variant as keyof typeof TYPE_RAMP]).toEqual([
+        step.fontSize,
+        step.lineHeight,
+        step.letterSpacing,
+        step.fontWeight,
+      ]);
+    }
+  });
+
+  it('icon and avatar rungs match Bloom’s own tables', () => {
+    // Both modules pull the theme provider at import, so their text is read.
+    const icons = read('icons/shared.tsx');
+    for (const [name, size] of Object.entries(named(ICON_SIZE))) {
+      expect(icons).toMatch(new RegExp(`\\n\\s+'?${name}'?: ${size},`));
+    }
+    // An IconCircle takes Bloom's named rungs, every one of them.
+    expect([...ENUMS.iconCircleSize]).toEqual(Object.keys(named(ICON_SIZE)));
+    const avatars = read('avatar/initials.ts');
+    for (const [name, size] of Object.entries(AVATAR_SIZE)) {
+      expect(avatars).toMatch(new RegExp(`\\n\\s+${name}: ${size},`));
+    }
+  });
+
+  it('each colour role names the theme colour Bloom builds from its CSS variable', () => {
+    // build-theme.ts: `textSecondary: g('muted-foreground')`: the ThemeColors key
+    // and the canonical variable the web reads are one pair. A fixed colour
+    // (`white: '#ffffff'`) is the same literal on both sides.
+    const theme = read('theme/build-theme.ts');
+    for (const { paint, web } of Object.values(COLORS)) {
+      const variable = /^var\(--([\w-]+)\)$/.exec(web)?.[1];
+      expect(theme).toMatch(
+        new RegExp(`\\n\\s+${paint}: ${variable ? `g\\('${variable}'\\)` : `'${web}'`},`),
+      );
+    }
+  });
+
+  it('a text with no font measures its leading and tracking from Bloom Text’s own size', () => {
+    expect(read('typography/Typography.tsx')).toMatch(
+      new RegExp(
+        `DEFAULT_TEXT_TYPOGRAPHY: TextStyle = \\{\\n\\s+fontSize: ${ENVIRONMENT_DEFAULTS.fontSize},`,
+      ),
+    );
+  });
+
+  it('shadows are Bloom’s elevation roles; stacking levels are Bloom’s Z_INDEX', () => {
+    // A shadow that is no role is Tailwind's own, named by its exact box-shadow.
+    const roles = Object.fromEntries(
+      Object.entries(SHADOW).filter(([name, value]) => name !== value),
+    );
+    expect(roles).toEqual(SHADOW_BOX);
+    expect(Object.keys(SHADOW).length - Object.keys(roles).length).toBe(7);
+    const levels = read('styles/z-index.ts');
+    for (const [name, level] of Object.entries(named(Z_INDEX))) {
+      expect(levels).toMatch(new RegExp(`\\n\\s+${name}: ${level},`));
+    }
+  });
+
+  it('scale factors are Bloom’s own: a press, the engagement pop’s dip and swell', () => {
+    // Bloom's PressableScale and engagement pop play these through its motion
+    // engine (`SCALE` in @oxy.so/bloom/motion), which the motion table test holds equal.
+    expect(named(SCALE)).toEqual({ dip: 0.7, pressed: 0.98, full: 1, swell: 1.2 });
+  });
+
+  it('the strongest glass tint is the opacity Surface already gives an opaque fill on the web', () => {
+    expect(read('surface/shared.ts')).toMatch(
+      new RegExp(`SURFACE_TINT_OPACITY = ${GLASS_OPACITY.strong};`),
+    );
+  });
+});
+
+describe('motion tokens are Bloom’s motion table', () => {
+  it('each motion, curve and scale is Bloom’s own, by name (Bloom’s animations play these)', () => {
+    expect(MOTION).toEqual(BLOOM_MOTION);
+    expect(EASING).toEqual(BLOOM_EASING);
+    // The scale's named rungs; its numeric ones are factors carried over from apps.
+    expect(named(SCALE)).toEqual(BLOOM_SCALE);
+  });
+});
+
+describe('the spec drives the rules', () => {
+  it('layering and the environment are the spec’s', () => {
+    expect(LAYER_RANK.padding).toBeLessThan(LAYER_RANK.background);
+    expect(LAYER_RANK.glass).toBe(LAYER_RANK.background);
+    expect(ENVIRONMENT).toEqual(['foreground', 'font', 'weight', 'leading', 'tracking']);
+  });
+
+  it('each node type exposes exactly the modifiers the spec gives its kind', () => {
+    type MethodsOf<T> = {
+      [K in keyof T]-?: T[K] extends (...args: never[]) => unknown ? K : never;
+    }[keyof T];
+    type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+    type Of<K extends keyof typeof NODE_MODIFIERS> = (typeof NODE_MODIFIERS)[K][number];
+    // A type error here means a node interface and spec/language.json disagree.
+    const checks: [
+      Same<MethodsOf<StackView>, Of<'stack'>>,
+      Same<MethodsOf<ZStackView>, Of<'zstack'>>,
+      Same<MethodsOf<SpacerView>, Of<'spacer'>>,
+      Same<MethodsOf<TextView>, Of<'text'>>,
+      Same<MethodsOf<IconView>, Of<'icon'>>,
+      Same<MethodsOf<AvatarView>, Of<'avatar'>>,
+      Same<MethodsOf<AvatarGroupView>, Of<'avatarGroup'>>,
+      Same<MethodsOf<BadgeView>, Of<'badge'>>,
+      Same<MethodsOf<IconCircleView>, Of<'iconCircle'>>,
+      Same<MethodsOf<LoadingView>, Of<'loading'>>,
+      Same<MethodsOf<SkeletonView>, Of<'skeleton'>>,
+      Same<MethodsOf<SkeletonGroupView>, Of<'skeletonGroup'>>,
+      Same<MethodsOf<ImageView>, Of<'image'>>,
+      Same<MethodsOf<ButtonView>, Of<'button'>>,
+      Same<MethodsOf<ButtonGroupView>, Of<'buttonGroup'>>,
+      Same<MethodsOf<ShapeView>, Of<'shape'>>,
+      Same<MethodsOf<ActionView>, Of<'action'>>,
+      Same<MethodsOf<ActionBarView>, Of<'actionBar'>>,
+      Same<MethodsOf<ActionGroupView>, Of<'actionGroup'>>,
+      Same<MethodsOf<EmbedView>, Of<'embed'>>,
+      Same<MethodsOf<GroupView>, Of<'group'>>,
+      Same<MethodsOf<LottieView>, Of<'lottie'>>,
+      Same<MethodsOf<ComposedView>, Of<'view'>>,
+      Same<MethodsOf<FabView>, Of<'fab'>>,
+      Same<MethodsOf<MenuView>, Of<'menu'>>,
+      Same<MethodsOf<MenuItemView>, Of<'menuItem'>>,
+      Same<MethodsOf<MenuSubmenuView>, Of<'menuSubmenu'>>,
+      Same<MethodsOf<MenuSectionView>, Of<'menuSection'>>,
+      Same<MethodsOf<DividerView>, Of<'divider'>>,
+      Same<MethodsOf<FillView>, Of<'fill'>>,
+      Same<MethodsOf<AspectRatioView>, Of<'ratio'>>,
+      Same<MethodsOf<GridView>, Of<'grid'>>,
+      Same<MethodsOf<MenuContentView>, Of<'menuContent'>>,
+      Same<MethodsOf<MenuActionsView>, Of<'menuActions'>>,
+      Same<MethodsOf<HeaderView>, Of<'header'>>,
+      Same<MethodsOf<BottomBarView>, Of<'bottomBar'>>,
+      Same<MethodsOf<TabView>, Of<'tab'>>,
+      Same<MethodsOf<AppLayoutView>, Of<'appLayout'>>,
+      Same<MethodsOf<NavStackView>, Of<'navStack'>>,
+      Same<MethodsOf<RouteView>, Of<'route'>>,
+      Same<MethodsOf<TabNavigatorView>, Of<'tabView'>>,
+      Same<MethodsOf<StickySectionView>, Of<'stickySection'>>,
+      Same<MethodsOf<ToolbarView>, Of<'toolbarView'>>,
+      Same<MethodsOf<ScrollAreaView>, Of<'scrollArea'>>,
+      Same<MethodsOf<ScrollSurfaceView>, Of<'scrollSurface'>>,
+      Same<MethodsOf<AutoHideBarView>, Of<'autoHideBar'>>,
+      Same<MethodsOf<ResizeHandleView>, Of<'resizeHandle'>>,
+      Same<MethodsOf<SidebarModeView>, Of<'sidebarMode'>>,
+      Same<MethodsOf<SettingsSectionView>, Of<'settingsSection'>>,
+      Same<MethodsOf<SettingsValueView>, Of<'settingsValue'>>,
+      Same<MethodsOf<SettingsSelectView>, Of<'settingsSelect'>>,
+      Same<MethodsOf<SettingsTextFieldView>, Of<'settingsTextField'>>,
+      Same<MethodsOf<SettingsDateFieldView>, Of<'settingsDateField'>>,
+      Same<MethodsOf<DestinationView>, Of<'destination'>>,
+      Same<MethodsOf<PanelView>, Of<'panel'>>,
+      Same<MethodsOf<SettingsItemView>, Of<'settingsItem'>>,
+      Same<MethodsOf<SettingsGroupView>, Of<'settingsGroup'>>,
+      Same<MethodsOf<SettingsModalView>, Of<'settings'>>,
+      Same<MethodsOf<CommandGroupView>, Of<'commandGroup'>>,
+      Same<MethodsOf<CommandItemView>, Of<'commandItem'>>,
+      Same<MethodsOf<CommandView>, Of<'command'>>,
+      Same<MethodsOf<PageFooterView>, Of<'pageFooter'>>,
+      Same<MethodsOf<RailItemView>, Of<'railItem'>>,
+      Same<MethodsOf<RailView>, Of<'rail'>>,
+      Same<MethodsOf<TreeItemView>, Of<'treeItem'>>,
+      Same<MethodsOf<TreeFolderView>, Of<'treeFolder'>>,
+      Same<MethodsOf<TreeSectionView>, Of<'treeSection'>>,
+      Same<MethodsOf<NavItemView>, Of<'navItem'>>,
+      Same<MethodsOf<SidebarView>, Of<'sidebar'>>,
+      Same<MethodsOf<BottomSheetView>, Of<'bottomSheet'>>,
+      Same<MethodsOf<ScrollViewNode>, Of<'scrollView'>>,
+      Same<MethodsOf<DatePickerView>, Of<'datePicker'>>,
+      Same<MethodsOf<DateRangePickerView>, Of<'dateRangePicker'>>,
+      Same<MethodsOf<CalendarPanelView>, Of<'calendar'>>,
+      Same<MethodsOf<RangeCalendarView>, Of<'rangeCalendar'>>,
+      Same<MethodsOf<TimeFieldView>, Of<'timeField'>>,
+      Same<MethodsOf<MeetingSchedulerView>, Of<'meetingScheduler'>>,
+      Same<MethodsOf<RatingView>, Of<'rating'>>,
+      Same<MethodsOf<RatingInputView>, Of<'ratingInput'>>,
+      Same<MethodsOf<RatingBarView>, Of<'ratingBar'>>,
+      Same<MethodsOf<RatingSummaryView>, Of<'ratingSummary'>>,
+      Same<MethodsOf<MeterView>, Of<'meter'>>,
+      Same<MethodsOf<MeterRingView>, Of<'meterRing'>>,
+      Same<MethodsOf<StatBarView>, Of<'statBar'>>,
+      Same<MethodsOf<TableView>, Of<'table'>>,
+      Same<MethodsOf<TableHeaderView>, Of<'tableHeader'>>,
+      Same<MethodsOf<TableColumnView>, Of<'tableColumn'>>,
+      Same<MethodsOf<TableBodyView>, Of<'tableBody'>>,
+      Same<MethodsOf<TableRowView>, Of<'tableRow'>>,
+      Same<MethodsOf<TableCellView>, Of<'tableCell'>>,
+      Same<MethodsOf<ListItemView>, Of<'listItem'>>,
+      Same<MethodsOf<MailRowView>, Of<'mailRow'>>,
+      Same<MethodsOf<ListView>, Of<'list'>>,
+      Same<MethodsOf<VirtualListView>, Of<'virtualList'>>,
+      Same<MethodsOf<ListSelectionBarView>, Of<'listSelectionBar'>>,
+      Same<MethodsOf<CarouselView>, Of<'carousel'>>,
+      Same<MethodsOf<CarouselItemView>, Of<'carouselItem'>>,
+      Same<MethodsOf<CarouselDotsView>, Of<'carouselDots'>>,
+      Same<MethodsOf<MarkdownView>, Of<'markdown'>>,
+      Same<MethodsOf<InlineMarkdownView>, Of<'inlineMarkdown'>>,
+      Same<MethodsOf<SliderView>, Of<'slider'>>,
+      Same<MethodsOf<RangeSliderView>, Of<'rangeSlider'>>,
+      Same<MethodsOf<AccordionView>, Of<'accordion'>>,
+      Same<MethodsOf<AccordionItemView>, Of<'accordionItem'>>,
+      Same<MethodsOf<AccordionTriggerView>, Of<'accordionTrigger'>>,
+      Same<MethodsOf<AccordionContentView>, Of<'accordionContent'>>,
+      Same<MethodsOf<CodeView>, Of<'code'>>,
+      Same<MethodsOf<PreView>, Of<'pre'>>,
+      Same<MethodsOf<CodeLinesView>, Of<'codeLines'>>,
+      Same<MethodsOf<CodeBlockView>, Of<'codeBlock'>>,
+      Same<MethodsOf<StepperView>, Of<'stepper'>>,
+      Same<MethodsOf<StepperRowView>, Of<'stepperRow'>>,
+      Same<MethodsOf<TooltipView>, Of<'tooltip'>>,
+      Same<MethodsOf<BreadcrumbView>, Of<'breadcrumb'>>,
+      Same<MethodsOf<BreadcrumbItemView>, Of<'breadcrumbItem'>>,
+      Same<MethodsOf<ActivityHeatmapView>, Of<'activityHeatmap'>>,
+      Same<MethodsOf<TagFieldView>, Of<'tagField'>>,
+      Same<MethodsOf<FileUploadView>, Of<'fileUpload'>>,
+      Same<MethodsOf<VideoView>, Of<'video'>>,
+      Same<MethodsOf<GalleryView>, Of<'gallery'>>,
+      Same<MethodsOf<InputGroupView>, Of<'inputGroup'>>,
+      Same<MethodsOf<InputGroupAddonView>, Of<'inputGroupAddon'>>,
+      Same<MethodsOf<PhoneInputView>, Of<'phoneInput'>>,
+      Same<MethodsOf<AvatarAnchorView>, Of<'avatarAnchor'>>,
+      Same<MethodsOf<AvatarFlightLayerView>, Of<'avatarFlightLayer'>>,
+      Same<MethodsOf<CategoryBarView>, Of<'categoryBar'>>,
+      Same<MethodsOf<MediaFlightLayerView>, Of<'mediaFlightLayer'>>,
+      Same<MethodsOf<MediaFlightHostView>, Of<'mediaFlightHost'>>,
+      Same<MethodsOf<MediaSurfaceView>, Of<'mediaSurface'>>,
+      Same<MethodsOf<MediaPosterView>, Of<'mediaPoster'>>,
+      Same<MethodsOf<EmptyMediaSurfaceView>, Of<'emptyMediaSurface'>>,
+      Same<MethodsOf<ChoiceListView>, Of<'choiceList'>>,
+      Same<MethodsOf<VideoPlaybackView>, Of<'videoPlayback'>>,
+      Same<MethodsOf<VideoViewabilityView>, Of<'videoViewability'>>,
+      Same<MethodsOf<VideoViewabilityScopeView>, Of<'videoViewabilityScope'>>,
+      Same<MethodsOf<ColorSwatchPickerView>, Of<'colorSwatchPicker'>>,
+      Same<MethodsOf<InputOtpView>, Of<'inputOtp'>>,
+      Same<MethodsOf<AnimatedCheckView>, Of<'animatedCheck'>>,
+      Same<MethodsOf<SpinnerIconView>, Of<'spinnerIcon'>>,
+      Same<MethodsOf<ContextMenuView>, Of<'contextMenu'>>,
+      Same<MethodsOf<CollapsibleView>, Of<'collapsible'>>,
+      Same<MethodsOf<DropZoneView>, Of<'dropZone'>>,
+      Same<MethodsOf<MediaInsetBorderView>, Of<'mediaInsetBorder'>>,
+      Same<MethodsOf<FactStripView>, Of<'factStrip'>>,
+      Same<MethodsOf<FactView>, Of<'fact'>>,
+      Same<MethodsOf<SortablePhotoGridView>, Of<'sortablePhotoGrid'>>,
+      Same<MethodsOf<HoverCardView>, Of<'hoverCard'>>,
+      Same<MethodsOf<ExpandableTextView>, Of<'expandableText'>>,
+      Same<MethodsOf<MenubarView>, Of<'menubar'>>,
+      Same<MethodsOf<MenubarMenuView>, Of<'menubarMenu'>>,
+      Same<MethodsOf<CompositionBarView>, Of<'compositionBar'>>,
+      Same<MethodsOf<NotificationView>, Of<'notification'>>,
+      Same<MethodsOf<LinkPreviewView>, Of<'linkPreview'>>,
+      Same<MethodsOf<SocialButtonView>, Of<'socialButton'>>,
+      Same<MethodsOf<DataTableView>, Of<'dataTable'>>,
+      Same<MethodsOf<DataColumnView>, Of<'dataColumn'>>,
+      Same<MethodsOf<SortableChipRowView>, Of<'sortableChipRow'>>,
+      Same<MethodsOf<SortableChipView>, Of<'sortableChip'>>,
+      Same<MethodsOf<ViewportView>, Of<'viewport'>>,
+      Same<MethodsOf<GlassGroupView>, Of<'glassGroup'>>,
+      Same<MethodsOf<ConfirmationDialogView>, Of<'confirmationDialog'>>,
+      Same<MethodsOf<ToolbarGroupView>, Of<'toolbarGroup'>>,
+      Same<MethodsOf<ToolbarSpacerView>, Of<'toolbarSpacer'>>,
+      Same<MethodsOf<ViewThatFitsView>, Of<'viewThatFits'>>,
+      Same<MethodsOf<DataTableFilterView>, Of<'dataTableFilter'>>,
+      Same<MethodsOf<DataTableSearchView>, Of<'dataTableSearch'>>,
+      Same<MethodsOf<DataTableSelectView>, Of<'dataTableSelect'>>,
+      Same<MethodsOf<AgentAvatarView>, Of<'agentAvatar'>>,
+      Same<MethodsOf<ChatComposerView>, Of<'chatComposer'>>,
+      Same<MethodsOf<CompactComposerView>, Of<'compactComposer'>>,
+      Same<MethodsOf<ComposerBannerView>, Of<'composerBanner'>>,
+      Same<MethodsOf<ComposerIconButtonView>, Of<'composerIconButton'>>,
+      Same<MethodsOf<SuggestionListView>, Of<'suggestionList'>>,
+      Same<MethodsOf<VoiceRecorderView>, Of<'voiceRecorder'>>,
+      Same<MethodsOf<AttachmentMenuView>, Of<'attachmentMenu'>>,
+      Same<MethodsOf<EmojiPickerView>, Of<'emojiPicker'>>,
+      Same<MethodsOf<ReactionPickerView>, Of<'reactionPicker'>>,
+      Same<MethodsOf<MessageContextMenuView>, Of<'messageContextMenu'>>,
+      Same<MethodsOf<AreaChartCardView>, Of<'areaChartCard'>>,
+      Same<MethodsOf<BarListCardView>, Of<'barListCard'>>,
+      Same<MethodsOf<ChartCardSurfaceView>, Of<'chartCardSurface'>>,
+      Same<MethodsOf<ChartHeadlineView>, Of<'chartHeadline'>>,
+      Same<MethodsOf<ChartStatTilesView>, Of<'chartStatTiles'>>,
+      Same<MethodsOf<ContributionsCardView>, Of<'contributionsCard'>>,
+      Same<MethodsOf<HeatmapChartCardView>, Of<'heatmapChartCard'>>,
+      Same<MethodsOf<LineChartCardView>, Of<'lineChartCard'>>,
+      Same<MethodsOf<RadarChartCardView>, Of<'radarChartCard'>>,
+      Same<MethodsOf<SleepScoreCardView>, Of<'sleepScoreCard'>>,
+      Same<MethodsOf<SparklineView>, Of<'sparkline'>>,
+      Same<MethodsOf<StageBarsCardView>, Of<'stageBarsCard'>>,
+      Same<MethodsOf<StepsCardView>, Of<'stepsCard'>>,
+      Same<MethodsOf<TokensChartCardView>, Of<'tokensChartCard'>>,
+      Same<MethodsOf<ComposerPanelView>, Of<'composerPanel'>>,
+      Same<MethodsOf<ComposerPillView>, Of<'composerPill'>>,
+      Same<MethodsOf<ComposerPanelStatusTabView>, Of<'composerPanelStatusTab'>>,
+      Same<MethodsOf<AiChatShellView>, Of<'aiChatShell'>>,
+      Same<MethodsOf<AiChatContainerView>, Of<'aiChatContainer'>>,
+      Same<MethodsOf<AiChatThreadView>, Of<'aiChatThread'>>,
+      Same<MethodsOf<AiChatUserMessageView>, Of<'aiChatUserMessage'>>,
+      Same<MethodsOf<AiChatAssistantMessageView>, Of<'aiChatAssistantMessage'>>,
+      Same<MethodsOf<AiChatMessageLineView>, Of<'aiChatMessageLine'>>,
+      Same<MethodsOf<AiChatHeaderView>, Of<'aiChatHeader'>>,
+      Same<MethodsOf<AiChatMobileHeaderView>, Of<'aiChatMobileHeader'>>,
+      Same<MethodsOf<AiChatCodePanelView>, Of<'aiChatCodePanel'>>,
+      Same<MethodsOf<AiChatGalleryPanelView>, Of<'aiChatGalleryPanel'>>,
+      Same<MethodsOf<StatCardView>, Of<'statCard'>>,
+      Same<MethodsOf<StatCardsView>, Of<'statCards'>>,
+      Same<MethodsOf<PlayButtonView>, Of<'playButton'>>,
+      Same<MethodsOf<PlaybackProgressView>, Of<'playbackProgress'>>,
+      Same<MethodsOf<AgentLimitsCardView>, Of<'agentLimitsCard'>>,
+      Same<MethodsOf<UsageCardView>, Of<'usageCard'>>,
+      Same<MethodsOf<AgentThinkingView>, Of<'agentThinking'>>,
+      Same<MethodsOf<AgentProgressView>, Of<'agentProgress'>>,
+      Same<MethodsOf<AgentProgressLoadingTextView>, Of<'agentProgressLoadingText'>>,
+      Same<MethodsOf<AgentLogRowView>, Of<'agentLogRow'>>,
+      Same<MethodsOf<AgentLogShimmerTextView>, Of<'agentLogShimmerText'>>,
+      Same<MethodsOf<AgentLogToolCallView>, Of<'agentLogToolCall'>>,
+      Same<MethodsOf<AgentLogToolCallsView>, Of<'agentLogToolCalls'>>,
+      Same<MethodsOf<AgentLogWorkingRowView>, Of<'agentLogWorkingRow'>>,
+      Same<MethodsOf<ComposerLoaderView>, Of<'composerLoader'>>,
+      Same<MethodsOf<ConversationSidebarView>, Of<'conversationSidebar'>>,
+      Same<MethodsOf<QuestionnaireView>, Of<'questionnaire'>>,
+      Same<MethodsOf<ChatBackgroundView>, Of<'chatBackground'>>,
+      Same<MethodsOf<ChatDateHeaderView>, Of<'chatDateHeader'>>,
+      Same<MethodsOf<ChatEmptyStateView>, Of<'chatEmptyState'>>,
+      Same<MethodsOf<ChatHeaderView>, Of<'chatHeader'>>,
+      Same<MethodsOf<ChatInfoPanelView>, Of<'chatInfoPanel'>>,
+      Same<MethodsOf<PinnedMessageBarView>, Of<'pinnedMessageBar'>>,
+      Same<MethodsOf<ScrollToBottomButtonView>, Of<'scrollToBottomButton'>>,
+      Same<MethodsOf<ChatFolderTabsView>, Of<'chatFolderTabs'>>,
+      Same<MethodsOf<ChatSearchFieldView>, Of<'chatSearchField'>>,
+      Same<MethodsOf<ChatSearchResultsView>, Of<'chatSearchResults'>>,
+      Same<MethodsOf<StoriesRowView>, Of<'storiesRow'>>,
+      Same<MethodsOf<StoryRingView>, Of<'storyRing'>>,
+      Same<MethodsOf<TypingDotsView>, Of<'typingDots'>>,
+      Same<MethodsOf<ContactMessageView>, Of<'contactMessage'>>,
+      Same<MethodsOf<DocumentGridView>, Of<'documentGrid'>>,
+      Same<MethodsOf<FileMessageView>, Of<'fileMessage'>>,
+      Same<MethodsOf<GifMessageView>, Of<'gifMessage'>>,
+      Same<MethodsOf<ImageMessageView>, Of<'imageMessage'>>,
+      Same<MethodsOf<LocationMessageView>, Of<'locationMessage'>>,
+      Same<MethodsOf<PollMessageView>, Of<'pollMessage'>>,
+      Same<MethodsOf<SharedMediaGridView>, Of<'sharedMediaGrid'>>,
+      Same<MethodsOf<StickerMessageView>, Of<'stickerMessage'>>,
+      Same<MethodsOf<VideoMessageView>, Of<'videoMessage'>>,
+      Same<MethodsOf<VoiceMessageView>, Of<'voiceMessage'>>,
+      Same<MethodsOf<AmenityListView>, Of<'amenityList'>>,
+      Same<MethodsOf<HostCardView>, Of<'hostCard'>>,
+      Same<MethodsOf<ListingHeaderView>, Of<'listingHeader'>>,
+      Same<MethodsOf<ListingHeaderActionView>, Of<'listingHeaderAction'>>,
+      Same<MethodsOf<ListingPhotoGridView>, Of<'listingPhotoGrid'>>,
+      Same<MethodsOf<ReviewCardView>, Of<'reviewCard'>>,
+      Same<MethodsOf<MapClusterMarkerView>, Of<'mapClusterMarker'>>,
+      Same<MethodsOf<MapPriceMarkerView>, Of<'mapPriceMarker'>>,
+      Same<MethodsOf<MapSearchAreaButtonView>, Of<'mapSearchAreaButton'>>,
+      Same<MethodsOf<FollowButtonView>, Of<'followButton'>>,
+      Same<MethodsOf<ShelfView>, Of<'shelf'>>,
+      Same<MethodsOf<ShelfSkeletonView>, Of<'shelfSkeleton'>>,
+      Same<MethodsOf<SubscriptionPlansView>, Of<'subscriptionPlans'>>,
+      Same<MethodsOf<SubscriptionPriceView>, Of<'subscriptionPrice'>>,
+      Same<MethodsOf<UserHoverCardView>, Of<'userHoverCard'>>,
+      Same<MethodsOf<CardFormView>, Of<'cardForm'>>,
+      Same<MethodsOf<CardFormCountryView>, Of<'cardFormCountry'>>,
+      Same<MethodsOf<CardFormPostcodeView>, Of<'cardFormPostcode'>>,
+      Same<MethodsOf<CardFormHostedFieldView>, Of<'cardFormHostedField'>>,
+      Same<MethodsOf<CheckoutSheetView>, Of<'checkoutSheet'>>,
+      Same<MethodsOf<FilterSectionView>, Of<'filterSection'>>,
+      Same<MethodsOf<PriceRangeFilterView>, Of<'priceRangeFilter'>>,
+      Same<MethodsOf<CountFilterView>, Of<'countFilter'>>,
+      Same<MethodsOf<ToggleChipGroupView>, Of<'toggleChipGroup'>>,
+      Same<MethodsOf<AmenityFilterView>, Of<'amenityFilter'>>,
+      Same<MethodsOf<SwitchFilterRowView>, Of<'switchFilterRow'>>,
+      Same<MethodsOf<FilterFooterView>, Of<'filterFooter'>>,
+      Same<MethodsOf<FilterTriggerButtonView>, Of<'filterTriggerButton'>>,
+      Same<MethodsOf<AreaRangeFilterView>, Of<'areaRangeFilter'>>,
+      Same<MethodsOf<AvailabilityFilterView>, Of<'availabilityFilter'>>,
+      Same<MethodsOf<FeatureFilterView>, Of<'featureFilter'>>,
+      Same<MethodsOf<FloorFilterView>, Of<'floorFilter'>>,
+      Same<MethodsOf<StaySearchCompactView>, Of<'staySearchCompact'>>,
+      Same<MethodsOf<StaySearchPanelView>, Of<'staySearchPanel'>>,
+      Same<MethodsOf<StaySearchStepView>, Of<'staySearchStep'>>,
+      Same<MethodsOf<DestinationSuggestionsView>, Of<'destinationSuggestions'>>,
+      Same<MethodsOf<GuestPickerView>, Of<'guestPicker'>>,
+      Same<MethodsOf<TenancyTimelineView>, Of<'tenancyTimeline'>>,
+      Same<MethodsOf<LeaseSummaryCardView>, Of<'leaseSummaryCard'>>,
+      Same<MethodsOf<RentPaymentListView>, Of<'rentPaymentList'>>,
+      Same<MethodsOf<MaintenanceRequestCardView>, Of<'maintenanceRequestCard'>>,
+      Same<MethodsOf<DocumentListView>, Of<'documentList'>>,
+      Same<MethodsOf<EvictionReportCardView>, Of<'evictionReportCard'>>,
+      Same<MethodsOf<EvictionTimelineView>, Of<'evictionTimeline'>>,
+      Same<MethodsOf<PlaceReviewSummaryView>, Of<'placeReviewSummary'>>,
+      Same<MethodsOf<WriteReviewPromptView>, Of<'writeReviewPrompt'>>,
+      Same<MethodsOf<CallScreenView>, Of<'callScreen'>>,
+      Same<MethodsOf<CallMinimisedPillView>, Of<'callMinimisedPill'>>,
+      Same<MethodsOf<GroupCallGridView>, Of<'groupCallGrid'>>,
+      Same<MethodsOf<IncomingCallScreenView>, Of<'incomingCallScreen'>>,
+      Same<MethodsOf<IncomingCallBannerView>, Of<'incomingCallBanner'>>,
+      Same<MethodsOf<StoryViewerView>, Of<'storyViewer'>>,
+      Same<MethodsOf<SelectedChipsRowView>, Of<'selectedChipsRow'>>,
+      Same<MethodsOf<NewGroupFormView>, Of<'newGroupForm'>>,
+      Same<MethodsOf<MessageBubbleView>, Of<'messageBubble'>>,
+      Same<MethodsOf<TypingBubbleView>, Of<'typingBubble'>>,
+      Same<MethodsOf<MessageListView>, Of<'messageList'>>,
+      Same<MethodsOf<MapScaleBarView>, Of<'mapScaleBar'>>,
+      Same<MethodsOf<MapControlsView>, Of<'mapControls'>>,
+      Same<MethodsOf<LocationPuckView>, Of<'locationPuck'>>,
+      Same<MethodsOf<NavigationBannerView>, Of<'navigationBanner'>>,
+      Same<MethodsOf<PlaceCardView>, Of<'placeCard'>>,
+      Same<MethodsOf<PlaceHoursView>, Of<'placeHours'>>,
+      Same<MethodsOf<PlaceInfoListView>, Of<'placeInfoList'>>,
+      Same<MethodsOf<PlaceTransitView>, Of<'placeTransit'>>,
+      Same<MethodsOf<PlaceListCardView>, Of<'placeListCard'>>,
+      Same<MethodsOf<PlaceListView>, Of<'placeList'>>,
+      Same<MethodsOf<DirectionsStepsView>, Of<'directionsSteps'>>,
+      Same<MethodsOf<PlacePickerView>, Of<'placePicker'>>,
+      Same<MethodsOf<MailComposeSurfaceView>, Of<'mailComposeSurface'>>,
+      Same<MethodsOf<MailRecipientFieldView>, Of<'mailRecipientField'>>,
+      Same<MethodsOf<MailMessageView>, Of<'mailMessage'>>,
+      Same<MethodsOf<MailThreadView>, Of<'mailThread'>>,
+      Same<MethodsOf<MailQuoteToggleView>, Of<'mailQuoteToggle'>>,
+      Same<MethodsOf<NoteEditorToolbarView>, Of<'noteEditorToolbar'>>,
+      Same<MethodsOf<TripCardView>, Of<'tripCard'>>,
+      Same<MethodsOf<BookingCardView>, Of<'bookingCard'>>,
+      Same<MethodsOf<BookingBarView>, Of<'bookingBar'>>,
+      Same<MethodsOf<PriceBreakdownView>, Of<'priceBreakdown'>>,
+      Same<MethodsOf<HomeSearchBarView>, Of<'homeSearchBar'>>,
+      Same<MethodsOf<SearchModeTabsView>, Of<'searchModeTabs'>>,
+      Same<MethodsOf<PropertyTypePickerView>, Of<'propertyTypePicker'>>,
+      Same<MethodsOf<SavedSearchCardView>, Of<'savedSearchCard'>>,
+      Same<MethodsOf<ListingActionBarView>, Of<'listingActionBar'>>,
+      Same<MethodsOf<MortgageCalculatorView>, Of<'mortgageCalculator'>>,
+      Same<MethodsOf<RentalActionCardView>, Of<'rentalActionCard'>>,
+      Same<MethodsOf<SaleActionCardView>, Of<'saleActionCard'>>,
+      Same<MethodsOf<ListingCardView>, Of<'listingCard'>>,
+      Same<MethodsOf<ListingCardGridView>, Of<'listingCardGrid'>>,
+      Same<MethodsOf<WishlistCardView>, Of<'wishlistCard'>>,
+      Same<MethodsOf<ListingPreviewPaneView>, Of<'listingPreviewPane'>>,
+      Same<MethodsOf<ListingQualityMeterView>, Of<'listingQualityMeter'>>,
+      Same<MethodsOf<PropertyTypeSelectorView>, Of<'propertyTypeSelector'>>,
+      Same<MethodsOf<OfferingBadgeView>, Of<'offeringBadge'>>,
+      Same<MethodsOf<PriceEstimateView>, Of<'priceEstimate'>>,
+      Same<MethodsOf<PricePerAreaComparisonView>, Of<'pricePerAreaComparison'>>,
+      Same<MethodsOf<ProjectBoardView>, Of<'projectBoard'>>,
+      Same<MethodsOf<ProjectBoardCardContentView>, Of<'projectBoardCardContent'>>,
+      Same<MethodsOf<BoardDragHandleView>, Of<'boardDragHandle'>>,
+      Same<MethodsOf<ActivityFeedView>, Of<'activityFeed'>>,
+      Same<MethodsOf<OrderStatusBarView>, Of<'orderStatusBar'>>,
+      Same<MethodsOf<OrderStatusTimelineView>, Of<'orderStatusTimeline'>>,
+      Same<MethodsOf<LockupView>, Of<'lockup'>>,
+      Same<MethodsOf<LockupSkeletonView>, Of<'lockupSkeleton'>>,
+      Same<MethodsOf<AmbientPhotoView>, Of<'ambientPhoto'>>,
+      Same<MethodsOf<CalendarViewView>, Of<'calendarView'>>,
+      Same<MethodsOf<CalendarViewHeaderView>, Of<'calendarViewHeader'>>,
+      Same<MethodsOf<CalendarViewMonthGridView>, Of<'calendarViewMonthGrid'>>,
+      Same<MethodsOf<TaskListView>, Of<'taskList'>>,
+      Same<MethodsOf<WebSearchView>, Of<'webSearch'>>,
+      Same<MethodsOf<VoiceControlsView>, Of<'voiceControls'>>,
+      Same<MethodsOf<AgentCreatorView>, Of<'agentCreator'>>,
+      Same<MethodsOf<AgentCreatorFieldView>, Of<'agentCreatorField'>>,
+      Same<MethodsOf<AgentCreatorSectionView>, Of<'agentCreatorSection'>>,
+      Same<MethodsOf<AgentProfileView>, Of<'agentProfile'>>,
+      Same<MethodsOf<AgentReplyIdentityView>, Of<'agentReplyIdentity'>>,
+      Same<MethodsOf<AiProfileCardView>, Of<'aiProfileCard'>>,
+      Same<MethodsOf<SelectedAgentPreviewView>, Of<'selectedAgentPreview'>>,
+      Same<MethodsOf<MultiAgentChatView>, Of<'multiAgentChat'>>,
+      Same<MethodsOf<AgentChatHistoryView>, Of<'agentChatHistory'>>,
+      Same<MethodsOf<AgentChatView>, Of<'agentChat'>>,
+      Same<MethodsOf<RouteStopsView>, Of<'routeStops'>>,
+      Same<MethodsOf<NoteCardView>, Of<'noteCard'>>,
+      Same<MethodsOf<NoteCardSkeletonView>, Of<'noteCardSkeleton'>>,
+      Same<MethodsOf<ShareSheetView>, Of<'shareSheet'>>,
+      Same<MethodsOf<ConnectionDotsView>, Of<'connectionDots'>>,
+      Same<MethodsOf<OutlineNavView>, Of<'outlineNav'>>,
+      Same<MethodsOf<PaginationView>, Of<'pagination'>>,
+      Same<MethodsOf<ProgressiveBlurView>, Of<'progressiveBlur'>>,
+      Same<MethodsOf<AddressRowView>, Of<'addressRow'>>,
+      Same<MethodsOf<AddressListView>, Of<'addressList'>>,
+      Same<MethodsOf<PaymentMethodMarkView>, Of<'paymentMethodMark'>>,
+      Same<MethodsOf<PaymentMethodRowView>, Of<'paymentMethodRow'>>,
+      Same<MethodsOf<PaymentMethodListView>, Of<'paymentMethodList'>>,
+      Same<MethodsOf<PriceSummaryView>, Of<'priceSummary'>>,
+      Same<MethodsOf<PriceSummaryLineView>, Of<'priceSummaryLine'>>,
+      Same<MethodsOf<PaymentStatusBarView>, Of<'paymentStatusBar'>>,
+      Same<MethodsOf<PaymentStatusBlockView>, Of<'paymentStatusBlock'>>,
+      Same<MethodsOf<ContactProfileCardView>, Of<'contactProfileCard'>>,
+      Same<MethodsOf<LeadScoreCardView>, Of<'leadScoreCard'>>,
+      Same<MethodsOf<DealCardView>, Of<'dealCard'>>,
+      Same<MethodsOf<PipelineColumnView>, Of<'pipelineColumn'>>,
+      Same<MethodsOf<PipelineBoardView>, Of<'pipelineBoard'>>,
+      Same<MethodsOf<ImportantAlertsCardView>, Of<'importantAlertsCard'>>,
+      Same<MethodsOf<PatientInfoCardView>, Of<'patientInfoCard'>>,
+      Same<MethodsOf<RecentHiresCardView>, Of<'recentHiresCard'>>,
+      Same<MethodsOf<CartLineView>, Of<'cartLine'>>,
+      Same<MethodsOf<CartPanelView>, Of<'cartPanel'>>,
+      Same<MethodsOf<CartPromoFieldView>, Of<'cartPromoField'>>,
+      Same<MethodsOf<CartTipPickerView>, Of<'cartTipPicker'>>,
+      Same<MethodsOf<MenuItemRowView>, Of<'menuItemRow'>>,
+      Same<MethodsOf<MenuItemOptionsView>, Of<'menuItemOptions'>>,
+      Same<MethodsOf<VendorCardView>, Of<'vendorCard'>>,
+      Same<MethodsOf<MediaCardView>, Of<'mediaCard'>>,
+      Same<MethodsOf<SongCardView>, Of<'songCard'>>,
+      Same<MethodsOf<AlbumCardView>, Of<'albumCard'>>,
+      Same<MethodsOf<ArtistCardView>, Of<'artistCard'>>,
+      Same<MethodsOf<PlaylistCardView>, Of<'playlistCard'>>,
+      Same<MethodsOf<MixCardView>, Of<'mixCard'>>,
+      Same<MethodsOf<PodcastCardView>, Of<'podcastCard'>>,
+      Same<MethodsOf<EpisodeCardView>, Of<'episodeCard'>>,
+      Same<MethodsOf<AudiobookCardView>, Of<'audiobookCard'>>,
+      Same<MethodsOf<GenreCardView>, Of<'genreCard'>>,
+      Same<MethodsOf<EventCardView>, Of<'eventCard'>>,
+      Same<MethodsOf<ProfileCardView>, Of<'profileCard'>>,
+      Same<MethodsOf<FriendActivityCardView>, Of<'friendActivityCard'>>,
+      Same<MethodsOf<QuickAccessTileView>, Of<'quickAccessTile'>>,
+      Same<MethodsOf<RecapCardView>, Of<'recapCard'>>,
+      Same<MethodsOf<ShareCardView>, Of<'shareCard'>>,
+      Same<MethodsOf<LyricsViewView>, Of<'lyricsView'>>,
+      Same<MethodsOf<LyricsPreviewCardView>, Of<'lyricsPreviewCard'>>,
+      Same<MethodsOf<ArtistChipsInputView>, Of<'artistChipsInput'>>,
+      Same<MethodsOf<ArtworkUploaderView>, Of<'artworkUploader'>>,
+      Same<MethodsOf<AudienceBreakdownView>, Of<'audienceBreakdown'>>,
+      Same<MethodsOf<AudienceOverviewView>, Of<'audienceOverview'>>,
+      Same<MethodsOf<CreditsEditorView>, Of<'creditsEditor'>>,
+      Same<MethodsOf<IsrcFieldView>, Of<'isrcField'>>,
+      Same<MethodsOf<PayoutSummaryCardView>, Of<'payoutSummaryCard'>>,
+      Same<MethodsOf<PitchCardView>, Of<'pitchCard'>>,
+      Same<MethodsOf<ReleaseCardView>, Of<'releaseCard'>>,
+      Same<MethodsOf<ReleaseStatusBadgeView>, Of<'releaseStatusBadge'>>,
+      Same<MethodsOf<ReleaseTimelineView>, Of<'releaseTimeline'>>,
+      Same<MethodsOf<StreamsChartView>, Of<'streamsChart'>>,
+      Same<MethodsOf<TopTracksTableView>, Of<'topTracksTable'>>,
+      Same<MethodsOf<TrackMetadataFormView>, Of<'trackMetadataForm'>>,
+      Same<MethodsOf<TrackUploadRowView>, Of<'trackUploadRow'>>,
+      Same<MethodsOf<CheckoutSummaryRowView>, Of<'checkoutSummaryRow'>>,
+      Same<MethodsOf<CheckoutSummaryView>, Of<'checkoutSummary'>>,
+      Same<MethodsOf<CheckoutConfirmView>, Of<'checkoutConfirm'>>,
+      Same<MethodsOf<DeliverySlotDaysView>, Of<'deliverySlotDays'>>,
+      Same<MethodsOf<DeliverySlotOptionView>, Of<'deliverySlotOption'>>,
+      Same<MethodsOf<DeliverySlotPickerView>, Of<'deliverySlotPicker'>>,
+      Same<MethodsOf<OrderConfirmationView>, Of<'orderConfirmation'>>,
+      Same<MethodsOf<TransportControlsView>, Of<'transportControls'>>,
+      Same<MethodsOf<NowPlayingBarView>, Of<'nowPlayingBar'>>,
+      Same<MethodsOf<MiniPlayerView>, Of<'miniPlayer'>>,
+      Same<MethodsOf<FullScreenPlayerView>, Of<'fullScreenPlayer'>>,
+      Same<MethodsOf<PlaybackSpeedMenuView>, Of<'playbackSpeedMenu'>>,
+      Same<MethodsOf<SleepTimerMenuView>, Of<'sleepTimerMenu'>>,
+      Same<MethodsOf<DevicePickerView>, Of<'devicePicker'>>,
+      Same<MethodsOf<ConnectBannerView>, Of<'connectBanner'>>,
+      Same<MethodsOf<CarrierQuoteCardView>, Of<'carrierQuoteCard'>>,
+      Same<MethodsOf<CarrierQuoteListView>, Of<'carrierQuoteList'>>,
+      Same<MethodsOf<EarningsSummaryView>, Of<'earningsSummary'>>,
+      Same<MethodsOf<EarningsBreakdownView>, Of<'earningsBreakdown'>>,
+      Same<MethodsOf<EarningsPayoutRowView>, Of<'earningsPayoutRow'>>,
+      Same<MethodsOf<JobCardView>, Of<'jobCard'>>,
+      Same<MethodsOf<JobBoardView>, Of<'jobBoard'>>,
+      Same<MethodsOf<SignaturePadView>, Of<'signaturePad'>>,
+      Same<MethodsOf<ProofOfDeliveryView>, Of<'proofOfDelivery'>>,
+      Same<MethodsOf<VehiclePickerView>, Of<'vehiclePicker'>>,
+      Same<MethodsOf<ShipmentLoadPickerView>, Of<'shipmentLoadPicker'>>,
+      Same<MethodsOf<ShipmentOptionsListView>, Of<'shipmentOptionsList'>>,
+      Same<MethodsOf<ShipmentRequestFormView>, Of<'shipmentRequestForm'>>,
+      Same<MethodsOf<RowActionsView>, Of<'rowActions'>>,
+      Same<MethodsOf<RowActionButtonView>, Of<'rowActionButton'>>,
+      Same<MethodsOf<SwipeRowView>, Of<'swipeRow'>>,
+      Same<MethodsOf<ThemeToggleView>, Of<'themeToggle'>>,
+      Same<MethodsOf<LibraryPanelView>, Of<'libraryPanel'>>,
+      Same<MethodsOf<LibraryItemView>, Of<'libraryItem'>>,
+      Same<MethodsOf<SearchFieldView>, Of<'searchField'>>,
+      Same<MethodsOf<TopResultCardView>, Of<'topResultCard'>>,
+      Same<MethodsOf<SearchResultTabsView>, Of<'searchResultTabs'>>,
+      Same<MethodsOf<RecentSearchesView>, Of<'recentSearches'>>,
+      Same<MethodsOf<BrowseGridView>, Of<'browseGrid'>>,
+      Same<MethodsOf<QueuePanelView>, Of<'queuePanel'>>,
+      Same<MethodsOf<QueuePanelRowView>, Of<'queuePanelRow'>>,
+      Same<MethodsOf<RecentlyPlayedListView>, Of<'recentlyPlayedList'>>,
+      Same<MethodsOf<TrackListView>, Of<'trackList'>>,
+      Same<MethodsOf<TrackListHeaderView>, Of<'trackListHeader'>>,
+      Same<MethodsOf<TrackRowView>, Of<'trackRow'>>,
+      Same<MethodsOf<TrackRowSkeletonView>, Of<'trackRowSkeleton'>>,
+      Same<MethodsOf<TrackListEmptyView>, Of<'trackListEmpty'>>,
+      Same<MethodsOf<SelectionBarView>, Of<'selectionBar'>>,
+      Same<MethodsOf<EpisodeRowView>, Of<'episodeRow'>>,
+      Same<MethodsOf<EpisodeListView>, Of<'episodeList'>>,
+      // A scroll view's content view takes exactly the spec's `contentView.modifiers`.
+      Same<MethodsOf<ScrollContentView>, (typeof CONTENT_VIEW_MODIFIERS)[number]>,
+    ] = [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+    ];
+    expect(checks.every(Boolean)).toBe(true);
+  });
+
+  it('every generated class is in the sheet once', () => {
+    const names = Object.values(WEB_CLASS);
+    expect(new Set(names).size).toBe(names.length);
+    // A class's own rule, or a child spacing's, which is all inside `:where()` (web-sheet.ts).
+    for (const name of names) {
+      expect(
+        WEB_SHEET.split('\n').filter(
+          (rule) => rule.startsWith(`.${name}{`) || rule.startsWith(`:where(.${name} `),
+        ),
+      ).toHaveLength(1);
+    }
+  });
+
+  it('the className table is current with the spec and the apps’ usage', () => {
+    const script = join(PACKAGE, 'scripts/generate-classnames.mjs');
+    expect(() =>
+      execFileSync(process.execPath, [script, '--check'], { stdio: 'pipe' }),
+    ).not.toThrow();
+  });
+
+  it('the generated outputs are current with the spec', () => {
+    const script = join(PACKAGE, 'scripts/generate.mjs');
+    expect(() =>
+      execFileSync(process.execPath, [script, '--check'], { stdio: 'pipe' }),
+    ).not.toThrow();
+  });
+});

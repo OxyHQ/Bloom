@@ -1,7 +1,7 @@
 import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
+import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { ScrollArea } from '../layout/ScrollArea';
-import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
 import type React from 'react';
@@ -187,9 +187,18 @@ function Scroller({
 
 /** A route Screen's own clearance beyond the occupied bottom edge (Screen's default). */
 const PAGE_CLEARANCE = 16;
-const AnimatedLayoutView = Animated.createAnimatedComponent(StyledView);
-const READING_TRANSITION =
-  'web:transition-[width,flex-basis,max-width,flex-grow] web:duration-[380ms] web:ease-in-out web:motion-reduce:transition-none';
+const AnimatedLayoutView = Animated.createAnimatedComponent(View);
+/**
+ * The reading column eases its width on the web (`ease-in-out`), unless motion
+ * is reduced. A base-layer rule, so the panel layout's own transition for a
+ * scoped envelope (`panel-layout-css.ts`) keeps the final say.
+ */
+const READING_TRANSITION_CSS = `@layer base {
+[data-bloom-reading-envelope],[data-bloom-reading-content] { transition-property: width,flex-basis,max-width,flex-grow; transition-duration: 380ms; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) { [data-bloom-reading-envelope],[data-bloom-reading-content] { transition-property: none; } }
+}`;
+/** `flex: 1` with `minHeight: 0`, as the classes computed it. */
+const FLEX_FILL_BOUNDED: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: '0%', minHeight: 0 };
 
 export function createAppShellEngine() {
   const AppShellComponent: React.FC<AppShellEngineProps> = ({
@@ -633,6 +642,7 @@ export function createAppShellEngine() {
     // Preserve the real device insets for fullscreen dialogs and portals. Only
     // the bounded shell consumes these edges; bottom chrome keeps its own inset.
     const bottomChrome = showBottomBar || showFloatingAction;
+    const frameTopInset = ownsSafeArea ? insets.top : 0;
     const frameBottomInset = ownsSafeArea && !bottomChrome ? insets.bottom : 0;
     const navigationBottomInset = ownsSafeArea && bottomChrome ? insets.bottom : 0;
     const inheritedSafeArea = useContext(SafeAreaConsumedContext);
@@ -652,7 +662,7 @@ export function createAppShellEngine() {
             flex: 1,
             minHeight: 0,
             minWidth: 0,
-            paddingTop: insets.top,
+            paddingTop: frameTopInset,
             paddingInlineStart: rtl ? insets.right : insets.left,
             paddingInlineEnd: rtl ? insets.left : insets.right,
             paddingBottom: frameBottomInset,
@@ -1604,9 +1614,9 @@ export function createAppShellEngine() {
       : plainFrame || railNav
         ? { paddingTop: gutter, paddingBottom: gutter }
         : {};
+    useInteractiveWebCss('bloom-reading-transition', READING_TRANSITION_CSS);
     const centredBody = (
       <AnimatedLayoutView
-        className={READING_TRANSITION}
         {...(Platform.OS === 'web'
           ? { dataSet: { bloomReadingEnvelope: cssScope ?? 'legacy' } }
           : {})}
@@ -1637,7 +1647,6 @@ export function createAppShellEngine() {
         ]}
       >
         <AnimatedLayoutView
-          className={READING_TRANSITION}
           {...(Platform.OS === 'web'
             ? { dataSet: { bloomReadingContent: cssScope ?? 'legacy' } }
             : {})}
@@ -1939,8 +1948,12 @@ export function createAppShellEngine() {
                     bottom: 0,
                     insetInlineStart: 0,
                     width: revealOffset,
-                    paddingTop: revealGutter,
-                    paddingBottom: revealGutter + navigationBottomInset,
+                    // Full height, so the device's top and bottom edges are its
+                    // own to clear wherever the frame leaves them, exactly as the
+                    // portaled overlay drawer does. Without `safeArea` the pages
+                    // own their edges, and the drawer ran under the status bar.
+                    paddingTop: revealGutter + insets.top - frameTopInset,
+                    paddingBottom: revealGutter + insets.bottom - frameBottomInset,
                     paddingInlineStart: revealGutter / 2,
                   }}
                 >
@@ -1993,7 +2006,7 @@ export function createAppShellEngine() {
                   style={{ ...(doc ? { flexGrow: 1 } : flexFill), minHeight: 0, minWidth: 0 }}
                 >
                   {topBarNode}
-                  <StyledView className={doc ? undefined : 'flex-1 min-h-0'}>
+                  <View style={doc ? undefined : FLEX_FILL_BOUNDED}>
                     <View
                       {...(cssScope ? { dataSet: { bloomShellFrame: cssScope } } : {})}
                       style={[
@@ -2004,7 +2017,7 @@ export function createAppShellEngine() {
                       {navRegion}
                       {body}
                     </View>
-                  </StyledView>
+                  </View>
                 </View>
                 <Animated.View
                   pointerEvents={isOpen ? 'auto' : 'none'}
@@ -2059,10 +2072,13 @@ export function createAppShellEngine() {
               >
                 {bars}
                 {isOpen && (
-                  <StyledView
+                  <View
                     pointerEvents="none"
-                    className="absolute bottom-0 left-0 right-0"
                     style={{
+                      position: 'absolute',
+                      right: 0,
+                      bottom: 0,
+                      left: 0,
                       height: contentReserve,
                       backgroundColor: theme.isDark
                         ? 'rgba(255, 255, 255, 0.05)'

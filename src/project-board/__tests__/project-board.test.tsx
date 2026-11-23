@@ -4,7 +4,8 @@ import type React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ProjectBoard } from '../ProjectBoard';
-import { classNamesOn, resolvedStyle } from '../../__tests__/support/rendered-style';
+import { resolvedStyle } from '../../__tests__/support/rendered-style';
+import { useColorTokens } from '../../theme/color-tokens';
 import { cloneColumns, dropTarget, moveTicket, sortColumns } from '../shared';
 import type { ProjectColumn } from '../types';
 
@@ -64,6 +65,21 @@ const columns: ProjectColumn[] = [
   { id: 'done', title: 'Done', limit: 3, tickets: [] },
 ];
 const members = { maya: { id: 'maya', name: 'Maya Chen', initials: 'MC' } };
+let probedSurface = '';
+function SurfaceProbe() {
+  probedSurface = useColorTokens().surface;
+  return null;
+}
+/** The `surface` token under the board's theme: the columns' secondary fill. */
+function surfaceToken() {
+  render(
+    <BloomThemeProvider colorPreset="teal" mode="light">
+      <SurfaceProbe />
+    </BloomThemeProvider>,
+  );
+  return probedSurface;
+}
+
 function renderBoard(extra: Partial<React.ComponentProps<typeof ProjectBoard>> = {}) {
   return render(
     <BloomThemeProvider colorPreset="teal" mode="light">
@@ -152,12 +168,11 @@ describe('ProjectBoard interactions', () => {
       return false;
     });
     expect(surfaces).toHaveLength(columns.length);
+    const fill = surfaceToken();
     for (const surface of surfaces) {
-      expect(classNamesOn(surface.props.style).join(' ')).toContain(
-        'bg-background-secondary-default',
-      );
-      expect(classNamesOn(surface.props.style).join(' ')).toContain('ring-transparent');
-      expect(resolvedStyle(surface.props.style).boxShadow).toBeUndefined();
+      expect(resolvedStyle(surface.props.style).backgroundColor).toBe(fill);
+      // Flat: the never-showing ring is an empty shadow list on native.
+      expect(resolvedStyle(surface.props.style).boxShadow).toEqual([]);
       expect(resolvedStyle(surface.props.style).borderRadius).toBe(20);
     }
   });

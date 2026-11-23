@@ -522,6 +522,14 @@ export function createScreen(
                     <ScrollOffsetProvider value={ownsViewport ? value.scrollY : inheritedOffset}>
                       <View
                         {...props}
+                        // The header and footer slots overflow this root by design:
+                        // a floating header's scroll-edge fade runs past its own box
+                        // (SCRIM_TAIL_RATIO). Without a stacking context Fabric
+                        // hoists those slots into the nearest native parent, which
+                        // under react-native-screens is a view that clips each child
+                        // to its own bounds, so the fade stopped half-opaque at the
+                        // header's foot (Mention Videos, Pixel 8a).
+                        collapsable={false}
                         testID={testID}
                         style={[
                           document

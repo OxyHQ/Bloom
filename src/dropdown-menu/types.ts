@@ -42,6 +42,21 @@ export type DropdownMenuTriggerProps = OverlayTriggerProps & {
    * as a Mac's menu bar extras do. Native only: on web the browser owns focus.
    */
   restoreFocus?: boolean;
+  /**
+   * The colour of a lens trigger (Android 13+): `'neutral'` (default) tints it with the menu
+   * surface, `'primary'` with the theme's `vivid` brand colour, strongly. Setting `'primary'`
+   * makes the trigger lens. No effect where the menu is not the native lens menu.
+   */
+  lensTone?: 'neutral' | 'primary';
+  /**
+   * Draw the trigger itself as lens. Off by default: a menu opens as lens from any trigger, but
+   * a lens trigger belongs to the fixed layer (a header, a toolbar, a floating button), never
+   * inside a scrolling area, whose overscroll stretch it does not follow. `lensTone` and
+   * `lensTint` imply it.
+   */
+  lens?: boolean;
+  /** An explicit colour for the native lens trigger (`#rrggbb`); wins over `lensTone`. */
+  lensTint?: string;
 };
 export type DropdownMenuContentProps = MenuSurfaceProps;
 

@@ -1,11 +1,36 @@
 import type { ReactNode } from 'react';
-import { StyledView } from '../styles/styled-primitives';
+import { StyleSheet, type TextStyle, View } from 'react-native';
+import { createTokenStyles } from '../theme/color-tokens';
+import { TYPE } from './styles';
 import { Text } from '../typography';
 import type { ProjectBoardCardContentProps } from './types';
 
-function text(value: ReactNode, className: string) {
+const styles = StyleSheet.create({
+  root: { width: '100%', flexDirection: 'column' },
+  body: { width: '100%', flexDirection: 'column', gap: 8, padding: 12 },
+  header: {
+    minHeight: 22,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  headerText: { flex: 1, minWidth: 0 },
+  content: { flexDirection: 'column', alignItems: 'flex-start', gap: 8 },
+  badges: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  copy: { width: '100%', flexDirection: 'column', gap: 5 },
+});
+
+const useTextStyles = createTokenStyles((t) => ({
+  // body-2-medium, the secondary text colour.
+  secondary: { ...TYPE.caption, color: t.mutedForeground },
+  // body-medium, the primary text colour; its 14px lost to Text's own 13px.
+  primary: { lineHeight: TYPE.body.lineHeight, fontWeight: 500, color: t.foreground },
+}));
+
+function text(value: ReactNode, style: TextStyle) {
   return typeof value === 'string' || typeof value === 'number' ? (
-    <Text className={className}>{value}</Text>
+    <Text style={style}>{value}</Text>
   ) : (
     value
   );
@@ -23,32 +48,29 @@ export function ProjectBoardCardContent({
   footer,
   testID,
 }: ProjectBoardCardContentProps) {
+  const textStyles = useTextStyles();
   return (
-    <StyledView testID={testID} className="flex w-full flex-col">
+    <View testID={testID} style={styles.root}>
       {preview}
-      <StyledView className="flex w-full flex-col gap-2 p-3">
+      <View style={styles.body}>
         {(header != null || actions != null) && (
-          <StyledView className="flex flex-row min-h-[22px] items-start justify-between gap-3">
-            <StyledView style={{ flex: 1, minWidth: 0 }}>
-              {text(header, 'text-body-2-medium text-text-secondary')}
-            </StyledView>
+          <View style={styles.header}>
+            <View style={styles.headerText}>{text(header, textStyles.secondary)}</View>
             {actions}
-          </StyledView>
+          </View>
         )}
-        <StyledView className="flex flex-col items-start gap-2">
-          {badges != null && (
-            <StyledView className="flex flex-row items-center gap-1.5">{badges}</StyledView>
-          )}
+        <View style={styles.content}>
+          {badges != null && <View style={styles.badges}>{badges}</View>}
           {(title != null || description != null) && (
-            <StyledView className="flex w-full flex-col gap-[5px]">
-              {text(title, 'text-body-medium text-text-primary')}
-              {text(description, 'text-body-2-medium text-text-secondary')}
-            </StyledView>
+            <View style={styles.copy}>
+              {text(title, textStyles.primary)}
+              {text(description, textStyles.secondary)}
+            </View>
           )}
           {children}
-        </StyledView>
+        </View>
         {footer}
-      </StyledView>
-    </StyledView>
+      </View>
+    </View>
   );
 }

@@ -4,7 +4,6 @@ import { SafeAreaConsumedContext } from '../layout/safe-area-ownership';
 import { resolvePaintMode } from '../theme/paint';
 import { createHeaderActionsHost, HeaderActionsHostContext } from './context';
 import { pointerEventsStyle } from '../styles/pointer-events';
-import { StyledView } from '../styles/styled-primitives';
 import {
   memo,
   useContext,
@@ -43,6 +42,7 @@ import {
   buttonTouchVisualInset,
 } from '../button/shared';
 import { BloomScope } from '../appearance';
+import { LensMaterialProvider } from '../floating/lens/lens-material';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useScrollMetricsValue } from '../layout/scroll-metrics';
@@ -844,16 +844,24 @@ function PageHeaderComponent({
     <>
       {backButton}
       {history ? (
-        <BloomScope>
-          <PageHeaderHistory
-            navigation={history}
-            active={screen?.active !== false && host.active !== false}
-            backLabel={backLabel}
-            testID={testID ? `${testID}-history` : undefined}
-          />
-        </BloomScope>
+        <LensMaterialProvider value={floating ? 'lens' : 'surface'}>
+          <BloomScope>
+            <PageHeaderHistory
+              navigation={history}
+              active={screen?.active !== false && host.active !== false}
+              backLabel={backLabel}
+              testID={testID ? `${testID}-history` : undefined}
+            />
+          </BloomScope>
+        </LensMaterialProvider>
       ) : null}
-      {floating && leading ? <BloomScope>{leading}</BloomScope> : leading}
+      {floating && leading ? (
+        <LensMaterialProvider value="lens">
+          <BloomScope>{leading}</BloomScope>
+        </LensMaterialProvider>
+      ) : (
+        leading
+      )}
     </>
   );
 
@@ -940,10 +948,19 @@ function PageHeaderComponent({
                 display: searchOccupiesRow ? 'none' : 'flex',
               }}
             >
-              {floating ? <BloomScope>{actions}</BloomScope> : actions}
+              {floating ? (
+                <LensMaterialProvider value="lens">
+                  <BloomScope>{actions}</BloomScope>
+                </LensMaterialProvider>
+              ) : (
+                actions
+              )}
             </View>
           ) : floating ? (
-            <BloomScope>{actions}</BloomScope>
+            // A floating header's controls float over the content: the native lens where there is one.
+            <LensMaterialProvider value="lens">
+              <BloomScope>{actions}</BloomScope>
+            </LensMaterialProvider>
           ) : (
             actions
           )}
@@ -1041,19 +1058,17 @@ function PageHeaderComponent({
         ) : null}
         {barEmpty ? null : (
           <BloomScope controlDensity={navigationPresentation ? 'compact' : undefined}>
-            <StyledView
+            <View
               {...(windowRoom > 0
                 ? dataHooks({ bloomPageHeaderBar: '', bloomPageHeaderWindow: '' })
                 : dataHook('bloomPageHeaderBar'))}
-              className={
-                navigationPresentation || windowToolbar > 0
-                  ? 'py-0'
-                  : compact
-                    ? 'min-h-8 py-0'
-                    : 'min-h-14'
-              }
               style={[
                 [
+                  navigationPresentation || windowToolbar > 0
+                    ? styles.barFlush
+                    : compact
+                      ? styles.barCompact
+                      : styles.barTall,
                   styles.bar,
                   stacked && { alignItems: 'flex-start' },
                   !compact &&
@@ -1183,7 +1198,7 @@ function PageHeaderComponent({
               ) : (
                 actionsSlot
               )}
-            </StyledView>
+            </View>
           </BloomScope>
         )}
         {accessory ? (
@@ -1230,6 +1245,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 1,
   },
+  barFlush: { paddingBlock: 0 },
+  barCompact: { minHeight: 32, paddingBlock: 0 },
+  barTall: { minHeight: 56 },
   bar: {
     flexDirection: 'row',
     alignItems: 'center',

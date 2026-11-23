@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import type React from 'react';
+import { useContext } from 'react';
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { ThemeScopeContext, type ScopeState } from './context';
-import { getVariableContextProvider } from './style-builder';
+import { ColorScopeLayerContext, throughLayer } from './layer';
 
 /** Re-publish the source scope when a native portal renders under an unrelated outlet. */
 export function ThemeScopeBridge({
@@ -16,15 +17,12 @@ export function ThemeScopeBridge({
   const outletScope = useContext(ThemeScopeContext);
   const sourceTheme = theme ?? outletTheme;
   const sourceScope = scope ?? outletScope;
-  const Variables = getVariableContextProvider();
-  const content = Variables ? (
-    <Variables value={sourceScope?.vars ?? {}}>{children}</Variables>
-  ) : (
-    children
-  );
+  const Layer = useContext(ColorScopeLayerContext);
   return (
     <BloomThemeContext.Provider value={sourceTheme}>
-      <ThemeScopeContext.Provider value={sourceScope}>{content}</ThemeScopeContext.Provider>
+      <ThemeScopeContext.Provider value={sourceScope}>
+        {throughLayer(Layer, sourceScope?.vars, children)}
+      </ThemeScopeContext.Provider>
     </BloomThemeContext.Provider>
   );
 }

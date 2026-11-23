@@ -6,7 +6,7 @@ order: 22
 
 # Typography
 
-Bloom's text primitives. Every one is a flat component, and every one accepts `className` so a NativeWind consumer can override it — except `Blockquote`, for the reason below.
+Bloom's text primitives. Every one is a flat component that takes `style`, which wins over its defaults; `Blockquote` takes a `style` and a `textStyle`, for the reason below.
 
 ```tsx
 import { H1, Lead, Muted, P, Small, Text } from '@oxy.so/bloom/typography';
@@ -41,7 +41,7 @@ react-native-reusables' own numbers, resolved from its `text-4xl font-extrabold 
 
 The FAMILY is not upstream's. shadcn sets everything in one sans face; a Bloom heading is set in the display family, which is the same layer as the colour roles and is Bloom's own.
 
-A caller's `className` replaces the size, weight and tracking (react-native-css merges utilities into `style` first, so an inline default repeating those keys would silently beat `text-2xl`). Only the family survives it.
+A caller's `style` replaces any of the size, weight, tracking or family.
 
 ## Prose variants
 
@@ -67,11 +67,9 @@ Ported from react-native-reusables, which spells them as a `variant` prop on one
 
 react-native-reusables' `code` variant is deliberately absent: Bloom's [`code`](/docs/bloom/main/design-tokens) family already owns monospace text, and a second spelling of one thing is what this library removes rather than adds.
 
-## `Blockquote` takes no `className`
+## `Blockquote` styles two nodes
 
-The one exception, and it is a platform limit rather than a preference. React Native draws no border on a text node — Android renders a `TextView`, iOS an attributed string, and neither paints a left rule — so the rule has to be a `View` wrapping a `Text`.
-
-That splits the component in two: the node the parent lays out is the `View`, while the utilities anybody would write (`text-lg`, `text-primary`) belong on the `Text` inside it. A `className` would land on one of them and silently do nothing for the other, which is exactly the failure Bloom's className rules exist to prevent. So it is not offered:
+React Native draws no border on a text node — Android renders a `TextView`, iOS an attributed string, and neither paints a left rule — so the rule has to be a `View` wrapping a `Text`. `style` addresses the container, `textStyle` the quotation:
 
 ```tsx
 <Blockquote style={{ borderLeftWidth: 4 }} textStyle={{ fontStyle: 'normal' }}>
@@ -79,19 +77,13 @@ That splits the component in two: the node the parent lays out is the `View`, wh
 </Blockquote>
 ```
 
-A caller who wants utility classes composes a `View` and a `Text` directly.
+## Families
 
-## `className` and inline defaults
-
-Every other variant drops a default only for the keys the `className` claims (a custom class it cannot read, such as `chip-label`, is assumed to claim all of them): `text-<size>` (and `text-[14px]`) claims size and line height, `text-<colour>` claims colour, `leading-*` line height and `font-<weight>` weight. react-native-css merges utilities into `style` first, so an inline default repeating a claimed key would win the merge and silently break the caller's `text-lg` or `text-primary`; every other default still applies, so `<Muted className="mt-2">` keeps its secondary colour (dropping all defaults left it unset, and invisible in dark mode). `fontFamily` is the exception and stays inline either way.
-
-Because the family is inline, a family utility cannot beat it, so `Text` reads the ones it can answer from `className` itself: `font-display` (or a size from `text-3xl` up) sets BlomusModernus, and `font-mono` sets JetBrains Mono, at any breakpoint or state prefix (`md:font-mono`). An explicit `font-mono` wins over a family implied by size or variant: `text-4xl font-mono` is mono. Bloom defines no serif family (`fonts/tokens.ts` has `sans`, `display` and `mono`), so `font-serif` has no counterpart.
-
-Layout classes on web need the consumer's Tailwind pipeline to be scanning Bloom's `lib/`. Colours work regardless, because Bloom applies those inline — which is what makes a missing pipeline look like a layout bug rather than a missing stylesheet.
+A `Text`'s family comes from its variant (BlomusModernus for the big titles, Inter for the rest) or from a caller's `fontFamily` (`fontFamilyStyle('mono')` is JetBrains Mono). Bloom defines no serif family (`fonts/tokens.ts` has `sans`, `display` and `mono`).
 
 ## What a `Text` costs
 
-A feed row draws dozens of texts, so `Text` is kept cheap. Without a `className` there is nothing for react-native-css to resolve, and `Text` renders React Native's text node directly: on native one component, no hook slot, and two context reads (the theme and the typography scope). The display face's Bold cut is chosen from the same style it would be under the interop. Only a `Text` with a `className` mounts the interop host that resolves the utilities. `useThemePaint` reads the prepaint context on the web alone (`theme/prepaint/use-paint-colors.native.ts`). `src/typography/__tests__/text-host-cost.test.tsx` pins these numbers.
+A feed row draws dozens of texts, so `Text` is kept cheap: it renders React Native's text node directly, on native one component, no hook slot, and two context reads (the theme and the typography scope). The display face's Bold cut is chosen from its final style. `useThemePaint` reads the prepaint context on the web alone (`theme/prepaint/use-paint-colors.native.ts`). `src/typography/__tests__/text-host-cost.test.tsx` pins these numbers.
 
 ## Desktop text styles
 

@@ -155,11 +155,6 @@ export interface FollowButtonProps extends ToggleBase {
   appearance?: ButtonProps['appearance'];
   /** Shared Button material; preserves the standard surface by default. */
   material?: ButtonProps['material'];
-  /** Classes on the Button layout and surface owner. */
-  className?: string;
-  /** Typography classes on both animated labels and their measuring copies.
-   * Text mode only; explicit color/textStyle still take precedence. */
-  labelClassName?: string;
   /** Shared Button tone. Defaults to support (secondary). */
   tone?: BloomTone;
   /** Compact toggle with icons and the same accessible name. */

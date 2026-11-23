@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { View as NativeView } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { Button as ButtonComponent } from '../button';
 import type { Collapsible as CollapsibleComponent } from '../collapsible/Collapsible';
 import { RiExpandDiagonalSLine } from '../icons/remix/RiExpandDiagonalSLine';
@@ -15,8 +15,9 @@ import { Toolbar } from '../layout/Toolbar';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { MeterRing } from '../stat-bar/MeterRing';
+import { useWindowBreakpoint } from '../hooks/use-width-class';
 import { IS_WEB } from '../styles/platform';
-import { StyledView as View } from '../styles/styled-primitives';
+import { useColorTokens } from '../theme/color-tokens';
 import type { Surface as SurfaceComponent } from '../surface/Surface';
 import { Textarea } from '../textarea/Textarea';
 import { COMPACT_COMPOSER_MESSAGES } from './messages';
@@ -51,13 +52,12 @@ export function createCompactComposer({
     busy = false,
     canSubmit = true,
     labels,
-    className,
     style,
     testID,
   }: CompactComposerProps) {
     const { messages } = useMessages(COMPACT_COMPOSER_MESSAGES);
     const common = useCommonMessages();
-    const capsule = useRef<ComponentRef<typeof NativeView>>(null);
+    const capsule = useRef<ComponentRef<typeof View>>(null);
     const [focused, setFocused] = useState(false);
     const [attempt, setAttempt] = useState(0);
     const focusCallback = useRef(onFocusChange);
@@ -86,6 +86,10 @@ export function createCompactComposer({
       canSubmit &&
       value.length <= maxLength &&
       (value.trim().length > 0 || hasAttachments);
+    const tokens = useColorTokens();
+    const tier = useWindowBreakpoint();
+    // From `md` up the scroller holds more lines.
+    const wide = tier !== 'base' && tier !== 'sm';
     const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
     const inputLabel = labels?.input ?? placeholder ?? messages.input;
     const actions = (location: string) =>
@@ -106,23 +110,17 @@ export function createCompactComposer({
         />
       ));
     return (
-      <Surface
-        ref={capsule}
-        radius={28}
-        className={['overflow-hidden', className].filter(Boolean).join(' ')}
-        style={style}
-        testID={testID}
-      >
+      <Surface ref={capsule} radius={28} style={[styles.capsule, style]} testID={testID}>
         <ScrollArea
-          className="max-h-64 md:max-h-80"
-          containerClassName="max-h-64 md:max-h-80"
-          contentContainerClassName="px-3 py-1.5"
+          style={{ maxHeight: wide ? 320 : 256 }}
+          viewportStyle={{ maxHeight: wide ? 320 : 256 }}
+          contentContainerStyle={{ paddingInline: 12, paddingBlock: 6 }}
           scrollbar="always"
           keyboardShouldPersistTaps="handled"
           testID={id('scroll')}
         >
           {attachments}
-          <View className="min-h-11 flex-row items-center gap-3">
+          <View style={styles.editorRow}>
             {avatar}
             <Textarea
               inputRef={inputRef}
@@ -141,12 +139,20 @@ export function createCompactComposer({
               rows={1}
               autoResize
               scrollEnabled={false}
-              className="min-w-0 flex-1"
-              fieldClassName="bg-transparent"
-              inputClassName="overflow-hidden p-0 text-base leading-5 text-foreground"
+              style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: '0%' }}
+              bare
+              inputStyle={{
+                overflow: 'hidden',
+                paddingLeft: 0,
+                paddingRight: 0,
+                // `text-base` is 1rem: 16px on the web, react-native-css's 14px rem on native.
+                fontSize: IS_WEB ? 16 : 14,
+                lineHeight: 20,
+                color: tokens.foreground,
+              }}
               testID={id('input')}
             />
-            <View className="flex-row items-center">
+            <View style={styles.row}>
               {!expanded ? actions('inline') : null}
               {onExpand ? (
                 <Button
@@ -175,7 +181,7 @@ export function createCompactComposer({
             style={{ paddingLeft: 8, paddingRight: 12, paddingTop: 8, paddingBottom: 8 }}
             testID={id('toolbar')}
             actions={
-              <View className="flex-row items-center gap-3">
+              <View style={styles.submitRow}>
                 <MeterRing
                   value={value.length}
                   max={maxLength}
@@ -192,7 +198,7 @@ export function createCompactComposer({
                   onBlur={handleBlur}
                   tone="action"
                   size="md"
-                  className="min-w-20"
+                  style={styles.submit}
                   onPress={() => {
                     if (submitEnabled) onSubmit();
                   }}
@@ -205,7 +211,7 @@ export function createCompactComposer({
               </View>
             }
           >
-            <View className="flex-row items-center">{actions('toolbar')}</View>
+            <View style={styles.row}>{actions('toolbar')}</View>
           </Toolbar>
         </Collapsible>
       </Surface>
@@ -213,3 +219,11 @@ export function createCompactComposer({
   }
   return CompactComposer;
 }
+
+const styles = StyleSheet.create({
+  capsule: { overflow: 'hidden' },
+  editorRow: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  submitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  submit: { minWidth: 80 },
+});

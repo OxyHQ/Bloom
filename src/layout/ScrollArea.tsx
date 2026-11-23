@@ -34,8 +34,8 @@ function NativeScrollArea({
   size: _size,
   scrollbarSide: _scrollbarSide,
   ref,
-  className,
-  containerClassName,
+  style,
+  viewportStyle,
   ...props
 }: ScrollAreaProps) {
   const indicator = useNativeScrollIndicator(scrollbar);
@@ -44,9 +44,9 @@ function NativeScrollArea({
     <ScrollViewport
       {...indicator}
       {...props}
+      style={[style, viewportStyle]}
       removeClippedSubviews={viewportOverlay != null ? false : props.removeClippedSubviews}
       animatedHandler={viewportOverlay != null ? (animatedHandler ?? handler) : animatedHandler}
-      className={[containerClassName, className].filter(Boolean).join(' ') || undefined}
       onScroll={onScroll}
       onLayout={onLayout}
       onContentSizeChange={onContentSizeChange}

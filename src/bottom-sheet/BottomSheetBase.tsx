@@ -24,7 +24,22 @@ import {
   type ViewStyle,
   type StyleProp,
 } from 'react-native';
-import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
+import {
+  useDrag,
+  useScrollGesture,
+  useStableCallback,
+  type DragActivation,
+} from '../motion/gestures';
+import {
+  animateMotionValue,
+  useDerivedMotionValue,
+  useMotionStyle,
+  useMotionValueOf,
+} from '../motion/motion-value';
+import { springSpecOf } from '../motion/spec';
+import { resolveSurfaceTransition } from '../motion/surface-transition';
+import type { Timing } from '../motion/timing';
 import { ScrollBar } from '../layout/ScrollBar';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SurfacePaint } from '../surface/SurfacePaint';
@@ -40,7 +55,6 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -55,12 +69,38 @@ import type { BottomSheetRef, BottomSheetBaseProps } from './types';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
 import { UNSET } from '../styles/animated-style';
 
-const SPRING_CONFIG = {
-  reduceMotion: MOTION_RECIPES.expand.reduceMotion,
-  damping: 25,
-  stiffness: 300,
-  mass: 0.8,
-};
+/**
+ * The sheet's spring, written as physics (mass 0.8, stiffness 300, damping
+ * 25): it presents, follows a release and settles a refused dismissal. It
+ * leaves on a softer one (stiffness 250). The same oscillators as specs, so
+ * they play on the gesture layer exactly as they did.
+ */
+const SHEET_SPRING = springSpecOf({ mass: 0.8, stiffness: 300, damping: 25 });
+const SHEET_LEAVE_SPRING = springSpecOf({ mass: 0.8, stiffness: 250, damping: 25 });
+
+/** Where the sheet's scale is at a translate: 1 at rest, 0.95 a screen's height down. */
+function sheetScaleAt(translate: number, screenHeight: number): number {
+  'worklet';
+  return interpolate(translate, [0, screenHeight], [1, 0.95]);
+}
+
+/** The keyboard lifts the sheet by its height. */
+function keyboardLift(keyboardHeight: number): number {
+  'worklet';
+  return -keyboardHeight;
+}
+
+/** A footer that rides with the sheet does not move inside it. */
+function footerAtRest(): number {
+  'worklet';
+  return 0;
+}
+
+/** A body drag that has its own activation only moves the sheet down from where it started. */
+function followsDown(travel: number, next: number): boolean {
+  'worklet';
+  return travel >= 0 && next >= 0;
+}
 
 export const BottomSheetBase = forwardRef(
   (props: BottomSheetBaseProps, ref: React.ForwardedRef<BottomSheetRef>) => {
@@ -108,6 +148,16 @@ export const BottomSheetBase = forwardRef(
       }),
       [motion.duration, motion.easing],
     );
+    // The same timed presentation as the gesture layer plays it on the
+    // sheet's translate: the transition's duration and cubic-bezier.
+    const [x1, y1, x2, y2] = resolveSurfaceTransition(transition).easing;
+    const timedMotion = useMemo<Timing>(
+      () => ({
+        duration: timedConfig.duration,
+        curve: { kind: 'bezier', points: [x1, y1, x2, y2] },
+      }),
+      [timedConfig.duration, x1, y1, x2, y2],
+    );
     const insets = useCssSafeAreaInsets(useSafeAreaInsets());
     const theme = useTheme();
     const { colors } = theme;
@@ -142,39 +192,22 @@ export const BottomSheetBase = forwardRef(
     }, [screenHeight, screenHeightSV]);
 
     const translateY = useSharedValue(screenHeight);
+    // The sheet's translate as Bloom's gesture layer moves it: its drags write
+    // it, its springs play on it, and the sheet's transform follows it through
+    // the one mapper. It is a motion value over `translateY` because the
+    // backdrop's fade and the owner's `animatedProgress` read the same number
+    // in the same frame, on the web too (`useMotionValueOf`).
+    const offset = useMotionValueOf(translateY);
     const opacity = useSharedValue(0);
     const scrollOffsetY = useSharedValue(0);
     const isScrollAtTop = useSharedValue(true);
-    const allowPanClose = useSharedValue(true);
     // Live keyboard height. Written by the native shell's keyboard tracker via
     // this shared value; on web it stays 0 (the browser owns keyboard layout).
     const keyboardHeight = useSharedValue(0);
-    // Stores the sheet's `translateY` captured at the moment a pan gesture
-    // begins, so `onUpdate` can offset from the starting position. This MUST
-    // be a primitive shared value, not an object-valued one. Under
-    // react-native-worklets 0.8.x (Reanimated 4), assigning a fresh object
-    // literal to an object-valued shared value's `.value` inside a worklet
-    // freezes the object (`freezeObjectInDev`) and routes the mutation through
-    // the serializer's listener machinery — which then tries to call the
-    // non-worklet `removeListener` synchronously on the UI thread and crashes
-    // ("Tried to synchronously call a non-worklet function `removeListener`").
-    // A scalar shared value sidesteps all object serialization.
-    const contextY = useSharedValue(0);
     // Mirror of `closeGenerationRef` for worklet access. Bumped from the JS
     // thread in lockstep with the ref so gesture worklets always see the
-    // current generation when they snapshot it on `onEnd`.
+    // current generation when they snapshot it on release.
     const closeGeneration = useSharedValue(0);
-    // Used by `manualActivation` body pan to track the touch's initial Y so
-    // it can compute downward distance for the activation decision.
-    const touchStartY = useSharedValue(0);
-
-    // Refs used to mark the handle pan and the body pan as mutually
-    // simultaneous (manualActivation mode only). Without this RNGH treats them
-    // as racing gestures and a touch that begins in the handle area could be
-    // claimed by whichever recognizer activates first — leading to
-    // inconsistent drag start.
-    const bodyPanRef = useRef<GestureType | undefined>(undefined);
-    const handlePanRef = useRef<GestureType | undefined>(undefined);
 
     // Completion is not a user request: once closed, every owner must hear it.
     // Vetoes are checked before a user-triggered close starts, never after it.
@@ -238,11 +271,7 @@ export const BottomSheetBase = forwardRef(
           1,
           timed ? timedConfig : { ...MOTION_RECIPES.present, duration: motion.duration ?? 250 },
         );
-        translateY.value = motion.reducedMotion
-          ? 0
-          : timed
-            ? withTiming(0, timedConfig)
-            : withSpring(0, SPRING_CONFIG);
+        animateMotionValue(offset, 0, timed ? timedMotion : SHEET_SPRING, motion.reducedMotion);
       } else if (rendered) {
         // Capture the generation for THIS close cycle so the animation
         // callback (running on the UI thread, scheduled back to JS) and
@@ -257,11 +286,12 @@ export const BottomSheetBase = forwardRef(
             }
           },
         );
-        translateY.value = motion.reducedMotion
-          ? screenHeight
-          : timed
-            ? withTiming(screenHeight, timedConfig)
-            : withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
+        animateMotionValue(
+          offset,
+          screenHeight,
+          timed ? timedMotion : SHEET_LEAVE_SPRING,
+          motion.reducedMotion,
+        );
 
         // Fallback timer to ensure close completes (especially on web
         // where reanimated callbacks occasionally drop on tab blur).
@@ -283,9 +313,10 @@ export const BottomSheetBase = forwardRef(
       screenHeight,
       closeGeneration,
       opacity,
-      translateY,
+      offset,
       timed,
       timedConfig,
+      timedMotion,
       motion.duration,
       motion.reducedMotion,
     ]);
@@ -323,7 +354,7 @@ export const BottomSheetBase = forwardRef(
       (generation: number, velocity: number) => {
         if (closeGenerationRef.current !== generation || hasClosedRef.current) return;
         if (onDismissAttempt && !onDismissAttempt()) {
-          translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
+          animateMotionValue(offset, 0, SHEET_SPRING, false, undefined, velocity);
           return;
         }
         // The timed presentation shares the imperative close lifecycle, so a live
@@ -332,14 +363,14 @@ export const BottomSheetBase = forwardRef(
           setVisible(false);
           return;
         }
-        translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
+        animateMotionValue(offset, screenHeightSV.value, SHEET_SPRING, false, undefined, velocity);
         opacity.value = withTiming(0, { ...MOTION_RECIPES.dismiss, duration: 250 }, (finished) => {
           if (finished) runOnJS(finishClose)(generation);
         });
       },
       [
         onDismissAttempt,
-        translateY,
+        offset,
         screenHeightSV,
         opacity,
         finishClose,
@@ -375,167 +406,106 @@ export const BottomSheetBase = forwardRef(
       [present, dismiss, scrollTo],
     );
 
-    const nativeGesture = useMemo(() => Gesture.Native(), []);
+    // The drags are Bloom's gesture layer (`useDrag`): each moves `offset`
+    // with the finger on the UI thread and hands its release to `release`,
+    // which decides in the same frame. One rule closes every pan the sheet
+    // owns (`shouldClosePan`); a pull short of it springs home from the
+    // finger's velocity; a close crosses to JS for the owner's veto.
+    const dismissFromPan = useStableCallback(requestPanDismiss);
+    const release = useCallback(
+      (end: { value: number; velocity: number }) => {
+        'worklet';
+        if (shouldClosePan(end.value, end.velocity, screenHeightSV.value)) {
+          runOnJS(dismissFromPan)(closeGeneration.value, end.velocity);
+        } else {
+          animateMotionValue(offset, 0, SHEET_SPRING, false, undefined, end.velocity);
+        }
+      },
+      [dismissFromPan, screenHeightSV, closeGeneration, offset],
+    );
 
-    // Body pan — two strategies, switched by `manualActivation`.
+    // Body drag — two strategies, switched by `manualActivation`.
     //
     // (1) Legacy mode (`manualActivation: false`, the bloom 0.3.x default):
-    //     Pan is always active. We snapshot the scroll offset at `onStart`
-    //     and gate movement on `scrollOffsetY <= 8` during the gesture.
-    //     This is what current bloom consumers expect.
+    //     the drag shares every touch with the scroll view's own gesture and
+    //     takes one past the pan's own slop. Whether it drags at all is read
+    //     when it takes the touch (`scrollOffsetY <= 8`); after that it holds
+    //     still while a pull down meets content that is not at (or near) the
+    //     top, so the ScrollView scrolls instead.
     //
     // (2) gorhom-style mode (`manualActivation: true`):
-    //     Pan uses `manualActivation(true)` and only flips to active when
-    //     the inner ScrollView is at the top AND the user has moved their
-    //     finger downward > 8dp. In every other case it fails, so the
-    //     ScrollView keeps full ownership of the touch. This is the only
-    //     RNGH 2.x pattern that does not steal vertical events from the
-    //     inner scroller on Android. Required for FileManagement /
-    //     PhotoPicker style sheets.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
-    const panGesture = useMemo(() => {
-      if (manualActivation) {
-        return Gesture.Pan()
-          .enabled(enablePanDownToClose)
-          .withRef(bodyPanRef)
-          .manualActivation(true)
-          .simultaneousWithExternalGesture(handlePanRef)
-          .onTouchesDown((e) => {
-            'worklet';
-            const t = e.changedTouches[0];
-            if (t) touchStartY.value = t.absoluteY;
-            contextY.value = translateY.value;
-          })
-          .onTouchesMove((e, state) => {
-            'worklet';
-            const t = e.changedTouches[0];
-            if (!t) return;
-            const dy = t.absoluteY - touchStartY.value;
-            const intent = sheetPanIntent(dy, scrollOffsetY.value, 0, 'dismiss');
-            if (intent === 'activate') state.activate();
-            else if (intent === 'fail') state.fail();
-          })
-          .onUpdate((event) => {
-            'worklet';
-            if (event.translationY < 0) return;
-            const newTranslateY = contextY.value + event.translationY;
-            if (newTranslateY >= 0) {
-              translateY.value = newTranslateY;
-            }
-          })
-          .onEnd((event) => {
-            'worklet';
-            const velocity = event.velocityY;
-            const distance = translateY.value;
-            const shouldClose = shouldClosePan(distance, velocity, screenHeightSV.value);
+    //     the drag takes a touch itself, only when the inner ScrollView is at
+    //     the top AND the finger has moved down > 8dp (`sheetPanIntent`). In
+    //     every other case it fails, so the ScrollView keeps full ownership
+    //     of the touch. This is the only pattern that does not steal vertical
+    //     events from the inner scroller on Android. Required for
+    //     FileManagement / PhotoPicker style sheets. It only moves the sheet
+    //     down from where it started.
+    const scrollGesture = useScrollGesture();
+    const startsAtTop = useCallback(() => {
+      'worklet';
+      return scrollOffsetY.value <= 8;
+    }, [scrollOffsetY]);
+    // If the user is pulling down while content isn't at (or near) the top,
+    // the ScrollView handles it (a slightly larger tolerance for a smoother handoff).
+    const followsAtTop = useCallback(
+      (travel: number) => {
+        'worklet';
+        return !(travel > 0 && scrollOffsetY.value > 8);
+      },
+      [scrollOffsetY],
+    );
+    const takesAtTop = useCallback(
+      (travel: number): DragActivation => {
+        'worklet';
+        return sheetPanIntent(travel, scrollOffsetY.value, 0, 'dismiss');
+      },
+      [scrollOffsetY],
+    );
 
-            if (shouldClose) {
-              runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
-            } else {
-              translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
-            }
-          });
-      }
-
-      // Legacy always-active pan (bloom 0.3.x behaviour).
-      return Gesture.Pan()
-        .enabled(enablePanDownToClose)
-        .simultaneousWithExternalGesture(nativeGesture)
-        .onStart(() => {
-          'worklet';
-          contextY.value = translateY.value;
-          allowPanClose.value = scrollOffsetY.value <= 8;
-        })
-        .onUpdate((event) => {
-          'worklet';
-          if (!allowPanClose.value) {
-            return;
+    // Dedicated handle drag — only mounted in `manualActivation` mode. It
+    // takes a touch past 8dp either way, so users can drag the handle even
+    // while content is mid-scroll. In legacy mode the body drag already wraps
+    // the whole sheet (handle included), so no separate gesture is needed.
+    // Only a detached sheet follows a pull above its rest, at 0.3 of it.
+    const handleDrag = useDrag(offset, {
+      axis: 'y',
+      min: 0,
+      overdrag: detached ? 0.3 : 0,
+      activeOffset: 8,
+      enabled: manualActivation && enablePanDownToClose && enableHandlePanningGesture,
+      startOn: 'activation',
+      onRelease: release,
+    });
+    // In manualActivation mode the body and handle drags are simultaneous
+    // (Gesture Handler makes the relation mutual). Without it they race, and
+    // a touch that begins in the handle area could be claimed by whichever
+    // activates first — leading to inconsistent drag start.
+    const bodyDrag = useDrag(
+      offset,
+      manualActivation
+        ? {
+            axis: 'y',
+            min: 0,
+            enabled: enablePanDownToClose,
+            simultaneousWith: handleDrag,
+            activation: takesAtTop,
+            follows: followsDown,
+            onRelease: release,
           }
-          const newTranslateY = contextY.value + event.translationY;
-          // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
-          const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
-          if (event.translationY > 0 && !atTopOrNearTop) {
-            return;
-          }
-          if (newTranslateY >= 0) {
-            translateY.value = newTranslateY;
-          } else if (detached) {
-            // Only allow overdrag (pulling up beyond top) when detached
-            translateY.value = newTranslateY * 0.3;
-          } else {
-            // In normal mode, prevent overdrag - clamp to 0
-            translateY.value = 0;
-          }
-        })
-        .onEnd((event) => {
-          'worklet';
-          if (!allowPanClose.value) {
-            return;
-          }
-          const velocity = event.velocityY;
-          const distance = translateY.value;
-          const shouldClose = shouldClosePan(distance, velocity, screenHeightSV.value);
-
-          if (shouldClose) {
-            runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
-          } else {
-            translateY.value = withSpring(0, {
-              ...SPRING_CONFIG,
-              velocity: velocity,
-            });
-          }
-        });
-      // Shared values are stable refs; the listed deps are the only JS-side
-      // values that change the gesture's behavior. `finishClose` is stable
-      // (useCallback with stable deps).
-    }, [enablePanDownToClose, detached, manualActivation, nativeGesture, requestPanDismiss]);
-
-    // Dedicated handle pan — only built in `manualActivation` mode. Always
-    // active so users can drag the handle even while content is mid-scroll.
-    // In legacy mode the body pan already wraps the whole sheet (handle
-    // included), so no separate gesture is needed.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional dependency list (carried over from the former eslint-disable)
-    const handlePanGesture = useMemo(() => {
-      if (!manualActivation) return undefined;
-      return Gesture.Pan()
-        .enabled(enablePanDownToClose && enableHandlePanningGesture)
-        .withRef(handlePanRef)
-        .simultaneousWithExternalGesture(bodyPanRef)
-        .activeOffsetY([-8, 8])
-        .onStart(() => {
-          'worklet';
-          contextY.value = translateY.value;
-        })
-        .onUpdate((event) => {
-          'worklet';
-          const newTranslateY = contextY.value + event.translationY;
-          if (newTranslateY >= 0) {
-            translateY.value = newTranslateY;
-          } else if (detached) {
-            translateY.value = newTranslateY * 0.3;
-          } else {
-            translateY.value = 0;
-          }
-        })
-        .onEnd((event) => {
-          'worklet';
-          const velocity = event.velocityY;
-          const distance = translateY.value;
-          const shouldClose = shouldClosePan(distance, velocity, screenHeightSV.value);
-
-          if (shouldClose) {
-            runOnJS(requestPanDismiss)(closeGeneration.value, velocity);
-          } else {
-            translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
-          }
-        });
-    }, [
-      manualActivation,
-      enablePanDownToClose,
-      enableHandlePanningGesture,
-      detached,
-      requestPanDismiss,
-    ]);
+        : {
+            axis: 'y',
+            min: 0,
+            overdrag: detached ? 0.3 : 0,
+            activeOffset: null,
+            enabled: enablePanDownToClose,
+            simultaneousWith: scrollGesture,
+            startOn: 'activation',
+            takes: startsAtTop,
+            follows: followsAtTop,
+            onRelease: release,
+          },
+    );
 
     // CRITICAL — the shared values each `useAnimatedStyle` READS (translateY,
     // opacity, screenHeightSV, keyboardHeight) MUST be listed in its dependency
@@ -593,31 +563,32 @@ export const BottomSheetBase = forwardRef(
     const footerHeight = useSharedValue(0);
     const [footerInset, setFooterInset] = useState(0);
     const overlayFooter = footerBehavior === 'viewport' && scrollable && footer != null;
-    const footerStyle = useAnimatedStyle(() => {
-      const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
-      return {
-        transform: [
-          {
-            translateY:
-              footerBehavior === 'viewport'
-                ? sheetFooterOffset(
-                    translateY.value,
-                    scale,
-                    sheetHeightSV.value,
-                    footerHeight.value,
-                  )
-                : 0,
-          },
-        ],
-      };
-    }, [footerBehavior, translateY, screenHeightSV, sheetHeightSV, footerHeight]);
-
-    const sheetStyle = useAnimatedStyle(() => {
-      const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
-      return {
-        transform: [{ translateY: translateY.value - keyboardHeight.value }, { scale }],
-      };
-    }, [translateY, screenHeightSV, keyboardHeight]);
+    // The sheet's transform follows its translate through the one mapper:
+    // lifted by the keyboard, and shrinking to 0.95 over a screen's travel.
+    // A `viewport` footer holds the panel's bottom edge as the sheet moves
+    // down, until it reaches the panel's top (`sheetFooterOffset`).
+    const screenHeightValue = useMotionValueOf(screenHeightSV);
+    const sheetHeightValue = useMotionValueOf(sheetHeightSV);
+    const footerHeightValue = useMotionValueOf(footerHeight);
+    const keyboardValue = useMotionValueOf(keyboardHeight);
+    const sheetScale = useDerivedMotionValue([offset, screenHeightValue], sheetScaleAt);
+    const lift = useDerivedMotionValue([keyboardValue], keyboardLift);
+    const sheetMotion = useMotionStyle({ translateY: [offset, lift], scale: sheetScale });
+    const footerOffset = useDerivedMotionValue(
+      [offset, sheetScale, sheetHeightValue, footerHeightValue],
+      footerBehavior === 'viewport' ? sheetFooterOffset : footerAtRest,
+    );
+    const footerMotion = useMotionStyle({ translateY: footerOffset });
+    // The sheet's node is the keyboard boundary's (`sheetRef`) and, on the web,
+    // the one the mapper writes.
+    const bindSheetMotion = sheetMotion.ref;
+    const attachSheet = useCallback(
+      (node: ComponentRef<typeof View> | null) => {
+        sheetRef.current = node;
+        bindSheetMotion?.(node);
+      },
+      [bindSheetMotion],
+    );
 
     // The shared window-edge rule, resolved on the JS thread: `windowEdgeGap` is
     // not a worklet, so the worklets below capture the number rather than call it.
@@ -750,8 +721,8 @@ export const BottomSheetBase = forwardRef(
     // sheet. In legacy mode the handle is rendered inline as a decorative
     // overlay (the body pan covers the entire sheet, handle included).
     const handleSlot =
-      handleNode && manualActivation && handlePanGesture ? (
-        <GestureDetector gesture={handlePanGesture}>
+      handleNode && manualActivation ? (
+        <GestureDetector gesture={handleDrag}>
           {/*
               The hit area is a POINTER affordance and is deliberately not an
               accessibility element. It used to carry `accessible
@@ -786,7 +757,7 @@ export const BottomSheetBase = forwardRef(
 
     // Inner content: scrollable wraps in Animated.ScrollView, non-scrollable
     // renders children directly. In legacy mode the scrollview is also
-    // wrapped in the `nativeGesture` detector for scroll/pan coordination.
+    // wrapped in the scroll view's own gesture (`scrollGesture`) for scroll/pan coordination.
     const scrollViewNode = (
       <Animated.ScrollView
         ref={scrollViewRef}
@@ -814,7 +785,7 @@ export const BottomSheetBase = forwardRef(
     ) : (
       // Legacy mode: native gesture wraps the scroll view to coordinate
       // with the always-active body pan.
-      <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>
+      <GestureDetector gesture={scrollGesture}>{scrollViewNode}</GestureDetector>
     );
     const bodyContent = scrollable ? (
       Platform.OS === 'web' ? (
@@ -876,10 +847,10 @@ export const BottomSheetBase = forwardRef(
             />
           )}
 
-          <GestureDetector gesture={panGesture}>
+          <GestureDetector gesture={bodyDrag}>
             <Animated.View
               collapsable={false}
-              ref={sheetRef}
+              ref={attachSheet}
               // The semantic modal and keyboard boundary must include
               // the sticky header as well as the scrolling body.
               role={Platform.OS === 'web' ? 'dialog' : undefined}
@@ -902,7 +873,7 @@ export const BottomSheetBase = forwardRef(
                   ? []
                   : [{ left: sheetSideInset, right: sheetSideInset }]),
                 sheetMarginStyle,
-                sheetStyle,
+                sheetMotion.style,
                 sheetHeightStyle,
                 style,
                 {
@@ -953,6 +924,7 @@ export const BottomSheetBase = forwardRef(
                 {footer != null && (
                   <Animated.View
                     testID="bloom-sheet-footer"
+                    ref={footerMotion.ref}
                     pointerEvents="box-none"
                     onLayout={(event) => {
                       const height = event.nativeEvent.layout.height;
@@ -962,7 +934,7 @@ export const BottomSheetBase = forwardRef(
                     style={[
                       { flexShrink: 0 },
                       overlayFooter && { position: 'absolute', left: 0, right: 0, bottom: 0 },
-                      footerStyle,
+                      footerMotion.style,
                     ]}
                   >
                     {footer}

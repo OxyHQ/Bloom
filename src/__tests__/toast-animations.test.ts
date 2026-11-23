@@ -1,90 +1,80 @@
-import {
-  MAX_CACHED_ANIMATIONS,
-  getToastEnterAnimation,
-  getToastExitAnimation,
-  toastAnimationCacheSize,
-} from '../toast/animations';
+import { toastEnterKeyframes, toastExitKeyframes } from '../toast/animations';
+import { MOTION } from '../motion/tokens';
 import type { ToastPosition } from '../toast/types';
 
-const POSITIONS: ToastPosition[] = ['top-center', 'bottom-center', 'bottom-right', 'center'];
+/** A keyframes value's frames as `[at, opacity, translateY]`. */
+const frames = (value: ReturnType<typeof toastEnterKeyframes>) =>
+  value.frames.map((frame) => [
+    frame.at,
+    frame.opacity,
+    (frame.transform[0] as { translateY: number } | undefined)?.translateY,
+  ]);
 
-describe('toast layout animations', () => {
-  it('returns the same instance for the same enter shape', () => {
-    const first = getToastEnterAnimation('bottom-center');
-    expect(getToastEnterAnimation('bottom-center')).toBe(first);
-  });
+describe('the toast’s enter and exit, as Bloom motion keyframes', () => {
+  it.each<[ToastPosition, number]>([
+    ['top-center', -20],
+    ['bottom-center', 50],
+    ['bottom-right', 50],
+    ['center', 50],
+  ])(
+    'a %s row rises %s px into its slot as it fades in, over the enter motion',
+    (position, from) => {
+      const enter = toastEnterKeyframes(position);
+      expect(frames(enter)).toEqual([
+        [0, 0, from],
+        [1, 1, 0],
+      ]);
+      expect(enter.motion).toBe(MOTION.enter);
+      expect(toastEnterKeyframes(position)).toBe(enter);
+    },
+  );
 
-  it('returns a different enter instance per position', () => {
-    const instances = POSITIONS.map((position) => getToastEnterAnimation(position));
-    expect(new Set(instances).size).toBe(POSITIONS.length);
-  });
-
-  it('returns a different exit instance per position', () => {
-    const instances = POSITIONS.map((position) =>
-      getToastExitAnimation({
-        position,
-        isHiddenByLimit: false,
-        isSingle: true,
-        stackGap: 8,
-      }),
-    );
-    expect(new Set(instances).size).toBe(POSITIONS.length);
-  });
-
-  it('returns the same instance for the same exit shape', () => {
-    const shape = {
-      position: 'bottom-center' as const,
-      isHiddenByLimit: false,
-      isSingle: true,
-      stackGap: 8,
-    };
-    expect(getToastExitAnimation(shape)).toBe(getToastExitAnimation(shape));
-  });
-
-  it.each([
-    ['isHiddenByLimit', { isHiddenByLimit: true }],
-    ['isSingle', { isSingle: false }],
-    ['stackGap', { stackGap: 12 }],
-    ['position', { position: 'top-center' as const }],
-  ])('keys the exit cache on %s', (_label, override) => {
-    const base = {
-      position: 'bottom-center' as const,
-      isHiddenByLimit: false,
-      isSingle: true,
-      stackGap: 8,
-    };
-    expect(getToastExitAnimation({ ...base, ...override })).not.toBe(getToastExitAnimation(base));
-  });
-
-  it('gives each cached instance its own definition object', () => {
-    // `Keyframe.parseDefinitions()` mutates the definitions it was built with
-    // (rewriting `from`/`to` into `0`/`100`), so two instances sharing one object
-    // would make the second throw. Distinct instances must not alias.
-    const first = getToastEnterAnimation('top-center');
-    const second = getToastEnterAnimation('bottom-center');
-    expect(first).not.toBe(second);
-  });
-
-  it('never grows past MAX_CACHED_ANIMATIONS, however many gaps are used', () => {
-    for (let stackGap = 0; stackGap < MAX_CACHED_ANIMATIONS * 4; stackGap++) {
-      getToastExitAnimation({
-        position: 'bottom-center',
-        isHiddenByLimit: false,
-        isSingle: false,
-        stackGap,
-      });
-    }
-    expect(toastAnimationCacheSize()).toBeLessThanOrEqual(MAX_CACHED_ANIMATIONS);
-  });
-
-  it('still serves a shape that was evicted, by rebuilding it', () => {
-    const rebuilt = getToastExitAnimation({
+  it('a single row leaves by 12 px, fading through 0.35 at half way, linearly over 180 ms', () => {
+    const exit = toastExitKeyframes({
       position: 'bottom-center',
       isHiddenByLimit: false,
-      isSingle: false,
-      stackGap: 0,
+      isSingle: true,
+      stackGap: 8,
     });
-    expect(rebuilt).toBeDefined();
-    expect(toastAnimationCacheSize()).toBeLessThanOrEqual(MAX_CACHED_ANIMATIONS);
+    expect(frames(exit)).toEqual([
+      [0, 1, 0],
+      [0.5, 0.35, 9],
+      [1, 0, 12],
+    ]);
+    expect(exit.motion).toBe(MOTION.exit);
+    expect(MOTION.exit.duration).toBe(180);
+  });
+
+  it('a stacked row leaves by no more than the stack gap; a row from the top leaves upward', () => {
+    expect(
+      frames(
+        toastExitKeyframes({
+          position: 'bottom-center',
+          isHiddenByLimit: false,
+          isSingle: false,
+          stackGap: 8,
+        }),
+      )[2],
+    ).toEqual([1, 0, 8]);
+    expect(
+      frames(
+        toastExitKeyframes({
+          position: 'top-center',
+          isHiddenByLimit: false,
+          isSingle: true,
+          stackGap: 8,
+        }),
+      )[2],
+    ).toEqual([1, 0, -12]);
+  });
+
+  it('a row culled by the limit only fades', () => {
+    const exit = toastExitKeyframes({
+      position: 'bottom-center',
+      isHiddenByLimit: true,
+      isSingle: false,
+      stackGap: 8,
+    });
+    expect(frames(exit).map(([, , y]) => y)).toEqual([0, 0, 0]);
   });
 });

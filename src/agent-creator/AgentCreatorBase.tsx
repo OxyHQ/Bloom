@@ -1,6 +1,6 @@
 import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
-import { Platform, type View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useCharacterHistory } from './use-character-history';
 import { useVectorGeometryPreparation } from '../agent-avatar/use-vector-geometry-preparation';
 import {
@@ -17,7 +17,7 @@ import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
 import { RiArrowGoForwardLine } from '../icons/remix/RiArrowGoForwardLine';
 
 import { useDirectionProps } from '../hooks/use-is-rtl';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { ROUNDED_FULL } from '../styles/rounded-full';
 import { TextFieldInput } from '../text-field';
 import { Textarea } from '../textarea';
 import { useTheme } from '../theme/use-theme';
@@ -39,13 +39,16 @@ import {
   useAgentCreatorBindings,
   useAgentCreatorMessages,
 } from './context';
+import { AGENT_CREATOR_CARD } from './shared';
 import type { AgentCreatorProps } from './types';
+import { AGENT_CREATOR_HOOKS, useAgentCreatorWebCss } from './web-css';
 
 /** Controlled creator block; saving and the surrounding panel belong to the host. */
 export function AgentCreatorBase(props: AgentCreatorProps) {
   const directionProps = useDirectionProps();
   const messages = useAgentCreatorMessages(props);
-  const { agent, onChange, onClose, className, style } = props;
+  const { agent, onChange, onClose, style } = props;
+  useAgentCreatorWebCss();
   const { isWithinDialog } = useDialogContext();
   const { colors } = useTheme();
   const backing = useSurfaceBacking(colors.background, style);
@@ -160,12 +163,12 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
   return (
     <AgentCreatorCopyContext.Provider value={copy}>
       <SurfaceLevelProvider level={backing.level} fill={backing.fill}>
-        <StyledView
+        <View
           {...directionProps}
           ref={editor}
           accessibilityLabel={messages.editor}
-          className={className ?? 'flex h-full min-h-0 flex-col bg-background-full'}
           style={[
+            styles.root,
             {
               flex: 1,
               minHeight: 0,
@@ -224,11 +227,12 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
               style={{ flex: 1, minHeight: 0 }}
               contentContainerStyle={{ paddingStart: 4, paddingEnd: 8, paddingBottom: 16 }}
             >
-              <StyledView className="relative h-[360px] overflow-hidden">
-                <StyledView
+              <View style={styles.stage}>
+                <View
                   pointerEvents="box-none"
-                  className="pointer-events-none absolute left-1/2 top-[30px] z-10 -translate-x-1/2"
                   style={{
+                    ...styles.centered,
+                    pointerEvents: 'none',
                     position: 'absolute',
                     left: '50%',
                     top: 30,
@@ -245,11 +249,12 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                       onSelect={(id) => edit({ eyes: id as typeof character.eyes })}
                     />
                   )}
-                </StyledView>
-                <StyledView
+                </View>
+                <View
                   pointerEvents="auto"
-                  className="pointer-events-auto absolute left-1/2 top-[83px] -translate-x-1/2"
                   style={{
+                    ...styles.centered,
+                    pointerEvents: 'auto',
                     position: 'absolute',
                     left: '50%',
                     top: 83,
@@ -264,11 +269,10 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     onLoadingChange={setPreparing}
                     label={messages.livePreview(agent.name || messages.newAgent)}
                   />
-                </StyledView>
-                <StyledView
+                </View>
+                <View
                   pointerEvents="box-none"
-                  className="pointer-events-none absolute inset-x-0 bottom-0"
-                  style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
+                  style={[styles.arc, { position: 'absolute', left: 0, right: 0, bottom: 0 }]}
                 >
                   {shapeChoices && (
                     <ShapeArc
@@ -278,9 +282,9 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                       onSelect={(id) => edit({ shape: id as typeof character.shape })}
                     />
                   )}
-                </StyledView>
-              </StyledView>
-              <StyledView
+                </View>
+              </View>
+              <View
                 style={{ minHeight: 20, alignItems: 'center' }}
                 aria-busy={preparing}
                 testID="agent-avatar-preparation"
@@ -288,18 +292,15 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                 <Text accessibilityLiveRegion="polite" role="status" variant="caption-1-regular">
                   {preparing ? messages.preparingAvatar : ''}
                 </Text>
-              </StyledView>
-              <StyledView
-                className="mt-[15px] flex shrink-0 flex-row justify-center"
-                style={{ flexShrink: 0 }}
-              >
-                <StyledView
+              </View>
+              <View style={[styles.colorRow, { flexShrink: 0 }]}>
+                <View
                   collapsable={false}
                   role="group"
                   accessibilityLabel={messages.color}
                   testID="agent-avatar-color-selector"
-                  className="flex h-[38px] shrink-0 items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default p-[5px] shadow-xs flex-row"
                   style={{
+                    ...styles.colors,
                     backgroundColor: colors.card,
                     borderColor: colors.border,
                     boxShadow: '0 1px 2px rgba(0,0,0,.05)',
@@ -310,7 +311,8 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                     const hex = CHARACTER_COLORS[id];
                     const disabled = false;
                     return (
-                      <StyledPressable
+                      <Pressable
+                        {...AGENT_CREATOR_HOOKS.swatch}
                         key={id}
                         accessibilityRole="button"
                         accessibilityLabel={messages.avatarColorLabel(
@@ -321,18 +323,18 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                         accessibilityState={{ selected: active, disabled }}
                         disabled={disabled}
                         onPress={() => changeColor(hex)}
-                        className="relative shrink-0 cursor-pointer overflow-hidden rounded-full transition-transform duration-150 ease-out hover:scale-110 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 size-[26px]"
+                        style={styles.swatch}
                       >
                         <GlossArt center={hex} edge={hex} active={active} />
-                      </StyledPressable>
+                      </Pressable>
                     );
                   })}
                   <Popover>
                     <PopoverTrigger asChild label={messages.customColor}>
-                      <StyledPressable
+                      <Pressable
                         aria-pressed={Boolean(customHex)}
                         accessibilityState={{ selected: Boolean(customHex) }}
-                        className="relative size-[26px] shrink-0 overflow-hidden rounded-full"
+                        style={styles.swatch}
                       >
                         <GlossArt
                           rainbow={!customHex}
@@ -340,24 +342,27 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                           edge={customHex}
                           active={Boolean(customHex)}
                         />
-                      </StyledPressable>
+                      </Pressable>
                     </PopoverTrigger>
                     <PopoverContent
                       label={messages.customColor}
                       align="end"
                       minWidth={248}
                       maxWidth={248}
-                      className="w-[248px] rounded-3xl p-2.5"
+                      style={styles.customColor}
                     >
                       <CustomColorPicker key={agent.id} value={bodyHex} onChange={changeColor} />
                     </PopoverContent>
                   </Popover>
-                </StyledView>
-              </StyledView>
+                </View>
+              </View>
               <CharacterControls character={painted} onChange={history.change} />
-              <StyledView
-                className="mt-[15px] overflow-hidden rounded-2xl bg-background-secondary-default ps-3"
-                style={{ backgroundColor: colors.backgroundSecondary }}
+              <View
+                style={[
+                  styles.details,
+                  AGENT_CREATOR_CARD,
+                  { backgroundColor: colors.backgroundSecondary },
+                ]}
               >
                 <AgentCreatorField label={messages.name} divider={false}>
                   <TextFieldInput
@@ -395,13 +400,43 @@ export function AgentCreatorBase(props: AgentCreatorProps) {
                   />
                 </AgentCreatorField>
                 {props.children}
-              </StyledView>
+              </View>
               {props.sections}
               {preferencesPanel}
             </ScreenScrollView>
           </Screen>
-        </StyledView>
+        </View>
       </SurfaceLevelProvider>
     </AgentCreatorCopyContext.Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { height: '100%', minHeight: 0, flexDirection: 'column' },
+  stage: { position: 'relative', height: 360, overflow: 'hidden' },
+  // `left-1/2 -translate-x-1/2`: the web centres with `translate`; native with each one's transform.
+  centered: Platform.OS === 'web' ? ({ translate: '-50% 0' } as object) : {},
+  arc: { pointerEvents: 'none', position: 'absolute', insetInline: 0, bottom: 0 },
+  colorRow: { marginTop: 15, flexShrink: 0, flexDirection: 'row', justifyContent: 'center' },
+  colors: {
+    height: 38,
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: ROUNDED_FULL,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    padding: 5,
+  },
+  swatch: {
+    position: 'relative',
+    width: 26,
+    height: 26,
+    flexShrink: 0,
+    overflow: 'hidden',
+    borderRadius: ROUNDED_FULL,
+  },
+  customColor: { width: 248, borderRadius: 24, padding: 10 },
+  details: { marginTop: 15 },
+});

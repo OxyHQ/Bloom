@@ -1,0 +1,126 @@
+import { createElement, type ReactElement } from 'react';
+import TestRenderer, { act, type ReactTestRenderer } from 'react-test-renderer';
+
+import { LIGHT, PaintContext } from './support/bloom-theme';
+import { HStack, Icon, Image, Text, VStack, ZStack } from '../primitives';
+import { toElement } from '../render';
+import { defineTokens } from '../tokens';
+import { WEB_CLASS, WEB_SHEET } from '../generated/web-sheet.generated';
+
+jest.mock('react-native', () => ({
+  ...jest.requireActual('react-native'),
+  Platform: { OS: 'web', select: <T,>(spec: { web?: T; default?: T }) => spec.web ?? spec.default },
+}));
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+const consoleError = console.error;
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+    if (String(args[0]).includes('react-test-renderer is deprecated')) return;
+    consoleError(...args);
+  });
+});
+
+function mount(element: ReactElement): ReactTestRenderer {
+  let renderer!: ReactTestRenderer;
+  act(() => {
+    renderer = TestRenderer.create(createElement(PaintContext.Provider, { value: LIGHT }, element));
+  });
+  return renderer;
+}
+
+const Glyph = (props: { fill?: string }) => createElement('Glyph', props);
+
+/** The CSS a class sets, from the generated sheet. */
+function css(name: string): string {
+  const rule = WEB_SHEET.split('\n').find((line) => line.startsWith(`.${name}{`));
+  return rule ? rule.slice(name.length + 2, -1) : '';
+}
+
+describe('on the web, styles are classes from the generated sheet', () => {
+  it('a stack and its text are react-native-web class objects; colours are theme variables', () => {
+    const r = mount(toElement(HStack(Text('a').foreground('muted').font('md')).spacing('sm')));
+    const stack = r.root.findByType('View' as never);
+    expect(stack.props.style).toEqual({
+      $$css: true,
+      flexDirection: WEB_CLASS['flexDirection:row'],
+      gap: WEB_CLASS['gap:8'],
+    });
+    const text = r.root.findByType('Text' as never);
+    expect(text.props.style).toEqual({
+      $$css: true,
+      fontSize: WEB_CLASS['fontSize:15'],
+      color: WEB_CLASS['color:@muted'],
+    });
+    expect(css(text.props.style.color)).toBe('color:var(--muted-foreground);');
+    expect(css(stack.props.style.gap)).toBe('gap:8px;');
+  });
+
+  it('logical edges are CSS logical properties', () => {
+    const r = mount(toElement(VStack().padding('leading', 'md')));
+    const style = r.root.findByType('View' as never).props.style;
+    expect(css(style.paddingStart)).toBe('padding-inline-start:12px;');
+  });
+
+  it('a value the sheet has no class for (an app token) stays inline beside the classes', () => {
+    const t = defineTokens({ space: { gutter: 70 } });
+    const r = mount(toElement(VStack().padding('top', 'md').padding('leading', t.space.gutter)));
+    expect(r.root.findByType('View' as never).props.style).toEqual([
+      { $$css: true, paddingTop: WEB_CLASS['paddingTop:12'] },
+      { paddingStart: 70 },
+    ]);
+  });
+
+  it('an app colour has no class: it is inline, as the hex it declares', () => {
+    const brand = defineTokens({ color: { blue: '#1877f2' } }).color.blue;
+    const r = mount(toElement(VStack(Text('a')).padding('top', 'md').background(brand)));
+    expect(r.root.findByType('View' as never).props.style).toEqual([
+      { $$css: true, paddingTop: WEB_CLASS['paddingTop:12'] },
+      { backgroundColor: '#1877f2' },
+    ]);
+  });
+
+  it('text reads no theme on the web; an icon’s fill still paints from it', () => {
+    const r = mount(toElement(VStack(Text('a'), Icon(Glyph).foreground('primary'))));
+    expect(
+      r.root.findAll((i) => (i.type as { displayName?: string }).displayName === 'BloomPaint'),
+    ).toHaveLength(1);
+    expect(r.root.findByType('Glyph' as never).props.fill).toBe(LIGHT.primary);
+  });
+
+  it('an image, a Bloom component, takes its style inline, roles as theme variables', () => {
+    const r = mount(toElement(Image('a.jpg').frame({ width: 'xl' }).background('surface')));
+    expect(r.root.findByType('BloomImage' as never).props.style).toEqual({
+      width: 20,
+      backgroundColor: 'var(--surface)',
+    });
+  });
+});
+
+describe('a ZStack on the web', () => {
+  it('is the tallest child’s height, each child at the alignment, from each slot’s onLayout, as on native', () => {
+    const r = mount(toElement(ZStack(Text('a'), Text('bb')).alignment('center')));
+    const [stack, , a, bb] = r.root.findAllByType('View' as never);
+    act(() => {
+      a?.props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 8, height: 10 } } });
+      bb?.props.onLayout({ nativeEvent: { layout: { x: 0, y: 0, width: 16, height: 30 } } });
+    });
+    const [, box, a2, bb2] = r.root.findAllByType('View' as never);
+    expect(stack?.props.style).toEqual({
+      $$css: true,
+      position: WEB_CLASS['position:relative'],
+    });
+    expect(box?.props.style).toEqual([
+      { flexGrow: 1, justifyContent: 'center' },
+      { minHeight: 30 },
+    ]);
+    expect(a2?.props.style).toEqual([
+      { position: 'static', alignItems: 'center' },
+      { marginTop: -5, marginBottom: -5 },
+    ]);
+    expect(bb2?.props.style).toEqual([
+      { position: 'static', alignItems: 'center' },
+      { marginTop: -15, marginBottom: -15 },
+    ]);
+  });
+});

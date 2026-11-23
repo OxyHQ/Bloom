@@ -234,7 +234,7 @@ const REVEAL = '[data-bloom-media-card-reveal="hover"]';
  * `--bloom-surface-presence`, never `opacity`: an `opacity` on an ancestor is
  * the material's backdrop root, so its blur would vanish for the whole fade.
  */
-const MATERIAL = '.bloom-surface-paint, .bloom-btn--surface, .bloom-surface';
+const MATERIAL = '[data-bloom-surface-paint], .bloom-btn--surface, [data-bloom-surface]';
 
 export const MEDIA_CARD_CSS = `
 ${CARD} {

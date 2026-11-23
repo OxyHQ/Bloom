@@ -7,9 +7,17 @@ import {
   type ComponentType,
   type Ref,
 } from 'react';
-import { Platform, type View, type ViewProps } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewProps,
+  type ViewStyle,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  cubicBezier,
   runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
@@ -20,10 +28,11 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import type { AvatarCharacter } from '../agent-avatar';
 import { useIsRtl } from '../hooks/use-is-rtl';
-import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { createTokenStyles } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { useAgentCreatorMessages } from './context';
+import { AGENT_CREATOR_HOOKS, useAgentCreatorWebCss } from './web-css';
 import { useTrackEvents } from './use-track-events';
 import { ShapeSilhouette } from './ShapeSilhouette';
 import { svgA11yProps } from '../styles/svg-a11y';
@@ -35,8 +44,28 @@ type ListboxViewProps = Omit<ViewProps, 'role'> & {
   'aria-activedescendant'?: string;
   ref?: Ref<ComponentRef<typeof View>>;
 };
-const ListboxView = StyledView as unknown as ComponentType<ListboxViewProps>;
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const ListboxView = View as unknown as ComponentType<ListboxViewProps>;
+const AnimatedView = Animated.createAnimatedComponent(View);
+// Native eases a slot's fill into and out of the selection (`transition-colors`: 150ms,
+// Tailwind's default curve); the web transitions it from the editor's sheet.
+const Slot = Platform.OS === 'web' ? Pressable : Animated.createAnimatedComponent(Pressable);
+const SLOT_MOTION = (
+  Platform.OS === 'web'
+    ? null
+    : {
+        transitionProperty: [
+          'color',
+          'backgroundColor',
+          'borderColor',
+          'outlineColor',
+          'textDecorationColor',
+          'fill',
+          'stroke',
+        ],
+        transitionDuration: 150,
+        transitionTimingFunction: cubicBezier(0.4, 0, 0.2, 1),
+      }
+) as ViewStyle | null;
 interface ArcCssStyle extends WebCssStyle {
   clipPath?: string;
 }
@@ -69,6 +98,7 @@ function ShapeSlot({
 }) {
   const messages = useAgentCreatorMessages();
   const { colors } = useTheme();
+  const ring = useRingStyles();
   const choice = choices[wrap(slot, choices.length)]!;
   const active = value === choice.id;
   const animated = useAnimatedStyle(() => {
@@ -81,35 +111,24 @@ function ShapeSlot({
     };
   }, [position, slot, sign]);
   return (
-    <AnimatedView
-      pointerEvents="auto"
-      className="pointer-events-auto absolute left-1/2 top-[35px] -ml-7 size-14"
-      style={[
-        {
-          position: 'absolute',
-          left: '50%',
-          top: 35,
-          marginLeft: -28,
-          width: 56,
-          height: 56,
-        },
-        animated,
-      ]}
-    >
-      <StyledPressable
+    <AnimatedView pointerEvents="auto" style={[styles.slot, animated]}>
+      <Slot
+        {...AGENT_CREATOR_HOOKS.shape}
         nativeID={`${id}-${slot}`}
         role="option"
         tabIndex={-1}
         aria-selected={active}
         accessibilityLabel={messages.shapeLabel(choice.label)}
         onPress={() => onSelect(slot)}
-        className={`flex size-14 cursor-grab items-center justify-center rounded-2xl outline-none transition-colors hover:bg-background-secondary-default active:cursor-grabbing${active ? ' bg-background-secondary-default ring-1 ring-border-button-default' : ''}`}
-        style={{
-          backgroundColor: active ? colors.backgroundSecondary : 'transparent',
-        }}
+        style={[
+          styles.shape,
+          SLOT_MOTION,
+          active && ring.active,
+          { backgroundColor: active ? colors.backgroundSecondary : 'transparent' },
+        ]}
       >
         <ShapeSilhouette character={choice.character} />
-      </StyledPressable>
+      </Slot>
     </AnimatedView>
   );
 }
@@ -130,6 +149,7 @@ export function ShapeArc({
     onSelect(choices[wrap(slot, choices.length)]!.id);
   };
   const id = useId();
+  useAgentCreatorWebCss();
   const ref = useRef<ComponentRef<typeof View>>(null);
   const initial = Math.max(
     0,
@@ -203,10 +223,10 @@ export function ShapeArc({
   const slots = Array.from({ length: 9 }, (_, index) => center + index - 4);
   const selectedSlot = slots.find((slot) => choices[wrap(slot, choices.length)]?.id === value);
   return (
-    // `touchAction="pan-y"`, not the `touch-pan-y` class below: RNGH writes an
-    // INLINE `touch-action: none` on this view on web, which beats the class,
-    // so a touch that lands on the arc could never scroll the page. The class
-    // stays for the moment before the handler attaches.
+    // `touchAction="pan-y"`, not the track's sheet rule: RNGH writes an INLINE
+    // `touch-action: none` on this view on web, which beats the sheet, so a
+    // touch that lands on the arc could never scroll the page. The rule stays
+    // for the moment before the handler attaches.
     <GestureDetector gesture={drag} touchAction="pan-y">
       <ListboxView
         collapsable={false}
@@ -216,8 +236,8 @@ export function ShapeArc({
         tabIndex={0}
         accessibilityLabel={messages.shape}
         pointerEvents="auto"
-        className="pointer-events-auto relative h-[126px] w-full touch-pan-y select-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
-        style={Platform.OS === 'web' ? trackClip : undefined}
+        {...AGENT_CREATOR_HOOKS.shapeTrack}
+        style={[styles.track, Platform.OS === 'web' ? trackClip : undefined]}
         accessibilityActions={[
           { name: 'increment', label: messages.nextShape },
           { name: 'decrement', label: messages.previousShape },
@@ -267,3 +287,42 @@ export function ShapeArc({
     </GestureDetector>
   );
 }
+
+const styles = StyleSheet.create({
+  slot: {
+    pointerEvents: 'auto',
+    position: 'absolute',
+    left: '50%',
+    top: 35,
+    marginLeft: -28,
+    width: 56,
+    height: 56,
+  },
+  shape: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+  },
+  track: {
+    pointerEvents: 'auto',
+    position: 'relative',
+    height: 126,
+    width: '100%',
+    overflow: 'hidden',
+    userSelect: 'none',
+  },
+});
+
+/** The selected shape's 1px ring on native; the web draws it from the editor's sheet. */
+const useRingStyles = createTokenStyles((t) => ({
+  active:
+    Platform.OS === 'web'
+      ? {}
+      : {
+          boxShadow: [
+            { offsetX: 0, offsetY: 0, blurRadius: 0, spreadDistance: 1, color: t.border },
+          ],
+        },
+}));

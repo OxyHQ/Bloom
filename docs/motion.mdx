@@ -27,6 +27,198 @@ fast things feel" happens in one place rather than being renegotiated per
 component. It is also where the web rules below are already applied, which is
 the stronger reason to use them rather than hand-writing an enter.
 
+## The motion engine
+
+Bloom's state-driven animations play on one engine (`@oxy.so/bloom/motion`):
+
+- **Motion is a table.** `MOTION` names every timing Bloom plays (`press`, `pop`,
+  `roll`, `slide`, `thumb`, `fade`, `enter`, `exit`, `restack`, the recipes'
+  `present` and `dismiss`, one turn of Tailwind's loops `spin` and `pulse`, and
+  the springs `select` and `expand`), each a `MotionSpec`; `EASING` names the
+  curves (`pulse` is Tailwind's `animate-pulse` curve), `SCALE` the press and
+  pop scales. Components read them; the Bloom language's `motion` tokens
+  mirror them.
+- **A timing can wait.** `withDelay(timing, ms)` is the same motion started
+  later: a `transitionDelay`/`animationDelay` on native, the transition's and
+  `element.animate()`'s `delay` on the web, the native removal's
+  `Keyframe.delay()`. A playing that waits can hold its first frame meanwhile
+  (`fill: 'backwards'`), and leaves the box when it ends, as `'none'` does.
+- **A playing can loop.** `Play.repeat` plays its frames forever
+  (`animationIterationCount: 'infinite'` on native, `iterations: Infinity` on
+  the web) until the playing changes; the caller stops it under reduced motion.
+- **A transition can take the colours.** `transitionStyle(timing, true)` also
+  transitions the box's fill, border (each side), outline and text colour
+  (the web's `currentColor` glyph follows the text colour). Without it the
+  style is the transform and opacity transition Bloom's own motion views take.
+  Colours are opt-in: only a caller that asks for them passes `true` (the Bloom
+  language's `.animatesColors()`).
+- **A theme switch never plays a colour transition** (`theme-switch.ts`). On the
+  web the theme's colours are CSS variables the provider writes on the
+  document, so a switch reaches no render of the views that paint with them: a
+  host that transitions its colours carries `COLOR_TRANSITION_PROPS`
+  (`data-bloom-color-transition`), and `BloomThemeProvider` applies a switch
+  (the scheme, the preset, the accents: its `dark` class and variables) through
+  `applyThemeAtOnce`, which marks the document, applies, reads the root's
+  layout (the browser computes the new style while marked: such a host
+  transitions only its transform and opacity, so its colours take their new
+  values at once) and unmarks; no colour changed after, so none plays. On
+  native colours are props a render changes, and the caller leaves them out
+  of the transition on the render a new palette makes (the language's
+  `ThemedMotion`: any palette the view paints with, the app's or a colour or
+  seed scope's). Not covered on the web: a colour or seed scope that repaints
+  its subtree on its own (its own variables, not the provider's switch), whose
+  colours play as any colour change does.
+- **Keyframes and transitions are data.** `defineKeyframes(frames, motion)`
+  writes what a CSS `@keyframes` block is: a frame's `easing` curves the stretch
+  from it to the next, else the motion's curve does, per stretch.
+  `opacityTransition`, `scaleTransition`, `moveTransition` and
+  `asymmetricTransition` are pairs of them (an insertion and a removal).
+- **Native plays them on Reanimated's CSS engine** (`MotionView`, `usePlay`):
+  a CSS animation (`animationName`, a registered `css.keyframes` rule) or a CSS
+  transition on an `Animated.View`, on the UI thread, with no worklet, no shared
+  value and no JS per frame. Two identical rules alternate by playing, so a
+  new playing restarts even mid-play. A playing that ends holding no last
+  frame leaves the box, so a box carries no finished animation into what
+  comes later.
+- **The web plays them with the Web Animations API and CSS**, with no
+  Reanimated: `element.animate()` before the frame paints, each frame carrying
+  its stretch's curve and the whole running linearly. A box that holds a
+  material host never fades (see below): it only moves, and the same frames fade
+  each material host's own layers (`::before`, `::after`) and each piece of
+  content that holds no material (`surfacePresenceTargets`).
+- **Leaving.** A `MotionView`'s `exit` is how it leaves, the same on every
+  platform: `Presence` keeps a keyed child that left (`exit`) and hands it a
+  `Leaving` through `LeavingContext`; the `MotionView` with the `exit` plays it
+  as it plays any keyframes and calls `onLeft()`, and nothing else in the
+  child re-renders (the toast's rows). Only that view is the leaver: a moving
+  view inside it (the toast's enter) ignores the leaving, or it would let the
+  child go at once. A native exit was a Reanimated layout `Keyframe` on a
+  snapshot after the unmount for a while: it ran no JS, but the frame each exit
+  started in was slow on a Pixel 8a (twice the janky frames over eight toasts,
+  with or without a curve on its stretches), so the row stays mounted for its
+  exit, as on the web.
+- **Press feedback** (`usePressScale`, `PressableScale`): native retargets one
+  shared value with the `press` motion, read by one mapper; the web is a class
+  whose `:active` rule scales a touch press with the CSS `scale` property.
+
+It plays the engagement bar's pop and count roll (`EngagementPop`,
+`RollingText`), the toast's enter and exit, and press feedback. Under reduced
+motion nothing plays: a removal leaves at once.
+
+## Motion values and gestures
+
+A `MotionValue` is the one way Bloom ties a gesture to what moves. A gesture
+writes it from its own callbacks; a view follows it through the one mapper.
+
+- **`useMotionValue(n)`.** Native: a Reanimated shared value, written on the UI
+  thread. Web: a number with the views bound to it, which a write restyles
+  directly (no React render, no Reanimated).
+- **`useMotionStyle(bindings)`** is the one mapper. A key (`translateX`,
+  `translateY`, `rotate`, `scale`, `opacity`, `width`, `height`) takes a value,
+  a constant, or a list of them, summed (`[base, settle, drag]`). Native: one
+  `useAnimatedStyle` that lists every bound value in its deps, writes every
+  bound key on every run, and starts no animation. Web: the style at render,
+  then each move written to the element. Spread its `style` and `ref` onto an
+  animated host (`MotionWrapper`, `Animated.View`). The bindings' shape is the
+  view's for its life.
+- **`useDerivedMotionValue(inputs, f)`**: a value computed from others by a pure
+  worklet of their numbers (the tab underline's travel toward its neighbour).
+- **`animateMotionValue(value, target, motion, reducedMotion?, onEnd?, velocity?)`**
+  eases it from where it is, with a motion name, a spec (a spring keeps its
+  physics on native) or a timing (`sampledTiming(duration, easing)` for a curve
+  no cubic-bezier draws, such as an elastic settle). A spring starts at
+  `velocity` (units per second: a released finger's). Native:
+  `withSpring`/`withTiming` on the UI thread. Web: a CSS transition of the bound
+  properties, so the browser plays it with no JS per frame and retargets it from
+  where it is (a spring from rest). A write (`setMotionValue`) is never eased.
+  `springSpecOf({ mass, stiffness, damping })` is a spring written as physics as
+  a spec: the same oscillator, so the same motion and the same rest.
+- **`useMotionValueOf(shared)`**: a motion value over a Reanimated shared value
+  that something else also writes or reads in its frames (a keyboard tracker's
+  height; the sheet's translate, which its backdrop and its owner's
+  `animatedProgress` follow). Native: the shared value is the motion value's
+  own. Web: writes and animations go to the shared value and play in
+  Reanimated's frames, not by a CSS transition, so its other readers see every
+  frame's number; each change restyles the bound views as a write does. A CSS
+  transition cannot serve those readers: only its end is a real number.
+- **`useDrag(value, { axis, min, max, onEnd })`** and **`useSwipe(direction,
+  onSwipe, options)`** are Gesture Handler 3's hooks (`usePanGesture`,
+  `useTapGesture`, `useCompetingGestures`) writing values. Hand the result to a
+  `GestureDetector`. Native: their callbacks are worklets, so a drag runs no JS
+  until the touch ends (`onEnd`, once). A swipe follows the finger toward its
+  direction, meets resistance against it, and on release flies out (`away`) and
+  calls `onSwipe`, or comes back (`back`).
+- **`usePinch(value, { min, max, onEnd })`** scales `value` by the fingers'
+  spread (`usePinchGesture`'s `scale`, a factor) from where it was when they
+  landed, within the bounds, and reports where it is and the pinch's velocity
+  once the touch ends. **`useDoubleTap(onDoubleTap)`** is `useTapGesture` with
+  `numberOfTaps: 2` (Gesture Handler's own 500 ms between taps): the callback
+  runs on the JS thread once both land, never for a cancelled pair. Both are
+  one memoized literal config, like the drag's.
+- **A drag that shares a scroll view's touches** (the bottom sheet's). `useDrag`
+  also takes: `simultaneousWith` (a scroll view's own gesture,
+  `useScrollGesture()`, around the scroll view in its own `GestureDetector`, or
+  another drag; Gesture Handler makes it mutual); `activation(travel)`, a
+  worklet that takes the touch by hand (`'activate'`, `'fail'` or `'wait'`, from
+  the finger's travel since it landed, asked on every move: manual activation
+  through `GestureStateManager`, the offsets then unused); `activeOffset: null`
+  (the pan's own slop, in any direction); `startOn: 'activation'` (start from
+  where the value is when the drag takes the touch, not when it lands);
+  `takes()`, a worklet read at the start (a touch it refuses moves nothing and
+  releases nothing); `follows(travel, next)`, a worklet per move (a refused
+  move holds the value); `overdrag` (the share of the travel past `min`/`max`
+  the value still follows); and `onRelease({ value, velocity })`, a worklet
+  when a touch the drag took ends, with the velocity the gesture reports, so
+  the spring home (`animateMotionValue` with that velocity) starts in the same
+  UI frame. Worklet options are read by the gesture's own callbacks: keep each
+  the same function (module scope or `useCallback`), or the gesture is rebuilt.
+- **A hook's config is one literal.** The worklets Babel plugin workletizes a
+  Gesture Handler 3 hook's config object and throws on a spread in it, which
+  fails the app's release bundle and nothing in Bloom's own build would see
+  (`worklets-plugin.test.ts` runs the plugin over every engine file).
+- **A config is one object while what it reads is the same.** Gesture Handler
+  3 rebuilds a gesture for every new config object (it re-sends the config to
+  the native handler and re-shares its worklets), so `useDrag` and `useSwipe`
+  memoize theirs and reach the caller's JS callbacks through one stable
+  function each: a re-render of the owner (a toast row's, as its stack changes)
+  costs the gesture nothing.
+- **Each move still reaches the JS thread.** A hook gesture's worklet
+  callbacks get its events through Reanimated on the UI thread, and Reanimated
+  4.7 then lets each event through to the JS thread as well
+  (`ReanimatedModuleProxy::handleRawEvent`: "for now handleEvent always returns
+  false"), where the detector's Reanimated host holds an empty listener for it.
+  No callback of Bloom's runs, but every move event costs the JS thread a
+  dispatch: on a Pixel 8a a toast swiped away in 240 ms costs about 1.2 ticks
+  (12 ms) more JS than the builder (`Gesture.Pan()`) the toast had, and one
+  dragged over 900 ms about 4.5 more, so the cost follows the number of moves.
+  The same build with the toast's old builder handler spent what the published
+  Bloom spends (90 and 90 ticks over 8 swipes), so nothing else in the swipe
+  costs it. It is Gesture Handler 3's hook path on Reanimated 4.7, not Bloom's
+  code: the UI thread is unaffected (no frame is dropped), and the way out is
+  either Reanimated consuming the events it handles or the layer building its
+  gestures with the builder API.
+
+The tab underline (`Tabs`) is bound this way: `RouterTabs`' drag writes
+`dragTranslation`, and the underline's offset and width follow it toward the
+neighbour `begin()` fixed, on the UI thread; `release()` folds a commit or
+springs home. Its slides and fades are CSS transitions on the web. The toast's
+swipe-to-dismiss is `useSwipe`, its elastic settle and fly-out the curves it
+always had, sampled.
+
+The bottom sheet's drags are `useDrag` on its translate (`useMotionValueOf`
+over the shared value its backdrop fade and `animatedProgress` read). The body
+drag shares the scroll view's gesture and takes a touch past the pan's own slop,
+dragging only if the content was within 8 of the top then and holding while a
+pull down meets content scrolled further; with `manualActivation` it takes a
+touch by hand (`sheetPanIntent`: at the top, down past 8) and a handle drag
+(past 8 either way) is simultaneous with it. Above its rest a detached sheet
+follows at 0.3, a flush one holds. Every release is one worklet
+(`shouldClosePan`): a close crosses to JS for the owner's veto; anything else
+springs home on the sheet's spring (mass 0.8, stiffness 300, damping 25, as
+`springSpecOf`) from the finger's velocity. Its transform and a `viewport`
+footer's offset follow through the one mapper (`useDerivedMotionValue` for the
+scale, the keyboard's lift and `sheetFooterOffset`).
+
 ## Rolling text
 
 `RollingText` is text that rolls when it changes — a count ticking, a range
@@ -55,6 +247,15 @@ outgoing one is hidden. In `'digits'` the wheels are hidden and the whole is one
 element named by `value` (or `accessibilityLabel`). Both modes snap under
 reduced motion, including a change while mounted. `EngagementBar`'s count roll,
 the chart cards' week pill and `SubscriptionPrice` render it.
+
+The Bloom language's `.contentTransition('numeric')` (SwiftUI's `numericText`)
+is a third reading on the engine itself: each character that changed rolls on
+`rollKeyframes`, its old piece out and its new one in, each a `Play` of its own
+(Reanimated's CSS animations on native, `element.animate()` on the web), while
+the characters that stayed are one still piece. It matches the two texts from
+their ends, as `'digits'` keys its wheels, and runs no JS per frame; `'digits'`
+keeps its wheels (a Reanimated timing on a shared value), so no rendered roll
+moved.
 
 ## Number tweens
 

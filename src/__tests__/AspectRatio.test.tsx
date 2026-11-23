@@ -12,7 +12,7 @@
  * reaches this component in production, and rescuing it is a decision that has
  * to stay pinned rather than be re-derived by the next reader.
  */
-import React from 'react';
+import type React from 'react';
 import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
