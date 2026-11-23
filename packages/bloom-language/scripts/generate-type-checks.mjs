@@ -161,8 +161,11 @@ function checksOf(kind, node, view, name, inUniversal) {
     lines.push(`  Expect<${JSON.stringify(label)}, Ok<${at}, ${want.type}>>,`);
     const app =
       APP_TOKEN[want.set] ??
-      (inUniversal && (want.set === 'color' || want.set === 'ring') ? UNIVERSAL_APP_COLOR : undefined);
-    if (app !== undefined) lines.push(`  Expect<${JSON.stringify(`${label} takes ${app}`)}, Takes<${at}, ${app}>>,`);
+      (inUniversal && (want.set === 'color' || want.set === 'ring')
+        ? UNIVERSAL_APP_COLOR
+        : undefined);
+    if (app !== undefined)
+      lines.push(`  Expect<${JSON.stringify(`${label} takes ${app}`)}, Takes<${at}, ${app}>>,`);
   });
   return lines;
 }
@@ -189,7 +192,8 @@ for (const [kind, node] of Object.entries(nodes)) {
       `  Expect<'${kind}: the universal modifiers', Universal<${view}${own.length > 0 ? `, ${lit(own)}` : ''}>>,`,
     );
   }
-  for (const name of node.modifiers) lines.push(...checksOf(kind, node, view, name, universal.has(name)));
+  for (const name of node.modifiers)
+    lines.push(...checksOf(kind, node, view, name, universal.has(name)));
   if (lines.length > 0) blocks.push(`type ${kind}Checks = [\n${lines.join('\n')}\n];`);
 }
 
