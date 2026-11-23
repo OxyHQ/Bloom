@@ -15,7 +15,7 @@ import {
   type MenuContentProps,
   type Modifier,
 } from '../node';
-import { resolveCorner } from '../tokens';
+import { resolveCorner, type IconSizeToken, type InkToken } from '../tokens';
 import { valuesOf } from './values';
 
 export interface MenuItemRow {
@@ -25,6 +25,9 @@ export interface MenuItemRow {
   /** A second line under the title, where the platform's menu draws one. */
   subtitle: string | undefined;
   icon: IconComponent | undefined;
+  /** The glyph's own size and ink (`.iconSize()`, `.iconForeground()`), over the menu's. */
+  iconSize: IconSizeToken | undefined;
+  iconForeground: InkToken | undefined;
   destructive: boolean;
   disabled: boolean;
   /** A toggle's state; `undefined` for an action. */
@@ -101,6 +104,8 @@ export function readMenuRows(
           title: (node.props as { title: string }).title,
           subtitle: values.subtitle as string | undefined,
           icon: values.icon as IconComponent | undefined,
+          iconSize: values.iconSize as IconSizeToken | undefined,
+          iconForeground: values.iconForeground as InkToken | undefined,
           destructive: values.destructive === true,
           disabled: values.disabled === true,
           checked: values.checked as boolean | undefined,

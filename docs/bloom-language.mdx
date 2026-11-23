@@ -1318,11 +1318,15 @@ BottomBar(Tab('Home', RiHome5Line).id('home'), Tab('Search', RiSearchLine).id('s
 | `Header` | Bloom `PageHeader` (a floating header's controls take the lens) | the navigation bar (expo-router's native `Stack`, `Stack.Toolbar`) | Bloom `PageHeader` |
 | `BottomBar` | Bloom `BottomBar` (its capsule on the lens) | Bloom `BottomBar` (its capsule on the system blur); an app's tabs are the system tab bar (see [Navigation](#navigation)) | Bloom `BottomBar` |
 
-**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.subtitle`, `.destructive`,
-`.disabled`, `.checked`, `.keepOpen`, `.onPress`), `Submenu` (one level),
-`Section` (`.title`, set apart from the rows beside it) and `Divider`. A
-row's glyph is a Bloom icon in the menu's quiet ink (the negative ink for a
-destructive row). Rows built from hooks, or costly to build, go in one
+**Menu.** `Menu(trigger, ...rows)`: `Item` (`.icon`, `.iconSize`, `.iconForeground`,
+`.subtitle`, `.destructive`, `.disabled`, `.checked`, `.keepOpen`, `.onPress`),
+`Submenu` (one level), `Section` (`.title`, set apart from the rows beside it)
+and `Divider`. A row's glyph is a 20pt Bloom icon in the menu's quiet ink (the
+negative ink for a destructive row; the row's own ink on the lens menu). A row
+sizes and inks its own with `.iconSize(size)` (an icon rung or a numeric size,
+`'22'`) and `.iconForeground(role)`, over those: Bloom's dropdown, context and
+menubar menus and the lens menu (Android, OxyOS) draw them; the system menu on
+iOS draws its SF Symbol at its own size and ink. Rows built from hooks, or costly to build, go in one
 `menu()` content, whose body runs only while the menu is open:
 
 ```ts

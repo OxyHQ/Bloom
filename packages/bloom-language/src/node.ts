@@ -1120,6 +1120,8 @@ export interface ValueModifiers {
 
   // Chat composer (controls/chat-composer.tsx)
   iconSize: IconSizeToken;
+  /** A menu row's glyph ink (`.iconForeground()`), over the menu's. */
+  iconForeground: InkToken;
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint: ColorToken;
@@ -4206,6 +4208,9 @@ export class Node {
   iconSize(value: IconSizeToken): Node {
     return this.set('iconSize', value);
   }
+  iconForeground(value: InkToken): Node {
+    return this.set('iconForeground', value);
+  }
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint(value: ColorToken): Node {
@@ -5012,6 +5017,18 @@ export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | Divider
 export type MenuChild = MenuRow | false | null | undefined | readonly MenuChild[];
 export interface MenuItemView extends ViewNode {
   icon(value: IconComponent): MenuItemView;
+  /**
+   * The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's
+   * 20pt. Bloom's menus and the lens menu draw it; the system menu on iOS
+   * draws its own.
+   */
+  iconSize(value: IconSizeToken): MenuItemView;
+  /**
+   * The glyph's ink, a colour role, over the menu's (its quiet ink, or the
+   * negative one of a destructive row). Bloom's menus and the lens menu draw
+   * it; the system menu on iOS draws its own.
+   */
+  iconForeground(value: InkToken): MenuItemView;
   /** Drawn in the theme's negative colour: an action that deletes or leaves. */
   destructive(): MenuItemView;
   disabled(value?: boolean): MenuItemView;

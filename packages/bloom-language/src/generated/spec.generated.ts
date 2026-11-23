@@ -4521,6 +4521,9 @@ export const MODIFIERS = {
   "iconSize": [
     "iconSize"
   ],
+  "iconForeground": [
+    "color"
+  ],
   "activeTint": [
     "color"
   ],
@@ -7135,6 +7138,8 @@ export const NODE_MODIFIERS = {
   ],
   "menuItem": [
     "icon",
+    "iconSize",
+    "iconForeground",
     "subtitle",
     "destructive",
     "disabled",

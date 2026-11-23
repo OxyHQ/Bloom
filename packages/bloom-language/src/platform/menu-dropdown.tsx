@@ -26,7 +26,13 @@ import {
 import { Icon } from '../primitives';
 import type { Child, IconComponent } from '../node';
 import { useMenuChoice } from './menu-actions';
-import { pressableTrigger, readMenuRows, setApart, type MenuRowData } from './menu-rows';
+import {
+  pressableTrigger,
+  readMenuRows,
+  setApart,
+  type MenuItemRow,
+  type MenuRowData,
+} from './menu-rows';
 import type { MenuHostProps } from './host.types';
 
 const NOOP = () => {};
@@ -59,9 +65,8 @@ function DropdownRows({
   choose: ((tag: string) => void) | undefined;
 }) {
   const data = readMenuRows(rows, choose);
-  const leading = useCallback(
-    (icon: IconComponent | undefined, destructive: boolean): ReactNode =>
-      icon ? render(glyph(icon, destructive)) : undefined,
+  const leading = useCallback<Leading>(
+    (row, destructive) => (row.icon ? render(glyph(row.icon, destructive, row)) : undefined),
     [render],
   );
   return (
@@ -71,14 +76,25 @@ function DropdownRows({
   );
 }
 
-/** A row's glyph: Bloom's 20pt icon in the menu's quiet ink, or its negative one. */
-export function glyph(icon: IconComponent, destructive: boolean): Child {
+/** What a row's glyph is drawn from: its icon, and its own size and ink where it names them. */
+export type GlyphRow = Partial<Pick<MenuItemRow, 'iconSize' | 'iconForeground'>> &
+  Pick<MenuItemRow, 'icon'>;
+
+/**
+ * A row's glyph: Bloom's 20pt icon in the menu's quiet ink, or its negative
+ * one; a row's `.iconSize()` and `.iconForeground()` over them.
+ */
+export function glyph(
+  icon: IconComponent,
+  destructive: boolean,
+  own: Omit<GlyphRow, 'icon'> = {},
+): Child {
   return Icon(icon)
-    .size('md')
-    .foreground(destructive ? 'error' : 'muted');
+    .size(own.iconSize ?? 'md')
+    .foreground(own.iconForeground ?? (destructive ? 'error' : 'muted'));
 }
 
-type Leading = (icon: IconComponent | undefined, destructive: boolean) => ReactNode;
+export type Leading = (row: GlyphRow, destructive: boolean) => ReactNode;
 
 /** A row's key chord, which only a menubar's rows take. */
 interface Shortcut {
@@ -140,11 +156,7 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
     case 'submenu':
       return (
         <Sub>
-          <SubTrigger
-            leading={leading(row.icon, false)}
-            disabled={row.disabled}
-            testID={row.testID}
-          >
+          <SubTrigger leading={leading(row, false)} disabled={row.disabled} testID={row.testID}>
             {row.title}
           </SubTrigger>
           <SubContent label={row.title}>{drawMenuRows(row.rows, leading, parts)}</SubContent>
@@ -154,7 +166,7 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
       const shortcut = row.shortcut === undefined ? undefined : { shortcut: row.shortcut };
       return row.checked === undefined ? (
         <Item
-          leading={leading(row.icon, row.destructive)}
+          leading={leading(row, row.destructive)}
           variant={row.destructive ? 'destructive' : 'default'}
           disabled={row.disabled}
           keepOpen={row.keepOpen}
@@ -166,7 +178,7 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
         </Item>
       ) : (
         <CheckboxItem
-          leading={leading(row.icon, row.destructive)}
+          leading={leading(row, row.destructive)}
           checked={row.checked}
           onCheckedChange={() => row.onPress?.()}
           disabled={row.disabled}

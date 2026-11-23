@@ -3293,3 +3293,15 @@ fn a_dialog_hears_it_has_finished_closing() {
     let output = compiled("export const x = (gone: () => void) => VStack().onDismissed(gone);\n");
     assert_eq!(output.diagnostics[0].message, "VStack has no modifier .onDismissed()");
 }
+
+#[test]
+fn a_menu_row_sizes_and_inks_its_own_glyph() {
+    let ok = compiled(
+        "export const x = () => Menu(Text('More'), Item('Copy').icon(RiMoreFill).iconSize('22').iconForeground('primary'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => Item('Copy').iconSize('23');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token '23' for .iconSize()");
+    let output = compiled("export const x = () => Item('Copy').iconForeground('#fff');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#fff' for .iconForeground()");
+}

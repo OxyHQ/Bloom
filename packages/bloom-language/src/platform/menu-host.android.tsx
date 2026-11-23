@@ -30,6 +30,7 @@ import {
   setApart,
   splitTriggerGlass,
   triggerCorner,
+  type MenuItemRow,
   type MenuRowData,
 } from './menu-rows';
 import type { MenuHostProps } from './host.types';
@@ -162,11 +163,11 @@ function useSame<T>(value: T): T {
   return useMemo(() => value, [key]);
 }
 
-/** A row's glyph: Bloom's 20pt icon in the row's ink, or its negative one. */
-function lensGlyph(icon: IconComponent, destructive: boolean): Child {
+/** A row's glyph: Bloom's 20pt icon in the row's ink, or its negative one; the row's own size and ink over them. */
+function lensGlyph(icon: IconComponent, row: MenuItemRow): Child {
   return Icon(icon)
-    .size('md')
-    .foreground(destructive ? 'error' : 'foreground');
+    .size(row.iconSize ?? 'md')
+    .foreground(row.iconForeground ?? (row.destructive ? 'error' : 'foreground'));
 }
 
 /** The rows as the lens menu takes them: a section is a heading set apart by separators. */
@@ -199,7 +200,7 @@ export function toLensRows(
           id: row.id,
           title: row.title,
           subtitle: row.subtitle,
-          icon: row.icon ? render(lensGlyph(row.icon, row.destructive)) : undefined,
+          icon: row.icon ? render(lensGlyph(row.icon, row)) : undefined,
           checked: row.checked,
           destructive: row.destructive || undefined,
           disabled: row.disabled || undefined,

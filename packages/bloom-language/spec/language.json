@@ -1835,6 +1835,7 @@
     "interactive": ["value?"],
     "portrait": ["value?"],
     "iconSize": ["iconSize"],
+    "iconForeground": ["color"],
     "activeTint": ["color"],
     "bubbleTint": ["color"],
     "contentTint": ["color"],
@@ -2211,6 +2212,8 @@
       "universal": false,
       "modifiers": [
         "icon",
+        "iconSize",
+        "iconForeground",
         "subtitle",
         "destructive",
         "disabled",

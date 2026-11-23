@@ -33,6 +33,56 @@ const bloomArea = () => <Text>Hold for options</Text>;
 
 export const CONTEXT_MENU_CASES: readonly ParityCase[] = [
   {
+    // A row's own glyph size and ink, over the menu's 20pt quiet ink (Mention's 22pt rows).
+    name: 'an open context menu whose rows size and ink their own glyphs',
+    isolated: true,
+    language: () =>
+      toElement(
+        L.ContextMenu(
+          area(),
+          L.Item('Copy')
+            .icon(RiFileCopyLine)
+            .iconSize('22')
+            .iconForeground('foreground')
+            .onPress(copy),
+          L.Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(set),
+          L.Item('Delete').icon(RiDeleteBinLine).iconSize('22').destructive().onPress(remove),
+        ).presentedAt([AT, set]),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ContextMenu anchor={AT} onAnchorChange={set}>
+            <ContextMenuTrigger>{bloomArea()}</ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                leading={<RiFileCopyLine width={22} height={22} fill={c.text} />}
+                variant="default"
+                onPress={copy}
+              >
+                Copy
+              </ContextMenuItem>
+              <ContextMenuItem
+                leading={<RiShareLine size="sm" fill={c.primary} />}
+                variant="default"
+                onPress={set}
+              >
+                Share
+              </ContextMenuItem>
+              <ContextMenuItem
+                leading={<RiDeleteBinLine width={22} height={22} fill={c.error} />}
+                variant="destructive"
+                onPress={remove}
+              >
+                Delete
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        )}
+      </Themed>
+    ),
+  },
+  {
     name: 'a context menu on a view',
     language: () =>
       toElement(
