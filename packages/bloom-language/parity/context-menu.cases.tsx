@@ -11,7 +11,9 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@oxy.so/bloom/context-menu';
-import { RiDeleteBinLine, RiFileCopyLine, RiShareLine } from '@oxy.so/bloom/icons';
+import { Button } from '@oxy.so/bloom/button';
+import { DropdownMenu, DropdownMenuTrigger } from '@oxy.so/bloom/dropdown-menu';
+import { RiDeleteBinLine, RiFileCopyLine, RiMoreFill, RiShareLine } from '@oxy.so/bloom/icons';
 import { Text } from '@oxy.so/bloom/typography';
 
 import * as L from '../src/index';
@@ -32,6 +34,32 @@ const area = () => L.Text('Hold for options');
 const bloomArea = () => <Text>Hold for options</Text>;
 
 export const CONTEXT_MENU_CASES: readonly ParityCase[] = [
+  {
+    // Mention's post menu: Bloom's dropdown on every platform, as its JSX draws it.
+    name: 'a menu drawn as Bloom’s dropdown everywhere',
+    language: () =>
+      toElement(
+        L.Menu(
+          L.Button(L.Icon(RiMoreFill)).style('subtle').shape('circle').label('More'),
+          L.Item('Copy').onPress(copy),
+        )
+          .label('More')
+          .menuStyle('dropdown'),
+      ),
+    bloom: () => (
+      <DropdownMenu open={false} onOpenChange={set}>
+        <DropdownMenuTrigger asChild label="More">
+          <Button
+            appearance="subtle"
+            leadingIcon={RiMoreFill}
+            iconOnly
+            accessibilityLabel="More"
+            onPress={set}
+          />
+        </DropdownMenuTrigger>
+      </DropdownMenu>
+    ),
+  },
   {
     // A row's own glyph size and ink, over the menu's 20pt quiet ink (Mention's 22pt rows).
     name: 'an open context menu whose rows size and ink their own glyphs',

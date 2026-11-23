@@ -143,6 +143,10 @@ export type GlassOpacityName = keyof typeof GLASS_OPACITY;
 /** Bloom's motion durations (`animation.duration`): an image's cross-fade, by name. */
 export type DurationName = keyof typeof DURATION;
 export type Edge = (typeof ENUMS.edge)[number];
+/** Which menu a `Menu` is: the platform's, or Bloom's dropdown on every platform. */
+export type MenuStyle = (typeof ENUMS.menuStyle)[number];
+/** What pressing a `Tabs` strip's open tab does (Bloom's `pressOpenTab`). */
+export type PressOpenTab = (typeof ENUMS.pressOpenTab)[number];
 /** A physical side or set of sides (left and right, never leading or trailing): what `.safeAreaPadding()` pads and `.hitSlop()` reaches, both the device's. */
 export type PhysicalEdge = (typeof ENUMS.physicalEdge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];

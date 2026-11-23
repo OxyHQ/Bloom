@@ -52,6 +52,7 @@ import {
   type ViewNode,
 } from '../node';
 import { paintedHost } from '../painted-host';
+import type { PressOpenTab } from '../tokens';
 import { layoutOf, layoutStyle, type StackModifier } from '../style';
 import {
   type Alignment,
@@ -315,6 +316,12 @@ export interface TabsView extends ViewModifiers<TabsView> {
   onReorder(value: (fromValue: string, toValue: string) => void): TabsView;
   /** A swipe's travel between the tabs, which the underline follows. */
   dragTranslation(value: MotionValue): TabsView;
+  /**
+   * What pressing the open tab does: `report` tells its value again, `reselect`
+   * takes its content back to the top (and reloads there), as social apps'
+   * inner tabs do (Bloom's `pressOpenTab`).
+   */
+  pressOpenTab(value: PressOpenTab): TabsView;
 }
 /** A tab of a `Tabs` strip: its value and label. */
 export interface TabItemView<V extends string = string> extends ViewNode {
@@ -838,6 +845,7 @@ function tabs(d: ControlDraw): ReactElement {
       fullWidth: d.own('fullWidth')?.value,
       onReorder: d.own('onReorder')?.value,
       dragTranslation: d.own('dragTranslation')?.value,
+      pressOpenTab: d.own('pressOpenTab')?.value,
     },
     ...triggers,
   );

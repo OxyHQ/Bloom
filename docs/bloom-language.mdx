@@ -1377,7 +1377,9 @@ sizes and inks its own with `.iconSize(size)` (an icon rung or a numeric size,
 menubar menus and the lens menu (Android, OxyOS) draw them; the system menu on
 iOS draws its SF Symbol at its own size and ink. A `Submenu` takes the same two
 for its own glyph; Bloom's menus draw them, and the lens menu's submenus draw
-no glyph. Rows built from hooks, or costly to build, go in one
+no glyph. `.menuStyle('dropdown')` draws Bloom's own DropdownMenu on every
+platform (its panel and rows, as an app's `<DropdownMenu>` draws them) rather
+than the platform's menu; `platform` is the default. Rows built from hooks, or costly to build, go in one
 `menu()` content, whose body runs only while the menu is open:
 
 ```ts
@@ -2204,7 +2206,7 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
 | `EmptyState(title?, ...content)` | Bloom `EmptyState` (the content between its explanation and its actions) |
 | `SelectionCard(title, ...body)` | Bloom `SelectionCard` |
 | `Admonition(...content)` | Bloom's `AdmonitionRoot`, row, icon and content: a `Text` is `AdmonitionText`, a `Button` an action |
-| `Tabs(selection, ...TabItem(value, label), ...TabContent(value, ...))` | Bloom `Tabs`, its `TabsTrigger`s and its `TabsContent`s |
+| `Tabs(selection, ...TabItem(value, label), ...TabContent(value, ...))` | Bloom `Tabs`, its `TabsTrigger`s and its `TabsContent`s; `.pressOpenTab('report' \| 'reselect')` is what pressing the open tab does (`reselect`: its content back to the top) |
 | `Kbd(keys)` | Bloom `Kbd` |
 | `ErrorBoundary(...content)` | Bloom `ErrorBoundary` |
 

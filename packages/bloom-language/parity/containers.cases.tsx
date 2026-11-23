@@ -679,6 +679,22 @@ const tabs: ParityCase[] = [
       </Tabs>
     ),
   },
+  ...ENUMS.pressOpenTab.map((press) => ({
+    // Mention's feed tabs: pressing the open tab takes its content back to the top.
+    name: `Tabs whose open tab, pressed, does ${press}`,
+    language: () =>
+      toElement(
+        C.Tabs(['posts', setTab], C.TabItem('posts', 'Posts'), C.TabItem('replies', 'Replies'))
+          .style('underline')
+          .pressOpenTab(press),
+      ),
+    bloom: () => (
+      <Tabs value="posts" onValueChange={setTab} variant="underline" pressOpenTab={press}>
+        <TabsTrigger value="posts" label="Posts" />
+        <TabsTrigger value="replies" label="Replies" />
+      </Tabs>
+    ),
+  })),
   ...ENUMS.tabsStyle.map((style) => ({
     name: `Tabs style ${style}`,
     language: () =>

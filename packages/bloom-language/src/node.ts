@@ -265,6 +265,8 @@ import {
   type DurationName,
   type Edge,
   type PhysicalEdge,
+  type PressOpenTab,
+  type MenuStyle,
   type Role,
   type ShrinkPriority,
   type FlexName,
@@ -1137,6 +1139,10 @@ export interface ValueModifiers {
 
   /** A press that goes no further than this view on the web (Bloom's `stopPropagation`). */
   stopPropagation: boolean;
+  /** What pressing a strip's open tab does (Bloom's `pressOpenTab`). */
+  pressOpenTab: PressOpenTab;
+  /** Which menu a `Menu` is: the platform's (the default) or Bloom's dropdown everywhere. */
+  menuStyle: MenuStyle;
   /** A button's spinner while loading: a view, or `null` for none (Bloom's `loadingIndicator`). */
   loadingIndicator: ViewNode | null;
   /** A button's ink under the pointer (Bloom's `hoverColor`), from a colour role. */
@@ -4275,6 +4281,12 @@ export class Node {
   hoverForeground(value: ColorToken): Node {
     return this.set('hoverForeground', value);
   }
+  menuStyle(value: MenuStyle): Node {
+    return this.set('menuStyle', value);
+  }
+  pressOpenTab(value: PressOpenTab): Node {
+    return this.set('pressOpenTab', value);
+  }
   editable(value: boolean): Node {
     return this.set('editable', value);
   }
@@ -5139,6 +5151,13 @@ export interface MenuView extends ViewModifiers<MenuView> {
    * every platform can present before the menu opens.
    */
   actions(value: MenuActionsView): MenuView;
+  /**
+   * `dropdown`: Bloom's own DropdownMenu on every platform (its panel and
+   * rows, as an app's `<DropdownMenu>` draws them), not the platform's menu
+   * (the lens menu on Android and OxyOS, SwiftUI's on iOS). `platform` is the
+   * default.
+   */
+  menuStyle(value: MenuStyle): MenuView;
 }
 /** What a menu holds: rows, and at most one `menu()` content. */
 export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | DividerView;

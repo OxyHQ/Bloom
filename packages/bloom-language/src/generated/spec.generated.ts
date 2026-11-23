@@ -1085,6 +1085,14 @@ export const COLORS = {
 } as const;
 
 export const ENUMS = {
+  "pressOpenTab": [
+    "report",
+    "reselect"
+  ],
+  "menuStyle": [
+    "platform",
+    "dropdown"
+  ],
   "physicalEdge": [
     "all",
     "top",
@@ -3156,6 +3164,12 @@ export const MODIFIERS = {
   ],
   "editable": [
     "value"
+  ],
+  "pressOpenTab": [
+    "pressOpenTab"
+  ],
+  "menuStyle": [
+    "menuStyle"
   ],
   "multiple": [
     "value?"
@@ -7314,7 +7328,8 @@ export const NODE_MODIFIERS = {
     "modifier",
     "confirmationDialog",
     "phases",
-    "actions"
+    "actions",
+    "menuStyle"
   ],
   "menuItem": [
     "icon",
@@ -9166,7 +9181,8 @@ export const NODE_MODIFIERS = {
     "style",
     "fullWidth",
     "onReorder",
-    "dragTranslation"
+    "dragTranslation",
+    "pressOpenTab"
   ],
   "tabItem": [
     "icon",

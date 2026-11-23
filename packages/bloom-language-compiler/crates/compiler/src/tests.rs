@@ -3441,3 +3441,31 @@ fn a_buttons_inks_spinner_and_a_fields_lines_are_checked() {
     let output = compiled_with(names, "export const x = () => Button(Text('a')).hoverForeground('#f00');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown color token '#f00' for .hoverForeground()");
 }
+
+#[test]
+fn a_tab_strips_open_tab_press_is_checked() {
+    let names = "Tabs, TabItem";
+    let ok = compiled_with(
+        names,
+        "export const x = (b) => Tabs(b, TabItem('a', 'A')).pressOpenTab('reselect');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output =
+        compiled_with(names, "export const x = (b) => Tabs(b, TabItem('a', 'A')).pressOpenTab('top');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown pressOpenTab token 'top' for .pressOpenTab()");
+}
+
+#[test]
+fn a_menu_can_be_blooms_dropdown_everywhere() {
+    let names = "Menu, Item, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = () => Menu(Text('More'), Item('Copy')).menuStyle('dropdown');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(
+        names,
+        "export const x = () => Menu(Text('More'), Item('Copy')).menuStyle('inline');\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "Unknown menuStyle token 'inline' for .menuStyle()");
+}

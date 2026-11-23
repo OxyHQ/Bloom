@@ -118,12 +118,7 @@ const content: ParityCase[] = [
           .accessibilityState({ expanded: true }),
       ),
     bloom: () => (
-      <Button
-        leadingIcon={RiMoreFill}
-        iconOnly
-        accessibilityLabel="Menu"
-        aria-expanded
-      />
+      <Button leadingIcon={RiMoreFill} iconOnly accessibilityLabel="Menu" aria-expanded />
     ),
   },
   {

@@ -436,6 +436,8 @@
     "infoText": ["infoSubtleForeground", "info-text"]
   },
   "enums": {
+    "pressOpenTab": ["report", "reselect"],
+    "menuStyle": ["platform", "dropdown"],
     "physicalEdge": ["all", "top", "bottom", "horizontal", "vertical", "left", "right"],
     "edge": [
       "all",
@@ -1384,6 +1386,8 @@
     "loadingIndicator": ["value"],
     "hoverForeground": ["color"],
     "editable": ["value"],
+    "pressOpenTab": ["pressOpenTab"],
+    "menuStyle": ["menuStyle"],
     "multiple": ["value?"],
     "ref": ["value"],
     "onLayout": ["value"],
@@ -2244,7 +2248,7 @@
     },
     "menu": {
       "constructors": ["Menu"],
-      "modifiers": ["actions"]
+      "modifiers": ["actions", "menuStyle"]
     },
     "menuItem": {
       "constructors": ["Item"],
@@ -2510,7 +2514,7 @@
     },
     "tabs": {
       "constructors": ["Tabs"],
-      "modifiers": ["style", "fullWidth", "onReorder", "dragTranslation"],
+      "modifiers": ["style", "fullWidth", "onReorder", "dragTranslation", "pressOpenTab"],
       "style": "tabsStyle"
     },
     "tabItem": {

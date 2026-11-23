@@ -104,6 +104,7 @@ import type { GlassMember } from './platform/glass-host.types';
 import { ConfirmationHost } from './platform/confirmation-host';
 import { type InsetRoom, insetsOf, NO_INSETS, SafeAreaInsets } from './chrome/safe-area-inset';
 import { MenuHost } from './platform/menu-host';
+import { DropdownMenuHost } from './platform/menu-dropdown';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
 import { ScrollViewHost } from './chrome/scroll-view-host';
@@ -2546,7 +2547,9 @@ function renderHost(
       return drawHost(fab, boxOf('component', 'F'), props);
     }
     case 'menu': {
-      const menu = draw(MenuHost, {
+      // `.menuStyle('dropdown')`: Bloom's own dropdown on every platform, its look as the JSX an app writes.
+      const host = ownValue(p, 'menuStyle')?.value === 'dropdown' ? DropdownMenuHost : MenuHost;
+      const menu = draw(host, {
         key: boxed ? undefined : key,
         trigger: namedTrigger((node.props as MenuProps).trigger, p.label),
         rows: node.children,
