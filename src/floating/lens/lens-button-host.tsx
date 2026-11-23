@@ -3,10 +3,11 @@
  * lens a menu grows out of. It draws the fill (the lens, tinted), springs under the finger and runs on the
  * UI thread; the control inside only draws its content and handles the press.
  */
-import { Children, type ReactNode } from 'react';
+import { Children, type ReactNode, useMemo } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../../theme/use-theme';
+import { LENS_FROST } from './lens-frost';
 import { useLensAvailable } from './lens-material';
 import { getNativeLens } from './native-lens';
 
@@ -104,6 +105,15 @@ interface LensButtonHostProps {
 export function LensButtonHost({ tint, radius, jelly, style, children }: LensButtonHostProps) {
   const native = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
+  // The same lens keeps the same config, so a render that changes nothing sends the engine nothing.
+  const config = useMemo(
+    () => ({
+      blur: LENS_FROST.control,
+      ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null),
+      ...(jelly === undefined ? null : { jelly }),
+    }),
+    [tint, jelly],
+  );
   if (!native) return <>{Children.only(children)}</>;
   const { LensBase } = native;
   // The one lens base (the upstream app's lens trigger): what it holds draws no lens of its own,
@@ -112,11 +122,7 @@ export function LensButtonHost({ tint, radius, jelly, style, children }: LensBut
     <LensBase
       colorScheme={dark ? 'dark' : 'light'}
       cornerRadius={radius}
-      config={
-        tint || jelly !== undefined
-          ? { ...(tint ? { tintColor: tint, tintOpacity: 0.96 } : null), jelly }
-          : undefined
-      }
+      config={config}
       style={[HOST, style]}
     >
       {children}

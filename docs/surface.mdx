@@ -238,6 +238,12 @@ and `sheen={false}` to omit the native inset sheen. Both default to true, so
 ordinary surfaces retain their existing optics. Use shared surface presence
 when fading a surface on web; ancestor opacity prevents its backdrop filtering.
 
+On the web `frost` sets how much the backdrop is blurred, in CSS px (24 by
+default). A glass frosts less than the floating material, as Liquid Glass's
+`regular` and `clear` do; the language's glass sets it from its spec
+(`webBlur`). Only the blur changes, so a baked surface paints the same body.
+Native ignores it.
+
 ## The native lens material
 
 `<Surface material="lens">` draws the surface with the native lens on Android 13+ (the engine in

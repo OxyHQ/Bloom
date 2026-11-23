@@ -42,6 +42,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       fill,
       rim = true,
       sheen: _sheen = true,
+      frost,
       material: _material = 'surface',
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,
@@ -95,7 +96,10 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     const material = useResolvedSurface({
       fill: override === undefined ? undefined : String(override),
     });
-    const opticsRecipe = useThemeRecipe((theme) => resolveSurfaceOptics(theme.isDark), []);
+    const opticsRecipe = useThemeRecipe(
+      (theme) => resolveSurfaceOptics(theme.isDark, frost),
+      [frost],
+    );
     const optics = opticsRecipe.paint;
     const materialRecipe = useThemeRecipe(
       (theme, documentMode, documentPreset) => {

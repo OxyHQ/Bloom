@@ -145,10 +145,13 @@ export function peakGain(rim: SurfaceRim): number {
 /** Frosting radius, in CSS px. */
 export const SURFACE_BLUR_PX = 24;
 
-/** The backdrop under the tint: frosted, saturated, flattened, brightened. */
-export function materialFilter({ saturate, slope, offset }: SurfaceLook): string {
+/** The backdrop under the tint: frosted (`blur` CSS px), saturated, flattened, brightened. */
+export function materialFilter(
+  { saturate, slope, offset }: SurfaceLook,
+  blur: number = SURFACE_BLUR_PX,
+): string {
   const brightness = slope + (2 * offset) / 255;
-  return `blur(${SURFACE_BLUR_PX}px) saturate(${saturate}) contrast(${(slope / brightness).toFixed(5)}) brightness(${brightness.toFixed(5)})`;
+  return `blur(${blur}px) saturate(${saturate}) contrast(${(slope / brightness).toFixed(5)}) brightness(${brightness.toFixed(5)})`;
 }
 
 /** The edge: the backdrop brightened by the rim's peak gain, shown through the mask. */

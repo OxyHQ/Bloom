@@ -23,6 +23,9 @@ import {
   Text,
 } from '../primitives';
 import { clear, identity, regular } from '../glass';
+import { GLASS } from '../generated/spec.generated';
+// Bloom's own lens frost, read from its source, so the language's regular glass and Bloom's lens controls agree.
+import { LENS_FROST } from '../../../../src/floating/lens/lens-frost';
 import { GlassGroup } from '../controls/glass-group';
 import { ToolbarGroup } from '../controls/toolbar-group';
 import { ConfirmationDialog } from '../controls/confirmation-dialog';
@@ -71,6 +74,9 @@ jest.mock('../platform/confirmation-host', () =>
 
 quietRenderer();
 
+const REGULAR_FROST = GLASS.regular.lensBlur;
+const CLEAR_FROST = GLASS.clear.lensBlur;
+
 describe('glass is the lens', () => {
   it('a glass view is the lens view with no rows, its tint from a role at a named transparency', () => {
     const r = mount(
@@ -82,18 +88,25 @@ describe('glass is the lens', () => {
       lens: true,
       colorScheme: 'light',
       cornerRadius: 16,
-      triggerConfig: { blur: 0.5, tintColor: LIGHT.primary, tintOpacity: 0.48 },
+      triggerConfig: { blur: CLEAR_FROST, tintColor: LIGHT.primary, tintOpacity: 0.48 },
     });
     expect(hosts(r, 'Surface')).toHaveLength(0);
   });
 
-  it('untinted regular glass is the engine’s own frost; the theme sets its scheme', () => {
+  it('untinted regular glass frosts as Liquid Glass does; the theme sets its scheme', () => {
     const r = mount(toElement(HStack(Text('a')).glass()), DARK);
     expect(only(r, 'BloomLensMenu').props).toMatchObject({
       cornerRadius: undefined,
       colorScheme: 'dark',
-      triggerConfig: { blur: 1, tintColor: undefined, tintOpacity: undefined },
+      triggerConfig: { blur: REGULAR_FROST, tintColor: undefined, tintOpacity: undefined },
     });
+  });
+
+  it('the frost is Liquid Glass’s: clear frosts less than regular, a menu more, as Bloom’s own lens', () => {
+    expect(CLEAR_FROST).toBeLessThan(REGULAR_FROST);
+    expect(REGULAR_FROST).toBeLessThan(GLASS.regular.lensMenuBlur);
+    // Bloom's lens controls and menus take the regular glass's frost.
+    expect(LENS_FROST).toEqual({ control: REGULAR_FROST, panel: GLASS.regular.lensMenuBlur });
   });
 
   it('a glass’s variants reach the lens: a fill its tint, a corner its radius, a frame its style', () => {
@@ -109,14 +122,14 @@ describe('glass is the lens', () => {
     const lens = () => only(r, 'BloomLensMenu');
     expect(lens().props).toMatchObject({
       cornerRadius: 16,
-      triggerConfig: { blur: 1, tintColor: LIGHT.primary, tintOpacity: 0.48 },
+      triggerConfig: { blur: REGULAR_FROST, tintColor: LIGHT.primary, tintOpacity: 0.48 },
     });
     expect(lens().props.style).toBeUndefined();
     act(() => only(r, 'Pressable').props.onPressIn());
     expect(lens().props).toMatchObject({
       cornerRadius: 20,
       style: { height: 40 },
-      triggerConfig: { blur: 1, tintColor: LIGHT.error, tintOpacity: 0.4 },
+      triggerConfig: { blur: REGULAR_FROST, tintColor: LIGHT.error, tintOpacity: 0.4 },
     });
     act(() => only(r, 'Pressable').props.onPressOut());
     expect(lens().props.triggerConfig).toMatchObject({ tintColor: LIGHT.primary });
@@ -151,7 +164,7 @@ describe('glass is the lens', () => {
     const tinted = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))));
     expect(hosts(tinted, 'BloomLensMenu')).toHaveLength(1);
     expect(only(tinted, 'BloomLensMenu').props.triggerConfig).toMatchObject({
-      blur: 0.5,
+      blur: CLEAR_FROST,
       tintColor: LIGHT.primary,
       tintOpacity: 0.24,
     });
@@ -205,8 +218,9 @@ describe('the menu is the lens menu', () => {
       { id: 'separator-4', title: '', separator: true },
       { id: 'r3', title: 'Share', items: [{ id: 'r3.0', title: 'Link' }] },
     ]);
-    // Bloom gives the colours: the panel's tint and the rows' ink.
+    // Bloom gives the panel's frost (regular glass grown large) and colours: its tint and the rows' ink.
     expect(lens.props.config).toMatchObject({
+      blur: GLASS.regular.lensMenuBlur,
       textColor: LIGHT.text,
       mutedColor: LIGHT.textSecondary,
     });
