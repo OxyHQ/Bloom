@@ -596,7 +596,7 @@ pub const MODIFIERS: &[(&str, &[&str])] = &[
     ("contentClearance", &["space"]),
     ("navigationScope", &["navigationScope"]),
     ("contentMargins", &["edge?", "space"]),
-    ("refreshable", &["value", "color?"]),
+    ("refreshable", &["refresh", "color?"]),
     ("onEndReached", &["value", "value?"]),
     ("scrollIndicators", &["scrollIndicators", "axis?"]),
     ("scrollDismissesKeyboard", &["keyboardDismiss"]),
@@ -1494,6 +1494,7 @@ pub const NODES: &[NodeSpec] = &[
 /// An object parameter (`frame({ … })`, `position({ … })`…): its type, the keys it takes,
 /// and the token set every value is in.
 pub const OBJECTS: &[(&str, &[&str], &str)] = &[
+    ("refresh", &["refreshing", "onRefresh"], "value"),
     ("accessibilityValue", &["min", "max", "now", "text"], "value"),
     ("accessibilityState", &["selected", "checked", "busy", "expanded", "disabled"], "accessibilityChecked"),
     ("frame", &["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"], "length"),

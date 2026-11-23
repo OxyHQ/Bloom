@@ -3397,3 +3397,20 @@ fn the_escape_hatches_take_a_ref_and_a_layout_handler() {
     let output = compiled("export const x = (r) => VStack(Text('a')).ref(r, r);\n");
     assert_eq!(output.diagnostics[0].message, ".ref() takes 1 argument(s), not 2");
 }
+
+#[test]
+fn a_refresh_is_a_binding_or_its_value_and_action() {
+    let names = "ScrollView, VirtualList, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = (q, b, rows, row) => [ScrollView(Text('a')).refreshable(b, 'primary'), ScrollView(Text('a')).refreshable({ refreshing: q.isRefetching, onRefresh: q.refetch }), VirtualList(rows, row).refreshable({ refreshing: q.isRefetching, onRefresh: q.refetch })];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(
+        names,
+        "export const x = (q) => ScrollView(Text('a')).refreshable({ refreshing: q.isRefetching, onPull: q.refetch });\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".refreshable() has no 'onPull'");
+    let output = compiled_with(names, "export const x = (b) => ScrollView(Text('a')).refreshable(b, 'teal');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token 'teal' for .refreshable()");
+}

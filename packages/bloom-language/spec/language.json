@@ -1144,6 +1144,10 @@
   ],
   "objects": {
     "$comment": "The object parameters: the keys each takes, and the token set of every value (value: a number or a text, no token, as React Native takes it).",
+    "refresh": {
+      "keys": ["refreshing", "onRefresh"],
+      "tokens": "value"
+    },
     "accessibilityValue": {
       "keys": ["min", "max", "now", "text"],
       "tokens": "value"
@@ -1590,7 +1594,7 @@
     "contentClearance": ["space"],
     "navigationScope": ["navigationScope"],
     "contentMargins": ["edge?", "space"],
-    "refreshable": ["value", "color?"],
+    "refreshable": ["refresh", "color?"],
     "onEndReached": ["value", "value?"],
     "scrollIndicators": ["scrollIndicators", "axis?"],
     "scrollDismissesKeyboard": ["keyboardDismiss"],

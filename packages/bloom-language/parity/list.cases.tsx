@@ -335,6 +335,25 @@ const virtual: ParityCase[] = [
     ),
   },
   {
+    // Mention's lists: a query's isRefetching and refetch.
+    name: 'a virtual list refreshed by its query',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .itemKey(keyOf)
+          .refreshable({ refreshing: true, onRefresh: press }),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        refreshing
+        onRefresh={press}
+      />
+    ),
+  },
+  {
     name: 'a virtual list with a numeric padding all round',
     language: () => toElement(L.VirtualList(NAMES, nameRow).itemKey(keyOf).contentMargins('6')),
     bloom: () => (

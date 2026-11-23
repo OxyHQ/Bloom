@@ -1100,7 +1100,9 @@ neither; there is no handler alone, so a screen that wants to hear a change
 owns the value. A value Bloom requires (a place picker's `.query()`, a pitch
 card's selections) is still a modifier, said where the node is. Pull to
 refresh is a binding as well: `.refreshable([refreshing, setRefreshing])`, a
-pull writing `true`. Each binding's type is the value Bloom holds
+pull writing `true`; or, where a query drives it, its value and action,
+`.refreshable({ refreshing: isRefetching, onRefresh: refetch })` (React
+Native's names), which writes nothing back. Each binding's type is the value Bloom holds
 (`Bound<ReviewCardProps, 'expanded'>` is `Binding<boolean>`), and the
 spec lists each modifier on the nodes that edit it, so the compiler rejects a
 binding on a node that has no such value.
@@ -1770,7 +1772,7 @@ inside a screen, as Bloom's is.
 | Modifier | Bloom `ScreenScrollView` |
 | --- | --- |
 | `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
-| `.refreshable([refreshing, setRefreshing], tint?)` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed. `tint`, a colour role (or a role at an opacity), is its `tintColor` and `colors={[…]}`, painted from the theme as an app writes `tintColor={theme.colors.primary} colors={[theme.colors.primary]}` |
+| `.refreshable([refreshing, setRefreshing], tint?)`, `.refreshable({ refreshing, onRefresh }, tint?)` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed. Or a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`), passed as they are. `tint`, a colour role (or a role at an opacity), is its `tintColor` and `colors={[…]}`, painted from the theme as an app writes `tintColor={theme.colors.primary} colors={[theme.colors.primary]}` |
 | `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden', axis?)` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator`, or only the one `axis` (`'vertical'` or `'horizontal'`) names: `showsVerticalScrollIndicator={false}` alone is `.scrollIndicators('hidden', 'vertical')` |
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
@@ -2450,7 +2452,7 @@ scroll of the language's takes them (`paddingHorizontal: 16, gap: 8` is
 `.contentMargins('horizontal', 'lg').spacing('sm')`; the room for views pinned
 at its edges adds to that padding), `.itemKey()`, `.itemType()` (FlashList's recycling type),
 `.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
-`.refreshable([refreshing, setRefreshing])`, `.stickyIndices()`,
+`.refreshable([refreshing, setRefreshing])` or `.refreshable({ refreshing, onRefresh })`, `.stickyIndices()`,
 `.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()`,
 `.screen(options?)` (Bloom's `screen`, `{}` by default: the list is its screen's
 scroller, binding the header's fade, the bottom bar's fold, the reselect and the

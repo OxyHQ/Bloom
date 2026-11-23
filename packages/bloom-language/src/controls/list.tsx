@@ -25,7 +25,7 @@ import {
 import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
-import { type Binding, refreshing } from '../binding';
+import { type Binding, type Refresh, refreshing } from '../binding';
 import { Node, type Child, type ViewModifiers, type ViewNode } from '../node';
 import {
   resolveSpace,
@@ -184,8 +184,12 @@ export interface VirtualListView extends ViewModifiers<VirtualListView> {
   columns(value: number): VirtualListView;
   /** Called near the end, `threshold` viewports from it. */
   onEndReached(action: () => void, threshold?: number): VirtualListView;
-  /** Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). */
-  refreshable(value: Binding<boolean>): VirtualListView;
+  /**
+   * Pull to refresh: a binding a pull writes `true` (the app writes `false`
+   * when done), or `{ refreshing, onRefresh }`, a refreshing value and the
+   * action a pull runs (a query's `isRefetching` and `refetch`).
+   */
+  refreshable(value: Refresh): VirtualListView;
   /** The indices whose rows stick to the top. */
   stickyIndices(value: readonly number[]): VirtualListView;
   /** Where its scroll position is kept across visits. */

@@ -2825,6 +2825,13 @@ export const ENVIRONMENT_TAKERS = {
 
 /** The object parameters (`frame`, `position`'s edges, `offset`): their keys and the token set of each value. */
 export const OBJECTS = {
+  "refresh": {
+    "keys": [
+      "refreshing",
+      "onRefresh"
+    ],
+    "tokens": "value"
+  },
   "accessibilityValue": {
     "keys": [
       "min",
@@ -3769,7 +3776,7 @@ export const MODIFIERS = {
     "space"
   ],
   "refreshable": [
-    "value",
+    "refresh",
     "color?"
   ],
   "onEndReached": [

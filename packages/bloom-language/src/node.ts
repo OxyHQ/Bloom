@@ -180,7 +180,7 @@ import type { ChatComposerKind } from './controls/chat-composer';
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
-import type { AnyBinding, Binding } from './binding';
+import type { AnyBinding, Binding, Refresh } from './binding';
 import type {
   BoundaryErrorHandler,
   BoundaryFallback,
@@ -1645,7 +1645,7 @@ export type Modifier =
   | {
       readonly kind: 'refreshable';
       readonly key: string;
-      readonly value: Binding<boolean>;
+      readonly value: Refresh;
       /** The refresh control's `tintColor` and `colors`, painted from a role; the platform's by default. */
       readonly tint: ColorToken | undefined;
     }
@@ -2835,7 +2835,7 @@ export class Node {
       value: token,
     });
   }
-  refreshable(value: Binding<boolean>, tint?: ColorToken): Node {
+  refreshable(value: Refresh, tint?: ColorToken): Node {
     return this.with({ kind: 'refreshable', key: 'refreshable', value, tint });
   }
   onEndReached(value: () => void, threshold?: number): Node {
@@ -5311,12 +5311,13 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollViewNode;
   /**
-   * Pull to refresh: whether it is refreshing, a binding a pull writes `true`
-   * (the app writes `false` when done). `tint` paints the refresh control's
-   * `tintColor` and `colors` from a colour role, as an app hands it its
-   * theme's colour; the platform's by default.
+   * Pull to refresh: a binding a pull writes `true` (the app writes `false`
+   * when done), or `{ refreshing, onRefresh }`, a refreshing value and the
+   * action a pull runs (a query's `isRefetching` and `refetch`). `tint` paints
+   * the refresh control's `tintColor` and `colors` from a colour role, as an
+   * app hands it its theme's colour; the platform's by default.
    */
-  refreshable(value: Binding<boolean>, tint?: ColorToken): ScrollViewNode;
+  refreshable(value: Refresh, tint?: ColorToken): ScrollViewNode;
   /** Called once each time the end comes within `threshold` viewports (2 by default). */
   onEndReached(action: () => void, threshold?: number): ScrollViewNode;
   /**

@@ -21,13 +21,29 @@ export type Binding<T> = readonly [value: T, set: (value: T) => void];
 export type Bound<Props, Key extends keyof Props> = Binding<Exclude<Props[Key], undefined>>;
 
 /**
- * A pull to refresh's binding as React Native's `refreshing` and `onRefresh`:
- * a pull writes `true`, and the app writes `false` when it has refreshed.
+ * A pull to refresh driven by what refreshes: whether it is refreshing, and
+ * the action a pull runs (a query's `isRefetching` and `refetch`), named as
+ * React Native's `refreshing` and `onRefresh`. Nothing is written back: the
+ * value ends the refresh when the work does.
  */
-export function refreshing([value, set]: Binding<boolean>): {
+export interface RefreshAction {
+  readonly refreshing: boolean;
+  readonly onRefresh: () => void;
+}
+
+/**
+ * A pull to refresh: a binding a pull writes `true` (the app writes `false`
+ * when it has refreshed), or a refreshing value and its action.
+ */
+export type Refresh = Binding<boolean> | RefreshAction;
+
+/** A pull to refresh as React Native's `refreshing` and `onRefresh`. */
+export function refreshing(refresh: Refresh): {
   refreshing: boolean;
   onRefresh: () => void;
 } {
+  if ('onRefresh' in refresh) return { refreshing: refresh.refreshing, onRefresh: refresh.onRefresh };
+  const [value, set] = refresh;
   return { refreshing: value, onRefresh: () => set(true) };
 }
 

@@ -158,6 +158,17 @@ const scrollViews: ParityCase[] = inScreen([
       </ScreenScrollView>
     ),
   },
+  {
+    // A query's isRefetching and refetch: the value ends the refresh, nothing is written back.
+    name: 'pull to refresh driven by its query',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).refreshable({ refreshing: true, onRefresh: noop })),
+    bloom: () => (
+      <ScreenScrollView refreshControl={<RefreshControl refreshing onRefresh={noop} />}>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
   ...(['primary', 'muted/70'] as const).map((tint) => ({
     name: `pull to refresh tinted ${tint}`,
     language: () => toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], tint)),
