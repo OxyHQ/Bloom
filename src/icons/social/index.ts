@@ -7,3 +7,4 @@ export { LikeFillIcon } from './LikeFillIcon';
 export { BookmarkIcon } from './BookmarkIcon';
 export { BookmarkFillIcon } from './BookmarkFillIcon';
 export { ShareIcon } from './ShareIcon';
+export { MenuIcon } from './MenuIcon';

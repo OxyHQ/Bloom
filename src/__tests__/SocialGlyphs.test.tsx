@@ -11,6 +11,7 @@ import { LikeFillIcon } from '../icons/social/LikeFillIcon';
 import { BookmarkIcon } from '../icons/social/BookmarkIcon';
 import { BookmarkFillIcon } from '../icons/social/BookmarkFillIcon';
 import { ShareIcon } from '../icons/social/ShareIcon';
+import { MenuIcon } from '../icons/social/MenuIcon';
 
 // Exercise the shared SVG renderer, with only the theme environment fixed.
 jest.mock('../theme/use-theme', () => ({
@@ -19,7 +20,9 @@ jest.mock('../theme/use-theme', () => ({
 
 // Approved path fingerprints protect the authored shapes independently of their
 // paint, host size and shared renderer. Outline hearts/replies use an 18-unit
-// canvas; normalizing those paths to 24 would visibly shrink them.
+// canvas; normalizing those paths to 24 would visibly shrink them. A glyph drawn
+// in several paths is fingerprinted over their `d` strings in order, joined by a
+// space.
 const glyphs = [
   {
     name: 'MediaAttachmentIcon',
@@ -84,6 +87,13 @@ const glyphs = [
     strokeWidth: 0,
     fingerprint: '43c945a114091404523d8950a801ae728a9ae6f60b861e82141b882f45786546',
   },
+  {
+    name: 'MenuIcon',
+    Icon: MenuIcon,
+    viewBox: '0 0 24 24',
+    strokeWidth: 0,
+    fingerprint: '388afaac3d35efaaa9623adcffa618a805f87bf0e84be323fae69fc084dbc268',
+  },
 ] satisfies Array<{
   name: string;
   Icon: BloomIconComponent;
@@ -97,21 +107,33 @@ describe('social glyphs', () => {
     'preserves $name while following the control paint and size',
     ({ Icon, viewBox, strokeWidth, fingerprint }) => {
       const screen = render(<Icon width={28} height={28} fill="#abcdef" />);
-      const path = screen.UNSAFE_getByType(Path);
       const svg = screen.toJSON();
       if (!svg || Array.isArray(svg)) throw new Error('Expected one SVG host');
       expect(svg.props).toMatchObject({ width: 28, height: 28, viewBox });
-      expect(createHash('sha256').update(path.props.d).digest('hex')).toBe(fingerprint);
-      expect(path.props).toMatchObject({
-        fill: strokeWidth ? 'none' : '#abcdef',
-        stroke: strokeWidth ? '#abcdef' : 'none',
-        strokeWidth,
-      });
+      const d = screen
+        .UNSAFE_getAllByType(Path)
+        .map((path) => path.props.d)
+        .join(' ');
+      expect(createHash('sha256').update(d).digest('hex')).toBe(fingerprint);
+      expectPaint('#abcdef');
       screen.rerender(<Icon width={20} height={20} fill="#fedcba" />);
-      expect(screen.UNSAFE_getByType(Path).props).toMatchObject({
-        fill: strokeWidth ? 'none' : '#fedcba',
-        stroke: strokeWidth ? '#fedcba' : 'none',
-      });
+      expectPaint('#fedcba');
+
+      // Every path follows the control's paint: a filled glyph fills and never
+      // strokes (an absent stroke is none), an outlined one strokes and never fills.
+      function expectPaint(color: string) {
+        for (const { props } of screen.UNSAFE_getAllByType(Path)) {
+          expect({
+            fill: props.fill,
+            stroke: props.stroke ?? 'none',
+            strokeWidth: props.strokeWidth ?? 0,
+          }).toEqual({
+            fill: strokeWidth ? 'none' : color,
+            stroke: strokeWidth ? color : 'none',
+            strokeWidth,
+          });
+        }
+      }
     },
   );
 });
