@@ -52,7 +52,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "generate": "node scripts/generate.mjs",
+    "generate": "node scripts/generate.mjs && node scripts/generate-type-checks.mjs",
     "build": "bob build",
     "typescript": "tsc --noEmit -p .",
     "test": "jest && jest -c parity/jest.config.js",
