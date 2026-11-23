@@ -510,9 +510,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
     const lensAvailable = useLensAvailable();
-    const lens = material === 'lens' && lensAvailable;
-    // On the lens (its own or an enclosing base's) the engine draws the shadow and rim.
-    const onLens = useInLensBase() || lens;
+    const inLensBase = useInLensBase();
     const palette = useMemo(
       () =>
         resolveButtonOverrides(
@@ -551,6 +549,15 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       ],
     );
     const underlineMode = resolveButtonUnderline(isLink, underline);
+    // Where the device has the lens, every button with a material is drawn by it: one material for
+    // every button. In a floating region (`material="lens"`) the window draws it over what moves
+    // behind; anywhere else it is drawn in its place, against the surface it sits on, as a feed's ⋯.
+    const lens =
+      lensAvailable &&
+      (material === 'lens' || (material === 'surface' && palette.rest.surface === true));
+    const restBackdrop = lens && material !== 'lens' ? layer.parentFill : undefined;
+    // On the lens (its own or an enclosing base's) the engine draws the shadow and rim.
+    const onLens = inLensBase || lens;
 
     // Pressed state drives the ACTIVE palette. Tracked through state rather than
     // Pressable's function-form `style`, which NativeWind's css-interop swallows
@@ -882,6 +889,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       <LensButtonHost
         tint={appearance === 'solid' ? paint.background : undefined}
         radius={typeof flatRadius === 'number' ? flatRadius : BUTTON_RADIUS}
+        restBackdrop={restBackdrop}
         style={split.host}
       >
         {pressable}

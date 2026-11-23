@@ -98,11 +98,24 @@ interface LensButtonHostProps {
   radius?: number;
   /** How far the press and the drag deform the lens, a multiplier of the engine's own (1). */
   jelly?: number;
+  /**
+   * The colour the control sits on, for a lens drawn in its place in the page (a control in a
+   * scroll, never in a floating region): it samples this fill, not the window, and shares one still
+   * with every control that looks the same.
+   */
+  restBackdrop?: string;
   style?: ViewStyle;
   children: ReactNode;
 }
 
-export function LensButtonHost({ tint, radius, jelly, style, children }: LensButtonHostProps) {
+export function LensButtonHost({
+  tint,
+  radius,
+  jelly,
+  restBackdrop,
+  style,
+  children,
+}: LensButtonHostProps) {
   const native = useLensAvailable() ? getNativeLens() : null;
   const dark = useTheme().isDark;
   // The same lens keeps the same config, so a render that changes nothing sends the engine nothing.
@@ -123,6 +136,7 @@ export function LensButtonHost({ tint, radius, jelly, style, children }: LensBut
       colorScheme={dark ? 'dark' : 'light'}
       cornerRadius={radius}
       config={config}
+      restBackdrop={restBackdrop}
       style={[HOST, style]}
     >
       {children}
