@@ -1105,6 +1105,11 @@ export const ENUMS = {
     "pill",
     "fit"
   ],
+  "fabShape": [
+    "circle",
+    "rounded",
+    "squircle"
+  ],
   "linkTone": [
     "primary",
     "secondary",
@@ -6858,6 +6863,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "style",
+    "shape",
     "size",
     "tint",
     "collapsed"

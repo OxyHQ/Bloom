@@ -127,8 +127,10 @@ describe('glass is the lens', () => {
     const r = mount(toElement(Button(Icon(Glyph)).shape('circle').glass().onPress(onPress)));
     const button = only(r, 'BloomButton');
     expect(button.props).toMatchObject({ material: 'shared', onPress, iconOnly: true });
+    // The solid fill tints the glass as Bloom's own lens control does (Apple's glassProminent).
     expect(only(r, 'BloomLensMenu').props.triggerConfig).toMatchObject({
       tintColor: LIGHT.primary,
+      tintOpacity: 0.96,
     });
     expect(hosts(r, 'Pressable')).toHaveLength(0);
   });
@@ -138,15 +140,16 @@ describe('glass is the lens', () => {
     expect(only(r, 'BloomLensMenu').props.triggerConfig.tintColor).toBeUndefined();
   });
 
-  it('a FAB is always on glass, tinted with its action tone unless its chain names a glass', () => {
+  it('a FAB is always on glass, tinted with the accent unless its chain names a glass', () => {
     const r = mount(toElement(FAB(Icon(Glyph), Text('Compose'))));
     expect(only(r, 'BloomFab').props).toMatchObject({
       icon: Glyph,
       label: 'Compose',
       material: 'shared',
     });
-    expect(only(r, 'BloomLensMenu').props.triggerConfig).toMatchObject({
-      tintColor: LIGHT.tertiary,
+    expect(only(r, 'BloomLensMenu').props).toMatchObject({
+      cornerRadius: undefined,
+      triggerConfig: { tintColor: LIGHT.primary, tintOpacity: 0.96 },
     });
     const tinted = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))));
     expect(hosts(tinted, 'BloomLensMenu')).toHaveLength(1);
@@ -155,6 +158,14 @@ describe('glass is the lens', () => {
       tintColor: LIGHT.primary,
       tintOpacity: 0.24,
     });
+  });
+
+  it('a FAB’s shape is its lens’s corner: 28% of its diameter, a circle by default', () => {
+    for (const shape of ['rounded', 'squircle'] as const) {
+      const r = mount(toElement(FAB(Icon(Glyph)).shape(shape).label('Compose')));
+      expect(only(r, 'BloomFab').props.shape).toBe(shape);
+      expect(only(r, 'BloomLensMenu').props.cornerRadius).toBe(14);
+    }
   });
 });
 

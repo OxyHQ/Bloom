@@ -915,7 +915,10 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
   Each is the chain it stands for: `glass` is `.style('subtle').tint('neutral')`
   on `.glass()`, `glassProminent` `.style('solid').tint('accent')` on `.glass()`,
   whose untinted glass takes the button's fill. A `.tint()` the chain names
-  wins, and a `.glass()` it names (`clear`, a tint) is the glass instead.
+  wins, and a `.glass()` it names (`clear`, a tint) is the glass instead. A
+  glass button is Apple's size: the 44pt `lg` rung (Bloom's
+  `GLASS_CONTROL_SIZE`, measured on iOS 26 and 27), unless its chain
+  (`.size()`) or its environment (`.controlSize()`) names one.
 
   | | Android, OxyOS | iOS (not verified) | Web |
   | --- | --- | --- | --- |
@@ -1122,7 +1125,15 @@ on the lens and iOS stand-ins, and by parity and Chrome on Surface.
 ink, size and name (Bloom's `material="shared"`); the glass draws its fill.
 An untinted glass under a solid control takes the control's fill (the spec's
 `toneRole`: `accent` is `primary`, `action` is `tertiary`…), so the ink still
-reads. A `FAB` is always on glass.
+reads; on the lens at Bloom's solid lens control's 0.96, as Apple's
+`glassProminent` is filled. A `FAB` is always on glass, tinted with the accent
+(the theme's primary, its glyph the on-primary colour) unless it names a
+`.tint()`. `.shape('circle' | 'rounded' | 'squircle')` is its silhouette
+(Bloom `Fab`'s `shape`): a circle by default, or a square whose corner is 28%
+of its diameter, round (`rounded`) or continuous (`squircle`); its glass takes
+that corner at the FAB's diameter, so the lens, its press and a menu's morph
+follow the shape. The lens draws every corner continuous, so the two squares
+read alike on Android and OxyOS.
 
 **Interactive and identity glass.** `regular.interactive(on?)` says whether the
 glass answers touch (SwiftUI's `Glass.interactive`), and `identity` is no glass
