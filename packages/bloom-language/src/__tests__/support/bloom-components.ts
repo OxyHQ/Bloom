@@ -45,7 +45,8 @@ export const Text = 'SkeletonText';
 export const Circle = 'SkeletonCircle';
 export const Pill = 'SkeletonPill';
 export const Box = 'SkeletonBox';
-/** Bloom's FAB shapes, read from its source. */
+/** Bloom's one floating size, and its FAB shapes, read from its source. */
+export const FLOATING_CONTROL_SIZE = 'lg';
 export { FAB_SHAPES, fabCornerRadius } from '../../../../../src/fab/constants';
 /** A FAB's diameter as Bloom resolves it outside a bottom bar: its size's (`md` by default). */
 export function useFabDiameter(size?: 'xs' | 'sm' | 'md' | 'lg'): number {

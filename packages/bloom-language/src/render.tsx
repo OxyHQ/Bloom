@@ -22,7 +22,7 @@ import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
 import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
 import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
 import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
-import { Button as BloomButton } from '@oxy.so/bloom/button';
+import { Button as BloomButton, FLOATING_CONTROL_SIZE } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
 import type { BloomSize } from '@oxy.so/bloom/appearance';
@@ -1891,7 +1891,8 @@ function renderHost(
       Object.assign(props, {
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
-        size: ownValue(p, 'size')?.value,
+        // A button on glass is Bloom's one floating size (44), whatever its chain says.
+        size: p.control ? FLOATING_CONTROL_SIZE : ownValue(p, 'size')?.value,
         leadingIcon: inked ? undefined : icon,
         icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
         trailingIcon: trailing,
