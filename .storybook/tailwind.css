@@ -50,7 +50,9 @@
  */
 
 @import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
+/* preflight left out (the parity check compares Bloom, not an app base sheet), but its
+   layer keeps the order an app declares: theme, base, components, utilities. */
+@layer theme, base, components, utilities;
 @import "tailwindcss/utilities.css" source(none);
 @import "nativewind/theme";
 @import "../src/design-tokens/theme.css";
