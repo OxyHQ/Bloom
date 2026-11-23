@@ -3473,11 +3473,13 @@ fn a_menu_can_be_blooms_dropdown_everywhere() {
 #[test]
 fn a_runtime_chain_into_jsx_becomes_a_root_that_builds_it() {
     let source = "import { toElement } from '@oxy.so/bloom-language';
+const Row = view((props) => Text('row').onPress(props.onTap));
 export function Controls({ onTap, onSeek, bar, items }) {
   return <View>
     {toElement(VStack(Text('x')).ref(bar).onPress(onSeek))}
     {items.map((item) => toElement(Text(item).onPress(onTap), item))}
     {toElement(Text('static'))}
+    {toElement(Row({ onTap }))}
   </View>;
 }
 ";
@@ -3488,9 +3490,10 @@ export function Controls({ onTap, onSeek, bar, items }) {
         code.starts_with("import { LanguageRoot as _BloomRoot } from \"@oxy.so/bloom-language\";"),
         "{code}"
     );
-    assert!(code.contains("<_BloomRoot build={() => _bloomStatic0.ref(bar).onPress(onSeek)} />"), "{code}");
+    assert!(code.contains("<_BloomRoot build={() => _bloomStatic1.ref(bar).onPress(onSeek)} />"), "{code}");
     assert!(code.contains("<_BloomRoot build={() => Text(item).onPress(onTap)} key={item} />"), "{code}");
     assert!(code.contains("toElement(_bloomStatic"), "a static chain stays hoisted:\n{code}");
+    assert!(code.contains("toElement(Row({ onTap }))"), "a bare view mounts itself:\n{code}");
     // A module without JSX keeps its calls.
     let plain =
         compile(&format!("{IMPORTS}{}", source.replace("<View>", "[").replace("</View>", "]")), "c.ts");

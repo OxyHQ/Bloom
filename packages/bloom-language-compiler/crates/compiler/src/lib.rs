@@ -228,7 +228,9 @@ struct Compiler<'a, 's> {
 
 impl<'a> Compiler<'a, '_> {
     /// Whether `expression` is `toElement(chain)` (and an optional key) whose
-    /// chain runs at render: what `lower_to_element` rewrites.
+    /// chain runs at render: what `lower_to_element` rewrites. A bare view
+    /// node is left alone: `toElement` mounts its component directly, with no
+    /// boundary fiber, and a view's props reach React as JSX props already.
     fn lowers(&self, expression: &Expression<'a>) -> bool {
         let Expression::CallExpression(call) = expression.without_parentheses() else { return false };
         self.depth > 0
@@ -237,7 +239,9 @@ impl<'a> Compiler<'a, '_> {
             && (1..=2).contains(&call.arguments.len())
             && call.arguments.iter().all(|argument| argument.as_expression().is_some())
             && call.arguments.first().and_then(Argument::as_expression).is_some_and(|chain| {
-                self.module.is_chain(chain, self.scoping)
+                // A bare view (`Row(props)`) mounts its own component, with no boundary to build it in.
+                !matches!(self.module.callee(chain, self.scoping), Some(Binding::ViewConstructor { .. }))
+                    && self.module.is_chain(chain, self.scoping)
                     && self.module.static_after(chain, self.scoping).is_none()
             })
     }
