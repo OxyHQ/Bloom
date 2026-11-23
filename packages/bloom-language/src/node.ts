@@ -2117,6 +2117,8 @@ export interface Rendered {
   readonly inText: boolean | undefined;
   /** Drawn as a child of an `HStack`. */
   readonly inRow: boolean | undefined;
+  /** The palette its tree paints from: a theme switch draws it again. */
+  readonly palette: unknown;
   readonly element: ReactNode;
 }
 

@@ -183,11 +183,12 @@ import {
   type Planned,
 } from './variants';
 import {
-  leafOf,
   GEOMETRY_KEYS,
   type ListColor,
   isSurfaceFill,
   paintedLeaf,
+  type Palette,
+  usePalette,
   paintsSurface,
   surfaced,
   composeGeometry,
@@ -1082,13 +1083,16 @@ interface Context {
   animation: AnimationScope | undefined;
   /** The scope `EnvContext` carries at this point of the React tree (`Env.animation`). */
   scoped: AnimationScope | undefined;
+  /** What the tree paints from, read once where it starts (`usePalette`). */
+  palette: Palette;
 }
 
 /**
  * Draws `host` with a resolved style: directly when the style is final, or
- * through a `Painted` leaf when the style names theme colours (native).
+ * with the colours of the tree's palette when the style names theme colours (native).
  */
 function drawHost(
+  palette: Palette,
   host: Host,
   style: StyleOut,
   props: Record<string, unknown>,
@@ -1097,14 +1101,14 @@ function drawHost(
   const out = pressHostOut(host, style);
   if (STATEFUL in props) {
     const { [STATEFUL]: states, ...rest } = props;
-    return draw(StateHost, { ...rest, host, out, states }, ...children);
+    return draw(StateHost, { ...rest, host, out, states, palette }, ...children);
   }
   // A moving box's motion style (`Outer`) comes after its own (a painted leaf
   // merges both after what it paints).
   if (out.style !== undefined)
     props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
   if (out.paint !== undefined)
-    return draw(...paintedLeaf({ ...props, host, paint: out.paint }), ...children);
+    return draw(...paintedLeaf(palette, { ...props, host, paint: out.paint }), ...children);
   return draw(host, props, ...children);
 }
 
@@ -1119,6 +1123,7 @@ interface Outermost {
 }
 
 function drawOutermost(
+  palette: Palette,
   box: Outermost | undefined,
   host: Host,
   style: StyleOut,
@@ -1128,14 +1133,21 @@ function drawOutermost(
   const out = pressHostOut(host, style);
   const animated = animatedHost(host) as Host | undefined;
   // A host with no animated twin (a Bloom component) moves in the box `drawNode` adds.
-  if (box === undefined || animated === undefined) return drawHost(host, out, props, ...children);
+  if (box === undefined || animated === undefined)
+    return drawHost(palette, host, out, props, ...children);
   box.used = true;
   const { outer } = box;
-  if (!outer.active) return drawHost(host, out, { ...props, ...outer.props }, ...children);
+  if (!outer.active) return drawHost(palette, host, out, { ...props, ...outer.props }, ...children);
   // The animated twin takes the motion's style after its own, through the
   // leaf that paints it and the `StateHost` whose state its variants answer,
   // so a variant's change (a press's scale, a hover's fill) plays on it.
-  return drawHost(animated, out, { ...props, ...outer.props, style: outer.style }, ...children);
+  return drawHost(
+    palette,
+    animated,
+    out,
+    { ...props, ...outer.props, style: outer.style },
+    ...children,
+  );
 }
 
 /** `element` in a box of its own that carries `outer` (`style` first): how what cannot take it moves. */
@@ -1168,7 +1180,8 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     last.scoped === ctx.scoped &&
     last.key === key &&
     last.inText === ctx.inText &&
-    last.inRow === ctx.inRow
+    last.inRow === ctx.inRow &&
+    last.palette === ctx.palette
   ) {
     return last.element;
   }
@@ -1184,6 +1197,7 @@ function renderNode(node: Node, ctx: Context, key: string | number | undefined):
     key,
     inText: ctx.inText,
     inRow: ctx.inRow,
+    palette: ctx.palette,
     element,
   };
   return element;
@@ -1270,6 +1284,7 @@ function drawMoving(
   ctx: Context,
   key: string | number | undefined,
 ): ReactElement {
+  const { palette } = ctx;
   const motion = p.motion as MotionPlan;
   const component =
     motion.bound !== undefined ||
@@ -1282,8 +1297,6 @@ function drawMoving(
         : motion.pressScale
           ? PressMotionNode
           : MotionNode;
-  // Native: a node that animates its colours reads the palette (`ThemedMotion`).
-  const themed = motion.colors && !IS_WEB;
   const props = {
     key: p.id ?? key,
     motion,
@@ -1291,9 +1304,12 @@ function drawMoving(
     scope: ctx.animation,
     content: (outer: Outer) => drawNode(node, p, ctx, undefined, outer),
   };
-  return themed
-    ? draw(...surfaced(ThemedMotion, { ...props, node: component }, motion.surface))
-    : draw(component, props);
+  // Native: a node that animates its colours takes its tree's paint (with the
+  // surface fill, under `OnSurface`, when it paints it).
+  if (!motion.colors || IS_WEB) return draw(component, props);
+  return motion.surface
+    ? draw(...surfaced(ThemedMotion, { ...props, node: component, palette }, true))
+    : draw(component, { ...props, theme: palette.paint });
 }
 
 /**
@@ -1308,6 +1324,7 @@ function drawNode(
   key: string | number | undefined,
   outer: Outer | undefined,
 ): ReactNode {
+  const { palette } = ctx;
   const traits =
     p.env.length > 0 || p.envVariants.length > 0
       ? deriveEnv(ctx.env, p.env, p.envVariants)
@@ -1324,7 +1341,14 @@ function drawNode(
   const inner: Context =
     env === ctx.env && animation === ctx.animation && !ctx.inRow
       ? ctx
-      : { env, provided: ctx.provided, animation, scoped: ctx.scoped, inText: ctx.inText };
+      : {
+          env,
+          provided: ctx.provided,
+          animation,
+          scoped: ctx.scoped,
+          inText: ctx.inText,
+          palette: ctx.palette,
+        };
   const reactKey = p.id ?? key;
   if (node.kind === 'skeleton') return drawSkeleton(node, p, inner, reactKey);
   if (node.kind === 'dialog') return drawPresentedDialog(node, p, inner, reactKey);
@@ -1380,6 +1404,7 @@ function drawNode(
       // The varied padding is a view of its own inside the material, which takes the variants.
       const { inner } = material;
       element = drawHost(
+        palette,
         View,
         cachedStyle(
           'host',
@@ -1393,6 +1418,7 @@ function drawNode(
       layer = material.outer;
     }
     element = wrapLayer(
+      palette,
       layer,
       flexOf,
       p,
@@ -1437,6 +1463,7 @@ function drawNode(
     element as ReactElement,
     { alert, dialog, popover, cover },
     (children) => renderChildren(children, inner),
+    (child) => renderTree(child, inner),
     reactKey,
   );
 }
@@ -1587,9 +1614,11 @@ const EMPTY_PADDING = Object.freeze({
  * through to what is under it, outside its own content.
  */
 function withOverlays(layer: Layer, child: ReactNode, ctx: Context): ReactNode | ReactNode[] {
+  const { palette } = ctx;
   if (layer.overlays.length === 0) return child;
   const box = (overlay: Layer['overlays'][number]) =>
     drawHost(
+      palette,
       View,
       cachedStyle('host', `OV|${overlay.alignment}`, () => overlayStyle(overlay.alignment)),
       { pointerEvents: 'box-none' },
@@ -1603,6 +1632,8 @@ function withOverlays(layer: Layer, child: ReactNode, ctx: Context): ReactNode |
 }
 
 function wrapLayer(
+  palette: Palette,
+
   layer: Layer,
   flex: string,
   p: Plan,
@@ -1667,10 +1698,16 @@ function wrapLayer(
         props,
         tintsSurface,
       );
-      const drawn = drawHost(glassHost, paint ? painted(out, paint) : out, glassProps, ...children);
+      const drawn = drawHost(
+        palette,
+        glassHost,
+        paint ? painted(out, paint) : out,
+        glassProps,
+        ...children,
+      );
       if (p.control?.reports.length) return draw(ReportedState, { key }, drawn);
       return behaviour && p.pressable
-        ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, drawn)
+        ? drawOutermost(palette, box, hostFor(p), around, { ...behaviour, key }, drawn)
         : drawn;
     }
     const out = cachedStyle(
@@ -1711,6 +1748,7 @@ function wrapLayer(
     const fab = p.control?.fab;
     if (fab) Object.assign(props, { fabShape: fab.shape, fabSize: fab.size });
     const surface = drawHost(
+      palette,
       fab ? fabShaped(Surface) : Surface,
       paint ? painted(out, paint) : out,
       props,
@@ -1719,7 +1757,7 @@ function wrapLayer(
     // A control's glass varies with the control's state, which it reports to a box around the glass.
     if (p.control?.reports.length) return draw(ReportedState, { key }, surface);
     return behaviour && p.pressable
-      ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, surface)
+      ? drawOutermost(palette, box, hostFor(p), around, { ...behaviour, key }, surface)
       : surface;
   }
   if (layer.blur) {
@@ -1736,6 +1774,7 @@ function wrapLayer(
     const outer = behaviour && !p.pressable ? behaviour : null;
     const paint = variedPaint(`I|${styleKey}`, out, NO_ROLES, () => radiusVariants(varied));
     const island = drawHost(
+      palette,
       BlurIsland,
       paint ? painted(out, paint) : out,
       {
@@ -1748,6 +1787,7 @@ function wrapLayer(
     );
     return behaviour && p.pressable
       ? drawOutermost(
+          palette,
           box,
           hostFor(p),
           varied.stateful ? AROUND : NO_OUT,
@@ -1767,6 +1807,7 @@ function wrapLayer(
     );
     const outer = behaviour && !p.pressable ? behaviour : null;
     const view = drawHost(
+      palette,
       ConcentricView,
       out,
       { ...outer, radius: 'concentric', key: behaviour && p.pressable ? undefined : key },
@@ -1774,6 +1815,7 @@ function wrapLayer(
     );
     return behaviour && p.pressable
       ? drawOutermost(
+          palette,
           box,
           hostFor(p),
           varied.stateful ? AROUND : NO_OUT,
@@ -1792,16 +1834,24 @@ function wrapLayer(
     // A view padded by the device's safe area, which it reads as it renders; a press is a host around it.
     const outer = behaviour && !p.pressable ? behaviour : null;
     const padded = drawHost(
+      palette,
       SafeAreaPadded,
       out,
       { ...outer, ...safeAreaProps(layer), key: behaviour && p.pressable ? undefined : key },
       ...children,
     );
     return behaviour && p.pressable
-      ? drawOutermost(box, hostFor(p), AROUND, { ...behaviour, key }, padded)
+      ? drawOutermost(palette, box, hostFor(p), AROUND, { ...behaviour, key }, padded)
       : padded;
   }
-  return drawOutermost(box, behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
+  return drawOutermost(
+    palette,
+    box,
+    behaviour ? hostFor(p) : View,
+    out,
+    { ...behaviour, key },
+    ...children,
+  );
 }
 
 /** What `SafeAreaPadded` pads a layer by: its sides, and its own top and bottom padding, which the insets add to. */
@@ -1817,10 +1867,11 @@ function safeAreaProps(layer: Layer): { safeArea: number; own: { top: number; bo
 }
 
 /** A web list's row: a list item around the child, which draws the list's marker before it. */
-function listItem(child: ReactNode): ReactNode {
+function listItem(palette: Palette, child: ReactNode): ReactNode {
   if (child === null || child === undefined || typeof child === 'boolean') return child;
   const { key } = child as ReactElement;
   return drawHost(
+    palette,
     View,
     cachedStyle('host', 'LI', () => ({ display: 'list-item' })),
     {
@@ -1904,6 +1955,8 @@ const SHAPE_SIDE: SpaceToken = '4xl';
 
 /** A shape's paint: what the last of `fill`, `stroke` and `image` in its chain says (a fill in the foreground by default). */
 function shapeElement(
+  palette: Palette,
+
   node: Node,
   name: ShapeName,
   size: number,
@@ -1918,7 +1971,7 @@ function shapeElement(
     return draw(ShapeImage, { key, shape: name, size, source: last.source, alt: last.alt });
   if (last?.kind === 'stroke') {
     return draw(
-      ...paintedLeaf({
+      ...paintedLeaf(palette, {
         key,
         host: ShapeBorder,
         shape: name,
@@ -1929,7 +1982,7 @@ function shapeElement(
     );
   }
   return draw(
-    ...paintedLeaf({
+    ...paintedLeaf(palette, {
       key,
       host: ShapeFill,
       shape: name,
@@ -1958,7 +2011,7 @@ function tokenPaint(prop: string, token: ColorToken): Paint {
 }
 
 /**
- * Bloom's Button with its `colors` pair as two props, so a `Painted` leaf can
+ * Bloom's Button with its `colors` pair as two props, so the node can
  * paint each from its role. One pair object per colour pair, so the button's
  * props compare equal across renders.
  */
@@ -2130,6 +2183,8 @@ const iconVariantPaints = new Map<string, Paint>();
  * environment.
  */
 function iconGlyph(
+  palette: Palette,
+
   icon: IconComponent,
   env: Env,
   size: number,
@@ -2149,7 +2204,7 @@ function iconGlyph(
     return own !== undefined
       ? draw(icon, { fill: own, width: size, height: size, key })
       : draw(
-          ...paintedLeaf({
+          ...paintedLeaf(palette, {
             host: icon,
             paint: iconPaint(color as ColorToken),
             width: size,
@@ -2164,7 +2219,7 @@ function iconGlyph(
       () => ({ color: ink(color) }),
       () => joinVariants(live.map(([condition, varied]) => [condition, { color: ink(varied) }])),
     );
-    return drawHost(icon, out, { fill: 'currentColor', width: size, height: size, key });
+    return drawHost(palette, icon, out, { fill: 'currentColor', width: size, height: size, key });
   }
   let paint = iconVariantPaints.get(env.key);
   if (paint === undefined) {
@@ -2189,7 +2244,7 @@ function iconGlyph(
   }
   // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
   const leaf = (props: Record<string, unknown>) =>
-    draw(...surfaced(leafOf(paint), { host: icon, paint, ...props }, paintsSurface(paint)));
+    draw(...paintedLeaf(palette, { host: icon, paint, ...props }));
   if (own !== undefined) return leaf({ fill: own, width: size, height: size, key });
   return leaf({ width: size, height: size, key });
 }
@@ -2243,6 +2298,7 @@ function drawScrollContent(
   children: readonly Child[],
   ctx: Context,
 ): ReactElement {
+  const { palette } = ctx;
   const content = plan(new Node('stack', CONTENT_VIEW, children, modifiers), ctx.env);
   if (content.layers.length > 1)
     throw new Error(
@@ -2250,6 +2306,7 @@ function drawScrollContent(
     );
   const out = stackOut(content, 'vertical', content.layers[0], flexKey(content), undefined);
   return drawHost(
+    palette,
     ScrollViewHost,
     out,
     { ...props, contentView: true },
@@ -2302,6 +2359,7 @@ function renderHost(
   /** The node's outermost box when it moves and its host is it (see `Outermost`). */
   box: Outermost | undefined,
 ): ReactElement {
+  const { palette } = ctx;
   const layerKey = layer?.key ?? '';
   const boxOf = (target: Target, prefix: string): StyleOut =>
     cachedStyle(
@@ -2323,7 +2381,7 @@ function renderHost(
       let children = renderChildren(node.children, row);
       if (marker !== undefined)
         children = children.map((child) =>
-          Array.isArray(child) ? child.map(listItem) : listItem(child),
+          Array.isArray(child) ? child.map(listItem) : listItem(palette, child),
         );
       const wash = ownValue(p, 'hoverHighlight');
       if (wash !== undefined) {
@@ -2337,7 +2395,7 @@ function renderHost(
       const props = hostProps(behaviour, key);
       if (marker !== undefined) props.role = 'list';
       if (padded) Object.assign(props, safeAreaProps(layer));
-      return drawOutermost(box, host, out, props, ...children);
+      return drawOutermost(palette, box, host, out, props, ...children);
     }
     case 'zstack': {
       const out = cachedStyle(
@@ -2359,6 +2417,7 @@ function renderHost(
         );
       }
       return drawOutermost(
+        palette,
         box,
         behaviour ? hostFor(p) : View,
         out,
@@ -2373,7 +2432,13 @@ function renderHost(
         () => Object.assign({ flex: 1 }, boxStyle(layer, flex, p)),
         () => boxVariants(layer, flex, p),
       );
-      return drawOutermost(box, behaviour ? hostFor(p) : View, out, hostProps(behaviour, key));
+      return drawOutermost(
+        palette,
+        box,
+        behaviour ? hostFor(p) : View,
+        out,
+        hostProps(behaviour, key),
+      );
     }
     case 'text':
       return drawText(
@@ -2394,6 +2459,7 @@ function renderHost(
       );
       const bare = !boxed && !behaviour;
       const glyph = iconGlyph(
+        palette,
         (node.props as IconProps).icon,
         ctx.env,
         size,
@@ -2401,7 +2467,14 @@ function renderHost(
       );
       if (bare) return glyph;
       const host = behaviour ? hostFor(p) : View;
-      return drawOutermost(box, host, boxOf('host', 'I'), hostProps(behaviour, key), glyph);
+      return drawOutermost(
+        palette,
+        box,
+        host,
+        boxOf('host', 'I'),
+        hostProps(behaviour, key),
+        glyph,
+      );
     }
     case 'avatar': {
       const { source, options } = node.props as AvatarProps;
@@ -2432,12 +2505,12 @@ function renderHost(
       });
       const host = presence === undefined ? BloomAvatar : AvatarPresence;
       if (!boxed) return draw(host, props);
-      return drawHost(host, boxOf('component', 'A'), props);
+      return drawHost(palette, host, boxOf('component', 'A'), props);
     }
     case 'avatarGroup': {
       const size = ownValue(p, 'size')?.value as AvatarSizeToken | undefined;
       const spacing = ownValue(p, 'spacing')?.value;
-      return pressAround(p, behaviour, key, (props) => {
+      return pressAround(palette, p, behaviour, key, (props) => {
         Object.assign(props, {
           items: (node.props as AvatarGroupProps).items,
           layout: ownValue(p, 'layout')?.value,
@@ -2452,25 +2525,25 @@ function renderHost(
           hoverCard: ownValue(p, 'hoverCard')?.value,
         });
         if (!boxed) return draw(BloomAvatarGroup, props);
-        return drawHost(BloomAvatarGroup, boxOf('component', 'AG'), props);
+        return drawHost(palette, BloomAvatarGroup, boxOf('component', 'AG'), props);
       });
     }
     case 'badge':
-      return pressAround(p, behaviour, key, (own) => {
+      return pressAround(palette, p, behaviour, key, (own) => {
         const props = { ...own, ...badgeProps(node, p) };
         if (!boxed) return draw(BloomBadge, props);
-        return drawHost(BloomBadge, boxOf('component', 'BD'), props);
+        return drawHost(palette, BloomBadge, boxOf('component', 'BD'), props);
       });
     case 'iconCircle':
-      return pressAround(p, behaviour, key, (props) => {
+      return pressAround(palette, p, behaviour, key, (props) => {
         props.icon = (node.props as IconProps).icon;
         props.size = ownValue(p, 'size')?.value;
         if (!boxed) return draw(BloomIconCircle, props);
-        return drawHost(BloomIconCircle, boxOf('component', 'IC'), props);
+        return drawHost(palette, BloomIconCircle, boxOf('component', 'IC'), props);
       });
     case 'loading': {
       const { label } = buttonContent(node.children);
-      return pressAround(p, behaviour, key, (props) => {
+      return pressAround(palette, p, behaviour, key, (props) => {
         Object.assign(props, {
           variant: ownValue(p, 'style')?.value,
           size: ownValue(p, 'size')?.value,
@@ -2478,7 +2551,7 @@ function renderHost(
           text: label,
         });
         if (!boxed) return draw(BloomLoading, props);
-        return drawHost(BloomLoading, boxOf('component', 'LD'), props);
+        return drawHost(palette, BloomLoading, boxOf('component', 'LD'), props);
       });
     }
     case 'skeleton':
@@ -2526,13 +2599,14 @@ function renderHost(
       });
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
       const image = drawHost(
+        palette,
         BloomImage,
         tint === undefined ? out : painted(out, propPaint(styleKey, out, 'tintColor', tint)),
         props,
       );
       if (!interactive) return image;
       const placement = cachedStyle('host', `IMP|${flex}`, () => boxStyle(undefined, flex, p));
-      return drawOutermost(box, hostFor(p), placement, hostProps(behaviour, key), image);
+      return drawOutermost(palette, box, hostFor(p), placement, hostProps(behaviour, key), image);
     }
     case 'button': {
       const props = hostProps(behaviour, key);
@@ -2590,6 +2664,7 @@ function renderHost(
         // A paired fill and label, painted from their roles: Bloom's `colors`.
         const out = boxOf('component', 'B');
         return drawHost(
+          palette,
           PairedButton,
           painted(out, pairPaint(`B|${layerKey}|${flex}`, out, colors)),
           props,
@@ -2607,10 +2682,10 @@ function renderHost(
           inks,
           NO_VARIANTS,
         ) as Paint;
-        return drawHost(button, painted(out, paint), props);
+        return drawHost(palette, button, painted(out, paint), props);
       }
       if (!boxed) return draw(button, props);
-      return drawHost(button, boxOf('component', 'B'), props);
+      return drawHost(palette, button, boxOf('component', 'B'), props);
     }
     case 'shape': {
       // A silhouette at a fixed side takes no style: its box is a view around it.
@@ -2618,14 +2693,14 @@ function renderHost(
       const size = resolveSpace(
         (ownValue(p, 'size')?.value as SpaceToken | undefined) ?? SHAPE_SIDE,
       );
-      const drawn = shapeElement(node, name, size, behaviour || boxed ? undefined : key);
+      const drawn = shapeElement(palette, node, name, size, behaviour || boxed ? undefined : key);
       if (!boxed && !behaviour) return drawn;
       const host = behaviour ? hostFor(p) : View;
-      return drawHost(host, boxOf('host', 'SH'), hostProps(behaviour, key), drawn);
+      return drawHost(palette, host, boxOf('host', 'SH'), hostProps(behaviour, key), drawn);
     }
     case 'buttonGroup': {
       const children = renderChildren(node.children, ctx);
-      return pressAround(p, behaviour, key, (props) => {
+      return pressAround(palette, p, behaviour, key, (props) => {
         if (props.accessibilityLabel === undefined) delete props.accessibilityLabel;
         Object.assign(props, {
           orientation: ownValue(p, 'axis')?.value,
@@ -2635,7 +2710,7 @@ function renderHost(
           material: groupMaterial(ownValue(p, 'glass')?.value),
         });
         if (!boxed) return draw(BloomButton.Group, props, ...children);
-        return drawHost(BloomButton.Group, boxOf('component', 'BG'), props, ...children);
+        return drawHost(palette, BloomButton.Group, boxOf('component', 'BG'), props, ...children);
       });
     }
     case 'fab': {
@@ -2656,7 +2731,7 @@ function renderHost(
       const fab = p.control?.reports.length ? ReportingFab : BloomFab;
       if (fab === ReportingFab) props.reports = p.control?.reports;
       if (!boxed) return draw(fab, props);
-      return drawHost(fab, boxOf('component', 'F'), props);
+      return drawHost(palette, fab, boxOf('component', 'F'), props);
     }
     case 'menu': {
       // `.menuStyle('dropdown')`: Bloom's own dropdown on every platform, its look as the JSX an app writes.
@@ -2672,7 +2747,7 @@ function renderHost(
         render: (child: Child) => renderChild(child, ctx, undefined),
       });
       if (!boxed) return menu;
-      return drawHost(View, boxOf('host', 'M'), hostProps(undefined, key), menu);
+      return drawHost(palette, View, boxOf('host', 'M'), hostProps(undefined, key), menu);
     }
     case 'header':
       return draw(HeaderHost, {
@@ -2680,6 +2755,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'bottomBar':
       return draw(BottomBarHost, {
@@ -2687,6 +2763,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'scrollView':
     case 'scrollArea':
@@ -2696,6 +2773,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       };
       const content = node.kind === 'scrollView' ? ownValue(p, 'contentView') : undefined;
       // The content's children keep their places as a stack's do.
@@ -2717,7 +2795,7 @@ function renderHost(
             });
       // Box modifiers are a view around the scroller, as SwiftUI's.
       if (!boxed) return scroller;
-      return drawHost(View, boxOf('host', 'SV'), hostProps(undefined, key), scroller);
+      return drawHost(palette, View, boxOf('host', 'SV'), hostProps(undefined, key), scroller);
     }
     // Rows and tabs are read by the menu or the bar that holds them; on their own they draw nothing.
     case 'menuItem':
@@ -2749,6 +2827,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'toolbarView':
       return draw(
@@ -2758,6 +2837,7 @@ function renderHost(
           node,
           render: (child: Child) => renderChild(child, ctx, undefined),
           press: (value: Press | undefined) => pressOf(value, ctx.env),
+          palette,
         },
         ...renderChildren(node.children, ctx),
       );
@@ -2769,6 +2849,7 @@ function renderHost(
           node,
           render: (child: Child) => renderChild(child, ctx, undefined),
           press: (value: Press | undefined) => pressOf(value, ctx.env),
+          palette,
         },
         ...renderChildren(node.children, ctx),
       );
@@ -2778,6 +2859,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'stickySection':
       return draw(
@@ -2787,6 +2869,7 @@ function renderHost(
           node,
           render: (child: Child) => renderChild(child, ctx, undefined),
           press: (value: Press | undefined) => pressOf(value, ctx.env),
+          palette,
         },
         ...renderChildren(node.children, ctx),
       );
@@ -2796,6 +2879,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'sidebar':
       return draw(SidebarHost, {
@@ -2803,6 +2887,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'rail':
       return draw(RailHost, {
@@ -2810,6 +2895,7 @@ function renderHost(
         node,
         render: (child: Child) => renderChild(child, ctx, undefined),
         press: (value: Press | undefined) => pressOf(value, ctx.env),
+        palette,
       });
     case 'pageFooter':
       return draw(
@@ -2819,6 +2905,7 @@ function renderHost(
           node,
           render: (child: Child) => renderChild(child, ctx, undefined),
           press: (value: Press | undefined) => pressOf(value, ctx.env),
+          palette,
         },
         ...renderChildren(node.children, ctx),
       );
@@ -2835,7 +2922,7 @@ function renderHost(
       const [label] = node.children;
       const content = dividerLabel(label, ctx);
       const out = boxOf('component', 'DV');
-      return pressAround(p, behaviour, key, (props) => {
+      return pressAround(palette, p, behaviour, key, (props) => {
         Object.assign(props, {
           variant: ownValue(p, 'lineStyle')?.value,
           align: ownValue(p, 'align')?.value,
@@ -2844,6 +2931,7 @@ function renderHost(
           spacing: spacing === undefined ? undefined : resolveSpace(spacing),
         });
         return drawHost(
+          palette,
           BloomDivider,
           tint === undefined
             ? out
@@ -2910,7 +2998,7 @@ function renderHost(
       // The action's own pressable takes its press, hover and focus, which its box tracks for its state variants.
       if (behaviour !== undefined && STATEFUL in behaviour) props[STATEFUL] = behaviour[STATEFUL];
       if (!boxed) return draw(EngagementAction, props);
-      return drawHost(EngagementAction, boxOf('component', 'EA'), props);
+      return drawHost(palette, EngagementAction, boxOf('component', 'EA'), props);
     }
     case 'actionBar': {
       const trailing = ownValue(p, 'trailing')?.value;
@@ -2926,13 +3014,13 @@ function renderHost(
       };
       const children = renderChildren(node.children, ctx);
       if (!boxed) return draw(EngagementBar, props, ...children);
-      return drawHost(EngagementBar, boxOf('component', 'AB'), props, ...children);
+      return drawHost(palette, EngagementBar, boxOf('component', 'AB'), props, ...children);
     }
     case 'actionGroup': {
       const props: Record<string, unknown> = { key, testID: p.testID };
       const children = renderChildren(node.children, ctx);
       if (!boxed) return draw(EngagementGroup, props, ...children);
-      return drawHost(EngagementGroup, boxOf('component', 'AG'), props, ...children);
+      return drawHost(palette, EngagementGroup, boxOf('component', 'AG'), props, ...children);
     }
     case 'embed': {
       const { content } = node.props as EmbedProps;
@@ -2946,7 +3034,14 @@ function renderHost(
         return key === undefined ? (element as ReactElement) : draw(Fragment, { key }, element);
       }
       const host = behaviour ? hostFor(p) : View;
-      return drawOutermost(box, host, boxOf('host', 'E'), hostProps(behaviour, key), element);
+      return drawOutermost(
+        palette,
+        box,
+        host,
+        boxOf('host', 'E'),
+        hostProps(behaviour, key),
+        element,
+      );
     }
     case 'lottie': {
       const { source } = node.props as LottieProps;
@@ -2980,12 +3075,13 @@ function renderHost(
       if (!boxedSticker && !behaviour) return sticker;
       const host = behaviour ? hostFor(p) : View;
       const out = sized ? NO_STYLE_OUT : boxOf('host', 'L');
-      return drawOutermost(box, host, out, hostProps(behaviour, key), sticker);
+      return drawOutermost(palette, box, host, out, hostProps(behaviour, key), sticker);
     }
     case 'view': {
       if (!boxed && !behaviour) return viewElement(node, ctx, key);
       const host = behaviour ? hostFor(p) : View;
       return drawOutermost(
+        palette,
         box,
         host,
         boxOf('host', 'V'),
@@ -3011,7 +3107,7 @@ function renderHost(
         },
         component: (host, props, ...children) =>
           boxed
-            ? drawHost(host, boxOf('component', node.kind), props, ...children)
+            ? drawHost(palette, host, boxOf('component', node.kind), props, ...children)
             : draw(host, props, ...children),
         painted: (host, props, colors, ...children) => {
           const roles: (readonly [string, ColorName, number?])[] = [];
@@ -3034,6 +3130,7 @@ function renderHost(
             lists.length === 0 ? undefined : lists,
           );
           return drawHost(
+            palette,
             host,
             paint === undefined ? out : painted(out, paint),
             props,
@@ -3042,13 +3139,15 @@ function renderHost(
         },
         around: (element) =>
           boxed
-            ? drawHost(View, boxOf('host', node.kind), hostProps(undefined, key), element)
+            ? drawHost(palette, View, boxOf('host', node.kind), hostProps(undefined, key), element)
             : element,
-        pressAround: (drawn) => pressAround(p, behaviour, key, drawn),
+        pressAround: (drawn) => pressAround(palette, p, behaviour, key, drawn),
         render: (child) => renderChild(child, ctx, undefined),
         embed: (content) => drawEmbedded(content, ctx),
+        tree: (child) => renderTree(child, ctx),
         children: (children) => renderChildren(children, ctx),
         press: (value) => pressOf(value, ctx.env),
+        palette,
         role: p.role,
       };
       // Views pinned at a list's edges: the list makes room for them (SwiftUI's safe area insets).
@@ -3083,6 +3182,7 @@ function drawPresentedDialog(
   return drawDialog(
     { isPresented: presented.value, content: node },
     (children) => renderChildren(children, inner),
+    (child) => renderTree(child, inner),
     key,
   );
 }
@@ -3136,6 +3236,8 @@ const AROUND: StyleOut = Object.freeze({
 
 /** `drawn` with its press on a host around it when the view is pressable; its props otherwise, as before. */
 function pressAround(
+  palette: Palette,
+
   p: Plan,
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
@@ -3148,7 +3250,7 @@ function pressAround(
   }
   const { testID, ...rest } = behaviour;
   const element = drawn(testID === undefined ? {} : { testID });
-  return drawHost(hostFor(p), AROUND, { ...rest, key }, element);
+  return drawHost(palette, hostFor(p), AROUND, { ...rest, key }, element);
 }
 
 function drawContainer(
@@ -3161,11 +3263,12 @@ function drawContainer(
   behaviour: Record<string, unknown> | undefined,
   key: string | number | undefined,
 ): ReactElement {
+  const { palette } = ctx;
   const { testID, ...rest } = behaviour ?? {};
   const outer = Object.keys(rest).length > 0;
   const props: Record<string, unknown> = { ...own, testID, key: outer ? undefined : key };
-  const element = drawHost(component, out, props, ...renderChildren(node.children, ctx));
-  return outer ? drawHost(hostFor(p), AROUND, { ...rest, key }, element) : element;
+  const element = drawHost(palette, component, out, props, ...renderChildren(node.children, ctx));
+  return outer ? drawHost(palette, hostFor(p), AROUND, { ...rest, key }, element) : element;
 }
 
 /** A Badge node's props for Bloom's Badge, standalone or attached. */
@@ -3317,6 +3420,7 @@ function drawText(
   key: string | number | undefined,
   outermost: Outermost | undefined,
 ): ReactElement {
+  const { palette } = ctx;
   const raw = (node.props as TextProps).raw === true;
   // React Native's own Text (RawText) inherits nothing of the language's environment
   // (no family, size or ink); a span, and RawText, write only what their own chain
@@ -3366,9 +3470,10 @@ function drawText(
     const own = textStyle(traits, look, spanTraits(p));
     if (Object.keys(own).length > 0) {
       const inner = cachedStyle('host', `TQ|${ctx.env.key}|${spanKey}|${lookKey}`, () => own);
-      runs = [drawHost(RNText, inner, {}, ...runs)];
+      runs = [drawHost(palette, RNText, inner, {}, ...runs)];
     }
     return drawHost(
+      palette,
       Blockquote,
       cachedStyle('component', `Q|${layerKey}|${flex}`, box, boxVaried),
       props,
@@ -3402,9 +3507,10 @@ function drawText(
       direction: roll.direction,
       scope: ctx.animation,
       draw: (text: string, rolling: Outer | undefined) => {
-        if (rolling === undefined) return drawOutermost(outermost, host, out, hostOnly(), text);
+        if (rolling === undefined)
+          return drawOutermost(palette, outermost, host, out, hostOnly(), text);
         const at: Outermost = { outer: rolling, used: false };
-        const drawn = drawOutermost(at, host, out, hostOnly(), text);
+        const drawn = drawOutermost(palette, at, host, out, hostOnly(), text);
         return at.used ? drawn : moveIn(rolling, drawn);
       },
     };
@@ -3428,6 +3534,7 @@ function drawText(
       ...rollProps,
       row: (text: string, ...pieces: ReactNode[]) =>
         drawOutermost(
+          palette,
           outermost,
           View,
           rowOut,
@@ -3435,12 +3542,12 @@ function drawText(
           ...pieces,
         ),
       piece: (text: string, rolling: Outer | undefined) => {
-        const drawn = drawHost(host, glyph, { ...pieceProps }, text);
+        const drawn = drawHost(palette, host, glyph, { ...pieceProps }, text);
         return rolling === undefined ? drawn : moveIn(rolling, drawn);
       },
     });
   }
-  return drawOutermost(outermost, host, out, props, ...runs);
+  return drawOutermost(palette, outermost, host, out, props, ...runs);
 }
 
 /** A piece of a numeric roll: the row it is in names the whole text. */
@@ -3591,6 +3698,24 @@ function renderRuns(runs: readonly TextRun[], ctx: Context): ReactNode[] {
   return out;
 }
 
+/**
+ * A language child as a tree of its own: drawn in `ctx`, but painted from the
+ * palette read where it is drawn. What a Bloom component that re-themes what
+ * it holds holds (an immersive player's slot, a dialog's page with a colour
+ * preset of its own), whose theme is not the tree's around it.
+ */
+function Retheme({ child, ctx }: { child: Child; ctx: Context }): ReactNode {
+  return renderChild(child, { ...ctx, palette: usePalette() }, undefined);
+}
+Retheme.displayName = 'BloomLanguage';
+
+/** `child` as a tree of its own (`Retheme`), or nothing when there is none. */
+function renderTree(child: Child, ctx: Context): ReactNode {
+  return child === undefined || child === null || child === false
+    ? null
+    : draw(Retheme, { child, ctx });
+}
+
 /** Draws any child in a context: what `Embed`'s render function hands out. */
 function renderChild(child: Child, ctx: Context, key: string | number | undefined): ReactNode {
   if (Array.isArray(child)) return renderList(child, ctx);
@@ -3629,6 +3754,7 @@ function inlineRoot(content: unknown, ctx: Context): ReactNode | undefined {
     provided: ctx.provided,
     animation: ctx.scoped,
     scoped: ctx.scoped,
+    palette: ctx.palette,
   };
   return renderChild(tree ?? null, here, content.key ?? undefined);
 }
@@ -3644,12 +3770,13 @@ function drawEmbedded(content: ReactNode, ctx: Context): ReactNode {
 
 /** The boundary from JSX into the language: it takes the environment provided where it is placed. */
 export function LanguageRoot({ node, build }: LanguageRootProps): ReactNode {
-  // One context: the environment, with the animation scope it carries.
+  // Two contexts: the environment, with the animation scope it carries, and
+  // the theme, read once for every node of the tree that paints.
   const env = useContext(EnvContext);
-  const animation = env.animation;
+  const palette = usePalette();
   if (build !== undefined) adoptLanguageSheet();
   const tree = build === undefined ? node : build();
-  return renderChild(tree ?? null, { env, provided: env, animation, scoped: animation }, undefined);
+  return renderBody(tree ?? null, env, env.animation, palette);
 }
 LanguageRoot.displayName = 'BloomLanguage';
 
@@ -3692,13 +3819,21 @@ export function toElement(node: Child, key?: string | number): ReactElement {
   return draw(LanguageRoot, { node, key });
 }
 
-/** What a `view()` component renders: its body, under the environment and animation scope it is placed in. */
+/**
+ * What a tree renders (a root's, a `view()` component's body): under the
+ * environment and animation scope it is placed in, painted from `palette`.
+ */
 export function renderBody(
   body: Child,
   env: Env,
   animation: AnimationScope | undefined,
+  palette: Palette,
 ): ReactNode {
-  return renderChild(body, { env, provided: env, animation, scoped: animation }, undefined);
+  return renderChild(
+    body,
+    { env, provided: env, animation, scoped: animation, palette },
+    undefined,
+  );
 }
 
 interface LottieHostProps {

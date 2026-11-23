@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-language-codemod",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Moves an app's NativeWind className JSX and Bloom JSX to Bloom's UI language, only where the rendered result stays identical, and proves it with the language's parity harness.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {

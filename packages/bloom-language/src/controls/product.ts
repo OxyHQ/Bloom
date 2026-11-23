@@ -71,6 +71,12 @@ export interface ProductSpec {
   /** Options that are language children, where Bloom takes a node. */
   readonly slots?: readonly string[];
   /**
+   * The component re-themes what it holds (an immersive player's dark
+   * theme): each slot is a tree of its own (`ControlDraw.tree`), which paints
+   * from the theme the component provides.
+   */
+  readonly rethemes?: true;
+  /**
    * Options that are functions returning a language child, where Bloom takes
    * a function returning a node (a board's `renderCard`): the same arguments,
    * the view drawn. Set only when given, as Bloom reads some by their presence.
@@ -110,7 +116,13 @@ export function product(host: unknown, spec: ProductSpec = {}): ControlRenderer 
       props[spec.binding[0]] = binding[0];
       props[spec.binding[1]] = binding[1];
     }
-    for (const key of spec.slots ?? []) props[key] = slot(d, options?.[key] as Child | undefined);
+    for (const key of spec.slots ?? []) {
+      const child = options?.[key] as Child | undefined;
+      props[key] =
+        spec.rethemes && child !== undefined && typeof child !== 'string'
+          ? d.tree(child)
+          : slot(d, child);
+    }
     for (const key of spec.renders ?? []) {
       const render = options?.[key] as ((...args: unknown[]) => Child) | undefined;
       if (render !== undefined) props[key] = (...args: unknown[]) => d.render(render(...args));

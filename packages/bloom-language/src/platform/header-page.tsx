@@ -8,7 +8,7 @@ import type { ComponentType } from 'react';
 import { PageHeader } from '@oxy.so/bloom/page-header';
 
 import { type Child, type HeadingLevel, isNode, type Node, type ScrollOffset } from '../node';
-import { type Paint, Painted } from '../paint';
+import { drawLeaf, type Paint, paintedLeaf } from '../paint';
 import { role } from '../style';
 import type {
   ColorToken,
@@ -52,7 +52,7 @@ export function readHeader(node: Node) {
   };
 }
 
-/** `PageHeader` as a `Painted` host (which types its host's props loosely). */
+/** `PageHeader` as a painted host (which types its host's props loosely). */
 const PAINTED_HEADER = PageHeader as unknown as ComponentType<Record<string, unknown>>;
 
 const scrimPaints = new Map<ColorToken, Paint>();
@@ -72,7 +72,7 @@ function scrimPaint(color: ColorToken): Paint {
   return paint;
 }
 
-export function PageHeaderHost({ node, render }: NodeHostProps) {
+export function PageHeaderHost({ node, render, palette }: NodeHostProps) {
   const header = readHeader(node);
   const props = {
     // A title or subtitle that is a view is drawn in its place as it is.
@@ -96,7 +96,13 @@ export function PageHeaderHost({ node, render }: NodeHostProps) {
     testID: header.testID,
   };
   if (header.scrimColor !== undefined) {
-    return <Painted host={PAINTED_HEADER} paint={scrimPaint(header.scrimColor)} {...props} />;
+    return drawLeaf(
+      paintedLeaf(palette, {
+        ...props,
+        host: PAINTED_HEADER,
+        paint: scrimPaint(header.scrimColor),
+      }),
+    );
   }
   return <PageHeader {...props} />;
 }

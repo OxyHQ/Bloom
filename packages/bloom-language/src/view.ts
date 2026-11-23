@@ -2,6 +2,7 @@ import { memo, useContext, type ComponentType, type ReactNode } from 'react';
 
 import { Node, type Child, type ComposedView } from './node';
 import { EnvContext } from './env';
+import { usePalette } from './paint';
 import { renderBody } from './render';
 
 const NO_CHILDREN: readonly Child[] = [];
@@ -22,11 +23,11 @@ const NO_PROPS = Object.freeze({});
  * that node, as a React function component of its own, so hooks work in the
  * body. The component is React's `memo` of its host, compared the way React
  * compares props (key by key, `Object.is` each), so it is ONE fiber, and the
- * body re-runs only when a prop changes. The theme is not an input: colours
- * are painted by the leaves that draw them, so a theme switch re-runs no
- * body. The environment (the text traits set above the view, and the
- * `.animation()` in scope) arrives through one context, which changes only
- * where an environment modifier or a scope changes it.
+ * body re-runs only when a prop changes, or the theme: the body is a tree of
+ * its own, which reads the theme once for every node it paints, as a JSX
+ * component that reads it does. The environment (the text traits set above
+ * the view, and the `.animation()` in scope) arrives through one context,
+ * which changes only where an environment modifier or a scope changes it.
  *
  * A body may return a function that builds its tree instead of the tree:
  * what the language compiler lowers a returned chain to, so a press handler
@@ -48,8 +49,9 @@ export function view<P extends object = Record<string, never>>(
   // biome-ignore lint/correctness/noComponentHookFactories: view() defines one component per call by design
   function ViewHost(props: P): ReactNode {
     const env = useContext(EnvContext);
+    const palette = usePalette();
     const built = body(props);
-    return renderBody(typeof built === 'function' ? built() : built, env, env.animation);
+    return renderBody(typeof built === 'function' ? built() : built, env, env.animation, palette);
   }
   ViewHost.displayName = body.name || 'View';
   const component = memo(ViewHost) as unknown as ComponentType<object>;

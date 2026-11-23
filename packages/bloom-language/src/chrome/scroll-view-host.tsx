@@ -10,7 +10,7 @@ import { ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/scre
 
 import { refreshing, type RefreshTint } from '../binding';
 import type { Edge, Modifier, Node } from '../node';
-import { type Paint, Painted } from '../paint';
+import { drawLeaf, type Paint, paintedLeaf } from '../paint';
 import { valuesOf } from '../platform/values';
 import { type InsetRoom, withRoom } from './safe-area-inset';
 import type { NodeHostProps } from '../platform/host.types';
@@ -118,8 +118,8 @@ interface RefreshProps {
 }
 
 /**
- * A scroll view whose refresh control takes the tint a `Painted` leaf hands it:
- * the one theme reader, around the scroll view, since the control is a prop.
+ * A scroll view whose refresh control takes the tint painted from its tree's
+ * palette, around the scroll view, since the control is a prop.
  */
 function TintedScrollView({
   refreshing,
@@ -143,7 +143,7 @@ function TintedScrollView({
   );
 }
 
-/** `TintedScrollView` as a `Painted` host (which types its host's props loosely). */
+/** `TintedScrollView` as a painted host (which types its host's props loosely). */
 const TINTED_HOST = TintedScrollView as unknown as ComponentType<Record<string, unknown>>;
 
 interface ScrollViewHostProps extends NodeHostProps {
@@ -156,7 +156,14 @@ interface ScrollViewHostProps extends NodeHostProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function ScrollViewHost({ node, room, children, contentView, style }: ScrollViewHostProps) {
+export function ScrollViewHost({
+  node,
+  palette,
+  room,
+  children,
+  contentView,
+  style,
+}: ScrollViewHostProps) {
   const values = valuesOf(node);
   // Only what the chain sets: an explicit undefined would replace the scroll view's own defaults.
   const props: { -readonly [K in keyof ScreenScrollViewProps]: ScreenScrollViewProps[K] } = {};
@@ -191,15 +198,14 @@ export function ScrollViewHost({ node, room, children, contentView, style }: Scr
   if (horizontal !== undefined) props.showsHorizontalScrollIndicator = horizontal;
   if (values.testID !== undefined) props.testID = values.testID as string;
   if (refresh?.tint !== undefined) {
-    return (
-      <Painted
-        host={TINTED_HOST}
-        paint={refreshPaint(refresh.tint)}
-        {...props}
-        {...refreshing(refresh.value)}
-      >
-        {children}
-      </Painted>
+    return drawLeaf(
+      paintedLeaf(palette, {
+        ...props,
+        ...refreshing(refresh.value),
+        host: TINTED_HOST,
+        paint: refreshPaint(refresh.tint),
+        children,
+      }),
     );
   }
   if (refresh) props.refreshControl = <RefreshControl {...refreshing(refresh.value)} />;

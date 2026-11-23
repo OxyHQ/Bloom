@@ -31,9 +31,18 @@ export { parseRgb, withAlpha } from '../../../../../src/theme/color-utils';
  */
 export const RgbContext = createContext<ThemeColors | null>(null);
 
-/** Stands in for `useTheme`: the palette a test renders under, and whether it is dark. */
+const themes = new WeakMap<ThemeColors, { colors: ThemeColors; isDark: boolean }>();
+/**
+ * Stands in for `useTheme`: the palette a test renders under, and whether it
+ * is dark; one object per palette, as Bloom's provider keeps its theme.
+ */
 export function useTheme(): { colors: ThemeColors; isDark: boolean } {
   const paint = useContext(PaintContext);
   const colors = useContext(RgbContext) ?? paint;
-  return { colors, isDark: colors === DARK };
+  let theme = themes.get(colors);
+  if (theme === undefined) {
+    theme = { colors, isDark: colors === DARK };
+    themes.set(colors, theme);
+  }
+  return theme;
 }

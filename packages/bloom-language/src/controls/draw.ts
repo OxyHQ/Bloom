@@ -10,6 +10,7 @@ import { type Child, isNode, type Modifier, type Node, type Press } from '../nod
 import type { TextTraits } from '../style';
 import type { ColorToken, InkToken, Role } from '../tokens';
 import type { InsetRoom } from '../chrome/safe-area-inset';
+import type { Palette } from '../paint';
 
 /** What a product component's colour prop is painted from: a role, or a list of colours. */
 export type ProductColor = ColorToken | readonly InkToken[];
@@ -82,6 +83,18 @@ export interface ControlDraw {
    * any other element as it is.
    */
   embed(content: ReactNode): ReactNode;
+  /**
+   * A language child drawn as a tree of its own, which paints from the theme
+   * where it is drawn: for what a Bloom component that re-themes what it
+   * holds holds (an immersive player's slot), whose theme is not this tree's.
+   */
+  tree(child: Child): ReactNode;
+  /**
+   * What the control's tree paints from (`usePalette`): for a colour a
+   * control paints itself, and for a component that keeps a render function
+   * across renders (a list's `renderItem`), which renews it when it changes.
+   */
+  readonly palette: Palette;
   /** Children, one slot each, as a stack draws them. */
   children(children: readonly Child[]): ReactNode[];
   /**

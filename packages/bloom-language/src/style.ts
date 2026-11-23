@@ -74,10 +74,9 @@ const IS_WEB = Platform.OS === 'web';
  * theme and a theme switch re-resolves nothing here. The role is painted
  * where the platform can do it cheapest:
  *
- * - native: a `Paint` descriptor, which the `Painted` leaf turns into the
- *   theme's colour (so a theme switch re-renders those leaves only);
- * - web: the role's CSS variable, in an atomic class from the generated sheet,
- *   so a theme switch re-renders nothing at all.
+ * - native: a `Paint` descriptor, which the node turns into the colour of
+ *   its tree's palette where it is drawn (`paintedLeaf`);
+ * - web: the role's CSS variable, in an atomic class from the generated sheet.
  */
 
 /** A colour role inside a resolved style, at its opacity if it names one. Interned, so a style compares by identity. */
@@ -147,7 +146,7 @@ export function joinVariants(...lists: (VariantStyles | undefined)[]): VariantSt
 
 /**
  * What a host is handed. `style` is final; `paint`, when present, names the
- * properties a `Painted` leaf must fill from the theme before drawing (and,
+ * properties to fill from the tree's palette before drawing (and,
  * with variants, what a `Conditioned` leaf picks from the environment).
  */
 export interface StyleOut {
@@ -208,8 +207,8 @@ export function ink(token: InkToken): RoleRef | string {
 /**
  * A fixed role's colour as a value, natively: white, black and transparent are
  * the same in every theme (Bloom's `buildTheme` writes them as constants), so
- * a style or a glyph that paints with one draws it as it is, with no `Painted`
- * leaf and no theme read. At an opacity it is the hex with the alpha in 8
+ * a style or a glyph that paints with one draws it as it is, with no paint
+ * to resolve. At an opacity it is the hex with the alpha in 8
  * bits, as `styleColor` writes it (paint.ts). `undefined` for any other role,
  * and on the web, whose roles are CSS variables the document paints.
  */
@@ -317,7 +316,7 @@ function inked(resolved: Resolved): Resolved {
 
 /**
  * The native form (and a web component's with variants): values, the roles a
- * `Painted` leaf paints, the variants a `Conditioned` one picks. Geometry is
+ * painted node fills from its tree's palette, the variants a `Conditioned` one picks. Geometry is
  * composed into one transform here, or, with variants, by the leaf once it
  * has the components that hold.
  */

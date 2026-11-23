@@ -266,6 +266,7 @@ export function presentAround(
   element: ReactElement,
   { alert, dialog, popover, cover }: Presentations,
   render: (children: readonly Child[]) => ReactNode[],
+  tree: (child: Child) => ReactNode,
   key: string | number | undefined,
 ): ReactElement {
   const anchored = popover === undefined ? element : drawPopover(element, popover, render, key);
@@ -275,7 +276,7 @@ export function presentAround(
     { key },
     anchored,
     alert === undefined ? null : drawAlert(alert, render),
-    dialog === undefined ? null : drawDialog(dialog, render, undefined),
+    dialog === undefined ? null : drawDialog(dialog, render, tree, undefined),
     cover === undefined ? null : drawCover(cover, (child) => render([child])),
   );
 }
@@ -306,14 +307,18 @@ function drawAlert(
 /**
  * Bloom's `Dialog` while the binding holds: what `.dialog()` draws beside the
  * view that presents it, and what a `Dialog(...).presented(binding)` draws in
- * place (`key` its React key there).
+ * place (`key` its React key there). Bloom's dialog scopes the colours of
+ * its content (a page's preset, or the one a screen inside it names), so its
+ * content is a tree of its own (`tree`), which paints from them.
  */
 export function drawDialog(
   { isPresented: [open, setOpen], content }: Presentation,
   render: (children: readonly Child[]) => ReactNode[],
+  tree: (child: Child) => ReactNode,
   key: string | number | undefined,
 ): ReactElement {
   const own = values(content);
+  const children: readonly Child[] = isNode(content) ? content.children : [];
   const at = own.presentAt;
   const footer = isNode(content) ? lastOf(content, 'footer')?.content : undefined;
   return createElement(
@@ -345,7 +350,7 @@ export function drawDialog(
       scrollable: own.scrollable,
       testID: own.testID,
     },
-    ...(isNode(content) ? render(content.children) : []),
+    tree(children),
   );
 }
 

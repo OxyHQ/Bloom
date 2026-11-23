@@ -1,9 +1,18 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
+
+### Breaking
+
+- Removed the logistics nodes no app wrote, with Bloom's families: `CarrierQuoteCard`, `CarrierQuoteList`, `EarningsSummary`, `EarningsBreakdown`, `EarningsPayoutRow`, `JobCard`, `JobBoard`, `SignaturePad`, `ProofOfDelivery`, `VehiclePicker`, `ShipmentLoadPicker`, `ShipmentOptionsList`, `ShipmentRequestForm`, `DeliverySlotDays`, `DeliverySlotOption` and `DeliverySlotPicker`, and the modifiers only they took (`.strokeWidth()`, `.day()`, `.filtersOpen()`, `.selectedExtras()`, `.access()`, `.window()`).
 
 ### Changed
 
+- A tree reads the theme once, where it starts: a `toElement` root (beside the environment), a `view()` body, and the content of a Bloom component that re-themes what it holds, which is a tree of its own (a dialog's content, a full-screen player's slot). Every node of it paints from that read where it is drawn. A painted node is its host with the palette's colours: it has no `Painted` leaf of its own and reads no context. A node with live variants (`Conditioned`) and one that paints the surface fill (`OnSurface`) keep their leaf, and also paint from the tree's palette.
+- A drawn node records the palette it was drawn with, so a theme switch draws each tree again once. That includes a node that kept its identity and a list's rows. A `view()` body now runs again on a theme switch, as a JSX component that reads the theme does.
+- A list row (`VirtualList(items, row)`) or an `Embed` render function that returns a language root (`toElement(chain)`) draws it as part of the tree, with no boundary component and no context read per row. Write a list of language rows this way, not as Bloom's JSX `VirtualList` whose `renderItem` returns `toElement(...)`.
+- A root reads two contexts, the environment and the theme, where it read one before. A node that paints now adds no read, so a root with any painted node costs no more than before. A root that paints nothing costs one context read more.
+- The cost gate (`parity/cost.parity.test.tsx`) measures each node against a JSX component that reads the theme once and paints by hand, and asserts that they are equal in components, hooks and context reads. It covers several painted views in one tree, a painted nested root, and a painted list row per row. A theme-switch gate (`parity/theme-switch.parity.test.tsx`) checks that a tree switched to dark draws what the same tree mounted dark draws, and that a `view()` body runs once per switch.
 - A `FAB` is a squircle unless its chain names a `.shape()` (was a circle), as Bloom `Fab`'s default is, on every platform: its glass takes the 28% corner at its diameter. `.shape('circle')` keeps the capsule.
 - The shell's bottom-bar FAB (`AppLayout(...).primaryAction(...)` on Android, OxyOS and the web) is Bloom's own `Fab` on no glass of the language's, the component and the paint the sidebar draws for the same action, so the two are always one colour (the accent): a tinted lens on Android, the surface tint over the frost on the web.
 - An untinted glass under a solid control (a `FAB`, a `glassProminent` button) is tinted glass: on the lens the fill at 0.8 (was 0.96), Bloom's lens controls' strength, so the glass still shows through it; on iOS the system's tinted Liquid Glass, and before iOS 26 the fill at 0.8 over the blur (was opaque).

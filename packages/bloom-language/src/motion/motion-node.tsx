@@ -44,8 +44,7 @@ import { OverlayRoot } from '@oxy.so/bloom/overlay';
 import { Portal } from '@oxy.so/bloom/portal';
 
 import type { DragSpec, PinchSpec, SwipeDirection } from '../node';
-import { type Geometry, withSurface } from '../paint';
-import { useThemePaint } from '@oxy.so/bloom/theme';
+import { type Geometry, type Palette, withSurface } from '../paint';
 import type { Frame, Lander, Namespace } from './namespace';
 import { motionKey, resolveMotion, type MotionToken } from './tokens';
 
@@ -156,8 +155,8 @@ export interface MotionNodeProps {
   exit: boolean;
   scope: AnimationScope | undefined;
   /**
-   * Native, a node that animates its colours: the palette it paints with
-   * (`ThemedMotion`), so the render a theme switch makes changes them at once.
+   * Native, a node that animates its colours: the paint of its tree, so the
+   * render a theme switch makes changes them at once.
    */
   theme?: unknown;
   /** Draws the node with `outer` on its outermost box. */
@@ -495,19 +494,22 @@ function leaverOnly(motion: MotionPlan, node: ReactNode, flying: ReactNode): Rea
 const NO_PRESS = { style: [] as readonly unknown[], ownsTransform: false };
 
 /**
- * Native, a node that animates its colours: its motion node with the palette
- * it paints with, so it alone of the moving nodes re-renders on a theme switch.
- * The web needs none: a switch there is the document's (`applyThemeAtOnce`).
+ * Native, a node that animates its colours and paints the surface fill: its
+ * motion node with its tree's paint and the fill `OnSurface` hands it. (One
+ * that names no surface fill takes its tree's paint as it is drawn.) The web
+ * needs none: a switch there is the document's (`applyThemeAtOnce`).
  */
 export function ThemedMotion({
   node,
+  palette,
   surface,
   ...props
 }: MotionNodeProps & {
   node: (props: MotionNodeProps) => ReactNode;
+  palette: Palette;
   surface?: string;
 }): ReactNode {
-  return createElement(node, { ...props, theme: withSurface(useThemePaint(), surface) });
+  return createElement(node, { ...props, theme: withSurface(palette.paint, surface) });
 }
 ThemedMotion.displayName = 'BloomThemedMotion';
 

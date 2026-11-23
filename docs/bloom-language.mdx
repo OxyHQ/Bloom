@@ -128,8 +128,10 @@ HStack(Badge({ label: 'New' }), …)
 - **One fiber.** The component is React's own `memo` of the body's host, with
   no comparator: props compare key by key, `Object.is` each, and the body
   re-runs only when one changes.
-- **No theme read.** Nothing above a leaf resolves a colour (see
-  [Rendering](#rendering)), so a theme switch re-runs no view body.
+- **One theme read.** The body is a tree of its own: it reads the theme once,
+  where it starts, and every node it draws paints from that read (see
+  [Rendering](#rendering)), so a theme switch re-runs it once, as it does a JSX
+  component that reads the theme.
 - **The environment** (text traits set above the view) arrives through a
   context that is provided only where an environment modifier changed it. A
   view under an unchanged environment adds no provider.
@@ -339,17 +341,23 @@ high: '#ef4444' } })` as `severity`, `.foreground(severity.color[level])`).
 and colour *roles*, and one cache serves every theme. Each role is painted where
 it is cheapest:
 
-- **Native:** a `Painted` leaf (`BloomPaint` in the React tree) reads the theme
-  and draws its host with that palette's colours, built once per palette. It is
-  the only reader of the theme, so a theme switch re-renders those leaves and
-  nothing above them.
-- **Web:** a role is its canonical CSS variable (`muted` is
-  `var(--muted-foreground)`) inside a class (below), so a theme switch renders
-  nothing. Colours that are props, not styles (an icon's `fill`, a glass
-  Surface's `fill`, a chip row's `fadeColor`), still paint from a `Painted`
-  leaf. A swatch radio group is the one other reader: its colours are inside
-  its options, not props of their own, so the group (a leaf too) reads the
-  palette for them.
+- **One theme read per tree.** A tree reads the theme once, where it starts: a
+  `toElement` root (beside the environment), a `view()` body, and the content of
+  a Bloom component that re-themes what it holds (a dialog's, an immersive
+  player's slot), which is a tree of its own. Every node of it paints from that
+  read where it is drawn: its host takes the palette's colours (built once per
+  palette) with no component of its own and no read, as a JSX component paints
+  from the theme it read. A drawn node records the palette it was drawn with, so
+  a theme switch draws each tree again once, a node that kept its identity and a
+  list's rows included.
+- **Native:** every role paints that way. A node with live variants is a
+  `Conditioned` leaf, which reads what they hold on (the breakpoint, the
+  state) and paints from the tree's palette; one that paints the surface fill
+  reads that fill alone (`OnSurface`).
+- **Web:** a style's role is its canonical CSS variable (`muted` is
+  `var(--muted-foreground)`) inside a class (below). Colours that are props,
+  not styles (an icon's `fill`, a glass Surface's `fill`, a chip row's
+  `fadeColor`, a swatch radio group's options), paint from the tree's palette.
 
 **A node remembers what it rendered.** Rendering a node in the same environment
 and slot gives the same element, so a node that keeps its identity across renders
@@ -752,16 +760,16 @@ inside; a stack's layout to its host; a placement to its outermost box.
 | Condition | Holds | Web | Native |
 | --- | --- | --- | --- |
 | `sm` `md` `lg` `xl` `2xl` | the window at that tier of Bloom's `BREAKPOINTS` or wider | `@media (min-width: …)` | the leaf reads `useWindowBreakpoint()`, which re-renders it only across a breakpoint |
-| `dark` | the dark scheme | `.dark &` (Bloom puts `dark` on the root) | the leaf reads the theme it already paints from |
+| `dark` | the dark scheme | `.dark &` (Bloom puts `dark` on the root) | the leaf reads the scheme of the palette it paints from |
 | `hovered` `focused` `pressed` | the view's own state (`focused` is a keyboard's focus, `:focus-visible`) | the view's outermost box carries the anchor class `blsg`, and a class answers its nearest anchor's state (see below) | the outermost box (`StateHost`) tracks the states its variants answer and hands them to the view's leaves |
 | `disabled` | the view's own `.disabled()` (Button, FAB, a pressable stack) | settled when it renders | settled when it renders |
 | `web` `native` `ios` `android` | the platform | settled | settled |
 | a boolean (`isActive`) | the app's own condition, read as the view renders | settled | settled |
 
 - **No view body runs.** A live condition is answered below the view: by CSS
-  on the web, by the leaf that draws each host on native (`Conditioned`, a
-  `Painted` leaf that also reads the breakpoint, the scheme and the state),
-  which builds its props once per palette and set of holding variants.
+  on the web, by the leaf that draws each host on native (`Conditioned`,
+  which reads the breakpoint and the state and paints from its tree's
+  palette), which builds its props once per palette and set of holding variants.
 - **The variant sheets** hold only the variant classes that have rendered.
   A variant is a generated class again under its condition (`<class>-md`,
   `<class>-hovered`…); the first time a style naming one is resolved (styles
@@ -4611,8 +4619,7 @@ third-party component, or a Bloom or app component the language has no node for
 yet. `Embed((render) => <Link asChild>{render(Text('…'))}</Link>)` hands the
 element a `render` function. That function draws language nodes in the current
 environment as their host elements, so `asChild`, hover cards and slot props
-receive a `Text` or `View` (on native, through its `Painted` leaf, which passes
-every prop, `ref` included, to the host). An embed with box modifiers gets one `View`
+receive a `Text` or `View` (its host, every prop, `ref` included, passed to it). An embed with box modifiers gets one `View`
 around it.
 
 **Bloom's helpers and constants.** What Bloom exports that draws nothing

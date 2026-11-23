@@ -510,6 +510,48 @@ const more: ParityCase[] = [
     ),
   },
   {
+    // Its content is a tree of its own: it paints from the page's preset, not the app's.
+    name: 'dialog on a page with a colour preset of its own, its content painted',
+    isolated: true,
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body').foreground('primary').padding('md').background('surface'))
+            .page({ key: 'details', colorPreset: 'green', direction: 'none' })
+            .label('Details'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          frame={{ key: 'details', colorPreset: 'green', direction: 'none' }}
+          label="Details"
+        >
+          <Themed>
+            {(c) => (
+              <Text
+                style={{
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                  paddingStart: 12,
+                  paddingEnd: 12,
+                  color: c.primary,
+                  backgroundColor: c.backgroundSecondary,
+                }}
+              >
+                Body
+              </Text>
+            )}
+          </Themed>
+        </Dialog>
+      </>
+    ),
+  },
+  {
     name: 'dialog at an app width, its gutter and height ceiling',
     isolated: true,
     language: () =>
