@@ -25,7 +25,11 @@ import type { TabBarItem, TabBarTheme } from './types';
 //  would put a layout round-trip between the finger and the pixels.
 // ---------------------------------------------------------------------------
 
-export const EXPANDED_HEIGHT = 58;
+/**
+ * The bar's height: Apple's tab bar (iOS 26 and 27), measured at 62pt on an iPhone Air and an
+ * iPhone 17 Pro, the same height as the search circle beside it. A FAB beside the bar takes it too.
+ */
+export const EXPANDED_HEIGHT = 62;
 export const MINIMIZED_HEIGHT = 44;
 /** Fraction of shared collapse progress that frees the editor's horizontal lane. */
 export const DOCK_NAVIGATION_PHASE = 0.6;
@@ -45,10 +49,19 @@ export const ICON_SIZE = 21;
  */
 export const ITEM_GAP = 2;
 export const LABEL_BLOCK = LABEL_HEIGHT + ITEM_GAP;
+/** The icon's room above and below it in the minimized bar. */
 export const ITEM_PAD_V = 7;
+/**
+ * The selection pill's inset from the bar's wall, on every side: Apple's selected tab sits on a pill that nearly
+ * fills the bar, 4pt in from its top, bottom and end (measured on iOS 26 and 27). The row's own inset
+ * (`ROW_PAD_H`) is the same 4.
+ */
+export const HIGHLIGHT_INSET = 4;
 /** Highlight content heights — radius must track h/2 for a true capsule. */
-export const HIGHLIGHT_EXPANDED = ICON_SIZE + LABEL_BLOCK + ITEM_PAD_V * 2;
+export const HIGHLIGHT_EXPANDED = EXPANDED_HEIGHT - HIGHLIGHT_INSET * 2;
 export const HIGHLIGHT_MINIMIZED = ICON_SIZE + ITEM_PAD_V * 2;
+/** The icon's room above it in the expanded bar: icon and label centred in the pill. */
+export const ITEM_PAD_V_EXPANDED = (HIGHLIGHT_EXPANDED - ICON_SIZE - LABEL_BLOCK) / 2;
 /** How far the bottom progressive blur bleeds above the pill. */
 export const BLUR_BLEED = 44;
 /** Label type size. Small by design — the icon carries the meaning. */
@@ -76,8 +89,11 @@ export const LONG_PRESS_MIN_DURATION = 500;
  * theme. Each role maps onto the token that already carries that meaning, so
  * the bar follows `BloomThemeProvider` for free:
  *
- *   - the two tints are the standard foreground pair;
- *   - the highlight is `contrast50`, the token meant for a subtle raised fill;
+ *   - the selected tab's icon and label take the accent (`primary`), the others
+ *     the foreground that reads on the material (`text`), as Apple's tab bar does;
+ *   - the highlight is a neutral darkening of the material, never a colour: the
+ *     `shadow` token (black at 10% light / 30% dark), translucent, so the
+ *     material shows through it (the selected tab of Apple's tab bar);
  *   - the card token is painted at 72% on the web (opaque on native); explicit tint alpha is preserved;
  *
  * Overrides are coalesced key by key (not spread) so an explicit `undefined` in
@@ -88,9 +104,9 @@ export function resolveTabBarTheme(
   overrides?: Partial<TabBarTheme>,
 ): TabBarTheme {
   return {
-    activeTint: overrides?.activeTint ?? colors.text,
-    inactiveTint: overrides?.inactiveTint ?? colors.textSecondary,
-    highlight: overrides?.highlight ?? colors.contrast50,
+    activeTint: overrides?.activeTint ?? colors.primary,
+    inactiveTint: overrides?.inactiveTint ?? colors.text,
+    highlight: overrides?.highlight ?? colors.shadow,
     blurTint: overrides?.blurTint ?? colors.card,
   };
 }

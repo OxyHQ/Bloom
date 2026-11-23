@@ -62,6 +62,7 @@ type S = {
   "borderEdge": "all" | "top" | "bottom" | "leading" | "trailing" | "left" | "right";
   "role": "button" | "link" | "header" | "image" | "text" | "none" | "checkbox" | "radio" | "tab" | "radiogroup" | "tablist" | "list" | "alert" | "progressbar" | "imagebutton" | "summary";
   "buttonShape": "circle" | "pill" | "fit";
+  "fabShape": "circle" | "rounded" | "squircle";
   "linkTone": "primary" | "secondary" | "text";
   "appearance": "solid" | "subtle" | "outline" | "plain";
   "tone": "neutral" | "accent" | "vivid" | "support" | "action" | "success" | "warning" | "danger" | "info";
@@ -587,6 +588,7 @@ type buttonGroupChecks = [
 type fabChecks = [
   Expect<'fab: the universal modifiers', Universal<View<'FAB'>, "disabled">>,
   Expect<"fab.style(style: appearance)", Ok<At<View<'FAB'>['style'], '0'>, S['appearance']>>,
+  Expect<"fab.shape(shape: fabShape)", Ok<At<View<'FAB'>['shape'], '0'>, S['fabShape']>>,
   Expect<"fab.size(size: controlSize)", Ok<At<View<'FAB'>['size'], '0'>, S['controlSize']>>,
   Expect<"fab.tint(tint: tone)", Ok<At<View<'FAB'>['tint'], '0'>, S['tone']>>,
 ];

@@ -48,9 +48,9 @@ describe('PageHeader, floating', () => {
     expect(materialCount(screen.toJSON())).toBe(1);
     const back = screen.getByTestId('h-back');
     expect(back.props.accessibilityLabel).toBe('Go back');
-    // 36pt capsule + 4 on every side = the 44pt touch floor, with nothing
-    // adjacent to steal from.
-    expect(back.props.hitSlop).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
+    // A floating header's controls are Apple's 44pt: the visible capsule is the
+    // touch floor, so it needs no slop.
+    expect(back.props.hitSlop).toEqual({ top: 0, bottom: 0, left: 0, right: 0 });
     fireEvent.press(back);
     expect(onBack).toHaveBeenCalledTimes(1);
   });

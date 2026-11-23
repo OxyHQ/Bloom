@@ -77,12 +77,13 @@ const surface: ParityCase[] = [
           .glass()
           .when('pressed', (v) => v.background('error')),
       ),
-    // The glass's fill is the button's tone; the press the button reports holds none at rest.
+    // The glass's fill is the button's tone; the press the button reports holds none at rest. A
+    // button on glass is Bloom's floating size (`lg`).
     bloom: () => (
       <Themed>
         {(colors) => (
           <Surface fill={colors.primary}>
-            <Button material="shared" onPress={onPress}>
+            <Button size="lg" material="shared" onPress={onPress}>
               Go
             </Button>
           </Surface>

@@ -27,6 +27,7 @@ import { useSurfaceFill } from '../styles/surface-levels';
 import { usePlatformMaterial } from '../platform-surface/context';
 import type { PlatformMaterialProps } from '../platform-surface/types';
 import { useTheme } from '../theme/use-theme';
+import { useInLensBase } from '../floating/lens/native-lens';
 
 // Backing participates only in web compositing. Native uses the supplied tint
 // directly, so it does not subscribe every painted surface to the backing tree.
@@ -53,8 +54,8 @@ export const SurfacePaint = memo(function SurfacePaint({
   shape,
   geometryStyle,
   direction = 'ltr',
-  sheen = true,
-  rim = true,
+  sheen: sheenProp = true,
+  rim: rimProp = true,
   outset = 0,
   composite = false,
   backing,
@@ -137,6 +138,11 @@ export const SurfacePaint = memo(function SurfacePaint({
   const increasedContrast = useIncreasedContrast();
   // A platform's own material under a floating surface (`material`: OxyOS).
   const platformMaterial = usePlatformMaterial();
+  // Inside a lens base the engine draws the material: its rim, light and shadow. The paint keeps its
+  // fill and draws no edge of its own, or the two read as a second border at the top and bottom.
+  const onLens = useInLensBase();
+  const rim = rimProp && !onLens;
+  const sheen = sheenProp && !onLens;
   const isWeb = Platform.OS === 'web';
   const contextBacking = useCompositeBacking();
   const resolvedFill = resolveSurfaceTint(
@@ -196,7 +202,7 @@ export const SurfacePaint = memo(function SurfacePaint({
   // the edge light. A border, not a shadow, so every renderer draws it (OxyOS's
   // host draws no box shadows).
   const edge: ViewStyle | null =
-    increasedContrast && rim
+    increasedContrast && rimProp
       ? { borderWidth: 1, borderColor: surfaceContrastEdge(paintFill ?? resolvedFill, text) }
       : !increasedContrast && (rim || sheen)
         ? {

@@ -4,7 +4,10 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { ButtonGroupContext } from './context';
 import type { ButtonProps } from './types';
 
-/** Group participation changes joining and material ownership, never button geometry. */
+/**
+ * Group participation changes joining and material ownership, never button geometry, except that a
+ * floating group's members are its floating size.
+ */
 export function useGroupedButton(props: ButtonProps): ButtonProps {
   const group = useContext(ButtonGroupContext);
   const id = useId();
@@ -44,7 +47,7 @@ export function useGroupedButton(props: ButtonProps): ButtonProps {
   return {
     ...props,
     ...toggleProps,
-    size: props.size ?? group.size,
+    size: group.floating ? group.size : (props.size ?? group.size),
     appearance: props.appearance ?? (group.separated && !pressed ? 'subtle' : 'outline'),
     tone: props.tone ?? 'neutral',
     material:

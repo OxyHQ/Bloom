@@ -1,11 +1,25 @@
 # Changelog
 
-## Unreleased
+## 23.1.0
+
+The Bloom language 1.1 ships beside it: `@oxy.so/bloom-language` 1.1.0, `@oxy.so/bloom-language-compiler` 1.1.0 (and its platform packages), `@oxy.so/bloom-language-codemod` 0.2.0 and `@oxy.so/bloom-lens` 1.1.0.
 
 ### Added
 
 - `Dialog` takes `onDismissed`: it fires once the dialog has finished closing, its exit animation done, in either mode (in controlled mode, after the host flipped `open` to `false`), the place to unmount what presented it. The language's `Dialog` takes it as `.onDismissed()`.
 - The Bloom language guides ship in `docs/`: `bloom-language-getting-started.mdx` (install, the compiler in Metro, Jest and Vite, a first screen), `bloom-language-tour.mdx`, `bloom-language-from-jsx.mdx` and `bloom-language-for-agents.mdx`, every `check` example compiled by the language compiler and TypeScript in CI; and the reference generated from the language's spec, `bloom-language-nodes.mdx`, `bloom-language-modifiers.mdx` and `bloom-language-tokens.mdx`. Storybook has a `Language` section led by the tour.
+- `Fab` takes `shape`: `circle` (the default), `rounded` or `squircle`, a square whose corner is 28% of the diameter, with circular or continuous corners; on the lens the glass, its press and a menu's morph take the same corner. `FAB_SHAPES`, `fabCornerRadius` and `useFabDiameter` (`@oxy.so/bloom/fab`) give the geometry to a host that draws a FAB's material itself.
+- `FLOATING_CONTROL_SIZE` (`@oxy.so/bloom/button`): the one floating size, `lg` (44pt).
+
+### Changed
+
+- One lens path for every glass control on Android 13+ (with `@oxy.so/bloom-lens`): every `Button` and `Button.Group` with a material is drawn by the lens. In a floating region (a floating header, a toolbar, a bar, a FAB) the window draws it; anywhere else it is drawn in its place against the surface it sits on, so it scrolls and stacks with the page. A separate window (a sheet, a dialog) keeps Bloom's own material; iOS and the web are unchanged.
+- Where the engine draws the glass, Bloom draws no emulated edge of its own (the extra top and bottom border is gone).
+- A floating control is 44pt, decided by the control, never its caller: a `Button` or `Button.Group` on the lens (by its own prop or its region), every member of such a group, a floating `PageHeader`'s back, `leading` and `actions`, a `Button.Group` on the lens and the media header's follow toggle. `material="surface"` keeps a group on Bloom's material at its own size.
+- The bottom bar is 62pt, its selected tab on a neutral translucent pill (the `shadow` token, 4pt in from the bar's wall) with accent icon and label; a FAB beside the bar takes its height.
+- `Fab`'s default tone is the accent (was `action`), its glyph the accent's foreground; on the lens a solid control's fill tints its glass at 0.96.
+- The web frosts a glass's backdrop as the material does.
+- A floating header's back control is in the header's floating region, so it floats with the controls beside it.
 
 ## 23.0.0
 

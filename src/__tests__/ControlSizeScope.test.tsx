@@ -179,7 +179,8 @@ it('sizes Button, Switch and joined controls from the same nearest scope', () =>
       <BloomScope size="sm">
         <Button testID="button">Save</Button>
         <Switch testID="switch" accessibilityLabel="Enabled" />
-        <Button.Group>
+        {/* A group on the shared Surface (not the lens) takes the scope's size. */}
+        <Button.Group material="surface">
           <Button testID="item">Day</Button>
         </Button.Group>
         <Button testID="explicit" size="lg">

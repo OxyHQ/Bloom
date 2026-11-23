@@ -1154,6 +1154,11 @@ export const ENUMS = {
     "pill",
     "fit"
   ],
+  "fabShape": [
+    "circle",
+    "rounded",
+    "squircle"
+  ],
   "linkTone": [
     "primary",
     "secondary",
@@ -2640,15 +2645,20 @@ export const GLASS = {
     "sheen": true,
     "fill": null,
     "tintOpacity": null,
-    "lensBlur": 1,
-    "iosStyle": "regular"
+    "lensBlur": 5,
+    "lensMenuBlur": 24,
+    "webBlur": 3,
+    "iosStyle": "regular",
+    "iosFallback": "systemThinMaterial"
   },
   "clear": {
     "sheen": false,
     "fill": "surface",
     "tintOpacity": "subtle",
-    "lensBlur": 0.5,
-    "iosStyle": "clear"
+    "lensBlur": 2,
+    "webBlur": 1.5,
+    "iosStyle": "clear",
+    "iosFallback": "systemUltraThinMaterial"
   }
 } as const;
 
@@ -7380,6 +7390,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "style",
+    "shape",
     "size",
     "tint",
     "collapsed"

@@ -24,6 +24,8 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
       fill,
       rim = true,
       sheen = true,
+      // The web's backdrop frost: native draws no backdrop filter.
+      frost: _frost,
       material: materialProp = 'surface',
       radius,
       cornerCurve = SURFACE_SHAPES.panel.curve,

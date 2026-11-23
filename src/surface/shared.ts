@@ -3,6 +3,7 @@ import { parseRgba, withAlpha } from '../theme/color-utils';
 import { quietText } from '../styles/color-contrast';
 
 import {
+  SURFACE_BLUR_PX,
   SURFACE_LOOKS,
   edgeGlowMask,
   edgeLightFilter,
@@ -86,8 +87,26 @@ const DARK_OPTICS: SurfaceOptics = {
   rim: nativeRim(0.4),
 };
 
-export function resolveSurfaceOptics(isDark: boolean): SurfaceOptics {
-  return isDark ? DARK_OPTICS : LIGHT_OPTICS;
+const FROSTED_OPTICS = new Map<string, SurfaceOptics>();
+
+/**
+ * The web material's optics for a scheme. `frost` (CSS px) blurs the backdrop
+ * by that much instead of `SURFACE_BLUR_PX`: a lighter frost than the floating
+ * material's (the language's regular and clear materials).
+ */
+export function resolveSurfaceOptics(isDark: boolean, frost?: number): SurfaceOptics {
+  const optics = isDark ? DARK_OPTICS : LIGHT_OPTICS;
+  if (frost === undefined || frost === SURFACE_BLUR_PX) return optics;
+  const key = `${isDark ? 'dark' : 'light'}|${frost}`;
+  let frosted = FROSTED_OPTICS.get(key);
+  if (!frosted) {
+    frosted = {
+      ...optics,
+      filter: materialFilter(isDark ? SURFACE_LOOKS.dark : SURFACE_LOOKS.light, frost),
+    };
+    FROSTED_OPTICS.set(key, frosted);
+  }
+  return frosted;
 }
 
 /** Radii above this are capsules, whose real corner is half the shorter side. */

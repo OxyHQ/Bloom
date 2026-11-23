@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
+
+### Compatibility
+
+- Its peer is `@oxy.so/bloom-language` 1.1.0 or newer, the language it writes.
 
 ### Added
 
