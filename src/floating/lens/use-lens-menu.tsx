@@ -29,6 +29,7 @@ import {
   useInLensBase,
   useLensBaseMenu,
 } from './native-lens';
+import { LENS_FROST } from './lens-frost';
 import type { ParsedLensMenu } from './parse-lens-menu';
 import { useLensTint } from './use-lens-tint';
 
@@ -263,7 +264,10 @@ export function LensTrigger({
   // any other out of the untinted lens, as the engine's upstream app does.
   const fill = tint ?? (tone === 'primary' ? primary : origin?.tint);
   const triggerConfig = useMemo(
-    () => (fill ? { tintColor: fill, tintOpacity: 0.96 } : undefined),
+    () => ({
+      blur: LENS_FROST.control,
+      ...(fill ? { tintColor: fill, tintOpacity: 0.96 } : null),
+    }),
     [fill],
   );
   if (!native) return <>{children}</>;
@@ -294,6 +298,7 @@ function LensOpener({ lens, children }: { lens: MenuLens; children: ReactNode })
         ? {
             rows,
             config: {
+              blur: LENS_FROST.panel,
               tintColor: surface,
               textColor: text,
               mutedColor: textSecondary,

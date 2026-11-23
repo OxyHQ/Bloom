@@ -135,6 +135,7 @@ pub const TOKEN_PARAMS: &[TokenParam] = &[
     TokenParam { label: "buttonGroup.axis(axis)", constructor: "ButtonGroup", call: "ButtonGroup().axis(@)", sets: &["axis"], tokens: &[], opacity: false },
     TokenParam { label: "buttonGroup.size(size: controlSize)", constructor: "ButtonGroup", call: "ButtonGroup().size(@)", sets: &["controlSize"], tokens: &[], opacity: false },
     TokenParam { label: "fab.style(style: appearance)", constructor: "FAB", call: "FAB().style(@)", sets: &["appearance"], tokens: &[], opacity: false },
+    TokenParam { label: "fab.shape(shape: fabShape)", constructor: "FAB", call: "FAB().shape(@)", sets: &["fabShape"], tokens: &[], opacity: false },
     TokenParam { label: "fab.size(size: controlSize)", constructor: "FAB", call: "FAB().size(@)", sets: &["controlSize"], tokens: &[], opacity: false },
     TokenParam { label: "fab.tint(tint: tone)", constructor: "FAB", call: "FAB().tint(@)", sets: &["tone"], tokens: &[], opacity: false },
     TokenParam { label: "menu.menuStyle(menuStyle)", constructor: "Menu", call: "Menu().menuStyle(@)", sets: &["menuStyle"], tokens: &[], opacity: false },

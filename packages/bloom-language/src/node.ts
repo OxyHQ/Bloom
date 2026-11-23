@@ -263,6 +263,7 @@ import {
   type ListMarker,
   type ButtonLinkTone,
   type ButtonShape,
+  type FabShape,
   type AnyDensity,
   type Density,
   type ContentFit,
@@ -460,6 +461,7 @@ export type {
   Justify,
   OverlayAlignment,
   ButtonShape,
+  FabShape,
   ContentFit,
   Edge,
   HeaderPresentation,
@@ -1582,7 +1584,7 @@ export type Modifier =
   | {
       readonly kind: 'shape';
       readonly key: string;
-      readonly value: ButtonShape | ShapeName | DotsShape | ChartShape;
+      readonly value: ButtonShape | FabShape | ShapeName | DotsShape | ChartShape;
     }
   | {
       readonly kind: 'tint';
@@ -2430,7 +2432,7 @@ export class Node {
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
-  shape(value: ButtonShape | ShapeName | DotsShape | ChartShape): Node {
+  shape(value: ButtonShape | FabShape | ShapeName | DotsShape | ChartShape): Node {
     return this.with({ kind: 'shape', key: `shape:${value}`, value });
   }
   tint(
@@ -5252,6 +5254,11 @@ export interface ButtonGroupView extends ViewModifiers<ButtonGroupView> {
  */
 export interface FabView extends ViewModifiers<FabView> {
   style(value: BloomAppearance): FabView;
+  /**
+   * The silhouette: `circle` (the default), `rounded` (a rounded square) or `squircle` (a rounded square
+   * with Apple's continuous corner). Its glass, the press and a menu's morph take the same shape.
+   */
+  shape(value: FabShape): FabView;
   size(value: BloomSize): FabView;
   tint(value: BloomTone): FabView;
   disabled(value?: boolean): FabView;

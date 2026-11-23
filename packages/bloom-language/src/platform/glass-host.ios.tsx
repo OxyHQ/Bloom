@@ -1,8 +1,10 @@
 /**
  * iOS: Liquid Glass (`glassEffect`, through `expo-glass-effect`) on iOS 26,
- * and the system's blur (`UIVisualEffectView`, through `expo-blur`) under the
- * tint before it. Both are optional: without either, a glass view draws
- * Bloom's `Surface`.
+ * its style the material's (`regular` or `clear`, which frost as the system
+ * frosts them), and the system's blur (`UIVisualEffectView`, through
+ * `expo-blur`) under the tint before it: thin material for regular,
+ * ultra-thin for clear (the spec's `iosFallback`). Both are optional: without
+ * either, a glass view draws Bloom's `Surface`.
  *
  * NOT VERIFIED: written without an iOS build (no Mac on this machine).
  */
@@ -101,7 +103,7 @@ function BlurGlass(props: GlassHostProps) {
     <View style={[props.style, shape]}>
       <BlurView
         intensity={100}
-        tint={theme.isDark ? 'systemUltraThinMaterialDark' : 'systemUltraThinMaterialLight'}
+        tint={`${GLASS[props.glass.material].iosFallback}${theme.isDark ? 'Dark' : 'Light'}`}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />

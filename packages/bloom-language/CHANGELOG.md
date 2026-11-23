@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
+
+### Compatibility
+
+- Requires `@oxy.so/bloom` 23.1.0 or newer (its floating control size and the FAB's shape geometry).
 
 ### Breaking
 
@@ -16,6 +20,13 @@
 - `surfaceFill`, a colour role: the fill of the surface a view sits on (Bloom's `useSurfaceFill()`), read only by the leaf that paints it.
 - Views as content: a header's title and subtitle, a button's content and the views beside its label; a button's inks and spinner; a field's lines; a tab's own box and label font; a Chip's colour chosen at render; the Button, Card, Chip and Field props apps write.
 - A pull to refresh as `{ refreshing, onRefresh }` (a query's `isRefetching` and `refetch`), with a tint per platform; `.ref()` and `.onLayout()` on the outermost box; `Dialog`'s `.onDismissed()`; hit testing chosen at render and a `Divider`'s own axis; a `Search`'s most characters.
+
+### Glass
+
+- A `Button` on glass (`.glass()`, `.style('glass' | 'glassProminent')`) is Bloom's floating size (44pt), whatever size its chain or environment names.
+- `FAB(...).shape('circle' | 'rounded' | 'squircle')`: its glass takes the silhouette's corner at the FAB's diameter. A FAB is tinted with the accent by default, and on the lens a solid control's fill tints its glass at 0.96.
+- On Android and OxyOS a `Menu`'s trigger is glass only when it says `.glass()` (or sits in a glass): a bare trigger (a feed row's ⋯) draws no lens, and its menu still grows out of its shape. An open lens menu frosts more than its trigger (`lensMenuBlur`).
+- The web frosts a glass's backdrop as the material does.
 
 ### Changed
 

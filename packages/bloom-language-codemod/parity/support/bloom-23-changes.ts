@@ -8,8 +8,9 @@
  * is listed here with its commit, as the one value it adds (a prop, an
  * attribute or a CSS declaration with exactly that value), and the Bloom 22 tree
  * takes it only where the after tree has it at the same place and the Bloom 22
- * tree has no value there at all. Nothing else is folded: any other difference,
- * or the same key at another value, still fails.
+ * tree has no value there at all; or, for a value Bloom changed (`was`), only
+ * where the Bloom 22 tree has exactly the old value there. Nothing else is
+ * folded: any other difference, or the same key at another value, still fails.
  *
  * The package's own suites fail when a listed change is no longer met, so the
  * list holds only what still differs (`bloom-22` updated to a release that has
@@ -23,8 +24,11 @@ export interface Bloom23Change {
   readonly platform: Platform;
   /** Where the value sits: a native host's prop, a DOM attribute, or a CSS declaration. */
   readonly in: 'props' | 'attributes' | 'css';
+  /** The key, or a path into the prop's value (`contentContainerStyle.1.paddingBottom`). */
   readonly key: string;
   readonly value: unknown;
+  /** The value Bloom 22 drew there, when Bloom 23 changed it rather than added it. */
+  readonly was?: unknown;
 }
 
 export const BLOOM_23_CHANGES: readonly Bloom23Change[] = [
@@ -52,6 +56,25 @@ export const BLOOM_23_CHANGES: readonly Bloom23Change[] = [
     key: 'transition',
     value: 'scale 100ms cubic-bezier(0.455,0.03,0.515,0.955)',
   },
+  // The bottom bar is 62pt (was 58), so a screen's first estimate of a bar's footprint (its height and
+  // the 16pt gap) is 78 (was 74), before the bar is measured.
+  ...(
+    [
+      ['bottomOffset', 78, 74],
+      ['extraKeyboardSpace', 78, 74],
+      ['contentContainerStyle.1.paddingBottom', 94, 90],
+    ] as const
+  ).map(
+    ([key, value, was]): Bloom23Change => ({
+      commit: '4de9ab0bc',
+      what: "The bottom bar is Apple's 62pt, so the screen's first estimate of its footprint is 78",
+      platform: 'native',
+      in: 'props',
+      key,
+      value,
+      was,
+    }),
+  ),
 ];
 
 const label = (change: Bloom23Change) => `${change.commit} ${change.key}`;
@@ -84,6 +107,14 @@ export function withBloom23Changes(
     for (const change of changes) {
       const theirs = other[change.in] as Tree | undefined;
       const ours = node[change.in] as Tree | undefined;
+      if (change.was !== undefined) {
+        // A changed value: the Bloom 22 tree has exactly the old one where the after tree has the new.
+        const path = change.key.split('.');
+        if (at(theirs, path) !== change.value || at(ours, path) !== change.was) continue;
+        node[change.in] = replaced(ours, path, change.value);
+        met.add(label(change));
+        continue;
+      }
       if (theirs?.[change.key] !== change.value) continue;
       if (ours !== undefined && change.key in ours) continue;
       node[change.in] = Object.fromEntries(
@@ -98,4 +129,22 @@ export function withBloom23Changes(
     return node;
   };
   return visit(before, after);
+}
+
+/** The value at `path` inside `value` (objects and arrays), or undefined. */
+function at(value: unknown, path: readonly string[]): unknown {
+  let current = value;
+  for (const step of path) {
+    if (current === null || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[step];
+  }
+  return current;
+}
+
+/** `value` with `next` at `path`, copying each object or array on the way. */
+function replaced(value: unknown, path: readonly string[], next: unknown): Tree {
+  const [step, ...rest] = path as [string, ...string[]];
+  const copy = (Array.isArray(value) ? [...value] : { ...(value as Tree) }) as Tree;
+  copy[step] = rest.length === 0 ? next : replaced(copy[step], rest, next);
+  return copy;
 }

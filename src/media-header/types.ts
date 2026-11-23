@@ -153,7 +153,7 @@ export interface DownloadButtonProps extends ToggleBase {
 export interface FollowButtonProps extends ToggleBase {
   /** Shared Button surface; defaults to subtle. */
   appearance?: ButtonProps['appearance'];
-  /** Shared Button material; preserves the standard surface by default. */
+  /** Shared Button material; a follow toggle is a pill on the lens by default (`'lens'`), Bloom's floating size. */
   material?: ButtonProps['material'];
   /** Shared Button tone. Defaults to support (secondary). */
   tone?: BloomTone;

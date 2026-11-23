@@ -2,6 +2,7 @@ import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
 import { Fab } from '@oxy.so/bloom/fab';
 import { Loading } from '@oxy.so/bloom/loading';
+import { Surface } from '@oxy.so/bloom/surface';
 import { RiAddLine, RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
 
 import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
@@ -378,10 +379,49 @@ const boxed: ParityCase[] = [
 
 /**
  * `FAB`: Bloom's `Fab`, its glyph an `Icon` child and its extended label a
- * `Text` one; with no glass (`identity`), Bloom's own solid FAB, as an app's
- * `<Fab>` draws it.
+ * `Text` one. By default on glass, tinted with the accent (the theme's
+ * primary, Apple's `glassProminent`), in its shape: the glass takes the corner
+ * of its silhouette at its diameter (a 50pt `md` FAB here). With no glass
+ * (`identity`), Bloom's own solid FAB, as an app's `<Fab>` draws it.
  */
 const fabs: ParityCase[] = [
+  {
+    name: 'a FAB: a circle on glass tinted with the accent',
+    language: () => toElement(L.FAB(L.Icon(RiAddLine)).label('Create').onPress(onPress)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface fill={c.primary}>
+            <Fab icon={RiAddLine} accessibilityLabel="Create" material="shared" onPress={onPress} />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  ...(['rounded', 'squircle'] as const).map((shape) => ({
+    name: `a ${shape} FAB: its glass takes its corner`,
+    language: () =>
+      toElement(L.FAB(L.Icon(RiAddLine)).shape(shape).label('Create').onPress(onPress)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface
+            fill={c.primary}
+            radius={14}
+            cornerCurve={shape === 'squircle' ? 'smooth' : 'round'}
+          >
+            <Fab
+              icon={RiAddLine}
+              shape={shape}
+              accessibilityLabel="Create"
+              material="shared"
+              onPress={onPress}
+            />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  })),
   {
     // Mention's feeds and saved pages: the page's own action.
     name: 'a FAB with its glyph and name',

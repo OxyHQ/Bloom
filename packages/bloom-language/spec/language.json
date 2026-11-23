@@ -476,6 +476,7 @@
       "summary"
     ],
     "buttonShape": ["circle", "pill", "fit"],
+    "fabShape": ["circle", "rounded", "squircle"],
     "linkTone": ["primary", "secondary", "text"],
     "appearance": ["solid", "subtle", "outline", "plain"],
     "tone": [
@@ -1126,21 +1127,28 @@
   "glass": {
     "$comment": [
       "How each material draws on each platform. sheen, fill, tintOpacity: Bloom Surface (the web, and native where the platform glass is absent); fill is the colour role it paints from when untinted (null: Surface keeps its own fill), tintOpacity the glassOpacity a tint takes by default (null: the colour as it is).",
-      "lensBlur: the lens engine's frost (Android and OxyOS), a multiplier of the engine's own. iosStyle: the glassEffect style (iOS 26)."
+      "The frost is Liquid Glass's: what is behind a glass is blurred slightly and bent at its edges; clear blurs less than regular, and glass that grows (a menu out of its trigger) frosts more. Apple publishes no radius; the values were chosen against iOS 26/27 captures and recreations (sigma about 3pt for a regular control, 1.2pt for clear, 10 to 20pt for a menu) and set on a Pixel 8a.",
+      "lensBlur: the lens engine's frost at rest (Android and OxyOS): its blur radius in dp (the engine's own is 1; sigma = 0.577 radius + 0.5 px). lensMenuBlur (regular only, a menu is regular glass): the frost of a menu's panel, the radius in dp the glass grows into as the menu opens (the engine's own is 16). Bloom's own lens controls take the same values (LENS_FROST, src/floating/lens/lens-frost.ts).",
+      "webBlur: the frost of Surface's backdrop on the web, the CSS blur in px (a standard deviation; Surface's own is 24). iosStyle: the glassEffect style (iOS 26). iosFallback: the UIBlurEffect style under the tint before iOS 26 (Dark or Light is added for the scheme)."
     ],
     "regular": {
       "sheen": true,
       "fill": null,
       "tintOpacity": null,
-      "lensBlur": 1,
-      "iosStyle": "regular"
+      "lensBlur": 5,
+      "lensMenuBlur": 24,
+      "webBlur": 3,
+      "iosStyle": "regular",
+      "iosFallback": "systemThinMaterial"
     },
     "clear": {
       "sheen": false,
       "fill": "surface",
       "tintOpacity": "subtle",
-      "lensBlur": 0.5,
-      "iosStyle": "clear"
+      "lensBlur": 2,
+      "webBlur": 1.5,
+      "iosStyle": "clear",
+      "iosFallback": "systemUltraThinMaterial"
     }
   },
   "glassValue": {
@@ -2289,10 +2297,11 @@
     },
     "fab": {
       "constructors": ["FAB"],
-      "modifiers": ["style", "size", "tint", "disabled", "collapsed"],
+      "modifiers": ["style", "shape", "size", "tint", "disabled", "collapsed"],
       "size": "controlSize",
       "tint": "tone",
-      "style": "appearance"
+      "style": "appearance",
+      "shape": "fabShape"
     },
     "menu": {
       "constructors": ["Menu"],

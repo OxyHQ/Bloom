@@ -38,8 +38,10 @@ export interface LensHandle {
   close: () => void;
 }
 
-/** The panel's tint and the rows' ink; a missing colour keeps the engine's own. */
+/** The panel's frost, tint and the rows' ink; a missing value keeps the engine's own. */
 export interface LensMenuConfig {
+  /** The panel's frost, a blur radius in dp (`LENS_FROST.panel`). */
+  blur?: number;
   tintColor?: string;
   textColor?: string;
   mutedColor?: string;
@@ -47,8 +49,10 @@ export interface LensMenuConfig {
   separatorColor?: string;
 }
 
-/** The base's lens: its tint, how far it springs, and how it takes its menu back. */
+/** The base's lens: its frost, its tint, how far it springs, and how it takes its menu back. */
 export interface LensTriggerConfig {
+  /** The frost at rest, a blur radius in dp (`LENS_FROST.control`). */
+  blur?: number;
   tintColor?: string;
   tintOpacity?: number;
   /** How far the press and the drag deform the lens, a multiplier of the engine's own (1). */

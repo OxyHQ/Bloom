@@ -512,7 +512,8 @@ describe('FollowButton', () => {
     expect(el.getAttribute('aria-pressed')).toBe('false');
     expect(el.textContent).toContain('Follow');
     expect(el.style.borderTopWidth || el.style.borderWidth || '0px').toBe('0px');
-    expect(el.style.height).toBe('32px');
+    // A follow toggle is a pill on the lens: Bloom's floating size.
+    expect(el.style.height).toBe('44px');
     act(() => el.click());
     expect(onFollowChange).toHaveBeenCalledWith(true);
 

@@ -8,10 +8,21 @@ import type { ColorName } from '../tokens';
 import type { LensTriggerConfig } from './lens';
 
 /**
- * A glass value as the lens engine draws it: the material's frost, and the
+ * How much of a solid control's fill tints the glass it is on: Bloom's own lens
+ * control (`LensButtonHost`) tints with a solid fill at 0.96, Apple's
+ * `glassProminent`. The engine's own for a control is 0, which left a FAB and a
+ * `glassProminent` button untinted on Android while iOS and the web drew them
+ * filled.
+ */
+const CONTROL_FILL_OPACITY = 0.96;
+
+/**
+ * A glass value as the lens engine draws it: the material's frost (its blur
+ * radius in dp at rest, the spec's `lensBlur`), and the
  * tint (a variant's `fill` while it holds, else the glass's own, else
  * `fallback`, the fill of the control it is under) at the named transparency,
- * or at the engine's own when none is named.
+ * at the solid control's own for its fill, or at the engine's own when none is
+ * named.
  */
 export function glassTriggerConfig(
   glass: GlassValue,
@@ -31,6 +42,11 @@ export function glassTriggerConfig(
   return {
     blur: material.lensBlur,
     tintColor: role === undefined ? undefined : paletteColor(colors, role),
-    tintOpacity: opacity === null || opacity === undefined ? undefined : GLASS_OPACITY[opacity],
+    tintOpacity:
+      opacity !== null && opacity !== undefined
+        ? GLASS_OPACITY[opacity]
+        : glass.tintColor === undefined && fallback !== undefined
+          ? CONTROL_FILL_OPACITY
+          : undefined,
   };
 }

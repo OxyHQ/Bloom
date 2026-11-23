@@ -5,7 +5,8 @@
  */
 import { useEffect, useImperativeHandle, useState } from 'react';
 import type React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SurfacePaint } from '../surface/SurfacePaint';
 import { Button } from '../button/Button';
 import { PageHeader } from '../page-header/PageHeader';
 import { BlurIsland } from '../blur';
@@ -18,6 +19,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme';
 import { lens } from './lens-stub';
+import { LENS_FROST } from '../floating/lens/lens-frost';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -130,10 +132,12 @@ describe('DropdownMenu as the native lens menu', () => {
       </DropdownMenu>,
     );
     expect(props()).toMatchObject({ fontFamily: 'Inter' });
-    // Bloom's colours, the engine's own glass: the panel at its transparency, a plain trigger
-    // morphing out of untinted glass.
+    // Bloom's colours and frost on the engine's own glass: the panel at its transparency and
+    // frosted as a menu (Liquid Glass grown large), a plain trigger morphing out of untinted glass
+    // frosted as a control.
     expect(props()?.config?.tintOpacity).toBeUndefined();
-    expect(props()?.triggerConfig).toBeUndefined();
+    expect(props()?.config?.blur).toBe(LENS_FROST.panel);
+    expect(props()?.triggerConfig).toEqual({ blur: LENS_FROST.control });
     expect(props()?.items.map((item) => item.title)).toEqual(['Share']);
     fireEvent.press(screen.getByText('Open'));
     expect(lens.handle.open).toHaveBeenCalledTimes(1);
@@ -365,13 +369,15 @@ describe('a ButtonGroup with the lens material', () => {
     expect(lens.handle.open).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the shared surface without the lens prop', () => {
+  it('is the lens without the prop too, drawn in its place against the surface it sits on', () => {
     const screen = wrap(
       <Button.Group accessibilityLabel="Actions">
         <Button>Share</Button>
       </Button.Group>,
     );
-    expect(screen.queryByTestId('native-lens')).toBeNull();
+    // One lens for the group: its button is inside it and draws none of its own.
+    expect(screen.getAllByTestId('native-lens')).toHaveLength(1);
+    expect(props()?.restBackdrop).toBeTruthy();
   });
 });
 
@@ -382,11 +388,15 @@ describe('a floating PageHeader', () => {
         <Button>Share</Button>
       </Button.Group>
     );
+    // Floating: the window draws the group's lens over what moves behind it.
     const floating = wrap(<PageHeader title="Inbox" actions={actions} />);
     expect(floating.getAllByTestId('native-lens').length).toBeGreaterThan(0);
+    expect(props()?.restBackdrop).toBeUndefined();
     floating.unmount();
+    // A bar: the same lens, drawn in its place against the bar.
     const bar = wrap(<PageHeader title="Inbox" presentation="bar" actions={actions} />);
-    expect(bar.queryByTestId('native-lens')).toBeNull();
+    expect(bar.getAllByTestId('native-lens').length).toBeGreaterThan(0);
+    expect(props()?.restBackdrop).toBeTruthy();
   });
 });
 
@@ -399,6 +409,46 @@ describe('a Surface with the lens material', () => {
     );
     expect(screen.getByTestId('native-lens')).toBeTruthy();
     expect(screen.getByText('Panel')).toBeTruthy();
+  });
+
+  it('draws no emulated edge on the lens: a paint inside it keeps its fill, a lens button its shade off', () => {
+    // A selection painted on the glass (a bar's highlight): its fill only, no rim or sheen.
+    const screen = wrap(
+      <Surface material="lens">
+        <SurfacePaint fill="#ff0000" testID="selection" />
+      </Surface>,
+    );
+    const selection = StyleSheet.flatten(screen.getByTestId('selection').props.style);
+    expect(selection.backgroundColor).toBe('#ff0000');
+    expect(selection.boxShadow).toBeUndefined();
+    screen.unmount();
+    // Off the lens the same paint keeps its edge.
+    const off = wrap(<SurfacePaint fill="#ff0000" testID="selection" />);
+    expect(StyleSheet.flatten(off.getByTestId('selection').props.style).boxShadow).toBeTruthy();
+    off.unmount();
+    // A lens button: the engine draws its shadow, the button none of its own.
+    const alone = wrap(
+      <Button material="lens" testID="share">
+        Share
+      </Button>,
+    );
+    const pressable = alone.getByTestId('share').props.style;
+    const box = StyleSheet.flatten(
+      typeof pressable === 'function' ? pressable({ pressed: false, hovered: false }) : pressable,
+    );
+    expect(box.boxShadow).toBeUndefined();
+    alone.unmount();
+    // Every button with a material is the lens: one in the page is drawn in its place, with no shade
+    // and no paint of its own.
+    const plain = wrap(<Button testID="share">Share</Button>);
+    expect(plain.getByTestId('native-lens')).toBeTruthy();
+    expect(props()?.restBackdrop).toBeTruthy();
+    expect(plain.UNSAFE_queryAllByType(SurfacePaint)).toHaveLength(0);
+    const own = plain.getByTestId('share').props.style;
+    expect(
+      StyleSheet.flatten(typeof own === 'function' ? own({ pressed: false, hovered: false }) : own)
+        .boxShadow,
+    ).toBeUndefined();
   });
 
   it('keeps the shared paint without the prop', () => {

@@ -39,6 +39,7 @@ import {
   BUTTON_SHADOW,
   BUTTON_GEOMETRY,
   BUTTON_TOUCH_TARGET,
+  FLOATING_CONTROL_SIZE,
   buttonTouchVisualInset,
 } from '../button/shared';
 import { BloomScope } from '../appearance';
@@ -109,7 +110,7 @@ import { PageHeaderHistory } from './PageHeaderHistory';
  * The geometry both share:
  *
  *   bar         min-height 56, uniform outer inset 12
- *   islands     Button geometry, 8 apart
+ *   islands     Button geometry, 8 apart; floating: the 44pt rung (lg)
  *   title       headline-medium, text-primary, one line
  *   subtitle    body-2-regular, secondary, one line
  *
@@ -235,11 +236,16 @@ function PageHeaderComponent({
   const lastHeight = useRef(0);
   const width = measured.width;
   const touch = useTouchInput();
-  const controlInset = buttonTouchVisualInset(BUTTON_GEOMETRY.md.height, touch);
+  // A floating header's controls float: Apple's bar buttons, 44pt (`FLOATING_CONTROL_SIZE`).
+  const controlSize = floating ? FLOATING_CONTROL_SIZE : 'md';
+  const controlInset = buttonTouchVisualInset(BUTTON_GEOMETRY[controlSize].height, touch);
   const [searchActive, setSearchActive] = useState(false);
   const searchCompact = search != null && width < BREAKPOINTS.sm;
   const searchOccupiesRow = searchCompact && searchActive;
-  const controlHeight = touch ? BUTTON_TOUCH_TARGET : BUTTON_GEOMETRY.md.height;
+  const controlHeight = Math.max(
+    touch ? BUTTON_TOUCH_TARGET : 0,
+    BUTTON_GEOMETRY[controlSize].height,
+  );
   const searchHost = useMemo(
     () => ({ compact: searchCompact, onActiveChange: setSearchActive }),
     [searchCompact],
@@ -842,10 +848,16 @@ function PageHeaderComponent({
 
   const leadingControls = (
     <>
-      {backButton}
+      {floating && backButton ? (
+        // The back control floats with the header's other controls: the window draws its lens, and it
+        // is Bloom's floating size, as they are.
+        <LensMaterialProvider value="lens">{backButton}</LensMaterialProvider>
+      ) : (
+        backButton
+      )}
       {history ? (
         <LensMaterialProvider value={floating ? 'lens' : 'surface'}>
-          <BloomScope>
+          <BloomScope size={floating ? FLOATING_CONTROL_SIZE : undefined}>
             <PageHeaderHistory
               navigation={history}
               active={screen?.active !== false && host.active !== false}
@@ -857,7 +869,7 @@ function PageHeaderComponent({
       ) : null}
       {floating && leading ? (
         <LensMaterialProvider value="lens">
-          <BloomScope>{leading}</BloomScope>
+          <BloomScope size={FLOATING_CONTROL_SIZE}>{leading}</BloomScope>
         </LensMaterialProvider>
       ) : (
         leading
@@ -950,7 +962,7 @@ function PageHeaderComponent({
             >
               {floating ? (
                 <LensMaterialProvider value="lens">
-                  <BloomScope>{actions}</BloomScope>
+                  <BloomScope size={FLOATING_CONTROL_SIZE}>{actions}</BloomScope>
                 </LensMaterialProvider>
               ) : (
                 actions
@@ -959,7 +971,7 @@ function PageHeaderComponent({
           ) : floating ? (
             // A floating header's controls float over the content: the native lens where there is one.
             <LensMaterialProvider value="lens">
-              <BloomScope>{actions}</BloomScope>
+              <BloomScope size={FLOATING_CONTROL_SIZE}>{actions}</BloomScope>
             </LensMaterialProvider>
           ) : (
             actions
@@ -981,7 +993,11 @@ function PageHeaderComponent({
             <View
               style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: actionGap }}
             >
-              {floating ? <BloomScope>{searchActions}</BloomScope> : searchActions}
+              {floating ? (
+                <BloomScope size={FLOATING_CONTROL_SIZE}>{searchActions}</BloomScope>
+              ) : (
+                searchActions
+              )}
             </View>
           ) : null}
         </HeaderActionsHostContext.Provider>

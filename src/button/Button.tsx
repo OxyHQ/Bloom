@@ -5,7 +5,13 @@ import { useGroupedButton } from './use-grouped-button';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
-import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
+import {
+  useControlMaterial,
+  useFloatingControl,
+  useInFloatingRegion,
+  useLensAvailable,
+} from '../floating/lens/lens-material';
+import { useInLensBase } from '../floating/lens/native-lens';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
   type ComponentRef,
@@ -43,6 +49,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
+  FLOATING_CONTROL_SIZE,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
   isIconComponent,
@@ -419,7 +426,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       stopPropagation = false,
       appearance: appearanceProp,
       tone: toneProp,
-      size: sizeProp,
+      size: requestedSize,
       density: densityProp,
       style,
       textStyle,
@@ -470,6 +477,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const appearance = appearanceProp ?? 'solid';
     const regionMaterial = useControlMaterial();
     const material = materialProp ?? regionMaterial;
+    // A floating control (on the lens) is the floating size, whatever its caller says.
+    const sizeProp = useFloatingControl(materialProp) ? FLOATING_CONTROL_SIZE : requestedSize;
+    const inFloatingRegion = useInFloatingRegion();
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
@@ -495,7 +505,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
     const lensAvailable = useLensAvailable();
-    const lens = material === 'lens' && lensAvailable;
+    const inLensBase = useInLensBase();
     const palette = useMemo(
       () =>
         resolveButtonOverrides(
@@ -534,6 +544,17 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       ],
     );
     const underlineMode = resolveButtonUnderline(isLink, underline);
+    // Where the device has the lens, every button with a material is drawn by it: one material for
+    // every button. In a floating region (`material="lens"`) the window draws it over what moves
+    // behind; anywhere else it is drawn in its place, against the surface it sits on, as a feed's ⋯.
+    const lens =
+      lensAvailable &&
+      (material === 'lens' || (material === 'surface' && palette.rest.surface === true));
+    // Outside a floating region (a header, a toolbar, a bar, a FAB) the control is in the page's
+    // content: its lens is drawn in its place, so it scrolls and stacks with the page.
+    const restBackdrop = lens && !inFloatingRegion ? layer.parentFill : undefined;
+    // On the lens (its own or an enclosing base's) the engine draws the shadow and rim.
+    const onLens = inLensBase || lens;
 
     // Pressed state drives the ACTIVE palette. Tracked through state rather than
     // Pressable's function-form `style`, which NativeWind's css-interop swallows
@@ -634,7 +655,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         borderColor: paint.border,
         // The gradient is a child layer, so the box itself stays clear of it.
         backgroundColor: paint.surface ? 'transparent' : paint.background,
-        ...(palette.shadow ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] } : null),
+        ...(palette.shadow && !onLens
+          ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] }
+          : null),
         ...(disabled && palette.disabledOpacity != null
           ? { opacity: palette.disabledOpacity }
           : null),
@@ -655,6 +678,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       palette,
       paint,
       theme.isDark,
+      onLens,
       disabled,
       isSquare,
       isLink,
@@ -830,6 +854,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           <SurfacePaint
             fill={paint.background}
             radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+            // A continuous corner (a squircle FAB) on the paint too.
+            shape={StyleSheet.flatten(style)?.borderCurve === 'continuous' ? SMOOTH : undefined}
           />
         ) : null}
         <ButtonContent
@@ -861,6 +887,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       <LensButtonHost
         tint={appearance === 'solid' ? paint.background : undefined}
         radius={typeof flatRadius === 'number' ? flatRadius : BUTTON_RADIUS}
+        restBackdrop={restBackdrop}
         style={split.host}
       >
         {pressable}
@@ -868,6 +895,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     );
   },
 );
+
+const SMOOTH = { curve: 'smooth' } as const;
 
 const styles = StyleSheet.create({
   content: {

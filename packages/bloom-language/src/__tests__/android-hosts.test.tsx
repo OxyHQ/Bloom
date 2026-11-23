@@ -23,6 +23,9 @@ import {
   Text,
 } from '../primitives';
 import { clear, identity, regular } from '../glass';
+import { GLASS } from '../generated/spec.generated';
+// Bloom's own lens frost, read from its source, so the language's regular glass and Bloom's lens controls agree.
+import { LENS_FROST } from '../../../../src/floating/lens/lens-frost';
 import { GlassGroup } from '../controls/glass-group';
 import { ToolbarGroup } from '../controls/toolbar-group';
 import { ConfirmationDialog } from '../controls/confirmation-dialog';
@@ -71,6 +74,9 @@ jest.mock('../platform/confirmation-host', () =>
 
 quietRenderer();
 
+const REGULAR_FROST = GLASS.regular.lensBlur;
+const CLEAR_FROST = GLASS.clear.lensBlur;
+
 describe('glass is the lens', () => {
   it('a glass view is the lens view with no rows, its tint from a role at a named transparency', () => {
     const r = mount(
@@ -82,18 +88,25 @@ describe('glass is the lens', () => {
       lens: true,
       colorScheme: 'light',
       cornerRadius: 16,
-      triggerConfig: { blur: 0.5, tintColor: LIGHT.primary, tintOpacity: 0.48 },
+      triggerConfig: { blur: CLEAR_FROST, tintColor: LIGHT.primary, tintOpacity: 0.48 },
     });
     expect(hosts(r, 'Surface')).toHaveLength(0);
   });
 
-  it('untinted regular glass is the engine’s own frost; the theme sets its scheme', () => {
+  it('untinted regular glass frosts as Liquid Glass does; the theme sets its scheme', () => {
     const r = mount(toElement(HStack(Text('a')).glass()), DARK);
     expect(only(r, 'BloomLensMenu').props).toMatchObject({
       cornerRadius: undefined,
       colorScheme: 'dark',
-      triggerConfig: { blur: 1, tintColor: undefined, tintOpacity: undefined },
+      triggerConfig: { blur: REGULAR_FROST, tintColor: undefined, tintOpacity: undefined },
     });
+  });
+
+  it('the frost is Liquid Glass’s: clear frosts less than regular, a menu more, as Bloom’s own lens', () => {
+    expect(CLEAR_FROST).toBeLessThan(REGULAR_FROST);
+    expect(REGULAR_FROST).toBeLessThan(GLASS.regular.lensMenuBlur);
+    // Bloom's lens controls and menus take the regular glass's frost.
+    expect(LENS_FROST).toEqual({ control: REGULAR_FROST, panel: GLASS.regular.lensMenuBlur });
   });
 
   it('a glass’s variants reach the lens: a fill its tint, a corner its radius, a frame its style', () => {
@@ -109,14 +122,14 @@ describe('glass is the lens', () => {
     const lens = () => only(r, 'BloomLensMenu');
     expect(lens().props).toMatchObject({
       cornerRadius: 16,
-      triggerConfig: { blur: 1, tintColor: LIGHT.primary, tintOpacity: 0.48 },
+      triggerConfig: { blur: REGULAR_FROST, tintColor: LIGHT.primary, tintOpacity: 0.48 },
     });
     expect(lens().props.style).toBeUndefined();
     act(() => only(r, 'Pressable').props.onPressIn());
     expect(lens().props).toMatchObject({
       cornerRadius: 20,
       style: { height: 40 },
-      triggerConfig: { blur: 1, tintColor: LIGHT.error, tintOpacity: 0.4 },
+      triggerConfig: { blur: REGULAR_FROST, tintColor: LIGHT.error, tintOpacity: 0.4 },
     });
     act(() => only(r, 'Pressable').props.onPressOut());
     expect(lens().props.triggerConfig).toMatchObject({ tintColor: LIGHT.primary });
@@ -126,9 +139,12 @@ describe('glass is the lens', () => {
     const onPress = jest.fn();
     const r = mount(toElement(Button(Icon(Glyph)).shape('circle').glass().onPress(onPress)));
     const button = only(r, 'BloomButton');
-    expect(button.props).toMatchObject({ material: 'shared', onPress, iconOnly: true });
+    // On glass it is Bloom's one floating size, whatever its chain says.
+    expect(button.props).toMatchObject({ material: 'shared', onPress, iconOnly: true, size: 'lg' });
+    // The solid fill tints the glass as Bloom's own lens control does (Apple's glassProminent).
     expect(only(r, 'BloomLensMenu').props.triggerConfig).toMatchObject({
       tintColor: LIGHT.primary,
+      tintOpacity: 0.96,
     });
     expect(hosts(r, 'Pressable')).toHaveLength(0);
   });
@@ -138,23 +154,32 @@ describe('glass is the lens', () => {
     expect(only(r, 'BloomLensMenu').props.triggerConfig.tintColor).toBeUndefined();
   });
 
-  it('a FAB is always on glass, tinted with its action tone unless its chain names a glass', () => {
+  it('a FAB is always on glass, tinted with the accent unless its chain names a glass', () => {
     const r = mount(toElement(FAB(Icon(Glyph), Text('Compose'))));
     expect(only(r, 'BloomFab').props).toMatchObject({
       icon: Glyph,
       label: 'Compose',
       material: 'shared',
     });
-    expect(only(r, 'BloomLensMenu').props.triggerConfig).toMatchObject({
-      tintColor: LIGHT.tertiary,
+    expect(only(r, 'BloomLensMenu').props).toMatchObject({
+      cornerRadius: undefined,
+      triggerConfig: { tintColor: LIGHT.primary, tintOpacity: 0.96 },
     });
     const tinted = mount(toElement(FAB(Icon(Glyph)).glass(clear.tint('primary', 'subtle'))));
     expect(hosts(tinted, 'BloomLensMenu')).toHaveLength(1);
     expect(only(tinted, 'BloomLensMenu').props.triggerConfig).toMatchObject({
-      blur: 0.5,
+      blur: CLEAR_FROST,
       tintColor: LIGHT.primary,
       tintOpacity: 0.24,
     });
+  });
+
+  it('a FAB’s shape is its lens’s corner: 28% of its diameter, a circle by default', () => {
+    for (const shape of ['rounded', 'squircle'] as const) {
+      const r = mount(toElement(FAB(Icon(Glyph)).shape(shape).label('Compose')));
+      expect(only(r, 'BloomFab').props.shape).toBe(shape);
+      expect(only(r, 'BloomLensMenu').props.cornerRadius).toBe(14);
+    }
   });
 });
 
@@ -175,17 +200,15 @@ describe('the menu is the lens menu', () => {
     Submenu('Share', Item('Link')),
   ).label('Post options');
 
-  it('closed, the trigger is the upstream glass trigger, its lens drawn in place on the surface it sits on', () => {
+  it('closed, a bare trigger is a base that draws no lens: no glass, its menu grows out of its shape', () => {
     const r = mount(toElement(node));
     const lens = only(r, 'BloomLensMenu');
     expect(lens.props).toMatchObject({
-      // The base is the trigger's own lens, and it is what becomes the menu.
-      lens: true,
+      // The base is the trigger's own, and it is what becomes the menu; a bare trigger is no glass.
+      lens: false,
       colorScheme: 'light',
       fontFamily: 'Inter',
       openWithItems: false,
-      // In a scroll: drawn in its place, against the surface's fill, not over the window.
-      restBackdrop: LIGHT.background,
       // The menu's own base: a tap opens it natively, with no round trip to JS.
       openOnTap: true,
       // The upstream app's glass trigger config.
@@ -196,6 +219,7 @@ describe('the menu is the lens menu', () => {
     expect(lens.props.alignment).toBeUndefined();
     expect(lens.props.menuWidth).toBeUndefined();
     expect(lens.props.cornerRadius).toBeUndefined();
+    expect(lens.props.restBackdrop).toBeUndefined();
     expect(lens.props.config.tintOpacity).toBeUndefined();
     expect(lens.props.items).toEqual([
       { id: 'r0', title: 'Copy', iconSlot: 0 },
@@ -205,8 +229,9 @@ describe('the menu is the lens menu', () => {
       { id: 'separator-4', title: '', separator: true },
       { id: 'r3', title: 'Share', items: [{ id: 'r3.0', title: 'Link' }] },
     ]);
-    // Bloom gives the colours: the panel's tint and the rows' ink.
+    // Bloom gives the panel's frost (regular glass grown large) and colours: its tint and the rows' ink.
     expect(lens.props.config).toMatchObject({
+      blur: GLASS.regular.lensMenuBlur,
       textColor: LIGHT.text,
       mutedColor: LIGHT.textSecondary,
     });

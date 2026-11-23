@@ -143,15 +143,6 @@ float nativeGlassShapeCoverage(float3 field) {
     float aa = max(abs(field.y) + abs(field.z), 0.0001);
     return clamp(.5 - field.x / aa, 0.0, 1.0);
 }
-float nativeGlassStrokeKeyFill(float3 field, float density, float threshold) {
-    float aa = max(abs(field.y) + abs(field.z), .0001);
-    float coverage = nativeGlassShapeCoverage(field);
-    float height = .5333333333333333 * density;
-    float strip = (1.0 - coverage) * clamp((height - field.x) / aa + .5, 0.0, 1.0);
-    float key = strip * nativeHighlightAngular(field.y, threshold);
-    float fill = strip * nativeHighlightAngular(-field.y, threshold);
-    return nativeHighlightBias(key, .5) + nativeHighlightBias(fill, .5);
-}
 float nativeGlassRingCoverage(float shiftedDistance, float coverage, float density) {
     float a = shiftedDistance / (5.0 * density) * .7071067811865476;
     float b = (shiftedDistance + 4.0 * density) / (5.0 * density) * .7071067811865476;
@@ -188,7 +179,6 @@ uniform float outerAmount;
 uniform float4 face;
 uniform float4 faceFill;
 uniform float4 tint;
-uniform float keyThreshold;
 uniform float highlightAlpha;
 uniform float rimAlpha;
 uniform float surfaceOpacity;
@@ -230,13 +220,15 @@ half4 main(float2 coord) {
     float3 field = liquidFieldGradient(p);
     float depth = -field.x;
     float coverage = nativeGlassShapeCoverage(field);
-    float key = depth < 2.0 ? nativeGlassStrokeKeyFill(field, density, keyThreshold) : 0.0;
     float ring = 0.0;
     if (depth < 22.0 * density) {
         float shifted = liquidFieldGradient(p - float2(0.0, 8.0 * density)).x;
         ring = nativeGlassRingCoverage(shifted, coverage, density);
     }
-    if (coverage <= 0.0 && key <= .000001) return half4(0.0);
+    // Bloom: no stroke outside the shape. The key and fill strokes drew a line just outside the top and
+    // bottom edges (where the normal faces up or down), ending in a blob where the edge turns; the
+    // glass's edge is its rim and light, inside the shape.
+    if (coverage <= 0.0) return half4(0.0);
 
     float3 original = glassSample(coord + magOffset);
     float3 filtered = original;
@@ -255,12 +247,6 @@ half4 main(float2 coord) {
     float4 covered = float4(glassFace(filtered), 1.0) * coverage;
     covered.rgb *= 1.0 - ring;
     covered.a = covered.a * (1.0 - ring) + ring;
-
-    if (key > .000001 && covered.a < 1.0) {
-        float3 corrected = min(glassFace(original), original);
-        covered.rgb += (1.0 - covered.a) * mix(original, corrected, key);
-        covered.a = mix(covered.a, 1.0, key);
-    }
 
     float pool = 0.0;
     if (coverage > 0.0 && (press.w > 0.0 || pressLift > 0.0)) {

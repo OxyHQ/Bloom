@@ -366,9 +366,10 @@ export interface ButtonGroupProps {
   /** Flat segments with a gap, sharing the outer pill. Default false. */
   separated?: boolean;
   /**
-   * The group's material. `'surface'` (default) paints it with the shared Surface; `'lens'` draws it with
-   * the native lens where the device has one (Android 13+), and falls back to the Surface elsewhere. Use it
-   * in a fixed layer such as a header or a toolbar, not inside a scrolling list.
+   * The group's material. `'lens'` (default: a group of controls is one capsule on the lens) draws it with the
+   * native lens where the device has one (Android 13+), in its own place when it is in the page's content
+   * (not a header, toolbar or bar), and falls back to the Surface elsewhere; `'surface'` paints it with
+   * the shared Surface. On the lens the group and its members are Bloom's floating size (44).
    */
   material?: 'surface' | 'lens';
   children: React.ReactNode;
