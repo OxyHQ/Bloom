@@ -9,14 +9,14 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  * from letting feed content bleed to the rounded panel edge, both solved here
  * with sticky, full-viewport-height overlays inside the panel surface:
  *
- *  1. BLEED-MASK overlay (`z-30`): a `box-shadow` ring in the GUTTER color
+ *  1. BLEED-MASK overlay (z-index 30): a `box-shadow` ring in the GUTTER color
  *     (Bloom `background` token) drawn OVER content that bleeds into the thin
  *     lateral gutter / rounded corners. The clip stays within the panel’s horizontal bounds
  *     and covers the full declared vertical insets. It sits below opaque chrome (headers/banners),
  *     so it only masks the content's bleed, never the chrome. No border.
  *     (`clip-path` lives in the adopted sheet — RN-web drops it from `style`.)
  *
- *  2. BORDER-FRAME overlay (`z-[120]`): a single 1px rounded `border-border`
+ *  2. BORDER-FRAME overlay (z-index 120): a single 1px rounded `border` token
  *     outline with a transparent interior, ABOVE all content. Being one element
  *     above everything, it draws ONE continuous rounded border around all four
  *     sides — no seams, no double lines, no per-chrome borders.
@@ -62,19 +62,17 @@ import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
  *
  * Framing is tri-state via the `framed` prop:
  *
- *  - `undefined` (DEFAULT) → RESPONSIVE, driven purely by NativeWind: full-bleed
- *    below the `framedFrom` breakpoint, framed at/above it. The breakpoint is
- *    configurable per consumer (`framedFrom`, default `768` / Tailwind `md`); the
- *    rounding is gated by that breakpoint's `min-*:` variant and both overlays
- *    are always rendered but carry the matching `max-*:hidden` literal
- *    (`display:none` below the breakpoint), so the breakpoint is decided entirely
- *    in CSS — no consumer JS breakpoint hook.
+ *  - `undefined` (DEFAULT) → RESPONSIVE: full-bleed below the `framedFrom`
+ *    breakpoint (default `768`), framed at/above it. The window width picks the
+ *    rounding and the overlays' `display: none`; the sticky inset PageHeader
+ *    inherits follows the same breakpoint in CSS (`PANEL_INSET_CSS`, keyed by
+ *    `data-bloom-panel`).
  *  - `false` → NEVER framed (full-bleed at every size): a single flat surface,
  *    no rounding, no overlays.
  *  - `true` → ALWAYS framed (rounded + overlays at every size).
  *
- * The overlays are gated by VISIBILITY (a `max-*:hidden` literal for the chosen
- * breakpoint) rather than by conditional mounting for the responsive case, so
+ * The overlays are gated by VISIBILITY (`display: none` below the breakpoint)
+ * rather than by conditional mounting for the responsive case, so
  * crossing the breakpoint never remounts them. The content wrapper likewise
  * keeps a stable `key` so `{children}` reconciles in place across the breakpoint
  * instead of remounting (which would reset feed scroll / the virtualizer +
@@ -123,20 +121,6 @@ export const PANEL_TOP_INSET = 8;
 /** Bottom sticky inset (px) of the framed panel chrome. */
 export const PANEL_BOTTOM_INSET = 8;
 
-/**
- * Per-breakpoint literal Tailwind variant tokens for the WEB responsive mode.
- * Each field is a WHOLE literal class string (never assembled from parts at
- * runtime) so the consumer's content-scan over `lib/**` picks up every
- * arbitrary/`min-*`/`max-*`/`web:` token verbatim. Selecting a bundle by
- * `framedFrom` value is the only runtime decision:
- * - `surface`       → framing rounding on the surface at/above the breakpoint.
- * - `content`       → the same rounding + a web-only horizontal clip on the
- *   inner content wrapper (`web:<bp>:overflow-x-clip`, platform-first-then-
- *   breakpoint — matching the consumer convention `web:sm:flex` in `@mercaria/ui`).
- * - `overlayHidden` → `display:none` for the sticky overlays BELOW the breakpoint.
- *   `min-[500px]:` (≥500) and `max-[500px]:` (<500) are exactly complementary
- *   (meet at 500, no overlap/gap), mirroring the named `md:`/`max-md:` pair.
- */
 /** `flex: 1`, as the CSS shorthand computes it. */
 const FLEX_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: '0%' };
 const PANEL_RADIUS = 'var(--bloom-panel-radius)';
@@ -338,16 +322,9 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           marginBottom: cssLength('calc(-100dvh + 16px)'),
         };
 
-  // The viewport-mode overlays are sized and positioned from literal Tailwind
-  // classes (`top-2`, `h-[calc(100dvh-16px)]`, the matching negative
-  // `margin-bottom`) because those values are constants known at build time.
-  // An INSET is a runtime number — a shell's gutter, a measured header — which
-  // a Tailwind arbitrary class cannot express (content-scanning needs the
-  // literal string in source, not a value computed later), so a non-default
-  // inset shifts the same three properties through inline `style` instead,
-  // which has no such constraint. The default (8/8) leaves the classes standing
-  // alone, and `panel` mode ignores the inset entirely — that mode already
-  // starts at the panel's own box.
+  // A non-default inset (a shell's gutter, a measured header) shifts the same
+  // three properties; `panel` mode ignores it, as it starts at the panel's own
+  // box.
   //
   // RN's `ViewStyle.height`/`marginBottom` types only accept a number or a
   // `${number}%` string, not an arbitrary CSS `calc()`, because most of that
