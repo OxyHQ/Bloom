@@ -1936,7 +1936,7 @@
  },
  {
   "name": "components/Corners.tsx:6",
-  "before": "<View\n      style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, borderBottomEndRadius: 4, padding: 8 }}\n    />",
+  "before": "<View\n      style={{\n        borderTopLeftRadius: 16,\n        borderTopRightRadius: 16,\n        borderBottomEndRadius: 4,\n        padding: 8,\n      }}\n    />",
   "after": "toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))",
   "bindings": {
    "View": {

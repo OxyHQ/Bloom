@@ -532,7 +532,12 @@ export const CASES = [
   {
     name: "components/Corners.tsx:6",
     before: () => { const View = I9; return (<View
-      style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, borderBottomEndRadius: 4, padding: 8 }}
+      style={{
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        borderBottomEndRadius: 4,
+        padding: 8,
+      }}
     />); },
     after: () => { const View = I9; const { VStack } = L;  return (toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))); },
   },
