@@ -830,6 +830,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           <SurfacePaint
             fill={paint.background}
             radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+            // A continuous corner (a squircle FAB) on the paint too.
+            shape={StyleSheet.flatten(style)?.borderCurve === 'continuous' ? SMOOTH : undefined}
           />
         ) : null}
         <ButtonContent
@@ -868,6 +870,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     );
   },
 );
+
+const SMOOTH = { curve: 'smooth' } as const;
 
 const styles = StyleSheet.create({
   content: {
