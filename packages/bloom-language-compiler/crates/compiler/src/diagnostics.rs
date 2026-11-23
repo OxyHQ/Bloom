@@ -2,6 +2,8 @@
 
 use oxc_span::Span;
 
+use crate::docs::Doc;
+
 /// An error fails the build; a warning is reported and the build goes on.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
@@ -14,18 +16,17 @@ pub struct Diagnostic {
     pub severity: Severity,
     pub message: String,
     pub help: Option<String>,
+    /// Links to the docs that explain it, the most precise first.
+    pub docs: Vec<String>,
     /// 1-based line and column of the offending span's start.
     pub line: u32,
     pub column: u32,
-    /// The message, file position, source line, a caret under the span and the help.
+    /// The message, file position, source line, a caret under the span, the
+    /// help and a `= docs:` line per link.
     pub rendered: String,
 }
 
 impl Diagnostic {
-    pub fn new(source: &str, filename: &str, span: Span, message: String, help: Option<String>) -> Self {
-        Self::with_severity(Severity::Error, source, filename, span, message, help)
-    }
-
     pub fn with_severity(
         severity: Severity,
         source: &str,
@@ -33,6 +34,7 @@ impl Diagnostic {
         span: Span,
         message: String,
         help: Option<String>,
+        docs: &[Doc],
     ) -> Self {
         let start = span.start as usize;
         let line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
@@ -56,18 +58,37 @@ impl Diagnostic {
         if let Some(help) = &help {
             rendered.push_str(&format!("\n{pad} = help: {help}"));
         }
-        Self { severity, message, help, line, column, rendered }
+        let docs: Vec<String> = docs.iter().map(|doc| doc.url()).collect();
+        for url in &docs {
+            rendered.push_str(&format!("\n{pad} = docs: {url}"));
+        }
+        Self { severity, message, help, docs, line, column, rendered }
     }
 }
 
-/// `did you mean 'md'?` for a token one or two edits away from a real one.
+/// `did you mean 'md'?` for a name one or two edits away from a real one, or
+/// the same name in another case or spelling (`largeTitle` for `large-title`,
+/// `childspacing` for `childSpacing`).
 pub fn suggest(wrong: &str, candidates: &[&str]) -> Option<String> {
+    let folded = fold(wrong);
     candidates
         .iter()
-        .map(|candidate| (edit_distance(wrong, candidate), *candidate))
-        .filter(|(distance, _)| *distance <= 2)
-        .min_by_key(|(distance, _)| *distance)
-        .map(|(_, candidate)| format!("did you mean '{candidate}'?"))
+        .find(|candidate| fold(candidate) == folded)
+        .or_else(|| {
+            candidates
+                .iter()
+                .map(|candidate| (edit_distance(wrong, candidate), candidate))
+                .filter(|(distance, _)| *distance <= 2)
+                .min_by_key(|(distance, _)| *distance)
+                .map(|(_, candidate)| candidate)
+        })
+        .map(|candidate| format!("did you mean '{candidate}'?"))
+}
+
+/// A name with case, `-` and `_` left out: camelCase, kebab-case and
+/// snake_case spellings of one name fold to the same text.
+fn fold(name: &str) -> String {
+    name.chars().filter(|c| *c != '-' && *c != '_').flat_map(char::to_lowercase).collect()
 }
 
 fn edit_distance(a: &str, b: &str) -> usize {
