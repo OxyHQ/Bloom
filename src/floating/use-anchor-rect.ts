@@ -65,6 +65,23 @@ export function triggerRectOf(node: ComponentRef<typeof View> | null): FloatingA
 }
 
 /**
+ * A `ResizeObserver` calling `onResize` when `node` (a DOM element: what
+ * react-native-web resolves a `View` ref to) or its first child changes size;
+ * `null` where there is no element or no `ResizeObserver` (native, a test DOM).
+ * The first child is the `asChild` control a zero-area trigger anchors to
+ * (`triggerRectOf`). An observer reports each element once as it starts
+ * watching it; a measurement of a box that did not move publishes nothing.
+ */
+export function observeSize(node: unknown, onResize: () => void): ResizeObserver | null {
+  if (!(typeof Element !== 'undefined' && node instanceof Element)) return null;
+  if (typeof ResizeObserver === 'undefined') return null;
+  const observer = new ResizeObserver(() => onResize());
+  observer.observe(node);
+  if (node.firstElementChild) observer.observe(node.firstElementChild);
+  return observer;
+}
+
+/**
  * Do two measurements describe the same box? Two `null`s do; a `null` and a box
  * do not.
  *
@@ -82,7 +99,8 @@ export function sameAnchor(a: FloatingAnchor | null, b: FloatingAnchor | null): 
 }
 
 /**
- * The trigger's viewport box while `open`, re-measured on scroll and resize.
+ * The trigger's viewport box while `open`, re-measured on scroll, on a window
+ * resize, and when the trigger itself changes size.
  * `null` until it has been measured — callers render nothing until then rather
  * than painting at the wrong place for one frame.
  *
@@ -130,6 +148,8 @@ export function useAnchorRect(
     measure();
   }, [open, measure, store, cancel]);
 
+  // A virtual anchor (a text selection) has no box of its own to watch.
+  const virtual = measureVirtual !== undefined;
   useEffect(() => {
     if (!open || typeof window === 'undefined') return;
     // Capture phase: a scroll inside any ancestor moves the trigger too, and a
@@ -139,11 +159,17 @@ export function useAnchorRect(
     // ONCE per open and survives every re-measurement.
     window.addEventListener('resize', schedule);
     window.addEventListener('scroll', schedule, true);
+    // The trigger can change size with nothing scrolling or resizing the window:
+    // its label's web font lands after the surface opened, its text changes. The
+    // surface was placed against the old box, so it is re-measured when the
+    // trigger's box (and, under `asChild`, its control's) changes size.
+    const observer = virtual ? null : observeSize(ref.current, schedule);
     return () => {
       window.removeEventListener('resize', schedule);
       window.removeEventListener('scroll', schedule, true);
+      observer?.disconnect();
     };
-  }, [open, schedule]);
+  }, [open, schedule, ref, virtual]);
 
   return anchor;
 }
