@@ -1381,6 +1381,9 @@
     "accessibilityState": ["accessibilityState"],
     "accessibilityValue": ["accessibilityValue"],
     "stopPropagation": ["value?"],
+    "loadingIndicator": ["value"],
+    "hoverForeground": ["color"],
+    "editable": ["value"],
     "multiple": ["value?"],
     "ref": ["value"],
     "onLayout": ["value"],
@@ -2212,7 +2215,9 @@
         "inverted",
         "density",
         "iconSize",
-        "stopPropagation"
+        "stopPropagation",
+        "loadingIndicator",
+        "hoverForeground"
       ],
       "densities": ["default", "compact"],
       "size": "controlSize",
@@ -2643,7 +2648,9 @@
         "maxLength",
         "trailingIcon",
         "completion",
-        "focused"
+        "focused",
+        "multiline",
+        "editable"
       ],
       "size": "controlSize"
     },

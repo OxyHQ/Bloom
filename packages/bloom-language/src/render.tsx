@@ -85,6 +85,7 @@ import {
   type StackProps,
   type TextProps,
   type TextRun,
+  type ViewNode,
   type ViewNodeProps,
 } from './node';
 import {
@@ -2425,7 +2426,9 @@ function renderHost(
     case 'button': {
       const props = hostProps(behaviour, key);
       delete props.focusable;
-      const { icon, glyph, label, trailing, content } = buttonContent(node.children);
+      const { icon, glyph, label, trailing, content, leadingView, trailingView } = buttonContent(
+        node.children,
+      );
       const shape = ownValue(p, 'shape')?.value;
       const iconOnly =
         !content &&
@@ -2443,6 +2446,11 @@ function renderHost(
         leadingIcon: inked || content ? undefined : icon,
         icon: inked && glyph && !content ? renderNode(glyph, ctx, undefined) : undefined,
         trailingIcon: content ? undefined : trailing,
+        // A view beside the label (an avatar glyph, a custom mark): Bloom's `leading` and `trailing`.
+        leading: leadingView === undefined ? undefined : renderNode(leadingView, ctx, undefined),
+        trailing: trailingView === undefined ? undefined : renderNode(trailingView, ctx, undefined),
+        // `null`: no spinner while loading (the label or glyph stays).
+        loadingIndicator: loadingIndicatorOf(ownValue(p, 'loadingIndicator')?.value, ctx),
         // A circle is Bloom's square icon button; a pill, its wide one; fit
         // grows with its content, never narrower than it is tall.
         iconOnly: iconOnly ? true : undefined,
@@ -2477,6 +2485,18 @@ function renderHost(
       }
       const button = p.control?.reports.length ? ReportingButton : BloomButton;
       if (button === ReportingButton) props.reports = p.control?.reports;
+      // Its ink at rest and under the pointer, painted from their roles: Bloom's `color` and `hoverColor`.
+      const inks = buttonInks(p);
+      if (inks.length > 0) {
+        const out = boxed ? boxOf('component', 'B') : NO_STYLE_OUT;
+        const paint = variedPaint(
+          `B|ink|${boxed ? `${layerKey}|${flex}` : ''}|${inks.map((ink) => ink.join(':')).join(',')}`,
+          out,
+          inks,
+          NO_VARIANTS,
+        ) as Paint;
+        return drawHost(button, painted(out, paint), props);
+      }
       if (!boxed) return draw(button, props);
       return drawHost(button, boxOf('component', 'B'), props);
     }
@@ -3322,6 +3342,28 @@ const LINK_TARGET = Object.freeze({ target: '_blank', rel: 'noopener noreferrer'
  * A button's content: its first `Icon` before any `Text` is the leading glyph,
  * an `Icon` after a `Text` the trailing one, and the `Text` runs its label.
  */
+/**
+ * A Button's inks as Bloom's `color` and `hoverColor`, each from a colour
+ * role: `.foreground()` (its ink at rest, the last one chained) and
+ * `.hoverForeground()`.
+ */
+function buttonInks(p: Plan): (readonly [string, ColorName, number?])[] {
+  const inks: (readonly [string, ColorName, number?])[] = [];
+  let rest: Modifier | undefined;
+  for (const modifier of p.env) if (modifier.kind === 'foreground') rest = modifier;
+  const restValue = (rest as { value?: unknown } | undefined)?.value;
+  if (typeof restValue === 'string') inks.push(propRole('color', restValue as ColorToken));
+  const hover = ownValue(p, 'hoverForeground')?.value;
+  if (hover !== undefined) inks.push(propRole('hoverColor', hover));
+  return inks;
+}
+
+/** A button's `.loadingIndicator()`: `null` draws none, a view is drawn in the spinner's place. */
+function loadingIndicatorOf(value: ViewNode | null | undefined, ctx: Context): ReactNode {
+  if (value === undefined || value === null) return value;
+  return renderNode(value as Node, ctx, undefined);
+}
+
 /** A glyph size token as the points Bloom's `iconSize` takes. */
 function iconSizeOf(token: IconSizeToken | undefined): number | undefined {
   return token === undefined ? undefined : resolveIconSize(token);
@@ -3334,10 +3376,13 @@ function buttonContent(children: readonly Child[]): {
   trailing: IconProps['icon'] | undefined;
   /**
    * A child that is neither an `Icon` nor a `Text` (a `Loading`, a `Group`
-   * around a glyph): a `Button` then draws its children as its content, as
-   * views, and reads none as its glyph or label.
+   * around a glyph) and no label: a `Button` then draws its children as its
+   * content, as views, and reads none as its glyph or label.
    */
   content: boolean;
+  /** With a label, the view before it and the view after it (Bloom's `leading` and `trailing`). */
+  leadingView: Node | undefined;
+  trailingView: Node | undefined;
 } {
   let icon: IconProps['icon'] | undefined;
   let glyph: Node | undefined;
@@ -3359,8 +3404,29 @@ function buttonContent(children: readonly Child[]): {
       label = label === undefined ? text : `${label} ${text}`;
     }
   }
-  const content = nodes.some((child) => child.kind !== 'icon' && child.kind !== 'text');
-  return { icon, glyph, label, trailing, content };
+  const views = nodes.some((child) => child.kind !== 'icon' && child.kind !== 'text');
+  // With a label, a view before it is the leading one and a view after it the trailing one.
+  let leadingView: Node | undefined;
+  let trailingView: Node | undefined;
+  if (views && label !== undefined) {
+    let seenLabel = false;
+    for (const child of nodes) {
+      if (child.kind === 'text') seenLabel = true;
+      else if (child.kind !== 'icon') {
+        if (seenLabel) trailingView ??= child;
+        else leadingView ??= child;
+      }
+    }
+  }
+  return {
+    icon,
+    glyph,
+    label,
+    trailing,
+    content: views && label === undefined,
+    leadingView,
+    trailingView,
+  };
 }
 
 function flatten(children: readonly Child[]): Node[] {

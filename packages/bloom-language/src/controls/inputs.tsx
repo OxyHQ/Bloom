@@ -170,6 +170,10 @@ export interface TextFieldView
   /** The return key's action. */
   onSubmit(value: () => void): TextFieldView;
   maxLength(value: number): TextFieldView;
+  /** Text over several lines, the field growing with it (React Native's `multiline`). */
+  multiline(value?: boolean): TextFieldView;
+  /** `false`: the text is shown and selectable but takes no typing (React Native's `editable`). */
+  editable(value: boolean): TextFieldView;
 }
 
 /** Bloom `Textarea`: text over several lines. */
@@ -475,6 +479,8 @@ const TEXT_INPUT_PROPS = [
   ['onSubmit', 'onSubmitEditing'],
   ['autoFocus', 'autoFocus'],
   ['maxLength', 'maxLength'],
+  ['multiline', 'multiline'],
+  ['editable', 'editable'],
 ] as const;
 
 const textField: ControlRenderer = (d) => {

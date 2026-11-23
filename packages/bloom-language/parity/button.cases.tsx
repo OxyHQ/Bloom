@@ -1,3 +1,4 @@
+import { Badge } from '@oxy.so/bloom/badge';
 import { Button } from '@oxy.so/bloom/button';
 import { Loading } from '@oxy.so/bloom/loading';
 import { RiArrowRightLine, RiHeart3Line, RiMoreFill } from '@oxy.so/bloom/icons';
@@ -121,10 +122,45 @@ const content: ParityCase[] = [
         leadingIcon={RiMoreFill}
         iconOnly
         accessibilityLabel="Menu"
-        accessibilityState={{ expanded: true }}
         aria-expanded
       />
     ),
+  },
+  {
+    // Mention's composer toolbar: an ink of a role at rest and under the pointer, no spinner.
+    name: 'an ink of its own at rest and under the pointer, and no spinner while loading',
+    language: () =>
+      toElement(
+        L.Button(L.Icon(RiMoreFill))
+          .style('plain')
+          .shape('circle')
+          .label('More')
+          .foreground('error')
+          .hoverForeground('error')
+          .loading(true)
+          .loadingIndicator(null),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Button
+            appearance="plain"
+            leadingIcon={RiMoreFill}
+            iconOnly
+            accessibilityLabel="More"
+            color={c.error}
+            hoverColor={c.error}
+            loading
+            loadingIndicator={null}
+          />
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a view before its label',
+    language: () => toElement(L.Button(L.Badge(1), L.Text('Ask'))),
+    bloom: () => <Button leading={<Badge content={1} />}>Ask</Button>,
   },
   // Content that is a view is the button's children as drawn (Mention's privacy rows).
   {

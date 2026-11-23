@@ -962,6 +962,15 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
   `.accessibilityState({ expanded })` on a button is Bloom's `aria-expanded`
   (a menu trigger's open state; Bloom writes the button's own accessibility
   state).
+- **Views beside the label.** With a `Text` label, a view before it (that is
+  no `Icon`) is Bloom's `leading`, one after it its `trailing`, drawn as they
+  are. A glyph drawn in the button's own ink, as Bloom's render-function
+  children draw one, is a plain `Icon` child: Bloom paints it in its ink.
+- **Inks and spinner.** `.foreground(role)` is the button's ink at rest
+  (Bloom's `color`) and `.hoverForeground(role)` under the pointer
+  (`hoverColor`), each painted from a colour role. `.loadingIndicator(null)`
+  draws no spinner while loading (the glyph or label stays); a view is drawn
+  in its place.
 - **Glyph and press.** `.iconSize(size)` is the glyph's size over its size's
   own (an icon rung, `xl` is 28, or a numeric size), Bloom's `iconSize`.
   `.stopPropagation()` keeps its press from reaching a pressable around it on
@@ -1116,7 +1125,7 @@ binding on a node that has no such value.
 
 | Node | Bloom | Modifiers |
 | --- | --- | --- |
-| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder` (`null`: none, not even the label Bloom draws in its place otherwise), `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength` |
+| `TextField(text, label)`, `SecureField(text, label)` | `TextFieldInput` in its `TextField` shell (`TextFieldIcon`, `TextFieldPrefix`, `TextFieldSuffix`, `TextFieldGhost`) | `.placeholder` (`null`: none, not even the label Bloom draws in its place otherwise), `.size`, `.disabled` (the shell and its input: what `<TextField disabled>` around a plain input draws too, since the input reads its shell's state), `.invalid`, `.floatingLabel()`, `.revealable()` (secure), `.icon(X)`, `.trailingIcon(X)`, `.prefix(text)`, `.suffix(text)`, `.completion(rest)`, `.focused(binding)`, `.keyboard`, `.autocapitalize`, `.autocorrect`, `.contentType` (autofill), `.submitLabel`, `.onSubmit`, `.autoFocus()`, `.maxLength`, `.multiline()`, `.editable(false)` (shown and selectable, no typing) |
 | `TextEditor(text, label?)` | `Textarea` | `.placeholder`, `.description` (its hint), `.size`, `.disabled`, `.invalid`, `.required`, `.rows`, `.autoResize(maxRows?)`, `.resize`, `.maxLength`, `.showCount()`, `.focused(binding)`, `.label(name)` (its `accessibilityLabel`, beside the visible `label`), the keyboard modifiers |
 | `Field(label, ...content)` | `Field` | `.description`, `.error`, `.required`, `.disabled`: the label names its control, the error marks it invalid; `.multiple()` for a field of several controls (chips, two inputs), whose label names the group (Bloom's `multiple`) |
 | `Label(text)` | `Label` | `.size('xs' \| 'sm' \| 'md')`, `.required`, `.disabled` |

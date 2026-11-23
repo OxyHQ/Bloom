@@ -3148,6 +3148,15 @@ export const MODIFIERS = {
   "stopPropagation": [
     "value?"
   ],
+  "loadingIndicator": [
+    "value"
+  ],
+  "hoverForeground": [
+    "color"
+  ],
+  "editable": [
+    "value"
+  ],
   "multiple": [
     "value?"
   ],
@@ -6850,7 +6859,9 @@ export const NODE_MODIFIERS = {
     "inverted",
     "density",
     "iconSize",
-    "stopPropagation"
+    "stopPropagation",
+    "loadingIndicator",
+    "hoverForeground"
   ],
   "shape": [
     "padding",
@@ -9687,7 +9698,9 @@ export const NODE_MODIFIERS = {
     "maxLength",
     "trailingIcon",
     "completion",
-    "focused"
+    "focused",
+    "multiline",
+    "editable"
   ],
   "textEditor": [
     "padding",

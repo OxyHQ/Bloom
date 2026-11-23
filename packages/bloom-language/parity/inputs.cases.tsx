@@ -369,6 +369,19 @@ const fields: ParityCase[] = [
     ),
   },
   {
+    name: 'TextField over several lines, not editable',
+    language: () => toElement(L.TextField(text, 'Bio').multiline().editable(false)),
+    bloom: () => (
+      <TextFieldInput
+        label="Bio"
+        value="Ada Lovelace"
+        onValueChange={set}
+        multiline
+        editable={false}
+      />
+    ),
+  },
+  {
     name: 'TextField with no placeholder at all',
     language: () => toElement(L.TextField(empty, 'Name').placeholder(null)),
     bloom: () => <TextFieldInput label="Name" value="" onValueChange={set} placeholder={null} />,

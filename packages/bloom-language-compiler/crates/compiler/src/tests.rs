@@ -3429,3 +3429,15 @@ fn the_component_props_mention_writes_are_checked() {
     let output = compiled_with(names, "export const x = () => Card(Text('a')).axis('row');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown axis token 'row' for .axis()");
 }
+
+#[test]
+fn a_buttons_inks_spinner_and_a_fields_lines_are_checked() {
+    let names = "Button, Icon, Text, Badge, TextField";
+    let ok = compiled_with(
+        names,
+        "export const x = (t, busy) => [Button(Icon(RiShareLine)).shape('circle').label('Share').foreground('error').hoverForeground('error').loading(busy).loadingIndicator(null), Button(Badge(1), Text('Ask')), TextField(t, 'Bio').multiline().editable(false)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => Button(Text('a')).hoverForeground('#f00');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#f00' for .hoverForeground()");
+}

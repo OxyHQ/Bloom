@@ -1137,6 +1137,12 @@ export interface ValueModifiers {
 
   /** A press that goes no further than this view on the web (Bloom's `stopPropagation`). */
   stopPropagation: boolean;
+  /** A button's spinner while loading: a view, or `null` for none (Bloom's `loadingIndicator`). */
+  loadingIndicator: ViewNode | null;
+  /** A button's ink under the pointer (Bloom's `hoverColor`), from a colour role. */
+  hoverForeground: ColorToken;
+  /** Whether a text field takes typing (React Native's `editable`). */
+  editable: boolean;
   /** A field of several controls (Bloom's `multiple`): its label names the group. */
   multiple: boolean;
 
@@ -4263,6 +4269,15 @@ export class Node {
   stopPropagation(value = true): Node {
     return this.set('stopPropagation', value);
   }
+  loadingIndicator(value: ViewNode | null): Node {
+    return this.set('loadingIndicator', value);
+  }
+  hoverForeground(value: ColorToken): Node {
+    return this.set('hoverForeground', value);
+  }
+  editable(value: boolean): Node {
+    return this.set('editable', value);
+  }
   multiple(value = true): Node {
     return this.set('multiple', value);
   }
@@ -5028,6 +5043,13 @@ export interface ButtonView extends ViewModifiers<ButtonView> {
    * presses only itself (Bloom's `stopPropagation`). Native presses never bubble.
    */
   stopPropagation(value?: boolean): ButtonView;
+  /** Its spinner while loading: a view, or `null` for none, the label or glyph staying (Bloom's `loadingIndicator`). */
+  loadingIndicator(value: ViewNode | null): ButtonView;
+  /**
+   * Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at
+   * rest is `.foreground(role)` (Bloom's `color`).
+   */
+  hoverForeground(value: ColorToken): ButtonView;
   /**
    * Bloom's appearance, or a glass style: `glass` (the button on glass, its
    * ink the neutral tone's) and `glassProminent` (on glass tinted with its
