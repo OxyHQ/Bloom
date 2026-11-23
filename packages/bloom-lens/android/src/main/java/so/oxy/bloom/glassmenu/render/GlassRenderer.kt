@@ -219,7 +219,9 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     canvas.drawRenderNode(glassNode)
   }
 
-  // Every value the glass is recorded from, against the last recording; the field texture follows the same state.
+  // Every value the glass is recorded from, against the last recording; the field texture follows the same state. A
+  // recording hwui dropped (the node left every tree: the window stopped, or the still it was drawn into was released)
+  // is never the same: drawn as it is, the glass would be empty.
   private fun sameAsRecorded(state: GlassSurfaceState, source: RenderNode): Boolean {
     val values = signature
     var index = 0
@@ -236,8 +238,8 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
     put(state.lensHeight); put(state.lensAmount); put(state.lensBand); put(state.materialProgress)
     put(state.surfaceOpacity); put(state.refractionScale); put(state.magnify)
     put(state.pressX); put(state.pressY); put(state.pressRadius); put(state.poolGain); put(state.pressLift); put(state.rimLift)
-    val same = recordedSource === source && recordedConfig === state.config && recordedTrigger === state.trigger &&
-      values.contentEquals(recorded)
+    val same = glassNode.hasDisplayList() && recordedSource === source && recordedConfig === state.config &&
+      recordedTrigger === state.trigger && values.contentEquals(recorded)
     if (!same) {
       values.copyInto(recorded)
       recordedSource = source

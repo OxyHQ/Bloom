@@ -196,7 +196,7 @@
    }
  
    override fun onDetachedFromWindow() {
-@@ -115,20 +181,157 @@
+@@ -115,20 +181,158 @@
    private fun releaseGraphics() {
      (glassRenderer as? GlassRenderer)?.release()
      glassRenderer = null
@@ -243,7 +243,8 @@
 +      it.setUseCompositingLayer(true, null)
 +      restNode = it
 +    }
-+    if (!restRecorded) {
++    // Recorded again when hwui dropped its display list (the window stopped while it was pressed).
++    if (!restRecorded || !node.hasDisplayList()) {
 +      val backdrop = prepareRest()
 +      node.setPosition(restLimits)
 +      val recording = node.beginRecording(restLimits.width(), restLimits.height())
@@ -358,7 +359,7 @@
      }
      if (drawsGlass) {
        when (event.actionMasked) {
-@@ -175,6 +378,23 @@
+@@ -175,6 +379,23 @@
  
    internal fun iconView(slot: Int): View? = iconHost()?.getChildAt(slot)
  
@@ -382,7 +383,7 @@
    override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
      if (child.getTag(R.id.view_tag_native_id) == IconHostId) return false
      return super.drawChild(canvas, child, drawingTime)
-@@ -182,7 +402,29 @@
+@@ -182,7 +403,29 @@
  
    override fun dispatchDraw(canvas: Canvas) {
      if (overlayDrawsChildren) return
@@ -412,7 +413,7 @@
    }
  
    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@@ -196,6 +438,7 @@
+@@ -196,6 +439,7 @@
      node.setTranslationX(0f)
      node.setTranslationY(0f)
      node.setRenderEffect(null)
@@ -420,7 +421,7 @@
      val recording = node.beginRecording(width, height)
      super.dispatchDraw(recording)
      node.endRecording()
-@@ -236,6 +479,16 @@
+@@ -236,6 +480,16 @@
      val target = overlay ?: return
      if (items.isEmpty() || this.width == 0 || this.height == 0) return
      if (menuActive && target.menuSession?.expanded == true) return
@@ -437,7 +438,7 @@
      val pressed = if (followsPress) pressedRect(target) else null
      val through = pressed ?: if (x != null && y != null && width != null && height != null) {
        RectF(
-@@ -275,11 +528,12 @@
+@@ -275,11 +529,12 @@
    internal fun onSessionFinished() {
      menuActive = false
      invalidate()
@@ -451,7 +452,7 @@
      const val PressMemory = 1000L
      const val MorphFromPress = "press"
      const val PressRadius = 22f
-@@ -287,5 +541,8 @@
+@@ -287,5 +542,8 @@
      const val LightLift = .055f
      const val LightPool = .07f
      const val LightRimLift = .3f
@@ -628,7 +629,17 @@
      val frame = motion.frame
      liveBounds(shown)
      // While a stacked submenu is open the root recedes: the glass shrinks and the rows dim.
-@@ -557,6 +559,7 @@
+@@ -408,7 +410,8 @@
+     val node = rowsNode ?: return null
+     val width = target.width().toInt()
+     val height = target.height().toInt()
+-    if (rowsDirty) {
++    // Recorded again when hwui dropped its display list (the window stopped while the menu was open).
++    if (rowsDirty || !node.hasDisplayList()) {
+       rowsDirty = false
+       node.setPosition(0, 0, width, height)
+       content.draw(node.beginRecording(width, height), scroll) { it === openedRow }
+@@ -557,6 +560,7 @@
        anchor, density,
        GlassMenuContent(overlay.context, density) { slot -> anchor.iconView(slot) }.also {
          it.dark = content.dark
@@ -728,7 +739,7 @@
      material.setFloatUniform("highlightAlpha", 1f)
      material.setFloatUniform("rimAlpha", ((if (state.dark) RimAlphaDark else RimAlphaLight) * mix(trigger.rim, config.rim)).coerceIn(0f, 1f))
      material.setFloatUniform("surfaceOpacity", state.surfaceOpacity)
-@@ -194,11 +214,39 @@
+@@ -194,11 +214,41 @@
      glassNode.setPosition(nodeRect)
      val recording = glassNode.beginRecording(width, height)
      recording.translate(-nodeRect.left.toFloat(), -nodeRect.top.toFloat())
@@ -738,7 +749,9 @@
      canvas.drawRenderNode(glassNode)
    }
  
-+  // Every value the glass is recorded from, against the last recording; the field texture follows the same state.
++  // Every value the glass is recorded from, against the last recording; the field texture follows the same state. A
++  // recording hwui dropped (the node left every tree: the window stopped, or the still it was drawn into was released)
++  // is never the same: drawn as it is, the glass would be empty.
 +  private fun sameAsRecorded(state: GlassSurfaceState, source: RenderNode): Boolean {
 +    val values = signature
 +    var index = 0
@@ -755,8 +768,8 @@
 +    put(state.lensHeight); put(state.lensAmount); put(state.lensBand); put(state.materialProgress)
 +    put(state.surfaceOpacity); put(state.refractionScale); put(state.magnify)
 +    put(state.pressX); put(state.pressY); put(state.pressRadius); put(state.poolGain); put(state.pressLift); put(state.rimLift)
-+    val same = recordedSource === source && recordedConfig === state.config && recordedTrigger === state.trigger &&
-+      values.contentEquals(recorded)
++    val same = glassNode.hasDisplayList() && recordedSource === source && recordedConfig === state.config &&
++      recordedTrigger === state.trigger && values.contentEquals(recorded)
 +    if (!same) {
 +      values.copyInto(recorded)
 +      recordedSource = source
@@ -769,7 +782,7 @@
    fun drawForeground(
      canvas: Canvas, state: GlassSurfaceState, warp: Boolean, portalBlur: Float,
      record: (RecordingCanvas) -> Unit,
-@@ -235,13 +283,25 @@
+@@ -235,13 +285,25 @@
      )
    }
  
@@ -845,7 +858,7 @@
  
    // Bumped each time the page is recorded: consumers that cache the backdrop regenerate when it changes.
    var version: Int = 0
-@@ -29,30 +51,121 @@
+@@ -29,30 +51,123 @@
      excluded.add(view)
      baseColor = color
      users += 1
@@ -886,7 +899,9 @@
    override fun onPreDraw(): Boolean {
 -    if (!recorded || anyChildDirty()) record()
 +    val color = baseColor()
-+    val whole = stale || color != recordedColor
++    // hwui drops the display list of a node that has left every tree: the window's (a stopped window), and every lens
++    // and still that held the page. Drawn as it is then, the page is empty and every glass on it draws black.
++    val whole = stale || color != recordedColor || !node.hasDisplayList()
 +    if (whole) record(color)
 +    if (lenses.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 +      dirt.clear()
@@ -975,7 +990,7 @@
      val width = root.width
      val height = root.height
      if (width <= 0 || height <= 0) return
-@@ -70,7 +183,7 @@
+@@ -70,7 +185,7 @@
      recording = true
      try {
        val canvas = node.beginRecording(width, height)
@@ -984,7 +999,7 @@
        root.background?.draw(canvas)
        for (index in 0 until root.childCount) {
          val child = root.getChildAt(index)
-@@ -83,12 +196,14 @@
+@@ -83,12 +198,14 @@
        recording = false
        for (view in hidden) view.visibility = View.VISIBLE
      }
@@ -1002,13 +1017,14 @@
      @Volatile
 --- a/backdrop/GlassLens.kt
 +++ b/backdrop/GlassLens.kt
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,113 @@
 +package so.oxy.bloom.glassmenu.backdrop
 +
 +import android.graphics.Bitmap
 +import android.graphics.Rect
 +import android.graphics.RenderNode
 +import android.os.Build
++import android.view.Choreographer
 +import android.os.SystemClock
 +import androidx.annotation.RequiresApi
 +import so.oxy.bloom.glassmenu.render.GlassStill
@@ -1035,9 +1051,10 @@
 +  private var askedGeneration = -1
 +  private var still: GlassStill? = null
 +
-+  // The node the glass draws for [area] (window px): the region's still, or the page.
++  // The node the glass draws for [area] (window px): the region's still, or the page. A node whose display list hwui
++  // dropped (it left every tree: the window stopped) is recorded again, not drawn empty.
 +  fun sample(area: Rect): RenderNode {
-+    if (area != region || !recorded) {
++    if (area != region || !recorded || !node.hasDisplayList()) {
 +      region.set(area)
 +      showPage(SystemClock.uptimeMillis())
 +    }
@@ -1059,9 +1076,8 @@
 +  private fun showPage(now: Long) {
 +    quietSince = now
 +    generation += 1
-+    still?.release()
-+    still = null
-+    if (!showsStill && recorded && node.left == region.left && node.top == region.top &&
++    letStillGo()
++    if (!showsStill && recorded && node.hasDisplayList() && node.left == region.left && node.top == region.top &&
 +      node.width == region.width() && node.height == region.height()) return
 +    node.setPosition(region)
 +    val canvas = node.beginRecording(region.width(), region.height())
@@ -1070,6 +1086,15 @@
 +    node.endRecording()
 +    showsStill = false
 +    recorded = true
++  }
++
++  // The still is released after the next frame, once the node that drew it draws the page in its place. Released now,
++  // its renderer would let go of the page while nothing else holds it (every other lens at rest on its own still), and
++  // hwui drops the display list of a node that leaves every tree: the page would be empty, and the glass black.
++  private fun letStillGo() {
++    val old = still ?: return
++    still = null
++    Choreographer.getInstance().postFrameCallback { old.release() }
 +  }
 +
 +  private fun askStill() {
@@ -1153,6 +1178,16 @@
      val p = progress.value.coerceIn(0f, 1f)
      lerp(row, target, p, shown)
      val rowRadius = min(row.width(), row.height()) / 2f
+@@ -196,7 +197,8 @@
+     val node = rowsNode ?: return null
+     val width = target.width().toInt()
+     val height = target.height().toInt()
+-    if (rowsDirty) {
++    // Recorded again when hwui dropped its display list (the window stopped while the menu was open).
++    if (rowsDirty || !node.hasDisplayList()) {
+       rowsDirty = false
+       node.setPosition(0, 0, width, height)
+       // The placeholder header row is not drawn here: the parent's own row is drawn as the header.
 --- a/render/GlassStill.kt
 +++ b/render/GlassStill.kt
 @@ -0,0 +1,115 @@

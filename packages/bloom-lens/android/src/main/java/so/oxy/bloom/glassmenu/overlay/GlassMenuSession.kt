@@ -410,7 +410,8 @@ internal class GlassMenuSession(
     val node = rowsNode ?: return null
     val width = target.width().toInt()
     val height = target.height().toInt()
-    if (rowsDirty) {
+    // Recorded again when hwui dropped its display list (the window stopped while the menu was open).
+    if (rowsDirty || !node.hasDisplayList()) {
       rowsDirty = false
       node.setPosition(0, 0, width, height)
       content.draw(node.beginRecording(width, height), scroll) { it === openedRow }

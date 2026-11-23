@@ -224,7 +224,8 @@ class GlassMenuAndroidView(context: Context, appContext: AppContext) : ExpoView(
       it.setUseCompositingLayer(true, null)
       restNode = it
     }
-    if (!restRecorded) {
+    // Recorded again when hwui dropped its display list (the window stopped while it was pressed).
+    if (!restRecorded || !node.hasDisplayList()) {
       val backdrop = prepareRest()
       node.setPosition(restLimits)
       val recording = node.beginRecording(restLimits.width(), restLimits.height())
