@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
-import { Conditioned, IDLE, type Interaction, InteractionContext, Painted } from './paint';
+import { IDLE, type Interaction, InteractionContext, leafOf } from './paint';
 import type { StyleOut } from './style';
 import type { LiveCondition } from './variants';
 
@@ -104,7 +104,7 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
   const box =
     out.paint === undefined
       ? createElement(host, { ...props, ...handlers, style: own })
-      : createElement(out.paint.variants ? Conditioned : Painted, {
+      : createElement(leafOf(out.paint), {
           ...props,
           ...handlers,
           style: own,

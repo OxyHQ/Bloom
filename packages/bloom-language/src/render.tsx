@@ -179,7 +179,7 @@ import {
   type Planned,
 } from './variants';
 import {
-  Conditioned,
+  leafOf,
   GEOMETRY_KEYS,
   type ListColor,
   Painted,
@@ -1076,10 +1076,8 @@ function drawHost(
   // merges both after what it paints).
   if (out.style !== undefined)
     props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
-  if (out.paint?.variants !== undefined)
-    return draw(Conditioned, { ...props, host, paint: out.paint }, ...children);
   if (out.paint !== undefined)
-    return draw(Painted, { ...props, host, paint: out.paint }, ...children);
+    return draw(leafOf(out.paint), { ...props, host, paint: out.paint }, ...children);
   return draw(host, props, ...children);
 }
 
@@ -2085,8 +2083,8 @@ function iconGlyph(
   }
   // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
   if (own !== undefined)
-    return draw(Conditioned, { host: icon, paint, fill: own, width: size, height: size, key });
-  return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
+    return draw(leafOf(paint), { host: icon, paint, fill: own, width: size, height: size, key });
+  return draw(leafOf(paint), { host: icon, paint, width: size, height: size, key });
 }
 
 /** A stack's style: its layout, then its box (the innermost layer and its flex), with their variants. */
