@@ -89,7 +89,6 @@ export interface ComposerPalette {
 }
 
 /** Re-exported from `theme/color-utils`, which owns it (it was copied here). */
-export { withAlpha } from '../theme/color-utils';
 
 /** Canonical surfaces and foregrounds follow the preset's authored role pairs. */
 export function resolveComposerPalette(theme: Theme): ComposerPalette {

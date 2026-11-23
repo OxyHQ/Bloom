@@ -13,12 +13,7 @@ import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { TYPE_SCALE } from '../typography/scale';
 import type { WebCssStyle } from '../styles/web-view-style';
-import {
-  AA_TEXT_CONTRAST,
-  contrastRatio,
-  readableOn,
-  relativeLuminance,
-} from '../styles/color-contrast';
+import { AA_TEXT_CONTRAST, contrastRatio, readableOn } from '../styles/color-contrast';
 import { IS_WEB } from '../styles/platform';
 import { mixColors } from '../styles/color-contrast';
 
@@ -238,5 +233,3 @@ export const MEDIA_HEADER_CSS = `
   }
 }
 `;
-
-export { contrastRatio, relativeLuminance };

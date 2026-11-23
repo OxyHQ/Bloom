@@ -11,7 +11,7 @@ import Animated, {
 import Svg, { Circle } from 'react-native-svg';
 
 import { AgentProgressLoadingText } from '../agent-progress';
-import { withAlpha } from '../composer-panel/shared';
+import { withAlpha } from '../theme/color-utils';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { AiChatFeedbackRowBase } from './AiChatFeedbackRowBase';

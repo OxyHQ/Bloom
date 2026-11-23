@@ -38,12 +38,12 @@ import {
 import { rentDeltaTone } from '../property-insights/RentHistoryList';
 import {
   ENERGY_CLASSES,
-  contrastRatio,
   formatEuros,
   formatEurosCompact,
   resolveEnergyTones,
   resolveInsightPalette,
 } from '../property-insights/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import { resolveMeterColors } from '../stat-bar';
 import { buildTheme } from '../theme/build-theme';
 import { APP_COLOR_PRESETS, type AppColorName } from '../theme/color-presets';

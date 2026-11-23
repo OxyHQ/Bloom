@@ -6,7 +6,7 @@ import { quietTextOver } from '../styles/color-contrast';
 import { AA_TEXT, resolveSurfaceLevel, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type { EnergyClass } from './types';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import { contrastRatio } from '../styles/color-contrast';
 import { formatCompactCurrency, formatCurrency } from '../locale/format-number';
 
 /**
@@ -152,5 +152,3 @@ export const formatEuros = (value: number, locale?: string) => formatCurrency(va
 export function formatEurosCompact(value: number, locale?: string): string {
   return formatCompactCurrency(value, 'EUR', locale);
 }
-
-export { contrastRatio, relativeLuminance };

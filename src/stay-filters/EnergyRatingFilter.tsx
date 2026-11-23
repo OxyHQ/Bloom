@@ -227,5 +227,3 @@ function EnergyRatingFilterComponent({
 
 export const EnergyRatingFilter = memo(EnergyRatingFilterComponent);
 EnergyRatingFilter.displayName = 'EnergyRatingFilter';
-
-export { contrastRatio };

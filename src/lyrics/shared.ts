@@ -9,7 +9,6 @@ import {
   AA_TEXT_CONTRAST,
   contrastRatio,
   darkenUntilContrast,
-  relativeLuminance,
 } from '../styles/color-contrast';
 import { mixColors } from '../styles/color-contrast';
 
@@ -244,5 +243,3 @@ export const LYRICS_CSS = `
   }
 }
 `;
-
-export { contrastRatio, relativeLuminance };
