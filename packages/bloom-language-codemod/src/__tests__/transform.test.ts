@@ -477,7 +477,7 @@ export const B = () => (
   it('keeps a compound element whose parts do not all map, and its parts with it', () => {
     const result = run(`import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
 export const A = () => (
-  <Tabs value={tab} onValueChange={setTab} pressOpenTab="reselect"><TabsTrigger value="a" label="A" /></Tabs>
+  <Tabs value={tab} onValueChange={setTab} style={s}><TabsTrigger value="a" label="A" /></Tabs>
 );
 export const B = () => (
   <Tabs value={tab} onValueChange={setTab}><TabsTrigger value="a" label="A" textStyle={s} /><Extra /></Tabs>
@@ -485,7 +485,7 @@ export const B = () => (
 `);
     expect(result.changed).toBe(false);
     expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([
-      ['Tabs:pressOpenTab'],
+      ['Tabs:style'],
       ['TabItem:part'],
       ['TabItem:textStyle', 'not-a-part'],
       ['TabItem:part'],
@@ -643,6 +643,38 @@ export const C = () => <VirtualList data={posts} renderItem={renderPost} content
       'VirtualList:contentContainerStyle',
     ]);
   });
+  it('moves a Button’s glyph size, press, spinner, open state and inks, a tab strip’s open-tab press, a field’s lines and a header’s title view', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
+import { TextFieldInput } from '@oxy.so/bloom/text-field';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { Text } from '@oxy.so/bloom/typography';
+import { RiMoreFill } from '@oxy.so/bloom/icons';
+import { useTheme } from '@oxy.so/bloom/theme';
+export function A({ open, busy, on, tab, setTab, bio, setBio, can }) {
+  const theme = useTheme();
+  return (
+    <>
+      <Button appearance={on ? 'solid' : 'subtle'} leadingIcon={RiMoreFill} iconOnly iconSize={28} stopPropagation loading={busy} loadingIndicator={null} aria-expanded={open} color={theme.colors.error} hoverColor={theme.colors.error} accessibilityLabel="More" />
+      <Tabs value={tab} onValueChange={setTab} pressOpenTab="reselect"><TabsTrigger value="a" label="A" /></Tabs>
+      <TextFieldInput label="Bio" value={bio} onValueChange={setBio} multiline editable={can} />
+      <PageHeader title={<Text>Home</Text>} />
+    </>
+  );
+}
+`);
+    const code = flat(result.code);
+    expect(code).toContain(".style(on ? 'solid' : 'subtle')");
+    expect(code).toContain(".iconSize('xl')");
+    expect(code).toContain('.stopPropagation()');
+    expect(code).toContain('.loadingIndicator(null)');
+    expect(code).toContain('.accessibilityState({ expanded: open })');
+    expect(code).toContain(".foreground('error').hoverForeground('error')");
+    expect(code).toContain(".pressOpenTab('reselect')");
+    expect(code).toContain('.multiline().editable(can)');
+    expect(code).toContain("Header(LText('Home')).inPage()");
+  });
+
   it('moves a VirtualList’s refreshing and onRefresh as one query-driven refresh', () => {
     const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
 import { ListItem } from '@oxy.so/bloom/list';

@@ -37,6 +37,8 @@ import { type Arg, LANGUAGE_PACKAGE } from './table';
  * - `className`: a static className laid out in a view of its own, as the
  *   modifiers of that view's build function (`.contentView((v) => v.padding('lg'))`),
  *   each class through the className table;
+ * - `content`: a text (as `string`), or an element as a view (as `view`): a
+ *   header's title or subtitle;
  * - `placement`: Bloom's responsive placement, a static token
  *   (`placement="bottom"`) or an object of them (`{ base: 'bottom', md: 'center' }`),
  *   as `.presentAt(base, tiers)`.
@@ -59,7 +61,8 @@ export type Form =
   | 'row'
   | 'placement'
   | 'empty'
-  | 'className';
+  | 'className'
+  | 'content';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -421,6 +424,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       invalid: p('invalid', 'flag'),
       disabled: p('disabled', 'flag'),
       floatingLabel: p('floatingLabel', 'mark'),
+      multiline: p('multiline', 'flag'),
+      editable: p('editable', 'boolean'),
       ...TEXT_INPUT,
       accessibilityHint: p('hint', 'string'),
       testID: p('testID', 'string'),
@@ -692,10 +697,10 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
   // parity/screen.cases.tsx and header cases: Bloom's PageHeader, in the page on every platform.
   '@oxy.so/bloom/page-header#PageHeader': {
     node: 'Header',
-    params: [{ prop: 'title', form: 'string', optional: true }],
+    params: [{ prop: 'title', form: 'content', optional: true }],
     always: ['inPage'],
     props: {
-      subtitle: p('subtitle', 'string'),
+      subtitle: p('subtitle', 'content'),
       actions: p('toolbar', 'view'),
       leading: p('toolbarLeading', 'view'),
       onBack: p('onBack', 'handler'),
@@ -745,6 +750,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       variant: p('style', 'token', tokens('tabsStyle')),
       fullWidth: p('fullWidth', 'flag'),
       onReorder: p('onReorder', 'handler'),
+      pressOpenTab: p('pressOpenTab', 'token', tokens('pressOpenTab')),
       label: p('label', 'string'),
       testID: p('testID', 'string'),
     },

@@ -146,6 +146,11 @@ for (const [role, entry] of Object.entries(spec.colors))
   if (Array.isArray(entry) && !ROLE_OF_THEME_COLOR.has(entry[0]))
     ROLE_OF_THEME_COLOR.set(entry[0], role);
 const ICON_SIZES = Object.entries(spec.scales.iconSize);
+/** A glyph size in points (`28`) as the icon size token of its value (`'xl'`), a named rung over a numeric one. */
+const ICON_SIZE_TOKEN = new Map<number, string>();
+for (const [name, size] of ICON_SIZES)
+  if (typeof size === 'number' && (!/^\d/.test(name) || !ICON_SIZE_TOKEN.has(size)))
+    ICON_SIZE_TOKEN.set(size, name);
 const RAMP = new Set(Object.keys(spec.typeRamp).filter((k) => !k.startsWith('$')));
 
 /** A content container's padding key as the edge of its content margin. */
@@ -2039,6 +2044,10 @@ export function transformSource(source: string, options: TransformOptions): File
           n.CallExpression.check(expression)
           ? [{ node: expression, hole: 'handler' }]
           : undefined;
+      case 'content':
+        return n.JSXElement.check(expression) || n.JSXFragment.check(expression)
+          ? valuesOf('view', value, map)
+          : valuesOf('string', value, map);
       case 'view': {
         if (n.StringLiteral.check(expression) || n.TemplateLiteral.check(expression))
           return undefined;
@@ -2389,6 +2398,45 @@ export function transformSource(source: string, options: TransformOptions): File
         (value === null || value === undefined)
       )
         flags.add(name);
+      // An appearance or tone set at runtime is the modifier's own expression.
+      else if (ENUM[name] && expression && !hasJsx(expression))
+        props.push({ name: ENUM[name] as string, args: [{ node: expression, hole: 'string' }] });
+      else if (name === 'stopPropagation' && (value === null || value === undefined))
+        props.push({ name: 'stopPropagation', args: [] });
+      else if (name === 'iconSize' && ICON_SIZE_TOKEN.has(staticNumber(value) as number))
+        props.push({
+          name: 'iconSize',
+          args: [ICON_SIZE_TOKEN.get(staticNumber(value) as number) as string],
+        });
+      // No spinner while loading.
+      else if (name === 'loadingIndicator' && n.NullLiteral.check(expression))
+        props.push({ name: 'loadingIndicator', args: [{ node: expression, hole: 'handler' }] });
+      // A menu trigger's open state: Bloom's aria-expanded is the language's accessibility state.
+      else if (name === 'aria-expanded' && expression && !hasJsx(expression))
+        props.push({
+          name: 'accessibilityState',
+          args: [
+            {
+              node: recast.types.builders.objectExpression([
+                recast.types.builders.objectProperty(
+                  recast.types.builders.identifier('expanded'),
+                  expression,
+                ),
+              ]),
+              hole: 'state',
+            },
+          ],
+        });
+      // Its inks, each a theme colour read as its role.
+      else if (
+        (name === 'color' || name === 'hoverColor') &&
+        expression &&
+        themeRoles.get(expression)
+      )
+        props.push({
+          name: name === 'color' ? 'foreground' : 'hoverForeground',
+          args: [themeRoles.get(expression) as string],
+        });
       else if (name === 'leadingIcon' && icon(value)) leading = icon(value) as string;
       else if (name === 'trailingIcon' && icon(value)) trailing = icon(value) as string;
       else if (name === 'accessibilityLabel' && value)
