@@ -1055,6 +1055,8 @@ export function transformSource(source: string, options: TransformOptions): File
   function staticStyle(
     expression: AnyNode,
     read: StyleRead,
+    /** A Pressable's style function's `pressed`: what it adds is the pressed variant (`active:`). */
+    pressed?: string,
   ):
     | {
         ok: true;
@@ -1075,7 +1077,26 @@ export function transformSource(source: string, options: TransformOptions): File
       // A style chosen by a plain condition (`!focused && styles.dim`, `compact ? A : B`): each
       // branch's utilities, chosen as a className is (`dynamic-className`).
       const chosen = styleBranches(part);
+      if (chosen && pressed && n.Identifier.check(chosen.test) && chosen.test.name === pressed) {
+        const [whenPressed, otherwise] = chosen.branches;
+        const style = whenPressed && !otherwise ? staticStyle(whenPressed, read) : undefined;
+        if (!style?.ok || style.mods.length || style.choice)
+          return {
+            ok: false,
+            subject: 'style',
+            why: 'a pressed style that is more than utilities added while pressed',
+          };
+        classes.push(...style.classes.map((name) => `active:${name}`));
+        continue;
+      }
       if (chosen) {
+        // Inside a style function a choice reads its parameter, which the chain has no name for.
+        if (pressed)
+          return {
+            ok: false,
+            subject: 'style',
+            why: 'a pressed style chosen with another condition (`pressed || locked`)',
+          };
         if (choice) return { ok: false, subject: 'style', why: 'a style with two choices' };
         const [whenTrue, whenFalse] = chosen.branches.map((branch) =>
           branch ? staticStyle(branch, read) : { ok: true as const, classes: [], mods: [] },
@@ -1779,7 +1800,26 @@ export function transformSource(source: string, options: TransformOptions): File
             return { name: 'foreground', args: [role] };
           return undefined;
         };
-        const style = staticStyle(expression, read);
+        // A Pressable's style of its press state (`({ pressed }) => [base, pressed && dim]`): `.when('pressed')`.
+        const fn: AnyNode =
+          kind === 'pressable' &&
+          n.ArrowFunctionExpression.check(expression) &&
+          expression.params.length === 1 &&
+          n.ObjectPattern.check(expression.params[0]) &&
+          !n.BlockStatement.check(expression.body)
+            ? expression
+            : undefined;
+        const pressedProperty = fn?.params[0].properties.find(
+          (p: AnyNode) =>
+            (n.ObjectProperty.check(p) || n.Property.check(p)) &&
+            n.Identifier.check(p.key) &&
+            p.key.name === 'pressed' &&
+            n.Identifier.check(p.value),
+        );
+        const style =
+          fn && pressedProperty && fn.params[0].properties.length === 1
+            ? staticStyle(fn.body, read, pressedProperty.value.name)
+            : staticStyle(expression, read);
         if (style.ok) {
           styleClasses.push(...style.classes);
           styleMods.push(...style.mods);

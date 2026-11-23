@@ -402,8 +402,9 @@ export function resolveClassName(
   for (const mod of unconditional?.mods ?? []) {
     const subject = unconditional?.subjects.get(mod) ?? '';
     if (!inline.has(subject)) continue;
-    for (const variant of resolved)
-      if (variant.conditions.length > 0 && variant.mods.some((m) => m.name === mod.name))
+    // A variant the style writes itself (a Pressable's pressed style) is inline too, and wins as the JSX's does.
+    for (const [key, g] of groups)
+      if (key && g.mods.some((m) => m.name === mod.name && !inline.has(g.subjects.get(m) ?? '')))
         fail(
           subject,
           'style-variant',

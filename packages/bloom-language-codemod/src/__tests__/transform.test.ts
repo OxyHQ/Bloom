@@ -418,6 +418,15 @@ const styles = StyleSheet.create({
     );
     expect(result.fixtures.filter((f) => f.name.endsWith('(false)'))).toHaveLength(2);
   });
+  it('reads a Pressable’s style of its press state as its pressed variant', () => {
+    const result = run(`import { Pressable, StyleSheet } from 'react-native';
+export const A = () => <Pressable onPress={go} style={({ pressed }) => [styles.option, pressed && styles.down]} />;
+export const B = () => <Pressable onPress={go} style={({ pressed }) => [styles.option, pressed || held ? styles.down : null]} />;
+const styles = StyleSheet.create({ option: { paddingVertical: 8 }, down: { paddingVertical: 16 } });
+`);
+    expect(flat(result.code)).toContain(".when('pressed', (v) => v.padding('vertical', 'lg'))");
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual(['style']);
+  });
   it('reads a colour from useColorTokens() as its role', () => {
     const result = run(`import { Text, View } from 'react-native';
 import { useColorTokens } from '@oxy.so/bloom/theme';

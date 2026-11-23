@@ -349,6 +349,11 @@ part of a style list chosen by a plain condition (`!focused && styles.dim`,
 value that differs chosen in place, or what one branch adds a variant of the
 app's condition, proven with the condition true and false; a branch that
 writes more than utilities (a theme colour, a `.grow()`) is a reason.
+A Pressable's style of its press state, `({ pressed }) => [base, pressed &&
+dim]` (or `pressed ? dim : null`), is the base and `.when('pressed', (v) =>
+…)` of what it adds, as `active:` is; a variant the style writes itself is
+inline, so it is no conflict with the style's base. A press state chosen with
+another condition (`pressed || locked`) is a reason.
 A grow, a shrink and a basis that are one of Tailwind's flex utilities
 (`flexGrow: 1, flexShrink: 1, flexBasis: '0%'`) are `.flex('1')`, and a style
 held in a module constant (`const ROW = { … } satisfies ViewStyle`) is read as
