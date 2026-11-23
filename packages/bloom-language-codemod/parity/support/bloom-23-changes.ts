@@ -75,13 +75,43 @@ export const BLOOM_23_CHANGES: readonly Bloom23Change[] = [
       was,
     }),
   ),
+  // A floating header's scroll edge is its own height and a 12pt fade (was a 0.55x tail of the
+  // whole header): over a 56pt header, a 68pt box, opaque to 56/68.
+  ...(
+    [
+      ['native', 'props', 'style.height', 68, 86.8],
+      ...(['247, 235, 240', '31, 3, 29'] as const).map(
+        (rgb) =>
+          [
+            'native',
+            'props',
+            'style.experimental_backgroundImage',
+            `linear-gradient(to bottom, rgba(${rgb}, 1) 0%, rgba(${rgb}, 1) 82.35294117647058%, rgba(${rgb}, 0.86) 89.76470588235294%, rgba(${rgb}, 0.38) 95.05882352941177%, rgba(${rgb}, 0) 100%)`,
+            `linear-gradient(to bottom, rgba(${rgb}, 1) 0%, rgba(${rgb}, 1) 64.51612903225806%, rgba(${rgb}, 0.86) 79.41935483870968%, rgba(${rgb}, 0.38) 90.06451612903226%, rgba(${rgb}, 0) 100%)`,
+          ] as const,
+      ),
+      ['web', 'attributes', 'offset', '0.8235294117647058', '0.6451612903225806'],
+      ['web', 'attributes', 'offset', '0.8976470588235294', '0.7941935483870968'],
+      ['web', 'attributes', 'offset', '0.9505882352941176', '0.9006451612903226'],
+    ] as const
+  ).map(
+    ([platform, where, key, value, was]): Bloom23Change => ({
+      commit: '#874',
+      what: "A floating header's scroll edge is the header's own height and a short fade",
+      platform,
+      in: where,
+      key,
+      value,
+      was,
+    }),
+  ),
 ];
 
 const label = (change: Bloom23Change) => `${change.commit} ${change.key}`;
 
-/** The labels of the changes for `platform`, to check each is still met. */
+/** The labels of the changes for `platform`, to check each is still met (one per commit and key). */
 export function bloom23Labels(platform: Platform): string[] {
-  return BLOOM_23_CHANGES.filter((c) => c.platform === platform).map(label);
+  return [...new Set(BLOOM_23_CHANGES.filter((c) => c.platform === platform).map(label))];
 }
 
 type Tree = Record<string, unknown>;
