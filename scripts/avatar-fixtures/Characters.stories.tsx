@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '../../src/button/Button';
-import { StyledView } from '../../src/styles/styled-primitives';
+import { AriaView } from '../../src/styles/aria-hosts';
 import { Text } from '../../src/typography';
 import { AgentCreator } from '../../src/agent-creator/AgentCreator.web';
 import type { AgentCreatorAgent } from '../../src/agent-creator/types';

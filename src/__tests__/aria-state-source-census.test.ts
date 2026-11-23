@@ -168,20 +168,18 @@ const RN_HOSTS = new Set([
   'ImageBackground',
   'Modal',
   'ActivityIndicator',
-  // `styles/styled-primitives.ts`'s four wrappers. They are the SAME primitives
-  // with `className` mapped onto `style` — every other prop is spread straight
-  // through to the host element — so the rules below apply to them exactly as
-  // they apply to the bare names above. Listing them here rather than in
-  // `DELEGATING_TAGS` is the honest classification: a delegating tag answers a
-  // role in its own file, and these answer nothing, they forward.
-  'StyledView',
-  'StyledText',
-  'StyledPressable',
-  'StyledImage',
+  // `styles/aria-hosts.ts`'s two hosts. They are the SAME primitives with
+  // wider web types — every prop is spread straight through to the host
+  // element — so the rules below apply to them exactly as they apply to the
+  // bare names above. Listing them here rather than in `DELEGATING_TAGS` is the
+  // honest classification: a delegating tag answers a role in its own file, and
+  // these answer nothing, they forward.
+  'AriaView',
+  'AriaPressable',
   // `image/BloomImage.tsx`, the one raster renderer: every prop but its own
   // five (`contentFit`, `transition`, `onLoad`, `onError`, `source`) reaches
   // expo-image or react-native's `Image` unchanged, so it forwards like the
-  // styled wrappers above.
+  // hosts above.
   'BloomImage',
 ]);
 
@@ -227,7 +225,7 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', '
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
  * reaches one more component. `card/Card.tsx` forwards both `accessibilityRole`
- * and `accessibilityLabel` to its `StyledPressable`, where the rules below
+ * and `accessibilityLabel` to its `AriaPressable`, where the rules below
  * apply — but only on the pressable branch; the plain-`View` branch forwards
  * the label and drops the role, which is correct, because a card with no
  * `onPress` is not a link. `link-preview` is its one role-passing caller and it
@@ -243,7 +241,7 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', '
 // `button/Button.tsx` is the third: it takes `accessibilityRole` (`'button' |
 // 'link'`, for a control that navigates through a family's own router and so
 // renders no anchor) and forwards it, with `accessibilityLabel`, to its own
-// `StyledPressable` — where every rule below applies. Its two role-passing
+// `AriaPressable` — where every rule below applies. Its two role-passing
 // callers are `listing-details`' and `media-header`'s inline links, both of
 // which pass the name too.
 //
@@ -258,7 +256,7 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', '
 // three separate Texts is three stops otherwise.
 //
 // `PressableScale` spreads every `Pressable` prop — `role` and
-// `accessibilityLabel` included — onto its one animated `StyledPressable`. Its
+// `accessibilityLabel` included — onto its one animated `AriaPressable`. Its
 // role-passing callers are `Lockup` (`role="link"`, named by the title,
 // subtitle and caption it contains, or the caller's `accessibilityLabel`) and
 // `FactStrip` (`role="button"`, named by the fact's label, value and caption,
@@ -324,7 +322,7 @@ function animatedHostAliases(): Set<string> {
         const from = origin.get(wrapped);
         const isRnPrimitive =
           RN_HOSTS.has(wrapped) &&
-          (from === 'react-native' || from?.endsWith('styles/styled-primitives') === true);
+          (from === 'react-native' || from?.endsWith('styles/aria-hosts') === true);
         if (isRnPrimitive) aliases.add(node.name.getText(sf));
       }
       ts.forEachChild(node, visit);
@@ -393,7 +391,7 @@ function hasTextChildren(sf: ts.SourceFile, opening: ts.Node): boolean {
   if (!ts.isJsxElement(parent)) return false;
   const isTextTag = (tag: string): boolean => {
     const bare = tag.replace(/^Animated\./, '');
-    return /(^|\.)(Text|StyledText)$/.test(bare) || bare.startsWith('Typography');
+    return /(^|\.)Text$/.test(bare) || bare.startsWith('Typography');
   };
   const scan = (children: readonly ts.JsxChild[]): boolean =>
     children.some((child) => {
@@ -498,7 +496,7 @@ describe('the census can see', () => {
       'AnimatedPressable',
       // HeaderActions preserves the real View host while its width changes.
       'AnimatedRoot',
-      // ReplyRow and SelectedAgentPreview wrap the same StyledView host.
+      // ReplyRow and SelectedAgentPreview wrap the same AriaView host.
       'AnimatedView',
       // layout/ScrollViewport: the animated ScrollView itself.
       'AnimatedViewport',

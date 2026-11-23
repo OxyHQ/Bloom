@@ -1,6 +1,6 @@
 import React, { type ComponentRef, memo } from 'react';
 import { View, type GestureResponderEvent } from 'react-native';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { useBrowserTitle } from '../hooks/use-browser-title';
@@ -33,7 +33,7 @@ import { displayShortcut } from './shortcuts';
  * square's top-end corner instead, so the count survives the collapse. With
  * `href` the row is a link (a real anchor on web).
  */
-const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
+const AnimatedPressable = Animated.createAnimatedComponent(AriaPressable);
 
 const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   icon: Icon,

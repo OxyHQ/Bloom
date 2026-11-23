@@ -1,6 +1,6 @@
 import React, { type ComponentRef, forwardRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Platform, View, type StyleProp, type ViewStyle, type TextStyle } from 'react-native';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { Text } from '../typography';
@@ -50,7 +50,7 @@ export const RadioHost: RefComponent<HostProps> = forwardRef<ComponentRef<typeof
       // The key handlers are DOM-typed and web-only: React Native 0.88's Pressable
       // types `onKeyDown` with its own event, so they never reach the native host.
       const { onKeyDown: _onKeyDown, onKeyUp: _onKeyUp, ...native } = props;
-      return <StyledPressable {...native} ref={ref} />;
+      return <AriaPressable {...native} ref={ref} />;
     }
     const {
       children,

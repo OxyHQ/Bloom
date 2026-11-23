@@ -5,7 +5,7 @@ import { resolveSurfaceGeometry } from './resolve-surface-geometry';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import { forwardRef, memo, useCallback, useRef } from 'react';
 import type { ComponentRef } from 'react';
-import { StyleSheet, type View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';
 import { useThemeRecipe } from '../theme/use-theme-paint';
@@ -14,7 +14,6 @@ import { resolveSurfaceLayer } from './use-surface-layer';
 import { resolveSurfaceMaterial } from './resolve-surface-material';
 import { ServerStyleSheet } from '../styles/ServerStyleSheet';
 import { borderRadius } from '../styles/tokens';
-import { StyledView } from '../styles/styled-primitives';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -134,7 +133,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         {opticsRecipe.sheet}
         {materialRecipe.sheet}
         <ServerStyleSheet id="bloom-surface-web-css" css={CSS} />
-        <StyledView
+        <View
           {...hostProps}
           ref={hostRef}
           // The surface's own hooks join a caller's (`webDataSet`), as one `dataSet`.
@@ -168,7 +167,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
           >
             <ConcentricProvider value={concentric.context}>{children}</ConcentricProvider>
           </SurfaceLevelProvider>
-        </StyledView>
+        </View>
       </>
     );
   },

@@ -36,7 +36,7 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
 
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import {
@@ -558,7 +558,7 @@ export function SelectItem({
   const highlighted = !disabled && (focused || pressed || isSelected);
 
   return (
-    <StyledPressable
+    <AriaPressable
       accessibilityRole="radio"
       accessibilityLabel={label}
       // ARIA gives `role="radio"` a checked state, not a selected one. Spelled
@@ -586,7 +586,7 @@ export function SelectItem({
         {leading}
         {children}
       </ItemContext.Provider>
-    </StyledPressable>
+    </AriaPressable>
   );
 }
 

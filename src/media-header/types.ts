@@ -4,7 +4,7 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import type { BloomTone } from '../appearance';
 import type { ButtonProps } from '../button/types';
 import type { BloomIconComponent } from '../icons/icon-component';
-import type { WebAriaProps } from '../styles/styled-primitives';
+import type { WebAriaProps } from '../styles/aria-hosts';
 
 /** A URL, or an id the registered ImageResolver turns into one. */
 export type MediaImageSource = string;

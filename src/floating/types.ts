@@ -31,7 +31,7 @@ import type {
 } from 'react-native';
 
 import type { MenuFocusIntent } from './menu-keyboard';
-import type { WebAriaProps } from '../styles/styled-primitives';
+import type { WebAriaProps } from '../styles/aria-hosts';
 
 /**
  * What a family's ROOT publishes to its own trigger and surface: the open
@@ -186,7 +186,7 @@ export interface FloatingPanelProps extends FloatingPositionProps {
  * `aria-haspopup` is here too, and it is a PROPERTY rather than a state: React
  * Native types no such prop — there is no state for it to fold into
  * `accessibilityState` — while react-native-web forwards it.
- * `styles/styled-primitives.ts`'s `WebAriaProps` is what makes it spellable
+ * `styles/aria-hosts.ts`'s `WebAriaProps` is what makes it spellable
  * without a cast, and each family passes its OWN value from
  * `floating/constants.ts`, because the five families open three different kinds
  * of surface and one shared default would be a lie for two of them.

@@ -7,7 +7,6 @@ import { Text } from '../typography';
 import { useCommonMessages } from '../locale/common-messages';
 import { useMessages } from '../locale/messages';
 import { pointerEventsStyles } from '../styles/pointer-events';
-import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { CoverImage } from './CoverImage';
 import { CENTER_POSITION, clampPosition, dragCoverPosition, coverSourceIdentity } from './geometry';
@@ -214,7 +213,7 @@ function CoverHeaderComponent({
         ]}
       >
         <GestureDetector gesture={gesture} touchAction={editing ? 'none' : 'auto'}>
-          <StyledView
+          <View
             ref={editHost}
             collapsable={false}
             {...webProps}
@@ -272,7 +271,7 @@ function CoverHeaderComponent({
                   testID={testID ? `${testID}-cover-image` : undefined}
                 />
               ) : null)}
-          </StyledView>
+          </View>
         </GestureDetector>
       </View>
       <View

@@ -1095,7 +1095,7 @@ describe('menu rows spell their state per role', () => {
     // sub-trigger reads as an ordinary row that toggles something. React Native
     // types no `aria-haspopup` (it is a PROPERTY, with no state to fold into
     // `accessibilityState`), which is why it travels on the widened
-    // `StyledPressableProps` rather than an RN prop — and why the source census
+    // `AriaPressableProps` rather than an RN prop — and why the source census
     // cannot see it: that gate is per-role STATE.
     const c = mount(
       inMenu(

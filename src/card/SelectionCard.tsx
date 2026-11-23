@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import { StyledPressable as Pressable, StyledView as View } from '../styles/styled-primitives';
+import { AriaPressable as Pressable, AriaView as View } from '../styles/aria-hosts';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';

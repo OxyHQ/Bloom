@@ -7,7 +7,6 @@ import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { useMessages } from '../locale/messages';
 import { IS_WEB } from '../styles/platform';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
-import { StyledView } from '../styles/styled-primitives';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
@@ -153,7 +152,7 @@ function AgentProgressPlanComponent({
             </View>
           )}
           {/* Mounted before the decision lands, so assistive technology hears it arrive. */}
-          <StyledView
+          <View
             ref={statusRef}
             // A decision from elsewhere is said politely as it lands. One the
             // user pressed for is said by the focus moving here, so the region
@@ -176,7 +175,7 @@ function AgentProgressPlanComponent({
                 content={decision === 'approved' ? messages.approved : messages.rejected}
               />
             )}
-          </StyledView>
+          </View>
         </View>
       </SurfaceLevelProvider>
     </View>

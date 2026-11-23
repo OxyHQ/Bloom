@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -7,10 +7,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useDialogContext } from './context';
-import { StyledView } from '../styles/styled-primitives';
 import { DetailDialogEnteredContext } from './context';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
-const AnimatedView = Animated.createAnimatedComponent(StyledView);
+const AnimatedView = Animated.createAnimatedComponent(View);
 function phase(start: number, end: number, value: number) {
   'worklet';
   const t = Math.min(1, Math.max(0, (value - start) / (end - start)));

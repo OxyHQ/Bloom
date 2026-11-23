@@ -28,7 +28,7 @@ import { SOCIAL_COLOR_LOGOS } from '../social-button/color-logos';
 import { ColorLogo } from '../social-button/SocialButtonBase';
 import { IS_WEB } from '../styles/platform';
 import { ROUNDED_FULL } from '../styles/rounded-full';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Tabs, TabsTrigger } from '../tabs';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
@@ -277,7 +277,7 @@ export function Marketplace({
     <CatalogGrid>
       {items.map((item) => (
         <Card key={item.id} style={[styles.listing, IS_WEB && WEB_TRANSITION_COLORS]}>
-          <StyledPressable
+          <AriaPressable
             {...MARKETPLACE_HOOKS.item}
             accessibilityRole="button"
             accessibilityLabel={formatMessage(messages.viewItem, item.name)}
@@ -291,7 +291,7 @@ export function Marketplace({
               </Text>
               <Text style={tokens.caption}>{item.category}</Text>
             </View>
-          </StyledPressable>
+          </AriaPressable>
           <Text style={tokens.body2}>{item.description}</Text>
           <Button
             size="sm"
@@ -317,7 +317,7 @@ export function Marketplace({
       {MARKETPLACE_ITEMS.filter((item) => item.kind === 'bot')
         .slice(0, 4)
         .map((item) => (
-          <StyledPressable
+          <AriaPressable
             {...MARKETPLACE_HOOKS.tile}
             key={item.id}
             accessibilityRole="button"
@@ -330,7 +330,7 @@ export function Marketplace({
               <Text style={tokens.body2Medium}>{item.name}</Text>
               <Text style={tokens.caption}>{item.category}</Text>
             </View>
-          </StyledPressable>
+          </AriaPressable>
         ))}
     </CatalogGrid>
   );

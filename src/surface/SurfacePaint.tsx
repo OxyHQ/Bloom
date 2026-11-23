@@ -3,7 +3,6 @@ import { surfaceStyle } from '../shapes/surface-style';
 import type { SurfaceShape, SurfaceStyle } from '../shapes/corner-types';
 import { memo, useEffect, type ComponentType } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
-import { StyledView } from '../styles/styled-primitives';
 import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -183,7 +182,7 @@ export const SurfacePaint = memo(function SurfacePaint({
       <>
         {opticsRecipe.sheet}
         <ServerStyleSheet id="bloom-surface-paint-web-css" css={WEB_PAINT_CSS} />
-        <StyledView
+        <View
           ref={layerRef as never}
           testID={testID}
           // The semantic fill the material tints with, before its translucency;

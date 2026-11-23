@@ -16,7 +16,7 @@ import type {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import type { WebAriaProps } from '../styles/styled-primitives';
+import type { WebAriaProps } from '../styles/aria-hosts';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { TypeScaleVariant } from '../typography/scale';
 

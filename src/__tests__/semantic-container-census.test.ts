@@ -65,7 +65,7 @@ const GROUPING_ROLES = new Set([
 const CLASSIFIED: Record<string, string> = {
   // Hosts that are never flattened.
   Pressable: 'accessible by default: forms a stacking context',
-  StyledPressable: 'a Pressable',
+  AriaPressable: 'a Pressable',
   HoldPressable: 'a Pressable',
   ScrollArea: 'a ScrollView host, which is never flattened',
   ScreenScrollView: 'a ScrollView host, which is never flattened',
@@ -79,7 +79,7 @@ const CLASSIFIED: Record<string, string> = {
   MapAttributionShell: 'forwards `role` to a View or a BlurIsland (collapsable)',
   FloatingPanel: 'forwards `role` to its AnimatedPanel (collapsable)',
   PopupPanel: 'forwards `role` to the PopupSurface or its AnimatedPanel',
-  RadioGroupHost: 'renders a StyledView with collapsable={false} natively',
+  RadioGroupHost: 'renders a AriaView with collapsable={false} natively',
   Item: 'forwards `role` to its Pressable',
   // Not an accessibility role.
   AgentChatMessage: "`role` is the message's author (user, assistant)",

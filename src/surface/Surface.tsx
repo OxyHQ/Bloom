@@ -5,8 +5,7 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import type React from 'react';
 import { forwardRef, memo } from 'react';
 import type { ComponentRef } from 'react';
-import { Platform, StyleSheet, type View } from 'react-native';
-import { StyledView } from '../styles/styled-primitives';
+import { Platform, StyleSheet, View } from 'react-native';
 import { borderRadius } from '../styles/tokens';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';
@@ -72,7 +71,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     const lens = materialProp === 'lens' && lensAvailable;
     const split = lens ? splitLensStyle(style) : null;
     const surface = (
-      <StyledView
+      <View
         {...hostProps}
         ref={ref}
         accessibilityLabel={accessibilityLabel}
@@ -101,7 +100,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
         <SurfaceLevelProvider level={material.level} fill={material.publishedFill}>
           <ConcentricProvider value={concentric.context}>{children}</ConcentricProvider>
         </SurfaceLevelProvider>
-      </StyledView>
+      </View>
     );
     if (!split) return surface;
     // The native lens is the material: it draws behind the content (the lens base, whose content

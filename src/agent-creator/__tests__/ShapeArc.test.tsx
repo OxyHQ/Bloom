@@ -4,7 +4,7 @@ import { VectorStaticPortrait } from '../../agent-avatar/VectorStaticPortrait';
 import { vectorShapePortraits } from '../../agent-avatar/vector-static';
 import type { AvatarCharacter } from '../../agent-avatar/character';
 import { CharacterRuntimeContext } from '../../agent-avatar/context';
-import { StyledImage } from '../../styles/styled-primitives';
+import { BloomImage } from '../../image';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { ShapeArc, type ShapeArcChoice } from '../ShapeArc';
 import { ShapeSilhouette } from '../ShapeSilhouette';
@@ -53,7 +53,7 @@ it('uses frozen previews from the one renderer for every body, without PNGs, and
     expect(preview.props.bodyColor).toBe('#cc5533');
     expect(preview.props.frame.paths.length).toBeGreaterThan(0);
   }
-  expect(view.UNSAFE_queryAllByType(StyledImage)).toHaveLength(0);
+  expect(view.UNSAFE_queryAllByType(BloomImage)).toHaveLength(0);
   fireEvent.press(view.getByLabelText('cloud shape'));
   expect(onSelect).toHaveBeenCalledWith('cloud');
 });

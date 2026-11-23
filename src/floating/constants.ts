@@ -47,7 +47,7 @@ export const DEFAULT_ALIGN_OFFSET = 0;
  *
  * React Native types no `aria-haspopup` (it is a PROPERTY, with no state to fold
  * into `accessibilityState`) and ignores it; react-native-web forwards it.
- * `styles/styled-primitives.ts`'s `WebAriaProps` is what makes it spellable
+ * `styles/aria-hosts.ts`'s `WebAriaProps` is what makes it spellable
  * without a cast.
  */
 export const MENU_TRIGGER_POPUP = 'menu';

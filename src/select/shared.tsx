@@ -29,7 +29,7 @@ import { menuType } from '../floating/menu-type';
 import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { RiArrowDownSLine as ChevronDownIcon } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine as ChevronUpIcon } from '../icons/remix/RiArrowUpSLine';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import type {
   SelectGroupProps,
   SelectItemContextValue,
@@ -250,7 +250,7 @@ function SelectScrollButton({ direction, style }: SelectScrollButtonProps) {
 
   const Chevron = isUp ? ChevronUpIcon : ChevronDownIcon;
   return (
-    <StyledPressable
+    <AriaPressable
       accessibilityRole="button"
       accessibilityLabel={isUp ? messages.scrollUp : messages.scrollDown}
       onPress={() => scroll.scrollBy(direction)}
@@ -260,7 +260,7 @@ function SelectScrollButton({ direction, style }: SelectScrollButtonProps) {
     >
       {/* `size-4` — the same 16px glyph the rows use. */}
       <Chevron width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={palette.textSecondary} />
-    </StyledPressable>
+    </AriaPressable>
   );
 }
 

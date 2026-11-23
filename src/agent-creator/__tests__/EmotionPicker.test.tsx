@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { CharacterAvatar } from '../../agent-avatar/CharacterAvatar';
 import type { AvatarCharacter } from '../../agent-avatar/character';
-import { StyledImage } from '../../styles/styled-primitives';
+import { BloomImage } from '../../image';
 import { BloomThemeProvider } from '../../theme/BloomThemeProvider';
 import { CHARACTER_OPTIONS } from '../constants';
 import { EmotionPicker } from '../EmotionPicker';
@@ -35,7 +35,7 @@ it('renders all eye styles as isolated eyes on a plain circle, preserving paint 
   );
   const eyes = view.UNSAFE_getAllByType(CharacterAvatar);
   expect(eyes).toHaveLength(CHARACTER_OPTIONS.eyes.length);
-  expect(view.UNSAFE_queryAllByType(StyledImage)).toHaveLength(0);
+  expect(view.UNSAFE_queryAllByType(BloomImage)).toHaveLength(0);
   for (const [index, eye] of eyes.entries()) {
     expect(eye.props).toMatchObject({
       renderer: 'svg',

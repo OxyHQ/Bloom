@@ -1,7 +1,7 @@
 import build from './build.json';
 import { PanelSessionLab } from './PanelSessionLab';
 import { useState } from 'react';
-import { StyledView as View } from './.source/styles/styled-primitives';
+import { AriaView as View } from './.source/styles/aria-hosts';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BloomProvider } from './.source/provider';

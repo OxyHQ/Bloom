@@ -6,7 +6,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useCommonMessages } from '../locale/common-messages';
 import { IS_WEB } from '../styles/platform';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { surfaceFillOn, surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -76,7 +76,7 @@ function OnboardingRow({
     </>
   );
   return onPress ? (
-    <StyledPressable
+    <AriaPressable
       {...webHook('inset')}
       role="button"
       accessible
@@ -89,7 +89,7 @@ function OnboardingRow({
       style={style}
     >
       {content}
-    </StyledPressable>
+    </AriaPressable>
   ) : (
     <View style={style}>{content}</View>
   );

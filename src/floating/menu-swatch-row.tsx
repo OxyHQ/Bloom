@@ -41,7 +41,7 @@ import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { RiCloseLine as RemoveIcon } from '../icons/remix/RiCloseLine';
 import { RiSubtractLine as MixedIcon } from '../icons/remix/RiSubtractLine';
 import { AA_LARGE_TEXT_CONTRAST, contrastRatio, mixColors } from '../styles/color-contrast';
-import { StyledPressable } from '../styles/styled-primitives';
+import { AriaPressable } from '../styles/aria-hosts';
 import { parseRgba } from '../theme/color-utils';
 import { useTheme } from '../theme/use-theme';
 import { useMenuSurface } from './context';
@@ -173,7 +173,7 @@ function Swatch({
   const glyphSize = shown ? geometry.litGlyph : geometry.glyph;
 
   return (
-    <StyledPressable
+    <AriaPressable
       ref={swatchRef}
       role={Platform.OS === 'web' ? 'menuitemcheckbox' : undefined}
       accessibilityRole="checkbox"
@@ -215,7 +215,7 @@ function Swatch({
       >
         {Glyph ? <Glyph width={glyphSize} height={glyphSize} fill={paint.glyph} /> : null}
       </View>
-    </StyledPressable>
+    </AriaPressable>
   );
 }
 
