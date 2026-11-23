@@ -73,6 +73,19 @@ describe('PageHeader', () => {
     }
   });
 
+  it('ends the scroll edge a short fade past the measured header, however tall the status bar', () => {
+    // A ratio of the whole header grew with the status bar: 0.55 of a 120pt
+    // header laid a 66pt band over Mention's Home tabs (Pixel 8a).
+    const screen = renderHeader({ title: 'Home', scrim: 'always' });
+    for (const height of [56, 92, 120]) {
+      fireEvent(screen.getByTestId('h'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 390, height } },
+      });
+      const box = Number(resolvedStyle(screen.getByTestId('h-scrim').props.style).height);
+      expect(box).toBe(height + 12);
+    }
+  });
+
   it.each([{ tone: 'onImage' as const }, { scrimFalloff: 'linear' as const }])(
     'preserves explicit image and linear full-box fades: %o',
     (props) => {

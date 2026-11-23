@@ -38,9 +38,12 @@ import { withAlpha } from '../theme/color-utils';
  * fading portion's height and arrives at zero gently. Header/footer chrome
  * stays opaque before that portion so scrolling text cannot cross its labels.
  *
- * `TAIL_RATIO` extends the ramp BELOW the header's own box. The header is as
- * tall as its islands plus its padding; the fade needs room after that, or it
- * finishes at the same place the layout does, which is the line again.
+ * The ramp continues BELOW the header's own box: the fade needs room past the
+ * layout, or it finishes at the same place the layout does, which is the line
+ * again. A floating header's chrome fade is short, the inset its row keeps
+ * below its islands, the way Apple's scroll edge ends just past the bar.
+ * `TAIL_RATIO` is the longer tail of a full-box ramp (a photo, a linear fade)
+ * and of the bottom chrome.
  *
  * ── `stopOpacity`, NOT AN `rgba()` STOP ─────────────────────────────────────
  *
@@ -74,7 +77,7 @@ import { withAlpha } from '../theme/color-utils';
  * gradient that is not there.
  */
 
-/** How far past the header's own height the fade continues, as a ratio of it. */
+/** How far past its chrome's height a full-box ramp, or the bottom chrome's fade, continues, as a ratio of it. */
 export const SCRIM_TAIL_RATIO = 0.55;
 /** Measured chrome occupies this fraction of its chrome + external tail box. */
 export const SCRIM_CHROME_FRACTION = 1 / (1 + SCRIM_TAIL_RATIO);

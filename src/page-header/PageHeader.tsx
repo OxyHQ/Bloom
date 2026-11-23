@@ -61,7 +61,7 @@ import { useSurfaceFillRecipe } from '../styles/surface-levels';
 import { Title, Subtitle } from '../typography';
 import { Surface } from '../surface/Surface';
 import { PageHeaderIdentity } from './PageHeaderIdentity';
-import { EdgeScrim, SCRIM_CHROME_FRACTION, SCRIM_TAIL_RATIO } from './EdgeScrim';
+import { EdgeScrim, SCRIM_TAIL_RATIO } from './EdgeScrim';
 import type { PageHeaderProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
 import { useCssSafeAreaInsets } from '../hooks/use-css-safe-area-insets';
@@ -894,12 +894,17 @@ function PageHeaderComponent({
     () => ({ opacity: dockProgress?.value ?? 0 }),
     [dockProgress],
   );
+  // The scroll edge: the page colour over the header's own measured box (the
+  // status bar and the row), then a short fade past its foot, as long as the
+  // inset the row keeps below its islands. A ratio of the whole header grew with
+  // the status bar and laid a band over whatever sat under the header (Mention's
+  // Home tabs, Pixel 8a). A photo's ramp, or a linear one, fades across its
+  // whole box instead, so it keeps the longer tail its legibility needs.
+  const fullBoxScrim = tone === 'onImage' || scrimFalloff !== 'smooth';
+  const scrimHeight = height + (fullBoxScrim ? height * SCRIM_TAIL_RATIO : OUTER_INSET);
   const chrome = floating ? (
     <Animated.View
-      style={[
-        [styles.scrim, { height: height * (1 + SCRIM_TAIL_RATIO) }, scrimStyle],
-        pointerEventsStyle('none'),
-      ]}
+      style={[[styles.scrim, { height: scrimHeight }, scrimStyle], pointerEventsStyle('none')]}
       testID={testID ? `${testID}-scrim` : undefined}
     >
       <EdgeScrim
@@ -907,7 +912,7 @@ function PageHeaderComponent({
         // falling back to the page. Explicit scrimColor remains an override.
         color={scrimColor ?? (imageScrim ? '#000000' : surfaceFill)}
         falloff={scrimFalloff}
-        opaqueFraction={tone !== 'onImage' && scrimFalloff === 'smooth' ? SCRIM_CHROME_FRACTION : 0}
+        opaqueFraction={fullBoxScrim || scrimHeight <= 0 ? 0 : height / scrimHeight}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>
