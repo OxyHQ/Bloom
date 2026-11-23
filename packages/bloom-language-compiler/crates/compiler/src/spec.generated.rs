@@ -33,7 +33,7 @@ pub const TOKEN_SETS: &[(&str, &[&str])] = &[
     ("separator", &["space", "line", "none", "inset"]),
     ("font", &["large-title", "display-1", "display-2", "display-3", "display-4", "title-1", "title-2", "title-3", "headline", "body", "body-2", "caption-1", "caption-2", "9", "11", "14", "16", "18", "24", "28", "30", "36", "42", "96", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "12.5", "mono"]),
     ("weight", &["light", "regular", "medium", "semibold", "bold", "extrabold"]),
-    ("leading", &["tight", "close", "snug", "easy", "normal", "relaxed", "14px", "16px", "18px", "20px", "22px", "24px", "28px", "32px", "36px", "40px"]),
+    ("leading", &["tight", "close", "snug", "easy", "normal", "relaxed", "14px", "16px", "18px", "20px", "22px", "24px", "28px", "32px", "36px", "40px", "96px"]),
     ("tracking", &["tight", "wide", "wider", "widest", "-0.02em", "-0.01em", "0.04em", "-0.5px", "-0.4px", "-0.2px", "0.5px", "1.5px", "2px"]),
     ("color", &["foreground", "muted", "textTertiary", "primary", "primaryText", "onPrimary", "secondary", "onSecondary", "tertiary", "onTertiary", "background", "surface", "popover", "border", "input", "success", "successText", "warning", "warningText", "error", "info", "mutedFill", "card", "destructive", "white", "black", "transparent", "onSurface", "accent", "errorText", "infoText"]),
     ("borderWidth", &["3", "4", "hairline", "thin", "thick", "0.5", "1.5", "2.5"]),

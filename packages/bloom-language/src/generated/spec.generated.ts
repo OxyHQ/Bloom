@@ -120,7 +120,8 @@ export const LEADING_PX = {
   "28px": 28,
   "32px": 32,
   "36px": 36,
-  "40px": 40
+  "40px": 40,
+  "96px": 96
 } as const;
 export const TRACKING = {
   "tight": -0.025,
