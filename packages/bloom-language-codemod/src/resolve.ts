@@ -12,7 +12,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type Arg, type Entry, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
+import {
+  type Arg,
+  type Entry,
+  isPoints,
+  LANGUAGE_PACKAGE,
+  type Mod,
+  type PointsArg,
+  type Table,
+} from './table';
 
 /** What draws the className: a React Native View, Pressable or a Bloom Text. */
 export type HostKind = 'view' | 'pressable' | 'text';
@@ -591,10 +599,11 @@ function mergeObjects(
   subject: (mod: Mod) => string,
   fail: (subject: string, code: string, why: string) => void,
 ): Mod | null {
-  const out: Record<string, string> = {};
+  // A key's token, or points computed at render (`{ width: itemSize }`).
+  const out: Record<string, string | PointsArg> = {};
   for (const mod of list) {
     const value = mod.args[0];
-    if (typeof value !== 'object' || mod.args.length !== 1) {
+    if (typeof value !== 'object' || isPoints(value) || mod.args.length !== 1) {
       fail(subject(mod), name, `an unexpected .${name}() form`);
       return null;
     }

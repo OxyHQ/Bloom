@@ -2050,6 +2050,81 @@
   "appColors": null
  },
  {
+  "name": "components/Geometry.tsx:10",
+  "before": "<View className=\"flex-row flex-wrap\">\n      <View style={{ width: 37, height: 37 }} />\n      <View className=\"w-12\" style={{ height: 43 }} />\n      <View style={{ maxWidth: 49, minHeight: 55 }} />\n    </View>",
+  "after": "toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack"
+  ],
+  "classes": [
+   "flex-row",
+   "flex-wrap",
+   "w-12"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:21",
+  "before": "<View className=\"relative h-24\">\n      <View\n        className=\"absolute right-4 p-1\"\n        style={{ top: 43, zIndex: 37 }}\n      />\n    </View>",
+  "after": "toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [
+   "relative",
+   "h-24",
+   "absolute",
+   "right-4",
+   "p-1"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:33",
+  "before": "<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />",
+  "after": "toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/Insets.tsx:11",
   "before": "<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>\n      <Text>Compose</Text>\n    </View>",
   "after": "toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))",

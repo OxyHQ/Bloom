@@ -203,6 +203,11 @@ export type StyleResult =
       /** What no utility writes, by its style key (`flex: 1` is `.grow()`). */
       readonly mods: readonly { readonly subject: string; readonly mod: Mod }[];
       readonly literal: string;
+      /**
+       * Points the chain draws without carrying them (a half-square radius's
+       * side, drawn as `'full'`): the parity's before side writes their hole.
+       */
+      readonly held: readonly AnyNode[];
     }
   | { readonly ok: false; readonly subject: string; readonly why: string };
 
@@ -342,6 +347,74 @@ export interface SpreadStyle {
   readonly literal?: string;
 }
 
+/** A frame's own length keys (spec `objects.frame`). */
+const FRAME_KEYS = new Set(['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight']);
+/** A pinned view's physical edges, as React Native's keys (spec `objects.edges`). */
+const PINNED_EDGES = new Set(['top', 'bottom', 'left', 'right']);
+
+/**
+ * Geometry computed at render as the language's points (spec `points`):
+ * `width: itemSize` is `.frame({ width: itemSize })`, `top: insets.top + 8`
+ * `.position({ top: insets.top + 8 })` (which joins the view's `absolute`),
+ * `zIndex: count - index` `.zIndex(count - index)`. Only a value `computed`
+ * says the view works out as it renders; a number written out is a token.
+ */
+function pointsDeclaration(key: string, value: AnyNode): Mod | undefined {
+  const points = { node: value, hole: 'points' } as const;
+  if (FRAME_KEYS.has(key)) return { name: 'frame', args: [{ [key]: points }] };
+  if (PINNED_EDGES.has(key)) return { name: 'position', args: [{ [key]: points }] };
+  if (key === 'zIndex') return { name: 'zIndex', args: [points] };
+  return undefined;
+}
+
+/** A style's own declaration by its key, or undefined. */
+function declared(object: AnyNode, key: string): AnyNode | undefined {
+  return object.properties.find(
+    (property: AnyNode) =>
+      (n.ObjectProperty.check(property) || n.Property.check(property)) &&
+      !property.computed &&
+      n.Identifier.check(property.key) &&
+      property.key.name === key,
+  )?.value;
+}
+
+/**
+ * The side of a square a radius is half of (`width: size, height: size,
+ * borderRadius: size / 2`), which is `.corner('full')`: the box is a circle
+ * either way, since a radius over half the side draws as half of it. The
+ * style sets the side twice as one expression and no minimum that could grow
+ * the box past it.
+ */
+function halfSquareSide(object: AnyNode, value: AnyNode): AnyNode | undefined {
+  const [width, height] = [declared(object, 'width'), declared(object, 'height')];
+  if (
+    !width ||
+    !height ||
+    declared(object, 'minWidth') ||
+    declared(object, 'minHeight') ||
+    !n.BinaryExpression.check(value) ||
+    value.operator !== '/' ||
+    !n.NumericLiteral.check(value.right) ||
+    value.right.value !== 2
+  )
+    return undefined;
+  const side = recast.print(value.left).code;
+  return recast.print(width).code === side && recast.print(height).code === side
+    ? value.left
+    : undefined;
+}
+
+export interface StyleReaders {
+  /** Declarations the caller reads as modifiers (a theme colour as its role). */
+  readonly read?: StyleRead;
+  /** A spread the caller reads (`StyleSheet.absoluteFill`, `fontFamilyStyle('mono')`). */
+  readonly spreadOf?: (node: AnyNode) => SpreadStyle | undefined;
+  /** A value that is a number the codemod knows (Bloom's `tokens.space.sm`), or undefined. */
+  readonly numberOf?: (node: AnyNode) => number | undefined;
+  /** Whether a value is a number the view computes as it renders (geometry's points). */
+  readonly computed?: (node: AnyNode) => boolean;
+}
+
 /**
  * An object literal of a style as utilities, and the literal itself (for the
  * parity's before side, where `styles.x` is not in scope). A spread `spreadOf`
@@ -349,15 +422,13 @@ export interface SpreadStyle {
  */
 export function styleUtilities(
   object: AnyNode,
-  read?: StyleRead,
-  spreadOf?: (node: AnyNode) => SpreadStyle | undefined,
-  /** A value that is a number the codemod knows (Bloom's `tokens.space.sm`), or undefined. */
-  numberOf?: (node: AnyNode) => number | undefined,
+  { read, spreadOf, numberOf, computed }: StyleReaders = {},
 ): StyleResult {
   if (!n.ObjectExpression.check(object))
     return { ok: false, subject: 'style', why: 'a style that is no object literal' };
   const classes: string[] = [];
   const mods: { subject: string; mod: Mod }[] = [];
+  const held: AnyNode[] = [];
   let literal = recast.print(object).code;
   // A grow, shrink and basis that are one of Tailwind's flex utilities (`flex-1`) are `.flex()`.
   const flex = flexToken(object);
@@ -392,7 +463,16 @@ export function styleUtilities(
         : known < 0
           ? recast.types.builders.unaryExpression('-', recast.types.builders.numericLiteral(-known))
           : recast.types.builders.numericLiteral(known);
-    const mod = direct(key, value) ?? read?.(key, value);
+    const side = key === 'borderRadius' ? halfSquareSide(object, value) : undefined;
+    if (side) {
+      mods.push({ subject: key, mod: { name: 'corner', args: ['full'] } });
+      if (computed?.(side)) held.push(side);
+      continue;
+    }
+    const mod =
+      direct(key, value) ??
+      read?.(key, value) ??
+      (computed?.(value) ? pointsDeclaration(key, value) : undefined);
     if (mod) {
       for (const one of Array.isArray(mod) ? mod : [mod]) mods.push({ subject: key, mod: one });
       continue;
@@ -414,5 +494,5 @@ export function styleUtilities(
       };
     classes.push(found);
   }
-  return { ok: true, classes, mods, literal };
+  return { ok: true, classes, mods, literal, held };
 }

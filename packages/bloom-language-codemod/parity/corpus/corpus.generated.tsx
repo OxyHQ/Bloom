@@ -583,6 +583,30 @@ export const CASES = [
     after: () => { const View = I9; const Text = I52; const Dialog = I53; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
   },
   {
+    name: "components/Geometry.tsx:10",
+    before: () => { const View = I9; return (<View className="flex-row flex-wrap">
+      <View style={{ width: 37, height: 37 }} />
+      <View className="w-12" style={{ height: 43 }} />
+      <View style={{ maxWidth: 49, minHeight: 55 }} />
+    </View>); },
+    after: () => { const View = I9; const { HStack, VStack } = L;  return (toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())); },
+  },
+  {
+    name: "components/Geometry.tsx:21",
+    before: () => { const View = I9; return (<View className="relative h-24">
+      <View
+        className="absolute right-4 p-1"
+        style={{ top: 43, zIndex: 37 }}
+      />
+    </View>); },
+    after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))); },
+  },
+  {
+    name: "components/Geometry.tsx:33",
+    before: () => { const View = I9; return (<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />); },
+    after: () => { const View = I9; const { HStack, VStack, toElement } = L;  return (toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))); },
+  },
+  {
     name: "components/Insets.tsx:11",
     before: () => { const View = I9; const Text = I52; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>
       <Text>Compose</Text>

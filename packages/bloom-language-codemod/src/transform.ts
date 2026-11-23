@@ -44,7 +44,7 @@ import {
   styleUtilities,
   textDeclaration,
 } from './style';
-import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
+import { type Arg, isPoints, LANGUAGE_PACKAGE, type Mod, modKey, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
@@ -240,7 +240,9 @@ interface Carried {
     /** A list's named row function, called with the argument Bloom hands it (`renderPost(info)`). */
     | 'renderer'
     /** An `accessibilityState` or `accessibilityValue` object. */
-    | 'state';
+    | 'state'
+    /** A number of points the view computes as it renders (a frame's `itemSize`). */
+    | 'points';
   /** For a key: its attribute, which a fixture's root leaves out (a key is no part of what draws). */
   readonly attribute?: AnyNode;
 }
@@ -619,16 +621,28 @@ const uncommented = (code: string) => code.replace(/\/\*[\s\S]*?\*\//g, '');
 const quote = (text: string) =>
   `'${text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
 
-function printArg(arg: Arg): string {
+/** An argument as code; points computed at render are their carried value (`carry`). */
+function printArg(arg: Arg, carry: (c: Carried) => string): string {
   if (typeof arg === 'string') return quote(arg);
   if (typeof arg === 'number' || typeof arg === 'boolean') return String(arg);
+  if (isPoints(arg)) return carry(arg);
   const entries = Object.entries(arg).map(
-    ([k, v]) => `${/^[A-Za-z_$][\w$]*$/.test(k) ? k : quote(k)}: ${quote(v)}`,
+    ([k, v]) =>
+      `${/^[A-Za-z_$][\w$]*$/.test(k) ? k : quote(k)}: ${isPoints(v) ? carry(v) : quote(v)}`,
   );
   return `{ ${entries.join(', ')} }`;
 }
 
-const printMod = (mod: Mod) => `.${mod.name}(${mod.args.map(printArg).join(', ')})`;
+const printMod = (mod: Mod, carry: (c: Carried) => string) =>
+  `.${mod.name}(${mod.args.map((arg) => printArg(arg, carry)).join(', ')})`;
+
+/** The points an argument carries: itself, or an object's values (`{ width: itemSize }`). */
+const pointsOf = (arg: unknown): Carried[] =>
+  isPoints(arg)
+    ? [arg]
+    : typeof arg === 'object' && arg !== null && !('$' in arg) && !('hole' in arg)
+      ? Object.values(arg).filter(isPoints)
+      : [];
 
 /** Transforms one file's source. */
 export function transformSource(source: string, options: TransformOptions): FileResult {
@@ -841,6 +855,72 @@ export function transformSource(source: string, options: TransformOptions): File
     },
   });
   /**
+   * Each identifier read whose binding is inside a function (a prop, a local, a
+   * hook's result): what the view works out as it renders, never a module's constant.
+   */
+  const renderReads = new Set<AnyNode>();
+  recast.visit(ast, {
+    visitIdentifier(path) {
+      const parent = path.parent?.node;
+      const named =
+        (n.MemberExpression.check(parent) && parent.property === path.node && !parent.computed) ||
+        ((n.ObjectProperty.check(parent) || n.Property.check(parent)) &&
+          parent.key === path.node &&
+          !parent.computed);
+      if (!named && scopeOf(path, path.node.name)?.isGlobal === false) renderReads.add(path.node);
+      this.traverse(path);
+    },
+  });
+  /** An expression of numbers alone: reads, arithmetic, `Math`'s functions, a plain choice between two. */
+  const numberForm = (node: AnyNode): boolean => {
+    if (n.NumericLiteral.check(node)) return true;
+    if (n.Identifier.check(node)) return node.name !== 'undefined';
+    if (n.MemberExpression.check(node))
+      return (
+        (n.Identifier.check(node.object) || n.MemberExpression.check(node.object)) &&
+        numberForm(node.object) &&
+        (!node.computed || numberForm(node.property))
+      );
+    if (n.BinaryExpression.check(node))
+      return (
+        ['+', '-', '*', '/'].includes(node.operator) &&
+        numberForm(node.left) &&
+        numberForm(node.right)
+      );
+    if (n.UnaryExpression.check(node)) return node.operator === '-' && numberForm(node.argument);
+    if (n.TSNonNullExpression.check(node)) return numberForm(node.expression);
+    if (n.ConditionalExpression.check(node))
+      return (
+        (isPlainRead(node.test) || isBooleanForm(node.test)) &&
+        numberForm(node.consequent) &&
+        numberForm(node.alternate)
+      );
+    return (
+      n.CallExpression.check(node) &&
+      n.MemberExpression.check(node.callee) &&
+      n.Identifier.check(node.callee.object) &&
+      node.callee.object.name === 'Math' &&
+      !renderReads.has(node.callee.object) &&
+      node.arguments.every(numberForm)
+    );
+  };
+  /**
+   * A number the view computes as it renders (`itemSize`, `insets.top + 8`,
+   * `SIZES[size] / 2`): a number form that reads something bound in the
+   * component. A number written out, or one of module constants alone, is a token.
+   */
+  const computedAtRender = (node: AnyNode): boolean => {
+    if (n.NumericLiteral.check(node) || !numberForm(node)) return false;
+    let reads = false;
+    recast.visit(node, {
+      visitIdentifier(path) {
+        if (renderReads.has(path.node)) reads = true;
+        return false;
+      },
+    });
+    return reads;
+  };
+  /**
    * A padding by the device's inset, as `.safeAreaPadding(side)`: `paddingTop:
    * insets.top`, or `insets.top + 24` with a padding of the space token beyond it
    * on the same view (a top or bottom one: the language adds them).
@@ -991,6 +1071,8 @@ export function transformSource(source: string, options: TransformOptions): File
 
   /** A `style` whose objects are the parity's before side, where `styles.x` is not in scope. */
   const styleLiterals = new Map<AnyNode, string>();
+  /** Points a style's chain draws without carrying them (a half-square radius's side): holes on the before side. */
+  const heldPoints = new Set<AnyNode>();
 
   /**
    * Module-level `const NAME = { … }` (a style held in a constant, `satisfies`
@@ -1184,12 +1266,11 @@ export function transformSource(source: string, options: TransformOptions): File
       let object = part;
       // A module constant holding a style is its object, written out on the before side.
       if (styleConstantReads.has(part)) {
-        const style = styleUtilities(
-          styleConstantReads.get(part),
+        const style = styleUtilities(styleConstantReads.get(part), {
           read,
           spreadOf,
-          bloomTokenNumber,
-        );
+          numberOf: bloomTokenNumber,
+        });
         if (!style.ok) return style;
         classes.push(...style.classes);
         mods.push(...style.mods);
@@ -1207,11 +1288,19 @@ export function transformSource(source: string, options: TransformOptions): File
           ? styleSheets.get(sheet.name)?.get(property.name)
           : undefined;
       }
-      const style = object ? styleUtilities(object, read, spreadOf, bloomTokenNumber) : undefined;
+      const style = object
+        ? styleUtilities(object, {
+            read,
+            spreadOf,
+            numberOf: bloomTokenNumber,
+            computed: computedAtRender,
+          })
+        : undefined;
       if (!style) return { ok: false, subject: 'style', why: 'a style the codemod cannot read' };
       if (!style.ok) return style;
       classes.push(...style.classes);
       mods.push(...style.mods);
+      for (const side of style.held) heldPoints.add(side);
       if (referenced) literals.set(part, style.literal);
     }
     for (const [part, literal] of literals) styleLiterals.set(part, literal);
@@ -2192,16 +2281,13 @@ export function transformSource(source: string, options: TransformOptions): File
     chain: Resolved,
     other: Resolved,
   ): { both: Mod[]; whenTrue: Mod[]; whenFalse: Mod[] } | undefined {
-    if (
-      chain.axis !== other.axis ||
-      JSON.stringify(chain.variants) !== JSON.stringify(other.variants)
-    )
+    if (chain.axis !== other.axis || modKey(chain.variants) !== modKey(other.variants))
       return undefined;
-    const rest = other.mods.map((mod) => JSON.stringify(mod));
+    const rest = other.mods.map(modKey);
     const both: Mod[] = [];
     const whenTrue: Mod[] = [];
     for (const mod of chain.mods) {
-      const at = rest.indexOf(JSON.stringify(mod));
+      const at = rest.indexOf(modKey(mod));
       if (at < 0) whenTrue.push(mod);
       else {
         both.push(mod);
@@ -2221,7 +2307,7 @@ export function transformSource(source: string, options: TransformOptions): File
   function sameShape(chain: Resolved, other: Resolved): readonly Mod[] | undefined {
     const same =
       chain.axis === other.axis &&
-      JSON.stringify(chain.variants) === JSON.stringify(other.variants) &&
+      modKey(chain.variants) === modKey(other.variants) &&
       chain.mods.length === other.mods.length &&
       chain.mods.every((mod, i) => {
         const at = other.mods[i] as Mod;
@@ -3885,7 +3971,7 @@ export function transformSource(source: string, options: TransformOptions): File
       case 'map':
         return `${carry(ir.items)}.map((${ir.params.map((param) => recast.print(param).code).join(', ')}) => ${print(ir.body, carry)})`;
       case 'icon':
-        return `${lang('Icon')}(${ir.component})${ir.mods.map(printMod).join('')}${ir.color ? `.foreground(${appColorTable}.color.${ir.color.name})` : ''}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
+        return `${lang('Icon')}(${ir.component})${ir.mods.map((mod) => printMod(mod, carry)).join('')}${ir.color ? `.foreground(${appColorTable}.color.${ir.color.name})` : ''}${ir.key && !root ? `.id(${carry(ir.key)})` : ''}`;
       case 'component': {
         // Its children (the trailing views) with their comments; the arguments before them as values.
         const first = ir.args.findIndex((a) => isTagged(a) && a.$ === 'view');
@@ -3943,12 +4029,12 @@ export function transformSource(source: string, options: TransformOptions): File
     let out = resolved.mods
       .map((mod, i) => {
         const other = choice && 'mods' in choice ? choice.mods[i] : undefined;
-        if (!choice || !other) return printMod(mod);
+        if (!choice || !other) return printMod(mod, carry);
         const args = mod.args.map((arg, j) => {
           const alternative = other.args[j] as Arg;
           return arg === alternative
-            ? printArg(arg)
-            : `${carry(choice.test)} ? ${printArg(arg)} : ${printArg(alternative)}`;
+            ? printArg(arg, carry)
+            : `${carry(choice.test)} ? ${printArg(arg, carry)} : ${printArg(alternative, carry)}`;
         });
         return `.${mod.name}(${args.join(', ')})`;
       })
@@ -3964,10 +4050,11 @@ export function transformSource(source: string, options: TransformOptions): File
         [holds, choice.only.whenTrue],
         [fails, choice.only.whenFalse],
       ] as const)
-        if (mods.length) out += `.when(${condition}, (v) => v${mods.map(printMod).join('')})`;
+        if (mods.length)
+          out += `.when(${condition}, (v) => v${mods.map((mod) => printMod(mod, carry)).join('')})`;
     }
     for (const variant of resolved.variants) {
-      let inner = `v${variant.mods.map(printMod).join('')}`;
+      let inner = `v${variant.mods.map((mod) => printMod(mod, carry)).join('')}`;
       for (const condition of [...variant.conditions].reverse().slice(0, -1))
         inner = `v.when(${quote(condition)}, (v) => ${inner})`;
       out += `.when(${quote(variant.conditions[0] as string)}, (v) => ${inner})`;
@@ -3994,7 +4081,7 @@ export function transformSource(source: string, options: TransformOptions): File
         case 'row':
           return `(${value.param}) => ${print(value.view, carry)}`;
         case 'build':
-          return `(v) => v${value.mods.map(printMod).join('')}`;
+          return `(v) => v${value.mods.map((mod) => printMod(mod, carry)).join('')}`;
         case 'renderer':
           return carry(value.fn);
         case 'absent':
@@ -4009,7 +4096,7 @@ export function transformSource(source: string, options: TransformOptions): File
           return `${carry(value.test)} ? ${printValue(value.then, carry)} : ${printValue(value.otherwise, carry)}`;
       }
     }
-    return printArg(value as Arg);
+    return printArg(value as Arg, carry);
   }
 
   const printProp = (prop: PropMod, carry: (c: Carried) => string) =>
@@ -4018,6 +4105,7 @@ export function transformSource(source: string, options: TransformOptions): File
   /** The carried values inside a value, in order. */
   function carriedOfValue(value: Value, out: Carried[]): void {
     if (isCarried(value)) out.push(value);
+    else if (!isTagged(value)) out.push(...pointsOf(value));
     else if (isTagged(value)) {
       if (value.$ === 'view' || value.$ === 'row') carriedOf(value.view, out);
       else if (value.$ === 'binding') for (const v of value.binding) carriedOfValue(v, out);
@@ -4065,6 +4153,16 @@ export function transformSource(source: string, options: TransformOptions): File
     }
   }
 
+  /** The points a view's modifiers carry (a style's `width: itemSize`), each once. */
+  function resolvedPoints(resolved: Resolved, choice: Choice | null): Carried[] {
+    const mods = [
+      ...resolved.mods,
+      ...resolved.variants.flatMap((variant) => variant.mods),
+      ...choiceMods(choice),
+    ];
+    return [...new Set(mods.flatMap((mod) => mod.args.flatMap(pointsOf)))];
+  }
+
   /** Every carried value of a tree, in order. */
   function carriedOf(ir: Ir, out: Carried[] = []): Carried[] {
     switch (ir.type) {
@@ -4101,12 +4199,14 @@ export function transformSource(source: string, options: TransformOptions): File
         for (const run of ir.runs)
           if ('type' in run && run.type === 'expr') out.push(run.value);
           else if (!('type' in run && run.type === 'string')) carriedOf(run as Ir, out);
+        out.push(...resolvedPoints(ir.resolved, ir.choice));
         if (ir.choice) out.push(ir.choice.test);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
         break;
       case 'stack':
         for (const child of ir.children) carriedOf(child, out);
+        out.push(...resolvedPoints(ir.resolved, ir.choice));
         if (ir.choice) out.push(ir.choice.test);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
@@ -4123,6 +4223,8 @@ export function transformSource(source: string, options: TransformOptions): File
     string: (i: number) => `'⟨${i}⟩'`,
     key: (i: number) => `'k${i}'`,
     number: () => '2',
+    // A length of its own for each, so a value carried to another key shows.
+    points: (i: number) => String(37 + 6 * i),
     boolean: () => 'true',
     state: () => '{ selected: true, busy: false }',
     handler: () => '() => {}',
@@ -4143,8 +4245,19 @@ export function transformSource(source: string, options: TransformOptions): File
     if (conditions && carried.some((c) => c.hole === 'condition'))
       fixture(node, ir, rootKey, false);
     const index = new Map(carried.map((c, i) => [c, i]));
+    // Points are one hole per expression: `width: size, height: size` stays a square.
+    const pointsTexts: string[] = [];
+    const pointsHole = (node: AnyNode) => {
+      const text = recast.print(node).code;
+      if (!pointsTexts.includes(text)) pointsTexts.push(text);
+      return HOLE.points(pointsTexts.indexOf(text));
+    };
     const hole = (c: Carried) =>
-      c.hole === 'condition' ? String(conditions) : HOLE[c.hole](index.get(c) ?? 0);
+      c.hole === 'condition'
+        ? String(conditions)
+        : c.hole === 'points'
+          ? pointsHole(c.node)
+          : HOLE[c.hole](index.get(c) ?? 0);
     const removed = rootKey?.attribute;
     const after =
       ir.type === 'screen' ? print(ir, hole, true) : `toElement(${print(ir, hole, true)})`;
@@ -4157,6 +4270,9 @@ export function transformSource(source: string, options: TransformOptions): File
       text: hole(c),
     }));
     if (removed) spans.push({ start: removed.start, end: removed.end, text: '' });
+    for (const side of heldPoints)
+      if (side.start >= node.start && side.end <= node.end)
+        spans.push({ start: side.start, end: side.end, text: pointsHole(side) });
     // An element's type arguments (`<SegmentedControl<Cadence>`) draw nothing, and name the app's types.
     recast.visit(node, {
       visitJSXOpeningElement(path) {
@@ -4181,7 +4297,12 @@ export function transformSource(source: string, options: TransformOptions): File
     // An inset the chain pads by is the corpus's on the before side, both sides drawn under it.
     let insets = false;
     for (const [read, side] of insetReads)
-      if (read.start >= node.start && read.end <= node.end) {
+      if (
+        read.start >= node.start &&
+        read.end <= node.end &&
+        // An inset inside points the chain carries (`top: insets.top + 8`) is that value's hole.
+        !carried.some((c) => c.node.start <= read.start && read.end <= c.node.end)
+      ) {
         insets = true;
         spans.push({ start: read.start, end: read.end, text: `PARITY_INSETS.${side}` });
       }

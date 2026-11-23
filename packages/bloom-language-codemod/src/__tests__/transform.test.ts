@@ -740,6 +740,51 @@ export function C() {
     expect(result.fixtures[0]?.insets).toBe(true);
     expect(result.fixtures[0]?.before).toContain('PARITY_INSETS.top + 24');
   });
+  it('carries geometry computed at render as points, through the frames and edges it joins', () => {
+    const result = run(`import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const SIZE = 48;
+export function A({ itemSize, count, index }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View>
+      <View className="w-12" style={{ height: itemSize / 2 }} />
+      <View className="absolute right-4" style={{ top: insets.top + 8, zIndex: count - index }} />
+      <View style={{ width: SIZE }} />
+      <View style={{ width: 45 }} />
+    </View>
+  );
+}
+`);
+    const code = flat(result.code);
+    expect(code).toContain("VStack().frame({ width: '48', height: itemSize / 2 })");
+    expect(code).toContain(".zIndex(count - index).position({ right: 'lg', top: insets.top + 8 })");
+    // A module's constant and a number written out are tokens, never points.
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['width', 'w-11.25']);
+    const [fixture] = result.fixtures;
+    expect(fixture?.before).toContain('style={{ top: 49, zIndex: 43 }}');
+    expect(fixture?.after).toContain(".zIndex(43).position({ right: 'lg', top: 49 })");
+    expect(fixture?.insets).toBe(false);
+  });
+  it('rounds a radius of half a square’s side as full', () => {
+    const result = run(`import { View } from 'react-native';
+export function A({ size, w }) {
+  return (
+    <View>
+      <View style={{ width: size, height: size, borderRadius: size / 2 }} />
+      <View style={{ width: w, height: size, borderRadius: size / 2 }} />
+    </View>
+  );
+}
+`);
+    expect(flat(result.code)).toContain(
+      "VStack().frame({ width: size, height: size }).corner('full')",
+    );
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual(['borderRadius']);
+    expect(result.fixtures[0]?.before).toContain(
+      'style={{ width: 37, height: 37, borderRadius: 37 / 2 }}',
+    );
+  });
   it('follows a Button’s ink held in a const back to the theme’s roles', () => {
     const result = run(`import { Button } from '@oxy.so/bloom/button';
 import { useTheme } from '@oxy.so/bloom/theme';

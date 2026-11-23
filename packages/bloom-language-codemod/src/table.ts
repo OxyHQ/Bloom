@@ -10,7 +10,33 @@ import { parseExpression } from '@babel/parser';
 
 type Expression = ReturnType<typeof parseExpression>;
 
-export type Arg = string | number | boolean | Readonly<Record<string, string>>;
+/**
+ * A number of points the view computes as it renders (`itemSize`,
+ * `insets.top + 8`), carried over as written: geometry only, a frame's
+ * lengths, a pinned view's edges and its stacking order (spec `points`).
+ */
+export interface PointsArg {
+  readonly node: unknown;
+  readonly hole: 'points';
+}
+
+export type Arg =
+  | string
+  | number
+  | boolean
+  | PointsArg
+  | Readonly<Record<string, string | PointsArg>>;
+
+export const isPoints = (arg: unknown): arg is PointsArg =>
+  typeof arg === 'object' && arg !== null && (arg as { hole?: unknown }).hole === 'points';
+
+/** Modifiers (or variants of them) as a comparable string, each points value by where it is written. */
+export const modKey = (mods: unknown): string =>
+  JSON.stringify(mods, (_, value) =>
+    isPoints(value)
+      ? `#${(value.node as { start: number }).start}:${(value.node as { end: number }).end}`
+      : value,
+  );
 
 /** One modifier call, as the codemod writes it. */
 export interface Mod {

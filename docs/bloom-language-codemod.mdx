@@ -117,6 +117,23 @@ bottom inset plus a space token's points (`insets.top + 24`) is
 view. Any other sum, or insets handed in as a prop, is a reason. Its parity
 draws both sides under a phone's insets (47 top, 34 bottom).
 
+Geometry a style computes as the view renders is points, the number the
+language's frame, edges and stacking order take (see [Styles computed at
+runtime](./bloom-language.mdx#styles-computed-at-runtime)): `width: itemSize`
+is `.frame({ width: itemSize })`, joined with the frame the classes write
+(`w-12` and `height: itemSize / 2` are `.frame({ width: '48', height: itemSize
+/ 2 })`); `top: insets.top + 8` beside `absolute right-4` is `.position({
+right: 'lg', top: insets.top + 8 })`; `zIndex: count - index` is
+`.zIndex(count - index)`. A value is points when it is a number form (reads,
+arithmetic, `Math`'s functions, a plain choice between two) that reads
+something bound in the component (a prop, a local, a hook's result); a number
+written out, or one of module constants alone (`width: SIZE`), stays a token
+or a reason. A radius of half a square's side (`width: size, height: size,
+borderRadius: size / 2`, the side one expression and no minimum beside it) is
+`.corner('full')`: either draws a circle, since a radius past half the side
+draws as half of it. Its parity writes one hole per expression, so a square
+stays square and the radius is half the hole on the before side.
+
 A `Button`'s `color` and `hoverColor` are `.foreground(role)` and
 `.hoverForeground(role)` when they are a theme colour read from `useTheme()`,
 a choice of them by a plain condition (`undefined` for Bloom's own ink), or a
@@ -436,7 +453,7 @@ object the codemod can read (a style passed in as a prop, a conditional
 module); the rest hold a value no utility writes, mostly a theme colour, a
 size of an app constant (`FONT_SIZES.sm`, `HPAD`), a font size or radius
 off Tailwind's scale, `flex: 1`, or a value computed from the layout
-(`insets.top + 32`).
+(`insets.top + 32`, now points where it is geometry).
 
 A className chosen at runtime between two static strings by one plain
 condition (`active ? 'bg-primary px-3' : 'bg-muted px-3'`, or a template
