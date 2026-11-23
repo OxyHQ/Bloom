@@ -10,6 +10,8 @@
  *   1. `docs/adoption-matrix.mdx` is byte-identical to a fresh render, so a
  *      family that changes what it reads cannot ship a matrix describing a
  *      library Bloom no longer is. (Same arrangement as `design-tokens/tokens.json`.)
+ *      Its family rows hold no counts that other families' changes move, so a
+ *      PR in the merge queue is not made stale by another one's new test.
  *
  *   2. The classification is an EQUALITY with the derived set. A family that
  *      starts matching a contract and reads nothing has to be argued about — it
@@ -45,6 +47,19 @@ describe('the shipped adoption matrix is generated, not maintained', () => {
 
   it('says so in the file itself', () => {
     expect(readFileSync(MATRIX_PATH, 'utf8')).toContain('AUTO-GENERATED');
+  });
+
+  it('records only what a family is, never a count other changes move', () => {
+    // A committed matrix that counted, say, the suites importing each family
+    // went stale for every queued PR whenever one PR added a test anywhere
+    // (one new theme test: `theme` 720 -> 721), and dropped them from the
+    // merge queue. Each family cell is a fact about that family alone.
+    const families = ROWS.map((row) => `| \`${row.family}\` |`);
+    const table = readFileSync(MATRIX_PATH, 'utf8')
+      .split('\n')
+      .filter((line) => families.some((start) => line.startsWith(start)));
+    expect(table).toHaveLength(ROWS.length);
+    for (const line of table) expect(line).not.toMatch(/\|\s*\d+\s*\|/);
   });
 
   it('covers every family exactly once', () => {
