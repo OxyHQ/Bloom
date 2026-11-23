@@ -761,6 +761,23 @@ const HIDDEN =
 /** State, live regions and hiding, as an app writes them on React Native's views. */
 const accessibility: ParityCase[] = [
   {
+    name: 'a layout handler on the outermost box',
+    language: () => toElement(L.VStack(L.Text('a')).padding('md').onLayout(hold)),
+    bloom: () => (
+      <RN.View
+        onLayout={hold}
+        style={{
+          paddingTop: space.md,
+          paddingBottom: space.md,
+          paddingStart: space.md,
+          paddingEnd: space.md,
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'an accessibility value as a range',
     language: () =>
       toElement(

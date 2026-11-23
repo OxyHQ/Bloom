@@ -1,10 +1,12 @@
 import type { MotionValue } from '@oxy.so/bloom/motion';
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentType, ReactNode, Ref } from 'react';
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
   GestureResponderEvent,
   Insets,
+  LayoutChangeEvent,
+  View,
 } from 'react-native';
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
 import type {
@@ -1581,6 +1583,12 @@ export type Modifier =
   | { readonly kind: 'label'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'hint'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'role'; readonly key: string; readonly value: Role }
+  | { readonly kind: 'ref'; readonly key: string; readonly value: Ref<View> }
+  | {
+      readonly kind: 'onLayout';
+      readonly key: string;
+      readonly value: ((event: LayoutChangeEvent) => void) | undefined;
+    }
   | {
       readonly kind: 'accessibilityValue';
       readonly key: string;
@@ -2438,6 +2446,12 @@ export class Node {
   }
   accessibilityState(value: AccessibilityState): Node {
     return this.with({ kind: 'accessibilityState', key: 'a11yState', value });
+  }
+  ref(value: Ref<View>): Node {
+    return this.with({ kind: 'ref', key: 'ref', value });
+  }
+  onLayout(value: ((event: LayoutChangeEvent) => void) | undefined): Node {
+    return this.with({ kind: 'onLayout', key: 'onLayout', value });
   }
   accessibilityValue(value: AccessibilityValue): Node {
     return this.with({ kind: 'accessibilityValue', key: 'a11yValue', value });
@@ -4622,6 +4636,21 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * Native's `accessibilityValue` as an app writes it.
    */
   accessibilityValue(value: AccessibilityValue): Self;
+  /**
+   * An escape hatch: the view's outermost box as React Native's view (its
+   * host, or the Bloom component that draws it), for what only a view
+   * instance does (a visibility tracker, a measurement, a DOM lookup on the
+   * web). A screen reads and writes state through bindings, not through it.
+   */
+  ref(value: Ref<View>): Self;
+  /**
+   * An escape hatch: React Native's `onLayout` on the view's outermost box,
+   * called with its frame after each layout that changes it. Laying a view out
+   * from state its own layout wrote is discouraged: it draws twice, the second
+   * time moved, and can loop. Prefer a layout the modifiers say (a frame, a
+   * grow, an aspect ratio, a `ZStack`).
+   */
+  onLayout(value: ((event: LayoutChangeEvent) => void) | undefined): Self;
   /** A change inside the view is announced: `polite`, `assertive` or `none` (`accessibilityLiveRegion`). */
   liveRegion(value: LiveRegion): Self;
   /**

@@ -999,6 +999,11 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (hidden !== undefined) Object.assign(props, hidden ? HIDDEN : SHOWN);
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
+  // The escape hatches, on whichever host is outermost.
+  const ref = ownValue(p, 'ref')?.value;
+  if (ref !== undefined) props.ref = ref;
+  const onLayout = ownValue(p, 'onLayout')?.value;
+  if (onLayout !== undefined) props.onLayout = onLayout;
   if (p.pressable) {
     const fade = ownValue(p, 'pressFade');
     // A view whose press handler is absent stays the same host, out of the tab order

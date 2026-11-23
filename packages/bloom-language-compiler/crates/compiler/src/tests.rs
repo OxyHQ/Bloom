@@ -3389,3 +3389,11 @@ fn an_accessibility_value_is_checked() {
     let output = compiled("export const x = () => Text('a').accessibilityValue({ current: 4 });\n");
     assert_eq!(output.diagnostics[0].message, ".accessibilityValue() has no 'current'");
 }
+
+#[test]
+fn the_escape_hatches_take_a_ref_and_a_layout_handler() {
+    let ok = compiled("export const x = (r, f) => VStack(Text('a')).ref(r).onLayout(f);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = (r) => VStack(Text('a')).ref(r, r);\n");
+    assert_eq!(output.diagnostics[0].message, ".ref() takes 1 argument(s), not 2");
+}

@@ -281,3 +281,35 @@ describe('Shape', () => {
     });
   });
 });
+
+describe('the escape hatches', () => {
+  /** A host's instance, as the test renderer hands a ref one (it has no views of its own). */
+  const BOX = { box: true };
+  const mountWithRefs = (element: ReactElement): ReactTestRenderer => {
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        createElement(PaintContext.Provider, { value: LIGHT }, element),
+        { createNodeMock: () => BOX },
+      );
+    });
+    return renderer;
+  };
+
+  it('.ref() is the outermost box, .onLayout() its layout handler', () => {
+    const ref = { current: null as unknown };
+    const onLayout = jest.fn();
+    const renderer = mountWithRefs(
+      toElement(VStack(Text('a')).padding('md').background('surface').ref(ref).onLayout(onLayout)),
+    );
+    const [outer] = views(renderer);
+    expect(outer?.props.onLayout).toBe(onLayout);
+    expect(ref.current).toBe(BOX);
+  });
+
+  it('a callback ref is called with the box', () => {
+    const seen: unknown[] = [];
+    mountWithRefs(toElement(HStack(Text('a')).ref((view) => void seen.push(view))));
+    expect(seen).toEqual([BOX]);
+  });
+});
