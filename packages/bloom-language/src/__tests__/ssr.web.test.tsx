@@ -65,9 +65,9 @@ describe('server-rendered HTML', () => {
     const sheets = languageSheets();
     const ids = sheets.map(([id]) => id);
     expect(ids.slice(0, 2)).toEqual(['bloom-language', 'bloom-language-ink-classes']);
-    expect(ids.at(-1)).toBe('bloom-language-ink');
+    expect(ids[ids.length - 1]).toBe('bloom-language-ink');
     expect(sheets[1]?.[1]).toContain(`.${base}-primary-50`);
-    expect(sheets.at(-1)?.[1]).toContain('--bl-primary-50:color-mix(');
+    expect(sheets[sheets.length - 1]?.[1]).toContain('--bl-primary-50:color-mix(');
   });
 
   it('one inside another writes nothing, and no policy writes nothing', () => {
