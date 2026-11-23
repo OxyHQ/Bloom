@@ -7,16 +7,16 @@
  * The menu grows out of a lens base, the upstream app's glass trigger, and goes back into it. Inside a base (a group on glass, a
  * toolbar's capsule) it is that base's menu, and the whole base becomes the menu. Anywhere else
  * the trigger is a base of its own: a trigger on `.glass()` (the fixed layer) is drawn by the
- * window, with the glass's tint and frost; any other (a feed row's ⋯) draws its lens in its own
- * place in the page, against the fill of the surface it sits on (`restBackdrop`), so it scrolls,
- * clips and stacks with the page. A tap on a menu's own base opens it on the UI thread, with no
+ * window, with the glass's tint and frost; any other (a feed row's ⋯) is a bare trigger, as
+ * SwiftUI's `Menu` with a plain label and Apple's track-row ⋯ are: its base draws no lens
+ * (`lens={false}`), and the menu still grows out of its shape. A tap on a menu's own base opens it on the UI thread, with no
  * round trip to JS (`openOnTap`); the trigger's press opens it too, from inside a group. Rows given as they
  * are (tagged, or with handlers) are held by the base before it opens; a `menu()` content is built
  * by the press, and the base opens with its rows as they arrive.
  */
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { resolveSurfaceLevel, useSurfaceFill } from '@oxy.so/bloom/styles';
+import { resolveSurfaceLevel } from '@oxy.so/bloom/styles';
 import { useTheme } from '@oxy.so/bloom/theme';
 import { fontFamilyStyle } from '@oxy.so/bloom/typography';
 
@@ -57,7 +57,6 @@ function LensMenuHost({
   // The choice outlives the open menu: the engine closes the menu as a row is chosen.
   const { choose, running } = useMenuChoice(actions);
   const inBase = lens.useInLensBase();
-  const surfaceFill = useSurfaceFill();
   const { trigger, glass } = splitTriggerGlass(given);
   const config = useMemo(() => lensMenuConfig(theme), [theme]);
   const triggerConfig = useSame(
@@ -84,7 +83,9 @@ function LensMenuHost({
           colorScheme={theme.isDark ? 'dark' : 'light'}
           cornerRadius={triggerCorner(given)}
           config={triggerConfig}
-          restBackdrop={glass ? undefined : surfaceFill}
+          // A trigger is glass only when it says so (`.glass()`): a bare one (a feed row's ⋯, Apple's
+          // track-row ⋯) draws no lens, and its menu still grows out of its shape.
+          lens={glass?.drawn === true}
           openOnTap={!(isNode(given) && valuesOf(given).disabled === true)}
           style={TRIGGER_STYLE}
         >

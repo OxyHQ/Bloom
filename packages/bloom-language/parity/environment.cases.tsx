@@ -104,7 +104,10 @@ const environment: ParityCase[] = [
   },
 ];
 
-/** The glass button styles: the button on glass (Bloom's shared material), as the chain they stand for draws it. */
+/**
+ * The glass button styles: the button on glass (Bloom's shared material), as the chain they stand for draws it,
+ * at Bloom's one floating size (`lg`, 44pt: Apple's Liquid Glass button), whatever size the chain names.
+ */
 const glassStyles: ParityCase[] = [
   {
     name: 'glass: a subtle neutral button on glass',
@@ -119,6 +122,7 @@ const glassStyles: ParityCase[] = [
     bloom: () => (
       <Surface>
         <Button
+          size="lg"
           appearance="subtle"
           tone="neutral"
           iconOnly
@@ -137,7 +141,7 @@ const glassStyles: ParityCase[] = [
       <Themed>
         {(c) => (
           <Surface fill={c.primary}>
-            <Button appearance="solid" tone="accent" material="shared" onPress={onPress}>
+            <Button size="lg" appearance="solid" tone="accent" material="shared" onPress={onPress}>
               Done
             </Button>
           </Surface>
@@ -152,12 +156,23 @@ const glassStyles: ParityCase[] = [
       <Themed>
         {(c) => (
           <Surface fill={c.error}>
-            <Button appearance="solid" tone="danger" material="shared">
+            <Button size="lg" appearance="solid" tone="danger" material="shared">
               Delete
             </Button>
           </Surface>
         )}
       </Themed>
+    ),
+  },
+  {
+    name: 'a glass button is the floating size whatever size its chain names',
+    language: () => toElement(L.Button(L.Text('Done')).style('glass').size('sm')),
+    bloom: () => (
+      <Surface>
+        <Button size="lg" appearance="subtle" tone="neutral" material="shared">
+          Done
+        </Button>
+      </Surface>
     ),
   },
   {
@@ -169,12 +184,12 @@ const glassStyles: ParityCase[] = [
     bloom: () => (
       <RN.View style={{ flexDirection: 'row' }}>
         <Surface>
-          <Button appearance="subtle" tone="neutral" material="shared">
+          <Button size="lg" appearance="subtle" tone="neutral" material="shared">
             Bold
           </Button>
         </Surface>
         <Surface>
-          <Button appearance="subtle" tone="neutral" material="shared">
+          <Button size="lg" appearance="subtle" tone="neutral" material="shared">
             Italic
           </Button>
         </Surface>

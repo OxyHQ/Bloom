@@ -1,6 +1,6 @@
 /**
  * A FAB beside the bottom bar is the bar's height, so the two read as one row (on a Pixel 8a the
- * 50 dp FAB stood shorter than the 58 dp bar); elsewhere it keeps its size's diameter.
+ * 50 dp FAB stood shorter than the bar); elsewhere it keeps its size's diameter.
  */
 import { render } from '@testing-library/react-native';
 import { StyleSheet, View } from 'react-native';
@@ -45,4 +45,19 @@ it('on its own, the FAB keeps its size’s diameter', () => {
     </BloomThemeProvider>,
   );
   expect(heightOf('fab', screen)).toBe(FAB_METRICS.md.diameter);
+});
+
+it('a FAB’s shape is its corner: a circle, or a rounded square or squircle at 28% of its diameter', () => {
+  const radius = (shape?: 'circle' | 'rounded' | 'squircle') => {
+    const screen = render(
+      <BloomThemeProvider mode="light">
+        <Fab icon={() => null} accessibilityLabel="Compose" testID="fab" shape={shape} />
+      </BloomThemeProvider>,
+    );
+    return StyleSheet.flatten(screen.getByTestId('fab').props.style)?.borderRadius;
+  };
+  const diameter = FAB_METRICS.md.diameter;
+  expect(radius()).toBe(radius('circle'));
+  expect(radius('rounded')).toBe(Math.round(diameter * 0.28));
+  expect(radius('squircle')).toBe(Math.round(diameter * 0.28));
 });

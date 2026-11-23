@@ -64,6 +64,7 @@ import {
 } from '../window/context';
 import { WindowControls } from '../window/WindowControls';
 import { WindowDragRegion } from '../window/WindowDragRegion';
+import { EXPANDED_HEIGHT } from '../tab-bar/shared';
 
 export function createScreen(
   ScrollBar: ComponentType<ScrollBarProps>,
@@ -249,7 +250,8 @@ export function createScreen(
       measuredTop ??
       headerHeight ??
       56 + (Platform.OS === 'web' || safeTopConsumed ? 0 : (insets?.top ?? 0));
-    const bottom = measuredBottom ?? bottomBarHeight ?? 58 + windowEdgeGap(insets?.bottom ?? 0);
+    const bottom =
+      measuredBottom ?? bottomBarHeight ?? EXPANDED_HEIGHT + windowEdgeGap(insets?.bottom ?? 0);
     const keyboardVisible = useKeyboardVisible();
     // A desktop window's keys are physical: there is no on-screen keyboard for
     // its bars to follow (and following one subscribes to every resize).
@@ -448,7 +450,7 @@ export function createScreen(
             paddingHorizontal: 16,
             paddingBottom: windowEdgeGap(insets?.bottom ?? 0),
             minHeight: host.bottomBar
-              ? (bottomBarHeight ?? 58 + windowEdgeGap(insets?.bottom ?? 0))
+              ? (bottomBarHeight ?? EXPANDED_HEIGHT + windowEdgeGap(insets?.bottom ?? 0))
               : bottom,
           }}
         >

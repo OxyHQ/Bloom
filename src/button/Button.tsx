@@ -5,7 +5,12 @@ import { useGroupedButton } from './use-grouped-button';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
-import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
+import {
+  useControlMaterial,
+  useFloatingControl,
+  useInFloatingRegion,
+  useLensAvailable,
+} from '../floating/lens/lens-material';
 import { useInLensBase } from '../floating/lens/native-lens';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
@@ -44,6 +49,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
+  FLOATING_CONTROL_SIZE,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
   isIconComponent,
@@ -420,7 +426,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       stopPropagation = false,
       appearance: appearanceProp,
       tone: toneProp,
-      size: sizeProp,
+      size: requestedSize,
       density: densityProp,
       style,
       textStyle,
@@ -471,6 +477,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const appearance = appearanceProp ?? 'solid';
     const regionMaterial = useControlMaterial();
     const material = materialProp ?? regionMaterial;
+    // A floating control (on the lens) is the floating size, whatever its caller says.
+    const sizeProp = useFloatingControl(materialProp) ? FLOATING_CONTROL_SIZE : requestedSize;
+    const inFloatingRegion = useInFloatingRegion();
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
@@ -541,7 +550,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const lens =
       lensAvailable &&
       (material === 'lens' || (material === 'surface' && palette.rest.surface === true));
-    const restBackdrop = lens && material !== 'lens' ? layer.parentFill : undefined;
+    // Outside a floating region (a header, a toolbar, a bar, a FAB) the control is in the page's
+    // content: its lens is drawn in its place, so it scrolls and stacks with the page.
+    const restBackdrop = lens && !inFloatingRegion ? layer.parentFill : undefined;
     // On the lens (its own or an enclosing base's) the engine draws the shadow and rim.
     const onLens = inLensBase || lens;
 
@@ -843,6 +854,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           <SurfacePaint
             fill={paint.background}
             radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+            // A continuous corner (a squircle FAB) on the paint too.
+            shape={StyleSheet.flatten(style)?.borderCurve === 'continuous' ? SMOOTH : undefined}
           />
         ) : null}
         <ButtonContent
@@ -882,6 +895,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     );
   },
 );
+
+const SMOOTH = { curve: 'smooth' } as const;
 
 const styles = StyleSheet.create({
   content: {

@@ -37,7 +37,7 @@ function Subject({ size }: { size: 'xs' | 'lg' }) {
 function tabBarHeights(root: ReturnType<typeof render>['UNSAFE_root']): number[] {
   return root
     .findAll(
-      (node) => typeof node.type === 'string' && resolvedStyle(node.props?.style).height === 58,
+      (node) => typeof node.type === 'string' && resolvedStyle(node.props?.style).height === 62,
     )
     .map((node) => resolvedStyle(node.props.style).height as number);
 }
@@ -53,6 +53,6 @@ it('keeps fixed navigation geometry independent of the app control size scope', 
   screen.rerender(<Subject size="lg" />);
   expect(measure()).toEqual(compact);
   expect(compact.header).toBe(44);
-  expect(compact.tabs).toContain(58);
-  expect(compact.bottom).toBe(74);
+  expect(compact.tabs).toContain(62);
+  expect(compact.bottom).toBe(78);
 });

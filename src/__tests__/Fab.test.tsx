@@ -51,7 +51,7 @@ describe('Fab action primitive', () => {
     ['native', Fab],
     ['web', WebFab],
   ] as const)(
-    '%s uses action by default while preserving scope and explicit tone precedence',
+    '%s uses the accent by default while preserving scope and explicit tone precedence',
     (platform, Action) => {
       const view = themed(<Action testID="tone-fab" icon={Icon} accessibilityLabel="Create" />);
       const fill = () => {
@@ -70,7 +70,7 @@ describe('Fab action primitive', () => {
         return materials[0]!.props.fill;
       };
       const theme = buildTheme('teal', 'light');
-      expect(fill()).toBe(resolveButtonPalette('solid', theme, 'action').rest.background);
+      expect(fill()).toBe(resolveButtonPalette('solid', theme, 'accent').rest.background);
       view.rerender(
         <BloomThemeProvider mode="light" colorPreset="teal">
           <BloomScope tone="support">
@@ -218,7 +218,7 @@ it.each([
 it.each([
   ['native', Fab],
   ['web', WebFab],
-] as const)('%s supplies icon components with the action foreground', (platform, Action) => {
+] as const)('%s supplies icon components with the accent foreground', (platform, Action) => {
   const Glyph = (props: { fill?: string }) => (
     <Text testID="painted-glyph" {...props}>
       +
@@ -232,7 +232,7 @@ it.each([
   const expected =
     platform === 'web'
       ? 'currentColor'
-      : resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action').rest.foreground;
+      : resolveButtonPalette('solid', buildTheme('teal', 'light'), 'accent').rest.foreground;
   expect(tree.getByTestId('painted-glyph', { includeHiddenElements: true }).props.fill).toBe(
     expected,
   );

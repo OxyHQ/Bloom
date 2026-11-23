@@ -35,6 +35,12 @@ so the ordinary row stays 60pt with either a mouse or touch. Native retains
 36pt controls with platform hit slop. Richer titles can grow naturally.
 Controls and accessory rows share an 8pt gap.
 
+A `floating` header's controls are on glass, and glass controls are Apple's
+size: the back button, `leading`, `actions` and their `Button.Group`s take the
+44pt `lg` rung (`FLOATING_CONTROL_SIZE`), the glass itself being the 44pt tap
+target, as on iOS 26 and 27 (measured: a 44pt back circle and a 44pt-tall
+share-and-more capsule). The floating row is 68pt.
+
 For `tone="onImage"`, the default scrim is a dark translucent gradient so the
 white title and subtitle remain readable in both themes. An explicit
 `scrimColor` still overrides that recipe; `scrim="none"` remains available.
@@ -224,7 +230,7 @@ container-width geometry.
 
 ## Look
 
-- Default minimum height 56; compact minimum 32. Default outer inset 12 at every width; compact inset 12 with no vertical padding. Button size remains the shared `md` default.
+- Default minimum height 56; compact minimum 32. Default outer inset 12 at every width; compact inset 12 with no vertical padding. Button size remains the shared `md` default, except on a floating header's glass, where it is `lg` (44).
 - Header actions use the same `Button` and `Button.Group` geometry as the rest of Bloom: `md` is 36px with a mouse, and the shared touch target is 44px. The header does not add a separate button size or hit-slop recipe.
 - Island material: the shared Surface material. Default fills paint at 72% on the web, where the blur shows through, and opaque on native. See [Surface](./surface.mdx).
 - Title `headline-medium` text-primary, subtitle `body-2-regular` secondary. Both truncate to one line.

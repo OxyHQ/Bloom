@@ -27,6 +27,13 @@ export function buttonTouchVisualInset(visualHeight: number, touch: boolean): nu
   return IS_WEB && touch ? Math.max(0, (BUTTON_TOUCH_TARGET - visualHeight) / 2) : 0;
 }
 
+/**
+ * The size of a control on the floating material (a floating header's controls and groups, the language's
+ * floating button styles): `lg`, 44pt, Apple's iOS 26 and 27 bar buttons, measured at 44pt. The standard tap
+ * target is the visible control itself.
+ */
+export const FLOATING_CONTROL_SIZE: ButtonResolvedSize = 'lg';
+
 /** Every size is a full pill. */
 export const BUTTON_RADIUS = borderRadius.full;
 

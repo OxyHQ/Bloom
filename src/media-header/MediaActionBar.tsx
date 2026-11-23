@@ -297,7 +297,8 @@ function FollowButtonComponent({
   accessibilityHint,
   color,
   appearance = 'subtle',
-  material,
+  // A follow toggle is a pill on the lens: Bloom's floating size (44).
+  material = 'lens',
   tone = 'support',
   iconOnly = false,
   size: sizeProp,

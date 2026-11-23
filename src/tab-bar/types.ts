@@ -153,7 +153,7 @@ export type TabBarProps = ViewProps & {
    *
    * Pass `false` to remove it entirely — no blur, and no node left behind. The
    * band is tall (the bar's own bottom gap plus its expanded height plus the
-   * bleed above it, 114pt at a zero bottom inset) and full-bleed, so anything a
+   * bleed above it, 122pt at a zero bottom inset) and full-bleed, so anything a
    * screen floats near the bottom edge — a video scrubber, a FAB — sits INSIDE
    * it and is blurred. That cannot be undone from the outside: `zIndex` only
    * orders siblings within one stacking context, and a screen's FAB is inside

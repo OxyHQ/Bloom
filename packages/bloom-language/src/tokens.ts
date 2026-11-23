@@ -146,6 +146,8 @@ export type Edge = (typeof ENUMS.edge)[number];
 export type BorderEdge = (typeof ENUMS.borderEdge)[number];
 export type Role = (typeof ENUMS.role)[number];
 export type ButtonShape = (typeof ENUMS.buttonShape)[number];
+/** A FAB's silhouette (Bloom `Fab`'s `shape`): a circle, a rounded square or a squircle. */
+export type FabShape = (typeof ENUMS.fabShape)[number];
 /** A plain link button's ink (Bloom `Button`'s `linkTone`). */
 export type ButtonLinkTone = (typeof ENUMS.linkTone)[number];
 /** A node kind that takes `.density()`. */

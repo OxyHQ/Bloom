@@ -915,7 +915,10 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
   Each is the chain it stands for: `glass` is `.style('subtle').tint('neutral')`
   on `.glass()`, `glassProminent` `.style('solid').tint('accent')` on `.glass()`,
   whose untinted glass takes the button's fill. A `.tint()` the chain names
-  wins, and a `.glass()` it names (`clear`, a tint) is the glass instead.
+  wins, and a `.glass()` it names (`clear`, a tint) is the glass instead. A
+  button on glass is Apple's size, the 44pt `lg` rung (Bloom's
+  `FLOATING_CONTROL_SIZE`, measured on iOS 26 and 27), whatever size its
+  chain or its environment names: the control decides it, never its caller.
 
   | | Android, OxyOS | iOS (not verified) | Web |
   | --- | --- | --- | --- |
@@ -1129,7 +1132,15 @@ on the lens and iOS stand-ins, and by parity and Chrome on Surface.
 ink, size and name (Bloom's `material="shared"`); the glass draws its fill.
 An untinted glass under a solid control takes the control's fill (the spec's
 `toneRole`: `accent` is `primary`, `action` is `tertiary`…), so the ink still
-reads. A `FAB` is always on glass.
+reads; on the lens at Bloom's solid lens control's 0.96, as Apple's
+`glassProminent` is filled. A `FAB` is always on glass, tinted with the accent
+(the theme's primary, its glyph the on-primary colour) unless it names a
+`.tint()`. `.shape('circle' | 'rounded' | 'squircle')` is its silhouette
+(Bloom `Fab`'s `shape`): a circle by default, or a square whose corner is 28%
+of its diameter, round (`rounded`) or continuous (`squircle`); its glass takes
+that corner at the FAB's diameter, so the lens, its press and a menu's morph
+follow the shape. The lens draws every corner continuous, so the two squares
+read alike on Android and OxyOS.
 
 **Interactive and identity glass.** `regular.interactive(on?)` says whether the
 glass answers touch (SwiftUI's `Glass.interactive`), and `identity` is no glass
@@ -1243,10 +1254,10 @@ is written):
 A warning is printed (`warning[bloom]`, `console.warn` in Metro and Jest) and
 the module compiles; an error fails it, as every other check does.
 
-**The one exception to the navigation layer** is a row's control that becomes
-its menu: Mention's feed ⋯ on Android draws a resting lens in the scroll
-(`restBackdrop`) so the button itself grows into the menu. A glass that is in
-the content on purpose says so with `.inContent()`, which silences the warning:
+**The one exception to the navigation layer** is a row's control that is glass
+on purpose (a feed's ⋯ is not: it is a bare trigger, see Menu). A glass that is
+in the content on purpose says so with `.inContent()`, which silences the
+warning:
 
 ```ts
 Menu(Button(Icon(RiMoreFill)).label('More').glass().inContent(), ...rows)
@@ -1313,11 +1324,9 @@ Menu(MORE, PostMenu({ post }))
   the whole base, and nothing inside a base draws a lens of its own. A menu
   outside any base is a base of its own: on `.glass()` (the fixed layer) drawn
   by the window, with the glass's tint and frost; anywhere else (a feed row's
-  ⋯) its lens is drawn in its own place in the page (`restBackdrop`, the
-  engine's Bloom patch), against the fill of the surface it sits on, so it
-  scrolls, clips and stacks with the page, and a layer keeps it, so a scroll
-  redraws no lens. The window draws it only while its menu is open, from that
-  same base. The trigger's `.corner()` is the base's radius (a capsule
+  ⋯) it is a bare trigger, as SwiftUI's `Menu` with a plain label and Apple's
+  track-row ⋯ are: its base draws no lens (`lens={false}`), and the menu still
+  grows out of its shape and goes back into it. The trigger's `.corner()` is the base's radius (a capsule
   without one). The trigger's press opens the menu natively;
   press-and-drag across the open panel, submenus, haptics and predictive back
   are the component's own. Rows given as they are (tagged, or with handlers)
