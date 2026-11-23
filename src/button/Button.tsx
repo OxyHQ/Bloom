@@ -6,6 +6,7 @@ import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-hos
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
 import { useControlMaterial, useLensAvailable } from '../floating/lens/lens-material';
+import { useInLensBase } from '../floating/lens/native-lens';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
   type ComponentRef,
@@ -510,6 +511,8 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           : geometry.iconSize;
     const lensAvailable = useLensAvailable();
     const lens = material === 'lens' && lensAvailable;
+    // On the lens (its own or an enclosing base's) the engine draws the glass's shadow and rim.
+    const onLens = useInLensBase() || lens;
     const palette = useMemo(
       () =>
         resolveButtonOverrides(
@@ -648,7 +651,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         borderColor: paint.border,
         // The gradient is a child layer, so the box itself stays clear of it.
         backgroundColor: paint.surface ? 'transparent' : paint.background,
-        ...(palette.shadow ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] } : null),
+        ...(palette.shadow && !onLens
+          ? { boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] }
+          : null),
         ...(disabled && palette.disabledOpacity != null
           ? { opacity: palette.disabledOpacity }
           : null),
@@ -669,6 +674,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
       palette,
       paint,
       theme.isDark,
+      onLens,
       disabled,
       isSquare,
       isLink,
