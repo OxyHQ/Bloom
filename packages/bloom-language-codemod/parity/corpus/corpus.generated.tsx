@@ -2,7 +2,7 @@
 import * as RN from 'react-native';
 import * as L from '@oxy.so/bloom-language';
 import { toElement } from '@oxy.so/bloom-language';
-import { useTheme as useParityTheme } from '@oxy.so/bloom/theme';
+import { useColorTokens as useParityTokens, useTheme as useParityTheme } from '@oxy.so/bloom/theme';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { ScreenHost } from '../../../bloom-language/src/router/screen-host';
 import { SettingsSection as I0 } from '@oxy.so/bloom/settings-modal';
@@ -281,7 +281,7 @@ export const CASES = [
   },
   {
     name: "components/Components.tsx:309",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const RiHeart3Fill = I31; return (<View className="flex-row gap-2" accessibilityRole="header">
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const View = I9; const RiHeart3Line = I29; const RiMailLine = I35; const RiStarLine = I26; const RiHeart3Fill = I31; return (<View className="flex-row gap-2" accessibilityRole="header">
       <RiHeart3Line width={20} height={20} fill={parityTheme.colors.textSecondary} />
       <RiMailLine width={16} height={16} fill={parityTheme.colors.primary} />
       <RiStarLine fill={parityTheme.colors.error} />
@@ -339,7 +339,7 @@ export const CASES = [
   },
   {
     name: "components/Components.tsx:394",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const ScreenScrollView = I8; const RefreshControl = I39; return (<ScreenScrollView
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const ScreenScrollView = I8; const RefreshControl = I39; return (<ScreenScrollView
       refreshControl={
         <RefreshControl
           refreshing={true}
@@ -518,7 +518,7 @@ export const CASES = [
   },
   {
     name: "components/Components.tsx:638",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const View = I9; const Text = I52; return (<View
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const View = I9; const Text = I52; return (<View
       className="flex-row p-2"
       style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}
     >
@@ -582,16 +582,18 @@ export const CASES = [
     after: () => { const View = I9; const Text = I52; const Dialog = I53; const { VStack, Text: LText, Dialog: LDialog, toElement } = L;  return (toElement(VStack(LText('Shortcuts'), LDialog(VStack().padding('horizontal', 'xl')).header(ITEMS).presentAt('center').presented([true, () => (() => {})()])).spacing('sm'))); },
   },
   {
-    name: "components/Insets.tsx:12",
-    before: () => { const Text = I52; return (<Text>Compose</Text>); },
-    after: () => { const Text = I52; const { Text: LText } = L;  return (toElement(LText('Compose'))); },
+    name: "components/Insets.tsx:11",
+    before: () => { const View = I9; const Text = I52; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>
+      <Text>Compose</Text>
+    </View>}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I9; const Text = I52; const { VStack, Text: LText } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
     name: "components/Insets.tsx:20",
     before: () => { const View = I9; const Text = I52; return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>
       <Text>Welcome</Text>
     </View>}</SafeAreaInsetsContext.Provider>); },
-    after: () => { const View = I9; const Text = I52; const { Text: LText, toElement, VStack } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))}</SafeAreaInsetsContext.Provider>); },
+    after: () => { const View = I9; const Text = I52; const { VStack, Text: LText, toElement } = L;  return (<SafeAreaInsetsContext.Provider value={PARITY_INSETS}>{toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))}</SafeAreaInsetsContext.Provider>); },
   },
   {
     name: "components/Menus.tsx:16",
@@ -616,7 +618,7 @@ export const CASES = [
   },
   {
     name: "components/Menus.tsx:41 (false)",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const Button = I13; const RiMoreFill = I60; return (<Button
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const RiMoreFill = I60; return (<Button
       appearance="plain"
       tone="neutral"
       iconOnly
@@ -628,7 +630,7 @@ export const CASES = [
   },
   {
     name: "components/Menus.tsx:41",
-    before: () => { function Before() { const parityTheme = useParityTheme(); const Button = I13; const RiMoreFill = I60; return (<Button
+    before: () => { function Before() { const parityTheme = useParityTheme(); const parityTokens = useParityTokens(); const Button = I13; const RiMoreFill = I60; return (<Button
       appearance="plain"
       tone="neutral"
       iconOnly

@@ -2,14 +2,13 @@
 
 - Files: 8 read, 8 changed
 - Elements considered (React Native View, Pressable, Text, Image; Bloom Text, Button, icons and mapped components): 160
-- Converted: 159 (99.4%), in 57 regions
+- Converted: 160 (100.0%), in 57 regions
 - Classes the app's theme draws differently from Bloom's: 0
 
 ## Why elements stayed JSX
 
 | Reason | Elements | Most frequent |
 | --- | ---: | --- |
-| style | 1 | `style` 1 |
 
 ## Bloom components left as JSX
 
@@ -26,4 +25,3 @@ Not mapped by the codemod yet (each needs its prop rules and parity first):
 
 ## Each element
 
-- components/Insets.tsx:11 `<View>`: `style` (style: a style that is no object literal)

@@ -2050,22 +2050,27 @@
   "appColors": null
  },
  {
-  "name": "components/Insets.tsx:12",
-  "before": "<Text>Compose</Text>",
-  "after": "toElement(LText('Compose'))",
+  "name": "components/Insets.tsx:11",
+  "before": "<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>\n      <Text>Compose</Text>\n    </View>",
+  "after": "toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))",
   "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
    "Text": {
     "module": "@oxy.so/bloom/typography",
     "imported": "Text"
    }
   },
   "language": [
+   "VStack",
    "Text: LText"
   ],
   "classes": [],
   "within": [],
   "themed": false,
-  "insets": false,
+  "insets": true,
   "screen": false,
   "appColors": null
  },
@@ -2084,9 +2089,9 @@
    }
   },
   "language": [
+   "VStack",
    "Text: LText",
-   "toElement",
-   "VStack"
+   "toElement"
   ],
   "classes": [],
   "within": [],

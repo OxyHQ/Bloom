@@ -3,9 +3,9 @@
   "files": 8,
   "changedFiles": 8,
   "candidates": 160,
-  "converted": 159,
+  "converted": 160,
   "regions": 57,
-  "rate": 99.4,
+  "rate": 100,
   "overridden": [],
   "bloomComponents": {
     "@oxy.so/bloom/segmented-control#SegmentedControlItemText": 5,
@@ -15,27 +15,6 @@
     "@oxy.so/bloom/dropdown-menu#DropdownMenuContent": 1,
     "@oxy.so/bloom/dropdown-menu#DropdownMenuSeparator": 1
   },
-  "patterns": [
-    {
-      "code": "style",
-      "elements": 1,
-      "top": {
-        "style": 1
-      }
-    }
-  ],
-  "unconverted": [
-    {
-      "file": "components/Insets.tsx",
-      "line": 11,
-      "element": "View",
-      "reasons": [
-        {
-          "subject": "style",
-          "code": "style",
-          "why": "a style that is no object literal"
-        }
-      ]
-    }
-  ]
+  "patterns": [],
+  "unconverted": []
 }
