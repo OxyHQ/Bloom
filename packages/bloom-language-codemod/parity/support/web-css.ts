@@ -199,8 +199,7 @@ function fold(node: Dom | string, inherited: Inherited): Dom | string {
   }
   // Accepted folds: an explicit `overflow: visible` is CSS's initial value, and a corner of
   // exactly half a square box is a full one (`full`, 9999px), as both draw it.
-  for (const axis of ['overflow-x', 'overflow-y'])
-    if (css[axis] === 'visible') delete css[axis];
+  for (const axis of ['overflow-x', 'overflow-y']) if (css[axis] === 'visible') delete css[axis];
   const side = css.width;
   if (side !== undefined && side === css.height && /^[\d.]+px$/.test(side)) {
     const half = `${Number.parseFloat(side) / 2}px`;

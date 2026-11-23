@@ -5274,10 +5274,8 @@
   "min-h-[76px]": {
    "count": 3,
    "apps": 2,
-   "status": "token",
-   "scale": "space",
-   "value": "76px",
-   "language": ".frame({ minHeight: … })"
+   "status": "mapped",
+   "language": ".frame({ minHeight: '76' })"
   },
   "min-h-[88px]": {
    "count": 3,
@@ -10554,10 +10552,8 @@
   "pb-[38px]": {
    "count": 1,
    "apps": 1,
-   "status": "token",
-   "scale": "space",
-   "value": "38px",
-   "language": ".padding('bottom', …)"
+   "status": "mapped",
+   "language": ".padding('bottom', '38')"
   },
   "pb-[60px]": {
    "count": 1,
