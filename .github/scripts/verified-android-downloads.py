@@ -22,12 +22,16 @@ class DownloadFailure(RuntimeError):
 def download(url, destination):
     # Retry receive resets (curl 56), too. GET writes to --output, so curl
     # truncates partial data before retrying. Even permanent HTTP/TLS errors
-    # cost at most the existing retry budget; integrity is checked afterwards.
+    # cost at most the retry budget; integrity is checked afterwards.
+    # No fixed --retry-delay: curl then backs off exponentially (1, 2, 4, 8 s)
+    # and honours a 429/503 Retry-After, which a rate-limited host (the GitHub
+    # release API answering 429 to a shared runner) needs; two tries 2 s apart
+    # failed inside its window.
     # No credentials, signed redirect URLs or response bodies enter the logs.
     result = subprocess.run([
         'curl', '--fail', '--location', '--silent', '--show-error',
         '--connect-timeout', '15', '--max-time', '90',
-        '--retry', '2', '--retry-all-errors', '--retry-delay', '2', '--retry-max-time', '180',
+        '--retry', '4', '--retry-all-errors', '--retry-max-time', '300',
         '--proto', '=https', '--proto-redir', '=https',
         '--header', 'Accept: application/octet-stream',
         '--output', str(destination), '--write-out', '%{http_code}', url,
@@ -40,9 +44,14 @@ def download(url, destination):
 def primary_available(url):
     # A bounded GET exercises redirects that HEAD can miss. Some official
     # hosts ignore Range; curl then refuses the body after healthy headers.
+    # Transient failures (a timeout, 429, 5xx) are retried with curl's
+    # backoff before the canonical host is judged down: one dropped probe sent
+    # a job to the fallback host, which then rate-limited it. Not
+    # --retry-all-errors: the healthy refusal above (curl 63) must not retry.
     result = subprocess.run([
         'curl', '--fail', '--location', '--silent', '--show-error',
         '--connect-timeout', '10', '--max-time', '30',
+        '--retry', '3', '--retry-max-time', '60',
         '--proto', '=https', '--proto-redir', '=https',
         '--range', '0-0', '--max-filesize', '1', '--output', os.devnull,
         '--write-out', '%{http_code}', url,
@@ -174,13 +183,51 @@ def prepare_hermes(directory, react_native, transport=download, probe=primary_av
     return tree
 
 
+ROBOLECTRIC_RUNTIMES = ('11-robolectric-6757853-i7', '12-robolectric-7732740-i7', '14-robolectric-10818077-i7')
+
+
+def prepare_robolectric(repository, transport=download):
+    """
+    The android-all-instrumented runtimes Robolectric 4.15.1 runs the unit
+    tests on (SDK 30, 31 and 34), verified and placed in the local Maven
+    repository it reads. Robolectric fetches a missing one itself, once, with no
+    retry (`MavenArtifactFetcher`); a jar already in `~/.m2/repository` is used
+    as it is. Fetched here with the retrying transport and the integrity pins,
+    and kept in the Actions cache by validate.yml, the tests reach no network.
+    """
+    for version in ROBOLECTRIC_RUNTIMES:
+        module = repository / f'org/robolectric/android-all-instrumented/{version}'
+        for extension in ('pom', 'jar'):
+            pin = MANIFEST[f'android-all-instrumented-{version}-{extension}']
+            target = module / pin['filename']
+            try:
+                verify(target, pin)
+                continue
+            except (FileNotFoundError, ValueError):
+                target.unlink(missing_ok=True)
+            fetched, _ = fetch(pin, module / '.downloads', transport)
+            fetched.replace(target)
+            # What Robolectric writes beside what it fetches, from the verified bytes.
+            with target.open('rb') as source:
+                digest = hashlib.file_digest(source, 'sha512').hexdigest()
+            target.with_name(target.name + '.sha512').write_text(digest)
+        shutil.rmtree(module / '.downloads', ignore_errors=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('kind', choices=['gradle', 'kotlin', 'hermes', 'cleanup', 'cleanup-hermes'])
+    parser.add_argument('kind', choices=['gradle', 'kotlin', 'hermes', 'robolectric', 'robolectric-key', 'cleanup', 'cleanup-hermes'])
     parser.add_argument('--version')
     parser.add_argument('--react-native', type=Path)
     parser.add_argument('--directory', type=Path, required=True)
     args = parser.parse_args()
+    if args.kind == 'robolectric':
+        prepare_robolectric(args.directory)
+        return
+    if args.kind == 'robolectric-key':
+        # The Actions cache key of the runtimes: their versions.
+        print('robolectric-' + '_'.join(ROBOLECTRIC_RUNTIMES))
+        return
     if args.kind == 'cleanup-hermes':
         source = args.directory / 'source'
         if source.exists():
