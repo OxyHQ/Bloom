@@ -384,6 +384,22 @@ export function Other() { return <Scope><Screen /></Scope>; }
       'screen:wrapped',
     ]);
   });
+  it('reads a text’s fontSize and lineHeight as its size and line tokens', () => {
+    const result = run(`import { Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+export const A = () => <Text style={{ fontSize: 15, lineHeight: 20 }}>a</Text>;
+export const B = () => <Text style={styles.day}>b</Text>;
+export const C = () => <Text style={{ fontSize: 17.5 }}>c</Text>;
+export const D = () => <Text style={{ lineHeight: 19 }}>d</Text>;
+const styles = StyleSheet.create({ day: { fontSize: 28, lineHeight: 32, fontWeight: '700' } });
+`);
+    expect(flat(result.code)).toContain("RawText('a').font('md').leading('20px')");
+    expect(flat(result.code)).toContain("RawText('b').weight('bold').font('28').leading('32px')");
+    expect(result.unconverted.map((u) => u.reasons[0]?.subject)).toEqual([
+      'fontSize',
+      'lineHeight',
+    ]);
+  });
   it('draws what a route wraps its Screen in as screen modifiers, innermost first', () => {
     const result = run(`import { Screen } from '@oxy.so/bloom/screen';
 import { BloomColorScope } from '@oxy.so/bloom/theme';

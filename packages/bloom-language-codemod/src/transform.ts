@@ -37,7 +37,7 @@ import {
   type Resolved,
   resolveClassName,
 } from './resolve';
-import { type StyleRead, styleUtilities } from './style';
+import { type StyleRead, styleUtilities, textDeclaration } from './style';
 import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
@@ -1589,6 +1589,10 @@ export function transformSource(source: string, options: TransformOptions): File
         const read: StyleRead = (key, read) => {
           const inset = insetPadding(key, read);
           if (inset) return inset;
+          if (kind === 'bloomText' || kind === 'rnText') {
+            const text = textDeclaration(key, read);
+            if (text) return text;
+          }
           const role = themeRoles.get(read);
           if (!role || insideOf(node, [COLOR_SCOPE])) return undefined;
           if (key === 'backgroundColor') return { name: 'background', args: [role] };

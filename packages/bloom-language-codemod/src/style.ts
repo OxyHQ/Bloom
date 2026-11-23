@@ -30,6 +30,28 @@ function byValue(scale: Record<string, unknown>): ReadonlyMap<number, string> {
 }
 const CORNER = byValue(scales.corner as Record<string, unknown>);
 const Z_INDEX = byValue(scales.zIndex as Record<string, unknown>);
+const FONT_SIZE = byValue(scales.fontSize as Record<string, unknown>);
+const LEADING_PX = byValue(scales.leadingPx as Record<string, unknown>);
+
+/**
+ * A text's own `fontSize` and `lineHeight` written out, as the language's
+ * size and line: `fontSize: 15` is `.font('md')` (a named rung over a numeric
+ * token of the same points, `fontSize: 14` `.font('14')`), `lineHeight: 20`
+ * `.leading('20px')`. A size or a line no token holds stays a reason.
+ */
+export function textDeclaration(key: string, value: AnyNode): Mod | undefined {
+  if (!n.NumericLiteral.check(value)) return undefined;
+  const number = value.value as number;
+  if (key === 'fontSize') {
+    const token = FONT_SIZE.get(number);
+    return token === undefined ? undefined : { name: 'font', args: [token] };
+  }
+  if (key === 'lineHeight') {
+    const token = LEADING_PX.get(number);
+    return token === undefined ? undefined : { name: 'leading', args: [token] };
+  }
+  return undefined;
+}
 
 // biome-ignore lint/suspicious/noExplicitAny: recast's AST nodes are untyped here.
 type AnyNode = any;
@@ -103,6 +125,17 @@ const KEYWORD: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   marginLeft: { auto: 'ml-auto' },
   marginRight: { auto: 'mr-auto' },
   borderStyle: { solid: 'border-solid', dashed: 'border-dashed', dotted: 'border-dotted' },
+  // A text's weight, as Tailwind's `font-*` writes it.
+  fontWeight: {
+    '300': 'font-light',
+    '400': 'font-normal',
+    '500': 'font-medium',
+    '600': 'font-semibold',
+    '700': 'font-bold',
+    '800': 'font-extrabold',
+    bold: 'font-bold',
+    normal: 'font-normal',
+  },
 };
 
 /**

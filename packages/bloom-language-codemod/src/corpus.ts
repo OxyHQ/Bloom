@@ -58,7 +58,11 @@ export function corpusModule(fixtures: readonly Fixture[], dir: string): string 
     const bindings = Object.entries(fixture.bindings)
       .map(([local, source]) => `const ${local} = ${alias(source)};`)
       .join(' ');
-    const language = fixture.language.length ? `const { ${fixture.language.join(', ')} } = L;` : '';
+    // A language name the file already imports (a file partly in the language) is bound once, as a binding.
+    const names = fixture.language.filter(
+      (entry) => !((entry.split(':').pop() as string).trim() in fixture.bindings),
+    );
+    const language = names.length ? `const { ${names.join(', ')} } = L;` : '';
     // A node drawn only inside a Bloom component (a screen's scroll view in a Screen) is, on both sides.
     const within = fixture.within.map((key) => {
       const [module, imported] = key.split('#') as [string, string];
