@@ -1,14 +1,16 @@
 /**
  * Android, OxyOS and the web: the shell's bottom bar is the language
- * `BottomBar` of the pager's pages, its FAB the primary action. Bloom draws it
+ * `BottomBar` of the pager's pages, its FAB the primary action (Bloom's `Fab`,
+ * the one the sidebar draws for the same action). Bloom draws it
  * (its capsule on the lens on Android and OxyOS, its floating material on the
  * web), with the pager's sliding selection and its presence as the pager
  * leaves its pages.
  */
-import type { ReactNode } from 'react';
+import { createElement, type ReactNode } from 'react';
+import { Fab } from '@oxy.so/bloom/fab';
 import { useTabPager } from '@oxy.so/bloom/tab-pager';
 
-import { BottomBar, FAB, Icon, Tab } from '../primitives';
+import { BottomBar, Embed, Tab } from '../primitives';
 import { toElement } from '../render';
 import { view } from '../view';
 import type { PrimaryDestination } from './primary';
@@ -32,10 +34,16 @@ const DestinationBar = view(function DestinationBar(props: { primary: PrimaryDes
     .progress(pager.progress)
     .hide(pager.chromeProgress)
     .action(
+      // Bloom's own `Fab`, as the shell's sidebar draws the same action (`SidebarPrimaryAction`):
+      // one component, one tone (the accent) and one paint path, so the two are the same colour.
       primary &&
-        FAB(Icon(primary.icon))
-          .label(primary.label)
-          .onPress(() => pager.selectDestination(primary.destination)),
+        Embed(
+          createElement(Fab, {
+            icon: primary.icon,
+            accessibilityLabel: primary.label,
+            onPress: () => pager.selectDestination(primary.destination),
+          }),
+        ),
     );
 });
 
