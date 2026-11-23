@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
-import { Conditioned, IDLE, type Interaction, InteractionContext, Painted } from './paint';
+import { IDLE, type Interaction, InteractionContext, paintedLeaf } from './paint';
 import type { StyleOut } from './style';
 import type { LiveCondition } from './variants';
 
@@ -101,16 +101,11 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
   // after what it paints.
   const motion = props.style as readonly unknown[] | undefined;
   const own = motion === undefined ? style : style === undefined ? motion : [style, ...motion];
-  const box =
+  const [leaf, leafProps] =
     out.paint === undefined
-      ? createElement(host, { ...props, ...handlers, style: own })
-      : createElement(out.paint.variants ? Conditioned : Painted, {
-          ...props,
-          ...handlers,
-          style: own,
-          host,
-          paint: out.paint,
-        });
+      ? [host, { ...props, ...handlers, style: own }]
+      : paintedLeaf({ ...props, ...handlers, style: own, host, paint: out.paint });
+  const box = createElement(leaf as ComponentType<Record<string, unknown>>, leafProps);
   return createElement(InteractionContext.Provider, { value: state }, box);
 }
 

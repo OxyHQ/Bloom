@@ -58,17 +58,17 @@ export interface PaintVariant {
 const IS_WEB = Platform.OS === 'web';
 const resolved = new WeakMap<ThemeColors, WeakMap<Paint, Record<string, unknown>>>();
 
-const surfaced = new WeakMap<ThemeColors, Map<string, ThemeColors>>();
+const surfacePalettes = new WeakMap<ThemeColors, Map<string, ThemeColors>>();
 /**
  * The palette a leaf paints with: the theme's, and the fill of the surface it
  * sits on as the `surfaceFill` role (Bloom's `useSurfaceFill()`), one palette
  * per theme and fill, so what it paints is built once for each.
  */
 function onSurface(colors: ThemeColors, fill: string): ThemeColors {
-  let byFill = surfaced.get(colors);
+  let byFill = surfacePalettes.get(colors);
   if (byFill === undefined) {
     byFill = new Map();
-    surfaced.set(colors, byFill);
+    surfacePalettes.set(colors, byFill);
   }
   let palette = byFill.get(fill);
   if (palette === undefined) {
@@ -135,14 +135,65 @@ export function paletteColor(colors: ThemeColors, role: ColorName): string {
   return (colors as unknown as Record<string, string>)[COLORS[role].paint] as string;
 }
 
-/** The theme's paint palette, with the surface fill around the caller (`surfaceFill`). */
-export function usePalette(): ThemeColors {
-  return onSurface(useThemePaint(), useSurfaceFill());
+/**
+ * A palette with the surface fill a leaf was handed (`OnSurface`): the
+ * theme's own when it was handed none, as a leaf whose paint names no
+ * `surfaceFill` never is.
+ */
+export function withSurface(colors: ThemeColors, surface: string | undefined): ThemeColors {
+  return surface === undefined ? colors : onSurface(colors, surface);
 }
 
-/** The theme's RGB colours (an app's for colour math), with the surface fill around the caller. */
-export function useRgbPalette(): ThemeColors {
-  return onSurface(useTheme().colors, useSurfaceFill());
+/** Whether a role is the surface fill, which only a leaf drawn `OnSurface` can paint. */
+export const isSurfaceFill = (role: ColorName | undefined): boolean => role === 'surfaceFill';
+
+/** A leaf's props, as the renderer assembles them. */
+type LeafProps = Record<string, unknown>;
+
+/**
+ * Reads the surface fill (Bloom's `useSurfaceFill()`) and draws `leaf` with
+ * it as `surface`. Drawn only around a leaf that paints `surfaceFill`, so no
+ * other leaf reads the surface's context: a node costs what its JSX does.
+ */
+function OnSurface({ leaf, ...props }: { leaf: unknown } & LeafProps): ReactElement {
+  return createElement(leaf as ComponentType<LeafProps>, { ...props, surface: useSurfaceFill() });
+}
+OnSurface.displayName = 'BloomOnSurface';
+
+/** `leaf` with `props`, drawn `OnSurface` when it paints the surface fill: the component and props to draw. */
+export function surfaced(
+  leaf: unknown,
+  props: LeafProps,
+  paintsSurface: boolean,
+): [unknown, LeafProps] {
+  return paintsSurface ? [OnSurface, { ...props, leaf }] : [leaf, props];
+}
+
+const surfacePaints = new WeakMap<Paint, boolean>();
+/** Whether a paint names the surface fill anywhere: its style, its props, its variants, its lists. */
+export function paintsSurface(paint: Paint): boolean {
+  let names = surfacePaints.get(paint);
+  if (names === undefined) {
+    const roles = (list: readonly (readonly [string, ColorName, number?])[] | undefined) =>
+      (list ?? []).some(([, role]) => isSurfaceFill(role));
+    names =
+      roles(paint.styleRoles) ||
+      roles(paint.propRoles) ||
+      (paint.variants ?? []).some(
+        (variant) => roles(variant.styleRoles) || roles(variant.propRoles),
+      ) ||
+      (paint.propLists ?? []).some(([, list]) =>
+        list.some((color) => typeof color !== 'string' && isSurfaceFill(color[0])),
+      );
+    surfacePaints.set(paint, names);
+  }
+  return names;
+}
+
+/** A painted leaf for `paint`: `Conditioned` with live variants, else `Painted`, `OnSurface` when it paints the surface fill. */
+export function paintedLeaf(props: LeafProps & { paint: Paint }): [unknown, LeafProps] {
+  const leaf = props.paint.variants !== undefined ? Conditioned : Painted;
+  return surfaced(leaf, props, paintsSurface(props.paint));
 }
 
 /** A prop painted from a role (an icon's `fill`), at its opacity: what an app hands Bloom. */
@@ -243,6 +294,8 @@ export function themeColor(colors: ThemeColors, value: RoleRef | string): string
 interface PaintedProps {
   host: ComponentType<Record<string, unknown>> | string;
   paint: Paint;
+  /** The surface fill, handed in by `OnSurface` when the paint names it. */
+  surface?: string;
   children?: ReactNode;
   [prop: string]: unknown;
 }
@@ -253,10 +306,9 @@ interface PaintedProps {
  * switch re-renders these leaves and no view body (the theme reaches them
  * through context, past every memoized view in between).
  */
-export function Painted({ host, paint, ...props }: PaintedProps): ReactElement {
-  const fill = useSurfaceFill();
-  const painted = paintProps(onSurface(useThemePaint(), fill), paint);
-  const lists = listProps(onSurface(useTheme().colors, fill), paint);
+export function Painted({ host, paint, surface, ...props }: PaintedProps): ReactElement {
+  const painted = paintProps(withSurface(useThemePaint(), surface), paint);
+  const lists = listProps(withSurface(useTheme().colors, surface), paint);
   // A moving host's motion style (`Outer`) comes after the painted one.
   if (props.style !== undefined && painted.style !== undefined) {
     return createElement(host, {
@@ -355,9 +407,8 @@ function conditionedProps(
  * belongs to) and draws the props built once for that set. A resize re-renders
  * it only across a breakpoint, a press only the leaves of the pressed view.
  */
-export function Conditioned({ host, paint, ...props }: PaintedProps): ReactElement {
-  const fill = useSurfaceFill();
-  const colors = onSurface(useThemePaint(), fill);
+export function Conditioned({ host, paint, surface, ...props }: PaintedProps): ReactElement {
+  const colors = withSurface(useThemePaint(), surface);
   const theme = useTheme();
   const tier = useWindowBreakpoint();
   const state = useContext(InteractionContext);
@@ -366,7 +417,7 @@ export function Conditioned({ host, paint, ...props }: PaintedProps): ReactEleme
     if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
   });
   const picked = conditionedProps(colors, paint, holding);
-  const lists = listProps(onSurface(theme.colors, fill), paint);
+  const lists = listProps(withSurface(theme.colors, surface), paint);
   // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
   if (props.style !== undefined && picked.style !== undefined) {
     return createElement(host, {

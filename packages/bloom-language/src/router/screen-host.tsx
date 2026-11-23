@@ -6,7 +6,13 @@
  * sheet over it (see sheet-bloom.tsx: Bloom's Dialog or BottomSheet, the system
  * sheet on iOS).
  */
-import { type ComponentProps, type ReactElement, type ReactNode, useMemo } from 'react';
+import {
+  type ComponentProps,
+  createElement,
+  type ReactElement,
+  type ReactNode,
+  useMemo,
+} from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Screen } from '@oxy.so/bloom/screen';
 import { BloomColorScope } from '@oxy.so/bloom/theme';
@@ -23,8 +29,9 @@ import {
   type ScreenHeader,
 } from '../node';
 import { valuesOf } from '../platform/values';
-import { ink, flexStyle } from '../style';
-import { themeColor, useRgbPalette } from '../paint';
+import { ink, flexStyle, type RoleRef } from '../style';
+import { isSurfaceFill, surfaced, themeColor, withSurface } from '../paint';
+import { useTheme } from '@oxy.so/bloom/theme';
 import type { InkToken } from '../tokens';
 import { toElement } from '../render';
 import {
@@ -155,12 +162,18 @@ export function ScreenHost({ root }: { root: Child }) {
     bottomBarKeyboardBehavior: footerOptions?.keyboard,
     children: toElement(chrome.content),
   };
+  const painted = background === undefined ? undefined : ink(background);
+  // A fill of its own is drawn by the leaf that reads the theme, `OnSurface` when it is the surface fill.
   const screen =
-    background === undefined ? (
-      <Screen {...props} />
-    ) : (
-      <FilledScreen {...props} background={background} />
-    );
+    painted === undefined
+      ? createElement(Screen, props)
+      : draw(
+          ...surfaced(
+            ScreenFill,
+            { ...props, painted },
+            typeof painted !== 'string' && isSurfaceFill(painted.role),
+          ),
+        );
   return (
     <>
       {wrapped(root, screen)}
@@ -170,16 +183,20 @@ export function ScreenHost({ root }: { root: Child }) {
   );
 }
 
+/** `createElement` over a leaf chosen at render (`surfaced`), with the props assembled for it. */
+const draw = createElement as (type: unknown, props: Record<string, unknown>) => ReactElement;
+
 /**
  * A Screen with a fill of its own (`.screenBackground()`): its colour as Bloom's
- * theme gives it, the leaf that reads the theme, so a theme switch re-renders
- * it and not the content handed in.
+ * theme gives it (the surface fill handed in `OnSurface`), the leaf that reads
+ * the theme, so a theme switch re-renders it and not the content handed in.
  */
-function FilledScreen({
-  background,
+function ScreenFill({
+  painted,
+  surface,
   ...props
-}: ComponentProps<typeof Screen> & { background: InkToken }): ReactElement {
-  const fill = themeColor(useRgbPalette(), ink(background));
+}: ComponentProps<typeof Screen> & { painted: RoleRef | string; surface?: string }): ReactElement {
+  const fill = themeColor(withSurface(useTheme().colors, surface), painted);
   const style = useMemo(() => ({ backgroundColor: fill }), [fill]);
   return <Screen {...props} style={style} />;
 }

@@ -182,7 +182,10 @@ import {
   Conditioned,
   GEOMETRY_KEYS,
   type ListColor,
-  Painted,
+  isSurfaceFill,
+  paintedLeaf,
+  paintsSurface,
+  surfaced,
   composeGeometry,
   type Geometry,
   type GeometryKey,
@@ -424,6 +427,7 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
     anchor: undefined,
     animation: undefined,
     colors: false,
+    surface: false,
     transition: undefined,
     keyframes: undefined,
     loop: undefined,
@@ -498,6 +502,7 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         // Its colours play with the animation in scope: the box is animated from the first render.
         motion.stable = true;
         motion.colors = true;
+        motion.surface = node.modifiers.some(namesSurfaceFill);
         break;
       case 'transition':
         motion.stable = true;
@@ -1075,10 +1080,8 @@ function drawHost(
   // merges both after what it paints).
   if (out.style !== undefined)
     props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
-  if (out.paint?.variants !== undefined)
-    return draw(Conditioned, { ...props, host, paint: out.paint }, ...children);
   if (out.paint !== undefined)
-    return draw(Painted, { ...props, host, paint: out.paint }, ...children);
+    return draw(...paintedLeaf({ ...props, host, paint: out.paint }), ...children);
   return draw(host, props, ...children);
 }
 
@@ -1231,6 +1234,12 @@ function restsStill(motion: MotionPlan): boolean {
   );
 }
 
+/** Whether a modifier paints the surface fill (`.background('surfaceFill')`, `'surfaceFill/50'`). */
+function namesSurfaceFill(modifier: Modifier): boolean {
+  const value = (modifier as { value?: unknown }).value;
+  return typeof value === 'string' && isSurfaceFill(value.split('/')[0] as ColorName);
+}
+
 /** A node with motion modifiers: `MotionNode` holds its motion state and draws it with `Outer`. */
 function drawMoving(
   node: Node,
@@ -1250,14 +1259,16 @@ function drawMoving(
         : MotionNode;
   // Native: a node that animates its colours reads the palette (`ThemedMotion`).
   const themed = motion.colors && !IS_WEB;
-  return draw(themed ? ThemedMotion : component, {
-    ...(themed ? { node: component } : null),
+  const props = {
     key: p.id ?? key,
     motion,
     exit: p.id !== undefined && motion.transition !== undefined,
     scope: ctx.animation,
     content: (outer: Outer) => drawNode(node, p, ctx, undefined, outer),
-  });
+  };
+  return themed
+    ? draw(...surfaced(ThemedMotion, { ...props, node: component }, motion.surface))
+    : draw(component, props);
 }
 
 /**
@@ -1619,7 +1630,13 @@ function wrapLayer(
           },
         ]),
       );
-      const drawn = drawHost(PlatformGlass, paint ? painted(out, paint) : out, props, ...children);
+      // A tint of the surface fill reads it where the glass is drawn (`OnSurface`); no other glass does.
+      const tintsSurface =
+        isSurfaceFill(glass.tintColor) ||
+        isSurfaceFill(p.control?.tint) ||
+        varied.props.some(([, { fill }]) => fill !== undefined && isSurfaceFill(role(fill).role));
+      const [glassHost, glassProps] = surfaced(PlatformGlass, props, tintsSurface);
+      const drawn = drawHost(glassHost, paint ? painted(out, paint) : out, glassProps, ...children);
       if (p.control?.reports.length) return draw(ReportedState, { key }, drawn);
       return behaviour && p.pressable
         ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, drawn)
@@ -1831,22 +1848,26 @@ function shapeElement(
   if (last?.kind === 'image')
     return draw(ShapeImage, { key, shape: name, size, source: last.source, alt: last.alt });
   if (last?.kind === 'stroke') {
-    return draw(Painted, {
+    return draw(
+      ...paintedLeaf({
+        key,
+        host: ShapeBorder,
+        shape: name,
+        size,
+        width: resolveBorderWidth(last.width),
+        paint: tokenPaint('colors', last.value),
+      }),
+    );
+  }
+  return draw(
+    ...paintedLeaf({
       key,
-      host: ShapeBorder,
+      host: ShapeFill,
       shape: name,
       size,
-      width: resolveBorderWidth(last.width),
-      paint: tokenPaint('colors', last.value),
-    });
-  }
-  return draw(Painted, {
-    key,
-    host: ShapeFill,
-    shape: name,
-    size,
-    paint: tokenPaint('color', last?.value ?? 'foreground'),
-  });
+      paint: tokenPaint('color', last?.value ?? 'foreground'),
+    }),
+  );
 }
 
 const tokenPaints = new Map<string, Paint>();
@@ -2057,13 +2078,15 @@ function iconGlyph(
   if (live.length === 0)
     return own !== undefined
       ? draw(icon, { fill: own, width: size, height: size, key })
-      : draw(Painted, {
-          host: icon,
-          paint: iconPaint(color as ColorToken),
-          width: size,
-          height: size,
-          key,
-        });
+      : draw(
+          ...paintedLeaf({
+            host: icon,
+            paint: iconPaint(color as ColorToken),
+            width: size,
+            height: size,
+            key,
+          }),
+        );
   if (IS_WEB) {
     const out = cachedStyle(
       'host',
@@ -2095,9 +2118,10 @@ function iconGlyph(
     iconVariantPaints.set(env.key, paint);
   }
   // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
-  if (own !== undefined)
-    return draw(Conditioned, { host: icon, paint, fill: own, width: size, height: size, key });
-  return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
+  const leaf = (props: Record<string, unknown>) =>
+    draw(...surfaced(Conditioned, { host: icon, paint, ...props }, paintsSurface(paint)));
+  if (own !== undefined) return leaf({ fill: own, width: size, height: size, key });
+  return leaf({ width: size, height: size, key });
 }
 
 /** A stack's style: its layout, then its box (the innermost layer and its flex), with their variants. */

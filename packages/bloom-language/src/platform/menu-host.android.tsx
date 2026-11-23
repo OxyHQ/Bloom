@@ -21,7 +21,7 @@ import { useTheme } from '@oxy.so/bloom/theme';
 import { fontFamilyStyle } from '@oxy.so/bloom/typography';
 
 import { glassTriggerConfig } from './lens-glass';
-import { useRgbPalette } from '../paint';
+import { withSurface } from '../paint';
 import { useMenuChoice } from './menu-actions';
 import { DropdownMenuHost } from './menu-dropdown';
 import {
@@ -56,14 +56,17 @@ function LensMenuHost({
   lens,
 }: MenuHostProps & { lens: Lens }) {
   const theme = useTheme();
-  const palette = useRgbPalette();
   // The choice outlives the open menu: the engine closes the menu as a row is chosen.
   const { choose, running } = useMenuChoice(actions);
   const inBase = lens.useInLensBase();
   const surfaceFill = useSurfaceFill();
   const { trigger, glass } = splitTriggerGlass(given);
   const config = useMemo(() => lensMenuConfig(theme), [theme]);
-  const triggerConfig = useSame(glass ? glassTriggerConfig(glass, undefined, palette) : undefined);
+  const triggerConfig = useSame(
+    glass
+      ? glassTriggerConfig(glass, undefined, withSurface(theme.colors, surfaceFill))
+      : undefined,
+  );
   const opener = (
     <LensMenuOpener
       trigger={trigger}

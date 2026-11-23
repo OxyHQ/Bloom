@@ -12,7 +12,6 @@ import { regular } from '../glass';
 import { getLens } from './lens';
 import { LensGroupProvider, useLensGroup } from './lens-group';
 import { glassTriggerConfig } from './lens-glass';
-import { useRgbPalette } from '../paint';
 import type {
   GlassGroupHostProps,
   PlatformGlassGroup,
@@ -22,14 +21,13 @@ import type {
 function LensGlassGroup({ blend, style, children }: GlassGroupHostProps) {
   const lens = getLens();
   const theme = useTheme();
-  const palette = useRgbPalette();
   const [members, registry] = useLensGroup();
   if (!lens) return null;
   const { LensBase } = lens;
   return (
     <LensBase
       colorScheme={theme.isDark ? 'dark' : 'light'}
-      config={glassTriggerConfig(regular, undefined, palette)}
+      config={glassTriggerConfig(regular, undefined, theme.colors)}
       members={members}
       blend={blend}
       style={style}

@@ -400,7 +400,10 @@ container around it published (a Screen, a Card, a panel), else its level's,
 for chrome that has to be that colour (a tab bar's backing, an avatar's ring
 in a skeleton). No theme colour or CSS variable holds it, so the leaf that
 paints the view reads it where it is drawn, on the web too (its style is an
-object there, its variants tracked in JS, as an app token's are). A role at an opacity is one token, `'role/opacity'`,
+object there, its variants tracked in JS, as an app token's are). Only a leaf
+whose paint names it reads the surface's context (drawn inside `OnSurface`,
+which hands it the fill); every other leaf reads what it did before, so a node
+that does not paint it costs what its JSX does. A role at an opacity is one token, `'role/opacity'`,
 with an `opacity` token for the amount: `text-muted-foreground/70` is
 `.foreground('muted/70')`, `bg-primary/10` `.background('primary/10')`.
 Native paints the role's colour at that alpha; the web paints an ink, a

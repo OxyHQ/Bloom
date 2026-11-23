@@ -14,6 +14,8 @@ export interface GlassHostProps {
   fallbackTint?: ColorName;
   /** The tint a variant sets while it holds (`.when(…, (v) => v.background(token))`), over the glass's own: the role at its opacity, if it names one. */
   fill?: RoleRef;
+  /** The surface fill, handed in by `OnSurface` when a tint names it. */
+  surface?: string;
   /** The glass answers touch (a pressable view on it). */
   interactive?: boolean;
   /** Its identity in a glass group (`.glassID()`, `.glassUnion()`, `.glassTransition()`), when it has one. */

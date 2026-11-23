@@ -13,15 +13,23 @@ import { View } from 'react-native';
 import { useTheme } from '@oxy.so/bloom/theme';
 
 import { glassTriggerConfig } from './lens-glass';
-import { useRgbPalette } from '../paint';
+import { withSurface } from '../paint';
 import { getLens } from './lens';
 import { LensGroupGlass, useInLensGroup } from './lens-group';
 import type { GlassHostProps, PlatformGlass } from './glass-host.types';
 
-function LensGlass({ glass, radius, fallbackTint, fill, member, style, children }: GlassHostProps) {
+function LensGlass({
+  glass,
+  radius,
+  fallbackTint,
+  fill,
+  surface,
+  member,
+  style,
+  children,
+}: GlassHostProps) {
   const lens = getLens();
   const theme = useTheme();
-  const palette = useRgbPalette();
   const inBase = lens?.useInLensBase() ?? false;
   const inGroup = useInLensGroup();
   if (!lens) return null;
@@ -36,7 +44,7 @@ function LensGlass({ glass, radius, fallbackTint, fill, member, style, children 
   // Inside any other base (a group of controls) the base draws the one lens: no glass on glass.
   if (inBase) return <View style={style}>{children}</View>;
   const { LensBase } = lens;
-  const config = glassTriggerConfig(glass, fallbackTint, palette, fill);
+  const config = glassTriggerConfig(glass, fallbackTint, withSurface(theme.colors, surface), fill);
   return (
     <LensBase
       colorScheme={theme.isDark ? 'dark' : 'light'}

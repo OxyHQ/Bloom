@@ -43,7 +43,8 @@ import { Textarea } from '@oxy.so/bloom/textarea';
 
 import type { Binding } from '../binding';
 import type { ENUMS } from '../generated/spec.generated';
-import { paletteColor, usePalette } from '../paint';
+import { isSurfaceFill, paletteColor, surfaced, withSurface } from '../paint';
+import { useThemePaint } from '@oxy.so/bloom/theme';
 import {
   type ButtonView,
   type Child,
@@ -636,9 +637,13 @@ interface RadioOptionOf {
  */
 function PaintedRadioGroup({
   options,
+  surface,
   ...props
-}: Record<string, unknown> & { options: readonly RadioOptionOf[] }): ReactElement {
-  const colors = usePalette();
+}: Record<string, unknown> & {
+  options: readonly RadioOptionOf[];
+  surface?: string;
+}): ReactElement {
+  const colors = withSurface(useThemePaint(), surface);
   return createElement(BloomRadioGroup, {
     ...props,
     options: options.map(({ tint, foreground, ...option }) => ({
@@ -667,18 +672,27 @@ const radioGroup: ControlRenderer = (d) => {
   const painted = options.some(
     (option) => option.tint !== undefined || option.foreground !== undefined,
   );
-  return d.component(painted ? PaintedRadioGroup : BloomRadioGroup, {
-    key: d.key,
-    label: d.label,
-    value,
-    onValueChange: setValue,
-    options,
-    variant: d.own('style')?.value,
-    size: d.own('size')?.value,
-    tone: d.own('tint')?.value,
-    disabled: d.own('disabled')?.value,
-    testID: d.testID,
-  });
+  // A swatch of the surface fill reads it where the group is drawn (`OnSurface`).
+  const onSurface = options.some(
+    (option) => isSurfaceFill(option.tint) || isSurfaceFill(option.foreground),
+  );
+  const [group, groupProps] = surfaced(
+    painted ? PaintedRadioGroup : BloomRadioGroup,
+    {
+      key: d.key,
+      label: d.label,
+      value,
+      onValueChange: setValue,
+      options,
+      variant: d.own('style')?.value,
+      size: d.own('size')?.value,
+      tone: d.own('tint')?.value,
+      disabled: d.own('disabled')?.value,
+      testID: d.testID,
+    },
+    onSurface,
+  );
+  return d.component(group, groupProps);
 };
 
 const segmented: ControlRenderer = (d) => {

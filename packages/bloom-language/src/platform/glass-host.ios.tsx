@@ -11,7 +11,7 @@ import { StyleSheet, View, type ViewProps } from 'react-native';
 import { useTheme, withAlpha, type ThemeColors } from '@oxy.so/bloom/theme';
 
 import { GLASS, GLASS_OPACITY } from '../generated/spec.generated';
-import { paletteColor, useRgbPalette } from '../paint';
+import { paletteColor, withSurface } from '../paint';
 import type { GlassHostProps, PlatformGlass } from './glass-host.types';
 
 interface GlassEffectModule {
@@ -77,7 +77,7 @@ const CAPSULE = 9999;
 function LiquidGlass(props: GlassHostProps) {
   const { GlassView } = loadGlassEffect() as GlassEffectModule;
   const theme = useTheme();
-  const palette = useRgbPalette();
+  const palette = withSurface(theme.colors, props.surface);
   return (
     <GlassView
       glassEffectStyle={GLASS[props.glass.material].iosStyle}
@@ -95,7 +95,7 @@ LiquidGlass.displayName = 'BloomLiquidGlass';
 function BlurGlass(props: GlassHostProps) {
   const { BlurView } = loadBlur() as BlurModule;
   const theme = useTheme();
-  const tint = tintOf(props, useRgbPalette());
+  const tint = tintOf(props, withSurface(theme.colors, props.surface));
   const shape = { borderRadius: props.radius ?? CAPSULE, overflow: 'hidden' as const };
   return (
     <View style={[props.style, shape]}>
