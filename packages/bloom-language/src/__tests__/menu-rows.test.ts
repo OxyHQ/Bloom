@@ -58,6 +58,36 @@ describe('a menu’s rows as data', () => {
     expect(Object.keys(menuHandlers(rows))).toEqual(['r0']);
   });
 
+  it('reads a section of choices: each tag a value, the chosen one checked, a choice sets it', () => {
+    const set = jest.fn();
+    const choose = jest.fn();
+    const [section] = readMenuRows(
+      [
+        Section(Item('Anyone').tag('anyone'), Item('Nobody').tag('nobody')).selection([
+          'nobody',
+          set,
+        ]),
+      ],
+      choose,
+    );
+    expect(section).toMatchObject({ kind: 'section', selection: { value: 'nobody', set } });
+    const rows = section?.kind === 'section' ? section.rows : [];
+    expect(rows).toMatchObject([
+      { value: 'anyone', checked: false },
+      { value: 'nobody', checked: true },
+    ]);
+    if (rows[0]?.kind === 'item') rows[0].onPress?.();
+    expect(set).toHaveBeenCalledWith('anyone');
+    // A tag in a section of choices is its value, never an action.
+    expect(choose).not.toHaveBeenCalled();
+  });
+  it('refuses a row of a section of choices that is no tagged item', () => {
+    const set = jest.fn();
+    expect(() => readMenuRows([Section(Item('Untagged')).selection(['a', set])])).toThrow(
+      'A Section with a .selection() holds its choices only',
+    );
+    expect(() => readMenuRows([Section(Divider()).selection(['a', set])])).toThrow();
+  });
   it('builds a menu() content by calling its body, which may use hooks', () => {
     expect(readMenuRows([PostMenu({ title: 'Report' })])).toMatchObject([{ title: 'Report' }]);
     // Outside a component the hook throws: the body runs only where the menu is presented.

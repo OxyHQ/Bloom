@@ -192,8 +192,9 @@ fn placement_keys_and_tokens_are_checked() {
     assert_eq!(output.diagnostics[0].message, ".position() has no 'rihgt'");
     let output = compiled("export const x = () => HStack().offset({ x: '2xs', y: 'big' });\n");
     assert_eq!(output.diagnostics[0].message, "Unknown padding token 'big' for .offset()");
+    // A level written out is a token; points are a stacking order computed at render.
     let output = compiled("export const x = () => HStack().zIndex(10);\n");
-    assert!(output.diagnostics.is_empty(), "a number is the runtime's to reject");
+    assert_eq!(output.diagnostics[0].message, ".zIndex() takes zIndex tokens, not the number 10");
     let output = compiled("export const x = () => HStack().zIndex('top');\n");
     assert_eq!(output.diagnostics[0].message, "Unknown zIndex token 'top' for .zIndex()");
     let output = compiled("export const x = () => HStack().justify('middle');\n");
@@ -254,6 +255,35 @@ fn the_small_modifiers_and_numeric_tokens_are_checked() {
     assert_eq!(output.diagnostics[0].message, "Unknown wordBreak token 'anywhere' for .wordBreak()");
     let output = compiled("export const x = () => Text('a').listMarker('disc');\n");
     assert_eq!(output.diagnostics[0].message, "Text has no modifier .listMarker()");
+}
+
+#[test]
+fn geometry_takes_points_computed_at_render_and_never_a_number_written_out() {
+    // A frame's lengths, a pinned view's edges and its stacking order take points the view computes.
+    let ok = compiled(
+        "export function Cell({ size, top, order }) {\n  return VStack(Text('a')).frame({ width: size, height: size, maxWidth: 'full' }).position({ top: top + 8, right: 'lg' }).zIndex(order);\n}\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    // A number written out is a token.
+    let output = compiled("export const x = () => VStack().frame({ width: 44 });\n");
+    assert_eq!(output.diagnostics[0].message, ".frame() takes length tokens, not the number 44");
+    let output = compiled("export const x = () => VStack().position({ top: -8 });\n");
+    assert_eq!(output.diagnostics[0].message, ".position() takes edgeDistance tokens, not the number -8");
+    let output = compiled("export const x = () => VStack().zIndex(2);\n");
+    assert_eq!(output.diagnostics[0].message, ".zIndex() takes zIndex tokens, not the number 2");
+    // Spacing, type and colour stay tokens: a number is never theirs.
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some("a number written out is a token ('2'); points are a value the view computes as it renders")
+    );
+    let output = compiled("export const x = () => VStack().padding(12);\n");
+    assert_eq!(output.diagnostics[0].message, ".padding() takes padding tokens, not the number 12");
+    assert_eq!(
+        output.diagnostics[0].help.as_deref(),
+        Some("write the token ('12'); .padding() takes tokens only")
+    );
+    let output = compiled("export const x = () => Text('a').font(15);\n");
+    assert_eq!(output.diagnostics[0].message, ".font() takes font tokens, not the number 15");
 }
 
 #[test]
@@ -357,10 +387,105 @@ fn a_colour_at_a_named_opacity_checks_both_halves() {
 }
 
 #[test]
-fn tracking_and_the_mono_face_are_checked() {
+fn a_section_of_choices_holds_tagged_items() {
+    const CHOICE_NAMES: &str = "Menu, Item, Section, Divider, Text";
+    let ok = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (a, set) => Menu(Text('a'), Section(Item('A').tag('a'), Item('B').tag('b').keepOpen()).title('Who').selection([a, set]));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let untagged = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (a, set) => Menu(Text('a'), Section(Item('A').tag('a'), Item('B')).selection([a, set]));\n",
+    );
+    assert_eq!(untagged.diagnostics[0].message, "a Section with a .selection() holds its choices only");
+    let divider = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (a, set) => Menu(Text('a'), Section(Divider()).selection([a, set]));\n",
+    );
+    assert_eq!(divider.diagnostics[0].message, "a Section with a .selection() holds its choices only");
+    let plain = compiled_with(
+        CHOICE_NAMES,
+        "export const x = () => Menu(Text('a'), Section(Item('B'), Divider()).title('t'));\n",
+    );
+    assert!(plain.diagnostics.is_empty());
+    let presented = compiled_with(
+        CHOICE_NAMES,
+        "export const x = (open, set) => Menu(Text('a'), Item('B')).presented([open, set]);\n",
+    );
+    assert!(presented.diagnostics.is_empty());
+    let unpresented = compiled_with(CHOICE_NAMES, "export const x = () => Item('B').presented(true);\n");
+    assert_eq!(unpresented.diagnostics[0].message, "Item has no modifier .presented()");
+}
+
+#[test]
+fn a_scroll_s_content_grows() {
+    let ok = compiled_with(
+        "ScrollView, VirtualList, Text",
+        "export const x = (items, row) => [ScrollView(Text('a')).contentGrows(), VirtualList(items, row).contentGrows(items.length === 0)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let text = compiled("export const x = () => Text('a').contentGrows();\n");
+    assert_eq!(text.diagnostics[0].message, "Text has no modifier .contentGrows()");
+}
+
+#[test]
+fn a_tab_sizes_its_box_and_label() {
+    let ok = compiled_with(
+        "Tabs, TabItem",
+        "export const x = (b, open) => Tabs(b, TabItem('a', 'A').frame({ height: '38', minWidth: '76' }).padding('left', 'md').font('md').leading('18px').weight(open ? 'bold' : 'medium'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let ink = compiled_with("TabItem", "export const x = () => TabItem('a', 'A').foreground('muted');\n");
+    assert_eq!(ink.diagnostics[0].message, "TabItem has no modifier .foreground()");
+    let height =
+        compiled_with("TabItem", "export const x = () => TabItem('a', 'A').frame({ height: '37' });\n");
+    assert!(height.diagnostics[0].message.contains("'37'"), "{}", height.diagnostics[0].message);
+}
+
+#[test]
+fn a_chip_s_tone_is_chosen_at_render() {
+    let ok = compiled_with(
+        "Chip, Text",
+        "export const x = (on) => Chip(Text('a')).tint(on ? 'danger' : undefined);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let bad = compiled_with("Chip, Text", "export const x = () => Chip(Text('a')).tint('red');\n");
+    assert!(bad.diagnostics[0].message.contains("'red'"), "{}", bad.diagnostics[0].message);
+}
+
+#[test]
+fn a_hit_testing_is_chosen_at_render() {
+    let ok =
+        compiled("export const x = (split) => VStack().allowsHitTesting(split ? 'children' : undefined);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let bad = compiled("export const x = () => VStack().allowsHitTesting('box-none');\n");
+    assert!(bad.diagnostics[0].message.contains("'box-none'"), "{}", bad.diagnostics[0].message);
+}
+
+#[test]
+fn a_divider_runs_either_way() {
+    let ok = compiled_with("Divider, VStack", "export const x = () => VStack(Divider().axis('vertical'));\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let bad = compiled_with("Divider", "export const x = () => Divider().axis('across');\n");
+    assert!(bad.diagnostics[0].message.contains("'across'"), "{}", bad.diagnostics[0].message);
+}
+
+#[test]
+fn a_clip_is_turned_on_or_off() {
+    let ok = compiled("export const x = () => VStack().clipped().padding('md').clipped(false);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let two = compiled("export const x = () => VStack().clipped(false, true);\n");
+    assert_eq!(two.diagnostics[0].message, ".clipped() takes 0 to 1 argument(s), not 2");
+}
+
+#[test]
+fn tracking_and_the_faces_are_checked() {
     let valid =
         compiled("export const x = () => Text('x').font('mono').font('caption-1').tracking('wider');\n");
     assert!(valid.diagnostics.is_empty() && valid.hoisted == 1);
+    let display = compiled("export const x = () => Text('3').font('96').font('display').weight('bold');\n");
+    assert!(display.diagnostics.is_empty() && display.hoisted == 1);
     let tracking = compiled("export const x = () => Text('x').tracking('loose');\n");
     assert_eq!(tracking.diagnostics[0].message, "Unknown tracking token 'loose' for .tracking()");
     let font = compiled("export const x = () => Text('x').font('serif');\n");
@@ -766,6 +891,24 @@ fn first_message(output: &crate::Output) -> Option<&str> {
 }
 
 #[test]
+fn a_refresh_tint_is_one_colour_or_each_platform_s() {
+    for tint in
+        ["'primary'", "'muted/70'", "{ ios: 'primary' }", "{ ios: 'primary', android: 'muted' }", "color"]
+    {
+        let fine = chrome(&format!(
+            "export const S = (r, color) => ScrollView(Text('a')).refreshable(r, {tint});\n"
+        ));
+        assert!(fine.diagnostics.is_empty(), "{tint}: {:?}", first_message(&fine));
+    }
+    let token = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, 'blue');\n");
+    assert_eq!(first_message(&token), Some("Unknown color token 'blue' for .refreshable()"));
+    let value = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, { ios: 'blue' });\n");
+    assert_eq!(first_message(&value), Some("Unknown color token 'blue' for .refreshable()"));
+    let key = chrome("export const S = (r) => ScrollView(Text('a')).refreshable(r, { web: 'primary' });\n");
+    assert_eq!(first_message(&key), Some(".refreshable() has no 'web'"));
+}
+
+#[test]
 fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
     let fine = chrome(
         "export const S = (more, refresh) => ScrollView(Text('a')).contentMargins('horizontal', 'lg').contentMargins('md').spacing('md').keyboardTaps('handled').scrollDismissesKeyboard('interactively').scrollIndicators('hidden').onEndReached(more, 3).refreshable([false, refresh]).padding('sm').title('Feed').scrollEdge('always').screenKind('collection').screenScroll('content').documentScroll().headerPlacement('overlay').contentClearance('2xl').navigationScope('isolated');\n",
@@ -776,6 +919,12 @@ fn the_screen_and_its_scroll_view_are_checked_against_the_spec() {
         first_message(&indicators),
         Some("Unknown scrollIndicators token 'never' for .scrollIndicators()")
     );
+    let wrapped = chrome(
+        "export const S = (dark, Dock) => Text('a').colorScope(dark ? 'dark' : undefined).keyboardAvoiding().provider(Dock);\n",
+    );
+    assert!(wrapped.diagnostics.is_empty(), "{:?}", first_message(&wrapped));
+    let scope = chrome("export const S = () => Text('a').colorScope('dim');\n");
+    assert_eq!(first_message(&scope), Some("Unknown colorScopeMode token 'dim' for .colorScope()"));
     let scroll = chrome("export const S = () => Text('a').screenScroll('page');\n");
     assert_eq!(first_message(&scroll), Some("Unknown screenScroll token 'page' for .screenScroll()"));
     let margin = chrome("export const S = () => ScrollView(Text('a')).contentMargins('sideways', 'md');\n");
@@ -909,6 +1058,28 @@ fn a_screen_s_colour_activity_and_starting_heights_are_checked_against_the_spec(
     assert_eq!(first_message(&preset), Some("Unknown colorPreset token 'magenta' for .colorPreset()"));
     let height = chrome("export const S = () => Text('a').initialHeaderHeight('65');\n");
     assert_eq!(first_message(&height), Some("Unknown space token '65' for .initialHeaderHeight()"));
+}
+
+#[test]
+fn percentages_of_the_parent_are_tokens_of_a_frame_and_an_edge() {
+    let fine = chrome(
+        "export const P = () => Text('a').frame({ width: '31%', maxHeight: '90%' }).position({ left: '25%', right: '25%' });\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let frame = chrome("export const P = () => Text('a').frame({ width: '45%' });\n");
+    assert!(first_message(&frame).is_some_and(|m| m.contains("'45%'")), "{:?}", first_message(&frame));
+    let edge = chrome("export const P = () => Text('a').position({ top: '90%' });\n");
+    assert!(first_message(&edge).is_some_and(|m| m.contains("'90%'")), "{:?}", first_message(&edge));
+}
+
+#[test]
+fn a_screen_s_fill_and_its_own_top_are_checked_against_the_spec() {
+    let fine = chrome(
+        "export const S = (atTop, toTop, black) => Text('a').background('surfaceFill').screenBackground('background').screenBackground('primary/10').screenBackground(black).reselectTop(atTop, toTop);\n",
+    );
+    assert!(fine.diagnostics.is_empty(), "{:?}", first_message(&fine));
+    let fill = chrome("export const S = () => Text('a').screenBackground('#000000');\n");
+    assert_eq!(first_message(&fill), Some("Unknown color token '#000000' for .screenBackground()"));
 }
 
 #[test]
@@ -3531,4 +3702,247 @@ fn a_node_takes_its_own_narrower_parameters_as_the_runtime_does() {
         let output = check(&format!("export const x = (t) => {chain};\n"));
         assert_eq!(output.diagnostics.first().map(|d| d.message.as_str()), Some(message), "{chain}");
     }
+}
+
+#[test]
+fn the_layout_apps_write_is_checked() {
+    // Auto margins, a gap per axis, a border's line, and the numeric tokens Mention writes.
+    let ok = compiled(
+        "export const x = () => HStack(Text('a').font('12.5'), VStack().margin('leading', 'auto').margin('auto')).horizontalSpacing('lg').verticalSpacing('6').border('border', '0.5').borderStyle('dashed').opacity('85');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    // `auto` is a margin's alone: a padding has no free space to take.
+    let output = compiled("export const x = () => HStack().padding('auto');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown padding token 'auto' for .padding()");
+    let output = compiled("export const x = () => HStack().borderStyle('double');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown borderStyle token 'double' for .borderStyle()");
+    let output = compiled("export const x = () => Text('a').horizontalSpacing('lg');\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .horizontalSpacing()");
+    let output = compiled("export const x = () => Text('a').font('12.4');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown font token '12.4' for .font()");
+}
+
+#[test]
+fn the_accessibility_modifiers_are_checked() {
+    let ok = compiled(
+        "export const x = (on: boolean) => VStack(Text('a').liveRegion('polite')).accessibilityState({ selected: on, checked: 'mixed', busy: false }).accessibilityHidden().accessibilityHidden(on);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack().accessibilityState({ pressed: true });\n");
+    assert_eq!(output.diagnostics[0].message, ".accessibilityState() has no 'pressed'");
+    let output = compiled("export const x = () => VStack().accessibilityState({ checked: 'partly' });\n");
+    assert_eq!(
+        output.diagnostics[0].message,
+        "Unknown accessibilityChecked token 'partly' for .accessibilityState()"
+    );
+    let output = compiled("export const x = () => VStack().liveRegion('loud');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown liveRegion token 'loud' for .liveRegion()");
+}
+
+#[test]
+fn a_press_fade_takes_an_opacity_token() {
+    let ok = compiled(
+        "export const x = (f: () => void) => HStack(Text('a')).onPress(f).pressFade('70').pressFade();\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => HStack().pressFade('0.7');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown opacity token '0.7' for .pressFade()");
+}
+
+#[test]
+fn a_virtual_list_takes_content_margins_and_a_gap() {
+    let ok = compiled(
+        "import { VirtualList } from '@oxy.so/bloom-language';\nexport const x = (row: never) => VirtualList([], row).contentMargins('horizontal', 'lg').contentMargins('6').spacing('sm');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled(
+        "import { VirtualList } from '@oxy.so/bloom-language';\nexport const x = (row: never) => VirtualList([], row).contentMargins('bottom', '-lg');\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "Unknown space token '-lg' for .contentMargins()");
+}
+
+#[test]
+fn a_dialog_hears_it_has_finished_closing() {
+    let ok = compiled(
+        "import { Dialog } from '@oxy.so/bloom-language';\nexport const x = (open: boolean, set: (v: boolean) => void, gone: () => void) => Dialog(Text('a')).onDismissed(gone).presented([open, set]);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = (gone: () => void) => VStack().onDismissed(gone);\n");
+    assert_eq!(output.diagnostics[0].message, "VStack has no modifier .onDismissed()");
+}
+
+#[test]
+fn a_menu_row_sizes_and_inks_its_own_glyph() {
+    let ok = compiled(
+        "export const x = () => Menu(Text('More'), Item('Copy').icon(RiMoreFill).iconSize('22').iconForeground('primary'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => Item('Copy').iconSize('23');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token '23' for .iconSize()");
+    let output = compiled("export const x = () => Item('Copy').iconForeground('#fff');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#fff' for .iconForeground()");
+}
+
+/// `body` compiled with `names` imported from the language (and the icons it names).
+fn compiled_with(names: &str, body: &str) -> crate::Output {
+    compile(
+        &format!(
+            "import {{ {names} }} from '@oxy.so/bloom-language';\nimport {{ RiShareLine }} from '@oxy.so/bloom/icons/RiShareLine';\n{body}"
+        ),
+        "row.tsx",
+    )
+}
+
+#[test]
+fn a_submenu_sizes_and_inks_its_own_glyph() {
+    let names = "Menu, Submenu, Item, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = () => Menu(Text('More'), Submenu('Share', Item('Email')).icon(RiShareLine).iconSize('22').iconForeground('primary'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => Submenu('Share').iconSize('23');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token '23' for .iconSize()");
+    let output = compiled_with(names, "export const x = () => Submenu('Share').iconForeground('#fff');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#fff' for .iconForeground()");
+}
+
+#[test]
+fn a_search_takes_a_most_characters() {
+    let ok =
+        compiled_with("Search", "export const x = (t) => Search(t).placeholder('Find').maxLength(50);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with("Search", "export const x = (t) => Search(t).maxLength(50, 2);\n");
+    assert_eq!(output.diagnostics[0].message, ".maxLength() takes 1 argument(s), not 2");
+}
+
+#[test]
+fn views_are_content_where_a_component_draws_them() {
+    let ok = compiled_with(
+        "Header, Text, Button, Loading, Group, Icon, TextField",
+        "export const x = (t) => [Header(Text('Home')).subtitle(Text('3 new')), Button(Loading().style('inline')).label('Ana'), Button(Group(Icon(RiShareLine).size('22'))).label('Share'), TextField(t, 'Name').placeholder(null)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+}
+
+#[test]
+fn stacking_levels_and_an_aspect_ratio_anywhere() {
+    let ok = compiled(
+        "export const x = (f) => [VStack(Text('a')).zIndex('-1'), HStack(Text('b')).zIndex('7').frame({ width: '1/4' }).aspectRatio(1).onPress(f)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack(Text('a')).zIndex('-2');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown zIndex token '-2' for .zIndex()");
+}
+
+#[test]
+fn a_view_is_padded_by_the_safe_area() {
+    let ok = compiled(
+        "export const x = () => [VStack(Text('a')).safeAreaPadding(), VStack(Text('b')).safeAreaPadding('top').padding('top', '2xl')];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => VStack(Text('a')).safeAreaPadding('leading');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown physicalEdge token 'leading' for .safeAreaPadding()");
+}
+
+#[test]
+fn a_hit_slop_reaches_each_side_its_own_way() {
+    let ok = compiled(
+        "export const x = (f) => [VStack(Text('a')).onPress(f).hitSlop('md'), VStack(Text('b')).onPress(f).hitSlop('vertical', '5').hitSlop('right', 'none')];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = (f) => VStack(Text('a')).onPress(f).hitSlop('leading', 'md');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown physicalEdge token 'leading' for .hitSlop()");
+    let output = compiled("export const x = (f) => VStack(Text('a')).onPress(f).hitSlop('10');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown hitSlop token '10' for .hitSlop()");
+}
+
+#[test]
+fn an_accessibility_value_is_checked() {
+    let ok = compiled(
+        "export const x = (p) => [Text('a').role('progressbar').accessibilityValue({ min: 0, max: 100, now: p }), VStack(Text('b')).accessibilityValue({ text: 'Verifying' })];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = () => Text('a').accessibilityValue({ current: 4 });\n");
+    assert_eq!(output.diagnostics[0].message, ".accessibilityValue() has no 'current'");
+}
+
+#[test]
+fn the_escape_hatches_take_a_ref_and_a_layout_handler() {
+    let ok = compiled("export const x = (r, f) => VStack(Text('a')).ref(r).onLayout(f);\n");
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled("export const x = (r) => VStack(Text('a')).ref(r, r);\n");
+    assert_eq!(output.diagnostics[0].message, ".ref() takes 1 argument(s), not 2");
+}
+
+#[test]
+fn a_refresh_is_a_binding_or_its_value_and_action() {
+    let names = "ScrollView, VirtualList, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = (q, b, rows, row) => [ScrollView(Text('a')).refreshable(b, 'primary'), ScrollView(Text('a')).refreshable({ refreshing: q.isRefetching, onRefresh: q.refetch }), VirtualList(rows, row).refreshable({ refreshing: q.isRefetching, onRefresh: q.refetch })];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(
+        names,
+        "export const x = (q) => ScrollView(Text('a')).refreshable({ refreshing: q.isRefetching, onPull: q.refetch });\n",
+    );
+    assert_eq!(output.diagnostics[0].message, ".refreshable() has no 'onPull'");
+    let output =
+        compiled_with(names, "export const x = (b) => ScrollView(Text('a')).refreshable(b, 'teal');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token 'teal' for .refreshable()");
+}
+
+#[test]
+fn the_component_props_mention_writes_are_checked() {
+    let names = "Button, Card, Chip, Field, Icon, Text, Toggle, Badge";
+    let ok = compiled_with(
+        names,
+        "export const x = (t, f) => [Button(Icon(RiShareLine)).shape('circle').iconSize('xl').stopPropagation().label('Share').onPress(f), Card(Text('a'), Text('b')).axis('horizontal').align('center').justify('between').spacing('md'), Chip(Icon(RiShareLine).size('sm').foreground('primary'), Text('Share'), Badge(1)).size('xl').style('subtle'), Field('Type', Toggle(t), Toggle(t)).multiple()];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => Button(Text('a')).iconSize('28');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown iconSize token '28' for .iconSize()");
+    let output = compiled_with(names, "export const x = () => Card(Text('a')).axis('row');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown axis token 'row' for .axis()");
+}
+
+#[test]
+fn a_buttons_inks_spinner_and_a_fields_lines_are_checked() {
+    let names = "Button, Icon, Text, Badge, TextField";
+    let ok = compiled_with(
+        names,
+        "export const x = (t, busy) => [Button(Icon(RiShareLine)).shape('circle').label('Share').foreground('error').hoverForeground('error').loading(busy).loadingIndicator(null), Button(Badge(1), Text('Ask')), TextField(t, 'Bio').multiline().editable(false)];\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = () => Button(Text('a')).hoverForeground('#f00');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token '#f00' for .hoverForeground()");
+}
+
+#[test]
+fn a_tab_strips_open_tab_press_is_checked() {
+    let names = "Tabs, TabItem";
+    let ok = compiled_with(
+        names,
+        "export const x = (b) => Tabs(b, TabItem('a', 'A')).pressOpenTab('reselect');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output =
+        compiled_with(names, "export const x = (b) => Tabs(b, TabItem('a', 'A')).pressOpenTab('top');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown pressOpenTab token 'top' for .pressOpenTab()");
+}
+
+#[test]
+fn a_menu_can_be_blooms_dropdown_everywhere() {
+    let names = "Menu, Item, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = () => Menu(Text('More'), Item('Copy')).menuStyle('dropdown');\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(
+        names,
+        "export const x = () => Menu(Text('More'), Item('Copy')).menuStyle('inline');\n",
+    );
+    assert_eq!(output.diagnostics[0].message, "Unknown menuStyle token 'inline' for .menuStyle()");
 }

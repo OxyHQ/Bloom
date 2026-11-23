@@ -293,6 +293,12 @@ export type DialogProps = React.PropsWithChildren<{
    * close request the host must answer by flipping `open` to `false`.
    */
   onClose?: () => void;
+  /**
+   * Fires once the dialog has finished closing, its exit animation done, in
+   * either mode: in controlled mode, after the host flipped `open` to `false`
+   * and the surface left. The place to unmount what presented it.
+   */
+  onDismissed?: () => void;
   testID?: string;
   /** Optional dialog header text. Rendered above `description` / `children`. */
   title?: string;

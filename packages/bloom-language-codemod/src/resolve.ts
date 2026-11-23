@@ -12,7 +12,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type Arg, LANGUAGE_PACKAGE, type Mod, type Table } from './table';
+import {
+  type Arg,
+  type Entry,
+  isPoints,
+  LANGUAGE_PACKAGE,
+  type Mod,
+  type PointsArg,
+  type Table,
+} from './table';
 
 /** What draws the className: a React Native View, Pressable or a Bloom Text. */
 export type HostKind = 'view' | 'pressable' | 'text';
@@ -49,6 +57,7 @@ interface Spec {
   environment: { traits: string[] };
   universal: string[];
   nodes: Record<string, { modifiers: string[] }>;
+  enums: { fontFamily: string[] };
 }
 const spec = JSON.parse(readFileSync(join(LANGUAGE_PACKAGE, 'spec/language.json'), 'utf8')) as Spec;
 
@@ -57,6 +66,38 @@ spec.layers.forEach((names, index) => {
   for (const name of names) LAYER.set(name, index);
 });
 const TRAITS = new Set(spec.environment.traits);
+/** A frame side's Tailwind prefix, as the frame key the language names. */
+const FRAME_PREFIX: Readonly<Record<string, string>> = {
+  w: 'width',
+  h: 'height',
+  'min-w': 'minWidth',
+  'min-h': 'minHeight',
+  'max-w': 'maxWidth',
+  'max-h': 'maxHeight',
+};
+/** The spec's space tokens by points, a named rung over a numeric token of the same value. */
+const SPACE_BY_POINTS = new Map<number, string>();
+for (const [name, points] of Object.entries(spec.scales.space ?? {}))
+  if (typeof points === 'number' && (!/^\d/.test(name) || !SPACE_BY_POINTS.has(points)))
+    SPACE_BY_POINTS.set(points, name);
+
+/**
+ * A frame length of Tailwind's spacing scale that no app writes as a class
+ * (so the table has no row for it) but a style writes (`height: 38` is
+ * `h-9.5`), whose points are a space token: the frame the table writes for
+ * the steps it holds (`h-11` is `.frame({ height: '44' })`).
+ */
+function frameStep(utility: string): Entry | undefined {
+  const match = /^(min-w|min-h|max-w|max-h|w|h)-(\d+(?:\.\d+)?)$/.exec(utility);
+  const token = match ? SPACE_BY_POINTS.get(Number(match[2]) * 4) : undefined;
+  if (!match || token === undefined) return undefined;
+  const frame = { [FRAME_PREFIX[match[1] as string] as string]: token };
+  const mods = [{ name: 'frame', args: [frame] }];
+  return { status: 'mapped', language: `.frame({ ${Object.keys(frame)[0]}: '${token}' })`, mods };
+}
+
+/** The faces `.font()` takes beside a size (`mono`, `display`). */
+const FONT_FAMILY = new Set(spec.enums.fontFamily);
 /** The modifiers a `when()` variant can change; any other is left out of it. */
 const VARIES = new Set(spec.variants.modifiers);
 /** Conditions that hold, or not, as the view renders: a platform. */
@@ -312,7 +353,7 @@ export function resolveClassName(
       );
       continue;
     }
-    const entry = table.utilities.get(utility);
+    const entry = table.utilities.get(utility) ?? frameStep(utility);
     if (!entry) {
       fail(token, 'unknown', 'not in the className table');
       continue;
@@ -402,8 +443,9 @@ export function resolveClassName(
   for (const mod of unconditional?.mods ?? []) {
     const subject = unconditional?.subjects.get(mod) ?? '';
     if (!inline.has(subject)) continue;
-    for (const variant of resolved)
-      if (variant.conditions.length > 0 && variant.mods.some((m) => m.name === mod.name))
+    // A variant the style writes itself (a Pressable's pressed style) is inline too, and wins as the JSX's does.
+    for (const [key, g] of groups)
+      if (key && g.mods.some((m) => m.name === mod.name && !inline.has(g.subjects.get(m) ?? '')))
         fail(
           subject,
           'style-variant',
@@ -508,14 +550,18 @@ function finish(
       fail(`${subject(prior)} ${subject(mod)}`, 'corner-overlap', 'two corners of one corner');
   });
 
-  // Any other modifier twice is decided by Tailwind's rule order.
+  // Any other modifier twice is decided by Tailwind's rule order. (A safe-area padding is one per side, from its style key;
+  // a face, `.font('mono')`, and a size, `.font('96')`, are two things a text keeps both of.)
   const seen = new Map<string, Mod>();
   for (const mod of mods) {
-    if (['padding', 'margin', 'border', 'corner', 'when'].includes(mod.name)) continue;
-    const prior = seen.get(mod.name);
+    if (['padding', 'margin', 'border', 'corner', 'when', 'safeAreaPadding'].includes(mod.name))
+      continue;
+    const key =
+      mod.name === 'font' && FONT_FAMILY.has(mod.args[0] as string) ? 'font family' : mod.name;
+    const prior = seen.get(key);
     if (prior)
       fail(`${subject(prior)} ${subject(mod)}`, 'conflict', `two classes set .${mod.name}()`);
-    seen.set(mod.name, mod);
+    seen.set(key, mod);
   }
 
   const measuredFrom = kind === 'text' ? unsized(mods) : undefined;
@@ -553,10 +599,11 @@ function mergeObjects(
   subject: (mod: Mod) => string,
   fail: (subject: string, code: string, why: string) => void,
 ): Mod | null {
-  const out: Record<string, string> = {};
+  // A key's token, or points computed at render (`{ width: itemSize }`).
+  const out: Record<string, string | PointsArg> = {};
   for (const mod of list) {
     const value = mod.args[0];
-    if (typeof value !== 'object' || mod.args.length !== 1) {
+    if (typeof value !== 'object' || isPoints(value) || mod.args.length !== 1) {
       fail(subject(mod), name, `an unexpected .${name}() form`);
       return null;
     }

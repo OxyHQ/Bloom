@@ -19,7 +19,11 @@ export interface DialogPresentationLifecycle {
  */
 export function usePresentationSession(
   placement: ResponsiveDialogPlacement | undefined,
-  { open, startOpen }: { open?: boolean; startOpen?: boolean },
+  {
+    open,
+    startOpen,
+    onDismissed,
+  }: { open?: boolean; startOpen?: boolean; onDismissed?: () => void },
 ) {
   const resolved = useResolvedPlacement(placement);
   const responsive = typeof placement === 'object' && placement != null;
@@ -27,17 +31,20 @@ export function usePresentationSession(
     responsive && (open ?? startOpen ?? false) ? resolved : null,
   );
   const active = useRef(session);
-  const latest = useRef({ resolved, responsive });
-  latest.current = { resolved, responsive };
+  const latest = useRef({ resolved, responsive, onDismissed });
+  latest.current = { resolved, responsive, onDismissed };
 
   const onPresentationOpen = useCallback(() => {
     if (!latest.current.responsive || active.current !== null) return;
     active.current = latest.current.resolved;
     setSession(active.current);
   }, []);
+  // Every renderer reports here once its exit has finished, in either mode: the
+  // session ends, then the Dialog's `onDismissed` hears it.
   const onPresentationClosed = useCallback(() => {
     active.current = null;
     setSession(null);
+    latest.current.onDismissed?.();
   }, []);
 
   // Imperative opens notify synchronously from the renderer; controlled opens

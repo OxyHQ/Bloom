@@ -618,7 +618,7 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     expect(named(CORNER)).toEqual(unprefixed(tokens.borderRadius));
     expect(named(FONT_SIZE)).toEqual(unprefixed(tokens.fontSize));
     expect(LEADING).toEqual(tokens.lineHeight);
-    expect(HIT_SLOP).toEqual(tokens.hitSlop);
+    expect(named(HIT_SLOP)).toEqual({ none: 0, ...tokens.hitSlop });
     // The language names Bloom's one disabled fade neutrally: it is any half opacity, not only a disabled control's.
     expect(OPACITY.half).toBe(tokens.DISABLED_OPACITY);
     expect(named(DURATION)).toEqual(tokens.animation.duration);
@@ -720,7 +720,9 @@ describe('the spec is Bloom’s scales, rung for rung', () => {
     // and the canonical variable the web reads are one pair. A fixed colour
     // (`white: '#ffffff'`) is the same literal on both sides.
     const theme = read('theme/build-theme.ts');
+    // The surface fill is no theme colour: its leaf reads Bloom's `useSurfaceFill()`.
     for (const { paint, web } of Object.values(COLORS)) {
+      if (web === null) continue;
       const variable = /^var\(--([\w-]+)\)$/.exec(web)?.[1];
       expect(theme).toMatch(
         new RegExp(`\\n\\s+${paint}: ${variable ? `g\\('${variable}'\\)` : `'${web}'`},`),

@@ -6,6 +6,8 @@ import {
   MenubarGroup,
   MenubarItem,
   MenubarLabel,
+  MenubarRadioGroup,
+  MenubarRadioItem,
   MenubarMenu as BloomMenubarMenu,
   MenubarSeparator,
   MenubarSub,
@@ -18,7 +20,6 @@ import type { Binding } from '../binding';
 import {
   Node,
   type Child,
-  type IconComponent,
   type MenuActionsView,
   type MenuChild,
   type MenuContentView,
@@ -26,7 +27,7 @@ import {
   type ViewNode,
 } from '../node';
 import { useMenuChoice } from '../platform/menu-actions';
-import { drawMenuRows, glyph, type MenuParts } from '../platform/menu-dropdown';
+import { drawMenuRows, glyph, type Leading, type MenuParts } from '../platform/menu-dropdown';
 import { readMenuRows } from '../platform/menu-rows';
 import { nodesOf, valuesOf } from '../platform/values';
 import type { ControlRenderer } from './draw';
@@ -67,6 +68,8 @@ export function MenubarMenu(title: string, ...rows: readonly unknown[]): Menubar
 const PARTS: MenuParts = {
   Item: MenubarItem,
   CheckboxItem: MenubarCheckboxItem,
+  RadioGroup: MenubarRadioGroup,
+  RadioItem: MenubarRadioItem,
   Label: MenubarLabel,
   Separator: MenubarSeparator,
   Group: MenubarGroup,
@@ -86,9 +89,8 @@ interface MenubarHostProps {
 /** The bar, each menu a trigger and its rows, read as a `Menu`'s. */
 function MenubarHost({ menus, actions, openMenu, render, ...props }: MenubarHostProps) {
   const { choose, running } = useMenuChoice(actions);
-  const leading = useCallback(
-    (icon: IconComponent | undefined, destructive: boolean): ReactNode =>
-      icon ? render(glyph(icon, destructive)) : undefined,
+  const leading = useCallback<Leading>(
+    (row, destructive) => (row.icon ? render(glyph(row.icon, destructive, row)) : undefined),
     [render],
   );
   return (

@@ -11,6 +11,7 @@ import {
   Platform,
   Pressable,
   Text as RNText,
+  TouchableOpacity,
   View,
   type GestureResponderEvent,
 } from 'react-native';
@@ -84,9 +85,17 @@ import {
   type StackProps,
   type TextProps,
   type TextRun,
+  type ViewNode,
   type ViewNodeProps,
 } from './node';
-import { ENVIRONMENT, ENVIRONMENT_TAKERS, LAYER_RANK, TONE_ROLE } from './generated/spec.generated';
+import {
+  ENVIRONMENT,
+  ENVIRONMENT_TAKERS,
+  LAYER_RANK,
+  OWN_ASPECT_RATIO,
+  OPACITY,
+  TONE_ROLE,
+} from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import type { Namespace } from './motion/namespace';
 import { opacity } from './motion/transition';
@@ -95,6 +104,7 @@ import type { GlassMember } from './platform/glass-host.types';
 import { ConfirmationHost } from './platform/confirmation-host';
 import { type InsetRoom, insetsOf, NO_INSETS, SafeAreaInsets } from './chrome/safe-area-inset';
 import { MenuHost } from './platform/menu-host';
+import { DropdownMenuHost } from './platform/menu-dropdown';
 import { HeaderHost } from './platform/header-host';
 import { BottomBarHost } from './platform/bottom-bar-host';
 import { ScrollViewHost } from './chrome/scroll-view-host';
@@ -136,7 +146,6 @@ import {
   overlayStyle,
   placeStyle,
   placeVariants,
-  rawBaseFont,
   stackStyle,
   textStyle,
   textVariant,
@@ -172,7 +181,10 @@ import {
   Conditioned,
   GEOMETRY_KEYS,
   type ListColor,
-  Painted,
+  isSurfaceFill,
+  paintedLeaf,
+  paintsSurface,
+  surfaced,
   composeGeometry,
   type Geometry,
   type GeometryKey,
@@ -191,7 +203,7 @@ import {
   resolveSpace,
   type ShapeName,
   type AvatarSizeToken,
-  type LengthToken,
+  type FrameLength,
   type CornerName,
   type SpaceToken,
   resolveIconSize,
@@ -203,12 +215,14 @@ import {
   type ListMarker,
   type IconSizeToken,
   type InkToken,
+  type PhysicalEdge,
   type Role,
   type TextStyleName,
 } from './tokens';
 import { deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from './env';
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
+import { SafeAreaPadded } from './safe-area';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
   MotionWrapper,
@@ -241,7 +255,7 @@ const IS_WEB = Platform.OS === 'web';
 type Host = unknown;
 
 /** The language's own pressable hosts. */
-const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable]);
+const PRESSABLE_HOSTS: ReadonlySet<Host> = new Set([Pressable, TouchableOpacity]);
 const pressHostOuts = new WeakMap<StyleOut, StyleOut>();
 
 /**
@@ -336,7 +350,8 @@ interface Plan {
   label: string | undefined;
   hint: string | undefined;
   role: Role | undefined;
-  hitSlop: number | undefined;
+  /** How far a press reaches: one slop on every side, or each side's (React Native's `Insets`). */
+  hitSlop: number | HitSlopInsets | undefined;
   testID: string | undefined;
   id: string | number | undefined;
   own: Map<Modifier['kind'], Modifier>;
@@ -412,6 +427,7 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
     anchor: undefined,
     animation: undefined,
     colors: false,
+    surface: false,
     transition: undefined,
     keyframes: undefined,
     loop: undefined,
@@ -486,6 +502,7 @@ function motionPlan(node: Node, layers: readonly Layer[]): MotionPlan {
         // Its colours play with the animation in scope: the box is animated from the first render.
         motion.stable = true;
         motion.colors = true;
+        motion.surface = node.modifiers.some(namesSurfaceFill);
         break;
       case 'transition':
         motion.stable = true;
@@ -689,6 +706,11 @@ function plan(node: Node, env: Env): Plan {
       result.own.set('cornerCurve', modifier);
       continue;
     }
+    // An image's or a call grid's aspect ratio is its own (it sizes what it draws), not its box's.
+    if (modifier.kind === 'aspectRatio' && OWN_ASPECT_RATIO.includes(node.kind)) {
+      result.own.set('aspectRatio', modifier);
+      continue;
+    }
     // A card's clip is its own (Bloom's `clipContent`), not a box around it.
     if (node.kind === 'card' && modifier.kind === 'clipped') {
       result.own.set('clipped', modifier);
@@ -754,7 +776,7 @@ function plan(node: Node, env: Env): Plan {
         result.role = modifier.value;
         break;
       case 'hitSlop':
-        result.hitSlop = HIT_SLOP[modifier.value];
+        result.hitSlop = withHitSlop(result.hitSlop, modifier.edge, HIT_SLOP[modifier.value]);
         break;
       case 'testID':
         result.testID = modifier.value;
@@ -781,6 +803,38 @@ function plan(node: Node, env: Env): Plan {
   if (moving || result.place.variants.some(([, modifier]) => GEOMETRY_KINDS.has(modifier.kind)))
     result.motion = motionPlan(node, result.layers);
   return result;
+}
+
+type HitSlopInsets = { top?: number; bottom?: number; left?: number; right?: number };
+
+/** Each side of a physical edge, as React Native's `Insets` names it. */
+const HIT_SLOP_SIDES: Record<PhysicalEdge, readonly (keyof HitSlopInsets)[]> = {
+  all: ['top', 'bottom', 'left', 'right'],
+  top: ['top'],
+  bottom: ['bottom'],
+  horizontal: ['left', 'right'],
+  vertical: ['top', 'bottom'],
+  left: ['left'],
+  right: ['right'],
+};
+
+/**
+ * A hit slop with one more `.hitSlop()`: every side is one number (as Bloom
+ * writes `hitSlop={8}`); a side of its own makes it React Native's insets,
+ * with only the sides the chain names, a later one of a side over the earlier.
+ */
+function withHitSlop(
+  current: number | HitSlopInsets | undefined,
+  edge: PhysicalEdge,
+  value: number,
+): number | HitSlopInsets {
+  if (edge === 'all') return value;
+  const insets: HitSlopInsets =
+    typeof current === 'number'
+      ? { top: current, bottom: current, left: current, right: current }
+      : { ...current };
+  for (const side of HIT_SLOP_SIDES[edge]) insets[side] = value;
+  return insets;
 }
 
 /**
@@ -919,6 +973,19 @@ function ownValue<K extends Modifier['kind']>(
 }
 
 /**
+ * `.accessibilityHidden()`: Android's and iOS's own props, hiding what is
+ * inside too; the web's `aria-hidden` (react-native-web drops the native ones).
+ */
+const HIDDEN = Object.freeze(
+  IS_WEB
+    ? { 'aria-hidden': true }
+    : { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' },
+);
+const SHOWN = Object.freeze(
+  IS_WEB ? {} : { accessibilityElementsHidden: false, importantForAccessibility: 'auto' },
+);
+
+/**
  * The accessibility and press props of a view, for whichever host ends up
  * outermost; `undefined` when it has none, so a bare node never gets a host
  * of its own.
@@ -930,14 +997,32 @@ function behaviourProps(p: Plan): Record<string, unknown> | undefined {
   if (p.role !== undefined) props.accessibilityRole = ROLE[p.role];
   // Press feedback is Bloom's PressableScale, which a button is.
   else if (p.pressable && p.motion?.pressScale) props.accessibilityRole = 'button';
+  const state = ownValue(p, 'accessibilityState')?.value;
+  if (state !== undefined) props.accessibilityState = state;
+  const value = ownValue(p, 'accessibilityValue')?.value;
+  if (value !== undefined) props.accessibilityValue = value;
+  const live = ownValue(p, 'liveRegion')?.value;
+  if (live !== undefined) props.accessibilityLiveRegion = live;
+  const hidden = ownValue(p, 'accessibilityHidden')?.value;
+  if (hidden !== undefined) Object.assign(props, hidden ? HIDDEN : SHOWN);
   if (p.testID !== undefined) props.testID = p.testID;
   if (p.hitSlop !== undefined) props.hitSlop = p.hitSlop;
+  // The escape hatches, on whichever host is outermost.
+  const ref = ownValue(p, 'ref')?.value;
+  if (ref !== undefined) props.ref = ref;
+  const onLayout = ownValue(p, 'onLayout')?.value;
+  if (onLayout !== undefined) props.onLayout = onLayout;
   if (p.pressable) {
+    const fade = ownValue(p, 'pressFade');
     // A view whose press handler is absent stays the same host, out of the tab order
-    // (a pressable is focusable by default).
-    if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
+    // (a pressable is focusable by default). A press that fades is TouchableOpacity's,
+    // whose focus is its own: on Android and iOS none without a press, on the web
+    // focusable unless disabled, as the TouchableOpacity an app writes.
+    if (fade !== undefined) props.onPress = p.onPress;
+    else if (p.onPress === undefined && p.onLongPress === undefined) props.focusable = false;
     if (p.onPress) props.onPress = p.onPress;
     if (p.onLongPress) props.onLongPress = p.onLongPress;
+    if (fade?.value !== undefined) props.activeOpacity = OPACITY[fade.value];
   }
   if (p.onHoverIn) props.onHoverIn = p.onHoverIn;
   if (p.onHoverOut) props.onHoverOut = p.onHoverOut;
@@ -995,10 +1080,8 @@ function drawHost(
   // merges both after what it paints).
   if (out.style !== undefined)
     props.style = props.style === undefined ? out.style : [out.style, ...(props.style as [])];
-  if (out.paint?.variants !== undefined)
-    return draw(Conditioned, { ...props, host, paint: out.paint }, ...children);
   if (out.paint !== undefined)
-    return draw(Painted, { ...props, host, paint: out.paint }, ...children);
+    return draw(...paintedLeaf({ ...props, host, paint: out.paint }), ...children);
   return draw(host, props, ...children);
 }
 
@@ -1151,6 +1234,12 @@ function restsStill(motion: MotionPlan): boolean {
   );
 }
 
+/** Whether a modifier paints the surface fill (`.background('surfaceFill')`, `'surfaceFill/50'`). */
+function namesSurfaceFill(modifier: Modifier): boolean {
+  const value = (modifier as { value?: unknown }).value;
+  return typeof value === 'string' && isSurfaceFill(value.split('/')[0] as ColorName);
+}
+
 /** A node with motion modifiers: `MotionNode` holds its motion state and draws it with `Outer`. */
 function drawMoving(
   node: Node,
@@ -1170,14 +1259,16 @@ function drawMoving(
         : MotionNode;
   // Native: a node that animates its colours reads the palette (`ThemedMotion`).
   const themed = motion.colors && !IS_WEB;
-  return draw(themed ? ThemedMotion : component, {
-    ...(themed ? { node: component } : null),
+  const props = {
     key: p.id ?? key,
     motion,
     exit: p.id !== undefined && motion.transition !== undefined,
     scope: ctx.animation,
     content: (outer: Outer) => drawNode(node, p, ctx, undefined, outer),
-  });
+  };
+  return themed
+    ? draw(...surfaced(ThemedMotion, { ...props, node: component }, motion.surface))
+    : draw(component, props);
 }
 
 /**
@@ -1224,12 +1315,15 @@ function drawNode(
   // A glass layer is a Surface and a blur layer an island, which the host cannot
   // be, and an overlay layer holds its views beside the host; so the host takes
   // the innermost layer only when that layer is plain.
+  // A safe-area layer is the host when the host is a plain column or row, which pads itself by the insets.
   const hostTakesLayer =
     !ownBox &&
     layers.length > 0 &&
     (layers[0] as Layer).glass === undefined &&
     !(layers[0] as Layer).blur &&
     !(layers[0] as Layer).concentric &&
+    ((layers[0] as Layer).safeArea === 0 ||
+      (node.kind === 'stack' && behaviourProps(p) === undefined)) &&
     (layers[0] as Layer).overlays.length === 0;
   const hostLayer = hostTakesLayer ? (layers[0] as Layer) : undefined;
   const wrappers = hostTakesLayer ? layers.slice(1) : layers;
@@ -1363,6 +1457,7 @@ function materialPadding(layer: Layer): { outer: Layer; inner: Layer } | undefin
     concentric: false,
     curve: undefined,
     blur: false,
+    safeArea: 0,
     overlays: [],
     corners: 0,
     follows: [],
@@ -1535,7 +1630,13 @@ function wrapLayer(
           },
         ]),
       );
-      const drawn = drawHost(PlatformGlass, paint ? painted(out, paint) : out, props, ...children);
+      // A tint of the surface fill reads it where the glass is drawn (`OnSurface`); no other glass does.
+      const tintsSurface =
+        isSurfaceFill(glass.tintColor) ||
+        isSurfaceFill(p.control?.tint) ||
+        varied.props.some(([, { fill }]) => fill !== undefined && isSurfaceFill(role(fill).role));
+      const [glassHost, glassProps] = surfaced(PlatformGlass, props, tintsSurface);
+      const drawn = drawHost(glassHost, paint ? painted(out, paint) : out, glassProps, ...children);
       if (p.control?.reports.length) return draw(ReportedState, { key }, drawn);
       return behaviour && p.pressable
         ? drawOutermost(box, hostFor(p), around, { ...behaviour, key }, drawn)
@@ -1646,7 +1747,32 @@ function wrapLayer(
     () => boxStyle(layer, flex, p),
     () => boxVariants(layer, flex, p),
   );
+  if (layer.safeArea !== 0) {
+    // A view padded by the device's safe area, which it reads as it renders; a press is a host around it.
+    const outer = behaviour && !p.pressable ? behaviour : null;
+    const padded = drawHost(
+      SafeAreaPadded,
+      out,
+      { ...outer, ...safeAreaProps(layer), key: behaviour && p.pressable ? undefined : key },
+      ...children,
+    );
+    return behaviour && p.pressable
+      ? drawOutermost(box, hostFor(p), AROUND, { ...behaviour, key }, padded)
+      : padded;
+  }
   return drawOutermost(box, behaviour ? hostFor(p) : View, out, { ...behaviour, key }, ...children);
+}
+
+/** What `SafeAreaPadded` pads a layer by: its sides, and its own top and bottom padding, which the insets add to. */
+function safeAreaProps(layer: Layer): { safeArea: number; own: { top: number; bottom: number } } {
+  const style = layerStyle(layer);
+  return {
+    safeArea: layer.safeArea,
+    own: {
+      top: typeof style.paddingTop === 'number' ? style.paddingTop : 0,
+      bottom: typeof style.paddingBottom === 'number' ? style.paddingBottom : 0,
+    },
+  };
 }
 
 /** A web list's row: a list item around the child, which draws the list's marker before it. */
@@ -1722,22 +1848,26 @@ function shapeElement(
   if (last?.kind === 'image')
     return draw(ShapeImage, { key, shape: name, size, source: last.source, alt: last.alt });
   if (last?.kind === 'stroke') {
-    return draw(Painted, {
+    return draw(
+      ...paintedLeaf({
+        key,
+        host: ShapeBorder,
+        shape: name,
+        size,
+        width: resolveBorderWidth(last.width),
+        paint: tokenPaint('colors', last.value),
+      }),
+    );
+  }
+  return draw(
+    ...paintedLeaf({
       key,
-      host: ShapeBorder,
+      host: ShapeFill,
       shape: name,
       size,
-      width: resolveBorderWidth(last.width),
-      paint: tokenPaint('colors', last.value),
-    });
-  }
-  return draw(Painted, {
-    key,
-    host: ShapeFill,
-    shape: name,
-    size,
-    paint: tokenPaint('color', last?.value ?? 'foreground'),
-  });
+      paint: tokenPaint('color', last?.value ?? 'foreground'),
+    }),
+  );
 }
 
 const tokenPaints = new Map<string, Paint>();
@@ -1888,9 +2018,13 @@ function propPaint(
   ) as Paint;
 }
 
-/** The outermost box's host: pressable when the view takes presses or hovers. */
+/**
+ * The outermost box's host: pressable when the view takes presses or hovers,
+ * React Native's `TouchableOpacity` when its press fades it (`.pressFade()`).
+ */
 function hostFor(p: Plan): Host {
-  return p.pressable ? Pressable : View;
+  if (!p.pressable) return View;
+  return p.own.has('pressFade') ? TouchableOpacity : Pressable;
 }
 
 function hostProps(
@@ -1944,13 +2078,15 @@ function iconGlyph(
   if (live.length === 0)
     return own !== undefined
       ? draw(icon, { fill: own, width: size, height: size, key })
-      : draw(Painted, {
-          host: icon,
-          paint: iconPaint(color as ColorToken),
-          width: size,
-          height: size,
-          key,
-        });
+      : draw(
+          ...paintedLeaf({
+            host: icon,
+            paint: iconPaint(color as ColorToken),
+            width: size,
+            height: size,
+            key,
+          }),
+        );
   if (IS_WEB) {
     const out = cachedStyle(
       'host',
@@ -1982,9 +2118,10 @@ function iconGlyph(
     iconVariantPaints.set(env.key, paint);
   }
   // An app colour at rest is the glyph's own fill; a variant that holds paints over it.
-  if (own !== undefined)
-    return draw(Conditioned, { host: icon, paint, fill: own, width: size, height: size, key });
-  return draw(Conditioned, { host: icon, paint, width: size, height: size, key });
+  const leaf = (props: Record<string, unknown>) =>
+    draw(...surfaced(Conditioned, { host: icon, paint, ...props }, paintsSurface(paint)));
+  if (own !== undefined) return leaf({ fill: own, width: size, height: size, key });
+  return leaf({ width: size, height: size, key });
 }
 
 /** A stack's style: its layout, then its box (the innermost layer and its flex), with their variants. */
@@ -1997,13 +2134,15 @@ function stackOut(
 ): StyleOut {
   const layout = {
     spacing: ownValue(p, 'spacing')?.value,
+    horizontalSpacing: ownValue(p, 'horizontalSpacing')?.value,
+    verticalSpacing: ownValue(p, 'verticalSpacing')?.value,
     childSpacing: ownValue(p, 'childSpacing')?.value,
     align: ownValue(p, 'align')?.value,
     justify: ownValue(p, 'justify')?.value,
     wrap: ownValue(p, 'wrap')?.value,
     axis: ownValue(p, 'axis')?.value,
   };
-  const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layer?.key ?? ''}|${flex}`;
+  const styleKey = `S|${axis}|${layout.spacing === undefined ? '' : tokenKey(layout.spacing)}|${ownValue(p, 'horizontalSpacing')?.key ?? ''}|${ownValue(p, 'verticalSpacing')?.key ?? ''}|${ownValue(p, 'childSpacing')?.key ?? ''}|${layout.align ?? ''}|${layout.justify ?? ''}|${layout.wrap ?? ''}|${layout.axis ?? ''}|${marker ?? ''}|${hostVariantKey(p)}|${layer?.key ?? ''}|${flex}`;
   return cachedStyle(
     'host',
     styleKey,
@@ -2123,9 +2262,11 @@ function renderHost(
           draw(SubtleHover, wash.value === undefined ? {} : { active: wash.value, native: true }),
         );
       }
-      const host = behaviour ? hostFor(p) : View;
+      const padded = layer !== undefined && layer.safeArea !== 0;
+      const host = behaviour ? hostFor(p) : padded ? SafeAreaPadded : View;
       const props = hostProps(behaviour, key);
       if (marker !== undefined) props.role = 'list';
+      if (padded) Object.assign(props, safeAreaProps(layer));
       return drawOutermost(box, host, out, props, ...children);
     }
     case 'zstack': {
@@ -2326,10 +2467,16 @@ function renderHost(
     case 'button': {
       const props = hostProps(behaviour, key);
       delete props.focusable;
-      const { icon, glyph, label, trailing } = buttonContent(node.children);
+      const { icon, glyph, label, trailing, content, leadingView, trailingView } = buttonContent(
+        node.children,
+      );
       const shape = ownValue(p, 'shape')?.value;
       const iconOnly =
-        icon !== undefined && label === undefined && shape !== undefined && shape !== 'fit';
+        !content &&
+        icon !== undefined &&
+        label === undefined &&
+        shape !== undefined &&
+        shape !== 'fit';
       // A glyph in an ink of its own (`Icon(X).foreground(role)`) is drawn as
       // it is; otherwise the button tints its icon with its tone.
       const inked = glyph?.modifiers.some((modifier) => modifier.kind === 'foreground');
@@ -2337,9 +2484,14 @@ function renderHost(
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
         size: ownValue(p, 'size')?.value,
-        leadingIcon: inked ? undefined : icon,
-        icon: inked && glyph ? renderNode(glyph, ctx, undefined) : undefined,
-        trailingIcon: trailing,
+        leadingIcon: inked || content ? undefined : icon,
+        icon: inked && glyph && !content ? renderNode(glyph, ctx, undefined) : undefined,
+        trailingIcon: content ? undefined : trailing,
+        // A view beside the label (an avatar glyph, a custom mark): Bloom's `leading` and `trailing`.
+        leading: leadingView === undefined ? undefined : renderNode(leadingView, ctx, undefined),
+        trailing: trailingView === undefined ? undefined : renderNode(trailingView, ctx, undefined),
+        // `null`: no spinner while loading (the label or glyph stays).
+        loadingIndicator: loadingIndicatorOf(ownValue(p, 'loadingIndicator')?.value, ctx),
         // A circle is Bloom's square icon button; a pill, its wide one; fit
         // grows with its content, never narrower than it is tall.
         iconOnly: iconOnly ? true : undefined,
@@ -2348,13 +2500,18 @@ function renderHost(
         linkTone: ownValue(p, 'linkTone')?.value,
         inverted: ownValue(p, 'inverted')?.value,
         density: ownValue(p, 'density')?.value,
-        children: label,
+        // Content that is a view (a spinner, a glyph in a `Group`) is the button's children as drawn.
+        children: content ? renderChildren(node.children, ctx) : label,
         disabled: ownValue(p, 'disabled')?.value,
         loading: ownValue(p, 'loading')?.value,
         pressed: ownValue(p, 'pressed')?.value,
         href: ownValue(p, 'link')?.value,
         numberOfLines: ownValue(p, 'lines')?.value,
         underline: ownValue(p, 'underline') === undefined ? undefined : 'rest',
+        iconSize: iconSizeOf(ownValue(p, 'iconSize')?.value),
+        stopPropagation: ownValue(p, 'stopPropagation')?.value,
+        // A trigger's open state is Bloom's own prop on a Button (it writes its own accessibility state).
+        'aria-expanded': ownValue(p, 'accessibilityState')?.value.expanded,
         material: p.control || ctx.env.island ? 'shared' : undefined,
       });
       const colors = ownValue(p, 'colors')?.value;
@@ -2369,6 +2526,18 @@ function renderHost(
       }
       const button = p.control?.reports.length ? ReportingButton : BloomButton;
       if (button === ReportingButton) props.reports = p.control?.reports;
+      // Its ink at rest and under the pointer, painted from their roles: Bloom's `color` and `hoverColor`.
+      const inks = buttonInks(p);
+      if (inks.length > 0) {
+        const out = boxed ? boxOf('component', 'B') : NO_STYLE_OUT;
+        const paint = variedPaint(
+          `B|ink|${boxed ? `${layerKey}|${flex}` : ''}|${inks.map((ink) => ink.join(':')).join(',')}`,
+          out,
+          inks,
+          NO_VARIANTS,
+        ) as Paint;
+        return drawHost(button, painted(out, paint), props);
+      }
       if (!boxed) return draw(button, props);
       return drawHost(button, boxOf('component', 'B'), props);
     }
@@ -2418,12 +2587,15 @@ function renderHost(
       return drawHost(fab, boxOf('component', 'F'), props);
     }
     case 'menu': {
-      const menu = draw(MenuHost, {
+      // `.menuStyle('dropdown')`: Bloom's own dropdown on every platform, its look as the JSX an app writes.
+      const host = ownValue(p, 'menuStyle')?.value === 'dropdown' ? DropdownMenuHost : MenuHost;
+      const menu = draw(host, {
         key: boxed ? undefined : key,
         trigger: namedTrigger((node.props as MenuProps).trigger, p.label),
         rows: node.children,
         actions: ownValue(p, 'actions')?.value,
         label: p.label,
+        presented: ownValue(p, 'presented')?.value,
         testID: p.testID,
         render: (child: Child) => renderChild(child, ctx, undefined),
       });
@@ -2587,6 +2759,7 @@ function renderHost(
     case 'divider': {
       const tint = ownValue(p, 'tint')?.value as ColorName | undefined;
       const spacing = ownValue(p, 'spacing')?.value;
+      const axis = ownValue(p, 'axis')?.value as 'horizontal' | 'vertical' | undefined;
       const [label] = node.children;
       const content = dividerLabel(label, ctx);
       const out = boxOf('component', 'DV');
@@ -2594,7 +2767,8 @@ function renderHost(
         Object.assign(props, {
           variant: ownValue(p, 'lineStyle')?.value,
           align: ownValue(p, 'align')?.value,
-          vertical: inRow || undefined,
+          // Across its stack: vertical in a row, unless its own `.axis()` says which way it runs.
+          vertical: (axis === undefined ? inRow : axis === 'vertical') || undefined,
           spacing: spacing === undefined ? undefined : resolveSpace(spacing),
         });
         return drawHost(
@@ -2656,7 +2830,7 @@ function renderHost(
         popOnActivate: options.pop,
         rollCount: options.rollCount,
         busy: options.busy,
-        hitSlop: options.hitSlop,
+        hitSlop: p.hitSlop,
         accessibilityActions: options.accessibilityActions,
         onAccessibilityAction: options.onAccessibilityAction,
         testID: p.testID,
@@ -2962,7 +3136,7 @@ function drawSkeleton(
     if (modifier.kind === 'frame') frame = { ...frame, ...modifier.value };
     if (modifier.kind === 'corner') corner = modifier.value;
   }
-  const length = (token: LengthToken | undefined) =>
+  const length = (token: FrameLength | undefined) =>
     token === undefined ? undefined : resolveLength(token);
   const props: Record<string, unknown> = { key };
   if (shape === 'text') {
@@ -3073,7 +3247,8 @@ function drawText(
   const raw = (node.props as TextProps).raw === true;
   // React Native's own Text (RawText) inherits nothing of the language's environment
   // (no family, size or ink); a span, and RawText, write only what their own chain
-  // names, RawText over the base face an app's React Native Text draws (`rawBaseFont`).
+  // names. A face for a text that names none is the app bundler's (app-preset's
+  // `baseFont`), which reaches this Text as it reaches the app's own.
   const traits = raw ? deriveEnv(ROOT_ENV, p.env).text : ctx.env.text;
   const span = ctx.inText || raw ? spanTraits(p) : undefined;
   const link = ownValue(p, 'link')?.value;
@@ -3130,14 +3305,8 @@ function drawText(
   const host = span !== undefined ? RNText : textStyleName ? TEXT_HOSTS[textStyleName] : BloomText;
   const out = cachedStyle(
     'host',
-    `T|${ctx.env.key}|${span === undefined ? '' : `s:${spanKey}`}|${raw ? (ctx.inText ? 'r:in' : 'r') : ''}|${lookKey}|${layerKey}|${flex}`,
-    () =>
-      Object.assign(
-        {},
-        raw ? rawBaseFont(ctx.inText === true) : undefined,
-        textStyle(traits, look, span),
-        box(),
-      ),
+    `T|${ctx.env.key}|${span === undefined ? '' : `s:${spanKey}`}|${raw ? 'r' : ''}|${lookKey}|${layerKey}|${flex}`,
+    () => Object.assign(textStyle(traits, look, span), box()),
     () => joinVariants(textVariants(traits), boxVaried()),
   );
   const roll = ownValue(p, 'contentTransition');
@@ -3216,17 +3385,54 @@ const LINK_TARGET = Object.freeze({ target: '_blank', rel: 'noopener noreferrer'
  * A button's content: its first `Icon` before any `Text` is the leading glyph,
  * an `Icon` after a `Text` the trailing one, and the `Text` runs its label.
  */
+/**
+ * A Button's inks as Bloom's `color` and `hoverColor`, each from a colour
+ * role: `.foreground()` (its ink at rest, the last one chained) and
+ * `.hoverForeground()`.
+ */
+function buttonInks(p: Plan): (readonly [string, ColorName, number?])[] {
+  const inks: (readonly [string, ColorName, number?])[] = [];
+  let rest: Modifier | undefined;
+  for (const modifier of p.env) if (modifier.kind === 'foreground') rest = modifier;
+  const restValue = (rest as { value?: unknown } | undefined)?.value;
+  if (typeof restValue === 'string') inks.push(propRole('color', restValue as ColorToken));
+  const hover = ownValue(p, 'hoverForeground')?.value;
+  if (hover !== undefined) inks.push(propRole('hoverColor', hover));
+  return inks;
+}
+
+/** A button's `.loadingIndicator()`: `null` draws none, a view is drawn in the spinner's place. */
+function loadingIndicatorOf(value: ViewNode | null | undefined, ctx: Context): ReactNode {
+  if (value === undefined || value === null) return value;
+  return renderNode(value as Node, ctx, undefined);
+}
+
+/** A glyph size token as the points Bloom's `iconSize` takes. */
+function iconSizeOf(token: IconSizeToken | undefined): number | undefined {
+  return token === undefined ? undefined : resolveIconSize(token);
+}
+
 function buttonContent(children: readonly Child[]): {
   icon: IconProps['icon'] | undefined;
   glyph: Node | undefined;
   label: string | undefined;
   trailing: IconProps['icon'] | undefined;
+  /**
+   * A child that is neither an `Icon` nor a `Text` (a `Loading`, a `Group`
+   * around a glyph) and no label: a `Button` then draws its children as its
+   * content, as views, and reads none as its glyph or label.
+   */
+  content: boolean;
+  /** With a label, the view before it and the view after it (Bloom's `leading` and `trailing`). */
+  leadingView: Node | undefined;
+  trailingView: Node | undefined;
 } {
   let icon: IconProps['icon'] | undefined;
   let glyph: Node | undefined;
   let label: string | undefined;
   let trailing: IconProps['icon'] | undefined;
-  for (const child of flatten(children)) {
+  const nodes = flatten(children);
+  for (const child of nodes) {
     if (child.kind === 'icon') {
       if (label !== undefined) trailing ??= (child.props as IconProps).icon;
       else if (icon === undefined) {
@@ -3241,7 +3447,29 @@ function buttonContent(children: readonly Child[]): {
       label = label === undefined ? text : `${label} ${text}`;
     }
   }
-  return { icon, glyph, label, trailing };
+  const views = nodes.some((child) => child.kind !== 'icon' && child.kind !== 'text');
+  // With a label, a view before it is the leading one and a view after it the trailing one.
+  let leadingView: Node | undefined;
+  let trailingView: Node | undefined;
+  if (views && label !== undefined) {
+    let seenLabel = false;
+    for (const child of nodes) {
+      if (child.kind === 'text') seenLabel = true;
+      else if (child.kind !== 'icon') {
+        if (seenLabel) trailingView ??= child;
+        else leadingView ??= child;
+      }
+    }
+  }
+  return {
+    icon,
+    glyph,
+    label,
+    trailing,
+    content: views && label === undefined,
+    leadingView,
+    trailingView,
+  };
 }
 
 function flatten(children: readonly Child[]): Node[] {

@@ -35,6 +35,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -73,6 +74,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -115,6 +117,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -160,6 +163,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -203,6 +207,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -246,6 +251,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -288,6 +294,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -328,6 +335,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -364,6 +372,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -418,6 +427,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -465,6 +475,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -529,6 +540,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -603,6 +615,7 @@
    "@oxy.so/bloom/engagement-bar#EngagementBar"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -663,6 +676,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -731,6 +745,7 @@
   ],
   "within": [],
   "themed": true,
+  "insets": false,
   "screen": false,
   "appColors": {
    "table": "appColors",
@@ -788,6 +803,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -838,6 +854,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -889,6 +906,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -945,6 +963,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -997,13 +1016,14 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
  {
   "name": "components/Components.tsx:394",
-  "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={(() => {})}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
-  "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable([true, () => (() => {})()], 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
+  "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={() => {}}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
+  "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
   "bindings": {
    "ScreenScrollView": {
     "module": "@oxy.so/bloom/screen",
@@ -1055,6 +1075,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": true,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1113,6 +1134,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1179,6 +1201,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1249,6 +1272,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1317,6 +1341,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1374,6 +1399,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1432,6 +1458,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1501,6 +1528,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1572,6 +1600,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1634,6 +1663,7 @@
    "@oxy.so/bloom/screen#Screen"
   ],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1694,6 +1724,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1767,6 +1798,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1828,6 +1860,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1897,6 +1930,27 @@
   ],
   "within": [],
   "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Corners.tsx:6",
+  "before": "<View\n      style={{\n        borderTopLeftRadius: 16,\n        borderTopRightRadius: 16,\n        borderBottomEndRadius: 4,\n        padding: 8,\n      }}\n    />",
+  "after": "toElement(VStack().padding('all', 'sm').corner('lg', 'top-left').corner('lg', 'top-right').corner('xs', 'bottom-trailing'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "VStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1930,6 +1984,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1956,6 +2011,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -1989,8 +2045,395 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:10",
+  "before": "<View className=\"flex-row flex-wrap\">\n      <View style={{ width: 37, height: 37 }} />\n      <View className=\"w-12\" style={{ height: 43 }} />\n      <View style={{ maxWidth: 49, minHeight: 55 }} />\n    </View>",
+  "after": "toElement(HStack(VStack().frame({ width: 37, height: 37 }), VStack().frame({ width: '48', height: 43 }), VStack().frame({ maxWidth: 49, minHeight: 55 })).wrap())",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack"
+  ],
+  "classes": [
+   "flex-row",
+   "flex-wrap",
+   "w-12"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:21",
+  "before": "<View className=\"relative h-24\">\n      <View\n        className=\"absolute right-4 p-1\"\n        style={{ top: 43, zIndex: 37 }}\n      />\n    </View>",
+  "after": "toElement(VStack(VStack().padding('all', 'xs').zIndex(37).position({ right: 'lg', top: 43 })).frame({ height: '96' }))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [
+   "relative",
+   "h-24",
+   "absolute",
+   "right-4",
+   "p-1"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:32",
+  "before": "<View style={{ width: 37, height: 37, borderRadius: 37 / 2 }} />",
+  "after": "toElement(VStack().frame({ width: 37, height: 37 }).corner('full'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Geometry.tsx:37",
+  "before": "<View className=\"relative h-24\" style={{ maxHeight: '90%' }}>\n      <View style={{ width: '31%' }} />\n      <View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }} />\n    </View>",
+  "after": "toElement(VStack(VStack().frame({ width: '31%' }), VStack().position({ bottom: 'none', left: '25%', right: '25%' })).frame({ height: '96', maxHeight: '90%' }))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "toElement"
+  ],
+  "classes": [
+   "relative",
+   "h-24"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Insets.tsx:11",
+  "before": "<View style={[{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }, { paddingTop: PARITY_INSETS.top, paddingBottom: PARITY_INSETS.bottom }]}>\n      <Text>Compose</Text>\n    </View>",
+  "after": "toElement(VStack(LText('Compose')).safeAreaPadding('top').safeAreaPadding('bottom').flex('1'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": true,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Insets.tsx:20",
+  "before": "<View style={{ paddingTop: PARITY_INSETS.top + 24, paddingBottom: PARITY_INSETS.bottom + 32 }}>\n      <Text>Welcome</Text>\n    </View>",
+  "after": "toElement(VStack(LText('Welcome')).safeAreaPadding('top').padding('top', '2xl').safeAreaPadding('bottom').padding('bottom', '3xl'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "VStack",
+   "Text: LText",
+   "toElement"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": true,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Menus.tsx:17",
+  "before": "<DropdownMenu>\n      <DropdownMenuTrigger asChild label=\"More\">\n        <Button iconOnly appearance=\"plain\" leadingIcon={RiMoreFill} accessibilityLabel=\"More\" />\n      </DropdownMenuTrigger>\n      <DropdownMenuContent label=\"More\">\n        <DropdownMenuItem\n          leading={toElement(Icon(RiShareLine).size('sm').foreground('primary'))}\n          onPress={() => {}}\n        >\n          Share\n        </DropdownMenuItem>\n        <DropdownMenuSeparator />\n        <DropdownMenuItem variant=\"destructive\" onPress={() => {}}>\n          Block\n        </DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>",
+  "after": "toElement(Menu(LButton(Icon(RiMoreFill)).shape('circle').style('plain').label('More'), Item('Share').icon(RiShareLine).iconSize('sm').iconForeground('primary').onPress(() => {}), Divider(), Item('Block').destructive().onPress(() => {})).label('More').menuStyle('dropdown'))",
+  "bindings": {
+   "DropdownMenu": {
+    "module": "@oxy.so/bloom/dropdown-menu",
+    "imported": "DropdownMenu"
+   },
+   "DropdownMenuTrigger": {
+    "module": "@oxy.so/bloom/dropdown-menu",
+    "imported": "DropdownMenuTrigger"
+   },
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "DropdownMenuContent": {
+    "module": "@oxy.so/bloom/dropdown-menu",
+    "imported": "DropdownMenuContent"
+   },
+   "DropdownMenuItem": {
+    "module": "@oxy.so/bloom/dropdown-menu",
+    "imported": "DropdownMenuItem"
+   },
+   "DropdownMenuSeparator": {
+    "module": "@oxy.so/bloom/dropdown-menu",
+    "imported": "DropdownMenuSeparator"
+   },
+   "Icon": {
+    "module": "@oxy.so/bloom-language",
+    "imported": "Icon"
+   },
+   "RiMoreFill": {
+    "module": "@oxy.so/bloom/icons",
+    "imported": "RiMoreFill"
+   },
+   "RiShareLine": {
+    "module": "@oxy.so/bloom/icons",
+    "imported": "RiShareLine"
+   }
+  },
+  "language": [
+   "Button: LButton",
+   "Item",
+   "Divider",
+   "Menu"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Menus.tsx:42 (false)",
+  "before": "<Button\n      appearance=\"plain\"\n      tone=\"neutral\"\n      iconOnly\n      leadingIcon={RiMoreFill}\n      color={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}\n      hoverColor={(false ? parityTheme.colors.error : false ? parityTheme.colors.primary : undefined)}\n    />",
+  "after": "toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(false ? 'error' : false ? 'primary' : undefined).hoverForeground(false ? 'error' : false ? 'primary' : undefined))",
+  "bindings": {
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "Icon": {
+    "module": "@oxy.so/bloom-language",
+    "imported": "Icon"
+   },
+   "RiMoreFill": {
+    "module": "@oxy.so/bloom/icons",
+    "imported": "RiMoreFill"
+   }
+  },
+  "language": [
+   "Button: LButton",
+   "Item",
+   "Divider",
+   "Menu"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Menus.tsx:42",
+  "before": "<Button\n      appearance=\"plain\"\n      tone=\"neutral\"\n      iconOnly\n      leadingIcon={RiMoreFill}\n      color={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}\n      hoverColor={(true ? parityTheme.colors.error : true ? parityTheme.colors.primary : undefined)}\n    />",
+  "after": "toElement(LButton(Icon(RiMoreFill)).shape('circle').style('plain').tint('neutral').foreground(true ? 'error' : true ? 'primary' : undefined).hoverForeground(true ? 'error' : true ? 'primary' : undefined))",
+  "bindings": {
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "Icon": {
+    "module": "@oxy.so/bloom-language",
+    "imported": "Icon"
+   },
+   "RiMoreFill": {
+    "module": "@oxy.so/bloom/icons",
+    "imported": "RiMoreFill"
+   }
+  },
+  "language": [
+   "Button: LButton",
+   "Item",
+   "Divider",
+   "Menu"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Menus.tsx:57",
+  "before": "<View\n      style={{\n        paddingHorizontal: 12,\n        paddingVertical: 8,\n        backgroundColor: withAlpha(parityTheme.colors.primary, 0.1),\n      }}\n    />",
+  "after": "toElement(VStack().padding('horizontal', 'md').padding('vertical', 'sm').background('primary/10'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "withAlpha": {
+    "module": "@oxy.so/bloom/theme",
+    "imported": "withAlpha"
+   }
+  },
+  "language": [
+   "Button: LButton",
+   "Item",
+   "Divider",
+   "Menu",
+   "VStack"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/ReelRoute.tsx:8 (false)",
+  "before": "<Screen\n      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}\n      style={{ backgroundColor: false ? parityTheme.colors.background : '#000000' }}\n    >\n      <Text>Reel</Text>\n    </Screen>",
+  "after": "LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(false ? 'background' : appColors.color.hex000000)",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "defineTokens",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": true,
+  "appColors": {
+   "table": "appColors",
+   "color": {
+    "hex000000": "#000000"
+   }
+  }
+ },
+ {
+  "name": "components/ReelRoute.tsx:8",
+  "before": "<Screen\n      reselect={{ isAtTop: () => {}, scrollToTop: () => {}, refresh: () => {} }}\n      style={{ backgroundColor: true ? parityTheme.colors.background : '#000000' }}\n    >\n      <Text>Reel</Text>\n    </Screen>",
+  "after": "LText('Reel').header(false).onReselect(() => {}).reselectTop(() => {}, () => {}).screenBackground(true ? 'background' : appColors.color.hex000000)",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "defineTokens",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": true,
+  "appColors": {
+   "table": "appColors",
+   "color": {
+    "hex000000": "#000000"
+   }
+  }
+ },
+ {
+  "name": "components/ReelRoute.tsx:18",
+  "before": "<Screen scroll=\"none\" style={{ backgroundColor: '#000' }}>\n      <Text>Camera</Text>\n    </Screen>",
+  "after": "LText('Camera').header(false).screenScroll('none').screenBackground(appColors.color.hex000)",
+  "bindings": {
+   "Screen": {
+    "module": "@oxy.so/bloom/screen",
+    "imported": "Screen"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "defineTokens",
+   "Text: LText"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": true,
+  "appColors": {
+   "table": "appColors",
+   "color": {
+    "hex000": "#000"
+   }
+  }
  },
  {
   "name": "components/Rows.tsx:19",
@@ -2033,6 +2476,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2085,6 +2529,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2121,6 +2566,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2157,6 +2603,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2194,6 +2641,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2235,6 +2683,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2280,6 +2729,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2325,6 +2775,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2357,6 +2808,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2390,6 +2842,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2438,6 +2891,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2486,6 +2940,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2517,6 +2972,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2548,6 +3004,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2568,6 +3025,7 @@
   "classes": [],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": false,
   "appColors": null
  },
@@ -2601,7 +3059,61 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
+  "appColors": null
+ },
+ {
+  "name": "components/Surfaces.tsx:10",
+  "before": "<View className=\"flex-row gap-2 px-4\" style={{ backgroundColor: paritySurface }}>\n      <Text style={{ color: paritySurface }}>Posts</Text>\n    </View>",
+  "after": "toElement(HStack(LText('Posts').foreground('surfaceFill')).padding('horizontal', 'lg').background('surfaceFill').spacing('sm'))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "Text: LText"
+  ],
+  "classes": [
+   "flex-row",
+   "gap-2",
+   "px-4"
+  ],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Surfaces.tsx:19",
+  "before": "<Card>\n      <Hole n=\"0\" />\n    </Card>",
+  "after": "toElement(LCard(Embed(<Hole n=\"0\" />)))",
+  "bindings": {
+   "Card": {
+    "module": "@oxy.so/bloom/card",
+    "imported": "Card"
+   }
+  },
+  "language": [
+   "HStack",
+   "Text: LText",
+   "toElement",
+   "Embed",
+   "Card: LCard"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": true,
+  "insets": false,
+  "screen": false,
   "appColors": null
  },
  {
@@ -2638,6 +3150,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2679,6 +3192,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  },
@@ -2720,6 +3234,7 @@
   ],
   "within": [],
   "themed": false,
+  "insets": false,
   "screen": true,
   "appColors": null
  }

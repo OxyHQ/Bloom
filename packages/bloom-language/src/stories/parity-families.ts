@@ -5,6 +5,7 @@ import type { ParityCase } from '../../parity/support/cases';
 import { TEXT_CASES } from '../../parity/text.cases';
 import { ICON_CASES, ICON_CASES_EVERY } from '../../parity/icon.cases';
 import { MATERIAL_CASES } from '../../parity/material.cases';
+import { SURFACE_FILL_CASES } from '../../parity/surface-fill.cases';
 import { AVATAR_CASES } from '../../parity/avatar.cases';
 import { PIECES_CASES } from '../../parity/pieces.cases';
 import { BUTTON_CASES } from '../../parity/button.cases';
@@ -134,6 +135,7 @@ export const FAMILIES = {
   icons: ICON_CASES,
   everyIcon: ICON_CASES_EVERY,
   material: MATERIAL_CASES,
+  surfaceFill: SURFACE_FILL_CASES,
   avatars: AVATAR_CASES,
   pieces: PIECES_CASES,
   buttons: BUTTON_CASES,

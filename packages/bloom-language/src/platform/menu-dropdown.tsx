@@ -12,6 +12,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -19,6 +21,8 @@ import {
   DropdownMenuTrigger,
   type DropdownMenuCheckboxItemProps,
   type DropdownMenuItemProps,
+  type DropdownMenuRadioGroupProps,
+  type DropdownMenuRadioItemProps,
   type DropdownMenuSubContentProps,
   type DropdownMenuSubTriggerProps,
 } from '@oxy.so/bloom/dropdown-menu';
@@ -26,13 +30,28 @@ import {
 import { Icon } from '../primitives';
 import type { Child, IconComponent } from '../node';
 import { useMenuChoice } from './menu-actions';
-import { pressableTrigger, readMenuRows, setApart, type MenuRowData } from './menu-rows';
+import {
+  pressableTrigger,
+  readMenuRows,
+  setApart,
+  type MenuItemRow,
+  type MenuRowData,
+} from './menu-rows';
 import type { MenuHostProps } from './host.types';
 
 const NOOP = () => {};
 
-export function DropdownMenuHost({ trigger, rows, actions, label, testID, render }: MenuHostProps) {
-  const [open, setOpen] = useState(false);
+export function DropdownMenuHost({
+  trigger,
+  rows,
+  actions,
+  label,
+  presented,
+  testID,
+  render,
+}: MenuHostProps) {
+  const own = useState(false);
+  const [open, setOpen] = presented ?? own;
   const { choose, running } = useMenuChoice(actions);
   return (
     <>
@@ -59,9 +78,8 @@ function DropdownRows({
   choose: ((tag: string) => void) | undefined;
 }) {
   const data = readMenuRows(rows, choose);
-  const leading = useCallback(
-    (icon: IconComponent | undefined, destructive: boolean): ReactNode =>
-      icon ? render(glyph(icon, destructive)) : undefined,
+  const leading = useCallback<Leading>(
+    (row, destructive) => (row.icon ? render(glyph(row.icon, destructive, row)) : undefined),
     [render],
   );
   return (
@@ -71,14 +89,25 @@ function DropdownRows({
   );
 }
 
-/** A row's glyph: Bloom's 20pt icon in the menu's quiet ink, or its negative one. */
-export function glyph(icon: IconComponent, destructive: boolean): Child {
+/** What a row's glyph is drawn from: its icon, and its own size and ink where it names them. */
+export type GlyphRow = Partial<Pick<MenuItemRow, 'iconSize' | 'iconForeground'>> &
+  Pick<MenuItemRow, 'icon'>;
+
+/**
+ * A row's glyph: Bloom's 20pt icon in the menu's quiet ink, or its negative
+ * one; a row's `.iconSize()` and `.iconForeground()` over them.
+ */
+export function glyph(
+  icon: IconComponent,
+  destructive: boolean,
+  own: Omit<GlyphRow, 'icon'> = {},
+): Child {
   return Icon(icon)
-    .size('md')
-    .foreground(destructive ? 'error' : 'muted');
+    .size(own.iconSize ?? 'md')
+    .foreground(own.iconForeground ?? (destructive ? 'error' : 'muted'));
 }
 
-type Leading = (icon: IconComponent | undefined, destructive: boolean) => ReactNode;
+export type Leading = (row: GlyphRow, destructive: boolean) => ReactNode;
 
 /** A row's key chord, which only a menubar's rows take. */
 interface Shortcut {
@@ -92,6 +121,8 @@ interface Shortcut {
 export interface MenuParts {
   Item: ComponentType<DropdownMenuItemProps & Shortcut>;
   CheckboxItem: ComponentType<DropdownMenuCheckboxItemProps & Shortcut>;
+  RadioGroup: ComponentType<DropdownMenuRadioGroupProps>;
+  RadioItem: ComponentType<DropdownMenuRadioItemProps & Shortcut>;
   Label: ComponentType<{ children?: ReactNode }>;
   Separator: ComponentType<Record<string, never>>;
   Group: ComponentType<{ children?: ReactNode }>;
@@ -103,6 +134,8 @@ export interface MenuParts {
 const DROPDOWN_PARTS: MenuParts = {
   Item: DropdownMenuItem,
   CheckboxItem: DropdownMenuCheckboxItem,
+  RadioGroup: DropdownMenuRadioGroup,
+  RadioItem: DropdownMenuRadioItem,
   Label: DropdownMenuLabel,
   Separator: DropdownMenuSeparator,
   Group: DropdownMenuGroup,
@@ -126,11 +159,23 @@ export function drawMenuRows(
 }
 
 function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNode {
-  const { Item, CheckboxItem, Label, Separator, Group, Sub, SubTrigger, SubContent } = parts;
+  const { Item, CheckboxItem, RadioGroup, RadioItem, Label, Separator, Group } = parts;
+  const { Sub, SubTrigger, SubContent } = parts;
   switch (row.kind) {
     case 'divider':
       return <Separator />;
     case 'section':
+      // A section of choices is its title over a radio group of its rows, as an app writes
+      // `DropdownMenuLabel` then `DropdownMenuRadioGroup`.
+      if (row.selection)
+        return (
+          <>
+            {row.title ? <Label>{row.title}</Label> : null}
+            <RadioGroup value={row.selection.value} onValueChange={row.selection.set}>
+              {drawMenuRows(row.rows, leading, parts)}
+            </RadioGroup>
+          </>
+        );
       return (
         <Group>
           {row.title ? <Label>{row.title}</Label> : null}
@@ -140,11 +185,7 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
     case 'submenu':
       return (
         <Sub>
-          <SubTrigger
-            leading={leading(row.icon, false)}
-            disabled={row.disabled}
-            testID={row.testID}
-          >
+          <SubTrigger leading={leading(row, false)} disabled={row.disabled} testID={row.testID}>
             {row.title}
           </SubTrigger>
           <SubContent label={row.title}>{drawMenuRows(row.rows, leading, parts)}</SubContent>
@@ -152,9 +193,22 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
       );
     case 'item': {
       const shortcut = row.shortcut === undefined ? undefined : { shortcut: row.shortcut };
+      if (row.value !== undefined)
+        return (
+          <RadioItem
+            value={row.value}
+            leading={leading(row, row.destructive)}
+            disabled={row.disabled}
+            keepOpen={row.keepOpen}
+            testID={row.testID}
+            {...shortcut}
+          >
+            {row.title}
+          </RadioItem>
+        );
       return row.checked === undefined ? (
         <Item
-          leading={leading(row.icon, row.destructive)}
+          leading={leading(row, row.destructive)}
           variant={row.destructive ? 'destructive' : 'default'}
           disabled={row.disabled}
           keepOpen={row.keepOpen}
@@ -166,7 +220,7 @@ function drawRow(row: MenuRowData, leading: Leading, parts: MenuParts): ReactNod
         </Item>
       ) : (
         <CheckboxItem
-          leading={leading(row.icon, row.destructive)}
+          leading={leading(row, row.destructive)}
           checked={row.checked}
           onCheckedChange={() => row.onPress?.()}
           disabled={row.disabled}

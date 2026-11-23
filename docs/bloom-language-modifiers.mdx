@@ -7,13 +7,13 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (648). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (674). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
 Every node takes these, except the 65 nodes that take only their own ([menuItem](bloom-language-nodes.mdx#menuitem), [menuSubmenu](bloom-language-nodes.mdx#menusubmenu), [menuSection](bloom-language-nodes.mdx#menusection), [alert](bloom-language-nodes.mdx#alert), [dialog](bloom-language-nodes.mdx#dialog), [popover](bloom-language-nodes.mdx#popover), [connectionStatus](bloom-language-nodes.mdx#connectionstatus), [menuContent](bloom-language-nodes.mdx#menucontent), [menuActions](bloom-language-nodes.mdx#menuactions), [header](bloom-language-nodes.mdx#header), [bottomBar](bloom-language-nodes.mdx#bottombar), [tab](bloom-language-nodes.mdx#tab), [cardTitle](bloom-language-nodes.mdx#cardtitle), [cardDescription](bloom-language-nodes.mdx#carddescription), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [tabItem](bloom-language-nodes.mdx#tabitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary), [group](bloom-language-nodes.mdx#group), [appLayout](bloom-language-nodes.mdx#applayout), [navStack](bloom-language-nodes.mdx#navstack), [route](bloom-language-nodes.mdx#route), [tabView](bloom-language-nodes.mdx#tabview), [option](bloom-language-nodes.mdx#option), [optionGroup](bloom-language-nodes.mdx#optiongroup), [groupedSectionIcon](bloom-language-nodes.mdx#groupedsectionicon), [groupedSectionDivider](bloom-language-nodes.mdx#groupedsectiondivider), [groupedSectionCollapse](bloom-language-nodes.mdx#groupedsectioncollapse), [bottomSheet](bloom-language-nodes.mdx#bottomsheet), [sidebar](bloom-language-nodes.mdx#sidebar), [navItem](bloom-language-nodes.mdx#navitem), [treeSection](bloom-language-nodes.mdx#treesection), [treeFolder](bloom-language-nodes.mdx#treefolder), [treeItem](bloom-language-nodes.mdx#treeitem), [rail](bloom-language-nodes.mdx#rail), [railItem](bloom-language-nodes.mdx#railitem), [command](bloom-language-nodes.mdx#command), [commandItem](bloom-language-nodes.mdx#commanditem), [commandGroup](bloom-language-nodes.mdx#commandgroup), [settings](bloom-language-nodes.mdx#settings), [settingsGroup](bloom-language-nodes.mdx#settingsgroup), [settingsItem](bloom-language-nodes.mdx#settingsitem), [panel](bloom-language-nodes.mdx#panel), [destination](bloom-language-nodes.mdx#destination), [toolbarView](bloom-language-nodes.mdx#toolbarview), [stickySection](bloom-language-nodes.mdx#stickysection), [pageFooter](bloom-language-nodes.mdx#pagefooter), [autoHideBar](bloom-language-nodes.mdx#autohidebar), [resizeHandle](bloom-language-nodes.mdx#resizehandle), [sidebarMode](bloom-language-nodes.mdx#sidebarmode), [settingsTextField](bloom-language-nodes.mdx#settingstextfield), [settingsDateField](bloom-language-nodes.mdx#settingsdatefield), [fact](bloom-language-nodes.mdx#fact), [videoPlayback](bloom-language-nodes.mdx#videoplayback), [videoViewability](bloom-language-nodes.mdx#videoviewability), [videoViewabilityScope](bloom-language-nodes.mdx#videoviewabilityscope), [menubarMenu](bloom-language-nodes.mdx#menubarmenu), [mediaFlightLayer](bloom-language-nodes.mdx#mediaflightlayer), [avatarFlightLayer](bloom-language-nodes.mdx#avatarflightlayer), [gallery](bloom-language-nodes.mdx#gallery), [dataColumn](bloom-language-nodes.mdx#datacolumn), [sortableChip](bloom-language-nodes.mdx#sortablechip), [viewport](bloom-language-nodes.mdx#viewport), [toolbarGroup](bloom-language-nodes.mdx#toolbargroup), [toolbarSpacer](bloom-language-nodes.mdx#toolbarspacer), [confirmationDialog](bloom-language-nodes.mdx#confirmationdialog)):
 
-[`.padding()`](#padding), [`.frame()`](#frame), [`.grow()`](#grow), [`.shrink()`](#shrink), [`.alignSelf()`](#alignself), [`.position()`](#position), [`.offset()`](#offset), [`.zIndex()`](#zindex), [`.hidden()`](#hidden), [`.basis()`](#basis), [`.flex()`](#flex), [`.margin()`](#margin), [`.scale()`](#scale), [`.allowsHitTesting()`](#allowshittesting), [`.accessibilityOnly()`](#accessibilityonly), [`.background()`](#background), [`.overlay()`](#overlay), [`.border()`](#border), [`.ring()`](#ring), [`.corner()`](#corner), [`.cornerCurve()`](#cornercurve), [`.clipped()`](#clipped), [`.opacity()`](#opacity), [`.shadow()`](#shadow), [`.glass()`](#glass), [`.blur()`](#blur), [`.foreground()`](#foreground), [`.font()`](#font), [`.weight()`](#weight), [`.leading()`](#leading), [`.tracking()`](#tracking), [`.onPress()`](#onpress), [`.onLongPress()`](#onlongpress), [`.onHover()`](#onhover), [`.hoverGroup()`](#hovergroup), [`.pressScale()`](#pressscale), [`.label()`](#label), [`.hint()`](#hint), [`.role()`](#role), [`.hitSlop()`](#hitslop), [`.testID()`](#testid), [`.badge()`](#badge), [`.id()`](#id), [`.title()`](#title), [`.titleDisplay()`](#titledisplay), [`.subtitle()`](#subtitle), [`.header()`](#header), [`.toolbar()`](#toolbar), [`.toolbarLeading()`](#toolbarleading), [`.onBack()`](#onback), [`.backLabel()`](#backlabel), [`.headingLevel()`](#headinglevel), [`.footer()`](#footer), [`.sheet()`](#sheet), [`.alert()`](#alert), [`.dialog()`](#dialog), [`.popover()`](#popover), [`.onReselect()`](#onreselect), [`.when()`](#when), [`.rotation()`](#rotation), [`.animation()`](#animation), [`.animatesColors()`](#animatescolors), [`.transition()`](#transition), [`.keyframes()`](#keyframes), [`.repeatForever()`](#repeatforever), [`.delay()`](#delay), [`.anchor()`](#anchor), [`.matchedGeometry()`](#matchedgeometry), [`.drag()`](#drag), [`.swipe()`](#swipe), [`.pinch()`](#pinch), [`.onDoubleTap()`](#ondoubletap), [`.screenKind()`](#screenkind), [`.screenScroll()`](#screenscroll), [`.documentScroll()`](#documentscroll), [`.headerPlacement()`](#headerplacement), [`.scrollEdge()`](#scrolledge), [`.underlay()`](#underlay), [`.floatingAction()`](#floatingaction), [`.contentClearance()`](#contentclearance), [`.navigationScope()`](#navigationscope), [`.colorPreset()`](#colorpreset), [`.seed()`](#seed), [`.screenActive()`](#screenactive), [`.initialHeaderHeight()`](#initialheaderheight), [`.initialFooterHeight()`](#initialfooterheight), [`.fullScreenCover()`](#fullscreencover), [`.glassID()`](#glassid), [`.glassUnion()`](#glassunion), [`.glassTransition()`](#glasstransition), [`.inContent()`](#incontent), [`.disabled()`](#disabled), [`.environment()`](#environment), [`.controlSize()`](#controlsize), [`.buttonStyle()`](#buttonstyle), [`.modifier()`](#modifier), [`.confirmationDialog()`](#confirmationdialog), [`.phases()`](#phases)
+[`.padding()`](#padding), [`.safeAreaPadding()`](#safeareapadding), [`.frame()`](#frame), [`.aspectRatio()`](#aspectratio), [`.grow()`](#grow), [`.shrink()`](#shrink), [`.alignSelf()`](#alignself), [`.position()`](#position), [`.offset()`](#offset), [`.zIndex()`](#zindex), [`.hidden()`](#hidden), [`.basis()`](#basis), [`.flex()`](#flex), [`.margin()`](#margin), [`.scale()`](#scale), [`.allowsHitTesting()`](#allowshittesting), [`.accessibilityOnly()`](#accessibilityonly), [`.background()`](#background), [`.overlay()`](#overlay), [`.border()`](#border), [`.borderStyle()`](#borderstyle), [`.ring()`](#ring), [`.corner()`](#corner), [`.cornerCurve()`](#cornercurve), [`.clipped()`](#clipped), [`.opacity()`](#opacity), [`.shadow()`](#shadow), [`.glass()`](#glass), [`.blur()`](#blur), [`.foreground()`](#foreground), [`.font()`](#font), [`.weight()`](#weight), [`.leading()`](#leading), [`.tracking()`](#tracking), [`.onPress()`](#onpress), [`.onLongPress()`](#onlongpress), [`.onHover()`](#onhover), [`.hoverGroup()`](#hovergroup), [`.pressScale()`](#pressscale), [`.pressFade()`](#pressfade), [`.label()`](#label), [`.hint()`](#hint), [`.role()`](#role), [`.accessibilityState()`](#accessibilitystate), [`.accessibilityValue()`](#accessibilityvalue), [`.liveRegion()`](#liveregion), [`.accessibilityHidden()`](#accessibilityhidden), [`.hitSlop()`](#hitslop), [`.testID()`](#testid), [`.ref()`](#ref), [`.onLayout()`](#onlayout), [`.badge()`](#badge), [`.id()`](#id), [`.title()`](#title), [`.titleDisplay()`](#titledisplay), [`.subtitle()`](#subtitle), [`.header()`](#header), [`.toolbar()`](#toolbar), [`.toolbarLeading()`](#toolbarleading), [`.onBack()`](#onback), [`.backLabel()`](#backlabel), [`.headingLevel()`](#headinglevel), [`.footer()`](#footer), [`.sheet()`](#sheet), [`.alert()`](#alert), [`.dialog()`](#dialog), [`.popover()`](#popover), [`.onReselect()`](#onreselect), [`.when()`](#when), [`.rotation()`](#rotation), [`.animation()`](#animation), [`.animatesColors()`](#animatescolors), [`.transition()`](#transition), [`.keyframes()`](#keyframes), [`.repeatForever()`](#repeatforever), [`.delay()`](#delay), [`.anchor()`](#anchor), [`.matchedGeometry()`](#matchedgeometry), [`.drag()`](#drag), [`.swipe()`](#swipe), [`.pinch()`](#pinch), [`.onDoubleTap()`](#ondoubletap), [`.screenKind()`](#screenkind), [`.screenScroll()`](#screenscroll), [`.documentScroll()`](#documentscroll), [`.headerPlacement()`](#headerplacement), [`.scrollEdge()`](#scrolledge), [`.underlay()`](#underlay), [`.floatingAction()`](#floatingaction), [`.contentClearance()`](#contentclearance), [`.navigationScope()`](#navigationscope), [`.colorPreset()`](#colorpreset), [`.seed()`](#seed), [`.screenActive()`](#screenactive), [`.screenBackground()`](#screenbackground), [`.reselectTop()`](#reselecttop), [`.initialHeaderHeight()`](#initialheaderheight), [`.initialFooterHeight()`](#initialfooterheight), [`.colorScope()`](#colorscope), [`.keyboardAvoiding()`](#keyboardavoiding), [`.provider()`](#provider), [`.fullScreenCover()`](#fullscreencover), [`.glassID()`](#glassid), [`.glassUnion()`](#glassunion), [`.glassTransition()`](#glasstransition), [`.inContent()`](#incontent), [`.disabled()`](#disabled), [`.environment()`](#environment), [`.controlSize()`](#controlsize), [`.buttonStyle()`](#buttonstyle), [`.modifier()`](#modifier), [`.confirmationDialog()`](#confirmationdialog), [`.phases()`](#phases)
 
 ## Modifiers
 
@@ -21,19 +21,28 @@ Every node takes these, except the 65 nodes that take only their own ([menuItem]
 
 - Parameters: [edge](bloom-language-tokens.mdx#edge) (optional); [padding](bloom-language-tokens.mdx#padding)
 - Signature: `.padding(value: PaddingToken)` or `.padding(edge: Edge, value: PaddingToken)`
-- Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
+- Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [tabItem](bloom-language-nodes.mdx#tabitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Narrower on: [dialog](bloom-language-nodes.mdx#dialog) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
-- `padding` tokens: 110, listed under [padding](bloom-language-tokens.mdx#padding)
+- `padding` tokens: 114, listed under [padding](bloom-language-tokens.mdx#padding)
+
+### `safeAreaPadding`
+
+Padded by the device's safe area on those sides (all by default), as SwiftUI's `.safeAreaPadding()`: React Native's safe-area insets (`react-native-safe-area-context`), a view of its own, so a padding beside it adds to it. The sides are physical: the insets are the device's.
+
+- Parameters: [physicalEdge](bloom-language-tokens.mdx#physicaledge) (optional)
+- Signature: `.safeAreaPadding(edge?: PhysicalEdge)`
+- Taken by: every node (universal)
+- `physicalEdge` tokens: `'all'`, `'top'`, `'bottom'`, `'horizontal'`, `'vertical'`, `'left'`, `'right'`
 
 ### `frame`
 
 - Parameters: `{ width, height, minWidth, minHeight, maxWidth, maxHeight }`, each [length](bloom-language-tokens.mdx#length)
 - Signature: `.frame(value: FrameSpec)`
-- Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [popover](bloom-language-nodes.mdx#popover), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
+- Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [popover](bloom-language-nodes.mdx#popover), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [tabItem](bloom-language-nodes.mdx#tabitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `frame` tokens: 65, listed under [length](bloom-language-tokens.mdx#length)
+- `frame` tokens: 69, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `grow`
 
@@ -60,7 +69,7 @@ A fill: a colour role, or a role at a named opacity (`'primary/10'`); or a view 
 - Signature: `.background(value: InkToken)` or `.background(value: ViewNode, alignment?: OverlayAlignment)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 - `overlayAlignment` tokens: `'center'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'top-leading'`, `'top-trailing'`, `'bottom-leading'`, `'bottom-trailing'`
 
 ### `overlay`
@@ -90,19 +99,19 @@ A ring outside the box (an outline, which takes no room): a role, `thin` by defa
 - Signature: `.ring(value: InkToken | 'none', width?: BorderWidthName, offset?: SpaceToken)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `ring` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'none'`
-- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'2.5'`, `'3'`, `'4'`
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `ring` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`, `'none'`
+- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `position`
 
 Pinned to its parent's edges, out of the stack's flow (absolute): each edge given is a distance from that edge of the parent. An overlay (`.overlay(view, alignment)`) is the way to lay one view over another.
 
-- Parameters: `{ top, bottom, leading, trailing, left, right }`, each [padding](bloom-language-tokens.mdx#padding)
+- Parameters: `{ top, bottom, leading, trailing, left, right }`, each [edgeDistance](bloom-language-tokens.mdx#edgedistance)
 - Signature: `.position(value: PositionEdges)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `edges` tokens: 110, listed under [padding](bloom-language-tokens.mdx#padding)
+- `edges` tokens: 115, listed under [edgeDistance](bloom-language-tokens.mdx#edgedistance)
 
 ### `offset`
 
@@ -112,17 +121,17 @@ Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep
 - Signature: `.offset(value: OffsetSpec)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `offset` tokens: 110, listed under [padding](bloom-language-tokens.mdx#padding)
+- `offset` tokens: 114, listed under [padding](bloom-language-tokens.mdx#padding)
 
 ### `zIndex`
 
 Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`.
 
 - Parameters: [zIndex](bloom-language-tokens.mdx#zindex)
-- Signature: `.zIndex(value: ZIndexName)`
+- Signature: `.zIndex(value: ZIndexValue)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `zIndex` tokens: `'base'`, `'raised'`, `'floating'`, `'dropdown'`, `'auto'`, `'2'`, `'20'`, `'30'`, `'50'`, `'60'`
+- `zIndex` tokens: `'base'`, `'raised'`, `'floating'`, `'dropdown'`, `'auto'`, `'-1'`, `'2'`, `'3'`, `'4'`, `'5'`, `'6'`, `'7'`, `'20'`, `'30'`, `'50'`, `'60'`
 
 ### `hidden`
 
@@ -142,7 +151,7 @@ Its length along its parent's axis before free space is shared (`flex-basis`): a
 - Taken by: every node (universal), and [dataColumn](bloom-language-nodes.mdx#datacolumn)
 - Narrower on: [dataColumn](bloom-language-nodes.mdx#datacolumn) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `length` tokens: 65, listed under [length](bloom-language-tokens.mdx#length)
+- `length` tokens: 69, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `flex`
 
@@ -156,14 +165,43 @@ Tailwind's flex utility, exactly: `1` is `flex-1` (grow 1, shrink 1, basis 0%), 
 
 ### `margin`
 
-Room outside the box, on every edge or one (`top`, `leading`, `left`…): a margin, on the view itself.
+Room outside the box, on every edge or one (`top`, `leading`, `left`…): a margin, on the view itself. `auto` takes the free space on that side (`.margin('leading', 'auto')` pushes the view to the trailing end, Tailwind's `ms-auto`).
 
-- Parameters: [edge](bloom-language-tokens.mdx#edge) (optional); [padding](bloom-language-tokens.mdx#padding)
-- Signature: `.margin(value: PaddingToken)` or `.margin(edge: Edge, value: PaddingToken)`
+- Parameters: [edge](bloom-language-tokens.mdx#edge) (optional); [margin](bloom-language-tokens.mdx#margin)
+- Signature: `.margin(value: MarginToken)` or `.margin(edge: Edge, value: MarginToken)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
-- `padding` tokens: 110, listed under [padding](bloom-language-tokens.mdx#padding)
+- `margin` tokens: 115, listed under [margin](bloom-language-tokens.mdx#margin)
+
+### `horizontalSpacing`
+
+The gap between children side by side (`columnGap`, Tailwind's `gap-x-*`), over `spacing`'s.
+
+- Parameters: [space](bloom-language-tokens.mdx#space)
+- Signature: `.horizontalSpacing(value: SpaceToken)`
+- Taken by: [stack](bloom-language-nodes.mdx#stack)
+- Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+
+### `verticalSpacing`
+
+The gap between children one above another, and between wrapped lines (`rowGap`, Tailwind's `gap-y-*`), over `spacing`'s.
+
+- Parameters: [space](bloom-language-tokens.mdx#space)
+- Signature: `.verticalSpacing(value: SpaceToken)`
+- Taken by: [stack](bloom-language-nodes.mdx#stack)
+- Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+
+### `borderStyle`
+
+The border's line: `solid` (the default), `dashed` or `dotted` (React Native's `borderStyle`).
+
+- Parameters: [borderStyle](bloom-language-tokens.mdx#borderstyle)
+- Signature: `.borderStyle(value: BorderStyleName)`
+- Taken by: every node (universal)
+- `borderStyle` tokens: `'solid'`, `'dashed'`, `'dotted'`
 
 ### `childSpacing`
 
@@ -174,7 +212,7 @@ Tailwind's `space-x-*`/`space-y-*` exactly as NativeWind draws them: on the web 
 - Taken by: [stack](bloom-language-nodes.mdx#stack)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `axis` tokens: `'horizontal'`, `'vertical'`
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `scale`
 
@@ -188,10 +226,10 @@ Drawn scaled about its centre, where it is laid out; its siblings keep their pla
 
 ### `allowsHitTesting`
 
-`false`: touches and the pointer pass through the view and everything inside it, to what is under it. `'children'`: through the view, not what is inside it (React Native's `box-none`); `'self'`: the view takes them, what is inside it does not (`box-only`).
+`false`: touches and the pointer pass through the view and everything inside it, to what is under it. `'children'`: through the view, not what is inside it (React Native's `box-none`); `'self'`: the view takes them, what is inside it does not (`box-only`). `undefined` sets none (React Native's `pointerEvents={undefined}`), so a hit testing chosen at render (`.allowsHitTesting(split ? 'children' : undefined)`) is drawn only while it holds.
 
 - Parameters: [hitTesting](bloom-language-tokens.mdx#hittesting)
-- Signature: `.allowsHitTesting(value: HitTesting)`
+- Signature: `.allowsHitTesting(value: HitTesting | undefined)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `hitTesting` tokens: `'children'`, `'self'`
@@ -220,8 +258,8 @@ Its own place across its parent's axis, over the parent's `align`.
 - Signature: `.border(value: InkToken, width?: BorderWidthName, edge?: BorderEdge)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
-- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'2.5'`, `'3'`, `'4'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
 - `borderEdge` tokens: `'all'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
 
 ### `corner`
@@ -232,7 +270,7 @@ Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape 
 - Signature: `.corner(value: CornerName, side?: CornerSide)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'10'`, `'14'`, `'18'`, `'22'`
+- `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'7'`, `'10'`, `'14'`, `'15'`, `'18'`, `'22'`
 - `cornerSide` tokens: `'all'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'top-leading'`, `'top-trailing'`, `'bottom-leading'`, `'bottom-trailing'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, `'bottom-right'`
 
 ### `opacity`
@@ -241,7 +279,7 @@ Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape 
 - Signature: `.opacity(value: OpacityName)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `opacity` tokens: `'transparent'`, `'half'`, `'opaque'`, `'10'`, `'20'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'90'`
+- `opacity` tokens: `'transparent'`, `'half'`, `'opaque'`, `'10'`, `'20'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'85'`, `'90'`
 
 ### `glass`
 
@@ -262,30 +300,31 @@ The view floats over content as an island: Bloom's `BlurIsland`, the shared mate
 
 ### `foreground`
 
-Text and icon colour for this view and everything inside it; a role, or a role at an opacity token (`'muted/70'`).
+Text and icon colour for this view and everything inside it; a role, or a role at an opacity token (`'muted/70'`). `undefined` is no ink of its own (SwiftUI's `foregroundColor(nil)`): `.foreground(invalid ? 'error' : undefined)`.
 
 - Parameters: [color](bloom-language-tokens.mdx#color)
-- Signature: `.foreground(value: InkToken)`
+- Signature: `.foreground(value: InkToken | undefined)`
 - Taken by: every node (universal), and [option](bloom-language-nodes.mdx#option)
 - Narrower on: [option](bloom-language-nodes.mdx#option) ([colorRole](bloom-language-tokens.mdx#colorrole))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `font`
 
-A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size.
+A ramp step or a size rung; or a face, which keeps the size: `mono`, Bloom's monospaced face, or `display`, the face of Bloom's big ramp steps, for a numeric size (`.font('96').font('display')`).
 
 - Parameters: [font](bloom-language-tokens.mdx#font)
 - Signature: `.font(value: FontName)`
-- Taken by: every node (universal)
+- Taken by: every node (universal), and [tabItem](bloom-language-nodes.mdx#tabitem)
+- Narrower on: [tabItem](bloom-language-nodes.mdx#tabitem) ([labelFont](bloom-language-tokens.mdx#labelfont))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `font` tokens: `'large-title'`, `'display-1'`, `'display-2'`, `'display-3'`, `'display-4'`, `'title-1'`, `'title-2'`, `'title-3'`, `'headline'`, `'body'`, `'body-2'`, `'caption-1'`, `'caption-2'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'mono'`, `'11'`, `'14'`, `'16'`, `'18'`, `'24'`, `'30'`, `'36'`
+- `font` tokens: `'large-title'`, `'display-1'`, `'display-2'`, `'display-3'`, `'display-4'`, `'title-1'`, `'title-2'`, `'title-3'`, `'headline'`, `'body'`, `'body-2'`, `'caption-1'`, `'caption-2'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'12.5'`, `'mono'`, `'display'`, `'9'`, `'11'`, `'14'`, `'16'`, `'18'`, `'24'`, `'28'`, `'30'`, `'36'`, `'42'`, `'96'`
 
 ### `weight`
 
 - Parameters: [weight](bloom-language-tokens.mdx#weight)
 - Signature: `.weight(value: WeightName)`
-- Taken by: every node (universal)
+- Taken by: every node (universal), and [tabItem](bloom-language-nodes.mdx#tabitem)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `weight` tokens: `'light'`, `'regular'`, `'medium'`, `'semibold'`, `'bold'`, `'extrabold'`
 
@@ -293,9 +332,9 @@ A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the 
 
 - Parameters: [leading](bloom-language-tokens.mdx#leading)
 - Signature: `.leading(value: LeadingToken)`
-- Taken by: every node (universal)
+- Taken by: every node (universal), and [tabItem](bloom-language-nodes.mdx#tabitem)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `leading` tokens: `'tight'`, `'close'`, `'snug'`, `'easy'`, `'normal'`, `'relaxed'`, `'14px'`, `'16px'`, `'18px'`, `'20px'`, `'22px'`, `'24px'`, `'28px'`, `'32px'`, `'36px'`, `'40px'`
+- `leading` tokens: `'tight'`, `'close'`, `'snug'`, `'easy'`, `'normal'`, `'relaxed'`, `'14px'`, `'16px'`, `'18px'`, `'20px'`, `'22px'`, `'24px'`, `'28px'`, `'32px'`, `'36px'`, `'40px'`, `'96px'`
 
 ### `tracking`
 
@@ -312,9 +351,9 @@ The gap between children.
 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.spacing(value: SpaceToken)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [avatarGroup](bloom-language-nodes.mdx#avatargroup), [grid](bloom-language-nodes.mdx#grid), [divider](bloom-language-nodes.mdx#divider), [chipRow](bloom-language-nodes.mdx#chiprow), [cappedChipRow](bloom-language-nodes.mdx#cappedchiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [carousel](bloom-language-nodes.mdx#carousel), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap), [choiceList](bloom-language-nodes.mdx#choicelist), [categoryBar](bloom-language-nodes.mdx#categorybar), [chartCardSurface](bloom-language-nodes.mdx#chartcardsurface), [chatFolderTabs](bloom-language-nodes.mdx#chatfoldertabs), [storiesRow](bloom-language-nodes.mdx#storiesrow), [sharedMediaGrid](bloom-language-nodes.mdx#sharedmediagrid), [shelf](bloom-language-nodes.mdx#shelf), [shelfSkeleton](bloom-language-nodes.mdx#shelfskeleton), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid), [browseGrid](bloom-language-nodes.mdx#browsegrid)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [avatarGroup](bloom-language-nodes.mdx#avatargroup), [grid](bloom-language-nodes.mdx#grid), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [chipRow](bloom-language-nodes.mdx#chiprow), [cappedChipRow](bloom-language-nodes.mdx#cappedchiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [carousel](bloom-language-nodes.mdx#carousel), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap), [choiceList](bloom-language-nodes.mdx#choicelist), [categoryBar](bloom-language-nodes.mdx#categorybar), [chartCardSurface](bloom-language-nodes.mdx#chartcardsurface), [chatFolderTabs](bloom-language-nodes.mdx#chatfoldertabs), [storiesRow](bloom-language-nodes.mdx#storiesrow), [sharedMediaGrid](bloom-language-nodes.mdx#sharedmediagrid), [shelf](bloom-language-nodes.mdx#shelf), [shelfSkeleton](bloom-language-nodes.mdx#shelfskeleton), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid), [browseGrid](bloom-language-nodes.mdx#browsegrid)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `align`
 
@@ -322,7 +361,7 @@ The children's place across the axis.
 
 - Parameters: [alignment](bloom-language-tokens.mdx#alignment)
 - Signature: `.align(value: Alignment)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [divider](bloom-language-nodes.mdx#divider), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carousel](bloom-language-nodes.mdx#carousel), [hoverCard](bloom-language-nodes.mdx#hovercard), [dataColumn](bloom-language-nodes.mdx#datacolumn), [mapControls](bloom-language-nodes.mdx#mapcontrols)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carousel](bloom-language-nodes.mdx#carousel), [hoverCard](bloom-language-nodes.mdx#hovercard), [dataColumn](bloom-language-nodes.mdx#datacolumn), [mapControls](bloom-language-nodes.mdx#mapcontrols)
 - Narrower on: [divider](bloom-language-nodes.mdx#divider) ([dividerAlign](bloom-language-tokens.mdx#divideralign)), [tableColumn](bloom-language-nodes.mdx#tablecolumn) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [tableCell](bloom-language-nodes.mdx#tablecell) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [carousel](bloom-language-nodes.mdx#carousel) ([carouselAlign](bloom-language-tokens.mdx#carouselalign)), [hoverCard](bloom-language-nodes.mdx#hovercard) ([floatingAlign](bloom-language-tokens.mdx#floatingalign)), [dataColumn](bloom-language-nodes.mdx#datacolumn) ([tableAlign](bloom-language-tokens.mdx#tablealign)), [mapControls](bloom-language-nodes.mdx#mapcontrols) ([mapControlsAlign](bloom-language-tokens.mdx#mapcontrolsalign))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `alignment` tokens: `'start'`, `'center'`, `'end'`, `'stretch'`, `'baseline'`
@@ -342,7 +381,7 @@ How the children spread along the axis: packed at `start`, `center` or `end`, or
 
 - Parameters: [justify](bloom-language-tokens.mdx#justify)
 - Signature: `.justify(value: Justify)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [card](bloom-language-nodes.mdx#card)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `justify` tokens: `'start'`, `'center'`, `'end'`, `'between'`, `'around'`, `'evenly'`
 
@@ -361,7 +400,7 @@ Lays the children out along `horizontal` or `vertical`, over the constructor's o
 
 - Parameters: [axis](bloom-language-tokens.mdx#axis)
 - Signature: `.axis(value: Axis)`
-- Taken by: [stack](bloom-language-nodes.mdx#stack), [buttonGroup](bloom-language-nodes.mdx#buttongroup), [actionBar](bloom-language-nodes.mdx#actionbar), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [resizeHandle](bloom-language-nodes.mdx#resizehandle), [choiceList](bloom-language-nodes.mdx#choicelist), [mapControls](bloom-language-nodes.mdx#mapcontrols), [orderStatusTimeline](bloom-language-nodes.mdx#orderstatustimeline), [releaseTimeline](bloom-language-nodes.mdx#releasetimeline)
+- Taken by: [stack](bloom-language-nodes.mdx#stack), [buttonGroup](bloom-language-nodes.mdx#buttongroup), [divider](bloom-language-nodes.mdx#divider), [actionBar](bloom-language-nodes.mdx#actionbar), [card](bloom-language-nodes.mdx#card), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [resizeHandle](bloom-language-nodes.mdx#resizehandle), [choiceList](bloom-language-nodes.mdx#choicelist), [mapControls](bloom-language-nodes.mdx#mapcontrols), [orderStatusTimeline](bloom-language-nodes.mdx#orderstatustimeline), [releaseTimeline](bloom-language-nodes.mdx#releasetimeline)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `axis` tokens: `'horizontal'`, `'vertical'`
 
@@ -393,11 +432,11 @@ How the image fills its box. Defaults to `cover`.
 
 ### `aspectRatio`
 
-Width over height, so one side sizes the other (`16 / 9`).
+The view's width to its height (`1` square, `1.6` landscape), in its frame's view: a width or height there, or its stretch, sets the other side (React Native's `aspectRatio`). An `Image`'s sizes the image in its box.
 
 - Parameters: a value
 - Signature: `.aspectRatio(value: number)`
-- Taken by: [image](bloom-language-nodes.mdx#image), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid)
+- Taken by: every node (universal), and [image](bloom-language-nodes.mdx#image), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid)
 
 ### `crossFade`
 
@@ -638,6 +677,115 @@ Web: the pointer over this view is what `group-hover:` styles inside it answer (
 - Signature: `.hint(value: string | undefined)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem)
 
+### `accessibilityState`
+
+What assistive technology reads of the view's state: `selected`, `checked` (or `'mixed'`), `busy`, `expanded`, `disabled` (React Native's `accessibilityState`, as an app writes it).
+
+- Parameters: `{ selected, checked, busy, expanded, disabled }`, each [accessibilityChecked](bloom-language-tokens.mdx#accessibilitychecked)
+- Signature: `.accessibilityState(value: AccessibilityState)`
+- Taken by: every node (universal)
+- `accessibilityState` tokens: `'mixed'`
+
+### `accessibilityValue`
+
+What assistive technology reads of the view's value: a range (`min`, `max`, `now`: a progress, a slider) or a text (`'Verifying'`), React Native's `accessibilityValue` as an app writes it.
+
+- Parameters: `{ min, max, now, text }`, each [value](bloom-language-tokens.mdx#value)
+- Signature: `.accessibilityValue(value: AccessibilityValue)`
+- Taken by: every node (universal)
+
+### `stopPropagation`
+
+Its press goes no further on the web: a button inside a pressable row presses only itself (Bloom's `stopPropagation`). Native presses never bubble.
+
+- Parameters: a value (optional)
+- Signature: `.stopPropagation(value?: boolean)`
+- Taken by: [button](bloom-language-nodes.mdx#button)
+
+### `loadingIndicator`
+
+Its spinner while loading: a view, or `null` for none, the label or glyph staying (Bloom's `loadingIndicator`).
+
+- Parameters: a value
+- Signature: `.loadingIndicator(value: ViewNode | null)`
+- Taken by: [button](bloom-language-nodes.mdx#button)
+
+### `hoverForeground`
+
+Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at rest is `.foreground(role)` (Bloom's `color`); `undefined` is Bloom's own.
+
+- Parameters: [color](bloom-language-tokens.mdx#color)
+- Signature: `.hoverForeground(value: ColorToken | undefined)`
+- Taken by: [button](bloom-language-nodes.mdx#button)
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+
+### `editable`
+
+`false`: the text is shown and selectable but takes no typing (React Native's `editable`).
+
+- Parameters: a value
+- Signature: `.editable(value: boolean)`
+- Taken by: [textField](bloom-language-nodes.mdx#textfield)
+
+### `pressOpenTab`
+
+What pressing the open tab does: `report` tells its value again, `reselect` takes its content back to the top (and reloads there), as social apps' inner tabs do (Bloom's `pressOpenTab`).
+
+- Parameters: [pressOpenTab](bloom-language-tokens.mdx#pressopentab)
+- Signature: `.pressOpenTab(value: PressOpenTab)`
+- Taken by: [tabs](bloom-language-nodes.mdx#tabs)
+- `pressOpenTab` tokens: `'report'`, `'reselect'`
+
+### `menuStyle`
+
+`dropdown`: Bloom's own DropdownMenu on every platform (its panel and rows, as an app's `<DropdownMenu>` draws them), not the platform's menu (the lens menu on Android and OxyOS, SwiftUI's on iOS). `platform` is the default.
+
+- Parameters: [menuStyle](bloom-language-tokens.mdx#menustyle)
+- Signature: `.menuStyle(value: MenuStyle)`
+- Taken by: [menu](bloom-language-nodes.mdx#menu)
+- `menuStyle` tokens: `'platform'`, `'dropdown'`
+
+### `multiple`
+
+A field of several controls (chips, two inputs): its label names the group, not one control (Bloom's `multiple`).
+
+- Parameters: a value (optional)
+- Signature: `.multiple(value?: boolean)`
+- Taken by: [field](bloom-language-nodes.mdx#field)
+
+### `ref`
+
+An escape hatch: the view's outermost box as React Native's view (its host, or the Bloom component that draws it), for what only a view instance does (a visibility tracker, a measurement, a DOM lookup on the web). A screen reads and writes state through bindings, not through it.
+
+- Parameters: a value
+- Signature: `.ref(value: Ref<ViewInstance>)`
+- Taken by: every node (universal)
+
+### `onLayout`
+
+An escape hatch: React Native's `onLayout` on the view's outermost box, called with its frame after each layout that changes it. Laying a view out from state its own layout wrote is discouraged: it draws twice, the second time moved, and can loop. Prefer a layout the modifiers say (a frame, a grow, an aspect ratio, a `ZStack`).
+
+- Parameters: a value
+- Signature: `.onLayout(value: ((event: LayoutChangeEvent) => void) | undefined)`
+- Taken by: every node (universal)
+
+### `liveRegion`
+
+A change inside the view is announced: `polite`, `assertive` or `none` (`accessibilityLiveRegion`).
+
+- Parameters: [liveRegion](bloom-language-tokens.mdx#liveregion)
+- Signature: `.liveRegion(value: LiveRegion)`
+- Taken by: every node (universal)
+- `liveRegion` tokens: `'polite'`, `'assertive'`, `'none'`
+
+### `accessibilityHidden`
+
+Hidden from screen readers, with everything inside it: on Android and iOS `accessibilityElementsHidden` and `importantForAccessibility: 'no-hide-descendants'`, on the web `aria-hidden`. `false` reads it again.
+
+- Parameters: a value (optional)
+- Signature: `.accessibilityHidden(value?: boolean)`
+- Taken by: every node (universal)
+
 ### `role`
 
 - Parameters: [role](bloom-language-tokens.mdx#role)
@@ -647,10 +795,13 @@ Web: the pointer over this view is what `group-hover:` styles inside it answer (
 
 ### `hitSlop`
 
-- Parameters: [hitSlop](bloom-language-tokens.mdx#hitslop)
-- Signature: `.hitSlop(value: HitSlopName)`
+How far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`, or an exact slop (`'4'` `'5'`). With a side first (`top`, `bottom`, `horizontal`, `vertical`, `left`, `right`: physical, as React Native's insets are) only that side; a later one of a side replaces the earlier.
+
+- Parameters: [physicalEdge](bloom-language-tokens.mdx#physicaledge) (optional); [hitSlop](bloom-language-tokens.mdx#hitslop)
+- Signature: `.hitSlop(value: HitSlopName)` or `.hitSlop(edge: PhysicalEdge, value: HitSlopName)`
 - Taken by: every node (universal)
-- `hitSlop` tokens: `'sm'`, `'md'`, `'lg'`
+- `physicalEdge` tokens: `'all'`, `'top'`, `'bottom'`, `'horizontal'`, `'vertical'`, `'left'`, `'right'`
+- `hitSlop` tokens: `'none'`, `'sm'`, `'md'`, `'lg'`, `'4'`, `'5'`
 
 ### `testID`
 
@@ -746,11 +897,11 @@ The selected glyph, when the set draws selection by shape (an outline that fills
 
 ### `selection`
 
-The `id` of the selected tab: a binding, a tab's press writing it.
+One of the section's rows chosen, as SwiftUI's `Picker` in a `Menu` (a `UIMenu` of single selection): each tagged `Item` in it is a choice whose tag is its value, marked while the binding holds it; choosing one sets the binding. `undefined` is no row chosen. Bloom's menus draw a radio group (`DropdownMenuRadioGroup`), the lens menu a check on the chosen row, iOS the system's inline picker.
 
 - Parameters: a value
-- Signature: `.selection(value: Binding<string>)`
-- Taken by: [bottomBar](bloom-language-nodes.mdx#bottombar), [sidebar](bloom-language-nodes.mdx#sidebar), [rail](bloom-language-nodes.mdx#rail), [settings](bloom-language-nodes.mdx#settings), [agentChatHistory](bloom-language-nodes.mdx#agentchathistory), [agentChat](bloom-language-nodes.mdx#agentchat)
+- Signature: `.selection(value: readonly [value: T | undefined, set: (value: T) => void])`
+- Taken by: [menuSection](bloom-language-nodes.mdx#menusection), [bottomBar](bloom-language-nodes.mdx#bottombar), [sidebar](bloom-language-nodes.mdx#sidebar), [rail](bloom-language-nodes.mdx#rail), [settings](bloom-language-nodes.mdx#settings), [agentChatHistory](bloom-language-nodes.mdx#agentchathistory), [agentChat](bloom-language-nodes.mdx#agentchat)
 
 ### `action`
 
@@ -970,7 +1121,7 @@ The opaque colour its scrim fades from, painted from a role (the page's backgrou
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.scrimColor(value: ColorToken)`
 - Taken by: [header](bloom-language-nodes.mdx#header)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `scrimFalloff`
 
@@ -1117,7 +1268,7 @@ A cell's narrowest width before the grid drops a column (Bloom's default: 320).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.minCellWidth(value: SpaceToken)`
 - Taken by: [grid](bloom-language-nodes.mdx#grid)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `flow`
 
@@ -1244,6 +1395,15 @@ A pressable view shrinks slightly under the finger (Bloom `PressableScale`).
 - Signature: `.pressScale()`
 - Taken by: every node (universal)
 
+### `pressFade`
+
+A pressable view fades while pressed, as React Native's `TouchableOpacity` fades it (its host): to `opacity` (an opacity token, `TouchableOpacity`'s own 0.2 without one) at once on touch, and back on release with its own timing and curve.
+
+- Parameters: [opacity](bloom-language-tokens.mdx#opacity) (optional)
+- Signature: `.pressFade(value?: OpacityName)`
+- Taken by: every node (universal)
+- `opacity` tokens: `'transparent'`, `'half'`, `'opaque'`, `'10'`, `'20'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'85'`, `'90'`
+
 ### `hoverHighlight`
 
 Bloom's hover wash behind the stack (`SubtleHover`): under the pointer, on the web; or while `active` (a coordinated highlight), on every platform.
@@ -1281,10 +1441,10 @@ Its own stroke over its appearance's: `none`, `hairline`, `thin` or `medium`.
 
 ### `clipped`
 
-Clips what it draws to its bounds, rounded by its corner (SwiftUI's `clipped()`): a corner alone does not clip.
+Clips what it draws to its bounds, rounded by its corner (SwiftUI's `clipped()`): a corner alone does not clip. `.clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out, over a clip the view would otherwise have (an earlier `.clipped()`, a variant's).
 
-- Parameters: none
-- Signature: `.clipped()`
+- Parameters: a value (optional)
+- Signature: `.clipped(on?: boolean)`
 - Taken by: every node (universal), and [card](bloom-language-nodes.mdx#card)
 
 ### `leadingView`
@@ -1459,8 +1619,8 @@ A paired fill and label from two colour roles (Bloom's `colors`), for a brand ac
 - Parameters: [color](bloom-language-tokens.mdx#color); [color](bloom-language-tokens.mdx#color)
 - Signature: `.colors(background: ColorToken, foreground: ColorToken)`
 - Taken by: [button](bloom-language-nodes.mdx#button)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `linkTone`
 
@@ -1508,15 +1668,15 @@ Flat segments with a gap between them, under the shared outer pill.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.fill(value: ColorToken)`
 - Taken by: [shape](bloom-language-nodes.mdx#shape)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `stroke`
 
 - Parameters: [color](bloom-language-tokens.mdx#color); [borderWidth](bloom-language-tokens.mdx#borderwidth) (optional)
 - Signature: `.stroke(value: ColorToken, width?: BorderWidthName)`
 - Taken by: [shape](bloom-language-nodes.mdx#shape)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
-- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'2.5'`, `'3'`, `'4'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
 
 ### `image`
 
@@ -1669,10 +1829,10 @@ The style every `Button` inside takes when it names none (`glass` and `glassProm
 
 ### `modifier`
 
-Applies a named recipe of modifiers (`defineModifier`), with its arguments.
+Applies a named recipe of modifiers (`defineModifier`), with its arguments. `undefined` applies none, so a view that takes a recipe from its caller (`handle?: ViewModifier`) chains `.modifier(props.handle)` as it is.
 
 - Parameters: a value; `children`
-- Signature: `.modifier(value: ViewModifier<A>, ...args: A)`
+- Signature: `.modifier(value: ViewModifier<A> | undefined, ...args: A)`
 - Taken by: every node (universal)
 
 ### `confirmationDialog`
@@ -1700,7 +1860,7 @@ SwiftUI's `safeAreaInset`: `view` pinned at the scroll's `edge`, and the content
 - Signature: `.safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [list](bloom-language-nodes.mdx#list), [virtualList](bloom-language-nodes.mdx#virtuallist)
 - `insetEdge` tokens: `'top'`, `'bottom'`
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `safeAreaBar`
 
@@ -1777,8 +1937,10 @@ What draws in its place where it cannot play (reduced motion, no player).
 
 ### `placeholder`
 
+Shown while the field is empty; `null` shows none (not even the label, which Bloom draws in its place otherwise).
+
 - Parameters: a value
-- Signature: `.placeholder(value: string)`
+- Signature: `.placeholder(value: string | null)`
 - Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor), [picker](bloom-language-nodes.mdx#picker), [search](bloom-language-nodes.mdx#search), [command](bloom-language-nodes.mdx#command), [settingsTextField](bloom-language-nodes.mdx#settingstextfield), [datePicker](bloom-language-nodes.mdx#datepicker), [dateRangePicker](bloom-language-nodes.mdx#daterangepicker), [timeField](bloom-language-nodes.mdx#timefield), [tagField](bloom-language-nodes.mdx#tagfield), [phoneInput](bloom-language-nodes.mdx#phoneinput), [dataTableSearch](bloom-language-nodes.mdx#datatablesearch)
 
 ### `invalid`
@@ -1891,7 +2053,7 @@ Takes the keyboard's focus when it appears.
 
 - Parameters: a value
 - Signature: `.maxLength(value: number)`
-- Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor)
+- Taken by: [textField](bloom-language-nodes.mdx#textfield), [textEditor](bloom-language-nodes.mdx#texteditor), [search](bloom-language-nodes.mdx#search)
 
 ### `description`
 
@@ -1972,11 +2134,11 @@ A button that opens the field (`'auto'`: a field where there is room).
 
 ### `presented`
 
-The dialog as a view of its own, shown while `isPresented` holds; dismissing it sets it false. It ends the chain: what a component that is a dialog returns, its binding handed in by the caller.
+The menu open through a binding, SwiftUI's `isPresented`: the app opens it (setting `true`) as its trigger's press does, and hears it close (`false`). The system menu on iOS opens only from its trigger, so a presented menu is Bloom's menu there.
 
 - Parameters: a value
-- Signature: `.presented(isPresented: Binding<boolean>)`
-- Taken by: [dialog](bloom-language-nodes.mdx#dialog), [picker](bloom-language-nodes.mdx#picker), [search](bloom-language-nodes.mdx#search), [command](bloom-language-nodes.mdx#command), [settings](bloom-language-nodes.mdx#settings), [panel](bloom-language-nodes.mdx#panel), [datePicker](bloom-language-nodes.mdx#datepicker), [dateRangePicker](bloom-language-nodes.mdx#daterangepicker), [tooltip](bloom-language-nodes.mdx#tooltip), [hoverCard](bloom-language-nodes.mdx#hovercard), [meetingScheduler](bloom-language-nodes.mdx#meetingscheduler), [suggestionList](bloom-language-nodes.mdx#suggestionlist), [attachmentMenu](bloom-language-nodes.mdx#attachmentmenu), [messageContextMenu](bloom-language-nodes.mdx#messagecontextmenu), [agentThinking](bloom-language-nodes.mdx#agentthinking), [playbackSpeedMenu](bloom-language-nodes.mdx#playbackspeedmenu), [sleepTimerMenu](bloom-language-nodes.mdx#sleeptimermenu)
+- Signature: `.presented(value: Binding<boolean>)`
+- Taken by: [menu](bloom-language-nodes.mdx#menu), [dialog](bloom-language-nodes.mdx#dialog), [picker](bloom-language-nodes.mdx#picker), [search](bloom-language-nodes.mdx#search), [command](bloom-language-nodes.mdx#command), [settings](bloom-language-nodes.mdx#settings), [panel](bloom-language-nodes.mdx#panel), [datePicker](bloom-language-nodes.mdx#datepicker), [dateRangePicker](bloom-language-nodes.mdx#daterangepicker), [tooltip](bloom-language-nodes.mdx#tooltip), [hoverCard](bloom-language-nodes.mdx#hovercard), [meetingScheduler](bloom-language-nodes.mdx#meetingscheduler), [suggestionList](bloom-language-nodes.mdx#suggestionlist), [attachmentMenu](bloom-language-nodes.mdx#attachmentmenu), [messageContextMenu](bloom-language-nodes.mdx#messagecontextmenu), [agentThinking](bloom-language-nodes.mdx#agentthinking), [playbackSpeedMenu](bloom-language-nodes.mdx#playbackspeedmenu), [sleepTimerMenu](bloom-language-nodes.mdx#sleeptimermenu)
 
 ### `tokens`
 
@@ -2033,7 +2195,7 @@ The gap between the view and the popover.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.sideOffset(value: SpaceToken)`
 - Taken by: [popover](bloom-language-nodes.mdx#popover)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `alignOffset`
 
@@ -2042,7 +2204,7 @@ A shift along the side it opens on (negative toward the start).
 - Parameters: [padding](bloom-language-tokens.mdx#padding)
 - Signature: `.alignOffset(value: PaddingToken)`
 - Taken by: [popover](bloom-language-nodes.mdx#popover)
-- `padding` tokens: 110, listed under [padding](bloom-language-tokens.mdx#padding)
+- `padding` tokens: 114, listed under [padding](bloom-language-tokens.mdx#padding)
 
 ### `offlineMessage`
 
@@ -2089,14 +2251,14 @@ The padding at both ends, inside the scroll.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.contentInset(value: SpaceToken)`
 - Taken by: [chipRow](bloom-language-nodes.mdx#chiprow), [carousel](bloom-language-nodes.mdx#carousel), [factStrip](bloom-language-nodes.mdx#factstrip)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `inset`
 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.inset(value: SpaceToken)`
 - Taken by: [groupedSectionDivider](bloom-language-nodes.mdx#groupedsectiondivider), [settingsSection](bloom-language-nodes.mdx#settingssection)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `illustration`
 
@@ -2179,7 +2341,7 @@ The colour its edges fade into on the web: a role or an app's own (the surface b
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.fade(value: InkToken)`
 - Taken by: [chipRow](bloom-language-nodes.mdx#chiprow), [scrollSurface](bloom-language-nodes.mdx#scrollsurface)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `ringInset`
 
@@ -2188,7 +2350,7 @@ The room kept on every side for a chip's focus ring (4 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.ringInset(value: SpaceToken)`
 - Taken by: [chipRow](bloom-language-nodes.mdx#chiprow)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `keyboardTaps`
 
@@ -2222,7 +2384,7 @@ The least room kept beside it on a narrow screen (Bloom's `minSideGutter`).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.sideGutter(value: SpaceToken)`
 - Taken by: [dialog](bloom-language-nodes.mdx#dialog)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `maxHeightRatio`
 
@@ -2230,6 +2392,14 @@ Its height ceiling, as a fraction of the window's (`0.9`).
 
 - Parameters: a value
 - Signature: `.maxHeightRatio(value: number)`
+- Taken by: [dialog](bloom-language-nodes.mdx#dialog)
+
+### `onDismissed`
+
+Once it has finished closing, its exit animation done (Bloom's `onDismissed`): after its binding turned false and it left the screen, the place to unmount what presented it.
+
+- Parameters: a value
+- Signature: `.onDismissed(action: () => void)`
 - Taken by: [dialog](bloom-language-nodes.mdx#dialog)
 
 ### `screenKind`
@@ -2290,7 +2460,7 @@ The room the content keeps above the screen's bottom chrome; Bloom's 16 by defau
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.contentClearance(value: SpaceToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `navigationScope`
 
@@ -2307,19 +2477,27 @@ Room around the content, inside the scroll (the content container's padding).
 
 - Parameters: [edge](bloom-language-tokens.mdx#edge) (optional); [space](bloom-language-tokens.mdx#space)
 - Signature: `.contentMargins(value: SpaceToken)` or `.contentMargins(edge: Edge, value: SpaceToken)`
-- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface)
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+
+### `contentGrows`
+
+The content container grows to fill the scroll (`flexGrow: 1` on React Native's `contentContainerStyle`), so content shorter than the viewport (an empty state) can centre or sit at its bottom; `false` (an `items.length === 0` written as a boolean) leaves it the content's height.
+
+- Parameters: a value (optional)
+- Signature: `.contentGrows(on?: boolean)`
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `refreshable`
 
-Pull to refresh: whether it is refreshing, a binding a pull writes `true` (the app writes `false` when done). `tint` paints the refresh control's `tintColor` and `colors` from a colour role, as an app hands it its theme's colour; the platform's by default.
+Pull to refresh: a binding a pull writes `true` (the app writes `false` when done), or `{ refreshing, onRefresh }`, a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`). `tint` paints the refresh control's `tintColor` (iOS) and `colors` (Android) from a colour role, as an app hands it its theme's colour, or each platform's own (`{ ios: 'primary' }`: Android's spinner keeps its look); the platform's by default.
 
-- Parameters: a value; [color](bloom-language-tokens.mdx#color) (optional)
-- Signature: `.refreshable(value: Binding<boolean>, tint?: ColorToken)`
+- Parameters: `{ refreshing, onRefresh }`, each [value](bloom-language-tokens.mdx#value); `{ ios, android }`, each [color](bloom-language-tokens.mdx#color) (optional)
+- Signature: `.refreshable(value: Refresh, tint?: RefreshTint<ColorToken>)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [virtualList](bloom-language-nodes.mdx#virtuallist)
 - Narrower on: [virtualList](bloom-language-nodes.mdx#virtuallist) (a value)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `refreshTint` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `onEndReached`
 
@@ -2503,7 +2681,7 @@ Its width; Bloom's 80 by default.
 - Signature: `.width(value: SpaceToken)`
 - Taken by: [rail](bloom-language-nodes.mdx#rail), [panel](bloom-language-nodes.mdx#panel), [settingsSelect](bloom-language-nodes.mdx#settingsselect), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carouselItem](bloom-language-nodes.mdx#carouselitem), [dataColumn](bloom-language-nodes.mdx#datacolumn)
 - Narrower on: [rail](bloom-language-nodes.mdx#rail) ([space](bloom-language-tokens.mdx#space)), [panel](bloom-language-nodes.mdx#panel) ([space](bloom-language-tokens.mdx#space)), [settingsSelect](bloom-language-nodes.mdx#settingsselect) ([space](bloom-language-tokens.mdx#space)), [carouselItem](bloom-language-nodes.mdx#carouselitem) ([space](bloom-language-tokens.mdx#space))
-- `columnWidth` tokens: 56, listed under [columnWidth](bloom-language-tokens.mdx#columnwidth)
+- `columnWidth` tokens: 58, listed under [columnWidth](bloom-language-tokens.mdx#columnwidth)
 
 ### `pinning`
 
@@ -2619,14 +2797,14 @@ What the panel is: `main`, `collection`, `detail`, `inspector`, `context` or `ca
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.minWidth(value: SpaceToken)`
 - Taken by: [panel](bloom-language-nodes.mdx#panel), [table](bloom-language-nodes.mdx#table), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [dataTable](bloom-language-nodes.mdx#datatable), [dataColumn](bloom-language-nodes.mdx#datacolumn)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `maxWidth`
 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.maxWidth(value: SpaceToken)`
 - Taken by: [panel](bloom-language-nodes.mdx#panel)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `resizable`
 
@@ -2709,6 +2887,23 @@ Whether the screen is in front (Bloom `Screen`'s `active`): a retained screen (`
 - Signature: `.screenActive(value?: boolean)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
 
+### `screenBackground`
+
+The screen's own fill, behind its header and content (Bloom `Screen`'s `style.backgroundColor`, the surface its chrome is painted for): a role, which Bloom's theme gives as its colour, or an app colour (a reel's black).
+
+- Parameters: [color](bloom-language-tokens.mdx#color)
+- Signature: `.screenBackground(value: InkToken)`
+- Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+
+### `reselectTop`
+
+Where the top is for a screen that drives its own scroll (a reel, whose top is its first slide), and how to go back there: reselecting it away from the top calls `scrollToTop`, and at the top `.onReselect()` (Bloom `Screen`'s `reselect`, its `isAtTop` and `scrollToTop`). Without it the scroller in front answers.
+
+- Parameters: a value; a value
+- Signature: `.reselectTop(isAtTop: () => boolean, scrollToTop: () => void)`
+- Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
+
 ### `initialHeaderHeight`
 
 The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included).
@@ -2716,7 +2911,7 @@ The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.initialHeaderHeight(value: SpaceToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `initialFooterHeight`
 
@@ -2725,7 +2920,33 @@ The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.initialFooterHeight(value: SpaceToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+
+### `colorScope`
+
+The screen in a colour scheme of its own (Bloom's `BloomColorScope`, its `mode`, around the Screen with `asChild`): a dark reel or camera over a light app. `undefined` is the app's scheme, the scope still drawn, so a scheme that changes at render never remounts the screen.
+
+- Parameters: [colorScopeMode](bloom-language-tokens.mdx#colorscopemode)
+- Signature: `.colorScope(mode: ColorScopeMode | undefined)`
+- Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
+- `colorScopeMode` tokens: `'light'`, `'dark'`
+
+### `keyboardAvoiding`
+
+The screen kept above the keyboard: React Native's `KeyboardAvoidingView` around it, filling, padded on iOS and resized elsewhere, as React Native recommends. SwiftUI avoids the keyboard by default; React Native does not. It fills with React Native's `flex: 1`, or with a flex token (`'1'` is Tailwind's `flex-1`, `flex: 1 1 0%`, as `.flex()` writes it).
+
+- Parameters: [flex](bloom-language-tokens.mdx#flex) (optional)
+- Signature: `.keyboardAvoiding(fill?: FlexName)`
+- Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
+- `flex` tokens: `'auto'`, `'initial'`, `'none'`, `'grow'`, `'1'`
+
+### `provider`
+
+A provider around the screen (a React component that draws its children: Bloom's `HeaderDockProvider`, an app's own context the screen's header and content share). Each of these three wraps what the root's modifiers before it drew, in chain order, as SwiftUI's modifiers do: the last one is outermost.
+
+- Parameters: a value
+- Signature: `.provider(component: ScreenProvider)`
+- Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
 
 ### `scrollbar`
 
@@ -2768,7 +2989,7 @@ The depth of each end's fade (24 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.fadeHeight(value: SpaceToken)`
 - Taken by: [scrollSurface](bloom-language-nodes.mdx#scrollsurface)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `fadeBottom`
 
@@ -2817,7 +3038,7 @@ The bar's height (41 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.barHeight(value: SpaceToken)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `band`
 
@@ -2826,7 +3047,7 @@ The band behind the bar: a role or an app's own (the fill of the surface it sits
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.band(value: InkToken)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `peekDelay`
 
@@ -2871,7 +3092,7 @@ The strip's height (20 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.collapsedHeight(value: SpaceToken)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `thickness`
 
@@ -2880,7 +3101,7 @@ The depth of its hit strip, across the separator.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.thickness(value: SpaceToken)`
 - Taken by: [resizeHandle](bloom-language-nodes.mdx#resizehandle), [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onResizeStart`
 
@@ -3141,7 +3362,7 @@ The star's edge, apart from the text's size.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.starSize(value: SpaceToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `starTint`
 
@@ -3150,7 +3371,7 @@ The filled stars alone.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.starTint(value: ColorToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `countTint`
 
@@ -3159,7 +3380,7 @@ The count alone.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.countTint(value: ColorToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `emptyTint`
 
@@ -3168,7 +3389,7 @@ The unfilled part of each star (`stars`).
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.emptyTint(value: ColorToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `fillValue`
 
@@ -3201,7 +3422,7 @@ A fixed label width: the bar takes the free space (a distribution).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.labelWidth(value: SpaceToken)`
 - Taken by: [ratingBar](bloom-language-nodes.mdx#ratingbar)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `reveal`
 
@@ -3235,7 +3456,7 @@ The rail behind the fill (neutral by default).
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.trackTint(value: ColorToken)`
 - Taken by: [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `fillDuration`
 
@@ -3254,7 +3475,7 @@ The track's and the fill's corner; half the thickness (a capsule) by default.
 - Signature: `.barCorner(value: Exclude<CornerName, 'concentric'>)`
 - Taken by: [meter](bloom-language-nodes.mdx#meter)
 - Narrower on: [meter](bloom-language-nodes.mdx#meter) ([cornerRadius](bloom-language-tokens.mdx#cornerradius))
-- `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'10'`, `'14'`, `'18'`, `'22'`
+- `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'7'`, `'10'`, `'14'`, `'15'`, `'18'`, `'22'`
 
 ### `backdrop`
 
@@ -3263,7 +3484,7 @@ A disc under the whole ring: the scrim that lets it read over a photo.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.backdrop(value: ColorToken)`
 - Taken by: [meterRing](bloom-language-nodes.mdx#meterring), [categoryBar](bloom-language-nodes.mdx#categorybar)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `cap`
 
@@ -3354,7 +3575,7 @@ A compact row's own vertical padding.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.compactPadding(value: SpaceToken)`
 - Taken by: [listItem](bloom-language-nodes.mdx#listitem), [mailRow](bloom-language-nodes.mdx#mailrow)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onPrefetch`
 
@@ -3427,7 +3648,7 @@ A scrolling list's viewport height.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.scrollHeight(value: SpaceToken)`
 - Taken by: [list](bloom-language-nodes.mdx#list)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `stickyHeaders`
 
@@ -3571,7 +3792,7 @@ How far overlay arrows sit from the edges.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.arrowsInset(value: SpaceToken)`
 - Taken by: [carousel](bloom-language-nodes.mdx#carousel)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `hidesUnavailableArrows`
 
@@ -3626,7 +3847,7 @@ How far an arrow key moves it (the step by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.thumbSize(value: SpaceToken)`
 - Taken by: [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `fillTint`
 
@@ -3635,14 +3856,14 @@ The filled part of the track.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.fillTint(value: ColorToken)`
 - Taken by: [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `thumbTint`
 
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.thumbTint(value: ColorToken)`
 - Taken by: [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `onCommit`
 
@@ -3796,7 +4017,7 @@ A cell's edge.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.cellSize(value: SpaceToken)`
 - Taken by: [activityHeatmap](bloom-language-nodes.mdx#activityheatmap)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onPressDay`
 
@@ -3822,7 +4043,7 @@ The ink's width: a border width token (Bloom's `'2.5'` with none).
 - Parameters: [borderWidth](bloom-language-tokens.mdx#borderwidth)
 - Signature: `.strokeWidth(value: BorderWidthName)`
 - Taken by: [signaturePad](bloom-language-nodes.mdx#signaturepad)
-- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'2.5'`, `'3'`, `'4'`
+- `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
 
 ### `collapses`
 
@@ -4054,7 +4275,7 @@ The corner of the media it edges, so the hairline follows it (Bloom's `sm` by de
 - Signature: `.mediaCorner(value: Exclude<CornerName, 'concentric'>)`
 - Taken by: [mediaInsetBorder](bloom-language-nodes.mdx#mediainsetborder), [gallery](bloom-language-nodes.mdx#gallery)
 - Narrower on: [mediaInsetBorder](bloom-language-nodes.mdx#mediainsetborder) ([cornerRadius](bloom-language-tokens.mdx#cornerradius)), [gallery](bloom-language-nodes.mdx#gallery) ([cornerRadius](bloom-language-tokens.mdx#cornerradius))
-- `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'10'`, `'14'`, `'18'`, `'22'`
+- `corner` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'concentric'`, `'infinite'`, `'6'`, `'7'`, `'10'`, `'14'`, `'15'`, `'18'`, `'22'`
 
 ### `minItemWidth`
 
@@ -4063,7 +4284,7 @@ The narrowest a fact gets before the strip scrolls (`96` by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.minItemWidth(value: SpaceToken)`
 - Taken by: [factStrip](bloom-language-nodes.mdx#factstrip)
-- `space` tokens: 55, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onRetry`
 
@@ -4470,12 +4691,21 @@ A cached still instead of a live renderer: for a picker's thumbnails.
 
 ### `iconSize`
 
-Its glyph (the edge less 16 by default).
+Its glyph's size, an icon rung (`xl` is 28) or a numeric size (`'22'`), over its size's own (Bloom's `iconSize`).
 
 - Parameters: [iconSize](bloom-language-tokens.mdx#iconsize)
 - Signature: `.iconSize(value: IconSizeToken)`
-- Taken by: [composerIconButton](bloom-language-nodes.mdx#composericonbutton)
+- Taken by: [button](bloom-language-nodes.mdx#button), [menuItem](bloom-language-nodes.mdx#menuitem), [menuSubmenu](bloom-language-nodes.mdx#menusubmenu), [composerIconButton](bloom-language-nodes.mdx#composericonbutton)
 - `iconSize` tokens: `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'10'`, `'11'`, `'13'`, `'14'`, `'15'`, `'17'`, `'18'`, `'21'`, `'22'`, `'40'`, `'44'`, `'64'`, `'96'`
+
+### `iconForeground`
+
+The glyph's ink, a colour role, over the menu's (its quiet ink, or the negative one of a destructive row). Bloom's menus and the lens menu draw it; the system menu on iOS draws its own.
+
+- Parameters: [color](bloom-language-tokens.mdx#color)
+- Signature: `.iconForeground(value: InkToken)`
+- Taken by: [menuItem](bloom-language-nodes.mdx#menuitem), [menuSubmenu](bloom-language-nodes.mdx#menusubmenu)
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `activeTint`
 
@@ -4484,7 +4714,7 @@ The active point's colour.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.activeTint(value: ColorToken)`
 - Taken by: [heatmapChartCard](bloom-language-nodes.mdx#heatmapchartcard), [lineChartCard](bloom-language-nodes.mdx#linechartcard), [stepsCard](bloom-language-nodes.mdx#stepscard), [tokensChartCard](bloom-language-nodes.mdx#tokenschartcard)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `bubbleTint`
 
@@ -4493,7 +4723,7 @@ The bubble's fill it sits on, when it is not Bloom's.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.bubbleTint(value: ColorToken)`
 - Taken by: [contactMessage](bloom-language-nodes.mdx#contactmessage), [fileMessage](bloom-language-nodes.mdx#filemessage), [gifMessage](bloom-language-nodes.mdx#gifmessage), [imageMessage](bloom-language-nodes.mdx#imagemessage), [locationMessage](bloom-language-nodes.mdx#locationmessage), [pollMessage](bloom-language-nodes.mdx#pollmessage), [stickerMessage](bloom-language-nodes.mdx#stickermessage), [videoMessage](bloom-language-nodes.mdx#videomessage), [voiceMessage](bloom-language-nodes.mdx#voicemessage)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `contentTint`
 
@@ -4502,14 +4732,14 @@ What is drawn on the bubble (text, icons), when it is not Bloom's.
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.contentTint(value: ColorToken)`
 - Taken by: [contactMessage](bloom-language-nodes.mdx#contactmessage), [fileMessage](bloom-language-nodes.mdx#filemessage), [gifMessage](bloom-language-nodes.mdx#gifmessage), [imageMessage](bloom-language-nodes.mdx#imagemessage), [locationMessage](bloom-language-nodes.mdx#locationmessage), [pollMessage](bloom-language-nodes.mdx#pollmessage), [stickerMessage](bloom-language-nodes.mdx#stickermessage), [videoMessage](bloom-language-nodes.mdx#videomessage), [voiceMessage](bloom-language-nodes.mdx#voicemessage)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `placeholderTint`
 
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.placeholderTint(value: ColorToken)`
 - Taken by: [gifMessage](bloom-language-nodes.mdx#gifmessage), [imageMessage](bloom-language-nodes.mdx#imagemessage), [videoMessage](bloom-language-nodes.mdx#videomessage)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `gradient`
 
@@ -4569,7 +4799,7 @@ The sender's name's colour, a role (by default one picked from the sender's seed
 - Parameters: [color](bloom-language-tokens.mdx#color)
 - Signature: `.senderTint(value: ColorToken)`
 - Taken by: [messageBubble](bloom-language-nodes.mdx#messagebubble)
-- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 ### `showZeroCounts`
 
@@ -4781,11 +5011,11 @@ The method step's title, a step of Bloom's type ramp.
 
 ### `multiline`
 
-A taller row whose label sits at the top, for a multi-line control.
+Text over several lines, the field growing with it (React Native's `multiline`).
 
 - Parameters: a value (optional)
 - Signature: `.multiline(value?: boolean)`
-- Taken by: [agentCreatorField](bloom-language-nodes.mdx#agentcreatorfield)
+- Taken by: [textField](bloom-language-nodes.mdx#textfield), [agentCreatorField](bloom-language-nodes.mdx#agentcreatorfield)
 
 ### `activeIndex`
 

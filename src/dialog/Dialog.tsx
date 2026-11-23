@@ -111,11 +111,12 @@ const AnimatedView = Animated.createAnimatedComponent(View);
  *   2. Custom children — caller passes JSX, bloom renders the chrome.
  *   3. Pure children — no `title`/`description`/`actions`.
  */
-export function Dialog({ placement, frame, children, header, ...props }: DialogProps) {
-  const session = usePresentationSession(
-    props.presentation === 'fullscreen' ? 'end' : placement,
-    props,
-  );
+export function Dialog({ placement, frame, children, header, onDismissed, ...props }: DialogProps) {
+  const session = usePresentationSession(props.presentation === 'fullscreen' ? 'end' : placement, {
+    open: props.open,
+    startOpen: props.startOpen,
+    onDismissed,
+  });
   const rest = {
     ...props,
     startOpen: session.startOpen,

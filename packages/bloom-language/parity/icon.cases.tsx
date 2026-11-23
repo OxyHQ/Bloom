@@ -3,7 +3,7 @@ import * as RN from 'react-native';
 import * as icons from '@oxy.so/bloom/icons';
 import type { Props as IconProps, sizes } from '@oxy.so/bloom/icons/shared';
 import { tokens } from '@oxy.so/bloom/styles';
-import { withAlpha } from '@oxy.so/bloom/theme';
+import { type ThemeColors, withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { COLORS, ICON_SIZE } from '../src/generated/spec.generated';
@@ -19,7 +19,11 @@ export const BLOOM_ICONS: [string, BloomIcon][] = Object.entries(icons).filter((
   /^(Ri|Si)[A-Z0-9]|Icon$/.test(name),
 ) as [string, BloomIcon][];
 
-const paint = (role: ColorName) => COLORS[role].paint;
+const paint = (role: ColorName) => COLORS[role].paint as keyof ThemeColors;
+/** The roles of the theme's palette (the surface fill has its own cases, surface-fill.cases.tsx). */
+const PALETTE_ROLES = (Object.keys(COLORS) as ColorName[]).filter(
+  (role) => COLORS[role].web !== null,
+);
 
 const every: ParityCase[] = BLOOM_ICONS.map(([name, Glyph]) => ({
   name: name,
@@ -49,7 +53,7 @@ const rungs: ParityCase[] = (Object.keys(ICON_SIZE) as IconSizeName[]).map((size
   ),
 }));
 
-const inks: ParityCase[] = (Object.keys(COLORS) as ColorName[]).flatMap((role) => [
+const inks: ParityCase[] = PALETTE_ROLES.flatMap((role) => [
   {
     name: `foreground ${role}`,
     language: () => toElement(L.Icon(Heart).foreground(role)),

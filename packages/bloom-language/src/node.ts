@@ -1,10 +1,11 @@
 import type { MotionValue } from '@oxy.so/bloom/motion';
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentRef, ComponentType, ReactNode, Ref } from 'react';
 import type {
   AccessibilityActionEvent,
   AccessibilityActionInfo,
   GestureResponderEvent,
-  Insets,
+  LayoutChangeEvent,
+  View,
 } from 'react-native';
 import type { BloomAppearance, BloomSize, BloomTone } from '@oxy.so/bloom/appearance';
 import type {
@@ -178,7 +179,7 @@ import type { ChatComposerKind } from './controls/chat-composer';
 import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
-import type { AnyBinding, Binding } from './binding';
+import type { AnyBinding, Binding, Refresh, RefreshTint } from './binding';
 import type {
   BoundaryErrorHandler,
   BoundaryFallback,
@@ -249,13 +250,17 @@ import {
   type Condition,
   type Justify,
   type LengthToken,
+  type EdgeDistance,
+  type FrameLength,
+  type Points,
+  type ZIndexValue,
+  type ColorScopeMode,
   type OverlayAlignment,
   type ShadowName,
   type ScaleName,
   type CornerSide,
   type WordBreak,
   type ListMarker,
-  type ZIndexName,
   type ButtonLinkTone,
   type ButtonShape,
   type AnyDensity,
@@ -263,6 +268,9 @@ import {
   type ContentFit,
   type DurationName,
   type Edge,
+  type PhysicalEdge,
+  type PressOpenTab,
+  type MenuStyle,
   type Role,
   type ShrinkPriority,
   type FlexName,
@@ -394,6 +402,9 @@ import {
   type TrackingName,
   type OpacityName,
   type PaddingToken,
+  type MarginToken,
+  type BorderStyleName,
+  type LiveRegion,
   type SpaceToken,
   type ControlSize,
   type InsetEdge,
@@ -498,6 +509,27 @@ export type { GlassValue };
 export type EngagementTone = Exclude<AccentTone, 'default'>;
 export type IconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
 export type PressHandler = (event: GestureResponderEvent) => unknown;
+/** `.accessibilityState()`: what assistive technology reads of a view's state. */
+export interface AccessibilityState {
+  readonly selected?: boolean;
+  readonly checked?: boolean | 'mixed';
+  readonly busy?: boolean;
+  readonly expanded?: boolean;
+  readonly disabled?: boolean;
+}
+/** A React Native view as a ref holds it (`.ref()`). */
+export type ViewInstance = ComponentRef<typeof View>;
+
+/**
+ * `.accessibilityValue()`: what assistive technology reads of a view's value:
+ * a range (`min`, `max`, `now`) or a text (React Native's `accessibilityValue`).
+ */
+export interface AccessibilityValue {
+  readonly min?: number;
+  readonly max?: number;
+  readonly now?: number;
+  readonly text?: string;
+}
 /** `.childSpacing()`: the margin after each child but the last, along an axis (Tailwind's `space-x`/`space-y`). */
 export interface ChildSpacing {
   readonly axis: Axis;
@@ -593,7 +625,8 @@ export interface ValueModifiers {
   progress: Progress | undefined;
   hide: Progress | undefined;
   titleDisplay: TitleDisplay;
-  subtitle: string | undefined;
+  /** A line under the title; a header's may be a view. */
+  subtitle: string | ViewNode | undefined;
   toolbar: readonly Child[];
   toolbarLeading: readonly Child[];
   onBack: (() => void) | null | undefined;
@@ -621,8 +654,18 @@ export interface ValueModifiers {
   colorPreset: ColorPreset;
   seed: string;
   screenActive: boolean;
+  /** The screen's own fill (Bloom `Screen`'s `style.backgroundColor`): a dark reel's or camera's black. */
+  screenBackground: InkToken;
+  /** Where a screen that drives its own scroll has its top (Bloom `Screen`'s `reselect`). */
+  reselectTop: ReselectTop;
   initialHeaderHeight: SpaceToken;
   initialFooterHeight: SpaceToken;
+  /** The screen's own scheme (`undefined`: the app's), a `BloomColorScope` around it. */
+  colorScope: ColorScopeMode | undefined;
+  /** The screen kept above the keyboard, React Native's `KeyboardAvoidingView` around it: its fill, or React Native's `flex: 1`. */
+  keyboardAvoiding: FlexName | undefined;
+  /** A provider (a component of children) drawn around the screen. */
+  provider: ScreenProvider;
   scrollDismissesKeyboard: KeyboardDismiss;
   keyboardTaps: KeyboardTaps;
   detached: boolean;
@@ -649,7 +692,8 @@ export interface ValueModifiers {
   width: SpaceToken | ColumnWidthToken;
   pinning: FooterPinning;
   ignoresSafeArea: boolean;
-  placeholder: string;
+  /** `null`: none at all (a text field's label is not drawn in its place either). */
+  placeholder: string | null;
   filter: ((item: BloomCommandItem, query: string) => boolean) | AnyBinding;
   keywords: readonly string[];
   content: Child | (() => Child);
@@ -733,6 +777,8 @@ export interface ValueModifiers {
   onPressItem: ((item: AvatarGroupItem, index: number) => void) | undefined;
   hoverCard: boolean;
   pressScale: true;
+  /** `.pressFade()`: React Native's TouchableOpacity as the press host, at this opacity while pressed (its own default without one). */
+  pressFade: OpacityName | undefined;
   hoverHighlight: boolean | undefined;
   pressed: boolean | AnyBinding;
   colors: readonly [ColorToken, ColorToken];
@@ -807,7 +853,7 @@ export interface ValueModifiers {
   radius: CardRadius;
   elevation: CardElevation;
   outline: CardBorder;
-  clipped: true;
+  clipped: boolean;
   leadingView: readonly Child[];
   selected: boolean | AnyBinding;
   highlighted: boolean;
@@ -841,6 +887,8 @@ export interface ValueModifiers {
   describedBy: string;
   sideGutter: SpaceToken;
   maxHeightRatio: number;
+  /** A dialog's `onDismissed`: once it has finished closing. */
+  onDismissed: () => void;
 
   // Settings rows (controls/settings.tsx)
   muted: boolean | AnyBinding;
@@ -1103,8 +1151,25 @@ export interface ValueModifiers {
   interactive: boolean;
   portrait: boolean;
 
+  /** A press that goes no further than this view on the web (Bloom's `stopPropagation`). */
+  stopPropagation: boolean;
+  /** What pressing a strip's open tab does (Bloom's `pressOpenTab`). */
+  pressOpenTab: PressOpenTab;
+  /** Which menu a `Menu` is: the platform's (the default) or Bloom's dropdown everywhere. */
+  menuStyle: MenuStyle;
+  /** A button's spinner while loading: a view, or `null` for none (Bloom's `loadingIndicator`). */
+  loadingIndicator: ViewNode | null;
+  /** A button's ink under the pointer (Bloom's `hoverColor`), from a colour role. */
+  hoverForeground: ColorToken;
+  /** Whether a text field takes typing (React Native's `editable`). */
+  editable: boolean;
+  /** A field of several controls (Bloom's `multiple`): its label names the group. */
+  multiple: boolean;
+
   // Chat composer (controls/chat-composer.tsx)
   iconSize: IconSizeToken;
+  /** A menu row's glyph ink (`.iconForeground()`), over the menu's. */
+  iconForeground: InkToken;
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint: ColorToken;
@@ -1232,6 +1297,8 @@ export interface ValueModifiers {
   search: readonly [text: AnyBinding, options?: ShareSheetSearchOptions];
   stage: AnyBinding;
   destination: AnyBinding;
+  /** The scroll's content container grows to fill it (`flexGrow: 1`). */
+  contentGrows: boolean;
 }
 export type ValueModifier = {
   [K in keyof ValueModifiers]: {
@@ -1241,25 +1308,31 @@ export type ValueModifier = {
   };
 }[keyof ValueModifiers];
 
-/** A frame's lengths: space rungs, app tokens, or lengths relative to the parent (`full`, `1/2`…). */
+/**
+ * A frame's lengths: space rungs, app tokens, lengths relative to the parent
+ * (`full`, `1/2`…), or points computed at render (`.frame({ width: itemSize })`).
+ */
 export interface FrameSpec {
-  width?: LengthToken;
-  height?: LengthToken;
-  minWidth?: LengthToken;
-  minHeight?: LengthToken;
-  maxWidth?: LengthToken;
-  maxHeight?: LengthToken;
+  width?: FrameLength;
+  height?: FrameLength;
+  minWidth?: FrameLength;
+  minHeight?: FrameLength;
+  maxWidth?: FrameLength;
+  maxHeight?: FrameLength;
 }
 
-/** A pinned view's distance from each edge of its parent (`none` touches it; `-sm` pulls past it). */
+/**
+ * A pinned view's distance from each edge of its parent (`none` touches it;
+ * `-sm` pulls past it), or points computed at render (`insets.top + 8`).
+ */
 export interface PositionEdges {
-  top?: PaddingToken;
-  bottom?: PaddingToken;
-  leading?: PaddingToken;
-  trailing?: PaddingToken;
+  top?: EdgeDistance;
+  bottom?: EdgeDistance;
+  leading?: EdgeDistance;
+  trailing?: EdgeDistance;
   /** A physical side, the same in a right-to-left layout. */
-  left?: PaddingToken;
-  right?: PaddingToken;
+  left?: EdgeDistance;
+  right?: EdgeDistance;
 }
 
 /** How far a view is drawn from where it is laid out: `x` to the right, `y` down. */
@@ -1300,6 +1373,7 @@ export type Modifier =
       readonly edge: Edge;
       readonly value: PaddingToken;
     }
+  | { readonly kind: 'safeAreaPadding'; readonly key: string; readonly edge: PhysicalEdge }
   | { readonly kind: 'frame'; readonly key: string; readonly value: FrameSpec }
   | { readonly kind: 'grow'; readonly key: string }
   | { readonly kind: 'flex'; readonly key: string; readonly value: FlexName }
@@ -1307,16 +1381,20 @@ export type Modifier =
       readonly kind: 'margin';
       readonly key: string;
       readonly edge: Edge;
-      readonly value: PaddingToken;
+      readonly value: MarginToken;
     }
   | { readonly kind: 'alignSelf'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'position'; readonly key: string; readonly value: PositionEdges }
   | { readonly kind: 'offset'; readonly key: string; readonly value: OffsetSpec }
-  | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexName }
+  | { readonly kind: 'zIndex'; readonly key: string; readonly value: ZIndexValue }
   | { readonly kind: 'hidden'; readonly key: string; readonly value: boolean }
   | { readonly kind: 'basis'; readonly key: string; readonly value: LengthToken }
   | { readonly kind: 'scale'; readonly key: string; readonly value: ScaleName | MotionValue }
-  | { readonly kind: 'allowsHitTesting'; readonly key: string; readonly value: HitTesting }
+  | {
+      readonly kind: 'allowsHitTesting';
+      readonly key: string;
+      readonly value: HitTesting | undefined;
+    }
   | { readonly kind: 'accessibilityOnly'; readonly key: string }
   | {
       readonly kind: 'overlay';
@@ -1370,6 +1448,7 @@ export type Modifier =
       readonly width: BorderWidthName;
       readonly edge: BorderEdge;
     }
+  | { readonly kind: 'borderStyle'; readonly key: string; readonly value: BorderStyleName }
   | {
       readonly kind: 'corner';
       readonly key: string;
@@ -1386,6 +1465,8 @@ export type Modifier =
   | { readonly kind: 'leading'; readonly key: string; readonly value: LeadingToken }
   | { readonly kind: 'tracking'; readonly key: string; readonly value: TrackingName }
   | { readonly kind: 'spacing'; readonly key: string; readonly value: SpaceToken }
+  | { readonly kind: 'horizontalSpacing'; readonly key: string; readonly value: SpaceToken }
+  | { readonly kind: 'verticalSpacing'; readonly key: string; readonly value: SpaceToken }
   | { readonly kind: 'childSpacing'; readonly key: string; readonly value: ChildSpacing }
   | { readonly kind: 'align'; readonly key: string; readonly value: Alignment }
   | { readonly kind: 'alignment'; readonly key: string; readonly value: OverlayAlignment }
@@ -1521,7 +1602,8 @@ export type Modifier =
         | RentOutstandingTone
         | AccentTone
         | EngagementBarTone
-        | PriceLineTone;
+        | PriceLineTone
+        | undefined;
     }
   | {
       readonly kind: 'count';
@@ -1547,7 +1629,30 @@ export type Modifier =
   | { readonly kind: 'label'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'hint'; readonly key: string; readonly value: string | undefined }
   | { readonly kind: 'role'; readonly key: string; readonly value: Role }
-  | { readonly kind: 'hitSlop'; readonly key: string; readonly value: HitSlopName }
+  | { readonly kind: 'ref'; readonly key: string; readonly value: Ref<ViewInstance> }
+  | {
+      readonly kind: 'onLayout';
+      readonly key: string;
+      readonly value: ((event: LayoutChangeEvent) => void) | undefined;
+    }
+  | {
+      readonly kind: 'accessibilityValue';
+      readonly key: string;
+      readonly value: AccessibilityValue;
+    }
+  | {
+      readonly kind: 'accessibilityState';
+      readonly key: string;
+      readonly value: AccessibilityState;
+    }
+  | { readonly kind: 'liveRegion'; readonly key: string; readonly value: LiveRegion }
+  | { readonly kind: 'accessibilityHidden'; readonly key: string; readonly value: boolean }
+  | {
+      readonly kind: 'hitSlop';
+      readonly key: string;
+      readonly edge: PhysicalEdge;
+      readonly value: HitSlopName;
+    }
   | { readonly kind: 'testID'; readonly key: string; readonly value: string }
   | { readonly kind: 'id'; readonly key: string; readonly value: string | number }
   | {
@@ -1586,9 +1691,9 @@ export type Modifier =
   | {
       readonly kind: 'refreshable';
       readonly key: string;
-      readonly value: Binding<boolean>;
-      /** The refresh control's `tintColor` and `colors`, painted from a role; the platform's by default. */
-      readonly tint: ColorToken | undefined;
+      readonly value: Refresh;
+      /** The refresh control's `tintColor` (iOS) and `colors` (Android), painted from roles; the platform's by default. */
+      readonly tint: RefreshTint<ColorToken> | undefined;
     }
   | {
       readonly kind: 'scrollIndicators';
@@ -1951,7 +2056,6 @@ export interface ActionOptions {
   readonly pop?: boolean;
   readonly rollCount?: boolean;
   readonly busy?: boolean;
-  readonly hitSlop?: Insets | number;
   readonly accessibilityActions?: readonly AccessibilityActionInfo[];
   readonly onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
 }
@@ -2049,6 +2153,9 @@ export class Node {
     const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
     return this.with({ kind: 'padding', key: `p:${edge}:${tokenKey(token)}`, edge, value: token });
   }
+  safeAreaPadding(edge: PhysicalEdge = 'all'): Node {
+    return this.with({ kind: 'safeAreaPadding', key: `sa:${edge}`, edge });
+  }
   frame(value: FrameSpec): Node {
     return this.with({ kind: 'frame', key: `f:${objectKey(value, FRAME_KEYS)}`, value });
   }
@@ -2058,9 +2165,9 @@ export class Node {
   flex(value: FlexName): Node {
     return this.with({ kind: 'flex', key: `flex:${value}`, value });
   }
-  margin(edgeOrValue: Edge | PaddingToken, value?: PaddingToken): Node {
+  margin(edgeOrValue: Edge | MarginToken, value?: MarginToken): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
-    const token = value === undefined ? (edgeOrValue as PaddingToken) : value;
+    const token = value === undefined ? (edgeOrValue as MarginToken) : value;
     return this.with({ kind: 'margin', key: `m:${edge}:${tokenKey(token)}`, edge, value: token });
   }
   alignSelf(value: Alignment): Node {
@@ -2076,8 +2183,8 @@ export class Node {
       value,
     });
   }
-  zIndex(value: ZIndexName): Node {
-    return this.with({ kind: 'zIndex', key: `z:${value}`, value });
+  zIndex(value: ZIndexValue): Node {
+    return this.with({ kind: 'zIndex', key: `z:${tokenKey(value)}`, value });
   }
   hidden(value = true): Node {
     return this.with({ kind: 'hidden', key: `hidden:${value}`, value });
@@ -2088,7 +2195,7 @@ export class Node {
   scale(value: ScaleName | MotionValue): Node {
     return this.with({ kind: 'scale', key: `scale:${geometryKey(value)}`, value });
   }
-  allowsHitTesting(value: HitTesting): Node {
+  allowsHitTesting(value: HitTesting | undefined): Node {
     return this.with({ kind: 'allowsHitTesting', key: `hit:${value}`, value });
   }
   accessibilityOnly(): Node {
@@ -2140,6 +2247,9 @@ export class Node {
       edge,
     });
   }
+  borderStyle(value: BorderStyleName): Node {
+    return this.with({ kind: 'borderStyle', key: `bs:${value}`, value });
+  }
   corner(value: CornerName, side: CornerSide = 'all'): Node {
     const key = side === 'all' ? `r:${value}` : `r:${value}:${side}`;
     return this.with({ kind: 'corner', key, value, side });
@@ -2156,7 +2266,9 @@ export class Node {
   blur(): Node {
     return this.with({ kind: 'blur', key: 'blur' });
   }
-  foreground(value: InkToken): Node {
+  foreground(value: InkToken | undefined): Node {
+    // No ink of its own (SwiftUI's `foregroundColor(nil)`): what is around it holds.
+    if (value === undefined) return this;
     return this.with({ kind: 'foreground', key: `fg:${tokenKey(value)}`, value });
   }
   font(value: FontName): Node {
@@ -2173,6 +2285,12 @@ export class Node {
   }
   spacing(value: SpaceToken): Node {
     return this.with({ kind: 'spacing', key: `gap:${tokenKey(value)}`, value });
+  }
+  horizontalSpacing(value: SpaceToken): Node {
+    return this.with({ kind: 'horizontalSpacing', key: `gapx:${tokenKey(value)}`, value });
+  }
+  verticalSpacing(value: SpaceToken): Node {
+    return this.with({ kind: 'verticalSpacing', key: `gapy:${tokenKey(value)}`, value });
   }
   childSpacing(axis: Axis, space: SpaceToken): Node {
     return this.with({
@@ -2331,7 +2449,8 @@ export class Node {
       | RentOutstandingTone
       | AccentTone
       | EngagementBarTone
-      | PriceLineTone,
+      | PriceLineTone
+      | undefined,
   ): Node {
     return this.with({ kind: 'tint', key: `tint:${value}`, value });
   }
@@ -2373,8 +2492,28 @@ export class Node {
   role(value: Role): Node {
     return this.with({ kind: 'role', key: `role:${value}`, value });
   }
-  hitSlop(value: HitSlopName): Node {
-    return this.with({ kind: 'hitSlop', key: `hitSlop:${value}`, value });
+  accessibilityState(value: AccessibilityState): Node {
+    return this.with({ kind: 'accessibilityState', key: 'a11yState', value });
+  }
+  ref(value: Ref<ViewInstance>): Node {
+    return this.with({ kind: 'ref', key: 'ref', value });
+  }
+  onLayout(value: ((event: LayoutChangeEvent) => void) | undefined): Node {
+    return this.with({ kind: 'onLayout', key: 'onLayout', value });
+  }
+  accessibilityValue(value: AccessibilityValue): Node {
+    return this.with({ kind: 'accessibilityValue', key: 'a11yValue', value });
+  }
+  liveRegion(value: LiveRegion): Node {
+    return this.with({ kind: 'liveRegion', key: `live:${value}`, value });
+  }
+  accessibilityHidden(value = true): Node {
+    return this.with({ kind: 'accessibilityHidden', key: `a11yHidden:${value}`, value });
+  }
+  hitSlop(edgeOrValue: PhysicalEdge | HitSlopName, value?: HitSlopName): Node {
+    const edge: PhysicalEdge = value === undefined ? 'all' : (edgeOrValue as PhysicalEdge);
+    const token = value === undefined ? (edgeOrValue as HitSlopName) : value;
+    return this.with({ kind: 'hitSlop', key: `hitSlop:${edge}:${token}`, edge, value: token });
   }
   testID(value: string): Node {
     return this.with({ kind: 'testID', key: 'testID', value });
@@ -2638,7 +2777,7 @@ export class Node {
   titleDisplay(value: TitleDisplay): Node {
     return this.set('titleDisplay', value);
   }
-  subtitle(value: string | undefined): Node {
+  subtitle(value: string | ViewNode | undefined): Node {
     return this.set('subtitle', value);
   }
   toolbar(...value: Child[]): Node {
@@ -2728,11 +2867,29 @@ export class Node {
   screenActive(value = true): Node {
     return this.set('screenActive', value);
   }
+  screenBackground(value: InkToken): Node {
+    return this.set('screenBackground', value);
+  }
+  reselectTop(isAtTop: () => boolean, scrollToTop: () => void): Node {
+    return this.set('reselectTop', { isAtTop, scrollToTop });
+  }
   initialHeaderHeight(value: SpaceToken): Node {
     return this.set('initialHeaderHeight', value);
   }
   initialFooterHeight(value: SpaceToken): Node {
     return this.set('initialFooterHeight', value);
+  }
+  colorScope(value: ColorScopeMode | undefined): Node {
+    return this.set('colorScope', value);
+  }
+  keyboardAvoiding(fill?: FlexName): Node {
+    return this.set('keyboardAvoiding', fill);
+  }
+  provider(value: ScreenProvider): Node {
+    return this.set('provider', value);
+  }
+  contentGrows(value = true): Node {
+    return this.set('contentGrows', value);
   }
   contentMargins(edgeOrValue: Edge | SpaceToken, value?: SpaceToken): Node {
     const edge: Edge = value === undefined ? 'all' : (edgeOrValue as Edge);
@@ -2744,7 +2901,7 @@ export class Node {
       value: token,
     });
   }
-  refreshable(value: Binding<boolean>, tint?: ColorToken): Node {
+  refreshable(value: Refresh, tint?: RefreshTint<ColorToken>): Node {
     return this.with({ kind: 'refreshable', key: 'refreshable', value, tint });
   }
   onEndReached(value: () => void, threshold?: number): Node {
@@ -2831,7 +2988,7 @@ export class Node {
   ignoresSafeArea(value = true): Node {
     return this.set('ignoresSafeArea', value);
   }
-  placeholder(value: string): Node {
+  placeholder(value: string | null): Node {
     return this.set('placeholder', value);
   }
   query(value: Binding<string>): Node {
@@ -3092,6 +3249,9 @@ export class Node {
   pressScale(): Node {
     return this.set('pressScale', true);
   }
+  pressFade(value?: OpacityName): Node {
+    return this.set('pressFade', value);
+  }
   hoverHighlight(value?: boolean): Node {
     return this.set('hoverHighlight', value);
   }
@@ -3203,7 +3363,8 @@ export class Node {
   controlSize(value: ControlSize): Node {
     return this.environment(environmentValues.controlSize, value);
   }
-  modifier<A extends readonly unknown[]>(value: ViewModifier<A>, ...args: A): Node {
+  modifier<A extends readonly unknown[]>(value: ViewModifier<A> | undefined, ...args: A): Node {
+    if (value === undefined) return this;
     return value.apply(this as unknown as AnyView, ...args) as unknown as Node;
   }
   buttonStyle(value: ButtonStyle): Node {
@@ -3420,8 +3581,8 @@ export class Node {
   outline(value: CardBorder): Node {
     return this.set('outline', value);
   }
-  clipped(): Node {
-    return this.set('clipped', true);
+  clipped(value = true): Node {
+    return this.set('clipped', value);
   }
   leadingView(...value: Child[]): Node {
     return this.set('leadingView', value);
@@ -3523,6 +3684,9 @@ export class Node {
   }
   maxHeightRatio(value: number): Node {
     return this.set('maxHeightRatio', value);
+  }
+  onDismissed(value: () => void): Node {
+    return this.set('onDismissed', value);
   }
 
   // Settings rows (controls/settings.tsx)
@@ -4157,6 +4321,31 @@ export class Node {
   iconSize(value: IconSizeToken): Node {
     return this.set('iconSize', value);
   }
+  stopPropagation(value = true): Node {
+    return this.set('stopPropagation', value);
+  }
+  loadingIndicator(value: ViewNode | null): Node {
+    return this.set('loadingIndicator', value);
+  }
+  hoverForeground(value: ColorToken | undefined): Node {
+    if (value === undefined) return this;
+    return this.set('hoverForeground', value);
+  }
+  menuStyle(value: MenuStyle): Node {
+    return this.set('menuStyle', value);
+  }
+  pressOpenTab(value: PressOpenTab): Node {
+    return this.set('pressOpenTab', value);
+  }
+  editable(value: boolean): Node {
+    return this.set('editable', value);
+  }
+  multiple(value = true): Node {
+    return this.set('multiple', value);
+  }
+  iconForeground(value: InkToken): Node {
+    return this.set('iconForeground', value);
+  }
 
   // Chart cards (controls/chart-cards.tsx)
   activeTint(value: ColorToken): Node {
@@ -4296,7 +4485,7 @@ const OFFSET_KEYS = OBJECTS.offset.keys;
 function objectKey<T extends object>(value: T, keys: readonly string[]): string {
   const parts: string[] = [];
   for (const name of keys) {
-    const token = (value as Record<string, string | AppToken | undefined>)[name];
+    const token = (value as Record<string, string | AppToken | Points | undefined>)[name];
     if (token !== undefined) parts.push(`${name}=${tokenKey(token)}`);
   }
   return parts.join(',');
@@ -4384,15 +4573,68 @@ export interface ScreenModifiers<Self> {
    * screen (`false`) drives no scroll, chrome or reselect. `true` by default.
    */
   screenActive(value?: boolean): Self;
+  /**
+   * The screen's own fill, behind its header and content (Bloom `Screen`'s
+   * `style.backgroundColor`, the surface its chrome is painted for): a role,
+   * which Bloom's theme gives as its colour, or an app colour (a reel's black).
+   */
+  screenBackground(value: InkToken): Self;
+  /**
+   * Where the top is for a screen that drives its own scroll (a reel, whose
+   * top is its first slide), and how to go back there: reselecting it away
+   * from the top calls `scrollToTop`, and at the top `.onReselect()` (Bloom
+   * `Screen`'s `reselect`, its `isAtTop` and `scrollToTop`). Without it the
+   * scroller in front answers.
+   */
+  reselectTop(isAtTop: () => boolean, scrollToTop: () => void): Self;
   /** The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, safe area included). */
   initialHeaderHeight(value: SpaceToken): Self;
   /** The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight`, safe area included). */
   initialFooterHeight(value: SpaceToken): Self;
+  /**
+   * The screen in a colour scheme of its own (Bloom's `BloomColorScope`, its
+   * `mode`, around the Screen with `asChild`): a dark reel or camera over a
+   * light app. `undefined` is the app's scheme, the scope still drawn, so a
+   * scheme that changes at render never remounts the screen.
+   */
+  colorScope(mode: ColorScopeMode | undefined): Self;
+  /**
+   * The screen kept above the keyboard: React Native's `KeyboardAvoidingView`
+   * around it, filling, padded on iOS and resized elsewhere, as React Native
+   * recommends. SwiftUI avoids the keyboard by default; React Native does not.
+   * It fills with React Native's `flex: 1`, or with a flex token (`'1'` is
+   * Tailwind's `flex-1`, `flex: 1 1 0%`, as `.flex()` writes it).
+   */
+  keyboardAvoiding(fill?: FlexName): Self;
+  /**
+   * A provider around the screen (a React component that draws its children:
+   * Bloom's `HeaderDockProvider`, an app's own context the screen's header and
+   * content share). Each
+   * of these three wraps what the root's modifiers before it drew, in chain
+   * order, as SwiftUI's modifiers do: the last one is outermost.
+   */
+  provider(component: ScreenProvider): Self;
+}
+
+/** A provider a screen is drawn inside: a component that draws its children. */
+export type ScreenProvider = ComponentType<{ children?: ReactNode }>;
+
+/** Where a screen that drives its own scroll has its top (`.reselectTop()`). */
+export interface ReselectTop {
+  readonly isAtTop: () => boolean;
+  readonly scrollToTop: () => void;
 }
 
 export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   padding(value: PaddingToken): Self;
   padding(edge: Edge, value: PaddingToken): Self;
+  /**
+   * Padded by the device's safe area on those sides (all by default), as
+   * SwiftUI's `.safeAreaPadding()`: React Native's safe-area insets
+   * (`react-native-safe-area-context`), a view of its own, so a padding beside
+   * it adds to it. The sides are physical: the insets are the device's.
+   */
+  safeAreaPadding(edge?: PhysicalEdge): Self;
   frame(value: FrameSpec): Self;
   /** Takes the free space along its parent's axis. */
   grow(): Self;
@@ -4401,11 +4643,20 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * 0%), `auto`, `initial`, `none`, and `grow` (`flex-grow: 1` alone).
    */
   flex(value: FlexName): Self;
-  /** Room outside the box, on every edge or one (`top`, `leading`, `left`…): a margin, on the view itself. */
-  margin(value: PaddingToken): Self;
-  margin(edge: Edge, value: PaddingToken): Self;
-  /** Clips what it draws to its bounds, rounded by its corner (SwiftUI's `clipped()`): a corner alone does not clip. */
-  clipped(): Self;
+  /**
+   * Room outside the box, on every edge or one (`top`, `leading`, `left`…): a
+   * margin, on the view itself. `auto` takes the free space on that side
+   * (`.margin('leading', 'auto')` pushes the view to the trailing end, Tailwind's `ms-auto`).
+   */
+  margin(value: MarginToken): Self;
+  margin(edge: Edge, value: MarginToken): Self;
+  /**
+   * Clips what it draws to its bounds, rounded by its corner (SwiftUI's
+   * `clipped()`): a corner alone does not clip. `.clipped(false)` draws what
+   * overflows it, React Native's `overflow: 'visible'` written out, over a clip
+   * the view would otherwise have (an earlier `.clipped()`, a variant's).
+   */
+  clipped(on?: boolean): Self;
   shrink(value: ShrinkPriority): Self;
   /** Its own place across its parent's axis, over the parent's `align`. */
   alignSelf(value: Alignment): Self;
@@ -4418,7 +4669,7 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   /** Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep their places. */
   offset(value: OffsetSpec): Self;
   /** Its stacking level among its siblings: Bloom's `base`, `raised`, `floating`, `dropdown`. */
-  zIndex(value: ZIndexName): Self;
+  zIndex(value: ZIndexValue): Self;
   /** Leaves the layout (`display: none`) while staying mounted; `hidden(false)` puts it back, as a variant does. */
   hidden(value?: boolean): Self;
   /** Its length along its parent's axis before free space is shared (`flex-basis`): a space rung, a length of the parent, or `fit`. */
@@ -4429,9 +4680,11 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `false`: touches and the pointer pass through the view and everything
    * inside it, to what is under it. `'children'`: through the view, not what
    * is inside it (React Native's `box-none`); `'self'`: the view takes them,
-   * what is inside it does not (`box-only`).
+   * what is inside it does not (`box-only`). `undefined` sets none (React
+   * Native's `pointerEvents={undefined}`), so a hit testing chosen at render
+   * (`.allowsHitTesting(split ? 'children' : undefined)`) is drawn only while it holds.
    */
-  allowsHitTesting(value: HitTesting): Self;
+  allowsHitTesting(value: HitTesting | undefined): Self;
   /**
    * Read by assistive technology and not drawn: a 1pt clipped box out of the
    * layout (Tailwind's `sr-only`). A screen reader still announces it.
@@ -4443,6 +4696,8 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   /** A view over this one, the size of this one as drawn so far, placed at `alignment` (centred by default). */
   overlay(content: ViewNode, alignment?: OverlayAlignment): Self;
   border(value: InkToken, width?: BorderWidthName, edge?: BorderEdge): Self;
+  /** The border's line: `solid` (the default), `dashed` or `dotted` (React Native's `borderStyle`). */
+  borderStyle(value: BorderStyleName): Self;
   /** A ring outside the box (an outline, which takes no room): a role, `thin` by default, `offset` from the edge; `none` removes one. */
   ring(value: InkToken | 'none', width?: BorderWidthName, offset?: SpaceToken): Self;
   /** Bloom's elevation under the box: `s`, `m` or `floating`. */
@@ -4477,9 +4732,17 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
    * `corner` names its radius.
    */
   blur(): Self;
-  /** Text and icon colour for this view and everything inside it; a role, or a role at an opacity token (`'muted/70'`). */
-  foreground(value: InkToken): Self;
-  /** A ramp step or a size rung; or `mono`, Bloom's monospaced face, which keeps the size. */
+  /**
+   * Text and icon colour for this view and everything inside it; a role, or a
+   * role at an opacity token (`'muted/70'`). `undefined` is no ink of its own
+   * (SwiftUI's `foregroundColor(nil)`): `.foreground(invalid ? 'error' : undefined)`.
+   */
+  foreground(value: InkToken | undefined): Self;
+  /**
+   * A ramp step or a size rung; or a face, which keeps the size: `mono`, Bloom's
+   * monospaced face, or `display`, the face of Bloom's big ramp steps, for a
+   * numeric size (`.font('96').font('display')`).
+   */
   font(value: FontName): Self;
   weight(value: WeightName): Self;
   leading(value: LeadingToken): Self;
@@ -4495,10 +4758,65 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   hoverGroup(): Self;
   /** A pressable view shrinks slightly under the finger (Bloom `PressableScale`). */
   pressScale(): Self;
+  /**
+   * A pressable view fades while pressed, as React Native's
+   * `TouchableOpacity` fades it (its host): to `opacity` (an opacity token,
+   * `TouchableOpacity`'s own 0.2 without one) at once on touch, and back on
+   * release with its own timing and curve.
+   */
+  pressFade(value?: OpacityName): Self;
+  /**
+   * The view's width to its height (`1` square, `1.6` landscape), in its
+   * frame's view: a width or height there, or its stretch, sets the other side
+   * (React Native's `aspectRatio`). An `Image`'s sizes the image in its box.
+   */
+  aspectRatio(value: number): Self;
   label(value: string | undefined): Self;
   hint(value: string | undefined): Self;
   role(value: Role): Self;
+  /**
+   * What assistive technology reads of the view's state: `selected`,
+   * `checked` (or `'mixed'`), `busy`, `expanded`, `disabled` (React Native's
+   * `accessibilityState`, as an app writes it).
+   */
+  accessibilityState(value: AccessibilityState): Self;
+  /**
+   * What assistive technology reads of the view's value: a range (`min`,
+   * `max`, `now`: a progress, a slider) or a text (`'Verifying'`), React
+   * Native's `accessibilityValue` as an app writes it.
+   */
+  accessibilityValue(value: AccessibilityValue): Self;
+  /**
+   * An escape hatch: the view's outermost box as React Native's view (its
+   * host, or the Bloom component that draws it), for what only a view
+   * instance does (a visibility tracker, a measurement, a DOM lookup on the
+   * web). A screen reads and writes state through bindings, not through it.
+   */
+  ref(value: Ref<ViewInstance>): Self;
+  /**
+   * An escape hatch: React Native's `onLayout` on the view's outermost box,
+   * called with its frame after each layout that changes it. Laying a view out
+   * from state its own layout wrote is discouraged: it draws twice, the second
+   * time moved, and can loop. Prefer a layout the modifiers say (a frame, a
+   * grow, an aspect ratio, a `ZStack`).
+   */
+  onLayout(value: ((event: LayoutChangeEvent) => void) | undefined): Self;
+  /** A change inside the view is announced: `polite`, `assertive` or `none` (`accessibilityLiveRegion`). */
+  liveRegion(value: LiveRegion): Self;
+  /**
+   * Hidden from screen readers, with everything inside it: on Android and iOS
+   * `accessibilityElementsHidden` and `importantForAccessibility:
+   * 'no-hide-descendants'`, on the web `aria-hidden`. `false` reads it again.
+   */
+  accessibilityHidden(value?: boolean): Self;
+  /**
+   * How far beyond its bounds a press reaches: Bloom's `sm` `md` `lg`, `none`,
+   * or an exact slop (`'4'` `'5'`). With a side first (`top`, `bottom`,
+   * `horizontal`, `vertical`, `left`, `right`: physical, as React Native's
+   * insets are) only that side; a later one of a side replaces the earlier.
+   */
   hitSlop(value: HitSlopName): Self;
+  hitSlop(edge: PhysicalEdge, value: HitSlopName): Self;
   testID(value: string): Self;
   /** A Bloom `Badge` attached to the view, at the badge's `placement` (the top right by default). */
   badge(value: BadgeView): Self;
@@ -4607,8 +4925,12 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   environment<T extends EnvironmentValue>(key: EnvironmentKey<T>, value: T): Self;
   /** The size every control inside takes when it names none (Bloom's control rungs). */
   controlSize(value: ControlSize): Self;
-  /** Applies a named recipe of modifiers (`defineModifier`), with its arguments. */
-  modifier<A extends readonly unknown[]>(value: ViewModifier<A>, ...args: A): Self;
+  /**
+   * Applies a named recipe of modifiers (`defineModifier`), with its arguments.
+   * `undefined` applies none, so a view that takes a recipe from its caller
+   * (`handle?: ViewModifier`) chains `.modifier(props.handle)` as it is.
+   */
+  modifier<A extends readonly unknown[]>(value: ViewModifier<A> | undefined, ...args: A): Self;
   /** The style every `Button` inside takes when it names none (`glass` and `glassProminent` included). */
   buttonStyle(value: ButtonStyle): Self;
   /**
@@ -4641,6 +4963,10 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
 export interface StackView extends ViewModifiers<StackView> {
   /** The gap between children. */
   spacing(value: SpaceToken): StackView;
+  /** The gap between children side by side (`columnGap`, Tailwind's `gap-x-*`), over `spacing`'s. */
+  horizontalSpacing(value: SpaceToken): StackView;
+  /** The gap between children one above another, and between wrapped lines (`rowGap`, Tailwind's `gap-y-*`), over `spacing`'s. */
+  verticalSpacing(value: SpaceToken): StackView;
   /**
    * Tailwind's `space-x-*`/`space-y-*` exactly as NativeWind draws them: on the
    * web a margin after every child but the last, along `axis` (the inline end,
@@ -4837,6 +5163,20 @@ export interface ImageView extends ViewModifiers<ImageView> {
   onError(value: ImageErrorHandler | undefined): ImageView;
 }
 export interface ButtonView extends ViewModifiers<ButtonView> {
+  /** Its glyph's size, an icon rung (`xl` is 28) or a numeric size (`'22'`), over its size's own (Bloom's `iconSize`). */
+  iconSize(value: IconSizeToken): ButtonView;
+  /**
+   * Its press goes no further on the web: a button inside a pressable row
+   * presses only itself (Bloom's `stopPropagation`). Native presses never bubble.
+   */
+  stopPropagation(value?: boolean): ButtonView;
+  /** Its spinner while loading: a view, or `null` for none, the label or glyph staying (Bloom's `loadingIndicator`). */
+  loadingIndicator(value: ViewNode | null): ButtonView;
+  /**
+   * Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at
+   * rest is `.foreground(role)` (Bloom's `color`); `undefined` is Bloom's own.
+   */
+  hoverForeground(value: ColorToken | undefined): ButtonView;
   /**
    * Bloom's appearance, or a glass style: `glass` (the button on glass, its
    * ink the neutral tone's) and `glassProminent` (on glass tinted with its
@@ -4926,12 +5266,38 @@ export interface MenuView extends ViewModifiers<MenuView> {
    * every platform can present before the menu opens.
    */
   actions(value: MenuActionsView): MenuView;
+  /**
+   * `dropdown`: Bloom's own DropdownMenu on every platform (its panel and
+   * rows, as an app's `<DropdownMenu>` draws them), not the platform's menu
+   * (the lens menu on Android and OxyOS, SwiftUI's on iOS). `platform` is the
+   * default.
+   */
+  menuStyle(value: MenuStyle): MenuView;
+  /**
+   * The menu open through a binding, SwiftUI's `isPresented`: the app opens it
+   * (setting `true`) as its trigger's press does, and hears it close (`false`).
+   * The system menu on iOS opens only from its trigger, so a presented menu is
+   * Bloom's menu there.
+   */
+  presented(value: Binding<boolean>): MenuView;
 }
 /** What a menu holds: rows, and at most one `menu()` content. */
 export type MenuRow = MenuItemView | MenuSubmenuView | MenuSectionView | DividerView;
 export type MenuChild = MenuRow | false | null | undefined | readonly MenuChild[];
 export interface MenuItemView extends ViewNode {
   icon(value: IconComponent): MenuItemView;
+  /**
+   * The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's
+   * 20pt. Bloom's menus and the lens menu draw it; the system menu on iOS
+   * draws its own.
+   */
+  iconSize(value: IconSizeToken): MenuItemView;
+  /**
+   * The glyph's ink, a colour role, over the menu's (its quiet ink, or the
+   * negative one of a destructive row). Bloom's menus and the lens menu draw
+   * it; the system menu on iOS draws its own.
+   */
+  iconForeground(value: InkToken): MenuItemView;
   /** Drawn in the theme's negative colour: an action that deletes or leaves. */
   destructive(): MenuItemView;
   disabled(value?: boolean): MenuItemView;
@@ -4950,12 +5316,35 @@ export interface MenuItemView extends ViewNode {
 }
 export interface MenuSubmenuView extends ViewNode {
   icon(value: IconComponent): MenuSubmenuView;
+  /**
+   * The glyph's size: an icon rung or a numeric size (`'22'`), over the menu's
+   * 20pt, as an `Item`'s. Bloom's menus draw it; the lens menu's submenus and
+   * the system menu on iOS draw their own.
+   */
+  iconSize(value: IconSizeToken): MenuSubmenuView;
+  /**
+   * The glyph's ink, a colour role, over the menu's quiet ink, as an `Item`'s.
+   * Bloom's menus draw it; the lens menu's submenus and the system menu on iOS
+   * draw their own.
+   */
+  iconForeground(value: InkToken): MenuSubmenuView;
   disabled(value?: boolean): MenuSubmenuView;
   testID(value: string): MenuSubmenuView;
 }
 export interface MenuSectionView extends ViewNode {
   /** A quiet heading above the section's rows. */
   title(value: string): MenuSectionView;
+  /**
+   * One of the section's rows chosen, as SwiftUI's `Picker` in a `Menu` (a
+   * `UIMenu` of single selection): each tagged `Item` in it is a choice whose
+   * tag is its value, marked while the binding holds it; choosing one sets the
+   * binding. `undefined` is no row chosen. Bloom's menus draw a radio group
+   * (`DropdownMenuRadioGroup`), the lens menu a check on the chosen row, iOS
+   * the system's inline picker.
+   */
+  selection<T extends string>(
+    value: readonly [value: T | undefined, set: (value: T) => void],
+  ): MenuSectionView;
 }
 /**
  * Bloom `Divider`: a line across its stack, vertical in an `HStack`. A label
@@ -4970,6 +5359,12 @@ export interface DividerView extends ViewModifiers<DividerView> {
   spacing(value: SpaceToken): DividerView;
   /** The line's colour role; the neutral separator by default. */
   tint(value: ColorName): DividerView;
+  /**
+   * Which way the line runs, over its stack's (vertical in an `HStack`,
+   * horizontal elsewhere): `.axis('vertical')` is a vertical line outside a
+   * row (Bloom `Divider vertical`), as in a `ZStack` or an `Embed`'s view.
+   */
+  axis(value: Axis): DividerView;
 }
 /** Bloom `Fill`: its children over the whole of the view it is in (an absolute inset). */
 export type FillView = ViewModifiers<FillView>;
@@ -5002,7 +5397,8 @@ export type MenuActionsView = ViewNode;
 export interface HeaderView extends ViewNode {
   /** `large`: the title at the ramp's title step; `inline` (default): the bar's own. */
   titleDisplay(value: TitleDisplay): HeaderView;
-  subtitle(value: string | undefined): HeaderView;
+  /** A line under the title: a text, or a view drawn there as it is. */
+  subtitle(value: string | ViewNode | undefined): HeaderView;
   /** Trailing items, in reading order. */
   toolbar(...value: Child[]): HeaderView;
   /** Leading items, after the back button. */
@@ -5108,18 +5504,27 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
    * scroll edge scrim under it, so the content fades as it scrolls beneath.
    */
   safeAreaBar(edge: InsetEdge, view: ViewNode): ScrollViewNode;
+  /**
+   * The content container grows to fill the scroll (`flexGrow: 1` on React
+   * Native's `contentContainerStyle`), so content shorter than the viewport
+   * (an empty state) can centre or sit at its bottom; `false` (an
+   * `items.length === 0` written as a boolean) leaves it the content's height.
+   */
+  contentGrows(on?: boolean): ScrollViewNode;
   /** Room around the content, inside the scroll (the content container's padding). */
   contentMargins(value: SpaceToken): ScrollViewNode;
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollViewNode;
   /**
-   * Pull to refresh: whether it is refreshing, a binding a pull writes `true`
-   * (the app writes `false` when done). `tint` paints the refresh control's
-   * `tintColor` and `colors` from a colour role, as an app hands it its
-   * theme's colour; the platform's by default.
+   * Pull to refresh: a binding a pull writes `true` (the app writes `false`
+   * when done), or `{ refreshing, onRefresh }`, a refreshing value and the
+   * action a pull runs (a query's `isRefetching` and `refetch`). `tint` paints
+   * the refresh control's `tintColor` (iOS) and `colors` (Android) from a
+   * colour role, as an app hands it its theme's colour, or each platform's own
+   * (`{ ios: 'primary' }`: Android's spinner keeps its look); the platform's by default.
    */
-  refreshable(value: Binding<boolean>, tint?: ColorToken): ScrollViewNode;
+  refreshable(value: Refresh, tint?: RefreshTint<ColorToken>): ScrollViewNode;
   /** Called once each time the end comes within `threshold` viewports (2 by default). */
   onEndReached(action: () => void, threshold?: number): ScrollViewNode;
   /**
@@ -5152,6 +5557,10 @@ export interface ScrollContentView
   > {
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollContentView;
+  /** The gap between children side by side (`columnGap`). */
+  horizontalSpacing(value: SpaceToken): ScrollContentView;
+  /** The gap between children one above another (`rowGap`). */
+  verticalSpacing(value: SpaceToken): ScrollContentView;
   /** The children's place across the axis. */
   align(value: Alignment): ScrollContentView;
   /** How the children spread along the axis. */
@@ -5474,6 +5883,13 @@ interface ScrollAreaModifiers<Self> extends ViewModifiers<Self> {
    * scroll edge scrim under it, so the content fades as it scrolls beneath.
    */
   safeAreaBar(edge: InsetEdge, view: ViewNode): Self;
+  /**
+   * The content container grows to fill the scroll (`flexGrow: 1` on React
+   * Native's `contentContainerStyle`), so content shorter than the viewport
+   * (an empty state) can centre or sit at its bottom; `false` (an
+   * `items.length === 0` written as a boolean) leaves it the content's height.
+   */
+  contentGrows(on?: boolean): Self;
   /** Room around the content, inside the scroll (the content container's padding). */
   contentMargins(value: SpaceToken): Self;
   contentMargins(edge: Edge, value: SpaceToken): Self;

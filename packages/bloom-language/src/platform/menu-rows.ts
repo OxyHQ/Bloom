@@ -15,7 +15,7 @@ import {
   type MenuContentProps,
   type Modifier,
 } from '../node';
-import { resolveCorner } from '../tokens';
+import { resolveCorner, type IconSizeToken, type InkToken } from '../tokens';
 import { valuesOf } from './values';
 
 export interface MenuItemRow {
@@ -25,10 +25,15 @@ export interface MenuItemRow {
   /** A second line under the title, where the platform's menu draws one. */
   subtitle: string | undefined;
   icon: IconComponent | undefined;
+  /** The glyph's own size and ink (`.iconSize()`, `.iconForeground()`), over the menu's. */
+  iconSize: IconSizeToken | undefined;
+  iconForeground: InkToken | undefined;
   destructive: boolean;
   disabled: boolean;
-  /** A toggle's state; `undefined` for an action. */
+  /** A toggle's state, or a choice's (chosen or not); `undefined` for an action. */
   checked: boolean | undefined;
+  /** A choice's value, in a section with a selection: its tag. */
+  value: string | undefined;
   keepOpen: boolean;
   /** The key chord that runs it from a menubar (`Mod+N`). */
   shortcut: string | undefined;
@@ -44,13 +49,22 @@ export interface MenuSectionRow {
   kind: 'section';
   id: string;
   title: string | undefined;
+  /** A section of choices (`.selection()`): the chosen value, and what choosing one sets. */
+  selection: MenuSelection | undefined;
   rows: MenuRowData[];
+}
+export interface MenuSelection {
+  value: string | undefined;
+  set: (value: string) => void;
 }
 export interface MenuSubmenuRow {
   kind: 'submenu';
   id: string;
   title: string;
   icon: IconComponent | undefined;
+  /** The glyph's own size and ink (`.iconSize()`, `.iconForeground()`), over the menu's. */
+  iconSize: IconSizeToken | undefined;
+  iconForeground: InkToken | undefined;
   disabled: boolean;
   testID: string | undefined;
   rows: MenuRowData[];
@@ -87,29 +101,45 @@ export function readMenuRows(
   children: readonly Child[],
   choose?: (tag: string) => void,
   prefix = 'r',
+  /** The selection of the section the rows are in: a tagged row is one of its choices. */
+  selection?: MenuSelection,
 ): MenuRowData[] {
   const rows: MenuRowData[] = [];
   flatten(children).forEach((node, index) => {
     const id = `${prefix}${index}`;
     const values = valuesOf(node);
+    if (selection && (node.kind !== 'menuItem' || values.tag === undefined))
+      throw new Error(
+        'A Section with a .selection() holds its choices only: an Item(title).tag(value) each',
+      );
     switch (node.kind) {
       case 'menuItem': {
         const tag = values.tag as string | undefined;
+        // In a section of choices the tag is the row's value: choosing it sets the selection.
+        const value = selection ? tag : undefined;
         rows.push({
           kind: 'item',
           id,
           title: (node.props as { title: string }).title,
           subtitle: values.subtitle as string | undefined,
           icon: values.icon as IconComponent | undefined,
+          iconSize: values.iconSize as IconSizeToken | undefined,
+          iconForeground: values.iconForeground as InkToken | undefined,
           destructive: values.destructive === true,
           disabled: values.disabled === true,
-          checked: values.checked as boolean | undefined,
+          checked:
+            value !== undefined
+              ? selection?.value === value
+              : (values.checked as boolean | undefined),
+          value,
           keepOpen: values.keepOpen === true,
           shortcut: values.shortcut as string | undefined,
           onPress:
-            tag !== undefined && choose
-              ? () => choose(tag)
-              : (values.onPress as (() => void) | undefined),
+            value !== undefined && selection
+              ? () => selection.set(value)
+              : tag !== undefined && choose
+                ? () => choose(tag)
+                : (values.onPress as (() => void) | undefined),
           testID: values.testID as string | undefined,
         });
         break;
@@ -117,20 +147,28 @@ export function readMenuRows(
       case 'divider':
         rows.push({ kind: 'divider', id });
         break;
-      case 'menuSection':
+      case 'menuSection': {
+        const bound = values.selection as
+          | readonly [value: string | undefined, set: (value: string) => void]
+          | undefined;
+        const own = bound && { value: bound[0], set: bound[1] };
         rows.push({
           kind: 'section',
           id,
           title: values.title as string | undefined,
-          rows: readMenuRows(node.children, choose, `${id}.`),
+          selection: own,
+          rows: readMenuRows(node.children, choose, `${id}.`, own),
         });
         break;
+      }
       case 'menuSubmenu':
         rows.push({
           kind: 'submenu',
           id,
           title: (node.props as { title: string }).title,
           icon: values.icon as IconComponent | undefined,
+          iconSize: values.iconSize as IconSizeToken | undefined,
+          iconForeground: values.iconForeground as InkToken | undefined,
           disabled: values.disabled === true,
           testID: values.testID as string | undefined,
           rows: readMenuRows(node.children, choose, `${id}.`),

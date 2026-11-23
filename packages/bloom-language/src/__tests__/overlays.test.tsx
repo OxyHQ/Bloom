@@ -76,6 +76,19 @@ describe('presentations', () => {
     expect(set).toHaveBeenCalledWith(false);
   });
 
+  it('a presented dialog hands Bloom its onDismissed, for once it has finished closing', () => {
+    const dismissed = jest.fn();
+    const renderer = mount(
+      toElement(
+        Dialog(Text('Body'))
+          .onDismissed(dismissed)
+          .presented([false, () => {}]),
+      ),
+    );
+    const dialog = only(renderer, 'Dialog');
+    expect(dialog.props).toMatchObject({ open: false, onDismissed: dismissed });
+  });
+
   it('one placement is the placement itself', () => {
     const renderer = mount(
       toElement(VStack().dialog([false, () => {}], Dialog().presentAt('center'))),

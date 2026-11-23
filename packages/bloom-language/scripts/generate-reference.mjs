@@ -438,6 +438,8 @@ function tokenValue(set, token) {
   if (scales[set] && token in scales[set]) return JSON.stringify(scales[set][token]);
   if (set === 'color' && colors[token]) {
     const [native, css] = colors[token];
+    // The surface fill has no web value: the leaf that paints it reads the surface it is on.
+    if (css === null) return `${native} (the surface the view is on)`;
     return `${native} / ${css.startsWith('#') || css === 'transparent' ? css : `var(--${css})`}`;
   }
   if (set === 'typeRamp' && typeRamp[token]) {

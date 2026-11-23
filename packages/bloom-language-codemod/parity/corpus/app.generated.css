@@ -476,6 +476,9 @@
 .right-3 {
   right: calc(4px * 3);
 }
+.right-4 {
+  right: calc(4px * 4);
+}
 .right-space-8 {
   right: var(--spacing-space-8);
 }
@@ -832,6 +835,9 @@
 }
 .h-11 {
   height: calc(4px * 11);
+}
+.h-24 {
+  height: calc(4px * 24);
 }
 .h-40 {
   height: calc(4px * 40);

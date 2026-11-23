@@ -19,26 +19,29 @@ import type { AppToken } from '../tokens';
 
 /** Each token set's names, as the compiler checks a written-out token. */
 type S = {
-  "space": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "44" | "48" | "56" | "64" | "72" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
-  "padding": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "44" | "48" | "56" | "64" | "72" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-44" | "-48" | "-56" | "-64" | "-72" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl";
-  "length": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "44" | "48" | "56" | "64" | "72" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full" | "1/2" | "1/3" | "2/3" | "1/4" | "3/4" | "1/5" | "2/5" | "3/5" | "fit";
-  "zIndex": "2" | "20" | "30" | "50" | "60" | "base" | "raised" | "floating" | "dropdown" | "auto";
+  "space": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
+  "padding": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl";
+  "edgeDistance": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl" | "25%";
+  "margin": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "-1" | "-3" | "-6" | "-10" | "-14" | "-28" | "-30" | "-36" | "-38" | "-44" | "-48" | "-56" | "-64" | "-72" | "-76" | "-80" | "-96" | "-120" | "-128" | "-140" | "-160" | "-192" | "-200" | "-224" | "-240" | "-256" | "-260" | "-280" | "-288" | "-300" | "-320" | "-360" | "-380" | "-384" | "-400" | "-420" | "-440" | "-448" | "-480" | "-512" | "-560" | "-640" | "-672" | "-720" | "-768" | "-1200" | "-none" | "-2xs" | "-xs" | "-sm" | "-md" | "-lg" | "-xl" | "-2xl" | "-3xl" | "-4xl" | "-5xl" | "auto";
+  "length": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full" | "1/2" | "1/3" | "2/3" | "1/4" | "3/4" | "1/5" | "2/5" | "3/5" | "90%" | "31%" | "fit";
+  "zIndex": "2" | "3" | "4" | "5" | "6" | "7" | "20" | "30" | "50" | "60" | "base" | "raised" | "floating" | "dropdown" | "-1" | "auto";
   "shadow": "s" | "m" | "floating" | "0 1px rgb(0 0 0 / 0.05)" | "0 1px 2px 0 rgb(0 0 0 / 0.05)" | "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)" | "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)" | "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)" | "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" | "0 25px 50px -12px rgb(0 0 0 / 0.25)";
   "scale": "95" | "99" | "103" | "105" | "110" | "dip" | "pressed" | "full" | "swell";
-  "ring": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "none";
-  "corner": "6" | "10" | "14" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "concentric" | "infinite";
-  "cornerRadius": "6" | "10" | "14" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "infinite";
-  "columnWidth": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "44" | "48" | "56" | "64" | "72" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "fit";
+  "ring": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill" | "none";
+  "corner": "6" | "7" | "10" | "14" | "15" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "concentric" | "infinite";
+  "cornerRadius": "6" | "7" | "10" | "14" | "15" | "18" | "22" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full" | "infinite";
+  "columnWidth": "1" | "3" | "6" | "10" | "14" | "28" | "30" | "36" | "38" | "44" | "48" | "56" | "64" | "72" | "76" | "80" | "96" | "120" | "128" | "140" | "160" | "192" | "200" | "224" | "240" | "256" | "260" | "280" | "288" | "300" | "320" | "360" | "380" | "384" | "400" | "420" | "440" | "448" | "480" | "512" | "560" | "640" | "672" | "720" | "768" | "1200" | "none" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "fit";
   "separator": "space" | "line" | "none" | "inset";
-  "font": "large-title" | "display-1" | "display-2" | "display-3" | "display-4" | "title-1" | "title-2" | "title-3" | "headline" | "body" | "body-2" | "caption-1" | "caption-2" | "11" | "14" | "16" | "18" | "24" | "30" | "36" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "mono";
+  "font": "large-title" | "display-1" | "display-2" | "display-3" | "display-4" | "title-1" | "title-2" | "title-3" | "headline" | "body" | "body-2" | "caption-1" | "caption-2" | "9" | "11" | "14" | "16" | "18" | "24" | "28" | "30" | "36" | "42" | "96" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "12.5" | "mono" | "display";
+  "labelFont": "large-title" | "display-1" | "display-2" | "display-3" | "display-4" | "title-1" | "title-2" | "title-3" | "headline" | "body" | "body-2" | "caption-1" | "caption-2" | "9" | "11" | "14" | "16" | "18" | "24" | "28" | "30" | "36" | "42" | "96" | "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "12.5";
   "weight": "light" | "regular" | "medium" | "semibold" | "bold" | "extrabold";
-  "leading": "tight" | "close" | "snug" | "easy" | "normal" | "relaxed" | "14px" | "16px" | "18px" | "20px" | "22px" | "24px" | "28px" | "32px" | "36px" | "40px";
+  "leading": "tight" | "close" | "snug" | "easy" | "normal" | "relaxed" | "14px" | "16px" | "18px" | "20px" | "22px" | "24px" | "28px" | "32px" | "36px" | "40px" | "96px";
   "tracking": "tight" | "wide" | "wider" | "widest" | "-0.02em" | "-0.01em" | "0.04em" | "-0.5px" | "-0.4px" | "-0.2px" | "0.5px" | "1.5px" | "2px";
-  "color": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText";
-  "colorRole": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText";
-  "borderWidth": "3" | "4" | "hairline" | "thin" | "thick" | "2.5";
-  "opacity": "10" | "20" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "90" | "transparent" | "half" | "opaque";
-  "hitSlop": "sm" | "md" | "lg";
+  "color": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill";
+  "colorRole": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill";
+  "borderWidth": "3" | "4" | "hairline" | "thin" | "thick" | "0.5" | "1.5" | "2.5";
+  "opacity": "10" | "20" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "85" | "90" | "transparent" | "half" | "opaque";
+  "hitSlop": "4" | "5" | "none" | "sm" | "md" | "lg";
   "shrink": "never" | "normal" | "first";
   "flex": "1" | "auto" | "initial" | "none" | "grow";
   "alignment": "start" | "center" | "end" | "stretch" | "baseline";
@@ -52,6 +55,9 @@ type S = {
   "typeRamp": "large-title-regular" | "large-title-medium" | "large-title-semibold" | "large-title-bold" | "display-1-regular" | "display-1-medium" | "display-1-semibold" | "display-1-bold" | "display-2-regular" | "display-2-medium" | "display-2-semibold" | "display-2-bold" | "display-3-regular" | "display-3-medium" | "display-3-semibold" | "display-3-bold" | "display-4-regular" | "display-4-medium" | "display-4-semibold" | "display-4-bold" | "title-1-regular" | "title-1-medium" | "title-1-semibold" | "title-1-bold" | "title-2-regular" | "title-2-medium" | "title-2-semibold" | "title-2-bold" | "title-3-regular" | "title-3-medium" | "title-3-semibold" | "title-3-bold" | "headline-regular" | "headline-medium" | "headline-semibold" | "headline-bold" | "body-regular" | "body-medium" | "body-semibold" | "body-bold" | "body-2-regular" | "body-2-medium" | "body-2-semibold" | "body-2-bold" | "caption-1-regular" | "caption-1-medium" | "caption-1-semibold" | "caption-1-bold" | "caption-2-regular" | "caption-2-medium" | "caption-2-semibold" | "caption-2-bold";
   "anchor": "center" | "top" | "bottom" | "leading" | "trailing" | "top-leading" | "top-trailing" | "bottom-leading" | "bottom-trailing";
   "loop": "spin" | "pulse";
+  "pressOpenTab": "report" | "reselect";
+  "menuStyle": "platform" | "dropdown";
+  "physicalEdge": "all" | "top" | "bottom" | "horizontal" | "vertical" | "left" | "right";
   "edge": "all" | "horizontal" | "vertical" | "top" | "bottom" | "leading" | "trailing" | "left" | "right";
   "borderEdge": "all" | "top" | "bottom" | "leading" | "trailing" | "left" | "right";
   "role": "button" | "link" | "header" | "image" | "text" | "none" | "checkbox" | "radio" | "tab" | "radiogroup" | "tablist" | "list" | "alert" | "progressbar" | "imagebutton" | "summary";
@@ -87,9 +93,14 @@ type S = {
   "textCase": "uppercase" | "lowercase" | "capitalize";
   "wordBreak": "all" | "words";
   "listMarker": "disc" | "decimal";
-  "fontFamily": "mono";
+  "fontFamily": "mono" | "display";
   "cornerExtra": "concentric" | "infinite";
   "zIndexExtra": "auto";
+  "marginExtra": "auto";
+  "insetPercent": "25%";
+  "liveRegion": "polite" | "assertive" | "none";
+  "accessibilityChecked": "mixed";
+  "borderStyle": "solid" | "dashed" | "dotted";
   "cornerCurve": "round" | "smooth";
   "cornerSide": "all" | "top" | "bottom" | "leading" | "trailing" | "top-leading" | "top-trailing" | "bottom-leading" | "bottom-trailing" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
   "dividerStyle": "single" | "double" | "fill";
@@ -156,6 +167,7 @@ type S = {
   "shellLayout": "workspace" | "collection-detail" | "feed" | "deck" | "catalog" | "map-browser";
   "shellPresentation": "continuous" | "framed" | "floating";
   "panelRole": "main" | "collection" | "detail" | "inspector" | "context" | "canvas";
+  "colorScopeMode": "light" | "dark";
   "colorPreset": "teal" | "blue" | "green" | "yellow" | "red" | "purple" | "pink" | "sky" | "orange" | "mint" | "oxy" | "faircoin" | "pumpkin" | "gray" | "brown" | "peach" | "rose" | "mono" | "grove" | "ember" | "merlot" | "cobalt" | "jade" | "pine" | "olive" | "lagoon" | "navy" | "azure" | "violet" | "lavender" | "plum" | "cherry" | "chocolate" | "graphite" | "forest-fire" | "malachite-rush" | "moss-voltage" | "viridian-orbit" | "acid-canopy" | "pacific-flare" | "reef-pulse" | "electric-tide" | "arctic-signal" | "ultramarine-gold" | "midnight-citrus" | "persimmon-wave" | "solar-flux" | "paprika-current" | "crimson-spark" | "flamenco-sun" | "saffron-depth" | "clay-current" | "bronze-neon" | "copper-field" | "umber-signal" | "amethyst-current" | "ruby-current" | "orchid-flare" | "garnet-acid" | "indigo-ember" | "raspberry-gold" | "ink-orange" | "charcoal-lime" | "pewter-current" | "gemies";
   "scrollbarVisibility": "scroll" | "hover" | "always" | "never";
   "scrollbarSide": "end" | "start";
@@ -333,6 +345,14 @@ type Ok<P, E> = IsAny<P> extends true
     : [Extract<P, number>] extends [never]
       ? Same<Extract<P, string>, E>
       : false;
+/** A parameter that takes points (`spec.points`): not `any` or `unknown`, a number, its strings exactly `E`. */
+type OkPoints<P, E> = IsAny<P> extends true
+  ? false
+  : unknown extends P
+    ? false
+    : [number] extends [P]
+      ? Same<Extract<P, string>, E>
+      : false;
 type Takes<P, A> = [A] extends [P] ? true : false;
 /** A node takes the universal modifiers as `ViewModifiers` declares them (but those it lists as its own, checked on their own), narrowing none. */
 type UniversalName = Exclude<keyof Any, keyof ViewNode>;
@@ -347,15 +367,15 @@ type UniversalChecks = [
   Expect<"padding(edge)", Ok<Lead<Any['padding']>, S['edge']>>,
   Expect<"padding(padding)", Ok<Last<Any['padding']>, S['padding']>>,
   Expect<"padding(padding) takes AppToken<'space'>", Takes<Last<Any['padding']>, AppToken<'space'>>>,
+  Expect<"safeAreaPadding(physicalEdge)", Ok<At<Any['safeAreaPadding'], '0'>, S['physicalEdge']>>,
   Expect<"shrink(shrink)", Ok<At<Any['shrink'], '0'>, S['shrink']>>,
   Expect<"alignSelf(alignment)", Ok<At<Any['alignSelf'], '0'>, S['alignment']>>,
-  Expect<"zIndex(zIndex)", Ok<At<Any['zIndex'], '0'>, S['zIndex']>>,
+  Expect<"zIndex(zIndex)", OkPoints<At<Any['zIndex'], '0'>, S['zIndex']>>,
   Expect<"basis(length)", Ok<At<Any['basis'], '0'>, S['length']>>,
   Expect<"basis(length) takes AppToken<'space'>", Takes<At<Any['basis'], '0'>, AppToken<'space'>>>,
   Expect<"flex(flex)", Ok<At<Any['flex'], '0'>, S['flex']>>,
   Expect<"margin(edge)", Ok<Lead<Any['margin']>, S['edge']>>,
-  Expect<"margin(padding)", Ok<Last<Any['margin']>, S['padding']>>,
-  Expect<"margin(padding) takes AppToken<'space'>", Takes<Last<Any['margin']>, AppToken<'space'>>>,
+  Expect<"margin(margin)", Ok<Last<Any['margin']>, S['margin']>>,
   Expect<"scale(scale)", Ok<At<Any['scale'], '0'>, S['scale']>>,
   Expect<"allowsHitTesting(hitTesting)", Ok<At<Any['allowsHitTesting'], '0'>, S['hitTesting']>>,
   Expect<"background(color)", Ok<At<Any['background'], '0'>, S['color'] | AtOpacity>>,
@@ -366,6 +386,7 @@ type UniversalChecks = [
   Expect<"border(color) takes AppToken<'color'>", Takes<At<Any['border'], '0'>, AppToken<'color'>>>,
   Expect<"border(borderWidth)", Ok<At<Any['border'], '1'>, S['borderWidth']>>,
   Expect<"border(borderEdge)", Ok<At<Any['border'], '2'>, S['borderEdge']>>,
+  Expect<"borderStyle(borderStyle)", Ok<At<Any['borderStyle'], '0'>, S['borderStyle']>>,
   Expect<"ring(ring)", Ok<At<Any['ring'], '0'>, S['ring'] | AtOpacity>>,
   Expect<"ring(ring) takes AppToken<'color'>", Takes<At<Any['ring'], '0'>, AppToken<'color'>>>,
   Expect<"ring(borderWidth)", Ok<At<Any['ring'], '1'>, S['borderWidth']>>,
@@ -383,8 +404,11 @@ type UniversalChecks = [
   Expect<"leading(leading)", Ok<At<Any['leading'], '0'>, S['leading']>>,
   Expect<"leading(leading) takes AppToken<'leading'>", Takes<At<Any['leading'], '0'>, AppToken<'leading'>>>,
   Expect<"tracking(tracking)", Ok<At<Any['tracking'], '0'>, S['tracking']>>,
+  Expect<"pressFade(opacity)", Ok<At<Any['pressFade'], '0'>, S['opacity']>>,
   Expect<"role(role)", Ok<At<Any['role'], '0'>, S['role']>>,
-  Expect<"hitSlop(hitSlop)", Ok<At<Any['hitSlop'], '0'>, S['hitSlop']>>,
+  Expect<"liveRegion(liveRegion)", Ok<At<Any['liveRegion'], '0'>, S['liveRegion']>>,
+  Expect<"hitSlop(physicalEdge)", Ok<Lead<Any['hitSlop']>, S['physicalEdge']>>,
+  Expect<"hitSlop(hitSlop)", Ok<Last<Any['hitSlop']>, S['hitSlop']>>,
   Expect<"titleDisplay(titleDisplay)", Ok<At<Any['titleDisplay'], '0'>, S['titleDisplay']>>,
   Expect<"when(condition)", Ok<At<Any['when'], '0'>, S['condition']>>,
   Expect<"rotation(rotation)", Ok<At<Any['rotation'], '0'>, S['rotation']>>,
@@ -402,10 +426,14 @@ type UniversalChecks = [
   Expect<"contentClearance(space) takes AppToken<'space'>", Takes<At<Any['contentClearance'], '0'>, AppToken<'space'>>>,
   Expect<"navigationScope(navigationScope)", Ok<At<Any['navigationScope'], '0'>, S['navigationScope']>>,
   Expect<"colorPreset(colorPreset)", Ok<At<Any['colorPreset'], '0'>, S['colorPreset']>>,
+  Expect<"screenBackground(color)", Ok<At<Any['screenBackground'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"screenBackground(color) takes AppToken<'color'>", Takes<At<Any['screenBackground'], '0'>, AppToken<'color'>>>,
   Expect<"initialHeaderHeight(space)", Ok<At<Any['initialHeaderHeight'], '0'>, S['space']>>,
   Expect<"initialHeaderHeight(space) takes AppToken<'space'>", Takes<At<Any['initialHeaderHeight'], '0'>, AppToken<'space'>>>,
   Expect<"initialFooterHeight(space)", Ok<At<Any['initialFooterHeight'], '0'>, S['space']>>,
   Expect<"initialFooterHeight(space) takes AppToken<'space'>", Takes<At<Any['initialFooterHeight'], '0'>, AppToken<'space'>>>,
+  Expect<"colorScope(colorScopeMode)", Ok<At<Any['colorScope'], '0'>, S['colorScopeMode']>>,
+  Expect<"keyboardAvoiding(flex)", Ok<At<Any['keyboardAvoiding'], '0'>, S['flex']>>,
   Expect<"glassTransition(glassTransition)", Ok<At<Any['glassTransition'], '0'>, S['glassTransition']>>,
   Expect<"controlSize(controlSize)", Ok<At<Any['controlSize'], '0'>, S['controlSize']>>,
   Expect<"buttonStyle(buttonStyle)", Ok<At<Any['buttonStyle'], '0'>, S['buttonStyle']>>,
@@ -415,6 +443,10 @@ type stackChecks = [
   Expect<'stack: the universal modifiers', Universal<View<'HStack'>, "disabled">>,
   Expect<"stack.spacing(space)", Ok<At<View<'HStack'>['spacing'], '0'>, S['space']>>,
   Expect<"stack.spacing(space) takes AppToken<'space'>", Takes<At<View<'HStack'>['spacing'], '0'>, AppToken<'space'>>>,
+  Expect<"stack.horizontalSpacing(space)", Ok<At<View<'HStack'>['horizontalSpacing'], '0'>, S['space']>>,
+  Expect<"stack.horizontalSpacing(space) takes AppToken<'space'>", Takes<At<View<'HStack'>['horizontalSpacing'], '0'>, AppToken<'space'>>>,
+  Expect<"stack.verticalSpacing(space)", Ok<At<View<'HStack'>['verticalSpacing'], '0'>, S['space']>>,
+  Expect<"stack.verticalSpacing(space) takes AppToken<'space'>", Takes<At<View<'HStack'>['verticalSpacing'], '0'>, AppToken<'space'>>>,
   Expect<"stack.childSpacing(axis)", Ok<At<View<'HStack'>['childSpacing'], '0'>, S['axis']>>,
   Expect<"stack.childSpacing(space)", Ok<At<View<'HStack'>['childSpacing'], '1'>, S['space']>>,
   Expect<"stack.childSpacing(space) takes AppToken<'space'>", Takes<At<View<'HStack'>['childSpacing'], '1'>, AppToken<'space'>>>,
@@ -499,7 +531,7 @@ type skeletonGroupChecks = [
 ];
 
 type imageChecks = [
-  Expect<'image: the universal modifiers', Universal<View<'Image'>>>,
+  Expect<'image: the universal modifiers', Universal<View<'Image'>, "aspectRatio">>,
   Expect<"image.contentFit(contentFit)", Ok<At<View<'Image'>['contentFit'], '0'>, S['contentFit']>>,
   Expect<"image.tint(tint: colorRole)", Ok<At<View<'Image'>['tint'], '0'>, S['colorRole']>>,
   Expect<"image.crossFade(duration)", Ok<At<View<'Image'>['crossFade'], '0'>, S['duration']>>,
@@ -532,6 +564,9 @@ type buttonChecks = [
   Expect<"button.colors(color)", Ok<At<View<'Button'>['colors'], '1'>, S['color'] | AtOpacity>>,
   Expect<"button.linkTone(linkTone)", Ok<At<View<'Button'>['linkTone'], '0'>, S['linkTone']>>,
   Expect<"button.density(density)", Ok<At<View<'Button'>['density'], '0'>, "default" | "compact">>,
+  Expect<"button.iconSize(iconSize)", Ok<At<View<'Button'>['iconSize'], '0'>, S['iconSize']>>,
+  Expect<"button.iconSize(iconSize) takes AppToken<'iconSize'>", Takes<At<View<'Button'>['iconSize'], '0'>, AppToken<'iconSize'>>>,
+  Expect<"button.hoverForeground(color)", Ok<At<View<'Button'>['hoverForeground'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type shapeChecks = [
@@ -558,6 +593,19 @@ type fabChecks = [
 
 type menuChecks = [
   Expect<'menu: the universal modifiers', Universal<View<'Menu'>>>,
+  Expect<"menu.menuStyle(menuStyle)", Ok<At<View<'Menu'>['menuStyle'], '0'>, S['menuStyle']>>,
+];
+
+type menuItemChecks = [
+  Expect<"menuItem.iconSize(iconSize)", Ok<At<View<'Item'>['iconSize'], '0'>, S['iconSize']>>,
+  Expect<"menuItem.iconSize(iconSize) takes AppToken<'iconSize'>", Takes<At<View<'Item'>['iconSize'], '0'>, AppToken<'iconSize'>>>,
+  Expect<"menuItem.iconForeground(color)", Ok<At<View<'Item'>['iconForeground'], '0'>, S['color'] | AtOpacity>>,
+];
+
+type menuSubmenuChecks = [
+  Expect<"menuSubmenu.iconSize(iconSize)", Ok<At<View<'Submenu'>['iconSize'], '0'>, S['iconSize']>>,
+  Expect<"menuSubmenu.iconSize(iconSize) takes AppToken<'iconSize'>", Takes<At<View<'Submenu'>['iconSize'], '0'>, AppToken<'iconSize'>>>,
+  Expect<"menuSubmenu.iconForeground(color)", Ok<At<View<'Submenu'>['iconForeground'], '0'>, S['color'] | AtOpacity>>,
 ];
 
 type dividerChecks = [
@@ -568,6 +616,7 @@ type dividerChecks = [
   Expect<"divider.spacing(space)", Ok<At<View<'Divider'>['spacing'], '0'>, S['space']>>,
   Expect<"divider.spacing(space) takes AppToken<'space'>", Takes<At<View<'Divider'>['spacing'], '0'>, AppToken<'space'>>>,
   Expect<"divider.tint(tint: colorRole)", Ok<At<View<'Divider'>['tint'], '0'>, S['colorRole']>>,
+  Expect<"divider.axis(axis)", Ok<At<View<'Divider'>['axis'], '0'>, S['axis']>>,
 ];
 
 type alertChecks = [
@@ -635,6 +684,11 @@ type cardChecks = [
   Expect<"card.radius(cardRadius)", Ok<At<View<'Card'>['radius'], '0'>, S['cardRadius']>>,
   Expect<"card.elevation(cardElevation)", Ok<At<View<'Card'>['elevation'], '0'>, S['cardElevation']>>,
   Expect<"card.outline(cardBorder)", Ok<At<View<'Card'>['outline'], '0'>, S['cardBorder']>>,
+  Expect<"card.axis(axis)", Ok<At<View<'Card'>['axis'], '0'>, S['axis']>>,
+  Expect<"card.spacing(space)", Ok<At<View<'Card'>['spacing'], '0'>, S['space']>>,
+  Expect<"card.spacing(space) takes AppToken<'space'>", Takes<At<View<'Card'>['spacing'], '0'>, AppToken<'space'>>>,
+  Expect<"card.align(alignment)", Ok<At<View<'Card'>['align'], '0'>, S['alignment']>>,
+  Expect<"card.justify(justify)", Ok<At<View<'Card'>['justify'], '0'>, S['justify']>>,
 ];
 
 type cardHeaderChecks = [
@@ -705,6 +759,18 @@ type admonitionChecks = [
 type tabsChecks = [
   Expect<'tabs: the universal modifiers', Universal<View<'Tabs'>>>,
   Expect<"tabs.style(style: tabsStyle)", Ok<At<View<'Tabs'>['style'], '0'>, S['tabsStyle']>>,
+  Expect<"tabs.pressOpenTab(pressOpenTab)", Ok<At<View<'Tabs'>['pressOpenTab'], '0'>, S['pressOpenTab']>>,
+];
+
+type tabItemChecks = [
+  Expect<"tabItem.padding(edge)", Ok<Lead<View<'TabItem'>['padding']>, S['edge']>>,
+  Expect<"tabItem.padding(padding)", Ok<Last<View<'TabItem'>['padding']>, S['padding']>>,
+  Expect<"tabItem.padding(padding) takes AppToken<'space'>", Takes<Last<View<'TabItem'>['padding']>, AppToken<'space'>>>,
+  Expect<"tabItem.font arity", Same<Lengths<View<'TabItem'>['font']>, 1>>,
+  Expect<"tabItem.font(labelFont)", Ok<At<View<'TabItem'>['font'], '0'>, S['labelFont']>>,
+  Expect<"tabItem.leading(leading)", Ok<At<View<'TabItem'>['leading'], '0'>, S['leading']>>,
+  Expect<"tabItem.leading(leading) takes AppToken<'leading'>", Takes<At<View<'TabItem'>['leading'], '0'>, AppToken<'leading'>>>,
+  Expect<"tabItem.weight(weight)", Ok<At<View<'TabItem'>['weight'], '0'>, S['weight']>>,
 ];
 
 type kbdChecks = [
@@ -744,10 +810,14 @@ type groupChecks = [
   Expect<"group.contentClearance(space) takes AppToken<'space'>", Takes<At<View<'Group'>['contentClearance'], '0'>, AppToken<'space'>>>,
   Expect<"group.navigationScope(navigationScope)", Ok<At<View<'Group'>['navigationScope'], '0'>, S['navigationScope']>>,
   Expect<"group.colorPreset(colorPreset)", Ok<At<View<'Group'>['colorPreset'], '0'>, S['colorPreset']>>,
+  Expect<"group.screenBackground(color)", Ok<At<View<'Group'>['screenBackground'], '0'>, S['color'] | AtOpacity>>,
+  Expect<"group.screenBackground(color) takes AppToken<'color'>", Takes<At<View<'Group'>['screenBackground'], '0'>, AppToken<'color'>>>,
   Expect<"group.initialHeaderHeight(space)", Ok<At<View<'Group'>['initialHeaderHeight'], '0'>, S['space']>>,
   Expect<"group.initialHeaderHeight(space) takes AppToken<'space'>", Takes<At<View<'Group'>['initialHeaderHeight'], '0'>, AppToken<'space'>>>,
   Expect<"group.initialFooterHeight(space)", Ok<At<View<'Group'>['initialFooterHeight'], '0'>, S['space']>>,
   Expect<"group.initialFooterHeight(space) takes AppToken<'space'>", Takes<At<View<'Group'>['initialFooterHeight'], '0'>, AppToken<'space'>>>,
+  Expect<"group.colorScope(colorScopeMode)", Ok<At<View<'Group'>['colorScope'], '0'>, S['colorScopeMode']>>,
+  Expect<"group.keyboardAvoiding(flex)", Ok<At<View<'Group'>['keyboardAvoiding'], '0'>, S['flex']>>,
 ];
 
 type appLayoutChecks = [
@@ -869,7 +939,6 @@ type scrollViewChecks = [
   Expect<"scrollView.contentMargins(space) takes AppToken<'space'>", Takes<Last<View<'ScrollView'>['contentMargins']>, AppToken<'space'>>>,
   Expect<"scrollView.spacing(space)", Ok<At<View<'ScrollView'>['spacing'], '0'>, S['space']>>,
   Expect<"scrollView.spacing(space) takes AppToken<'space'>", Takes<At<View<'ScrollView'>['spacing'], '0'>, AppToken<'space'>>>,
-  Expect<"scrollView.refreshable(color)", Ok<At<View<'ScrollView'>['refreshable'], '1'>, S['color'] | AtOpacity>>,
   Expect<"scrollView.scrollIndicators(scrollIndicators)", Ok<At<View<'ScrollView'>['scrollIndicators'], '0'>, S['scrollIndicators']>>,
   Expect<"scrollView.scrollIndicators(axis)", Ok<At<View<'ScrollView'>['scrollIndicators'], '1'>, S['axis']>>,
   Expect<"scrollView.scrollDismissesKeyboard(keyboardDismiss)", Ok<At<View<'ScrollView'>['scrollDismissesKeyboard'], '0'>, S['keyboardDismiss']>>,
@@ -1167,6 +1236,11 @@ type listChecks = [
 
 type virtualListChecks = [
   Expect<'virtualList: the universal modifiers', Universal<View<'VirtualList'>>>,
+  Expect<"virtualList.contentMargins(edge)", Ok<Lead<View<'VirtualList'>['contentMargins']>, S['edge']>>,
+  Expect<"virtualList.contentMargins(space)", Ok<Last<View<'VirtualList'>['contentMargins']>, S['space']>>,
+  Expect<"virtualList.contentMargins(space) takes AppToken<'space'>", Takes<Last<View<'VirtualList'>['contentMargins']>, AppToken<'space'>>>,
+  Expect<"virtualList.spacing(space)", Ok<At<View<'VirtualList'>['spacing'], '0'>, S['space']>>,
+  Expect<"virtualList.spacing(space) takes AppToken<'space'>", Takes<At<View<'VirtualList'>['spacing'], '0'>, AppToken<'space'>>>,
   Expect<"virtualList.refreshable arity", Same<Lengths<View<'VirtualList'>['refreshable']>, 1>>,
   Expect<"virtualList.scrollbar(scrollbarVisibility)", Ok<At<View<'VirtualList'>['scrollbar'], '0'>, S['scrollbarVisibility']>>,
   Expect<"virtualList.scrollDismissesKeyboard(keyboardDismiss)", Ok<At<View<'VirtualList'>['scrollDismissesKeyboard'], '0'>, S['keyboardDismiss']>>,
@@ -2207,7 +2281,7 @@ type callMinimisedPillChecks = [
 ];
 
 type groupCallGridChecks = [
-  Expect<'groupCallGrid: the universal modifiers', Universal<View<'GroupCallGrid'>>>,
+  Expect<'groupCallGrid: the universal modifiers', Universal<View<'GroupCallGrid'>, "aspectRatio">>,
   Expect<"groupCallGrid.style(style: groupCallLayout)", Ok<At<View<'GroupCallGrid'>['style'], '0'>, S['groupCallLayout']>>,
   Expect<"groupCallGrid.spacing(space)", Ok<At<View<'GroupCallGrid'>['spacing'], '0'>, S['space']>>,
   Expect<"groupCallGrid.spacing(space) takes AppToken<'space'>", Takes<At<View<'GroupCallGrid'>['spacing'], '0'>, AppToken<'space'>>>,

@@ -104,6 +104,9 @@ export type {
   ActionGroupView,
   ActionOptions,
   ActionView,
+  AccessibilityState,
+  AccessibilityValue,
+  ViewInstance,
   Alignment,
   AspectRatioView,
   AvatarGroupView,
@@ -163,6 +166,7 @@ export type {
   Progress,
   Role,
   ScrollEdge,
+  ReselectTop,
   ScreenFooter,
   ScrollContentView,
   ScrollViewNode,
@@ -258,6 +262,9 @@ export type {
   BadgeStyle,
   InkToken,
   BorderWidthName,
+  BorderStyleName,
+  LiveRegion,
+  MarginToken,
   ColorName,
   CornerCurve,
   CornerName,
@@ -284,8 +291,16 @@ export type {
   SpaceToken,
   WeightName,
 } from './tokens';
-export type { Binding, Bound } from './binding';
-export type { AnyDensity, Density, DensityNode } from './tokens';
+export type { Binding, Bound, Refresh, RefreshAction, RefreshTint } from './binding';
+export type {
+  AnyDensity,
+  Density,
+  DensityNode,
+  EdgeDistance,
+  FrameLength,
+  Points,
+  ZIndexValue,
+} from './tokens';
 export {
   SettingsDateField,
   SettingsSection,

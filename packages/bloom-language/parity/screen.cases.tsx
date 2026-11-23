@@ -1,17 +1,21 @@
 import { type ReactNode, useState } from 'react';
-import { RefreshControl, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, View } from 'react-native';
 import { EdgeScrim, PageHeader, SCRIM_TAIL_RATIO } from '@oxy.so/bloom/page-header';
 import { Screen, ScreenScrollView, type ScreenScrollViewProps } from '@oxy.so/bloom/screen';
 import { tokens, useSurfaceFill } from '@oxy.so/bloom/styles';
-import { withAlpha } from '@oxy.so/bloom/theme';
+import { BloomColorScope, withAlpha } from '@oxy.so/bloom/theme';
 import { Text } from '@oxy.so/bloom/typography';
+import { defineTokens } from '../src/tokens';
 
 import { ENUMS } from '../src/generated/spec.generated';
 import type { ScrollViewNode } from '../src/node';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { ScreenHost } from '../src/router/screen-host';
-import { type ParityCase, Themed } from './support/cases';
+import { type ParityCase, Themed, ThemedRgb } from './support/cases';
+
+/** An app's own colours, as Mention's reel paints its screen. */
+const REEL = defineTokens({ color: { black: '#000000' } });
 
 const { space } = tokens;
 const noop = () => {};
@@ -74,6 +78,17 @@ const scrollViews: ParityCase[] = inScreen([
       ),
     bloom: () => (
       <ScreenScrollView contentContainerStyle={{ paddingLeft: space.sm, paddingRight: space.lg }}>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
+  {
+    // Mention's pokes: `contentContainerStyle={{ flexGrow: 1, paddingBottom: … }}`.
+    name: 'content that grows to the scroll, with a bottom margin',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).contentGrows().contentMargins('bottom', '2xl')),
+    bloom: () => (
+      <ScreenScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: space._2xl }}>
         <Text>a</Text>
       </ScreenScrollView>
     ),
@@ -158,6 +173,17 @@ const scrollViews: ParityCase[] = inScreen([
       </ScreenScrollView>
     ),
   },
+  {
+    // A query's isRefetching and refetch: the value ends the refresh, nothing is written back.
+    name: 'pull to refresh driven by its query',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).refreshable({ refreshing: true, onRefresh: noop })),
+    bloom: () => (
+      <ScreenScrollView refreshControl={<RefreshControl refreshing onRefresh={noop} />}>
+        <Text>a</Text>
+      </ScreenScrollView>
+    ),
+  },
   ...(['primary', 'muted/70'] as const).map((tint) => ({
     name: `pull to refresh tinted ${tint}`,
     language: () => toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], tint)),
@@ -178,6 +204,39 @@ const scrollViews: ParityCase[] = inScreen([
       </Themed>
     ),
   })),
+  {
+    // Mention's lists: the theme's colour on iOS's spinner only, Android's keeping its look.
+    name: 'pull to refresh tinted on iOS only',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], { ios: 'primary' })),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ScreenScrollView
+            refreshControl={<RefreshControl refreshing onRefresh={noop} tintColor={c.primary} />}
+          >
+            <Text>a</Text>
+          </ScreenScrollView>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'pull to refresh tinted on Android only',
+    language: () =>
+      toElement(L.ScrollView(L.Text('a')).refreshable([true, noop], { android: 'primary' })),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <ScreenScrollView
+            refreshControl={<RefreshControl refreshing onRefresh={noop} colors={[c.primary]} />}
+          >
+            <Text>a</Text>
+          </ScreenScrollView>
+        )}
+      </Themed>
+    ),
+  },
 ]);
 
 /**
@@ -292,6 +351,21 @@ const pageHeaders: ParityCase[] = [
     language: () => toElement(L.Header('Home').titleAlign(align)),
     bloom: () => <PageHeader title="Home" titleAlign={align} />,
   })),
+  {
+    name: 'a header titled by a view',
+    language: () => toElement(L.Header(L.Text('Home'))),
+    bloom: () => <PageHeader title={<Text>Home</Text>} />,
+  },
+  {
+    name: 'a header whose subtitle is a view',
+    language: () => toElement(L.Header('Home').subtitle(L.Text('3 new'))),
+    bloom: () => <PageHeader title="Home" subtitle={<Text>3 new</Text>} />,
+  },
+  {
+    name: 'a header with a text subtitle',
+    language: () => toElement(L.Header('Home').subtitle('3 new')),
+    bloom: () => <PageHeader title="Home" subtitle="3 new" />,
+  },
   {
     name: 'a header with an accessory',
     language: () => toElement(L.Header('Home').accessory(L.Text('Tabs'))),
@@ -473,6 +547,30 @@ const screens: ParityCase[] = [
       <Screen colorPreset="teal" seed="#8e5137">
         <Text>a</Text>
       </Screen>
+    ),
+  },
+  {
+    name: 'a screen filled with an app colour (a reel’s black)',
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).screenBackground(REEL.color.black)} />
+    ),
+    bloom: () => (
+      <Screen style={{ backgroundColor: '#000000' }}>
+        <Text>a</Text>
+      </Screen>
+    ),
+  },
+  {
+    name: 'a screen filled with a role, as the theme gives it',
+    language: () => <ScreenHost root={L.Text('a').header(false).screenBackground('background')} />,
+    bloom: () => (
+      <ThemedRgb>
+        {(colors) => (
+          <Screen style={{ backgroundColor: colors.background }}>
+            <Text>a</Text>
+          </Screen>
+        )}
+      </ThemedRgb>
     ),
   },
   {
@@ -669,7 +767,81 @@ const groups: ParityCase[] = [
   },
 ];
 
+/** An app's own provider of children, as Mention's header dock is. */
+function Dock({ children }: { children?: ReactNode }) {
+  return <View testID="dock">{children}</View>;
+}
+const KEYBOARD_BEHAVIOR = Platform.OS === 'ios' ? 'padding' : 'height';
+
+/** What a screen's root draws around its Screen: a colour scope, the keyboard's room, an app's provider. */
+const wrappers: ParityCase[] = [
+  ...(['dark', 'light', undefined] as const).map((mode) => ({
+    name: `a screen in its own scheme (${mode ?? 'the app’s'})`,
+    language: () => <ScreenHost root={L.Text('a').header(false).colorScope(mode)} />,
+    bloom: () => (
+      <BloomColorScope mode={mode} asChild>
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </BloomColorScope>
+    ),
+  })),
+  {
+    name: 'a screen kept above the keyboard',
+    language: () => <ScreenHost root={L.Text('a').header(false).keyboardAvoiding()} />,
+    bloom: () => (
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={KEYBOARD_BEHAVIOR}>
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </KeyboardAvoidingView>
+    ),
+  },
+  {
+    name: 'a screen kept above the keyboard, filled by Tailwind’s flex-1',
+    language: () => <ScreenHost root={L.Text('a').header(false).keyboardAvoiding('1')} />,
+    bloom: () => (
+      <KeyboardAvoidingView
+        style={{ flexGrow: 1, flexShrink: 1, flexBasis: '0%' }}
+        behavior={KEYBOARD_BEHAVIOR}
+      >
+        <Screen>
+          <Text>a</Text>
+        </Screen>
+      </KeyboardAvoidingView>
+    ),
+  },
+  {
+    name: 'a titled screen inside an app’s provider',
+    language: () => <ScreenHost root={L.Text('a').title('Saved').provider(Dock)} />,
+    bloom: () => (
+      <Dock>
+        <Screen header={<PageHeader title="Saved" presentation="floating" />}>
+          <Text>a</Text>
+        </Screen>
+      </Dock>
+    ),
+  },
+  {
+    // In chain order: the provider is outermost, the scope inside it.
+    name: 'a dark screen inside an app’s provider, wrapped in chain order',
+    language: () => (
+      <ScreenHost root={L.Text('a').header(false).colorScope('dark').provider(Dock)} />
+    ),
+    bloom: () => (
+      <Dock>
+        <BloomColorScope mode="dark" asChild>
+          <Screen>
+            <Text>a</Text>
+          </Screen>
+        </BloomColorScope>
+      </Dock>
+    ),
+  },
+];
+
 export const SCREEN_CASES: ParityCase[] = [
+  ...wrappers,
   ...scrollViews,
   ...insets,
   ...contentViews,

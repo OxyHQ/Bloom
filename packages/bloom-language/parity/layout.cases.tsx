@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { bloomShadowStyle } from '@oxy.so/bloom/design-tokens';
 import { Border, Fill, Image } from '@oxy.so/bloom/shapes';
 import { Z_INDEX } from '@oxy.so/bloom/styles';
@@ -9,7 +10,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
-import { type ParityCase, Themed } from './support/cases';
+import { hold, type ParityCase, Themed } from './support/cases';
 
 const { space, borderRadius } = tokens;
 
@@ -64,6 +65,16 @@ const placement: ParityCase[] = [
       </RN.View>
     ),
   },
+  ...(['-1', '3', '6', '7'] as const).map((level) => ({
+    // The levels Mention stacks its video chrome with, and one under its siblings.
+    name: `the stacking level ${level}`,
+    language: () => toElement(L.VStack(L.Text('a')).zIndex(level)),
+    bloom: () => (
+      <RN.View style={{ zIndex: Number(level) }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  })),
   {
     name: 'hidden',
     language: () => toElement(L.VStack(L.Text('a')).hidden()),
@@ -102,6 +113,29 @@ const placement: ParityCase[] = [
     bloom: () => (
       <RN.View style={{ width: '100%', maxHeight: '50%' }}>
         <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'the percentages no fraction holds: 31% wide, 90% high at most',
+    language: () => toElement(L.VStack(L.Text('a')).frame({ width: '31%', maxHeight: '90%' })),
+    bloom: () => (
+      <RN.View style={{ width: '31%', maxHeight: '90%' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'pinned a quarter of its parent in from each side',
+    language: () =>
+      toElement(
+        L.VStack(L.VStack(L.Text('a')).position({ bottom: 'none', left: '25%', right: '25%' })),
+      ),
+    bloom: () => (
+      <RN.View>
+        <RN.View style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%' }}>
+          <Text>a</Text>
+        </RN.View>
       </RN.View>
     ),
   },
@@ -347,6 +381,34 @@ const small: ParityCase[] = [
         </RN.View>
       ),
   },
+  ...[true, false].map((split) => ({
+    // Mention's notification row: what is inside takes touches only while its gestures split.
+    name: `hit testing chosen at render (${split})`,
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .padding('sm')
+          .allowsHitTesting(split ? 'children' : undefined),
+      ),
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View pointerEvents={split ? 'box-none' : undefined} style={{ padding: 8 }}>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View
+          style={{
+            paddingTop: 8,
+            paddingBottom: 8,
+            paddingStart: 8,
+            paddingEnd: 8,
+            ...(split ? { pointerEvents: 'box-none' as const } : {}),
+          }}
+        >
+          <Text>a</Text>
+        </RN.View>
+      ),
+  })),
   ...(
     [
       ['children', 'box-none'],
@@ -641,7 +703,522 @@ const roles: ParityCase[] = ENUMS.role.map((role) => ({
   ),
 }));
 
+/** What Mention's screens write that the language lacked: auto margins, a gap per axis, a border's line. */
+const appLayout: ParityCase[] = [
+  {
+    name: 'an auto leading margin pushes a view to the trailing end (ms-auto)',
+    language: () =>
+      toElement(L.HStack(L.Text('a'), L.VStack(L.Text('b')).margin('leading', 'auto'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <RN.View style={{ marginStart: 'auto' }}>
+          <Text>b</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a physical auto margin on the left (marginLeft: auto)',
+    language: () => toElement(L.HStack(L.Text('a'), L.VStack(L.Text('b')).margin('left', 'auto'))),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <RN.View style={{ marginLeft: 'auto' }}>
+          <Text>b</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'auto margins all round centre a view',
+    language: () => toElement(L.VStack(L.VStack(L.Text('a')).margin('auto'))),
+    bloom: () => (
+      <RN.View>
+        <RN.View
+          style={{
+            marginTop: 'auto',
+            marginBottom: 'auto',
+            marginStart: 'auto',
+            marginEnd: 'auto',
+          }}
+        >
+          <Text>a</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a gap per axis on a wrapping row (columnGap, rowGap)',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'), L.Text('b'), L.Text('c'))
+          .wrap()
+          .horizontalSpacing('lg')
+          .verticalSpacing('xs'),
+      ),
+    bloom: () => (
+      <RN.View
+        style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: space.lg, rowGap: space.xs }}
+      >
+        <Text>a</Text>
+        <Text>b</Text>
+        <Text>c</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a column with a numeric vertical gap',
+    language: () => toElement(L.VStack(L.Text('a'), L.Text('b')).verticalSpacing('6')),
+    bloom: () => (
+      <RN.View style={{ rowGap: 6 }}>
+        <Text>a</Text>
+        <Text>b</Text>
+      </RN.View>
+    ),
+  },
+  ...(['dashed', 'dotted'] as const).map((line) => ({
+    name: `a ${line} border`,
+    language: () =>
+      toElement(L.VStack(L.Text('a')).border('border', 'thin').borderStyle(line).corner('md')),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.View
+            style={{
+              borderWidth: 1,
+              borderColor: c.border,
+              borderStyle: line,
+              borderRadius: borderRadius.md,
+            }}
+          >
+            <Text>a</Text>
+          </RN.View>
+        )}
+      </Themed>
+    ),
+  })),
+];
+
+/** Hidden from screen readers: each platform's own props (react-native-web drops the native ones). */
+const HIDDEN =
+  RN.Platform.OS === 'web'
+    ? ({ 'aria-hidden': true } as const)
+    : ({
+        accessibilityElementsHidden: true,
+        importantForAccessibility: 'no-hide-descendants',
+      } as const);
+
+/** State, live regions and hiding, as an app writes them on React Native's views. */
+const accessibility: ParityCase[] = [
+  {
+    name: 'a layout handler on the outermost box',
+    language: () => toElement(L.VStack(L.Text('a')).padding('md').onLayout(hold)),
+    bloom: () => (
+      <RN.View
+        onLayout={hold}
+        style={{
+          paddingTop: space.md,
+          paddingBottom: space.md,
+          paddingStart: space.md,
+          paddingEnd: space.md,
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'an accessibility value as a range',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a')).role('progressbar').accessibilityValue({ min: 0, max: 100, now: 40 }),
+      ),
+    bloom: () => (
+      <RN.View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: 40 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'an accessibility value as a text',
+    language: () => toElement(L.VStack(L.Text('a')).accessibilityValue({ text: 'Verifying' })),
+    bloom: () => (
+      <RN.View accessibilityValue={{ text: 'Verifying' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'an accessibility state (selected, busy)',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).accessibilityState({ selected: true, busy: false })),
+    bloom: () => (
+      <RN.View accessibilityState={{ selected: true, busy: false }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a mixed checked state',
+    language: () => toElement(L.HStack(L.Text('a')).accessibilityState({ checked: 'mixed' })),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }} accessibilityState={{ checked: 'mixed' }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a polite live region',
+    language: () => toElement(L.VStack(L.Text('a')).liveRegion('polite')),
+    bloom: () => (
+      <RN.View accessibilityLiveRegion="polite">
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'hidden from screen readers, with what is inside',
+    language: () => toElement(L.VStack(L.Text('a')).accessibilityHidden()),
+    bloom: () => (
+      <RN.View {...HIDDEN}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'read again (accessibilityHidden(false))',
+    language: () => toElement(L.VStack(L.Text('a')).accessibilityHidden(false)),
+    bloom: () =>
+      RN.Platform.OS === 'web' ? (
+        <RN.View>
+          <Text>a</Text>
+        </RN.View>
+      ) : (
+        <RN.View accessibilityElementsHidden={false} importantForAccessibility="auto">
+          <Text>a</Text>
+        </RN.View>
+      ),
+  },
+];
+
+/** `.pressFade()`: React Native's TouchableOpacity is the press host, so its fade is its own. */
+const pressFade: ParityCase[] = [
+  {
+    name: 'a row whose press fades it to 70% (TouchableOpacity)',
+    language: () => toElement(L.HStack(L.Text('a')).padding('md').onPress(hold).pressFade('70')),
+    bloom: () => (
+      <RN.TouchableOpacity
+        onPress={hold}
+        activeOpacity={0.7}
+        style={{
+          flexDirection: 'row',
+          paddingTop: space.md,
+          paddingBottom: space.md,
+          paddingStart: space.md,
+          paddingEnd: space.md,
+        }}
+      >
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    name: 'a press fade at TouchableOpacity’s own opacity, labelled as a button',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).onPress(hold).pressFade().role('button').label('Open')),
+    bloom: () => (
+      <RN.TouchableOpacity onPress={hold} accessibilityRole="button" accessibilityLabel="Open">
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    // TouchableOpacity's own focus: none on Android and iOS without a press, focusable on the web.
+    name: 'a press fade whose press is absent keeps TouchableOpacity’s focus',
+    language: () => toElement(L.VStack(L.Text('a')).onPress(undefined).pressFade()),
+    bloom: () => (
+      <RN.TouchableOpacity onPress={undefined}>
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    name: 'a faded, selected row on a fill',
+    language: () =>
+      toElement(
+        L.HStack(L.Text('a'))
+          .background('surface')
+          .corner('md')
+          .onPress(hold)
+          .pressFade('85')
+          .accessibilityState({ selected: true }),
+      ),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <RN.TouchableOpacity
+            onPress={hold}
+            activeOpacity={0.85}
+            accessibilityState={{ selected: true }}
+            style={{
+              flexDirection: 'row',
+              backgroundColor: c.backgroundSecondary,
+              borderRadius: borderRadius.md,
+            }}
+          >
+            <Text>a</Text>
+          </RN.TouchableOpacity>
+        )}
+      </Themed>
+    ),
+  },
+];
+
+/** `.aspectRatio()` on any view: React Native's `aspectRatio`, in its frame's view. */
+const aspectRatio: ParityCase[] = [
+  {
+    // Mention's emoji cell: a square that fades when pressed.
+    name: 'a square cell a quarter wide that fades when pressed',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .frame({ width: '1/4' })
+          .aspectRatio(1)
+          .align('center')
+          .justify('center')
+          .onPress(hold)
+          .pressFade(),
+      ),
+    bloom: () => (
+      <RN.TouchableOpacity
+        onPress={hold}
+        style={{ width: '25%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Text>a</Text>
+      </RN.TouchableOpacity>
+    ),
+  },
+  {
+    name: 'a padded landscape box',
+    language: () => toElement(L.VStack().padding('md').frame({ width: 'full' }).aspectRatio(1.6)),
+    bloom: () => (
+      <RN.View
+        style={{
+          paddingTop: space.md,
+          paddingBottom: space.md,
+          paddingStart: space.md,
+          paddingEnd: space.md,
+          width: '100%',
+          aspectRatio: 1.6,
+        }}
+      />
+    ),
+  },
+];
+
+/** The insets of a phone with a notch and a home bar. */
+const INSETS = { top: 47, bottom: 34, left: 0, right: 0 };
+const withInsets = (element: ReactElement) => (
+  <SafeAreaInsetsContext.Provider value={INSETS}>{element}</SafeAreaInsetsContext.Provider>
+);
+
+/**
+ * `.safeAreaPadding()`: a view padded by the device's insets, as an app pads by
+ * `useSafeAreaInsets()`, on the view itself: its fill, flex and own padding stay one view.
+ */
+const safeArea: ParityCase[] = [
+  {
+    name: 'a column padded by the safe area top and bottom',
+    language: () => withInsets(toElement(L.VStack(L.Text('a')).safeAreaPadding('vertical'))),
+    bloom: () =>
+      withInsets(
+        <RN.View style={{ paddingTop: INSETS.top, paddingBottom: INSETS.bottom }}>
+          <Text>a</Text>
+        </RN.View>,
+      ),
+  },
+  {
+    // Mention's sign-in: the inset, then 24 more, on a card fill.
+    name: 'a safe-area top, a padding beyond it, on a fill',
+    language: () =>
+      withInsets(
+        toElement(
+          L.VStack(L.Text('a')).safeAreaPadding('top').padding('top', '2xl').background('card'),
+        ),
+      ),
+    bloom: () =>
+      withInsets(
+        <Themed>
+          {(c) => (
+            <RN.View style={{ paddingTop: INSETS.top + 24, backgroundColor: c.card }}>
+              <Text>a</Text>
+            </RN.View>
+          )}
+        </Themed>,
+      ),
+  },
+  {
+    // Mention's composer: a root that fills the screen on the card fill, clear of both insets.
+    name: 'a filling root on a fill, padded by the safe area top and bottom',
+    language: () =>
+      withInsets(
+        toElement(L.VStack(L.Text('a')).flex('1').safeAreaPadding('vertical').background('card')),
+      ),
+    bloom: () =>
+      withInsets(
+        <Themed>
+          {(c) => (
+            <RN.View
+              style={{
+                flexGrow: 1,
+                flexShrink: 1,
+                flexBasis: '0%',
+                backgroundColor: c.card,
+                paddingTop: INSETS.top,
+                paddingBottom: INSETS.bottom,
+              }}
+            >
+              <Text>a</Text>
+            </RN.View>
+          )}
+        </Themed>,
+      ),
+  },
+  {
+    // A left inset beside a padding across: start and end are logical, the inset physical.
+    name: 'a safe-area left beside a padding across, two views',
+    language: () =>
+      withInsets(
+        toElement(L.VStack(L.Text('a')).safeAreaPadding('left').padding('horizontal', 'lg')),
+      ),
+    bloom: () =>
+      withInsets(
+        <RN.View style={{ paddingStart: 16, paddingEnd: 16 }}>
+          <RN.View style={{ paddingLeft: INSETS.left }}>
+            <Text>a</Text>
+          </RN.View>
+        </RN.View>,
+      ),
+  },
+];
+
+/** `.hitSlop()`: one slop on every side, or each side's (React Native's insets). */
+const hitSlop: ParityCase[] = [
+  {
+    name: 'a press that reaches a slop beyond every side',
+    language: () => toElement(L.VStack(L.Text('a')).onPress(hold).hitSlop('md')),
+    bloom: () => (
+      <RN.Pressable onPress={hold} hitSlop={8}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    // Mention's video scrubber: taller to the finger, not wider.
+    name: 'a press that reaches beyond its top and bottom only',
+    language: () => toElement(L.VStack(L.Text('a')).onPress(hold).hitSlop('vertical', 'md')),
+    bloom: () => (
+      <RN.Pressable onPress={hold} hitSlop={{ top: 8, bottom: 8 }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
+    // Mention's upvote: five points up, down and to the left, none to the right.
+    name: 'a press whose sides reach their own slops',
+    language: () =>
+      toElement(L.VStack(L.Text('a')).onPress(hold).hitSlop('5').hitSlop('right', 'none')),
+    bloom: () => (
+      <RN.Pressable onPress={hold} hitSlop={{ top: 5, bottom: 5, left: 5, right: 0 }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+];
+
+/**
+ * Points computed at render: a frame's lengths, a pinned view's edges and its
+ * stacking order take a number the view works out (Mention's grid cell, a
+ * card's width from its props, a badge under the top inset, a facepile's order).
+ */
+const CELL = 117.5;
+const points: ParityCase[] = [
+  {
+    name: 'a frame of points computed at render',
+    language: () => toElement(L.VStack(L.Text('a')).frame({ width: CELL, height: CELL })),
+    bloom: () => (
+      <RN.View style={{ width: CELL, height: CELL }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'points beside tokens in one frame, on a clipped corner',
+    language: () =>
+      toElement(
+        L.VStack(L.Text('a'))
+          .frame({ width: CELL * 2, maxWidth: 'full', minHeight: '160' })
+          .corner('lg')
+          .clipped(),
+      ),
+    bloom: () => (
+      <RN.View
+        style={{
+          width: CELL * 2,
+          maxWidth: '100%',
+          minHeight: 160,
+          borderRadius: borderRadius.lg,
+          overflow: 'hidden',
+        }}
+      >
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a view pinned by points beside a token',
+    language: () =>
+      withInsets(toElement(L.VStack(L.Text('a')).position({ top: INSETS.top + 8, right: 'lg' }))),
+    bloom: () =>
+      withInsets(
+        <RN.View style={{ position: 'absolute', top: INSETS.top + 8, right: space.lg }}>
+          <Text>a</Text>
+        </RN.View>,
+      ),
+  },
+  {
+    name: 'stacking orders computed at render',
+    language: () =>
+      toElement(
+        L.HStack(
+          [0, 1, 2].map((index) =>
+            L.VStack(L.Text(String(index)))
+              .zIndex(3 - index)
+              .id(String(index)),
+          ),
+        ),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        {[0, 1, 2].map((index) => (
+          <RN.View key={index} style={{ zIndex: 3 - index }}>
+            <Text>{String(index)}</Text>
+          </RN.View>
+        ))}
+      </RN.View>
+    ),
+  },
+];
+
 export const LAYOUT_CASES: ParityCase[] = [
+  ...points,
+  ...hitSlop,
+  ...safeArea,
+  ...aspectRatio,
+  ...pressFade,
+  ...accessibility,
+  ...appLayout,
   ...roles,
   ...tailwind,
   ...distribution,

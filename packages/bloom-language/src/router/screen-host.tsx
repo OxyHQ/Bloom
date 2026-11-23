@@ -6,8 +6,16 @@
  * sheet over it (see sheet-bloom.tsx: Bloom's Dialog or BottomSheet, the system
  * sheet on iOS).
  */
-import type { ReactNode } from 'react';
+import {
+  type ComponentProps,
+  createElement,
+  type ReactElement,
+  type ReactNode,
+  useMemo,
+} from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { Screen } from '@oxy.so/bloom/screen';
+import { BloomColorScope } from '@oxy.so/bloom/theme';
 
 import { Header } from '../primitives';
 import {
@@ -16,14 +24,20 @@ import {
   type Child,
   type HeadingLevel,
   type Modifier,
+  type ReselectTop,
   type ScreenFooter,
   type ScreenHeader,
 } from '../node';
 import { valuesOf } from '../platform/values';
+import { ink, flexStyle, type RoleRef } from '../style';
+import { isSurfaceFill, surfaced, themeColor, withSurface } from '../paint';
+import { useTheme } from '@oxy.so/bloom/theme';
+import type { InkToken } from '../tokens';
 import { toElement } from '../render';
 import {
   resolveSpace,
   type ChromePlacement,
+  type FlexName,
   type ColorPreset,
   type NavigationScope,
   type ScreenKind,
@@ -120,37 +134,121 @@ export function ScreenHost({ root }: { root: Child }) {
   const clearance = values.contentClearance as SpaceToken | undefined;
   const headerHeight = values.initialHeaderHeight as SpaceToken | undefined;
   const footerHeight = values.initialFooterHeight as SpaceToken | undefined;
+  const top = values.reselectTop as ReselectTop | undefined;
+  const reselect =
+    chrome.onReselect || top
+      ? { refresh: chrome.onReselect, isAtTop: top?.isAtTop, scrollToTop: top?.scrollToTop }
+      : undefined;
+  const background = values.screenBackground as InkToken | undefined;
+  const props: ComponentProps<typeof Screen> = {
+    testID: chrome.testID,
+    kind: values.screenKind as ScreenKind | undefined,
+    scroll: values.screenScroll as ScreenScroll | undefined,
+    documentScroll: values.documentScroll as boolean | undefined,
+    header: bar === undefined || system ? undefined : header,
+    headerPlacement: values.headerPlacement as ChromePlacement | undefined,
+    underlay: values.underlay ? toElement(values.underlay as Child) : undefined,
+    primaryAction: action ? toElement(action.content) : undefined,
+    primaryActionPlacement: action?.options?.placement,
+    primaryActionVisibility: action?.options?.visibility,
+    contentClearance: clearance === undefined ? undefined : resolveSpace(clearance),
+    navigationScope: values.navigationScope as NavigationScope | undefined,
+    colorPreset: values.colorPreset as ColorPreset | undefined,
+    seed: values.seed as string | undefined,
+    active: values.screenActive as boolean | undefined,
+    headerHeight: headerHeight === undefined ? undefined : resolveSpace(headerHeight),
+    bottomBarHeight: footerHeight === undefined ? undefined : resolveSpace(footerHeight),
+    reselect,
+    bottomBar: footer ? toElement(footer.content) : undefined,
+    bottomBarPlacement: footerOptions?.placement,
+    bottomBarKeyboardBehavior: footerOptions?.keyboard,
+    children: toElement(chrome.content),
+  };
+  const painted = background === undefined ? undefined : ink(background);
+  // A fill of its own is drawn by the leaf that reads the theme, `OnSurface` when it is the surface fill.
+  const screen =
+    painted === undefined
+      ? createElement(Screen, props)
+      : draw(
+          ...surfaced(
+            ScreenFill,
+            { ...props, painted },
+            typeof painted !== 'string' && isSurfaceFill(painted.role),
+          ),
+        );
   return (
     <>
-      <Screen
-        testID={chrome.testID}
-        kind={values.screenKind as ScreenKind | undefined}
-        scroll={values.screenScroll as ScreenScroll | undefined}
-        documentScroll={values.documentScroll as boolean | undefined}
-        header={bar === undefined || system ? undefined : header}
-        headerPlacement={values.headerPlacement as ChromePlacement | undefined}
-        underlay={values.underlay ? toElement(values.underlay as Child) : undefined}
-        primaryAction={action ? toElement(action.content) : undefined}
-        primaryActionPlacement={action?.options?.placement}
-        primaryActionVisibility={action?.options?.visibility}
-        contentClearance={clearance === undefined ? undefined : resolveSpace(clearance)}
-        navigationScope={values.navigationScope as NavigationScope | undefined}
-        colorPreset={values.colorPreset as ColorPreset | undefined}
-        seed={values.seed as string | undefined}
-        active={values.screenActive as boolean | undefined}
-        headerHeight={headerHeight === undefined ? undefined : resolveSpace(headerHeight)}
-        bottomBarHeight={footerHeight === undefined ? undefined : resolveSpace(footerHeight)}
-        reselect={chrome.onReselect ? { refresh: chrome.onReselect } : undefined}
-        bottomBar={footer ? toElement(footer.content) : undefined}
-        bottomBarPlacement={footerOptions?.placement}
-        bottomBarKeyboardBehavior={footerOptions?.keyboard}
-      >
-        {toElement(chrome.content)}
-      </Screen>
+      {wrapped(root, screen)}
       {system ? header : null}
       {sheetsOf(chrome.sheets)}
     </>
   );
+}
+
+/** `createElement` over a leaf chosen at render (`surfaced`), with the props assembled for it. */
+const draw = createElement as (type: unknown, props: Record<string, unknown>) => ReactElement;
+
+/**
+ * A Screen with a fill of its own (`.screenBackground()`): its colour as Bloom's
+ * theme gives it (the surface fill handed in `OnSurface`), the leaf that reads
+ * the theme, so a theme switch re-renders it and not the content handed in.
+ */
+function ScreenFill({
+  painted,
+  surface,
+  ...props
+}: ComponentProps<typeof Screen> & { painted: RoleRef | string; surface?: string }): ReactElement {
+  const fill = themeColor(withSurface(useTheme().colors, surface), painted);
+  const style = useMemo(() => ({ backgroundColor: fill }), [fill]);
+  return <Screen {...props} style={style} />;
+}
+
+/** What `.keyboardAvoiding()` draws: React Native's own fill and, on iOS, a padding (elsewhere the view resizes). */
+const KEYBOARD_FILL = { flex: 1 } as const;
+const KEYBOARD_BEHAVIOR = Platform.OS === 'ios' ? 'padding' : 'height';
+/** A flex token's fill, as `.flex()` writes it, once per token. */
+const fills = new Map<FlexName, object>();
+function flexFill(name: FlexName): object {
+  let fill = fills.get(name);
+  if (fill === undefined) {
+    const style = {};
+    flexStyle(style, name);
+    fill = Object.freeze(style);
+    fills.set(name, fill);
+  }
+  return fill;
+}
+
+/**
+ * The Screen inside what the root's `.colorScope()`, `.keyboardAvoiding()`
+ * and `.provider()` draw around it, in chain order: each wraps the ones
+ * before it, as SwiftUI's modifiers do. Its header and sheets stay beside it.
+ */
+function wrapped(root: Child, screen: ReactElement): ReactElement {
+  if (!isNode(root)) return screen;
+  let out = screen;
+  for (const modifier of root.modifiers) {
+    if (modifier.kind === 'colorScope')
+      out = (
+        <BloomColorScope mode={modifier.value} asChild>
+          {out}
+        </BloomColorScope>
+      );
+    else if (modifier.kind === 'keyboardAvoiding')
+      out = (
+        <KeyboardAvoidingView
+          style={modifier.value === undefined ? KEYBOARD_FILL : flexFill(modifier.value)}
+          behavior={KEYBOARD_BEHAVIOR}
+        >
+          {out}
+        </KeyboardAvoidingView>
+      );
+    else if (modifier.kind === 'provider') {
+      const Provider = modifier.value;
+      out = <Provider>{out}</Provider>;
+    }
+  }
+  return out;
 }
 
 /** Each `.sheet()` modifier, in order: a sheet's place among them is its identity. */

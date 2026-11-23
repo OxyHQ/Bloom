@@ -49,6 +49,8 @@ const nodes = withoutComment(spec.nodes);
 const modifiers = withoutComment(spec.modifiers);
 const universal = new Set(spec.universal);
 const glassValue = withoutComment(spec.glassValue);
+/** The parameters that take points (a number computed at render) besides their tokens. */
+const points = new Set(spec.points.params);
 
 /**
  * What a parameter of each set takes, where the runtime reads more than the
@@ -148,7 +150,9 @@ function checksOf(label, node, params, member, { inUniversal, own, probe }) {
     if (want === undefined) return;
     const at = slot(params, index, member);
     const name = `${label}(${param}${want.set && want.set !== param ? `: ${want.set}` : ''})`;
-    lines.push(`  Expect<${JSON.stringify(name)}, Ok<${at}, ${typeOf(want)}>>,`);
+    // A parameter that takes points takes a number the view computes besides its tokens.
+    const check = points.has(param) ? 'OkPoints' : 'Ok';
+    lines.push(`  Expect<${JSON.stringify(name)}, ${check}<${at}, ${typeOf(want)}>>,`);
     probes.push({ label: name, ...probe(argumentsFor(params, index)), ...want });
     const app =
       APP_TOKEN[want.set] ??
@@ -277,6 +281,14 @@ type Ok<P, E> = IsAny<P> extends true
   : unknown extends P
     ? false
     : [Extract<P, number>] extends [never]
+      ? Same<Extract<P, string>, E>
+      : false;
+/** A parameter that takes points (\`spec.points\`): not \`any\` or \`unknown\`, a number, its strings exactly \`E\`. */
+type OkPoints<P, E> = IsAny<P> extends true
+  ? false
+  : unknown extends P
+    ? false
+    : [number] extends [P]
       ? Same<Extract<P, string>, E>
       : false;
 type Takes<P, A> = [A] extends [P] ? true : false;

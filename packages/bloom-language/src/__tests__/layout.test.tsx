@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from 'react';
+import { createElement, createRef, type ReactElement } from 'react';
 import TestRenderer, {
   act,
   type ReactTestInstance,
@@ -9,6 +9,7 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { SHADOW_BOX } from './support/bloom-design-tokens';
 import { LIGHT, PaintContext } from './support/bloom-theme';
 import { Fill, HStack, Shape, Text, VStack, ZStack } from '../primitives';
+import type { ViewInstance } from '../node';
 import { toElement } from '../render';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -279,5 +280,37 @@ describe('Shape', () => {
       source: { uri: 'a.png' },
       alt: 'Ana',
     });
+  });
+});
+
+describe('the escape hatches', () => {
+  /** A host's instance, as the test renderer hands a ref one (it has no views of its own). */
+  const BOX = { box: true };
+  const mountWithRefs = (element: ReactElement): ReactTestRenderer => {
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        createElement(PaintContext.Provider, { value: LIGHT }, element),
+        { createNodeMock: () => BOX },
+      );
+    });
+    return renderer;
+  };
+
+  it('.ref() is the outermost box, .onLayout() its layout handler', () => {
+    const ref = createRef<ViewInstance>();
+    const onLayout = jest.fn();
+    const renderer = mountWithRefs(
+      toElement(VStack(Text('a')).padding('md').background('surface').ref(ref).onLayout(onLayout)),
+    );
+    const [outer] = views(renderer);
+    expect(outer?.props.onLayout).toBe(onLayout);
+    expect(ref.current as unknown).toBe(BOX);
+  });
+
+  it('a callback ref is called with the box', () => {
+    const seen: unknown[] = [];
+    mountWithRefs(toElement(HStack(Text('a')).ref((view) => void seen.push(view))));
+    expect(seen).toEqual([BOX]);
   });
 });

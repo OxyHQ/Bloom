@@ -9,7 +9,8 @@
  * as they are, tagged (`Item(title).tag(name)`, resolved by the menu's
  * `actions()` when chosen) or with their own handlers, are plain data it can
  * be given then. A `menu()` content, whose rows exist only while the menu is
- * open, cannot be: such a menu is Bloom's menu.
+ * open, cannot be: such a menu is Bloom's menu, as is a menu the app opens
+ * itself (`.presented()`), which the system menu cannot be.
  *
  * NOT VERIFIED: written without an iOS build (no Mac on this machine).
  */
@@ -18,7 +19,7 @@ import { useTheme } from '@oxy.so/bloom/theme';
 
 import { useMenuChoice } from './menu-actions';
 import { DropdownMenuHost } from './menu-dropdown';
-import { builtOnOpen, readMenuRows, type MenuRowData } from './menu-rows';
+import { builtOnOpen, readMenuRows, type MenuItemRow, type MenuRowData } from './menu-rows';
 import type { MenuHostProps } from './host.types';
 import { sfSymbolOf } from './sf-symbol';
 
@@ -44,12 +45,21 @@ interface SwiftUI {
     modifiers?: unknown[];
   }>;
   Section: ComponentType<{ title?: string; children?: ReactNode }>;
+  Picker: ComponentType<{
+    selection?: string | null;
+    onSelectionChange?: (selection: string) => void;
+    children?: ReactNode;
+    modifiers?: unknown[];
+  }>;
+  Label: ComponentType<{ title?: string; systemImage?: string; modifiers?: unknown[] }>;
   Divider: ComponentType<object>;
   RNHostView: ComponentType<{ matchContents?: boolean; children: ReactNode }>;
 }
 interface Modifiers {
   disabled: (disabled?: boolean) => unknown;
   menuActionDismissBehavior: (behavior: 'automatic' | 'disabled' | 'enabled') => unknown;
+  pickerStyle: (style: 'inline') => unknown;
+  tag: (tag: string) => unknown;
 }
 
 let ui: { swift: SwiftUI; modifiers: Modifiers } | null | undefined;
@@ -69,7 +79,8 @@ function loadSwiftUI() {
 
 export function MenuHost(props: MenuHostProps) {
   const loaded = loadSwiftUI();
-  if (!loaded || builtOnOpen(props.rows)) return <DropdownMenuHost {...props} />;
+  // The system menu opens only from its trigger: a menu the app opens (`.presented()`) is Bloom's.
+  if (!loaded || builtOnOpen(props.rows) || props.presented) return <DropdownMenuHost {...props} />;
   return <SystemMenu {...props} swift={loaded.swift} modifiers={loaded.modifiers} />;
 }
 
@@ -106,11 +117,44 @@ function systemMenuRows(
 }
 
 function systemMenuRow(row: MenuRowData, swift: SwiftUI, modifiers: Modifiers): ReactNode {
-  const { Button, Toggle, Section, Divider, Menu } = swift;
+  const { Button, Toggle, Section, Divider, Menu, Picker, Label } = swift;
   switch (row.kind) {
     case 'divider':
       return <Divider key={row.id} />;
     case 'section':
+      // A section of choices is SwiftUI's inline Picker, the system menu's single selection
+      // (a `UIMenu` with `.singleSelection`): each choice a label tagged with its value. A
+      // Picker dismisses as a whole, so the menu stays open only when every choice keeps it.
+      if (row.selection) {
+        const { selection } = row;
+        // Every row of a section of choices is a tagged item (`readMenuRows` holds it).
+        const choices = row.rows as MenuItemRow[];
+        const keepOpen = choices.length > 0 && choices.every((choice) => choice.keepOpen);
+        return (
+          <Section key={row.id} title={row.title}>
+            <Picker
+              selection={selection.value ?? null}
+              onSelectionChange={selection.set}
+              modifiers={[
+                modifiers.pickerStyle('inline'),
+                ...(keepOpen ? [modifiers.menuActionDismissBehavior('disabled')] : []),
+              ]}
+            >
+              {choices.map((choice) => (
+                <Label
+                  key={choice.id}
+                  title={choice.title}
+                  systemImage={sfSymbolOf(choice.icon)}
+                  modifiers={[
+                    modifiers.tag(choice.value as string),
+                    modifiers.disabled(choice.disabled),
+                  ]}
+                />
+              ))}
+            </Picker>
+          </Section>
+        );
+      }
       return (
         <Section key={row.id} title={row.title}>
           {systemMenuRows(row.rows, swift, modifiers)}
