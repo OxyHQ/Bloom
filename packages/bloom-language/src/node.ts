@@ -394,7 +394,11 @@ export type Modifier =
       readonly key: string;
       readonly value: BloomAppearance | BadgeStyle | LoadingStyle;
     }
-  | { readonly kind: 'shape'; readonly key: string; readonly value: ButtonShape | FabShape | ShapeName }
+  | {
+      readonly kind: 'shape';
+      readonly key: string;
+      readonly value: ButtonShape | FabShape | ShapeName;
+    }
   | {
       readonly kind: 'tint';
       readonly key: string;
