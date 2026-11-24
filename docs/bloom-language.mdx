@@ -171,7 +171,7 @@ const PostMeta = view(function PostMeta() {
   style. `when('disabled', …)` answers an inherited `disabled` too.
 - **Where `disabled` reaches.** A stack's `.disabled()`, and any view's that
   takes no `disabled` of its own, reaches everything inside it. A Bloom
-  component that takes one (a `ChipRow`, a `CarrierQuoteCard`) keeps it: Bloom
+  component that takes one (a `ChipRow`, a `CardForm`) keeps it: Bloom
   decides what its content does, as it does for an app's JSX, so a chain that
   disabled one before draws what it drew.
 - **An app's values.** `defineEnvironment(name, default)` at module scope; the
@@ -3391,7 +3391,7 @@ is an `Embed`.
 ## Product components
 
 The product families apps share (agents, chat, dashboards, media), and those
-no app imports yet (commerce, logistics, music, CRM, the dashboard cards and
+no app imports yet (commerce, music, CRM, the dashboard cards and
 a few more), are Bloom's own components drawn as nodes. A node takes its content first and its data as
 an options object, as the Bloom component takes them: a slot is a language
 child, a handler a function, and the data is Bloom's own type, so Bloom's
@@ -4301,12 +4301,11 @@ Bloom's `vendor-card`: `VendorCard(name, options?)`.
 - A menu row and a vendor card take `.onPress()` themselves. A vendor card's
   promo tone keeps Bloom's name (`promoTone`) in its options.
 
-### Checkout summary, delivery slots and order confirmation
+### Checkout summary and order confirmation
 
 ```ts
 CheckoutSummary(undefined, { address, delivery, payment: PaymentMethodRow(card), price, confirm })
 CheckoutConfirm({ label: 'Place order', amount, onConfirm: place }).loading(placing)
-DeliverySlotPicker([slot, setSlot], days, windows, { asap }).day([day, setDay])
 OrderConfirmation({ reference, status, address, items: Text(summary) }).density('compact')
 ```
 
@@ -4315,51 +4314,13 @@ Bloom's `checkout-summary`: `CheckoutSummaryRow(label, options?)` (its
 `CheckoutSummary(content?, options?)` (its address, delivery, note, extras,
 price and confirm are Bloom's data, its `payment` a child, its content what
 it holds beyond the rows) and `CheckoutConfirm(options?)` (its `terms` and
-`footer` children; `.loading()` is Bloom's `busy`). Bloom's `delivery-slot`:
-`DeliverySlotDays(day, days, options?)` (its binding the day chosen),
-`DeliverySlotOption(label, options?)` (its `badge` a child; `.onPress()` its
-own) and `DeliverySlotPicker(window, days, windows, options?)` (its binding
-the window chosen; the day chosen and its handler, the ASAP option and the
-words are data; its `empty` a child). Bloom's `order-confirmation`:
+`footer` children; `.loading()` is Bloom's `busy`). Bloom's `order-confirmation`:
 `OrderConfirmation(options?)` (its `mark`, `items` and `footer` children, its
 `markSize` a space token; its status, address, facts and actions Bloom's
 data).
 
-- `.disabled()` on the rows, the confirm and the slots; `.loading()` on the
-  confirm and the picker; the days' and the picker's `.tint()` is the colour
-  role their scrolling edges fade into (Bloom's `fadeColor`); a confirmation's
-  `.density()` is Bloom's comfortable or compact `variant`.
-
-### Logistics
-
-```ts
-CarrierQuoteList(quotes, { onAccept: accept }).sorting([sort, setSort]).density('compact')
-JobCard(job, { onTake: take, onPass: pass, route: true }).disabled(job.state !== 'open')
-EarningsSummary(periods, { payoutAction: Button(Text('Cash out')).onPress(cashOut) }).period([period, setPeriod])
-ProofOfDelivery({ required: ['signature', 'code'], onSubmit: deliver, onAddPhoto: addPhoto }).loading(sending)
-ShipmentRequestForm(route, [load, setLoad], { options, price, footer: Button(Text('Request quotes')).onPress(send) })
-```
-
-Bloom's logistics families: `CarrierQuoteCard(quote, options?)` and
-`CarrierQuoteList(quotes, options?)`, `JobCard(job, options?)` and
-`JobBoard(jobs, options?)` (`.density('comfortable' | 'compact')`; a card
-`.disabled()`, a list or board `.loading()`
-for its skeletons; a card's `actions` and a list's `emptyAction` are
-children); `EarningsSummary(periods, options?)` (its `payoutAction` a child,
-`chartHeight` a space token), `EarningsBreakdown(lines, options?)` and
-`EarningsPayoutRow(payout, options?)` (its `action` a child; `.onPress()` its
-own); `SignaturePad(options?)` (its value Bloom's own from a
-`defaultValue`, or `.value([signature, setSignature])`; `.tint()` its ink, a
-colour role, and `.strokeWidth()` its width, a border width as a shape's
-outline takes (Bloom's `'2.5'` with none); `height` a space token) and `ProofOfDelivery(options?)`
-(`.value()` the same way, `.loading()` while it submits, `actions` a child,
-`signatureHeight` a space token), both `.disabled()`;
-`VehiclePicker(vehicle, options?)` and `ShipmentLoadPicker(load, options?)`
-write their binding; `ShipmentOptionsList(options?)` takes its three choices
-as `.selectedExtras()`, `.access()` and `.window()` bindings; `ShipmentRequestForm(route, load, options?)` (its
-route Bloom's `RouteStops` data, its load a binding, its `footer` a child);
-each takes `.disabled()`. A pad's stroke width stays a number in the options
-(a line's weight, not a length on the space scale).
+- `.disabled()` on the rows and the confirm; `.loading()` on the confirm; a
+  confirmation's `.density()` is Bloom's comfortable or compact `variant`.
 
 ### Media cards
 
@@ -5496,9 +5457,8 @@ with its reason. Nothing else is missing.
   and the month calendar; and the action bar's orientation, tone and zero
   counts Mention sets. Wave 7, the families no app imports yet: commerce
   (addresses, payment methods, the price summary, payment status, the cart,
-  menu items, the vendor card, the checkout summary, delivery slots, the
-  order confirmation); logistics (carrier quotes, earnings, the job board,
-  proof of delivery, the shipment request, the vehicle picker); music (the
+  menu items, the vendor card, the checkout summary, the order
+  confirmation); music (the
   media cards, lyrics, the media player, the creator studio, the music
   library, the queue panel, the track list); CRM (`ContactProfileCard`,
   `LeadScoreCard`, the pipeline); the dashboard cards

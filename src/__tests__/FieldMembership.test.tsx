@@ -52,7 +52,6 @@ import { CustomColorPicker } from '../agent-creator/CustomColorPicker';
 import { SelectionCard } from '../card';
 import { CardFormNumber } from '../card-form';
 import { Checkbox } from '../checkbox';
-import { DeliverySlotPicker } from '../delivery-slot';
 import { FileUpload } from '../file-upload';
 import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
@@ -64,7 +63,6 @@ import { Questionnaire } from '../questionnaire';
 import { Radio, RadioChip, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
 import { Search } from '../search';
-import { ShipmentLoadPicker } from '../shipment-request';
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -79,7 +77,6 @@ import { TagField } from '../tag-field';
 import { PlacePicker } from '../place-picker';
 import { TextField, TextFieldInput } from '../text-field';
 import { TimeField } from '../date-picker';
-import { VehiclePicker } from '../vehicle-picker';
 
 function wrap(ui: React.ReactElement) {
   return render(
@@ -358,28 +355,6 @@ const SUBJECTS: Subject[] = [
     id: true,
   },
   {
-    // The picker is TWO radio groups inside one field (the days, and the
-    // windows). The windows group is the one the contract lands on; it carries
-    // the name, so it is found by that rather than by a testID one node up.
-    // Dropped inside a `Field` the picker renders no second field of its own.
-    name: 'delivery-slot',
-    render: (p) => (
-      <DeliverySlotPicker
-        days={[{ id: 'fri', weekday: 'Fri', day: '24' }]}
-        day="fri"
-        windows={[{ id: 'w1', label: '17:00 - 19:00' }]}
-        value="w1"
-        onValueChange={() => {}}
-        {...p}
-      />
-    ),
-    ownNameProp: 'label',
-    isInert: viewInert,
-    node: 'byName',
-    describedBy: true,
-    invalid: true,
-  },
-  {
     name: 'select',
     render: (p) => (
       <Select value="a" onValueChange={() => {}}>
@@ -431,46 +406,6 @@ const SUBJECTS: Subject[] = [
     invalid: true,
     id: true,
     lastResortName: 'How is the home offered?',
-  },
-  {
-    // The KIND `radiogroup` is the member; the cards and the size, weight and
-    // quantity controls after it are its parts. Its testID is derived from the
-    // picker's.
-    name: 'shipment-load-picker',
-    render: ({ accessibilityLabel, ...p }) => (
-      <ShipmentLoadPicker
-        testID="shipment"
-        value={{ kind: null, size: null, weight: '', quantity: 1 }}
-        onValueChange={() => {}}
-        labels={accessibilityLabel ? { kind: accessibilityLabel as string } : undefined}
-        {...p}
-      />
-    ),
-    ownNameProp: 'accessibilityLabel',
-    isInert: viewInert,
-    testID: 'shipment-kind',
-    describedBy: true,
-    invalid: true,
-    id: true,
-    lastResortName: 'What are we moving?',
-  },
-  {
-    name: 'vehicle-picker',
-    render: (p) => (
-      <VehiclePicker
-        value={null}
-        onValueChange={() => {}}
-        options={[{ value: 'van', label: 'Van', capacity: 'Up to 800 kg' }]}
-        {...p}
-      />
-    ),
-    ownNameProp: 'accessibilityLabel',
-    isInert: viewInert,
-    node: 'byName',
-    describedBy: true,
-    invalid: true,
-    id: true,
-    lastResortName: 'Vehicle',
   },
   {
     // The member is the calculator's own `group`; its inputs, slider and term
@@ -881,36 +816,6 @@ const COMPOSITES: Composite[] = [
       'o-rent-amount': inputInert,
       'o-rent-minimum-increment': pressableInert,
     },
-  },
-  {
-    name: 'shipment-load-picker',
-    render: () => (
-      <ShipmentLoadPicker
-        testID="s"
-        value={{ kind: null, size: null, weight: '', quantity: 1 }}
-        onValueChange={() => {}}
-      />
-    ),
-    ownNames: { 's-weight': 'Weight', 's-size': 'Size', 's-quantity': 'How many' },
-    frozen: {
-      's-kind-parcel-control': pressableInert,
-      's-size-small': pressableInert,
-      's-weight': inputInert,
-      's-quantity-increment': pressableInert,
-    },
-  },
-  {
-    name: 'vehicle-picker',
-    render: () => (
-      <VehiclePicker
-        testID="v"
-        value={null}
-        onValueChange={() => {}}
-        options={[{ value: 'van', label: 'Van', capacity: 'Up to 800 kg' }]}
-      />
-    ),
-    ownNames: { 'v-van-control': 'Van, Up to 800 kg' },
-    frozen: { 'v-van-control': pressableInert },
   },
   {
     name: 'property-type-selector',

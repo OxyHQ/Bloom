@@ -40,8 +40,6 @@ const ASSERTIVE: Record<string, string> = {
   'creator-studio/ArtworkUploader.tsx:View': 'a rejection of the artwork the user just picked',
   'listing-editor/OfferingEditor.tsx:Text': 'a validation error of the form the user submitted',
   'listing-editor/PropertyTypeSelector.tsx:Text': 'a validation error of the user’s choice',
-  'proof-of-delivery/ProofOfDelivery.tsx:View':
-    'what is still missing, said in the gesture that asked to finish',
   'composer-panel/ComposerPillBase.tsx:View': 'the reason the message the user wrote is refused',
   'cover-header/CoverHeader.tsx:Text': 'the cover position the user set could not be saved',
   'agent-chat/AgentChatBase.tsx:Text': 'the reply the user asked for failed',

@@ -69,7 +69,7 @@ function legacySizeUnions(file: string): string[] {
 }
 
 /**
- * Content and load densities, not control sizes. `BloomScope` never reaches
+ * Content densities, not control sizes. `BloomScope` never reaches
  * them; renaming them to `sm | md | lg` would claim it does.
  */
 const CONTENT_DENSITY = [
@@ -78,12 +78,11 @@ const CONTENT_DENSITY = [
   'listing-details/types.ts: type ListingHeaderSize',
   'listing-details/types.ts: type ListingSectionSize',
   'media-card/types.ts: type MediaCardSize',
-  'shipment-request/types.ts: type ShipmentLoadSize',
   'stay-filters/PropertyTypeTiles.tsx: type TileSize',
 ];
 
 describe('control sizes are one vocabulary', () => {
-  it('only content and load densities still spell small / medium / large', () => {
+  it('only content densities still spell small / medium / large', () => {
     const found = files.flatMap(legacySizeUnions).sort();
     expect(found).toEqual([...CONTENT_DENSITY].sort());
   });

@@ -6,7 +6,6 @@ import { Field } from '../field';
 import { Switch } from '../switch';
 import { Text } from '../typography';
 import { Questionnaire } from '../questionnaire';
-import { VehiclePicker } from '../vehicle-picker';
 
 const meta: Meta<typeof SelectionCard> = {
   id: 'selection-card',
@@ -35,12 +34,11 @@ export const Default: Story = {
   },
 };
 
-/** One Field constraint reaches the generic card, a domain picker and custom answer controls. */
+/** One Field constraint reaches the generic card and custom answer controls. */
 export const FieldComposition: Story = {
   render: () => {
     const [disabled, setDisabled] = useState(true);
     const [selected, setSelected] = useState(false);
-    const [vehicle, setVehicle] = useState<string>('bike');
     return (
       <View style={{ width: 520, maxWidth: '100%', gap: 24 }}>
         <Field label="Disable fields">
@@ -57,21 +55,6 @@ export const FieldComposition: Story = {
             selected={selected}
             disabled={false}
             onPress={() => setSelected(!selected)}
-          />
-        </Field>
-        <Field
-          multiple
-          label="Delivery vehicle"
-          disabled={disabled}
-          error="Choose an available vehicle."
-        >
-          <VehiclePicker
-            value={vehicle}
-            onValueChange={setVehicle}
-            options={[
-              { value: 'bike', label: 'Bicycle', capacity: 'Small deliveries' },
-              { value: 'van', label: 'Van', capacity: 'Large deliveries' },
-            ]}
           />
         </Field>
         <Field multiple label="Preferences" disabled={disabled}>

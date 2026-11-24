@@ -119,7 +119,6 @@ import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
 import { LYRICS_CASES } from '../../parity/lyrics.cases';
 import { CREATOR_STUDIO_CASES } from '../../parity/creator-studio.cases';
 import { MEDIA_PLAYER_CASES } from '../../parity/media-player.cases';
-import { LOGISTICS_CASES } from '../../parity/logistics.cases';
 import { MUSIC_LIBRARY_CASES } from '../../parity/music-library.cases';
 import { QUEUE_PANEL_CASES } from '../../parity/queue-panel.cases';
 import { TRACK_LIST_CASES } from '../../parity/track-list.cases';
@@ -249,7 +248,6 @@ export const FAMILIES = {
   lyrics: LYRICS_CASES,
   creatorStudio: CREATOR_STUDIO_CASES,
   mediaPlayer: MEDIA_PLAYER_CASES,
-  logistics: LOGISTICS_CASES,
   musicLibrary: MUSIC_LIBRARY_CASES,
   queuePanel: QUEUE_PANEL_CASES,
   trackList: TRACK_LIST_CASES,

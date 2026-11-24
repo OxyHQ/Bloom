@@ -569,7 +569,7 @@ fn the_button_leftovers_are_checked() {
     assert_eq!(
         output.diagnostics[0].help.as_deref(),
         Some(
-            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 26 more; density tokens: default, compact"
+            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 22 more; density tokens: default, compact"
         )
     );
 }
@@ -2973,15 +2973,14 @@ fn the_creator_studio_is_checked() {
 }
 
 #[test]
-fn the_checkout_summary_delivery_slots_and_order_confirmation_are_checked() {
-    let imports = "import { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow, DeliverySlotDays, DeliverySlotOption, DeliverySlotPicker, OrderConfirmation, VStack } from '@oxy.so/bloom-language';\n";
+fn the_checkout_summary_and_order_confirmation_are_checked() {
+    let imports = "import { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow, OrderConfirmation, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (b, d, w) => VStack(CheckoutSummaryRow('a').disabled(), CheckoutSummary().label('Review'), CheckoutConfirm().loading().disabled(), DeliverySlotDays(b, d).tint('primary').disabled(), DeliverySlotOption('a').disabled(), DeliverySlotPicker(b, d, w).loading().tint('surface'), OrderConfirmation().density('compact'));\n",
+        "export const x = () => VStack(CheckoutSummaryRow('a').disabled(), CheckoutSummary().label('Review'), CheckoutConfirm().loading().disabled(), OrderConfirmation().density('compact'));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("DeliverySlotDays(b, d).tint('teal')", "Unknown color token 'teal' for .tint()"),
         ("OrderConfirmation().density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("CheckoutSummary().loading()", "CheckoutSummary has no modifier .loading()"),
     ];
@@ -3012,26 +3011,11 @@ fn the_media_player_is_checked() {
 }
 
 #[test]
-fn the_logistics_families_are_checked() {
-    let imports = "import { CarrierQuoteCard, JobBoard, SignaturePad, ProofOfDelivery, VehiclePicker, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (q, j, v) => VStack(CarrierQuoteCard(q).density('compact').disabled(), JobBoard(j).loading(), SignaturePad().tint('primary').strokeWidth('2.5'), SignaturePad().strokeWidth('thick'), ProofOfDelivery().loading().disabled(), VehiclePicker(v).disabled());\n",
+fn a_border_width_near_miss_names_the_width_it_meant() {
+    let output = compile(
+        "import { Shape } from '@oxy.so/bloom-language';\nexport const x = Shape('heart').stroke('primary', 'thickk');\n",
+        "row.tsx",
     );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("CarrierQuoteCard(q).density('cozy')", "Unknown density token 'cozy' for .density()"),
-        ("SignaturePad().tint('ink')", "Unknown color token 'ink' for .tint()"),
-        ("SignaturePad().strokeWidth('2')", "Unknown borderWidth token '2' for .strokeWidth()"),
-        ("JobBoard(q).style('grid')", "JobBoard has no modifier .style()"),
-        ("ProofOfDelivery().strokeWidth('thin')", "ProofOfDelivery has no modifier .strokeWidth()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (q) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-    // A signature's stroke is a line width: a near miss names the width it meant.
-    let output = check("export const x = SignaturePad().strokeWidth('thickk');\n");
     assert!(output.diagnostics[0].help.as_deref().unwrap().starts_with("did you mean 'thick'?"));
 }
 

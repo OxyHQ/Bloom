@@ -851,52 +851,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
     }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: 'ظرف', description: 'مستندات، مفاتيح، أي شيء مسطّح.' },
-    parcel: { label: 'طرد', description: 'صندوق أو حقيبة يحملها شخص واحد.' },
-    furniture: { label: 'أثاث', description: 'أريكة، طاولة، مرتبة — شخصان عند كل طرف.' },
-    pallet: { label: 'منصة نقالة', description: 'مغلّفة ومرصوصة، تُنقل برافعة خلفية.' },
-    food: { label: 'طعام', description: 'توصيل من مطعم، بدرجة الحرارة المناسبة.' },
-  },
-  sizes: {
-    small: 'حتى حجم علبة أحذية — 35 × 25 × 20 سم.',
-    medium: 'حتى حجم حقيبة المقصورة — 55 × 40 × 25 سم.',
-    large: 'حتى حجم غسالة — 85 × 60 × 60 سم.',
-    extraLarge: 'أكبر من ذلك — أخبرنا في الملاحظات.',
-  },
-  access: { ground: 'الطابق الأرضي', stairs: 'درج', lift: 'مصعد' },
-  load: {
-    kind: 'ماذا سننقل؟',
-    size: 'الحجم',
-    weight: 'الوزن',
-    quantity: 'العدد',
-    quantityValue: (n) =>
-      plural('ar', n, {
-        zero: 'لا قطع',
-        one: 'قطعة واحدة',
-        two: 'قطعتان',
-        few: '{n} قطع',
-        many: '{n} قطعة',
-        other: '{n} قطعة',
-      }),
-    notes: 'هل هناك ما يجب أن يعرفه الناقل؟',
-    notesPlaceholder: 'قابل للكسر، رمز المصعد، مكان التسليم…',
-  },
-  options: { extras: 'إضافات', access: 'الوصول عند الطرفين', window: 'متى يجب الاستلام؟' },
-  form: {
-    route: 'المسار',
-    routeDescription: 'الاستلام أولًا، والتسليم أخيرًا.',
-    load: 'الحمولة',
-    photos: 'الصور',
-    photosDescription: 'صورة الحمولة هي أكثر ما يحسّن عروض الأسعار التي ستصلك.',
-    options: 'الخيارات',
-    optionsDescription: 'كل خيار منها يغيّر السعر.',
-    price: 'السعر',
-  },
-  shipmentRequest: 'طلب شحن',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'مطلوب' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -907,40 +861,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: 'يفتح أداة الاختيار',
   placeOrder: 'تأكيد الطلب',
   placingOrder: 'جارٍ إرسال طلبك',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: 'ابتداءً من',
-  fits: (label) => `ما يتسع له ${label}`,
-  unavailable: 'غير متاحة لهذه الحمولة',
-  vehicle: 'المركبة',
-  vehicles: {
-    bike: {
-      label: 'دراجة شحن',
-      capacity: 'حتى 25 كغ · 60 × 40 × 40 سم',
-      fits: ['مستندات', 'طلب طعام', 'صندوق صغير'],
-    },
-    car: {
-      label: 'سيارة',
-      capacity: 'حتى 150 كغ · 100 × 80 × 60 سم',
-      fits: ['حقيبتا سفر', 'أربعة صناديق', 'دراجة هوائية'],
-    },
-    van: {
-      label: 'فان',
-      capacity: 'حتى 800 كغ · 240 × 150 × 140 سم',
-      fits: ['أريكة', 'نقل أثاث استوديو', 'نصف منصة نقالة'],
-    },
-    boxTruck: {
-      label: 'شاحنة صندوقية',
-      capacity: 'حتى 3500 كغ · 420 × 200 × 210 سم',
-      fits: ['منصتان نقالتان', 'نقل أثاث شقة بغرفتي نوم', 'رافعة خلفية'],
-    },
-    refrigerated: {
-      label: 'فان مبرّد',
-      capacity: 'حتى 700 كغ · بين 2 و8 °م',
-      fits: ['منتجات طازجة', 'تموين مبرّد', 'زهور'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1574,57 +1494,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: 'أغنية',
   share: 'مشاركة',
   listened: 'تم الاستماع',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'قبول المهمة',
-    pass: 'تخطٍّ',
-    distance: 'المسافة',
-    duration: 'المدة',
-    window: 'الفترة',
-    pickup: 'الاستلام',
-    dropoff: 'التسليم',
-    state: { taken: 'محجوزة', expired: 'منتهية' },
-    showPay: 'عرض الأجر',
-    hidePay: 'إخفاء الأجر',
-    payDetails: 'الأجر:',
-    sort: 'ترتيب المهام',
-    filtersToggle: 'عوامل التصفية',
-    filtersActive: (n) => `مطبَّق: ${n}`,
-    sortOptions: {
-      pay: 'الأعلى أجرًا',
-      distance: 'الأقرب',
-      soonest: 'الأقرب بدءًا',
-      expiring: 'الأقرب انتهاءً',
-    },
-    filters: { distance: 'المسافة', pay: 'الأجر', when: 'الموعد', vehicle: 'المركبة' },
-    clearFilters: 'مسح عوامل التصفية',
-    refresh: 'تحديث القائمة',
-    count: (n) =>
-      plural('ar', n, {
-        zero: 'لا مهام',
-        one: 'مهمة واحدة',
-        two: 'مهمتان',
-        few: '{n} مهام',
-        many: '{n} مهمة',
-        other: '{n} مهمة',
-      }),
-    loading: 'جارٍ تحميل المهام',
-  },
-  emptyTitle: 'لا توجد مهام الآن',
-  emptyDescription: 'لا شيء يطابق ما تبحث عنه. وسّع أحد عوامل التصفية أو حدّث القائمة بعد دقيقة.',
-  list: 'المهام',
-  payDetailsFor: (load) => `أجر ${load}`,
-  route: (pickup, dropoff) => `${pickup} و${dropoff}`,
-  bands: {
-    anyDistance: 'أي مسافة',
-    underKm: (km) => `أقل من ${km} كم`,
-    anyTime: 'في أي وقت',
-    withinHour: 'خلال الساعة',
-    nextHours: (hours) => `خلال الساعات الـ${hours} القادمة`,
-    today: 'اليوم',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2367,16 +2236,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `${percent}% ينصحون بالسكن هنا`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: 'عادي', express: 'سريع' },
-  soldOut: 'نفدت الأماكن',
-  asap: 'في أقرب وقت ممكن',
-  field: 'وقت التوصيل',
-  day: 'اليوم',
-  emptyTitle: 'لا توجد فترات متاحة',
-  emptyDescription: 'اختر يومًا آخر، أو أقرب مندوب متاح.',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'خاصة', shared: 'مشتركة', public: 'عامة' },
   places: (n) =>
@@ -2831,56 +2690,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'استخدام الوضع الفاتح',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: 'الأرباح',
-  period: 'فترة الأرباح',
-  breakdown: 'مصدر الأرباح',
-  payout: 'الدفعة التالية',
-  payoutState: {
-    scheduled: 'مجدولة',
-    processing: 'في الطريق',
-    paid: 'مدفوعة',
-    held: 'معلّقة',
-    failed: 'فشلت',
-  },
-  chart: (label) => `أرباح ${label} حسب الفترة`,
-  empty: 'لا أرباح بعد',
-  earnings: 'الأرباح',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: 'التوقيع',
-    signaturePad: 'مساحة التوقيع',
-    signatureHint: 'وقّع بإصبعك',
-    signed: 'تم التوقيع',
-    clear: 'مسح التوقيع',
-    typeName: 'أو اكتب اسمك',
-    typeNamePlaceholder: 'الاسم الكامل',
-    photo: 'صورة',
-    photoHint: 'المكان الذي تركته فيه، أو الطرد مع المستلم.',
-    code: 'رمز التسليم',
-    codeHint: 'اطلب من المستلم قراءة الرمز من تطبيقه.',
-    recipient: 'من استلمه',
-    recipientPlaceholder: 'الاسم',
-    note: 'ملاحظة',
-    notePlaceholder: 'أي شيء يستحق التسجيل',
-    submit: 'تأكيد التسليم',
-    required: 'مطلوب',
-    missing: 'هذا مطلوب قبل أن تتمكن من التأكيد.',
-    missingSummary: (n) =>
-      plural('ar', n, {
-        zero: 'لا ينقص شيء',
-        one: 'ما زال ينقص شيء واحد',
-        two: 'ما زال ينقص شيئان',
-        few: 'ما زالت تنقص {n} أشياء',
-        many: 'ما زال ينقص {n} شيئًا',
-        other: 'ما زال ينقص {n} شيء',
-      }),
-  },
-  proofOfDelivery: 'إثبات التسليم',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'اسحب الملف وأفلته للرفع أو',
   promptNative: 'انقر',
@@ -2951,40 +2760,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: 'الفئات السابقة',
   next: 'الفئات التالية',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: 'قبول',
-    message: 'رسالة',
-    decline: 'رفض',
-    pickup: 'الاستلام',
-    eta: 'الوصول',
-    vehicle: 'المركبة',
-    jobs: (jobs) => `${jobs} مهمة`,
-    verified: 'ناقل موثَّق',
-    marks: { cheapest: 'الأرخص', fastest: 'الأسرع' },
-    showPrice: 'عرض تفاصيل السعر',
-    hidePrice: 'إخفاء تفاصيل السعر',
-    priceDetails: 'تفاصيل السعر:',
-    sort: 'ترتيب العروض',
-    sortOptions: { price: 'الأرخص', eta: 'الأسرع', rating: 'الأعلى تقييمًا' },
-    count: (n) =>
-      plural('ar', n, {
-        zero: 'لا عروض',
-        one: 'عرض واحد',
-        two: 'عرضان',
-        few: '{n} عروض',
-        many: '{n} عرضًا',
-        other: '{n} عرض',
-      }),
-    loading: 'جارٍ تحميل العروض',
-  },
-  emptyTitle: 'لا توجد عروض بعد',
-  emptyDescription: 'يطّلع الناقلون على طلبك. تصل العروض الأولى عادةً خلال دقائق قليلة.',
-  list: 'العروض',
-  priceDetailsFor: (name) => `تفاصيل سعر ${name}`,
-  rating: (rating) => `${rating} من 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3491,10 +3266,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3527,7 +3300,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3558,7 +3330,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3588,8 +3359,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3597,7 +3366,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,

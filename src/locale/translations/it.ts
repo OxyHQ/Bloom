@@ -768,55 +768,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('it', n, { one: '{n} minuto', other: '{n} minuti' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: 'Busta', description: 'Documenti, chiavi, qualsiasi cosa piatta.' },
-    parcel: { label: 'Pacco', description: 'Una scatola o una borsa che una persona può portare.' },
-    furniture: {
-      label: 'Mobili',
-      description: 'Un divano, un tavolo, un materasso: due persone a ogni capo.',
-    },
-    pallet: {
-      label: 'Pallet',
-      description: 'Imballato e impilato, movimentato con sponda idraulica.',
-    },
-    food: { label: 'Cibo', description: 'Una consegna dal ristorante, alla giusta temperatura.' },
-  },
-  sizes: {
-    small: 'Fino a una scatola da scarpe: 35 × 25 × 20 cm.',
-    medium: 'Fino a un bagaglio a mano: 55 × 40 × 25 cm.',
-    large: 'Fino a una lavatrice: 85 × 60 × 60 cm.',
-    extraLarge: 'Più grande: descrivilo nelle note.',
-  },
-  access: { ground: 'Piano terra', stairs: 'Scale', lift: 'Ascensore' },
-  load: {
-    kind: 'Cosa trasportiamo?',
-    size: 'Dimensione',
-    weight: 'Peso',
-    quantity: 'Quanti',
-    quantityValue: (n) => plural('it', n, { one: '{n} articolo', other: '{n} articoli' }),
-    notes: 'Altro che il corriere dovrebbe sapere?',
-    notesPlaceholder: 'Fragile, un codice per l’ascensore, dove lasciarlo…',
-  },
-  options: {
-    extras: 'Extra',
-    access: 'Accesso a entrambi gli indirizzi',
-    window: 'Quando va ritirato?',
-  },
-  form: {
-    route: 'Percorso',
-    routeDescription: 'Prima il ritiro, poi la consegna.',
-    load: 'Il carico',
-    photos: 'Foto',
-    photosDescription:
-      'Una foto del carico è la cosa che migliora di più i preventivi che riceverai.',
-    options: 'Opzioni',
-    optionsDescription: 'Ognuna cambia il prezzo.',
-    price: 'Prezzo',
-  },
-  shipmentRequest: 'Richiesta di spedizione',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'obbligatorio' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -827,40 +778,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: 'Apre il selettore',
   placeOrder: 'Effettua ordine',
   placingOrder: 'Invio del tuo ordine',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: 'Da',
-  fits: (label) => `Cosa entra in: ${label}`,
-  unavailable: 'Non disponibile per questo carico',
-  vehicle: 'Veicolo',
-  vehicles: {
-    bike: {
-      label: 'Cargo bike',
-      capacity: 'Fino a 25 kg · 60 × 40 × 40 cm',
-      fits: ['Documenti', 'Un ordine di cibo', 'Una scatola piccola'],
-    },
-    car: {
-      label: 'Auto',
-      capacity: 'Fino a 150 kg · 100 × 80 × 60 cm',
-      fits: ['Due valigie', 'Quattro scatoloni', 'Una bicicletta'],
-    },
-    van: {
-      label: 'Furgone',
-      capacity: 'Fino a 800 kg · 240 × 150 × 140 cm',
-      fits: ['Un divano', 'Il trasloco di un monolocale', 'Mezzo pallet'],
-    },
-    boxTruck: {
-      label: 'Camion furgonato',
-      capacity: 'Fino a 3.500 kg · 420 × 200 × 210 cm',
-      fits: ['Due pallet', 'Il trasloco di un trilocale', 'Una sponda idraulica'],
-    },
-    refrigerated: {
-      label: 'Furgone refrigerato',
-      capacity: 'Fino a 700 kg · tra 2 e 8 °C',
-      fits: ['Prodotti freschi', 'Catering refrigerato', 'Fiori'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1436,50 +1353,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: 'Brano',
   share: 'Condividi',
   listened: 'Ascoltato',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'Accetta il lavoro',
-    pass: 'Salta',
-    distance: 'Distanza',
-    duration: 'Tempo',
-    window: 'Fascia',
-    pickup: 'Ritiro',
-    dropoff: 'Consegna',
-    state: { taken: 'Assegnato', expired: 'Scaduto' },
-    showPay: 'Mostra il compenso',
-    hidePay: 'Nascondi il compenso',
-    payDetails: 'Compenso per',
-    sort: 'Ordina i lavori',
-    filtersToggle: 'Filtri',
-    filtersActive: (n) => plural('it', n, { one: '{n} applicato', other: '{n} applicati' }),
-    sortOptions: {
-      pay: 'Pagati meglio',
-      distance: 'Più vicini',
-      soonest: 'Iniziano prima',
-      expiring: 'Chiudono prima',
-    },
-    filters: { distance: 'Distanza', pay: 'Compenso', when: 'Quando', vehicle: 'Veicolo' },
-    clearFilters: 'Rimuovi i filtri',
-    refresh: 'Aggiorna la lista',
-    count: (n) => plural('it', n, { one: '{n} lavoro', other: '{n} lavori' }),
-    loading: 'Caricamento dei lavori',
-  },
-  emptyTitle: 'Nessun lavoro al momento',
-  emptyDescription:
-    'Nulla corrisponde a ciò che cerchi. Allarga un filtro o aggiorna di nuovo tra un minuto.',
-  list: 'Lavori',
-  payDetailsFor: (load) => `Compenso per ${load}`,
-  route: (pickup, dropoff) => `${pickup} e ${dropoff}`,
-  bands: {
-    anyDistance: 'Qualsiasi distanza',
-    underKm: (km) => `Meno di ${km} km`,
-    anyTime: 'In qualsiasi momento',
-    withinHour: "Entro un'ora",
-    nextHours: (hours) => `Nelle prossime ${hours} ore`,
-    today: 'Oggi',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2115,16 +1988,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `Il ${percent}% consiglierebbe di vivere qui`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: 'Standard', express: 'Espresso' },
-  soldOut: 'Esaurito',
-  asap: 'Il prima possibile',
-  field: 'Orario di consegna',
-  day: 'Giorno',
-  emptyTitle: 'Nessuna fascia disponibile',
-  emptyDescription: 'Scegli un altro giorno o il prossimo corriere disponibile.',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Privata', shared: 'Condivisa', public: 'Pubblica' },
   places: (n) => plural('it', n, { one: '{n} luogo', other: '{n} luoghi' }),
@@ -2546,49 +2409,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'Usa la modalità chiara',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: 'Guadagnato',
-  period: 'Periodo dei guadagni',
-  breakdown: 'Da dove arriva',
-  payout: 'Prossimo pagamento',
-  payoutState: {
-    scheduled: 'Programmato',
-    processing: 'In arrivo',
-    paid: 'Pagato',
-    held: 'Sospeso',
-    failed: 'Non riuscito',
-  },
-  chart: (label) => `Guadagni ${label}, per periodo`,
-  empty: 'Ancora nessun guadagno',
-  earnings: 'Guadagni',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: 'Firma',
-    signaturePad: 'Firma',
-    signatureHint: 'Firma con il dito',
-    signed: 'Firmato',
-    clear: 'Cancella la firma',
-    typeName: 'Oppure scrivi il tuo nome',
-    typeNamePlaceholder: 'Nome e cognome',
-    photo: 'Foto',
-    photoHint: 'Dove l’hai lasciato, o il pacco con il destinatario.',
-    code: 'Codice di consegna',
-    codeHint: 'Chiedi al destinatario di leggere il codice nella sua app.',
-    recipient: 'Chi l’ha ricevuto',
-    recipientPlaceholder: 'Nome',
-    note: 'Nota',
-    notePlaceholder: 'Qualsiasi cosa da annotare',
-    submit: 'Conferma la consegna',
-    required: 'Obbligatorio',
-    missing: 'Serve prima di poter confermare.',
-    missingSummary: (n) =>
-      plural('it', n, { one: 'Manca ancora una cosa', other: 'Mancano ancora {n} cose' }),
-  },
-  proofOfDelivery: 'Prova di consegna',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'Trascina qui per caricare oppure',
   promptNative: 'Tocca per',
@@ -2651,33 +2471,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: 'Categorie precedenti',
   next: 'Categorie successive',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: 'Accetta',
-    message: 'Messaggio',
-    decline: 'Rifiuta',
-    pickup: 'Ritiro',
-    eta: 'Arrivo',
-    vehicle: 'Veicolo',
-    jobs: (jobs) => `${jobs} lavori`,
-    verified: 'Corriere verificato',
-    marks: { cheapest: 'Il più economico', fastest: 'Il più veloce' },
-    showPrice: 'Mostra i dettagli del prezzo',
-    hidePrice: 'Nascondi i dettagli del prezzo',
-    priceDetails: 'Dettagli del prezzo di',
-    sort: 'Ordina le offerte',
-    sortOptions: { price: 'Più economiche', eta: 'Più veloci', rating: 'Meglio valutate' },
-    count: (n) => plural('it', n, { one: '{n} offerta', other: '{n} offerte' }),
-    loading: 'Caricamento delle offerte',
-  },
-  emptyTitle: 'Ancora nessuna offerta',
-  emptyDescription:
-    'I corrieri stanno guardando la tua spedizione. Le prime offerte di solito arrivano in pochi minuti.',
-  list: 'Offerte',
-  priceDetailsFor: (name) => `Dettagli del prezzo di ${name}`,
-  rating: (rating) => `${rating} su 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3148,10 +2941,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3184,7 +2975,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3215,7 +3005,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3245,8 +3034,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3254,7 +3041,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,

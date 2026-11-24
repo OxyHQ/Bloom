@@ -8,22 +8,17 @@
 import type React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
-import { CarrierQuoteList } from '../carrier-quote';
-import { CARRIER_QUOTE_MESSAGES } from '../carrier-quote/messages';
 import { ContributionsCard, RevenueChartCard, StepsCard } from '../chart-cards';
 import { contributionLabel } from '../chart-cards/contributions-cells';
 import { CHART_CARDS_MESSAGES } from '../chart-cards/messages';
 import { CheckoutConfirm } from '../checkout-summary';
 import { CHECKOUT_SUMMARY_MESSAGES } from '../checkout-summary/messages';
-import { JobBoard } from '../job-board';
-import { JOB_BOARD_MESSAGES } from '../job-board/messages';
 import { ListingCard } from '../listing-card';
 import { LocaleProvider } from '../locale';
 import { OfferingBadge } from '../offering-badge';
 import { OFFERING_BADGE_MESSAGES } from '../offering-badge/messages';
 import { PaymentStatusBar } from '../payment-status';
 import { PAYMENT_STATUS_MESSAGES } from '../payment-status/messages';
-import { VEHICLE_PICKER_MESSAGES } from '../vehicle-picker/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { VendorCard } from '../vendor-card';
 import { VENDOR_CARD_MESSAGES } from '../vendor-card/messages';
@@ -120,52 +115,6 @@ describe('listing-card offerings (review of #226)', () => {
       getByLabelText(
         new RegExp(`Alvora, ${messagesIn(OFFERING_BADGE_MESSAGES, 'es').offerings.long_term_rent}`),
       ),
-    ).toBeTruthy();
-  });
-});
-
-describe('job-board and carrier-quote', () => {
-  it('draw their empty states and names in the locale', () => {
-    const board = renderIn('es', <JobBoard jobs={[]} />);
-    expect(board.getByText(messagesIn(JOB_BOARD_MESSAGES, 'es').emptyTitle)).toBeTruthy();
-    expect(board.getByText(messagesIn(JOB_BOARD_MESSAGES, 'es').emptyDescription)).toBeTruthy();
-    const quotes = renderIn('ru', <CarrierQuoteList quotes={[]} />);
-    expect(quotes.getByText(messagesIn(CARRIER_QUOTE_MESSAGES, 'ru').emptyTitle)).toBeTruthy();
-  });
-
-  it('pluralise their counts per language, and join phrases without an English connector', () => {
-    expect(messagesIn(JOB_BOARD_MESSAGES, 'ru').labels.count(3)).toBe('3 заказа');
-    expect(messagesIn(JOB_BOARD_MESSAGES, 'ru').labels.count(5)).toBe('5 заказов');
-    expect(messagesIn(CARRIER_QUOTE_MESSAGES, 'ar').labels.count(2)).toBe('عرضان');
-    expect(messagesIn(JOB_BOARD_MESSAGES, 'es').route('Recogida', 'Entrega')).toBe(
-      'Recogida y Entrega',
-    );
-    expect(messagesIn(CARRIER_QUOTE_MESSAGES, 'ja').priceDetailsFor('Rápido')).toBe(
-      'Rápidoの料金の内訳',
-    );
-  });
-
-  it("draws the board's default filter bands and vehicle names in the locale (review of #235)", () => {
-    const board = renderIn('es', <JobBoard jobs={[]} defaultFiltersOpen />);
-    expect(
-      board.getAllByText(messagesIn(JOB_BOARD_MESSAGES, 'es').bands.anyDistance).length,
-    ).toBeGreaterThan(0);
-    expect(
-      board.getAllByText(messagesIn(JOB_BOARD_MESSAGES, 'es').bands.underKm(10)).length,
-    ).toBeGreaterThan(0);
-    expect(
-      board.getAllByText(messagesIn(JOB_BOARD_MESSAGES, 'es').bands.nextHours(4)).length,
-    ).toBeGreaterThan(0);
-    expect(
-      board.getAllByText(messagesIn(VEHICLE_PICKER_MESSAGES, 'es').vehicles.van.label).length,
-    ).toBeGreaterThan(0);
-    expect(board.queryByText('Any distance')).toBeNull();
-    expect(messagesIn(JOB_BOARD_MESSAGES, 'ru').bands.nextHours(4)).toBe('В ближайшие 4 часа');
-  });
-
-  it('keep a caller empty title over the catalog', () => {
-    expect(
-      renderIn('es', <JobBoard jobs={[]} emptyTitle="Nada por aquí" />).getByText('Nada por aquí'),
     ).toBeTruthy();
   });
 });

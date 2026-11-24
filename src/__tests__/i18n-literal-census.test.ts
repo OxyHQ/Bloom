@@ -211,7 +211,7 @@ const PENDING: Record<string, number> = {};
 
 /** `// i18n-exempt:` lines, counted so a new one is a reviewed decision. */
 // The creator keeps its original proper-name example placeholder.
-const EXEMPTIONS = 8;
+const EXEMPTIONS = 7;
 
 const { findings, exemptions } = scan();
 const byFamily = new Map<string, Finding[]>();

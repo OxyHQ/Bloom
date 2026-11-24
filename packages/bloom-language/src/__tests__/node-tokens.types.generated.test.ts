@@ -2945,20 +2945,6 @@ type checkoutConfirmChecks = [
   Expect<'checkoutConfirm: the universal modifiers', Universal<View<'CheckoutConfirm'>, "disabled">>,
 ];
 
-type deliverySlotDaysChecks = [
-  Expect<'deliverySlotDays: the universal modifiers', Universal<View<'DeliverySlotDays'>, "disabled">>,
-  Expect<"deliverySlotDays.tint(tint: color)", Ok<At<View<'DeliverySlotDays'>['tint'], '0'>, S['color'] | AtOpacity>>,
-];
-
-type deliverySlotOptionChecks = [
-  Expect<'deliverySlotOption: the universal modifiers', Universal<View<'DeliverySlotOption'>, "disabled">>,
-];
-
-type deliverySlotPickerChecks = [
-  Expect<'deliverySlotPicker: the universal modifiers', Universal<View<'DeliverySlotPicker'>, "disabled">>,
-  Expect<"deliverySlotPicker.tint(tint: color)", Ok<At<View<'DeliverySlotPicker'>['tint'], '0'>, S['color'] | AtOpacity>>,
-];
-
 type orderConfirmationChecks = [
   Expect<'orderConfirmation: the universal modifiers', Universal<View<'OrderConfirmation'>>>,
   Expect<"orderConfirmation.density(density)", Ok<At<View<'OrderConfirmation'>['density'], '0'>, "comfortable" | "compact">>,
@@ -2998,64 +2984,6 @@ type devicePickerChecks = [
 
 type connectBannerChecks = [
   Expect<'connectBanner: the universal modifiers', Universal<View<'ConnectBanner'>>>,
-];
-
-type carrierQuoteCardChecks = [
-  Expect<'carrierQuoteCard: the universal modifiers', Universal<View<'CarrierQuoteCard'>, "disabled">>,
-  Expect<"carrierQuoteCard.density(density)", Ok<At<View<'CarrierQuoteCard'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type carrierQuoteListChecks = [
-  Expect<'carrierQuoteList: the universal modifiers', Universal<View<'CarrierQuoteList'>>>,
-  Expect<"carrierQuoteList.density(density)", Ok<At<View<'CarrierQuoteList'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type earningsSummaryChecks = [
-  Expect<'earningsSummary: the universal modifiers', Universal<View<'EarningsSummary'>>>,
-];
-
-type earningsBreakdownChecks = [
-  Expect<'earningsBreakdown: the universal modifiers', Universal<View<'EarningsBreakdown'>>>,
-];
-
-type earningsPayoutRowChecks = [
-  Expect<'earningsPayoutRow: the universal modifiers', Universal<View<'EarningsPayoutRow'>>>,
-];
-
-type jobCardChecks = [
-  Expect<'jobCard: the universal modifiers', Universal<View<'JobCard'>, "disabled">>,
-  Expect<"jobCard.density(density)", Ok<At<View<'JobCard'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type jobBoardChecks = [
-  Expect<'jobBoard: the universal modifiers', Universal<View<'JobBoard'>>>,
-  Expect<"jobBoard.density(density)", Ok<At<View<'JobBoard'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type signaturePadChecks = [
-  Expect<'signaturePad: the universal modifiers', Universal<View<'SignaturePad'>, "disabled">>,
-  Expect<"signaturePad.tint(tint: color)", Ok<At<View<'SignaturePad'>['tint'], '0'>, S['color'] | AtOpacity>>,
-  Expect<"signaturePad.strokeWidth(borderWidth)", Ok<At<View<'SignaturePad'>['strokeWidth'], '0'>, S['borderWidth']>>,
-];
-
-type proofOfDeliveryChecks = [
-  Expect<'proofOfDelivery: the universal modifiers', Universal<View<'ProofOfDelivery'>, "disabled">>,
-];
-
-type vehiclePickerChecks = [
-  Expect<'vehiclePicker: the universal modifiers', Universal<View<'VehiclePicker'>, "disabled">>,
-];
-
-type shipmentLoadPickerChecks = [
-  Expect<'shipmentLoadPicker: the universal modifiers', Universal<View<'ShipmentLoadPicker'>, "disabled">>,
-];
-
-type shipmentOptionsListChecks = [
-  Expect<'shipmentOptionsList: the universal modifiers', Universal<View<'ShipmentOptionsList'>, "disabled">>,
-];
-
-type shipmentRequestFormChecks = [
-  Expect<'shipmentRequestForm: the universal modifiers', Universal<View<'ShipmentRequestForm'>, "disabled">>,
 ];
 
 type rowActionsChecks = [

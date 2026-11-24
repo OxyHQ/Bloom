@@ -1777,17 +1777,6 @@ export type {
   CheckoutSummaryView,
 } from './controls/checkout-summary';
 
-// Delivery slots (controls/delivery-slot.tsx)
-export { DeliverySlotDays, DeliverySlotOption, DeliverySlotPicker } from './controls/delivery-slot';
-export type {
-  DeliverySlotDaysOptions,
-  DeliverySlotDaysView,
-  DeliverySlotOptionOptions,
-  DeliverySlotOptionView,
-  DeliverySlotPickerOptions,
-  DeliverySlotPickerView,
-} from './controls/delivery-slot';
-
 // Order confirmation (controls/order-confirmation.tsx)
 export { OrderConfirmation } from './controls/order-confirmation';
 export type {
@@ -1824,51 +1813,6 @@ export type {
   DevicePickerView,
   ConnectBannerView,
 } from './controls/media-player';
-
-// Logistics (controls/logistics.tsx)
-export {
-  CarrierQuoteCard,
-  CarrierQuoteList,
-  EarningsBreakdown,
-  EarningsPayoutRow,
-  EarningsSummary,
-  JobBoard,
-  JobCard,
-  ProofOfDelivery,
-  ShipmentLoadPicker,
-  ShipmentOptionsList,
-  ShipmentRequestForm,
-  SignaturePad,
-  VehiclePicker,
-} from './controls/logistics';
-export type {
-  CarrierQuoteCardOptions,
-  CarrierQuoteCardView,
-  CarrierQuoteListOptions,
-  CarrierQuoteListView,
-  EarningsBreakdownOptions,
-  EarningsBreakdownView,
-  EarningsPayoutRowOptions,
-  EarningsPayoutRowView,
-  EarningsSummaryOptions,
-  EarningsSummaryView,
-  JobBoardOptions,
-  JobBoardView,
-  JobCardOptions,
-  JobCardView,
-  ProofOfDeliveryOptions,
-  ProofOfDeliveryView,
-  ShipmentLoadPickerOptions,
-  ShipmentLoadPickerView,
-  ShipmentOptionsListOptions,
-  ShipmentOptionsListView,
-  ShipmentRequestFormOptions,
-  ShipmentRequestFormView,
-  SignaturePadOptions,
-  SignaturePadView,
-  VehiclePickerOptions,
-  VehiclePickerView,
-} from './controls/logistics';
 // Music library (controls/music-library.tsx)
 export {
   BrowseGrid,

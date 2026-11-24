@@ -196,10 +196,9 @@ const RN_HOSTS = new Set([
  */
 // `item/Item.tsx` translates a role it is handed (`option` → `aria-selected`,
 // `radio`/`checkbox` → `aria-checked`, a `button` toggle → `aria-pressed`), and
-// spells the native `accessibilityState` beside each. It had no role-passing
-// caller for a while; `delivery-slot/DeliverySlotOption.tsx` is the first one
-// back, handing it `role="radio"` for a delivery window. `Item.test.tsx` and
-// `DeliverySlot.test.tsx` pin the translation against the real DOM.
+// spells the native `accessibilityState` beside each. No Bloom caller hands
+// it a role today, so it is not in the list below; `aria-state-web.test.tsx`
+// pins the translation against the real DOM, role by role.
 //
 // `chip/Chip.tsx` is the second: it takes `role` as `'button' | 'checkbox' | 'radio' | 'tab'`
 // and picks the state attribute the ROLE defines — `aria-pressed`,
@@ -220,7 +219,7 @@ const RN_HOSTS = new Set([
 // `Slot` (agent-creator/ShapeArc) is `Pressable` on the web and its Reanimated wrapper on
 // native, picked per platform, so the alias scan cannot see it: it answers role and state
 // as the primitive does.
-const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', 'RadioHost', 'Slot'];
+const DELEGATING_TAGS = ['Chip', 'MenuRowShell', 'Meter', 'MeterRing', 'RadioHost', 'Slot'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -249,12 +248,6 @@ const DELEGATING_TAGS = ['Chip', 'Item', 'MenuRowShell', 'Meter', 'MeterRing', '
 // role, on the pressable branch only — the non-pressable branch has no role to
 // name. Its string child names it otherwise.
 //
-// `Item` is the fourth: the pressable branch carries the role AND
-// `accessibilityLabel`, defaulting to its own string title when the caller
-// writes none. `DeliverySlotOption` always passes one — the window, what is
-// left of it and its surcharge, as one utterance — because a row built from
-// three separate Texts is three stops otherwise.
-//
 // `PressableScale` spreads every `Pressable` prop — `role` and
 // `accessibilityLabel` included — onto its one animated `AriaPressable`. Its
 // role-passing callers are `Lockup` (`role="link"`, named by the title,
@@ -265,7 +258,6 @@ const NAME_DELEGATING_TAGS = [
   'Button',
   'Card',
   'Chip',
-  'Item',
   'MediaPressable',
   'MenuRowShell',
   'Meter',

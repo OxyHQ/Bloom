@@ -743,44 +743,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('tr', n, { other: '{n} dakika' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: 'Zarf', description: 'Evrak, anahtar, düz olan her şey.' },
-    parcel: { label: 'Koli', description: 'Tek kişinin taşıyabileceği bir kutu ya da çanta.' },
-    furniture: { label: 'Mobilya', description: 'Kanepe, masa, yatak — iki uçta da iki kişi.' },
-    pallet: { label: 'Palet', description: 'Sarılmış ve istiflenmiş, hidrolik kapakla taşınır.' },
-    food: { label: 'Yemek', description: 'Restoran siparişi, doğru sıcaklıkta.' },
-  },
-  sizes: {
-    small: 'Ayakkabı kutusuna kadar — 35 × 25 × 20 cm.',
-    medium: 'Kabin bavuluna kadar — 55 × 40 × 25 cm.',
-    large: 'Çamaşır makinesine kadar — 85 × 60 × 60 cm.',
-    extraLarge: 'Daha büyük — notlarda anlatın.',
-  },
-  access: { ground: 'Zemin kat', stairs: 'Merdiven', lift: 'Asansör' },
-  load: {
-    kind: 'Ne taşıyoruz?',
-    size: 'Boyut',
-    weight: 'Ağırlık',
-    quantity: 'Adet',
-    quantityValue: (n) => `${n} parça`,
-    notes: 'Taşıyıcının bilmesi gereken başka bir şey var mı?',
-    notesPlaceholder: 'Kırılabilir, asansör kodu, nereye bırakılacağı…',
-  },
-  options: { extras: 'Ekstralar', access: 'İki adreste de erişim', window: 'Ne zaman alınmalı?' },
-  form: {
-    route: 'Güzergâh',
-    routeDescription: 'Önce alım, en son teslim.',
-    load: 'Yük',
-    photos: 'Fotoğraflar',
-    photosDescription: 'Yükün bir fotoğrafı, alacağınız teklifleri en çok iyileştiren şeydir.',
-    options: 'Seçenekler',
-    optionsDescription: 'Her biri fiyatı değiştirir.',
-    price: 'Fiyat',
-  },
-  shipmentRequest: 'Taşıma talebi',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'zorunlu' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -791,40 +753,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: 'Seçiciyi açar',
   placeOrder: 'Siparişi ver',
   placingOrder: 'Siparişin veriliyor',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: 'Başlangıç',
-  fits: (label) => `${label} içine neler sığar`,
-  unavailable: 'Bu yük için uygun değil',
-  vehicle: 'Araç',
-  vehicles: {
-    bike: {
-      label: 'Kargo bisikleti',
-      capacity: '25 kg’a kadar · 60 × 40 × 40 cm',
-      fits: ['Evrak', 'Yemek siparişi', 'Küçük bir kutu'],
-    },
-    car: {
-      label: 'Otomobil',
-      capacity: '150 kg’a kadar · 100 × 80 × 60 cm',
-      fits: ['İki bavul', 'Dört koli', 'Bir bisiklet'],
-    },
-    van: {
-      label: 'Panelvan',
-      capacity: '800 kg’a kadar · 240 × 150 × 140 cm',
-      fits: ['Bir kanepe', 'Stüdyo daire taşıma', 'Yarım palet'],
-    },
-    boxTruck: {
-      label: 'Kapalı kasa kamyon',
-      capacity: '3.500 kg’a kadar · 420 × 200 × 210 cm',
-      fits: ['İki palet', '2+1 ev taşıma', 'Hidrolik kapak'],
-    },
-    refrigerated: {
-      label: 'Frigorifik panelvan',
-      capacity: '700 kg’a kadar · 2–8 °C arası',
-      fits: ['Taze ürünler', 'Soğuk ikram', 'Çiçekler'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1385,50 +1313,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: 'Şarkı',
   share: 'Paylaş',
   listened: 'Dinlendi',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'İşi al',
-    pass: 'Geç',
-    distance: 'Mesafe',
-    duration: 'Süre',
-    window: 'Zaman aralığı',
-    pickup: 'Alım',
-    dropoff: 'Teslimat',
-    state: { taken: 'Alındı', expired: 'Süresi doldu' },
-    showPay: 'Ödemeyi göster',
-    hidePay: 'Ödemeyi gizle',
-    payDetails: 'Ödeme:',
-    sort: 'İşleri sırala',
-    filtersToggle: 'Filtreler',
-    filtersActive: (n) => `${n} uygulandı`,
-    sortOptions: {
-      pay: 'En iyi ödeyen',
-      distance: 'En yakın',
-      soonest: 'En erken başlayan',
-      expiring: 'En erken kapanan',
-    },
-    filters: { distance: 'Mesafe', pay: 'Ödeme', when: 'Ne zaman', vehicle: 'Araç' },
-    clearFilters: 'Filtreleri temizle',
-    refresh: 'Listeyi yenile',
-    count: (n) => plural('tr', n, { other: '{n} iş' }),
-    loading: 'İşler yükleniyor',
-  },
-  emptyTitle: 'Şu anda iş yok',
-  emptyDescription:
-    'Aradığınıza uyan bir şey yok. Bir filtreyi genişletin ya da bir dakika sonra yeniden yenileyin.',
-  list: 'İşler',
-  payDetailsFor: (load) => `${load} için ödeme`,
-  route: (pickup, dropoff) => `${pickup} ve ${dropoff}`,
-  bands: {
-    anyDistance: 'Her mesafe',
-    underKm: (km) => `${km} km'den az`,
-    anyTime: 'Her zaman',
-    withinHour: 'Bir saat içinde',
-    nextHours: (hours) => `Sonraki ${hours} saat`,
-    today: 'Bugün',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2052,16 +1936,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `%${percent} burada yaşamayı tavsiye ediyor`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: 'Standart', express: 'Ekspres' },
-  soldOut: 'Doldu',
-  asap: 'En kısa sürede',
-  field: 'Teslimat zamanı',
-  day: 'Gün',
-  emptyTitle: 'Boş zaman aralığı kalmadı',
-  emptyDescription: 'Başka bir gün seçin ya da ilk uygun kuryeyi bekleyin.',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Gizli', shared: 'Paylaşılan', public: 'Herkese açık' },
   places: (n) => plural('tr', n, { other: '{n} yer' }),
@@ -2475,48 +2349,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'Açık modu kullan',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: 'Kazanılan',
-  period: 'Kazanç dönemi',
-  breakdown: 'Nereden geldi',
-  payout: 'Sonraki ödeme',
-  payoutState: {
-    scheduled: 'Planlandı',
-    processing: 'Yolda',
-    paid: 'Ödendi',
-    held: 'Bekletiliyor',
-    failed: 'Başarısız',
-  },
-  chart: (label) => `${label} kazançları, döneme göre`,
-  empty: 'Henüz kazanç yok',
-  earnings: 'Kazançlar',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: 'İmza',
-    signaturePad: 'İmza alanı',
-    signatureHint: 'Parmağınızla imzalayın',
-    signed: 'İmzalandı',
-    clear: 'İmzayı temizle',
-    typeName: 'Ya da adınızı yazın',
-    typeNamePlaceholder: 'Ad soyad',
-    photo: 'Fotoğraf',
-    photoHint: 'Bıraktığınız yer ya da alıcıyla birlikte paket.',
-    code: 'Teslimat kodu',
-    codeHint: 'Alıcıdan uygulamasındaki kodu okumasını isteyin.',
-    recipient: 'Teslim alan',
-    recipientPlaceholder: 'Ad',
-    note: 'Not',
-    notePlaceholder: 'Kayda değer her şey',
-    submit: 'Teslimatı onayla',
-    required: 'Zorunlu',
-    missing: 'Onaylamadan önce bu gerekli.',
-    missingSummary: (n) => `${n} eksik bilgi var`,
-  },
-  proofOfDelivery: 'Teslimat kanıtı',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'Yüklemek için sürükleyip bırakın ya da',
   promptNative: 'Dokunarak',
@@ -2579,33 +2411,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: 'Önceki kategoriler',
   next: 'Sonraki kategoriler',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: 'Kabul et',
-    message: 'Mesaj',
-    decline: 'Reddet',
-    pickup: 'Alım',
-    eta: 'Varış',
-    vehicle: 'Araç',
-    jobs: (jobs) => `${jobs} iş`,
-    verified: 'Doğrulanmış taşıyıcı',
-    marks: { cheapest: 'En ucuz', fastest: 'En hızlı' },
-    showPrice: 'Fiyat ayrıntılarını göster',
-    hidePrice: 'Fiyat ayrıntılarını gizle',
-    priceDetails: 'Fiyat ayrıntıları:',
-    sort: 'Teklifleri sırala',
-    sortOptions: { price: 'En ucuz', eta: 'En hızlı', rating: 'En yüksek puanlı' },
-    count: (n) => plural('tr', n, { other: '{n} teklif' }),
-    loading: 'Teklifler yükleniyor',
-  },
-  emptyTitle: 'Henüz teklif yok',
-  emptyDescription:
-    'Taşıyıcılar işinizi inceliyor. İlk teklifler genellikle birkaç dakika içinde gelir.',
-  list: 'Teklifler',
-  priceDetailsFor: (name) => `${name} için fiyat ayrıntıları`,
-  rating: (rating) => `5 üzerinden ${rating}`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3078,10 +2883,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3114,7 +2917,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3145,7 +2947,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3175,8 +2976,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3184,7 +2983,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,
