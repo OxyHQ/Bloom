@@ -26,9 +26,10 @@ import com.facebook.react.uimanager.annotations.ReactProp
  *
  * Why a raster and not `Canvas.drawPath` on the hardware canvas: the GPU's
  * anti-aliasing is not the CPU rasteriser's. Measured on a Pixel 8a over all 589
- * glyphs at 16, 20 and 24dp, hardware paths differed from react-native-svg at
- * the edge of every glyph, up to 124 of 255 levels; this raster is
- * react-native-svg's own, so the pixels are the same.
+ * glyphs (16, 20 and 24dp, solid, translucent, gradient and currentColor
+ * paints), hardware paths differed from react-native-svg at the edge of every
+ * glyph, about a third of its inked pixels, by up to 131 of 255 levels; this
+ * raster is react-native-svg's own, so the pixels are the same.
  *
  * The drawing is react-native-svg's, step for step: the path parsed at the
  * screen density by its own parser ([IconPathParser]), an ARGB bitmap the size
