@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (505), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (500), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 This page is generated from `packages/bloom-language/spec/language.json` and the package's types, the same spec the compiler checks a chain against, so what it lists is exactly what builds. For how to use them, read [the tour](bloom-language-tour.mdx).
 
@@ -452,7 +452,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [cartTipPicker](#carttippicker) | `CartTipPicker` |
 | [menuItemRow](#menuitemrow) | `MenuItemRow` |
 | [menuItemOptions](#menuitemoptions) | `MenuItemOptions` |
-| [vendorCard](#vendorcard) | `VendorCard` |
 | [mediaCard](#mediacard) | `MediaCard` |
 | [songCard](#songcard) | `SongCard` |
 | [albumCard](#albumcard) | `AlbumCard` |
@@ -486,10 +485,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [artworkUploader](#artworkuploader) | `ArtworkUploader` |
 | [payoutSummaryCard](#payoutsummarycard) | `PayoutSummaryCard` |
 | [pitchCard](#pitchcard) | `PitchCard` |
-| [checkoutSummaryRow](#checkoutsummaryrow) | `CheckoutSummaryRow` |
-| [checkoutSummary](#checkoutsummary) | `CheckoutSummary` |
-| [checkoutConfirm](#checkoutconfirm) | `CheckoutConfirm` |
-| [orderConfirmation](#orderconfirmation) | `OrderConfirmation` |
 | [transportControls](#transportcontrols) | `TransportControls` |
 | [nowPlayingBar](#nowplayingbar) | `NowPlayingBar` |
 | [miniPlayer](#miniplayer) | `MiniPlayer` |
@@ -6385,22 +6380,6 @@ Modifiers:
 
 And every universal modifier.
 
-### `vendorCard`
-
-- `VendorCard(name: string, options: VendorCardOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'vendorCard'>)`: `comfortable` or `compact`.
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: Its placeholder, while the vendor loads.
-- [`.favorite()`](bloom-language-modifiers.mdx#favorite) `(value: Bound<VendorCardProps, 'favorite'>)`
-
-And every universal modifier.
-
 ### `mediaCard`
 
 - `MediaCard(title: string, options: MediaCardOptions = {})`
@@ -6773,42 +6752,6 @@ Modifiers:
 - [`.selectedMoods()`](bloom-language-modifiers.mdx#selectedmoods) `(value: Bound<PitchCardProps, 'selectedMoods'>)`
 - [`.selectedGenres()`](bloom-language-modifiers.mdx#selectedgenres) `(value: Bound<PitchCardProps, 'selectedGenres'>)`
 - [`.pitch()`](bloom-language-modifiers.mdx#pitch) `(value: Bound<PitchCardProps, 'pitch'>)`
-
-And every universal modifier.
-
-### `checkoutSummaryRow`
-
-- `CheckoutSummaryRow(label: string, options: CheckoutSummaryRowOptions = {})`
-
-Takes the universal modifiers.
-
-### `checkoutSummary`
-
-- `CheckoutSummary(content?: Child, options: CheckoutSummaryOptions = {})`: Bloom `CheckoutSummary`; `content` is what it holds beyond its rows (Bloom's children).
-
-Takes the universal modifiers.
-
-### `checkoutConfirm`
-
-- `CheckoutConfirm(options: CheckoutConfirmOptions = {})`
-
-Modifiers:
-
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: The order is being placed (Bloom's `busy`).
-
-And every universal modifier.
-
-### `orderConfirmation`
-
-- `OrderConfirmation(options: OrderConfirmationOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'orderConfirmation'>)`: `comfortable` or `compact` (Bloom's `variant`).
 
 And every universal modifier.
 

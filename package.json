@@ -3416,20 +3416,6 @@
         "default": "./lib/commonjs/price-breakdown/index.js"
       }
     },
-    "./checkout-summary": {
-      "react-native": {
-        "types": "./lib/typescript/module/checkout-summary/index.d.ts",
-        "default": "./src/checkout-summary/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/checkout-summary/index.d.ts",
-        "default": "./lib/module/checkout-summary/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/checkout-summary/index.d.ts",
-        "default": "./lib/commonjs/checkout-summary/index.js"
-      }
-    },
     "./checkout-sheet": {
       "react-native": {
         "types": "./lib/typescript/module/checkout-sheet/index.d.ts",
@@ -3456,34 +3442,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/checkout-sheet/model.d.ts",
         "default": "./lib/commonjs/checkout-sheet/model.js"
-      }
-    },
-    "./order-confirmation": {
-      "react-native": {
-        "types": "./lib/typescript/module/order-confirmation/index.d.ts",
-        "default": "./src/order-confirmation/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/order-confirmation/index.d.ts",
-        "default": "./lib/module/order-confirmation/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/order-confirmation/index.d.ts",
-        "default": "./lib/commonjs/order-confirmation/index.js"
-      }
-    },
-    "./vendor-card": {
-      "react-native": {
-        "types": "./lib/typescript/module/vendor-card/index.d.ts",
-        "default": "./src/vendor-card/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/vendor-card/index.d.ts",
-        "default": "./lib/module/vendor-card/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/vendor-card/index.d.ts",
-        "default": "./lib/commonjs/vendor-card/index.js"
       }
     },
     "./menu-item": {
@@ -5297,20 +5255,11 @@
       "price-breakdown": [
         "./lib/typescript/module/price-breakdown/index.d.ts"
       ],
-      "checkout-summary": [
-        "./lib/typescript/module/checkout-summary/index.d.ts"
-      ],
       "checkout-sheet": [
         "./lib/typescript/module/checkout-sheet/index.d.ts"
       ],
       "checkout-sheet/model": [
         "./lib/typescript/module/checkout-sheet/model.d.ts"
-      ],
-      "order-confirmation": [
-        "./lib/typescript/module/order-confirmation/index.d.ts"
-      ],
-      "vendor-card": [
-        "./lib/typescript/module/vendor-card/index.d.ts"
       ],
       "menu-item": [
         "./lib/typescript/module/menu-item/index.d.ts"

@@ -153,9 +153,6 @@ import type { LyricsKind } from './controls/lyrics';
 import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
-import type { OrderConfirmationKind } from './controls/order-confirmation';
-import type { CheckoutSummaryKind } from './controls/checkout-summary';
-import type { VendorCardKind } from './controls/vendor-card';
 import type { MenuItemKind } from './controls/menu-item';
 import type { CartKind, CartPanelPromoOptions, CartPanelTipOptions } from './controls/cart-panel';
 import type { PaymentStatusKind } from './controls/payment-status';
@@ -1974,12 +1971,9 @@ export type NodeKind =
   | DashboardCardKind
   | CartKind
   | MenuItemKind
-  | VendorCardKind
   | MediaCardKind
   | LyricsKind
   | CreatorStudioKind
-  | CheckoutSummaryKind
-  | OrderConfirmationKind
   | MediaPlayerKind
   | MusicLibraryKind
   | QueuePanelKind

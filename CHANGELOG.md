@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- Removed the commerce families no app imports: `@oxy.so/bloom/checkout-summary`, `@oxy.so/bloom/vendor-card` and `@oxy.so/bloom/order-confirmation`, their root-barrel exports and message catalogs, and their Bloom language nodes (`CheckoutSummaryRow`, `CheckoutSummary`, `CheckoutConfirm`, `VendorCard`, `OrderConfirmation`). `cart-panel`, `menu-item`, `price-breakdown`, `payment-method`, `payment-status` and `address` stay.
+
 ## 23.6.0
 
 The Bloom language 1.3.0 ships beside it (`@oxy.so/bloom-language`): a `.hoverGroup()` view that takes a press shows the press highlight on Android and iOS.

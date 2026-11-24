@@ -4276,14 +4276,13 @@ line's tone. Bloom's `payment-status`: `PaymentStatusBar(state, options?)`
 `actions` and `illustration` children; `illustration: null` draws no glyph
 tile), each `.style('surface' | 'plain')`.
 
-### Cart, menu items and vendor card
+### Cart and menu items
 
 ```ts
 CartPanel(vendor.name, basket.lines, { summary, onCheckout }).tip([tip, setTip], TIPS, { label: 'Tip' }).promo([code, setCode], { onApply: apply }).density('compact')
 CartPromoField([code, setCode], { onApply: apply, applied: basket.promo })
 CartTipPicker([tip, setTip], TIPS, { label: 'Tip' })
 MenuItemRow(dish.name, { price: dish.price, diets: dish.diets, onAdd: add }).onPress(open)
-VendorCard(shop.name, { cuisines, rating, deliveryTime }).density('compact').onPress(open)
 ```
 
 Bloom's `cart-panel`: `CartLine(name, options)` (its price, quantity and
@@ -4301,34 +4300,10 @@ options)` (its price, photo, diets, heat, quantity and handlers) and
 `MenuItemOptions(groups, options)` (the choices made are `.value([chosen,
 setChosen])`, every group's in one record, which Bloom requires: a group's new
 choice writes the record with it; its `header` a child).
-Bloom's `vendor-card`: `VendorCard(name, options?)`.
 
-- `.density('comfortable' | 'compact')` on a cart line, the cart, a menu row and
-  a vendor card; `.disabled()` on the promo field, the tip picker and the
-  options; a vendor card's `.loading()` its placeholder.
-- A menu row and a vendor card take `.onPress()` themselves. A vendor card's
-  promo tone keeps Bloom's name (`promoTone`) in its options.
-
-### Checkout summary and order confirmation
-
-```ts
-CheckoutSummary(undefined, { address, delivery, payment: PaymentMethodRow(card), price, confirm })
-CheckoutConfirm({ label: 'Place order', amount, onConfirm: place }).loading(placing)
-OrderConfirmation({ reference, status, address, items: Text(summary) }).density('compact')
-```
-
-Bloom's `checkout-summary`: `CheckoutSummaryRow(label, options?)` (its
-`content`, `leading` and `badge` children; it takes `.onPress()` itself),
-`CheckoutSummary(content?, options?)` (its address, delivery, note, extras,
-price and confirm are Bloom's data, its `payment` a child, its content what
-it holds beyond the rows) and `CheckoutConfirm(options?)` (its `terms` and
-`footer` children; `.loading()` is Bloom's `busy`). Bloom's `order-confirmation`:
-`OrderConfirmation(options?)` (its `mark`, `items` and `footer` children, its
-`markSize` a space token; its status, address, facts and actions Bloom's
-data).
-
-- `.disabled()` on the rows and the confirm; `.loading()` on the confirm; a
-  confirmation's `.density()` is Bloom's comfortable or compact `variant`.
+- `.density('comfortable' | 'compact')` on a cart line, the cart and a menu
+  row; `.disabled()` on the promo field, the tip picker and the options.
+- A menu row takes `.onPress()` itself.
 
 ### Media cards
 
@@ -5464,8 +5439,7 @@ with its reason. Nothing else is missing.
   and the month calendar; and the action bar's orientation, tone and zero
   counts Mention sets. Wave 7, the families no app imports yet: commerce
   (addresses, payment methods, the price summary, payment status, the cart,
-  menu items, the vendor card, the checkout summary, the order
-  confirmation); music (the
+  menu items); music (the
   media cards, lyrics, the media player, the creator studio, the music
   library, the queue panel, the track list); CRM (`ContactProfileCard`,
   `LeadScoreCard`, the pipeline); the dashboard cards
@@ -5473,10 +5447,10 @@ with its reason. Nothing else is missing.
   `RouteStops`, `NoteCard`, `ShareSheet`. **Decided:** colours that come
   with an item of the data (a reply preview's inside a message bubble's
   data, a lyrics view's or a player's `artworkColor`, a swipe row's `paint`,
-  an alert's tone, a CRM card's accents, a vendor card's `promoTone`) stay
+  an alert's tone, a CRM card's accents) stay
   in that item, as Bloom takes them, since they belong to the item, not to
-  the view; content Bloom takes inside its data (a price line's `info`, a
-  checkout summary's address, delivery and price) stays data, not language
+  the view; content Bloom takes inside its data (a price line's `info`) stays
+  data, not language
   children, for the same reason.
 - **Parity.** Every family above is compared against hand-written Bloom in
   the Jest suites, native and web, and in Chrome, light and dark, an

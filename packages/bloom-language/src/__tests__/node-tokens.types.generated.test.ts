@@ -2769,11 +2769,6 @@ type menuItemOptionsChecks = [
   Expect<'menuItemOptions: the universal modifiers', Universal<View<'MenuItemOptions'>, "disabled">>,
 ];
 
-type vendorCardChecks = [
-  Expect<'vendorCard: the universal modifiers', Universal<View<'VendorCard'>>>,
-  Expect<"vendorCard.density(density)", Ok<At<View<'VendorCard'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
 type mediaCardChecks = [
   Expect<'mediaCard: the universal modifiers', Universal<View<'MediaCard'>>>,
   Expect<"mediaCard.size(size: mediaCardSize)", Ok<At<View<'MediaCard'>['size'], '0'>, S['mediaCardSize']>>,
@@ -2931,23 +2926,6 @@ type payoutSummaryCardChecks = [
 
 type pitchCardChecks = [
   Expect<'pitchCard: the universal modifiers', Universal<View<'PitchCard'>>>,
-];
-
-type checkoutSummaryRowChecks = [
-  Expect<'checkoutSummaryRow: the universal modifiers', Universal<View<'CheckoutSummaryRow'>, "disabled">>,
-];
-
-type checkoutSummaryChecks = [
-  Expect<'checkoutSummary: the universal modifiers', Universal<View<'CheckoutSummary'>>>,
-];
-
-type checkoutConfirmChecks = [
-  Expect<'checkoutConfirm: the universal modifiers', Universal<View<'CheckoutConfirm'>, "disabled">>,
-];
-
-type orderConfirmationChecks = [
-  Expect<'orderConfirmation: the universal modifiers', Universal<View<'OrderConfirmation'>>>,
-  Expect<"orderConfirmation.density(density)", Ok<At<View<'OrderConfirmation'>['density'], '0'>, "comfortable" | "compact">>,
 ];
 
 type transportControlsChecks = [

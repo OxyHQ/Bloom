@@ -4694,11 +4694,6 @@
       "constructors": ["MenuItemOptions"],
       "modifiers": ["disabled", "value", "quantity"]
     },
-    "vendorCard": {
-      "constructors": ["VendorCard"],
-      "modifiers": ["density", "loading", "favorite"],
-      "densities": ["comfortable", "compact"]
-    },
     "mediaCard": {
       "constructors": ["MediaCard"],
       "modifiers": ["size", "style", "loading"],
@@ -4805,17 +4800,6 @@
     "pitchCard": {
       "constructors": ["PitchCard"],
       "modifiers": ["release", "selectedMoods", "selectedGenres", "pitch"]
-    },
-    "checkoutSummaryRow": { "constructors": ["CheckoutSummaryRow"], "modifiers": ["disabled"] },
-    "checkoutSummary": { "constructors": ["CheckoutSummary"], "modifiers": [] },
-    "checkoutConfirm": {
-      "constructors": ["CheckoutConfirm"],
-      "modifiers": ["disabled", "loading"]
-    },
-    "orderConfirmation": {
-      "constructors": ["OrderConfirmation"],
-      "modifiers": ["density"],
-      "densities": ["comfortable", "compact"]
     },
     "transportControls": {
       "constructors": ["TransportControls"],

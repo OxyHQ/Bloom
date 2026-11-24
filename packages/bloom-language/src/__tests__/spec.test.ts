@@ -268,7 +268,6 @@ import type {
   CartTipPickerView,
 } from '../controls/cart-panel';
 import type { MenuItemRowView, MenuItemOptionsView } from '../controls/menu-item';
-import type { VendorCardView } from '../controls/vendor-card';
 import type {
   MediaCardView,
   SongCardView,
@@ -305,12 +304,6 @@ import type {
   TrackMetadataFormView,
   TrackUploadRowView,
 } from '../controls/creator-studio';
-import type {
-  CheckoutSummaryRowView,
-  CheckoutSummaryView,
-  CheckoutConfirmView,
-} from '../controls/checkout-summary';
-import type { OrderConfirmationView } from '../controls/order-confirmation';
 import type {
   TransportControlsView,
   NowPlayingBarView,
@@ -1166,7 +1159,6 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CartTipPickerView>, Of<'cartTipPicker'>>,
       Same<MethodsOf<MenuItemRowView>, Of<'menuItemRow'>>,
       Same<MethodsOf<MenuItemOptionsView>, Of<'menuItemOptions'>>,
-      Same<MethodsOf<VendorCardView>, Of<'vendorCard'>>,
       Same<MethodsOf<MediaCardView>, Of<'mediaCard'>>,
       Same<MethodsOf<SongCardView>, Of<'songCard'>>,
       Same<MethodsOf<AlbumCardView>, Of<'albumCard'>>,
@@ -1200,10 +1192,6 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<TopTracksTableView>, Of<'topTracksTable'>>,
       Same<MethodsOf<TrackMetadataFormView>, Of<'trackMetadataForm'>>,
       Same<MethodsOf<TrackUploadRowView>, Of<'trackUploadRow'>>,
-      Same<MethodsOf<CheckoutSummaryRowView>, Of<'checkoutSummaryRow'>>,
-      Same<MethodsOf<CheckoutSummaryView>, Of<'checkoutSummary'>>,
-      Same<MethodsOf<CheckoutConfirmView>, Of<'checkoutConfirm'>>,
-      Same<MethodsOf<OrderConfirmationView>, Of<'orderConfirmation'>>,
       Same<MethodsOf<TransportControlsView>, Of<'transportControls'>>,
       Same<MethodsOf<NowPlayingBarView>, Of<'nowPlayingBar'>>,
       Same<MethodsOf<MiniPlayerView>, Of<'miniPlayer'>>,
@@ -1237,11 +1225,6 @@ describe('the spec drives the rules', () => {
       // A scroll view's content view takes exactly the spec's `contentView.modifiers`.
       Same<MethodsOf<ScrollContentView>, (typeof CONTENT_VIEW_MODIFIERS)[number]>,
     ] = [
-      true,
-      true,
-      true,
-      true,
-      true,
       true,
       true,
       true,

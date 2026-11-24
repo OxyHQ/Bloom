@@ -1644,13 +1644,6 @@ export type {
   MenuItemRowView,
 } from './controls/menu-item';
 
-// Vendor card (controls/vendor-card.tsx)
-export { VendorCard } from './controls/vendor-card';
-export type {
-  VendorCardOptions,
-  VendorCardView,
-} from './controls/vendor-card';
-
 // Media cards (controls/media-cards.tsx)
 export {
   MediaCard,
@@ -1766,23 +1759,6 @@ export type {
   TrackUploadRowOptions,
   TrackUploadRowView,
 } from './controls/creator-studio';
-// Checkout summary (controls/checkout-summary.tsx)
-export { CheckoutSummaryRow, CheckoutSummary, CheckoutConfirm } from './controls/checkout-summary';
-export type {
-  CheckoutConfirmOptions,
-  CheckoutConfirmView,
-  CheckoutSummaryOptions,
-  CheckoutSummaryRowOptions,
-  CheckoutSummaryRowView,
-  CheckoutSummaryView,
-} from './controls/checkout-summary';
-
-// Order confirmation (controls/order-confirmation.tsx)
-export { OrderConfirmation } from './controls/order-confirmation';
-export type {
-  OrderConfirmationOptions,
-  OrderConfirmationView,
-} from './controls/order-confirmation';
 
 // Media player (controls/media-player.tsx)
 export {

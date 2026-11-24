@@ -37,7 +37,6 @@ import type { LISTING_DETAILS_MESSAGES } from '../../listing-details/messages';
 import type { PRICE_BREAKDOWN_MESSAGES } from '../../price-breakdown/messages';
 import type { DATE_PICKER_MESSAGES } from '../../date-picker/messages';
 import type { LABEL_MESSAGES } from '../../label/messages';
-import type { CHECKOUT_SUMMARY_MESSAGES } from '../../checkout-summary/messages';
 import type { COMPOSER_PANEL_MESSAGES } from '../../composer-panel/messages';
 import type { MESSAGE_BUBBLE_MESSAGES } from '../../message-bubble/messages';
 import type { PAYMENT_STATUS_MESSAGES } from '../../payment-status/messages';
@@ -108,7 +107,6 @@ import type { SELECT_MESSAGES } from '../../select/messages';
 import type { ZOOMABLE_MEDIA_GALLERY_MESSAGES } from '../../zoomable-media-gallery/messages';
 import type { NOTIFICATION_MESSAGES } from '../../notification/messages';
 import type { PHONE_INPUT_MESSAGES } from '../../phone-input/messages';
-import type { VENDOR_CARD_MESSAGES } from '../../vendor-card/messages';
 import type { CHAT_INDICATORS_MESSAGES } from '../../chat-indicators/messages';
 import type { MEDIA_CONTROLS_MESSAGES } from '../../media-controls/messages';
 import type { INPUT_OTP_MESSAGES } from '../../input-otp/messages';
@@ -146,7 +144,6 @@ import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
 import type { SHARE_SHEET_MESSAGES } from '../../share-sheet/messages';
 import type { WINDOW_MESSAGES } from '../../window/messages';
 import type { CONNECTION_STATUS_MESSAGES } from '../../connection-status/messages';
-import type { ORDER_CONFIRMATION_MESSAGES } from '../../order-confirmation/messages';
 import type { COMPOSITION_BAR_MESSAGES } from '../../composition-bar/messages';
 
 export interface Translations {
@@ -181,7 +178,6 @@ export interface Translations {
   readonly PRICE_BREAKDOWN_MESSAGES: CatalogMessages<typeof PRICE_BREAKDOWN_MESSAGES>;
   readonly DATE_PICKER_MESSAGES: CatalogMessages<typeof DATE_PICKER_MESSAGES>;
   readonly LABEL_MESSAGES: CatalogMessages<typeof LABEL_MESSAGES>;
-  readonly CHECKOUT_SUMMARY_MESSAGES: CatalogMessages<typeof CHECKOUT_SUMMARY_MESSAGES>;
   readonly COMPOSER_PANEL_MESSAGES: CatalogMessages<typeof COMPOSER_PANEL_MESSAGES>;
   readonly MESSAGE_BUBBLE_MESSAGES: CatalogMessages<typeof MESSAGE_BUBBLE_MESSAGES>;
   readonly PAYMENT_STATUS_MESSAGES: CatalogMessages<typeof PAYMENT_STATUS_MESSAGES>;
@@ -253,7 +249,6 @@ export interface Translations {
   readonly ZOOMABLE_MEDIA_GALLERY_MESSAGES: CatalogMessages<typeof ZOOMABLE_MEDIA_GALLERY_MESSAGES>;
   readonly NOTIFICATION_MESSAGES: CatalogMessages<typeof NOTIFICATION_MESSAGES>;
   readonly PHONE_INPUT_MESSAGES: CatalogMessages<typeof PHONE_INPUT_MESSAGES>;
-  readonly VENDOR_CARD_MESSAGES: CatalogMessages<typeof VENDOR_CARD_MESSAGES>;
   readonly CHAT_INDICATORS_MESSAGES: CatalogMessages<typeof CHAT_INDICATORS_MESSAGES>;
   readonly MEDIA_CONTROLS_MESSAGES: CatalogMessages<typeof MEDIA_CONTROLS_MESSAGES>;
   readonly INPUT_OTP_MESSAGES: CatalogMessages<typeof INPUT_OTP_MESSAGES>;
@@ -292,6 +287,5 @@ export interface Translations {
   readonly SHARE_SHEET_MESSAGES: CatalogMessages<typeof SHARE_SHEET_MESSAGES>;
   readonly WINDOW_MESSAGES: CatalogMessages<typeof WINDOW_MESSAGES>;
   readonly CONNECTION_STATUS_MESSAGES: CatalogMessages<typeof CONNECTION_STATUS_MESSAGES>;
-  readonly ORDER_CONFIRMATION_MESSAGES: CatalogMessages<typeof ORDER_CONFIRMATION_MESSAGES>;
   readonly COMPOSITION_BAR_MESSAGES: CatalogMessages<typeof COMPOSITION_BAR_MESSAGES>;
 }
