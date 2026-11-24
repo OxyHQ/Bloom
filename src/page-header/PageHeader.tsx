@@ -136,7 +136,7 @@ const DEFAULT_THRESHOLD = 20;
  * on web collapses the title to nothing and on native logs a layout error. The
  * title stops centring before that happens and sits off-centre, in the room
  * between the sides. It never takes a side's own room to keep this width: a
- * title laid out under a side's controls is drawn behind them, and a glass
+ * title laid out under a side's controls is drawn behind them, and a lens
  * control refracts it (Mention's logo under its Spanish "Pregunta a Alia" pill).
  */
 const MIN_CENTERED_TITLE_WIDTH = 96;
