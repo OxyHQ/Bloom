@@ -58,8 +58,9 @@ def download(url, destination, sleep=time.sleep, clock=time.monotonic):
     # failure waits 2, 4, 8, 16, 32 s, or the host's Retry-After when it asks
     # for longer (capped at 120 s), inside a 7 minute budget per URL.
     # Each attempt starts from no file, so a partial body never survives, and
-    # success requires the file curl wrote: curl exiting 0 without one
-    # (jobs 138058057372, 138063112723) is a failed attempt, not a download.
+    # success requires a non-empty file: curl exiting 0 with no body written
+    # (always the SDK 31 runtime, jobs 138058057372, 138063112723 and
+    # 138164981120) is a failed attempt, not a download.
     # Integrity is still checked by the caller, on every route.
     # No credentials, signed redirect URLs or response bodies enter the logs.
     deadline = clock() + RETRY_BUDGET_SECONDS
@@ -74,10 +75,10 @@ def download(url, destination, sleep=time.sleep, clock=time.monotonic):
         ], capture_output=True, text=True)
         status, _, retry_after = result.stdout.partition('\n')
         status = status if status.isdigit() and len(status) == 3 else 'unknown'
-        if result.returncode == 0 and destination.is_file():
+        if result.returncode == 0 and destination.is_file() and destination.stat().st_size:
             return
         if result.returncode == 0:
-            failure = f'curl 0 wrote no file, HTTP {status}'
+            failure = f'curl 0 wrote no body, HTTP {status}'
             transient = True
         else:
             failure = f'curl {result.returncode}, HTTP {status}'

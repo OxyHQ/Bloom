@@ -128,10 +128,17 @@ class VerifiedDownloads(unittest.TestCase):
         self.assertEqual(delays, [2])
         self.assertEqual(output.read_bytes(), b'official')
 
+    def test_exit_zero_with_an_empty_body_is_retried_not_an_integrity_failure(self):
+        run, calls = self.scripted([(0, '200\n', b''), (0, '200\n', b'official')])
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            path, route = module.fetch(artifact(b'official'), self.root,
+                                       lambda url, output: module.download(url, output, sleep=lambda _: None))
+        self.assertEqual((len(calls), route, path.read_bytes()), (2, 'primary', b'official'))
+
     def test_exit_zero_without_a_file_every_time_is_a_transport_failure(self):
         run, calls = self.scripted([(0, '200\n', None)] * module.ATTEMPTS)
         with patch.object(module.subprocess, 'run', side_effect=run):
-            with self.assertRaisesRegex(module.DownloadFailure, 'curl 0 wrote no file, HTTP 200'):
+            with self.assertRaisesRegex(module.DownloadFailure, 'curl 0 wrote no body, HTTP 200'):
                 module.download('https://official.invalid', self.root / 'artifact', sleep=lambda _: None)
         self.assertEqual(len(calls), module.ATTEMPTS)
 
