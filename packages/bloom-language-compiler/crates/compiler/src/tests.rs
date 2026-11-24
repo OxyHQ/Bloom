@@ -432,6 +432,22 @@ fn a_scroll_s_content_grows() {
 }
 
 #[test]
+fn a_grid_list_spans_its_rows_and_keeps_its_header_to_its_content() {
+    let ok = compiled_with(
+        "VirtualList, Text",
+        "export const x = (items, row, span) => VirtualList(items, row).columns(3).itemLayout(span).headerContent(Text('a')).headerFitsContent();\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let text = compiled("export const x = () => Text('a').headerFitsContent();\n");
+    assert_eq!(text.diagnostics[0].message, "Text has no modifier .headerFitsContent()");
+    let fits = compiled_with(
+        "VirtualList",
+        "export const x = (items, row) => VirtualList(items, row).headerFitsContent(true);\n",
+    );
+    assert!(!fits.diagnostics.is_empty(), "a modifier of no parameters takes no argument");
+}
+
+#[test]
 fn a_tab_sizes_its_box_and_label() {
     let ok = compiled_with(
         "Tabs, TabItem",

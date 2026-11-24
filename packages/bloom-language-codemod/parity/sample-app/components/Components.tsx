@@ -591,6 +591,31 @@ export function Timeline({
   );
 }
 
+// Mention's profile media grid: full-width rows span the columns, and the header keeps to its content.
+const spanRow = (layout: { span?: number }, row: { kind: string }) => {
+  if (row.kind !== 'cell') layout.span = 3;
+};
+
+export function MediaGrid({
+  rows,
+  renderRow,
+}: {
+  rows: { id: string; kind: string }[];
+  renderRow: (info: { item: { id: string; kind: string }; index: number }) => React.ReactElement;
+}) {
+  return (
+    <VirtualList
+      data={rows}
+      keyExtractor={(row) => row.id}
+      renderItem={renderRow}
+      numColumns={3}
+      overrideItemLayout={spanRow}
+      ListHeaderComponent={<Muted>Media</Muted>}
+      ListHeaderComponentStyle={{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }}
+    />
+  );
+}
+
 export function Rows({
   rows,
   renderRow,

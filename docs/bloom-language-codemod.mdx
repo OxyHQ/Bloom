@@ -105,7 +105,7 @@ the element JSX with the reason `Node:prop`.
 | `Tabs` with its `TabsTrigger`s | `Tabs([value, set], TabItem(value, label).count(n)…).style(variant)` |
 | `SegmentedControl` with its `SegmentedControlItem`s (each its `SegmentedControlItemText`) | `Segmented([value, set], Option(value, text)…)`, `type="tabs"` its `.tabs()` |
 | `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
-| `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().onEndReached(action, threshold).stickyIndices().screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })` |
+| `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().itemLayout().onEndReached(action, threshold).stickyIndices().headerFitsContent().screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })` |
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
 | `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
 
@@ -224,7 +224,11 @@ A `VirtualList`'s is moved alike. Its `ListHeaderComponent`,
 `const` holding an element, what a render function returns (`renderEmpty()`:
 a lowercase callee, as a component is never called) embedded, or an element or
 none chosen by a plain condition (`loading ? <Spinner /> : null`); a bare name
-may be a component and stays a reason. A `Dialog`'s `onDismissed` is
+may be a component and stays a reason. Its `overrideItemLayout` is
+`.itemLayout(handler)`, as written, and a `ListHeaderComponentStyle` of exactly
+`{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }` (an object literal or a
+module constant) is `.headerFitsContent()`; any other header style is a reason.
+A `Dialog`'s `onDismissed` is
 `.onDismissed(handler)`.
 A static `contentContainerClassName` is `.contentView((v) => v…)`, the scroll
 view's content view: Bloom lays the class out in a view of its own inside the

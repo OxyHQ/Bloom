@@ -114,6 +114,30 @@ describe('VirtualList()', () => {
       windowSize: 10,
     });
   });
+
+  it('hands Bloom a grid’s item layout, and one header style that keeps the header to its content', () => {
+    const span = (layout: { span?: number }, item: string) => {
+      if (item === 'Tabs') layout.span = 3;
+    };
+    const grid = () =>
+      toElement(VirtualList(['Tabs', 'Ana'], row).columns(3).itemLayout(span).headerFitsContent());
+    const r = mount(grid());
+    const first = only(r, 'VirtualList').props;
+    expect(first).toMatchObject({ numColumns: 3, overrideItemLayout: span });
+    expect(first.ListHeaderComponentStyle).toEqual({
+      flexGrow: 0,
+      flexShrink: 0,
+      alignSelf: 'stretch',
+    });
+    // The same object on every render, so a memoised header wrapper is not drawn again.
+    act(() => r.update(themed(grid())));
+    expect(only(r, 'VirtualList').props.ListHeaderComponentStyle).toBe(
+      first.ListHeaderComponentStyle,
+    );
+    const plain = only(mount(toElement(VirtualList(['Ana'], row))), 'VirtualList').props;
+    expect(plain.ListHeaderComponentStyle).toBeUndefined();
+    expect(plain.overrideItemLayout).toBeUndefined();
+  });
 });
 
 describe('a node’s other editable values', () => {

@@ -4309,6 +4309,10 @@ export const MODIFIERS = {
   "estimatedItemSize": [
     "value"
   ],
+  "itemLayout": [
+    "value"
+  ],
+  "headerFitsContent": [],
   "stickyIndices": [
     "value"
   ],
@@ -15195,11 +15199,13 @@ export const NODE_MODIFIERS = {
     "itemType",
     "estimatedItemSize",
     "columns",
+    "itemLayout",
     "onEndReached",
     "refreshable",
     "stickyIndices",
     "restorationKey",
     "headerContent",
+    "headerFitsContent",
     "footerContent",
     "emptyState",
     "tuning",

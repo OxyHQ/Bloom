@@ -514,6 +514,7 @@ export type {
   ListText,
   ListView,
   SupportingLines,
+  VirtualListItemLayout,
   VirtualListRow,
   VirtualListRowFn,
   VirtualListScreen,

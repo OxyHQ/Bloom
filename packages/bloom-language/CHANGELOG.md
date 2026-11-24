@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0
+
+### Added
+
+- `VirtualList(...).itemLayout(fn)`: Bloom's `overrideItemLayout`. `fn(layout, item, index, columns)` sets `layout.span`, so a full-width row (a header, a tab strip) spans a grid of `.columns()`. FlashList and the web honour it; the `FlatList` fallback gives every item one column, as Bloom's does.
+- `VirtualList(...).headerFitsContent()`: the header's container is its content's height and the list's width (`ListHeaderComponentStyle`'s `flexGrow: 0, flexShrink: 0, alignSelf: 'stretch'`, one frozen object for every list), so the engine never stretches it to the viewport and a sticky row after it starts under it.
+- With both, a grid list such as Mention's profile media grid is written as `VirtualList(rows, row)`. The cost gate holds a grid with these props equal to its JSX in components, hooks and context reads, per row and for the whole list.
+
 ## 1.3.0
 
 ### Compatibility

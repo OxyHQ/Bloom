@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+### Compatibility
+
+- Its peer is `@oxy.so/bloom-language` 1.4.0 or newer, the language it writes.
+
+### Added
+
+- A `VirtualList`'s `overrideItemLayout` is `.itemLayout(handler)`, as written, and a `ListHeaderComponentStyle` of exactly `{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }` (a literal or a module constant) is `.headerFitsContent()`. Any other header style stays a reason.
+
 ## 0.2.1
 
 ### Changed

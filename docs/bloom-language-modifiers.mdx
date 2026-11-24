@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (668). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (670). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -3706,6 +3706,22 @@ The engine's first estimate of a row's height, in px.
 
 - Parameters: a value
 - Signature: `.estimatedItemSize(value: number)`
+- Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
+
+### `itemLayout`
+
+How many of the columns an item takes: the function sets `layout.span` (Bloom's `overrideItemLayout`; 1 by default), so a full-width row sits in the grid. FlashList and the web; the `FlatList` fallback gives every item one column.
+
+- Parameters: a value
+- Signature: `.itemLayout(value: VirtualListItemLayout<T>)`
+- Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
+
+### `headerFitsContent`
+
+The header is its content's height and the list's width: its container neither grows nor shrinks and stretches across (`ListHeaderComponentStyle`'s `flexGrow: 0, flexShrink: 0, alignSelf: 'stretch'`), so the engine never stretches it to the viewport and the row after it (a sticky one) starts under it.
+
+- Parameters: none
+- Signature: `.headerFitsContent()`
 - Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `stickyIndices`

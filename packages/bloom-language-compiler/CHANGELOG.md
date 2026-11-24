@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+### Changed
+
+- Checks chains against the language 1.4.0 spec: `VirtualList`'s `.itemLayout()` and `.headerFitsContent()` are accepted, and the logistics nodes and modifiers the language 1.2.0 removed are refused.
+
 ## 1.1.0
 
 ### Added
