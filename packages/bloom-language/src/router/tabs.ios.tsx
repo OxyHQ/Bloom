@@ -10,14 +10,14 @@
  */
 import { useContext } from 'react';
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useTabPager } from '@oxy.so/bloom/tab-pager';
+import { useTabPagerActions } from '@oxy.so/bloom/tab-pager';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 import { sfSymbolOf } from '../platform/sf-symbol';
 import { PrimaryDestinationContext } from './primary';
 
 export function TabViewHost() {
-  const { pages } = useTabPager();
+  const { pages } = useTabPagerActions();
   const primary = useContext(PrimaryDestinationContext);
   return (
     <NativeTabs>

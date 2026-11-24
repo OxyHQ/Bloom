@@ -121,6 +121,13 @@ From `@oxy.so/bloom/tab-pager`, under a `TabPagerProvider`:
 | `progress` | The highlight's position in bar-item units, on the UI thread. |
 | `chromeProgress` | The bar's absence, 0 to 1, on the UI thread. |
 
+`useTabPager()` re-renders on every navigation, because `activePage` changes on
+each one, a pushed route included. A component that only moves between pages
+and does not draw the page in front (a shell's primary action, a header's
+button, a composer's exit) reads `useTabPagerActions()` instead: the same fields
+without `activePage`, which change only with the pages' structure. Bloom's
+language `AppLayout` reads it, so a push does not re-render the whole shell.
+
 ## `useTabPageContentPainted(painted)`
 
 From `@oxy.so/bloom/tab-pager`, in a page. While `painted` is `false` the pager
@@ -181,7 +188,7 @@ that arbitrate a drag between the pager and a child that also scrolls.
   (`useTabsWithTriggers`) is not memoized upstream (~36ms a render on a Pixel
   10 Pro), so the layout reads only what changes with the pages' structure; the
   page in front lives in a context of its own that only the bar and
-  `useTabPager()` read.
+  `useTabPager()` read (`useTabPagerActions()` does not).
 
 `react-native-pager-view` is an **optional peer**. Without it the same pages
 switch by tap only, and a dev warning names the package.

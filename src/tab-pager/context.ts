@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo } from 'react';
 import type { SidebarNavItem } from '../sidebar/types';
 import type { TabBarItem } from '../tab-bar/types';
 import type { PageModel } from './pages';
-import type { AppDestination, TabPagerState } from './types';
+import type { AppDestination, TabPagerActions, TabPagerState } from './types';
 
 /**
  * What a mounted tabs navigator takes over from the provider.
@@ -77,13 +77,28 @@ export function useTabPagerContext(): TabPagerContextValue {
   return value;
 }
 
-/** The app's root pages: which one is in front, and how to move between them. */
-export function useTabPager(): TabPagerState {
+/**
+ * The app's root pages and how to move between them, without the page in
+ * front. It changes only with the pages' structure, so a component that only
+ * moves (a shell's primary action, a header's button, a page's own exit) does
+ * not re-render on every navigation, a pushed post included.
+ */
+export function useTabPagerActions(): TabPagerActions {
   const { pages, progress, chromeProgress, selectTab, leaveTab, selectDestination } =
     useTabPagerContext();
-  const { activePage } = useContext(TabPagerActiveContext);
   return useMemo(
-    () => ({ pages, activePage, progress, chromeProgress, selectTab, leaveTab, selectDestination }),
-    [pages, activePage, progress, chromeProgress, selectTab, leaveTab, selectDestination],
+    () => ({ pages, progress, chromeProgress, selectTab, leaveTab, selectDestination }),
+    [pages, progress, chromeProgress, selectTab, leaveTab, selectDestination],
   );
+}
+
+/**
+ * The app's root pages: which one is in front, and how to move between them.
+ * It re-renders on every navigation; read `useTabPagerActions()` when the page
+ * in front is not drawn.
+ */
+export function useTabPager(): TabPagerState {
+  const actions = useTabPagerActions();
+  const { activePage } = useContext(TabPagerActiveContext);
+  return useMemo(() => ({ ...actions, activePage }), [actions, activePage]);
 }

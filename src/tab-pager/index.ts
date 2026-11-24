@@ -1,4 +1,9 @@
-export { useTabPager } from './context';
+export { useTabPager, useTabPagerActions } from './context';
 export { useTabPageContentPainted } from './page-content';
 export { TabPagerBottomBar } from './TabPagerBottomBar';
-export type { AppDestination, TabPagerBottomBarProps, TabPagerState } from './types';
+export type {
+  AppDestination,
+  TabPagerActions,
+  TabPagerBottomBarProps,
+  TabPagerState,
+} from './types';
