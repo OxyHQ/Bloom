@@ -222,6 +222,10 @@ class ListReader<A extends unknown[], E> {
  * a read, so equal keys must not start another.
  */
 function useArgs<A extends unknown[]>(key: string, args: A | [Skip]): A | [Skip] {
+  // Left as written: the React Compiler keeps a memo by what it reads, not by
+  // the list it is given, so it dropped this one (`args` is a new array every
+  // render) and every render subscribed and observed the source again.
+  'use no memo';
   // biome-ignore lint/correctness/useExhaustiveDependencies: the key identifies the arguments
   return useMemo(() => args, [key]);
 }

@@ -189,7 +189,14 @@ resolver can return a refreshed URL for the same id), `CalendarFrame`
 (`today()`), the web `TooltipBubble` (`window.innerWidth`/`innerHeight`),
 `useMessages` (the loaded languages without a `LocaleProvider`) and the
 skeleton's `useShapeMotion` (its shimmer delay reads the clock once per
-driver; recomputed, a re-rendered shape jumped its shimmer).
+driver; recomputed, a re-rendered shape jumped its shimmer). bloom-data's
+`useArgs` keeps a list's or record's arguments while their key is the same
+(`useMemo(() => args, [key])`): the compiler keeps a memo by what it reads, so
+it dropped it (`return args`, a new array every render) and `useList` and
+`useRecord` subscribed and observed their source again on every render.
+bloom-data's suite run with its source compiled by the build's options failed
+3 of 116 tests (the skipped-arguments cases, and Mention's feed asked its
+service in a loop); with the opt-out it passes 116.
 Elsewhere an image resolver's result is kept until the resolver, the id or the
 variant changes, as an app's own compiled component keeps it (and as the chat
 screen's `useMemo` already did): only the Avatar promises a re-read on any
