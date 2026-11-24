@@ -25,7 +25,7 @@ import { StyleSheet, View } from 'react-native';
 import { openExternal } from '../hooks/link-activation';
 
 import { Card } from '../card';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { fontSize, space } from '../styles/tokens';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
@@ -105,7 +105,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   onPress,
   style,
 }) => {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
 
   const { displaySiteName, displayTitle } = useMemo(() => {
     const host = hostnameOf(url);
@@ -158,7 +158,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
             // by the consumer via `style`), letting the text block stay a
             // compact footer. Default mode: fixed intrinsic cover height.
             coverFill ? styles.coverFill : styles.coverFixed,
-            { backgroundColor: colors.backgroundTertiary },
+            { backgroundColor: tokens.popover },
           ]}
         />
       ) : null}
@@ -168,14 +168,14 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
           <Text
             variant="caption-1-medium"
             numberOfLines={1}
-            style={[styles.siteName, { color: colors.textSecondary }]}
+            style={[styles.siteName, { color: tokens.mutedForeground }]}
           >
             {displaySiteName}
           </Text>
         ) : null}
 
         {displayTitle ? (
-          <Text numberOfLines={2} style={[styles.title, { color: colors.text }]}>
+          <Text numberOfLines={2} style={[styles.title, { color: tokens.foreground }]}>
             {displayTitle}
           </Text>
         ) : null}
@@ -184,7 +184,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
           <Text
             variant="body-2-regular"
             numberOfLines={2}
-            style={[styles.description, { color: colors.textSecondary }]}
+            style={[styles.description, { color: tokens.mutedForeground }]}
           >
             {description}
           </Text>
@@ -194,7 +194,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
           <Text
             variant="caption-1-medium"
             numberOfLines={1}
-            style={[styles.author, { color: colors.textSecondary }]}
+            style={[styles.author, { color: tokens.mutedForeground }]}
           >
             {author}
           </Text>

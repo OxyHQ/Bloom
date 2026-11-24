@@ -4,7 +4,7 @@ import { View, type ViewStyle } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { ConnectionDotsBase } from './ConnectionDotsBase';
 import type { ConnectionDotsProps } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
@@ -43,7 +43,7 @@ function useKeyframes(): void {
  * `react-native-reanimated`, which cannot ship to a web bundle. This fork drives
  * the same motion with a CSS `@keyframes` animation (injected once into
  * `<head>`) and a per-dot `animation-delay`. Brand color comes from the
- * `fill-brand` role (`theme.colors.primary`). Reduced-motion (the `reducedMotion`
+ * `fill-brand` role (`tokens.primary`). Reduced-motion (the `reducedMotion`
  * prop, the JS `matchMedia` gate, or the CSS media query) renders static dots.
  */
 const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
@@ -55,11 +55,11 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
   style,
   reducedMotion,
 }) => {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   useKeyframes();
   const systemReduceMotion = usePrefersReducedMotion();
   const reduce = reducedMotion ?? systemReduceMotion;
-  const color = theme.colors.primary;
+  const color = tokens.primary;
 
   const count = Math.max(1, Math.floor(dotCount));
 

@@ -15,7 +15,7 @@ import { CharacterAvatar } from '../agent-avatar/CharacterAvatar';
 import { updateAvatarCharacter } from '../agent-avatar/character';
 import { pointerEventsStyles } from '../styles/pointer-events';
 import { ROUNDED_FULL } from '../styles/rounded-full';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { useAgentCreatorMessages } from './context';
 import { AGENT_CREATOR_HOOKS, useAgentCreatorWebCss } from './web-css';
 import { useTrackEvents } from './use-track-events';
@@ -59,7 +59,7 @@ function Emotion({
   rotation: SharedValue<number>;
   onChange: (id: string) => void;
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   // The eyes alone, on a plain circle: the chip shows the eyes, not the body they sit in.
   const eyeCharacter = useMemo(
     () =>
@@ -105,7 +105,7 @@ function Emotion({
           style={[
             styles.chip,
             CHIP_MOTION,
-            { backgroundColor, borderColor: active ? colors.icon : 'transparent' },
+            { backgroundColor, borderColor: active ? tokens.mutedForeground : 'transparent' },
           ]}
         >
           <CharacterAvatar

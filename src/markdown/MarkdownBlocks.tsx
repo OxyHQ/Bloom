@@ -6,7 +6,7 @@ import { CodeBlock } from '../code';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { useMessages } from '../locale/messages';
 import { IS_WEB } from '../styles/platform';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import { useMarkdownContext } from './context';
@@ -98,7 +98,7 @@ interface BlockProps {
 
 const MarkdownBlockView = memo(function MarkdownBlockView({ block, streaming, depth }: BlockProps) {
   const { size, renderCodeBlock } = useMarkdownContext();
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
 
   switch (block.type) {
     case 'paragraph':
@@ -124,12 +124,12 @@ const MarkdownBlockView = memo(function MarkdownBlockView({ block, streaming, de
       );
     case 'quote':
       return (
-        <View style={{ borderStartWidth: 3, borderStartColor: colors.border, paddingStart: 12 }}>
+        <View style={{ borderStartWidth: 3, borderStartColor: tokens.border, paddingStart: 12 }}>
           <MarkdownBlocks blocks={block.children} streaming={streaming} depth={depth} />
         </View>
       );
     case 'rule':
-      return <View role="separator" style={{ height: 1, backgroundColor: colors.border }} />;
+      return <View role="separator" style={{ height: 1, backgroundColor: tokens.border }} />;
     case 'list':
       return (
         <View collapsable={false} role="list" style={{ gap: ITEM_GAP }}>
@@ -169,7 +169,7 @@ interface ListItemProps {
 
 function MarkdownListItemView({ item, marker, ordered, streaming, depth }: ListItemProps) {
   const { size } = useMarkdownContext();
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const lineHeight = BODY_LINE_HEIGHT[size];
   // The marker column is as wide as the widest number, so the text hangs in line.
   const width = ordered ? 9 * marker.length + 6 : 18;
@@ -191,7 +191,7 @@ function MarkdownListItemView({ item, marker, ordered, streaming, depth }: ListI
         {item.checked !== undefined ? (
           <TaskBox checked={item.checked} />
         ) : (
-          <Text variant={BODY[size]} style={[BODY_STYLE[size], { color: colors.textSecondary }]}>
+          <Text variant={BODY[size]} style={[BODY_STYLE[size], { color: tokens.mutedForeground }]}>
             {marker}
           </Text>
         )}
@@ -210,7 +210,7 @@ function MarkdownListItemView({ item, marker, ordered, streaming, depth }: ListI
 
 /** A task item's box. Read-only: the document is not a form. */
 function TaskBox({ checked }: { checked: boolean }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(MARKDOWN_MESSAGES);
   return (
     <View
@@ -221,13 +221,13 @@ function TaskBox({ checked }: { checked: boolean }) {
         height: TASK_BOX,
         borderRadius: 4,
         borderWidth: 1.5,
-        borderColor: checked ? colors.primary : colors.border,
-        backgroundColor: checked ? colors.primary : 'transparent',
+        borderColor: checked ? tokens.primary : tokens.border,
+        backgroundColor: checked ? tokens.primary : 'transparent',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      {checked ? <RiCheckLine width={12} height={12} fill={colors.primaryForeground} /> : null}
+      {checked ? <RiCheckLine width={12} height={12} fill={tokens.primaryForeground} /> : null}
     </View>
   );
 }
@@ -243,7 +243,7 @@ const MIN_COLUMN = 96;
 
 function MarkdownTable({ align, header, rows, streaming }: TableProps) {
   const { size } = useMarkdownContext();
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
 
   const cells = (values: string[], isHeader: boolean, isLast: boolean) =>
     values.map((value, column) => {
@@ -273,7 +273,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
         style={{
           flexGrow: 1,
           borderWidth: 1,
-          borderColor: colors.border,
+          borderColor: tokens.border,
           borderRadius: 8,
           overflow: 'hidden',
         }}
@@ -281,7 +281,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
         <View
           collapsable={false}
           role="row"
-          style={{ flexDirection: 'row', backgroundColor: colors.backgroundSecondary }}
+          style={{ flexDirection: 'row', backgroundColor: tokens.surface }}
         >
           {cells(header, true, false)}
         </View>
@@ -290,7 +290,7 @@ function MarkdownTable({ align, header, rows, streaming }: TableProps) {
             collapsable={false}
             key={index}
             role="row"
-            style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border }}
+            style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: tokens.border }}
           >
             {cells(row, false, index === rows.length - 1)}
           </View>

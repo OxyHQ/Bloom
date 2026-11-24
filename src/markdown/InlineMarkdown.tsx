@@ -4,7 +4,7 @@ import { openExternal } from '../hooks/link-activation';
 
 import { Code } from '../code';
 import { IS_WEB } from '../styles/platform';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { parseInline } from './parse-inline';
 import type { InlineMarkdownProps, MarkdownInline } from './types';
 import { safeUrl } from './safe-url';
@@ -22,7 +22,7 @@ export const InlineMarkdown = memo(function InlineMarkdown({
   renderLink,
   suffix,
 }: InlineMarkdownProps) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const nodes = useMemo(
     () => suppliedNodes ?? parseInline(source ?? '', streaming),
     [suppliedNodes, source, streaming],
@@ -89,7 +89,7 @@ export const InlineMarkdown = memo(function InlineMarkdown({
               key={index}
               role="link"
               onPress={press(url)}
-              style={{ color: colors.primary, textDecorationLine: 'underline' }}
+              style={{ color: tokens.primary, textDecorationLine: 'underline' }}
               {...webLink}
             >
               {children}
