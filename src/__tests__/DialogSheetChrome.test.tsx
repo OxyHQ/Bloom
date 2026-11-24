@@ -186,18 +186,16 @@ describe('the nav bar paints its own background', () => {
     expect(typeof background).toBe('string');
 
     const stops = stopsIn(scrim);
-    // Opaque over the nav's measured box, then the header's short 12pt fade.
-    const box = Number(resolvedStyle(scrim.props.style as never).height);
-    const chrome = (box - 12) / box;
+    // A sheet's nav has no status bar to hold: the header's one eased fade runs from its top edge
+    // to nothing 12pt past its foot.
     const normalize = (color: unknown) => String(color).replace(/[ ,]+/g, '');
-    expect(stops.map((stop) => ({ ...stop, color: normalize(stop.color) }))).toEqual([
-      { offset: 0, opacity: 1, color: normalize(background) },
-      ...SCRIM_STOPS.map(({ offset, opacity }) => ({
-        offset: chrome + (1 - chrome) * offset,
+    expect(stops.map((stop) => ({ ...stop, color: normalize(stop.color) }))).toEqual(
+      SCRIM_STOPS.map(({ offset, opacity }) => ({
+        offset,
         opacity,
         color: normalize(background),
       })),
-    ]);
+    );
   });
 
   it('swaps to a dark scrim over media', () => {

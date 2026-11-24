@@ -469,13 +469,15 @@ describe('AiChatContainer without floatingChrome', () => {
     expect(api.getByTestId('chat-header')).toBeTruthy();
     expect(api.getByTestId('chat-bottom')).toBeTruthy();
     expect(api.UNSAFE_getByType(Screen).props.headerPlacement).toBe('inset');
+    // The thread runs under the header: its own 16pt plus the header's unmeasured 56pt, which the
+    // screen hands its scroller rather than padding the content box.
     const content = scroller(api).contentContainerStyle;
-    expect(content.paddingTop).toBe(16);
+    expect(content.paddingTop).toBe(56 + 16);
     expect(content.paddingBottom).toBe(12);
     expect(scroller(api).scrollIndicatorInsets).toBeUndefined();
     expect(api.UNSAFE_getByType(ScreenScrollView).props.onScroll).toBeDefined();
 
     const alone = renderIn(<AiChatThread testID="thread">turns</AiChatThread>);
-    expect(scroller(alone).contentContainerStyle).toEqual(content);
+    expect(scroller(alone).contentContainerStyle).toEqual({ ...content, paddingTop: 16 });
   });
 });

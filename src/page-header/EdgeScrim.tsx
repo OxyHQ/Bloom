@@ -30,20 +30,24 @@ import { withAlpha } from '../theme/color-utils';
  *
  * ── THE STOPS ───────────────────────────────────────────────────────────────
  *
- * Four of them describe the fading portion, after any opaque chrome region:
- * an ease-in-out (smoothstep at its thirds), the full range from opaque to
- * nothing, leaving and arriving gently. An ease-out that held 86% through the
- * first 42% of the fade read as a band that stopped at 90% and then stepped to
- * opaque at the chrome's edge: the content showed at a faint, even 10% under it
- * before it was hidden. Header/footer chrome stays opaque before that portion
- * so scrolling text cannot cross its labels.
+ * The fading portion, after any opaque region, is smoothstep sampled at 16
+ * even steps: the full range from opaque to nothing, flat where it leaves the
+ * solid colour and flat where it arrives at nothing, steepest in the middle.
+ * Enough stops that the straight segments a gradient draws between them never
+ * show a corner (four stops showed their kinks as faint bands). Every stop is
+ * the same RGB at a different alpha, so straight and premultiplied
+ * interpolation agree and no stop darkens towards black.
+ *
+ * Two earlier ramps read as a line under a floating header (Pixel 8a): an
+ * ease-out that held 86% through the first 42% of the fade (a band stopping at
+ * 90%), and the whole header held opaque with only a 12pt fade below it (text
+ * cut sharply at the header's foot). The header now holds only its status bar
+ * and fades across its row; see `PageHeader`.
  *
  * The ramp continues BELOW the header's own box: the fade needs room past the
  * layout, or it finishes at the same place the layout does, which is the line
- * again. A floating header's chrome fade is short, the inset its row keeps
- * below its islands, the way Apple's scroll edge ends just past the bar.
- * `TAIL_RATIO` is the longer tail of a full-box ramp (a photo, a linear fade)
- * and of the bottom chrome.
+ * again. `TAIL_RATIO` is the longer tail of a full-box ramp (a photo, a linear
+ * fade) and of the bottom chrome.
  *
  * ── `stopOpacity`, NOT AN `rgba()` STOP ─────────────────────────────────────
  *
@@ -82,17 +86,21 @@ export const SCRIM_TAIL_RATIO = 0.55;
 /** Measured chrome occupies this fraction of its chrome + external tail box. */
 export const SCRIM_CHROME_FRACTION = 1 / (1 + SCRIM_TAIL_RATIO);
 
+/** How many straight segments the smooth curve is drawn with. */
+const SCRIM_SEGMENTS = 16;
+
 /**
  * Offset down the ramp -> how much of the page colour survives there.
  *
  * Applied to the fading portion only; any opaque chrome region precedes it.
  */
-export const SCRIM_STOPS = [
-  { offset: 0, opacity: 1 },
-  { offset: 1 / 3, opacity: 0.74 },
-  { offset: 2 / 3, opacity: 0.26 },
-  { offset: 1, opacity: 0 },
-] as const;
+export const SCRIM_STOPS: readonly { offset: number; opacity: number }[] = Array.from(
+  { length: SCRIM_SEGMENTS + 1 },
+  (_, i) => {
+    const t = i / SCRIM_SEGMENTS;
+    return { offset: t, opacity: Math.round((1 - t * t * (3 - 2 * t)) * 1e4) / 1e4 };
+  },
+);
 const LINEAR_STOPS = [
   { offset: 0, opacity: 1 },
   { offset: 1, opacity: 0 },
@@ -112,8 +120,8 @@ export interface EdgeScrimProps {
   falloff?: 'smooth' | 'linear';
   /**
    * Fraction of the gradient box kept opaque from its anchored edge, in [0, 1].
-   * Defaults to 0 for a full-box fade. Header/footer supply their measured
-   * chrome's share of the box; the curve then occupies only the external tail.
+   * Defaults to 0 for a full-box fade. A floating header supplies its status
+   * bar's share and a footer its measured chrome's; the curve occupies the rest.
    */
   opaqueFraction?: number;
   testID?: string;

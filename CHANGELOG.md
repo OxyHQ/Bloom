@@ -6,6 +6,11 @@
 
 - Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
 
+### Fixed
+
+- On native, a `scroll="auto"` screen's list runs its content under the header: the scroller that binds `useScreenScroll` pads its own content by the header's height (`contentInsets.top`) and the content box drops its top padding. The list ended at the header's foot, so every row was cut there in a hard line and nothing passed under a floating header. A list with a refresh control should pass `contentInsets.top` as its `progressViewOffset`.
+- A floating header's scroll edge is Apple's: the page colour solid over the status bar, then one eased fade (smoothstep, drawn with 16 segments) across the header to nothing 12pt past its foot. It held the whole header opaque and faded only in a 12pt strip below it, which cut text passing under the header sharply at its foot (Pixel 8a). `EdgeScrim`'s smooth ramp is the same 16-segment smoothstep everywhere (a footer keeps its chrome opaque and fades in its tail).
+
 ## 23.7.0
 
 ### Breaking

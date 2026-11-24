@@ -15,6 +15,13 @@ export interface ScreenContextValue {
   contentInsetsHandled?: boolean;
   /** A keyboard-following footer reserves native scroll content rather than shrinking its viewport. */
   bottomInsetHandled?: boolean;
+  /**
+   * Set (false) once a native `scroll="auto"` Screen's scroller has claimed the top inset: the
+   * scroller pads its content clear of the header, so the content runs under it.
+   */
+  topInsetHandled?: boolean;
+  /** A native auto Screen's scroller claims the header's height as its own top inset; returns the release. */
+  claimTopInset?: () => () => void;
   /** Native focused-input scrolling follows the Screen's measured keyboard footer. */
   keyboardFollow?: boolean;
   keyboardFooterHeight?: number;

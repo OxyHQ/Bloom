@@ -489,7 +489,10 @@ it.each(['light', 'dark'] as const)(
   },
 );
 
-it('defaults to reserving chrome around a native scroll view', () => {
+it('defaults to reserving chrome around a native scroll view, its content running under the header', () => {
+  // The scroller pads its own content clear of the header: padding the content box ended the
+  // scroller at the header's foot, and every row was cut there in a hard line (Mention's Home,
+  // Pixel 8a), with nothing under the header for its scroll edge to fade.
   const tree = render(
     wrap(
       <Screen testID="default" header={<View />} bottomBar={<View />}>
@@ -504,15 +507,31 @@ it('defaults to reserving chrome around a native scroll view', () => {
     nativeEvent: { layout: { height: 92 } },
   });
   expect(resolvedStyle(tree.getByTestId('default-content').props.style)).toMatchObject({
-    paddingTop: 70,
+    paddingTop: 0,
     paddingBottom: 108,
   });
   expect(resolvedStyle(tree.getByTestId('default-list').props.contentContainerStyle)).toMatchObject(
     {
-      paddingTop: 0,
+      paddingTop: 70,
       paddingBottom: 0,
     },
   );
+});
+
+it('pads a native content box clear of the header while no scroller has bound', () => {
+  const tree = render(
+    wrap(
+      <Screen testID="plain" header={<View />}>
+        <View />
+      </Screen>,
+    ),
+  );
+  fireEvent(tree.getByTestId('plain-header'), 'layout', {
+    nativeEvent: { layout: { height: 70 } },
+  });
+  expect(resolvedStyle(tree.getByTestId('plain-content').props.style)).toMatchObject({
+    paddingTop: 70,
+  });
 });
 
 it('keeps its root a native parent so the header slot can overflow it', () => {
