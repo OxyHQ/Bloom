@@ -651,6 +651,40 @@ describe('ZoomableMediaGallery', () => {
     }
   });
 
+  /**
+   * With a preview (the thumbnail's own, already decoded URL) the open waits
+   * for it to paint before it hides the thumbnail and moves. Started at the
+   * commit instead, the avatar left a hole for a frame or two and the photo
+   * first appeared already on its way (Pixel 8a recording).
+   */
+  it('hides the thumbnail and starts the flight once the preview has painted', () => {
+    const flights = holdAnimations();
+    try {
+      const hidden = { value: -1 } as SharedValue<number>;
+      const api = renderGallery({ hiddenThumbIndex: hidden });
+      act(() =>
+        api.ref.current?.open(
+          [{ uri: 'https://cloud.oxy.so/full.jpg', previewUri: 'https://cloud.oxy.so/thumb.jpg' }],
+          0,
+        ),
+      );
+      expect(hidden.value).toBe(-1);
+      expect(flights.held()).toBe(0);
+      const preview = hostNodes(api.toJSON()).find(
+        (node) =>
+          node.type === 'ExpoImage' &&
+          (node.props.source as { uri?: string } | undefined)?.uri ===
+            'https://cloud.oxy.so/thumb.jpg',
+      );
+      expect(preview).toBeDefined();
+      act(() => (preview?.props.onDisplay as () => void)());
+      expect(hidden.value).toBe(0);
+      expect(flights.held()).toBeGreaterThan(0);
+    } finally {
+      flights.restore();
+    }
+  });
+
   it('gives the thumbnail back when it unmounts mid-flight', () => {
     const flights = holdAnimations();
     try {
@@ -663,5 +697,35 @@ describe('ZoomableMediaGallery', () => {
     } finally {
       flights.restore();
     }
+  });
+});
+
+/**
+ * The pager mounts with the overlay, so it must be seated on the opened page
+ * once it exists. `contentOffset` alone left the web pager on page 0 while the
+ * counter read "2 / 2", and the arrows then paged from the wrong place.
+ */
+it('seats the pager on the opened page once the overlay is committed', () => {
+  const scrollTo = jest.fn();
+  const ref = createRef<ZoomableMediaGalleryHandle>();
+  render(
+    <BloomThemeProvider mode="light" colorPreset="oxy">
+      <PortalProvider>
+        <ZoomableMediaGallery ref={ref} />
+        <PortalOutlet />
+      </PortalProvider>
+    </BloomThemeProvider>,
+    {
+      createNodeMock: (element) =>
+        (element.props as { testID?: string }).testID === 'bloom-media-gallery-pager'
+          ? { scrollTo }
+          : null,
+    },
+  );
+  act(() => ref.current?.open(IMAGES, 1));
+  expect(scrollTo).toHaveBeenCalledWith({
+    x: Dimensions.get('window').width,
+    y: 0,
+    animated: false,
   });
 });

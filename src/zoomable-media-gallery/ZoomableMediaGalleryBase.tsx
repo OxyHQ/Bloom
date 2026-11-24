@@ -655,9 +655,14 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         zoomTranslateY,
       ]);
 
-      // The open flight, started once the overlay is committed (see
-      // `FlightStart`): from the thumbnail to the fitted center. The thumbnail is
-      // hidden in the same write, so the media is never on screen twice.
+      // The open flight: from the thumbnail to the fitted center. The thumbnail
+      // is hidden in the same write, so the photo is on screen exactly once. It
+      // starts when the opened media shows a picture (`onPicture`) if it has a
+      // preview — the thumbnail's own, already decoded URL — and otherwise as
+      // soon as the overlay is committed. Started any earlier, the thumbnail
+      // was hidden and the media had flown a frame or two before its first
+      // pixel was drawn: a hole where the avatar was, then a photo already on
+      // its way.
       const flightPendingRef = useRef(false);
       const startOpenFlight = useCallback(() => {
         if (!flightPendingRef.current) return;
@@ -691,6 +696,26 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
               )
             : withSpring(1, OPEN_SPRING, landed);
       }, [flight, hiddenThumbIndex, mediaOpacity]);
+
+      // The overlay is committed (see `OnCommit`). Seat the pager on the opened
+      // page now that it exists: `contentOffset` alone is not honoured on web
+      // for a pager mounted with the overlay (it stayed on page 0 while the
+      // counter said 2 / 2), and the viewer's own layout effects run before the
+      // portal has rendered the pager.
+      const onOverlayCommit = useCallback(() => {
+        pagerRef.current?.scrollTo({
+          x: activeIndexRef.current * SCREEN_WIDTH,
+          y: 0,
+          animated: false,
+        });
+        const opened = openedItemsRef.current[activeIndexRef.current];
+        const waitsForPicture =
+          opened !== undefined &&
+          opened.kind !== 'video' &&
+          opened.previewUri !== undefined &&
+          opened.previewUri !== opened.uri;
+        if (!waitsForPicture) startOpenFlight();
+      }, [startOpenFlight, SCREEN_WIDTH]);
 
       const open = useCallback(
         (nextItems: GalleryMedia[], index: number, rect?: MeasuredRect) => {
@@ -1217,7 +1242,6 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         // dismiss. The viewer is a Portal, not an RN `Modal`, so without it nothing
         // consumed the press and back finished the whole app.
         <OverlayRoot style={styles.modalContainer} onRequestClose={handleDismiss} modal>
-          <OnCommit onCommit={startOpenFlight} />
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             {/* Shared `Backdrop` (a Pressable) rather than a `Gesture.Tap()`: the
             viewer renders through the web Portal, whose root is
@@ -1315,6 +1339,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
                                   contentFit="contain"
                                   nativeControls={videoControls}
                                   accessibilityLabel={item.alt}
+                                  onPicture={startOpenFlight}
                                   style={StyleSheet.absoluteFill}
                                 />
                               </Animated.View>
@@ -1516,6 +1541,9 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
               </Animated.View>
             )}
           </GestureHandlerRootView>
+          {/* LAST, so its layout effect runs after every ref above it — the
+              pager's included — is attached. */}
+          <OnCommit onCommit={onOverlayCommit} />
         </OverlayRoot>
       );
 
