@@ -55,6 +55,8 @@ jest.mock('../tab-pager/expo-router/PredictiveBackHost', () => ({
 jest.mock('../tab-pager/expo-router/pager-view-module', () => ({
   loadPagerView: () => (mockPagerAvailable ? () => null : null),
 }));
+// One component, as the navigator's own is: a new one per render would remount the pager under it.
+const MockNavigationContent = ({ children }: { children: unknown }) => children;
 jest.mock('expo-router/ui', () => ({
   useTabsWithTriggers: () => ({
     state: mockState,
@@ -62,7 +64,7 @@ jest.mock('expo-router/ui', () => ({
     descriptors: Object.fromEntries(
       mockRoutes.map((route) => [route.key, { navigation: mockNavigation }]),
     ),
-    NavigationContent: ({ children }: { children: unknown }) => children,
+    NavigationContent: MockNavigationContent,
   }),
 }));
 jest.mock('../tab-pager/expo-router/TabPager', () => ({

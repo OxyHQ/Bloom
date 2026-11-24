@@ -6,12 +6,15 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type RefObject,
 } from 'react';
+import type { SharedValue } from 'react-native-reanimated';
 import { useTabsWithTriggers } from 'expo-router/ui';
 import { useIsFocused, type Href } from '../../panel-routing/expo-router';
 import { hasBackOwner, subscribeBackOwnership } from '../../overlay/back-ownership';
 import { hasActiveOverlays, subscribeActiveOverlays } from '../../overlay/stack';
 import { useTabPagerContext } from '../context';
+import type { PageModel } from '../pages';
 import { stateLeavingTab } from './leave-tab';
 import { TabPager, type TabPagerHandle } from './TabPager';
 import { TabPagesHost } from './TabPagesHost';
@@ -56,6 +59,104 @@ export function TabPagerLayout() {
     triggers,
     backBehavior: 'history',
   });
+  // Expo Router creates a tab's route on its first visit; the pager renders
+  // each page from its route, so an unvisited page would be blank under the
+  // finger. `preload` adds the route without focusing it or touching history.
+  useEffect(() => {
+    for (const page of pages) {
+      if (!state.routes.some((route) => route.name === page.name)) navigation.preload(page.name);
+    }
+  }, [pages, navigation, state.routes]);
+
+  // The pager moves on the tap itself; the navigator's state follows.
+  const pager = useRef<TabPagerHandle>(null);
+  const commit = useCallback(
+    (name: string) => {
+      pager.current?.select(name);
+      navigation.navigate(name);
+    },
+    [navigation],
+  );
+  // One state change: a `RESET` to the history without the page being left.
+  const leave = useCallback(
+    (from: string, to: string) => {
+      const current = navigation.getState();
+      const next = stateLeavingTab(current, from, to);
+      navigation.dispatch(
+        next
+          ? { type: 'RESET', payload: next, target: current.key }
+          : { type: 'NAVIGATE', payload: { name: to }, target: current.key },
+      );
+    },
+    [navigation],
+  );
+
+  useEffect(() => {
+    registerCommitter({ commit, leave });
+    return () => registerCommitter(null);
+  }, [commit, leave, registerCommitter]);
+
+  if (process.env.NODE_ENV !== 'production') {
+    const missing = pages.filter((page) => !state.routeNames.includes(page.name));
+    if (missing.length > 0) {
+      console.warn(
+        `[Bloom] The tab pager's navigator has no route for ${missing
+          .map((page) => `"${page.name}"`)
+          .join(', ')}: each page needs a route file of that name in the tabs group.`,
+      );
+    }
+  }
+
+  return (
+    <NavigationContent>
+      <TabPagesHost>
+        <TabPagerWithBack
+          handle={pager}
+          model={model}
+          state={state}
+          descriptors={descriptors}
+          navigation={navigation}
+          navigationScopeKey={navigationScopeKey}
+          progress={progress}
+          chromeProgress={chromeProgress}
+          onCommit={selectTab}
+        />
+      </TabPagesHost>
+    </NavigationContent>
+  );
+}
+
+type Navigator = ReturnType<typeof useTabsWithTriggers>;
+
+interface TabPagerWithBackProps {
+  handle: RefObject<TabPagerHandle | null>;
+  model: PageModel;
+  state: Navigator['state'];
+  descriptors: Navigator['descriptors'];
+  navigation: Navigator['navigation'];
+  navigationScopeKey: string | undefined;
+  progress: SharedValue<number>;
+  chromeProgress: SharedValue<number>;
+  onCommit: (name: string) => void;
+}
+
+/**
+ * The pager and its predictive Back: everything that follows whether the tabs
+ * are the screen in front. A route pushed over the tabs changes only that, so
+ * only this re-renders for it; the navigator above (`useTabsWithTriggers`,
+ * costly to run again) does not re-render for a push or its Back.
+ */
+function TabPagerWithBack({
+  handle,
+  model,
+  state,
+  descriptors,
+  navigation,
+  navigationScopeKey,
+  progress,
+  chromeProgress,
+  onCommit,
+}: TabPagerWithBackProps) {
   const focused = useIsFocused();
   const candidatePreview = tabBackPreview(state);
   const canDelegateTabBack =
@@ -133,71 +234,19 @@ export function TabPagerLayout() {
     [navigation, state, backPreview, nativeBackAvailable],
   );
 
-  // Expo Router creates a tab's route on its first visit; the pager renders
-  // each page from its route, so an unvisited page would be blank under the
-  // finger. `preload` adds the route without focusing it or touching history.
-  useEffect(() => {
-    for (const page of pages) {
-      if (!state.routes.some((route) => route.name === page.name)) navigation.preload(page.name);
-    }
-  }, [pages, navigation, state.routes]);
-
-  // The pager moves on the tap itself; the navigator's state follows.
-  const pager = useRef<TabPagerHandle>(null);
-  const commit = useCallback(
-    (name: string) => {
-      pager.current?.select(name);
-      navigation.navigate(name);
-    },
-    [navigation],
-  );
-  // One state change: a `RESET` to the history without the page being left.
-  const leave = useCallback(
-    (from: string, to: string) => {
-      const current = navigation.getState();
-      const next = stateLeavingTab(current, from, to);
-      navigation.dispatch(
-        next
-          ? { type: 'RESET', payload: next, target: current.key }
-          : { type: 'NAVIGATE', payload: { name: to }, target: current.key },
-      );
-    },
-    [navigation],
-  );
-
-  useEffect(() => {
-    registerCommitter({ commit, leave });
-    return () => registerCommitter(null);
-  }, [commit, leave, registerCommitter]);
-
-  if (process.env.NODE_ENV !== 'production') {
-    const missing = pages.filter((page) => !state.routeNames.includes(page.name));
-    if (missing.length > 0) {
-      console.warn(
-        `[Bloom] The tab pager's navigator has no route for ${missing
-          .map((page) => `"${page.name}"`)
-          .join(', ')}: each page needs a route file of that name in the tabs group.`,
-      );
-    }
-  }
-
   return (
-    <NavigationContent>
-      <TabPagesHost>
-        <TabPager
-          handle={pager}
-          model={model}
-          state={state}
-          descriptors={descriptors}
-          progress={progress}
-          chromeProgress={chromeProgress}
-          // A swipe takes the same path as a tap, including dismissing a push.
-          onCommit={selectTab}
-          backPreview={backPreview}
-          predictiveBackEnabled={nativeBackAvailable && focused && !blocked}
-          onBackPreviewCommit={commitBackPreview}
-        />
-      </TabPagesHost>
-    </NavigationContent>
+    <TabPager
+      handle={handle}
+      model={model}
+      state={state}
+      descriptors={descriptors}
+      progress={progress}
+      chromeProgress={chromeProgress}
+      // A swipe takes the same path as a tap, including dismissing a push.
+      onCommit={onCommit}
+      backPreview={backPreview}
+      predictiveBackEnabled={nativeBackAvailable && focused && !blocked}
+      onBackPreviewCommit={commitBackPreview}
+    />
   );
 }
