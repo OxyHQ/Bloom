@@ -29,6 +29,10 @@ internal class GlassRenderer(private val density: Float, private val minimumFiel
   private val shadowPaint = Paint().apply { shader = shadow }
   private val shadowRect = RectF()
   private val foregroundRect = Rect()
+  // Where the last glass drew anything (its shadow's rect: the glass and its rim lie inside it, the material and the
+  // portal draw nothing outside the shape), and where its foreground was drawn, in window px.
+  val shadowBounds: RectF get() = shadowRect
+  val foregroundBounds: Rect get() = foregroundRect
   private val warmPaint = Paint().apply { color = Color.WHITE }
   private val windowLimits = Rect()
   private val portal = RuntimeShader(GlassPortalShader)
