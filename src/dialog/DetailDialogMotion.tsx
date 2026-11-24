@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { type LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -25,7 +25,15 @@ export function GenieSurface({
   const { isClosing = false } = useDialogContext();
   const reduced = usePrefersReducedMotion();
   const progress = useSharedValue(reduced ? 0 : 1);
-  const [height, setHeight] = useState(280);
+  // The measured height, read only by the worklet: a shared value, so a measure
+  // updates the style on the UI thread without a render or a new worklet.
+  const height = useSharedValue(280);
+  const onLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      height.value = event.nativeEvent.layout.height || 280;
+    },
+    [height],
+  );
   const [entered, setEntered] = useState(reduced || !corner);
   const { height: viewportHeight } = useWindowDimensions();
   useEffect(() => {
@@ -41,16 +49,17 @@ export function GenieSurface({
   }, [isClosing, corner, reduced]);
   const style = useAnimatedStyle(() => {
     const p = reduced ? 0 : progress.value;
+    const measured = height.value;
     const extension = 64 * phase(0, 0.42, p);
     const swallow = phase(0.32, 1, p);
-    const stretch = Math.max(0.001, ((height + extension) * (1 - swallow)) / height);
+    const stretch = Math.max(0.001, ((measured + extension) * (1 - swallow)) / measured);
     return {
       opacity: 1 - phase(0.94, 1, p),
       transform: [
         {
           translateY: corner
             ? viewportHeight * swallow * 0.5
-            : extension + (height * (1 - stretch)) / 2,
+            : extension + (measured * (1 - stretch)) / 2,
         },
         { translateX: corner ? 24 * phase(0, 0.72, p) : 0 },
         { scaleX: corner ? 1 - 0.88 * swallow : 1 },
@@ -60,10 +69,7 @@ export function GenieSurface({
   }, [progress, reduced, corner, height, viewportHeight]);
   return (
     <DetailDialogEnteredContext.Provider value={entered}>
-      <AnimatedView
-        onLayout={(event) => setHeight(event.nativeEvent.layout.height || 280)}
-        style={[corner ? { flex: 1, minHeight: 0 } : {}, style]}
-      >
+      <AnimatedView onLayout={onLayout} style={[corner ? { flex: 1, minHeight: 0 } : {}, style]}>
         {children}
       </AnimatedView>
     </DetailDialogEnteredContext.Provider>

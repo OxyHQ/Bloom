@@ -392,20 +392,29 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     const padding = expandedPadding + (collapsedPadding - expandedPadding) * progress.value;
     return { paddingLeft: padding, paddingRight: padding };
   }, [progress, expandedPadding, collapsedPadding]);
-  const [contentHeight, setContentHeight] = useState(0);
+  // The content's measured height, read only by the morph's worklet: a shared
+  // value, so a measure updates the style on the UI thread without re-rendering
+  // the sidebar or rebuilding the worklet. 0 until the first layout.
+  const contentHeight = useSharedValue(0);
+  const onContentLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      contentHeight.value = event.nativeEvent.layout.height;
+    },
+    [contentHeight],
+  );
   // A worklet copies what it reads to the UI runtime, and `tree` carries the
   // app's rows, elements and data — a `Date` among them crashes native on the
   // copy. The mapper reads only whether there is one (`worklet-captures.test.ts`).
   const treeShown = hasSections;
   const hasHeader = header != null || toolbar != null;
-  const contentMorph = useAnimatedStyle(
-    () => ({
-      height: contentHeight > 0 ? contentHeight * (1 - progress.value) : collapsed ? 0 : UNSET,
+  const contentMorph = useAnimatedStyle(() => {
+    const measured = contentHeight.value;
+    return {
+      height: measured > 0 ? measured * (1 - progress.value) : collapsed ? 0 : UNSET,
       ...(IS_WEB ? null : { opacity: 1 - progress.value }),
       marginTop: treeShown || hasHeader ? 0 : 24 * (1 - progress.value),
-    }),
-    [contentHeight, collapsed, progress, treeShown, hasHeader],
-  );
+    };
+  }, [contentHeight, collapsed, progress, treeShown, hasHeader]);
   const contentBorder =
     contentPadding == null ? 0 : surface === 'card' ? 2 : surface === 'docked' ? 1 : 0;
   const contentWidth = useAnimatedStyle(
@@ -1083,10 +1092,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           ref={contentFade.ref}
           style={[{ overflow: 'hidden', flexShrink: 0 }, contentMorph, contentFade.style]}
         >
-          <Animated.View
-            onLayout={(event) => setContentHeight(event.nativeEvent.layout.height)}
-            style={contentWidth}
-          >
+          <Animated.View onLayout={onContentLayout} style={contentWidth}>
             {content}
           </Animated.View>
         </Animated.View>
