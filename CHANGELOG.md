@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `Screen`'s `replacesBottomBar`: the screen's own bar takes the place of the app's (a post's reply prompt with the tabs docked beside it). While the screen is in front the app's `BottomBar` steps aside in one cut on the UI thread, through its own presence, stays mounted and keeps its edge claim, so nothing re-renders and the screens it covers keep their geometry; the screen's bar and content sit on the window's edge. The Bloom language says it with `.replacesBottomBar()` on a screen's root.
+
 ### Changed
 
 - A route pushed over the tab pager no longer runs its navigator again (`useTabsWithTriggers`): only the pager and its predictive Back, which follow whether the tabs are in front, re-render for the push and for its Back. `TabPagerLayout` read the focus itself, so every push and Back re-ran the navigator hook twice (once more for the render-time revision of the Back preview), before the pushed screen could mount (Mention, Pixel 8a: about 5 ms of JavaScript per run).
