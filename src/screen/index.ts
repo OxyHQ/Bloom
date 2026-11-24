@@ -15,6 +15,7 @@ export type { ScreenReselectHandler, ScreenScroller } from './reselect';
 export { useScreenViewport } from './context';
 export { useScreenBack } from './use-screen-back';
 export { useScreenVisible } from './use-screen-visible';
+export { useScreenEntered } from './use-screen-entered';
 export type { ScreenViewportValue } from './context';
 
 export { ScreenPager } from './ScreenPager';

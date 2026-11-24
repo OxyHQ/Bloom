@@ -18,6 +18,10 @@
 
 - The tab pager's fade-through to a page further away cuts on the UI thread: the pager moves with a native command the moment the page in front has faded out, and the destination fades in at once. It hopped to JavaScript there and waited behind the route change's render, which held the pager blank for 520 to 650 ms mid-fade on a Pixel 8a (Profile to Home).
 
+### Added
+
+- `useScreenEntered()` (`@oxy.so/bloom/screen`): whether the navigator has finished bringing the screen in. In a stack scene a push brings in (`stackSceneLayout`) it is false until the push transition ends (`transitionEnd`), true everywhere else; a screen mounts what can wait (a thread's replies, a reply composer) after the slide, so the native transition starts at once and runs without that work on its frames.
+
 ### Breaking
 
 - Removed `@oxy.so/bloom/teleport`, the vendored copy of react-native-teleport 1.2.0 that nothing imported (its native views were never in Bloom). The media flight keeps the one piece it used, the web move primitive in `media-flight/media-node.web.ts`.

@@ -361,6 +361,16 @@ and `AppState` per feature. Retained route screens pass `active={focused}`, as
 they already do for scroll and color recipes; a panel's visibility is part of the
 Screen's activity. Outside a Screen only the app's state counts.
 
+### Entered
+
+`useScreenEntered()` is false in a stack scene a push brings in
+(`stackSceneLayout` from `@oxy.so/bloom/panel-routing/expo-router`) until the
+stack reports the push transition over (`transitionEnd`), and true everywhere
+else: a stack's first screen, a pager's page, a panel, the web. During the slide
+a screen draws what the reader opened (its header, the item itself, a skeleton);
+what can wait (a thread's replies, a reply composer) mounts once it is true, so
+the native transition starts at once and runs without that work on its frames.
+
 ### Back
 
 `useScreenBack()` returns the Back the screen's `PageHeader` offers — its panel
