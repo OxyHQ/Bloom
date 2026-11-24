@@ -1,4 +1,5 @@
 import {
+  type Component,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -12,8 +13,9 @@ import {
 } from 'react';
 import { findNodeHandle, StyleSheet, View } from 'react-native';
 import Animated, {
+  dispatchCommand,
   Easing,
-  runOnJS,
+  useAnimatedRef,
   useAnimatedStyle,
   useEvent,
   useHandler,
@@ -135,7 +137,8 @@ export function TabPager({
   onBackPreviewCommit,
 }: TabPagerProps) {
   const PagerView = loadAnimatedPagerView();
-  const pagerRef = useRef<PagerViewHandle>(null);
+  // An animated ref: the fade-through's cut is a command the UI thread sends.
+  const pagerRef = useAnimatedRef<Component<PagerViewLikeProps> & PagerViewHandle>();
   const { pages, barPositions, chromeHidden } = model;
   const routeByName = useMemo(
     () => new Map(state.routes.map((route) => [route.name, route])),
@@ -262,18 +265,26 @@ export function TabPager({
 
   // ROUTE → PAGER: a tap, a deep link, a back gesture. The bar's presence
   // needs nothing here: the provider settles it on every route landing.
-  const cutTo = useCallback((page: number) => {
-    pagerRef.current?.setPageWithoutAnimation(page);
-  }, []);
-  // The fade-through's second half: the cut and the fade-in, from this thread,
-  // so the destination fades in only once it is there (a tap fades the page
-  // in front out while the destination is still rendering).
-  const reveal = useCallback(
+  const cutTo = useCallback(
     (page: number) => {
-      cutTo(page);
-      fade.value = withTiming(1, FADE_IN);
+      pagerRef.current?.setPageWithoutAnimation(page);
     },
-    [cutTo, fade],
+    [pagerRef],
+  );
+  // The fade-through's second half: the cut and the fade-in, on the UI thread
+  // the moment the page in front has faded out. A hop to JavaScript there would
+  // wait behind the route change's render (the whole app's, measured 520 to
+  // 650 ms on a Pixel 8a), holding the pager blank mid-fade.
+  const fadeThrough = useCallback(
+    (page: number) => {
+      fade.value = withTiming(0, FADE_OUT, (finished) => {
+        'worklet';
+        if (!finished) return;
+        dispatchCommand(pagerRef, 'setPageWithoutAnimation', [page]);
+        fade.value = withTiming(1, FADE_IN);
+      });
+    },
+    [fade, pagerRef],
   );
   // Commit the already-previewed destination before paint, without the normal
   // tap animation or visiting pages between two nonadjacent history entries.
@@ -301,15 +312,23 @@ export function TabPager({
         pagerRef.current?.setPage(page);
         return;
       } else if (!reducedMotion) {
-        fade.value = withTiming(0, FADE_OUT, (finished) => {
-          if (finished) runOnJS(reveal)(page);
-        });
+        fadeThrough(page);
       } else {
         cutTo(page);
       }
       animateMotion(progress, barPositions[page] ?? 0, 'select');
     },
-    [keyForPage, admit, PagerView, reducedMotion, fade, cutTo, reveal, progress, barPositions],
+    [
+      keyForPage,
+      admit,
+      PagerView,
+      reducedMotion,
+      fadeThrough,
+      cutTo,
+      progress,
+      barPositions,
+      pagerRef,
+    ],
   );
   useEffect(() => moveTo(focusedPage), [focusedPage, moveTo]);
   useImperativeHandle(

@@ -136,6 +136,20 @@ const Reanimated = {
     return (ratio < 0.5 ? outputRange[0] : outputRange[1]) ?? '';
   },
   runOnJS: (fn: (...args: unknown[]) => void) => fn,
+  // An animated ref is a ref whose host a worklet can address: here a plain
+  // ref, and a command reaches the component's method of that name, which is
+  // what the native command does to the view.
+  useAnimatedRef: () => {
+    const { useRef } = jest.requireActual('react');
+    return useRef(null);
+  },
+  dispatchCommand: (
+    ref: { current: Record<string, ((...args: unknown[]) => void) | undefined> | null },
+    command: string,
+    args: unknown[] = [],
+  ) => {
+    ref.current?.[command]?.(...args);
+  },
   // Reanimated's CSS engine as data: what Bloom's motion engine hands it is asserted directly.
   css: {
     keyframes: (blocks: Record<string, unknown>) => ({ keyframes: blocks }),
@@ -249,6 +263,8 @@ export const interpolate = Reanimated.interpolate;
 export const interpolateColor = Reanimated.interpolateColor;
 export const Extrapolation = Reanimated.Extrapolation;
 export const runOnJS = Reanimated.runOnJS;
+export const useAnimatedRef = Reanimated.useAnimatedRef;
+export const dispatchCommand = Reanimated.dispatchCommand;
 export const useHandler = Reanimated.useHandler;
 export const useEvent = Reanimated.useEvent;
 export const cancelAnimation = Reanimated.cancelAnimation;

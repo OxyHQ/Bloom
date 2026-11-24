@@ -14,6 +14,10 @@
 - `Avatar` reads its LIVE label only when it draws the live pill: one locale context read and one hook less per avatar.
 - An article `LinkPreviewCard` (one with a cover, or `pending`) holds its text block at its full shape, the site name, two lines of title and two of description: a late preview, or a title that runs to one line, does not change the card's height. A card without a cover stays compact.
 
+### Fixed
+
+- The tab pager's fade-through to a page further away cuts on the UI thread: the pager moves with a native command the moment the page in front has faded out, and the destination fades in at once. It hopped to JavaScript there and waited behind the route change's render, which held the pager blank for 520 to 650 ms mid-fade on a Pixel 8a (Profile to Home).
+
 ### Breaking
 
 - Removed `@oxy.so/bloom/teleport`, the vendored copy of react-native-teleport 1.2.0 that nothing imported (its native views were never in Bloom). The media flight keeps the one piece it used, the web move primitive in `media-flight/media-node.web.ts`.
