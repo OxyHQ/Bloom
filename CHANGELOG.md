@@ -12,6 +12,7 @@
 
 ### Changed
 
+- A closed `reveal` drawer at rest is out of the native view tree: on native it is `display: none`, set on the UI thread from the drawer's open amount, so its sidebar's views (about a hundred in Mention) are not created, laid out or drawn while nothing can see them; its React state stays. The first frame that opens it, by a press or the edge swipe, mounts it again. The web keeps its CSS transition and `inert`.
 - A route pushed over the tab pager no longer runs its navigator again (`useTabsWithTriggers`): only the pager and its predictive Back, which follow whether the tabs are in front, re-render for the push and for its Back. `TabPagerLayout` read the focus itself, so every push and Back re-ran the navigator hook twice (once more for the render-time revision of the Back preview), before the pushed screen could mount (Mention, Pixel 8a: about 5 ms of JavaScript per run).
 
 ### Fixed
