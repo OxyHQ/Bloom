@@ -12,7 +12,6 @@ import {
   type DataTableColumn,
 } from '../../src/data-table';
 import { RiHomeLine } from '../../src/icons/remix';
-import { RecentHiresCard } from '../../src/recent-hires-card';
 import { StatCards } from '../../src/stat-cards';
 import { useTheme } from '../../src/theme/use-theme';
 import {
@@ -27,7 +26,6 @@ import {
   PRICE_BUCKETS,
   PRODUCTS,
   PURCHASES,
-  RECENT_HIRES,
   REGIONS,
   REVENUE_RANGES,
   formatPrice,
@@ -46,7 +44,7 @@ import {
  *
  *   header   Design team › Maya › Home trail; "Welcome Maya"; the
  *            notification bell (5), Filters, Create ticket
- *   row 1    recent hires (flex) + earnings (673 fixed) side by side from `xl`
+ *   row 1    earnings
  *   row 2    revenue line chart (337 tall) + contributions side by side from `lg`
  *   KPIs     the plain stat cards (2 columns, 4 from `lg`)
  *   table    customers: filters, search, sortable columns, selection,
@@ -197,29 +195,12 @@ export function HomeDashboardTemplate() {
 
   return (
     <DashboardShell selected="home" title="Welcome Maya" crumb="Home" crumbIcon={RiHomeLine}>
-      <View
-        style={{
-          width: '100%',
-          flexDirection: bp.xl ? 'row' : 'column',
-          alignItems: bp.xl ? 'flex-start' : 'stretch',
-          gap: 16,
-        }}
-      >
-        <RecentHiresCard
-          count={56}
-          teamLabel="Design team"
-          hires={RECENT_HIRES}
-          // Stacked (below xl) `flex-1` beats `h-[329px]` in the column: content height.
-          height={bp.xl ? undefined : 'auto'}
-          style={bp.xl ? { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 } : undefined}
-        />
-        <EarningsChartCard
-          ranges={EARNINGS_RANGES}
-          yTicks={EARNINGS_Y_TICKS}
-          yMax={EARNINGS_Y_MAX}
-          style={bp.xl ? { width: 673, flexShrink: 0 } : { width: '100%' }}
-        />
-      </View>
+      <EarningsChartCard
+        ranges={EARNINGS_RANGES}
+        yTicks={EARNINGS_Y_TICKS}
+        yMax={EARNINGS_Y_MAX}
+        style={{ width: '100%' }}
+      />
       <View
         style={{
           width: '100%',

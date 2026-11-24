@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
+
 ## 23.7.0
 
 ### Breaking

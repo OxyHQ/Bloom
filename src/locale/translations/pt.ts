@@ -180,19 +180,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: 'Confirmar', ok: 'Certo' };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: 'E-mail', name: (s) => `Enviar e-mail para ${s}` },
-    phone: { action: 'Ligar', name: (s) => `Ligar para ${s}` },
-    chat: { action: 'Mensagem', name: (s) => `Enviar mensagem para ${s}` },
-    meeting: { action: 'Reunião', name: (s) => `Agendar reunião com ${s}` },
-    video: { action: 'Vídeo', name: (s) => `Iniciar videochamada com ${s}` },
-    website: { action: 'Site', name: (s) => `Abrir o site de ${s}` },
-  },
-  labelsFor: (name) => `Etiquetas de ${name}`,
-  owner: 'Responsável',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'Rascunho:',
@@ -225,16 +212,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'Sua história',
   addStory: 'Adicionar à sua história',
   storyOf: (name) => `História de ${name}`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'Fixada',
-  locked: 'Protegida',
-  attachments: (n) => plural('pt', n, { one: '{n} anexo', other: '{n} anexos' }),
-  select: 'Selecionar nota',
-  checklistDone: 'Concluído',
-  checklistTodo: 'A fazer',
-  more: (n) => `mais ${n}`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1271,12 +1248,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Ir para a página ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'Pontuação do lead',
-  factors: 'Do que é composta',
-  bands: { cold: 'Frio', warm: 'Morno', hot: 'Quente' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Carro', transit: 'Transporte público', walk: 'A pé', cycle: 'Bicicleta' },
   traffic: { light: 'Trânsito leve', moderate: 'Trânsito moderado', heavy: 'Trânsito intenso' },
@@ -1618,10 +1589,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, microfone desativado`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'Contratações recentes',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Rascunho:',
   unread: 'Não lido',
@@ -1840,17 +1807,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   votes: (n) =>
     n === 0 ? 'Nenhum voto' : plural('pt', n, { one: '{n} voto', other: '{n} votos' }),
   sticker: 'Figurinha',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'No prazo', 'at-risk': 'Em risco', stalled: 'Parado' },
-  stalledFor: (duration) => `Parado há ${duration}`,
-  move: (title) => `Mover ${title}`,
-  stages: 'Etapas do funil',
-  stageWithCount: (name, n) =>
-    `${name}, ${plural('pt', n, { one: '{n} negócio', other: '{n} negócios' })}`,
-  empty: 'Nenhum negócio nesta etapa',
-  loadMore: 'Carregar mais',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2899,9 +2855,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2950,7 +2904,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2965,7 +2918,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2977,7 +2929,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

@@ -176,20 +176,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: 'Onayla', ok: 'Tamam' };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  // The same colon form: Turkish case suffixes depend on the name's vowels.
-  channels: {
-    email: { action: 'E-posta', name: (s) => `E-posta gönder: ${s}` },
-    phone: { action: 'Ara', name: (s) => `Ara: ${s}` },
-    chat: { action: 'Mesaj', name: (s) => `Mesaj gönder: ${s}` },
-    meeting: { action: 'Toplantı', name: (s) => `Toplantı planla: ${s}` },
-    video: { action: 'Görüntülü', name: (s) => `Görüntülü arama başlat: ${s}` },
-    website: { action: 'Web sitesi', name: (s) => `Web sitesini aç: ${s}` },
-  },
-  labelsFor: (name) => `Etiketler: ${name}`,
-  owner: 'Sorumlu',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'Taslak:',
@@ -215,16 +201,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'Hikayen',
   addStory: 'Hikayene ekle',
   storyOf: (name) => `Hikaye: ${name}`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'Sabitlendi',
-  locked: 'Korumalı',
-  attachments: (n) => plural('tr', n, { other: '{n} ek' }),
-  select: 'Notu seç',
-  checklistDone: 'Tamamlandı',
-  checklistTodo: 'Yapılacak',
-  more: (n) => `${n} tane daha`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1228,12 +1204,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `${page}. sayfaya git`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'Potansiyel müşteri puanı',
-  factors: 'Nelerden oluşuyor',
-  bands: { cold: 'Soğuk', warm: 'Ilık', hot: 'Sıcak' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Araba', transit: 'Toplu taşıma', walk: 'Yürüyüş', cycle: 'Bisiklet' },
   traffic: { light: 'Trafik akıcı', moderate: 'Orta yoğunlukta trafik', heavy: 'Yoğun trafik' },
@@ -1560,10 +1530,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, sesi kapalı`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'Son işe alımlar',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Taslak:',
   unread: 'Okunmadı',
@@ -1776,16 +1742,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   yourAnswer: 'cevabınız',
   votes: (n) => (n === 0 ? 'Oy yok' : `${n} oy`),
   sticker: 'Çıkartma',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'Yolunda', 'at-risk': 'Risk altında', stalled: 'Durdu' },
-  stalledFor: (duration) => `${duration} süredir duruyor`,
-  move: (title) => `${title} fırsatını taşı`,
-  stages: 'Satış hattı aşamaları',
-  stageWithCount: (name, n) => `${name}, ${n} fırsat`,
-  empty: 'Bu aşamada fırsat yok',
-  loadMore: 'Daha fazla yükle',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2828,9 +2784,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2879,7 +2833,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2894,7 +2847,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2906,7 +2858,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

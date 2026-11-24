@@ -284,13 +284,11 @@ type S = {
   "radarLegend": "bottom" | "top" | "overlay";
   "methodTitleAlign": "left" | "center";
   "voiceSize": "sm" | "md" | "lg";
-  "noteCardLayout": "grid" | "row";
   "shareSheetSize": "sm" | "md" | "lg";
   "outlineNavStyle": "full" | "compact";
   "choiceListStyle": "list" | "picker";
   "priceLineTone": "default" | "discount" | "muted";
   "paymentStatusStyle": "surface" | "plain";
-  "pipelineLayout": "auto" | "board" | "single";
   "mediaCardSize": "large" | "medium" | "small";
   "mediaCardLayout": "tile" | "row";
   "lyricsSize": "large" | "medium" | "small";
@@ -2627,17 +2625,6 @@ type routeStopsChecks = [
   Expect<"routeStops.density(density)", Ok<At<View<'RouteStops'>['density'], '0'>, "comfortable" | "compact">>,
 ];
 
-type noteCardChecks = [
-  Expect<'noteCard: the universal modifiers', Universal<View<'NoteCard'>>>,
-  Expect<"noteCard.style(style: noteCardLayout)", Ok<At<View<'NoteCard'>['style'], '0'>, S['noteCardLayout']>>,
-  Expect<"noteCard.tint(tint: accentTone)", Ok<At<View<'NoteCard'>['tint'], '0'>, S['accentTone']>>,
-];
-
-type noteCardSkeletonChecks = [
-  Expect<'noteCardSkeleton: the universal modifiers', Universal<View<'NoteCardSkeleton'>>>,
-  Expect<"noteCardSkeleton.style(style: noteCardLayout)", Ok<At<View<'NoteCardSkeleton'>['style'], '0'>, S['noteCardLayout']>>,
-];
-
 type shareSheetChecks = [
   Expect<'shareSheet: the universal modifiers', Universal<View<'ShareSheet'>>>,
   Expect<"shareSheet.size(size: shareSheetSize)", Ok<At<View<'ShareSheet'>['size'], '0'>, S['shareSheetSize']>>,
@@ -2708,38 +2695,12 @@ type paymentStatusBlockChecks = [
   Expect<"paymentStatusBlock.style(style: paymentStatusStyle)", Ok<At<View<'PaymentStatusBlock'>['style'], '0'>, S['paymentStatusStyle']>>,
 ];
 
-type contactProfileCardChecks = [
-  Expect<'contactProfileCard: the universal modifiers', Universal<View<'ContactProfileCard'>>>,
-  Expect<"contactProfileCard.density(density)", Ok<At<View<'ContactProfileCard'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type leadScoreCardChecks = [
-  Expect<'leadScoreCard: the universal modifiers', Universal<View<'LeadScoreCard'>>>,
-];
-
-type dealCardChecks = [
-  Expect<'dealCard: the universal modifiers', Universal<View<'DealCard'>>>,
-];
-
-type pipelineColumnChecks = [
-  Expect<'pipelineColumn: the universal modifiers', Universal<View<'PipelineColumn'>>>,
-];
-
-type pipelineBoardChecks = [
-  Expect<'pipelineBoard: the universal modifiers', Universal<View<'PipelineBoard'>>>,
-  Expect<"pipelineBoard.style(style: pipelineLayout)", Ok<At<View<'PipelineBoard'>['style'], '0'>, S['pipelineLayout']>>,
-];
-
 type importantAlertsCardChecks = [
   Expect<'importantAlertsCard: the universal modifiers', Universal<View<'ImportantAlertsCard'>>>,
 ];
 
 type patientInfoCardChecks = [
   Expect<'patientInfoCard: the universal modifiers', Universal<View<'PatientInfoCard'>>>,
-];
-
-type recentHiresCardChecks = [
-  Expect<'recentHiresCard: the universal modifiers', Universal<View<'RecentHiresCard'>>>,
 ];
 
 type cartLineChecks = [

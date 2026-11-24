@@ -585,7 +585,7 @@ fn the_button_leftovers_are_checked() {
     assert_eq!(
         output.diagnostics[0].help.as_deref(),
         Some(
-            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 20 more; density tokens: default, compact"
+            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 19 more; density tokens: default, compact"
         )
     );
 }
@@ -2803,16 +2803,13 @@ fn the_agent_chats_are_checked() {
 }
 
 #[test]
-fn route_stops_note_cards_and_the_share_sheet_are_checked() {
-    let imports = "import { NoteCard, NoteCardSkeleton, RouteStops, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
+fn route_stops_and_the_share_sheet_are_checked() {
+    let imports = "import { RouteStops, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (s) => VStack(RouteStops(s).density('compact'), NoteCard('a').style('row').tint('warning').loading(), NoteCardSkeleton().style('grid').lines(2), ShareSheet().size('lg'));\n",
-    );
+    let valid =
+        check("export const x = (s) => VStack(RouteStops(s).density('compact'), ShareSheet().size('lg'));\n");
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
-        ("NoteCard('a').style('list')", "Unknown noteCardLayout token 'list' for .style()"),
-        ("NoteCard('a').tint('rose')", "Unknown accentTone token 'rose' for .tint()"),
         ("ShareSheet().size('xl')", "Unknown shareSheetSize token 'xl' for .size()"),
         ("RouteStops(b).size('sm')", "RouteStops has no modifier .size()"),
     ];
@@ -2882,31 +2879,10 @@ fn the_price_breakdown_and_payment_status_are_checked() {
 }
 
 #[test]
-fn the_crm_families_are_checked() {
-    let imports =
-        "import { ContactProfileCard, DealCard, PipelineBoard, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (s, r) => VStack(ContactProfileCard('a').density('compact'), DealCard('b'), PipelineBoard(s, r).style('single').stage([s, r]));\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("PipelineBoard(s, r).style('kanban')", "Unknown pipelineLayout token 'kanban' for .style()"),
-        ("ContactProfileCard('a').density('cozy')", "Unknown density token 'cozy' for .density()"),
-        ("DealCard('a').size('sm')", "DealCard has no modifier .size()"),
-        ("DealCard('a').stage([s, r])", "DealCard has no modifier .stage()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (s, r) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
 fn the_dashboard_cards_are_checked() {
-    let imports = "import { ImportantAlertsCard, RecentHiresCard } from '@oxy.so/bloom-language';\n";
+    let imports = "import { ImportantAlertsCard } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check("export const x = (a, h) => RecentHiresCard(h, 4).padding('md');\n");
+    let valid = check("export const x = (a) => ImportantAlertsCard(a, 4).padding('md');\n");
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let output = check("export const x = (a) => ImportantAlertsCard(a, 2).style('rose');\n");
     assert_eq!(output.diagnostics[0].message, "ImportantAlertsCard has no modifier .style()");

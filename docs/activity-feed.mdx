@@ -54,7 +54,7 @@ would fit.
 `entry.day` is already formatted by the app ("Today", "12 March"), and
 `groupActivityByDay` buckets on that exact string in first-seen order.
 
-Bloom does no date maths here, exactly as it does no money maths in `pipeline`.
+Bloom does no date maths here.
 The app has the timezone, the locale and the decision about whether today is
 called "Today"; a component that parsed a date would be guessing at all three,
 and could then disagree with the heading it drew. Entries of the same day still

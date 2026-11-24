@@ -11,7 +11,6 @@ import { AvatarGroup } from '../avatar-group';
 import { AVATAR_GROUP_MESSAGES } from '../avatar-group/messages';
 import { Carousel, CarouselItem } from '../carousel';
 import { CodeBlock } from '../code';
-import { ContactProfileCard } from '../contact-card';
 import { LocaleProvider } from '../locale';
 import { OutlineNav } from '../outline-nav';
 import { SocialButton, socialButtonLabel } from '../social-button';
@@ -23,7 +22,7 @@ jest.mock('../settings-modal/modal-portal', () => ({
   ModalPortal: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-describe('carousel, code, outline-nav, contact-card, avatar-group, social-button', () => {
+describe('carousel, code, outline-nav, avatar-group, social-button', () => {
   function renderIn(locale: string, ui: React.ReactElement) {
     return render(
       <BloomThemeProvider mode="light" colorPreset="teal">
@@ -103,35 +102,6 @@ describe('carousel, code, outline-nav, contact-card, avatar-group, social-button
         <OutlineNav headings={headings} activeId="a" labels={{ outline: 'Índice' }} />,
       );
       expect(getByText('Índice')).toBeTruthy();
-    });
-  });
-
-  describe('contact-card', () => {
-    it('names channels, chips and the owner in the provider locale', () => {
-      const { getByLabelText, getByText } = renderIn(
-        'es',
-        <ContactProfileCard
-          name="Nora Vance"
-          channels={[
-            { kind: 'phone', onPress: () => {} },
-            { kind: 'website', onPress: () => {} },
-          ]}
-          tags={['VIP']}
-          owner={{ name: 'Marta' }}
-        />,
-      );
-      expect(getByLabelText('Llamar a Nora Vance')).toBeTruthy();
-      expect(getByLabelText('Abrir el sitio web de Nora Vance')).toBeTruthy();
-      expect(getByLabelText('Etiquetas de Nora Vance')).toBeTruthy();
-      expect(getByText('Responsable · Marta')).toBeTruthy();
-    });
-
-    it("lets the owner's own label win", () => {
-      const { getByText } = renderIn(
-        'es',
-        <ContactProfileCard name="Nora" owner={{ name: 'Marta', label: 'Gestora' }} />,
-      );
-      expect(getByText('Gestora · Marta')).toBeTruthy();
     });
   });
 

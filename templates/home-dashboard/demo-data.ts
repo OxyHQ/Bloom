@@ -17,46 +17,13 @@ import {
   RiGroupLine,
   RiShoppingBasketLine,
 } from '../../src/icons/remix';
-import type { RecentHire } from '../../src/recent-hires-card';
 import type { StatCardsItem } from '../../src/stat-cards';
-import { AVATARS, MONTHS, PHOTO_PEOPLE, assetUri, makeRng } from '../shared/dashboard';
+import { MONTHS, PHOTO_PEOPLE, makeRng } from '../shared/dashboard';
 
 /**
  * Demo data for the Home Dashboard template. The sidebar, header and photo
- * people are the dashboard family's shared demo data (`../shared/dashboard`);
- * the recent hires are shared with the HR template.
+ * people are the dashboard family's shared demo data (`../shared/dashboard`).
  */
-
-// ---------------------------------------------------------------------------
-//  Recent hires
-// ---------------------------------------------------------------------------
-
-export const RECENT_HIRES: RecentHire[] = [
-  {
-    name: 'Livia Saris',
-    joined: 'Joined today',
-    role: 'Backend Engineer',
-    avatar: assetUri(AVATARS.liviaSaris),
-  },
-  {
-    name: 'Jaydon Aminoff',
-    joined: '2 days ago',
-    role: 'UI Designer',
-    avatar: assetUri(AVATARS.jaydonAminoff),
-  },
-  {
-    name: 'Maria Lubin',
-    joined: '5 days ago',
-    role: 'User Researcher',
-    avatar: assetUri(AVATARS.mariaLubin),
-  },
-  {
-    name: 'Ann Press',
-    joined: 'A week ago',
-    role: 'DevOps Engineer',
-    avatar: assetUri(AVATARS.annPress),
-  },
-];
 
 // ---------------------------------------------------------------------------
 //  Charts (earnings, line, contributions)

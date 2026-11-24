@@ -1104,13 +1104,11 @@
     "radarLegend": ["bottom", "top", "overlay"],
     "methodTitleAlign": ["left", "center"],
     "voiceSize": ["sm", "md", "lg"],
-    "noteCardLayout": ["grid", "row"],
     "shareSheetSize": ["sm", "md", "lg"],
     "outlineNavStyle": ["full", "compact"],
     "choiceListStyle": ["list", "picker"],
     "priceLineTone": ["default", "discount", "muted"],
     "paymentStatusStyle": ["surface", "plain"],
-    "pipelineLayout": ["auto", "board", "single"],
     "mediaCardSize": ["large", "medium", "small"],
     "mediaCardLayout": ["tile", "row"],
     "lyricsSize": ["large", "medium", "small"],
@@ -2017,7 +2015,6 @@
     "tip": ["value", "value", "value?"],
     "promo": ["value", "value"],
     "search": ["value", "value?"],
-    "stage": ["value"],
     "destination": ["value"]
   },
   "universal": [
@@ -4592,17 +4589,6 @@
       "modifiers": ["density"],
       "densities": ["comfortable", "compact"]
     },
-    "noteCard": {
-      "constructors": ["NoteCard"],
-      "modifiers": ["style", "tint", "loading", "selected"],
-      "style": "noteCardLayout",
-      "tint": "accentTone"
-    },
-    "noteCardSkeleton": {
-      "constructors": ["NoteCardSkeleton"],
-      "modifiers": ["style", "lines"],
-      "style": "noteCardLayout"
-    },
     "shareSheet": {
       "constructors": ["ShareSheet"],
       "modifiers": ["size", "search"],
@@ -4661,22 +4647,8 @@
       "modifiers": ["style"],
       "style": "paymentStatusStyle"
     },
-    "contactProfileCard": {
-      "constructors": ["ContactProfileCard"],
-      "modifiers": ["density"],
-      "densities": ["comfortable", "compact"]
-    },
-    "leadScoreCard": { "constructors": ["LeadScoreCard"], "modifiers": [] },
-    "dealCard": { "constructors": ["DealCard"], "modifiers": [] },
-    "pipelineColumn": { "constructors": ["PipelineColumn"], "modifiers": [] },
-    "pipelineBoard": {
-      "constructors": ["PipelineBoard"],
-      "modifiers": ["style", "stage"],
-      "style": "pipelineLayout"
-    },
     "importantAlertsCard": { "constructors": ["ImportantAlertsCard"], "modifiers": [] },
     "patientInfoCard": { "constructors": ["PatientInfoCard"], "modifiers": [] },
-    "recentHiresCard": { "constructors": ["RecentHiresCard"], "modifiers": [] },
     "cartLine": {
       "constructors": ["CartLine"],
       "modifiers": ["density", "quantity"],

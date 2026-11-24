@@ -111,7 +111,6 @@ import { ROUTE_NOTE_SHARE_CASES } from '../../parity/route-note-share.cases';
 import { GENERIC_CASES } from '../../parity/generic.cases';
 import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
 import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
-import { CRM_CASES } from '../../parity/crm.cases';
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
 import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
 import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
@@ -239,7 +238,6 @@ export const FAMILIES = {
   generic: GENERIC_CASES,
   addressPayment: ADDRESS_PAYMENT_CASES,
   pricePaymentStatus: PRICE_PAYMENT_STATUS_CASES,
-  crm: CRM_CASES,
   dashboardCard: DASHBOARD_CARD_CASES,
   cartMenuVendor: CART_MENU_VENDOR_CASES,
   mediaCard: MEDIA_CARD_CASES,

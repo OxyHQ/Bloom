@@ -183,19 +183,6 @@ const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = {
   ok: 'D’accord',
 };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: 'E-mail', name: (s) => `Envoyer un e-mail à ${s}` },
-    phone: { action: 'Appeler', name: (s) => `Appeler ${s}` },
-    chat: { action: 'Message', name: (s) => `Envoyer un message à ${s}` },
-    meeting: { action: 'Réunion', name: (s) => `Planifier une réunion avec ${s}` },
-    video: { action: 'Vidéo', name: (s) => `Lancer un appel vidéo avec ${s}` },
-    website: { action: 'Site web', name: (s) => `Ouvrir le site web de ${s}` },
-  },
-  labelsFor: (name) => `Libellés de ${name}`,
-  owner: 'Responsable',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'Brouillon :',
@@ -228,16 +215,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'Votre story',
   addStory: 'Ajouter à votre story',
   storyOf: (name) => `Story de ${name}`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'Épinglée',
-  locked: 'Protégée',
-  attachments: (n) => plural('fr', n, { one: '{n} pièce jointe', other: '{n} pièces jointes' }),
-  select: 'Sélectionner la note',
-  checklistDone: 'Terminé',
-  checklistTodo: 'À faire',
-  more: (n) => `${n} de plus`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1270,12 +1247,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Aller à la page ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'Score du prospect',
-  factors: 'Ce qui le compose',
-  bands: { cold: 'Froid', warm: 'Tiède', hot: 'Chaud' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Voiture', transit: 'Transports en commun', walk: 'À pied', cycle: 'Vélo' },
   traffic: { light: 'Trafic fluide', moderate: 'Trafic modéré', heavy: 'Trafic dense' },
@@ -1620,10 +1591,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, micro coupé`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'Recrutements récents',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Brouillon :',
   unread: 'Non lu',
@@ -1841,17 +1808,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   yourAnswer: 'votre réponse',
   votes: (n) => (n === 0 ? 'Aucun vote' : plural('fr', n, { one: '{n} vote', other: '{n} votes' })),
   sticker: 'Sticker',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'En bonne voie', 'at-risk': 'À risque', stalled: 'Bloqué' },
-  stalledFor: (duration) => `Bloqué depuis ${duration}`,
-  move: (title) => `Déplacer ${title}`,
-  stages: 'Étapes du pipeline',
-  stageWithCount: (name, n) =>
-    `${name}, ${plural('fr', n, { one: '{n} affaire', other: '{n} affaires' })}`,
-  empty: 'Aucune affaire à cette étape',
-  loadMore: 'Charger plus',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2901,9 +2857,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2952,7 +2906,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2967,7 +2920,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2979,7 +2931,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

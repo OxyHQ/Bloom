@@ -306,7 +306,6 @@ export * from './row-actions';
 export * from './chart-cards';
 export * from './calendar';
 export * from './stat-cards';
-export * from './recent-hires-card';
 export * from './ai-profile-card';
 export * from './cover-header';
 export * from './important-alerts-card';
@@ -1920,72 +1919,6 @@ export * as Code from './code';
 // Fonts
 export * as Fonts from './fonts';
 export * from './creator-studio';
-
-// CRM — people and companies, deals and the board they move on, what was done
-// with a customer, and how good a lead is. Named exports rather than `export *`
-// so the barrel says what each family publishes: `chat-people` already offers a
-// `ContactRow` and `chart-cards` an `ActivityDay`, and a star export is how two
-// families come to disagree about one name without anything failing.
-export {
-  ContactProfileCard,
-  CONTACT_AVATAR_OVERLAP,
-  CONTACT_AVATAR_SIZE,
-  CONTACT_CHANNEL,
-  CONTACT_CHANNEL_HIT,
-  CONTACT_CHANNEL_SIZE,
-  CONTACT_CONTENT_TOP,
-  CONTACT_COVER_HEIGHT,
-  CONTACT_NARROW_WIDTH,
-  CONTACT_OWNER_AVATAR_SIZE,
-  CONTACT_PROFILE_PADDING,
-  CONTACT_ROW_MIN_HEIGHT,
-  CONTACT_TILE_PADDING,
-  CONTACT_TILE_RADIUS,
-  contactActionsAreLabelled,
-  contactCoverWash,
-  contactMetaLine,
-  contactStatRows,
-  resolveContactPaint,
-} from './contact-card';
-export type {
-  ContactChannel,
-  ContactChannelKind,
-  ContactOwner,
-  ContactPaint,
-  ContactProfileCardProps,
-  ContactProfileDensity,
-  ContactProfileHeadline,
-  ContactProfilePerson,
-  ContactProfileStat,
-  ContactStatus,
-  ContactSubjectKind,
-} from './contact-card';
-export {
-  DealCard,
-  DEAL_CARD_PADDING,
-  DEAL_HEALTH,
-  PipelineBoard,
-  PipelineColumn,
-  PIPELINE_CARD_GAP,
-  PIPELINE_COLUMN_PADDING,
-  PIPELINE_COLUMN_WIDTH,
-  PIPELINE_SINGLE_MAX_WIDTH,
-  PIPELINE_SKELETON_CARDS,
-  dealHealthLabel,
-  dealHealthTone,
-  pipelineColumnFill,
-  resolvePipelinePaint,
-} from './pipeline';
-export type {
-  DealCardProps,
-  DealHealth,
-  DealOwner,
-  PipelineBoardLayout,
-  PipelineBoardProps,
-  PipelineColumnProps,
-  PipelinePaint,
-  PipelineStage,
-} from './pipeline';
 export {
   ActivityFeed,
   ActivityFeedFilters,
@@ -2008,34 +1941,6 @@ export type {
   ActivityFeedPaint,
   ActivityFeedProps,
 } from './activity-feed';
-export {
-  LeadScoreCard,
-  LEAD_FACTOR_MARK_RADIUS,
-  LEAD_FACTOR_MARK_SIZE,
-  LEAD_FACTOR_ROW_PADDING,
-  LEAD_SCORE_BAND,
-  LEAD_SCORE_CARD_PADDING,
-  LEAD_SCORE_PANEL_GAP,
-  LEAD_SCORE_PANEL_PADDING,
-  LEAD_SCORE_PANEL_RADIUS,
-  LEAD_SCORE_RING_SIZE,
-  LEAD_SCORE_RING_THICKNESS,
-  LEAD_SCORE_THRESHOLDS,
-  LEAD_SCORE_TREND,
-  factorLine,
-  formatContribution,
-  resolveLeadScoreBand,
-  resolveLeadScorePaint,
-} from './lead-score';
-export type {
-  LeadScoreBand,
-  LeadScoreCardProps,
-  LeadScoreFactor,
-  LeadScorePaint,
-  LeadScoreTrend,
-} from './lead-score';
-// Notes and long documents
-export * from './note-card';
 export * from './note-editor';
 export * from './outline-nav';
 export * from './tag-field';

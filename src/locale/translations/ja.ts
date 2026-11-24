@@ -173,19 +173,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: '確認', ok: '了解' };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: 'メール', name: (s) => `${s}にメールを送信` },
-    phone: { action: '電話', name: (s) => `${s}に電話` },
-    chat: { action: 'メッセージ', name: (s) => `${s}にメッセージを送信` },
-    meeting: { action: 'ミーティング', name: (s) => `${s}とのミーティングを設定` },
-    video: { action: 'ビデオ', name: (s) => `${s}とビデオ通話を開始` },
-    website: { action: 'ウェブサイト', name: (s) => `${s}のウェブサイトを開く` },
-  },
-  labelsFor: (name) => `${name}のラベル`,
-  owner: '担当者',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: '下書き:',
@@ -211,16 +198,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'あなたのストーリー',
   addStory: 'ストーリーに追加',
   storyOf: (name) => `${name}のストーリー`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'ピン留め',
-  locked: '保護済み',
-  attachments: (n) => plural('ja', n, { other: '添付ファイル{n}件' }),
-  select: 'メモを選択',
-  checklistDone: '完了',
-  checklistTodo: '未完了',
-  more: (n) => `他${n}件`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1213,12 +1190,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `${page}ページへ移動`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'リードスコア',
-  factors: 'スコアの内訳',
-  bands: { cold: 'コールド', warm: 'ウォーム', hot: 'ホット' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: '車', transit: '公共交通機関', walk: '徒歩', cycle: '自転車' },
   traffic: { light: '道路は空いています', moderate: 'やや混雑', heavy: '渋滞' },
@@ -1548,10 +1519,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}、ミュート中`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: '最近の採用',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: '下書き:',
   unread: '未読',
@@ -1769,16 +1736,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   yourAnswer: 'あなたの回答',
   votes: (n) => (n === 0 ? '投票なし' : `${n} 票`),
   sticker: 'スタンプ',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': '順調', 'at-risk': '要注意', stalled: '停滞中' },
-  stalledFor: (duration) => `${duration}停滞中`,
-  move: (title) => `「${title}」を移動`,
-  stages: 'パイプラインのステージ',
-  stageWithCount: (name, n) => `${name}、商談${n}件`,
-  empty: 'このステージに商談はありません',
-  loadMore: 'さらに読み込む',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2808,9 +2765,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2859,7 +2814,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2874,7 +2828,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2886,7 +2839,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

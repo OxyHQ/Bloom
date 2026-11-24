@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (500), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (492), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 This page is generated from `packages/bloom-language/spec/language.json` and the package's types, the same spec the compiler checks a chain against, so what it lists is exactly what builds. For how to use them, read [the tour](bloom-language-tour.mdx).
 
@@ -422,8 +422,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [agentChatHistory](#agentchathistory) | `AgentChatHistory` |
 | [agentChat](#agentchat) | `AgentChat` |
 | [routeStops](#routestops) | `RouteStops` |
-| [noteCard](#notecard) | `NoteCard` |
-| [noteCardSkeleton](#notecardskeleton) | `NoteCardSkeleton` |
 | [shareSheet](#sharesheet) | `ShareSheet` |
 | [connectionDots](#connectiondots) | `ConnectionDots` |
 | [outlineNav](#outlinenav) | `OutlineNav` |
@@ -438,14 +436,8 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [priceSummaryLine](#pricesummaryline) | `PriceSummaryLine` |
 | [paymentStatusBar](#paymentstatusbar) | `PaymentStatusBar` |
 | [paymentStatusBlock](#paymentstatusblock) | `PaymentStatusBlock` |
-| [contactProfileCard](#contactprofilecard) | `ContactProfileCard` |
-| [leadScoreCard](#leadscorecard) | `LeadScoreCard` |
-| [dealCard](#dealcard) | `DealCard` |
-| [pipelineColumn](#pipelinecolumn) | `PipelineColumn` |
-| [pipelineBoard](#pipelineboard) | `PipelineBoard` |
 | [importantAlertsCard](#importantalertscard) | `ImportantAlertsCard` |
 | [patientInfoCard](#patientinfocard) | `PatientInfoCard` |
-| [recentHiresCard](#recenthirescard) | `RecentHiresCard` |
 | [cartLine](#cartline) | `CartLine` |
 | [cartPanel](#cartpanel) | `CartPanel` |
 | [cartPromoField](#cartpromofield) | `CartPromoField` |
@@ -6036,39 +6028,6 @@ Modifiers:
 
 And every universal modifier.
 
-### `noteCard`
-
-- `NoteCard(title: string, options: NoteCardOptions = {})`
-
-Token sets:
-
-- `.tint()`: [accentTone](bloom-language-tokens.mdx#accenttone), `'default'`, `'primary'`, `'vivid'`, `'secondary'`, `'tertiary'`, `'success'`, `'warning'`, `'error'`, `'info'`
-- `.style()`: [noteCardLayout](bloom-language-tokens.mdx#notecardlayout), `'grid'`, `'row'`
-
-Modifiers:
-
-- [`.style()`](bloom-language-modifiers.mdx#style) `(value: NoteCardLayout)`: `grid` (default) or `row`.
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: AccentTone)`: The note's colour: an accent tone, its wash.
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: The skeleton in the card's geometry.
-- [`.selected()`](bloom-language-modifiers.mdx#selected) `(value: Bound<NoteCardProps, 'selected'>)`
-
-And every universal modifier.
-
-### `noteCardSkeleton`
-
-- `NoteCardSkeleton()`
-
-Token sets:
-
-- `.style()`: [noteCardLayout](bloom-language-tokens.mdx#notecardlayout), `'grid'`, `'row'`
-
-Modifiers:
-
-- [`.style()`](bloom-language-modifiers.mdx#style) `(value: NoteCardLayout)`
-- [`.lines()`](bloom-language-modifiers.mdx#lines) `(value: number)`: How many excerpt lines it draws.
-
-And every universal modifier.
-
 ### `shareSheet`
 
 - `ShareSheet(options: ShareSheetOptions = {})`
@@ -6248,53 +6207,6 @@ Modifiers:
 
 And every universal modifier.
 
-### `contactProfileCard`
-
-- `ContactProfileCard(name: string, options: ContactProfileCardOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'contactProfileCard'>)`: `comfortable` or `compact`.
-
-And every universal modifier.
-
-### `leadScoreCard`
-
-- `LeadScoreCard(score: number, options: LeadScoreCardOptions = {})`: Bloom `LeadScoreCard` of `score` (out of its `max`, 100 by default).
-
-Takes the universal modifiers.
-
-### `dealCard`
-
-- `DealCard(title: string, options: DealCardOptions = {})`
-
-Takes the universal modifiers.
-
-### `pipelineColumn`
-
-- `PipelineColumn(name: string, deals: Child, options: PipelineColumnOptions = {})`: Bloom `PipelineColumn`: a stage named `name`, its deals the content.
-
-Takes the universal modifiers.
-
-### `pipelineBoard`
-
-- `PipelineBoard(stages: readonly PipelineStage[], renderStage: (stage: PipelineStage) => Child, options: PipelineBoardOptions = {})`: Bloom `PipelineBoard` of `stages`, each stage's column drawn by `renderStage`.
-
-Token sets:
-
-- `.style()`: [pipelineLayout](bloom-language-tokens.mdx#pipelinelayout), `'auto'`, `'board'`, `'single'`
-
-Modifiers:
-
-- [`.style()`](bloom-language-modifiers.mdx#style) `(value: PipelineLayout)`: `auto` (default), `board` or `single`.
-- [`.stage()`](bloom-language-modifiers.mdx#stage) `(value: Bound<PipelineBoardProps, 'stageId'>)`: The stage the `single` layout shows: a binding, its stage switcher writing it.
-
-And every universal modifier.
-
 ### `importantAlertsCard`
 
 - `ImportantAlertsCard(alerts: readonly ImportantAlertsCardAlert[], count: number | string, options: ImportantAlertsCardOptions = {})`: Bloom `ImportantAlertsCard`: `count` alerts, the feed `alerts`.
@@ -6304,12 +6216,6 @@ Takes the universal modifiers.
 ### `patientInfoCard`
 
 - `PatientInfoCard(name: string, details: readonly PatientInfoCardDetail[], options: PatientInfoCardOptions = {})`: Bloom `PatientInfoCard`: `name` and its detail rows.
-
-Takes the universal modifiers.
-
-### `recentHiresCard`
-
-- `RecentHiresCard(hires: readonly RecentHire[], count: number | string, options: RecentHiresCardOptions = {})`: Bloom `RecentHiresCard`: `count` hires, four of them `hires`.
 
 Takes the universal modifiers.
 

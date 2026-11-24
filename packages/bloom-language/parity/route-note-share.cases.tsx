@@ -1,6 +1,5 @@
 import { Badge } from '@oxy.so/bloom/badge';
 import { RiLinksLine, RiMailLine } from '@oxy.so/bloom/icons';
-import { NoteCard, NoteCardSkeleton } from '@oxy.so/bloom/note-card';
 import { RouteStops } from '@oxy.so/bloom/route-stops';
 import { ShareSheet } from '@oxy.so/bloom/share-sheet';
 import { Text } from '@oxy.so/bloom/typography';
@@ -53,92 +52,6 @@ const routes: ParityCase[] = [
   },
 ];
 
-const CHECKLIST = [
-  { id: '1', label: 'Buy rope', done: true },
-  { id: '2', label: 'Check the tide' },
-];
-const META = { edited: '2 min ago', notebook: 'Field notes', attachments: 2 };
-
-const notes: ParityCase[] = [
-  ...ENUMS.noteCardLayout.map((layout) => ({
-    name: `NoteCard ${layout}`,
-    language: () =>
-      toElement(
-        L.NoteCard('Harbour notes', {
-          excerpt: 'The boats come in at dawn and leave before noon.',
-          tags: ['sea', 'walks', 'ideas', 'later'],
-          meta: META,
-          pinned: true,
-        })
-          .style(layout)
-          .onPress(press)
-          .onLongPress(press),
-      ),
-    bloom: () => (
-      <NoteCard
-        title="Harbour notes"
-        excerpt="The boats come in at dawn and leave before noon."
-        tags={['sea', 'walks', 'ideas', 'later']}
-        meta={META}
-        pinned
-        density={layout}
-        onPress={press}
-        onLongPress={press}
-      />
-    ),
-  })),
-  ...ENUMS.accentTone.map((tone) => ({
-    name: `NoteCard ${tone}, a checklist`,
-    language: () =>
-      toElement(
-        L.NoteCard('Packing', { checklist: CHECKLIST, checklistTotal: 5 })
-          .tint(tone)
-          .onPress(press),
-      ),
-    bloom: () => (
-      <NoteCard
-        title="Packing"
-        checklist={CHECKLIST}
-        checklistTotal={5}
-        tone={tone}
-        onPress={press}
-      />
-    ),
-  })),
-  {
-    name: 'NoteCard selectable, selected',
-    language: () =>
-      toElement(
-        L.NoteCard('Harbour notes', {
-          excerpt: 'Dawn',
-          selectable: true,
-        })
-          .selected([true, press])
-          .label('Harbour'),
-      ),
-    bloom: () => (
-      <NoteCard
-        title="Harbour notes"
-        excerpt="Dawn"
-        selectable
-        selected
-        onSelectedChange={press}
-        accessibilityLabel="Harbour"
-      />
-    ),
-  },
-  {
-    name: 'NoteCard loading',
-    language: () => toElement(L.NoteCard('Harbour notes').style('row').loading()),
-    bloom: () => <NoteCard title="Harbour notes" density="row" loading />,
-  },
-  ...ENUMS.noteCardLayout.map((layout) => ({
-    name: `NoteCardSkeleton ${layout}`,
-    language: () => toElement(L.NoteCardSkeleton().style(layout).lines(2)),
-    bloom: () => <NoteCardSkeleton density={layout} lines={2} />,
-  })),
-];
-
 const PEOPLE = [
   { id: '1', name: 'Ana García', subtitle: '@ana' },
   { id: '2', name: 'Bruno', subtitle: '@bruno' },
@@ -187,4 +100,4 @@ const shares: ParityCase[] = [
   },
 ];
 
-export const ROUTE_NOTE_SHARE_CASES: ParityCase[] = [...routes, ...notes, ...shares];
+export const ROUTE_NOTE_SHARE_CASES: ParityCase[] = [...routes, ...shares];

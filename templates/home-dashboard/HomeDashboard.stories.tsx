@@ -4,10 +4,9 @@ import { HomeDashboardTemplate } from './HomeDashboardTemplate';
 
 /**
  * The Home Dashboard template: the floating sidebar, the breadcrumb header with
- * notifications, recent hires beside the earnings chart, the revenue line chart
- * beside the contributions grid, the KPI cards and the customers data table.
- * Below 1280 the first row stacks, below 1024 the second row stacks and the
- * navigation adapts to the available width.
+ * notifications, the earnings chart, the revenue line chart beside the
+ * contributions grid, the KPI cards and the customers data table. Below 1024
+ * the second row stacks and the navigation adapts to the available width.
  */
 const meta: Meta<typeof HomeDashboardTemplate> = {
   component: HomeDashboardTemplate,

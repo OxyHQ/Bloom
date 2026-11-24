@@ -131,7 +131,6 @@ import type { TaskListKind } from './controls/task-list';
 import type { GenericKind } from './controls/generic';
 import type { ShareSheetKind, ShareSheetSearchOptions } from './controls/share-sheet';
 import type { CartTipOption } from '@oxy.so/bloom/cart-panel';
-import type { NoteCardKind } from './controls/note-card';
 import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
 import type { StayFilterKind } from './controls/stay-filters';
@@ -167,7 +166,6 @@ import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
 import type { ChatKind } from './controls/chat';
-import type { CrmKind } from './controls/crm';
 import type { DashboardCardKind } from './controls/dashboard-cards';
 import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
@@ -304,7 +302,6 @@ import {
   type OutlineNavStyle,
   type RowActionStyle,
   type ThemeToggleStyle,
-  type NoteCardLayout,
   type ShareSheetSize,
   type ShelfLayout,
   type PriceScale,
@@ -353,7 +350,6 @@ import {
   type ChoiceListStyle,
   type PaymentStatusStyle,
   type PriceLineTone,
-  type PipelineLayout,
   type ReleaseCardLayout,
   type ReleaseStatusBadgeSize,
   type QueuePanelStyle,
@@ -1296,7 +1292,6 @@ export interface ValueModifiers {
   tip: readonly [tip: AnyBinding, choices: readonly CartTipOption[], options?: CartPanelTipOptions];
   promo: readonly [code: AnyBinding, options: CartPanelPromoOptions];
   search: readonly [text: AnyBinding, options?: ShareSheetSearchOptions];
-  stage: AnyBinding;
   destination: AnyBinding;
   /** The scroll's content container grows to fill it (`flexGrow: 1`). */
   contentGrows: boolean;
@@ -1566,11 +1561,9 @@ export type Modifier =
         | ActivityFeedGrouping
         | OrderStatusBarStyle
         | SidebarVariant
-        | NoteCardLayout
         | OutlineNavStyle
         | ChoiceListStyle
         | PaymentStatusStyle
-        | PipelineLayout
         | MediaCardLayout
         | ReleaseCardLayout
         | TransportStyle
@@ -1967,14 +1960,12 @@ export type NodeKind =
   | MultiAgentChatKind
   | AgentChatKind
   | RouteStopsKind
-  | NoteCardKind
   | ShareSheetKind
   | GenericKind
   | AddressesKind
   | PaymentMethodsKind
   | PriceBreakdownKind
   | PaymentStatusKind
-  | CrmKind
   | DashboardCardKind
   | CartKind
   | MenuItemKind
@@ -2412,11 +2403,9 @@ export class Node {
       | ActivityFeedGrouping
       | OrderStatusBarStyle
       | SidebarVariant
-      | NoteCardLayout
       | OutlineNavStyle
       | ChoiceListStyle
       | PaymentStatusStyle
-      | PipelineLayout
       | MediaCardLayout
       | ReleaseCardLayout
       | TransportStyle
@@ -2714,9 +2703,6 @@ export class Node {
   }
   search(value: AnyBinding, options?: ShareSheetSearchOptions): Node {
     return this.set('search', [value, options]);
-  }
-  stage(value: AnyBinding): Node {
-    return this.set('stage', value);
   }
   destination(value: AnyBinding): Node {
     return this.set('destination', value);
