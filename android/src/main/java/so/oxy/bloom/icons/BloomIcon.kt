@@ -1,6 +1,7 @@
 package so.oxy.bloom.icons
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Matrix
@@ -8,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Shader
+import android.util.LruCache
 import android.view.View
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
@@ -15,20 +17,26 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 /**
- * A Bloom icon as ONE native view: its path data drawn with `Canvas.drawPath` on
- * the view's own (hardware) canvas.
+ * A Bloom icon as ONE native view, drawn on its own hardware canvas.
  *
  * react-native-svg draws the same glyph as three views (`SvgView`, a group and
- * the path) and rasterises it in software into a bitmap on the UI thread during
- * `onDraw`. This view records one path op per subpath instead; the GPU
- * rasterises it on the render thread.
+ * the path) and rasterises it in software into a fresh bitmap on the UI thread
+ * every time the view draws. This view rasterises a glyph once per size and
+ * paint for the whole process ([Raster]) and records one `drawBitmap` per draw.
  *
- * The drawing is react-native-svg's, step for step, so the glyph is the same:
- * the path parsed at the screen density by its own parser ([IconPathParser]),
- * the `xMidYMid meet` viewBox transform, the even-odd fill rule, its paint
- * flags, its stroke miter (4 x density), and the one gradient Bloom icons draw
- * (`useCommonSVGProps`: x1 0, y1 0, x2 100%, y2 0 of each path's bounds,
- * `rotate(45)`). The JS contract is `src/icons/glyph.native.tsx`.
+ * Why a raster and not `Canvas.drawPath` on the hardware canvas: the GPU's
+ * anti-aliasing is not the CPU rasteriser's. Measured on a Pixel 8a over all 589
+ * glyphs at 16, 20 and 24dp, hardware paths differed from react-native-svg at
+ * the edge of every glyph, up to 124 of 255 levels; this raster is
+ * react-native-svg's own, so the pixels are the same.
+ *
+ * The drawing is react-native-svg's, step for step: the path parsed at the
+ * screen density by its own parser ([IconPathParser]), an ARGB bitmap the size
+ * of the view, the `xMidYMid meet` viewBox transform, the even-odd fill rule,
+ * its paint flags, its stroke miter (4 x density), the one gradient Bloom icons
+ * draw (`useCommonSVGProps`: x1 0, y1 0, x2 100%, y2 0 of each path's bounds,
+ * `rotate(45)`), and its bitmap paint. The JS contract is
+ * `src/icons/glyph.native.tsx`.
  */
 class BloomIconManager : SimpleViewManager<BloomIcon>() {
   override fun getName() = "BloomIconV1"
@@ -104,6 +112,10 @@ class BloomIcon(context: Context) : View(context) {
   private val scale = resources.displayMetrics.density
   private val paint = Paint()
   private val transform = Matrix()
+  // react-native-svg's flags for drawing its bitmap onto the view's canvas.
+  private val bitmapPaint = Paint(
+    Paint.ANTI_ALIAS_FLAG or Paint.DEV_KERN_TEXT_FLAG or Paint.SUBPIXEL_TEXT_FLAG or Paint.FILTER_BITMAP_FLAG,
+  )
   // react-native-svg's `rotate(45)`: cos and sin of 45 degrees in double, then float.
   private val gradientMatrix = Matrix().apply {
     val c = Math.cos(Math.PI / 180 * 45).toFloat()
@@ -129,18 +141,32 @@ class BloomIcon(context: Context) : View(context) {
   var stopColors: IntArray? = null
 
   override fun onDraw(canvas: Canvas) {
-    val width = width.toFloat()
-    val height = height.toFloat()
-    if (width < 1 || height < 1) return
-    val stops = stops
-    val stopColors = stopColors
+    val w = width
+    val h = height
+    if (w < 1 || h < 1) return
     val color = color
     if (color == null && stops == null) return
     val glyph = glyph ?: Glyph.of(sources, scale)?.also { glyph = it } ?: return
+    val key = rasterKey(glyph, w, h, color)
+    val raster = Raster.get(key) ?: rasterise(glyph, w, h, color).also { Raster.put(key, it) }
+    canvas.drawBitmap(raster, 0f, 0f, bitmapPaint)
+  }
 
-    viewBoxTransform(width, height)
-    val save = canvas.save()
+  private fun rasterKey(glyph: Glyph, w: Int, h: Int, color: Int?): String =
+    "${glyph.key}|${viewBox.joinToString(",")}|${w}x$h|$color|$strokeWidth|$cap|$join|" +
+      "${stops?.joinToString(",")}|${stopColors?.joinToString(",")}"
+
+  /**
+   * The glyph as react-native-svg's `SvgView.drawOutput` rasterises it: an ARGB
+   * bitmap the size of the view, the viewBox transform, then each path.
+   */
+  private fun rasterise(glyph: Glyph, w: Int, h: Int, color: Int?): Bitmap {
+    val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    viewBoxTransform(w.toFloat(), h.toFloat())
     canvas.concat(transform)
+    val stops = stops
+    val stopColors = stopColors
     for (index in glyph.paths.indices) {
       paint.reset()
       paint.flags = Paint.ANTI_ALIAS_FLAG or Paint.DEV_KERN_TEXT_FLAG or Paint.SUBPIXEL_TEXT_FLAG
@@ -163,7 +189,7 @@ class BloomIcon(context: Context) : View(context) {
       }
       canvas.drawPath(glyph.paths[index], paint)
     }
-    canvas.restoreToCount(save)
+    return bitmap
   }
 
   /** react-native-svg's `ViewBox.getTransform` for `xMidYMid meet`, in its order and precision. */
@@ -182,7 +208,7 @@ class BloomIcon(context: Context) : View(context) {
 }
 
 /** A glyph's subpaths at one density, parsed once per process and shared by every view. */
-internal class Glyph private constructor(val paths: Array<Path>, val bounds: Array<RectF>) {
+internal class Glyph private constructor(val key: String, val paths: Array<Path>, val bounds: Array<RectF>) {
   companion object {
     private val cache = HashMap<String, Glyph>()
 
@@ -198,7 +224,27 @@ internal class Glyph private constructor(val paths: Array<Path>, val bounds: Arr
         return null
       }
       val bounds = Array(paths.size) { RectF().also { box -> paths[it].computeBounds(box, true) } }
-      return Glyph(paths, bounds).also { cache[key] = it }
+      return Glyph(key, paths, bounds).also { cache[key] = it }
     }
   }
+}
+
+/**
+ * Every view's rasters, shared: one bitmap per glyph, size and paint for the
+ * whole process, so a glyph is rasterised once however many views draw it, and
+ * the hardware canvas uploads it once. Never recycled here: a display list may
+ * still hold an evicted bitmap, and the GC frees it after.
+ */
+internal object Raster {
+  private val cache = object : LruCache<String, Bitmap>(8 * 1024 * 1024) {
+    override fun sizeOf(key: String, value: Bitmap) = value.byteCount
+  }
+
+  fun get(key: String): Bitmap? = cache.get(key)
+
+  fun put(key: String, bitmap: Bitmap) {
+    cache.put(key, bitmap)
+  }
+
+  fun count(): Int = cache.snapshot().size
 }
