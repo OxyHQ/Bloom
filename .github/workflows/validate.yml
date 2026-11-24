@@ -457,7 +457,11 @@ jobs:
             sdk-minimum) bash .github/scripts/android-sdk-cache.sh "${ANDROID_SDK_MINIMUM}" ;;
             robolectric)
               echo "key=$(python3 .github/scripts/verified-android-downloads.py robolectric-key --directory .)"
-              echo "paths=$HOME/.m2/repository/org/robolectric/android-all-instrumented"
+              # The same literal as the restore in the android job: the cache
+              # version hashes the path as written, so `$HOME/...` saved an
+              # entry `~/...` never restored and every job downloaded ~420 MB
+              # from Maven Central, which then rate-limited the runners.
+              echo 'paths=~/.m2/repository/org/robolectric/android-all-instrumented'
               ;;
           esac >> "$GITHUB_OUTPUT"
       - name: Is it already cached?

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Official artifact transport fallback; failed integrity checks never fall back."""
 import argparse
+import datetime
+import email.utils
 import hashlib
 import json
 import os
@@ -9,6 +11,7 @@ import shutil
 import subprocess
 import tempfile
 import tarfile
+import time
 import zipfile
 
 MANIFEST = json.loads(Path(__file__).with_suffix('.json').read_text())
@@ -19,26 +22,78 @@ class DownloadFailure(RuntimeError):
     pass
 
 
-def download(url, destination):
-    # Retry receive resets (curl 56), too. GET writes to --output, so curl
-    # truncates partial data before retrying. Even permanent HTTP/TLS errors
-    # cost at most the retry budget; integrity is checked afterwards.
-    # No fixed --retry-delay: curl then backs off exponentially (1, 2, 4, 8 s)
-    # and honours a 429/503 Retry-After, which a rate-limited host (the GitHub
-    # release API answering 429 to a shared runner) needs; two tries 2 s apart
-    # failed inside its window.
+# What a later attempt can cure: the host is busy or rate limiting (408, 425,
+# 429, 5xx gateways) or the connection broke (resolve, connect, timeout, TLS
+# handshake, empty reply, send/receive reset, HTTP/2 stream). A 404, 403 or an
+# untrusted certificate is final for that host and goes to the fallback at once.
+TRANSIENT_HTTP = frozenset({'408', '425', '429', '500', '502', '503', '504'})
+TRANSIENT_CURL = frozenset({5, 6, 7, 16, 18, 28, 35, 52, 55, 56, 92})
+ATTEMPTS = 6
+BACKOFF_SECONDS = (2, 4, 8, 16, 32)
+RETRY_AFTER_CAP_SECONDS = 120
+RETRY_BUDGET_SECONDS = 420
+
+
+def retry_after_seconds(value):
+    """A Retry-After header (delta seconds or an HTTP date) in seconds, or None."""
+    value = value.strip()
+    if not value:
+        return None
+    if value.isdigit():
+        return int(value)
+    try:
+        when = email.utils.parsedate_to_datetime(value)
+    except (TypeError, ValueError):
+        return None
+    if when.tzinfo is None:
+        return None
+    return max(0, int((when - datetime.datetime.now(datetime.timezone.utc)).total_seconds()))
+
+
+def download(url, destination, sleep=time.sleep, clock=time.monotonic):
+    # One curl attempt at a time; the retry policy is here, not in curl.
+    # curl's own --retry backs off 1, 2, 4, 8 s (15 s in all), and Maven
+    # Central and its Google mirror rate-limit a shared runner for longer:
+    # both answered 429 for the whole 15 s (job 138071866469). Here a transient
+    # failure waits 2, 4, 8, 16, 32 s, or the host's Retry-After when it asks
+    # for longer (capped at 120 s), inside a 7 minute budget per URL.
+    # Each attempt starts from no file, so a partial body never survives, and
+    # success requires the file curl wrote: curl exiting 0 without one
+    # (jobs 138058057372, 138063112723) is a failed attempt, not a download.
+    # Integrity is still checked by the caller, on every route.
     # No credentials, signed redirect URLs or response bodies enter the logs.
-    result = subprocess.run([
-        'curl', '--fail', '--location', '--silent', '--show-error',
-        '--connect-timeout', '15', '--max-time', '90',
-        '--retry', '4', '--retry-all-errors', '--retry-max-time', '300',
-        '--proto', '=https', '--proto-redir', '=https',
-        '--header', 'Accept: application/octet-stream',
-        '--output', str(destination), '--write-out', '%{http_code}', url,
-    ], capture_output=True, text=True)
-    if result.returncode:
-        status = result.stdout if result.stdout.isdigit() and len(result.stdout) == 3 else 'unknown'
-        raise DownloadFailure(f'Official download transport failed (curl {result.returncode}, HTTP {status})')
+    deadline = clock() + RETRY_BUDGET_SECONDS
+    for attempt in range(1, ATTEMPTS + 1):
+        destination.unlink(missing_ok=True)
+        result = subprocess.run([
+            'curl', '--fail', '--location', '--silent', '--show-error',
+            '--connect-timeout', '15', '--max-time', '90',
+            '--proto', '=https', '--proto-redir', '=https',
+            '--header', 'Accept: application/octet-stream',
+            '--output', str(destination), '--write-out', '%{http_code}\n%header{retry-after}', url,
+        ], capture_output=True, text=True)
+        status, _, retry_after = result.stdout.partition('\n')
+        status = status if status.isdigit() and len(status) == 3 else 'unknown'
+        if result.returncode == 0 and destination.is_file():
+            return
+        if result.returncode == 0:
+            failure = f'curl 0 wrote no file, HTTP {status}'
+            transient = True
+        else:
+            failure = f'curl {result.returncode}, HTTP {status}'
+            transient = status in TRANSIENT_HTTP or result.returncode in TRANSIENT_CURL
+        destination.unlink(missing_ok=True)
+        if not transient or attempt == ATTEMPTS:
+            break
+        delay = BACKOFF_SECONDS[attempt - 1]
+        asked = retry_after_seconds(retry_after) if status in ('429', '503') else None
+        if asked is not None:
+            delay = max(delay, min(asked, RETRY_AFTER_CAP_SECONDS))
+        if clock() + delay > deadline:
+            break
+        print(f'{destination.name}: {failure}; attempt {attempt + 1} of {ATTEMPTS} in {delay} s', flush=True)
+        sleep(delay)
+    raise DownloadFailure(f'Official download transport failed ({failure})')
 
 
 def primary_available(url):
@@ -79,7 +134,10 @@ def fetch(artifact, directory, transport=download):
     destination = directory / artifact['filename']
     # Always probe primary first. A previous temporary result must not silently
     # enable a fallback repository when the canonical transport has recovered.
-    with tempfile.TemporaryDirectory(dir=directory) as temporary:
+    # Each fetch downloads into its own new directory beside the destination
+    # (the same filesystem, so the verified file is renamed into place
+    # atomically); nothing else writes there or removes it before the rename.
+    with tempfile.TemporaryDirectory(dir=directory, prefix='.download-') as temporary:
         pending = Path(temporary) / artifact['filename']
         route = 'primary'
         try:
@@ -205,13 +263,11 @@ def prepare_robolectric(repository, transport=download):
                 continue
             except (FileNotFoundError, ValueError):
                 target.unlink(missing_ok=True)
-            fetched, _ = fetch(pin, module / '.downloads', transport)
-            fetched.replace(target)
+            fetch(pin, module, transport)
             # What Robolectric writes beside what it fetches, from the verified bytes.
             with target.open('rb') as source:
                 digest = hashlib.file_digest(source, 'sha512').hexdigest()
             target.with_name(target.name + '.sha512').write_text(digest)
-        shutil.rmtree(module / '.downloads', ignore_errors=True)
 
 
 def main():

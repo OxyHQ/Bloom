@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import datetime
+import email.utils
 import hashlib
 import importlib.util
 import io
 from pathlib import Path
+import re
 import tempfile
 import tarfile
 import sys
@@ -85,20 +88,103 @@ class VerifiedDownloads(unittest.TestCase):
 
     def test_transport_error_reports_status_without_sensitive_response(self):
         import subprocess
-        result = subprocess.CompletedProcess([],22,stdout='504',stderr='signed-url-or-token')
+        result = subprocess.CompletedProcess([],22,stdout='504\n',stderr='signed-url-or-token')
+        delays = []
         with patch.object(module.subprocess, 'run', return_value=result) as run:
             with self.assertRaisesRegex(module.DownloadFailure, r'curl 22, HTTP 504') as failure:
-                module.download('https://official.invalid', self.root / 'artifact')
+                module.download('https://official.invalid', self.root / 'artifact', sleep=delays.append)
             self.assertNotIn('signed-url', str(failure.exception))
-            self.assertIn('--retry', run.call_args.args[0])
-            self.assertIn('--retry-all-errors', run.call_args.args[0])
             args = run.call_args.args[0]
-            for flag, expected in [('--retry', '4'), ('--retry-max-time', '300'), ('--max-time', '90')]:
-                self.assertEqual(args[args.index(flag) + 1], expected)
-            # A fixed delay would turn off curl's backoff and its Retry-After.
-            self.assertNotIn('--retry-delay', args)
+            self.assertEqual(args[args.index('--max-time') + 1], '90')
+            # One attempt per curl run: the backoff below is the only retry policy.
+            self.assertNotIn('--retry', args)
+            self.assertNotIn('--retry-all-errors', args)
             self.assertNotIn('--insecure', args)
             self.assertNotIn('-k', args)
+        self.assertEqual(run.call_count, module.ATTEMPTS)
+        self.assertEqual(delays, [2, 4, 8, 16, 32])
+
+    def scripted(self, steps):
+        """subprocess.run stand-in: each step is (curl exit, stdout, body or None)."""
+        import subprocess
+        calls = []
+        def run(args, **_kwargs):
+            code, stdout, body = steps[len(calls)]
+            calls.append(args)
+            if body is not None:
+                Path(args[args.index('--output') + 1]).write_bytes(body)
+            return subprocess.CompletedProcess(args, code, stdout=stdout, stderr='')
+        return run, calls
+
+    def test_exit_zero_without_a_file_is_retried_not_trusted(self):
+        # Jobs 138058057372 and 138063112723: curl exited 0 and the file it was
+        # told to write did not exist, so verify() raised FileNotFoundError.
+        run, calls = self.scripted([(0, '200\n', None), (0, '200\n', b'official')])
+        delays = []
+        output = self.root / 'artifact.jar'
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            module.download('https://official.invalid', output, sleep=delays.append)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(delays, [2])
+        self.assertEqual(output.read_bytes(), b'official')
+
+    def test_exit_zero_without_a_file_every_time_is_a_transport_failure(self):
+        run, calls = self.scripted([(0, '200\n', None)] * module.ATTEMPTS)
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            with self.assertRaisesRegex(module.DownloadFailure, 'curl 0 wrote no file, HTTP 200'):
+                module.download('https://official.invalid', self.root / 'artifact', sleep=lambda _: None)
+        self.assertEqual(len(calls), module.ATTEMPTS)
+
+    def test_rate_limit_honours_retry_after_within_its_cap(self):
+        later = email.utils.format_datetime(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=50), usegmt=True)
+        run, calls = self.scripted([(22, '429\n7', None), (22, '429\n1', None), (22, '503\n' + later, None),
+                                    (22, '429\n86400', None), (0, '200\n', b'official')])
+        delays = []
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            module.download('https://official.invalid', self.root / 'artifact', sleep=delays.append)
+        self.assertEqual(len(calls), 5)
+        # Longer of the backoff and Retry-After (seconds or a date), at most 120 s.
+        self.assertEqual(delays[:2], [7, 4])
+        self.assertTrue(45 <= delays[2] <= 50, delays)
+        self.assertEqual(delays[3], module.RETRY_AFTER_CAP_SECONDS)
+
+    def test_retries_stop_at_the_time_budget(self):
+        now = [0.0]
+        def sleep(seconds):
+            now[0] += seconds
+        run, calls = self.scripted([(22, '429\n120', None)] * module.ATTEMPTS)
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            with self.assertRaisesRegex(module.DownloadFailure, 'HTTP 429'):
+                module.download('https://official.invalid', self.root / 'artifact', sleep=sleep, clock=lambda: now[0])
+        # 120 + 120 + 120 s fit the 420 s budget; a fourth wait would not.
+        self.assertEqual(len(calls), 4)
+        self.assertLessEqual(now[0], module.RETRY_BUDGET_SECONDS)
+
+    def test_permanent_failures_are_not_retried(self):
+        for code, stdout in [(22, '404\n'), (22, '403\n'), (60, '000\n')]:
+            with self.subTest(code=code, stdout=stdout):
+                run, calls = self.scripted([(code, stdout, None)])
+                with patch.object(module.subprocess, 'run', side_effect=run):
+                    with self.assertRaises(module.DownloadFailure):
+                        module.download('https://official.invalid', self.root / 'artifact', sleep=self.fail)
+                self.assertEqual(len(calls), 1)
+
+    def test_missing_primary_then_corrupt_fallback_is_rejected(self):
+        run, calls = self.scripted([(22, '404\n', None), (0, '200\n', b'corrupt!')])
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            with self.assertRaisesRegex(ValueError, 'Integrity'):
+                module.fetch(artifact(b'official'), self.root)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(list(self.root.iterdir()), [])
+
+    def test_robolectric_cache_is_saved_under_the_path_it_is_restored_from(self):
+        # actions/cache versions an entry by the path text: `$HOME/.m2` and
+        # `~/.m2` are different entries, and the restore never found the save.
+        workflow = (Path(__file__).parents[1] / 'workflows' / 'validate.yml').read_text()
+        restored = re.findall(r'path: (\S*android-all-instrumented)$', workflow, re.M)
+        saved = re.findall(r"paths=(\S*android-all-instrumented)'?$", workflow, re.M)
+        self.assertTrue(restored and saved)
+        self.assertEqual(set(restored) | set(saved), {'~/.m2/repository/org/robolectric/android-all-instrumented'})
 
     def test_probe_retries_transient_failures_but_not_its_healthy_refusal(self):
         import subprocess
@@ -133,7 +219,8 @@ class VerifiedDownloads(unittest.TestCase):
                 self.assertEqual(jar.read_bytes(), f'{version}.jar'.encode())
                 self.assertEqual((module_dir / (jar.name + '.sha512')).read_text(),
                                  hashlib.sha512(jar.read_bytes()).hexdigest())
-                self.assertFalse((module_dir / '.downloads').exists())
+                self.assertEqual(sorted(p.name for p in module_dir.iterdir()),
+                                 sorted([jar.name, jar.name + '.sha512', jar.name[:-3] + 'pom', jar.name[:-3] + 'pom.sha512']))
             # A verified repository (the Actions cache) is used as it is.
             calls.clear()
             module.prepare_robolectric(self.root, transport)
@@ -366,47 +453,49 @@ class RealCurlTransport(unittest.TestCase):
     def test_receive_reset_recovers_and_truncates_partial_output(self):
         import subprocess
         output = self.root / 'artifact'
-        # The pre-change curl policy demonstrably stops with curl 56.
+        # A single curl run demonstrably stops with curl 56 and a partial file.
         failed = subprocess.run(['curl', '--fail', '--silent', '--output', str(output), self.url], capture_output=True)
         self.assertEqual(failed.returncode, 56)
         self.assertEqual(self.requests, 1)
         self.assertGreater(output.stat().st_size, 0)
         self.requests = 0
-        module.download(self.url, output)
+        delays = []
+        module.download(self.url, output, sleep=delays.append)
         self.assertEqual(self.requests, 2)
+        self.assertEqual(delays, [2])
         self.assertEqual(output.read_bytes(), self.payload)
         module.verify(output, artifact(self.payload))
 
-    def test_receive_reset_exhausts_exactly_five_attempts(self):
-        import time
+    def test_receive_reset_exhausts_the_bounded_attempts(self):
         self.mode = 'reset'
-        start = time.monotonic()
+        delays = []
+        output = self.root / 'artifact'
         with self.assertRaisesRegex(module.DownloadFailure, 'curl 56'):
-            module.download(self.url, self.root / 'artifact')
-        self.assertEqual(self.requests, 5)
-        # curl's backoff: 1 + 2 + 4 + 8 s between the five attempts.
-        self.assertLess(time.monotonic() - start, 40)
+            module.download(self.url, output, sleep=delays.append)
+        self.assertEqual(self.requests, module.ATTEMPTS)
+        self.assertEqual(delays, [2, 4, 8, 16, 32])
+        self.assertFalse(output.exists())
 
-    def test_404_still_fails_after_bounded_retries(self):
+    def test_404_fails_at_once_for_the_fallback(self):
         self.mode = 'missing'
         with self.assertRaisesRegex(module.DownloadFailure, 'curl 22, HTTP 404'):
-            module.download(self.url, self.root / 'artifact')
-        self.assertEqual(self.requests, 5)
+            module.download(self.url, self.root / 'artifact', sleep=self.fail)
+        self.assertEqual(self.requests, 1)
 
     def test_rate_limit_waits_out_retry_after_and_recovers(self):
-        import time
         self.mode = 'rate-limited'
-        start = time.monotonic()
-        module.download(self.url, self.root / 'artifact')
+        delays = []
+        module.download(self.url, self.root / 'artifact', sleep=delays.append)
         self.assertEqual(self.requests, 3)
         self.assertEqual((self.root / 'artifact').read_bytes(), self.payload)
-        # Two 429s with `Retry-After: 3`: waited out (6 s), not the old fixed 2 s apart.
-        self.assertGreaterEqual(time.monotonic() - start, 5.5)
+        # Two 429s with `Retry-After: 3`, read from the real response headers:
+        # the longer of it and the 2 s, 4 s backoff.
+        self.assertEqual(delays, [3, 4])
 
     def test_untrusted_tls_still_fails_without_an_http_request(self):
         with patch.dict(module.os.environ, {'CURL_CA_BUNDLE': '/etc/ssl/certs/ca-certificates.crt'}):
             with self.assertRaisesRegex(module.DownloadFailure, 'curl 60'):
-                module.download(self.url, self.root / 'artifact')
+                module.download(self.url, self.root / 'artifact', sleep=self.fail)
         self.assertEqual(self.requests, 0)
 
 
