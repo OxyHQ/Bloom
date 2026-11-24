@@ -156,8 +156,11 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 `scrim="auto"` fades it in over `[0, scrollThreshold]`, so it appears when content starts passing under. `"always"` paints it at rest — for a header born over a photograph. `"none"` removes it and leaves legibility to the islands alone.
 
 `scrimFalloff="linear"` fades uniformly from fully opaque at the top to transparent
-at the bottom, with half opacity at the midpoint. The default `"smooth"` retains
-an opaque chrome region followed by an ease-in-out curve (0.74 and 0.26 at its thirds) in the external tail: the full range, leaving the chrome and arriving at nothing gently, with no plateau or step.
+at the bottom, with half opacity at the midpoint. The default `"smooth"` is Apple's
+scroll edge: the page colour solid over the status bar, then one eased fade (smoothstep,
+drawn with 16 segments) across the header to nothing 12pt past its foot, flat where it
+leaves the colour and where it arrives at nothing, with no band, plateau or step. The
+islands carry their own material over it.
 `tone="onImage"` keeps a full-box fade for photographic overlays, including its
 existing layer opacity. Both extend 0.55× (`SCRIM_TAIL_RATIO`) below the header and leave title/action
 opacity unchanged. `EdgeScrim falloff="linear"` exposes the same option for other

@@ -50,14 +50,18 @@ afterEach(() => {
 });
 
 describe('PageHeader', () => {
-  it('protects the entire measured title, subtitle and accessory chrome as its height changes', () => {
-    const screen = renderHeader({
-      title: 'Record',
-      subtitle: 'Shared header and Screen',
-      accessory: <ReactNative.Text>Filters</ReactNative.Text>,
-      scrim: 'always',
-    });
-    for (const height of [76, 144, 92]) {
+  it('holds the page colour over the status bar only, then fades across the header to nothing', () => {
+    // Apple's scroll edge: solid at the top of the screen, one eased fade to nothing just past the
+    // header's foot. The whole header held opaque with only a 12pt fade below it cut the text
+    // passing under it sharply at the foot (Mention's Home, Pixel 8a).
+    const screen = render(
+      <SafeAreaInsetsContext.Provider value={{ top: 47, bottom: 0, left: 0, right: 0 }}>
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <PageHeader testID="h" title="Record" scrim="always" safeArea />
+        </BloomThemeProvider>
+      </SafeAreaInsetsContext.Provider>,
+    );
+    for (const height of [103, 144, 92]) {
       fireEvent(screen.getByTestId('h'), 'layout', {
         nativeEvent: { layout: { x: 0, y: 0, width: 390, height } },
       });
@@ -66,8 +70,22 @@ describe('PageHeader', () => {
         .getByTestId('h-scrim-gradient')
         .findAll((node) => String(node.type) === 'Stop');
       const lastOpaque = stops.filter((node) => node.props.stopOpacity === 1).slice(-1)[0]!;
-      expect(Number(lastOpaque.props.offset) * box).toBeCloseTo(height);
-      expect(box).toBeGreaterThan(height);
+      expect(Number(lastOpaque.props.offset) * box).toBeCloseTo(47);
+      // Under the header's foot most of the content already shows; nothing of the colour is
+      // left a short way past it.
+      const at = (y: number) => {
+        const offsets = stops.map((node) => ({
+          offset: Number(node.props.offset) * box,
+          opacity: Number(node.props.stopOpacity),
+        }));
+        const next = offsets.findIndex((stop) => stop.offset >= y);
+        const a = offsets[next - 1]!;
+        const b = offsets[next]!;
+        return a.opacity + ((b.opacity - a.opacity) * (y - a.offset)) / (b.offset - a.offset);
+      };
+      expect(at(height)).toBeLessThan(0.15);
+      expect(at((47 + height) / 2)).toBeGreaterThan(0.3);
+      expect(stops.length).toBeGreaterThan(10);
       expect(stops.slice(-1)[0]!.props).toMatchObject({ offset: '1', stopOpacity: 0 });
       expect(opacity(screen.getByTestId('h-scrim'))).toBe(1);
     }

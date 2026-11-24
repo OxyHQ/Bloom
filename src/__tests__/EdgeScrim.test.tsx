@@ -68,12 +68,19 @@ describe('the smooth ramp runs the full range, leaving and arriving gently', () 
       (stop, i) =>
         (SCRIM_STOPS[i]!.opacity - stop.opacity) / (stop.offset - SCRIM_STOPS[i]!.offset),
     );
-    // Monotonic, with no plateau: an ease-out that held 86% through the first 42% of the fade read
-    // as a band stopping at 90%, then a step to opaque at the chrome's edge. Eased at both ends,
-    // steepest in the middle.
-    for (const slope of slopes) expect(slope).toBeGreaterThan(0.5);
-    expect(slopes[0]!).toBeLessThan(slopes[1]!);
-    expect(slopes[slopes.length - 1]!).toBeLessThan(slopes[1]!);
+    // Monotonic with no plateau: an ease-out that held 86% through the first 42% of the fade read
+    // as a band stopping at 90%, then a step to opaque at the chrome's edge.
+    for (const slope of slopes) expect(slope).toBeGreaterThan(0);
+    // Eased at both ends (it leaves the solid colour and arrives at nothing flat, so the hold
+    // before it and the page after it meet it without a corner), steepest in the middle.
+    expect(slopes[0]!).toBeLessThan(0.2);
+    expect(slopes[slopes.length - 1]!).toBeLessThan(0.2);
+    const middle = slopes.length / 2;
+    expect(Math.max(...slopes)).toBeCloseTo(slopes[middle]!, 2);
+    // Smooth, not four segments whose corners showed as faint bands: no two neighbouring
+    // segments differ in slope by more than a quarter of the steepest.
+    for (let i = 1; i < slopes.length; i++)
+      expect(Math.abs(slopes[i]! - slopes[i - 1]!)).toBeLessThan(Math.max(...slopes) / 4);
   });
 });
 
