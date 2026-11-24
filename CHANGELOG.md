@@ -1,6 +1,18 @@
 # Changelog
 
-## Unreleased
+## 23.3.0
+
+### Added
+
+- `BloomImage` takes `cachePolicy` (expo-image's: `memory-disk` by default, so a picture scrolled back to, or drawn again by another list row, paints in the frame it is needed instead of being decoded from disk again; `disk`, `memory`, `none`) and `recyclingKey` (a view a list reuses for another item clears the last picture at once). The web ignores both.
+- The shape `Image` (`@oxy.so/bloom/shapes`) takes `placeholderColor`, the shape filled until the picture covers it, and `recyclingKey`.
+- `LinkPreviewCard` takes `pending`: the preview is still being fetched, and the card is drawn at the size it will have, the cover slot and the text block both empty.
+
+### Changed
+
+- `Avatar` keeps its image view when its source changes and restarts its photo stages in place: a list row recycled for another person hands the same native view the new picture (cleared at once by its `recyclingKey`) instead of building a new one. Until the picture arrives the photo slot shows the theme's muted fill (`backgroundTertiary`), never a transparent hole.
+- `Avatar` reads its LIVE label only when it draws the live pill: one locale context read and one hook less per avatar.
+- An article `LinkPreviewCard` (one with a cover, or `pending`) holds its text block at its full shape, the site name, two lines of title and two of description: a late preview, or a title that runs to one line, does not change the card's height. A card without a cover stays compact.
 
 ### Breaking
 
