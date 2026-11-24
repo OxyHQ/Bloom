@@ -5,6 +5,7 @@
 ### Changed
 
 - Every control the lens can draw takes the native lens or Bloom's own paint through one decision (`useLensFrame` and `withLens`, `floating/lens/lens-frame.tsx`): `Button`, `Button.Group`, `Surface`, `BlurIsland` and `TabBar` each wrote it. What each draws is unchanged: the lens on Android with `@oxy.so/bloom-lens` (in the page against the surface it sits on, in a floating region or for the tab bar and an island by the window), the paint on the web, iOS, Android without the lens and inside a Dialog or a BottomSheet. A `Surface` and a `Button.Group` off the lens no longer read the surface fill and the floating region they only needed on it.
+- `AgentAvatar` plays its rest loop on a native surface on Android (`AvatarSurface`, `AvatarLoops`): the loop is remembered once and drawn by the view itself, waking once per frame it shows on the vsync it is due, instead of react-native-svg frames from JavaScript. Pixel 8a, Mention's idle Home with the header's Alia avatar, process CPU from 20 s to 30 s after a cold start: about 120% of a core without it, about 45% with it (the owner build, which has it: about 38%). The iOS view (`BloomAvatarSurface.swift`) comes with it and has not been compiled.
 
 ## 23.8.0
 
