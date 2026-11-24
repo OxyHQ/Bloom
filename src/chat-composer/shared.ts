@@ -46,7 +46,6 @@ import { RiUserLine } from '../icons/remix/RiUserLine';
 import type { Theme } from '../theme/types';
 import type {
   AttachmentMenuItem,
-  ChatComposerIcon,
   ChatComposerLabels,
   ComposerBannerKind,
   EmojiEntry,
@@ -62,6 +61,7 @@ import {
 import { formatClock } from '../locale/format-number';
 import { mixColors } from '../styles/color-contrast';
 import { animation } from '../styles/tokens';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 // ---------------------------------------------------------------------------
 //  Palette
@@ -331,7 +331,7 @@ export function waveformBars(amplitudes: ReadonlyArray<number>, count: number): 
 //  Default data
 // ---------------------------------------------------------------------------
 
-const ATTACHMENT_MENU_ICONS: ReadonlyArray<readonly [AttachmentMenuItemId, ChatComposerIcon]> = [
+const ATTACHMENT_MENU_ICONS: ReadonlyArray<readonly [AttachmentMenuItemId, BloomIconComponent]> = [
   ['gallery', RiGalleryLine],
   ['camera', RiCameraLine],
   ['file', RiFileTextLine],
@@ -367,7 +367,7 @@ export const REACTION_PICKER_EMOJIS: ReadonlyArray<string> = ['👍', '❤️', 
  * emoji dataset, and one would be tens of kilobytes that every app that has its
  * own would still pay for. This is the vocabulary a caller's `groups` keys into.
  */
-export const EMOJI_CATEGORY_ICONS: Record<string, ChatComposerIcon> = {
+export const EMOJI_CATEGORY_ICONS: Record<string, BloomIconComponent> = {
   recent: RiTimeLine,
   frequent: RiTimeLine,
   smileys: RiEmotionLine,
@@ -383,7 +383,7 @@ export const EMOJI_CATEGORY_ICONS: Record<string, ChatComposerIcon> = {
 };
 
 /** The glyph each banner kind draws when the caller passes none. */
-export const BANNER_ICONS: Record<ComposerBannerKind, ChatComposerIcon> = {
+export const BANNER_ICONS: Record<ComposerBannerKind, BloomIconComponent> = {
   reply: RiCornerUpLeftLine,
   edit: RiPencilLine,
   forward: RiShareForwardLine,

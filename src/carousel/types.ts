@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { ButtonProps, ButtonIconComponent } from '../button/types';
+import type { ButtonProps } from '../button/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** Visual options only; the carousel retains navigation, names and disabled state. */
 export type CarouselArrowButtonProps = Pick<
@@ -11,7 +12,7 @@ export type CarouselArrowButtonProps = Pick<
 /** Spread onto a Bloom Button; carousel owns logical direction and edge state. */
 export type CarouselControlProps = Required<
   Pick<ButtonProps, 'onPress' | 'disabled' | 'accessibilityLabel'>
-> & { icon: ButtonIconComponent };
+> & { icon: BloomIconComponent };
 
 export interface CarouselControls {
   previous: CarouselControlProps;

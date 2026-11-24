@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import type { ButtonIconComponent } from '../../src/button/types';
 import { Chip, type ChipHue } from '../../src/chip';
 import {
   DataTable,
@@ -22,6 +21,7 @@ import {
   RiStockLine,
 } from '../../src/icons/remix';
 import { CellText, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../shared/dashboard';
+import type { BloomIconComponent } from '../../src/icons/icon-component';
 
 /**
  * The finance template's transactions table: the
@@ -31,7 +31,7 @@ import { CellText, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../sha
  * chip (income lime, spending gray). A `DataTable` in its `inset` layout.
  */
 
-type Category = { label: string; color: ChipHue; icon: ButtonIconComponent };
+type Category = { label: string; color: ChipHue; icon: BloomIconComponent };
 
 const CATEGORIES = {
   housing: { label: 'Housing', color: 'blue', icon: RiHome4Line },

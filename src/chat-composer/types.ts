@@ -47,7 +47,7 @@ export interface ChatComposerAttachment {
   /** Thumbnail URI (or an {@link ImageResolver} id). Omit for a glyph tile. */
   source?: string;
   /** Overrides the glyph a non-image tile draws. */
-  icon?: ChatComposerIcon;
+  icon?: BloomIconComponent;
   /** `0`–`100` draws the accent progress ring. Omit once the file has landed. */
   progress?: number;
   /** Small caption under the name — a size, a duration. */
@@ -151,7 +151,7 @@ export interface ChatComposerProps extends PartProps {
   /** Typography and other text styles on the editable field. */
   inputStyle?: StyleProp<TextStyle>;
   /** Send control glyph. Defaults to the paper plane. */
-  sendIcon?: ChatComposerIcon;
+  sendIcon?: BloomIconComponent;
   /** The draft. Works controlled or uncontrolled. */
   value?: string;
   defaultValue?: string;
@@ -174,7 +174,7 @@ export interface ChatComposerProps extends PartProps {
    */
   notice?: ReactNode;
   /** The glyph beside a string `notice`. */
-  noticeIcon?: ChatComposerIcon;
+  noticeIcon?: BloomIconComponent;
   /** Anything above the bar: reply/edit/forward previews, a slow-mode line. */
   banner?: ReactNode;
   /** Pending attachments, drawn as a strip between `banner` and the bar. */
@@ -237,7 +237,7 @@ export interface ChatComposerProps extends PartProps {
 export interface ComposerIconButtonProps extends PartProps {
   /** Keeps anchored menus positioned when the control lays out. */
   onLayout?: import('react-native').ViewProps['onLayout'];
-  icon: ChatComposerIcon;
+  icon: BloomIconComponent;
   accessibilityLabel: string;
   onPress?: (event?: unknown) => void;
   onLongPress?: (event?: unknown) => void;
@@ -275,7 +275,7 @@ export interface ComposerBannerProps extends PartProps {
   /** Thumbnail of the quoted media. */
   thumbnail?: string;
   /** Overrides the glyph. Defaults per `kind`. */
-  icon?: ChatComposerIcon;
+  icon?: BloomIconComponent;
   /**
    * The accent bar and glyph colour. Defaults to the theme accent; pass a
    * per-sender colour to match the quoted bubble.
@@ -363,7 +363,7 @@ export interface VoiceRecorderProps extends PartProps {
 export interface AttachmentMenuItem {
   id: string;
   label: string;
-  icon: ChatComposerIcon;
+  icon: BloomIconComponent;
   /** Overrides the disc tint. Defaults to the accent. */
   color?: string;
   disabled?: boolean;
@@ -406,7 +406,7 @@ export interface EmojiGroup {
   label: string;
   emojis: ReadonlyArray<EmojiEntry>;
   /** The category-bar glyph. Defaults to a glyph picked from `key`. */
-  icon?: ChatComposerIcon;
+  icon?: BloomIconComponent;
 }
 
 /** A top-level tab beside "Emoji" — stickers, GIFs, anything else. */
@@ -414,7 +414,7 @@ export interface EmojiPickerTab {
   key: string;
   label: string;
   content: ReactNode;
-  icon?: ChatComposerIcon;
+  icon?: BloomIconComponent;
 }
 
 export interface EmojiPickerLabels {
@@ -500,7 +500,7 @@ export interface ReactionPickerProps extends PartProps {
 export interface MessageMenuItem {
   id: string;
   label: string;
-  icon?: ChatComposerIcon;
+  icon?: BloomIconComponent;
   /** `'destructive'` paints the row in the theme's negative colour. */
   variant?: 'default' | 'destructive';
   /** A keyboard hint at the right end of the row (web). */

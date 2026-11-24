@@ -1,7 +1,7 @@
 import type { ComponentRef, ReactNode, Ref } from 'react';
 import type { StyleProp, View, ViewStyle } from 'react-native';
 import type { AvatarCharacter } from '../agent-avatar';
-import type { ButtonIconComponent } from '../button/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** An agent as the reply pieces draw it. */
 export interface AgentReplyAgent {
@@ -79,7 +79,7 @@ export interface AgentReplyActionsProps {
 
 export interface AgentReplyActionProps {
   /** The icon component, sized by the row. */
-  icon: ButtonIconComponent;
+  icon: BloomIconComponent;
   /** The tile's name; it draws no text. */
   label: string;
   /** Lit as the current choice (a vote, a read-aloud in progress). */

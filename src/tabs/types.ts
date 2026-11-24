@@ -115,7 +115,7 @@ export interface TabsTriggerProps {
    * variants — painted in the label's colour for the current state. Wins over
    * `icon`.
    */
-  leadingIcon?: TabsIconComponent;
+  leadingIcon?: BloomIconComponent;
   /**
    * Optional tally rendered as a small count badge beside the label (accent
    * when the tab is selected, muted otherwise). Omitted

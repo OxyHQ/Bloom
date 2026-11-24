@@ -226,7 +226,7 @@ export interface HeaderAction {
   id: string;
   /** Visible menu label and the control's accessible name. */
   label: string;
-  icon?: import('../button/types').ButtonIconComponent;
+  icon?: import('../icons/icon-component').BloomIconComponent;
   onPress: () => void;
   /** Related actions retain their source order and group in overflow. */
   group?: string;

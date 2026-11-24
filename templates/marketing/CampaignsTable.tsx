@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import type { ButtonIconComponent } from '../../src/button/types';
 import { Chip, type ChipHue } from '../../src/chip';
 import {
   DataTable,
@@ -20,6 +19,7 @@ import {
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { CellText, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../shared/dashboard';
+import type { BloomIconComponent } from '../../src/icons/icon-component';
 
 /**
  * The marketing template's campaigns table: the
@@ -29,7 +29,7 @@ import { CellText, IconTile, MONTHS, NameCell, dateValue, makeRng } from '../sha
  * `inset` layout.
  */
 
-type Channel = { label: string; icon: ButtonIconComponent };
+type Channel = { label: string; icon: BloomIconComponent };
 
 const CHANNELS: Channel[] = [
   { label: 'Google Ads', icon: RiGoogleFill },

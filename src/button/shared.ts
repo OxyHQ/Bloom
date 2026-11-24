@@ -13,7 +13,8 @@ import { TYPE_SCALE, type TypeScaleStyle, type TypeScaleVariant } from '../typog
 import { srgbToOklch, type Oklch, oklchToRgbString } from '../theme/color-space';
 import { mixColors } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
-import type { ButtonIconComponent, ButtonLinkTone, ButtonUnderline } from './types';
+import type { ButtonLinkTone, ButtonUnderline } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** Geometry shared by web and native: xs 24, sm 32, md 36, lg 44.
  * Icon actions are squares; native expands compact touch targets with hitSlop.
@@ -490,9 +491,7 @@ export function resolveCanonicalButtonPalette(
 }
 
 /** Elements are content; function, memo and forwardRef icons are components. */
-export function isIconComponent(
-  icon: ReactNode | ButtonIconComponent,
-): icon is ButtonIconComponent {
+export function isIconComponent(icon: ReactNode | BloomIconComponent): icon is BloomIconComponent {
   return (
     typeof icon === 'function' ||
     (typeof icon === 'object' && icon !== null && !isValidElement(icon) && '$$typeof' in icon)

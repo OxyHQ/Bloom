@@ -3,15 +3,15 @@ import type { ComponentRef } from 'react';
 import type { GestureResponderEvent, View } from 'react-native';
 
 import { Button } from '../button';
-import type { ButtonIconComponent } from '../button';
 import type { WebAriaProps } from '../styles/aria-hosts';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { resolveQueuePanelPaint } from './shared';
 import type { RefComponent } from '../styles/native-refs';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 export interface QueueIconButtonProps {
-  icon: ButtonIconComponent;
+  icon: BloomIconComponent;
   accessibilityLabel: string;
   /** Diameter. Default `32`; the glyph is half of it. */
   size?: number;

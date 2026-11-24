@@ -181,7 +181,7 @@ export interface SavedSearchCardProps {
   /** `"Alerts off"` in English; follows the locale. */
   alertsOffLabel?: string;
   /** A small icon tile beside the title. Default a search glyph. */
-  icon?: SavedSearchIcon;
+  icon?: BloomIconComponent;
   /** Opens the search's results; makes the title block a button. */
   onPress?: () => void;
   /** Draws an "Edit" button. */

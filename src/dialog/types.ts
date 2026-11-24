@@ -5,7 +5,6 @@ import type { AppColorName } from '../theme/color-presets';
 import type { BackdropAppearance } from '../overlay/types';
 import type { SurfaceTransition } from '../motion/types';
 import type { ReactNode } from 'react';
-import type { ButtonIconComponent } from '../button/types';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 

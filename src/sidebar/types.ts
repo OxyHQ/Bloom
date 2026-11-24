@@ -38,9 +38,9 @@ export interface SidebarNavItem {
   style?: StyleProp<ViewStyle>;
   key: string;
   label: string;
-  icon: SidebarIcon;
+  icon: BloomIconComponent;
   /** The glyph while selected, e.g. the filled icon. Used by the `rail` variant. */
-  activeIcon?: SidebarIcon;
+  activeIcon?: BloomIconComponent;
   /** Link target. On web the row renders a real anchor. */
   href?: string;
   /** Counter badge at the row's end (the right in LTR); primary-tinted when the row is selected. */
@@ -72,7 +72,7 @@ export interface SidebarNavItem {
 export interface SidebarMode {
   key: string;
   label: string;
-  icon: SidebarIcon;
+  icon: BloomIconComponent;
   /**
    * Web: a keyboard shortcut, e.g. `⌥⌃1`. Shown on hover and BOUND by the
    * `Sidebar` that lists the mode — the key calls `onModeChange(key)`. Don't bind
@@ -97,7 +97,7 @@ export interface SidebarModeSwitcherProps {
 }
 
 export interface SidebarItemProps {
-  icon?: SidebarIcon;
+  icon?: BloomIconComponent;
   /** An avatar or other visual in place of the icon. Kept visible while collapsed. */
   leading?: ReactNode;
   label: string;
@@ -159,9 +159,9 @@ export interface SidebarRailItemProps {
   labelVisibility?: 'visible' | 'hidden';
   /** Selected pill, or emphasis on the glyph alone. Default pill. */
   selectedAppearance?: 'pill' | 'icon';
-  icon: SidebarIcon;
+  icon: BloomIconComponent;
   /** The glyph while selected (e.g. the filled icon); defaults to `icon`. */
-  activeIcon?: SidebarIcon;
+  activeIcon?: BloomIconComponent;
   label: string;
   href?: string;
   /** Sits over the indicator's top-end corner (top-right in LTR). */
@@ -214,7 +214,7 @@ export interface SidebarMenuItem {
   key: string;
   label: string;
   /** The glyph before the label. */
-  icon?: SidebarIcon;
+  icon?: BloomIconComponent;
   /**
    * An avatar before the label, in place of `icon`: a row that IS a workspace
    * or a person (a switcher's choices).
@@ -406,7 +406,7 @@ export interface SidebarProps {
   /** Persistent primary action below destinations. Its label collapses to a named icon button. */
   primaryAction?: {
     label: string;
-    icon: SidebarIcon;
+    icon: BloomIconComponent;
     onPress: (event: GestureResponderEvent) => void;
     disabled?: boolean;
   };
@@ -594,7 +594,7 @@ export interface SidebarTreeItem
    */
   description?: string;
   /** A glyph before the label, in the row's icon colour. */
-  icon?: SidebarIcon;
+  icon?: BloomIconComponent;
   /**
    * Anything else before the label in place of `icon` — an emoji, an image — in
    * the same 20px box (`tree.icon`), or a taller one (`tree.avatar`, 36px at the default size)

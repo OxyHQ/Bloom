@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { BookingPriceProps } from '../booking/types';
-import type { ButtonIconComponent } from '../button/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 // ---------------------------------------------------------------------------
 //  Shared
@@ -353,7 +353,7 @@ export interface ActionBarProps extends BookingPriceProps {
   /** Spinner in the primary button. */
   loading?: boolean;
   /** An icon-only secondary button left of the primary one (save, share). */
-  secondaryIcon?: ButtonIconComponent;
+  secondaryIcon?: BloomIconComponent;
   /** The icon button's accessible name — required with `secondaryIcon`. */
   secondaryLabel?: string;
   onSecondary?: () => void;
