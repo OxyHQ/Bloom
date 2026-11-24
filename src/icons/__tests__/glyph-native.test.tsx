@@ -2,7 +2,7 @@ import TestRenderer, { act } from 'react-test-renderer';
 import { BloomThemeProvider } from '../../theme';
 import { RiHeart3Line } from '../remix/RiHeart3Line';
 import { LikeIcon } from '../social/LikeIcon';
-import { MenuIcon } from '../social/MenuIcon';
+import { createMultiPathSVG } from '../TEMPLATE';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -55,7 +55,8 @@ describe('a Bloom icon on native, with the icon view in the binary', () => {
   });
 
   it('keeps every path of a multi-path glyph, filled', () => {
-    const [view] = hosts(<MenuIcon fill="#000000" />);
+    const TwoBars = createMultiPathSVG({ paths: ['M3 5H21V7H3Z', 'M3 17H21V19H3Z'] });
+    const [view] = hosts(<TwoBars fill="#000000" />);
     expect(view?.props.paths.length).toBeGreaterThan(1);
     expect(view?.props.strokeWidth).toBe(0);
   });
