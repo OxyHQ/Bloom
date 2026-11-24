@@ -77,6 +77,15 @@ class BloomIconTest {
     assertTrue(pixels(icon(24, "M4 4 L")).all { row -> row.all { it == 0 } })
   }
 
+  @Test fun sharesOneRasterAcrossViewsOfTheSameGlyphSizeAndPaint() {
+    pixels(icon(48, frame))
+    val before = Raster.count()
+    pixels(icon(48, frame))
+    assertEquals(before, Raster.count())
+    pixels(icon(48, frame).apply { color = 0xff00ff00.toInt() })
+    assertEquals(before + 1, Raster.count())
+  }
+
   @Test fun parsesAGlyphOncePerDensity() {
     assertSame(Glyph.of(listOf(frame), 2f), Glyph.of(listOf(frame), 2f))
     assertNotSame(Glyph.of(listOf(frame), 2f), Glyph.of(listOf(frame), 3f))
