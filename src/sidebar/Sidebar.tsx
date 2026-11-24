@@ -496,15 +496,19 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     setSearchActive(true);
   }, [mobile, setCollapsed]);
 
+  // Dismissing the field from the keyboard or its clear button hands focus back
+  // to the search trigger, which mounts in the commit that closes the field.
+  const restoreSearchFocus = useRef(false);
   const deactivateSearch = useCallback((restoreFocus: boolean) => {
     setQuery('');
     setSearchActive(false);
-    if (restoreFocus && IS_WEB && typeof window !== 'undefined') {
-      window.requestAnimationFrame(() =>
-        (searchTriggerRef.current as unknown as HTMLElement | null)?.focus?.(),
-      );
-    }
+    restoreSearchFocus.current = restoreFocus && IS_WEB;
   }, []);
+  useEffect(() => {
+    if (searchActive || !restoreSearchFocus.current) return;
+    restoreSearchFocus.current = false;
+    (searchTriggerRef.current as unknown as HTMLElement | null)?.focus?.();
+  }, [searchActive]);
 
   // A press anywhere outside the field closes it (web).
   useEffect(() => {
