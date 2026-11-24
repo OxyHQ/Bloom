@@ -2,15 +2,10 @@ import { GlyphAttention } from './GlyphAttention';
 import { resolveButtonOverrides } from './shared';
 import { Group } from './Group';
 import { useGroupedButton } from './use-grouped-button';
-import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
+import { useLensFrame, withLens } from '../floating/lens/lens-frame';
 import { useLensOriginReporter } from '../floating/lens/use-lens-menu';
 import { compositeOnto } from '../surface/shared';
-import {
-  useControlMaterial,
-  useFloatingControl,
-  useInFloatingRegion,
-  useLensAvailable,
-} from '../floating/lens/lens-material';
+import { useControlMaterial, useFloatingControl } from '../floating/lens/lens-material';
 import { useInLensBase } from '../floating/lens/native-lens';
 import { useSurfaceLayer } from '../surface/use-surface-layer';
 import React, {
@@ -20,7 +15,6 @@ import React, {
   useRef,
   useEffect,
   memo,
-  type ComponentType,
   createContext,
   useContext,
 } from 'react';
@@ -479,7 +473,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     const material = materialProp ?? regionMaterial;
     // A floating control (on the lens) is the floating size, whatever its caller says.
     const sizeProp = useFloatingControl(materialProp) ? FLOATING_CONTROL_SIZE : requestedSize;
-    const inFloatingRegion = useInFloatingRegion();
     const { size, tone } = useBloomAppearance(
       { size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp },
       { size: 'md', tone: 'accent' },
@@ -504,7 +497,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
             ? geometry.iconSize
             : ICON_BUTTON_ICON_SIZE[size]
           : geometry.iconSize;
-    const lensAvailable = useLensAvailable();
     const inLensBase = useInLensBase();
     const palette = useMemo(
       () =>
@@ -547,14 +539,12 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     // Where the device has the lens, every button with a material is drawn by it: one material for
     // every button. In a floating region (`material="lens"`) the window draws it over what moves
     // behind; anywhere else it is drawn in its place, against the surface it sits on, as a feed's ⋯.
-    const lens =
-      lensAvailable &&
-      (material === 'lens' || (material === 'surface' && palette.rest.surface === true));
-    // Outside a floating region (a header, a toolbar, a bar, a FAB) the control is in the page's
-    // content: its lens is drawn in its place, so it scrolls and stacks with the page.
-    const restBackdrop = lens && !inFloatingRegion ? layer.parentFill : undefined;
+    const frame = useLensFrame(
+      material === 'lens' || (material === 'surface' && palette.rest.surface === true),
+      style,
+    );
     // On the lens (its own or an enclosing base's) the engine draws the shadow and rim.
-    const onLens = inLensBase || lens;
+    const onLens = inLensBase || frame.lens;
 
     // Pressed state drives the ACTIVE palette. Tracked through state rather than
     // Pressable's function-form `style`, which NativeWind's css-interop swallows
@@ -624,8 +614,9 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     // of the button's own shape. The resting paint, composited onto the page, is what it looks like.
     const reportOrigin = useLensOriginReporter();
     const restFill = palette.rest.background;
-    const styleRadius = StyleSheet.flatten(style)?.borderRadius;
-    const originRadius = typeof styleRadius === 'number' ? styleRadius : BUTTON_RADIUS;
+    const flatStyle = StyleSheet.flatten(style);
+    const originRadius =
+      typeof flatStyle?.borderRadius === 'number' ? flatStyle.borderRadius : BUTTON_RADIUS;
     const pageColor = theme.colors.background;
     useEffect(() => {
       if (!reportOrigin) return;
@@ -770,7 +761,6 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ? () => (target === '_blank' ? openExternal(href) : openHref(href))
           : undefined));
 
-    const split = lens ? splitLensStyle(style) : null;
     const pressable = (
       <ButtonPressable
         interactive={interactive}
@@ -787,7 +777,7 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           ? {}
           : { tabIndex: tabIndex < 0 ? (-1 as const) : (0 as const) })}
         baseStyle={baseStyles}
-        style={split ? split.control : style}
+        style={frame.style}
         onLongPress={isInteractionBlocked ? undefined : onLongPress}
         onPress={
           handlePress
@@ -850,12 +840,12 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
         testID={testID}
       >
-        {paint.surface && !lens ? (
+        {paint.surface && !frame.lens ? (
           <SurfacePaint
             fill={paint.background}
-            radius={StyleSheet.flatten(style)?.borderRadius ?? BUTTON_RADIUS}
+            radius={flatStyle?.borderRadius ?? BUTTON_RADIUS}
             // A continuous corner (a squircle FAB) on the paint too.
-            shape={StyleSheet.flatten(style)?.borderCurve === 'continuous' ? SMOOTH : undefined}
+            shape={flatStyle?.borderCurve === 'continuous' ? SMOOTH : undefined}
           />
         ) : null}
         <ButtonContent
@@ -881,18 +871,11 @@ const ButtonComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
         {decoration}
       </ButtonPressable>
     );
-    if (!split) return pressable;
-    const flatRadius = StyleSheet.flatten(style)?.borderRadius;
-    return (
-      <LensButtonHost
-        tint={appearance === 'solid' ? paint.background : undefined}
-        radius={typeof flatRadius === 'number' ? flatRadius : BUTTON_RADIUS}
-        restBackdrop={restBackdrop}
-        style={split.host}
-      >
-        {pressable}
-      </LensButtonHost>
-    );
+    // The lens takes the paint's fill (a solid control's) and radius.
+    return withLens(frame, pressable, {
+      tint: appearance === 'solid' ? paint.background : undefined,
+      radius: originRadius,
+    });
   },
 );
 

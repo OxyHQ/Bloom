@@ -39,7 +39,7 @@ export function useFloatingControl(material: string | undefined): boolean {
 /**
  * Whether the region is a floating one (a floating header, a toolbar, a bar, a FAB): a fixed layer the
  * window draws the lens of. Outside one a control on the lens is in the page's content, and its lens is
- * drawn in its own place (`LensButtonHost restBackdrop`), so it scrolls and stacks with the page instead of
+ * drawn in its own place (`withLens`, `lens-frame.tsx`), so it scrolls and stacks with the page instead of
  * being drawn above it by the window.
  */
 export function useInFloatingRegion(): boolean {

@@ -5,8 +5,7 @@ import { resolveTabBarTheme } from './shared';
 import { pointerEventsStyle } from '../styles/pointer-events';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { TabBarSurface } from './surface';
-import { LensButtonHost } from '../floating/lens/lens-button-host';
-import { useLensAvailable } from '../floating/lens/lens-material';
+import { useLensFrame, withLens } from '../floating/lens/lens-frame';
 import { SurfacePaint } from '../surface/SurfacePaint';
 import { IS_WEB } from '../styles/platform';
 import { borderRadius } from '../styles/tokens';
@@ -141,6 +140,9 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  * stretched bar covered the FAB). At 0.35 both stay inside the gap.
  */
 const BAR_JELLY = 0.35;
+
+/** Where the bar's lens host sits: across the bar. */
+const BAR_LENS_HOST = { alignSelf: 'stretch', flex: 1 } as const;
 
 const BarContext = createContext<BarContextValue | null>(null);
 const subscribeHydration = () => () => {};
@@ -555,8 +557,9 @@ function TabBarBody({
   // Native (plugin present) auto-tracks and ignores the extra deps, so listing
   // them is correct on both platforms. Same rule as `BottomSheetBase` and
   // `ZoomableMediaGallery`. Do NOT strip these.
-  // The bar's material: the native lens behind the items where the device has it, else the shared surface.
-  const lens = useLensAvailable();
+  // The bar's material: the native lens behind the items where the device has it, else the shared
+  // surface. The bar floats over the content, so the window draws its lens.
+  const lensFrame = useLensFrame(true, BAR_LENS_HOST);
   const barStyle = useAnimatedStyle(() => {
     const height = interpolate(
       progress.value,
@@ -829,10 +832,11 @@ function TabBarBody({
       >
         <OptionalGesture enabled={!scrollable && !collapseActive} gesture={gesture}>
           <Animated.View style={[barStyle, surfaceFillVars(recipe.paint.material.publishedFill)]}>
-            {lens ? (
-              <LensButtonHost jelly={BAR_JELLY} style={{ alignSelf: 'stretch', flex: 1 }}>
-                <View style={{ flex: 1 }}>{barContent}</View>
-              </LensButtonHost>
+            {lensFrame.lens ? (
+              withLens(lensFrame, <View style={styles.lensContent}>{barContent}</View>, {
+                jelly: BAR_JELLY,
+                floating: true,
+              })
             ) : (
               <>
                 <TabBarSurface
@@ -1105,6 +1109,7 @@ export function createTabBarButton(Glyph: ComponentType<TabBarGlyphProps>) {
 }
 
 const styles = StyleSheet.create({
+  lensContent: { flex: 1 },
   root: {
     // The shared compiled pointer stylesheet keeps the bar's gaps transparent
     // to input while its children stay interactive, without deprecated props.

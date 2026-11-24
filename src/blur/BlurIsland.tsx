@@ -1,7 +1,8 @@
 import { resolveSurfaceGeometry } from '../surface/resolve-surface-geometry';
 import { surfaceStyle } from '../shapes/surface-style';
 import { SURFACE_SHAPES } from '../design-tokens/shapes';
-import React, { memo } from 'react';
+import type React from 'react';
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useDirectionProps, useIsRtl } from '../hooks/use-is-rtl';
@@ -12,8 +13,7 @@ import { useSurfaceLayer } from '../surface/use-surface-layer';
 import { resolveSurfaceMaterial } from '../surface/resolve-surface-material';
 import { borderRadius } from '../styles/tokens';
 import { SurfacePaint } from '../surface/SurfacePaint';
-import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { useLensAvailable } from '../floating/lens/lens-material';
+import { useLensFrame, withLens } from '../floating/lens/lens-frame';
 import type { BlurIslandProps } from './types';
 
 /** Floating control container using the shared surface material.
@@ -30,7 +30,7 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
   style,
   testID,
 }) => {
-  const lensAvailable = useLensAvailable();
+  const frame = useLensFrame(variant === 'lens', style);
   const directionProps = useDirectionProps();
   const direction = useIsRtl() ? 'rtl' : 'ltr';
   const layer = useSurfaceLayer();
@@ -40,20 +40,18 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
     parentFill: layer.parentFill,
     parentLevel: layer.parentLevel,
   });
-  const { paintFill: fill, publishedFill: publishedFill } = material;
+  const { paintFill: fill, publishedFill } = material;
   const geometry = resolveSurfaceGeometry(radius, style, borderRadius.full, cornerCurve);
   const shape = geometry.shape;
 
-  if (variant === 'lens' && lensAvailable) {
+  if (frame.lens) {
     // The island is the native lens: the engine draws the material, its shadow and its light, and the
     // controls inside draw their content. Placement stays on the host, the look on the inner view.
-    const split = splitLensStyle(style);
+    // It floats over what moves behind (a map, a feed), so the window draws its lens.
     return (
       <BloomScope>
-        <LensButtonHost
-          radius={typeof geometry.radius === 'number' ? geometry.radius : undefined}
-          style={split.host}
-        >
+        {withLens(
+          frame,
           <View
             collapsable={false}
             {...directionProps}
@@ -63,14 +61,18 @@ const BlurIslandComponent: React.FC<BlurIslandProps> = ({
             style={[
               styles.island,
               { borderRadius: geometry.radius, overflow: 'hidden' },
-              split.control,
+              frame.style,
             ]}
           >
             <SurfaceLevelProvider level={material.level} fill={publishedFill}>
               {children}
             </SurfaceLevelProvider>
-          </View>
-        </LensButtonHost>
+          </View>,
+          {
+            radius: typeof geometry.radius === 'number' ? geometry.radius : undefined,
+            floating: true,
+          },
+        )}
       </BloomScope>
     );
   }

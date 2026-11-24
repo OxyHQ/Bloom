@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Every glass control takes the native lens or Bloom's own paint through one decision (`useLensFrame` and `withLens`, `floating/lens/lens-frame.tsx`): `Button`, `Button.Group`, `Surface`, `BlurIsland` and `TabBar` each wrote it. What each draws is unchanged: the lens on Android with `@oxy.so/bloom-lens` (in the page against the surface it sits on, in a floating region or for the tab bar and an island by the window), the paint on the web, iOS, Android without the lens and inside a Dialog or a BottomSheet. A `Surface` and a `Button.Group` off the lens no longer read the surface fill and the floating region they only needed on it.
+
 ## 23.8.0
 
 The Bloom language 1.5.0 (`@oxy.so/bloom-language`), its compiler 1.3.0 (`@oxy.so/bloom-language-compiler`) and `@oxy.so/bloom-data` 0.1.2 ship beside it.
