@@ -4,7 +4,7 @@ import { ListCall } from './ListCall';
 import { ListConversation } from './ListConversation';
 import { ListMail } from './ListMail';
 import { ChipRow } from '../chip';
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, View, type PressableProps } from 'react-native';
 import { Checkbox } from '../checkbox';
 import { openHref } from '../hooks/link-activation';
@@ -96,7 +96,10 @@ export function createListItem({
     useEffect(() => {
       adoptStyleSheet(LIST_STYLE_ID, LIST_CSS);
     }, []);
-    const selectedFill = mixColors(surface, theme.colors.text, theme.isDark ? 0.09 : 0.06);
+    const selectedFill = useMemo(
+      () => mixColors(surface, theme.colors.text, theme.isDark ? 0.09 : 0.06),
+      [surface, theme.colors.text, theme.isDark],
+    );
     // First occurrence wins: explicit commands retain their callbacks when also exposed by swipe.
     const commands = [
       ...actions,
@@ -126,19 +129,12 @@ export function createListItem({
     const selection = onCheckedChange ? (
       <View
         {...webDataSet({ bloomListIdentity: '' })}
-        style={{ width: 36, height: 36 }}
+        style={styles.identity}
         testID={testID ? `${testID}-avatar` : undefined}
       >
         <View
           {...webDataSet({ bloomListSelection: '' })}
-          style={{
-            position: 'absolute',
-            top: -4,
-            left: -4,
-            width: 44,
-            height: 44,
-            opacity: checked || !leading ? 1 : 0,
-          }}
+          style={[styles.selection, { opacity: checked || !leading ? 1 : 0 }]}
         >
           <Checkbox
             checked={checked}
@@ -146,6 +142,8 @@ export function createListItem({
             onCheckedChange={onCheckedChange}
             accessibilityLabel={selectionLabel ?? label}
             testID={testID ? `${testID}-check` : undefined}
+            // Inline: Checkbox's adopted sheet aligns its row to flex-start and
+            // outranks a StyleSheet class, never an inline style.
             style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
           />
         </View>
@@ -225,7 +223,7 @@ export function createListItem({
         : undefined,
       style: ({ pressed }) => [
         StyleSheet.absoluteFill,
-        { borderRadius: 28 },
+        styles.rounded,
         !IS_WEB && pressed && !active && !checked ? { backgroundColor: selectedFill } : undefined,
       ],
       testID: testID ? `${testID}-link` : undefined,
@@ -267,37 +265,27 @@ export function createListItem({
           ) : null)}
         <View
           pointerEvents="box-none"
-          style={{
-            minHeight: density === 'compact' ? LIST_ROW_COMPACT_MIN_HEIGHT : LIST_ROW_MIN_HEIGHT,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: density === 'compact' ? LIST_ROW_COMPACT_GAP : 10,
-            paddingHorizontal: density === 'compact' ? LIST_ROW_COMPACT_INSET : LIST_ROW_INSET,
-            paddingVertical: density === 'compact' ? compactPadding : 8,
-          }}
+          style={[
+            density === 'compact' ? styles.bodyCompact : styles.body,
+            density === 'compact' ? { paddingVertical: compactPadding } : undefined,
+          ]}
         >
           {selection ? (
             <View
               pointerEvents="box-none"
-              style={{
-                flexShrink: 0,
-                minWidth: compactDecorativeLeading ? 0 : 36,
-                // Compact decorative content gets a smaller leading column;
-                // a selectable identity keeps its 36px touch target.
-                minHeight: compactDecorativeLeading ? 0 : 36,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              // Compact decorative content gets a smaller leading column;
+              // a selectable identity keeps its 36px touch target.
+              style={compactDecorativeLeading ? styles.leadingDecorative : styles.leading}
             >
               {selection}
             </View>
           ) : null}
-          <View pointerEvents="box-none" style={{ flex: 1, minWidth: 0 }}>
+          <View pointerEvents="box-none" style={styles.content}>
             {content ?? (
               <View
                 pointerEvents="none"
                 aria-hidden={interactive || Boolean(labelProp) || undefined}
-                style={{ gap: 2 }}
+                style={styles.text}
               >
                 {typeof title === 'string' ? (
                   <Text variant="body-medium" numberOfLines={1}>
@@ -374,7 +362,7 @@ export function createListItem({
         {footer ? (
           <View
             pointerEvents="box-none"
-            style={{ paddingBottom: 8, paddingLeft: selection ? 56 : 10, paddingRight: 10 }}
+            style={selection ? styles.footerIndented : styles.footer}
             testID={testID ? `${testID}-footer` : undefined}
           >
             {footer}
@@ -390,7 +378,7 @@ export function createListItem({
           <ContextMenuTrigger
             asChild
             disabled={selecting || disabled}
-            style={{ width: '100%', alignSelf: 'stretch' }}
+            style={styles.contextTrigger}
           >
             <View role="presentation">{row}</View>
           </ContextMenuTrigger>
@@ -437,3 +425,43 @@ export function createListItem({
     return <Shell {...props} />;
   });
 }
+
+const styles = StyleSheet.create({
+  identity: { width: 36, height: 36 },
+  selection: { position: 'absolute', top: -4, left: -4, width: 44, height: 44 },
+  rounded: { borderRadius: 28 },
+  body: {
+    minHeight: LIST_ROW_MIN_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: LIST_ROW_INSET,
+    paddingVertical: 8,
+  },
+  bodyCompact: {
+    minHeight: LIST_ROW_COMPACT_MIN_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: LIST_ROW_COMPACT_GAP,
+    paddingHorizontal: LIST_ROW_COMPACT_INSET,
+  },
+  leading: {
+    flexShrink: 0,
+    minWidth: 36,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leadingDecorative: {
+    flexShrink: 0,
+    minWidth: 0,
+    minHeight: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: { flex: 1, minWidth: 0 },
+  text: { gap: 2 },
+  footer: { paddingBottom: 8, paddingLeft: 10, paddingRight: 10 },
+  footerIndented: { paddingBottom: 8, paddingLeft: 56, paddingRight: 10 },
+  contextTrigger: { width: '100%', alignSelf: 'stretch' },
+});

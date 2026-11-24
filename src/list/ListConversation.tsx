@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { useMemo } from 'react';
 import type React from 'react';
-import { View, type TextStyle } from 'react-native';
+import { StyleSheet, View, type TextStyle } from 'react-native';
 import { MessageStatus, TypingDots, UnreadBadge } from '../chat-indicators';
 import { RiNotificationOffFill } from '../icons/remix/RiNotificationOffFill';
 import { RiPushpinFill } from '../icons/remix/RiPushpinFill';
@@ -109,7 +109,7 @@ export function ListConversation({
       preview.attachment && !preview.draft ? CHAT_ATTACHMENT_ICONS[preview.attachment.kind] : null;
     const body = [preview.attachment?.label, preview.text].filter(Boolean).join(' ');
     previewLine = (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 }}>
+      <View style={styles.line}>
         {AttachmentIcon ? (
           <View testID={testID ? `${testID}-attachment` : undefined}>
             <AttachmentIcon width={geo.glyph} height={geo.glyph} fill={previewColor} />
@@ -118,7 +118,7 @@ export function ListConversation({
         <Text
           variant={geo.previewVariant}
           numberOfLines={1}
-          style={{ color: previewColor, flexShrink: 1, minWidth: 0 }}
+          style={[styles.shrink, { color: previewColor }]}
           testID={testID ? `${testID}-preview` : undefined}
         >
           {preview.draft ? <Text style={draftStyle}>{`${text.draft} `}</Text> : null}
@@ -134,7 +134,7 @@ export function ListConversation({
   // --- the right column ----------------------------------------------------
   const timeColor = unread && !muted ? paint.accent : paint.textMuted;
   const states = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+    <View style={styles.states}>
       {muted ? (
         <RiNotificationOffFill
           width={geo.glyph}
@@ -195,12 +195,12 @@ export function ListConversation({
         props.content !== undefined ? (
           props.content
         ) : (
-          <View pointerEvents="none" aria-hidden style={{ gap: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 }}>
+          <View pointerEvents="none" aria-hidden style={styles.content}>
+            <View style={styles.line}>
               <Text
                 variant={unread ? 'body-semibold' : 'body-medium'}
                 numberOfLines={1}
-                style={{ color: paint.text, flexShrink: 1, minWidth: 0 }}
+                style={[styles.shrink, { color: paint.text }]}
                 testID={testID ? `${testID}-name` : undefined}
               >
                 {name}
@@ -224,7 +224,7 @@ export function ListConversation({
         props.trailing !== undefined ? (
           props.trailing
         ) : (
-          <View pointerEvents="none" aria-hidden style={{ alignItems: 'flex-end', gap: 3 }}>
+          <View pointerEvents="none" aria-hidden style={styles.trailing}>
             {time !== undefined ? (
               <Text
                 variant="caption-2-regular"
@@ -242,3 +242,11 @@ export function ListConversation({
     />
   );
 }
+
+const styles = StyleSheet.create({
+  line: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 },
+  shrink: { flexShrink: 1, minWidth: 0 },
+  states: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  content: { gap: 2 },
+  trailing: { alignItems: 'flex-end', gap: 3 },
+});

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Avatar } from '../avatar';
 import { CALL_UI_MESSAGES } from '../call-ui/messages';
 import { isNegativeDirection, resolveCallPaint } from '../call-ui/shared';
@@ -61,12 +61,12 @@ export function ListCall({
         props.content !== undefined ? (
           props.content
         ) : (
-          <View pointerEvents="none" aria-hidden style={{ gap: 2, minWidth: 0 }}>
-            <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+          <View pointerEvents="none" aria-hidden style={styles.content}>
+            <View style={styles.nameLine}>
               <Text
                 variant="body-medium"
                 numberOfLines={1}
-                style={[{ color, flexShrink: 1 }, textStyle]}
+                style={[styles.shrink, { color }, textStyle]}
                 testID={id('name')}
               >
                 {name}
@@ -78,7 +78,7 @@ export function ListCall({
                 >{`(${count})`}</Text>
               ) : null}
             </View>
-            <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+            <View style={styles.metaLine}>
               <Arrow
                 width={14}
                 height={14}
@@ -87,7 +87,7 @@ export function ListCall({
               <Text
                 variant="body-2-regular"
                 numberOfLines={1}
-                style={{ color: paint.textSecondary, flexShrink: 1 }}
+                style={[styles.shrink, { color: paint.textSecondary }]}
                 testID={id('meta')}
               >{`${text[direction]} · ${meta}`}</Text>
             </View>
@@ -113,3 +113,10 @@ export function ListCall({
     />
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 2, minWidth: 0 },
+  nameLine: { flexDirection: 'row', gap: 4, alignItems: 'center' },
+  metaLine: { flexDirection: 'row', gap: 5, alignItems: 'center' },
+  shrink: { flexShrink: 1 },
+});
