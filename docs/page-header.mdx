@@ -149,7 +149,7 @@ Use ordinary `Button` controls for both standalone and grouped actions. `Button.
 
 ### The edge effect
 
-The default smooth scrim keeps the page colour opaque throughout the header's measured box, including subtitles, accessories and safe-area padding, then fades to nothing **below** it. The combined box is 1.55× the header's height; only the external 0.55× tail fades, so scrolling text cannot show through the title. That overhang is the point: a translucent rectangle ends at its own bottom edge, and that edge is a line across the screen whether or not it is drawn.
+The default smooth scrim keeps the page colour opaque throughout the header's measured box, including subtitles, accessories and safe-area padding, then fades to nothing **below** it over a short tail: the 12pt inset the row keeps below its islands, the way Apple's scroll edge ends just past the bar. The band is the header's real height (status bar plus row, measured) and that tail, never a ratio of the header, which grew with the status bar and laid a band over whatever sat under it; only the tail fades, so scrolling text cannot show through the title. That overhang is the point: a translucent rectangle ends at its own bottom edge, and that edge is a line across the screen whether or not it is drawn.
 
 It is an opacity ramp of one flat colour, not a blur of varying intensity. `backdrop-filter` and `expo-blur` both take a single radius for a whole surface; a real blur falloff needs the stacked layers `progressive-blur` uses, and is not what this is.
 
@@ -157,9 +157,9 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 `scrimFalloff="linear"` fades uniformly from fully opaque at the top to transparent
 at the bottom, with half opacity at the midpoint. The default `"smooth"` retains
-an opaque chrome region followed by the existing curve in the external tail.
+an opaque chrome region followed by an ease-in-out curve (0.74 and 0.26 at its thirds) in the external tail: the full range, leaving the chrome and arriving at nothing gently, with no plateau or step.
 `tone="onImage"` keeps a full-box fade for photographic overlays, including its
-existing layer opacity. Both extend below the header and leave title/action
+existing layer opacity. Both extend 0.55× (`SCRIM_TAIL_RATIO`) below the header and leave title/action
 opacity unchanged. `EdgeScrim falloff="linear"` exposes the same option for other
 floating chrome; Android's background gradient and the SVG use the same stops.
 

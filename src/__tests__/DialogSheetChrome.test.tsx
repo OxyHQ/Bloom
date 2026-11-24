@@ -10,7 +10,7 @@ import { DIALOG_HEADER_CONTENT_TOP, DIALOG_NAV_BAR_HEIGHT } from '../dialog/Dial
 import type { DialogHeaderConfig } from '../dialog/types';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
-import { SCRIM_CHROME_FRACTION, SCRIM_STOPS } from '../page-header/EdgeScrim';
+import { SCRIM_STOPS } from '../page-header/EdgeScrim';
 import { resolvedStyle } from './support/rendered-style';
 
 /**
@@ -186,11 +186,14 @@ describe('the nav bar paints its own background', () => {
     expect(typeof background).toBe('string');
 
     const stops = stopsIn(scrim);
+    // Opaque over the nav's measured box, then the header's short 12pt fade.
+    const box = Number(resolvedStyle(scrim.props.style as never).height);
+    const chrome = (box - 12) / box;
     const normalize = (color: unknown) => String(color).replace(/[ ,]+/g, '');
     expect(stops.map((stop) => ({ ...stop, color: normalize(stop.color) }))).toEqual([
       { offset: 0, opacity: 1, color: normalize(background) },
       ...SCRIM_STOPS.map(({ offset, opacity }) => ({
-        offset: SCRIM_CHROME_FRACTION + (1 - SCRIM_CHROME_FRACTION) * offset,
+        offset: chrome + (1 - chrome) * offset,
         opacity,
         color: normalize(background),
       })),

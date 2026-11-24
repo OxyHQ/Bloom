@@ -60,6 +60,23 @@ describe('EdgeScrim', () => {
   });
 });
 
+describe('the smooth ramp runs the full range, leaving and arriving gently', () => {
+  it('is opaque at its start, nothing at its end, and falls the whole way between', () => {
+    expect(SCRIM_STOPS[0]).toEqual({ offset: 0, opacity: 1 });
+    expect(SCRIM_STOPS[SCRIM_STOPS.length - 1]).toEqual({ offset: 1, opacity: 0 });
+    const slopes = SCRIM_STOPS.slice(1).map(
+      (stop, i) =>
+        (SCRIM_STOPS[i]!.opacity - stop.opacity) / (stop.offset - SCRIM_STOPS[i]!.offset),
+    );
+    // Monotonic, with no plateau: an ease-out that held 86% through the first 42% of the fade read
+    // as a band stopping at 90%, then a step to opaque at the chrome's edge. Eased at both ends,
+    // steepest in the middle.
+    for (const slope of slopes) expect(slope).toBeGreaterThan(0.5);
+    expect(slopes[0]!).toBeLessThan(slopes[1]!);
+    expect(slopes[slopes.length - 1]!).toBeLessThan(slopes[1]!);
+  });
+});
+
 describe('protected chrome and external fade', () => {
   const fraction = 1 / 1.55;
   it.each(['top', 'bottom'] as const)(
