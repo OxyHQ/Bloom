@@ -57,12 +57,13 @@ it.each(['ios', 'android'] as const)(
       enabled: true,
       keyboardShouldPersistTaps: 'handled',
     });
+    // The scroller pads its content clear of the header, so the content runs under it.
     expect(resolvedStyle(scroll.props.contentContainerStyle)).toMatchObject({
-      paddingTop: 0,
+      paddingTop: 56,
       paddingBottom: 120,
     });
     expect(resolvedStyle(tree.getByTestId('editor-content').props.style)).toMatchObject({
-      paddingTop: 56,
+      paddingTop: 0,
       paddingBottom: 0,
     });
     expect(tree.UNSAFE_getByType(KeyboardStickyView).props.enabled).toBe(true);

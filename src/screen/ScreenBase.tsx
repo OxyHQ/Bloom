@@ -10,7 +10,7 @@ import type { ScrollBarProps } from '../layout/types';
 import type { BloomColorScopeProps } from '../theme/color-scope/ColorScope';
 import type { useScrollRestoration as UseScrollRestoration } from '../scroll/use-scroll-restoration';
 import type React from 'react';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { useBorderBoxSize } from '../hooks/use-border-box-size';
@@ -286,6 +286,18 @@ export function createScreen(
           (host.kind ? host.kind === 'document' : !region || region.flow === 'document'))) &&
       Platform.OS === 'web';
     const reservedTop = header && headerPlacement === 'inset' ? top : 0;
+    // On native the screen's own scroller takes the header's height as the top inset of its
+    // content once it binds (`useScreenScroll`), so the content runs under the header and the
+    // header's scroll edge fades it, as the web's viewport does. Padding the content box instead
+    // ended the scroller at the header's foot, and every row was cut there in a hard line
+    // (Mention's Home, Pixel 8a). Until a scroller binds, the box is padded clear of the header.
+    const [topClaims, setTopClaims] = useState(0);
+    const claimTopInset = useCallback(() => {
+      setTopClaims((claims) => claims + 1);
+      return () => setTopClaims((claims) => claims - 1);
+    }, []);
+    const nativeViewport = ownsViewport && Platform.OS !== 'web';
+    const scrollerTakesTop = nativeViewport && topClaims > 0;
     // A document page fills ONE SCREEN of the region it is in. Inside a panel
     // shell that screen is the viewport less the shell's gutters and top bar —
     // a full `100dvh` page inside a panel 8px down overflowed it, and every short
@@ -306,6 +318,8 @@ export function createScreen(
         collapseTarget,
         activeScrollerId,
         contentInsetsHandled: document || reservesChrome,
+        topInsetHandled: scrollerTakesTop ? false : undefined,
+        claimTopInset: nativeViewport ? claimTopInset : undefined,
         bottomInsetHandled:
           scroll === 'none' ||
           ((document || ownsViewport) && !keyboardFollow && !scrollsUnderBar && !bottomOverlaid),
@@ -351,6 +365,9 @@ export function createScreen(
         scrollsUnderBar,
         bottomOverlaid,
         underBarInset,
+        scrollerTakesTop,
+        nativeViewport,
+        claimTopInset,
       ],
     );
     useScreenWindowBinding(value, { active: document && !ownsViewport });
@@ -598,7 +615,7 @@ export function createScreen(
                                   minWidth: 0,
                                   ...((ownsViewport && !ownWebViewport) || scroll === 'none'
                                     ? {
-                                        paddingTop: reservedTop,
+                                        paddingTop: scrollerTakesTop ? 0 : reservedTop,
                                         paddingBottom:
                                           (keyboardFollow && scroll !== 'none') || bottomOverlaid
                                             ? 0

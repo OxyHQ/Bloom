@@ -23,6 +23,7 @@ type ScreenScrollState = Pick<
   | 'activeScrollerId'
   | 'contentInsetsHandled'
   | 'bottomInsetHandled'
+  | 'topInsetHandled'
   | 'topInset'
   | 'bottomInset'
 >;
@@ -79,6 +80,11 @@ export function useScreenScroll({
       if (screen.activeScrollerId.value === id) screen.activeScrollerId.value = null;
     };
   }, [active, id, screen, previousY, reducedMotion]);
+  // The screen's scroller pads its own content clear of the header on native, so the content runs
+  // under the header (`ScreenBase`, `claimTopInset`). Held while mounted, not while active: a
+  // hidden tab's list keeps its inset, and a screen leaving focus lays nothing out again.
+  const claimTopInset = context?.claimTopInset;
+  useEffect(() => claimTopInset?.(), [claimTopInset]);
   useRegisterScreenScroller(
     scrollToOffset ? { offset: () => previousY.value, scrollToOffset } : null,
     active && context !== null,
@@ -117,7 +123,7 @@ export function useScreenScroll({
     onScroll,
     scrollerId: id,
     contentInsets: {
-      top: screen.contentInsetsHandled ? 0 : screen.topInset,
+      top: (screen.topInsetHandled ?? screen.contentInsetsHandled) ? 0 : screen.topInset,
       bottom: (screen.bottomInsetHandled ?? screen.contentInsetsHandled) ? 0 : screen.bottomInset,
     },
     scrollY: screen.scrollY,
