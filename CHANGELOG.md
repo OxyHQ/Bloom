@@ -1,5 +1,9 @@
 # Changelog
 
+## 23.3.2
+
+The Bloom language 1.2.0 ships beside it (`@oxy.so/bloom-language`), with `@oxy.so/bloom-language-codemod` 0.2.1: a language tree reads the theme once, and a list row that returns a root has no boundary of its own (#873, #881). Bloom itself is unchanged; the language is released with a Bloom release, whose build its own build reads.
+
 ## 23.3.1
 
 ### Fixed
