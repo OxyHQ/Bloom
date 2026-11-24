@@ -980,10 +980,15 @@ function navigationPress(env: Env, to: Navigation): () => void {
   };
 }
 
-/** The colour role a solid control fills with: what an untinted glass under it is tinted with. */
+/**
+ * The colour role a solid control fills with: what an untinted glass under it is tinted with.
+ * A disabled control has no fill of its own (Bloom's disabled paint is neutral), so its glass
+ * stays neutral, as Bloom's own lens control draws it.
+ */
 function controlTint(kind: 'button' | 'fab', p: Plan): ColorName | undefined {
   const appearance = (p.own.get('style') as { value?: string } | undefined)?.value ?? 'solid';
   if (appearance !== 'solid') return undefined;
+  if ((p.own.get('disabled') as { value?: boolean } | undefined)?.value === true) return undefined;
   const tone = (p.own.get('tint') as { value?: string } | undefined)?.value;
   const role = TONE_ROLE[(tone ?? 'accent') as keyof typeof TONE_ROLE];
   return role ?? undefined;
