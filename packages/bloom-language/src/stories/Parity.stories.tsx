@@ -180,4 +180,3 @@ export const AddressesAndPaymentMethods: Story = { args: { family: 'addressPayme
 export const PricesAndPaymentStatus: Story = { args: { family: 'pricePaymentStatus' } };
 export const DashboardCards: Story = { args: { family: 'dashboardCard' } };
 export const CartMenuItemsAndVendors: Story = { args: { family: 'cartMenuVendor' } };
-export const CreatorStudio: Story = { args: { family: 'creatorStudio' } };

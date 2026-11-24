@@ -1104,13 +1104,10 @@
     "radarLegend": ["bottom", "top", "overlay"],
     "methodTitleAlign": ["left", "center"],
     "voiceSize": ["sm", "md", "lg"],
-    "shareSheetSize": ["sm", "md", "lg"],
     "outlineNavStyle": ["full", "compact"],
     "choiceListStyle": ["list", "picker"],
     "priceLineTone": ["default", "discount", "muted"],
     "paymentStatusStyle": ["surface", "plain"],
-    "releaseCardLayout": ["grid", "row"],
-    "releaseStatusBadgeSize": ["sm", "md"],
     "rowActionStyle": ["plain", "outline"],
     "themeToggleStyle": ["sidebar", "segmented", "sidebar-segmented", "bare-segmented"]
   },
@@ -1980,11 +1977,6 @@
     "month": ["value"],
     "period": ["value"],
     "quantity": ["value"],
-    "release": ["value"],
-    "selectedMoods": ["value"],
-    "selectedGenres": ["value"],
-    "pitch": ["value"],
-    "metric": ["value"],
     "date": ["value"],
     "tilted": ["value"],
     "speaker": ["value"],
@@ -1993,7 +1985,6 @@
     "localVideoCorner": ["value"],
     "tip": ["value", "value", "value?"],
     "promo": ["value", "value"],
-    "search": ["value", "value?"],
     "destination": ["value"]
   },
   "universal": [
@@ -4568,11 +4559,6 @@
       "modifiers": ["density"],
       "densities": ["comfortable", "compact"]
     },
-    "shareSheet": {
-      "constructors": ["ShareSheet"],
-      "modifiers": ["size", "search"],
-      "size": "shareSheetSize"
-    },
     "connectionDots": { "constructors": ["ConnectionDots"], "modifiers": [] },
     "outlineNav": {
       "constructors": ["OutlineNav"],
@@ -4648,32 +4634,6 @@
     "menuItemOptions": {
       "constructors": ["MenuItemOptions"],
       "modifiers": ["disabled", "value", "quantity"]
-    },
-    "audienceOverview": { "constructors": ["AudienceOverview"], "modifiers": [] },
-    "streamsChart": { "constructors": ["StreamsChart"], "modifiers": ["metric"] },
-    "topTracksTable": { "constructors": ["TopTracksTable"], "modifiers": [] },
-    "audienceBreakdown": { "constructors": ["AudienceBreakdown"], "modifiers": [] },
-    "releaseCard": {
-      "constructors": ["ReleaseCard"],
-      "modifiers": ["style"],
-      "style": "releaseCardLayout"
-    },
-    "releaseStatusBadge": {
-      "constructors": ["ReleaseStatusBadge"],
-      "modifiers": ["size"],
-      "size": "releaseStatusBadgeSize"
-    },
-    "releaseTimeline": { "constructors": ["ReleaseTimeline"], "modifiers": ["axis"] },
-    "trackUploadRow": { "constructors": ["TrackUploadRow"], "modifiers": [] },
-    "trackMetadataForm": { "constructors": ["TrackMetadataForm"], "modifiers": ["disabled"] },
-    "artistChipsInput": { "constructors": ["ArtistChipsInput"], "modifiers": ["disabled"] },
-    "isrcField": { "constructors": ["IsrcField"], "modifiers": ["disabled"] },
-    "creditsEditor": { "constructors": ["CreditsEditor"], "modifiers": ["disabled"] },
-    "artworkUploader": { "constructors": ["ArtworkUploader"], "modifiers": ["disabled"] },
-    "payoutSummaryCard": { "constructors": ["PayoutSummaryCard"], "modifiers": [] },
-    "pitchCard": {
-      "constructors": ["PitchCard"],
-      "modifiers": ["release", "selectedMoods", "selectedGenres", "pitch"]
     },
     "rowActions": {
       "constructors": ["RowActions"],

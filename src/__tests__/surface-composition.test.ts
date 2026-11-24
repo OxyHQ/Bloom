@@ -34,7 +34,6 @@ it.each([
   'src/pagination/Pagination.tsx',
   'src/input-otp/InputOtp.tsx',
   'src/file-upload/FileUpload.tsx',
-  'src/share-sheet/ShareTargetButton.tsx',
   'src/switch/Switch.tsx',
   'src/slider/Slider.tsx',
   'src/checkbox/shared.tsx',

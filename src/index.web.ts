@@ -442,8 +442,6 @@ export type {
   EngagementGroupProps,
   EngagementTone,
 } from './engagement-bar';
-export { ShareSheet } from './share-sheet';
-export type { ShareSheetProps, ShareSheetTarget } from './share-sheet';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
 export {
@@ -1742,7 +1740,6 @@ export * as Code from './code';
 
 // Fonts
 export * as Fonts from './fonts/index.web';
-export * from './creator-studio';
 export {
   ActivityFeed,
   ActivityFeedFilters,

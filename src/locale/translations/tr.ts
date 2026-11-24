@@ -338,147 +338,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'Adresler',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'Tekli', ep: 'EP', album: 'Albüm' },
-  releaseStatuses: {
-    draft: 'Taslak',
-    'in-review': 'İncelemede',
-    scheduled: 'Planlandı',
-    live: 'Yayında',
-    rejected: 'Reddedildi',
-    takedown: 'Yayından kaldırıldı',
-  },
-  creditRoles: {
-    songwriter: 'Şarkı yazarı',
-    producer: 'Yapımcı',
-    composer: 'Besteci',
-    performer: 'Yorumcu',
-    lyricist: 'Söz yazarı',
-    'mixing-engineer': 'Miks mühendisi',
-    'mastering-engineer': 'Mastering mühendisi',
-  },
-  periods: { '7d': '7 gün', '28d': '28 gün', '12m': '12 ay', all: 'Tüm zamanlar' },
-  artworkNotSquare: (w, h) => `Kapak kare olmalı; bu görsel ${w}×${h} piksel.`,
-  artworkTooSmall: (w, h, min) =>
-    `Kapak çok küçük (${w}×${h} piksel). En az ${min}×${min} piksel yükleyin.`,
-  audience: { title: 'Kitle', period: 'Dönem' },
-  breakdown: {
-    locations: 'Öne çıkan konumlar',
-    cities: 'Şehirler',
-    countries: 'Ülkeler',
-    age: 'Yaş',
-    gender: 'Cinsiyet',
-    sources: 'Dinleme kaynakları',
-    metric: 'Dinleyiciler',
-  },
-  streams: {
-    metrics: 'Grafik ölçütü',
-    summary: (metric, releases) =>
-      releases ? `Zaman içinde ${metric}; yayınlar: ${releases}` : `Zaman içinde ${metric}`,
-  },
-  topTracks: {
-    title: 'En çok dinlenen parçalar',
-    rank: '#',
-    rankName: 'Sıra',
-    track: 'Parça',
-    streams: 'Dinlenme',
-    listeners: 'Dinleyiciler',
-    saves: 'Kaydetme',
-    trend: 'Eğilim',
-    trends: { up: 'Yükseliyor', down: 'Düşüyor', flat: 'Sabit', new: 'Yeni giriş' },
-    newBadge: 'Yeni',
-    empty: 'Bu dönemde henüz dinlenme yok.',
-  },
-  tracks: (n) => plural('tr', n, { one: '{n} parça', other: '{n} parça' }),
-  timeline: {
-    states: {
-      complete: 'tamamlandı',
-      current: 'devam ediyor',
-      upcoming: 'başlamadı',
-      error: 'ilgilenilmesi gerekiyor',
-    },
-    label: 'Yayın ilerlemesi',
-  },
-  upload: {
-    queued: 'Sırada',
-    processing: 'Dönüştürülüyor…',
-    ready: 'Hazır',
-    failed: 'Yükleme başarısız',
-    remove: (name) => `Kaldır: ${name}`,
-    progress: (name) => `${name} yükleniyor`,
-  },
-  artwork: {
-    title: 'Kapak görseli',
-    requirements: '3000×3000 piksel, JPG veya PNG',
-    replace: 'Değiştir',
-    remove: 'Kapak görselini kaldır',
-    preview: 'Yayın kapağı',
-    upload: 'Kapak görseli yükle',
-  },
-  credits: {
-    title: 'Katkıda bulunanlar',
-    role: 'Rol',
-    name: 'Ad',
-    add: 'Katkı ekle',
-    remove: (index, name) =>
-      name ? `${index + 1}. katkıyı kaldır, ${name}` : `${index + 1}. katkıyı kaldır`,
-    empty: 'Bu parçanın söz yazarlarını, yapımcılarını ve yorumcularını belirtin.',
-    field: (field, n) => `${field}, ${n}. katkı`,
-  },
-  artists: {
-    add: 'Ekle',
-    addTo: (label) => `${label}: ekle`,
-    remove: (name) => `Kaldır: ${name}`,
-  },
-  isrc: { hint: 'Biçim: CC-XXX-YY-NNNNN', invalid: 'Bu geçerli bir ISRC değil' },
-  metadata: {
-    title: 'Parça adı',
-    version: 'Sürüm',
-    versionPlaceholder: 'Remiks, canlı, akustik…',
-    explicit: 'Müstehcen sözler',
-    explicitDescription: 'Parça kaba dil veya müstehcen temalar içeriyorsa bunu açın.',
-    genre: 'Tür',
-    genrePlaceholder: 'Tür seçin',
-    primaryArtists: 'Ana sanatçılar',
-    featuredArtists: 'Konuk sanatçılar',
-    artistPlaceholder: 'Sanatçı adı ekleyin',
-    language: 'Söz dili',
-    languagePlaceholder: 'Dil seçin',
-    lyrics: 'Şarkı sözleri',
-    lyricsPlaceholder: 'Sözleri yapıştırın, söylenen her dize için bir satır',
-  },
-  payout: {
-    estimated: 'Bu ayki tahmini kazanç',
-    lastPayout: 'Son ödeme',
-    nextPayout: 'Sonraki ödeme',
-    statements: 'Hesap özetlerini görüntüle',
-    chart: 'Aylık kazanç',
-  },
-  pitch: {
-    title: 'Editörlere öner',
-    description: 'Bir sonraki yayınınızı çıkmadan önce editör ekibine anlatın.',
-    release: 'Yayın',
-    releasePlaceholder: 'Yaklaşan bir yayın seçin',
-    moods: 'Ruh hâli',
-    genres: 'Tür',
-    pitch: 'Öneriniz',
-    pitchPlaceholder: 'Bu yayını öne çıkaran ne? Kimin için ve arkasındaki hikâye ne?',
-    submit: 'Öneriyi gönder',
-    tagLimit: (max) => `En fazla ${max} seçin`,
-    statuses: {
-      submitted: 'Öneri gönderildi',
-      accepted: 'İncelemeye alındı',
-      declined: 'Bu sefer seçilmedi',
-    },
-    statusDescriptions: {
-      submitted: 'Editörler her öneriyi okur. Yayın tarihinden önce yanıt alacaksınız.',
-      accepted: 'Yayınınız editoryal çalma listeleri için değerlendiriliyor.',
-      declined: 'Bu yayın seçilmedi. Bir sonrakini planlanır planlanmaz önerebilirsiniz.',
-    },
-    edit: 'Öneriyi düzenle',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'Enerji',
   pending: 'Beklemede',
@@ -2478,14 +2337,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Mikrofon sessize alındı',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'Paylaş',
-  people: 'Gönder',
-  targets: 'Şurada paylaş',
-  sendTo: (name) => `${name} kişisine gönder`,
-  noPeople: 'Kimse bulunamadı',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'Kapat',
   minimize: 'Küçült',
@@ -2630,7 +2481,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -2738,7 +2588,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

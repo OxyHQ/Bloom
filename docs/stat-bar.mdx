@@ -131,15 +131,15 @@ drawn meanwhile.
 ```tsx
 <Meter indeterminate value={0} accessibilityLabel={`Processing ${name}`} />
 
-// A segment of a row whose status text already says it (`TrackUploadRow`):
+// A segment of a row whose status text already says it:
 <Meter decorative indeterminate value={0} height={4} />
 ```
 
 The sweep needs no measurement: natively the segment's `left` moves as a share
 of the track on the JS driver (a layout property cannot take the native
 driver), and on the web a keyframe in Meter's adopted stylesheet moves it.
-`TrackUploadRow`'s processing bar is this one, and the dialog header's wizard
-step is a determinate `Meter`, rather than the hand-drawn bars they had.
+The dialog header's wizard step is a determinate `Meter`, rather than the
+hand-drawn bar it had.
 
 ## Accessibility
 
@@ -152,8 +152,8 @@ says a level indicator and a progress indicator:
 - `progressbar`: how far a TASK has got — an upload, a download or an install
   (a download's ring or an indeterminate bar included), an episode listened, a lease's
   elapsed time, an application's steps. "Progress indicator". Bloom's own
-  progress families (`creator-studio`, `media-header`, `order-status`,
-  `outline-nav`, `listing-actions`, `tenancy`)
+  progress families (`media-header`, `order-status`, `outline-nav`,
+  `listing-actions`, `tenancy`)
   pass it.
 
 react-native-web drops the `accessibilityValue` object entirely, so a bar

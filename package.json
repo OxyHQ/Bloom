@@ -2256,20 +2256,6 @@
         "default": "./lib/commonjs/engagement-bar/index.js"
       }
     },
-    "./share-sheet": {
-      "react-native": {
-        "types": "./lib/typescript/module/share-sheet/index.d.ts",
-        "default": "./src/share-sheet/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/share-sheet/index.d.ts",
-        "default": "./lib/module/share-sheet/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/share-sheet/index.d.ts",
-        "default": "./lib/commonjs/share-sheet/index.js"
-      }
-    },
     "./empty-state": {
       "react-native": {
         "types": "./lib/typescript/module/empty-state/index.d.ts",
@@ -2979,20 +2965,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/chat-list/index.d.ts",
         "default": "./lib/commonjs/chat-list/index.js"
-      }
-    },
-    "./creator-studio": {
-      "react-native": {
-        "types": "./lib/typescript/module/creator-studio/index.d.ts",
-        "default": "./src/creator-studio/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/creator-studio/index.d.ts",
-        "default": "./lib/module/creator-studio/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/creator-studio/index.d.ts",
-        "default": "./lib/commonjs/creator-studio/index.js"
       }
     },
     "./media-shelf": {
@@ -4866,9 +4838,6 @@
       "engagement-bar": [
         "./lib/typescript/module/engagement-bar/index.d.ts"
       ],
-      "share-sheet": [
-        "./lib/typescript/module/share-sheet/index.d.ts"
-      ],
       "empty-state": [
         "./lib/typescript/module/empty-state/index.d.ts"
       ],
@@ -5000,9 +4969,6 @@
       ],
       "chat-list": [
         "./lib/typescript/module/chat-list/index.d.ts"
-      ],
-      "creator-studio": [
-        "./lib/typescript/module/creator-studio/index.d.ts"
       ],
       "media-shelf": [
         "./lib/typescript/module/media-shelf/index.d.ts"

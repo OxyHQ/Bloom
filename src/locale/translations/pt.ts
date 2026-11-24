@@ -349,152 +349,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'Endereços',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'Single', ep: 'EP', album: 'Álbum' },
-  releaseStatuses: {
-    draft: 'Rascunho',
-    'in-review': 'Em análise',
-    scheduled: 'Agendado',
-    live: 'Publicado',
-    rejected: 'Rejeitado',
-    takedown: 'Removido',
-  },
-  creditRoles: {
-    songwriter: 'Autor',
-    producer: 'Produtor',
-    composer: 'Compositor',
-    performer: 'Intérprete',
-    lyricist: 'Letrista',
-    'mixing-engineer': 'Engenheiro de mixagem',
-    'mastering-engineer': 'Engenheiro de masterização',
-  },
-  periods: { '7d': '7 dias', '28d': '28 dias', '12m': '12 meses', all: 'Todo o período' },
-  artworkNotSquare: (w, h) => `A capa deve ser quadrada — esta imagem tem ${w}×${h} px.`,
-  artworkTooSmall: (w, h, min) =>
-    `A capa é pequena demais (${w}×${h} px). Envie uma de pelo menos ${min}×${min} px.`,
-  audience: { title: 'Público', period: 'Período' },
-  breakdown: {
-    locations: 'Principais locais',
-    cities: 'Cidades',
-    countries: 'Países',
-    age: 'Idade',
-    gender: 'Gênero',
-    sources: 'Fontes de audição',
-    metric: 'Ouvintes',
-  },
-  streams: {
-    metrics: 'Métrica do gráfico',
-    summary: (metric, releases) =>
-      releases
-        ? `${metric} ao longo do tempo; lançamentos: ${releases}`
-        : `${metric} ao longo do tempo`,
-  },
-  topTracks: {
-    title: 'Principais faixas',
-    rank: '#',
-    rankName: 'Posição',
-    track: 'Faixa',
-    streams: 'Reproduções',
-    listeners: 'Ouvintes',
-    saves: 'Salvamentos',
-    trend: 'Tendência',
-    trends: { up: 'Em alta', down: 'Em queda', flat: 'Estável', new: 'Nova entrada' },
-    newBadge: 'Nova',
-    empty: 'Ainda não há reproduções neste período.',
-  },
-  tracks: (n) => plural('pt', n, { one: '{n} faixa', other: '{n} faixas' }),
-  timeline: {
-    states: {
-      complete: 'concluído',
-      current: 'em andamento',
-      upcoming: 'não iniciado',
-      error: 'requer atenção',
-    },
-    label: 'Progresso do lançamento',
-  },
-  upload: {
-    queued: 'Na fila',
-    processing: 'Transcodificando…',
-    ready: 'Pronto',
-    failed: 'Falha no envio',
-    remove: (name) => `Remover ${name}`,
-    progress: (name) => `Enviando ${name}`,
-  },
-  artwork: {
-    title: 'Capa',
-    requirements: '3000×3000 px, JPG ou PNG',
-    replace: 'Substituir',
-    remove: 'Remover capa',
-    preview: 'Capa do lançamento',
-    upload: 'Enviar capa',
-  },
-  credits: {
-    title: 'Créditos',
-    role: 'Função',
-    name: 'Nome',
-    add: 'Adicionar crédito',
-    remove: (index, name) =>
-      name ? `Remover crédito ${index + 1}, ${name}` : `Remover crédito ${index + 1}`,
-    empty: 'Dê crédito aos autores, produtores e intérpretes desta faixa.',
-    field: (field, n) => `${field}, crédito ${n}`,
-  },
-  artists: {
-    add: 'Adicionar',
-    addTo: (label) => `Adicionar: ${label}`,
-    remove: (name) => `Remover ${name}`,
-  },
-  isrc: { hint: 'Formato: CC-XXX-YY-NNNNN', invalid: 'Este não é um ISRC válido' },
-  metadata: {
-    title: 'Título da faixa',
-    version: 'Versão',
-    versionPlaceholder: 'Remix, ao vivo, acústica…',
-    explicit: 'Letra explícita',
-    explicitDescription: 'Ative se a faixa tiver linguagem forte ou temas explícitos.',
-    genre: 'Gênero',
-    genrePlaceholder: 'Escolha um gênero',
-    primaryArtists: 'Artistas principais',
-    featuredArtists: 'Artistas convidados',
-    artistPlaceholder: 'Adicione o nome de um artista',
-    language: 'Idioma da letra',
-    languagePlaceholder: 'Escolha um idioma',
-    lyrics: 'Letra',
-    lyricsPlaceholder: 'Cole a letra, uma linha por verso cantado',
-  },
-  payout: {
-    estimated: 'Ganhos estimados neste mês',
-    lastPayout: 'Último pagamento',
-    nextPayout: 'Próximo pagamento',
-    statements: 'Ver extratos',
-    chart: 'Ganhos mensais',
-  },
-  pitch: {
-    title: 'Apresentar aos editores',
-    description: 'Conte à equipe editorial sobre seu próximo lançamento antes que ele saia.',
-    release: 'Lançamento',
-    releasePlaceholder: 'Escolha um lançamento futuro',
-    moods: 'Clima',
-    genres: 'Gênero',
-    pitch: 'Sua apresentação',
-    pitchPlaceholder:
-      'O que torna este lançamento especial? Para quem ele é e qual é a história por trás dele?',
-    submit: 'Enviar apresentação',
-    tagLimit: (max) => `Escolha até ${max}`,
-    statuses: {
-      submitted: 'Apresentação enviada',
-      accepted: 'Selecionado para análise',
-      declined: 'Não selecionado desta vez',
-    },
-    statusDescriptions: {
-      submitted:
-        'Os editores leem todas as apresentações. Você terá uma resposta antes da data de lançamento.',
-      accepted: 'Seu lançamento está sendo considerado para playlists editoriais.',
-      declined:
-        'Este lançamento não foi selecionado. Você poderá apresentar o próximo assim que ele for agendado.',
-    },
-    edit: 'Editar apresentação',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'Energia',
   pending: 'Pendente',
@@ -2549,14 +2403,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Microfone silenciado',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'Partilhar',
-  people: 'Enviar para',
-  targets: 'Partilhar em',
-  sendTo: (name) => `Enviar para ${name}`,
-  noPeople: 'Ninguém encontrado',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'Fechar',
   minimize: 'Minimizar',
@@ -2700,7 +2546,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -2808,7 +2653,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

@@ -229,7 +229,6 @@ import type {
 } from '../controls/card-form';
 import type { CheckoutSheetView } from '../controls/checkout-sheet';
 import type { RouteStopsView } from '../controls/route-stops';
-import type { ShareSheetView } from '../controls/share-sheet';
 import type {
   ConnectionDotsView,
   OutlineNavView,
@@ -256,23 +255,6 @@ import type {
   CartTipPickerView,
 } from '../controls/cart-panel';
 import type { MenuItemRowView, MenuItemOptionsView } from '../controls/menu-item';
-import type {
-  ArtistChipsInputView,
-  ArtworkUploaderView,
-  AudienceBreakdownView,
-  AudienceOverviewView,
-  CreditsEditorView,
-  IsrcFieldView,
-  PayoutSummaryCardView,
-  PitchCardView,
-  ReleaseCardView,
-  ReleaseStatusBadgeView,
-  ReleaseTimelineView,
-  StreamsChartView,
-  TopTracksTableView,
-  TrackMetadataFormView,
-  TrackUploadRowView,
-} from '../controls/creator-studio';
 import type {
   FilterSectionView,
   PriceRangeFilterView,
@@ -1064,7 +1046,6 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AgentChatHistoryView>, Of<'agentChatHistory'>>,
       Same<MethodsOf<AgentChatView>, Of<'agentChat'>>,
       Same<MethodsOf<RouteStopsView>, Of<'routeStops'>>,
-      Same<MethodsOf<ShareSheetView>, Of<'shareSheet'>>,
       Same<MethodsOf<ConnectionDotsView>, Of<'connectionDots'>>,
       Same<MethodsOf<OutlineNavView>, Of<'outlineNav'>>,
       Same<MethodsOf<PaginationView>, Of<'pagination'>>,
@@ -1086,21 +1067,6 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<CartTipPickerView>, Of<'cartTipPicker'>>,
       Same<MethodsOf<MenuItemRowView>, Of<'menuItemRow'>>,
       Same<MethodsOf<MenuItemOptionsView>, Of<'menuItemOptions'>>,
-      Same<MethodsOf<ArtistChipsInputView>, Of<'artistChipsInput'>>,
-      Same<MethodsOf<ArtworkUploaderView>, Of<'artworkUploader'>>,
-      Same<MethodsOf<AudienceBreakdownView>, Of<'audienceBreakdown'>>,
-      Same<MethodsOf<AudienceOverviewView>, Of<'audienceOverview'>>,
-      Same<MethodsOf<CreditsEditorView>, Of<'creditsEditor'>>,
-      Same<MethodsOf<IsrcFieldView>, Of<'isrcField'>>,
-      Same<MethodsOf<PayoutSummaryCardView>, Of<'payoutSummaryCard'>>,
-      Same<MethodsOf<PitchCardView>, Of<'pitchCard'>>,
-      Same<MethodsOf<ReleaseCardView>, Of<'releaseCard'>>,
-      Same<MethodsOf<ReleaseStatusBadgeView>, Of<'releaseStatusBadge'>>,
-      Same<MethodsOf<ReleaseTimelineView>, Of<'releaseTimeline'>>,
-      Same<MethodsOf<StreamsChartView>, Of<'streamsChart'>>,
-      Same<MethodsOf<TopTracksTableView>, Of<'topTracksTable'>>,
-      Same<MethodsOf<TrackMetadataFormView>, Of<'trackMetadataForm'>>,
-      Same<MethodsOf<TrackUploadRowView>, Of<'trackUploadRow'>>,
       Same<MethodsOf<RowActionsView>, Of<'rowActions'>>,
       Same<MethodsOf<RowActionButtonView>, Of<'rowActionButton'>>,
       Same<MethodsOf<SwipeRowView>, Of<'swipeRow'>>,
@@ -1108,22 +1074,6 @@ describe('the spec drives the rules', () => {
       // A scroll view's content view takes exactly the spec's `contentView.modifiers`.
       Same<MethodsOf<ScrollContentView>, (typeof CONTENT_VIEW_MODIFIERS)[number]>,
     ] = [
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
       true,
       true,
       true,

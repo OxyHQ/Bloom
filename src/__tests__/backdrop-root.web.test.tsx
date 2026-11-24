@@ -93,7 +93,6 @@ import { RadioIndicator } from '../radio-indicator';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Select, SelectTrigger, SelectValue } from '../select/index.web';
 import { SettingsModal } from '../settings-modal/index.web';
-import { ShareSheet } from '../share-sheet';
 import { Sidebar } from '../sidebar';
 import { Slider } from '../slider';
 import { Switch } from '../switch';
@@ -103,7 +102,6 @@ import { TextField, TextFieldInput } from '../text-field';
 import { Textarea } from '../textarea';
 import { ToastContent } from '../toast/ToastContent';
 import { RiHomeLine } from '../icons/remix/RiHomeLine';
-import { RiLinkM } from '../icons/remix/RiLinkM';
 import { RiSettings6Line } from '../icons/remix/RiSettings6Line';
 import { PlatformSurfaceProvider } from '../platform-surface/context';
 import { WindowControls } from '../window/WindowControls';
@@ -467,14 +465,6 @@ const SUBJECTS: Record<string, Subject> = {
           },
         ]}
         pages={{ general: { title: 'General', content: <Button>Save</Button> } }}
-      />
-    ),
-  },
-  'share-sheet/ShareTargetButton.tsx': {
-    states: ['rest', 'pressed'],
-    render: () => (
-      <ShareSheet
-        targets={[{ key: 'link', label: 'Copy link', icon: RiLinkM, onPress: () => {} }]}
       />
     ),
   },

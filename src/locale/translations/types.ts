@@ -24,7 +24,6 @@ import type {
 } from '../../chat-composer/messages';
 import type { MAIL_COMPOSE_MESSAGES } from '../../mail-compose/messages';
 import type { ADDRESS_MESSAGES } from '../../address/messages';
-import type { CREATOR_STUDIO_MESSAGES } from '../../creator-studio/messages';
 import type { PROPERTY_INSIGHTS_MESSAGES } from '../../property-insights/messages';
 import type { MAP_MARKER_MESSAGES } from '../../map-marker/messages';
 import type { LISTING_ACTIONS_MESSAGES } from '../../listing-actions/messages';
@@ -130,7 +129,6 @@ import type { SORTABLE_CHIP_ROW_MESSAGES } from '../../sortable-chip-row/message
 import type { CONNECTION_DOTS_MESSAGES } from '../../connection-dots/messages';
 import type { CHAT_PEOPLE_MESSAGES } from '../../chat-people/messages';
 import type { EMPTY_STATE_MESSAGES } from '../../empty-state/messages';
-import type { SHARE_SHEET_MESSAGES } from '../../share-sheet/messages';
 import type { WINDOW_MESSAGES } from '../../window/messages';
 import type { CONNECTION_STATUS_MESSAGES } from '../../connection-status/messages';
 import type { COMPOSITION_BAR_MESSAGES } from '../../composition-bar/messages';
@@ -154,7 +152,6 @@ export interface Translations {
   readonly CHAT_COMPOSER_MESSAGES: CatalogMessages<typeof CHAT_COMPOSER_MESSAGES>;
   readonly MAIL_COMPOSE_MESSAGES: CatalogMessages<typeof MAIL_COMPOSE_MESSAGES>;
   readonly ADDRESS_MESSAGES: CatalogMessages<typeof ADDRESS_MESSAGES>;
-  readonly CREATOR_STUDIO_MESSAGES: CatalogMessages<typeof CREATOR_STUDIO_MESSAGES>;
   readonly PROPERTY_INSIGHTS_MESSAGES: CatalogMessages<typeof PROPERTY_INSIGHTS_MESSAGES>;
   readonly MAP_MARKER_MESSAGES: CatalogMessages<typeof MAP_MARKER_MESSAGES>;
   readonly LISTING_ACTIONS_MESSAGES: CatalogMessages<typeof LISTING_ACTIONS_MESSAGES>;
@@ -262,7 +259,6 @@ export interface Translations {
   readonly CHAT_PEOPLE_MESSAGES: CatalogMessages<typeof CHAT_PEOPLE_MESSAGES>;
   readonly EMPTY_STATE_MESSAGES: CatalogMessages<typeof EMPTY_STATE_MESSAGES>;
   readonly VOICE_MESSAGES: CatalogMessages<typeof VOICE_MESSAGES>;
-  readonly SHARE_SHEET_MESSAGES: CatalogMessages<typeof SHARE_SHEET_MESSAGES>;
   readonly WINDOW_MESSAGES: CatalogMessages<typeof WINDOW_MESSAGES>;
   readonly CONNECTION_STATUS_MESSAGES: CatalogMessages<typeof CONNECTION_STATUS_MESSAGES>;
   readonly COMPOSITION_BAR_MESSAGES: CatalogMessages<typeof COMPOSITION_BAR_MESSAGES>;
