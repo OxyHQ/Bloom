@@ -1,6 +1,6 @@
 import { RiCloseLine as DismissActionIcon } from '../icons/remix/RiCloseLine';
 import { Card } from '../card';
-import React, { useRef, useState, type ReactNode } from 'react';
+import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -246,6 +246,14 @@ export function Marketplace({
     () => MARKETPLACE_ITEMS.find((item) => item.id === initialItem) ?? null,
   );
   const searchRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  // Back from a detail lands in the search field, which mounts in the commit
+  // that closes the detail.
+  const focusSearch = useRef(false);
+  useEffect(() => {
+    if (detail || !focusSearch.current) return;
+    focusSearch.current = false;
+    searchRef.current?.focus();
+  }, [detail]);
   const isPresent = true;
   const isAdded = (item: MarketplaceItem) =>
     item.kind === 'plugin'
@@ -353,8 +361,8 @@ export function Marketplace({
                   accessibilityLabel={detail ? messages.backToMarketplace : backLabel}
                   onPress={() => {
                     if (detail) {
+                      focusSearch.current = true;
                       setDetail(null);
-                      requestAnimationFrame(() => searchRef.current?.focus());
                     } else onBack?.();
                   }}
                 />
