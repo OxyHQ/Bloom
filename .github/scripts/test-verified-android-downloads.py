@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import tempfile
 import tarfile
+import time
 import sys
 sys.dont_write_bytecode = True
 import unittest
@@ -154,6 +155,17 @@ class VerifiedDownloads(unittest.TestCase):
         self.assertEqual(delays[:2], [7, 4])
         self.assertTrue(45 <= delays[2] <= 50, delays)
         self.assertEqual(delays[3], module.RETRY_AFTER_CAP_SECONDS)
+
+    def test_github_rate_limit_403_is_retried_until_its_reset(self):
+        reset = str(int(time.time()) + 30)
+        run, calls = self.scripted([(22, f'403\n\n0\n{reset}', None), (22, '403\n5\n\n', None),
+                                    (0, '200\n', b'official')])
+        delays = []
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            module.download('https://official.invalid', self.root / 'artifact', sleep=delays.append)
+        self.assertEqual(len(calls), 3)
+        self.assertTrue(28 <= delays[0] <= 30, delays)
+        self.assertEqual(delays[1], 5)
 
     def test_retries_stop_at_the_time_budget(self):
         now = [0.0]
