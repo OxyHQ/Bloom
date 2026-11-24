@@ -1,39 +1,28 @@
 # Changelog
 
-## Unreleased
+## 23.8.0
 
-### Fixed
-
-- `useScreenEntered()` is false on a pushed stack scene until its push transition ends, as documented. The pushing render reads the navigator's last committed state, which does not hold the pushed route yet, so the scene counted as one the stack started with and was entered at once: on a Pixel 8a a Mention post mounted its replies and its reply composer a frame after the push instead of after the slide.
-
-### Added
-
-- `useTabPagerActions()` (`@oxy.so/bloom/tab-pager`): `useTabPager()` without `activePage`, so a component that only moves between pages (a shell's primary action, a header's button, a composer's exit) does not re-render on every navigation. `useTabPager()` changes on each one, a pushed route included: on a Pixel 8a, opening a Mention post re-rendered the whole shell, its sidebar, the tab pager and the Videos page through it before the post's screen could mount.
-- `Screen`'s `replacesBottomBar`: the screen's own bar takes the place of the app's (a post's reply prompt with the tabs docked beside it). While the screen is in front the app's `BottomBar` steps aside in one cut on the UI thread, through its own presence, stays mounted and keeps its edge claim, so nothing re-renders and the screens it covers keep their geometry; the screen's bar and content sit on the window's edge. It holds from the screen's first frame, before a `bottomBar` that waits for `useScreenEntered`. Removing the shell's bar for the route instead re-rendered the whole shell and every covered screen in the push (Mention, Pixel 8a: about 60 to 80 ms of JavaScript and 12 ms of view removal per post opened). The Bloom language says it with `.replacesBottomBar()` on a screen's root.
+The Bloom language 1.5.0 (`@oxy.so/bloom-language`), its compiler 1.3.0 (`@oxy.so/bloom-language-compiler`) and `@oxy.so/bloom-data` 0.1.2 ship beside it.
 
 ### Breaking
 
 - Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
 - Removed the music and media families no app imports: `@oxy.so/bloom/media-card`, `@oxy.so/bloom/media-player`, `@oxy.so/bloom/music-library`, `@oxy.so/bloom/track-list`, `@oxy.so/bloom/lyrics` and `@oxy.so/bloom/queue-panel`, their root-barrel exports and message catalogs, and their Bloom language nodes (the media cards, `LyricsView`, `LyricsPreviewCard`, the player's `TransportControls`, `NowPlayingBar`, `MiniPlayer`, `FullScreenPlayer`, `PlaybackSpeedMenu`, `SleepTimerMenu`, `DevicePicker` and `ConnectBanner`, the library's `LibraryPanel`, `LibraryItem`, `SearchField`, `TopResultCard`, `SearchResultTabs`, `RecentSearches` and `BrowseGrid`, the track list's nodes, `QueuePanel`, `QueuePanelRow` and `RecentlyPlayedList`) with the modifiers and tokens only they took (`.liked()`, `.saved()`, `.downloaded()`, `.downloadedOnly()`, `.shuffle()`, `.repeat()`, `.playbackRate()`, `.volume()`, `.devicePickerOpen()`, `.lyricsActive()`, `.queueActive()`, `.selectedIds()`, `.view()`). `media-controls`, `media-header` and `media-shelf` stay.
 - Removed the creator families no app imports: `@oxy.so/bloom/creator-studio` and `@oxy.so/bloom/share-sheet`, their root-barrel exports and message catalogs, and their Bloom language nodes (`AudienceOverview`, `StreamsChart`, `TopTracksTable`, `AudienceBreakdown`, `ReleaseCard`, `ReleaseStatusBadge`, `ReleaseTimeline`, `TrackUploadRow`, `TrackMetadataForm`, `ArtistChipsInput`, `IsrcField`, `CreditsEditor`, `ArtworkUploader`, `PayoutSummaryCard`, `PitchCard`, `ShareSheet`) with the modifiers and tokens only they took (`.search()`, `.release()`, `.selectedMoods()`, `.selectedGenres()`, `.pitch()`, `.metric()`).
-
-### Fixed
-
-- On native, a `scroll="auto"` screen's list runs its content under the header: the scroller that binds `useScreenScroll` pads its own content by the header's height (`contentInsets.top`) and the content box drops its top padding. The list ended at the header's foot, so every row was cut there in a hard line and nothing passed under a floating header. A list with a refresh control should pass `contentInsets.top` as its `progressViewOffset`.
-- A floating header's scroll edge is Apple's: the page colour solid over the status bar, then one eased fade (smoothstep, drawn with 16 segments) across the header to nothing 12pt past its foot. It held the whole header opaque and faded only in a 12pt strip below it, which cut text passing under the header sharply at its foot (Pixel 8a). `EdgeScrim`'s smooth ramp is the same 16-segment smoothstep everywhere (a footer keeps its chrome opaque and fades in its tail).
-
-### Changed
-
-- A route pushed over the tab pager no longer runs its navigator again (`useTabsWithTriggers`): only the pager and its predictive Back, which follow whether the tabs are in front, re-render for the push and for its Back. `TabPagerLayout` read the focus itself, so every push and Back re-ran the navigator hook twice (once more for the render-time revision of the Back preview), before the pushed screen could mount (Mention, Pixel 8a: about 5 ms of JavaScript per run).
+- Removed `ComposerLoader`'s deprecated `active` prop. Pass `phase` instead: `active={x}` is `phase={x ? 'streaming' : 'idle'}`, and a loader with no `phase` still shows its light.
 
 ### Added
 
+- `useTabPagerActions()` (`@oxy.so/bloom/tab-pager`): `useTabPager()` without `activePage`, so a component that only moves between pages (a shell's primary action, a header's button, a composer's exit) does not re-render on every navigation. `useTabPager()` changes on each one, a pushed route included: on a Pixel 8a, opening a Mention post re-rendered the whole shell, its sidebar, the tab pager and the Videos page through it before the post's screen could mount.
+- `Screen`'s `replacesBottomBar`: the screen's own bar takes the place of the app's (a post's reply prompt with the tabs docked beside it). While the screen is in front the app's `BottomBar` steps aside in one cut on the UI thread, through its own presence, stays mounted and keeps its edge claim, so nothing re-renders and the screens it covers keep their geometry; the screen's bar and content sit on the window's edge. It holds from the screen's first frame, before a `bottomBar` that waits for `useScreenEntered`. Removing the shell's bar for the route instead re-rendered the whole shell and every covered screen in the push (Mention, Pixel 8a: about 60 to 80 ms of JavaScript and 12 ms of view removal per post opened). The Bloom language says it with `.replacesBottomBar()` on a screen's root.
 - `pressHighlight(colors, children, lit?)` (`@oxy.so/bloom/subtle-hover`): a pressable row's pressed state on its own `Pressable`, at no cost: no hook, state, effect or component. Spread what it returns on the row's `Pressable` (`<Pressable onPress={open} {...pressHighlight(theme.colors, content)} />`). Android: the platform ripple (`android_ripple`) in `contrast50`, one object per palette; the press reaches the view as a command and the ripple animates on the render thread. iOS: the `Pressable`'s own pressed state (its children as a function of it) lights a `contrast50` wash under the children; a press re-renders that `Pressable` alone, its children the same elements. The web gets the children back (the pointer has the hover wash). `lit` false keeps the wash's slot for a row that takes no press, so its children keep their state. Unlike `usePressHighlight`, the iOS wash clears at once on release.
 
 ### Changed
 
+- A route pushed over the tab pager no longer runs its navigator again (`useTabsWithTriggers`): only the pager and its predictive Back, which follow whether the tabs are in front, re-render for the push and for its Back. `TabPagerLayout` read the focus itself, so every push and Back re-ran the navigator hook twice (once more for the render-time revision of the Back preview), before the pushed screen could mount (Mention, Pixel 8a: about 5 ms of JavaScript per run).
 - The `react` and `react-dom` peers are `>=19.0.0` (were `>=18.0.0`). `lib/` has been compiled by the React Compiler since 23.5.0 and imports `react/compiler-runtime`, which React 18 does not have, so React 18 already failed at the first import; the range now says so at install. Every Oxy app and SDK is on React 19.
 - `lib/` is compiled with function outlining on, exactly Expo's options (23.5.0 to 23.7.0 turned it off for the select compositions). `verify-react-compiler.mjs` fails the build on an outlined function that uses a name only a function of its file binds.
+- `Button` (web), `Avatar`, `Badge` and `GroupedSectionIcon` memoise their slot styles and hoist their static layout into StyleSheets; list rows (`ListItem`, and the conversation, mail, call and person rows) memoise their selected fill and hoist their layout styles. No rendered value changes. (#907, #908)
 
 ### Deprecated
 
@@ -41,16 +30,21 @@
 
 ### Fixed
 
+- `useScreenEntered()` is false on a pushed stack scene until its push transition ends, as documented. The pushing render reads the navigator's last committed state, which does not hold the pushed route yet, so the scene counted as one the stack started with and was entered at once: on a Pixel 8a a Mention post mounted its replies and its reply composer a frame after the push instead of after the slide.
 - On native, a `scroll="auto"` screen's list runs its content under the header: the scroller that binds `useScreenScroll` pads its own content by the header's height (`contentInsets.top`) and the content box drops its top padding. The list ended at the header's foot, so every row was cut there in a hard line and nothing passed under a floating header. A list with a refresh control should pass `contentInsets.top` as its `progressViewOffset`.
 - A floating header's scroll edge is Apple's: the page colour solid over the status bar, then one eased fade (smoothstep, drawn with 16 segments) across the header to nothing 12pt past its foot. It held the whole header opaque and faded only in a 12pt strip below it, which cut text passing under the header sharply at its foot (Pixel 8a). `EdgeScrim`'s smooth ramp is the same 16-segment smoothstep everywhere (a footer keeps its chrome opaque and fades in its tail).
 - `SettingsSelect` and `SelectField` are components at module scope (`SettingsSelectFromParts` and `SelectFieldFromParts` take each platform's `Select` parts as a prop), not components a factory builds. The React Compiler takes the parameters of a function a component is built inside for globals, and with function outlining, the compiler's default, it moved their `renderItem` out of the factory: every `SettingsSelect` threw `SelectItem is not defined`. An app that compiles Bloom's source with Expo's compiler options (Mention's native build) now compiles them correctly.
+- The web `Select` scrolls the chosen option into view in the commit that shows the list, not a frame later. (#900)
+- Dismissing the `Sidebar`'s search (Escape or clear) focuses its trigger in the closing commit. (#901)
+- Opening a collapsible `Search`, or a controlled `open`, focuses the field in that commit, not a frame later. (#902)
+- The multi-agent chat `Marketplace`'s back button focuses the browse search in the commit that closes the detail. (#903)
+- The web `Command` palette's arrow keys move the highlight (react-native-web's `TextInput` stopped the keydown before the wrapper heard it), and the highlighted row is scrolled into view in its commit. (#904)
 
 ## 23.7.0
 
 ### Breaking
 
 - Removed the commerce families no app imports: `@oxy.so/bloom/checkout-summary`, `@oxy.so/bloom/vendor-card` and `@oxy.so/bloom/order-confirmation`, their root-barrel exports and message catalogs, and their Bloom language nodes (`CheckoutSummaryRow`, `CheckoutSummary`, `CheckoutConfirm`, `VendorCard`, `OrderConfirmation`). `cart-panel`, `menu-item`, `price-breakdown`, `payment-method`, `payment-status` and `address` stay.
-- Removed `ComposerLoader`'s deprecated `active` prop. Pass `phase` instead: `active={x}` is `phase={x ? 'streaming' : 'idle'}`, and a loader with no `phase` still shows its light.
 
 ### Changed
 

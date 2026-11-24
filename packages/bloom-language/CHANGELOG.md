@@ -1,15 +1,18 @@
 # Changelog
 
-## Unreleased
+## 1.5.0
 
 ### Compatibility
 
-- Requires the `@oxy.so/bloom` release beside it or newer (its `pressHighlight`); the peer floor rises with that release.
-- Requires the `@oxy.so/bloom` release that adds `useTabPagerActions()` (the one after 23.7.0); the peer floor moves to it with the release.
+- Requires `@oxy.so/bloom` 23.8.0 or newer (its `pressHighlight`, `useTabPagerActions()` and `Screen`'s `replacesBottomBar`); the peer is `>=23.8.0`.
+
+### Breaking
+
+- Removed the nodes, modifiers and tokens of the CRM, music and media, and creator families Bloom 23.8.0 removes (no app imports them; see Bloom's changelog for each list): among them `ContactProfileCard`, `PipelineBoard`, `NoteCard`, `RecentHiresCard`, the player, library, lyrics, queue and track-list nodes, the creator studio's nodes and `ShareSheet`, with `.stage()`, `.liked()`, `.shuffle()`, `.volume()`, `.release()`, `.pitch()` and the other modifiers only they took.
 
 ### Added
 
-- `.replacesBottomBar(value?)` on a screen's root: Bloom `Screen`'s `replacesBottomBar` (needs the Bloom release that adds it). The screen's own bar replaces the app's bottom bar, which steps aside on the UI thread from the screen's first frame without re-rendering the shell.
+- `.replacesBottomBar(value?)` on a screen's root: Bloom `Screen`'s `replacesBottomBar` (Bloom 23.8.0). The screen's own bar replaces the app's bottom bar, which steps aside on the UI thread from the screen's first frame without re-rendering the shell.
 
 ### Changed
 

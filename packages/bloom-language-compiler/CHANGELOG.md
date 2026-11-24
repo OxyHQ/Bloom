@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+### Changed
+
+- Checks chains against the language 1.5.0 spec: the CRM, music and media, and creator nodes, and the modifiers and tokens only they took, are refused, and a screen's `.replacesBottomBar()` is accepted.
+
 ## 1.2.0
 
 ### Changed
