@@ -115,8 +115,9 @@ describe('Rating', () => {
       const [value, count] = Array.from(
         byTestId('r').querySelectorAll('[dir="auto"]'),
       ) as HTMLElement[];
-      expect(getComputedStyle(value as HTMLElement).color).toBe(normalise(colors.text));
-      expect(getComputedStyle(count as HTMLElement).color).toBe(normalise(colors.textSecondary));
+      // The theme's tokens: the document's variables paint them in either mode.
+      expect(getComputedStyle(value as HTMLElement).color).toBe('var(--foreground)');
+      expect(getComputedStyle(count as HTMLElement).color).toBe('var(--muted-foreground)');
     },
   );
 
@@ -144,7 +145,7 @@ describe('Rating colour override', () => {
     const [value, count] = Array.from(
       byTestId('r').querySelectorAll('[dir="auto"]'),
     ) as HTMLElement[];
-    expect(getComputedStyle(value as HTMLElement).color).toBe(normalise(colors.text));
+    expect(getComputedStyle(value as HTMLElement).color).toBe('var(--foreground)');
     expect(getComputedStyle(count as HTMLElement).color).toBe(normalise('#eeeeee'));
     expect(byTestId('r').querySelector('path')?.getAttribute('fill')).toBe('#f5a623');
   });

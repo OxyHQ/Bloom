@@ -6,7 +6,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { dataHook } from '../styles/data-hook';
 
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { WizardFooterProps } from './types';
 import { useCommonMessages } from '../locale/common-messages';
@@ -53,7 +53,7 @@ export function createWizardFooter({ Button }: { Button: typeof import('../butto
     const common = useCommonMessages();
     const backLabel = backLabelProp ?? common.back;
     const nextLabel = nextLabelProp ?? common.next;
-    const theme = useTheme();
+    const tokens = useColorTokens();
     const [narrow, setNarrow] = useState(false);
     useInsertionEffect(() => {
       if (IS_WEB) adoptStyleSheet('bloom-wizard-footer-layout', WIZARD_FOOTER_CSS);
@@ -70,8 +70,8 @@ export function createWizardFooter({ Button }: { Button: typeof import('../butto
 
     const frameStyle: WebCssStyle = {
       borderTopWidth: 1,
-      borderTopColor: theme.colors.border,
-      backgroundColor: theme.colors.background,
+      borderTopColor: tokens.border,
+      backgroundColor: tokens.background,
       ...(IS_WEB ? { containerType: 'inline-size', containerName: 'bloom-wizard-footer' } : {}),
     };
 
@@ -123,7 +123,7 @@ export function createWizardFooter({ Button }: { Button: typeof import('../butto
               variant="caption-1-regular"
               numberOfLines={1}
               accessibilityLiveRegion="polite"
-              style={{ flexShrink: 1, color: theme.colors.textSecondary, textAlign: 'center' }}
+              style={{ flexShrink: 1, color: tokens.mutedForeground, textAlign: 'center' }}
             >
               {status}
             </Text>

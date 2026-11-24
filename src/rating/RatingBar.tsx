@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { Meter } from '../stat-bar';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { RatingBarProps } from './types';
 
@@ -42,7 +42,7 @@ function RatingBarComponent({
   trackStyle,
   fillStyle,
 }: RatingBarProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const safeMax = max > 0 ? max : 1;
 
   return (
@@ -53,7 +53,7 @@ function RatingBarComponent({
         importantForAccessibility="no"
         accessibilityElementsHidden
         style={[
-          { color: theme.colors.text },
+          { color: tokens.foreground },
           labelWidth === undefined ? { flex: 1, minWidth: 0 } : { width: labelWidth },
           labelStyle,
         ]}
@@ -82,7 +82,7 @@ function RatingBarComponent({
           accessibilityElementsHidden
           style={[
             {
-              color: theme.colors.text,
+              color: tokens.foreground,
               minWidth: 28,
               textAlign: 'right',
               fontVariant: ['tabular-nums'],

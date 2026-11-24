@@ -13,7 +13,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { useMessages } from '../locale/messages';
 import { RATING_MESSAGES } from './messages';
 import type { RatingInputProps, RatingInputSize } from './types';
@@ -97,7 +97,7 @@ function RatingInputComponent({
   );
   const size = inheritedSize === 'xs' ? 'sm' : inheritedSize;
 
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(RATING_MESSAGES);
   const formatStarLabel = formatStarLabelProp ?? messages.star;
   // A row of stars draws no words, so the `radiogroup`'s name is a prop or the
@@ -162,12 +162,12 @@ function RatingInputComponent({
   // The roving tab stop: the chosen star, or the first one while nothing is
   // chosen, so a keyboard reaches the group in one Tab either way.
   const tabStop = chosen ?? 1;
-  const emptyColor = theme.colors.border;
+  const emptyColor = tokens.border;
 
   const starStyle: WebCssStyle = {
     padding: 2,
     borderRadius: 6,
-    '--bloom-rating-input-ring': theme.colors.primary,
+    '--bloom-rating-input-ring': tokens.primary,
     ...ringOffset,
   };
 
@@ -234,7 +234,7 @@ function RatingInputComponent({
               <Glyph
                 width={config.star}
                 height={config.star}
-                fill={filled ? theme.colors.primary : emptyColor}
+                fill={filled ? tokens.primary : emptyColor}
               />
             </View>
           </Pressable>

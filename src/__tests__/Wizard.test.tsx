@@ -174,7 +174,7 @@ describe('WizardFooter', () => {
     const bar = byTestId('wf');
     expect(bar.style.position).toBe('sticky');
     expect(bar.style.borderTopWidth).toBe('1px');
-    expect(normalise(bar.style.backgroundColor)).toBe(normalise(theme.colors.background));
+    expect(bar.style.backgroundColor).toBe('var(--background)');
 
     mount(<WizardFooter onNext={() => undefined} sticky={false} testID="wf" />);
     expect(byTestId('wf').style.position).not.toBe('sticky');
