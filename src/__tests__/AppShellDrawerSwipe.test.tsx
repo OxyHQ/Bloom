@@ -351,6 +351,37 @@ describe('AppShell drawerSwipe: reveal', () => {
     expect(page(screen)).toBe(REVEAL_TRAVEL);
   });
 
+  it('keeps the closed drawer out of the native tree, and mounts it as the swipe starts', () => {
+    setWidth(WIDTH);
+    const pans = recordPans();
+    const screen = render(wrap(<Reveal />));
+    const display = () =>
+      resolvedStyle(
+        screen.getByTestId('shell-navigation-drawer', { includeHiddenElements: true }).props.style,
+      ).display;
+    // At rest and closed: no native view under it (Fabric mounts none under `display: none`).
+    expect(display()).toBe('none');
+    // The first frame of a drag shows it, before anything is decided.
+    hold(live(pans), 40);
+    screen.rerender(wrap(<Reveal />));
+    expect(display()).toBe('flex');
+    // Snapped back closed, it leaves the tree again; the sidebar stays mounted in React.
+    release(live(pans), 40);
+    screen.rerender(wrap(<Reveal />));
+    expect(display()).toBe('none');
+    expect(screen.getByTestId('sidebar-item-home', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('keeps the drawer in the tree while it is open', () => {
+    setWidth(WIDTH);
+    const screen = render(wrap(<Reveal drawerOpen />));
+    expect(
+      resolvedStyle(
+        screen.getByTestId('shell-navigation-drawer', { includeHiddenElements: true }).props.style,
+      ).display,
+    ).toBe('flex');
+  });
+
   it('snaps a short pan back to the closed page', () => {
     setWidth(WIDTH);
     const pans = recordPans();
