@@ -2,9 +2,11 @@ import type React from 'react';
 import { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 
+import { useMessages } from '../locale/messages';
 import { fontSize } from '../styles/tokens';
 import { Z_INDEX } from '../styles/z-index';
 import { Text } from '../typography';
+import { AVATAR_MESSAGES } from './messages';
 
 export type LiveBadgeVariant = 'tiny' | 'small';
 
@@ -18,8 +20,12 @@ const LABEL_SIZE: Record<LiveBadgeVariant, number> = { small: fontSize._2xs, tin
 interface LiveBadgeProps {
   /** Size variant — `'tiny'` for small avatars, `'small'` for larger ones. */
   variant: LiveBadgeVariant;
-  /** Text shown inside the pill (already localized by the caller). */
-  label: string;
+  /**
+   * Text shown inside the pill, already localized by the caller. Omitted, the
+   * pill says Bloom's own localized "LIVE": read here, where only a live avatar
+   * pays for it, not in every avatar.
+   */
+  label?: string;
   /** Pill background color (defaults come from the theme `negative` token). */
   backgroundColor: string;
   /** Pill text color (defaults come from the theme `negativeForeground` token). */
@@ -39,6 +45,7 @@ const LiveBadgeComponent: React.FC<LiveBadgeProps> = ({
   backgroundColor,
   textColor,
 }) => {
+  const { messages } = useMessages(AVATAR_MESSAGES);
   return (
     <View style={styles.wrapper}>
       <View style={[styles.pill, { backgroundColor }]}>
@@ -47,7 +54,7 @@ const LiveBadgeComponent: React.FC<LiveBadgeProps> = ({
           numberOfLines={1}
           style={[styles.text, { color: textColor, fontSize: LABEL_SIZE[variant] }]}
         >
-          {label}
+          {label ?? messages.live}
         </Text>
       </View>
     </View>
