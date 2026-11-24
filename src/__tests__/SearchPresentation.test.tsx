@@ -77,6 +77,8 @@ it('keeps a query on blur, and explicit dismissal restores the trigger without c
   expect(input.current.blur).toHaveBeenCalledTimes(1);
   expect(focus).toHaveBeenCalledTimes(1);
   act(() => result.current.show());
+  // Opening focuses the field in the commit that opens it, before any frame.
+  expect(input.current.focus).toHaveBeenCalledTimes(1);
   act(() => jest.runOnlyPendingTimers());
   expect(input.current.focus).toHaveBeenCalledTimes(1);
 });
@@ -92,11 +94,13 @@ it('leaves open state controlled and cancels blur/focus work on unmount', () => 
   expect(changed).toHaveBeenCalledWith(true);
   expect(result.current.expanded).toBe(false);
   rerender({ presentation: 'collapsible', open: true, onOpenChange: changed });
+  // The controlled open moves focus in its own commit, before any frame.
+  expect(input.current.focus).toHaveBeenCalledTimes(1);
   act(() => result.current.blur());
   changed.mockClear();
   unmount();
   act(() => jest.runOnlyPendingTimers());
-  expect(input.current.focus).not.toHaveBeenCalled();
+  expect(input.current.focus).toHaveBeenCalledTimes(1);
   expect(changed).not.toHaveBeenCalled();
 });
 
