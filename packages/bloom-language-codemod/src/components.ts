@@ -75,7 +75,9 @@ export type Form =
   /** A style that is its fill alone (`{ backgroundColor }`): a role or an app colour. */
   | 'fill'
   /** Bloom Screen's `reselect` handler: `.onReselect(refresh)` and `.reselectTop(isAtTop, scrollToTop)`. */
-  | 'reselect';
+  | 'reselect'
+  /** A list header container style that keeps the header to its content (`{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }`): the bare modifier. */
+  | 'headerStyle';
 
 /** A prop as a modifier: its name and form, and for a token, Bloom's value to the language's. */
 export interface PropRule {
@@ -907,10 +909,12 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       estimatedItemSize: p('estimatedItemSize', 'number'),
       contentContainerStyle: p('contentMargins', 'contentStyle'),
       numColumns: p('columns', 'number'),
+      overrideItemLayout: p('itemLayout', 'handler'),
       onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
       restorationKey: p('restorationKey', 'string'),
       stickyHeaderIndices: p('stickyIndices', 'items'),
       ListHeaderComponent: p('headerContent', 'element'),
+      ListHeaderComponentStyle: p('headerFitsContent', 'headerStyle'),
       ListFooterComponent: p('footerContent', 'element'),
       ListEmptyComponent: p('emptyState', 'element'),
       // A query-driven pull to refresh: `.refreshable({ refreshing, onRefresh })`, as written.

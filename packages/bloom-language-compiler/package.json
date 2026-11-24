@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-language-compiler",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Build-time optimiser for @oxy.so/bloom-language: hoists static chains, opts view bodies into the React Compiler and checks chains against the language spec. A pre-pass in front of Metro's and Jest's own transformers.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {

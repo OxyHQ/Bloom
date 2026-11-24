@@ -2696,6 +2696,12 @@ export function transformSource(source: string, options: TransformOptions): File
         else unmapped(name);
         continue;
       }
+      if (prop?.form === 'headerStyle') {
+        if (value && fitsContent(attributeExpression(value)))
+          props.push({ name: prop.modifier, args: [] });
+        else unmapped(name);
+        continue;
+      }
       if (prop?.marks) {
         // A static string naming the bare modifier, or none.
         const text = staticString(value);
@@ -3208,6 +3214,39 @@ export function transformSource(source: string, options: TransformOptions): File
     }
     if (object !== expression) styleLiterals.set(expression, recast.print(object).code);
     return mods;
+  }
+
+  /**
+   * A list header container style (an object literal or a module constant)
+   * that is exactly `{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }`,
+   * in any order: the header kept to its content, `.headerFitsContent()`.
+   */
+  function fitsContent(expression: AnyNode): boolean {
+    const object = moduleStyleReads.has(expression)
+      ? styleSheets.get(expression.object.name)?.get(expression.property.name)
+      : (styleConstantReads.get(expression) ?? expression);
+    if (!n.ObjectExpression.check(object)) return false;
+    const seen = new Map<string, unknown>();
+    for (const property of object.properties) {
+      if (
+        !(n.ObjectProperty.check(property) || n.Property.check(property)) ||
+        property.computed ||
+        !n.Identifier.check(property.key)
+      )
+        return false;
+      const key = property.key.name as string;
+      seen.set(
+        key,
+        key === 'alignSelf' ? staticString(property.value) : staticNumber(property.value),
+      );
+    }
+    const fits =
+      seen.size === 3 &&
+      seen.get('flexGrow') === 0 &&
+      seen.get('flexShrink') === 0 &&
+      seen.get('alignSelf') === 'stretch';
+    if (fits && object !== expression) styleLiterals.set(expression, recast.print(object).code);
+    return fits;
   }
 
   /** A style that is a fill alone (`{ backgroundColor: '#000' }`) as its colour (`inkOf`). */

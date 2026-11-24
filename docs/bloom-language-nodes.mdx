@@ -2689,11 +2689,13 @@ Modifiers:
 - [`.itemType()`](bloom-language-modifiers.mdx#itemtype) `(value: (item: T, index: number) => string | number | undefined)`: Each item's recycling type (FlashList's `getItemType`).
 - [`.estimatedItemSize()`](bloom-language-modifiers.mdx#estimateditemsize) `(value: number)`: The engine's first estimate of a row's height, in px.
 - [`.columns()`](bloom-language-modifiers.mdx#columns) `(value: number)`: Items per row.
+- [`.itemLayout()`](bloom-language-modifiers.mdx#itemlayout) `(value: VirtualListItemLayout<T>)`: How many of the columns an item takes: the function sets `layout.span` (Bloom's `overrideItemLayout`; 1 by default), so a full-width row sits in the grid. FlashList and the web; the `FlatList` fallback gives every item one column.
 - [`.onEndReached()`](bloom-language-modifiers.mdx#onendreached) `(action: () => void, threshold?: number)`: Called near the end, `threshold` viewports from it.
 - [`.refreshable()`](bloom-language-modifiers.mdx#refreshable) `(value: Refresh)` (here: a value): Pull to refresh: a binding a pull writes `true` (the app writes `false` when done), or `{ refreshing, onRefresh }`, a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`).
 - [`.stickyIndices()`](bloom-language-modifiers.mdx#stickyindices) `(value: readonly number[])`: The indices whose rows stick to the top.
 - [`.restorationKey()`](bloom-language-modifiers.mdx#restorationkey) `(value: string)`: Where its scroll position is kept across visits.
 - [`.headerContent()`](bloom-language-modifiers.mdx#headercontent) `(value: Child)`
+- [`.headerFitsContent()`](bloom-language-modifiers.mdx#headerfitscontent) `()`: The header is its content's height and the list's width: its container neither grows nor shrinks and stretches across (`ListHeaderComponentStyle`'s `flexGrow: 0, flexShrink: 0, alignSelf: 'stretch'`), so the engine never stretches it to the viewport and the row after it (a sticky one) starts under it.
 - [`.footerContent()`](bloom-language-modifiers.mdx#footercontent) `(value: Child)`
 - [`.emptyState()`](bloom-language-modifiers.mdx#emptystate) `(value: Child)`
 - [`.tuning()`](bloom-language-modifiers.mdx#tuning) `(value: VirtualListTuning)`: The engine's tuning knobs, honoured by the engine that knows them.

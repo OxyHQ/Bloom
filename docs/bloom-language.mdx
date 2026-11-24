@@ -2716,9 +2716,14 @@ render would redraw every memoised row. It takes `.contentMargins(edge?, space)`
 scroll of the language's takes them (`paddingHorizontal: 16, gap: 8` is
 `.contentMargins('horizontal', 'lg').spacing('sm')`; the room for views pinned
 at its edges adds to that padding), `.itemKey()`, `.itemType()` (FlashList's recycling type),
-`.estimatedItemSize(px)`, `.columns()`, `.onEndReached(action, threshold?)`,
+`.estimatedItemSize(px)`, `.columns()`, `.itemLayout(fn)` (Bloom's `overrideItemLayout`:
+`fn(layout, item, index, columns)` sets `layout.span`, so a full-width row sits in a grid of
+columns), `.onEndReached(action, threshold?)`,
 `.refreshable([refreshing, setRefreshing])` or `.refreshable({ refreshing, onRefresh })`, `.stickyIndices()`,
-`.restorationKey()`, `.headerContent()`, `.footerContent()`, `.emptyState()`,
+`.restorationKey()`, `.headerContent()`, `.headerFitsContent()` (the header is its content's
+height and the list's width, `ListHeaderComponentStyle`'s `flexGrow: 0, flexShrink: 0,
+alignSelf: 'stretch'`, so the engine never stretches it to the viewport and a sticky row after it
+starts under it), `.footerContent()`, `.emptyState()`,
 `.screen(options?)` (Bloom's `screen`, `{}` by default: the list is its screen's
 scroller, binding the header's fade, the bottom bar's fold, the reselect and the
 insets, without a `ScrollView` around it; it must be inside a screen),

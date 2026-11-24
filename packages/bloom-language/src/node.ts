@@ -99,7 +99,12 @@ import type { AccordionKind } from './controls/accordion';
 import type { SliderKind } from './controls/slider';
 import type { MarkdownKind } from './controls/markdown';
 import type { CarouselKind } from './controls/carousel';
-import type { ListKind, VirtualListScreen, VirtualListTuning } from './controls/list';
+import type {
+  ListKind,
+  VirtualListItemLayout,
+  VirtualListScreen,
+  VirtualListTuning,
+} from './controls/list';
 import type { ListAction, ListProps } from '@oxy.so/bloom/list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 import type { TableKind } from './controls/table';
@@ -962,6 +967,8 @@ export interface ValueModifiers {
   itemKey: (item: never, index: number) => string;
   itemType: (item: never, index: number) => string | number | undefined;
   estimatedItemSize: number;
+  itemLayout: VirtualListItemLayout<never>;
+  headerFitsContent: true;
   stickyIndices: readonly number[];
   restorationKey: string;
   tuning: VirtualListTuning;
@@ -3873,6 +3880,12 @@ export class Node {
   }
   estimatedItemSize(value: number): Node {
     return this.set('estimatedItemSize', value);
+  }
+  itemLayout(value: VirtualListItemLayout<never>): Node {
+    return this.set('itemLayout', value);
+  }
+  headerFitsContent(): Node {
+    return this.set('headerFitsContent', true);
   }
   stickyIndices(value: readonly number[]): Node {
     return this.set('stickyIndices', value);

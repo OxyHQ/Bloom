@@ -1230,6 +1230,34 @@ export const A = () => (
     );
     expect(result.unconverted).toEqual([]);
   });
+  it('reads a grid’s item layout and a header kept to its content', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+const HEADER_FITS = { flexShrink: 0, alignSelf: 'stretch', flexGrow: 0 };
+export const A = () => (
+  <VirtualList
+    data={rows}
+    renderItem={renderRow}
+    numColumns={3}
+    overrideItemLayout={spanRow}
+    ListHeaderComponent={renderHeader()}
+    ListHeaderComponentStyle={{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }}
+  />
+);
+export const B = () => <VirtualList data={rows} renderItem={renderRow} ListHeaderComponentStyle={HEADER_FITS} />;
+export const C = () => <VirtualList data={rows} renderItem={renderRow} ListHeaderComponentStyle={{ flexGrow: 0 }} />;
+export const D = () => <VirtualList data={rows} renderItem={renderRow} ListHeaderComponentStyle={{ flexGrow: 0, flexShrink: 0, alignSelf: 'center' }} />;
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      'toElement(LVirtualList(rows, renderRow).columns(3).itemLayout(spanRow).headerContent(Embed(renderHeader())).headerFitsContent())',
+    );
+    expect(code).toContain('toElement(LVirtualList(rows, renderRow).headerFitsContent())');
+    // Any other header style keeps the list JSX.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'VirtualList:ListHeaderComponentStyle',
+      'VirtualList:ListHeaderComponentStyle',
+    ]);
+  });
   it('binds a virtual list to its screen and gathers the engine’s knobs into its tuning', () => {
     const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
 export const A = () => (

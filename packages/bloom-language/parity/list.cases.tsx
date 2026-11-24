@@ -20,6 +20,11 @@ const SECTIONS = [{ id: 'team', title: 'Team', items: ENTRIES }];
 const NAMES = ['Ana', 'Rui', 'Mia'];
 const nameRow = ({ item }: { item: string }) => L.ListItem(item);
 const keyOf = (name: string) => name;
+/** A grid's rows: a full-width row (its tabs), then cells. */
+const GRID = ['Tabs', 'Ana', 'Rui', 'Mia', 'Eva'];
+const spanTabs = (layout: { span?: number }, item: string) => {
+  if (item === 'Tabs') layout.span = 3;
+};
 /** React Native's `keyboardDismissMode` for each of the language's. */
 const DISMISS_MODE = {
   never: 'none',
@@ -438,6 +443,30 @@ const virtual: ParityCase[] = [
         ListFooterComponent={<Text>End</Text>}
         drawDistance={500}
         testID="names"
+      />
+    ),
+  },
+  {
+    // Mention's profile media grid: a full-width row spans the columns, under a header kept to its content.
+    name: 'a virtual grid whose full-width row spans its columns, under a header kept to its content',
+    language: () =>
+      toElement(
+        L.VirtualList(GRID, nameRow)
+          .itemKey(keyOf)
+          .columns(3)
+          .itemLayout(spanTabs)
+          .headerContent(L.Text('Top'))
+          .headerFitsContent(),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={GRID}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => <ListItem title={item} />}
+        numColumns={3}
+        overrideItemLayout={spanTabs}
+        ListHeaderComponent={<Text>Top</Text>}
+        ListHeaderComponentStyle={{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }}
       />
     ),
   },

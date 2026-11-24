@@ -306,6 +306,51 @@ describe('a language node costs React what the JSX it stands for costs', () => {
     expect(perRow.language).toEqual(perRow.jsx);
   });
 
+  it('a grid list’s span and its header kept to its content cost what the JSX props do', () => {
+    const row = ({ item }: { item: string }) =>
+      toElement(L.Text(item).padding('xs').foreground('primary'));
+    const span = (layout: { span?: number }, item: string) => {
+      if (item === 'tabs') layout.span = 3;
+    };
+    const language = (items: string[], grid: boolean) => {
+      const list = LVirtualList(items, row).itemKey(String).headerContent(L.Text('Top'));
+      return measured(
+        toElement(grid ? list.columns(3).itemLayout(span).headerFitsContent() : list),
+      );
+    };
+    const jsx = (items: string[], grid: boolean) =>
+      measured(
+        <Themed>
+          {(c) => (
+            <VirtualList
+              data={items}
+              keyExtractor={String}
+              renderItem={({ item }) => (
+                <Text style={{ padding: 4, color: c.primary }}>{item}</Text>
+              )}
+              ListHeaderComponent={<Text>Top</Text>}
+              {...(grid && {
+                numColumns: 3,
+                overrideItemLayout: span,
+                ListHeaderComponentStyle: { flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' },
+              })}
+            />
+          )}
+        </Themed>,
+      );
+    const items = ['tabs', 'a', 'b', 'c'];
+    const perRow = {
+      language: less(language([...items, 'd'], true), language(items, true)),
+      jsx: less(jsx([...items, 'd'], true), jsx(items, true)),
+    };
+    expect(perRow.jsx.fibers).toBeGreaterThan(0);
+    expect(perRow.language).toEqual(perRow.jsx);
+    // The whole list: what the language adds over the JSX is the same with the props as without them.
+    expect(less(language(items, true), jsx(items, true))).toEqual(
+      less(language(items, false), jsx(items, false)),
+    );
+  });
+
   it.each(CASES.map((c) => [c.name, c] as const))('%s', (_name, c) => {
     const container = c.in ?? STACK;
     const language = less(

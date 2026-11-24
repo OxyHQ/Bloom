@@ -22,6 +22,7 @@ import {
   type VirtualListProps,
   type VirtualListRenderItemInfo,
 } from '@oxy.so/bloom/list';
+import type { ViewStyle } from 'react-native';
 import type { MailStrings } from '@oxy.so/bloom/mail-list';
 import type { SwipeRowActions, SwipeRowProps } from '@oxy.so/bloom/swipe-row';
 
@@ -75,6 +76,13 @@ export type VirtualListTuning = Pick<
 
 /** How a list binds to its screen, as Bloom's `VirtualList` takes its `screen` (`ScreenScrollOptions`). */
 export type VirtualListScreen = NonNullable<VirtualListProps<unknown>['screen']>;
+
+/**
+ * How many of a grid's columns an item takes, as Bloom's `overrideItemLayout`
+ * sets it: `layout.span` (1 by default), so a full-width row (a header, a
+ * section title) sits in a grid of `.columns()`.
+ */
+export type VirtualListItemLayout<T> = NonNullable<VirtualListProps<T>['overrideItemLayout']>;
 
 /** What a list's row is handed: FlashList's `renderItem` argument as Bloom passes it, the item and its index. */
 export type VirtualListRow<T> = VirtualListRenderItemInfo<T>;
@@ -186,6 +194,12 @@ export interface VirtualListView<T = unknown> extends ViewModifiers<VirtualListV
   estimatedItemSize(value: number): VirtualListView<T>;
   /** Items per row. */
   columns(value: number): VirtualListView<T>;
+  /**
+   * How many of the columns an item takes: the function sets `layout.span`
+   * (Bloom's `overrideItemLayout`; 1 by default), so a full-width row sits in
+   * the grid. FlashList and the web; the `FlatList` fallback gives every item one column.
+   */
+  itemLayout(value: VirtualListItemLayout<T>): VirtualListView<T>;
   /** Called near the end, `threshold` viewports from it. */
   onEndReached(action: () => void, threshold?: number): VirtualListView<T>;
   /**
@@ -199,6 +213,13 @@ export interface VirtualListView<T = unknown> extends ViewModifiers<VirtualListV
   /** Where its scroll position is kept across visits. */
   restorationKey(value: string): VirtualListView<T>;
   headerContent(value: Child): VirtualListView<T>;
+  /**
+   * The header is its content's height and the list's width: its container
+   * neither grows nor shrinks and stretches across (`ListHeaderComponentStyle`'s
+   * `flexGrow: 0, flexShrink: 0, alignSelf: 'stretch'`), so the engine never
+   * stretches it to the viewport and the row after it (a sticky one) starts under it.
+   */
+  headerFitsContent(): VirtualListView<T>;
   footerContent(value: Child): VirtualListView<T>;
   emptyState(value: Child): VirtualListView<T>;
   /** The engine's tuning knobs, honoured by the engine that knows them. */
@@ -299,6 +320,13 @@ function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
   props.footer = slot(d, footer);
   props.empty = slot(d, empty);
 }
+
+/** A header container that keeps to its content (`.headerFitsContent()`): one object for every list. */
+const HEADER_FITS_CONTENT: ViewStyle = Object.freeze({
+  flexGrow: 0,
+  flexShrink: 0,
+  alignSelf: 'stretch',
+});
 
 interface LanguageVirtualListProps {
   readonly row: VirtualListRowFn<unknown>;
@@ -404,6 +432,7 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       getItemType: d.own('itemType')?.value,
       estimatedItemSize: d.own('estimatedItemSize')?.value,
       numColumns: d.own('columns')?.value,
+      overrideItemLayout: d.own('itemLayout')?.value,
       stickyHeaderIndices: d.own('stickyIndices')?.value,
       restorationKey: d.own('restorationKey')?.value,
       screen: d.own('screen')?.value,
@@ -411,6 +440,8 @@ export const LISTS: Record<ListKind, ControlRenderer> = {
       keyboardShouldPersistTaps: d.own('keyboardTaps')?.value,
       keyboardDismissMode: dismiss === undefined ? undefined : DISMISS_MODE[dismiss],
       ListHeaderComponent: header === undefined ? undefined : (d.render(header) as ReactElement),
+      ListHeaderComponentStyle:
+        d.own('headerFitsContent') === undefined ? undefined : HEADER_FITS_CONTENT,
       ListFooterComponent: footer === undefined ? undefined : (d.render(footer) as ReactElement),
       ListEmptyComponent: empty === undefined ? undefined : (d.render(empty) as ReactElement),
     });

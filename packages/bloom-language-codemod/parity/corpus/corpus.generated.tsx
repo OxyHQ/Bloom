@@ -536,13 +536,27 @@ export const CASES = [
     after: () => { const VirtualList = I52; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (<I11>{toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))}</I11>); },
   },
   {
-    name: "components/Components.tsx:601",
+    name: "components/Components.tsx:607",
+    bloom22: false,
+    before: () => { const VirtualList = I52; const Muted = I16; return (<VirtualList
+      data={ITEMS}
+      keyExtractor={() => {}}
+      renderItem={((info) => <Hole n={'1-' + info.index} />)}
+      numColumns={3}
+      overrideItemLayout={() => {}}
+      ListHeaderComponent={<Muted>Media</Muted>}
+      ListHeaderComponentStyle={{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }}
+    />); },
+    after: () => { const VirtualList = I52; const Muted = I16; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).itemKey(() => {}).columns(3).itemLayout(() => {}).headerContent(LText('Media').textStyle('muted')).headerFitsContent())); },
+  },
+  {
+    name: "components/Components.tsx:626",
     bloom22: false,
     before: () => { const VirtualList = I52; return (<VirtualList data={ITEMS} renderItem={({ item }) => <Hole n="1" />} />); },
     after: () => { const VirtualList = I52; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (toElement(LVirtualList(ITEMS, ({ item }) => Embed(<Hole n="1" />)))); },
   },
   {
-    name: "components/Components.tsx:606",
+    name: "components/Components.tsx:631",
     bloom22: true,
     before: () => { const PressableScale = I54; const Muted = I13; return (<PressableScale
       onPress={() => {}}
@@ -554,7 +568,7 @@ export const CASES = [
     after: () => { const PressableScale = I55; const Muted = I16; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList } = L;  return (toElement(HStack(LText('⟨0⟩').textStyle('muted')).padding('all', 'lg').background('surface').border('border', 'thin').corner('md').align('center').spacing('md').onPress(() => {}).label('⟨2⟩').pressScale())); },
   },
   {
-    name: "components/Components.tsx:624",
+    name: "components/Components.tsx:649",
     bloom22: false,
     before: () => { const ChatSearchField = I56; return (<ChatSearchField
       value={'⟨0⟩'}
@@ -567,7 +581,7 @@ export const CASES = [
     after: () => { const ChatSearchField = I56; const { Toggle, GroupedSectionItem: LGroupedSectionItem, SpinnerIcon: LSpinnerIcon, GroupedSection: LGroupedSection, SettingsSection: LSettingsSection, toElement, SettingsValue, Card: LCard, VStack, TextField: LTextField, ScrollView, Text: LText, Button: LButton, ChatEmptyState: LChatEmptyState, Search: LSearch, Divider: LDivider, Embed, Loading: LLoading, Avatar: LAvatar, Badge: LBadge, Row, Checkbox: LCheckbox, Field: LField, TextEditor, IconCircle: LIconCircle, Grid, HStack, Chip: LChip, Icon, Action, defineTokens, Slider: LSlider, Admonition: LAdmonition, Header: LHeader, TabItem, Tabs: LTabs, Option, Segmented, SettingsSelect: LSettingsSelect, AvatarGroup: LAvatarGroup, List: LList, VirtualList: LVirtualList, ChatSearchField: LChatSearchField } = L;  return (toElement(LChatSearchField(['⟨0⟩', () => {}], { placeholder: '⟨2⟩', clearLabel: '⟨3⟩', onClear: () => {} }).label('⟨5⟩'))); },
   },
   {
-    name: "components/Components.tsx:638",
+    name: "components/Components.tsx:663",
     bloom22: true,
     before: () => { function Before() { const parityTheme = useParityTheme22(); const parityTokens = useParityTokens(); const paritySurface = useParitySurface(); const View = I9; const Text = I57; return (<View
       className="flex-row p-2"
