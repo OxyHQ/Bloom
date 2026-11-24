@@ -1,5 +1,13 @@
 # Changelog
 
+## 23.6.0
+
+The Bloom language 1.3.0 ships beside it (`@oxy.so/bloom-language`): a `.hoverGroup()` view that takes a press shows the press highlight on Android and iOS.
+
+### Added
+
+- `usePressHighlight()` (`@oxy.so/bloom/subtle-hover`): a pressable row's pressed state on Android and iOS, in `contrast50`, the fill an unfilled Bloom control takes while held. Android gets the platform ripple, bounded by the row (`android_ripple`): the press reaches the view as a command and the ripple animates on the render thread, with no React render. On iOS the press sets a shared value that the row's `SubtleHover` reads (`<SubtleHover pressed={…} />`): the wash lights on the press and fades out over 150 ms on release, on the UI thread. The web keeps the pointer's hover wash. A child that takes its own press, or a scroll that takes the touch, keeps the row unlit. A feed row with only `SubtleHover` showed nothing on native until its navigation landed, about 600 ms after the tap on a Pixel 8a.
+
 ## 23.5.0
 
 `@oxy.so/bloom-data` 0.1.1, `@oxy.so/bloom-text` 0.1.7 and `@oxy.so/bloom-editor` 0.9.1 ship beside it, compiled the same way.

@@ -230,6 +230,7 @@ import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { SafeAreaPadded } from './safe-area';
+import { AnimatedPressHighlighted, PressHighlighted } from './press-highlight';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
   MotionWrapper,
@@ -1131,7 +1132,8 @@ function drawOutermost(
   ...children: ReactNode[]
 ): ReactElement {
   const out = pressHostOut(host, style);
-  const animated = animatedHost(host) as Host | undefined;
+  const twin = host === PressHighlighted ? AnimatedPressHighlighted : animatedHost(host);
+  const animated = twin as Host | undefined;
   // A host with no animated twin (a Bloom component) moves in the box `drawNode` adds.
   if (box === undefined || animated === undefined)
     return drawHost(palette, host, out, props, ...children);
@@ -2142,11 +2144,13 @@ function propPaint(
 
 /**
  * The outermost box's host: pressable when the view takes presses or hovers,
- * React Native's `TouchableOpacity` when its press fades it (`.pressFade()`).
+ * React Native's `TouchableOpacity` when its press fades it (`.pressFade()`),
+ * and on Android and iOS a hover group's press highlights it (`PressHighlighted`).
  */
 function hostFor(p: Plan): Host {
   if (!p.pressable) return View;
-  return p.own.has('pressFade') ? TouchableOpacity : Pressable;
+  if (p.own.has('pressFade')) return TouchableOpacity;
+  return !IS_WEB && p.hoverGroup ? PressHighlighted : Pressable;
 }
 
 function hostProps(

@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { type ReactElement, useEffect } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -40,10 +41,29 @@ const FADE = Easing.bezier(0.4, 0, 0.2, 1);
  *   can light up together (e.g. every post of a thread), cross-fading over
  *   150ms. Web always; native only when `native` is set.
  *
+ * Either way, on native a `pressed` value (`usePressHighlight`, iOS) adds the
+ * row's press wash on top, at the full fill.
+ *
  * The wash color comes from the theme's `contrast50` token so it tracks the
  * active preset and light/dark mode.
  */
-export function SubtleHover({ active, style, native = false }: SubtleHoverProps) {
+export function SubtleHover({ active, pressed, style, native = false }: SubtleHoverProps) {
+  const wash = washFor(active, native, style);
+  if (pressed === undefined || Platform.OS === 'web') return wash;
+  return (
+    <>
+      {wash}
+      <PressedWash pressed={pressed} style={style} />
+    </>
+  );
+}
+
+/** The hover or coordinated wash, drawn in place (no component of its own). */
+function washFor(
+  active: boolean | undefined,
+  native: boolean,
+  style: SubtleHoverProps['style'],
+): ReactElement | null {
   const isWeb = Platform.OS === 'web';
   if (active === undefined) {
     // A web pointer affordance. Native has no hover, and neither does touch web.
@@ -101,6 +121,17 @@ function NativeActiveWash({ active, style }: WashProps & { active: boolean }) {
     opacity.value = withTiming(target, { duration: FADE_MS, easing: FADE });
   }, [opacity, target]);
   const fade = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
+  return (
+    <Animated.View
+      style={[styles.overlay, { backgroundColor: theme.colors.contrast50 }, fade, style]}
+    />
+  );
+}
+
+/** A press's wash: the full fill, its opacity the press highlight's value, on the UI thread. */
+function PressedWash({ pressed, style }: WashProps & { pressed: SharedValue<number> }) {
+  const theme = useTheme();
+  const fade = useAnimatedStyle(() => ({ opacity: pressed.value }), [pressed]);
   return (
     <Animated.View
       style={[styles.overlay, { backgroundColor: theme.colors.contrast50 }, fade, style]}
