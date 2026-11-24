@@ -1263,9 +1263,9 @@ binding (`TextField(text)`, `NewGroupForm(name)`). Every other value it edits
 is a modifier named after that value, taking a `Binding` too:
 `.presented([open, setOpen])` (Bloom's `open`), `.query([text, setText])`,
 `.expanded([open, setOpen])`, `.sorting([sort, setSort])` (Bloom's `sort`),
-`.liked([liked, setLiked])`, `.month([month, setMonth])`… Elsewhere the
+`.starred([starred, setStarred])`, `.month([month, setMonth])`… Elsewhere the
 modifier is Bloom's own name for the value (`activeIndex`, `range`, `tab`,
-`muted`, `volume`, `selectedIds`), its setter the matching `on…Change`. One
+`muted`), its setter the matching `on…Change`. One
 not chained leaves the value to Bloom (uncontrolled), as an app that passes
 neither; there is no handler alone, so a screen that wants to hear a change
 owns the value. A value Bloom requires (a place picker's `.query()`, a pitch
@@ -4310,79 +4310,6 @@ choice writes the record with it; its `header` a child).
   row; `.disabled()` on the promo field, the tip picker and the options.
 - A menu row takes `.onPress()` itself.
 
-### Media cards
-
-```ts
-AlbumCard(album.title, { artist, year, artwork, onPlay: play, menuItems }).size('small').onPress(open)
-SongCard(track.title, { artists, duration }).liked([liked, setLiked]).style('row').loading(buffering)
-MediaCard(item.title, { subtitle: Text(item.by), footer: Text(item.left), artworkSize: '96' }).style('row')
-```
-
-Bloom's `media-card`, every card a music or audio app shows, each taking
-its title (an artist's or a profile's name, a recap's value) first and
-Bloom's data as options: `MediaCard`, `SongCard`, `AlbumCard`, `ArtistCard`,
-`PlaylistCard`, `MixCard`, `PodcastCard`, `EpisodeCard`, `AudiobookCard`,
-`EventCard` and `ProfileCard` take `.size('large' | 'medium' | 'small')`,
-`.style('tile' | 'row')` and `.loading()`; `GenreCard` takes `.size()`,
-`QuickAccessTile` `.loading()`; `FriendActivityCard`, `RecapCard` and
-`ShareCard` none of their own.
-
-- A card opens its item itself: `.onPress()` is its own, and `.label()`
-  replaces its composed name. `RecapCard` and `ShareCard` take no press.
-- A card's `menu`, an episode's `actions`, an event's and a profile's
-  `action`, a share card's `footer` and a media card's slots
-  (`artworkOverlay`, `titleAccessory`, `titleLeading`, `trailing`,
-  `footer`) are language children; a media card's `subtitle` is text or a
-  child, and its `renderArtwork` a function of the cover's box that returns
-  one. Its `artworkSize` is a space token and its `artworkRadius` a corner
-  rung.
-- The playing state (`playing`, `current`, `selected`, `skeleton`, the play
-  button's `playButton`) and the artwork's colour from the backend stay
-  Bloom's data in the options.
-- A friend listening live draws bars that move on the JS thread: compared by
-  Jest as it mounts, not in Chrome.
-
-### Lyrics
-
-```ts
-LyricsView(track.lines, { currentTime, onSeekLine: seek, footer: Text(credits) }).size('medium')
-LyricsPreviewCard(track.lines, { currentTime, onShowLyrics: open }).lines(4)
-```
-
-Bloom's `lyrics`: `LyricsView(lines, options?)` follows playback (its
-`currentTime`, `onSeekLine`, the artwork's colour from the backend, plain
-`text` when there are no timed lines, its words); `.size('large' | 'medium'
-| 'small')`, with none by its width; its `footer` is a language child and
-`.label()` names its region. `LyricsPreviewCard(lines, options?)` is the
-card under a player; `.lines(4 | 5)` is how many lines it shows.
-
-### Media player
-
-```ts
-TransportControls(playing, { onPlayPause: toggle, onNext, onPrevious }).repeat([repeat, setRepeat]).size('lg').style('podcast')
-MiniPlayer(track, { playing, onPlayPause: toggle, position, duration }).onPress(expand)
-PlaybackSpeedMenu([rate, setRate]).size('sm')
-SleepTimerMenu([timer, setTimer], { remaining })
-```
-
-Bloom's `media-player`: `TransportControls(playing, options)` takes
-`.size('sm' | 'md' | 'lg')`, `.style('music' | 'podcast')`, `.loading()`
-and `.disabled()`, its `trailing` a language child. `NowPlayingBar(track,
-options)` (its `devicePicker` a child), `MiniPlayer(track, options)` and
-`FullScreenPlayer(track, options)` (its `aboutArtist` a child) take the
-transport, position and duration as Bloom's data; the transport's shuffle,
-repeat and rate are the player's `.shuffle()`, `.repeat()` and
-`.playbackRate()` (on a bar and a full-screen player), bindings drawn into its
-`transport` as `TransportControls` takes them; a bar's `.liked()`,
-`.muted()`, `.volume()`, `.devicePickerOpen()`, `.lyricsActive()` and
-`.queueActive()` are bindings (a bound lyrics or queue toggle draws its
-button); a mini player's `.onPress()` is its own. `PlaybackSpeedMenu(rate)`
-and `SleepTimerMenu(value)` write their binding, open by `.presented([open,
-setOpen])`, take the transport's `.size()` and `.disabled()`, and
-their `trigger` (Bloom's children) is a language child.
-`DevicePicker(current, devices, options)` and `ConnectBanner(deviceName,
-options?)` (`.onPress()` its own) complete it.
-
 ### Creator studio
 
 ```ts
@@ -4410,73 +4337,6 @@ a space token; `.disabled()`), `PayoutSummaryCard(estimated, options)` and
 release, tags and pitch it edits are `.release()`, `.selectedMoods()`,
 `.selectedGenres()` and `.pitch()` bindings, which Bloom requires). `.label()` names a chart's plot, the table and the
 timeline. The words, formats and labels stay in the options, as Bloom's.
-
-### Music library
-
-```ts
-LibraryPanel(library, { selectedId, nowPlayingId, onItemPress: open, renderContextMenu: (item) => Menu(item) })
-LibraryItem(entry, { nowPlaying, paused }).style('grid').onPress(open)
-SearchField([query, setQuery], { onClear: clear, onBrowsePress: browse })
-SearchResultTabs([tab, setTab], tabs)
-BrowseGrid(genres, { title: 'Browse all', onItemPress: openGenre }).spacing('lg')
-```
-
-Bloom's `music-library`: `LibraryPanel(items, options?)` (its filter, sort,
-view, query and rail are controlled when given, with their handlers; its
-`emptyState` a language child, and `renderContextMenu` returns one),
-`LibraryItem(item, options?)` (`.style('compact' | 'list' | 'grid' |
-'rail')`, its `contextMenu` a child, `.onPress()` its own),
-`SearchField(query, options?)` (its binding the query; `.label()` names it),
-`TopResultCard(title, kind, options?)` (`.onPress()` its own),
-`SearchResultTabs(tab, tabs, options?)` (its binding the chosen tab),
-`RecentSearches(items, options?)` and `BrowseGrid(items, options?)` (colour
-tiles, or its own cells as the `children` child; `.spacing()` its gap, its
-`minTileWidth` a space token).
-
-### Queue panel
-
-```ts
-QueuePanel({ nowPlaying, queue, context, contextName, onReorder: move, onPlay: play, onClose: close }).style('sheet')
-QueuePanelRow(track, { current, trailing: Button(Text('More')) }).onPress(play)
-```
-
-Bloom's `queue-panel`: `QueuePanel(options)` (the playing track, the queue,
-the context and what was played, its tab controlled when given, and its
-handlers; `.style('panel' | 'sheet')`, the web's and native's default, and
-its panel's `width` a space token), `QueuePanelRow(track, options?)` (its
-`trailing` a child; `.onPress()` its own, `.label()` its name) and
-`RecentlyPlayedList(items, options?)`.
-
-### Track list
-
-```ts
-TrackList(album.tracks, { currentTrackId, isPlaying, onPlay: play, menuItems }).density('compact').label(album.title)
-TrackRow(track, index, { current, playing, onPlay: play }).liked([liked, setLiked]).onPress(select)
-SelectionBar(selected.length, actions, { onClear: clear }).style('inline')
-EpisodeList(show.episodes, { currentEpisodeId, onPlay: play, onPress: open })
-```
-
-Bloom's `track-list`: `TrackList(tracks, options?)` (its columns, groups,
-the loaded track, its selection controlled when given, reordering and its
-handlers; `.density('comfortable' | 'compact')`, its rows;
-`.tint()` its header's background, a role; `.label()` names the grid),
-`TrackListHeader(columns, options?)` (`.density()`, `.tint()` its
-background), `TrackRow(track, index, options?)` (`.density()`; `.onPress()`
-its own, Bloom handing it the track, its index and the press; its like is
-`.liked([liked, setLiked])`, a binding drawn into its track, its button drawn
-when bound),
-`TrackRowSkeleton(options?)` (`.density()`), `TrackListEmpty(title,
-options?)`, `SelectionBar(count, actions, options)` (`.style('floating' |
-'inline')`), `EpisodeRow(episode, options?)` (`.onPress()` its own: it opens
-the episode; `.saved()` and `.downloaded()` bindings drawn into its episode,
-each toggle drawn when bound) and `EpisodeList(episodes, options?)` (`.label()` names it).
-The width each lays out for, and a sticky header's offset, are space tokens.
-A `TrackList`'s and an `EpisodeList`'s rows are Bloom's data: a row's like,
-save and download stay its item's, with the list's handler.
-
-- The now-playing bars loop while a track plays: a playing list or row is
-  compared by Jest as it mounts, not in Chrome, where two side by side are
-  read at different frames.
 
 ### Dashboard cards
 
@@ -5056,7 +4916,7 @@ the case:
 
 | Left out of Chrome | Why two sides cannot be compared in one page | Cases |
 | --- | --- | --- |
-| A mark that moves on its own | Its frames run on a JavaScript timer or a frame loop from the moment it mounts, so two sides read one after the other stand at different frames. Jest compares them as they mount, where time stands still. | the thinking marks and the working row (agents), the typing dots (chat, message bubbles), a working container's seconds (AI chat), the editor's emotion ring (agent editor), the ambient photo's cross-fade and drift, a calendar's pulsing day, a call's speaking ring and slide track, a busy action's mark (engagement), the locating puck (map chrome), live listening bars (media cards), the task list's and web search's working rows, the now-playing bars (track list) |
+| A mark that moves on its own | Its frames run on a JavaScript timer or a frame loop from the moment it mounts, so two sides read one after the other stand at different frames. Jest compares them as they mount, where time stands still. | the thinking marks and the working row (agents), the typing dots (chat, message bubbles), a working container's seconds (AI chat), the editor's emotion ring (agent editor), the ambient photo's cross-fade and drift, a calendar's pulsing day, a call's speaking ring and slide track, a busy action's mark (engagement), the locating puck (map chrome), the task list's and web search's working rows |
 | A field that takes the focus as it appears | A page has one focused element, so of two sides drawn side by side only one holds it. | an `autoFocus` field and an open collapsible search (inputs), a one-time code, an open home-search location segment |
 | A notification that dismisses itself | Its countdown runs as it is drawn, so two sides are sampled at different moments of it. | the timed notifications |
 | A toast | A page has one toast store, so two toasters side by side would each draw both toasts. | toasts raised through the language's `toast` and Bloom's |
@@ -5204,10 +5064,9 @@ with its reason. Nothing else is missing.
   family, the selections a press reports included (a bottom bar's, a
   sidebar's, a rail's and the settings' `.selection([id, setId])`, an agent
   chat's, a chart's active tile) and the values inside
-  Bloom's data that an app edits (a mail row's `.starred()`, a track's
-  `.liked()`, an episode's `.saved()` and `.downloaded()`, a cart's `.tip()`
-  and `.promo()`, a share sheet's `.search()`, a call's toggles, a player's
-  `.shuffle()`, `.repeat()` and `.playbackRate()`, a map's `.tilted()`).
+  Bloom's data that an app edits (a mail row's `.starred()`, a cart's
+  `.tip()` and `.promo()`, a share sheet's `.search()`, a call's toggles, a
+  map's `.tilted()`).
   **Decided:** an event that holds no value stays an event: a one-off
   choice (a suggestion, an emoji, a reaction a second press removes, a
   date picked from a calendar), a press that opens something, a jump the
@@ -5416,12 +5275,10 @@ with its reason. Nothing else is missing.
   and the month calendar; and the action bar's orientation, tone and zero
   counts Mention sets. Wave 7, the families no app imports yet: commerce
   (addresses, payment methods, the price summary, payment status, the cart,
-  menu items); music (the
-  media cards, lyrics, the media player, the creator studio, the music
-  library, the queue panel, the track list); the dashboard cards
+  menu items); music (the creator studio); the dashboard cards
   (`ImportantAlertsCard`, `PatientInfoCard`); `RouteStops`, `ShareSheet`. **Decided:** colours that come
   with an item of the data (a reply preview's inside a message bubble's
-  data, a lyrics view's or a player's `artworkColor`, a swipe row's `paint`,
+  data, a swipe row's `paint`,
   an alert's tone) stay
   in that item, as Bloom takes them, since they belong to the item, not to
   the view; content Bloom takes inside its data (a price line's `info`) stays

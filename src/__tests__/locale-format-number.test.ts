@@ -4,7 +4,6 @@ import {
   groupThousands,
 } from '../chart-cards/primitives/format';
 import { formatFileSize as fileUploadSize } from '../file-upload/shared';
-import { formatPlaybackRate } from '../media-player/shared';
 import {
   formatClock,
   formatCompactCurrency,
@@ -135,9 +134,8 @@ describe("the families' own helpers now take the locale", () => {
     expect(describeDeltaRatio(0.00004)).toEqual({ label: '0.0%', tone: 'neutral' });
   });
 
-  it('writes a playback speed and a file size in the locale', () => {
+  it('writes a multiplier and a file size in the locale', () => {
     expect(formatMultiplier(1.5, 'es')).toBe('1,5×');
-    expect(formatPlaybackRate(1.25)).toBe('1.25×');
     expect(fileUploadSize(2.4 * 1024 ** 2, 'ru')).toBe('2,4 МБ');
   });
 });

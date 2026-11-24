@@ -216,7 +216,7 @@ the right parent without being told:
 <SurfaceLevelProvider level={1} fill={colors.card}>{children}</SurfaceLevelProvider>
 ```
 
-`Surface`, painted `Card`, `ContentPanel`, `FloatingPanel` (menus, popovers and selects), `Tooltip`, `QueuePanel`, and the sheet and dialog surfaces publish their backing. `useSurfaceLevel()`
+`Surface`, painted `Card`, `ContentPanel`, `FloatingPanel` (menus, popovers and selects), `Tooltip`, and the sheet and dialog surfaces publish their backing. `useSurfaceLevel()`
 reads the current rung's paint, `useSurfaceLevel(1)` the one above it,
 `useSurfaceFill()` just the fill. Nothing published means level 0 — the page —
 which is what every unwrapped consumer already assumed.

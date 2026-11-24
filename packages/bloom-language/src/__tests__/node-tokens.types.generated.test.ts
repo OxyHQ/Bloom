@@ -289,18 +289,10 @@ type S = {
   "choiceListStyle": "list" | "picker";
   "priceLineTone": "default" | "discount" | "muted";
   "paymentStatusStyle": "surface" | "plain";
-  "mediaCardSize": "large" | "medium" | "small";
-  "mediaCardLayout": "tile" | "row";
-  "lyricsSize": "large" | "medium" | "small";
   "releaseCardLayout": "grid" | "row";
   "releaseStatusBadgeSize": "sm" | "md";
-  "transportSize": "sm" | "md" | "lg";
-  "transportStyle": "music" | "podcast";
   "rowActionStyle": "plain" | "outline";
   "themeToggleStyle": "sidebar" | "segmented" | "sidebar-segmented" | "bare-segmented";
-  "libraryItemStyle": "compact" | "list" | "grid" | "rail";
-  "queuePanelStyle": "panel" | "sheet";
-  "selectionBarPlacement": "floating" | "inline";
 };
 /** A colour role at an opacity (`'muted/70'`). */
 type AtOpacity = `${S['color']}/${S['opacity']}`;
@@ -2730,102 +2722,6 @@ type menuItemOptionsChecks = [
   Expect<'menuItemOptions: the universal modifiers', Universal<View<'MenuItemOptions'>, "disabled">>,
 ];
 
-type mediaCardChecks = [
-  Expect<'mediaCard: the universal modifiers', Universal<View<'MediaCard'>>>,
-  Expect<"mediaCard.size(size: mediaCardSize)", Ok<At<View<'MediaCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"mediaCard.style(style: mediaCardLayout)", Ok<At<View<'MediaCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type songCardChecks = [
-  Expect<'songCard: the universal modifiers', Universal<View<'SongCard'>>>,
-  Expect<"songCard.size(size: mediaCardSize)", Ok<At<View<'SongCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"songCard.style(style: mediaCardLayout)", Ok<At<View<'SongCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type albumCardChecks = [
-  Expect<'albumCard: the universal modifiers', Universal<View<'AlbumCard'>>>,
-  Expect<"albumCard.size(size: mediaCardSize)", Ok<At<View<'AlbumCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"albumCard.style(style: mediaCardLayout)", Ok<At<View<'AlbumCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type artistCardChecks = [
-  Expect<'artistCard: the universal modifiers', Universal<View<'ArtistCard'>>>,
-  Expect<"artistCard.size(size: mediaCardSize)", Ok<At<View<'ArtistCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"artistCard.style(style: mediaCardLayout)", Ok<At<View<'ArtistCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type playlistCardChecks = [
-  Expect<'playlistCard: the universal modifiers', Universal<View<'PlaylistCard'>>>,
-  Expect<"playlistCard.size(size: mediaCardSize)", Ok<At<View<'PlaylistCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"playlistCard.style(style: mediaCardLayout)", Ok<At<View<'PlaylistCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type mixCardChecks = [
-  Expect<'mixCard: the universal modifiers', Universal<View<'MixCard'>>>,
-  Expect<"mixCard.size(size: mediaCardSize)", Ok<At<View<'MixCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"mixCard.style(style: mediaCardLayout)", Ok<At<View<'MixCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type podcastCardChecks = [
-  Expect<'podcastCard: the universal modifiers', Universal<View<'PodcastCard'>>>,
-  Expect<"podcastCard.size(size: mediaCardSize)", Ok<At<View<'PodcastCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"podcastCard.style(style: mediaCardLayout)", Ok<At<View<'PodcastCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type episodeCardChecks = [
-  Expect<'episodeCard: the universal modifiers', Universal<View<'EpisodeCard'>>>,
-  Expect<"episodeCard.size(size: mediaCardSize)", Ok<At<View<'EpisodeCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"episodeCard.style(style: mediaCardLayout)", Ok<At<View<'EpisodeCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type audiobookCardChecks = [
-  Expect<'audiobookCard: the universal modifiers', Universal<View<'AudiobookCard'>>>,
-  Expect<"audiobookCard.size(size: mediaCardSize)", Ok<At<View<'AudiobookCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"audiobookCard.style(style: mediaCardLayout)", Ok<At<View<'AudiobookCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type eventCardChecks = [
-  Expect<'eventCard: the universal modifiers', Universal<View<'EventCard'>>>,
-  Expect<"eventCard.size(size: mediaCardSize)", Ok<At<View<'EventCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"eventCard.style(style: mediaCardLayout)", Ok<At<View<'EventCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type profileCardChecks = [
-  Expect<'profileCard: the universal modifiers', Universal<View<'ProfileCard'>>>,
-  Expect<"profileCard.size(size: mediaCardSize)", Ok<At<View<'ProfileCard'>['size'], '0'>, S['mediaCardSize']>>,
-  Expect<"profileCard.style(style: mediaCardLayout)", Ok<At<View<'ProfileCard'>['style'], '0'>, S['mediaCardLayout']>>,
-];
-
-type genreCardChecks = [
-  Expect<'genreCard: the universal modifiers', Universal<View<'GenreCard'>>>,
-  Expect<"genreCard.size(size: mediaCardSize)", Ok<At<View<'GenreCard'>['size'], '0'>, S['mediaCardSize']>>,
-];
-
-type friendActivityCardChecks = [
-  Expect<'friendActivityCard: the universal modifiers', Universal<View<'FriendActivityCard'>>>,
-];
-
-type quickAccessTileChecks = [
-  Expect<'quickAccessTile: the universal modifiers', Universal<View<'QuickAccessTile'>>>,
-];
-
-type recapCardChecks = [
-  Expect<'recapCard: the universal modifiers', Universal<View<'RecapCard'>>>,
-];
-
-type shareCardChecks = [
-  Expect<'shareCard: the universal modifiers', Universal<View<'ShareCard'>>>,
-];
-
-type lyricsViewChecks = [
-  Expect<'lyricsView: the universal modifiers', Universal<View<'LyricsView'>>>,
-  Expect<"lyricsView.size(size: lyricsSize)", Ok<At<View<'LyricsView'>['size'], '0'>, S['lyricsSize']>>,
-];
-
-type lyricsPreviewCardChecks = [
-  Expect<'lyricsPreviewCard: the universal modifiers', Universal<View<'LyricsPreviewCard'>>>,
-];
-
 type audienceOverviewChecks = [
   Expect<'audienceOverview: the universal modifiers', Universal<View<'AudienceOverview'>>>,
 ];
@@ -2889,42 +2785,6 @@ type pitchCardChecks = [
   Expect<'pitchCard: the universal modifiers', Universal<View<'PitchCard'>>>,
 ];
 
-type transportControlsChecks = [
-  Expect<'transportControls: the universal modifiers', Universal<View<'TransportControls'>, "disabled">>,
-  Expect<"transportControls.size(size: transportSize)", Ok<At<View<'TransportControls'>['size'], '0'>, S['transportSize']>>,
-  Expect<"transportControls.style(style: transportStyle)", Ok<At<View<'TransportControls'>['style'], '0'>, S['transportStyle']>>,
-];
-
-type nowPlayingBarChecks = [
-  Expect<'nowPlayingBar: the universal modifiers', Universal<View<'NowPlayingBar'>>>,
-];
-
-type miniPlayerChecks = [
-  Expect<'miniPlayer: the universal modifiers', Universal<View<'MiniPlayer'>>>,
-];
-
-type fullScreenPlayerChecks = [
-  Expect<'fullScreenPlayer: the universal modifiers', Universal<View<'FullScreenPlayer'>>>,
-];
-
-type playbackSpeedMenuChecks = [
-  Expect<'playbackSpeedMenu: the universal modifiers', Universal<View<'PlaybackSpeedMenu'>, "disabled">>,
-  Expect<"playbackSpeedMenu.size(size: transportSize)", Ok<At<View<'PlaybackSpeedMenu'>['size'], '0'>, S['transportSize']>>,
-];
-
-type sleepTimerMenuChecks = [
-  Expect<'sleepTimerMenu: the universal modifiers', Universal<View<'SleepTimerMenu'>, "disabled">>,
-  Expect<"sleepTimerMenu.size(size: transportSize)", Ok<At<View<'SleepTimerMenu'>['size'], '0'>, S['transportSize']>>,
-];
-
-type devicePickerChecks = [
-  Expect<'devicePicker: the universal modifiers', Universal<View<'DevicePicker'>>>,
-];
-
-type connectBannerChecks = [
-  Expect<'connectBanner: the universal modifiers', Universal<View<'ConnectBanner'>>>,
-];
-
 type rowActionsChecks = [
   Expect<'rowActions: the universal modifiers', Universal<View<'RowActions'>>>,
   Expect<"rowActions.style(style: rowActionStyle)", Ok<At<View<'RowActions'>['style'], '0'>, S['rowActionStyle']>>,
@@ -2943,89 +2803,6 @@ type swipeRowChecks = [
 type themeToggleChecks = [
   Expect<'themeToggle: the universal modifiers', Universal<View<'ThemeToggle'>>>,
   Expect<"themeToggle.style(style: themeToggleStyle)", Ok<At<View<'ThemeToggle'>['style'], '0'>, S['themeToggleStyle']>>,
-];
-
-type libraryPanelChecks = [
-  Expect<'libraryPanel: the universal modifiers', Universal<View<'LibraryPanel'>>>,
-];
-
-type libraryItemChecks = [
-  Expect<'libraryItem: the universal modifiers', Universal<View<'LibraryItem'>>>,
-  Expect<"libraryItem.style(style: libraryItemStyle)", Ok<At<View<'LibraryItem'>['style'], '0'>, S['libraryItemStyle']>>,
-];
-
-type searchFieldChecks = [
-  Expect<'searchField: the universal modifiers', Universal<View<'SearchField'>>>,
-];
-
-type topResultCardChecks = [
-  Expect<'topResultCard: the universal modifiers', Universal<View<'TopResultCard'>>>,
-];
-
-type searchResultTabsChecks = [
-  Expect<'searchResultTabs: the universal modifiers', Universal<View<'SearchResultTabs'>>>,
-];
-
-type recentSearchesChecks = [
-  Expect<'recentSearches: the universal modifiers', Universal<View<'RecentSearches'>>>,
-];
-
-type browseGridChecks = [
-  Expect<'browseGrid: the universal modifiers', Universal<View<'BrowseGrid'>>>,
-  Expect<"browseGrid.spacing(space)", Ok<At<View<'BrowseGrid'>['spacing'], '0'>, S['space']>>,
-  Expect<"browseGrid.spacing(space) takes AppToken<'space'>", Takes<At<View<'BrowseGrid'>['spacing'], '0'>, AppToken<'space'>>>,
-];
-
-type queuePanelChecks = [
-  Expect<'queuePanel: the universal modifiers', Universal<View<'QueuePanel'>>>,
-  Expect<"queuePanel.style(style: queuePanelStyle)", Ok<At<View<'QueuePanel'>['style'], '0'>, S['queuePanelStyle']>>,
-];
-
-type queuePanelRowChecks = [
-  Expect<'queuePanelRow: the universal modifiers', Universal<View<'QueuePanelRow'>>>,
-];
-
-type recentlyPlayedListChecks = [
-  Expect<'recentlyPlayedList: the universal modifiers', Universal<View<'RecentlyPlayedList'>>>,
-];
-
-type trackListChecks = [
-  Expect<'trackList: the universal modifiers', Universal<View<'TrackList'>>>,
-  Expect<"trackList.density(density)", Ok<At<View<'TrackList'>['density'], '0'>, "comfortable" | "compact">>,
-  Expect<"trackList.tint(tint: color)", Ok<At<View<'TrackList'>['tint'], '0'>, S['color'] | AtOpacity>>,
-];
-
-type trackListHeaderChecks = [
-  Expect<'trackListHeader: the universal modifiers', Universal<View<'TrackListHeader'>>>,
-  Expect<"trackListHeader.density(density)", Ok<At<View<'TrackListHeader'>['density'], '0'>, "comfortable" | "compact">>,
-  Expect<"trackListHeader.tint(tint: color)", Ok<At<View<'TrackListHeader'>['tint'], '0'>, S['color'] | AtOpacity>>,
-];
-
-type trackRowChecks = [
-  Expect<'trackRow: the universal modifiers', Universal<View<'TrackRow'>>>,
-  Expect<"trackRow.density(density)", Ok<At<View<'TrackRow'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type trackRowSkeletonChecks = [
-  Expect<'trackRowSkeleton: the universal modifiers', Universal<View<'TrackRowSkeleton'>>>,
-  Expect<"trackRowSkeleton.density(density)", Ok<At<View<'TrackRowSkeleton'>['density'], '0'>, "comfortable" | "compact">>,
-];
-
-type trackListEmptyChecks = [
-  Expect<'trackListEmpty: the universal modifiers', Universal<View<'TrackListEmpty'>>>,
-];
-
-type selectionBarChecks = [
-  Expect<'selectionBar: the universal modifiers', Universal<View<'SelectionBar'>>>,
-  Expect<"selectionBar.style(style: selectionBarPlacement)", Ok<At<View<'SelectionBar'>['style'], '0'>, S['selectionBarPlacement']>>,
-];
-
-type episodeRowChecks = [
-  Expect<'episodeRow: the universal modifiers', Universal<View<'EpisodeRow'>>>,
-];
-
-type episodeListChecks = [
-  Expect<'episodeList: the universal modifiers', Universal<View<'EpisodeList'>>>,
 ];
 
 type GlassValueChecks = [

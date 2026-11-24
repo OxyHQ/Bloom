@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **229 families** in `src/`, **228** published (a subpath, the root barrel, or both). **66** carry a web fork.
+- **223 families** in `src/`, **222** published (a subpath, the root barrel, or both). **64** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the table below says which families have each.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 47 | 28 | 0 | 19 | 0 |
-| Control presentation | 61 | 60 | 1 | 0 | 0 |
+| Field membership | 46 | 28 | 0 | 18 | 0 |
+| Control presentation | 60 | 59 | 1 | 0 | 0 |
 | Trigger composition | 11 | 8 | 0 | 3 | 0 |
-| Controlled / uncontrolled state | 57 | 54 | 2 | 1 | 0 |
+| Controlled / uncontrolled state | 54 | 51 | 2 | 1 | 0 |
 
 The control-presentation census detects families declaring canonical size props; blank entries do not prove inherited sizing. Fixed-size controls and composite layouts need a separate visual audit. This table does not certify touch-target geometry.
 
@@ -63,7 +63,6 @@ None.
 - `map-marker` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `media-controls` (does-not-apply) — a transport SCRUBBER (`adjustable`): it is named by the track it plays and lives in a player, not in a field.
 - `message-media` (does-not-apply) — a voice message’s scrubber — same as `media-controls`.
-- `music-library` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
 - `note-editor` (does-not-apply) — the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.
 - `project-board` (does-not-apply) — the form roles occur in ProjectBoard's drag exclusion selector: nested checkbox, switch and combobox controls keep their own input gestures. ProjectBoard renders opaque card slots, not those controls.
 - `sidebar` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
@@ -205,7 +204,6 @@ None.
 | `locale` | `@oxy.so/bloom/locale` + barrel | universal | `locale.mdx` | — | yes |  |  |  |  |
 | `location-puck` | `@oxy.so/bloom/location-puck` + barrel | universal | `location-puck.mdx` | yes | yes |  |  |  |  |
 | `lockup` | `@oxy.so/bloom/lockup` + barrel | universal | `lockup.mdx` | yes | yes |  |  |  |  |
-| `lyrics` | `@oxy.so/bloom/lyrics` + barrel | universal | `lyrics.mdx` | yes | yes |  |  |  |  |
 | `mail-compose` | `@oxy.so/bloom/mail-compose` + barrel | universal | `mail-compose.mdx` | yes | yes | reads |  |  | reads |
 | `mail-list` | `@oxy.so/bloom/mail-list` + barrel | universal | `mail-list.mdx` | yes | yes |  |  |  |  |
 | `mail-thread` | `@oxy.so/bloom/mail-thread` + barrel | universal | `mail-thread.mdx` | yes | yes |  |  |  | reads |
@@ -213,12 +211,10 @@ None.
 | `map-controls` | `@oxy.so/bloom/map-controls` + barrel | universal | `map-controls.mdx` | yes | yes |  |  |  | delegated |
 | `map-marker` | `@oxy.so/bloom/map-marker` + barrel | universal | `map-marker.mdx` | yes | yes | n/a¹ |  |  |  |
 | `markdown` | `@oxy.so/bloom/markdown` + barrel | universal | `markdown.mdx` | yes | yes |  |  |  |  |
-| `media-card` | `@oxy.so/bloom/media-card` + barrel | universal | `media-card.mdx` | yes | yes |  |  |  |  |
 | `media-controls` | `@oxy.so/bloom/media-controls` + barrel | universal | `media-controls.mdx` | yes | yes | n/a¹ | reads |  |  |
 | `media-flight` | `@oxy.so/bloom/media-flight` | web fork | `media-flight.mdx` | yes | yes |  |  |  |  |
 | `media-header` | `@oxy.so/bloom/media-header` + barrel | universal | `media-header.mdx` | yes | yes |  | reads |  |  |
 | `media-inset-border` | `@oxy.so/bloom/media-inset-border` + barrel | universal | `media-inset-border.mdx` | yes | yes |  |  |  |  |
-| `media-player` | `@oxy.so/bloom/media-player` + barrel | universal | `media-player.mdx` | yes | yes |  | reads |  |  |
 | `media-shelf` | `@oxy.so/bloom/media-shelf` + barrel | universal | `media-shelf.mdx` | yes | yes |  |  |  |  |
 | `menu-item` | `@oxy.so/bloom/menu-item` + barrel | universal | `menu-item.mdx` | yes | yes |  |  |  |  |
 | `menubar` | `@oxy.so/bloom/menubar` + barrel | web fork | `menubar.mdx` | yes | yes |  | reads | reads | reads |
@@ -226,7 +222,6 @@ None.
 | `message-media` | `@oxy.so/bloom/message-media` + barrel | universal | `message-media.mdx` | yes | yes | n/a¹ |  |  |  |
 | `motion` | `@oxy.so/bloom/motion` + barrel | web fork | `motion.mdx` | yes | yes |  |  |  |  |
 | `multi-agent-chat` | `@oxy.so/bloom/multi-agent-chat` + barrel | web fork | `multi-agent-chat.mdx` | yes | yes |  |  |  | reads |
-| `music-library` | `@oxy.so/bloom/music-library` + barrel | web fork | `music-library.mdx` | yes | yes | n/a¹ |  |  | reads |
 | `navigation-banner` | `@oxy.so/bloom/navigation-banner` + barrel | universal | `navigation-banner.mdx` | yes | yes |  |  |  |  |
 | `note-editor` | `@oxy.so/bloom/note-editor` + barrel | universal | `note-editor.mdx` | yes | yes | n/a¹ | reads |  |  |
 | `notification` | `@oxy.so/bloom/notification` + barrel | universal | `notification.mdx` | yes | yes |  |  |  |  |
@@ -260,7 +255,6 @@ None.
 | `property-insights` | `@oxy.so/bloom/property-insights` + barrel | web fork | `property-insights.mdx` | yes | yes |  | reads |  | reads |
 | `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | yes |  |  |  |  |
 | `questionnaire` | `@oxy.so/bloom/questionnaire` + barrel | universal | `questionnaire.mdx` | yes | yes | reads |  |  | reads |
-| `queue-panel` | `@oxy.so/bloom/queue-panel` + barrel | web fork | `queue-panel.mdx` | yes | yes |  |  |  | reads |
 | `radio` | `@oxy.so/bloom/radio` + barrel | universal | `radio.mdx` | yes | yes | reads | reads |  | reads |
 | `radio-indicator` | `@oxy.so/bloom/radio-indicator` + barrel | universal | `radio-indicator.mdx` | yes | yes |  |  |  |  |
 | `rail` | `@oxy.so/bloom/rail` + barrel | universal | `rail.mdx` | yes | yes |  |  |  |  |
@@ -308,7 +302,6 @@ None.
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | yes | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | yes |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | yes |  | reads |  |  |
-| `track-list` | `@oxy.so/bloom/track-list` + barrel | universal | `track-list.mdx` | yes | yes |  |  |  | reads |
 | `typography` | `@oxy.so/bloom/typography` + barrel | universal | `typography.mdx` | yes | yes |  |  |  |  |
 | `usage-card` | `@oxy.so/bloom/usage-card` + barrel | universal | `usage-card.mdx` | yes | yes |  |  |  | reads |
 | `user-hover-card` | `@oxy.so/bloom/user-hover-card` + barrel | universal | `user-hover-card.mdx` | yes | yes |  |  |  |  |

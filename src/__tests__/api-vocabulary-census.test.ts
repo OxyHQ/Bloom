@@ -73,11 +73,9 @@ function legacySizeUnions(file: string): string[] {
  * them; renaming them to `sm | md | lg` would claim it does.
  */
 const CONTENT_DENSITY = [
-  'lyrics/types.ts: type LyricsSize',
   'listing-card/parts.tsx: type ListingPartSize',
   'listing-details/types.ts: type ListingHeaderSize',
   'listing-details/types.ts: type ListingSectionSize',
-  'media-card/types.ts: type MediaCardSize',
   'stay-filters/PropertyTypeTiles.tsx: type TileSize',
 ];
 

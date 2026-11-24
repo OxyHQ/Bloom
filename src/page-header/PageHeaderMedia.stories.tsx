@@ -27,7 +27,6 @@ import {
 import { HeaderDockProvider, StickySection } from '../layout';
 import { List } from '../list';
 import { CollectionHeader } from '../media-header';
-import { FullScreenPlayer, MiniPlayer } from '../media-player';
 import { Screen, ScreenScrollView } from '../screen';
 import { Search } from '../search';
 import { AppShell } from '../app-shell';
@@ -507,8 +506,6 @@ function MusicCollectionDemo() {
   const [shuffle, setShuffle] = useState(false);
   const [active, setActive] = useState(0);
   const [saved, setSaved] = useState<string[]>(['First light']);
-  const [playerOpen, setPlayerOpen] = useState(false);
-  const [position, setPosition] = useState(0);
   const current = TRACKS[active] ?? 'First light';
   const albums = ALBUMS.filter((album) =>
     `${album.title} ${album.artist}`.toLowerCase().includes(query.toLowerCase()),
@@ -522,10 +519,6 @@ function MusicCollectionDemo() {
     setSaved(
       saved.includes(current) ? saved.filter((title) => title !== current) : [...saved, current],
     );
-  const next = () => {
-    setActive((active + (shuffle ? 3 : 1)) % TRACKS.length);
-    setPosition(0);
-  };
   const browsingAlbums = destination === 'album' && selectedAlbum === null;
   const playback = (
     <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -567,22 +560,6 @@ function MusicCollectionDemo() {
               gap: 8,
             }}
           >
-            <MiniPlayer
-              track={{
-                title: current,
-                artists: playingAlbum.artist,
-                artwork: imageFor(playingAlbum.artwork),
-              }}
-              playing={playing}
-              onPlayPause={() => setPlaying(!playing)}
-              onPress={() => setPlayerOpen(true)}
-              onNext={next}
-              position={position}
-              duration={220}
-              liked={saved.includes(current)}
-              onLikedChange={toggleSaved}
-              style={{ marginHorizontal: 12 }}
-            />
             <MediaNavigation
               value={destination}
               onValueChange={(value) => {
@@ -708,7 +685,6 @@ function MusicCollectionDemo() {
                     trailing: <Text>3:40</Text>,
                     onPress: () => {
                       setActive(TRACKS.indexOf(title));
-                      setPosition(0);
                       setPlaying(true);
                     },
                   }))}
@@ -721,40 +697,6 @@ function MusicCollectionDemo() {
           </HeaderDockProvider>
         </ScreenScrollView>
       </Screen>
-      <Dialog
-        open={playerOpen}
-        onClose={() => setPlayerOpen(false)}
-        presentation="fullscreen"
-        scrollable={false}
-        contentPadding={0}
-      >
-        <FullScreenPlayer
-          track={{
-            title: current,
-            artists: playingAlbum.artist,
-            artwork: imageFor(playingAlbum.artwork),
-          }}
-          contextLabel="Playing from album"
-          contextName={playingAlbum.title}
-          onCollapse={() => setPlayerOpen(false)}
-          liked={saved.includes(current)}
-          onLikedChange={toggleSaved}
-          position={position}
-          duration={220}
-          onSeek={setPosition}
-          transport={{
-            playing,
-            onPlayPause: () => setPlaying(!playing),
-            onNext: next,
-            onPrevious: () => {
-              setActive((active + TRACKS.length - 1) % TRACKS.length);
-              setPosition(0);
-            },
-            shuffle,
-            onShuffleChange: setShuffle,
-          }}
-        />
-      </Dialog>
     </Frame>
   );
 }

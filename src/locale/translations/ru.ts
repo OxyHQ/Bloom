@@ -343,53 +343,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'Новое сообщение',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'Текст песни',
-  queue: 'Очередь',
-  devices: 'Подключиться к устройству',
-  fullscreen: 'Во весь экран',
-  openPlayer: 'Открыть плеер',
-  currentDevice: 'Текущее устройство',
-  listeningOn: 'Воспроизводится на',
-  listeningOnDevice: (d) => `Воспроизводится на устройстве ${d}`,
-  selectDevice: 'Выберите устройство',
-  noDevices: 'Другие устройства не найдены',
-  deviceHelp: 'Не видите своё устройство?',
-  playbackSpeed: 'Скорость воспроизведения',
-  sleepTimer: 'Таймер сна',
-  sleepOff: 'Выкл.',
-  endOfEpisode: 'Конец выпуска',
-  oneHour: '1 час',
-  minutes: (n) =>
-    plural('ru', n, {
-      one: '{n} минута',
-      few: '{n} минуты',
-      many: '{n} минут',
-      other: '{n} минуты',
-    }),
-  stopsIn: (r) => `Остановится через ${r}`,
-  shuffle: 'Перемешать',
-  repeat: 'Повторять',
-  repeatOne: 'Повторять трек',
-  skipBack: (n) =>
-    plural('ru', n, {
-      one: 'Назад на {n} секунду',
-      few: 'Назад на {n} секунды',
-      many: 'Назад на {n} секунд',
-      other: 'Назад на {n} секунды',
-    }),
-  skipForward: (n) =>
-    plural('ru', n, {
-      one: 'Вперёд на {n} секунду',
-      few: 'Вперёд на {n} секунды',
-      many: 'Вперёд на {n} секунд',
-      other: 'Вперёд на {n} секунды',
-    }),
-  closePlayer: 'Закрыть плеер',
-  share: 'Поделиться',
-  showLyrics: 'Показать текст',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'Здесь пока ничего нет',
   addresses: 'Адреса',
@@ -1064,65 +1017,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'Очистить поиск',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'Плейлист',
-    artist: 'Исполнитель',
-    album: 'Альбом',
-    podcast: 'Подкаст',
-    audiobook: 'Аудиокнига',
-    folder: 'Папка',
-  },
-  library: {
-    title: 'Моя медиатека',
-    create: 'Создать плейлист или папку',
-    collapseRail: 'Свернуть медиатеку',
-    expandRail: 'Открыть медиатеку',
-    filters: 'Фильтры',
-    clearFilters: 'Сбросить фильтры',
-    filter: {
-      playlists: 'Плейлисты',
-      artists: 'Исполнители',
-      albums: 'Альбомы',
-      podcasts: 'Подкасты',
-      audiobooks: 'Аудиокниги',
-    },
-    downloaded: 'Скачанное',
-    search: 'Искать в медиатеке',
-    searchPlaceholder: 'Искать в медиатеке',
-    clearSearch: 'Очистить поиск',
-    sortAndView: 'Сортировка и вид',
-    sortBy: 'Сортировать',
-    viewAs: 'Вид',
-    sort: {
-      recents: 'Недавние',
-      'recently-added': 'Недавно добавленные',
-      alphabetical: 'По алфавиту',
-      creator: 'По автору',
-    },
-    view: { compact: 'Компактный', list: 'Список', grid: 'Сетка' },
-    empty: 'Здесь пока ничего нет',
-  },
-  item: { pinned: 'Закреплено', downloaded: 'Скачано', nowPlaying: 'Сейчас играет' },
-  search: { placeholder: 'Что хотите послушать?', clear: 'Очистить поиск', browse: 'Обзор' },
-  resultTypes: 'Типы результатов',
-  topResultKinds: {
-    song: 'Трек',
-    artist: 'Исполнитель',
-    album: 'Альбом',
-    playlist: 'Плейлист',
-    podcast: 'Подкаст',
-    episode: 'Выпуск',
-    audiobook: 'Аудиокнига',
-    profile: 'Профиль',
-  },
-  recent: {
-    title: 'Недавние запросы',
-    clearAll: 'Очистить недавние запросы',
-    remove: (title) => `Убрать ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: {
     reserved: 'Забронировано',
@@ -1408,31 +1302,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'Промокод',
   apply: 'Применить',
   tip: 'Чаевые',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'Альбом', single: 'Сингл', ep: 'EP', compilation: 'Сборник' },
-  artist: 'Исполнитель',
-  verified: 'Подтверждённый',
-  audiobook: 'Аудиокнига',
-  narratedBy: (n) => `Читает ${n}`,
-  progressOf: (t) => `Прогресс: ${t}`,
-  episode: 'Выпуск',
-  played: 'Прослушано',
-  event: 'Мероприятие',
-  soldOut: 'Билеты распроданы',
-  listeningNow: 'Слушает сейчас',
-  trackBy: (t, a) => `${t} — ${a}`,
-  mix: 'Микс',
-  playlist: 'Плейлист',
-  collaborative: 'Совместный',
-  ownedBy: (o) => `Автор: ${o}`,
-  podcast: 'Подкаст',
-  profile: 'Профиль',
-  followsYou: 'Подписан на вас',
-  song: 'Трек',
-  share: 'Поделиться',
-  listened: 'Прослушано',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2082,44 +1951,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'или продолжите с',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'Название',
-  album: 'Альбом',
-  dateAdded: 'Дата добавления',
-  plays: 'Прослушивания',
-  duration: 'Длительность',
-  moveUp: 'Переместить вверх',
-  moveDown: 'Переместить вниз',
-  reorder: 'Изменить порядок',
-  downloaded: 'Скачано',
-  unavailable: 'Недоступно',
-  tracks: 'Треки',
-  episodes: 'Выпуски',
-  selected: (n) =>
-    plural('ru', n, {
-      one: 'Выбран {n} трек',
-      few: 'Выбрано {n} трека',
-      many: 'Выбрано {n} треков',
-      other: 'Выбрано {n} трека',
-    }),
-  clearSelection: 'Снять выделение',
-  played: 'Прослушано',
-  listened: 'Прослушано',
-  saveEpisode: 'Сохранить выпуск',
-  downloadEpisode: 'Скачать выпуск',
-  minutes: (m) => `${m} мин`,
-  hours: (h) => `${h} ч`,
-  hoursMinutes: (h, m) => `${h} ч ${m} мин`,
-  remaining: (l) => `Осталось ${l}`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'Текст песни',
-  showLyrics: 'Показать текст',
-  backToCurrent: 'К текущей строке',
-  empty: 'Текст этого трека недоступен',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'Звонок',
@@ -2606,25 +2437,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'Всплывающее окно',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'Очередь',
-  recentTab: 'Недавно прослушанные',
-  close: 'Закрыть очередь',
-  nextInQueue: 'Далее в очереди',
-  nextFrom: (c) => `Далее из: ${c}`,
-  nextUp: 'Далее',
-  clearQueue: 'Очистить очередь',
-  reorder: (t) => `Переместить ${t}`,
-  reorderHint: 'Перетащите или используйте клавиши со стрелками',
-  moveUp: 'Переместить вверх',
-  moveDown: 'Переместить вниз',
-  remove: 'Удалить из очереди',
-  moved: (t, p, n) => `${t}: позиция ${p} из ${n}`,
-  emptyQueue: 'Очередь пуста',
-  emptyQueueHint: 'Добавьте треки и выпуски, чтобы послушать их следующими.',
-  emptyRecent: 'Вы ещё ничего не слушали',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -3121,7 +2933,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -3150,7 +2961,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -3163,7 +2973,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3188,8 +2997,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -3222,7 +3029,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

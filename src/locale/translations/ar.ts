@@ -340,59 +340,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'رسالة جديدة',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'كلمات الأغنية',
-  queue: 'قائمة الانتظار',
-  devices: 'الاتصال بجهاز',
-  fullscreen: 'ملء الشاشة',
-  openPlayer: 'فتح المشغّل',
-  currentDevice: 'الجهاز الحالي',
-  listeningOn: 'الاستماع على',
-  listeningOnDevice: (d) => `الاستماع على ${d}`,
-  selectDevice: 'اختر جهازًا',
-  noDevices: 'لم يتم العثور على أجهزة أخرى',
-  deviceHelp: 'ألا ترى جهازك؟',
-  playbackSpeed: 'سرعة التشغيل',
-  sleepTimer: 'مؤقت النوم',
-  sleepOff: 'إيقاف',
-  endOfEpisode: 'نهاية الحلقة',
-  oneHour: 'ساعة واحدة',
-  minutes: (n) =>
-    plural('ar', n, {
-      zero: '{n} دقيقة',
-      one: 'دقيقة واحدة',
-      two: 'دقيقتان',
-      few: '{n} دقائق',
-      many: '{n} دقيقة',
-      other: '{n} دقيقة',
-    }),
-  stopsIn: (r) => `يتوقف بعد ${r}`,
-  shuffle: 'ترتيب عشوائي',
-  repeat: 'تكرار',
-  repeatOne: 'تكرار الأغنية',
-  skipBack: (n) =>
-    plural('ar', n, {
-      zero: 'رجوع {n} ثانية',
-      one: 'رجوع ثانية واحدة',
-      two: 'رجوع ثانيتين',
-      few: 'رجوع {n} ثوانٍ',
-      many: 'رجوع {n} ثانية',
-      other: 'رجوع {n} ثانية',
-    }),
-  skipForward: (n) =>
-    plural('ar', n, {
-      zero: 'تقديم {n} ثانية',
-      one: 'تقديم ثانية واحدة',
-      two: 'تقديم ثانيتين',
-      few: 'تقديم {n} ثوانٍ',
-      many: 'تقديم {n} ثانية',
-      other: 'تقديم {n} ثانية',
-    }),
-  closePlayer: 'إغلاق المشغّل',
-  share: 'مشاركة',
-  showLyrics: 'عرض كلمات الأغنية',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'لا يوجد شيء هنا بعد',
   addresses: 'العناوين',
@@ -1078,65 +1025,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'مسح البحث',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'قائمة تشغيل',
-    artist: 'فنان',
-    album: 'ألبوم',
-    podcast: 'بودكاست',
-    audiobook: 'كتاب صوتي',
-    folder: 'مجلد',
-  },
-  library: {
-    title: 'مكتبتك',
-    create: 'إنشاء قائمة تشغيل أو مجلد',
-    collapseRail: 'طي مكتبتك',
-    expandRail: 'فتح مكتبتك',
-    filters: 'عوامل التصفية',
-    clearFilters: 'مسح عوامل التصفية',
-    filter: {
-      playlists: 'قوائم التشغيل',
-      artists: 'الفنانون',
-      albums: 'الألبومات',
-      podcasts: 'البودكاست',
-      audiobooks: 'الكتب الصوتية',
-    },
-    downloaded: 'تم تنزيله',
-    search: 'البحث في مكتبتك',
-    searchPlaceholder: 'البحث في مكتبتك',
-    clearSearch: 'مسح البحث',
-    sortAndView: 'الترتيب والعرض',
-    sortBy: 'الترتيب حسب',
-    viewAs: 'العرض كـ',
-    sort: {
-      recents: 'الأحدث',
-      'recently-added': 'المضافة مؤخرًا',
-      alphabetical: 'أبجديًا',
-      creator: 'المنشئ',
-    },
-    view: { compact: 'مضغوط', list: 'قائمة', grid: 'شبكة' },
-    empty: 'لا يوجد شيء هنا بعد',
-  },
-  item: { pinned: 'مثبّت', downloaded: 'تم تنزيله', nowPlaying: 'قيد التشغيل الآن' },
-  search: { placeholder: 'ماذا تريد أن تسمع؟', clear: 'مسح البحث', browse: 'تصفّح' },
-  resultTypes: 'أنواع النتائج',
-  topResultKinds: {
-    song: 'أغنية',
-    artist: 'فنان',
-    album: 'ألبوم',
-    playlist: 'قائمة تشغيل',
-    podcast: 'بودكاست',
-    episode: 'حلقة',
-    audiobook: 'كتاب صوتي',
-    profile: 'ملف شخصي',
-  },
-  recent: {
-    title: 'عمليات البحث الأخيرة',
-    clearAll: 'مسح عمليات البحث الأخيرة',
-    remove: (title) => `إزالة ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: { reserved: 'محجوز', sold: 'تم البيع', rented: 'تم التأجير', unavailable: 'غير متاح' },
   originally: (p) => `السعر الأصلي ${p}`,
@@ -1418,31 +1306,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'رمز الخصم',
   apply: 'تطبيق',
   tip: 'إكرامية',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'ألبوم', single: 'أغنية منفردة', ep: 'EP', compilation: 'مجموعة' },
-  artist: 'فنان',
-  verified: 'موثّق',
-  audiobook: 'كتاب صوتي',
-  narratedBy: (n) => `بصوت ${n}`,
-  progressOf: (t) => `تقدّم ${t}`,
-  episode: 'حلقة',
-  played: 'تم الاستماع',
-  event: 'فعالية',
-  soldOut: 'نفدت التذاكر',
-  listeningNow: 'يستمع الآن',
-  trackBy: (t, a) => `${t} لـ ${a}`,
-  mix: 'مزيج',
-  playlist: 'قائمة تشغيل',
-  collaborative: 'قائمة تعاونية',
-  ownedBy: (o) => `بواسطة ${o}`,
-  podcast: 'بودكاست',
-  profile: 'الملف الشخصي',
-  followsYou: 'يتابعك',
-  song: 'أغنية',
-  share: 'مشاركة',
-  listened: 'تم الاستماع',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2092,46 +1955,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'أو تابع باستخدام',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'العنوان',
-  album: 'الألبوم',
-  dateAdded: 'تاريخ الإضافة',
-  plays: 'مرات التشغيل',
-  duration: 'المدة',
-  moveUp: 'نقل لأعلى',
-  moveDown: 'نقل لأسفل',
-  reorder: 'إعادة الترتيب',
-  downloaded: 'تم التنزيل',
-  unavailable: 'غير متاح',
-  tracks: 'الأغاني',
-  episodes: 'الحلقات',
-  selected: (n) =>
-    plural('ar', n, {
-      zero: 'تم تحديد {n} عنصر',
-      one: 'تم تحديد عنصر واحد',
-      two: 'تم تحديد عنصرين',
-      few: 'تم تحديد {n} عناصر',
-      many: 'تم تحديد {n} عنصرًا',
-      other: 'تم تحديد {n} عنصر',
-    }),
-  clearSelection: 'مسح التحديد',
-  played: 'تم التشغيل',
-  listened: 'تم الاستماع',
-  saveEpisode: 'حفظ الحلقة',
-  downloadEpisode: 'تنزيل الحلقة',
-  minutes: (m) => `${m} د`,
-  hours: (h) => `${h} س`,
-  hoursMinutes: (h, m) => `${h} س ${m} د`,
-  remaining: (l) => `المتبقي ${l}`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'الكلمات',
-  showLyrics: 'عرض الكلمات',
-  backToCurrent: 'العودة إلى السطر الحالي',
-  empty: 'كلمات هذا المقطع غير متوفرة',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'مكالمة',
@@ -2626,25 +2449,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'نافذة منبثقة',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'قائمة الانتظار',
-  recentTab: 'تم تشغيله مؤخرًا',
-  close: 'إغلاق قائمة الانتظار',
-  nextInQueue: 'التالي في قائمة الانتظار',
-  nextFrom: (c) => `التالي من: ${c}`,
-  nextUp: 'التالي',
-  clearQueue: 'مسح قائمة الانتظار',
-  reorder: (t) => `إعادة ترتيب ${t}`,
-  reorderHint: 'اسحب أو استخدم مفاتيح الأسهم',
-  moveUp: 'نقل لأعلى',
-  moveDown: 'نقل لأسفل',
-  remove: 'إزالة من قائمة الانتظار',
-  moved: (t, p, n) => `تم نقل ${t} إلى الموضع ${p} من ${n}`,
-  emptyQueue: 'قائمة الانتظار فارغة',
-  emptyQueueHint: 'أضف أغاني وحلقات للاستماع إليها بعد ذلك.',
-  emptyRecent: 'لم يتم تشغيل أي شيء بعد',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -3168,7 +2972,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -3197,7 +3000,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -3210,7 +3012,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3235,8 +3036,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -3269,7 +3068,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

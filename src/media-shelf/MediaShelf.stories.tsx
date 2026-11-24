@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import { AlbumCard, ArtistCard, QuickAccessTile } from '../media-card';
+import { BloomImage } from '../image';
+import { Text } from '../typography';
 import { FilterChips } from './FilterChips';
 import { Shelf } from './Shelf';
 import { ShelfSkeleton } from './ShelfSkeleton';
@@ -63,6 +64,39 @@ const FILTERS = [
   { value: 'audiobooks', label: 'Audiobooks' },
 ];
 
+/** A demo tile: the shelf lays out whatever an app puts in it. */
+function DemoTile({
+  artwork,
+  title,
+  subtitle,
+  round = false,
+  row = false,
+}: {
+  artwork: string;
+  title: string;
+  subtitle?: string;
+  round?: boolean;
+  row?: boolean;
+}) {
+  const size = row ? 48 : 160;
+  return (
+    <View
+      style={
+        row ? { flexDirection: 'row', alignItems: 'center', gap: 12 } : { width: size, gap: 8 }
+      }
+    >
+      <BloomImage
+        source={{ uri: artwork }}
+        style={{ width: size, height: size, borderRadius: round ? size / 2 : 8 }}
+      />
+      <View style={{ flexShrink: 1 }}>
+        <Text numberOfLines={1}>{title}</Text>
+        {subtitle ? <Text numberOfLines={1}>{subtitle}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
 /** The canvas provides the viewport and theme; this only spaces the shelf content. */
 function Page({ children }: { children: React.ReactNode }) {
   return <View style={{ width: '100%', padding: 16, gap: 32 }}>{children}</View>;
@@ -70,8 +104,6 @@ function Page({ children }: { children: React.ReactNode }) {
 
 function HomeFeedDemo() {
   const [filter, setFilter] = useState<string | undefined>('all');
-  const [playing, setPlaying] = useState<string | null>(null);
-  const play = (id: string) => setPlaying((value) => (value === id ? null : id));
   return (
     <Page>
       <FilterChips
@@ -87,15 +119,7 @@ function HomeFeedDemo() {
       {filter === 'all' && (
         <Shelf title="Recently played" layout="grid" minItemWidth={240} rows={2} gap={8}>
           {RECENT.map((title, index) => (
-            <QuickAccessTile
-              key={title}
-              title={title}
-              artwork={cover(`recent-${index}`)}
-              playing={playing === title}
-              current={playing === title}
-              onPress={() => play(title)}
-              onPlay={() => play(title)}
-            />
+            <DemoTile key={title} artwork={cover(`recent-${index}`)} title={title} row />
           ))}
         </Shelf>
       )}
@@ -107,16 +131,7 @@ function HomeFeedDemo() {
           eyebrowAvatar="https://picsum.photos/seed/maya-face/96/96"
         >
           {MIXES.map((mix) => (
-            <AlbumCard
-              key={mix.id}
-              artwork={cover(mix.id)}
-              title={mix.title}
-              artist={mix.meta}
-              playing={playing === mix.id}
-              current={playing === mix.id}
-              onPress={() => play(mix.id)}
-              onPlay={() => play(mix.id)}
-            />
+            <DemoTile key={mix.id} artwork={cover(mix.id)} title={mix.title} subtitle={mix.meta} />
           ))}
         </Shelf>
       )}
@@ -124,15 +139,7 @@ function HomeFeedDemo() {
       {filter !== 'albums' && (
         <Shelf title="Your favourite artists">
           {ARTISTS.map((artist) => (
-            <ArtistCard
-              key={artist.id}
-              artwork={cover(artist.id)}
-              name={artist.title}
-              playing={playing === artist.id}
-              current={playing === artist.id}
-              onPress={() => play(artist.id)}
-              onPlay={() => play(artist.id)}
-            />
+            <DemoTile key={artist.id} artwork={cover(artist.id)} title={artist.title} round />
           ))}
         </Shelf>
       )}
@@ -148,15 +155,7 @@ function HomeFeedDemo() {
           {MIXES.slice()
             .reverse()
             .map((mix) => (
-              <QuickAccessTile
-                key={mix.id}
-                artwork={cover(`${mix.id}-b`)}
-                title={mix.title}
-                playing={playing === mix.id}
-                current={playing === mix.id}
-                onPress={() => play(mix.id)}
-                onPlay={() => play(mix.id)}
-              />
+              <DemoTile key={mix.id} artwork={cover(`${mix.id}-b`)} title={mix.title} row />
             ))}
         </Shelf>
       )}
@@ -201,21 +200,11 @@ export const Chips: Story = {
 /** Whole columns size themselves from the actual track, with a trailing peek. */
 export const Paged: Story = {
   render: function PagedStory() {
-    const [playing, setPlaying] = useState<string | null>(null);
-    const play = (title: string) => setPlaying((value) => (value === title ? null : title));
     return (
       <Page>
         <Shelf title="Recently played" layout="paged" rows={2} minItemWidth={240} peek={32} gap={8}>
           {RECENT.map((title, index) => (
-            <QuickAccessTile
-              key={title}
-              artwork={cover(`paged-${index}`)}
-              title={title}
-              playing={playing === title}
-              current={playing === title}
-              onPress={() => play(title)}
-              onPlay={() => play(title)}
-            />
+            <DemoTile key={title} artwork={cover(`paged-${index}`)} title={title} row />
           ))}
         </Shelf>
       </Page>

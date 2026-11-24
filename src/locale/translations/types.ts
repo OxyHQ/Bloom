@@ -23,7 +23,6 @@ import type {
   CHAT_COMPOSER_MESSAGES,
 } from '../../chat-composer/messages';
 import type { MAIL_COMPOSE_MESSAGES } from '../../mail-compose/messages';
-import type { MEDIA_PLAYER_MESSAGES } from '../../media-player/messages';
 import type { ADDRESS_MESSAGES } from '../../address/messages';
 import type { CREATOR_STUDIO_MESSAGES } from '../../creator-studio/messages';
 import type { PROPERTY_INSIGHTS_MESSAGES } from '../../property-insights/messages';
@@ -51,7 +50,6 @@ import type { MARKDOWN_MESSAGES } from '../../markdown/messages';
 import type { AGENT_LOG_MESSAGES } from '../../agent-log/messages';
 import type { AI_CHAT_MESSAGES } from '../../ai-chat/messages';
 import type { COMMAND_MESSAGES } from '../../command/messages';
-import type { MUSIC_LIBRARY_MESSAGES } from '../../music-library/messages';
 import type { LISTING_CARD_MESSAGES } from '../../listing-card/messages';
 import type { NAVIGATION_BANNER_MESSAGES } from '../../navigation-banner/messages';
 import type { LOCATION_PUCK_MESSAGES } from '../../location-puck/messages';
@@ -64,7 +62,6 @@ import type { MENU_ITEM_MESSAGES } from '../../menu-item/messages';
 import type { PAGINATION_MESSAGES } from '../../pagination/messages';
 import type { DIRECTIONS_MESSAGES } from '../../directions/messages';
 import type { CART_PANEL_MESSAGES } from '../../cart-panel/messages';
-import type { MEDIA_CARD_MESSAGES } from '../../media-card/messages';
 import type { FLOATING_MESSAGES } from '../../floating/messages';
 import type { AGENT_CHAT_MESSAGES } from '../../agent-chat/messages';
 import type { WEB_SEARCH_MESSAGES } from '../../web-search/messages';
@@ -89,8 +86,6 @@ import type { BREADCRUMB_MESSAGES } from '../../breadcrumb/messages';
 import type { MESSAGE_MEDIA_MESSAGES } from '../../message-media/messages';
 import type { STAY_SEARCH_MESSAGES } from '../../stay-search/messages';
 import type { AUTH_CARD_MESSAGES } from '../../auth-card/messages';
-import type { TRACK_LIST_MESSAGES } from '../../track-list/messages';
-import type { LYRICS_MESSAGES } from '../../lyrics/messages';
 import type { ACTIVITY_FEED_MESSAGES } from '../../activity-feed/messages';
 import type { PLACE_REVIEWS_MESSAGES } from '../../place-reviews/messages';
 import type { PLACE_LIST_MESSAGES } from '../../place-list/messages';
@@ -123,7 +118,6 @@ import type { PATIENT_INFO_CARD_MESSAGES } from '../../patient-info-card/message
 import type { THEME_TOGGLE_MESSAGES } from '../../theme-toggle/messages';
 import type { FILE_UPLOAD_MESSAGES } from '../../file-upload/messages';
 import type { POPOVER_MESSAGES } from '../../popover/messages';
-import type { QUEUE_PANEL_MESSAGES } from '../../queue-panel/messages';
 import type { HOVER_CARD_MESSAGES } from '../../hover-card/messages';
 import type { NOTE_EDITOR_MESSAGES } from '../../note-editor/messages';
 import type { MEDIA_SHELF_MESSAGES } from '../../media-shelf/messages';
@@ -159,7 +153,6 @@ export interface Translations {
   readonly COMPACT_COMPOSER_MESSAGES: CatalogMessages<typeof COMPACT_COMPOSER_MESSAGES>;
   readonly CHAT_COMPOSER_MESSAGES: CatalogMessages<typeof CHAT_COMPOSER_MESSAGES>;
   readonly MAIL_COMPOSE_MESSAGES: CatalogMessages<typeof MAIL_COMPOSE_MESSAGES>;
-  readonly MEDIA_PLAYER_MESSAGES: CatalogMessages<typeof MEDIA_PLAYER_MESSAGES>;
   readonly ADDRESS_MESSAGES: CatalogMessages<typeof ADDRESS_MESSAGES>;
   readonly CREATOR_STUDIO_MESSAGES: CatalogMessages<typeof CREATOR_STUDIO_MESSAGES>;
   readonly PROPERTY_INSIGHTS_MESSAGES: CatalogMessages<typeof PROPERTY_INSIGHTS_MESSAGES>;
@@ -188,7 +181,6 @@ export interface Translations {
   readonly AGENT_LOG_MESSAGES: CatalogMessages<typeof AGENT_LOG_MESSAGES>;
   readonly AI_CHAT_MESSAGES: CatalogMessages<typeof AI_CHAT_MESSAGES>;
   readonly COMMAND_MESSAGES: CatalogMessages<typeof COMMAND_MESSAGES>;
-  readonly MUSIC_LIBRARY_MESSAGES: CatalogMessages<typeof MUSIC_LIBRARY_MESSAGES>;
   readonly LISTING_CARD_MESSAGES: CatalogMessages<typeof LISTING_CARD_MESSAGES>;
   readonly NAVIGATION_BANNER_MESSAGES: CatalogMessages<typeof NAVIGATION_BANNER_MESSAGES>;
   readonly LOCATION_PUCK_MESSAGES: CatalogMessages<typeof LOCATION_PUCK_MESSAGES>;
@@ -201,7 +193,6 @@ export interface Translations {
   readonly PAGINATION_MESSAGES: CatalogMessages<typeof PAGINATION_MESSAGES>;
   readonly DIRECTIONS_MESSAGES: CatalogMessages<typeof DIRECTIONS_MESSAGES>;
   readonly CART_PANEL_MESSAGES: CatalogMessages<typeof CART_PANEL_MESSAGES>;
-  readonly MEDIA_CARD_MESSAGES: CatalogMessages<typeof MEDIA_CARD_MESSAGES>;
   readonly FLOATING_MESSAGES: CatalogMessages<typeof FLOATING_MESSAGES>;
   readonly AGENT_CHAT_MESSAGES: CatalogMessages<typeof AGENT_CHAT_MESSAGES>;
   readonly WEB_SEARCH_MESSAGES: CatalogMessages<typeof WEB_SEARCH_MESSAGES>;
@@ -226,8 +217,6 @@ export interface Translations {
   readonly MESSAGE_MEDIA_MESSAGES: CatalogMessages<typeof MESSAGE_MEDIA_MESSAGES>;
   readonly STAY_SEARCH_MESSAGES: CatalogMessages<typeof STAY_SEARCH_MESSAGES>;
   readonly AUTH_CARD_MESSAGES: CatalogMessages<typeof AUTH_CARD_MESSAGES>;
-  readonly TRACK_LIST_MESSAGES: CatalogMessages<typeof TRACK_LIST_MESSAGES>;
-  readonly LYRICS_MESSAGES: CatalogMessages<typeof LYRICS_MESSAGES>;
   readonly ACTIVITY_FEED_MESSAGES: CatalogMessages<typeof ACTIVITY_FEED_MESSAGES>;
   readonly PLACE_REVIEWS_MESSAGES: CatalogMessages<typeof PLACE_REVIEWS_MESSAGES>;
   readonly PLACE_LIST_MESSAGES: CatalogMessages<typeof PLACE_LIST_MESSAGES>;
@@ -260,7 +249,6 @@ export interface Translations {
   readonly THEME_TOGGLE_MESSAGES: CatalogMessages<typeof THEME_TOGGLE_MESSAGES>;
   readonly FILE_UPLOAD_MESSAGES: CatalogMessages<typeof FILE_UPLOAD_MESSAGES>;
   readonly POPOVER_MESSAGES: CatalogMessages<typeof POPOVER_MESSAGES>;
-  readonly QUEUE_PANEL_MESSAGES: CatalogMessages<typeof QUEUE_PANEL_MESSAGES>;
   readonly HOVER_CARD_MESSAGES: CatalogMessages<typeof HOVER_CARD_MESSAGES>;
   readonly NOTE_EDITOR_MESSAGES: CatalogMessages<typeof NOTE_EDITOR_MESSAGES>;
   readonly MEDIA_SHELF_MESSAGES: CatalogMessages<typeof MEDIA_SHELF_MESSAGES>;

@@ -312,8 +312,8 @@ Reach for `Search` rather than rebuilding it: it is a `TextField` at the pill ra
 `resolveTextFieldPalette(theme, surface)` takes the fill the field lands on, and
 every fill and quiet text colour it returns is a step off THAT — see
 [Styles → Surface levels](/docs/bloom/main/styles). `useTextFieldPalette()` reads
-the surface from the ambient `SurfaceLevelProvider`, which `FloatingPanel` and
-`QueuePanel` publish, so a field inside a menu or a popover steps off the panel
+the surface from the ambient `SurfaceLevelProvider`, which `FloatingPanel`
+publishes, so a field inside a menu or a popover steps off the panel
 rather than off the page.
 
 It used to be `neutral-800` in dark — byte for byte the colour

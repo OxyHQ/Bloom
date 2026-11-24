@@ -113,13 +113,7 @@ import { ADDRESS_PAYMENT_CASES } from '../../parity/address-payment.cases';
 import { PRICE_PAYMENT_STATUS_CASES } from '../../parity/price-payment-status.cases';
 import { DASHBOARD_CARD_CASES } from '../../parity/dashboard-cards.cases';
 import { CART_MENU_VENDOR_CASES } from '../../parity/cart-menu-vendor.cases';
-import { MEDIA_CARD_CASES } from '../../parity/media-cards.cases';
-import { LYRICS_CASES } from '../../parity/lyrics.cases';
 import { CREATOR_STUDIO_CASES } from '../../parity/creator-studio.cases';
-import { MEDIA_PLAYER_CASES } from '../../parity/media-player.cases';
-import { MUSIC_LIBRARY_CASES } from '../../parity/music-library.cases';
-import { QUEUE_PANEL_CASES } from '../../parity/queue-panel.cases';
-import { TRACK_LIST_CASES } from '../../parity/track-list.cases';
 
 // The tables draw as a web app does: an ESM bundle hands Bloom expo-video
 // (its optional-peer `require` cannot run here), or a video draws nothing.
@@ -240,13 +234,7 @@ export const FAMILIES = {
   pricePaymentStatus: PRICE_PAYMENT_STATUS_CASES,
   dashboardCard: DASHBOARD_CARD_CASES,
   cartMenuVendor: CART_MENU_VENDOR_CASES,
-  mediaCard: MEDIA_CARD_CASES,
-  lyrics: LYRICS_CASES,
   creatorStudio: CREATOR_STUDIO_CASES,
-  mediaPlayer: MEDIA_PLAYER_CASES,
-  musicLibrary: MUSIC_LIBRARY_CASES,
-  queuePanel: QUEUE_PANEL_CASES,
-  trackList: TRACK_LIST_CASES,
 } satisfies Record<string, readonly ParityCase[]>;
 export type Family = keyof typeof FAMILIES;
 export type Side = 'bloom' | 'language';

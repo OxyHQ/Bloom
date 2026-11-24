@@ -330,35 +330,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: '新規メッセージ',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: '歌詞',
-  queue: '再生キュー',
-  devices: 'デバイスに接続',
-  fullscreen: '全画面表示',
-  openPlayer: 'プレーヤーを開く',
-  currentDevice: '現在のデバイス',
-  listeningOn: '再生中のデバイス',
-  listeningOnDevice: (d) => `${d}で再生中`,
-  selectDevice: 'デバイスを選択',
-  noDevices: '他のデバイスが見つかりません',
-  deviceHelp: 'デバイスが表示されない場合',
-  playbackSpeed: '再生速度',
-  sleepTimer: 'スリープタイマー',
-  sleepOff: 'オフ',
-  endOfEpisode: 'エピソードの終わり',
-  oneHour: '1時間',
-  minutes: (n) => plural('ja', n, { other: '{n}分' }),
-  stopsIn: (r) => `あと${r}で停止`,
-  shuffle: 'シャッフル',
-  repeat: 'リピート',
-  repeatOne: '1曲リピート',
-  skipBack: (n) => plural('ja', n, { other: '{n}秒戻る' }),
-  skipForward: (n) => plural('ja', n, { other: '{n}秒進む' }),
-  closePlayer: 'プレーヤーを閉じる',
-  share: '共有',
-  showLyrics: '歌詞を表示',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'まだ何もありません',
   addresses: '住所',
@@ -943,65 +914,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: '検索をクリア',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'プレイリスト',
-    artist: 'アーティスト',
-    album: 'アルバム',
-    podcast: 'ポッドキャスト',
-    audiobook: 'オーディオブック',
-    folder: 'フォルダ',
-  },
-  library: {
-    title: 'マイライブラリ',
-    create: 'プレイリストまたはフォルダを作成',
-    collapseRail: 'マイライブラリを折りたたむ',
-    expandRail: 'マイライブラリを開く',
-    filters: 'フィルター',
-    clearFilters: 'フィルターをクリア',
-    filter: {
-      playlists: 'プレイリスト',
-      artists: 'アーティスト',
-      albums: 'アルバム',
-      podcasts: 'ポッドキャスト',
-      audiobooks: 'オーディオブック',
-    },
-    downloaded: 'ダウンロード済み',
-    search: 'マイライブラリを検索',
-    searchPlaceholder: 'マイライブラリを検索',
-    clearSearch: '検索をクリア',
-    sortAndView: '並べ替えと表示',
-    sortBy: '並べ替え',
-    viewAs: '表示形式',
-    sort: {
-      recents: '最近再生した項目',
-      'recently-added': '最近追加した項目',
-      alphabetical: 'アルファベット順',
-      creator: '作成者',
-    },
-    view: { compact: 'コンパクト', list: 'リスト', grid: 'グリッド' },
-    empty: 'まだ何もありません',
-  },
-  item: { pinned: 'ピン留め済み', downloaded: 'ダウンロード済み', nowPlaying: '再生中' },
-  search: { placeholder: '何を聴きたいですか？', clear: '検索をクリア', browse: 'ブラウズ' },
-  resultTypes: '結果の種類',
-  topResultKinds: {
-    song: '曲',
-    artist: 'アーティスト',
-    album: 'アルバム',
-    playlist: 'プレイリスト',
-    podcast: 'ポッドキャスト',
-    episode: 'エピソード',
-    audiobook: 'オーディオブック',
-    profile: 'プロフィール',
-  },
-  recent: {
-    title: '最近の検索',
-    clearAll: '最近の検索をクリア',
-    remove: (title) => `${title}を取り除く`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: { reserved: '予約済み', sold: '売却済み', rented: '賃貸済み', unavailable: '利用不可' },
   originally: (p) => `元の価格 ${p}`,
@@ -1230,31 +1142,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'プロモーションコード',
   apply: '適用',
   tip: 'チップ',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'アルバム', single: 'シングル', ep: 'EP', compilation: 'コンピレーション' },
-  artist: 'アーティスト',
-  verified: '認証済み',
-  audiobook: 'オーディオブック',
-  narratedBy: (n) => `ナレーション: ${n}`,
-  progressOf: (t) => `${t}の進捗`,
-  episode: 'エピソード',
-  played: '再生済み',
-  event: 'イベント',
-  soldOut: '完売',
-  listeningNow: '今聴いています',
-  trackBy: (t, a) => `${a}の${t}`,
-  mix: 'ミックス',
-  playlist: 'プレイリスト',
-  collaborative: 'コラボ',
-  ownedBy: (o) => `${o}が作成`,
-  podcast: 'ポッドキャスト',
-  profile: 'プロフィール',
-  followsYou: 'フォローされています',
-  song: '曲',
-  share: '共有',
-  listened: '再生済み',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1804,38 +1691,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'または次で続行',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'タイトル',
-  album: 'アルバム',
-  dateAdded: '追加日',
-  plays: '再生回数',
-  duration: '再生時間',
-  moveUp: '上に移動',
-  moveDown: '下に移動',
-  reorder: '並べ替え',
-  downloaded: 'ダウンロード済み',
-  unavailable: '利用できません',
-  tracks: '曲',
-  episodes: 'エピソード',
-  selected: (n) => plural('ja', n, { other: '{n}件を選択中' }),
-  clearSelection: '選択を解除',
-  played: '再生済み',
-  listened: '再生済み',
-  saveEpisode: 'エピソードを保存',
-  downloadEpisode: 'エピソードをダウンロード',
-  minutes: (m) => `${m}分`,
-  hours: (h) => `${h}時間`,
-  hoursMinutes: (h, m) => `${h}時間${m}分`,
-  remaining: (l) => `残り${l}`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: '歌詞',
-  showLyrics: '歌詞を表示',
-  backToCurrent: '再生中の行に戻る',
-  empty: 'この曲の歌詞はありません',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: '通話',
@@ -2275,25 +2130,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'ポップオーバー',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: '再生キュー',
-  recentTab: '最近再生した項目',
-  close: 'キューを閉じる',
-  nextInQueue: 'キューの次の曲',
-  nextFrom: (c) => `次の曲（${c}）`,
-  nextUp: '次に再生',
-  clearQueue: 'キューをクリア',
-  reorder: (t) => `${t}を並べ替え`,
-  reorderHint: 'ドラッグするか矢印キーを使用します',
-  moveUp: '上に移動',
-  moveDown: '下に移動',
-  remove: 'キューから削除',
-  moved: (t, p, n) => `${t}を${n}件中${p}番目に移動しました`,
-  emptyQueue: 'キューは空です',
-  emptyQueueHint: '曲やエピソードを追加すると、次に再生されます。',
-  emptyRecent: 'まだ何も再生していません',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2774,7 +2610,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2803,7 +2638,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2816,7 +2650,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2841,8 +2674,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2875,7 +2706,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

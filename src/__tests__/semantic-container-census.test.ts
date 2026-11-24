@@ -68,7 +68,6 @@ const CLASSIFIED: Record<string, string> = {
   AriaPressable: 'a Pressable',
   HoldPressable: 'a Pressable',
   ScrollArea: 'a ScrollView host, which is never flattened',
-  ScreenScrollView: 'a ScrollView host, which is never flattened',
   RNText: 'a Text host: its role is a leaf role or the web’s',
   TextFieldInput: 'a TextInput host, which is never flattened',
   div: 'the DOM (a web branch)',

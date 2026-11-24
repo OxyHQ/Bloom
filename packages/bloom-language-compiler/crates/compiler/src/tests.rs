@@ -585,7 +585,7 @@ fn the_button_leftovers_are_checked() {
     assert_eq!(
         output.diagnostics[0].help.as_deref(),
         Some(
-            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 19 more; density tokens: default, compact"
+            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 15 more; density tokens: default, compact"
         )
     );
 }
@@ -968,13 +968,13 @@ fn a_nodes_other_editable_values_are_binding_modifiers() {
     let check = |body: &str| {
         compile(
             &format!(
-                "import {{ AvailabilityFilter, NowPlayingBar, ReviewCard, Sidebar, NavItem }} from '@oxy.so/bloom-language';\n{body}"
+                "import {{ AvailabilityFilter, ReviewCard, Sidebar, NavItem }} from '@oxy.so/bloom-language';\n{body}"
             ),
             "row.tsx",
         )
     };
     let valid = check(
-        "export const x = (r, t, now, day, open, liked, mode, I) => [ReviewCard('Ana', 'Lovely', r).expanded(open), NowPlayingBar(t, {}).liked(liked).volume([0.6, (v) => {}]).devicePickerOpen(open), AvailabilityFilter(now).date(day), Sidebar(NavItem('Home', I)).mode(mode).collapsed(open)];\n",
+        "export const x = (r, t, now, day, open, liked, mode, I) => [ReviewCard('Ana', 'Lovely', r).expanded(open), AvailabilityFilter(now).date(day), Sidebar(NavItem('Home', I)).mode(mode).collapsed(open)];\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -982,7 +982,7 @@ fn a_nodes_other_editable_values_are_binding_modifiers() {
         ("Sidebar(NavItem('Home', I)).onModeChange(f)", "Sidebar has no modifier .onModeChange()"),
         ("Sidebar(NavItem('Home', I)).onCollapsedChange(f)", "Sidebar has no modifier .onCollapsedChange()"),
         // A binding belongs to the node that edits that value.
-        ("ReviewCard('Ana', 'Lovely', r).liked(f)", "ReviewCard has no modifier .liked()"),
+        ("ReviewCard('Ana', 'Lovely', r).starred(f)", "ReviewCard has no modifier .starred()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (r, f, I) => {chain};\n"));
@@ -2907,44 +2907,6 @@ fn the_cart_and_menu_items_are_checked() {
 }
 
 #[test]
-fn the_media_cards_are_checked() {
-    let imports = "import { AlbumCard, GenreCard, MediaCard, QuickAccessTile, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (o) => VStack(MediaCard('a', o).size('small').style('row').loading(), AlbumCard('a').size('large').style('tile'), GenreCard('a').size('medium'), QuickAccessTile('a').loading());\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("MediaCard('a').size('xl')", "Unknown mediaCardSize token 'xl' for .size()"),
-        ("AlbumCard('a').style('grid')", "Unknown mediaCardLayout token 'grid' for .style()"),
-        ("GenreCard('a').style('row')", "GenreCard has no modifier .style()"),
-        ("QuickAccessTile('a').size('small')", "QuickAccessTile has no modifier .size()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (b) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
-fn the_lyrics_are_checked() {
-    let imports = "import { LyricsPreviewCard, LyricsView, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (l) => VStack(LyricsView(l).size('small').label('Lyrics'), LyricsPreviewCard(l).lines(4));\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("LyricsView(b).size('xl')", "Unknown lyricsSize token 'xl' for .size()"),
-        ("LyricsPreviewCard(b).size('small')", "LyricsPreviewCard has no modifier .size()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (b) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
 fn the_creator_studio_is_checked() {
     let imports = "import { ArtworkUploader, IsrcField, ReleaseCard, ReleaseStatusBadge, ReleaseTimeline, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
@@ -2956,26 +2918,6 @@ fn the_creator_studio_is_checked() {
         ("ReleaseCard(b).style('list')", "Unknown releaseCardLayout token 'list' for .style()"),
         ("ReleaseStatusBadge('live').size('lg')", "Unknown releaseStatusBadgeSize token 'lg' for .size()"),
         ("IsrcField(b).size('sm')", "IsrcField has no modifier .size()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (b) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
-fn the_media_player_is_checked() {
-    let imports = "import { MiniPlayer, PlaybackSpeedMenu, SleepTimerMenu, TransportControls, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (o, r) => VStack(TransportControls(true, o).size('lg').style('podcast').loading().disabled(), PlaybackSpeedMenu(r).size('sm').disabled(), SleepTimerMenu(r).size('md'), MiniPlayer(o, o).onPress(o));\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("TransportControls(true, b).size('xl')", "Unknown transportSize token 'xl' for .size()"),
-        ("TransportControls(true, b).style('video')", "Unknown transportStyle token 'video' for .style()"),
-        ("PlaybackSpeedMenu(b).style('music')", "PlaybackSpeedMenu has no modifier .style()"),
-        ("MiniPlayer(b, b).size('sm')", "MiniPlayer has no modifier .size()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (b) => {chain};\n"));
@@ -3013,70 +2955,11 @@ fn row_actions_the_swipe_row_and_the_theme_toggle_are_checked() {
 }
 
 #[test]
-fn the_music_library_is_checked() {
-    let imports =
-        "import { BrowseGrid, LibraryItem, LibraryPanel, SearchField } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (i, e, q) => [LibraryPanel(i), LibraryItem(e).style('rail'), SearchField(q).label('Search'), BrowseGrid(i).spacing('lg')];\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("LibraryItem(e).style('tile')", "Unknown libraryItemStyle token 'tile' for .style()"),
-        ("LibraryPanel(e).style('grid')", "LibraryPanel has no modifier .style()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (e) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
-fn the_queue_panel_is_checked() {
-    let imports = "import { QueuePanel, QueuePanelRow } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid =
-        check("export const x = (o, t) => [QueuePanel(o).style('sheet'), QueuePanelRow(t).label('Play')];\n");
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("QueuePanel(o).style('drawer')", "Unknown queuePanelStyle token 'drawer' for .style()"),
-        ("QueuePanelRow(o).style('panel')", "QueuePanelRow has no modifier .style()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (o) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
-fn the_track_list_is_checked() {
-    let imports =
-        "import { SelectionBar, TrackList, TrackListHeader, TrackRow } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (t, c, a) => [TrackList(t).density('compact').tint('surface'), TrackListHeader(c).density('comfortable'), TrackRow(t, 0).density('compact'), SelectionBar(2, a, {}).style('inline')];\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        (
-            "SelectionBar(1, a, {}).style('docked')",
-            "Unknown selectionBarPlacement token 'docked' for .style()",
-        ),
-        ("TrackList(a).density('cozy')", "Unknown density token 'cozy' for .density()"),
-        ("TrackRow(a, 0).tint('surface')", "TrackRow has no modifier .tint()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (a) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
 fn values_inside_blooms_own_data_are_bindings() {
-    let imports = "import { CallScreen, CartPanel, EpisodeRow, FullScreenPlayer, ListItem, MailRow, MapControls, NowPlayingBar, ShareSheet, TrackRow, TrackRowSkeleton, VStack } from '@oxy.so/bloom-language';\n";
+    let imports = "import { CallScreen, CartPanel, ListItem, MailRow, MapControls, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]), NowPlayingBar(d, {}).lyricsActive([v, s]).queueActive([v, s]).shuffle([v, s]).repeat([v, s]).playbackRate([v, s]), FullScreenPlayer(d, {}).shuffle([v, s]), TrackRow(d, 0).liked([v, s]), EpisodeRow(d).saved([v, s]).downloaded([v, s]));\n",
+        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
@@ -3084,7 +2967,6 @@ fn values_inside_blooms_own_data_are_bindings() {
         ("CartPanel('a', c).promo([v, s])", ".promo() takes 2 argument(s), not 1"),
         ("ListItem('a').starred([v, s])", "ListItem has no modifier .starred()"),
         ("ShareSheet().query([v, s])", "ShareSheet has no modifier .query()"),
-        ("TrackRowSkeleton().liked([v, s])", "TrackRowSkeleton has no modifier .liked()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (v, s, c) => {chain};\n"));

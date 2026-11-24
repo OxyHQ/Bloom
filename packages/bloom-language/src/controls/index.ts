@@ -107,13 +107,7 @@ import { PAYMENT_STATUSES } from './payment-status';
 import { DASHBOARD_CARDS } from './dashboard-cards';
 import { CARTS } from './cart-panel';
 import { MENU_ITEMS } from './menu-item';
-import { MEDIA_CARDS } from './media-cards';
-import { LYRICS } from './lyrics';
 import { CREATOR_STUDIO } from './creator-studio';
-import { MEDIA_PLAYERS } from './media-player';
-import { MUSIC_LIBRARY } from './music-library';
-import { QUEUE_PANELS } from './queue-panel';
-import { TRACK_LISTS } from './track-list';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -228,11 +222,5 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...DASHBOARD_CARDS,
   ...CARTS,
   ...MENU_ITEMS,
-  ...MEDIA_CARDS,
-  ...LYRICS,
   ...CREATOR_STUDIO,
-  ...MEDIA_PLAYERS,
-  ...MUSIC_LIBRARY,
-  ...QUEUE_PANELS,
-  ...TRACK_LISTS,
 };

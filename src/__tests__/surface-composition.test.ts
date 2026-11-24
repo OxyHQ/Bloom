@@ -12,7 +12,6 @@ it.each([
   'src/settings-modal/SettingsModalBase.tsx',
   'src/dialog/Dialog.web.tsx',
   'src/bottom-sheet/BottomSheetBase.tsx',
-  'src/queue-panel/QueuePanelBase.tsx',
   'src/user-hover-card/UserHoverCard.tsx',
   'src/tooltip/Tooltip.tsx',
   'src/toast/ToastContent.tsx',
