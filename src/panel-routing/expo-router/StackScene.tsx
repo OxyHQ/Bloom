@@ -1,8 +1,25 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ScreenActivity } from '../../screen/ScreenActivity';
+import { ScreenEnteredContext } from '../../screen/use-screen-entered';
 import { useSurfaceFill } from '../../styles/surface-levels';
 import { useIsFocused } from './PanelRouterAdapter';
+
+/** The slice of a stack screen's navigation a scene listens to. */
+interface SceneNavigation {
+  getState(): { index: number; routes: readonly { key: string }[] };
+  addListener(
+    type: 'transitionEnd',
+    listener: (event: { data?: { closing?: boolean } }) => void,
+  ): () => void;
+}
+
+export interface StackSceneProps {
+  children: ReactNode;
+  /** The scene's route navigation and key, as the stack's `screenLayout` receives them. */
+  navigation?: SceneNavigation;
+  routeKey?: string;
+}
 
 /**
  * One native stack scene: pass `stackSceneLayout` as the stack's `screenLayout`.
@@ -22,23 +39,63 @@ import { useIsFocused } from './PanelRouterAdapter';
  * its pages: their videos stop, their scroll stops driving the chrome, and their
  * reselect, status bar and floating action yield to the screen on top — without
  * every route passing `active={isFocused}` to its `Screen`.
+ *
+ * A pushed scene tells its screens when the push transition has ended
+ * (`useScreenEntered`), so what can wait mounts after the slide rather than on
+ * its frames.
  */
-export function StackScene({ children }: { children: ReactNode }) {
+export function StackScene({ children, navigation, routeKey }: StackSceneProps) {
   const fill = useSurfaceFill();
   const focused = useIsFocused();
+  const entered = useSceneEntered(navigation, routeKey);
   return (
     <View
       style={[styles.scene, { backgroundColor: fill }]}
       importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
       accessibilityElementsHidden={!focused}
     >
-      <ScreenActivity active={focused}>{children}</ScreenActivity>
+      <ScreenActivity active={focused}>
+        <ScreenEnteredContext.Provider value={entered}>{children}</ScreenEnteredContext.Provider>
+      </ScreenActivity>
     </View>
   );
 }
 
-export function stackSceneLayout({ children }: { children: ReactNode }) {
-  return <StackScene>{children}</StackScene>;
+/**
+ * False from the render that pushes the scene until the stack reports its
+ * transition over (`transitionEnd`, from the native screen's appearance);
+ * true for a scene the stack started with or that a push did not bring in.
+ */
+function useSceneEntered(navigation: SceneNavigation | undefined, routeKey: string | undefined) {
+  const [entered, setEntered] = useState(() => {
+    if (!navigation || !routeKey) return true;
+    const state = navigation.getState();
+    return state.routes.length < 2 || state.routes[state.index]?.key !== routeKey;
+  });
+  // Subscribed in the commit that mounts the native screen, before it can appear.
+  useLayoutEffect(() => {
+    if (entered || !navigation) return;
+    return navigation.addListener('transitionEnd', (event) => {
+      if (!event.data?.closing) setEntered(true);
+    });
+  }, [entered, navigation]);
+  return entered;
+}
+
+export function stackSceneLayout({
+  children,
+  navigation,
+  route,
+}: {
+  children: ReactNode;
+  navigation?: SceneNavigation;
+  route?: { key: string };
+}) {
+  return (
+    <StackScene navigation={navigation} routeKey={route?.key}>
+      {children}
+    </StackScene>
+  );
 }
 
 const styles = StyleSheet.create({
