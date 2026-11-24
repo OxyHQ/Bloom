@@ -81,7 +81,7 @@ for (const [platform, Loader, rectName] of [
     const setup = (active = true, paused = false) => {
       const ui = (on: boolean, pause = false, phase?: ComposerLoaderPhase) =>
         wrap(
-          <Loader active={on} phase={phase} paused={pause} testID="loader">
+          <Loader phase={phase ?? (on ? 'streaming' : 'idle')} paused={pause} testID="loader">
             <Text>draft</Text>
           </Loader>,
         );

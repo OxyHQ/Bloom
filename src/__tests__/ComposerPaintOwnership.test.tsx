@@ -22,8 +22,8 @@ test('nearest loader owns semantic paint state without replacing the focused dra
     act(() =>
       root.render(
         <BloomThemeProvider mode="light" colorPreset="teal">
-          <ComposerLoader active={!active}>
-            <ComposerLoader active={active}>
+          <ComposerLoader phase={active ? 'idle' : 'streaming'}>
+            <ComposerLoader phase={active ? 'streaming' : 'idle'}>
               <State />
               <ComposerPill testID="pill" defaultValue="Retained draft" showVoice={false} />
             </ComposerLoader>

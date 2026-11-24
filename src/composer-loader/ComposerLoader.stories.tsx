@@ -18,7 +18,6 @@ const meta: Meta<typeof ComposerLoader> = {
       control: 'select',
       options: ['idle', 'submitting', 'streaming', 'stopping', 'error', 'complete'],
     },
-    active: { control: false },
     speed: { control: 'number' },
     intensity: { control: 'number' },
     bloom: { control: 'number' },
@@ -79,11 +78,11 @@ function Label({ children }: { children: string }) {
 }
 
 export const Default: Story = {
-  args: { active: true },
+  args: { phase: 'streaming' },
   parameters: {
     controls: {
       include: [
-        'active',
+        'phase',
         'speed',
         'intensity',
         'bloom',
@@ -116,7 +115,7 @@ export const Variants: Story = {
     <View style={{ gap: 24, width: '100%', maxWidth: WIDTH }}>
       <View>
         <Label>default</Label>
-        <ComposerLoader active>
+        <ComposerLoader>
           <Pill />
         </ComposerLoader>
       </View>
@@ -128,32 +127,32 @@ export const Variants: Story = {
       </View>
       <View>
         <Label>taper 0.6 · radius 16</Label>
-        <ComposerLoader active taper={0.6} radius={16}>
+        <ComposerLoader taper={0.6} radius={16}>
           <Pill height={120} />
         </ComposerLoader>
       </View>
       <View>
         <Label>bloomOnly · arc 200</Label>
-        <ComposerLoader active bloomOnly arc={200} bloom={24} bloomStrength={0.5}>
+        <ComposerLoader bloomOnly arc={200} bloom={24} bloomStrength={0.5}>
           <Pill />
         </ComposerLoader>
       </View>
       <View>
         <Label>reverse · speed 2.5 · line 4</Label>
-        <ComposerLoader active reverse speed={2.5} line={4}>
+        <ComposerLoader reverse speed={2.5} line={4}>
           <Pill />
         </ComposerLoader>
       </View>
       <View>
         <Label>custom colours · intensity 1</Label>
-        <ComposerLoader active intensity={1} colors={['#f97316', '#facc15', '#ef4444', '#a855f7']}>
+        <ComposerLoader intensity={1} colors={['#f97316', '#facc15', '#ef4444', '#a855f7']}>
           <Pill />
         </ComposerLoader>
       </View>
       <View>
         <Label>no surface · blend screen</Label>
         <View style={{ backgroundColor: '#18181b', borderRadius: 9999 }}>
-          <ComposerLoader active surface={false} blend="screen">
+          <ComposerLoader surface={false} blend="screen">
             <Pill />
           </ComposerLoader>
         </View>
@@ -161,9 +160,9 @@ export const Variants: Story = {
       <View>
         <Label>beam leading a glow (offset)</Label>
         <View>
-          <ComposerLoader active bloomOnly arc={160} bloom={22}>
+          <ComposerLoader bloomOnly arc={160} bloom={22}>
             <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-              <ComposerLoader active surface={false} arc={60} bloom={0} offset={(160 - 60) / 360}>
+              <ComposerLoader surface={false} arc={60} bloom={0} offset={(160 - 60) / 360}>
                 <Pill />
               </ComposerLoader>
             </View>

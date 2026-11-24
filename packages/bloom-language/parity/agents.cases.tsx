@@ -240,9 +240,9 @@ export const AGENT_CASES: ParityCase[] = [
   {
     name: 'ComposerLoader a radius and line',
     language: () =>
-      toElement(L.ComposerLoader(L.Text('Composer'), { active: false, radius: '3xl', line: '3' })),
+      toElement(L.ComposerLoader(L.Text('Composer'), { phase: 'idle', radius: '3xl', line: '3' })),
     bloom: () => (
-      <ComposerLoader active={false} radius={28} line={3}>
+      <ComposerLoader phase="idle" radius={28} line={3}>
         <Text>Composer</Text>
       </ComposerLoader>
     ),

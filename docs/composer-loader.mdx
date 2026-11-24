@@ -37,10 +37,8 @@ infers completion from a timeout.
 | `error` | Fades out over 450 ms. | Pass the actual error to `ComposerPill.error`; Bloom presents its error ring/message. |
 | `complete` | Fades out over 450 ms. | Keep the completed response and draft under app control. |
 
-`active` remains as a compatibility prop for existing consumers. Prefer `phase`
-for new code and migrate callers while on 17.x; `active` is scheduled for removal
-in 18.0.0. This transition keeps current apps working while giving new
-compositions one explicit lifecycle API.
+With no `phase` the light shows, so a bare `<ComposerLoader>` reads as working.
+The boolean `active` prop was removed; `active={x}` is `phase={x ? 'streaming' : 'idle'}`.
 
 **The loader owns the pill surface** (the shared Surface material with `shadow-xs`) and layers the light beneath its children. `ComposerPill` automatically inherits that paint ownership and the nearest loader’s active state for frosted controls. Explicit `surface` and `frosted` values override inheritance. Outside a loader, the pill keeps its own surface and unfrosted controls. Custom children still own their paint contract; an opaque child can cover the decorative light.
 
@@ -70,7 +68,7 @@ cancels the pending stop.
 Both renderers suspend when their owning `Screen` becomes inactive or the app
 leaves the foreground. Web additionally observes the loader with Bloom's
 `useInView` and pauses outside the viewport, including a zero-sized hidden host.
-`paused` freezes the decoration without changing `active`, the surface, or the
+`paused` freezes the decoration without changing the phase, the surface, or the
 input. Native consumers placing a loader in a scrolled/virtualized region should
 pass `paused={!inView}` from their existing viewport/viewability owner. Native
 screen activity is automatic; per-item native visibility is not inferred from
@@ -90,8 +88,7 @@ phase. The app chooses the phase; `ComposerLoader` only presents it.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `children` | `ReactNode` | — | The composer. |
-| `phase?` | `ComposerLoaderPhase` | — | Controlled request lifecycle; takes precedence over `active`. |
-| `active?` | `boolean` | `true` | **Deprecated:** show the light; fades in/out over 450ms. Use `phase`. |
+| `phase?` | `ComposerLoaderPhase` | — | Controlled request lifecycle; the light fades in/out over 450ms. Omitted, the light shows. |
 | `paused?` | `boolean` | `false` | Freeze the light at its current phase; input and surface remain mounted. |
 | `colors?` | `[string, string, string, string]` | Theme primary / support / action foreground roles | Gradient left → right. Any colour string. |
 | `speed?` | `number` | `4.5` | Seconds per lap. |
