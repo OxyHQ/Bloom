@@ -10,6 +10,7 @@ import { SurfacePaint } from '../surface/SurfacePaint';
 import { Button } from '../button/Button';
 import { PageHeader } from '../page-header/PageHeader';
 import { BlurIsland } from '../blur';
+import { TabBar, TabBarButton } from '../tab-bar';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiFilterLine } from '../icons/remix/RiFilterLine';
 import { Surface } from '../surface/Surface';
@@ -555,5 +556,38 @@ describe('a bottom toolbar composed of islands', () => {
     expect(screen.getAllByTestId('native-lens')).toHaveLength(3);
     expect(screen.getByLabelText('Filter')).toBeTruthy();
     expect(screen.getByText('Inbox')).toBeTruthy();
+  });
+
+  it('floats: the window draws an island over what moves behind, in the page too', () => {
+    wrap(
+      <BlurIsland>
+        <Text>Map layers</Text>
+      </BlurIsland>,
+    );
+    expect(props()?.restBackdrop).toBeUndefined();
+  });
+
+  it('paints its own material without the lens material', () => {
+    const screen = wrap(
+      <BlurIsland material="surface" testID="island">
+        <Text>Layers</Text>
+      </BlurIsland>,
+    );
+    expect(screen.queryByTestId('native-lens')).toBeNull();
+    expect(screen.getByTestId('island-material')).toBeTruthy();
+  });
+});
+
+describe('the tab bar on the lens', () => {
+  it('is one lens behind its items, drawn by the window, with no paint of its own', () => {
+    const screen = wrap(
+      <TabBar activeIndex={0} blur={false}>
+        <TabBarButton item={{ name: 'home', label: 'Home', icon: <Text>h</Text> }} index={0} />
+        <TabBarButton item={{ name: 'search', label: 'Search', icon: <Text>s</Text> }} index={1} />
+      </TabBar>,
+    );
+    expect(screen.getAllByTestId('native-lens')).toHaveLength(1);
+    expect(props()?.restBackdrop).toBeUndefined();
+    expect(screen.getByLabelText('Search')).toBeTruthy();
   });
 });

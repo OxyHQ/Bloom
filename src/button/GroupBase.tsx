@@ -16,7 +16,7 @@ import { BloomScope, useBloomAppearance } from '../appearance';
 import { useBloomControlDensity } from '../appearance/context';
 
 import { useThemeRecipe } from '../theme/use-theme-paint';
-import { hairlineOn, useSurfaceFill, useSurfaceFillRecipe } from '../styles/surface-levels';
+import { hairlineOn, useSurfaceFillRecipe } from '../styles/surface-levels';
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
@@ -32,12 +32,8 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { moveSelection, SELECTION_FADE, SELECTION_SPRING } from '../motion/selection-motion';
 import { surfacePresenceStyle, useEnteredPresence } from '../surface/use-surface-presence';
 import { IS_WEB } from '../styles/platform';
-import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import {
-  useFloatingControl,
-  useInFloatingRegion,
-  useLensAvailable,
-} from '../floating/lens/lens-material';
+import { useLensFrame, withLens } from '../floating/lens/lens-frame';
+import { useFloatingControl } from '../floating/lens/lens-material';
 import { useGroupSelection } from './use-group-selection';
 import type { SurfaceProps } from '../surface/types';
 import type { ButtonGroupProps } from './types';
@@ -179,58 +175,48 @@ export function createButtonGroup(Surface: ComponentType<SurfaceProps>) {
         {item}
       </Fragment>
     ));
-    // The group's one material: its own Surface, or, with `material="lens"` on a device that has the
-    // native lens, the lens itself behind the items. The items draw their content either way.
-    // Where the device has the lens the group is drawn by it, as every button is: by the window in
-    // a floating region, else in its place against the surface it sits on.
-    const lens = useLensAvailable();
-    const backing = useSurfaceFill();
-    const restBackdrop = useInFloatingRegion() ? undefined : backing;
-    const frame = (content: ReactNode) => {
-      if (lens) {
-        const split = splitLensStyle(style);
-        return (
-          <LensButtonHost
-            radius={BUTTON_RADIUS}
-            restBackdrop={restBackdrop}
-            style={{ alignSelf: 'flex-start', ...split.host }}
+    // The group's one material: the native lens behind the items where the device has it, as every
+    // button is (by the window in a floating region, else in its place against the surface it sits
+    // on), or its own Surface. The items draw their content either way.
+    const lensFrame = useLensFrame(true, style);
+    const frame = (content: ReactNode) =>
+      withLens(
+        lensFrame,
+        lensFrame.lens ? (
+          <View
+            role="group"
+            accessibilityLabel={accessibilityLabel}
+            // The group holds its items (GROUP_HOLDS_ITEMS).
+            collapsable={false}
+            testID={testID}
+            style={[{ borderRadius: BUTTON_RADIUS, overflow: 'hidden' }, lensFrame.style]}
           >
-            <View
-              role="group"
-              accessibilityLabel={accessibilityLabel}
-              // The group holds its items (GROUP_HOLDS_ITEMS).
-              collapsable={false}
-              testID={testID}
-              style={[{ borderRadius: BUTTON_RADIUS, overflow: 'hidden' }, split.control]}
-            >
-              {content}
-            </View>
-          </LensButtonHost>
-        );
-      }
-      return (
-        <Surface
-          radius={BUTTON_RADIUS}
-          cornerCurve="round"
-          {...paintHook}
-          role="group"
-          accessibilityLabel={accessibilityLabel}
-          // The group holds its items (GROUP_HOLDS_ITEMS).
-          collapsable={false}
-          testID={testID}
-          style={[
-            {
-              alignSelf: 'flex-start',
-              boxShadow: recipe.paint.shadow,
-            },
-            paintStyle,
-            style,
-          ]}
-        >
-          {content}
-        </Surface>
+            {content}
+          </View>
+        ) : (
+          <Surface
+            radius={BUTTON_RADIUS}
+            cornerCurve="round"
+            {...paintHook}
+            role="group"
+            accessibilityLabel={accessibilityLabel}
+            // The group holds its items (GROUP_HOLDS_ITEMS).
+            collapsable={false}
+            testID={testID}
+            style={[
+              {
+                alignSelf: 'flex-start',
+                boxShadow: recipe.paint.shadow,
+              },
+              paintStyle,
+              style,
+            ]}
+          >
+            {content}
+          </Surface>
+        ),
+        { radius: BUTTON_RADIUS },
       );
-    };
     if (separated)
       return (
         <ButtonGroupContext.Provider value={context}>
