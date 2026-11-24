@@ -1,7 +1,6 @@
 import { CartLine, CartPanel, CartPromoField, CartTipPicker } from '@oxy.so/bloom/cart-panel';
 import { MenuItemOptions, MenuItemRow } from '@oxy.so/bloom/menu-item';
 import { Text } from '@oxy.so/bloom/typography';
-import { VendorCard } from '@oxy.so/bloom/vendor-card';
 
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
@@ -332,73 +331,4 @@ const menu: ParityCase[] = [
   },
 ];
 
-const vendors: ParityCase[] = [
-  ...NODE_DENSITIES.vendorCard.map((density) => ({
-    name: `VendorCard ${density}`,
-    language: () =>
-      toElement(
-        L.VendorCard('Forno Rosso', {
-          photo: PHOTO,
-          cuisines: ['Pizza', 'Italian'],
-          rating: 4.7,
-          reviewCount: 320,
-          deliveryTime: '25–35 min',
-          deliveryFee: '€1.90',
-          distance: '1.2 km',
-          promo: '20% off',
-        })
-          .favorite([true, set])
-          .density(density)
-          .onPress(press),
-      ),
-    bloom: () => (
-      <VendorCard
-        name="Forno Rosso"
-        photo={PHOTO}
-        cuisines={['Pizza', 'Italian']}
-        rating={4.7}
-        reviewCount={320}
-        deliveryTime="25–35 min"
-        deliveryFee="€1.90"
-        distance="1.2 km"
-        promo="20% off"
-        favorite
-        onFavoriteChange={set}
-        density={density}
-        onPress={press}
-      />
-    ),
-  })),
-  {
-    name: 'VendorCard closed, a promo tone',
-    language: () =>
-      toElement(
-        L.VendorCard('Sushi Ko', {
-          cuisines: ['Japanese'],
-          availability: 'closed',
-          opensAt: 'Opens at 18:00',
-          promo: 'Free delivery',
-          promoTone: 'success',
-          newLabel: 'New',
-        }),
-      ),
-    bloom: () => (
-      <VendorCard
-        name="Sushi Ko"
-        cuisines={['Japanese']}
-        availability="closed"
-        opensAt="Opens at 18:00"
-        promo="Free delivery"
-        promoTone="success"
-        newLabel="New"
-      />
-    ),
-  },
-  {
-    name: 'VendorCard loading',
-    language: () => toElement(L.VendorCard('Forno Rosso').loading()),
-    bloom: () => <VendorCard name="Forno Rosso" loading />,
-  },
-];
-
-export const CART_MENU_VENDOR_CASES: ParityCase[] = [...cart, ...menu, ...vendors];
+export const CART_MENU_VENDOR_CASES: ParityCase[] = [...cart, ...menu];

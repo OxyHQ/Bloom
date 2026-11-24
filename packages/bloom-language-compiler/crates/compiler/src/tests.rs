@@ -569,7 +569,7 @@ fn the_button_leftovers_are_checked() {
     assert_eq!(
         output.diagnostics[0].help.as_deref(),
         Some(
-            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 22 more; density tokens: default, compact"
+            "'comfortable' is a density of Row, GroupedSection, SelectionCard and 20 more; density tokens: default, compact"
         )
     );
 }
@@ -2897,17 +2897,16 @@ fn the_dashboard_cards_are_checked() {
 }
 
 #[test]
-fn the_cart_menu_items_and_vendor_card_are_checked() {
-    let imports = "import { CartLine, CartPanel, CartPromoField, CartTipPicker, MenuItemOptions, MenuItemRow, VendorCard, VStack } from '@oxy.so/bloom-language';\n";
+fn the_cart_and_menu_items_are_checked() {
+    let imports = "import { CartLine, CartPanel, CartPromoField, CartTipPicker, MenuItemOptions, MenuItemRow, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (o, l, b, t, g) => VStack(CartLine('a', o).density('compact'), CartPanel('a', l).density('comfortable'), CartPromoField(b, o).disabled(), CartTipPicker(b, t).disabled(), MenuItemRow('a', o).density('compact'), MenuItemOptions(g, o).disabled(), VendorCard('a').density('compact').loading());\n",
+        "export const x = (o, l, b, t, g) => VStack(CartLine('a', o).density('compact'), CartPanel('a', l).density('comfortable'), CartPromoField(b, o).disabled(), CartTipPicker(b, t).disabled(), MenuItemRow('a', o).density('compact'), MenuItemOptions(g, o).disabled());\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("CartLine('a', o).density('cozy')", "Unknown density token 'cozy' for .density()"),
         ("CartPanel('a', o).loading()", "CartPanel has no modifier .loading()"),
-        ("VendorCard('a').tint('success')", "VendorCard has no modifier .tint()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (o) => {chain};\n"));
@@ -2968,24 +2967,6 @@ fn the_creator_studio_is_checked() {
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (b) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
-fn the_checkout_summary_and_order_confirmation_are_checked() {
-    let imports = "import { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow, OrderConfirmation, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = () => VStack(CheckoutSummaryRow('a').disabled(), CheckoutSummary().label('Review'), CheckoutConfirm().loading().disabled(), OrderConfirmation().density('compact'));\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("OrderConfirmation().density('cozy')", "Unknown density token 'cozy' for .density()"),
-        ("CheckoutSummary().loading()", "CheckoutSummary has no modifier .loading()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (b, d) => {chain};\n"));
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
     }
 }

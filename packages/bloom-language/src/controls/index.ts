@@ -109,12 +109,9 @@ import { CRM } from './crm';
 import { DASHBOARD_CARDS } from './dashboard-cards';
 import { CARTS } from './cart-panel';
 import { MENU_ITEMS } from './menu-item';
-import { VENDOR_CARDS } from './vendor-card';
 import { MEDIA_CARDS } from './media-cards';
 import { LYRICS } from './lyrics';
 import { CREATOR_STUDIO } from './creator-studio';
-import { CHECKOUT_SUMMARIES } from './checkout-summary';
-import { ORDER_CONFIRMATIONS } from './order-confirmation';
 import { MEDIA_PLAYERS } from './media-player';
 import { MUSIC_LIBRARY } from './music-library';
 import { QUEUE_PANELS } from './queue-panel';
@@ -235,12 +232,9 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...DASHBOARD_CARDS,
   ...CARTS,
   ...MENU_ITEMS,
-  ...VENDOR_CARDS,
   ...MEDIA_CARDS,
   ...LYRICS,
   ...CREATOR_STUDIO,
-  ...CHECKOUT_SUMMARIES,
-  ...ORDER_CONFIRMATIONS,
   ...MEDIA_PLAYERS,
   ...MUSIC_LIBRARY,
   ...QUEUE_PANELS,

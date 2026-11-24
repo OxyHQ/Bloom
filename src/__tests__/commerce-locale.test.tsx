@@ -11,8 +11,6 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { ContributionsCard, RevenueChartCard, StepsCard } from '../chart-cards';
 import { contributionLabel } from '../chart-cards/contributions-cells';
 import { CHART_CARDS_MESSAGES } from '../chart-cards/messages';
-import { CheckoutConfirm } from '../checkout-summary';
-import { CHECKOUT_SUMMARY_MESSAGES } from '../checkout-summary/messages';
 import { ListingCard } from '../listing-card';
 import { LocaleProvider } from '../locale';
 import { OfferingBadge } from '../offering-badge';
@@ -20,8 +18,6 @@ import { OFFERING_BADGE_MESSAGES } from '../offering-badge/messages';
 import { PaymentStatusBar } from '../payment-status';
 import { PAYMENT_STATUS_MESSAGES } from '../payment-status/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { VendorCard } from '../vendor-card';
-import { VENDOR_CARD_MESSAGES } from '../vendor-card/messages';
 import { messagesIn } from './support/messages-in';
 
 function renderIn(locale: string, ui: React.ReactElement) {
@@ -32,50 +28,7 @@ function renderIn(locale: string, ui: React.ReactElement) {
   );
 }
 
-describe('vendor-card', () => {
-  const vendor = {
-    name: 'Fig & Ember',
-    rating: 4.8,
-    reviewCount: 214,
-    deliveryTime: '25–35 min',
-    availability: 'closed' as const,
-    testID: 'v',
-  };
-
-  it('draws the status pill and composes its name in Spanish', () => {
-    const { getByText, getByTestId } = renderIn('es', <VendorCard {...vendor} />);
-    expect(getByText('Cerrado')).toBeTruthy();
-    const name = getByTestId('v-link').props.accessibilityLabel as string;
-    expect(name).toContain('Valoración: 4.8 de 5, 214 reseñas');
-    expect(name).toContain('Tiempo de entrega 25–35 min');
-  });
-
-  it('pluralises the review count per language', () => {
-    expect(messagesIn(VENDOR_CARD_MESSAGES, 'ru').rated('4.8', 1)).toBe('Оценка 4.8 из 5, 1 отзыв');
-    expect(messagesIn(VENDOR_CARD_MESSAGES, 'ru').rated('4.8', 3)).toBe(
-      'Оценка 4.8 из 5, 3 отзыва',
-    );
-    expect(messagesIn(VENDOR_CARD_MESSAGES, 'ru').rated('4.8', 25)).toBe(
-      'Оценка 4.8 из 5, 25 отзывов',
-    );
-    expect(VENDOR_CARD_MESSAGES.en.rated('4.8', 1)).toBe('Rated 4.8 out of 5, 1 review');
-  });
-
-  it('lets availabilityLabel and factLabels win over the catalog', () => {
-    const { getByText, getByTestId } = renderIn(
-      'es',
-      <VendorCard
-        {...vendor}
-        availabilityLabel="Vuelve pronto"
-        factLabels={{ deliveryTime: 'Llega en' }}
-      />,
-    );
-    expect(getByText('Vuelve pronto')).toBeTruthy();
-    expect(getByTestId('v-link').props.accessibilityLabel).toContain('Llega en 25–35 min');
-  });
-});
-
-describe('payment-status, checkout-summary, offering-badge', () => {
+describe('payment-status, offering-badge', () => {
   it('draw their words in the locale', () => {
     expect(
       renderIn('es', <PaymentStatusBar state="failed" />).getByText(
@@ -87,11 +40,6 @@ describe('payment-status, checkout-summary, offering-badge', () => {
         messagesIn(PAYMENT_STATUS_MESSAGES, 'de').states.paid,
       ),
     ).toBeTruthy();
-    expect(
-      renderIn('es', <CheckoutConfirm amount="49,62 €" onConfirm={() => {}} />).getAllByText(
-        new RegExp(messagesIn(CHECKOUT_SUMMARY_MESSAGES, 'es').placeOrder),
-      ).length,
-    ).toBeGreaterThan(0);
     expect(
       renderIn('fr', <OfferingBadge offering="sale" />).getByText(
         messagesIn(OFFERING_BADGE_MESSAGES, 'fr').offerings.sale,

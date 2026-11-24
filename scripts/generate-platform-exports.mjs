@@ -365,12 +365,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./price-breakdown', 'price-breakdown/index.ts'],
   // Checkout: review and confirm, the delivery window, and the screen that
   // says it is placed.
-  ['./checkout-summary', 'checkout-summary/index.ts'],
   ['./checkout-sheet', 'checkout-sheet/index.ts'],
   ['./checkout-sheet/model', 'checkout-sheet/model.ts'],
-  ['./order-confirmation', 'order-confirmation/index.ts'],
   // Ordering food: the vendor, the dish and the basket.
-  ['./vendor-card', 'vendor-card/index.ts'],
   ['./menu-item', 'menu-item/index.ts'],
   ['./cart-panel', 'cart-panel/index.ts'],
   ['./address', 'address/index.ts'],

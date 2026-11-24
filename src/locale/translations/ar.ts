@@ -15,10 +15,6 @@ import {
 } from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import {
-  has as vendorCard_has,
-  counted as vendorCard_counted,
-} from '../../vendor-card/message-helpers';
 
 const CALL_UI_MESSAGES__CORNERS = {
   'top-left': 'أعلى اليسار',
@@ -852,16 +848,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
 };
 
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'مطلوب' };
-
-const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
-  title: 'راجع طلبك',
-  orderSummary: 'ملخص الطلب',
-  deliverTo: 'التوصيل إلى',
-  notChosen: 'لم يُختر بعد',
-  opensPicker: 'يفتح أداة الاختيار',
-  placeOrder: 'تأكيد الطلب',
-  placingOrder: 'جارٍ إرسال طلبك',
-};
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
   suggestions: 'اقتراحات',
@@ -2352,19 +2338,6 @@ const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
   countryCode: 'رمز البلد',
 };
 
-const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: {
-    deliveryTime: 'وقت التوصيل',
-    deliveryFee: 'التوصيل',
-    distance: 'المسافة',
-    minimumOrder: 'الحد الأدنى للطلب',
-  },
-  availability: { paused: 'متوقف مؤقتًا', closed: 'مغلق' },
-  new: 'جديد',
-  rated: (value, reviews) =>
-    `التقييم ${value} من 5${vendorCard_has(reviews) ? `، ${vendorCard_counted('ar', reviews, { zero: 'لا مراجعات', one: 'مراجعة واحدة', two: 'مراجعتان', few: '{n} مراجعات', many: '{n} مراجعة', other: '{n} مراجعة' })}` : ''}`,
-};
-
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'متصل', idle: 'بعيد', offline: 'غير متصل', busy: 'مشغول' },
   status: {
@@ -3136,12 +3109,6 @@ const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
   restored: 'عاد الاتصال',
 };
 
-const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
-  title: 'تم تقديم طلبك',
-  referenceLabel: 'رقم الطلب',
-  itemsLabel: 'ما طلبته',
-};
-
 const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
   readout: (points, percent) => `${points} نقطة · ${percent}`,
 };
@@ -3267,7 +3234,6 @@ const translations: Translations = {
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
   LABEL_MESSAGES,
-  CHECKOUT_SUMMARY_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3339,7 +3305,6 @@ const translations: Translations = {
   ZOOMABLE_MEDIA_GALLERY_MESSAGES,
   NOTIFICATION_MESSAGES,
   PHONE_INPUT_MESSAGES,
-  VENDOR_CARD_MESSAGES,
   CHAT_INDICATORS_MESSAGES,
   MEDIA_CONTROLS_MESSAGES,
   INPUT_OTP_MESSAGES,
@@ -3378,7 +3343,6 @@ const translations: Translations = {
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
-  ORDER_CONFIRMATION_MESSAGES,
   COMPOSITION_BAR_MESSAGES,
 };
 

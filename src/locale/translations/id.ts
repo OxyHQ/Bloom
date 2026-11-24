@@ -18,10 +18,6 @@ import {
 } from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import {
-  has as vendorCard_has,
-  counted as vendorCard_counted,
-} from '../../vendor-card/message-helpers';
 
 const CALL_UI_MESSAGES__CORNERS = {
   'top-left': 'kiri atas',
@@ -748,16 +744,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
 };
 
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'wajib diisi' };
-
-const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
-  title: 'Tinjau pesananmu',
-  orderSummary: 'Ringkasan pesanan',
-  deliverTo: 'Kirim ke',
-  notChosen: 'Belum dipilih',
-  opensPicker: 'Membuka pemilih',
-  placeOrder: 'Buat pesanan',
-  placingOrder: 'Memproses pesananmu',
-};
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
   suggestions: 'Saran',
@@ -2057,19 +2043,6 @@ const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
   countryCode: 'Kode negara',
 };
 
-const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: {
-    deliveryTime: 'Waktu pengantaran',
-    deliveryFee: 'Ongkos kirim',
-    distance: 'Jarak',
-    minimumOrder: 'Pesanan minimum',
-  },
-  availability: { paused: 'Dijeda', closed: 'Tutup' },
-  new: 'Baru',
-  rated: (value, reviews) =>
-    `Rating ${value} dari 5${vendorCard_has(reviews) ? `, ${vendorCard_counted('id', reviews, { other: '{n} ulasan' })}` : ''}`,
-};
-
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'Online', idle: 'Pergi', offline: 'Offline', busy: 'Sibuk' },
   status: {
@@ -2778,12 +2751,6 @@ const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
   restored: 'Kembali online',
 };
 
-const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
-  title: 'Pesanan Anda telah dibuat',
-  referenceLabel: 'Nomor pesanan',
-  itemsLabel: 'Yang Anda pesan',
-};
-
 const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
   readout: (points, percent) => `${points} poin · ${percent}`,
 };
@@ -2909,7 +2876,6 @@ const translations: Translations = {
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
   LABEL_MESSAGES,
-  CHECKOUT_SUMMARY_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -2981,7 +2947,6 @@ const translations: Translations = {
   ZOOMABLE_MEDIA_GALLERY_MESSAGES,
   NOTIFICATION_MESSAGES,
   PHONE_INPUT_MESSAGES,
-  VENDOR_CARD_MESSAGES,
   CHAT_INDICATORS_MESSAGES,
   MEDIA_CONTROLS_MESSAGES,
   INPUT_OTP_MESSAGES,
@@ -3020,7 +2985,6 @@ const translations: Translations = {
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
-  ORDER_CONFIRMATION_MESSAGES,
   COMPOSITION_BAR_MESSAGES,
 };
 

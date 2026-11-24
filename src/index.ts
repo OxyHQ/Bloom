@@ -1597,29 +1597,6 @@ export type {
   PriceSummaryProps,
   PriceTotal,
 } from './price-breakdown';
-
-// Ordering food: who is cooking, what they cook, and what is in the basket.
-// Three families on top of the commerce four above — the vendor card is
-// `listing-card`'s card with a vendor's data in it, the basket's totals are
-// `PriceSummary`, and order tracking is `order-status`.
-export { VendorCard } from './vendor-card';
-export {
-  VENDOR_AVAILABILITY_LABELS,
-  VENDOR_FACT_ICON,
-  VENDOR_FACT_LABELS,
-  VENDOR_FACT_ORDER,
-  VENDOR_PHOTO_ASPECT_RATIO,
-  availabilityLabelFor,
-  composeVendorName,
-  vendorCuisines,
-  vendorFacts,
-} from './vendor-card';
-export type {
-  VendorAvailability,
-  VendorCardDensity,
-  VendorCardProps,
-  VendorFactKey,
-} from './vendor-card';
 export { MenuItemOptions, MenuItemRow } from './menu-item';
 export {
   MENU_ITEM_DIETS,
@@ -1726,45 +1703,6 @@ export type {
   TransitLineBadgeProps,
   TransitLineColors,
 } from './directions';
-
-// Checkout — the distance between "I want this" and "it is ordered": the
-// review a buyer confirms, the window they pick, and the screen that says it
-// happened. Built on the commerce block above — the totals ARE `PriceSummary`,
-// the address row IS `AddressRow`, and the tracking strip IS `OrderStatusBar`.
-export { CheckoutConfirm, CheckoutSummary, CheckoutSummaryRow } from './checkout-summary';
-export {
-  CHECKOUT_AMOUNT_SEPARATOR,
-  CHECKOUT_CONFIRM_BUSY_LABEL,
-  CHECKOUT_CONFIRM_LABEL,
-  CHECKOUT_GROUP_RADIUS,
-  CHECKOUT_ROW_HINT,
-  CHECKOUT_ROW_ICON,
-  CHECKOUT_ROW_PLACEHOLDER,
-  CHECKOUT_ROW_TILE,
-  checkoutConfirmLabel,
-  checkoutRowName,
-  resolveCheckoutPaint,
-} from './checkout-summary';
-export type {
-  CheckoutAddressSummary,
-  CheckoutConfirmProps,
-  CheckoutSummaryLine,
-  CheckoutSummaryPaint,
-  CheckoutSummaryProps,
-  CheckoutSummaryRowProps,
-} from './checkout-summary';
-export { OrderConfirmation } from './order-confirmation';
-export {
-  ORDER_CONFIRMATION_ITEMS_LABEL,
-  ORDER_CONFIRMATION_MARK,
-  ORDER_CONFIRMATION_REFERENCE_LABEL,
-  ORDER_CONFIRMATION_TITLE,
-} from './order-confirmation';
-export type {
-  OrderConfirmationAddress,
-  OrderConfirmationFact,
-  OrderConfirmationProps,
-} from './order-confirmation';
 
 // TAKING THE MONEY. `payment-method` is the saved way to pay, `card-form` is
 // entering a new one, and `payment-status` is what happened afterwards. None of

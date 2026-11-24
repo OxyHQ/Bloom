@@ -18,10 +18,6 @@ import {
 } from '../../place-card/message-helpers';
 import { countForms as rating_countForms } from '../../rating/message-helpers';
 import { shapeNames as shapes_shapeNames } from '../../shapes/message-helpers';
-import {
-  has as vendorCard_has,
-  counted as vendorCard_counted,
-} from '../../vendor-card/message-helpers';
 
 const CALL_UI_MESSAGES__CORNERS = {
   'top-left': 'in alto a sinistra',
@@ -769,16 +765,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
 };
 
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'obbligatorio' };
-
-const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
-  title: 'Controlla il tuo ordine',
-  orderSummary: 'Riepilogo ordine',
-  deliverTo: 'Consegna a',
-  notChosen: 'Non ancora scelto',
-  opensPicker: 'Apre il selettore',
-  placeOrder: 'Effettua ordine',
-  placingOrder: 'Invio del tuo ordine',
-};
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
   suggestions: 'Suggerimenti',
@@ -2087,19 +2073,6 @@ const PHONE_INPUT_MESSAGES: Translations['PHONE_INPUT_MESSAGES'] = {
   countryCode: 'Prefisso internazionale',
 };
 
-const VENDOR_CARD_MESSAGES: Translations['VENDOR_CARD_MESSAGES'] = {
-  facts: {
-    deliveryTime: 'Tempo di consegna',
-    deliveryFee: 'Consegna',
-    distance: 'Distanza',
-    minimumOrder: 'Ordine minimo',
-  },
-  availability: { paused: 'In pausa', closed: 'Chiuso' },
-  new: 'Nuovo',
-  rated: (value, reviews) =>
-    `Valutazione ${value} su 5${vendorCard_has(reviews) ? `, ${vendorCard_counted('it', reviews, { one: '{n} recensione', other: '{n} recensioni' })}` : ''}`,
-};
-
 const CHAT_INDICATORS_MESSAGES: Translations['CHAT_INDICATORS_MESSAGES'] = {
   presence: { online: 'Online', idle: 'Assente', offline: 'Offline', busy: 'Occupato' },
   status: {
@@ -2811,12 +2784,6 @@ const CONNECTION_STATUS_MESSAGES: Translations['CONNECTION_STATUS_MESSAGES'] = {
   restored: 'Di nuovo online',
 };
 
-const ORDER_CONFIRMATION_MESSAGES: Translations['ORDER_CONFIRMATION_MESSAGES'] = {
-  title: 'Il tuo ordine è stato effettuato',
-  referenceLabel: 'Numero d’ordine',
-  itemsLabel: 'Cosa hai ordinato',
-};
-
 const COMPOSITION_BAR_MESSAGES: Translations['COMPOSITION_BAR_MESSAGES'] = {
   readout: (points, percent) => `${points} punti · ${percent}`,
 };
@@ -2942,7 +2909,6 @@ const translations: Translations = {
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
   LABEL_MESSAGES,
-  CHECKOUT_SUMMARY_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3014,7 +2980,6 @@ const translations: Translations = {
   ZOOMABLE_MEDIA_GALLERY_MESSAGES,
   NOTIFICATION_MESSAGES,
   PHONE_INPUT_MESSAGES,
-  VENDOR_CARD_MESSAGES,
   CHAT_INDICATORS_MESSAGES,
   MEDIA_CONTROLS_MESSAGES,
   INPUT_OTP_MESSAGES,
@@ -3053,7 +3018,6 @@ const translations: Translations = {
   SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
-  ORDER_CONFIRMATION_MESSAGES,
   COMPOSITION_BAR_MESSAGES,
 };
 
