@@ -633,6 +633,7 @@ export interface ValueModifiers {
   colorPreset: ColorPreset;
   seed: string;
   screenActive: boolean;
+  replacesBottomBar: boolean;
   /** The screen's own fill (Bloom `Screen`'s `style.backgroundColor`): a dark reel's or camera's black. */
   screenBackground: InkToken;
   /** Where a screen that drives its own scroll has its top (Bloom `Screen`'s `reselect`). */
@@ -2726,6 +2727,9 @@ export class Node {
   screenActive(value = true): Node {
     return this.set('screenActive', value);
   }
+  replacesBottomBar(value = true): Node {
+    return this.set('replacesBottomBar', value);
+  }
   screenBackground(value: InkToken): Node {
     return this.set('screenBackground', value);
   }
@@ -4435,6 +4439,14 @@ export interface ScreenModifiers<Self> {
    * screen (`false`) drives no scroll, chrome or reselect. `true` by default.
    */
   screenActive(value?: boolean): Self;
+  /**
+   * The screen's own bar takes the place of the app's bottom bar (Bloom
+   * `Screen`'s `replacesBottomBar`): a post's reply prompt with the tabs docked
+   * beside it. While the screen is in front the app's bar steps aside in one
+   * cut, on the UI thread, from the screen's first frame (before a footer that
+   * waits for the push to end mounts). `true` by default.
+   */
+  replacesBottomBar(value?: boolean): Self;
   /**
    * The screen's own fill, behind its header and content (Bloom `Screen`'s
    * `style.backgroundColor`, the surface its chrome is painted for): a role,

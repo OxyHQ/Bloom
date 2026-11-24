@@ -156,6 +156,7 @@ export function ScreenHost({ root }: { root: Child }) {
     colorPreset: values.colorPreset as ColorPreset | undefined,
     seed: values.seed as string | undefined,
     active: values.screenActive as boolean | undefined,
+    replacesBottomBar: values.replacesBottomBar as boolean | undefined,
     headerHeight: headerHeight === undefined ? undefined : resolveSpace(headerHeight),
     bottomBarHeight: footerHeight === undefined ? undefined : resolveSpace(footerHeight),
     reselect,

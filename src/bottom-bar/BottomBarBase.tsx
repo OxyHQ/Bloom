@@ -30,7 +30,11 @@ import { ScreenFooterContext } from '../screen/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { IS_WEB } from '../styles/platform';
 import { dataHook } from '../styles/data-hook';
-import { useClaimBottomEdge, useMeasuredBottomEdgeClaim } from '../layout/bottom-edge';
+import {
+  useBottomEdgeTaken,
+  useClaimBottomEdge,
+  useMeasuredBottomEdgeClaim,
+} from '../layout/bottom-edge';
 import { FAB_METRICS } from '../fab/constants';
 import { FabDiameterContext } from '../fab/fab-diameter';
 import { windowEdgeGap } from '../layout/edge';
@@ -226,14 +230,21 @@ export function BottomBarBase({
   // a reaction cannot be registered conditionally.
   const shown = useSharedValue(0);
   const hide = hideProgress ?? shown;
+  // The app's navigation also steps aside, in one cut, while a screen whose own
+  // bar replaces it has taken the edge (`Screen replacesBottomBar`); a screen's
+  // own bar never does. It stays mounted and keeps its claim: nothing
+  // re-renders and the screens it covers keep their geometry.
+  const footerOwner = useContext(ScreenFooterContext);
+  const edgeTaken = useBottomEdgeTaken();
+  const yielded = footerOwner == null && edgeTaken ? edgeTaken : shown;
   const rootRef = useRef<ComponentRef<typeof View>>(null);
-  const [barHidden, setBarHidden] = useState(() => hide.value > 0.5);
+  const [barHidden, setBarHidden] = useState(() => hide.value > 0.5 || yielded.value > 0.5);
   useAnimatedReaction(
-    () => hide.value > 0.5,
+    () => hide.value > 0.5 || yielded.value > 0.5,
     (hidden, previous) => {
       if (hidden !== previous) runOnJS(setBarHidden)(hidden);
     },
-    [hide, setBarHidden],
+    [hide, yielded, setBarHidden],
   );
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -244,7 +255,6 @@ export function BottomBarBase({
     node.inert = barHidden;
   }, [barHidden]);
   const suppliedBottomInset = useContext(BottomBarSlotContext);
-  const footerOwner = useContext(ScreenFooterContext);
   const bottom = keyboardVisible
     ? 0
     : Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
@@ -411,13 +421,16 @@ export function BottomBarBase({
     selected,
   ]);
   const presenceStyle = useAnimatedStyle(() => {
-    const amount = Math.min(1, Math.max(0, reducedMotion ? Number(hide.value > 0.5) : hide.value));
+    const amount = Math.max(
+      yielded.value,
+      Math.min(1, Math.max(0, reducedMotion ? Number(hide.value > 0.5) : hide.value)),
+    );
     // The whole footprint, so a gone bar leaves no sliver above the edge.
     return {
       opacity: 1 - amount,
       transform: [{ translateY: amount * (dock ? naturalFootprint.value : bottom + footprint) }],
     };
-  }, [hide, reducedMotion, bottom, footprint, dock, naturalFootprint]);
+  }, [hide, yielded, reducedMotion, bottom, footprint, dock, naturalFootprint]);
   // Only explicitly editable actions survive the native keyboard. Existing
   // intrinsic actions retain their previous keyboard dismissal behavior.
   const retainsEditor = dock || (action != null && actionSizing !== 'intrinsic');

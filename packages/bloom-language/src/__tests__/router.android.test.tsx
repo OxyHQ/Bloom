@@ -355,12 +355,13 @@ describe('screen() on Android', () => {
     expect(hosts(r, 'ScreenScrollView')).toHaveLength(1);
   });
 
-  it('the root’s colour, activity and starting chrome heights reach Screen', () => {
+  it('the root’s colour, activity, bar replacement and starting chrome heights reach Screen', () => {
     const Tinted = screen(() =>
       Text('a')
         .colorPreset('rose')
         .seed('#8e5137')
         .screenActive(false)
+        .replacesBottomBar()
         .initialHeaderHeight('64')
         .initialFooterHeight('96'),
     );
@@ -368,12 +369,20 @@ describe('screen() on Android', () => {
       colorPreset: 'rose',
       seed: '#8e5137',
       active: false,
+      replacesBottomBar: true,
       headerHeight: 64,
       bottomBarHeight: 96,
     });
     // What the chain leaves out stays Bloom's default.
     const plain = only(mount(createElement(screen(() => Text('a')))), 'Screen').props;
-    for (const name of ['colorPreset', 'seed', 'active', 'headerHeight', 'bottomBarHeight'])
+    for (const name of [
+      'colorPreset',
+      'seed',
+      'active',
+      'replacesBottomBar',
+      'headerHeight',
+      'bottomBarHeight',
+    ])
       expect(plain[name]).toBeUndefined();
   });
 
