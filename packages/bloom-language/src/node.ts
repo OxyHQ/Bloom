@@ -4741,8 +4741,9 @@ export interface ViewModifiers<Self> extends ViewNode, ScreenModifiers<Self> {
   /**
    * Web: the pointer over this view is what `group-hover:` styles inside it
    * answer (Bloom `SubtleHover`). Android and iOS: a press on the view lights
-   * it with Bloom's press highlight (`usePressHighlight`), Android's ripple or
-   * iOS's wash; a child that takes its own press, or a scroll, does not.
+   * it on the `Pressable` it already is, in the theme's `contrast50`: Android's
+   * ripple, iOS's wash under its children. A child that takes its own press, or
+   * a scroll, does not. It adds no component, hook or state to the view.
    */
   hoverGroup(): Self;
   /** A pressable view shrinks slightly under the finger (Bloom `PressableScale`). */

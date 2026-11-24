@@ -4,6 +4,7 @@
  * the contract with the engine.
  */
 import { createElement } from 'react';
+import { Platform } from 'react-native';
 
 import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { act, Glyph, hosts, mount, only, quietRenderer } from './support/mount';
@@ -21,6 +22,7 @@ import {
   Submenu,
   Tab,
   Text,
+  VStack,
 } from '../primitives';
 import { clear, identity, regular } from '../glass';
 import { GLASS } from '../generated/spec.generated';
@@ -80,6 +82,54 @@ quietRenderer();
 
 const REGULAR_FROST = GLASS.regular.lensBlur;
 const CLEAR_FROST = GLASS.clear.lensBlur;
+
+describe("a hover group's press is the platform ripple", () => {
+  // Bloom's press highlight reads the platform where it is drawn.
+  const ios = Platform.OS;
+  beforeAll(() => {
+    Platform.OS = 'android';
+  });
+  afterAll(() => {
+    Platform.OS = ios;
+  });
+  const row = (press: (() => void) | undefined) =>
+    toElement(VStack(Text('Post')).hoverGroup().onPress(press));
+
+  it("the view's own Pressable draws it, bounded, in the tree's contrast fill; nothing else changes", () => {
+    const onPress = jest.fn();
+    const r = mount(row(onPress));
+    const press = only(r, 'Pressable');
+    expect(press.props.android_ripple).toEqual({ color: LIGHT.contrast50, borderless: false });
+    // The children are the Pressable's own, as a bare press's are: no wash, no function of the press.
+    expect(typeof press.props.children).not.toBe('function');
+    expect(press.children).toHaveLength(1);
+    act(() => press.props.onPress());
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('one ripple per palette, so a re-render hands React Native the same prop', () => {
+    const ripple = only(mount(row(() => {})), 'Pressable').props.android_ripple;
+    expect(only(mount(row(() => {})), 'Pressable').props.android_ripple).toBe(ripple);
+    expect(
+      only(
+        mount(
+          row(() => {}),
+          DARK,
+        ),
+        'Pressable',
+      ).props.android_ripple,
+    ).toEqual({
+      color: DARK.contrast50,
+      borderless: false,
+    });
+  });
+
+  it('a hover group with no press handler, and a press outside one, take no ripple', () => {
+    expect(only(mount(row(undefined)), 'Pressable').props.android_ripple).toBeUndefined();
+    const plain = mount(toElement(VStack(Text('a')).onPress(() => {})));
+    expect(only(plain, 'Pressable').props.android_ripple).toBeUndefined();
+  });
+});
 
 describe('glass is the lens', () => {
   it('a glass view is the lens view with no rows, its tint from a role at a named transparency', () => {

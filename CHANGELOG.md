@@ -6,6 +6,14 @@
 
 - Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
 
+### Added
+
+- `pressHighlight(colors, children, lit?)` (`@oxy.so/bloom/subtle-hover`): a pressable row's pressed state on its own `Pressable`, at no cost: no hook, state, effect or component. Spread what it returns on the row's `Pressable` (`<Pressable onPress={open} {...pressHighlight(theme.colors, content)} />`). Android: the platform ripple (`android_ripple`) in `contrast50`, one object per palette; the press reaches the view as a command and the ripple animates on the render thread. iOS: the `Pressable`'s own pressed state (its children as a function of it) lights a `contrast50` wash under the children; a press re-renders that `Pressable` alone, its children the same elements. The web gets the children back (the pointer has the hover wash). `lit` false keeps the wash's slot for a row that takes no press, so its children keep their state. Unlike `usePressHighlight`, the iOS wash clears at once on release.
+
+### Deprecated
+
+- `usePressHighlight()`: a row pays hooks for it (iOS: a shared value, and the wash's animated style in `SubtleHover`'s `pressed`). Use `pressHighlight`. Mention's language feed row paid 9 hook slots and a component per row for it.
+
 ## 23.7.0
 
 ### Breaking
