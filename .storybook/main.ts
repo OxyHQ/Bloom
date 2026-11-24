@@ -57,6 +57,32 @@ const BLOOM_ROOT = path.resolve(__dirname, '..');
 const BLOOM_EXPORTS = JSON.parse(readFileSync(path.join(BLOOM_ROOT, 'package.json'), 'utf8'))
   .exports as Record<string, { 'react-native'?: { default?: string } }>;
 
+// The react-native target of a subpath, as Node reads the map: an exact key
+// first, then a pattern key (`./icons/Ri*`), the longest prefix before its `*`
+// winning, with the matched part put in place of the target's `*`.
+function bloomEntry(subpath: string): string | undefined {
+  const exact = BLOOM_EXPORTS[subpath]?.['react-native']?.default;
+  if (exact) return exact;
+  let best: { prefix: string; target: string; match: string } | undefined;
+  for (const [key, conditions] of Object.entries(BLOOM_EXPORTS)) {
+    const star = key.indexOf('*');
+    const target = conditions?.['react-native']?.default;
+    if (star < 0 || !target) continue;
+    const prefix = key.slice(0, star);
+    const suffix = key.slice(star + 1);
+    if (
+      subpath.length < key.length ||
+      !subpath.startsWith(prefix) ||
+      !subpath.endsWith(suffix) ||
+      (best && best.prefix.length >= prefix.length)
+    ) {
+      continue;
+    }
+    best = { prefix, target, match: subpath.slice(prefix.length, subpath.length - suffix.length) };
+  }
+  return best?.target.split('*').join(best.match);
+}
+
 function bloomSelfReference() {
   return {
     name: 'bloom-self-reference',
@@ -64,7 +90,7 @@ function bloomSelfReference() {
     resolveId(source: string) {
       const match = /^@oxy\.so\/bloom(\/.+)?$/.exec(source);
       if (!match) return null;
-      const entry = BLOOM_EXPORTS[match[1] ? `.${match[1]}` : '.']?.['react-native']?.default;
+      const entry = bloomEntry(match[1] ? `.${match[1]}` : '.');
       if (!entry) {
         throw new Error(`"${source}" has no react-native entry in package.json exports`);
       }
