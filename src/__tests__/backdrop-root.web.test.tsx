@@ -89,7 +89,6 @@ import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar/index.web';
 import { Notification } from '../notification';
 import { Pagination } from '../pagination';
 import { Questionnaire } from '../questionnaire';
-import { QueuePanel } from '../queue-panel/index.web';
 import { RadioIndicator } from '../radio-indicator';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Select, SelectTrigger, SelectValue } from '../select/index.web';
@@ -419,17 +418,6 @@ const SUBJECTS: Record<string, Subject> = {
         questions={[
           { id: 'q1', question: 'What brings you here?', options: [{ value: 'a', label: 'A' }] },
         ]}
-      />
-    ),
-  },
-  'queue-panel/QueuePanelBase.tsx': {
-    states: ['opening', 'rest'],
-    render: () => (
-      <QueuePanel
-        nowPlaying={{ id: 'now', title: 'Harbour Lights', artists: 'Ilse Marn' }}
-        queue={[{ id: 'q1', title: 'Slow Tide', artists: 'Ilse Marn' }]}
-        context={[]}
-        contextName="Night Drive"
       />
     ),
   },

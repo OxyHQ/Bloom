@@ -205,7 +205,8 @@ const RN_HOSTS = new Set([
 // `aria-checked`, `aria-selected` — alongside the native `accessibilityState`
 // spelling of the same thing. It is a claim its own file makes and
 // `Chip.test.tsx` pins against the real DOM, role by role, including that the
-// other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA).
+// other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA). No
+// Bloom caller hands it a stateful role today, so it is not in the list below.
 // RadioHost forwards the radio state/name to its native Pressable or owned DOM
 // button. aria-state-web.test.tsx exercises all three radio variants.
 //
@@ -219,7 +220,7 @@ const RN_HOSTS = new Set([
 // `Slot` (agent-creator/ShapeArc) is `Pressable` on the web and its Reanimated wrapper on
 // native, picked per platform, so the alias scan cannot see it: it answers role and state
 // as the primitive does.
-const DELEGATING_TAGS = ['Chip', 'MenuRowShell', 'Meter', 'MeterRing', 'RadioHost', 'Slot'];
+const DELEGATING_TAGS = ['MenuRowShell', 'Meter', 'MeterRing', 'RadioHost', 'Slot'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so

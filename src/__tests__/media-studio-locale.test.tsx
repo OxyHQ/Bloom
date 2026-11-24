@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * The creator-studio, music-library and lyrics families speak the app's
+ * The creator-studio family speaks the app's
  * locale: rendered through the REAL react-native-web under a Spanish (or
  * Russian / Arabic) `LocaleProvider`, the DOM carries the catalog's words —
  * visible text and accessible names — while a caller's own `labels` /
@@ -26,15 +26,6 @@ import {
 } from '../creator-studio';
 import { CREATOR_STUDIO_MESSAGES } from '../creator-studio/messages';
 import { LocaleProvider } from '../locale';
-import { LyricsPreviewCard, LyricsView } from '../lyrics';
-import {
-  LibraryItem,
-  LibraryPanel,
-  RecentSearches,
-  SearchField,
-  TopResultCard,
-  type LibraryEntry,
-} from '../music-library';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { messagesIn } from './support/messages-in';
 
@@ -174,77 +165,5 @@ describe('creator-studio in the app locale', () => {
       'La portada debe ser cuadrada: esta imagen mide 3000×2000 px.',
     );
     expect(artworkDimensionsError(3000, 2000)).toMatch(/square/);
-  });
-});
-
-const ITEMS: LibraryEntry[] = [
-  {
-    id: 'a',
-    title: 'Night Drive',
-    kind: 'playlist',
-    subtitle: 'Maya',
-    pinned: true,
-    downloaded: true,
-  },
-];
-
-describe('music-library in the app locale', () => {
-  it('LibraryPanel: title, filters and the kind in a meta line', () => {
-    const screen = mount(<LibraryPanel items={ITEMS} onExpandedChange={() => {}} testID="lib" />);
-    expect(screen.getAllByText('Tu biblioteca').length).toBeGreaterThan(0);
-    expect(screen.getByText('Álbumes')).toBeTruthy();
-    expect(screen.getByText('Playlist · Maya')).toBeTruthy();
-    // The common word, not a family copy.
-    expect(screen.getByLabelText('Mostrar más')).toBeTruthy();
-  });
-
-  it('LibraryPanel: a nested labels entry still wins', () => {
-    const screen = mount(<LibraryPanel items={ITEMS} labels={{ filter: { albums: 'Discos' } }} />);
-    expect(screen.getByText('Discos')).toBeTruthy();
-    expect(screen.getByText('Artistas')).toBeTruthy();
-  });
-
-  it('LibraryItem: the spoken states, with a *Label prop winning', () => {
-    let screen = mount(<LibraryItem item={ITEMS[0]!} />);
-    expect(screen.getByLabelText('Night Drive, Playlist · Maya, Fijado, Descargado')).toBeTruthy();
-    screen = mount(<LibraryItem item={ITEMS[0]!} pinnedLabel="Anclado" />, 'es');
-    expect(screen.getByLabelText('Night Drive, Playlist · Maya, Anclado, Descargado')).toBeTruthy();
-  });
-
-  it('SearchField, TopResultCard and RecentSearches', () => {
-    let screen = mount(<SearchField value="" onChangeText={() => {}} onBrowsePress={() => {}} />);
-    expect(screen.getByPlaceholderText('¿Qué quieres escuchar?')).toBeTruthy();
-    expect(screen.getByLabelText('Explorar')).toBeTruthy();
-    screen = mount(<TopResultCard title="Lumen Vale" kind="artist" />);
-    expect(screen.getByText('Artista')).toBeTruthy();
-    screen = mount(
-      <RecentSearches
-        items={[{ id: '1', title: 'Lumen Vale' }]}
-        onRemove={() => {}}
-        onClearAll={() => {}}
-      />,
-    );
-    expect(screen.getByText('Búsquedas recientes')).toBeTruthy();
-    expect(screen.getByLabelText('Quitar Lumen Vale')).toBeTruthy();
-    screen = mount(<RecentSearches items={[]} title="Historial" />);
-    expect(screen.getByText('Historial')).toBeTruthy();
-  });
-});
-
-describe('lyrics in the app locale', () => {
-  it('LyricsView: the region name and the empty line', () => {
-    const screen = mount(<LyricsView lines={[]} />);
-    expect(screen.getByLabelText('Letra')).toBeTruthy();
-    expect(screen.getByText('La letra de esta canción no está disponible')).toBeTruthy();
-  });
-
-  it('LyricsPreviewCard: heading and pill, with a label prop winning', () => {
-    let screen = mount(<LyricsPreviewCard text={'uno\ndos'} onShowLyrics={() => {}} />);
-    expect(screen.getByText('Letra')).toBeTruthy();
-    expect(screen.getByText('Mostrar letra')).toBeTruthy();
-    screen = mount(
-      <LyricsPreviewCard text={'uno'} onShowLyrics={() => {}} showLyricsLabel="Ver todo" />,
-    );
-    expect(screen.getByText('Ver todo')).toBeTruthy();
   });
 });

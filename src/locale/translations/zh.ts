@@ -325,35 +325,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: '新邮件',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: '歌词',
-  queue: '播放队列',
-  devices: '连接到设备',
-  fullscreen: '全屏',
-  openPlayer: '打开播放器',
-  currentDevice: '当前设备',
-  listeningOn: '正在收听的设备',
-  listeningOnDevice: (d) => `正在${d}上收听`,
-  selectDevice: '选择设备',
-  noDevices: '未找到其他设备',
-  deviceHelp: '看不到你的设备？',
-  playbackSpeed: '播放速度',
-  sleepTimer: '睡眠定时',
-  sleepOff: '关闭',
-  endOfEpisode: '本集结束时',
-  oneHour: '1 小时',
-  minutes: (n) => plural('zh', n, { other: '{n} 分钟' }),
-  stopsIn: (r) => `${r}后停止`,
-  shuffle: '随机播放',
-  repeat: '重复播放',
-  repeatOne: '单曲循环',
-  skipBack: (n) => plural('zh', n, { other: '后退 {n} 秒' }),
-  skipForward: (n) => plural('zh', n, { other: '前进 {n} 秒' }),
-  closePlayer: '关闭播放器',
-  share: '分享',
-  showLyrics: '显示歌词',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: '这里还没有内容',
   addresses: '地址',
@@ -926,65 +897,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: '清除搜索',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: '歌单',
-    artist: '艺人',
-    album: '专辑',
-    podcast: '播客',
-    audiobook: '有声书',
-    folder: '文件夹',
-  },
-  library: {
-    title: '我的音乐库',
-    create: '创建歌单或文件夹',
-    collapseRail: '收起我的音乐库',
-    expandRail: '打开我的音乐库',
-    filters: '筛选',
-    clearFilters: '清除筛选',
-    filter: {
-      playlists: '歌单',
-      artists: '艺人',
-      albums: '专辑',
-      podcasts: '播客',
-      audiobooks: '有声书',
-    },
-    downloaded: '已下载',
-    search: '在我的音乐库中搜索',
-    searchPlaceholder: '在我的音乐库中搜索',
-    clearSearch: '清除搜索',
-    sortAndView: '排序和视图',
-    sortBy: '排序方式',
-    viewAs: '视图',
-    sort: {
-      recents: '最近播放',
-      'recently-added': '最近添加',
-      alphabetical: '按字母顺序',
-      creator: '创建者',
-    },
-    view: { compact: '紧凑', list: '列表', grid: '网格' },
-    empty: '这里还没有内容',
-  },
-  item: { pinned: '已置顶', downloaded: '已下载', nowPlaying: '正在播放' },
-  search: { placeholder: '想听什么？', clear: '清除搜索', browse: '浏览' },
-  resultTypes: '结果类型',
-  topResultKinds: {
-    song: '歌曲',
-    artist: '艺人',
-    album: '专辑',
-    playlist: '歌单',
-    podcast: '播客',
-    episode: '单集',
-    audiobook: '有声书',
-    profile: '个人资料',
-  },
-  recent: {
-    title: '最近搜索',
-    clearAll: '清除最近搜索',
-    remove: (title) => `移除 ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: { reserved: '已预订', sold: '已售出', rented: '已出租', unavailable: '不可用' },
   originally: (p) => `原价 ${p}`,
@@ -1208,31 +1120,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: '优惠码',
   apply: '使用',
   tip: '小费',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: '专辑', single: '单曲', ep: 'EP', compilation: '合辑' },
-  artist: '艺人',
-  verified: '已认证',
-  audiobook: '有声书',
-  narratedBy: (n) => `朗读：${n}`,
-  progressOf: (t) => `${t}的进度`,
-  episode: '单集',
-  played: '已播放',
-  event: '活动',
-  soldOut: '售罄',
-  listeningNow: '正在收听',
-  trackBy: (t, a) => `${a}的${t}`,
-  mix: '混合歌单',
-  playlist: '歌单',
-  collaborative: '协作歌单',
-  ownedBy: (o) => `创建者：${o}`,
-  podcast: '播客',
-  profile: '个人资料',
-  followsYou: '关注了你',
-  song: '歌曲',
-  share: '分享',
-  listened: '已收听',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1752,38 +1639,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: '或使用以下方式继续',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: '标题',
-  album: '专辑',
-  dateAdded: '添加日期',
-  plays: '播放次数',
-  duration: '时长',
-  moveUp: '上移',
-  moveDown: '下移',
-  reorder: '调整顺序',
-  downloaded: '已下载',
-  unavailable: '不可用',
-  tracks: '曲目',
-  episodes: '单集',
-  selected: (n) => plural('zh', n, { other: '已选择 {n} 项' }),
-  clearSelection: '清除选择',
-  played: '已播放',
-  listened: '已收听',
-  saveEpisode: '保存单集',
-  downloadEpisode: '下载单集',
-  minutes: (m) => `${m} 分钟`,
-  hours: (h) => `${h} 小时`,
-  hoursMinutes: (h, m) => `${h} 小时 ${m} 分钟`,
-  remaining: (l) => `剩余 ${l}`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: '歌词',
-  showLyrics: '显示歌词',
-  backToCurrent: '回到当前歌词',
-  empty: '此曲目暂无歌词',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: '通话',
@@ -2211,25 +2066,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: '弹出框',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: '播放队列',
-  recentTab: '最近播放',
-  close: '关闭队列',
-  nextInQueue: '队列中的下一首',
-  nextFrom: (c) => `接下来播放：${c}`,
-  nextUp: '接下来播放',
-  clearQueue: '清空队列',
-  reorder: (t) => `调整${t}的顺序`,
-  reorderHint: '拖动，或使用方向键',
-  moveUp: '上移',
-  moveDown: '下移',
-  remove: '从队列中移除',
-  moved: (t, p, n) => `${t}已移至第 ${p} 位，共 ${n} 位`,
-  emptyQueue: '队列为空',
-  emptyQueueHint: '添加歌曲和单集，接下来就能收听。',
-  emptyRecent: '还没有播放记录',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2701,7 +2537,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2730,7 +2565,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2743,7 +2577,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2768,8 +2601,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2802,7 +2633,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

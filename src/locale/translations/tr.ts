@@ -333,35 +333,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'Yeni ileti',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'Şarkı sözleri',
-  queue: 'Sıra',
-  devices: 'Bir cihaza bağlan',
-  fullscreen: 'Tam ekran',
-  openPlayer: 'Oynatıcıyı aç',
-  currentDevice: 'Geçerli cihaz',
-  listeningOn: 'Şurada dinleniyor',
-  listeningOnDevice: (d) => `${d} cihazında dinleniyor`,
-  selectDevice: 'Bir cihaz seç',
-  noDevices: 'Başka cihaz bulunamadı',
-  deviceHelp: 'Cihazını göremiyor musun?',
-  playbackSpeed: 'Oynatma hızı',
-  sleepTimer: 'Uyku zamanlayıcısı',
-  sleepOff: 'Kapalı',
-  endOfEpisode: 'Bölüm sonu',
-  oneHour: '1 saat',
-  minutes: (n) => plural('tr', n, { other: '{n} dakika' }),
-  stopsIn: (r) => `${r} sonra duracak`,
-  shuffle: 'Karıştır',
-  repeat: 'Tekrarla',
-  repeatOne: 'Şarkıyı tekrarla',
-  skipBack: (n) => plural('tr', n, { other: '{n} saniye geri' }),
-  skipForward: (n) => plural('tr', n, { other: '{n} saniye ileri' }),
-  closePlayer: 'Oynatıcıyı kapat',
-  share: 'Paylaş',
-  showLyrics: 'Şarkı sözlerini göster',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'Burada henüz bir şey yok',
   addresses: 'Adresler',
@@ -951,65 +922,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'Aramayı temizle',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'Çalma listesi',
-    artist: 'Sanatçı',
-    album: 'Albüm',
-    podcast: 'Podcast',
-    audiobook: 'Sesli kitap',
-    folder: 'Klasör',
-  },
-  library: {
-    title: 'Kitaplığın',
-    create: 'Çalma listesi veya klasör oluştur',
-    collapseRail: 'Kitaplığını daralt',
-    expandRail: 'Kitaplığını aç',
-    filters: 'Filtreler',
-    clearFilters: 'Filtreleri temizle',
-    filter: {
-      playlists: 'Çalma listeleri',
-      artists: 'Sanatçılar',
-      albums: 'Albümler',
-      podcasts: 'Podcast’ler',
-      audiobooks: 'Sesli kitaplar',
-    },
-    downloaded: 'İndirilenler',
-    search: 'Kitaplığında ara',
-    searchPlaceholder: 'Kitaplığında ara',
-    clearSearch: 'Aramayı temizle',
-    sortAndView: 'Sırala ve görüntüle',
-    sortBy: 'Sıralama ölçütü',
-    viewAs: 'Görünüm',
-    sort: {
-      recents: 'En son çalınanlar',
-      'recently-added': 'Son eklenenler',
-      alphabetical: 'Alfabetik',
-      creator: 'Oluşturan',
-    },
-    view: { compact: 'Sıkışık', list: 'Liste', grid: 'Izgara' },
-    empty: 'Burada henüz bir şey yok',
-  },
-  item: { pinned: 'Sabitlendi', downloaded: 'İndirildi', nowPlaying: 'Şimdi çalıyor' },
-  search: { placeholder: 'Ne dinlemek istersin?', clear: 'Aramayı temizle', browse: 'Göz at' },
-  resultTypes: 'Sonuç türleri',
-  topResultKinds: {
-    song: 'Şarkı',
-    artist: 'Sanatçı',
-    album: 'Albüm',
-    playlist: 'Çalma listesi',
-    podcast: 'Podcast',
-    episode: 'Bölüm',
-    audiobook: 'Sesli kitap',
-    profile: 'Profil',
-  },
-  recent: {
-    title: 'Son aramalar',
-    clearAll: 'Son aramaları temizle',
-    remove: (title) => `Kaldır: ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: {
     reserved: 'Rezerve edildi',
@@ -1244,31 +1156,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'Promosyon kodu',
   apply: 'Uygula',
   tip: 'Bahşiş',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'Albüm', single: 'Single', ep: 'EP', compilation: 'Derleme' },
-  artist: 'Sanatçı',
-  verified: 'Onaylı',
-  audiobook: 'Sesli kitap',
-  narratedBy: (n) => `Seslendiren: ${n}`,
-  progressOf: (t) => `${t} ilerlemesi`,
-  episode: 'Bölüm',
-  played: 'Dinlendi',
-  event: 'Etkinlik',
-  soldOut: 'Tükendi',
-  listeningNow: 'Şu an dinliyor',
-  trackBy: (t, a) => `${a} - ${t}`,
-  mix: 'Mix',
-  playlist: 'Çalma listesi',
-  collaborative: 'Ortak',
-  ownedBy: (o) => `${o} tarafından`,
-  podcast: 'Podcast',
-  profile: 'Profil',
-  followsYou: 'Seni takip ediyor',
-  song: 'Şarkı',
-  share: 'Paylaş',
-  listened: 'Dinlendi',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1816,38 +1703,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'veya şununla devam edin',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'Başlık',
-  album: 'Albüm',
-  dateAdded: 'Eklenme tarihi',
-  plays: 'Dinlenme',
-  duration: 'Süre',
-  moveUp: 'Yukarı taşı',
-  moveDown: 'Aşağı taşı',
-  reorder: 'Yeniden sırala',
-  downloaded: 'İndirildi',
-  unavailable: 'Kullanılamıyor',
-  tracks: 'Şarkılar',
-  episodes: 'Bölümler',
-  selected: (n) => plural('tr', n, { other: '{n} seçildi' }),
-  clearSelection: 'Seçimi temizle',
-  played: 'Oynatıldı',
-  listened: 'Dinlendi',
-  saveEpisode: 'Bölümü kaydet',
-  downloadEpisode: 'Bölümü indir',
-  minutes: (m) => `${m} dk`,
-  hours: (h) => `${h} sa`,
-  hoursMinutes: (h, m) => `${h} sa ${m} dk`,
-  remaining: (l) => `${l} kaldı`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'Şarkı sözleri',
-  showLyrics: 'Sözleri göster',
-  backToCurrent: 'Geçerli satıra dön',
-  empty: 'Bu parçanın sözleri mevcut değil',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'Arama',
@@ -2293,25 +2148,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'Açılır pencere',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'Sıra',
-  recentTab: 'Son çalınanlar',
-  close: 'Sırayı kapat',
-  nextInQueue: 'Sırada sonraki',
-  nextFrom: (c) => `Sonraki: ${c}`,
-  nextUp: 'Sıradaki',
-  clearQueue: 'Sırayı temizle',
-  reorder: (t) => `${t} öğesini yeniden sırala`,
-  reorderHint: 'Sürükleyin veya ok tuşlarını kullanın',
-  moveUp: 'Yukarı taşı',
-  moveDown: 'Aşağı taşı',
-  remove: 'Sıradan kaldır',
-  moved: (t, p, n) => `${t}, ${n} öğe içinde ${p}. sıraya taşındı`,
-  emptyQueue: 'Sıran boş',
-  emptyQueueHint: 'Sonra dinlemek için şarkı ve bölüm ekle.',
-  emptyRecent: 'Henüz bir şey çalınmadı',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2793,7 +2629,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2822,7 +2657,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2835,7 +2669,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2860,8 +2693,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2894,7 +2725,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

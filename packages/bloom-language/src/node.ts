@@ -152,9 +152,6 @@ import type { OrderStatusKind } from './controls/order-status';
 import type { LockupKind } from './controls/lockup';
 import type { AmbientPhotoKind } from './controls/ambient-photo';
 import type { CalendarViewKind } from './controls/calendar';
-import type { MediaPlayerKind } from './controls/media-player';
-import type { LyricsKind } from './controls/lyrics';
-import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
 import type { MenuItemKind } from './controls/menu-item';
@@ -217,9 +214,6 @@ import type {
   PresentedNode,
 } from './controls/overlays';
 import type { SettingsKind } from './controls/settings';
-import type { MusicLibraryKind } from './controls/music-library';
-import type { QueuePanelKind } from './controls/queue-panel';
-import type { TrackListKind } from './controls/track-list';
 import { OBJECTS } from './generated/spec.generated';
 import { regular, type GlassTransition, type GlassValue } from './glass';
 import { loopKeyframes, type KeyframesValue } from './motion/keyframes';
@@ -342,19 +336,11 @@ import {
   type RadarLegend,
   type MethodTitleAlign,
   type TypeRampStep,
-  type TransportStyle,
-  type TransportSize,
-  type LyricsSize,
-  type MediaCardLayout,
-  type MediaCardSize,
   type ChoiceListStyle,
   type PaymentStatusStyle,
   type PriceLineTone,
   type ReleaseCardLayout,
   type ReleaseStatusBadgeSize,
-  type QueuePanelStyle,
-  type SelectionBarPlacement,
-  type LibraryItemStyle,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1260,31 +1246,18 @@ export interface ValueModifiers {
   month: AnyBinding;
   period: AnyBinding;
   quantity: AnyBinding;
-  liked: AnyBinding;
   release: AnyBinding;
   selectedMoods: AnyBinding;
   selectedGenres: AnyBinding;
   pitch: AnyBinding;
   metric: AnyBinding;
   day: AnyBinding;
-  shuffle: AnyBinding;
-  repeat: AnyBinding;
-  playbackRate: AnyBinding;
-  devicePickerOpen: AnyBinding;
-  volume: AnyBinding;
   filtersOpen: AnyBinding;
   selectedExtras: AnyBinding;
   access: AnyBinding;
   window: AnyBinding;
-  downloadedOnly: AnyBinding;
-  view: AnyBinding;
   date: AnyBinding;
-  selectedIds: AnyBinding;
-  saved: AnyBinding;
-  downloaded: AnyBinding;
   tilted: AnyBinding;
-  lyricsActive: AnyBinding;
-  queueActive: AnyBinding;
   speaker: AnyBinding;
   videoOn: AnyBinding;
   screenSharing: AnyBinding;
@@ -1504,10 +1477,7 @@ export type Modifier =
         | LockupSize
         | SidebarSize
         | ShareSheetSize
-        | MediaCardSize
-        | LyricsSize
-        | ReleaseStatusBadgeSize
-        | TransportSize;
+        | ReleaseStatusBadgeSize;
     }
   | {
       readonly kind: 'style';
@@ -1564,14 +1534,9 @@ export type Modifier =
         | OutlineNavStyle
         | ChoiceListStyle
         | PaymentStatusStyle
-        | MediaCardLayout
         | ReleaseCardLayout
-        | TransportStyle
         | RowActionStyle
-        | ThemeToggleStyle
-        | LibraryItemStyle
-        | QueuePanelStyle
-        | SelectionBarPlacement;
+        | ThemeToggleStyle;
     }
   | {
       readonly kind: 'shape';
@@ -1969,13 +1934,7 @@ export type NodeKind =
   | DashboardCardKind
   | CartKind
   | MenuItemKind
-  | MediaCardKind
-  | LyricsKind
-  | CreatorStudioKind
-  | MediaPlayerKind
-  | MusicLibraryKind
-  | QueuePanelKind
-  | TrackListKind;
+  | CreatorStudioKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2346,10 +2305,7 @@ export class Node {
       | LockupSize
       | SidebarSize
       | ShareSheetSize
-      | MediaCardSize
-      | LyricsSize
-      | ReleaseStatusBadgeSize
-      | TransportSize,
+      | ReleaseStatusBadgeSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -2406,14 +2362,9 @@ export class Node {
       | OutlineNavStyle
       | ChoiceListStyle
       | PaymentStatusStyle
-      | MediaCardLayout
       | ReleaseCardLayout
-      | TransportStyle
       | RowActionStyle
-      | ThemeToggleStyle
-      | LibraryItemStyle
-      | QueuePanelStyle
-      | SelectionBarPlacement,
+      | ThemeToggleStyle,
   ): Node {
     return this.with({ kind: 'style', key: `style:${value}`, value });
   }
@@ -2608,9 +2559,6 @@ export class Node {
   quantity(value: AnyBinding): Node {
     return this.set('quantity', value);
   }
-  liked(value: AnyBinding): Node {
-    return this.set('liked', value);
-  }
   release(value: AnyBinding): Node {
     return this.set('release', value);
   }
@@ -2629,21 +2577,6 @@ export class Node {
   day(value: AnyBinding): Node {
     return this.set('day', value);
   }
-  shuffle(value: AnyBinding): Node {
-    return this.set('shuffle', value);
-  }
-  repeat(value: AnyBinding): Node {
-    return this.set('repeat', value);
-  }
-  playbackRate(value: AnyBinding): Node {
-    return this.set('playbackRate', value);
-  }
-  devicePickerOpen(value: AnyBinding): Node {
-    return this.set('devicePickerOpen', value);
-  }
-  volume(value: AnyBinding): Node {
-    return this.set('volume', value);
-  }
   filtersOpen(value: AnyBinding): Node {
     return this.set('filtersOpen', value);
   }
@@ -2656,32 +2589,11 @@ export class Node {
   window(value: AnyBinding): Node {
     return this.set('window', value);
   }
-  downloadedOnly(value: AnyBinding): Node {
-    return this.set('downloadedOnly', value);
-  }
-  view(value: AnyBinding): Node {
-    return this.set('view', value);
-  }
   date(value: AnyBinding): Node {
     return this.set('date', value);
   }
-  selectedIds(value: AnyBinding): Node {
-    return this.set('selectedIds', value);
-  }
-  saved(value: AnyBinding): Node {
-    return this.set('saved', value);
-  }
-  downloaded(value: AnyBinding): Node {
-    return this.set('downloaded', value);
-  }
   tilted(value: AnyBinding): Node {
     return this.set('tilted', value);
-  }
-  lyricsActive(value: AnyBinding): Node {
-    return this.set('lyricsActive', value);
-  }
-  queueActive(value: AnyBinding): Node {
-    return this.set('queueActive', value);
   }
   speaker(value: AnyBinding): Node {
     return this.set('speaker', value);

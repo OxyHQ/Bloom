@@ -113,12 +113,9 @@ A 40-tall pill: search glyph, input, and a clear button once there is text.
 Pressing anywhere on the pill focuses the input; focus takes the border, with no
 size change, so nothing reflows.
 
-**Why not `Search` or the music library's field.** [`Search`](./search.mdx) is a
-`TextField` with a floating LABEL — taller, and a label above a one-word search
-box is chrome a chat header has no room for.
-[`music-library`](./music-library.mdx)'s field is the right geometry but it is 48
-tall with a Browse toggle and a divider baked in, and reusing it would make a
-messaging screen import the music library's whole module graph for a pill.
+**Why not `Search`.** [`Search`](./search.mdx) is a `TextField` with a floating
+LABEL — taller, and a label above a one-word search box is chrome a chat header
+has no room for.
 
 `ChatSearchResults` groups hits by `kind` in a fixed order — Chats, Messages,
 Contacts — keeping your order inside each group, and DROPS an empty group rather

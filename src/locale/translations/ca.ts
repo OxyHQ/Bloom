@@ -337,35 +337,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'Missatge nou',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'Lletra',
-  queue: 'Cua',
-  devices: 'Connecta a un dispositiu',
-  fullscreen: 'Pantalla completa',
-  openPlayer: 'Obre el reproductor',
-  currentDevice: 'Dispositiu actual',
-  listeningOn: 'Escoltant a',
-  listeningOnDevice: (d) => `Escoltant a ${d}`,
-  selectDevice: 'Selecciona un dispositiu',
-  noDevices: "No s'han trobat altres dispositius",
-  deviceHelp: 'No veus el teu dispositiu?',
-  playbackSpeed: 'Velocitat de reproducció',
-  sleepTimer: 'Temporitzador',
-  sleepOff: 'Desactivat',
-  endOfEpisode: "Final de l'episodi",
-  oneHour: '1 hora',
-  minutes: (n) => plural('ca', n, { one: '{n} minut', other: '{n} minuts' }),
-  stopsIn: (r) => `S'atura d'aquí a ${r}`,
-  shuffle: 'Aleatori',
-  repeat: 'Repeteix',
-  repeatOne: 'Repeteix-ne una',
-  skipBack: (n) => plural('ca', n, { one: 'Enrere {n} segon', other: 'Enrere {n} segons' }),
-  skipForward: (n) => plural('ca', n, { one: 'Endavant {n} segon', other: 'Endavant {n} segons' }),
-  closePlayer: 'Tanca el reproductor',
-  share: 'Comparteix',
-  showLyrics: 'Mostra la lletra',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'Encara no hi ha res',
   addresses: 'Adreces',
@@ -968,65 +939,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'Esborra la cerca',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'Llista',
-    artist: 'Artista',
-    album: 'Àlbum',
-    podcast: 'Pòdcast',
-    audiobook: 'Audiollibre',
-    folder: 'Carpeta',
-  },
-  library: {
-    title: 'La teva biblioteca',
-    create: 'Crea una llista o una carpeta',
-    collapseRail: 'Redueix La teva biblioteca',
-    expandRail: 'Obre La teva biblioteca',
-    filters: 'Filtres',
-    clearFilters: 'Esborra els filtres',
-    filter: {
-      playlists: 'Llistes',
-      artists: 'Artistes',
-      albums: 'Àlbums',
-      podcasts: 'Pòdcasts',
-      audiobooks: 'Audiollibres',
-    },
-    downloaded: 'Baixat',
-    search: 'Cerca a La teva biblioteca',
-    searchPlaceholder: 'Cerca a La teva biblioteca',
-    clearSearch: 'Esborra la cerca',
-    sortAndView: 'Ordena i visualitza',
-    sortBy: 'Ordena per',
-    viewAs: 'Visualitza com a',
-    sort: {
-      recents: 'Recents',
-      'recently-added': 'Afegits recentment',
-      alphabetical: 'Ordre alfabètic',
-      creator: 'Creador',
-    },
-    view: { compact: 'Compacta', list: 'Llista', grid: 'Quadrícula' },
-    empty: 'Encara no hi ha res aquí',
-  },
-  item: { pinned: 'Fixat', downloaded: 'Baixat', nowPlaying: "S'està reproduint" },
-  search: { placeholder: 'Què vols escoltar?', clear: 'Esborra la cerca', browse: 'Explora' },
-  resultTypes: 'Tipus de resultat',
-  topResultKinds: {
-    song: 'Cançó',
-    artist: 'Artista',
-    album: 'Àlbum',
-    playlist: 'Llista',
-    podcast: 'Pòdcast',
-    episode: 'Episodi',
-    audiobook: 'Audiollibre',
-    profile: 'Perfil',
-  },
-  recent: {
-    title: 'Cerques recents',
-    clearAll: 'Esborra les cerques recents',
-    remove: (title) => `Treu ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: { reserved: 'Reservat', sold: 'Venut', rented: 'Llogat', unavailable: 'No disponible' },
   originally: (p) => `abans ${p}`,
@@ -1267,31 +1179,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'Codi promocional',
   apply: 'Aplica',
   tip: 'Propina',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'Àlbum', single: 'Senzill', ep: 'EP', compilation: 'Recopilatori' },
-  artist: 'Artista',
-  verified: 'Verificat',
-  audiobook: 'Audiollibre',
-  narratedBy: (n) => `Narrat per ${n}`,
-  progressOf: (t) => `Progrés de ${t}`,
-  episode: 'Episodi',
-  played: 'Escoltat',
-  event: 'Esdeveniment',
-  soldOut: 'Exhaurit',
-  listeningNow: 'Escoltant ara',
-  trackBy: (t, a) => `${t} de ${a}`,
-  mix: 'Mix',
-  playlist: 'Llista',
-  collaborative: 'Col·laborativa',
-  ownedBy: (o) => `De ${o}`,
-  podcast: 'Pòdcast',
-  profile: 'Perfil',
-  followsYou: 'Et segueix',
-  song: 'Cançó',
-  share: 'Comparteix',
-  listened: 'Escoltat',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1846,38 +1733,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'o continua amb',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'Títol',
-  album: 'Àlbum',
-  dateAdded: "Data d'addició",
-  plays: 'Reproduccions',
-  duration: 'Durada',
-  moveUp: 'Mou amunt',
-  moveDown: 'Mou avall',
-  reorder: 'Reordena',
-  downloaded: 'Baixada',
-  unavailable: 'No disponible',
-  tracks: 'Cançons',
-  episodes: 'Episodis',
-  selected: (n) => plural('ca', n, { one: '{n} seleccionat', other: '{n} seleccionats' }),
-  clearSelection: 'Esborra la selecció',
-  played: 'Reproduït',
-  listened: 'Escoltat',
-  saveEpisode: "Desa l'episodi",
-  downloadEpisode: "Baixa l'episodi",
-  minutes: (m) => `${m} min`,
-  hours: (h) => `${h} h`,
-  hoursMinutes: (h, m) => `${h} h ${m} min`,
-  remaining: (l) => `Queden ${l}`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'Lletra',
-  showLyrics: 'Mostra la lletra',
-  backToCurrent: 'Torna a la línia actual',
-  empty: "La lletra d'aquesta cançó no està disponible",
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'Trucada',
@@ -2328,25 +2183,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'Finestra emergent',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'Cua',
-  recentTab: 'Escoltat recentment',
-  close: 'Tanca la cua',
-  nextInQueue: 'Següent a la cua',
-  nextFrom: (c) => `Següent de: ${c}`,
-  nextUp: 'A continuació',
-  clearQueue: 'Buida la cua',
-  reorder: (t) => `Reordena ${t}`,
-  reorderHint: 'Arrossega o fes servir les tecles de fletxa',
-  moveUp: 'Mou amunt',
-  moveDown: 'Mou avall',
-  remove: 'Treu de la cua',
-  moved: (t, p, n) => `${t} s'ha mogut a la posició ${p} de ${n}`,
-  emptyQueue: 'La teva cua és buida',
-  emptyQueueHint: 'Afegeix cançons i episodis per escoltar-los a continuació.',
-  emptyRecent: 'Encara no has reproduït res',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2828,7 +2664,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2857,7 +2692,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2870,7 +2704,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2895,8 +2728,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2929,7 +2760,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

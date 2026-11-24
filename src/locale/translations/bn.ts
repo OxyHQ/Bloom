@@ -332,35 +332,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'নতুন বার্তা',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'গানের কথা',
-  queue: 'কিউ',
-  devices: 'কোনো ডিভাইসে কানেক্ট করুন',
-  fullscreen: 'ফুল স্ক্রিন',
-  openPlayer: 'প্লেয়ার খুলুন',
-  currentDevice: 'বর্তমান ডিভাইস',
-  listeningOn: 'এতে শুনছেন',
-  listeningOnDevice: (d) => `${d}-এ শুনছেন`,
-  selectDevice: 'একটি ডিভাইস বেছে নিন',
-  noDevices: 'অন্য কোনো ডিভাইস পাওয়া যায়নি',
-  deviceHelp: 'আপনার ডিভাইস দেখতে পাচ্ছেন না?',
-  playbackSpeed: 'প্লেব্যাকের গতি',
-  sleepTimer: 'স্লিপ টাইমার',
-  sleepOff: 'বন্ধ',
-  endOfEpisode: 'পর্বের শেষে',
-  oneHour: '1 ঘণ্টা',
-  minutes: (n) => plural('bn', n, { other: '{n} মিনিট' }),
-  stopsIn: (r) => `${r} পরে থামবে`,
-  shuffle: 'শাফল করুন',
-  repeat: 'রিপিট করুন',
-  repeatOne: 'একটি গান রিপিট করুন',
-  skipBack: (n) => plural('bn', n, { other: '{n} সেকেন্ড পিছনে' }),
-  skipForward: (n) => plural('bn', n, { other: '{n} সেকেন্ড সামনে' }),
-  closePlayer: 'প্লেয়ার বন্ধ করুন',
-  share: 'শেয়ার করুন',
-  showLyrics: 'গানের কথা দেখান',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'এখানে এখনও কিছু নেই',
   addresses: 'ঠিকানা',
@@ -941,65 +912,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'অনুসন্ধান মুছুন',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'প্লেলিস্ট',
-    artist: 'শিল্পী',
-    album: 'অ্যালবাম',
-    podcast: 'পডকাস্ট',
-    audiobook: 'অডিওবুক',
-    folder: 'ফোল্ডার',
-  },
-  library: {
-    title: 'আপনার লাইব্রেরি',
-    create: 'প্লেলিস্ট বা ফোল্ডার তৈরি করুন',
-    collapseRail: 'আপনার লাইব্রেরি সংকুচিত করুন',
-    expandRail: 'আপনার লাইব্রেরি খুলুন',
-    filters: 'ফিল্টার',
-    clearFilters: 'ফিল্টার মুছে ফেলুন',
-    filter: {
-      playlists: 'প্লেলিস্ট',
-      artists: 'শিল্পী',
-      albums: 'অ্যালবাম',
-      podcasts: 'পডকাস্ট',
-      audiobooks: 'অডিওবুক',
-    },
-    downloaded: 'ডাউনলোড করা',
-    search: 'আপনার লাইব্রেরিতে খুঁজুন',
-    searchPlaceholder: 'আপনার লাইব্রেরিতে খুঁজুন',
-    clearSearch: 'অনুসন্ধান মুছে ফেলুন',
-    sortAndView: 'সাজান ও দেখুন',
-    sortBy: 'যেভাবে সাজাবেন',
-    viewAs: 'যেভাবে দেখবেন',
-    sort: {
-      recents: 'সাম্প্রতিক',
-      'recently-added': 'সম্প্রতি যোগ করা',
-      alphabetical: 'বর্ণানুক্রমিক',
-      creator: 'নির্মাতা',
-    },
-    view: { compact: 'কমপ্যাক্ট', list: 'তালিকা', grid: 'গ্রিড' },
-    empty: 'এখানে এখনও কিছু নেই',
-  },
-  item: { pinned: 'পিন করা', downloaded: 'ডাউনলোড করা', nowPlaying: 'এখন চলছে' },
-  search: { placeholder: 'আপনি কী শুনতে চান?', clear: 'অনুসন্ধান মুছে ফেলুন', browse: 'ব্রাউজ করুন' },
-  resultTypes: 'ফলাফলের ধরন',
-  topResultKinds: {
-    song: 'গান',
-    artist: 'শিল্পী',
-    album: 'অ্যালবাম',
-    playlist: 'প্লেলিস্ট',
-    podcast: 'পডকাস্ট',
-    episode: 'পর্ব',
-    audiobook: 'অডিওবুক',
-    profile: 'প্রোফাইল',
-  },
-  recent: {
-    title: 'সাম্প্রতিক অনুসন্ধান',
-    clearAll: 'সাম্প্রতিক অনুসন্ধান মুছে ফেলুন',
-    remove: (title) => `${title} সরান`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: {
     reserved: 'সংরক্ষিত',
@@ -1231,31 +1143,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'প্রোমো কোড',
   apply: 'প্রয়োগ করুন',
   tip: 'টিপ',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'অ্যালবাম', single: 'সিঙ্গেল', ep: 'EP', compilation: 'সংকলন' },
-  artist: 'শিল্পী',
-  verified: 'যাচাইকৃত',
-  audiobook: 'অডিওবুক',
-  narratedBy: (n) => `বর্ণনায় ${n}`,
-  progressOf: (t) => `${t}-এর অগ্রগতি`,
-  episode: 'পর্ব',
-  played: 'শোনা হয়েছে',
-  event: 'ইভেন্ট',
-  soldOut: 'টিকিট শেষ',
-  listeningNow: 'এখন শুনছেন',
-  trackBy: (t, a) => `${a}-এর ${t}`,
-  mix: 'মিক্স',
-  playlist: 'প্লেলিস্ট',
-  collaborative: 'যৌথ প্লেলিস্ট',
-  ownedBy: (o) => `${o}-এর তৈরি`,
-  podcast: 'পডকাস্ট',
-  profile: 'প্রোফাইল',
-  followsYou: 'আপনাকে ফলো করে',
-  song: 'গান',
-  share: 'শেয়ার করুন',
-  listened: 'শোনা হয়েছে',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1785,38 +1672,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'অথবা এর মাধ্যমে চালিয়ে যান',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'শিরোনাম',
-  album: 'অ্যালবাম',
-  dateAdded: 'যোগ করার তারিখ',
-  plays: 'প্লে',
-  duration: 'সময়কাল',
-  moveUp: 'উপরে সরান',
-  moveDown: 'নিচে সরান',
-  reorder: 'ক্রম বদলান',
-  downloaded: 'ডাউনলোড করা হয়েছে',
-  unavailable: 'উপলভ্য নয়',
-  tracks: 'ট্র্যাক',
-  episodes: 'পর্ব',
-  selected: (n) => plural('bn', n, { other: '{n}টি নির্বাচিত' }),
-  clearSelection: 'নির্বাচন মুছুন',
-  played: 'চালানো হয়েছে',
-  listened: 'শোনা হয়েছে',
-  saveEpisode: 'পর্ব সংরক্ষণ করুন',
-  downloadEpisode: 'পর্ব ডাউনলোড করুন',
-  minutes: (m) => `${m} মিনিট`,
-  hours: (h) => `${h} ঘণ্টা`,
-  hoursMinutes: (h, m) => `${h} ঘণ্টা ${m} মিনিট`,
-  remaining: (l) => `${l} বাকি`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'গানের কথা',
-  showLyrics: 'গানের কথা দেখান',
-  backToCurrent: 'বর্তমান লাইনে ফিরে যান',
-  empty: 'এই ট্র্যাকের গানের কথা উপলব্ধ নেই',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'কল',
@@ -2249,25 +2104,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'পপওভার',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'কিউ',
-  recentTab: 'সম্প্রতি চালানো',
-  close: 'কিউ বন্ধ করুন',
-  nextInQueue: 'কিউতে পরবর্তী',
-  nextFrom: (c) => `${c} থেকে পরবর্তী`,
-  nextUp: 'এরপর',
-  clearQueue: 'কিউ খালি করুন',
-  reorder: (t) => `${t}-এর ক্রম বদলান`,
-  reorderHint: 'টেনে আনুন বা তীর কী ব্যবহার করুন',
-  moveUp: 'উপরে সরান',
-  moveDown: 'নিচে সরান',
-  remove: 'কিউ থেকে সরান',
-  moved: (t, p, n) => `${t} ${n}টির মধ্যে ${p} নম্বর অবস্থানে সরানো হয়েছে`,
-  emptyQueue: 'আপনার কিউ খালি',
-  emptyQueueHint: 'পরে শুনতে গান ও পর্ব যোগ করুন।',
-  emptyRecent: 'এখনও কিছু চালানো হয়নি',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2742,7 +2578,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2771,7 +2606,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2784,7 +2618,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2809,8 +2642,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2843,7 +2674,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

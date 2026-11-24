@@ -128,9 +128,8 @@ need it. Both APIs are inert on web and when haptics are disabled.
 The controls a finger operates use it already: `Switch` (`toggle`), `Slider`
 (a tick per step while its steps are at most 20 detents, otherwise at either
 end), `SegmentedControl`, `Stepper`'s − and +, `RatingInput` and
-`SortablePhotoGrid`'s move buttons (`selection`, only when the value changes),
-`SwipeRow` opening a side's actions and `QueuePanel`'s drag (`tap` as a row
-lifts, `selection` as it crosses a slot). Keys and an assistive technology's
+`SortablePhotoGrid`'s move buttons (`selection`, only when the value changes)
+and `SwipeRow` opening a side's actions. Keys and an assistive technology's
 adjustments stay silent, as the platforms' own controls do. To silence one
 subtree, wrap it in `<BloomHapticsProvider enabled={false}>`.
 

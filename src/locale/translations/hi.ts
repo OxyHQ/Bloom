@@ -329,35 +329,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'नया संदेश',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'बोल',
-  queue: 'कतार',
-  devices: 'किसी डिवाइस से कनेक्ट करें',
-  fullscreen: 'फ़ुल स्क्रीन',
-  openPlayer: 'प्लेयर खोलें',
-  currentDevice: 'मौजूदा डिवाइस',
-  listeningOn: 'इस पर सुन रहे हैं',
-  listeningOnDevice: (d) => `${d} पर सुन रहे हैं`,
-  selectDevice: 'कोई डिवाइस चुनें',
-  noDevices: 'कोई अन्य डिवाइस नहीं मिला',
-  deviceHelp: 'आपका डिवाइस नहीं दिख रहा?',
-  playbackSpeed: 'प्लेबैक स्पीड',
-  sleepTimer: 'स्लीप टाइमर',
-  sleepOff: 'बंद',
-  endOfEpisode: 'एपिसोड के अंत में',
-  oneHour: '1 घंटा',
-  minutes: (n) => plural('hi', n, { other: '{n} मिनट' }),
-  stopsIn: (r) => `${r} में रुक जाएगा`,
-  shuffle: 'शफ़ल करें',
-  repeat: 'रिपीट करें',
-  repeatOne: 'एक गाना रिपीट करें',
-  skipBack: (n) => plural('hi', n, { other: '{n} सेकंड पीछे' }),
-  skipForward: (n) => plural('hi', n, { other: '{n} सेकंड आगे' }),
-  closePlayer: 'प्लेयर बंद करें',
-  share: 'शेयर करें',
-  showLyrics: 'बोल दिखाएं',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'यहाँ अभी कुछ नहीं है',
   addresses: 'पते',
@@ -951,65 +922,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'खोज साफ़ करें',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'प्लेलिस्ट',
-    artist: 'कलाकार',
-    album: 'एल्बम',
-    podcast: 'पॉडकास्ट',
-    audiobook: 'ऑडियोबुक',
-    folder: 'फ़ोल्डर',
-  },
-  library: {
-    title: 'आपकी लाइब्रेरी',
-    create: 'प्लेलिस्ट या फ़ोल्डर बनाएं',
-    collapseRail: 'आपकी लाइब्रेरी छोटी करें',
-    expandRail: 'आपकी लाइब्रेरी खोलें',
-    filters: 'फ़िल्टर',
-    clearFilters: 'फ़िल्टर साफ़ करें',
-    filter: {
-      playlists: 'प्लेलिस्ट',
-      artists: 'कलाकार',
-      albums: 'एल्बम',
-      podcasts: 'पॉडकास्ट',
-      audiobooks: 'ऑडियोबुक',
-    },
-    downloaded: 'डाउनलोड किए गए',
-    search: 'आपकी लाइब्रेरी में खोजें',
-    searchPlaceholder: 'आपकी लाइब्रेरी में खोजें',
-    clearSearch: 'खोज साफ़ करें',
-    sortAndView: 'क्रम और व्यू',
-    sortBy: 'इसके अनुसार क्रम',
-    viewAs: 'इस रूप में देखें',
-    sort: {
-      recents: 'हाल ही के',
-      'recently-added': 'हाल ही में जोड़े गए',
-      alphabetical: 'वर्णानुक्रम',
-      creator: 'निर्माता',
-    },
-    view: { compact: 'कॉम्पैक्ट', list: 'सूची', grid: 'ग्रिड' },
-    empty: 'यहां अभी कुछ नहीं है',
-  },
-  item: { pinned: 'पिन किया गया', downloaded: 'डाउनलोड किया गया', nowPlaying: 'अभी चल रहा है' },
-  search: { placeholder: 'आप क्या सुनना चाहते हैं?', clear: 'खोज साफ़ करें', browse: 'ब्राउज़ करें' },
-  resultTypes: 'नतीजों के प्रकार',
-  topResultKinds: {
-    song: 'गाना',
-    artist: 'कलाकार',
-    album: 'एल्बम',
-    playlist: 'प्लेलिस्ट',
-    podcast: 'पॉडकास्ट',
-    episode: 'एपिसोड',
-    audiobook: 'ऑडियोबुक',
-    profile: 'प्रोफ़ाइल',
-  },
-  recent: {
-    title: 'हाल की खोजें',
-    clearAll: 'हाल की खोजें साफ़ करें',
-    remove: (title) => `${title} निकालें`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: {
     reserved: 'आरक्षित',
@@ -1249,31 +1161,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'प्रोमो कोड',
   apply: 'लागू करें',
   tip: 'टिप',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'एल्बम', single: 'सिंगल', ep: 'EP', compilation: 'संकलन' },
-  artist: 'कलाकार',
-  verified: 'सत्यापित',
-  audiobook: 'ऑडियोबुक',
-  narratedBy: (n) => `${n} द्वारा सुनाई गई`,
-  progressOf: (t) => `${t} की प्रगति`,
-  episode: 'एपिसोड',
-  played: 'सुना गया',
-  event: 'इवेंट',
-  soldOut: 'सभी टिकट बिक गए',
-  listeningNow: 'अभी सुन रहे हैं',
-  trackBy: (t, a) => `${a} का ${t}`,
-  mix: 'मिक्स',
-  playlist: 'प्लेलिस्ट',
-  collaborative: 'साझा प्लेलिस्ट',
-  ownedBy: (o) => `${o} द्वारा`,
-  podcast: 'पॉडकास्ट',
-  profile: 'प्रोफ़ाइल',
-  followsYou: 'आपको फ़ॉलो करता है',
-  song: 'गाना',
-  share: 'शेयर करें',
-  listened: 'सुना गया',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1801,38 +1688,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'या इसके साथ जारी रखें',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'शीर्षक',
-  album: 'एल्बम',
-  dateAdded: 'जोड़ने की तारीख',
-  plays: 'प्ले',
-  duration: 'अवधि',
-  moveUp: 'ऊपर ले जाएं',
-  moveDown: 'नीचे ले जाएं',
-  reorder: 'क्रम बदलें',
-  downloaded: 'डाउनलोड किया गया',
-  unavailable: 'उपलब्ध नहीं',
-  tracks: 'ट्रैक',
-  episodes: 'एपिसोड',
-  selected: (n) => plural('hi', n, { one: '{n} चुना गया', other: '{n} चुने गए' }),
-  clearSelection: 'चयन हटाएं',
-  played: 'चलाया गया',
-  listened: 'सुना गया',
-  saveEpisode: 'एपिसोड सहेजें',
-  downloadEpisode: 'एपिसोड डाउनलोड करें',
-  minutes: (m) => `${m} मिनट`,
-  hours: (h) => `${h} घंटा`,
-  hoursMinutes: (h, m) => `${h} घंटा ${m} मिनट`,
-  remaining: (l) => `${l} बाकी`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'बोल',
-  showLyrics: 'बोल दिखाएं',
-  backToCurrent: 'मौजूदा पंक्ति पर वापस जाएं',
-  empty: 'इस ट्रैक के बोल उपलब्ध नहीं हैं',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'कॉल',
@@ -2267,25 +2122,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'पॉपओवर',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'कतार',
-  recentTab: 'हाल ही में चलाए गए',
-  close: 'कतार बंद करें',
-  nextInQueue: 'कतार में आगे',
-  nextFrom: (c) => `${c} से आगे`,
-  nextUp: 'आगे आने वाले',
-  clearQueue: 'कतार खाली करें',
-  reorder: (t) => `${t} का क्रम बदलें`,
-  reorderHint: 'खींचें या तीर कुंजियों का इस्तेमाल करें',
-  moveUp: 'ऊपर ले जाएं',
-  moveDown: 'नीचे ले जाएं',
-  remove: 'कतार से निकालें',
-  moved: (t, p, n) => `${t} को ${n} में से ${p} स्थान पर ले जाया गया`,
-  emptyQueue: 'आपकी कतार खाली है',
-  emptyQueueHint: 'गाने और एपिसोड जोड़ें ताकि वे आगे चलें।',
-  emptyRecent: 'अभी तक कुछ नहीं चलाया गया',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2760,7 +2596,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2789,7 +2624,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2802,7 +2636,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2827,8 +2660,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2861,7 +2692,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

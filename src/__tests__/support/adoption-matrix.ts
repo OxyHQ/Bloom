@@ -347,7 +347,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     'chat-list': { verdict: 'does-not-apply', reason: BARE_INPUT },
     command: { verdict: 'does-not-apply', reason: BARE_INPUT },
     'home-search': { verdict: 'does-not-apply', reason: BARE_INPUT },
-    'music-library': { verdict: 'does-not-apply', reason: BARE_INPUT },
     sidebar: { verdict: 'does-not-apply', reason: BARE_INPUT },
     'stay-filters': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'project-board': {

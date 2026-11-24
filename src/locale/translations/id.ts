@@ -334,35 +334,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'Pesan baru',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'Lirik',
-  queue: 'Antrean',
-  devices: 'Hubungkan ke perangkat',
-  fullscreen: 'Layar penuh',
-  openPlayer: 'Buka pemutar',
-  currentDevice: 'Perangkat saat ini',
-  listeningOn: 'Mendengarkan di',
-  listeningOnDevice: (d) => `Mendengarkan di ${d}`,
-  selectDevice: 'Pilih perangkat',
-  noDevices: 'Tidak ada perangkat lain yang ditemukan',
-  deviceHelp: 'Perangkat Anda tidak terlihat?',
-  playbackSpeed: 'Kecepatan pemutaran',
-  sleepTimer: 'Timer tidur',
-  sleepOff: 'Nonaktif',
-  endOfEpisode: 'Akhir episode',
-  oneHour: '1 jam',
-  minutes: (n) => plural('id', n, { other: '{n} menit' }),
-  stopsIn: (r) => `Berhenti dalam ${r}`,
-  shuffle: 'Acak',
-  repeat: 'Ulangi',
-  repeatOne: 'Ulangi satu',
-  skipBack: (n) => plural('id', n, { other: 'Mundur {n} detik' }),
-  skipForward: (n) => plural('id', n, { other: 'Maju {n} detik' }),
-  closePlayer: 'Tutup pemutar',
-  share: 'Bagikan',
-  showLyrics: 'Tampilkan lirik',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'Belum ada apa pun di sini',
   addresses: 'Alamat',
@@ -954,65 +925,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'Hapus pencarian',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'Playlist',
-    artist: 'Artis',
-    album: 'Album',
-    podcast: 'Podcast',
-    audiobook: 'Buku audio',
-    folder: 'Folder',
-  },
-  library: {
-    title: 'Koleksi Kamu',
-    create: 'Buat playlist atau folder',
-    collapseRail: 'Ciutkan Koleksi Kamu',
-    expandRail: 'Buka Koleksi Kamu',
-    filters: 'Filter',
-    clearFilters: 'Hapus filter',
-    filter: {
-      playlists: 'Playlist',
-      artists: 'Artis',
-      albums: 'Album',
-      podcasts: 'Podcast',
-      audiobooks: 'Buku audio',
-    },
-    downloaded: 'Diunduh',
-    search: 'Cari di Koleksi Kamu',
-    searchPlaceholder: 'Cari di Koleksi Kamu',
-    clearSearch: 'Hapus pencarian',
-    sortAndView: 'Urutkan dan tampilan',
-    sortBy: 'Urutkan menurut',
-    viewAs: 'Tampilkan sebagai',
-    sort: {
-      recents: 'Terbaru',
-      'recently-added': 'Baru ditambahkan',
-      alphabetical: 'Menurut abjad',
-      creator: 'Pembuat',
-    },
-    view: { compact: 'Ringkas', list: 'Daftar', grid: 'Kisi' },
-    empty: 'Belum ada apa-apa di sini',
-  },
-  item: { pinned: 'Disematkan', downloaded: 'Diunduh', nowPlaying: 'Sedang diputar' },
-  search: { placeholder: 'Mau dengar apa?', clear: 'Hapus pencarian', browse: 'Jelajahi' },
-  resultTypes: 'Jenis hasil',
-  topResultKinds: {
-    song: 'Lagu',
-    artist: 'Artis',
-    album: 'Album',
-    playlist: 'Playlist',
-    podcast: 'Podcast',
-    episode: 'Episode',
-    audiobook: 'Buku audio',
-    profile: 'Profil',
-  },
-  recent: {
-    title: 'Pencarian terbaru',
-    clearAll: 'Hapus pencarian terbaru',
-    remove: (title) => `Keluarkan ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: {
     reserved: 'Dipesan',
@@ -1254,31 +1166,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'Kode promo',
   apply: 'Terapkan',
   tip: 'Tip',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'Album', single: 'Single', ep: 'EP', compilation: 'Kompilasi' },
-  artist: 'Artis',
-  verified: 'Terverifikasi',
-  audiobook: 'Buku audio',
-  narratedBy: (n) => `Dinarasikan oleh ${n}`,
-  progressOf: (t) => `Progres ${t}`,
-  episode: 'Episode',
-  played: 'Sudah diputar',
-  event: 'Acara',
-  soldOut: 'Habis terjual',
-  listeningNow: 'Sedang mendengarkan',
-  trackBy: (t, a) => `${t} oleh ${a}`,
-  mix: 'Mix',
-  playlist: 'Daftar putar',
-  collaborative: 'Kolaboratif',
-  ownedBy: (o) => `Oleh ${o}`,
-  podcast: 'Podcast',
-  profile: 'Profil',
-  followsYou: 'Mengikuti Anda',
-  song: 'Lagu',
-  share: 'Bagikan',
-  listened: 'Sudah didengarkan',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1839,38 +1726,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'atau lanjutkan dengan',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'Judul',
-  album: 'Album',
-  dateAdded: 'Tanggal ditambahkan',
-  plays: 'Diputar',
-  duration: 'Durasi',
-  moveUp: 'Pindahkan ke atas',
-  moveDown: 'Pindahkan ke bawah',
-  reorder: 'Urutkan ulang',
-  downloaded: 'Diunduh',
-  unavailable: 'Tidak tersedia',
-  tracks: 'Lagu',
-  episodes: 'Episode',
-  selected: (n) => plural('id', n, { other: '{n} dipilih' }),
-  clearSelection: 'Hapus pilihan',
-  played: 'Sudah diputar',
-  listened: 'Sudah didengarkan',
-  saveEpisode: 'Simpan episode',
-  downloadEpisode: 'Unduh episode',
-  minutes: (m) => `${m} mnt`,
-  hours: (h) => `${h} jam`,
-  hoursMinutes: (h, m) => `${h} jam ${m} mnt`,
-  remaining: (l) => `${l} lagi`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'Lirik',
-  showLyrics: 'Tampilkan lirik',
-  backToCurrent: 'Kembali ke baris saat ini',
-  empty: 'Lirik untuk lagu ini tidak tersedia',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'Panggilan',
@@ -2321,25 +2176,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'Jendela munculan',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'Antrean',
-  recentTab: 'Baru diputar',
-  close: 'Tutup antrean',
-  nextInQueue: 'Berikutnya di antrean',
-  nextFrom: (c) => `Berikutnya dari: ${c}`,
-  nextUp: 'Berikutnya',
-  clearQueue: 'Hapus antrean',
-  reorder: (t) => `Urutkan ulang ${t}`,
-  reorderHint: 'Seret, atau gunakan tombol panah',
-  moveUp: 'Pindahkan ke atas',
-  moveDown: 'Pindahkan ke bawah',
-  remove: 'Hapus dari antrean',
-  moved: (t, p, n) => `${t} dipindahkan ke posisi ${p} dari ${n}`,
-  emptyQueue: 'Antrean Anda kosong',
-  emptyQueueHint: 'Tambahkan lagu dan episode untuk didengarkan berikutnya.',
-  emptyRecent: 'Belum ada yang diputar',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2819,7 +2655,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2848,7 +2683,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2861,7 +2695,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2886,8 +2719,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2920,7 +2751,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

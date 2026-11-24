@@ -341,37 +341,6 @@ const MAIL_COMPOSE_MESSAGES: Translations['MAIL_COMPOSE_MESSAGES'] = {
   title: 'Mensaje nuevo',
 };
 
-const MEDIA_PLAYER_MESSAGES: Translations['MEDIA_PLAYER_MESSAGES'] = {
-  lyrics: 'Letra',
-  queue: 'Cola',
-  devices: 'Conectar a un dispositivo',
-  fullscreen: 'Pantalla completa',
-  openPlayer: 'Abrir reproductor',
-  currentDevice: 'Dispositivo actual',
-  listeningOn: 'Escuchando en',
-  listeningOnDevice: (d) => `Escuchando en ${d}`,
-  selectDevice: 'Selecciona un dispositivo',
-  noDevices: 'No se han encontrado otros dispositivos',
-  deviceHelp: '¿No ves tu dispositivo?',
-  playbackSpeed: 'Velocidad de reproducción',
-  sleepTimer: 'Temporizador',
-  sleepOff: 'Desactivado',
-  endOfEpisode: 'Final del episodio',
-  oneHour: '1 hora',
-  minutes: (n) => plural('es', n, { one: '{n} minuto', other: '{n} minutos' }),
-  stopsIn: (r) => `Se detiene en ${r}`,
-  shuffle: 'Aleatorio',
-  repeat: 'Repetir',
-  repeatOne: 'Repetir una',
-  skipBack: (n) =>
-    plural('es', n, { one: 'Retroceder {n} segundo', other: 'Retroceder {n} segundos' }),
-  skipForward: (n) =>
-    plural('es', n, { one: 'Avanzar {n} segundo', other: 'Avanzar {n} segundos' }),
-  closePlayer: 'Cerrar reproductor',
-  share: 'Compartir',
-  showLyrics: 'Mostrar letra',
-};
-
 const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   emptyTitle: 'Aún no hay nada aquí',
   addresses: 'Direcciones',
@@ -978,65 +947,6 @@ const COMMAND_MESSAGES: Translations['COMMAND_MESSAGES'] = {
   clearSearch: 'Borrar búsqueda',
 };
 
-const MUSIC_LIBRARY_MESSAGES: Translations['MUSIC_LIBRARY_MESSAGES'] = {
-  kinds: {
-    playlist: 'Playlist',
-    artist: 'Artista',
-    album: 'Álbum',
-    podcast: 'Pódcast',
-    audiobook: 'Audiolibro',
-    folder: 'Carpeta',
-  },
-  library: {
-    title: 'Tu biblioteca',
-    create: 'Crear playlist o carpeta',
-    collapseRail: 'Contraer Tu biblioteca',
-    expandRail: 'Abrir Tu biblioteca',
-    filters: 'Filtros',
-    clearFilters: 'Borrar filtros',
-    filter: {
-      playlists: 'Playlists',
-      artists: 'Artistas',
-      albums: 'Álbumes',
-      podcasts: 'Pódcasts',
-      audiobooks: 'Audiolibros',
-    },
-    downloaded: 'Descargado',
-    search: 'Buscar en Tu biblioteca',
-    searchPlaceholder: 'Buscar en Tu biblioteca',
-    clearSearch: 'Borrar búsqueda',
-    sortAndView: 'Ordenar y ver',
-    sortBy: 'Ordenar por',
-    viewAs: 'Ver como',
-    sort: {
-      recents: 'Recientes',
-      'recently-added': 'Añadidos recientemente',
-      alphabetical: 'Orden alfabético',
-      creator: 'Creador',
-    },
-    view: { compact: 'Compacta', list: 'Lista', grid: 'Cuadrícula' },
-    empty: 'Aún no hay nada aquí',
-  },
-  item: { pinned: 'Fijado', downloaded: 'Descargado', nowPlaying: 'Reproduciendo' },
-  search: { placeholder: '¿Qué quieres escuchar?', clear: 'Borrar búsqueda', browse: 'Explorar' },
-  resultTypes: 'Tipos de resultado',
-  topResultKinds: {
-    song: 'Canción',
-    artist: 'Artista',
-    album: 'Álbum',
-    playlist: 'Playlist',
-    podcast: 'Pódcast',
-    episode: 'Episodio',
-    audiobook: 'Audiolibro',
-    profile: 'Perfil',
-  },
-  recent: {
-    title: 'Búsquedas recientes',
-    clearAll: 'Borrar búsquedas recientes',
-    remove: (title) => `Quitar ${title}`,
-  },
-};
-
 const LISTING_CARD_MESSAGES: Translations['LISTING_CARD_MESSAGES'] = {
   statuses: {
     reserved: 'Reservado',
@@ -1279,31 +1189,6 @@ const CART_PANEL_MESSAGES: Translations['CART_PANEL_MESSAGES'] = {
   promoCode: 'Código promocional',
   apply: 'Aplicar',
   tip: 'Propina',
-};
-
-const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
-  albumTypes: { album: 'Álbum', single: 'Sencillo', ep: 'EP', compilation: 'Recopilatorio' },
-  artist: 'Artista',
-  verified: 'Verificado',
-  audiobook: 'Audiolibro',
-  narratedBy: (n) => `Narrado por ${n}`,
-  progressOf: (t) => `Progreso de ${t}`,
-  episode: 'Episodio',
-  played: 'Escuchado',
-  event: 'Evento',
-  soldOut: 'Agotado',
-  listeningNow: 'Escuchando ahora',
-  trackBy: (t, a) => `${t} de ${a}`,
-  mix: 'Mix',
-  playlist: 'Lista',
-  collaborative: 'Colaborativa',
-  ownedBy: (o) => `De ${o}`,
-  podcast: 'Pódcast',
-  profile: 'Perfil',
-  followsYou: 'Te sigue',
-  song: 'Canción',
-  share: 'Compartir',
-  listened: 'Escuchado',
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1870,38 +1755,6 @@ const AUTH_CARD_MESSAGES: Translations['AUTH_CARD_MESSAGES'] = {
   orContinueWith: 'o continúa con',
 };
 
-const TRACK_LIST_MESSAGES: Translations['TRACK_LIST_MESSAGES'] = {
-  title: 'Título',
-  album: 'Álbum',
-  dateAdded: 'Fecha en que se añadió',
-  plays: 'Reproducciones',
-  duration: 'Duración',
-  moveUp: 'Subir',
-  moveDown: 'Bajar',
-  reorder: 'Reordenar',
-  downloaded: 'Descargada',
-  unavailable: 'No disponible',
-  tracks: 'Canciones',
-  episodes: 'Episodios',
-  selected: (n) => plural('es', n, { one: '{n} seleccionado', other: '{n} seleccionados' }),
-  clearSelection: 'Borrar selección',
-  played: 'Reproducido',
-  listened: 'Escuchado',
-  saveEpisode: 'Guardar episodio',
-  downloadEpisode: 'Descargar episodio',
-  minutes: (m) => `${m} min`,
-  hours: (h) => `${h} h`,
-  hoursMinutes: (h, m) => `${h} h ${m} min`,
-  remaining: (l) => `Quedan ${l}`,
-};
-
-const LYRICS_MESSAGES: Translations['LYRICS_MESSAGES'] = {
-  lyrics: 'Letra',
-  showLyrics: 'Mostrar letra',
-  backToCurrent: 'Volver a la línea actual',
-  empty: 'La letra de esta canción no está disponible',
-};
-
 const ACTIVITY_FEED_MESSAGES: Translations['ACTIVITY_FEED_MESSAGES'] = {
   kinds: {
     call: 'Llamada',
@@ -2353,25 +2206,6 @@ const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
 
 const POPOVER_MESSAGES: Translations['POPOVER_MESSAGES'] = {
   popover: 'Ventana emergente',
-};
-
-const QUEUE_PANEL_MESSAGES: Translations['QUEUE_PANEL_MESSAGES'] = {
-  queueTab: 'Cola',
-  recentTab: 'Escuchado recientemente',
-  close: 'Cerrar cola',
-  nextInQueue: 'A continuación en la cola',
-  nextFrom: (c) => `A continuación de: ${c}`,
-  nextUp: 'A continuación',
-  clearQueue: 'Borrar cola',
-  reorder: (t) => `Reordenar ${t}`,
-  reorderHint: 'Arrastra o usa las teclas de flecha',
-  moveUp: 'Subir',
-  moveDown: 'Bajar',
-  remove: 'Quitar de la cola',
-  moved: (t, p, n) => `${t} se ha movido a la posición ${p} de ${n}`,
-  emptyQueue: 'Tu cola está vacía',
-  emptyQueueHint: 'Añade canciones y episodios para escucharlos a continuación.',
-  emptyRecent: 'Aún no has reproducido nada',
 };
 
 const HOVER_CARD_MESSAGES: Translations['HOVER_CARD_MESSAGES'] = {
@@ -2855,7 +2689,6 @@ const translations: Translations = {
   COMPACT_COMPOSER_MESSAGES,
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
-  MEDIA_PLAYER_MESSAGES,
   ADDRESS_MESSAGES,
   CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
@@ -2884,7 +2717,6 @@ const translations: Translations = {
   AGENT_LOG_MESSAGES,
   AI_CHAT_MESSAGES,
   COMMAND_MESSAGES,
-  MUSIC_LIBRARY_MESSAGES,
   LISTING_CARD_MESSAGES,
   NAVIGATION_BANNER_MESSAGES,
   LOCATION_PUCK_MESSAGES,
@@ -2897,7 +2729,6 @@ const translations: Translations = {
   PAGINATION_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
-  MEDIA_CARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -2922,8 +2753,6 @@ const translations: Translations = {
   MESSAGE_MEDIA_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
-  TRACK_LIST_MESSAGES,
-  LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
   PLACE_LIST_MESSAGES,
@@ -2956,7 +2785,6 @@ const translations: Translations = {
   THEME_TOGGLE_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
-  QUEUE_PANEL_MESSAGES,
   HOVER_CARD_MESSAGES,
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,

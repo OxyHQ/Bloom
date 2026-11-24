@@ -328,8 +328,6 @@ export type MethodTitleAlign = (typeof ENUMS.methodTitleAlign)[number];
 export type TypeRampStep = keyof typeof TYPE_RAMP;
 /** Bloom's voice parts' sizes (`VoiceSize`). */
 export type VoiceSize = (typeof ENUMS.voiceSize)[number];
-export type MediaCardSize = (typeof ENUMS.mediaCardSize)[number];
-export type MediaCardLayout = (typeof ENUMS.mediaCardLayout)[number];
 export type ReleaseCardLayout = (typeof ENUMS.releaseCardLayout)[number];
 export type ReleaseStatusBadgeSize = (typeof ENUMS.releaseStatusBadgeSize)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
@@ -375,9 +373,6 @@ export type ChoiceListStyle = (typeof ENUMS.choiceListStyle)[number];
 export type PriceLineTone = (typeof ENUMS.priceLineTone)[number];
 /** A payment status: `surface`, a strip or block of its own; or `plain`, only its content. */
 export type PaymentStatusStyle = (typeof ENUMS.paymentStatusStyle)[number];
-export type LibraryItemStyle = (typeof ENUMS.libraryItemStyle)[number];
-export type QueuePanelStyle = (typeof ENUMS.queuePanelStyle)[number];
-export type SelectionBarPlacement = (typeof ENUMS.selectionBarPlacement)[number];
 
 export {
   COLORS,
@@ -678,6 +673,3 @@ function ofSize(size: number, ratio: number): number {
   const length = size * ratio;
   return Platform.OS === 'web' ? length : Math.round(length * 100) / 100;
 }
-export type LyricsSize = (typeof ENUMS.lyricsSize)[number];
-export type TransportSize = (typeof ENUMS.transportSize)[number];
-export type TransportStyle = (typeof ENUMS.transportStyle)[number];

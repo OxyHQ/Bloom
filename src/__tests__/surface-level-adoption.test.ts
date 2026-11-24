@@ -202,8 +202,8 @@ describe('a grouped section shares canonical card material', () => {
     const offenders: string[] = [];
     for (const { theme, preset, mode } of THEMES) {
       for (const level of SURFACE_LEVELS) {
-        // The two shapes a container publishes: the rung alone (`FloatingPanel`,
-        // `QueuePanel`) and an exact fill that is NOT the rung — `ContentPanel`
+        // The two shapes a container publishes: the rung alone (`FloatingPanel`)
+        // and an exact fill that is NOT the rung — `ContentPanel`
         // paints `colors.card`, which in dark is ~1.27:1 off rung 1.
         const rung = resolveSurfaceLevel(theme, level).background;
         for (const behind of level === 1 ? [rung, theme.colors.card] : [rung]) {
