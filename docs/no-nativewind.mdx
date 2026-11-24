@@ -47,7 +47,9 @@ tokens. Colour comes from `useColorTokens()` (`theme/color-tokens.ts`):
 
 - Native: the nearest scope's token record (the provider's, a colour scope's, a
   seed scope's, or the one a portal bridge carries), so a colour is exactly the
-  value the class read, in an adaptive theme too.
+  value the class read, in an adaptive theme too. That record is the preset's
+  in `mode="adaptive"`, not the platform's dynamic colours `useTheme()` holds
+  ([Theme](./theme.mdx), *Which reader*).
 - Web: the token's CSS variable (`var(--primary)`), which the theme writes on
   the document and a colour scope on its element, as the classes read it. A
   theme switch re-renders nothing on the web; the server's first paint is the
