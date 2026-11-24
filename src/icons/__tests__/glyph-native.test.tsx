@@ -49,6 +49,12 @@ describe('a Bloom icon on native, with the icon view in the binary', () => {
     expect(flat(view?.props.style)).toEqual({ width: 16, height: 16, flex: 0 });
   });
 
+  // A number used as a rung key drew NaN, and a native glyph with no width draws nothing.
+  it('takes a numeric size as its side', () => {
+    const [view] = hosts(<RiHeart3Line size={24} fill="#000000" />);
+    expect(flat(view?.props.style)).toEqual({ width: 24, height: 24, flex: 0 });
+  });
+
   it('strokes a stroked glyph in its fill, on its own viewBox', () => {
     const [view] = hosts(<LikeIcon fill="#00ff00" />);
     expect(view?.props).toMatchObject({ viewBox: '0 0 18 18', strokeWidth: 1.8, fill: '#00ff00' });
