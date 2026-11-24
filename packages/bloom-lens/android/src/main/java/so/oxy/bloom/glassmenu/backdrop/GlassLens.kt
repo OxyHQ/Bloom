@@ -26,6 +26,8 @@ internal class GlassLens(val page: GlassBackdrop) {
   private var showsStill = false
   private var recorded = false
   private var quietSince = 0L
+  // When the region was last moved or resized: a region that moves (a lens sliding with its header) takes no stills.
+  private var placedAt = 0L
   // Bumped whenever the page is shown again: a still asked before then is dropped when it arrives.
   private var generation = 0
   private var askedGeneration = -1
@@ -35,8 +37,12 @@ internal class GlassLens(val page: GlassBackdrop) {
   // dropped (it left every tree: the window stopped) is recorded again, not drawn empty.
   fun sample(area: Rect): RenderNode {
     if (area != region || !recorded || !node.hasDisplayList()) {
+      val now = SystemClock.uptimeMillis()
+      if (area != region) placedAt = now
       region.set(area)
-      showPage(SystemClock.uptimeMillis())
+      // A new region has been as quiet as the page behind it: a menu opening over a page that is still samples a still
+      // of it once its region has settled, not the page for its first half second (the whole of its opening).
+      showPage(page.lastChangeIn(region, now))
     }
     return node
   }
@@ -46,15 +52,15 @@ internal class GlassLens(val page: GlassBackdrop) {
     if (!recorded || region.isEmpty) return
     if (dirt == null || dirt.any { Rect.intersects(it, region) }) {
       showPage(now)
-    } else if (!showsStill && still == null && now - quietSince >= StillAfterMs) {
+    } else if (!showsStill && still == null && now - quietSince >= StillAfterMs && now - placedAt >= SettleMs) {
       askStill()
     }
   }
 
   // The page again, and the still let go: a lens holds a still only while it shows it (a menu's large region, a
   // region that changes now and then, would otherwise keep buffers it does not draw).
-  private fun showPage(now: Long) {
-    quietSince = now
+  private fun showPage(changedAt: Long) {
+    quietSince = changedAt
     generation += 1
     letStillGo()
     if (!showsStill && recorded && node.hasDisplayList() && node.left == region.left && node.top == region.top &&
@@ -106,8 +112,10 @@ internal class GlassLens(val page: GlassBackdrop) {
     showsStill = false
   }
 
-  private companion object {
+  companion object {
     // Longer than the gap between two frames of a video and than a press: a region that changes keeps the page.
     const val StillAfterMs = 500L
+    // A region kept this long has stopped moving.
+    const val SettleMs = 50L
   }
 }

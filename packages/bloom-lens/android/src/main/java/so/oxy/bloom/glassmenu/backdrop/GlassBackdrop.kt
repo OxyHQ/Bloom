@@ -42,6 +42,11 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
   // The place, transform, scroll, alpha and visibility of each view seen on a dirty path, as of the last frame.
   private val seen = WeakHashMap<View, FloatArray>()
   private val shape = FloatArray(ShapeSize)
+  // What changed lately: when the whole page last did (or when no lens was watching), and the bounds of each frame's
+  // changes for as long as a lens waits before a still (GlassLens.StillAfterMs), oldest first.
+  private var wholeChangedAt = 0L
+  private val recentAt = ArrayDeque<Long>()
+  private val recentDirt = ArrayDeque<Rect>()
 
   // Bumped each time the page is recorded: consumers that cache the backdrop regenerate when it changes.
   var version: Int = 0
@@ -88,13 +93,40 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
     // and still that held the page. Drawn as it is then, the page is empty and every glass on it draws black.
     val whole = stale || color != recordedColor || !node.hasDisplayList()
     if (whole) record(color)
+    val now = SystemClock.uptimeMillis()
     if (lenses.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       dirt.clear()
       if (!whole && root.isDirty) collectDirt(root)
-      val now = SystemClock.uptimeMillis()
+      remember(whole, now)
       for (lens in lenses) lens.frame(if (whole) null else dirt, now)
+    } else {
+      wholeChangedAt = now
     }
     return true
+  }
+
+  private fun remember(whole: Boolean, now: Long) {
+    while (recentAt.isNotEmpty() && now - recentAt.first() > GlassLens.StillAfterMs) {
+      recentAt.removeFirst()
+      recentDirt.removeFirst()
+    }
+    if (whole) {
+      wholeChangedAt = now
+    } else if (dirt.isNotEmpty()) {
+      val bounds = Rect(dirt[0])
+      for (index in 1 until dirt.size) bounds.union(dirt[index])
+      recentAt.addLast(now)
+      recentDirt.addLast(bounds)
+    }
+  }
+
+  // The last time anything in [region] (window px) changed, as far back as a lens waits before a still: a lens that
+  // starts sampling a region now can show a still of it as soon as the page there has been quiet that long.
+  fun lastChangeIn(region: Rect, now: Long): Long {
+    if (now - wholeChangedAt <= GlassLens.StillAfterMs) return wholeChangedAt
+    var last = wholeChangedAt
+    for (index in recentDirt.indices) if (Rect.intersects(recentDirt[index], region)) last = recentAt[index]
+    return last
   }
 
   // What redraws in this frame, from the dirty flags Android keeps under hardware rendering (it keeps no dirty rects):
