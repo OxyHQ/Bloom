@@ -1,5 +1,6 @@
 import React from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 
 export interface SubtleHoverProps {
   /**
@@ -9,6 +10,11 @@ export interface SubtleHoverProps {
    * element spreads `hoverGroupProps`.
    */
   active?: boolean;
+  /**
+   * The row's press, from `usePressHighlight()` (iOS): the wash lights while
+   * the row is held, at the full fill, on the UI thread. Ignored on the web.
+   */
+  pressed?: SharedValue<number>;
   /** Extra style merged last — e.g. `borderRadius` to match the parent. */
   style?: StyleProp<ViewStyle>;
   /**

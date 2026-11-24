@@ -3,7 +3,7 @@ import { render } from '@testing-library/react-native';
 import type { ReactTestRendererJSON, ReactTestRendererNode } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { SubtleHover } from '../subtle-hover';
+import { type PressHighlight, SubtleHover } from '../subtle-hover';
 
 // Default test Platform.OS is 'ios' (see __mocks__/react-native.ts), so the
 // web-only hover wash is suppressed unless the JS `active` mode opts in via
@@ -82,5 +82,98 @@ describe('SubtleHover', () => {
     expect(
       renderWrapper(<SubtleHover active native style={{ borderRadius: 12 }} />).children,
     ).not.toBeNull();
+  });
+});
+
+describe('SubtleHover pressed', () => {
+  it('draws the press wash on native, at the full contrast fill, its opacity the press', () => {
+    const pressed = { value: 0 } as never;
+    const wrapper = renderWrapper(<SubtleHover pressed={pressed} />);
+    const washes = wrapper.children ?? [];
+    expect(washes).toHaveLength(1);
+    const style = Object.assign(
+      {},
+      ...[(washes[0] as ReactTestRendererJSON).props.style].flat(4).filter(Boolean),
+    );
+    expect(style).toMatchObject({ position: 'absolute', opacity: 0, pointerEvents: 'none' });
+    expect(typeof style.backgroundColor).toBe('string');
+  });
+
+  it('adds the press wash beside a coordinated highlight', () => {
+    const pressed = { value: 0 } as never;
+    expect(renderWrapper(<SubtleHover active native pressed={pressed} />).children).toHaveLength(2);
+  });
+});
+
+/**
+ * The hook is chosen once per platform at module load, so each platform loads
+ * the module afresh against the same React the renderer uses.
+ */
+function loadPressHighlight(os: 'ios' | 'android' | 'web') {
+  let hook!: typeof import('../subtle-hover').usePressHighlight;
+  const reactModule: unknown = jest.requireActual('react');
+  jest.isolateModules(() => {
+    jest.doMock('react', () => reactModule);
+    const { Platform } = require('react-native') as typeof import('react-native');
+    const previous = Platform.OS;
+    Platform.OS = os;
+    try {
+      hook = (require('../subtle-hover/use-press-highlight') as typeof import('../subtle-hover'))
+        .usePressHighlight;
+    } finally {
+      Platform.OS = previous;
+    }
+  });
+  return hook;
+}
+
+function HookProbe({
+  hook,
+  onResult,
+}: {
+  hook: () => PressHighlight;
+  onResult: (result: PressHighlight) => void;
+}) {
+  onResult(hook());
+  return null;
+}
+
+function runPressHighlight(os: 'ios' | 'android' | 'web'): PressHighlight {
+  const hook = loadPressHighlight(os);
+  let result: PressHighlight | undefined;
+  renderWithTheme(
+    <HookProbe
+      hook={hook}
+      onResult={(r) => {
+        result = r;
+      }}
+    />,
+  );
+  if (result === undefined) throw new Error('the hook did not run');
+  return result;
+}
+
+describe('usePressHighlight', () => {
+  it('Android: the bounded platform ripple in the contrast fill, nothing for the wash', () => {
+    const { hostProps, pressed } = runPressHighlight('android');
+    expect(hostProps.android_ripple).toEqual({ color: expect.any(String), borderless: false });
+    expect(hostProps.onPressIn).toBeUndefined();
+    expect(pressed).toBeUndefined();
+  });
+
+  it('iOS: press in lights the wash at once, press out fades it, with no ripple', () => {
+    const { hostProps, pressed } = runPressHighlight('ios');
+    expect(hostProps.android_ripple).toBeUndefined();
+    expect(pressed?.value).toBe(0);
+    hostProps.onPressIn?.();
+    expect(pressed?.value).toBe(1);
+    hostProps.onPressOut?.();
+    expect(pressed?.value).toBe(0);
+  });
+
+  it('web: nothing (the pointer has the hover wash)', () => {
+    const { hostProps, pressed } = runPressHighlight('web');
+    expect(hostProps).toEqual({});
+    expect(pressed).toBeUndefined();
   });
 });

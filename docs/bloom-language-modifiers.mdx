@@ -659,7 +659,7 @@ The side of the view it opens on, and its alignment along that side.
 
 ### `hoverGroup`
 
-Web: the pointer over this view is what `group-hover:` styles inside it answer (Bloom `SubtleHover`). Native has no hover group; it does nothing.
+Web: the pointer over this view is what `group-hover:` styles inside it answer (Bloom `SubtleHover`). Android and iOS: a press on the view lights it with Bloom's press highlight (`usePressHighlight`), Android's ripple or iOS's wash; a child that takes its own press, or a scroll, does not.
 
 - Parameters: none
 - Signature: `.hoverGroup()`

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0
+
+### Compatibility
+
+- Requires `@oxy.so/bloom` 23.6.0 or newer (its `usePressHighlight`).
+
+### Changed
+
+- On Android and iOS a view with `.hoverGroup()` that takes a press shows Bloom's press highlight (`usePressHighlight`): Android's ripple on its `Pressable`, iOS's wash under its children. A view whose press handler is absent, or whose press fades (`.pressFade()`), takes none. The web is unchanged.
+
 ## 1.2.0
 
 ### Breaking
