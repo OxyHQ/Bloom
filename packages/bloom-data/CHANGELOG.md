@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `useList` and `useRecord` keep their arguments while their key is the same when compiled. The React Compiler dropped the memo that held them (`useMemo(() => args, [key])` became `return args`), so in the compiled `lib/` (the web, since 0.1.1) and in an app that compiles the source, every render subscribed and observed the source again: a feed asked its service in a loop. The hook that holds them is left as written (`'use no memo'`).
+
 ## 0.1.1
 
 ### Changed
