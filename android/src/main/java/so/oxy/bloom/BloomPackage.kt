@@ -11,6 +11,6 @@ class BloomPackage : ReactPackage {
   override fun createNativeModules(context: ReactApplicationContext): List<NativeModule> = emptyList()
   override fun createViewManagers(context: ReactApplicationContext): List<ViewManager<*, *>> =
     listOf<ViewManager<*, *>>(BloomIconManager()) +
-      PredictiveBackManagers.create() +
+      PredictiveBackManagers.create() + AvatarSurfaceManager() +
       if (Build.VERSION.SDK_INT >= 31) listOf(ComposerLightManager()) else emptyList()
 }
