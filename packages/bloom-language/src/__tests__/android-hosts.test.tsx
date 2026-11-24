@@ -205,6 +205,16 @@ describe('glass is the lens', () => {
     expect(hosts(r, 'Pressable')).toHaveLength(0);
   });
 
+  it('a disabled solid Button on glass stays neutral, as Bloom draws its disabled paint', () => {
+    const r = mount(
+      toElement(Button(Text('Post')).tint('action').glass().disabled(true).onPress(jest.fn())),
+    );
+    expect(only(r, 'BloomButton').props).toMatchObject({ material: 'shared', disabled: true });
+    expect(only(r, 'BloomLensMenu').props.triggerConfig.tintColor).toBeUndefined();
+    const enabled = mount(toElement(Button(Text('Post')).tint('action').glass().disabled(false)));
+    expect(only(enabled, 'BloomLensMenu').props.triggerConfig.tintColor).toBe(LIGHT.tertiary);
+  });
+
   it('a plain Button on glass stays neutral', () => {
     const r = mount(toElement(Button(Text('Edit')).style('plain').glass()));
     expect(only(r, 'BloomLensMenu').props.triggerConfig.tintColor).toBeUndefined();
