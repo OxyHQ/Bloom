@@ -150,15 +150,22 @@ published-package result or adjust timing/budget gates to hide the difference.
 bob builds the JS targets (`lib/module`, `lib/commonjs`) of the root package,
 `bloom-data`, `bloom-text` and `bloom-editor` with `babel.build.cjs`: bob's
 preset with `babel-plugin-react-compiler` 1.0.0 first, the options Expo gives
-app code (`target: '19'`, `infer`, `panicThreshold: 'none'`) with function
-outlining off. Outlining moves a lambda that captures nothing of its component
-to module scope, and inside a component a factory builds
-(`createSettingsSelect(parts)`) it took the factory's parameters for globals:
-the moved lambda threw `SelectItem is not defined`. Each package's
+app code (`target: '19'`, `infer`, `panicThreshold: 'none'`), function
+outlining included. Outlining moves a lambda that captures nothing of its
+component to module scope, and the compiler takes the parameters of a function
+a component is built inside for globals: inside a component a factory built
+(`createSettingsSelect(parts)`, `createSelectField(parts)`) the moved lambda
+threw `SelectItem is not defined`. 23.5.0 to 23.7.0 built with outlining off for
+it; the compositions are now components at module scope that take the parts as
+a prop (`SettingsSelectFromParts`, `SelectFieldFromParts`), so no component is
+built inside a function, and an app that compiles Bloom's source with Expo's
+defaults compiles them correctly. Each package's
 postbuild runs `scripts/verify-react-compiler.mjs`, which compiles every source
 bob compiles with the plugin and options it loads from that config, and fails
 unless each built file calls the memo cache exactly as often as the compiler
-memoizes functions in its source. It prints what the compiler left as written.
+memoizes functions in its source. It also fails on a built file whose outlined
+function (`function _temp…` at module scope) uses a name nothing at module scope
+binds while a function of the file does: a capture the compiler lost. It prints what the compiler left as written.
 
 **The `react-native` condition still resolves `src/`**, which an app's Metro
 transforms as a node module, without the React Compiler. A compiled `lib/`

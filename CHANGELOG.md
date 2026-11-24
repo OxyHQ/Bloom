@@ -16,6 +16,15 @@
 
 - The `react` and `react-dom` peers are `>=19.0.0` (were `>=18.0.0`). `lib/` has been compiled by the React Compiler since 23.5.0 and imports `react/compiler-runtime`, which React 18 does not have, so React 18 already failed at the first import; the range now says so at install. Every Oxy app and SDK is on React 19.
 
+### Changed
+
+- The `react` and `react-dom` peers are `>=19.0.0` (were `>=18.0.0`). `lib/` has been compiled by the React Compiler since 23.5.0 and imports `react/compiler-runtime`, which React 18 does not have, so React 18 already failed at the first import; the range now says so at install. Every Oxy app and SDK is on React 19.
+- `lib/` is compiled with function outlining on, exactly Expo's options (23.5.0 to 23.7.0 turned it off for the select compositions). `verify-react-compiler.mjs` fails the build on an outlined function that uses a name only a function of its file binds.
+
+### Fixed
+
+- `SettingsSelect` and `SelectField` are components at module scope (`SettingsSelectFromParts` and `SelectFieldFromParts` take each platform's `Select` parts as a prop), not components a factory builds. The React Compiler takes the parameters of a function a component is built inside for globals, and with function outlining, the compiler's default, it moved their `renderItem` out of the factory: every `SettingsSelect` threw `SelectItem is not defined`. An app that compiles Bloom's source with Expo's compiler options (Mention's native build) now compiles them correctly.
+
 ## 23.7.0
 
 ### Breaking

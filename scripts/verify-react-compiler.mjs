@@ -30,6 +30,16 @@
  *   must be compiled in lib/. It guards against the compiler silently
  *   compiling nothing anywhere (an options change both sides would share).
  *
+ * ## What an outlined function may use
+ *
+ * Function outlining moves a function that captures nothing of its component
+ * to module scope (`function _temp…`). The compiler takes the parameters of a
+ * function a component is built inside for module globals, so a lambda in a
+ * component a factory built was moved out of the factory and threw
+ * (`SelectItem is not defined`, every `SettingsSelect`). Every built file is
+ * read: an outlined function that uses a name nothing at module scope binds,
+ * while a function in the same file binds it, fails.
+ *
  * Bail-outs are not failures: the compiler leaves those functions as written,
  * which is the behaviour they had before. They are printed so they stay seen.
  */
@@ -114,6 +124,45 @@ const compiler =
 if (failures.length === 0 && !compiler)
   fail(`${configFiles[0]} does not run babel-plugin-react-compiler`);
 
+/**
+ * The names an outlined function (`function _temp…` at module scope) uses that
+ * nothing at module scope binds while a function of the same file does: a
+ * capture the compiler did not see.
+ */
+function lostCaptures(code) {
+  const ast = babel.parseSync(code, {
+    babelrc: false,
+    configFile: false,
+    sourceType: 'module',
+    parserOpts: { plugins: ['jsx'] },
+  });
+  if (!ast) return [];
+  const program = ast.program;
+  const outlined = [];
+  const local = new Set();
+  babel.traverse(ast, {
+    Scopable(scopePath) {
+      if (scopePath.scope.block === program) return;
+      for (const name of Object.keys(scopePath.scope.bindings)) local.add(name);
+    },
+    FunctionDeclaration(fnPath) {
+      if (fnPath.parentPath.isProgram() && /^_temp\d*$/.test(fnPath.node.id?.name ?? '')) {
+        outlined.push(fnPath);
+      }
+    },
+  });
+  const lost = new Set();
+  for (const fnPath of outlined) {
+    fnPath.traverse({
+      ReferencedIdentifier(ref) {
+        const name = ref.node.name;
+        if (!ref.scope.hasBinding(name) && local.has(name)) lost.add(name);
+      },
+    });
+  }
+  return [...lost];
+}
+
 let compiledTotal = 0;
 let controlCompiled = 0;
 /** Functions the compiler left as written: `file:line:column` -> reasons. */
@@ -167,7 +216,14 @@ if (compiler) {
         fail(`${path.relative(root, built)} is missing (run the build)`);
         continue;
       }
-      const calls = readFileSync(built, 'utf8').match(MARKERS[target.name])?.length ?? 0;
+      const output = readFileSync(built, 'utf8');
+      const calls = output.match(MARKERS[target.name])?.length ?? 0;
+      for (const name of lostCaptures(output)) {
+        fail(
+          `${path.relative(root, built)}: the compiler moved a function that uses \`${name}\` to module scope, ` +
+            'where nothing binds it (a component built inside a function? define it at module scope)',
+        );
+      }
       if (calls !== compiled) {
         fail(
           `${path.relative(root, built)}: ${calls} memo cache calls, the compiler makes ${compiled} of ${relative}`,

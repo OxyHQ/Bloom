@@ -6,14 +6,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../select/index.web';
-import { createSettingsSelect } from './create-settings-select';
+import type { SelectParts } from '../select/SelectField';
+import { SettingsSelectFromParts } from './settings-select-parts';
+import type { SettingsSelectProps } from './types';
 
-export const SettingsSelect = createSettingsSelect({
+const PARTS: SelectParts = {
   Select,
   SelectTrigger,
   SelectValue,
   SelectIcon,
   SelectContent,
   SelectItem,
-});
-// No compact field: on the web the compact trigger is the size's own (`COMPACT_TRIGGER`).
+};
+
+/**
+ * The compact select a settings row puts on its right, with the web parts and
+ * no compact field (on the web the compact trigger is the size's own).
+ */
+export function SettingsSelect<T extends string>(props: SettingsSelectProps<T>) {
+  return <SettingsSelectFromParts parts={PARTS} {...props} />;
+}
