@@ -1,8 +1,8 @@
 /**
  * The no-NativeWind parity harness (docs/no-nativewind.mdx): every family's
  * cases (`cases/*.cases.tsx`) rendered on Android under Bloom's real provider,
- * light and dark, and written out as committed host trees with styles
- * flattened.
+ * light, dark and adaptive (over a mocked dynamic palette), and written out as
+ * committed host trees with styles flattened.
  *
  *   BLOOM_TREE=<checkout> PARITY_OUT=<dir> PARITY_BASELINE=1 jest -c scripts/no-nativewind/jest.config.js
  *
@@ -33,6 +33,9 @@ module.exports = {
     // The root's first, so the baseline's real runtime replaces its inert mock.
     ...root.moduleNameMapper,
     '^@bloom/(.*)$': join(TREE, 'src/$1'),
+    // `mode="adaptive"`: the theme's native platform palette, over a mocked dynamic one.
+    '^\\./adaptive-colors$': join(TREE, 'src/theme/adaptive-colors.native.ts'),
+    '^expo-router/build/color/index\\.js$': join(HARNESS, '../../__mocks__/dynamic-palette.ts'),
     // One React: the harness lives in this branch, the tree under test may not.
     '^react$': join(TREE, 'node_modules/react'),
     '^react/(.*)$': join(TREE, 'node_modules/react/$1'),

@@ -3,7 +3,10 @@ import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { generateRoleColors, type RoleColors } from './color-engine';
 import type { ExplicitAccents } from './preset-vars';
-import { getAdaptiveColors } from './adaptive-colors';
+import { type AdaptiveColors, getAdaptiveColors } from './adaptive-colors';
+import type { ScopePalette } from './color-scope/context';
+import { withFieldColors } from './color-scope/resolve-scope';
+import { buildScopeVars } from './color-scope/style-builder';
 import { getResolvedTokens } from './token-registry';
 import { THEME_GRADIENTS } from './gradients';
 import type { Theme } from './types';
@@ -165,20 +168,18 @@ function buildColorsFromPreset(
   };
 }
 
-/**
- * Build a `Theme` from a color preset and a resolved light/dark mode.
- *
- * When `isAdaptive` is true and the platform exposes adaptive (Material You /
- * iOS dynamic) colors, those override the preset-derived palette.
- */
-export function buildTheme(
+/** The platform's palette (Material You, iOS dynamic) when the theme is adaptive: none on the web. */
+function platformColors(isAdaptive: boolean): AdaptiveColors | null {
+  return isAdaptive && Platform.OS !== 'web' ? getAdaptiveColors() : null;
+}
+
+function themeOf(
   preset: AppColorName,
   resolved: 'light' | 'dark',
-  isAdaptive: boolean = false,
+  adaptive: AdaptiveColors | null,
   accents?: ExplicitAccents,
 ): Theme {
   const { colors: base, chartColors } = buildColorsFromPreset(preset, resolved, accents);
-  const adaptive = isAdaptive && Platform.OS !== 'web' ? getAdaptiveColors() : undefined;
   // The platform palette OVERLAYS the preset one rather than replacing it. Every
   // field the platform answers still wins, byte for byte; the tinted status
   // members — which Material You and iOS dynamic have no role for at all — fall
@@ -192,5 +193,41 @@ export function buildTheme(
     gradients: THEME_GRADIENTS,
     isDark: resolved === 'dark',
     isLight: resolved === 'light',
+  };
+}
+
+/**
+ * Build a `Theme` from a color preset and a resolved light/dark mode.
+ *
+ * When `isAdaptive` is true and the platform exposes adaptive (Material You /
+ * iOS dynamic) colors, those override the preset-derived palette.
+ */
+export function buildTheme(
+  preset: AppColorName,
+  resolved: 'light' | 'dark',
+  isAdaptive: boolean = false,
+  accents?: ExplicitAccents,
+): Theme {
+  return themeOf(preset, resolved, platformColors(isAdaptive), accents);
+}
+
+/**
+ * A preset's one resolved palette: the theme `useTheme()` reads and the token
+ * record `useColorTokens()` reads. In an adaptive theme on Android and iOS the
+ * platform's colours overlay both, each token taking the colour of the
+ * `theme.colors` field it feeds (`COLOR_FIELDS`), so the two readers never
+ * disagree in any mode.
+ */
+export function buildPresetPalette(
+  preset: AppColorName,
+  resolved: 'light' | 'dark',
+  isAdaptive: boolean = false,
+  accents?: ExplicitAccents,
+): ScopePalette {
+  const adaptive = platformColors(isAdaptive);
+  const vars = buildScopeVars(preset, resolved, accents);
+  return {
+    theme: themeOf(preset, resolved, adaptive, accents),
+    vars: adaptive ? withFieldColors(vars, adaptive) : vars,
   };
 }

@@ -1,5 +1,4 @@
-import { buildTheme } from './build-theme';
-import { buildScopeVars } from './color-scope/style-builder';
+import { buildPresetPalette } from './build-theme';
 import type { ScopePalette } from './color-scope/context';
 import type { AppColorName } from './color-presets';
 
@@ -11,7 +10,7 @@ export function getPrepaintPalette(preset: AppColorName, mode: 'light' | 'dark')
   const key = `${preset}/${mode}`;
   let palette = palettes.get(key);
   if (!palette) {
-    palette = { theme: buildTheme(preset, mode), vars: buildScopeVars(preset, mode) };
+    palette = buildPresetPalette(preset, mode);
     palettes.set(key, palette);
   }
   return palette;

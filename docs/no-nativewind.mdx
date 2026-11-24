@@ -47,9 +47,9 @@ tokens. Colour comes from `useColorTokens()` (`theme/color-tokens.ts`):
 
 - Native: the nearest scope's token record (the provider's, a colour scope's, a
   seed scope's, or the one a portal bridge carries), so a colour is exactly the
-  value the class read, in an adaptive theme too. That record is the preset's
-  in `mode="adaptive"`, not the platform's dynamic colours `useTheme()` holds
-  ([Theme](./theme.mdx), *Which reader*).
+  value the class read. In `mode="adaptive"` the record holds the platform's
+  dynamic colours, as `useTheme().colors` does: the provider builds both from
+  one palette ([Theme](./theme.mdx), *Which reader*).
 - Web: the token's CSS variable (`var(--primary)`), which the theme writes on
   the document and a colour scope on its element, as the classes read it. A
   theme switch re-renders nothing on the web; the server's first paint is the
@@ -83,7 +83,8 @@ the authority.
 
 - Native: `scripts/no-nativewind/run.sh <baseline> <out> [family,…]` renders
   each family's cases (`scripts/no-nativewind/cases/<family>.cases.tsx`) on
-  Android under Bloom's provider, light and dark, in a baseline checkout styled
+  Android under Bloom's provider, light, dark and adaptive (over the mocked
+  dynamic palette `__mocks__/dynamic-palette.ts`), in a baseline checkout styled
   by react-native-css's real runtime over the Tailwind an app compiles, and in
   this branch, and requires identical committed host trees.
 - Web: `scripts/no-nativewind/verify-web.mjs` compares every story of a family

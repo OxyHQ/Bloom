@@ -67,6 +67,8 @@ module.exports = {
       moduleNameMapper: {
         ...bloomSource,
         '^expo-font$': `${PACKAGE}/parity/support/expo-font.ts`,
+        // The platform's dynamic palette `mode="adaptive"` reads (adaptive-colors.native.ts).
+        '^expo-router/build/color/index\\.js$': '<rootDir>/__mocks__/dynamic-palette.ts',
         ...rootMapper,
       },
       setupFiles: [...shared.setupFiles, `${PACKAGE}/parity/support/android.ts`],

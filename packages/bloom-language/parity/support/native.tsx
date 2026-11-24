@@ -12,7 +12,7 @@ import TestRenderer, { act, type ReactTestRendererJSON } from 'react-test-render
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 import { PortalOutlet, PortalProvider } from '@oxy.so/bloom/portal';
 
-import type { ParityCase, Scheme } from './cases';
+import { type ParityCase, type Scheme, SCHEMES } from './cases';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -121,7 +121,7 @@ export function nativeTree(
   return roots.map(normalize);
 }
 
-/** Every case, in both schemes: the language tree commits exactly what Bloom's does. */
+/** Every case, in every scheme: the language tree commits exactly what Bloom's does. */
 export function describeNativeParity(title: string, cases: readonly ParityCase[]): void {
   const consoleError = console.error;
   beforeAll(() => {
@@ -131,7 +131,7 @@ export function describeNativeParity(title: string, cases: readonly ParityCase[]
     });
   });
   describe(title, () => {
-    for (const scheme of ['light', 'dark'] as const) {
+    for (const scheme of SCHEMES) {
       describe(scheme, () => {
         it.each(cases.map((c) => [c.name, c] as const))('%s', (_name, c) => {
           const bloom = nativeTree(c.bloom(), scheme);

@@ -17,7 +17,7 @@ import { createRoot } from 'react-dom/client';
 import { Dimensions } from 'react-native';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
-import type { ParityCase, Scheme } from './cases';
+import { type ParityCase, type Scheme, SCHEMES } from './cases';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -319,10 +319,10 @@ export function drawsInPlace(element: ReactNode): boolean {
   return drawn;
 }
 
-/** Every case, in both schemes: the language draws exactly the DOM and CSS Bloom's element does. */
+/** Every case, in every scheme: the language draws exactly the DOM and CSS Bloom's element does. */
 export function describeWebParity(title: string, cases: readonly ParityCase[]): void {
   describe(title, () => {
-    for (const scheme of ['light', 'dark'] as const) {
+    for (const scheme of SCHEMES) {
       describe(scheme, () => {
         it.each(cases.map((c) => [c.name, c] as const))('%s', (_name, c) => {
           const bloom = webTree(c.bloom(), scheme);

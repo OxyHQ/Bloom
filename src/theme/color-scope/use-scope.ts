@@ -1,11 +1,10 @@
 import { useContext, useMemo } from 'react';
 import { BloomThemeContext } from '../BloomThemeProvider';
-import { buildTheme } from '../build-theme';
+import { buildPresetPalette } from '../build-theme';
 import { buildThemeFromSeed } from '../build-theme-from-seed';
 import { buildSeedScopeVars } from './seed-scope';
 import type { AppColorName } from '../color-presets';
 import { ThemeScopeContext, type ScopePalette, type ScopeState } from './context';
-import { buildScopeVars } from './style-builder';
 import { applyScopeTokens } from './resolve-scope';
 import type { BloomColorScopeTokens } from './types';
 
@@ -44,10 +43,7 @@ export function useScope(
               vars: buildSeedScopeVars({ seed, mode: resolved }),
             }
           : colorPreset !== undefined || !inherited
-            ? {
-                theme: buildTheme(colorPreset ?? preset, resolved),
-                vars: buildScopeVars(colorPreset ?? preset, resolved),
-              }
+            ? buildPresetPalette(colorPreset ?? preset, resolved)
             : (inherited.resolvePreset?.(preset, resolved) ?? inherited.resolveMode(resolved));
       const palette = applyScopeTokens(base, tokens);
       palettes.set(key, palette);

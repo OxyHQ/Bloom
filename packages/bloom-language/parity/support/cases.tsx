@@ -1,7 +1,15 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useTheme, useThemePaint, type ThemeColors } from '@oxy.so/bloom/theme';
 
-export type Scheme = 'light' | 'dark';
+/**
+ * The theme mode a case is drawn in. `adaptive` is the platform's dynamic
+ * palette on native (a mocked one: Bloom's `__mocks__/dynamic-palette.ts`) and
+ * the system's on the web, where there is none.
+ */
+export type Scheme = 'light' | 'dark' | 'adaptive';
+
+/** Every scheme a parity case is compared in. */
+export const SCHEMES: readonly Scheme[] = ['light', 'dark', 'adaptive'];
 
 /**
  * The setter of a binding a case holds still (the screen shows a value and
