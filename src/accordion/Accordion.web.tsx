@@ -8,7 +8,7 @@ import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTouchInput } from '../styles/pointer';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { DISABLED_OPACITY, space } from '../styles/tokens';
 import { useSurfacePresence } from '../surface/use-surface-presence';
 import { AccordionContext, AccordionItemContext } from './context';
@@ -58,8 +58,8 @@ export const AccordionItem = memo(function AccordionItem({
 }: AccordionItemProps) {
   useStyles();
   const state = useAccordionItem(value, disabled);
-  const theme = useTheme();
-  const vars = { '--bloom-accordion-border': theme.colors.borderLight } as React.CSSProperties;
+  const tokens = useColorTokens();
+  const vars = { '--bloom-accordion-border': tokens.input } as React.CSSProperties;
   return (
     <AccordionItemContext.Provider value={state}>
       <div className="bloom-accordion-item" style={{ ...vars, ...resolveNativeWebStyle(style) }}>
@@ -79,13 +79,13 @@ export const AccordionTrigger = memo(function AccordionTrigger({
   const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
   const geometry = resolveAccordionGeometry(size);
   const touch = useTouchInput();
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const { toggle } = useContext(AccordionContext);
   const { value, isExpanded, disabled, triggerId, contentId } = useContext(AccordionItemContext);
   const progress = useAccordionMotion(isExpanded, 'trigger', false);
   const rotation = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const vars = {
-    '--bloom-accordion-text': theme.colors.text,
+    '--bloom-accordion-text': tokens.foreground,
     '--bloom-accordion-font-size': `${geometry.fontSize}px`,
     '--bloom-accordion-padding-y': `${geometry.paddingVertical}px`,
     '--bloom-accordion-gap': `${geometry.gap}px`,
@@ -121,7 +121,7 @@ export const AccordionTrigger = memo(function AccordionTrigger({
         {children}
       </span>
       <Animated.View aria-hidden style={{ transform: [{ rotate: rotation }] }}>
-        <RiArrowDownSLine size={geometry.chevronSize} fill={theme.colors.textSecondary} />
+        <RiArrowDownSLine size={geometry.chevronSize} fill={tokens.mutedForeground} />
       </Animated.View>
     </button>
   );

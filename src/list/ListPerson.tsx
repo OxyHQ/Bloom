@@ -5,7 +5,7 @@ import { CHAT_PEOPLE_MESSAGES } from '../chat-people/messages';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { ListCommonProps, ListItemShellProps, ListPersonData } from './types';
 
@@ -21,7 +21,7 @@ export function ListPerson({
 }) {
   const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
   const fill = useSurfaceFill();
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const {
     name,
     avatar,
@@ -73,7 +73,7 @@ export function ListPerson({
               <Text
                 variant="body-2-regular"
                 numberOfLines={1}
-                style={{ color: theme.colors.textSecondary }}
+                style={{ color: tokens.mutedForeground }}
                 testID={id('subtitle')}
               >
                 {subtitle}

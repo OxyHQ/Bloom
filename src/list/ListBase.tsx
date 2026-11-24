@@ -4,7 +4,7 @@ import { Divider } from '../divider';
 import { CHAT_PEOPLE_MESSAGES } from '../chat-people/messages';
 import { useMessages } from '../locale/messages';
 import { useSurfaceFill } from '../styles/surface-levels';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import * as Skeleton from '../skeleton';
 import { Text } from '../typography';
 import type { ListProps } from './types';
@@ -37,7 +37,7 @@ export function createList({
     const groups = (sections ?? [{ id: 'all', items: items ?? [] }]).filter(
       (section) => section.items.length > 0,
     );
-    const theme = useTheme();
+    const tokens = useColorTokens();
     const fill = useSurfaceFill();
     const { messages } = useMessages(CHAT_PEOPLE_MESSAGES);
     const scroller = useRef<ComponentRef<typeof ScrollView> | null>(null);
@@ -185,10 +185,7 @@ export function createList({
                 <Text
                   variant={id === sectionIndex.activeId ? 'caption-2-bold' : 'caption-2-medium'}
                   style={{
-                    color:
-                      id === sectionIndex.activeId
-                        ? theme.colors.primary
-                        : theme.colors.textSecondary,
+                    color: id === sectionIndex.activeId ? tokens.primary : tokens.mutedForeground,
                   }}
                 >
                   {id}

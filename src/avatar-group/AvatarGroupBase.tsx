@@ -14,7 +14,7 @@ import {
 import { Avatar } from '../avatar';
 import type { AvatarMotion } from '../avatar/types';
 import { useMessages } from '../locale/messages';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { fontSize } from '../styles/tokens';
 import { computeClusterLayout } from './cluster-layout';
 import { computeConversationLayout } from './conversation-layout';
@@ -227,7 +227,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   testID,
   hoverHandlers,
 }) => {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const isCluster = layout === 'cluster' || layout === 'conversation';
   const ringWidth = ringWidthProp ?? DEFAULT_RING_WIDTH;
   const isRow = layout === 'row';
@@ -235,8 +235,8 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   // The ring is the thin separator drawn between overlapping avatars. It
   // defaults to the page background so avatars read as cleanly punched out of
   // the surface behind them — matching the original Mention stack, which used
-  // `theme.colors.background`, not a large `card`-colored ring cell.
-  const ringFill = ringColor ?? theme.colors.background;
+  // `tokens.background`, not a large `card`-colored ring cell.
+  const ringFill = ringColor ?? tokens.background;
 
   const effectiveMax = max ?? DEFAULT_MAX;
   const effectiveOverlap = overlap ?? Math.round(size * DEFAULT_OVERLAP_RATIO);
@@ -561,7 +561,7 @@ function OverflowCircle({
   textStyle: TextStyle;
   onPress?: () => void;
 }) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(AVATAR_GROUP_MESSAGES);
 
   // A solid "+N" count circle: secondary-text-colored fill with white text,
@@ -569,7 +569,7 @@ function OverflowCircle({
   // (margin for the facepile, absolute coords for the cluster) is supplied by
   // the caller via `wrapperStyle`.
   const circle = (
-    <View style={[cellStyle, { backgroundColor: theme.colors.textSecondary }]}>
+    <View style={[cellStyle, { backgroundColor: tokens.mutedForeground }]}>
       <Text allowFontScaling={false} style={textStyle}>
         +{count}
       </Text>

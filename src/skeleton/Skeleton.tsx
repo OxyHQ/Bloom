@@ -15,7 +15,7 @@ import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useCommonMessages } from '../locale/common-messages';
 import type { SkeletonRegionProps } from './types';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { borderRadius } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -156,7 +156,7 @@ export function Region({ children, label, testID, style }: SkeletonRegionProps) 
 Region.displayName = 'Skeleton.Region';
 
 export function Text({ blend, style }: { style?: TextStyle | TextStyle[]; blend?: boolean }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const motion = useShapeMotion(blend);
   const flattened = StyleSheet.flatten(style);
   const width = (flattened as ViewStyle)?.width;
@@ -176,7 +176,7 @@ export function Text({ blend, style }: { style?: TextStyle | TextStyle[]; blend?
         style={[
           styles.textInner,
           {
-            backgroundColor: colors.contrast50,
+            backgroundColor: tokens.muted,
             height: lineHeight * 0.7,
           },
         ]}
@@ -197,7 +197,7 @@ export function Circle({
   blend?: boolean;
   style?: ViewStyle | ViewStyle[];
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const motion = useShapeMotion(blend, style);
 
   return (
@@ -207,7 +207,7 @@ export function Circle({
       style={[
         styles.circle,
         {
-          backgroundColor: colors.contrast50,
+          backgroundColor: tokens.muted,
           width: size,
           height: size,
         },
@@ -229,7 +229,7 @@ export function Pill({
   blend?: boolean;
   style?: ViewStyle | ViewStyle[];
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const motion = useShapeMotion(blend, style);
 
   return (
@@ -239,7 +239,7 @@ export function Pill({
       style={[
         styles.pill,
         {
-          backgroundColor: colors.contrast50,
+          backgroundColor: tokens.muted,
           width: size * 1.618,
           height: size,
         },
@@ -276,7 +276,7 @@ export function Box({
   blend?: boolean;
   style?: ViewStyle | ViewStyle[];
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const motion = useShapeMotion(blend, style);
 
   return (
@@ -285,7 +285,7 @@ export function Box({
       motion={motion}
       style={[
         {
-          backgroundColor: colors.contrast50,
+          backgroundColor: tokens.muted,
           width,
           height,
           borderRadius,

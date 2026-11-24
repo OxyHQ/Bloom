@@ -10,7 +10,7 @@ import {
 } from '../dropdown-menu';
 import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { useCommonMessages } from '../locale/common-messages';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { RowActionButton } from './RowActionButton';
 import type { RowActionsProps } from './types';
 
@@ -37,7 +37,7 @@ export function RowActions({
 }: RowActionsProps) {
   const common = useCommonMessages();
   const menuLabel = menuLabelProp ?? common.moreActions;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const [open, setOpen] = useState(false);
   const menuName = common.labelFor(menuLabel, name);
 
@@ -92,7 +92,7 @@ export function RowActions({
                       <Icon
                         width={MENU_ICON_SIZE}
                         height={MENU_ICON_SIZE}
-                        fill={theme.colors.textSecondary}
+                        fill={tokens.mutedForeground}
                       />
                     ) : undefined
                   }
