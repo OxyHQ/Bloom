@@ -55,7 +55,7 @@ export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
     // `OverlayRoot` carries the pointer-events opt-in as a PROP; as a style
     // entry it never reached the DOM, so the rows inherited the portal root's
     // `pointer-events: none` and no toast could be pressed or swiped away.
-    <OverlayRoot zIndex={TOAST_LAYER_Z} style={styles.host}>
+    <OverlayRoot zIndex={TOAST_LAYER_Z} style={styles.host} inheritBottomEdge>
       {/* Also `box-none`: as the direct child of a box-none root it would
           otherwise be handed `pointer-events: auto` and, spanning the whole
           viewport, block the app underneath while a toast is up. */}

@@ -77,7 +77,7 @@ describe('ToastHost platform split', () => {
     // app's stacking context once Fabric flattened the paintless positioner,
     // and the toast drew beneath any screen with a background.
     const native = code('toast/ToastHost.native.tsx');
-    expect(native).toMatch(/<OverlayRoot zIndex=\{TOAST_LAYER_Z\}>/);
+    expect(native).toMatch(/<OverlayRoot zIndex=\{TOAST_LAYER_Z\} inheritBottomEdge>/);
     expect(native).toMatch(/from '\.\.\/overlay'/);
   });
 
