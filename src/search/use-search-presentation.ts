@@ -86,12 +86,10 @@ export function useSearchPresentation(
     [],
   );
   // Controlled opening also transfers focus. Resizing into a full field never steals it.
+  // The field is focusable in the commit that opens it (its `inert` is gone), so focus
+  // moves there, not a frame later.
   useEffect(() => {
-    if (open) {
-      const id = requestAnimationFrame(() => input.current?.focus());
-      return () => cancelAnimationFrame(id);
-    }
-    return undefined;
+    if (open) input.current?.focus();
   }, [open, input]);
   const close = () => {
     cancelBlur();
