@@ -6,6 +6,10 @@
 
 - Requires the `@oxy.so/bloom` release beside it or newer (its `pressHighlight`); the peer floor rises with that release.
 
+### Added
+
+- `.replacesBottomBar(value?)` on a screen's root: Bloom `Screen`'s `replacesBottomBar` (needs the Bloom release that adds it). The screen's own bar replaces the app's bottom bar, which steps aside on the UI thread from the screen's first frame without re-rendering the shell.
+
 ### Changed
 
 - A hover group's press highlight (`.hoverGroup()` on a view that takes a press) costs the view nothing: it is Bloom's `pressHighlight`, drawn on the `Pressable` the view already is, in its tree's palette, with no component, hook, state or effect of its own. Android: the platform ripple (`android_ripple`), one object per palette. iOS: the `Pressable`'s own pressed state lights the wash under the children, and a press re-renders that `Pressable` alone. 1.3.0 drew it with a component of its own, a shared value and `SubtleHover`'s animated wash: Mention's feed row paid 9 hook slots and one component per row. The cost gate holds a pressable hover group equal to a bare press (fibers, hooks and context reads; Android in the parity suite, iOS in the unit suite). On iOS the wash clears at once on release (1.3.0 faded it over 150 ms).

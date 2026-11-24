@@ -53,6 +53,17 @@ export interface ScreenProps extends ViewProps {
    */
   bottomBarKeyboardBehavior?: 'hide' | 'visible' | 'follow';
   /**
+   * This screen's own bar takes the place of the app's bottom navigation (an
+   * `AppShell` bottom bar): a post's reply prompt with the tabs docked beside it.
+   * While the screen is in front the app's bar steps aside in one cut, on the UI
+   * thread — it stays mounted, nothing re-renders and the screens under it keep
+   * their geometry — and this screen's bar and content sit on the window's edge,
+   * not on the app's bar. It holds from the screen's first frame, before a
+   * `bottomBar` that waits for `useScreenEntered` mounts. Where the app's bar
+   * reserves its space in a web document, the shell still has to drop the bar.
+   */
+  replacesBottomBar?: boolean;
+  /**
    * The page's own floating action (a "new folder"). It floats over the
    * content, which scrolls under it and pads its end clear of it, and the
    * shell's floating action steps aside while this screen is in front.
