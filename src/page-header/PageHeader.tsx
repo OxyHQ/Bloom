@@ -127,15 +127,17 @@ const TITLE_PADDING = 4;
 const DEFAULT_THRESHOLD = 20;
 
 /**
- * The narrowest the centred title may be squeezed to before it stops yielding
- * to the two sides.
+ * The narrowest the centred title is squeezed to before it stops yielding the
+ * centre to the two sides.
  *
  * Without a floor the centring inset is `max(startWidth, endWidth)` applied to
  * BOTH sides, so on a narrow container two wide sides can ask for more than the
  * container has — and `left + right > width` is a box of negative width, which
  * on web collapses the title to nothing and on native logs a layout error. The
- * title stops centring before that happens and simply sits off-centre, which is
- * the lesser of the two wrongs and the one a reader can still use.
+ * title stops centring before that happens and sits off-centre, in the room
+ * between the sides. It never takes a side's own room to keep this width: a
+ * title laid out under a side's controls is drawn behind them, and a lens
+ * control refracts it (Mention's logo under its Spanish "Pregunta a Alia" pill).
  */
 const MIN_CENTERED_TITLE_WIDTH = 96;
 /** The widths where search and actions change presentation (`sm`, `xl`). */
@@ -161,8 +163,8 @@ const PAGE_HEADER_LAYOUT_CSS = `
   inset-inline-end: var(--bloom-page-header-inset) !important;
 }
 [data-bloom-page-header-center] {
-  margin-left: clamp(0px, calc(var(--bloom-page-header-side-width, 0px) + ${ROW_GAP}px), max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2}px))) !important;
-  margin-right: clamp(0px, calc(var(--bloom-page-header-side-width, 0px) + ${ROW_GAP}px), max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2}px))) !important;
+  margin-inline-start: max(calc(var(--bloom-page-header-start-width, 0px) + ${ROW_GAP}px), clamp(0px, calc(var(--bloom-page-header-side-width, 0px) + ${ROW_GAP}px), max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2}px)))) !important;
+  margin-inline-end: max(calc(var(--bloom-page-header-end-width, 0px) + ${ROW_GAP}px), clamp(0px, calc(var(--bloom-page-header-side-width, 0px) + ${ROW_GAP}px), max(0px, calc(50% - ${MIN_CENTERED_TITLE_WIDTH / 2}px)))) !important;
 }
 `;
 
@@ -647,13 +649,17 @@ function PageHeaderComponent({
         containerType: 'inline-size',
         containerName: 'bloom-page-header',
         '--bloom-page-header-side-width': `${Math.max(startWidth, endWidth)}px`,
+        '--bloom-page-header-start-width': `${startWidth}px`,
+        '--bloom-page-header-end-width': `${endWidth}px`,
       }
     : null;
-  // A centred title clears the wider side, and gives that clearance up evenly
-  // as the room narrows until the title has its minimum width: the web's
-  // `clamp()` margins (above), as flex on native. Two spacers of the clearance
-  // shrink alike around a title that keeps its minimum, so Yoga resolves it in
-  // the pass that lays the window out.
+  // A centred title clears the wider side on both sides, so it sits on the
+  // container's centre. As the room narrows it gives up the centre, never the
+  // clearance of its own side: each spacer shrinks to its side's width and no
+  // further, so the title slides off-centre into the room the two sides leave
+  // and is never laid out under their controls, as Apple's bar places a title
+  // that does not fit centred. The web's `clamp()` margins (above), as flex on
+  // native, so Yoga resolves it in the pass that lays the window out.
   const centerClearance = Math.max(startWidth, endWidth) + ROW_GAP;
   const centerSpacer = (side: 'before' | 'after') =>
     !isWeb ? (
@@ -661,7 +667,12 @@ function PageHeaderComponent({
         testID={testID ? `${testID}-center-${side}` : undefined}
         // Its basis as a `width` (shrinking): Yoga reads a definite width on
         // every layout, where a changed `flexBasis` keeps the size it computed.
-        style={{ flexGrow: 0, flexShrink: 1, width: centerClearance, minWidth: 0 }}
+        style={{
+          flexGrow: 0,
+          flexShrink: 1,
+          width: centerClearance,
+          minWidth: (side === 'before' ? startWidth : endWidth) + ROW_GAP,
+        }}
       />
     ) : null;
 
@@ -1172,11 +1183,13 @@ function PageHeaderComponent({
                     [
                       styles.centerSlot,
                       searchOccupiesRow && { display: 'none' },
+                      // Its minimum while the sides leave room for it; past
+                      // that it narrows with the room, so it stays between them.
                       !isWeb &&
                         !searchOccupiesRow && {
                           flexBasis: MIN_CENTERED_TITLE_WIDTH,
                           flexGrow: 1,
-                          flexShrink: 0,
+                          flexShrink: 1,
                         },
                     ],
                     pointerEventsStyle('box-none'),

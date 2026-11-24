@@ -282,28 +282,67 @@ describe('PageHeader', () => {
       });
     });
     // The wider side (82) + the 8 gap, on both sides of the title, as flex:
-    // spacers that give it up alike as the room narrows, around a title that
-    // keeps its minimum width (Yoga resolves it as the window resizes).
-    for (const side of ['before', 'after'])
-      expect(resolvedStyle(screen.getByTestId(`h-center-${side}`).props.style)).toMatchObject({
-        flexGrow: 0,
-        flexShrink: 1,
-        width: 90,
-        minWidth: 0,
-      });
+    // spacers that give the centre up as the room narrows (Yoga resolves it as
+    // the window resizes), each down to its own side + the gap and no further.
+    expect(resolvedStyle(screen.getByTestId('h-center-before').props.style)).toMatchObject({
+      flexGrow: 0,
+      flexShrink: 1,
+      width: 90,
+      minWidth: 36 + 8,
+    });
+    expect(resolvedStyle(screen.getByTestId('h-center-after').props.style)).toMatchObject({
+      flexGrow: 0,
+      flexShrink: 1,
+      width: 90,
+      minWidth: 82 + 8,
+    });
     expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
       flexGrow: 1,
-      flexShrink: 0,
+      flexShrink: 1,
       flexBasis: 96,
+      minWidth: 0,
     });
     expect(screen.queryByTestId('h-title')).toBeTruthy();
+  });
+
+  it('a centred title that does not fit centred slides off-centre, never under a side', () => {
+    // Mention's Home on a Pixel 8a (411): menu and search at the start, the
+    // Spanish "Pregunta a Alia" pill and the bell at the end, and the 28 logo
+    // centred between them. Centred, the logo sat under the pill, and the
+    // pill's glass refracted it into a bright streak. Neither spacer may give
+    // up its own side's room, so the title can only move into the room the
+    // sides leave, and narrow with it.
+    setWidth(411);
+    const screen = renderBar({
+      onBack: () => {},
+      title: 'Mention',
+      titleAlign: 'center',
+      actions: <ReactNative.View testID="action" />,
+    });
+    act(() => {
+      fireEvent(screen.getByTestId('h-start'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 96, height: 44 } },
+      });
+      fireEvent(screen.getByTestId('h-actions'), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 232, height: 44 } },
+      });
+    });
+    const before = resolvedStyle(screen.getByTestId('h-center-before').props.style);
+    const after = resolvedStyle(screen.getByTestId('h-center-after').props.style);
+    expect(before).toMatchObject({ flexShrink: 1, width: 240, minWidth: 104 });
+    // The wider side's spacer is already at its floor: it cannot shrink.
+    expect(after).toMatchObject({ width: 240, minWidth: 240 });
+    expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
+      flexShrink: 1,
+      minWidth: 0,
+    });
   });
 
   it('never insets the centred title past the container — no negative width', () => {
     // 320 wide, both sides wider than half of it. Unclamped this asks for
     // `left + right = 2 * (16 + 130 + 8) = 308` inside 320 minus the insets,
     // which is a box of negative width: on web the title collapses to nothing,
-    // on native the layout logs an error. The title goes off-centre instead.
+    // on native the layout logs an error. The title narrows to the room between them.
     setWidth(320);
     const screen = renderBar({
       onBack: () => {},
@@ -319,17 +358,18 @@ describe('PageHeader', () => {
         nativeEvent: { layout: { x: 0, y: 0, width: 130, height: 36 } },
       });
     });
-    // The spacers shrink (to nothing at most) and the title does not: it keeps
-    // its 96 whatever the clearance asks.
+    // The spacers shrink, to their own side + the gap at most, and the title
+    // narrows with the room that leaves rather than lie under either side.
     for (const side of ['before', 'after'])
       expect(resolvedStyle(screen.getByTestId(`h-center-${side}`).props.style)).toMatchObject({
         flexShrink: 1,
         width: 138,
-        minWidth: 0,
+        minWidth: 138,
       });
     expect(resolvedStyle(screen.getByTestId('h-center').props.style)).toMatchObject({
-      flexShrink: 0,
+      flexShrink: 1,
       flexBasis: 96,
+      minWidth: 0,
     });
   });
 
