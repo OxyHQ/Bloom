@@ -63,7 +63,7 @@ imports on their individual `icons/Ri…` or `icons/Si…` subpaths.
 
 ### Social and attachment glyphs
 
-The social glyphs use the same SVG renderer, sizing and state colour contract
+The social glyphs use the same renderer, sizing and state colour contract
 as the general icon catalogue. Each has its own import path:
 
 ```tsx
@@ -132,6 +132,30 @@ Colour travels on `fill` and size on `size` (the `xs`…`xl` rung, or `width` /
 `height`). Neither is inherited from a surrounding `Text`, so an icon beside a
 label has to be told both — an icon that "looks black in dark mode" is almost
 always one that was never given a `fill`.
+
+## How an icon draws
+
+The component API is the same on every platform; what draws it is not.
+
+- **Web:** inline SVG, as before. A browser draws it for nothing extra.
+- **Android:** ONE native view per icon (`BloomIconV1`, `android/…/icons/BloomIcon.kt`)
+  that draws the glyph's path with `Canvas.drawPath` on the view's hardware canvas.
+  react-native-svg mounted three views per icon (the `SvgView`, a group and the path)
+  and rasterised each glyph in software into a bitmap on the UI thread while the frame
+  was recorded; on a Pixel 8a an opened Mention post created 130 of its 285 native views
+  for 43 icons, and `SvgView.onDraw` was about 30% of the draw phase.
+- **iOS, and a binary without the view** (a JavaScript-only update on an older build,
+  Expo Go): react-native-svg, as before. The icon looks for the native view once
+  (`UIManager.hasViewManagerConfig`) and falls back without it.
+
+The native view draws what react-native-svg drew, step for step: the same path parser
+(copied from react-native-svg), the same `xMidYMid meet` viewBox transform, the even-odd
+fill rule, the paint flags, the stroke, and the `gradient` tokens. The paint resolves as
+it always did (`fill`, else `style.color`, else the theme's primary; `currentColor` is
+the `color` prop or `style.color`, black without either). Every View prop applies
+(layout style, `opacity`, accessibility, `testID`, `onLayout`). SVG paint props no Bloom
+icon is drawn with — `fillOpacity`, `strokeDasharray`, an SVG `transform` — are not drawn
+by the native view.
 
 ## `BloomIconComponent` — the type of an icon you hand to a component
 
