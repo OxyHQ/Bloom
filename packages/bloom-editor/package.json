@@ -67,6 +67,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "bob build",
+    "postbuild": "node ../../scripts/verify-react-compiler.mjs --control src/react/BlockEditor.tsx",
     "typescript": "tsc --noEmit -p .",
     "test": "jest"
   },
@@ -87,13 +88,15 @@
       [
         "commonjs",
         {
-          "esm": true
+          "esm": true,
+          "configFile": "../../babel.build.cjs"
         }
       ],
       [
         "module",
         {
-          "esm": true
+          "esm": true,
+          "configFile": "../../babel.build.cjs"
         }
       ],
       [

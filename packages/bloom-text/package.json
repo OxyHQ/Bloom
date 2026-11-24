@@ -53,6 +53,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "bob build",
+    "postbuild": "node ../../scripts/verify-react-compiler.mjs --control src/input-accessibility.web.ts",
     "typescript": "tsc --noEmit -p .",
     "test": "jest"
   },
@@ -80,13 +81,15 @@
       [
         "commonjs",
         {
-          "esm": true
+          "esm": true,
+          "configFile": "../../babel.build.cjs"
         }
       ],
       [
         "module",
         {
-          "esm": true
+          "esm": true,
+          "configFile": "../../babel.build.cjs"
         }
       ],
       [

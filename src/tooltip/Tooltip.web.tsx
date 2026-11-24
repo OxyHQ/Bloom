@@ -197,6 +197,9 @@ interface TooltipContentProps {
 }
 
 function TooltipBubble({ children, label, size: sizeProp }: TooltipContentProps) {
+  // The viewport is read while rendering (`window.innerWidth`/`innerHeight`), so every render
+  // must re-read it: the React Compiler would keep a placement from the size it first saw.
+  'use no memo';
   const size = useTooltipSize(sizeProp);
   const parentFill = useSurfaceFill();
   const palette = useMenuPalette();

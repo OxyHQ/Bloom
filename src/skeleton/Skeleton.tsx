@@ -93,6 +93,10 @@ function useShimmer() {
 
 /** Only mount-time phase alignment uses JS; CSS owns every subsequent frame. */
 function useShapeMotion(blend: boolean | undefined, style?: ViewStyle | ViewStyle[]) {
+  // The delay reads the clock once per driver (`useMemo`). The React Compiler takes a string a
+  // memo returns for one it may recompute, so it read the clock on every render: a shape that
+  // re-rendered jumped its shimmer by the time since its region started.
+  'use no memo';
   const driver = useShimmer();
   const delay = useMemo(
     () => ('startedAt' in driver ? `${-(Date.now() - driver.startedAt)}ms` : undefined),
