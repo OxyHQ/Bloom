@@ -7,11 +7,11 @@ import { forwardRef, memo } from 'react';
 import type { ComponentRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { borderRadius } from '../styles/tokens';
-import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { SurfaceLevelProvider, useSurfaceFill } from '../styles/surface-levels';
 import { useResolvedSurface } from './use-resolved-surface';
 import { SurfacePaint } from './SurfacePaint';
 import { LensButtonHost, splitLensStyle } from '../floating/lens/lens-button-host';
-import { useLensAvailable } from '../floating/lens/lens-material';
+import { useInFloatingRegion, useLensAvailable } from '../floating/lens/lens-material';
 import type { SurfaceProps } from './types';
 import type { MemoRefComponent } from '../styles/native-refs';
 
@@ -69,6 +69,12 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     });
     const lensAvailable = useLensAvailable();
     const lens = materialProp === 'lens' && lensAvailable;
+    // Outside a floating region the surface is in the page's content, as a feed's compose prompt:
+    // its lens is drawn in its place, against the surface it sits on, so it scrolls and clips with
+    // the page (a Button's and a Group's do the same). Drawn by the window, it slid over the header
+    // and the status bar as the feed scrolled (Mention's Home, Pixel 8a).
+    const backing = useSurfaceFill();
+    const restBackdrop = useInFloatingRegion() ? undefined : backing;
     const split = lens ? splitLensStyle(style) : null;
     const surface = (
       <View
@@ -108,6 +114,7 @@ const SurfaceComponent = forwardRef<ComponentRef<typeof View>, SurfaceProps>(
     return (
       <LensButtonHost
         radius={typeof geometry.radius === 'number' ? geometry.radius : undefined}
+        restBackdrop={restBackdrop}
         style={split.host}
       >
         {surface}
