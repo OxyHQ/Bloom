@@ -581,6 +581,9 @@ export function BloomThemeProvider({
       vars: themeVars,
       rootMode: resolved,
       prepaintReady: !serverPaint,
+      // The platform's palette is the device appearance's (Material You reads it,
+      // an iOS dynamic colour resolves against it), so a scope that forces the
+      // other mode takes the preset's palette for that mode, in both readers.
       resolvePreset: (nextPreset, nextMode) =>
         effectiveSeed
           ? {
@@ -595,9 +598,14 @@ export function BloomThemeProvider({
                 tertiarySeed: effectiveTertiary,
               }),
             }
-          : !explicitAccents && !isAdaptive
+          : !explicitAccents && !(isAdaptive && nextMode === resolved)
             ? getPrepaintPalette(nextPreset, nextMode)
-            : buildPresetPalette(nextPreset, nextMode, isAdaptive, explicitAccents),
+            : buildPresetPalette(
+                nextPreset,
+                nextMode,
+                isAdaptive && nextMode === resolved,
+                explicitAccents,
+              ),
       resolveMode: (nextMode) =>
         nextMode === resolved
           ? { theme: themeColors, vars: themeVars }
@@ -614,7 +622,7 @@ export function BloomThemeProvider({
                   tertiarySeed: effectiveTertiary,
                 }),
               }
-            : buildPresetPalette(colorPreset, nextMode, isAdaptive, explicitAccents),
+            : buildPresetPalette(colorPreset, nextMode, false, explicitAccents),
     }),
     [
       themeColors,

@@ -36,8 +36,12 @@ export interface RgbaChannels extends RgbChannels {
  * resolve to `rgba(r, g, b, 0.13)` in light and `0.24` in dark, so anything
  * compositing onto a tint has to know it is compositing onto something
  * translucent — dropping the alpha silently turns a tint into an opaque fill.
+ *
+ * A platform colour (iOS dynamic, Material You: a `PlatformColor` object in an
+ * adaptive theme) is not a string and yields `null` as well.
  */
 export function parseRgba(color: string): RgbaChannels | null {
+  if (typeof color !== 'string') return null;
   const trimmed = color.trim();
   if (trimmed.startsWith('#')) {
     let hex = trimmed.slice(1);

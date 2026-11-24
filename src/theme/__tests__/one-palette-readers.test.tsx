@@ -11,8 +11,9 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../BloomThemeProvider';
 import { buildPresetPalette } from '../build-theme';
 import { APP_COLOR_NAMES } from '../color-presets';
+import { BloomColorScope } from '../color-scope/ColorScope';
 import { COLOR_FIELDS } from '../color-scope/resolve-scope';
-import { useColorTokens } from '../color-tokens';
+import { tokenAlpha, useColorTokens } from '../color-tokens';
 import { useTheme } from '../use-theme';
 
 jest.mock('../adaptive-colors', () => jest.requireActual('../adaptive-colors.native'));
@@ -35,10 +36,16 @@ function Probe() {
   return <Text testID="probe">{JSON.stringify({ colors, tokens })}</Text>;
 }
 
-function readers(mode: 'light' | 'dark' | 'adaptive', colorPreset = 'oxy' as const) {
+function readers(mode: 'light' | 'dark' | 'adaptive', scopeMode?: 'light' | 'dark') {
   const { getByTestId, unmount } = render(
-    <BloomThemeProvider colorPreset={colorPreset} mode={mode} fonts={false}>
-      <Probe />
+    <BloomThemeProvider colorPreset="oxy" mode={mode} fonts={false}>
+      {scopeMode ? (
+        <BloomColorScope mode={scopeMode}>
+          <Probe />
+        </BloomColorScope>
+      ) : (
+        <Probe />
+      )}
     </BloomThemeProvider>,
   );
   const value = JSON.parse(getByTestId('probe').props.children as string) as {
@@ -74,6 +81,23 @@ describe.each(['android', 'ios'] as const)('on %s', (os) => {
     expect(tokens.background).toBe(
       os === 'android' ? Color.android.dynamic.surface : Color.ios.systemBackground,
     );
+  });
+
+  it('a scope in the root’s mode keeps the platform palette', () => {
+    expect(readers('adaptive', 'light')).toEqual(readers('adaptive'));
+  });
+
+  it('a scope that forces the other mode paints that mode’s preset palette, in both readers', () => {
+    // The platform's colours are the device appearance's (light here), never a forced dark.
+    const { colors, tokens } = readers('adaptive', 'dark');
+    const dark = buildPresetPalette('oxy', 'dark');
+    for (const [token, field] of TOKEN_FIELDS) {
+      expect([token, tokens[camel(token)], colors[field]]).toEqual([
+        token,
+        dark.vars[`--${token}`],
+        dark.theme.colors[field],
+      ]);
+    }
   });
 });
 
@@ -118,6 +142,12 @@ it('every preset, light and dark: the token record holds each field’s colour',
       }
     }
   }
+});
+
+it('a platform colour object takes no opacity and does not throw', () => {
+  // iOS dynamic and Material You colours are `PlatformColor` objects on a device.
+  const platform = { semantic: ['systemBlue'] } as unknown as string;
+  expect(tokenAlpha(platform, 0.12)).toBe(platform);
 });
 
 it('the web has no platform palette: adaptive is the preset’s', () => {
