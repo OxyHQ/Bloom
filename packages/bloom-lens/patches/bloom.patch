@@ -1095,7 +1095,7 @@
  import java.util.WeakHashMap
  
  // The window backdrop: the page behind every glass surface of the window (menus, tab bar, search, create circle).
-@@ -13,13 +18,35 @@
+@@ -13,13 +18,37 @@
  // Consumers call register(view, baseColor) and unregister(view). A registered view that is a direct child of the root
  // (the menu overlay) is left out of the recording. Surfaces that live inside the page skip their own drawing while
  // `recording` is true (dispatchDraw / onDraw check it), so they are not recorded into the backdrop.
@@ -1130,10 +1130,12 @@
 +  private var wholeChangedAt = 0L
 +  private val recentAt = ArrayDeque<Long>()
 +  private val recentDirt = ArrayDeque<Rect>()
++  // The bands of the page the lenses that show it draw (capture).
++  private val captures = ArrayList<Capture>()
  
    // Bumped each time the page is recorded: consumers that cache the backdrop regenerate when it changes.
    var version: Int = 0
-@@ -29,30 +56,150 @@
+@@ -29,30 +58,198 @@
      excluded.add(view)
      baseColor = color
      users += 1
@@ -1157,9 +1159,9 @@
 +        root.viewTreeObserver.removeOnPreDrawListener(this)
 +        root.viewTreeObserver.removeOnGlobalLayoutListener(this)
 +      }
-     }
-   }
- 
++    }
++  }
++
 +  override fun onGlobalLayout() {
 +    stale = true
 +  }
@@ -1169,6 +1171,54 @@
 +
 +  fun drop(lens: GlassLens) {
 +    lenses.remove(lens)
++  }
++
++  // A band of the page, drawn into a layer of its own once a frame, for every lens showing the page whose region shares
++  // rows of the window with it (a bar and the FAB beside it; a header's buttons). Each lens drew the page into its
++  // glass by itself: on every frame of a scroll RenderThread walked the page's display lists once per lens and the GPU
++  // drew what is behind each one, a band at a time now. The same pixels: the page at whole pixels in a layer at
++  // window coordinates, sampled at whole-pixel offsets.
++  private class Capture(val node: RenderNode) {
++    val band = Rect()
++    val users = HashMap<GlassLens, Rect>()
++  }
++
++  // The node [lens] draws the page through for [region] (window px): its band's layer, its band grown to hold it.
++  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
++  fun capture(lens: GlassLens, region: Rect): RenderNode {
++    val current = captures.firstOrNull { lens in it.users }
++    if (current != null && current.users[lens] == region && current.node.hasDisplayList()) return current.node
++    current?.let { leave(lens) }
++    val joined = captures.firstOrNull { it.band.top < region.bottom && region.top < it.band.bottom }
++      ?: Capture(RenderNode("GlassBackdrop.band").also { it.setUseCompositingLayer(true, null) }).also { captures.add(it) }
++    joined.users[lens] = Rect(region)
++    place(joined)
++    return joined.node
++  }
++
++  // [lens] no longer shows the page: its band shrinks to the lenses left, and goes once none is.
++  fun leave(lens: GlassLens) {
++    val current = captures.firstOrNull { lens in it.users } ?: return
++    current.users.remove(lens)
++    if (current.users.isEmpty()) {
++      captures.remove(current)
++      current.node.discardDisplayList()
++    } else {
++      place(current)
+     }
+   }
+ 
++  // The band around its lenses' regions, the page recorded into it again when it moved or its display list was dropped.
++  private fun place(capture: Capture) {
++    val band = Rect()
++    for (region in capture.users.values) band.union(region)
++    if (band == capture.band && capture.node.hasDisplayList()) return
++    capture.band.set(band)
++    capture.node.setPosition(band)
++    val canvas = capture.node.beginRecording(band.width(), band.height())
++    canvas.translate(-band.left.toFloat(), -band.top.toFloat())
++    canvas.drawRenderNode(node)
++    capture.node.endRecording()
 +  }
 +
    override fun onPreDraw(): Boolean {
@@ -1187,12 +1237,9 @@
 +    } else {
 +      wholeChangedAt = now
 +    }
-     return true
-   }
- 
--  private fun anyChildDirty(): Boolean {
--    for (index in 0 until root.childCount) if (root.getChildAt(index).isDirty) return true
--    return false
++    return true
++  }
++
 +  private fun remember(whole: Boolean, now: Long) {
 +    while (recentAt.isNotEmpty() && now - recentAt.first() > GlassLens.StillAfterMs) {
 +      recentAt.removeFirst()
@@ -1267,9 +1314,12 @@
 +    val last = seen[view]
 +    if (last != null && last.contentEquals(shape)) return false
 +    if (last == null) seen[view] = shape.copyOf() else shape.copyInto(last)
-+    return true
-+  }
-+
+     return true
+   }
+ 
+-  private fun anyChildDirty(): Boolean {
+-    for (index in 0 until root.childCount) if (root.getChildAt(index).isDirty) return true
+-    return false
 +  // The view's bounds in the root's coordinates (the backdrop's), through every transform and scroll above it.
 +  private fun addDirt(view: View) {
 +    dirtRect.set(0f, 0f, view.width.toFloat(), view.height.toFloat())
@@ -1292,7 +1342,7 @@
      val width = root.width
      val height = root.height
      if (width <= 0 || height <= 0) return
-@@ -70,7 +217,7 @@
+@@ -70,7 +267,7 @@
      recording = true
      try {
        val canvas = node.beginRecording(width, height)
@@ -1301,7 +1351,7 @@
        root.background?.draw(canvas)
        for (index in 0 until root.childCount) {
          val child = root.getChildAt(index)
-@@ -83,12 +230,14 @@
+@@ -83,12 +280,14 @@
        recording = false
        for (view in hidden) view.visibility = View.VISIBLE
      }
@@ -1319,7 +1369,7 @@
      @Volatile
 --- a/backdrop/GlassLens.kt
 +++ b/backdrop/GlassLens.kt
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,129 @@
 +package so.oxy.bloom.glassmenu.backdrop
 +
 +import android.graphics.Bitmap
@@ -1354,6 +1404,8 @@
 +  private var generation = 0
 +  private var askedGeneration = -1
 +  private var still: GlassStill? = null
++  // The band of the page this lens draws while it shows the page (GlassBackdrop.capture).
++  private var capture: RenderNode? = null
 +
 +  // The node the glass draws for [area] (window px): the region's still, or the page. A node whose display list hwui
 +  // dropped (it left every tree: the window stopped) is recorded again, not drawn empty.
@@ -1385,12 +1437,14 @@
 +    quietSince = changedAt
 +    generation += 1
 +    letStillGo()
-+    if (!showsStill && recorded && node.hasDisplayList() && node.left == region.left && node.top == region.top &&
-+      node.width == region.width() && node.height == region.height()) return
++    val band = page.capture(this, region)
++    if (!showsStill && recorded && node.hasDisplayList() && band === capture && node.left == region.left &&
++      node.top == region.top && node.width == region.width() && node.height == region.height()) return
++    capture = band
 +    node.setPosition(region)
 +    val canvas = node.beginRecording(region.width(), region.height())
 +    canvas.translate(-region.left.toFloat(), -region.top.toFloat())
-+    canvas.drawRenderNode(page.node)
++    canvas.drawRenderNode(band)
 +    node.endRecording()
 +    showsStill = false
 +    recorded = true
@@ -1423,9 +1477,13 @@
 +    canvas.drawBitmap(bitmap, 0f, 0f, null)
 +    node.endRecording()
 +    showsStill = true
++    capture = null
++    page.leave(this)
 +  }
 +
 +  fun release() {
++    page.leave(this)
++    capture = null
 +    page.drop(this)
 +    still?.release()
 +    still = null

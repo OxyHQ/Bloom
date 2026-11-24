@@ -47,6 +47,8 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
   private var wholeChangedAt = 0L
   private val recentAt = ArrayDeque<Long>()
   private val recentDirt = ArrayDeque<Rect>()
+  // The bands of the page the lenses that show it draw (capture).
+  private val captures = ArrayList<Capture>()
 
   // Bumped each time the page is recorded: consumers that cache the backdrop regenerate when it changes.
   var version: Int = 0
@@ -85,6 +87,54 @@ internal class GlassBackdrop private constructor(private val root: ViewGroup) :
 
   fun drop(lens: GlassLens) {
     lenses.remove(lens)
+  }
+
+  // A band of the page, drawn into a layer of its own once a frame, for every lens showing the page whose region shares
+  // rows of the window with it (a bar and the FAB beside it; a header's buttons). Each lens drew the page into its
+  // glass by itself: on every frame of a scroll RenderThread walked the page's display lists once per lens and the GPU
+  // drew what is behind each one, a band at a time now. The same pixels: the page at whole pixels in a layer at
+  // window coordinates, sampled at whole-pixel offsets.
+  private class Capture(val node: RenderNode) {
+    val band = Rect()
+    val users = HashMap<GlassLens, Rect>()
+  }
+
+  // The node [lens] draws the page through for [region] (window px): its band's layer, its band grown to hold it.
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  fun capture(lens: GlassLens, region: Rect): RenderNode {
+    val current = captures.firstOrNull { lens in it.users }
+    if (current != null && current.users[lens] == region && current.node.hasDisplayList()) return current.node
+    current?.let { leave(lens) }
+    val joined = captures.firstOrNull { it.band.top < region.bottom && region.top < it.band.bottom }
+      ?: Capture(RenderNode("GlassBackdrop.band").also { it.setUseCompositingLayer(true, null) }).also { captures.add(it) }
+    joined.users[lens] = Rect(region)
+    place(joined)
+    return joined.node
+  }
+
+  // [lens] no longer shows the page: its band shrinks to the lenses left, and goes once none is.
+  fun leave(lens: GlassLens) {
+    val current = captures.firstOrNull { lens in it.users } ?: return
+    current.users.remove(lens)
+    if (current.users.isEmpty()) {
+      captures.remove(current)
+      current.node.discardDisplayList()
+    } else {
+      place(current)
+    }
+  }
+
+  // The band around its lenses' regions, the page recorded into it again when it moved or its display list was dropped.
+  private fun place(capture: Capture) {
+    val band = Rect()
+    for (region in capture.users.values) band.union(region)
+    if (band == capture.band && capture.node.hasDisplayList()) return
+    capture.band.set(band)
+    capture.node.setPosition(band)
+    val canvas = capture.node.beginRecording(band.width(), band.height())
+    canvas.translate(-band.left.toFloat(), -band.top.toFloat())
+    canvas.drawRenderNode(node)
+    capture.node.endRecording()
   }
 
   override fun onPreDraw(): Boolean {
