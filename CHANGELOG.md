@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- A route pushed over the tab pager no longer runs its navigator again (`useTabsWithTriggers`): only the pager and its predictive Back, which follow whether the tabs are in front, re-render for the push and for its Back. `TabPagerLayout` read the focus itself, so every push and Back re-ran the navigator hook twice (once more for the render-time revision of the Back preview), before the pushed screen could mount (Mention, Pixel 8a: about 5 ms of JavaScript per run).
+
 ### Fixed
 
 - `useScreenEntered()` is false on a pushed stack scene until its push transition ends, as documented. The pushing render reads the navigator's last committed state, which does not hold the pushed route yet, so the scene counted as one the stack started with and was entered at once: on a Pixel 8a a Mention post mounted its replies and its reply composer a frame after the push instead of after the slide.
