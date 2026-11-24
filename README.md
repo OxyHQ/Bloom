@@ -52,8 +52,8 @@ Always required:
 
 | Package | Range |
 |---|---|
-| `react` | `>=18.0.0` |
-| `react-dom` | `>=18.0.0` |
+| `react` | `>=19.0.0` |
+| `react-dom` | `>=19.0.0` |
 | `react-native` | `>=0.73.0` |
 | `react-native-safe-area-context` | `>=5.0.0` |
 | `react-native-screens` | `>=3.16.0` |

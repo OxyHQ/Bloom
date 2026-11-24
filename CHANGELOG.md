@@ -6,6 +6,10 @@
 
 - Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
 
+### Changed
+
+- The `react` and `react-dom` peers are `>=19.0.0` (were `>=18.0.0`). `lib/` has been compiled by the React Compiler since 23.5.0 and imports `react/compiler-runtime`, which React 18 does not have, so React 18 already failed at the first import; the range now says so at install. Every Oxy app and SDK is on React 19.
+
 ## 23.7.0
 
 ### Breaking
