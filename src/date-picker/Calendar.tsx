@@ -82,6 +82,10 @@ function CalendarFrame({
   style,
   testID,
 }: CalendarFrameProps) {
+  // Today is read while rendering (`today()`), so every render must re-read it: the React
+  // Compiler would read it once per mount. A calendar left open past midnight then kept
+  // yesterday as today.
+  'use no memo';
   const theme = useTheme();
   const { locale, messages } = useMessages(DATE_PICKER_MESSAGES, localeProp);
   const previousLabel = labels?.previousMonth ?? messages.previousMonth;

@@ -57,6 +57,10 @@ export function useMessages<M>(
   catalog: MessageCatalog<M>,
   localeProp?: string,
 ): { locale: string | undefined; messages: M } {
+  // With no LocaleProvider the loaded languages are read while rendering
+  // (`getBloomTranslations()`), so every render must re-read them: the React
+  // Compiler would keep the first snapshot while the provider stays absent.
+  'use no memo';
   const scope = useContext(LocaleContext);
   const locale = localeProp ?? scope?.resolvedLocale ?? scope?.locale;
   const translations = scope ? scope.translations : getBloomTranslations();
