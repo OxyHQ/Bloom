@@ -30,13 +30,14 @@ export function resolveComposerLoaderColors(theme: Theme): ComposerLoaderColors 
   ];
 }
 
-/** The light fades in/out over this long when `active` flips. */
+/** The light fades in/out over this long when the phase turns it on or off. */
 export const COMPOSER_LOADER_FADE_MS = 450;
 
-/** Resolve the visual light state while preserving the existing boolean API. */
-export function resolveComposerLoaderActive(active: boolean, phase?: ComposerLoaderPhase): boolean {
-  if (phase === undefined) return active;
-  return phase === 'submitting' || phase === 'streaming' || phase === 'stopping';
+/** Whether the light shows: while a request runs, or when no phase is given. */
+export function resolveComposerLoaderActive(phase?: ComposerLoaderPhase): boolean {
+  return (
+    phase === undefined || phase === 'submitting' || phase === 'streaming' || phase === 'stopping'
+  );
 }
 
 /** Copies per layer when tapering. */

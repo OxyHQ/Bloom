@@ -79,13 +79,11 @@ describe('ComposerLoader request phases', () => {
     ['error', false],
     ['complete', false],
   ] as const)('%s resolves to the expected visual light state', (phase, expected) => {
-    expect(resolveComposerLoaderActive(true, phase)).toBe(expected);
+    expect(resolveComposerLoaderActive(phase)).toBe(expected);
   });
 
-  it('uses the legacy active value only when no phase is supplied', () => {
-    expect(resolveComposerLoaderActive(false)).toBe(false);
-    expect(resolveComposerLoaderActive(true)).toBe(true);
-    expect(resolveComposerLoaderActive(false, 'streaming')).toBe(true);
+  it('shows the light when no phase is supplied', () => {
+    expect(resolveComposerLoaderActive()).toBe(true);
   });
 });
 
@@ -290,7 +288,7 @@ describe('ComposerLoader (native)', () => {
     });
   });
 
-  it('fades the light by `active` and hides it from assistive tech', () => {
+  it('fades the light by `phase` and hides it from assistive tech', () => {
     const on = renderLoader(
       <ComposerLoader testID="cl">
         <Text>x</Text>
@@ -301,7 +299,7 @@ describe('ComposerLoader (native)', () => {
     expect(light.props['aria-hidden']).toBe(true);
     on.unmount();
     const off = renderLoader(
-      <ComposerLoader testID="cl" active={false}>
+      <ComposerLoader testID="cl" phase="idle">
         <Text>x</Text>
       </ComposerLoader>,
     );

@@ -36,7 +36,7 @@ export function LoaderBenchmark({
     <>
       <Renderer
         key={`first-${count}-${taper}`}
-        active={active}
+        phase={active ? 'streaming' : 'idle'}
         paused={paused}
         radius={square ? 12 : undefined}
         style={narrow ? { width: 240 } : undefined}
@@ -50,7 +50,7 @@ export function LoaderBenchmark({
       {count === 2 ? (
         <Renderer
           key={`second-${count}-${taper}`}
-          active={active}
+          phase={active ? 'streaming' : 'idle'}
           paused={paused}
           radius={square ? 12 : undefined}
           style={narrow ? { width: 240 } : undefined}

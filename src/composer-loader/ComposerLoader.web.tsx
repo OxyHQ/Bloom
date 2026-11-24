@@ -57,7 +57,6 @@ export const COMPOSER_LOADER_WEB_CSS = `
 function ComposerLoaderComponent({
   children,
   phase,
-  active = true,
   paused = false,
   colors,
   speed = 4.5,
@@ -76,7 +75,7 @@ function ComposerLoaderComponent({
   style,
   testID,
 }: ComposerLoaderProps) {
-  const showLight = resolveComposerLoaderActive(active, phase);
+  const showLight = resolveComposerLoaderActive(phase);
   const theme = useTheme();
   const gradientId = `${useSvgIdPrefix('bloom-cl')}gradient`;
   const [box, setBox] = useState({ w: 0, h: 0 });

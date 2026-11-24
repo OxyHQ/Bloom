@@ -20,16 +20,10 @@ export interface ComposerLoaderProps {
    * `stopping` keep the light active without resetting its lap. `idle`, `error`
    * and `complete` fade it out. The app owns the request and passes business
    * state such as `ComposerPill.busy` and `ComposerPill.error` separately.
-   * When present, this takes precedence over the legacy `active` prop.
+   * The light fades in/out over 450ms. Omitted, the light shows.
    */
   phase?: ComposerLoaderPhase;
-  /**
-   * Show the light. Fades in/out (450ms). Prefer `phase` for a request lifecycle.
-   * Default `true`.
-   * @deprecated `phase` is the recommended API; `active` will be removed in 18.0.0.
-   */
-  active?: boolean;
-  /** Freeze the decorative light without changing active or the composer. Use native viewability for offscreen content. */
+  /** Freeze the decorative light without changing the phase or the composer. Use native viewability for offscreen content. */
   paused?: boolean;
   /** Four gradient colours, spread across the pill left → right. Default an iridescent set. */
   colors?: ComposerLoaderColors;

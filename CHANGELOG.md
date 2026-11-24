@@ -5,6 +5,7 @@
 ### Breaking
 
 - Removed the commerce families no app imports: `@oxy.so/bloom/checkout-summary`, `@oxy.so/bloom/vendor-card` and `@oxy.so/bloom/order-confirmation`, their root-barrel exports and message catalogs, and their Bloom language nodes (`CheckoutSummaryRow`, `CheckoutSummary`, `CheckoutConfirm`, `VendorCard`, `OrderConfirmation`). `cart-panel`, `menu-item`, `price-breakdown`, `payment-method`, `payment-status` and `address` stay.
+- Removed `ComposerLoader`'s deprecated `active` prop. Pass `phase` instead: `active={x}` is `phase={x ? 'streaming' : 'idle'}`, and a loader with no `phase` still shows its light.
 
 ## 23.6.0
 

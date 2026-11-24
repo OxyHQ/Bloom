@@ -66,7 +66,7 @@ Both composers take the pair. `busy` **without** `onStop` draws no stop at all: 
 import { ComposerLoader } from '@oxy.so/bloom/composer-loader';
 import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 
-<ComposerLoader active={working}>
+<ComposerLoader phase={working ? 'streaming' : 'idle'}>
   <ComposerPill models={['Composer 2.5', 'Fable 5']} onSubmit={send} />
 </ComposerLoader>
 <ComposerStatusBar branch="Main" folders={folders} mode="Agent" context={57} />
@@ -107,7 +107,7 @@ Inside a `ComposerLoader` the slot is the wrong place: the loader's light traces
 ```tsx
 <View style={{ gap: 8 }}>
   {pending && <Questionnaire questions={pending} onComplete={answer} />}
-  <ComposerLoader active={busy}>
+  <ComposerLoader phase={busy ? 'streaming' : 'idle'}>
     <ComposerPill value={draft} onValueChange={setDraft} onSubmit={send} />
   </ComposerLoader>
 </View>
