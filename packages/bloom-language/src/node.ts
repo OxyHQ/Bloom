@@ -154,7 +154,6 @@ import type { MediaCardKind } from './controls/media-cards';
 import type { PaymentMethodsKind } from './controls/payment-method';
 import type { AddressesKind } from './controls/address';
 import type { OrderConfirmationKind } from './controls/order-confirmation';
-import type { DeliverySlotKind } from './controls/delivery-slot';
 import type { CheckoutSummaryKind } from './controls/checkout-summary';
 import type { VendorCardKind } from './controls/vendor-card';
 import type { MenuItemKind } from './controls/menu-item';
@@ -168,7 +167,6 @@ import type { ListingKind } from './controls/listings';
 import type { ChatKind } from './controls/chat';
 import type { CrmKind } from './controls/crm';
 import type { DashboardCardKind } from './controls/dashboard-cards';
-import type { LogisticsKind } from './controls/logistics';
 import type { AgentKind } from './controls/agents';
 import type { MediaControlKind } from './controls/media-controls';
 import type { StatCardKind } from './controls/stat-cards';
@@ -1197,9 +1195,6 @@ export interface ValueModifiers {
   // An action bar's zero counts
   showZeroCounts: boolean;
 
-  // Signature pads (controls/logistics.tsx)
-  strokeWidth: BorderWidthName;
-
   // The chat screen's secondary looks (controls/chat.tsx)
   titleAlign: TitleAlign;
   titleLayout: TitleLayout;
@@ -1984,10 +1979,8 @@ export type NodeKind =
   | LyricsKind
   | CreatorStudioKind
   | CheckoutSummaryKind
-  | DeliverySlotKind
   | OrderConfirmationKind
   | MediaPlayerKind
-  | LogisticsKind
   | MusicLibraryKind
   | QueuePanelKind
   | TrackListKind;
@@ -4295,9 +4288,6 @@ export class Node {
   // Hover cards (controls/hover-card.tsx)
   closeDelay(value: DurationName): Node {
     return this.set('closeDelay', value);
-  }
-  strokeWidth(value: BorderWidthName): Node {
-    return this.set('strokeWidth', value);
   }
   padded(value: boolean): Node {
     return this.set('padded', value);

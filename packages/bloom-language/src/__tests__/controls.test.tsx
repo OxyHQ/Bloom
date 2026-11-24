@@ -12,7 +12,6 @@ import { Collapsible } from '../controls/collapsible';
 import { HoverCard } from '../controls/hover-card';
 import { ListItem, MailRow, VirtualList } from '../controls/list';
 import { ReviewCard } from '../controls/listings';
-import { SignaturePad } from '../controls/logistics';
 import { MenuItemOptions } from '../controls/menu-item';
 import { NowPlayingBar } from '../controls/media-player';
 import { Notification } from '../controls/notification';
@@ -189,19 +188,6 @@ describe('a component’s waits are duration tokens', () => {
     expect(notification.props.introDelay).toBe(0.2);
     const atOnce = only(mount(toElement(Notification('Copied').introDelay('0'))), 'Notification');
     expect(atOnce.props.introDelay).toBe(0);
-  });
-});
-
-describe('a signature’s stroke', () => {
-  it('is a border width token, as a shape’s outline is: Bloom’s own width by its value', () => {
-    const pad = (width?: 'thick' | '2.5') =>
-      only(
-        mount(toElement(width === undefined ? SignaturePad() : SignaturePad().strokeWidth(width))),
-        'SignaturePad',
-      ).props;
-    expect(pad('2.5').strokeWidth).toBe(2.5);
-    expect(pad('thick').strokeWidth).toBe(2);
-    expect(pad().strokeWidth).toBeUndefined();
   });
 });
 

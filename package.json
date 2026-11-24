@@ -3458,20 +3458,6 @@
         "default": "./lib/commonjs/checkout-sheet/model.js"
       }
     },
-    "./delivery-slot": {
-      "react-native": {
-        "types": "./lib/typescript/module/delivery-slot/index.d.ts",
-        "default": "./src/delivery-slot/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/delivery-slot/index.d.ts",
-        "default": "./lib/module/delivery-slot/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/delivery-slot/index.d.ts",
-        "default": "./lib/commonjs/delivery-slot/index.js"
-      }
-    },
     "./order-confirmation": {
       "react-native": {
         "types": "./lib/typescript/module/order-confirmation/index.d.ts",
@@ -3570,48 +3556,6 @@
         "default": "./lib/commonjs/directions/index.js"
       }
     },
-    "./shipment-request": {
-      "react-native": {
-        "types": "./lib/typescript/module/shipment-request/index.d.ts",
-        "default": "./src/shipment-request/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/shipment-request/index.d.ts",
-        "default": "./lib/module/shipment-request/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/shipment-request/index.d.ts",
-        "default": "./lib/commonjs/shipment-request/index.js"
-      }
-    },
-    "./carrier-quote": {
-      "react-native": {
-        "types": "./lib/typescript/module/carrier-quote/index.d.ts",
-        "default": "./src/carrier-quote/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/carrier-quote/index.d.ts",
-        "default": "./lib/module/carrier-quote/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/carrier-quote/index.d.ts",
-        "default": "./lib/commonjs/carrier-quote/index.js"
-      }
-    },
-    "./vehicle-picker": {
-      "react-native": {
-        "types": "./lib/typescript/module/vehicle-picker/index.d.ts",
-        "default": "./src/vehicle-picker/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/vehicle-picker/index.d.ts",
-        "default": "./lib/module/vehicle-picker/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/vehicle-picker/index.d.ts",
-        "default": "./lib/commonjs/vehicle-picker/index.js"
-      }
-    },
     "./place-picker": {
       "react-native": {
         "types": "./lib/typescript/module/place-picker/index.d.ts",
@@ -3666,48 +3610,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/payment-status/index.d.ts",
         "default": "./lib/commonjs/payment-status/index.js"
-      }
-    },
-    "./job-board": {
-      "react-native": {
-        "types": "./lib/typescript/module/job-board/index.d.ts",
-        "default": "./src/job-board/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/job-board/index.d.ts",
-        "default": "./lib/module/job-board/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/job-board/index.d.ts",
-        "default": "./lib/commonjs/job-board/index.js"
-      }
-    },
-    "./earnings": {
-      "react-native": {
-        "types": "./lib/typescript/module/earnings/index.d.ts",
-        "default": "./src/earnings/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/earnings/index.d.ts",
-        "default": "./lib/module/earnings/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/earnings/index.d.ts",
-        "default": "./lib/commonjs/earnings/index.js"
-      }
-    },
-    "./proof-of-delivery": {
-      "react-native": {
-        "types": "./lib/typescript/module/proof-of-delivery/index.d.ts",
-        "default": "./src/proof-of-delivery/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/proof-of-delivery/index.d.ts",
-        "default": "./lib/module/proof-of-delivery/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/proof-of-delivery/index.d.ts",
-        "default": "./lib/commonjs/proof-of-delivery/index.js"
       }
     },
     "./mail-list": {
@@ -5400,9 +5302,6 @@
       "checkout-sheet/model": [
         "./lib/typescript/module/checkout-sheet/model.d.ts"
       ],
-      "delivery-slot": [
-        "./lib/typescript/module/delivery-slot/index.d.ts"
-      ],
       "order-confirmation": [
         "./lib/typescript/module/order-confirmation/index.d.ts"
       ],
@@ -5424,15 +5323,6 @@
       "directions": [
         "./lib/typescript/module/directions/index.d.ts"
       ],
-      "shipment-request": [
-        "./lib/typescript/module/shipment-request/index.d.ts"
-      ],
-      "carrier-quote": [
-        "./lib/typescript/module/carrier-quote/index.d.ts"
-      ],
-      "vehicle-picker": [
-        "./lib/typescript/module/vehicle-picker/index.d.ts"
-      ],
       "place-picker": [
         "./lib/typescript/module/place-picker/index.d.ts"
       ],
@@ -5444,15 +5334,6 @@
       ],
       "payment-status": [
         "./lib/typescript/module/payment-status/index.d.ts"
-      ],
-      "job-board": [
-        "./lib/typescript/module/job-board/index.d.ts"
-      ],
-      "earnings": [
-        "./lib/typescript/module/earnings/index.d.ts"
-      ],
-      "proof-of-delivery": [
-        "./lib/typescript/module/proof-of-delivery/index.d.ts"
       ],
       "mail-list": [
         "./lib/typescript/module/mail-list/index.d.ts"

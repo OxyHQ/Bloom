@@ -5,6 +5,7 @@
 ### Breaking
 
 - Removed `@oxy.so/bloom/teleport`, the vendored copy of react-native-teleport 1.2.0 that nothing imported (its native views were never in Bloom). The media flight keeps the one piece it used, the web move primitive in `media-flight/media-node.web.ts`.
+- Removed the logistics families no app imports: `@oxy.so/bloom/shipment-request`, `@oxy.so/bloom/carrier-quote`, `@oxy.so/bloom/vehicle-picker`, `@oxy.so/bloom/job-board`, `@oxy.so/bloom/earnings`, `@oxy.so/bloom/proof-of-delivery` and `@oxy.so/bloom/delivery-slot`, their root-barrel exports and message catalogs, and their Bloom language nodes (`CarrierQuoteCard`, `CarrierQuoteList`, `EarningsSummary`, `EarningsBreakdown`, `EarningsPayoutRow`, `JobCard`, `JobBoard`, `SignaturePad`, `ProofOfDelivery`, `VehiclePicker`, `ShipmentLoadPicker`, `ShipmentOptionsList`, `ShipmentRequestForm`, `DeliverySlotDays`, `DeliverySlotOption`, `DeliverySlotPicker`) with the modifiers only they took (`.strokeWidth()`, `.day()`, `.filtersOpen()`, `.selectedExtras()`, `.access()`, `.window()`).
 
 ## 23.1.1
 

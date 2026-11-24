@@ -758,51 +758,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('ca', n, { one: '{n} minut', other: '{n} minuts' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: 'Sobre', description: 'Documents, claus, qualsevol cosa plana.' },
-    parcel: { label: 'Paquet', description: 'Una caixa o bossa que pugui portar una persona.' },
-    furniture: {
-      label: 'Mobles',
-      description: 'Un sofà, una taula, un matalàs: dues persones a cada punt.',
-    },
-    pallet: { label: 'Palet', description: 'Embalat i apilat, amb plataforma elevadora.' },
-    food: { label: 'Menjar', description: 'Una comanda de restaurant, a la temperatura adequada.' },
-  },
-  sizes: {
-    small: 'Fins a una capsa de sabates: 35 × 25 × 20 cm.',
-    medium: 'Fins a una maleta de cabina: 55 × 40 × 25 cm.',
-    large: 'Fins a una rentadora: 85 × 60 × 60 cm.',
-    extraLarge: 'Més gran: explica-ho a les notes.',
-  },
-  access: { ground: 'Planta baixa', stairs: 'Escales', lift: 'Ascensor' },
-  load: {
-    kind: 'Què transportem?',
-    size: 'Mida',
-    weight: 'Pes',
-    quantity: 'Quantitat',
-    quantityValue: (n) => plural('ca', n, { one: '{n} article', other: '{n} articles' }),
-    notes: 'Alguna cosa més que hagi de saber el transportista?',
-    notesPlaceholder: "Fràgil, un codi d'ascensor, on deixar-ho…",
-  },
-  options: {
-    extras: 'Extres',
-    access: 'Accés a origen i destinació',
-    window: "Quan s'ha de recollir?",
-  },
-  form: {
-    route: 'Recorregut',
-    routeDescription: 'Primer la recollida, al final el lliurament.',
-    load: 'La càrrega',
-    photos: 'Fotos',
-    photosDescription: 'Una foto de la càrrega és el que més millora els pressupostos que rebràs.',
-    options: 'Opcions',
-    optionsDescription: 'Cadascuna canvia el preu.',
-    price: 'Preu',
-  },
-  shipmentRequest: "Sol·licitud d'enviament",
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'obligatori' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -813,40 +768,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: 'Obre el selector',
   placeOrder: 'Fes la comanda',
   placingOrder: 'Fent la comanda',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: 'Des de',
-  fits: (label) => `Què hi cap: ${label}`,
-  unavailable: 'No disponible per a aquesta càrrega',
-  vehicle: 'Vehicle',
-  vehicles: {
-    bike: {
-      label: 'Bicicleta de càrrega',
-      capacity: 'Fins a 25 kg · 60 × 40 × 40 cm',
-      fits: ['Documents', 'Una comanda de menjar', 'Una caixa petita'],
-    },
-    car: {
-      label: 'Cotxe',
-      capacity: 'Fins a 150 kg · 100 × 80 × 60 cm',
-      fits: ['Dues maletes', 'Quatre caixes', 'Una bicicleta'],
-    },
-    van: {
-      label: 'Furgoneta',
-      capacity: 'Fins a 800 kg · 240 × 150 × 140 cm',
-      fits: ['Un sofà', "La mudança d'un estudi", 'Mig palet'],
-    },
-    boxTruck: {
-      label: 'Camió caixa',
-      capacity: 'Fins a 3.500 kg · 420 × 200 × 210 cm',
-      fits: ['Dos palets', "La mudança d'un pis de dues habitacions", 'Una plataforma elevadora'],
-    },
-    refrigerated: {
-      label: 'Furgoneta frigorífica',
-      capacity: 'Fins a 700 kg · entre 2 i 8 °C',
-      fits: ['Productes frescos', 'Càtering refrigerat', 'Flors'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1414,50 +1335,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: 'Cançó',
   share: 'Comparteix',
   listened: 'Escoltat',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'Accepta la feina',
-    pass: 'Passa',
-    distance: 'Distància',
-    duration: 'Temps',
-    window: 'Franja',
-    pickup: 'Recollida',
-    dropoff: 'Lliurament',
-    state: { taken: 'Assignada', expired: 'Caducada' },
-    showPay: 'Mostra quant es paga',
-    hidePay: 'Amaga quant es paga',
-    payDetails: 'Pagament per',
-    sort: 'Ordena les feines',
-    filtersToggle: 'Filtres',
-    filtersActive: (n) => plural('ca', n, { one: '{n} aplicat', other: '{n} aplicats' }),
-    sortOptions: {
-      pay: 'Més ben pagades',
-      distance: 'Més properes',
-      soonest: 'Comencen abans',
-      expiring: 'Tanquen abans',
-    },
-    filters: { distance: 'Distància', pay: 'Pagament', when: 'Quan', vehicle: 'Vehicle' },
-    clearFilters: 'Treu els filtres',
-    refresh: 'Actualitza la llista',
-    count: (n) => plural('ca', n, { one: '{n} feina', other: '{n} feines' }),
-    loading: "S'estan carregant les feines",
-  },
-  emptyTitle: 'Ara no hi ha feines',
-  emptyDescription:
-    'No hi ha res que coincideixi amb el que busques. Amplia un filtre o torna a actualitzar d’aquí a un minut.',
-  list: 'Feines',
-  payDetailsFor: (load) => `Pagament per ${load}`,
-  route: (pickup, dropoff) => `${pickup} i ${dropoff}`,
-  bands: {
-    anyDistance: 'Qualsevol distància',
-    underKm: (km) => `A menys de ${km} km`,
-    anyTime: 'Qualsevol moment',
-    withinHour: 'En la pròxima hora',
-    nextHours: (hours) => `En les pròximes ${hours} hores`,
-    today: 'Avui',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2089,16 +1966,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `El ${percent}% recomanaria viure-hi`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: 'Estàndard', express: 'Exprés' },
-  soldOut: 'Esgotat',
-  asap: 'Com més aviat millor',
-  field: "Hora d'entrega",
-  day: 'Dia',
-  emptyTitle: 'No queden franges',
-  emptyDescription: 'Tria un altre dia o el proper repartidor disponible.',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Privada', shared: 'Compartida', public: 'Pública' },
   places: (n) => plural('ca', n, { one: '{n} lloc', other: '{n} llocs' }),
@@ -2517,49 +2384,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'Utilitza el mode clar',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: 'Guanyat',
-  period: 'Període de guanys',
-  breakdown: "D'on ve",
-  payout: 'Proper pagament',
-  payoutState: {
-    scheduled: 'Programat',
-    processing: 'En camí',
-    paid: 'Pagat',
-    held: 'Retingut',
-    failed: 'Fallit',
-  },
-  chart: (label) => `Guanys: ${label}, per període`,
-  empty: 'Encara no has guanyat res',
-  earnings: 'Guanys',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: 'Signatura',
-    signaturePad: 'Signatura',
-    signatureHint: 'Signa amb el dit',
-    signed: 'Signat',
-    clear: 'Esborra la signatura',
-    typeName: 'O escriu el teu nom',
-    typeNamePlaceholder: 'Nom complet',
-    photo: 'Foto',
-    photoHint: "On l'has deixat, o el paquet amb el destinatari.",
-    code: "Codi d'entrega",
-    codeHint: 'Demana al destinatari que llegeixi el codi de la seva app.',
-    recipient: "Qui l'ha rebut",
-    recipientPlaceholder: 'Nom',
-    note: 'Nota',
-    notePlaceholder: 'Qualsevol cosa que valgui la pena anotar',
-    submit: "Confirma l'entrega",
-    required: 'Obligatori',
-    missing: 'Cal això per poder confirmar.',
-    missingSummary: (n) =>
-      plural('ca', n, { one: 'Encara falta una cosa', other: 'Encara falten {n} coses' }),
-  },
-  proofOfDelivery: "Prova d'entrega",
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'Arrossega i deixa anar per pujar o',
   promptNative: 'Toca per',
@@ -2622,33 +2446,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: 'Categories anteriors',
   next: 'Categories següents',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: 'Accepta',
-    message: 'Missatge',
-    decline: 'Rebutja',
-    pickup: 'Recollida',
-    eta: 'Arriba',
-    vehicle: 'Vehicle',
-    jobs: (jobs) => `${jobs} feines`,
-    verified: 'Transportista verificat',
-    marks: { cheapest: 'Més barat', fastest: 'Més ràpid' },
-    showPrice: 'Mostra el desglossament del preu',
-    hidePrice: 'Amaga el desglossament del preu',
-    priceDetails: 'Desglossament del preu de',
-    sort: 'Ordena les ofertes',
-    sortOptions: { price: 'Més barat', eta: 'Més ràpid', rating: 'Més ben valorat' },
-    count: (n) => plural('ca', n, { one: '{n} oferta', other: '{n} ofertes' }),
-    loading: "S'estan carregant les ofertes",
-  },
-  emptyTitle: 'Encara no hi ha ofertes',
-  emptyDescription:
-    'Els transportistes estan mirant el teu enviament. Les primeres ofertes solen arribar en pocs minuts.',
-  list: 'Ofertes',
-  priceDetailsFor: (name) => `Desglossament del preu de ${name}`,
-  rating: (rating) => `${rating} de 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3121,10 +2918,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3157,7 +2952,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3188,7 +2982,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3218,8 +3011,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3227,7 +3018,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,

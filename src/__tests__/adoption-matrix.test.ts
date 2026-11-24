@@ -115,7 +115,6 @@ describe('the field contract', () => {
       'card-form',
       'checkbox',
       'date-picker',
-      'delivery-slot',
       'field',
       'file-upload',
       'input-group',
@@ -133,14 +132,12 @@ describe('the field contract', () => {
       'search',
       'segmented-control',
       'select',
-      'shipment-request',
       'slider',
       'stepper',
       'switch',
       'tag-field',
       'text-field',
       'textarea',
-      'vehicle-picker',
     ]);
   });
 

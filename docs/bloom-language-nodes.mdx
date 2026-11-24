@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (521), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (505), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 This page is generated from `packages/bloom-language/spec/language.json` and the package's types, the same spec the compiler checks a chain against, so what it lists is exactly what builds. For how to use them, read [the tour](bloom-language-tour.mdx).
 
@@ -489,9 +489,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [checkoutSummaryRow](#checkoutsummaryrow) | `CheckoutSummaryRow` |
 | [checkoutSummary](#checkoutsummary) | `CheckoutSummary` |
 | [checkoutConfirm](#checkoutconfirm) | `CheckoutConfirm` |
-| [deliverySlotDays](#deliveryslotdays) | `DeliverySlotDays` |
-| [deliverySlotOption](#deliveryslotoption) | `DeliverySlotOption` |
-| [deliverySlotPicker](#deliveryslotpicker) | `DeliverySlotPicker` |
 | [orderConfirmation](#orderconfirmation) | `OrderConfirmation` |
 | [transportControls](#transportcontrols) | `TransportControls` |
 | [nowPlayingBar](#nowplayingbar) | `NowPlayingBar` |
@@ -501,19 +498,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [sleepTimerMenu](#sleeptimermenu) | `SleepTimerMenu` |
 | [devicePicker](#devicepicker) | `DevicePicker` |
 | [connectBanner](#connectbanner) | `ConnectBanner` |
-| [carrierQuoteCard](#carrierquotecard) | `CarrierQuoteCard` |
-| [carrierQuoteList](#carrierquotelist) | `CarrierQuoteList` |
-| [earningsSummary](#earningssummary) | `EarningsSummary` |
-| [earningsBreakdown](#earningsbreakdown) | `EarningsBreakdown` |
-| [earningsPayoutRow](#earningspayoutrow) | `EarningsPayoutRow` |
-| [jobCard](#jobcard) | `JobCard` |
-| [jobBoard](#jobboard) | `JobBoard` |
-| [signaturePad](#signaturepad) | `SignaturePad` |
-| [proofOfDelivery](#proofofdelivery) | `ProofOfDelivery` |
-| [vehiclePicker](#vehiclepicker) | `VehiclePicker` |
-| [shipmentLoadPicker](#shipmentloadpicker) | `ShipmentLoadPicker` |
-| [shipmentOptionsList](#shipmentoptionslist) | `ShipmentOptionsList` |
-| [shipmentRequestForm](#shipmentrequestform) | `ShipmentRequestForm` |
 | [rowActions](#rowactions) | `RowActions` |
 | [rowActionButton](#rowactionbutton) | `RowActionButton` |
 | [swipeRow](#swiperow) | `SwipeRow` |
@@ -6814,42 +6798,6 @@ Modifiers:
 
 And every universal modifier.
 
-### `deliverySlotDays`
-
-- `DeliverySlotDays(day: Binding<string>, days: readonly DeliveryDay[], options: DeliverySlotDaysOptions = {})`: Bloom `DeliverySlotDays`: the day its binding holds, one of `days`.
-
-Token sets:
-
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
-
-Modifiers:
-
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The colour its scrolling edges fade into (with none, Bloom's surface).
-
-And every universal modifier.
-
-### `deliverySlotOption`
-
-- `DeliverySlotOption(label: string, options: DeliverySlotOptionOptions = {})`
-
-Takes the universal modifiers.
-
-### `deliverySlotPicker`
-
-- `DeliverySlotPicker(window: Binding<string>, days: readonly DeliveryDay[], windows: readonly DeliveryWindow[], options: DeliverySlotPickerOptions = {})`: Bloom `DeliverySlotPicker`: the window its binding holds, among the chosen day's `windows`.
-
-Token sets:
-
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
-
-Modifiers:
-
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: Placeholder rows while the windows load.
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The colour the day strip's edges fade into.
-- [`.day()`](bloom-language-modifiers.mdx#day) `(value: Bound<DeliverySlotPickerProps, 'day'>)`
-
-And every universal modifier.
-
 ### `orderConfirmation`
 
 - `OrderConfirmation(options: OrderConfirmationOptions = {})`
@@ -6964,147 +6912,6 @@ Takes the universal modifiers.
 ### `connectBanner`
 
 - `ConnectBanner(deviceName: string, options: ConnectBannerOptions = {})`
-
-Takes the universal modifiers.
-
-### `carrierQuoteCard`
-
-- `CarrierQuoteCard(quote: CarrierQuote, options: CarrierQuoteCardOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'carrierQuoteCard'>)`: `comfortable` or `compact`.
-
-And every universal modifier.
-
-### `carrierQuoteList`
-
-- `CarrierQuoteList(quotes: readonly CarrierQuote[], options: CarrierQuoteListOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'carrierQuoteList'>)`
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: Skeleton cards while the quotes load.
-- [`.sorting()`](bloom-language-modifiers.mdx#sorting) `(value: Bound<CarrierQuoteListProps, 'sort'>)`
-
-And every universal modifier.
-
-### `earningsSummary`
-
-- `EarningsSummary(periods: readonly EarningsPeriod[], options: EarningsSummaryOptions = {})`
-
-Modifiers:
-
-- [`.period()`](bloom-language-modifiers.mdx#period) `(value: Bound<EarningsSummaryProps, 'period'>)`
-
-And every universal modifier.
-
-### `earningsBreakdown`
-
-- `EarningsBreakdown(lines: readonly PriceLine[], options: EarningsBreakdownOptions = {})`
-
-Takes the universal modifiers.
-
-### `earningsPayoutRow`
-
-- `EarningsPayoutRow(payout: EarningsPayout, options: EarningsPayoutRowOptions = {})`
-
-Takes the universal modifiers.
-
-### `jobCard`
-
-- `JobCard(job: JobOffer, options: JobCardOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'jobCard'>)`
-
-And every universal modifier.
-
-### `jobBoard`
-
-- `JobBoard(jobs: readonly JobOffer[], options: JobBoardOptions = {})`
-
-Token sets:
-
-- `.density()`: `'comfortable'`, `'compact'`
-
-Modifiers:
-
-- [`.density()`](bloom-language-modifiers.mdx#density) `(value: Density<'jobBoard'>)`
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`
-- [`.sorting()`](bloom-language-modifiers.mdx#sorting) `(value: Bound<JobBoardProps, 'sort'>)`
-- [`.filter()`](bloom-language-modifiers.mdx#filter) `(value: Bound<JobBoardProps, 'filter'>)`
-- [`.filtersOpen()`](bloom-language-modifiers.mdx#filtersopen) `(value: Bound<JobBoardProps, 'filtersOpen'>)`
-
-And every universal modifier.
-
-### `signaturePad`
-
-- `SignaturePad(options: SignaturePadOptions = {})`
-
-Token sets:
-
-- `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
-
-Modifiers:
-
-- [`.tint()`](bloom-language-modifiers.mdx#tint) `(value: ColorToken)`: The ink's colour role (Bloom's pad text colour with none).
-- [`.strokeWidth()`](bloom-language-modifiers.mdx#strokewidth) `(value: BorderWidthName)`: The ink's width: a border width token (Bloom's `'2.5'` with none).
-- [`.value()`](bloom-language-modifiers.mdx#value) `(value: Bound<SignaturePadProps, 'value'>)`
-
-And every universal modifier.
-
-### `proofOfDelivery`
-
-- `ProofOfDelivery(options: ProofOfDeliveryOptions = {})`
-
-Modifiers:
-
-- [`.loading()`](bloom-language-modifiers.mdx#loading) `(value?: boolean)`: Submitting: the proofs are on their way.
-- [`.value()`](bloom-language-modifiers.mdx#value) `(value: Bound<ProofOfDeliveryProps, 'value'>)`
-
-And every universal modifier.
-
-### `vehiclePicker`
-
-- `VehiclePicker(vehicle: Binding<T | null>, options: VehiclePickerOptions<T> = {})`: Bloom `VehiclePicker`: the vehicle its binding holds (`null` before one is chosen).
-
-Takes the universal modifiers.
-
-### `shipmentLoadPicker`
-
-- `ShipmentLoadPicker(load: Binding<ShipmentLoad>, options: ShipmentLoadPickerOptions = {})`: Bloom `ShipmentLoadPicker`: the load its binding holds.
-
-Takes the universal modifiers.
-
-### `shipmentOptionsList`
-
-- `ShipmentOptionsList(options: ShipmentOptionsListOptions = {})`
-
-Modifiers:
-
-- [`.selectedExtras()`](bloom-language-modifiers.mdx#selectedextras) `(value: Bound<ShipmentOptionsListProps, 'selectedExtras'>)`
-- [`.access()`](bloom-language-modifiers.mdx#access) `(value: Bound<ShipmentOptionsListProps, 'access'>)`
-- [`.window()`](bloom-language-modifiers.mdx#window) `(value: Bound<ShipmentOptionsListProps, 'window'>)`
-
-And every universal modifier.
-
-### `shipmentRequestForm`
-
-- `ShipmentRequestForm(route: RouteStopsProps, load: Binding<ShipmentLoad>, options: ShipmentRequestFormOptions = {})`: Bloom `ShipmentRequestForm`: the job's `route`, and the load its binding holds.
 
 Takes the universal modifiers.
 

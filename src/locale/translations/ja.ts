@@ -734,44 +734,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('ja', n, { other: '{n}分' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: '封筒', description: '書類、鍵など平たいもの。' },
-    parcel: { label: '小包', description: '一人で運べる箱や袋。' },
-    furniture: { label: '家具', description: 'ソファ、テーブル、マットレス — 両地点に2人必要。' },
-    pallet: { label: 'パレット', description: '梱包・積載済み、パワーゲートで搬送。' },
-    food: { label: '食品', description: '飲食店の配達、温度を保って。' },
-  },
-  sizes: {
-    small: '靴箱まで — 35 × 25 × 20 cm。',
-    medium: '機内持ち込みバッグまで — 55 × 40 × 25 cm。',
-    large: '洗濯機まで — 85 × 60 × 60 cm。',
-    extraLarge: 'それ以上 — メモで詳しく教えてください。',
-  },
-  access: { ground: '1階', stairs: '階段', lift: 'エレベーター' },
-  load: {
-    kind: '何を運びますか？',
-    size: 'サイズ',
-    weight: '重さ',
-    quantity: '個数',
-    quantityValue: (n) => `${n}個`,
-    notes: '配送業者に伝えることはありますか？',
-    notesPlaceholder: '割れ物、エレベーターの暗証番号、置き場所など…',
-  },
-  options: { extras: 'オプション', access: '両地点の搬入経路', window: 'いつ集荷しますか？' },
-  form: {
-    route: 'ルート',
-    routeDescription: '最初に集荷、最後に配達。',
-    load: '荷物',
-    photos: '写真',
-    photosDescription: '荷物の写真があると、受け取る見積もりが最も正確になります。',
-    options: 'オプション',
-    optionsDescription: 'どれも料金に影響します。',
-    price: '料金',
-  },
-  shipmentRequest: '配送依頼',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: '必須' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -782,40 +744,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: '選択画面を開きます',
   placeOrder: '注文を確定する',
   placingOrder: '注文を送信しています',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: '最低料金',
-  fits: (label) => `${label}に積めるもの`,
-  unavailable: 'この荷物には利用できません',
-  vehicle: '車両',
-  vehicles: {
-    bike: {
-      label: 'カーゴバイク',
-      capacity: '最大 25 kg · 60 × 40 × 40 cm',
-      fits: ['書類', 'フードの注文', '小さな箱'],
-    },
-    car: {
-      label: '乗用車',
-      capacity: '最大 150 kg · 100 × 80 × 60 cm',
-      fits: ['スーツケース2個', '段ボール4箱', '自転車1台'],
-    },
-    van: {
-      label: 'バン',
-      capacity: '最大 800 kg · 240 × 150 × 140 cm',
-      fits: ['ソファ', 'ワンルームの引っ越し', 'パレット半分'],
-    },
-    boxTruck: {
-      label: '箱型トラック',
-      capacity: '最大 3,500 kg · 420 × 200 × 210 cm',
-      fits: ['パレット2枚', '2LDKの引っ越し', 'パワーゲート'],
-    },
-    refrigerated: {
-      label: '冷蔵バン',
-      capacity: '最大 700 kg · 2〜8 °C を維持',
-      fits: ['生鮮食品', '冷蔵ケータリング', '花'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1370,50 +1298,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: '曲',
   share: '共有',
   listened: '再生済み',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'この仕事を受ける',
-    pass: '見送る',
-    distance: '距離',
-    duration: '時間',
-    window: '時間帯',
-    pickup: '集荷',
-    dropoff: '配達',
-    state: { taken: '受注済み', expired: '期限切れ' },
-    showPay: '報酬を表示',
-    hidePay: '報酬を隠す',
-    payDetails: '報酬：',
-    sort: '仕事を並べ替え',
-    filtersToggle: 'フィルター',
-    filtersActive: (n) => `${n}件適用中`,
-    sortOptions: {
-      pay: '報酬の高い順',
-      distance: '近い順',
-      soonest: '開始が早い順',
-      expiring: '締め切りが近い順',
-    },
-    filters: { distance: '距離', pay: '報酬', when: '日時', vehicle: '車両' },
-    clearFilters: 'フィルターをクリア',
-    refresh: '一覧を更新',
-    count: (n) => `仕事${n}件`,
-    loading: '仕事を読み込み中',
-  },
-  emptyTitle: '現在、仕事はありません',
-  emptyDescription:
-    '条件に合う仕事がありません。フィルターを広げるか、1分後にもう一度更新してください。',
-  list: '仕事',
-  payDetailsFor: (load) => `${load}の報酬`,
-  route: (pickup, dropoff) => `${pickup}と${dropoff}`,
-  bands: {
-    anyDistance: '距離指定なし',
-    underKm: (km) => `${km}km以内`,
-    anyTime: 'いつでも',
-    withinHour: '1時間以内',
-    nextHours: (hours) => `今後${hours}時間以内`,
-    today: '今日',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2039,16 +1923,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `${percent}%がここでの暮らしをおすすめしています`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: '通常配送', express: '速達' },
-  soldOut: '受付終了',
-  asap: 'できるだけ早く',
-  field: '配達時間',
-  day: '日付',
-  emptyTitle: '空いている時間帯がありません',
-  emptyDescription: '別の日を選ぶか、次の配達員をお待ちください。',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: '非公開', shared: '共有', public: '公開' },
   places: (n) => plural('ja', n, { other: '{n}か所' }),
@@ -2456,48 +2330,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'ライトモードにする',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: '収益',
-  period: '収益の期間',
-  breakdown: '内訳',
-  payout: '次回の支払い',
-  payoutState: {
-    scheduled: '予定',
-    processing: '送金中',
-    paid: '支払い済み',
-    held: '保留中',
-    failed: '失敗',
-  },
-  chart: (label) => `${label}の収益（期間別）`,
-  empty: 'まだ収益はありません',
-  earnings: '収益',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: '署名',
-    signaturePad: '署名欄',
-    signatureHint: '指で署名してください',
-    signed: '署名済み',
-    clear: '署名を消去',
-    typeName: 'または名前を入力',
-    typeNamePlaceholder: '氏名',
-    photo: '写真',
-    photoHint: '置いた場所、または受取人と荷物の写真。',
-    code: '配達コード',
-    codeHint: '受取人にアプリのコードを読み上げてもらってください。',
-    recipient: '受取人',
-    recipientPlaceholder: '名前',
-    note: 'メモ',
-    notePlaceholder: '記録しておきたいこと',
-    submit: '配達を確定する',
-    required: '必須',
-    missing: '確定する前に入力が必要です。',
-    missingSummary: (n) => `未入力の項目が${n}件あります`,
-  },
-  proofOfDelivery: '配達証明',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'ドラッグ＆ドロップでアップロード、または',
   promptNative: 'タップして',
@@ -2560,33 +2392,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: '前のカテゴリ',
   next: '次のカテゴリ',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: '承諾',
-    message: 'メッセージ',
-    decline: '辞退',
-    pickup: '集荷',
-    eta: '到着',
-    vehicle: '車両',
-    jobs: (jobs) => `${jobs}件の実績`,
-    verified: '認証済みの運送業者',
-    marks: { cheapest: '最安', fastest: '最速' },
-    showPrice: '料金の内訳を表示',
-    hidePrice: '料金の内訳を隠す',
-    priceDetails: '料金の内訳：',
-    sort: '見積もりを並べ替え',
-    sortOptions: { price: '安い順', eta: '早い順', rating: '評価の高い順' },
-    count: (n) => `見積もり${n}件`,
-    loading: '見積もりを読み込み中',
-  },
-  emptyTitle: 'まだ見積もりはありません',
-  emptyDescription:
-    '運送業者があなたの依頼を確認しています。最初の見積もりは通常数分以内に届きます。',
-  list: '見積もり',
-  priceDetailsFor: (name) => `${name}の料金の内訳`,
-  rating: (rating) => `5点中${rating}点`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3058,10 +2863,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3094,7 +2897,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3125,7 +2927,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3155,8 +2956,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3164,7 +2963,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,

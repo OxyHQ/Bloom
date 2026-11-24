@@ -30,8 +30,8 @@ import { FieldControlProvider, useFieldControl, type FieldControlValue } from '.
  *
  * Outside a `Field` it publishes nothing — the parts see no field, exactly as
  * they would without it — so a composite can render it unconditionally. Inside
- * one, a part that branches on "is there a field at all" (`DeliverySlotPicker`
- * rendering a second `Field` of its own) sees one: this is still membership,
+ * one, a part that branches on "is there a field at all" (one rendering a
+ * second `Field` of its own) sees one: this is still membership,
  * only without the parts that belong to the root.
  */
 export function FieldConstraintScope({ children }: { children: ReactNode }) {

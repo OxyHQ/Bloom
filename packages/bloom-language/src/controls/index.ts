@@ -114,10 +114,8 @@ import { MEDIA_CARDS } from './media-cards';
 import { LYRICS } from './lyrics';
 import { CREATOR_STUDIO } from './creator-studio';
 import { CHECKOUT_SUMMARIES } from './checkout-summary';
-import { DELIVERY_SLOTS } from './delivery-slot';
 import { ORDER_CONFIRMATIONS } from './order-confirmation';
 import { MEDIA_PLAYERS } from './media-player';
-import { LOGISTICS } from './logistics';
 import { MUSIC_LIBRARY } from './music-library';
 import { QUEUE_PANELS } from './queue-panel';
 import { TRACK_LISTS } from './track-list';
@@ -242,10 +240,8 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...LYRICS,
   ...CREATOR_STUDIO,
   ...CHECKOUT_SUMMARIES,
-  ...DELIVERY_SLOTS,
   ...ORDER_CONFIRMATIONS,
   ...MEDIA_PLAYERS,
-  ...LOGISTICS,
   ...MUSIC_LIBRARY,
   ...QUEUE_PANELS,
   ...TRACK_LISTS,

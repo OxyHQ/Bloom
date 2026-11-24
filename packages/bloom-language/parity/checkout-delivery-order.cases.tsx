@@ -3,22 +3,16 @@ import {
   CheckoutSummary,
   CheckoutSummaryRow,
 } from '@oxy.so/bloom/checkout-summary';
-import {
-  DeliverySlotDays,
-  DeliverySlotOption,
-  DeliverySlotPicker,
-} from '@oxy.so/bloom/delivery-slot';
-import { RiFlashlightLine, RiTimeLine } from '@oxy.so/bloom/icons';
+import { RiTimeLine } from '@oxy.so/bloom/icons';
 import { OrderConfirmation } from '@oxy.so/bloom/order-confirmation';
 import { Text } from '@oxy.so/bloom/typography';
 
 import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
-import { hold, type ParityCase, Themed } from './support/cases';
+import type { ParityCase } from './support/cases';
 
 const press = () => {};
-const set = () => {};
 const ADDRESS = {
   label: 'Deliver to',
   title: 'Home',
@@ -41,17 +35,6 @@ const PRICE = {
   total: { label: 'Total', amount: '€32.90' },
 };
 const CONFIRM = { label: 'Place order', amount: '€32.90', onConfirm: press };
-const DAYS = [
-  { id: 'mon', weekday: 'Mon', day: '9' },
-  { id: 'tue', weekday: 'Tue', day: '10' },
-  { id: 'wed', weekday: 'Wed', day: '11', disabled: true },
-];
-const WINDOWS = [
-  { id: 'a', label: '18:00–18:30', price: '€2.90', capacity: '3 left' },
-  { id: 'b', label: '18:30–19:00', tier: 'express' as const, price: '€4.90' },
-  { id: 'c', label: '19:00–19:30', soldOut: true },
-];
-const ASAP = { id: 'asap', eta: '25–35 min', icon: RiFlashlightLine };
 const STATUS = {
   status: 'Preparing',
   eta: 'Arrives 19:20',
@@ -170,136 +153,6 @@ const checkout: ParityCase[] = [
   },
 ];
 
-const delivery: ParityCase[] = [
-  {
-    name: 'DeliverySlotDays',
-    language: () => toElement(L.DeliverySlotDays(['tue', set], DAYS).label('Day')),
-    bloom: () => (
-      <DeliverySlotDays days={DAYS} value="tue" onChange={set} accessibilityLabel="Day" />
-    ),
-  },
-  {
-    name: 'DeliverySlotDays a fade colour, disabled',
-    language: () => toElement(L.DeliverySlotDays(['mon', set], DAYS).tint('primary').disabled()),
-    bloom: () => (
-      <Themed>
-        {(colors) => (
-          <DeliverySlotDays
-            days={DAYS}
-            value="mon"
-            onChange={set}
-            fadeColor={colors.primary}
-            disabled
-          />
-        )}
-      </Themed>
-    ),
-  },
-  {
-    name: 'DeliverySlotOption selected',
-    language: () =>
-      toElement(
-        L.DeliverySlotOption('18:00–18:30', {
-          detail: '3 left',
-          price: '€2.90',
-          icon: RiTimeLine,
-          selected: true,
-          badge: L.Text('Express'),
-        }).onPress(press),
-      ),
-    bloom: () => (
-      <DeliverySlotOption
-        label="18:00–18:30"
-        detail="3 left"
-        price="€2.90"
-        icon={RiTimeLine}
-        selected
-        badge={<Text>Express</Text>}
-        onPress={press}
-      />
-    ),
-  },
-  {
-    name: 'DeliverySlotOption disabled',
-    language: () => toElement(L.DeliverySlotOption('19:00–19:30').disabled().label('Sold out')),
-    bloom: () => <DeliverySlotOption label="19:00–19:30" disabled accessibilityLabel="Sold out" />,
-  },
-  {
-    name: 'DeliverySlotPicker',
-    language: () =>
-      toElement(
-        L.DeliverySlotPicker(['a', set], DAYS, WINDOWS, {
-          label: 'When',
-          description: 'Choose a window',
-          asap: ASAP,
-        }).day(['mon', set]),
-      ),
-    bloom: () => (
-      <DeliverySlotPicker
-        days={DAYS}
-        windows={WINDOWS}
-        value="a"
-        onValueChange={set}
-        label="When"
-        description="Choose a window"
-        day="mon"
-        onDayChange={set}
-        asap={ASAP}
-      />
-    ),
-  },
-  {
-    name: 'DeliverySlotPicker loading, a fade colour',
-    language: () =>
-      toElement(
-        L.DeliverySlotPicker(['', set], DAYS, [], { loadingRows: 2 })
-          .day(['tue', hold])
-          .loading()
-          .tint('primary'),
-      ),
-    bloom: () => (
-      <Themed>
-        {(colors) => (
-          <DeliverySlotPicker
-            onDayChange={hold}
-            days={DAYS}
-            windows={[]}
-            value=""
-            onValueChange={set}
-            day="tue"
-            loadingRows={2}
-            loading
-            fadeColor={colors.primary}
-          />
-        )}
-      </Themed>
-    ),
-  },
-  {
-    name: 'DeliverySlotPicker empty, an error, disabled',
-    language: () =>
-      toElement(
-        L.DeliverySlotPicker(['', set], DAYS, [], {
-          error: 'Choose a window',
-          required: true,
-          empty: L.Text('No windows today'),
-        }).disabled(),
-      ),
-    bloom: () => (
-      <DeliverySlotPicker
-        days={DAYS}
-        windows={[]}
-        value=""
-        onValueChange={set}
-        error="Choose a window"
-        required
-        empty={<Text>No windows today</Text>}
-        disabled
-      />
-    ),
-  },
-];
-
 const orders: ParityCase[] = [
   ...NODE_DENSITIES.orderConfirmation.map((density) => ({
     name: `OrderConfirmation ${density}`,
@@ -343,4 +196,4 @@ const orders: ParityCase[] = [
   },
 ];
 
-export const CHECKOUT_DELIVERY_ORDER_CASES: ParityCase[] = [...checkout, ...delivery, ...orders];
+export const CHECKOUT_DELIVERY_ORDER_CASES: ParityCase[] = [...checkout, ...orders];

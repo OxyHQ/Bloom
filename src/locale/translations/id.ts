@@ -747,48 +747,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('id', n, { other: '{n} menit' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: 'Amplop', description: 'Dokumen, kunci, apa pun yang pipih.' },
-    parcel: { label: 'Paket', description: 'Kotak atau tas yang bisa dibawa satu orang.' },
-    furniture: { label: 'Furnitur', description: 'Sofa, meja, kasur — dua orang di tiap ujung.' },
-    pallet: {
-      label: 'Palet',
-      description: 'Dibungkus dan ditumpuk, dipindahkan dengan tail lift.',
-    },
-    food: { label: 'Makanan', description: 'Antaran restoran, dijaga suhunya.' },
-  },
-  sizes: {
-    small: 'Hingga sebesar kotak sepatu — 35 × 25 × 20 cm.',
-    medium: 'Hingga sebesar koper kabin — 55 × 40 × 25 cm.',
-    large: 'Hingga sebesar mesin cuci — 85 × 60 × 60 cm.',
-    extraLarge: 'Lebih besar — ceritakan di catatan.',
-  },
-  access: { ground: 'Lantai dasar', stairs: 'Tangga', lift: 'Lift' },
-  load: {
-    kind: 'Apa yang kita angkut?',
-    size: 'Ukuran',
-    weight: 'Berat',
-    quantity: 'Jumlah',
-    quantityValue: (n) => `${n} barang`,
-    notes: 'Ada hal lain yang perlu diketahui kurir?',
-    notesPlaceholder: 'Mudah pecah, kode lift, di mana meninggalkannya…',
-  },
-  options: { extras: 'Tambahan', access: 'Akses di kedua alamat', window: 'Kapan harus dijemput?' },
-  form: {
-    route: 'Rute',
-    routeDescription: 'Penjemputan dulu, pengantaran terakhir.',
-    load: 'Muatan',
-    photos: 'Foto',
-    photosDescription:
-      'Foto muatan adalah hal terpenting agar penawaran yang kamu terima lebih tepat.',
-    options: 'Opsi',
-    optionsDescription: 'Masing-masing mengubah harga.',
-    price: 'Harga',
-  },
-  shipmentRequest: 'Permintaan pengiriman',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'wajib diisi' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -799,40 +757,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: 'Membuka pemilih',
   placeOrder: 'Buat pesanan',
   placingOrder: 'Memproses pesananmu',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: 'Mulai',
-  fits: (label) => `Yang muat di ${label}`,
-  unavailable: 'Tidak tersedia untuk muatan ini',
-  vehicle: 'Kendaraan',
-  vehicles: {
-    bike: {
-      label: 'Sepeda kargo',
-      capacity: 'Hingga 25 kg · 60 × 40 × 40 cm',
-      fits: ['Dokumen', 'Pesanan makanan', 'Kotak kecil'],
-    },
-    car: {
-      label: 'Mobil',
-      capacity: 'Hingga 150 kg · 100 × 80 × 60 cm',
-      fits: ['Dua koper', 'Empat kardus', 'Sepeda'],
-    },
-    van: {
-      label: 'Van',
-      capacity: 'Hingga 800 kg · 240 × 150 × 140 cm',
-      fits: ['Sofa', 'Pindahan studio', 'Setengah palet'],
-    },
-    boxTruck: {
-      label: 'Truk boks',
-      capacity: 'Hingga 3.500 kg · 420 × 200 × 210 cm',
-      fits: ['Dua palet', 'Pindahan rumah dua kamar', 'Tail lift'],
-    },
-    refrigerated: {
-      label: 'Van berpendingin',
-      capacity: 'Hingga 700 kg · suhu 2–8 °C',
-      fits: ['Produk segar', 'Katering dingin', 'Bunga'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1398,50 +1322,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: 'Lagu',
   share: 'Bagikan',
   listened: 'Sudah didengarkan',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'Ambil pekerjaan',
-    pass: 'Lewati',
-    distance: 'Jarak',
-    duration: 'Waktu',
-    window: 'Rentang waktu',
-    pickup: 'Penjemputan',
-    dropoff: 'Pengantaran',
-    state: { taken: 'Sudah diambil', expired: 'Kedaluwarsa' },
-    showPay: 'Tampilkan bayaran',
-    hidePay: 'Sembunyikan bayaran',
-    payDetails: 'Bayaran untuk',
-    sort: 'Urutkan pekerjaan',
-    filtersToggle: 'Filter',
-    filtersActive: (n) => `${n} diterapkan`,
-    sortOptions: {
-      pay: 'Bayaran tertinggi',
-      distance: 'Terdekat',
-      soonest: 'Mulai paling cepat',
-      expiring: 'Segera ditutup',
-    },
-    filters: { distance: 'Jarak', pay: 'Bayaran', when: 'Kapan', vehicle: 'Kendaraan' },
-    clearFilters: 'Hapus filter',
-    refresh: 'Muat ulang daftar',
-    count: (n) => `${n} pekerjaan`,
-    loading: 'Memuat pekerjaan',
-  },
-  emptyTitle: 'Belum ada pekerjaan saat ini',
-  emptyDescription:
-    'Tidak ada yang cocok dengan pencarian Anda. Perluas filter, atau muat ulang daftar dalam satu menit.',
-  list: 'Pekerjaan',
-  payDetailsFor: (load) => `Bayaran untuk ${load}`,
-  route: (pickup, dropoff) => `${pickup} dan ${dropoff}`,
-  bands: {
-    anyDistance: 'Jarak berapa pun',
-    underKm: (km) => `Kurang dari ${km} km`,
-    anyTime: 'Kapan saja',
-    withinHour: 'Dalam satu jam',
-    nextHours: (hours) => `${hours} jam ke depan`,
-    today: 'Hari ini',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2077,16 +1957,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `${percent}% akan merekomendasikan tinggal di sini`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: 'Reguler', express: 'Ekspres' },
-  soldOut: 'Habis',
-  asap: 'Secepatnya',
-  field: 'Waktu pengantaran',
-  day: 'Hari',
-  emptyTitle: 'Tidak ada slot tersisa',
-  emptyDescription: 'Pilih hari lain, atau ambil kurir berikutnya.',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'Pribadi', shared: 'Dibagikan', public: 'Publik' },
   places: (n) => plural('id', n, { other: '{n} tempat' }),
@@ -2506,48 +2376,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'Gunakan mode terang',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: 'Diperoleh',
-  period: 'Periode pendapatan',
-  breakdown: 'Sumbernya',
-  payout: 'Pencairan berikutnya',
-  payoutState: {
-    scheduled: 'Terjadwal',
-    processing: 'Dalam proses',
-    paid: 'Dibayar',
-    held: 'Ditahan',
-    failed: 'Gagal',
-  },
-  chart: (label) => `Pendapatan ${label}, per periode`,
-  empty: 'Belum ada pendapatan',
-  earnings: 'Pendapatan',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: 'Tanda tangan',
-    signaturePad: 'Area tanda tangan',
-    signatureHint: 'Tanda tangani dengan jari',
-    signed: 'Sudah ditandatangani',
-    clear: 'Hapus tanda tangan',
-    typeName: 'Atau ketik namamu',
-    typeNamePlaceholder: 'Nama lengkap',
-    photo: 'Foto',
-    photoHint: 'Tempat kamu meninggalkannya, atau paket bersama penerima.',
-    code: 'Kode pengantaran',
-    codeHint: 'Minta penerima membacakan kode di aplikasinya.',
-    recipient: 'Siapa yang menerima',
-    recipientPlaceholder: 'Nama',
-    note: 'Catatan',
-    notePlaceholder: 'Apa pun yang perlu dicatat',
-    submit: 'Konfirmasi pengantaran',
-    required: 'Wajib',
-    missing: 'Ini diperlukan sebelum kamu bisa mengonfirmasi.',
-    missingSummary: (n) => `Masih ada ${n} hal yang kurang`,
-  },
-  proofOfDelivery: 'Bukti pengantaran',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'Seret dan lepas untuk mengunggah atau',
   promptNative: 'Ketuk untuk',
@@ -2610,33 +2438,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: 'Kategori sebelumnya',
   next: 'Kategori berikutnya',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: 'Terima',
-    message: 'Pesan',
-    decline: 'Tolak',
-    pickup: 'Penjemputan',
-    eta: 'Tiba',
-    vehicle: 'Kendaraan',
-    jobs: (jobs) => `${jobs} pekerjaan`,
-    verified: 'Pengangkut terverifikasi',
-    marks: { cheapest: 'Termurah', fastest: 'Tercepat' },
-    showPrice: 'Tampilkan rincian harga',
-    hidePrice: 'Sembunyikan rincian harga',
-    priceDetails: 'Rincian harga untuk',
-    sort: 'Urutkan penawaran',
-    sortOptions: { price: 'Termurah', eta: 'Tercepat', rating: 'Rating terbaik' },
-    count: (n) => `${n} penawaran`,
-    loading: 'Memuat penawaran',
-  },
-  emptyTitle: 'Belum ada penawaran',
-  emptyDescription:
-    'Para pengangkut sedang melihat pekerjaan Anda. Penawaran pertama biasanya tiba dalam beberapa menit.',
-  list: 'Penawaran',
-  priceDetailsFor: (name) => `Rincian harga untuk ${name}`,
-  rating: (rating) => `${rating} dari 5`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3107,10 +2908,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3143,7 +2942,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3174,7 +2972,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3204,8 +3001,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3213,7 +3008,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,

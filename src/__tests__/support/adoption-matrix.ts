@@ -392,19 +392,10 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.',
     },
-
-    'carrier-quote': {
-      verdict: 'does-not-apply',
-      reason: SELECTION_ROW,
-    },
     styles: {
       verdict: 'does-not-apply',
       reason:
         'the roles are CSS attribute selectors in `styles/base-web-css.ts` (`[role="radio"]` and its siblings take no text selection), not a node the family renders — it draws no control at all.',
-    },
-    'job-board': {
-      verdict: 'does-not-apply',
-      reason: SELECTION_ROW,
     },
   },
   appearance: {

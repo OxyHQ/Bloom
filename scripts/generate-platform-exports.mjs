@@ -368,7 +368,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./checkout-summary', 'checkout-summary/index.ts'],
   ['./checkout-sheet', 'checkout-sheet/index.ts'],
   ['./checkout-sheet/model', 'checkout-sheet/model.ts'],
-  ['./delivery-slot', 'delivery-slot/index.ts'],
   ['./order-confirmation', 'order-confirmation/index.ts'],
   // Ordering food: the vendor, the dish and the basket.
   ['./vendor-card', 'vendor-card/index.ts'],
@@ -377,9 +376,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./address', 'address/index.ts'],
   ['./route-stops', 'route-stops/index.ts'],
   ['./directions', 'directions/index.ts'],
-  ['./shipment-request', 'shipment-request/index.ts'],
-  ['./carrier-quote', 'carrier-quote/index.ts'],
-  ['./vehicle-picker', 'vehicle-picker/index.ts'],
   ['./place-picker', 'place-picker/index.ts'],
   // Taking the money: the saved method, entering a new card, and the verdict.
   ['./payment-method', 'payment-method/index.ts'],
@@ -387,9 +383,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./payment-status', 'payment-status/index.ts'],
   // Fulfilment: the same marketplace from the side of the person who does the
   // work — the board of jobs, what the work paid, and the proof it happened.
-  ['./job-board', 'job-board/index.ts'],
-  ['./earnings', 'earnings/index.ts'],
-  ['./proof-of-delivery', 'proof-of-delivery/index.ts'],
   ['./mail-list', 'mail-list/index.ts'],
   ['./mail-thread', 'mail-thread/index.ts'],
   ['./mail-compose', 'mail-compose/index.ts'],

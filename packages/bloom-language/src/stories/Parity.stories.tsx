@@ -188,7 +188,6 @@ export const MediaCards: Story = { args: { family: 'mediaCard' } };
 export const Lyrics: Story = { args: { family: 'lyrics' } };
 export const CreatorStudio: Story = { args: { family: 'creatorStudio' } };
 export const MediaPlayer: Story = { args: { family: 'mediaPlayer' } };
-export const Logistics: Story = { args: { family: 'logistics' } };
 export const MusicLibrary: Story = { args: { family: 'musicLibrary' } };
 export const QueuePanels: Story = { args: { family: 'queuePanel' } };
 export const TrackLists: Story = { args: { family: 'trackList' } };

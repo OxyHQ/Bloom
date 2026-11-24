@@ -85,7 +85,7 @@ geometric audit of every story in light and dark (2026-11-11).
   demonstrates document scrolling adds `bloomScroll: 'document'` (see
   `docs/screen.mdx`).
 - A component that bleeds past its edge with a negative margin (`ListingCardGrid`'s
-  gutters, `DeliverySlot`'s focus clearance) needs a host that pads: use `padded`.
+  gutters) needs a host that pads: use `padded`.
   `fullscreen` makes it overflow the page sideways.
 - Never cancel the canvas padding with a negative margin: `fullscreen` has none, so the
   margin clips the story's own edge (the Tab Bar story lost its left edge that way).

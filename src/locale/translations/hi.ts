@@ -741,44 +741,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('hi', n, { other: '{n} मिनट' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: 'लिफ़ाफ़ा', description: 'दस्तावेज़, चाबियाँ, कोई भी चपटी चीज़।' },
-    parcel: { label: 'पार्सल', description: 'एक डिब्बा या थैला जिसे एक व्यक्ति उठा सके।' },
-    furniture: { label: 'फ़र्नीचर', description: 'सोफ़ा, मेज़, गद्दा — दोनों तरफ़ दो लोग।' },
-    pallet: { label: 'पैलेट', description: 'पैक और स्टैक किया हुआ, टेल लिफ़्ट से उठाया जाता है।' },
-    food: { label: 'खाना', description: 'रेस्तराँ डिलीवरी, सही तापमान पर।' },
-  },
-  sizes: {
-    small: 'जूते के डिब्बे तक — 35 × 25 × 20 cm।',
-    medium: 'केबिन बैग तक — 55 × 40 × 25 cm।',
-    large: 'वॉशिंग मशीन तक — 85 × 60 × 60 cm।',
-    extraLarge: 'इससे बड़ा — नोट्स में बताएँ।',
-  },
-  access: { ground: 'भूतल', stairs: 'सीढ़ियाँ', lift: 'लिफ़्ट' },
-  load: {
-    kind: 'हम क्या ले जा रहे हैं?',
-    size: 'आकार',
-    weight: 'वज़न',
-    quantity: 'कितने',
-    quantityValue: (n) => plural('hi', n, { one: '{n} आइटम', other: '{n} आइटम' }),
-    notes: 'क्या कैरियर को कुछ और जानना चाहिए?',
-    notesPlaceholder: 'नाज़ुक, लिफ़्ट कोड, कहाँ छोड़ना है…',
-  },
-  options: { extras: 'अतिरिक्त', access: 'दोनों जगह पहुँच', window: 'कब पिकअप करना है?' },
-  form: {
-    route: 'रास्ता',
-    routeDescription: 'पहले पिकअप, आख़िर में ड्रॉप-ऑफ़।',
-    load: 'सामान',
-    photos: 'फ़ोटो',
-    photosDescription: 'सामान की एक फ़ोटो आपको मिलने वाले कोटेशन को सबसे ज़्यादा बेहतर बनाती है।',
-    options: 'विकल्प',
-    optionsDescription: 'इनमें से हर एक कीमत बदलता है।',
-    price: 'कीमत',
-  },
-  shipmentRequest: 'शिपमेंट अनुरोध',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: 'आवश्यक' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -789,40 +751,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: 'चयनकर्ता खोलता है',
   placeOrder: 'ऑर्डर करें',
   placingOrder: 'आपका ऑर्डर दिया जा रहा है',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: 'शुरुआती कीमत',
-  fits: (label) => `${label} में क्या आता है`,
-  unavailable: 'इस सामान के लिए उपलब्ध नहीं',
-  vehicle: 'वाहन',
-  vehicles: {
-    bike: {
-      label: 'कार्गो बाइक',
-      capacity: '25 kg तक · 60 × 40 × 40 cm',
-      fits: ['दस्तावेज़', 'खाने का ऑर्डर', 'एक छोटा डिब्बा'],
-    },
-    car: {
-      label: 'कार',
-      capacity: '150 kg तक · 100 × 80 × 60 cm',
-      fits: ['दो सूटकेस', 'चार डिब्बे', 'एक साइकिल'],
-    },
-    van: {
-      label: 'वैन',
-      capacity: '800 kg तक · 240 × 150 × 140 cm',
-      fits: ['एक सोफ़ा', 'स्टूडियो फ़्लैट की शिफ़्टिंग', 'आधा पैलेट'],
-    },
-    boxTruck: {
-      label: 'बॉक्स ट्रक',
-      capacity: '3,500 kg तक · 420 × 200 × 210 cm',
-      fits: ['दो पैलेट', '2BHK की शिफ़्टिंग', 'टेल लिफ़्ट'],
-    },
-    refrigerated: {
-      label: 'रेफ़्रिजरेटेड वैन',
-      capacity: '700 kg तक · 2–8 °C पर',
-      fits: ['ताज़ी उपज', 'ठंडा कैटरिंग', 'फूल'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1389,49 +1317,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: 'गाना',
   share: 'शेयर करें',
   listened: 'सुना गया',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: 'काम लें',
-    pass: 'छोड़ें',
-    distance: 'दूरी',
-    duration: 'समय',
-    window: 'समय-सीमा',
-    pickup: 'पिक-अप',
-    dropoff: 'ड्रॉप-ऑफ़',
-    state: { taken: 'लिया गया', expired: 'समाप्त' },
-    showPay: 'भुगतान दिखाएं',
-    hidePay: 'भुगतान छिपाएं',
-    payDetails: 'भुगतान:',
-    sort: 'काम क्रमबद्ध करें',
-    filtersToggle: 'फ़िल्टर',
-    filtersActive: (n) => `${n} लागू`,
-    sortOptions: {
-      pay: 'सबसे ज़्यादा भुगतान',
-      distance: 'सबसे नज़दीक',
-      soonest: 'सबसे पहले शुरू',
-      expiring: 'सबसे पहले बंद',
-    },
-    filters: { distance: 'दूरी', pay: 'भुगतान', when: 'कब', vehicle: 'वाहन' },
-    clearFilters: 'फ़िल्टर हटाएं',
-    refresh: 'सूची रीफ़्रेश करें',
-    count: (n) => `${n} काम`,
-    loading: 'काम लोड हो रहे हैं',
-  },
-  emptyTitle: 'अभी कोई काम नहीं',
-  emptyDescription: 'आपकी खोज से कुछ मेल नहीं खाता। कोई फ़िल्टर बढ़ाएं या एक मिनट बाद फिर से रीफ़्रेश करें।',
-  list: 'काम',
-  payDetailsFor: (load) => `${load} का भुगतान`,
-  route: (pickup, dropoff) => `${pickup} और ${dropoff}`,
-  bands: {
-    anyDistance: 'कोई भी दूरी',
-    underKm: (km) => `${km} किमी से कम`,
-    anyTime: 'कभी भी',
-    withinHour: 'एक घंटे के भीतर',
-    nextHours: (hours) => `अगले ${hours} घंटे`,
-    today: 'आज',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -2034,16 +1919,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `${percent}% यहाँ रहने की सलाह देंगे`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: 'सामान्य', express: 'एक्सप्रेस' },
-  soldOut: 'भर गया',
-  asap: 'जितनी जल्दी हो सके',
-  field: 'डिलीवरी का समय',
-  day: 'दिन',
-  emptyTitle: 'कोई स्लॉट नहीं बचा',
-  emptyDescription: 'कोई और दिन चुनें, या अगला उपलब्ध कूरियर लें।',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: 'निजी', shared: 'शेयर की गई', public: 'सार्वजनिक' },
   places: (n) => plural('hi', n, { one: '{n} जगह', other: '{n} जगहें' }),
@@ -2447,49 +2322,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: 'लाइट मोड इस्तेमाल करें',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: 'कमाई',
-  period: 'कमाई की अवधि',
-  breakdown: 'कहाँ से आई',
-  payout: 'अगला भुगतान',
-  payoutState: {
-    scheduled: 'निर्धारित',
-    processing: 'रास्ते में',
-    paid: 'भुगतान हो गया',
-    held: 'रोका गया',
-    failed: 'विफल',
-  },
-  chart: (label) => `${label} की कमाई, अवधि के अनुसार`,
-  empty: 'अभी तक कोई कमाई नहीं',
-  earnings: 'कमाई',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: 'हस्ताक्षर',
-    signaturePad: 'हस्ताक्षर क्षेत्र',
-    signatureHint: 'उंगली से हस्ताक्षर करें',
-    signed: 'हस्ताक्षर हो गए',
-    clear: 'हस्ताक्षर मिटाएँ',
-    typeName: 'या अपना नाम लिखें',
-    typeNamePlaceholder: 'पूरा नाम',
-    photo: 'फ़ोटो',
-    photoHint: 'जहाँ आपने छोड़ा, या प्राप्तकर्ता के साथ पार्सल।',
-    code: 'डिलीवरी कोड',
-    codeHint: 'प्राप्तकर्ता से उनके ऐप में दिखा कोड पढ़ने को कहें।',
-    recipient: 'किसने लिया',
-    recipientPlaceholder: 'नाम',
-    note: 'नोट',
-    notePlaceholder: 'दर्ज करने लायक कुछ भी',
-    submit: 'डिलीवरी की पुष्टि करें',
-    required: 'ज़रूरी',
-    missing: 'पुष्टि करने से पहले यह ज़रूरी है।',
-    missingSummary: (n) =>
-      plural('hi', n, { one: 'अभी {n} चीज़ बाकी है', other: 'अभी {n} चीज़ें बाकी हैं' }),
-  },
-  proofOfDelivery: 'डिलीवरी का प्रमाण',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: 'अपलोड करने के लिए खींचें और छोड़ें या',
   promptNative: 'टैप करके',
@@ -2552,32 +2384,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: 'पिछली श्रेणियाँ',
   next: 'अगली श्रेणियाँ',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: 'स्वीकार करें',
-    message: 'संदेश',
-    decline: 'अस्वीकार करें',
-    pickup: 'पिक-अप',
-    eta: 'पहुँचेगा',
-    vehicle: 'वाहन',
-    jobs: (jobs) => `${jobs} काम`,
-    verified: 'सत्यापित वाहक',
-    marks: { cheapest: 'सबसे सस्ता', fastest: 'सबसे तेज़' },
-    showPrice: 'कीमत का विवरण दिखाएं',
-    hidePrice: 'कीमत का विवरण छिपाएं',
-    priceDetails: 'कीमत का विवरण:',
-    sort: 'ऑफ़र क्रमबद्ध करें',
-    sortOptions: { price: 'सबसे सस्ते', eta: 'सबसे तेज़', rating: 'सबसे अच्छी रेटिंग' },
-    count: (n) => `${n} ऑफ़र`,
-    loading: 'ऑफ़र लोड हो रहे हैं',
-  },
-  emptyTitle: 'अभी कोई ऑफ़र नहीं',
-  emptyDescription: 'वाहक आपका काम देख रहे हैं। पहले ऑफ़र आमतौर पर कुछ ही मिनटों में आ जाते हैं।',
-  list: 'ऑफ़र',
-  priceDetailsFor: (name) => `${name} की कीमत का विवरण`,
-  rating: (rating) => `5 में से ${rating}`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -3043,10 +2849,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3079,7 +2883,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3110,7 +2913,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3140,8 +2942,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3149,7 +2949,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,

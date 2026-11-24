@@ -724,44 +724,6 @@ const DATE_PICKER_MESSAGES: Translations['DATE_PICKER_MESSAGES'] = {
   duration: (n) => plural('zh', n, { other: '{n} 分钟' }),
 };
 
-const SHIPMENT_REQUEST_MESSAGES: Translations['SHIPMENT_REQUEST_MESSAGES'] = {
-  kinds: {
-    envelope: { label: '信封', description: '文件、钥匙等扁平物品。' },
-    parcel: { label: '包裹', description: '一个人能拿的箱子或袋子。' },
-    furniture: { label: '家具', description: '沙发、桌子、床垫——两端各需两人。' },
-    pallet: { label: '托盘', description: '已包装码放，用尾板装卸。' },
-    food: { label: '餐食', description: '餐厅配送，保持温度。' },
-  },
-  sizes: {
-    small: '不超过鞋盒——35 × 25 × 20 cm。',
-    medium: '不超过登机箱——55 × 40 × 25 cm。',
-    large: '不超过洗衣机——85 × 60 × 60 cm。',
-    extraLarge: '更大——请在备注中说明。',
-  },
-  access: { ground: '一楼', stairs: '楼梯', lift: '电梯' },
-  load: {
-    kind: '要运送什么？',
-    size: '尺寸',
-    weight: '重量',
-    quantity: '数量',
-    quantityValue: (n) => `${n} 件`,
-    notes: '还有什么需要告诉承运人的吗？',
-    notesPlaceholder: '易碎、电梯密码、放在哪里……',
-  },
-  options: { extras: '附加服务', access: '两端的出入条件', window: '何时取件？' },
-  form: {
-    route: '路线',
-    routeDescription: '先取件，最后送达。',
-    load: '货物',
-    photos: '照片',
-    photosDescription: '一张货物照片最能帮你拿到更准的报价。',
-    options: '选项',
-    optionsDescription: '每一项都会影响价格。',
-    price: '价格',
-  },
-  shipmentRequest: '运输需求',
-};
-
 const LABEL_MESSAGES: Translations['LABEL_MESSAGES'] = { required: '必填' };
 
 const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
@@ -772,40 +734,6 @@ const CHECKOUT_SUMMARY_MESSAGES: Translations['CHECKOUT_SUMMARY_MESSAGES'] = {
   opensPicker: '打开选择器',
   placeOrder: '提交订单',
   placingOrder: '正在提交订单',
-};
-
-const VEHICLE_PICKER_MESSAGES: Translations['VEHICLE_PICKER_MESSAGES'] = {
-  from: '起价',
-  fits: (label) => `${label}能装下什么`,
-  unavailable: '不适用于此货物',
-  vehicle: '车型',
-  vehicles: {
-    bike: {
-      label: '货运自行车',
-      capacity: '最多 25 kg · 60 × 40 × 40 cm',
-      fits: ['文件', '一份外卖', '一个小箱子'],
-    },
-    car: {
-      label: '轿车',
-      capacity: '最多 150 kg · 100 × 80 × 60 cm',
-      fits: ['两个行李箱', '四个纸箱', '一辆自行车'],
-    },
-    van: {
-      label: '面包车',
-      capacity: '最多 800 kg · 240 × 150 × 140 cm',
-      fits: ['一张沙发', '单间搬家', '半个托盘'],
-    },
-    boxTruck: {
-      label: '厢式货车',
-      capacity: '最多 3,500 kg · 420 × 200 × 210 cm',
-      fits: ['两个托盘', '两居室搬家', '尾板升降'],
-    },
-    refrigerated: {
-      label: '冷藏车',
-      capacity: '最多 700 kg · 保持 2–8 °C',
-      fits: ['生鲜食品', '冷藏餐饮', '鲜花'],
-    },
-  },
 };
 
 const EMPTY_STATE_MESSAGES: Translations['EMPTY_STATE_MESSAGES'] = {
@@ -1348,49 +1276,6 @@ const MEDIA_CARD_MESSAGES: Translations['MEDIA_CARD_MESSAGES'] = {
   song: '歌曲',
   share: '分享',
   listened: '已收听',
-};
-
-const JOB_BOARD_MESSAGES: Translations['JOB_BOARD_MESSAGES'] = {
-  labels: {
-    take: '接单',
-    pass: '跳过',
-    distance: '距离',
-    duration: '时长',
-    window: '时段',
-    pickup: '取货',
-    dropoff: '送货',
-    state: { taken: '已被接', expired: '已过期' },
-    showPay: '显示报酬',
-    hidePay: '隐藏报酬',
-    payDetails: '报酬：',
-    sort: '排序订单',
-    filtersToggle: '筛选',
-    filtersActive: (n) => `已应用 ${n} 项`,
-    sortOptions: {
-      pay: '报酬最高',
-      distance: '距离最近',
-      soonest: '最早开始',
-      expiring: '即将截止',
-    },
-    filters: { distance: '距离', pay: '报酬', when: '时间', vehicle: '车辆' },
-    clearFilters: '清除筛选',
-    refresh: '刷新列表',
-    count: (n) => `${n} 个订单`,
-    loading: '正在加载订单',
-  },
-  emptyTitle: '暂时没有订单',
-  emptyDescription: '没有符合条件的订单。放宽筛选条件，或一分钟后再刷新。',
-  list: '订单',
-  payDetailsFor: (load) => `${load}的报酬`,
-  route: (pickup, dropoff) => `${pickup}和${dropoff}`,
-  bands: {
-    anyDistance: '任意距离',
-    underKm: (km) => `${km} 公里以内`,
-    anyTime: '任意时间',
-    withinHour: '一小时内',
-    nextHours: (hours) => `接下来 ${hours} 小时`,
-    today: '今天',
-  },
 };
 
 const FLOATING_MESSAGES: Translations['FLOATING_MESSAGES'] = {
@@ -1985,16 +1870,6 @@ const PLACE_REVIEWS_MESSAGES: Translations['PLACE_REVIEWS_MESSAGES'] = {
   recommendRate: (percent) => `${percent}% 的人推荐住在这里`,
 };
 
-const DELIVERY_SLOT_MESSAGES: Translations['DELIVERY_SLOT_MESSAGES'] = {
-  tiers: { standard: '标准配送', express: '极速配送' },
-  soldOut: '已约满',
-  asap: '尽快送达',
-  field: '配送时间',
-  day: '日期',
-  emptyTitle: '没有可选时段了',
-  emptyDescription: '请换一天，或选择下一位骑手。',
-};
-
 const PLACE_LIST_MESSAGES: Translations['PLACE_LIST_MESSAGES'] = {
   visibility: { private: '私密', shared: '已共享', public: '公开' },
   places: (n) => plural('zh', n, { other: '{n} 个地点' }),
@@ -2391,48 +2266,6 @@ const THEME_TOGGLE_MESSAGES: Translations['THEME_TOGGLE_MESSAGES'] = {
   useLightMode: '使用浅色模式',
 };
 
-const EARNINGS_MESSAGES: Translations['EARNINGS_MESSAGES'] = {
-  earned: '已赚取',
-  period: '收入周期',
-  breakdown: '收入来源',
-  payout: '下次打款',
-  payoutState: {
-    scheduled: '已安排',
-    processing: '打款中',
-    paid: '已支付',
-    held: '已暂扣',
-    failed: '失败',
-  },
-  chart: (label) => `${label}收入（按周期）`,
-  empty: '还没有收入',
-  earnings: '收入',
-};
-
-const PROOF_OF_DELIVERY_MESSAGES: Translations['PROOF_OF_DELIVERY_MESSAGES'] = {
-  labels: {
-    signature: '签名',
-    signaturePad: '签名区',
-    signatureHint: '用手指签名',
-    signed: '已签名',
-    clear: '清除签名',
-    typeName: '或输入姓名',
-    typeNamePlaceholder: '全名',
-    photo: '照片',
-    photoHint: '放置的位置，或收件人手中的包裹。',
-    code: '收货码',
-    codeHint: '请收件人读出其应用中的收货码。',
-    recipient: '签收人',
-    recipientPlaceholder: '姓名',
-    note: '备注',
-    notePlaceholder: '任何值得记录的信息',
-    submit: '确认送达',
-    required: '必填',
-    missing: '确认前需要填写此项。',
-    missingSummary: (n) => `还有 ${n} 项未完成`,
-  },
-  proofOfDelivery: '送达凭证',
-};
-
 const FILE_UPLOAD_MESSAGES: Translations['FILE_UPLOAD_MESSAGES'] = {
   promptWeb: '拖放文件以上传，或',
   promptNative: '点按以',
@@ -2495,32 +2328,6 @@ const MEDIA_SHELF_MESSAGES: Translations['MEDIA_SHELF_MESSAGES'] = {
 const CATEGORY_BAR_MESSAGES: Translations['CATEGORY_BAR_MESSAGES'] = {
   previous: '上一组类别',
   next: '下一组类别',
-};
-
-const CARRIER_QUOTE_MESSAGES: Translations['CARRIER_QUOTE_MESSAGES'] = {
-  labels: {
-    accept: '接受',
-    message: '发消息',
-    decline: '拒绝',
-    pickup: '取货',
-    eta: '送达',
-    vehicle: '车辆',
-    jobs: (jobs) => `${jobs} 单`,
-    verified: '已认证承运人',
-    marks: { cheapest: '最便宜', fastest: '最快' },
-    showPrice: '显示价格明细',
-    hidePrice: '隐藏价格明细',
-    priceDetails: '价格明细：',
-    sort: '排序报价',
-    sortOptions: { price: '价格最低', eta: '最快送达', rating: '评分最高' },
-    count: (n) => `${n} 个报价`,
-    loading: '正在加载报价',
-  },
-  emptyTitle: '暂无报价',
-  emptyDescription: '承运人正在查看你的订单，第一批报价通常会在几分钟内到达。',
-  list: '报价',
-  priceDetailsFor: (name) => `${name}的价格明细`,
-  rating: (rating) => `${rating} 分（满分 5 分）`,
 };
 
 const TEXT_FIELD_MESSAGES: Translations['TEXT_FIELD_MESSAGES'] = {
@@ -2983,10 +2790,8 @@ const translations: Translations = {
   LISTING_DETAILS_MESSAGES,
   PRICE_BREAKDOWN_MESSAGES,
   DATE_PICKER_MESSAGES,
-  SHIPMENT_REQUEST_MESSAGES,
   LABEL_MESSAGES,
   CHECKOUT_SUMMARY_MESSAGES,
-  VEHICLE_PICKER_MESSAGES,
   COMPOSER_PANEL_MESSAGES,
   MESSAGE_BUBBLE_MESSAGES,
   PAYMENT_STATUS_MESSAGES,
@@ -3019,7 +2824,6 @@ const translations: Translations = {
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
-  JOB_BOARD_MESSAGES,
   FLOATING_MESSAGES,
   AGENT_CHAT_MESSAGES,
   WEB_SEARCH_MESSAGES,
@@ -3050,7 +2854,6 @@ const translations: Translations = {
   LYRICS_MESSAGES,
   ACTIVITY_FEED_MESSAGES,
   PLACE_REVIEWS_MESSAGES,
-  DELIVERY_SLOT_MESSAGES,
   PLACE_LIST_MESSAGES,
   HOME_SEARCH_MESSAGES,
   OFFERING_BADGE_MESSAGES,
@@ -3080,8 +2883,6 @@ const translations: Translations = {
   SWIPE_ROW_MESSAGES,
   PATIENT_INFO_CARD_MESSAGES,
   THEME_TOGGLE_MESSAGES,
-  EARNINGS_MESSAGES,
-  PROOF_OF_DELIVERY_MESSAGES,
   FILE_UPLOAD_MESSAGES,
   POPOVER_MESSAGES,
   QUEUE_PANEL_MESSAGES,
@@ -3089,7 +2890,6 @@ const translations: Translations = {
   NOTE_EDITOR_MESSAGES,
   MEDIA_SHELF_MESSAGES,
   CATEGORY_BAR_MESSAGES,
-  CARRIER_QUOTE_MESSAGES,
   TEXT_FIELD_MESSAGES,
   CHAT_SCREEN_MESSAGES,
   CONTEXT_MENU_MESSAGES,
