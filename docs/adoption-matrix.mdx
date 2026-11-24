@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **223 families** in `src/`, **222** published (a subpath, the root barrel, or both). **64** carry a web fork.
+- **221 families** in `src/`, **220** published (a subpath, the root barrel, or both). **64** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the table below says which families have each.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
 | Field membership | 46 | 28 | 0 | 18 | 0 |
-| Control presentation | 60 | 59 | 1 | 0 | 0 |
+| Control presentation | 58 | 57 | 1 | 0 | 0 |
 | Trigger composition | 11 | 8 | 0 | 3 | 0 |
-| Controlled / uncontrolled state | 54 | 51 | 2 | 1 | 0 |
+| Controlled / uncontrolled state | 53 | 50 | 2 | 1 | 0 |
 
 The control-presentation census detects families declaring canonical size props; blank entries do not prove inherited sizing. Fixed-size controls and composite layouts need a separate visual audit. This table does not certify touch-target geometry.
 
@@ -156,7 +156,6 @@ None.
 | `context-menu` | `@oxy.so/bloom/context-menu` + barrel | web fork | `context-menu.mdx` | yes | yes |  |  | reads |  |
 | `conversation-sidebar` | `@oxy.so/bloom/conversation-sidebar` + barrel | web fork | `conversation-sidebar.mdx` | yes | yes |  |  |  | reads |
 | `cover-header` | `@oxy.so/bloom/cover-header` + barrel | universal | `cover-header.mdx` | yes | yes |  |  |  |  |
-| `creator-studio` | `@oxy.so/bloom/creator-studio` + barrel | universal | `creator-studio.mdx` | yes | yes |  | reads |  | reads |
 | `data-table` | `@oxy.so/bloom/data-table` + barrel | universal | `data-table.mdx` | yes | yes |  | reads |  | reads |
 | `date-picker` | `@oxy.so/bloom/date-picker` + barrel | universal | `date-picker.mdx` | yes | yes | reads | reads |  | reads |
 | `design-tokens` | `@oxy.so/bloom/design-tokens` + barrel | universal | `design-tokens.mdx` | yes | yes |  |  |  |  |
@@ -268,7 +267,6 @@ None.
 | `select` | `@oxy.so/bloom/select` + barrel | web fork | `select.mdx` | yes | yes | reads | reads | reads | reads |
 | `settings-modal` | `@oxy.so/bloom/settings-modal` + barrel | web fork | `settings-modal.mdx` | yes | yes |  | reads |  | reads |
 | `shapes` | `@oxy.so/bloom/shapes` + barrel | universal | `shapes.mdx` | yes | yes |  |  |  |  |
-| `share-sheet` | `@oxy.so/bloom/share-sheet` + barrel | universal | `share-sheet.mdx` | yes | yes |  | reads |  |  |
 | `sidebar` | `@oxy.so/bloom/sidebar` + barrel | universal | `sidebar.mdx` | yes | yes | n/a¹ | reads |  | reads |
 | `skeleton` | `@oxy.so/bloom/skeleton` + barrel | universal | `skeleton.mdx` | yes | yes |  |  |  |  |
 | `slider` | `@oxy.so/bloom/slider` + barrel | universal | `slider.mdx` | yes | yes | reads | reads |  |  |

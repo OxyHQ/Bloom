@@ -172,11 +172,11 @@ Icons go one step further: every glyph is its own subpath, `@oxy.so/bloom/icons/
 | Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset` (apps still using `className`), `styles`, `appearance`, `hooks` |
 | App shell and navigation | `app-shell`, `panel-routing`, `screen`, `page-header`, `page-footer`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `surfaces`, `settings-modal` |
-| Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover`, `engagement-bar`, `share-sheet` |
+| Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover`, `engagement-bar` |
 | Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card`, `stepper`, `rating`, `wizard` |
 | Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `cover-header`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
 | Data and charts | `table`, `data-table`, `project-board`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `stat-bar`, `activity-heatmap`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
-| Music and media | `media-controls`, `media-header`, `media-shelf`, `creator-studio`, `sortable-media` |
+| Music and media | `media-controls`, `media-header`, `media-shelf`, `sortable-media` |
 | Housing | `home-search`, `listing-actions`, `listing-editor`, `offering-badge`, `place-reviews`, `property-insights`, `tenancy`, `eviction` |
 | Stays and booking | `listing-card`, `listing-details`, `stay-search`, `stay-filters`, `booking`, `category-bar`, `map-marker` |
 | AI and agents | `agent-chat`, `ai-chat`, `composer-panel`, `composer-loader`, `voice`, `agent-thinking`, `agent-reply`, `agent-log`, `agent-progress`, `markdown`, `task-list`, `web-search`, `questionnaire` |

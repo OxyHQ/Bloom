@@ -7,7 +7,7 @@ description: Every node of the Bloom language: its constructors, the token sets 
 
 # Bloom language nodes
 
-Every node kind the language has (448), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
+Every node kind the language has (432), in the spec's order: the constructors that make it, the token sets its `.size()`, `.tint()`, `.style()`, `.shape()` and `.density()` read, and the modifiers it takes beyond the universal ones. Unless a node says otherwise it also takes every universal modifier ([`.padding()`](bloom-language-modifiers.mdx#padding), [`.background()`](bloom-language-modifiers.mdx#background), [`.onPress()`](bloom-language-modifiers.mdx#onpress)…; the list is in [the modifiers reference](bloom-language-modifiers.mdx#universal-modifiers)).
 
 This page is generated from `packages/bloom-language/spec/language.json` and the package's types, the same spec the compiler checks a chain against, so what it lists is exactly what builds. For how to use them, read [the tour](bloom-language-tour.mdx).
 
@@ -422,7 +422,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [agentChatHistory](#agentchathistory) | `AgentChatHistory` |
 | [agentChat](#agentchat) | `AgentChat` |
 | [routeStops](#routestops) | `RouteStops` |
-| [shareSheet](#sharesheet) | `ShareSheet` |
 | [connectionDots](#connectiondots) | `ConnectionDots` |
 | [outlineNav](#outlinenav) | `OutlineNav` |
 | [pagination](#pagination) | `Pagination` |
@@ -444,21 +443,6 @@ This page is generated from `packages/bloom-language/spec/language.json` and the
 | [cartTipPicker](#carttippicker) | `CartTipPicker` |
 | [menuItemRow](#menuitemrow) | `MenuItemRow` |
 | [menuItemOptions](#menuitemoptions) | `MenuItemOptions` |
-| [audienceOverview](#audienceoverview) | `AudienceOverview` |
-| [streamsChart](#streamschart) | `StreamsChart` |
-| [topTracksTable](#toptrackstable) | `TopTracksTable` |
-| [audienceBreakdown](#audiencebreakdown) | `AudienceBreakdown` |
-| [releaseCard](#releasecard) | `ReleaseCard` |
-| [releaseStatusBadge](#releasestatusbadge) | `ReleaseStatusBadge` |
-| [releaseTimeline](#releasetimeline) | `ReleaseTimeline` |
-| [trackUploadRow](#trackuploadrow) | `TrackUploadRow` |
-| [trackMetadataForm](#trackmetadataform) | `TrackMetadataForm` |
-| [artistChipsInput](#artistchipsinput) | `ArtistChipsInput` |
-| [isrcField](#isrcfield) | `IsrcField` |
-| [creditsEditor](#creditseditor) | `CreditsEditor` |
-| [artworkUploader](#artworkuploader) | `ArtworkUploader` |
-| [payoutSummaryCard](#payoutsummarycard) | `PayoutSummaryCard` |
-| [pitchCard](#pitchcard) | `PitchCard` |
 | [rowActions](#rowactions) | `RowActions` |
 | [rowActionButton](#rowactionbutton) | `RowActionButton` |
 | [swipeRow](#swiperow) | `SwipeRow` |
@@ -5984,21 +5968,6 @@ Modifiers:
 
 And every universal modifier.
 
-### `shareSheet`
-
-- `ShareSheet(options: ShareSheetOptions = {})`
-
-Token sets:
-
-- `.size()`: [shareSheetSize](bloom-language-tokens.mdx#sharesheetsize), `'sm'`, `'md'`, `'lg'`
-
-Modifiers:
-
-- [`.size()`](bloom-language-modifiers.mdx#size) `(value: ShareSheetSize)`: `sm`, `md` (default) or `lg`.
-- [`.search()`](bloom-language-modifiers.mdx#search) `(value: Binding<string>, options?: ShareSheetSearchOptions)`: The search field above the people: the text its binding holds. Without it there is none.
-
-And every universal modifier.
-
 ### `connectionDots`
 
 - `ConnectionDots(left: Child, right: Child, options: ConnectionDotsOptions = {})`: Bloom `ConnectionDots` between `left` and `right`.
@@ -6241,127 +6210,6 @@ Modifiers:
 
 - [`.value()`](bloom-language-modifiers.mdx#value) `(value: Bound<MenuItemOptionsProps, 'value'>)`
 - [`.quantity()`](bloom-language-modifiers.mdx#quantity) `(value: Bound<MenuItemOptionsProps, 'quantity'>)`
-
-And every universal modifier.
-
-### `audienceOverview`
-
-- `AudienceOverview(metrics: readonly AudienceMetric[], period: Binding<string>, options: AudienceOverviewOptions = {})`: Bloom `AudienceOverview` of `metrics`, the selected period as its binding holds.
-
-Takes the universal modifiers.
-
-### `streamsChart`
-
-- `StreamsChart(metrics: readonly StreamsMetric[], options: StreamsChartOptions = {})`: Bloom `StreamsChart` of `metrics`.
-
-Modifiers:
-
-- [`.metric()`](bloom-language-modifiers.mdx#metric) `(value: Bound<StreamsChartProps, 'metric'>)`
-
-And every universal modifier.
-
-### `topTracksTable`
-
-- `TopTracksTable(tracks: readonly TopTrack[], options: TopTracksTableOptions = {})`: Bloom `TopTracksTable` of `tracks`, in rank order.
-
-Takes the universal modifiers.
-
-### `audienceBreakdown`
-
-- `AudienceBreakdown(options: AudienceBreakdownOptions)`: Bloom `AudienceBreakdown` of its cities, countries, ages, genders and sources.
-
-Takes the universal modifiers.
-
-### `releaseCard`
-
-- `ReleaseCard(release: CreatorRelease, options: ReleaseCardOptions = {})`: Bloom `ReleaseCard` of `release`.
-
-Token sets:
-
-- `.style()`: [releaseCardLayout](bloom-language-tokens.mdx#releasecardlayout), `'grid'`, `'row'`
-
-Modifiers:
-
-- [`.style()`](bloom-language-modifiers.mdx#style) `(value: ReleaseCardLayout)`: `grid` (default: the cover on top) or `row` (a list row, the cover leading).
-
-And every universal modifier.
-
-### `releaseStatusBadge`
-
-- `ReleaseStatusBadge(status: ReleaseStatus, options: ReleaseStatusBadgeOptions = {})`: Bloom `ReleaseStatusBadge` of `status`.
-
-Token sets:
-
-- `.size()`: [releaseStatusBadgeSize](bloom-language-tokens.mdx#releasestatusbadgesize), `'sm'`, `'md'`
-
-Modifiers:
-
-- [`.size()`](bloom-language-modifiers.mdx#size) `(value: ReleaseStatusBadgeSize)`: `sm` or `md`.
-
-And every universal modifier.
-
-### `releaseTimeline`
-
-- `ReleaseTimeline(steps: readonly ReleaseStep[], options: ReleaseTimelineOptions = {})`: Bloom `ReleaseTimeline` of `steps`.
-
-Modifiers:
-
-- [`.axis()`](bloom-language-modifiers.mdx#axis) `(value: Axis)`: `vertical` (default) or `horizontal`, a row of steps for a wide header.
-
-And every universal modifier.
-
-### `trackUploadRow`
-
-- `TrackUploadRow(fileName: string, status: TrackUploadStatus, options: TrackUploadRowOptions)`: Bloom `TrackUploadRow` of `fileName` at `status` (its `size` in the options).
-
-Takes the universal modifiers.
-
-### `trackMetadataForm`
-
-- `TrackMetadataForm(value: Binding<TrackMetadata>, options: TrackMetadataFormOptions)`: Bloom `TrackMetadataForm`: edits the metadata its binding holds.
-
-Takes the universal modifiers.
-
-### `artistChipsInput`
-
-- `ArtistChipsInput(label: string, values: Binding<string[]>, options: ArtistChipsInputOptions = {})`: Bloom `ArtistChipsInput` labelled `label`: the names its binding holds.
-
-Takes the universal modifiers.
-
-### `isrcField`
-
-- `IsrcField(value: Binding<string>, options: IsrcFieldOptions = {})`: Bloom `IsrcField`: the code its binding holds.
-
-Takes the universal modifiers.
-
-### `creditsEditor`
-
-- `CreditsEditor(credits: Binding<TrackCredit[]>, options: CreditsEditorOptions = {})`: Bloom `CreditsEditor`: the credits its binding holds.
-
-Takes the universal modifiers.
-
-### `artworkUploader`
-
-- `ArtworkUploader(artwork: string | null | undefined, options: ArtworkUploaderOptions = {})`: Bloom `ArtworkUploader` of the current cover (`null` or none: the drop zone).
-
-Takes the universal modifiers.
-
-### `payoutSummaryCard`
-
-- `PayoutSummaryCard(estimated: string, options: PayoutSummaryCardOptions)`: Bloom `PayoutSummaryCard` of this month's `estimated` earnings.
-
-Takes the universal modifiers.
-
-### `pitchCard`
-
-- `PitchCard(options: PitchCardOptions)`: Bloom `PitchCard`: its data here, the release, tags and pitch it edits as bindings Bloom requires.
-
-Modifiers:
-
-- [`.release()`](bloom-language-modifiers.mdx#release) `(value: Bound<PitchCardProps, 'release'>)`
-- [`.selectedMoods()`](bloom-language-modifiers.mdx#selectedmoods) `(value: Bound<PitchCardProps, 'selectedMoods'>)`
-- [`.selectedGenres()`](bloom-language-modifiers.mdx#selectedgenres) `(value: Bound<PitchCardProps, 'selectedGenres'>)`
-- [`.pitch()`](bloom-language-modifiers.mdx#pitch) `(value: Bound<PitchCardProps, 'pitch'>)`
 
 And every universal modifier.
 

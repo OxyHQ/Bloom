@@ -1,10 +1,7 @@
 import { Badge } from '@oxy.so/bloom/badge';
-import { RiLinksLine, RiMailLine } from '@oxy.so/bloom/icons';
 import { RouteStops } from '@oxy.so/bloom/route-stops';
-import { ShareSheet } from '@oxy.so/bloom/share-sheet';
-import { Text } from '@oxy.so/bloom/typography';
 
-import { ENUMS, NODE_DENSITIES } from '../src/generated/spec.generated';
+import { NODE_DENSITIES } from '../src/generated/spec.generated';
 import * as L from '../src/index';
 import { toElement } from '../src/render';
 import type { ParityCase } from './support/cases';
@@ -52,52 +49,4 @@ const routes: ParityCase[] = [
   },
 ];
 
-const PEOPLE = [
-  { id: '1', name: 'Ana García', subtitle: '@ana' },
-  { id: '2', name: 'Bruno', subtitle: '@bruno' },
-];
-const TARGETS = [
-  { key: 'copy', label: 'Copy link', icon: RiLinksLine, onPress: press },
-  { key: 'email', label: 'Email', icon: RiMailLine, onPress: press },
-];
-const SEARCH = { value: 'an', onValueChange: pick, placeholder: 'Search' };
-
-const shares: ParityCase[] = [
-  ...ENUMS.shareSheetSize.map((size) => ({
-    name: `ShareSheet ${size}`,
-    language: () =>
-      toElement(
-        L.ShareSheet({
-          title: 'Send to',
-          people: PEOPLE,
-          onPersonPress: pick,
-          targets: TARGETS,
-        })
-          .search(['an', pick], { placeholder: 'Search' })
-          .size(size),
-      ),
-    bloom: () => (
-      <ShareSheet
-        title="Send to"
-        search={SEARCH}
-        people={PEOPLE}
-        onPersonPress={pick}
-        targets={TARGETS}
-        size={size}
-      />
-    ),
-  })),
-  {
-    name: 'ShareSheet no people',
-    language: () =>
-      toElement(L.ShareSheet({ title: null, people: [], peopleEmpty: L.Text('Nobody yet') })),
-    bloom: () => <ShareSheet title={null} people={[]} peopleEmpty={<Text>Nobody yet</Text>} />,
-  },
-  {
-    name: 'ShareSheet people loading',
-    language: () => toElement(L.ShareSheet({ peopleLoading: true, targets: TARGETS })),
-    bloom: () => <ShareSheet peopleLoading targets={TARGETS} />,
-  },
-];
-
-export const ROUTE_NOTE_SHARE_CASES: ParityCase[] = [...routes, ...shares];
+export const ROUTE_NOTE_SHARE_CASES: ParityCase[] = routes;

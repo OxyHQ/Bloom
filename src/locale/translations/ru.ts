@@ -348,149 +348,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'Адреса',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'Сингл', ep: 'Мини-альбом', album: 'Альбом' },
-  releaseStatuses: {
-    draft: 'Черновик',
-    'in-review': 'На проверке',
-    scheduled: 'Запланирован',
-    live: 'Опубликован',
-    rejected: 'Отклонён',
-    takedown: 'Снят с публикации',
-  },
-  creditRoles: {
-    songwriter: 'Автор песни',
-    producer: 'Продюсер',
-    composer: 'Композитор',
-    performer: 'Исполнитель',
-    lyricist: 'Автор текста',
-    'mixing-engineer': 'Звукорежиссёр сведения',
-    'mastering-engineer': 'Звукорежиссёр мастеринга',
-  },
-  periods: { '7d': '7 дней', '28d': '28 дней', '12m': '12 месяцев', all: 'Всё время' },
-  artworkNotSquare: (w, h) => `Обложка должна быть квадратной, а это изображение — ${w}×${h} пикс.`,
-  artworkTooSmall: (w, h, min) =>
-    `Обложка слишком маленькая (${w}×${h} пикс.). Загрузите изображение не меньше ${min}×${min} пикс.`,
-  audience: { title: 'Аудитория', period: 'Период' },
-  breakdown: {
-    locations: 'Основные регионы',
-    cities: 'Города',
-    countries: 'Страны',
-    age: 'Возраст',
-    gender: 'Пол',
-    sources: 'Источники прослушиваний',
-    metric: 'Слушатели',
-  },
-  streams: {
-    metrics: 'Показатель графика',
-    summary: (metric, releases) =>
-      releases ? `${metric} в динамике; релизы: ${releases}` : `${metric} в динамике`,
-  },
-  topTracks: {
-    title: 'Популярные треки',
-    rank: '#',
-    rankName: 'Место',
-    track: 'Трек',
-    streams: 'Прослушивания',
-    listeners: 'Слушатели',
-    saves: 'Сохранения',
-    trend: 'Динамика',
-    trends: { up: 'Растёт', down: 'Падает', flat: 'Без изменений', new: 'Новинка' },
-    newBadge: 'Новый',
-    empty: 'За этот период прослушиваний пока нет.',
-  },
-  tracks: (n) =>
-    plural('ru', n, { one: '{n} трек', few: '{n} трека', many: '{n} треков', other: '{n} трека' }),
-  timeline: {
-    states: {
-      complete: 'завершено',
-      current: 'выполняется',
-      upcoming: 'не начато',
-      error: 'требует внимания',
-    },
-    label: 'Ход релиза',
-  },
-  upload: {
-    queued: 'В очереди',
-    processing: 'Перекодирование…',
-    ready: 'Готово',
-    failed: 'Не удалось загрузить',
-    remove: (name) => `Убрать ${name}`,
-    progress: (name) => `Загрузка: ${name}`,
-  },
-  artwork: {
-    title: 'Обложка',
-    requirements: '3000×3000 пикс., JPG или PNG',
-    replace: 'Заменить',
-    remove: 'Убрать обложку',
-    preview: 'Обложка релиза',
-    upload: 'Загрузить обложку',
-  },
-  credits: {
-    title: 'Участники',
-    role: 'Роль',
-    name: 'Имя',
-    add: 'Добавить участника',
-    remove: (index, name) =>
-      name ? `Убрать участника ${index + 1}, ${name}` : `Убрать участника ${index + 1}`,
-    empty: 'Укажите авторов, продюсеров и исполнителей этого трека.',
-    field: (field, n) => `${field}, участник ${n}`,
-  },
-  artists: {
-    add: 'Добавить',
-    addTo: (label) => `Добавить: ${label}`,
-    remove: (name) => `Убрать ${name}`,
-  },
-  isrc: { hint: 'Формат: CC-XXX-YY-NNNNN', invalid: 'Это недействительный код ISRC' },
-  metadata: {
-    title: 'Название трека',
-    version: 'Версия',
-    versionPlaceholder: 'Ремикс, концертная, акустическая…',
-    explicit: 'Откровенный текст',
-    explicitDescription: 'Включите, если в треке есть грубая лексика или откровенные темы.',
-    genre: 'Жанр',
-    genrePlaceholder: 'Выберите жанр',
-    primaryArtists: 'Основные исполнители',
-    featuredArtists: 'Приглашённые исполнители',
-    artistPlaceholder: 'Добавьте имя исполнителя',
-    language: 'Язык текста',
-    languagePlaceholder: 'Выберите язык',
-    lyrics: 'Текст песни',
-    lyricsPlaceholder: 'Вставьте текст — по одной строке на каждую спетую строку',
-  },
-  payout: {
-    estimated: 'Ожидаемый доход за этот месяц',
-    lastPayout: 'Последняя выплата',
-    nextPayout: 'Следующая выплата',
-    statements: 'Посмотреть отчёты',
-    chart: 'Доход по месяцам',
-  },
-  pitch: {
-    title: 'Питч для редакции',
-    description: 'Расскажите редакции о своём следующем релизе до его выхода.',
-    release: 'Релиз',
-    releasePlaceholder: 'Выберите предстоящий релиз',
-    moods: 'Настроение',
-    genres: 'Жанр',
-    pitch: 'Ваш питч',
-    pitchPlaceholder: 'Чем выделяется этот релиз? Для кого он и какая история за ним стоит?',
-    submit: 'Отправить питч',
-    tagLimit: (max) => `Выберите до ${max}`,
-    statuses: {
-      submitted: 'Питч отправлен',
-      accepted: 'Отобран для рассмотрения',
-      declined: 'На этот раз не выбран',
-    },
-    statusDescriptions: {
-      submitted: 'Редакция читает каждый питч. Вы получите ответ до даты релиза.',
-      accepted: 'Ваш релиз рассматривается для редакционных плейлистов.',
-      declined:
-        'Этот релиз не выбран. Вы сможете предложить следующий, как только он будет запланирован.',
-    },
-    edit: 'Изменить питч',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'Энергия',
   pending: 'Ожидается',
@@ -2782,14 +2639,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Микрофон выключен',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'Поделиться',
-  people: 'Отправить',
-  targets: 'Поделиться в',
-  sendTo: (name) => `Отправить: ${name}`,
-  noPeople: 'Никого не найдено',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'Закрыть',
   minimize: 'Свернуть',
@@ -2934,7 +2783,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -3042,7 +2890,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

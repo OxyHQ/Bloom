@@ -284,13 +284,10 @@ type S = {
   "radarLegend": "bottom" | "top" | "overlay";
   "methodTitleAlign": "left" | "center";
   "voiceSize": "sm" | "md" | "lg";
-  "shareSheetSize": "sm" | "md" | "lg";
   "outlineNavStyle": "full" | "compact";
   "choiceListStyle": "list" | "picker";
   "priceLineTone": "default" | "discount" | "muted";
   "paymentStatusStyle": "surface" | "plain";
-  "releaseCardLayout": "grid" | "row";
-  "releaseStatusBadgeSize": "sm" | "md";
   "rowActionStyle": "plain" | "outline";
   "themeToggleStyle": "sidebar" | "segmented" | "sidebar-segmented" | "bare-segmented";
 };
@@ -2617,11 +2614,6 @@ type routeStopsChecks = [
   Expect<"routeStops.density(density)", Ok<At<View<'RouteStops'>['density'], '0'>, "comfortable" | "compact">>,
 ];
 
-type shareSheetChecks = [
-  Expect<'shareSheet: the universal modifiers', Universal<View<'ShareSheet'>>>,
-  Expect<"shareSheet.size(size: shareSheetSize)", Ok<At<View<'ShareSheet'>['size'], '0'>, S['shareSheetSize']>>,
-];
-
 type connectionDotsChecks = [
   Expect<'connectionDots: the universal modifiers', Universal<View<'ConnectionDots'>>>,
 ];
@@ -2720,69 +2712,6 @@ type menuItemRowChecks = [
 
 type menuItemOptionsChecks = [
   Expect<'menuItemOptions: the universal modifiers', Universal<View<'MenuItemOptions'>, "disabled">>,
-];
-
-type audienceOverviewChecks = [
-  Expect<'audienceOverview: the universal modifiers', Universal<View<'AudienceOverview'>>>,
-];
-
-type streamsChartChecks = [
-  Expect<'streamsChart: the universal modifiers', Universal<View<'StreamsChart'>>>,
-];
-
-type topTracksTableChecks = [
-  Expect<'topTracksTable: the universal modifiers', Universal<View<'TopTracksTable'>>>,
-];
-
-type audienceBreakdownChecks = [
-  Expect<'audienceBreakdown: the universal modifiers', Universal<View<'AudienceBreakdown'>>>,
-];
-
-type releaseCardChecks = [
-  Expect<'releaseCard: the universal modifiers', Universal<View<'ReleaseCard'>>>,
-  Expect<"releaseCard.style(style: releaseCardLayout)", Ok<At<View<'ReleaseCard'>['style'], '0'>, S['releaseCardLayout']>>,
-];
-
-type releaseStatusBadgeChecks = [
-  Expect<'releaseStatusBadge: the universal modifiers', Universal<View<'ReleaseStatusBadge'>>>,
-  Expect<"releaseStatusBadge.size(size: releaseStatusBadgeSize)", Ok<At<View<'ReleaseStatusBadge'>['size'], '0'>, S['releaseStatusBadgeSize']>>,
-];
-
-type releaseTimelineChecks = [
-  Expect<'releaseTimeline: the universal modifiers', Universal<View<'ReleaseTimeline'>>>,
-  Expect<"releaseTimeline.axis(axis)", Ok<At<View<'ReleaseTimeline'>['axis'], '0'>, S['axis']>>,
-];
-
-type trackUploadRowChecks = [
-  Expect<'trackUploadRow: the universal modifiers', Universal<View<'TrackUploadRow'>>>,
-];
-
-type trackMetadataFormChecks = [
-  Expect<'trackMetadataForm: the universal modifiers', Universal<View<'TrackMetadataForm'>, "disabled">>,
-];
-
-type artistChipsInputChecks = [
-  Expect<'artistChipsInput: the universal modifiers', Universal<View<'ArtistChipsInput'>, "disabled">>,
-];
-
-type isrcFieldChecks = [
-  Expect<'isrcField: the universal modifiers', Universal<View<'IsrcField'>, "disabled">>,
-];
-
-type creditsEditorChecks = [
-  Expect<'creditsEditor: the universal modifiers', Universal<View<'CreditsEditor'>, "disabled">>,
-];
-
-type artworkUploaderChecks = [
-  Expect<'artworkUploader: the universal modifiers', Universal<View<'ArtworkUploader'>, "disabled">>,
-];
-
-type payoutSummaryCardChecks = [
-  Expect<'payoutSummaryCard: the universal modifiers', Universal<View<'PayoutSummaryCard'>>>,
-];
-
-type pitchCardChecks = [
-  Expect<'pitchCard: the universal modifiers', Universal<View<'PitchCard'>>>,
 ];
 
 type rowActionsChecks = [

@@ -12,7 +12,6 @@
  * and its hue — and each assertion names the case that fails.
  */
 import { resolveChartCardPalette } from '../chart-cards/palette';
-import { resolveCreatorStudioPaint } from '../creator-studio/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { resolveMediaHeaderPaint } from '../media-header/shared';
 import { resolveInsightPalette } from '../property-insights/shared';
@@ -142,19 +141,9 @@ describe('quiet text is read off the surface it lands on', () => {
     }
   });
 
-  it.each(MODES)('creator studio, property insights and media headers do too (%s)', (mode) => {
+  it.each(MODES)('property insights and media headers do too (%s)', (mode) => {
     for (const { preset, theme } of themesIn(mode)) {
       const where = `${preset}/${mode}`;
-
-      const studio = resolveCreatorStudioPaint(theme);
-      expect([
-        where,
-        contrastRatio(studio.textSecondary, studio.surface) >= AA_TEXT_STRONG,
-      ]).toEqual([where, true]);
-      expect([where, contrastRatio(studio.textTertiary, studio.surface) >= AA_TEXT]).toEqual([
-        where,
-        true,
-      ]);
 
       const insights = resolveInsightPalette(theme);
       expect([where, contrastRatio(insights.muted, insights.card) >= AA_TEXT]).toEqual([

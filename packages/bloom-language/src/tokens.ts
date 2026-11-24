@@ -328,13 +328,10 @@ export type MethodTitleAlign = (typeof ENUMS.methodTitleAlign)[number];
 export type TypeRampStep = keyof typeof TYPE_RAMP;
 /** Bloom's voice parts' sizes (`VoiceSize`). */
 export type VoiceSize = (typeof ENUMS.voiceSize)[number];
-export type ReleaseCardLayout = (typeof ENUMS.releaseCardLayout)[number];
-export type ReleaseStatusBadgeSize = (typeof ENUMS.releaseStatusBadgeSize)[number];
 export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
 export type MapPriceMarkerSize = (typeof ENUMS.mapPriceMarkerSize)[number];
-export type ShareSheetSize = (typeof ENUMS.shareSheetSize)[number];
 /** Bloom `OutlineNav`'s forms: every heading, or the compact one that drops the deep levels. */
 export type OutlineNavStyle = (typeof ENUMS.outlineNavStyle)[number];
 export type RowActionStyle = (typeof ENUMS.rowActionStyle)[number];

@@ -280,7 +280,6 @@ const SUBPATHS = /** @type {const} */ ([
   // A post's action bar: reply, repost, like, share, save.
   ['./engagement-bar', 'engagement-bar/index.ts'],
   // What a "send" button opens: people to send to and other destinations.
-  ['./share-sheet', 'share-sheet/index.ts'],
   // Nothing to show, said once — the base block a dozen families hand-rolled.
   ['./empty-state', 'empty-state/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],
@@ -330,7 +329,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./message-media', 'message-media/index.ts'],
   ['./message-bubble', 'message-bubble/index.ts'],
   ['./chat-list', 'chat-list/index.ts'],
-  ['./creator-studio', 'creator-studio/index.ts'],
   ['./media-shelf', 'media-shelf/index.ts'],
   ['./media-header', 'media-header/index.ts'],
   ['./stay-filters', 'stay-filters/index.ts'],

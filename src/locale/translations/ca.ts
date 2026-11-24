@@ -342,152 +342,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'Adreces',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'Senzill', ep: 'EP', album: 'Àlbum' },
-  releaseStatuses: {
-    draft: 'Esborrany',
-    'in-review': 'En revisió',
-    scheduled: 'Programat',
-    live: 'Publicat',
-    rejected: 'Rebutjat',
-    takedown: 'Retirat',
-  },
-  creditRoles: {
-    songwriter: 'Autor',
-    producer: 'Productor',
-    composer: 'Compositor',
-    performer: 'Intèrpret',
-    lyricist: 'Lletrista',
-    'mixing-engineer': 'Enginyer de mescla',
-    'mastering-engineer': 'Enginyer de masterització',
-  },
-  periods: { '7d': '7 dies', '28d': '28 dies', '12m': '12 mesos', all: 'Tot' },
-  artworkNotSquare: (w, h) => `La portada ha de ser quadrada: aquesta imatge fa ${w}×${h} px.`,
-  artworkTooSmall: (w, h, min) =>
-    `La portada és massa petita (${w}×${h} px). Puja'n una d'almenys ${min}×${min} px.`,
-  audience: { title: 'Audiència', period: 'Període' },
-  breakdown: {
-    locations: 'Ubicacions principals',
-    cities: 'Ciutats',
-    countries: 'Països',
-    age: 'Edat',
-    gender: 'Gènere',
-    sources: "Fonts d'escolta",
-    metric: 'Oients',
-  },
-  streams: {
-    metrics: 'Mètrica del gràfic',
-    summary: (metric, releases) =>
-      releases
-        ? `${metric} al llarg del temps; llançaments: ${releases}`
-        : `${metric} al llarg del temps`,
-  },
-  topTracks: {
-    title: 'Cançons principals',
-    rank: '#',
-    rankName: 'Posició',
-    track: 'Cançó',
-    streams: 'Reproduccions',
-    listeners: 'Oients',
-    saves: 'Desats',
-    trend: 'Tendència',
-    trends: { up: "A l'alça", down: 'A la baixa', flat: 'Estable', new: 'Nova entrada' },
-    newBadge: 'Nova',
-    empty: 'Encara no hi ha reproduccions en aquest període.',
-  },
-  tracks: (n) => plural('ca', n, { one: '{n} cançó', other: '{n} cançons' }),
-  timeline: {
-    states: {
-      complete: 'completat',
-      current: 'en curs',
-      upcoming: 'no començat',
-      error: 'requereix atenció',
-    },
-    label: 'Progrés del llançament',
-  },
-  upload: {
-    queued: 'A la cua',
-    processing: 'Transcodificant…',
-    ready: 'A punt',
-    failed: "No s'ha pogut pujar",
-    remove: (name) => `Treu ${name}`,
-    progress: (name) => `Pujant ${name}`,
-  },
-  artwork: {
-    title: 'Portada',
-    requirements: '3000×3000 px, JPG o PNG',
-    replace: 'Substitueix',
-    remove: 'Treu la portada',
-    preview: 'Portada del llançament',
-    upload: 'Puja la portada',
-  },
-  credits: {
-    title: 'Crèdits',
-    role: 'Rol',
-    name: 'Nom',
-    add: 'Afegeix un crèdit',
-    remove: (index, name) =>
-      name ? `Treu el crèdit ${index + 1}, ${name}` : `Treu el crèdit ${index + 1}`,
-    empty: "Acredita els autors, productors i intèrprets d'aquesta cançó.",
-    field: (field, n) => `${field}, crèdit ${n}`,
-  },
-  artists: {
-    add: 'Afegeix',
-    addTo: (label) => `Afegeix: ${label}`,
-    remove: (name) => `Treu ${name}`,
-  },
-  isrc: { hint: 'Format: CC-XXX-YY-NNNNN', invalid: 'No és un ISRC vàlid' },
-  metadata: {
-    title: 'Títol de la cançó',
-    version: 'Versió',
-    versionPlaceholder: 'Remix, en directe, acústica…',
-    explicit: 'Lletra explícita',
-    explicitDescription: 'Activa-ho si la cançó conté llenguatge fort o temes explícits.',
-    genre: 'Gènere',
-    genrePlaceholder: 'Tria un gènere',
-    primaryArtists: 'Artistes principals',
-    featuredArtists: 'Artistes convidats',
-    artistPlaceholder: "Afegeix el nom d'un artista",
-    language: 'Idioma de la lletra',
-    languagePlaceholder: 'Tria un idioma',
-    lyrics: 'Lletra',
-    lyricsPlaceholder: 'Enganxa la lletra, una línia per cada vers cantat',
-  },
-  payout: {
-    estimated: "Ingressos estimats d'aquest mes",
-    lastPayout: 'Últim pagament',
-    nextPayout: 'Pròxim pagament',
-    statements: 'Mostra els extractes',
-    chart: 'Ingressos mensuals',
-  },
-  pitch: {
-    title: 'Proposta als editors',
-    description: "Explica a l'equip editorial el teu pròxim llançament abans que surti.",
-    release: 'Llançament',
-    releasePlaceholder: 'Tria un pròxim llançament',
-    moods: "Estat d'ànim",
-    genres: 'Gènere',
-    pitch: 'La teva proposta',
-    pitchPlaceholder:
-      'Què fa especial aquest llançament? Per a qui és i quina història hi ha al darrere?',
-    submit: 'Envia la proposta',
-    tagLimit: (max) => `Tria'n fins a ${max}`,
-    statuses: {
-      submitted: 'Proposta enviada',
-      accepted: 'Seleccionada per a revisió',
-      declined: 'No seleccionada aquesta vegada',
-    },
-    statusDescriptions: {
-      submitted:
-        'Els editors llegeixen totes les propostes. Rebràs resposta abans de la data de llançament.',
-      accepted: "El teu llançament s'està considerant per a llistes editorials.",
-      declined:
-        "Aquest llançament no s'ha seleccionat. Podràs proposar el següent tan aviat com estigui programat.",
-    },
-    edit: 'Edita la proposta',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'Energia',
   pending: 'Pendent',
@@ -2513,14 +2367,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Micròfon silenciat',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'Comparteix',
-  people: 'Envia a',
-  targets: 'Comparteix a',
-  sendTo: (name) => `Envia a ${name}`,
-  noPeople: "No s'ha trobat ningú",
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'Tanca',
   minimize: 'Minimitza',
@@ -2665,7 +2511,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -2773,7 +2618,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

@@ -337,142 +337,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'ঠিকানা',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'সিঙ্গেল', ep: 'EP', album: 'অ্যালবাম' },
-  releaseStatuses: {
-    draft: 'খসড়া',
-    'in-review': 'পর্যালোচনায়',
-    scheduled: 'নির্ধারিত',
-    live: 'লাইভ',
-    rejected: 'প্রত্যাখ্যাত',
-    takedown: 'সরিয়ে নেওয়া হয়েছে',
-  },
-  creditRoles: {
-    songwriter: 'গান লেখক',
-    producer: 'প্রযোজক',
-    composer: 'সুরকার',
-    performer: 'শিল্পী',
-    lyricist: 'গীতিকার',
-    'mixing-engineer': 'মিক্সিং ইঞ্জিনিয়ার',
-    'mastering-engineer': 'মাস্টারিং ইঞ্জিনিয়ার',
-  },
-  periods: { '7d': '7 দিন', '28d': '28 দিন', '12m': '12 মাস', all: 'সব সময়' },
-  artworkNotSquare: (w, h) => `আর্টওয়ার্ক বর্গাকার হতে হবে — এই ছবিটি ${w}×${h} px।`,
-  artworkTooSmall: (w, h, min) =>
-    `আর্টওয়ার্ক খুব ছোট (${w}×${h} px)। কমপক্ষে ${min}×${min} px-এর ছবি আপলোড করুন।`,
-  audience: { title: 'শ্রোতামণ্ডলী', period: 'সময়কাল' },
-  breakdown: {
-    locations: 'শীর্ষ অবস্থান',
-    cities: 'শহর',
-    countries: 'দেশ',
-    age: 'বয়স',
-    gender: 'লিঙ্গ',
-    sources: 'শোনার উৎস',
-    metric: 'শ্রোতা',
-  },
-  streams: {
-    metrics: 'চার্টের মেট্রিক',
-    summary: (metric, releases) =>
-      releases ? `সময়ের সাথে ${metric}; রিলিজ: ${releases}` : `সময়ের সাথে ${metric}`,
-  },
-  topTracks: {
-    title: 'শীর্ষ ট্র্যাক',
-    rank: '#',
-    rankName: 'র‍্যাঙ্ক',
-    track: 'ট্র্যাক',
-    streams: 'স্ট্রিম',
-    listeners: 'শ্রোতা',
-    saves: 'সেভ',
-    trend: 'প্রবণতা',
-    trends: { up: 'বাড়ছে', down: 'কমছে', flat: 'স্থির', new: 'নতুন এন্ট্রি' },
-    newBadge: 'নতুন',
-    empty: 'এই সময়কালে এখনও কোনো স্ট্রিম নেই।',
-  },
-  tracks: (n) => plural('bn', n, { one: '{n}টি ট্র্যাক', other: '{n}টি ট্র্যাক' }),
-  timeline: {
-    states: { complete: 'সম্পন্ন', current: 'চলছে', upcoming: 'শুরু হয়নি', error: 'মনোযোগ প্রয়োজন' },
-    label: 'রিলিজের অগ্রগতি',
-  },
-  upload: {
-    queued: 'সারিতে আছে',
-    processing: 'ট্রান্সকোড হচ্ছে…',
-    ready: 'প্রস্তুত',
-    failed: 'আপলোড ব্যর্থ হয়েছে',
-    remove: (name) => `${name} সরান`,
-    progress: (name) => `${name} আপলোড হচ্ছে`,
-  },
-  artwork: {
-    title: 'আর্টওয়ার্ক',
-    requirements: '3000×3000 px, JPG বা PNG',
-    replace: 'প্রতিস্থাপন করুন',
-    remove: 'আর্টওয়ার্ক সরান',
-    preview: 'রিলিজের আর্টওয়ার্ক',
-    upload: 'আর্টওয়ার্ক আপলোড করুন',
-  },
-  credits: {
-    title: 'ক্রেডিট',
-    role: 'ভূমিকা',
-    name: 'নাম',
-    add: 'ক্রেডিট যোগ করুন',
-    remove: (index, name) =>
-      name ? `ক্রেডিট ${index + 1} সরান, ${name}` : `ক্রেডিট ${index + 1} সরান`,
-    empty: 'এই ট্র্যাকের গান লেখক, প্রযোজক ও শিল্পীদের ক্রেডিট দিন।',
-    field: (field, n) => `${field}, ক্রেডিট ${n}`,
-  },
-  artists: {
-    add: 'যোগ করুন',
-    addTo: (label) => `${label}-এ যোগ করুন`,
-    remove: (name) => `${name} সরান`,
-  },
-  isrc: { hint: 'ফরম্যাট: CC-XXX-YY-NNNNN', invalid: 'এটি বৈধ ISRC নয়' },
-  metadata: {
-    title: 'ট্র্যাকের শিরোনাম',
-    version: 'সংস্করণ',
-    versionPlaceholder: 'রিমিক্স, লাইভ, অ্যাকোস্টিক…',
-    explicit: 'স্পষ্ট কথা',
-    explicitDescription: 'ট্র্যাকে কড়া ভাষা বা স্পষ্ট বিষয় থাকলে এটি চালু করুন।',
-    genre: 'ধারা',
-    genrePlaceholder: 'একটি ধারা বেছে নিন',
-    primaryArtists: 'প্রধান শিল্পী',
-    featuredArtists: 'অতিথি শিল্পী',
-    artistPlaceholder: 'শিল্পীর নাম যোগ করুন',
-    language: 'গানের কথার ভাষা',
-    languagePlaceholder: 'একটি ভাষা বেছে নিন',
-    lyrics: 'গানের কথা',
-    lyricsPlaceholder: 'গানের কথা পেস্ট করুন, প্রতিটি গাওয়া লাইনের জন্য একটি লাইন',
-  },
-  payout: {
-    estimated: 'এই মাসের আনুমানিক আয়',
-    lastPayout: 'শেষ পেমেন্ট',
-    nextPayout: 'পরবর্তী পেমেন্ট',
-    statements: 'স্টেটমেন্ট দেখুন',
-    chart: 'মাসিক আয়',
-  },
-  pitch: {
-    title: 'সম্পাদকদের কাছে পিচ করুন',
-    description: 'আপনার পরবর্তী রিলিজ প্রকাশের আগেই সম্পাদকীয় দলকে জানান।',
-    release: 'রিলিজ',
-    releasePlaceholder: 'আসন্ন একটি রিলিজ বেছে নিন',
-    moods: 'মেজাজ',
-    genres: 'ধারা',
-    pitch: 'আপনার পিচ',
-    pitchPlaceholder: 'এই রিলিজটি কেন আলাদা? এটি কার জন্য, এবং এর পেছনের গল্প কী?',
-    submit: 'পিচ পাঠান',
-    tagLimit: (max) => `সর্বোচ্চ ${max}টি বেছে নিন`,
-    statuses: {
-      submitted: 'পিচ পাঠানো হয়েছে',
-      accepted: 'পর্যালোচনার জন্য নির্বাচিত',
-      declined: 'এবার নির্বাচিত হয়নি',
-    },
-    statusDescriptions: {
-      submitted: 'সম্পাদকরা প্রতিটি পিচ পড়েন। রিলিজের তারিখের আগেই আপনি উত্তর পাবেন।',
-      accepted: 'আপনার রিলিজটি সম্পাদকীয় প্লেলিস্টের জন্য বিবেচনা করা হচ্ছে।',
-      declined: 'এই রিলিজটি নির্বাচিত হয়নি। পরেরটি নির্ধারিত হলেই আপনি সেটি পিচ করতে পারবেন।',
-    },
-    edit: 'পিচ সম্পাদনা করুন',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'শক্তি',
   pending: 'অপেক্ষমাণ',
@@ -2427,14 +2291,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'মাইক্রোফোন মিউট করা আছে',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'শেয়ার করুন',
-  people: 'পাঠান',
-  targets: 'এতে শেয়ার করুন',
-  sendTo: (name) => `${name}-কে পাঠান`,
-  noPeople: 'কাউকে পাওয়া যায়নি',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'বন্ধ করুন',
   minimize: 'ছোট করুন',
@@ -2579,7 +2435,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -2687,7 +2542,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

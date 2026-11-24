@@ -345,155 +345,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'العناوين',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'أغنية منفردة', ep: 'ألبوم قصير', album: 'ألبوم' },
-  releaseStatuses: {
-    draft: 'مسودة',
-    'in-review': 'قيد المراجعة',
-    scheduled: 'مجدول',
-    live: 'منشور',
-    rejected: 'مرفوض',
-    takedown: 'تمت إزالته',
-  },
-  creditRoles: {
-    songwriter: 'كاتب الأغاني',
-    producer: 'المنتج',
-    composer: 'الملحن',
-    performer: 'المؤدي',
-    lyricist: 'كاتب الكلمات',
-    'mixing-engineer': 'مهندس المزج',
-    'mastering-engineer': 'مهندس الماسترينغ',
-  },
-  periods: { '7d': '7 أيام', '28d': '28 يومًا', '12m': '12 شهرًا', all: 'كل الأوقات' },
-  artworkNotSquare: (w, h) => `يجب أن يكون الغلاف مربعًا — أبعاد هذه الصورة ${w}×${h} بكسل.`,
-  artworkTooSmall: (w, h, min) =>
-    `الغلاف صغير جدًا (${w}×${h} بكسل). حمّل صورة بأبعاد ${min}×${min} بكسل على الأقل.`,
-  audience: { title: 'الجمهور', period: 'الفترة' },
-  breakdown: {
-    locations: 'أبرز المواقع',
-    cities: 'المدن',
-    countries: 'البلدان',
-    age: 'العمر',
-    gender: 'الجنس',
-    sources: 'مصادر الاستماع',
-    metric: 'المستمعون',
-  },
-  streams: {
-    metrics: 'مقياس الرسم البياني',
-    summary: (metric, releases) =>
-      releases ? `${metric} بمرور الوقت؛ الإصدارات: ${releases}` : `${metric} بمرور الوقت`,
-  },
-  topTracks: {
-    title: 'أبرز المقاطع',
-    rank: '#',
-    rankName: 'الترتيب',
-    track: 'المقطع',
-    streams: 'مرات التشغيل',
-    listeners: 'المستمعون',
-    saves: 'مرات الحفظ',
-    trend: 'الاتجاه',
-    trends: { up: 'في صعود', down: 'في هبوط', flat: 'ثابت', new: 'دخول جديد' },
-    newBadge: 'جديد',
-    empty: 'لا توجد مرات تشغيل في هذه الفترة بعد.',
-  },
-  tracks: (n) =>
-    plural('ar', n, {
-      zero: 'لا مقاطع',
-      one: 'مقطع واحد',
-      two: 'مقطعان',
-      few: '{n} مقاطع',
-      many: '{n} مقطعًا',
-      other: '{n} مقطع',
-    }),
-  timeline: {
-    states: {
-      complete: 'مكتمل',
-      current: 'قيد التنفيذ',
-      upcoming: 'لم يبدأ',
-      error: 'يحتاج إلى انتباه',
-    },
-    label: 'تقدّم الإصدار',
-  },
-  upload: {
-    queued: 'في قائمة الانتظار',
-    processing: 'جارٍ التحويل…',
-    ready: 'جاهز',
-    failed: 'تعذّر التحميل',
-    remove: (name) => `إزالة ${name}`,
-    progress: (name) => `جارٍ تحميل ${name}`,
-  },
-  artwork: {
-    title: 'الغلاف',
-    requirements: '3000×3000 بكسل، JPG أو PNG',
-    replace: 'استبدال',
-    remove: 'إزالة الغلاف',
-    preview: 'غلاف الإصدار',
-    upload: 'تحميل الغلاف',
-  },
-  credits: {
-    title: 'المساهمون',
-    role: 'الدور',
-    name: 'الاسم',
-    add: 'إضافة مساهم',
-    remove: (index, name) =>
-      name ? `إزالة المساهم ${index + 1}، ${name}` : `إزالة المساهم ${index + 1}`,
-    empty: 'اذكر كتّاب الأغاني والمنتجين والمؤدين في هذا المقطع.',
-    field: (field, n) => `${field}، المساهم ${n}`,
-  },
-  artists: {
-    add: 'إضافة',
-    addTo: (label) => `إضافة: ${label}`,
-    remove: (name) => `إزالة ${name}`,
-  },
-  isrc: { hint: 'التنسيق: CC-XXX-YY-NNNNN', invalid: 'هذا ليس رمز ISRC صالحًا' },
-  metadata: {
-    title: 'عنوان المقطع',
-    version: 'النسخة',
-    versionPlaceholder: 'ريمكس، مباشر، أكوستيك…',
-    explicit: 'كلمات صريحة',
-    explicitDescription: 'فعّل هذا الخيار إذا كان المقطع يحتوي على لغة بذيئة أو مواضيع صريحة.',
-    genre: 'النوع',
-    genrePlaceholder: 'اختر نوعًا',
-    primaryArtists: 'الفنانون الرئيسيون',
-    featuredArtists: 'الفنانون الضيوف',
-    artistPlaceholder: 'أضف اسم فنان',
-    language: 'لغة الكلمات',
-    languagePlaceholder: 'اختر لغة',
-    lyrics: 'الكلمات',
-    lyricsPlaceholder: 'الصق الكلمات، سطرًا لكل سطر مغنّى',
-  },
-  payout: {
-    estimated: 'الأرباح المقدّرة لهذا الشهر',
-    lastPayout: 'آخر دفعة',
-    nextPayout: 'الدفعة التالية',
-    statements: 'عرض الكشوفات',
-    chart: 'الأرباح الشهرية',
-  },
-  pitch: {
-    title: 'اقتراح على المحررين',
-    description: 'عرّف فريق التحرير بإصدارك القادم قبل صدوره.',
-    release: 'الإصدار',
-    releasePlaceholder: 'اختر إصدارًا قادمًا',
-    moods: 'الحالة المزاجية',
-    genres: 'النوع',
-    pitch: 'عرضك',
-    pitchPlaceholder: 'ما الذي يميز هذا الإصدار؟ لمن هو، وما القصة وراءه؟',
-    submit: 'إرسال العرض',
-    tagLimit: (max) => `اختر حتى ${max}`,
-    statuses: {
-      submitted: 'تم إرسال العرض',
-      accepted: 'تم اختياره للمراجعة',
-      declined: 'لم يُختر هذه المرة',
-    },
-    statusDescriptions: {
-      submitted: 'يقرأ المحررون كل عرض. ستتلقى ردًا قبل تاريخ الإصدار.',
-      accepted: 'يجري النظر في إصدارك لقوائم التشغيل التحريرية.',
-      declined: 'لم يُختر هذا الإصدار. يمكنك تقديم إصدارك التالي فور جدولته.',
-    },
-    edit: 'تعديل العرض',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'الطاقة',
   pending: 'قيد الانتظار',
@@ -2821,14 +2672,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'الميكروفون مكتوم',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'مشاركة',
-  people: 'إرسال إلى',
-  targets: 'مشاركة عبر',
-  sendTo: (name) => `إرسال إلى ${name}`,
-  noPeople: 'لم يُعثر على أحد',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'إغلاق',
   minimize: 'تصغير',
@@ -2973,7 +2816,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -3081,7 +2923,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

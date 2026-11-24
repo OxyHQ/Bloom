@@ -98,7 +98,6 @@ import { AI_PROFILE_CARDS } from './ai-profile-card';
 import { MULTI_AGENT_CHATS } from './multi-agent-chat';
 import { AGENT_CHATS } from './agent-chat';
 import { ROUTE_STOPS } from './route-stops';
-import { SHARE_SHEETS } from './share-sheet';
 import { GENERIC } from './generic';
 import { ADDRESSES } from './address';
 import { PAYMENT_METHODS } from './payment-method';
@@ -107,7 +106,6 @@ import { PAYMENT_STATUSES } from './payment-status';
 import { DASHBOARD_CARDS } from './dashboard-cards';
 import { CARTS } from './cart-panel';
 import { MENU_ITEMS } from './menu-item';
-import { CREATOR_STUDIO } from './creator-studio';
 
 /**
  * The renderer of each control kind: the Bloom components the language draws
@@ -213,7 +211,6 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...MULTI_AGENT_CHATS,
   ...AGENT_CHATS,
   ...ROUTE_STOPS,
-  ...SHARE_SHEETS,
   ...GENERIC,
   ...ADDRESSES,
   ...PAYMENT_METHODS,
@@ -222,5 +219,4 @@ export const CONTROLS: Partial<Record<NodeKind, ControlRenderer>> = {
   ...DASHBOARD_CARDS,
   ...CARTS,
   ...MENU_ITEMS,
-  ...CREATOR_STUDIO,
 };

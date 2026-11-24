@@ -2803,16 +2803,12 @@ fn the_agent_chats_are_checked() {
 }
 
 #[test]
-fn route_stops_and_the_share_sheet_are_checked() {
-    let imports = "import { RouteStops, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
+fn route_stops_are_checked() {
+    let imports = "import { RouteStops, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid =
-        check("export const x = (s) => VStack(RouteStops(s).density('compact'), ShareSheet().size('lg'));\n");
+    let valid = check("export const x = (s) => VStack(RouteStops(s).density('compact'));\n");
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("ShareSheet().size('xl')", "Unknown shareSheetSize token 'xl' for .size()"),
-        ("RouteStops(b).size('sm')", "RouteStops has no modifier .size()"),
-    ];
+    let cases = [("RouteStops(b).size('sm')", "RouteStops has no modifier .size()")];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (b) => {chain};\n"));
         assert_eq!(output.diagnostics[0].message, message, "{chain}");
@@ -2907,25 +2903,6 @@ fn the_cart_and_menu_items_are_checked() {
 }
 
 #[test]
-fn the_creator_studio_is_checked() {
-    let imports = "import { ArtworkUploader, IsrcField, ReleaseCard, ReleaseStatusBadge, ReleaseTimeline, VStack } from '@oxy.so/bloom-language';\n";
-    let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
-    let valid = check(
-        "export const x = (r, b) => VStack(ReleaseCard(r).style('row'), ReleaseStatusBadge('live').size('sm'), ReleaseTimeline(r).axis('horizontal'), IsrcField(b).disabled(), ArtworkUploader(null).disabled());\n",
-    );
-    assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
-    let cases = [
-        ("ReleaseCard(b).style('list')", "Unknown releaseCardLayout token 'list' for .style()"),
-        ("ReleaseStatusBadge('live').size('lg')", "Unknown releaseStatusBadgeSize token 'lg' for .size()"),
-        ("IsrcField(b).size('sm')", "IsrcField has no modifier .size()"),
-    ];
-    for (chain, message) in cases {
-        let output = check(&format!("export const x = (b) => {chain};\n"));
-        assert_eq!(output.diagnostics[0].message, message, "{chain}");
-    }
-}
-
-#[test]
 fn a_border_width_near_miss_names_the_width_it_meant() {
     let output = compile(
         "import { Shape } from '@oxy.so/bloom-language';\nexport const x = Shape('heart').stroke('primary', 'thickk');\n",
@@ -2956,17 +2933,16 @@ fn row_actions_the_swipe_row_and_the_theme_toggle_are_checked() {
 
 #[test]
 fn values_inside_blooms_own_data_are_bindings() {
-    let imports = "import { CallScreen, CartPanel, ListItem, MailRow, MapControls, ShareSheet, VStack } from '@oxy.so/bloom-language';\n";
+    let imports = "import { CallScreen, CartPanel, ListItem, MailRow, MapControls, VStack } from '@oxy.so/bloom-language';\n";
     let check = |body: &str| compile(&format!("{imports}{body}"), "row.tsx");
     let valid = check(
-        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), ShareSheet().search([v, s], { placeholder: 'Search' }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]));\n",
+        "export const x = (v, s, c, d) => VStack(CartPanel('a', c).tip([v, s], c, { label: 'Tip' }).promo([v, s], { onApply: s }), CallScreen('a', 'active').muted([v, s]).speaker([v, s]).videoOn([v, s]).screenSharing([v, s]).localVideoCorner([v, s]), MailRow(d).starred([v, s]), MapControls().tilted([v, s]));\n",
     );
     assert!(valid.diagnostics.is_empty(), "{:?}", valid.diagnostics.first().map(|d| &d.message));
     let cases = [
         ("CartPanel('a', c).tip([v, s])", ".tip() takes 2 to 3 argument(s), not 1"),
         ("CartPanel('a', c).promo([v, s])", ".promo() takes 2 argument(s), not 1"),
         ("ListItem('a').starred([v, s])", "ListItem has no modifier .starred()"),
-        ("ShareSheet().query([v, s])", "ShareSheet has no modifier .query()"),
     ];
     for (chain, message) in cases {
         let output = check(&format!("export const x = (v, s, c) => {chain};\n"));

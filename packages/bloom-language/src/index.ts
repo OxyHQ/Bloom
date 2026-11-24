@@ -1510,13 +1510,6 @@ export type {
   RouteStopsView,
 } from './controls/route-stops';
 
-// Share sheet (controls/share-sheet.tsx)
-export { ShareSheet } from './controls/share-sheet';
-export type {
-  ShareSheetOptions,
-  ShareSheetView,
-} from './controls/share-sheet';
-
 // Generic components (controls/generic.tsx)
 export {
   ConnectionDots,
@@ -1613,53 +1606,3 @@ export type {
   MenuItemRowOptions,
   MenuItemRowView,
 } from './controls/menu-item';
-// Creator studio (controls/creator-studio.tsx)
-export {
-  ArtistChipsInput,
-  ArtworkUploader,
-  AudienceBreakdown,
-  AudienceOverview,
-  CreditsEditor,
-  IsrcField,
-  PayoutSummaryCard,
-  PitchCard,
-  ReleaseCard,
-  ReleaseStatusBadge,
-  ReleaseTimeline,
-  StreamsChart,
-  TopTracksTable,
-  TrackMetadataForm,
-  TrackUploadRow,
-} from './controls/creator-studio';
-export type {
-  ArtistChipsInputOptions,
-  ArtistChipsInputView,
-  ArtworkUploaderOptions,
-  ArtworkUploaderView,
-  AudienceBreakdownOptions,
-  AudienceBreakdownView,
-  AudienceOverviewOptions,
-  AudienceOverviewView,
-  CreditsEditorOptions,
-  CreditsEditorView,
-  IsrcFieldOptions,
-  IsrcFieldView,
-  PayoutSummaryCardOptions,
-  PayoutSummaryCardView,
-  PitchCardOptions,
-  PitchCardView,
-  ReleaseCardOptions,
-  ReleaseCardView,
-  ReleaseStatusBadgeOptions,
-  ReleaseStatusBadgeView,
-  ReleaseTimelineOptions,
-  ReleaseTimelineView,
-  StreamsChartOptions,
-  StreamsChartView,
-  TopTracksTableOptions,
-  TopTracksTableView,
-  TrackMetadataFormOptions,
-  TrackMetadataFormView,
-  TrackUploadRowOptions,
-  TrackUploadRowView,
-} from './controls/creator-studio';

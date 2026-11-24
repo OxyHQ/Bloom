@@ -9,7 +9,6 @@ jest.mock('../portal', () => jest.requireActual('../portal/index.web'));
 jest.mock('../button', () => jest.requireActual('../button/index.web'));
 
 import { BloomScope, type BloomSize } from '../appearance';
-import { ReleaseStatusBadge } from '../creator-studio/ReleaseCard';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tooltip, TooltipContent, TooltipTextBubble, TooltipTrigger } from '../tooltip/Tooltip.web';
@@ -50,17 +49,6 @@ const subjects = [
     render: (size?: 'sm' | 'md') => <OfferingBadge offering="sale" size={size} testID="offering" />,
     measure: () => getComputedStyle(element('[data-testid="offering"]')).height,
     defaultSize: '24px',
-    small: '20px',
-    medium: '24px',
-    large: '24px',
-  },
-  {
-    name: 'release status badge',
-    render: (size?: 'sm' | 'md') => (
-      <ReleaseStatusBadge status="draft" size={size} testID="release" />
-    ),
-    measure: () => getComputedStyle(element('[data-testid="release"]')).height,
-    defaultSize: '20px',
     small: '20px',
     medium: '24px',
     large: '24px',

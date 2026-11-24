@@ -335,142 +335,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: '住所',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'シングル', ep: 'EP', album: 'アルバム' },
-  releaseStatuses: {
-    draft: '下書き',
-    'in-review': '審査中',
-    scheduled: '配信予定',
-    live: '配信中',
-    rejected: '却下',
-    takedown: '配信停止',
-  },
-  creditRoles: {
-    songwriter: 'ソングライター',
-    producer: 'プロデューサー',
-    composer: '作曲者',
-    performer: '演奏者',
-    lyricist: '作詞者',
-    'mixing-engineer': 'ミキシングエンジニア',
-    'mastering-engineer': 'マスタリングエンジニア',
-  },
-  periods: { '7d': '7日間', '28d': '28日間', '12m': '12か月', all: '全期間' },
-  artworkNotSquare: (w, h) => `アートワークは正方形にしてください。この画像は ${w}×${h} px です。`,
-  artworkTooSmall: (w, h, min) =>
-    `アートワークが小さすぎます（${w}×${h} px）。${min}×${min} px 以上の画像をアップロードしてください。`,
-  audience: { title: 'オーディエンス', period: '期間' },
-  breakdown: {
-    locations: '上位の地域',
-    cities: '都市',
-    countries: '国',
-    age: '年齢',
-    gender: '性別',
-    sources: '再生元',
-    metric: 'リスナー',
-  },
-  streams: {
-    metrics: 'グラフの指標',
-    summary: (metric, releases) =>
-      releases ? `${metric}の推移、リリース: ${releases}` : `${metric}の推移`,
-  },
-  topTracks: {
-    title: '人気の曲',
-    rank: '#',
-    rankName: '順位',
-    track: '曲',
-    streams: '再生回数',
-    listeners: 'リスナー',
-    saves: '保存数',
-    trend: '傾向',
-    trends: { up: '上昇', down: '下降', flat: '横ばい', new: '初登場' },
-    newBadge: '新着',
-    empty: 'この期間の再生はまだありません。',
-  },
-  tracks: (n) => plural('ja', n, { other: '{n}曲' }),
-  timeline: {
-    states: { complete: '完了', current: '進行中', upcoming: '未着手', error: '要対応' },
-    label: 'リリースの進捗',
-  },
-  upload: {
-    queued: '待機中',
-    processing: 'トランスコード中…',
-    ready: '準備完了',
-    failed: 'アップロードに失敗しました',
-    remove: (name) => `${name}を取り除く`,
-    progress: (name) => `${name}をアップロード中`,
-  },
-  artwork: {
-    title: 'アートワーク',
-    requirements: '3000×3000 px、JPG または PNG',
-    replace: '置き換え',
-    remove: 'アートワークを取り除く',
-    preview: 'リリースのアートワーク',
-    upload: 'アートワークをアップロード',
-  },
-  credits: {
-    title: 'クレジット',
-    role: '役割',
-    name: '名前',
-    add: 'クレジットを追加',
-    remove: (index, name) =>
-      name ? `クレジット${index + 1}（${name}）を取り除く` : `クレジット${index + 1}を取り除く`,
-    empty: 'この曲のソングライター、プロデューサー、演奏者をクレジットしましょう。',
-    field: (field, n) => `${field}（クレジット${n}）`,
-  },
-  artists: {
-    add: '追加',
-    addTo: (label) => `${label}に追加`,
-    remove: (name) => `${name}を取り除く`,
-  },
-  isrc: { hint: '形式: CC-XXX-YY-NNNNN', invalid: '有効な ISRC ではありません' },
-  metadata: {
-    title: '曲名',
-    version: 'バージョン',
-    versionPlaceholder: 'リミックス、ライブ、アコースティック…',
-    explicit: '露骨な表現を含む歌詞',
-    explicitDescription: '強い言葉や露骨なテーマを含む場合はオンにしてください。',
-    genre: 'ジャンル',
-    genrePlaceholder: 'ジャンルを選択',
-    primaryArtists: 'メインアーティスト',
-    featuredArtists: 'フィーチャリングアーティスト',
-    artistPlaceholder: 'アーティスト名を追加',
-    language: '歌詞の言語',
-    languagePlaceholder: '言語を選択',
-    lyrics: '歌詞',
-    lyricsPlaceholder: '歌詞を貼り付けてください（歌う1行につき1行）',
-  },
-  payout: {
-    estimated: '今月の推定収益',
-    lastPayout: '前回の支払い',
-    nextPayout: '次回の支払い',
-    statements: '明細を表示',
-    chart: '月別収益',
-  },
-  pitch: {
-    title: '編集部にピッチ',
-    description: 'リリース前に、次の作品を編集チームに紹介しましょう。',
-    release: 'リリース',
-    releasePlaceholder: '今後のリリースを選択',
-    moods: 'ムード',
-    genres: 'ジャンル',
-    pitch: 'ピッチ内容',
-    pitchPlaceholder: 'このリリースの魅力は？誰に向けた作品で、どんな背景がありますか？',
-    submit: 'ピッチを送信',
-    tagLimit: (max) => `${max}個まで選択`,
-    statuses: {
-      submitted: 'ピッチを送信しました',
-      accepted: '審査対象に選ばれました',
-      declined: '今回は選ばれませんでした',
-    },
-    statusDescriptions: {
-      submitted: '編集部はすべてのピッチを読んでいます。リリース日までに返答があります。',
-      accepted: 'あなたのリリースは編集部プレイリストの候補になっています。',
-      declined: 'このリリースは選ばれませんでした。次のリリースは予定が決まり次第ピッチできます。',
-    },
-    edit: 'ピッチを編集',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'エネルギー',
   pending: '取得中',
@@ -2459,14 +2323,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'マイクはミュート中',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: '共有',
-  people: '送信先',
-  targets: '共有先',
-  sendTo: (name) => `${name}さんに送信`,
-  noPeople: '見つかりませんでした',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: '閉じる',
   minimize: '最小化',
@@ -2611,7 +2467,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -2719,7 +2574,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,

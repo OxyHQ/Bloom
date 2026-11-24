@@ -37,7 +37,6 @@ const ASSERTIVE: Record<string, string> = {
   'field/Field.tsx:Text': "the field's error, answering what the user entered",
   'text-field/TextField.tsx:Text': "an invalid `TextFieldHint` is the field's error",
   'file-upload/FileUpload.tsx:Text': 'a rejection of the file the user just dropped or picked',
-  'creator-studio/ArtworkUploader.tsx:View': 'a rejection of the artwork the user just picked',
   'listing-editor/OfferingEditor.tsx:Text': 'a validation error of the form the user submitted',
   'listing-editor/PropertyTypeSelector.tsx:Text': 'a validation error of the user’s choice',
   'composer-panel/ComposerPillBase.tsx:View': 'the reason the message the user wrote is refused',
@@ -166,7 +165,7 @@ describe('live regions', () => {
         'tag-field/TagField.tsx:Text',
       ]),
     );
-    expect(found.length).toBeGreaterThan(40);
+    expect(found.length).toBeGreaterThan(35);
   });
 
   it('a live VIEW states its politeness, so native keeps it (a role alone is flattened)', () => {

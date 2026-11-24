@@ -129,7 +129,6 @@ import type { AgentChatKind } from './controls/agent-chat';
 import type { WebSearchKind } from './controls/web-search';
 import type { TaskListKind } from './controls/task-list';
 import type { GenericKind } from './controls/generic';
-import type { ShareSheetKind, ShareSheetSearchOptions } from './controls/share-sheet';
 import type { CartTipOption } from '@oxy.so/bloom/cart-panel';
 import type { RouteStopsKind } from './controls/route-stops';
 import type { CheckoutSheetKind } from './controls/checkout-sheet';
@@ -158,7 +157,6 @@ import type { MenuItemKind } from './controls/menu-item';
 import type { CartKind, CartPanelPromoOptions, CartPanelTipOptions } from './controls/cart-panel';
 import type { PaymentStatusKind } from './controls/payment-status';
 import type { PriceBreakdownKind } from './controls/price-breakdown';
-import type { CreatorStudioKind } from './controls/creator-studio';
 import type { CardFormKind } from './controls/card-form';
 import type { MediaKind } from './controls/media';
 import type { ListingKind } from './controls/listings';
@@ -296,7 +294,6 @@ import {
   type OutlineNavStyle,
   type RowActionStyle,
   type ThemeToggleStyle,
-  type ShareSheetSize,
   type ShelfLayout,
   type PriceScale,
   type FeatureFilterStyle,
@@ -339,8 +336,6 @@ import {
   type ChoiceListStyle,
   type PaymentStatusStyle,
   type PriceLineTone,
-  type ReleaseCardLayout,
-  type ReleaseStatusBadgeSize,
   type FollowButtonSize,
   type MapPriceMarkerSize,
   type MapMarkerState,
@@ -1246,11 +1241,6 @@ export interface ValueModifiers {
   month: AnyBinding;
   period: AnyBinding;
   quantity: AnyBinding;
-  release: AnyBinding;
-  selectedMoods: AnyBinding;
-  selectedGenres: AnyBinding;
-  pitch: AnyBinding;
-  metric: AnyBinding;
   day: AnyBinding;
   filtersOpen: AnyBinding;
   selectedExtras: AnyBinding;
@@ -1264,7 +1254,6 @@ export interface ValueModifiers {
   localVideoCorner: AnyBinding;
   tip: readonly [tip: AnyBinding, choices: readonly CartTipOption[], options?: CartPanelTipOptions];
   promo: readonly [code: AnyBinding, options: CartPanelPromoOptions];
-  search: readonly [text: AnyBinding, options?: ShareSheetSearchOptions];
   destination: AnyBinding;
   /** The scroll's content container grows to fill it (`flexGrow: 1`). */
   contentGrows: boolean;
@@ -1475,9 +1464,7 @@ export type Modifier =
         | NoteToolbarSize
         | OfferingBadgeSize
         | LockupSize
-        | SidebarSize
-        | ShareSheetSize
-        | ReleaseStatusBadgeSize;
+        | SidebarSize;
     }
   | {
       readonly kind: 'style';
@@ -1534,7 +1521,6 @@ export type Modifier =
         | OutlineNavStyle
         | ChoiceListStyle
         | PaymentStatusStyle
-        | ReleaseCardLayout
         | RowActionStyle
         | ThemeToggleStyle;
     }
@@ -1925,7 +1911,6 @@ export type NodeKind =
   | MultiAgentChatKind
   | AgentChatKind
   | RouteStopsKind
-  | ShareSheetKind
   | GenericKind
   | AddressesKind
   | PaymentMethodsKind
@@ -1933,8 +1918,7 @@ export type NodeKind =
   | PaymentStatusKind
   | DashboardCardKind
   | CartKind
-  | MenuItemKind
-  | CreatorStudioKind;
+  | MenuItemKind;
 
 /** A node as data: its kind, props, children and ordered modifiers. Every view type is one. */
 export interface ViewNode {
@@ -2303,9 +2287,7 @@ export class Node {
       | NoteToolbarSize
       | OfferingBadgeSize
       | LockupSize
-      | SidebarSize
-      | ShareSheetSize
-      | ReleaseStatusBadgeSize,
+      | SidebarSize,
   ): Node {
     return this.with({ kind: 'size', key: `size:${tokenKey(value)}`, value });
   }
@@ -2362,7 +2344,6 @@ export class Node {
       | OutlineNavStyle
       | ChoiceListStyle
       | PaymentStatusStyle
-      | ReleaseCardLayout
       | RowActionStyle
       | ThemeToggleStyle,
   ): Node {
@@ -2559,21 +2540,6 @@ export class Node {
   quantity(value: AnyBinding): Node {
     return this.set('quantity', value);
   }
-  release(value: AnyBinding): Node {
-    return this.set('release', value);
-  }
-  selectedMoods(value: AnyBinding): Node {
-    return this.set('selectedMoods', value);
-  }
-  selectedGenres(value: AnyBinding): Node {
-    return this.set('selectedGenres', value);
-  }
-  pitch(value: AnyBinding): Node {
-    return this.set('pitch', value);
-  }
-  metric(value: AnyBinding): Node {
-    return this.set('metric', value);
-  }
   day(value: AnyBinding): Node {
     return this.set('day', value);
   }
@@ -2612,9 +2578,6 @@ export class Node {
   }
   promo(value: AnyBinding, options: CartPanelPromoOptions): Node {
     return this.set('promo', [value, options]);
-  }
-  search(value: AnyBinding, options?: ShareSheetSearchOptions): Node {
-    return this.set('search', [value, options]);
   }
   destination(value: AnyBinding): Node {
     return this.set('destination', value);

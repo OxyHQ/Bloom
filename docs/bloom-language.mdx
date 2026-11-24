@@ -1838,7 +1838,7 @@ Button(Text('Delete')).onPress(() => setConfirming(true)).alert(
 const sharing = useState(false);
 Button(Text('Share')).onPress(() => sharing[1](true)).dialog(
   sharing,
-  Dialog(ShareSheet({ post })).title('Share').presentAt('bottom', { md: 'center' }).buttons([{ label: 'Done' }]),
+  Dialog(Text(post.link)).title('Share').presentAt('bottom', { md: 'center' }).buttons([{ label: 'Done' }]),
 )
 // The popover's trigger is the view: pressing it opens the popover.
 Button(Icon(RiInformationLine)).shape('circle').label('Details').popover(
@@ -3404,7 +3404,7 @@ is an `Embed`.
 ## Product components
 
 The product families apps share (agents, chat, dashboards, media), and those
-no app imports yet (commerce, music, the dashboard cards and
+no app imports yet (commerce, the dashboard cards and
 a few more), are Bloom's own components drawn as nodes. A node takes its content first and its data as
 an options object, as the Bloom component takes them: a slot is a language
 child, a handler a function, and the data is Bloom's own type, so Bloom's
@@ -4310,34 +4310,6 @@ choice writes the record with it; its `header` a child).
   row; `.disabled()` on the promo field, the tip picker and the options.
 - A menu row takes `.onPress()` itself.
 
-### Creator studio
-
-```ts
-AudienceOverview(metrics, [period, setPeriod], { caption: 'Against the last 28 days' })
-ReleaseCard(release, { actions }).style('row').onPress(() => open(release.id))
-TrackMetadataForm([metadata, setMetadata], { genres, languages, errors })
-ArtistChipsInput('Primary artists', [artists, setArtists], { max: 3 }).disabled(saving)
-```
-
-Bloom's `creator-studio`, each its own: `AudienceOverview(metrics, period,
-options?)` (its binding the selected period), `StreamsChart(metrics,
-options?)` (its `height` a space token), `TopTracksTable(tracks, options?)`
-(its `summary` and `toolbar` children), `AudienceBreakdown(options)`,
-`ReleaseCard(release, options?)` (`.style('grid' | 'row')` its layout; it
-takes `.onPress()` itself), `ReleaseStatusBadge(status, options?)`
-(`.size('sm' | 'md')`; its `label` the badge's own words),
-`ReleaseTimeline(steps, options?)` (`.axis()` its orientation),
-`TrackUploadRow(fileName, status, options)` (its `size` in bytes or words),
-`TrackMetadataForm(metadata, options)`, `ArtistChipsInput(label, names,
-options?)`, `IsrcField(code, options?)` and `CreditsEditor(credits,
-options?)` (each writes its binding; `.disabled()`),
-`ArtworkUploader(artwork, options?)` (`null` draws the drop zone; its `size`
-a space token; `.disabled()`), `PayoutSummaryCard(estimated, options)` and
-`PitchCard(options)` (its releases, moods, genres and status as data; the
-release, tags and pitch it edits are `.release()`, `.selectedMoods()`,
-`.selectedGenres()` and `.pitch()` bindings, which Bloom requires). `.label()` names a chart's plot, the table and the
-timeline. The words, formats and labels stay in the options, as Bloom's.
-
 ### Dashboard cards
 
 ```ts
@@ -4351,20 +4323,16 @@ Bloom's (an alert's tone and its `iconBackground` stay in the alert); a
 
 
 
-### Route stops and the share sheet
+### Route stops
 
 ```ts
 RouteStops(trip.stops, { onPressStop: edit, onAddStop: add, onRemoveStop: remove }).density('compact')
-ShareSheet({ title: 'Send to', people, onPersonPress: send, targets }).search([query, setQuery], { placeholder: 'Search' }).size('lg')
 ```
 
-Bloom's `route-stops` and `share-sheet`. `RouteStops(stops,
+Bloom's `route-stops`: `RouteStops(stops,
 options?)` takes Bloom's stops (a stop's `badge` and `action` are React
 elements, as they are data) and its handlers; `.density('comfortable' |
-'compact')`; `.label()` names the list. `ShareSheet(options?)`: `.size('sm' | 'md'
-| 'lg')`; `peopleEmpty` is a language child; `.search([text, setText],
-options?)` its search field, a binding drawn into Bloom's `search` (its
-`placeholder` and `onSubmit` the options; without it, no field).
+'compact')`; `.label()` names the list.
 
 `@oxy.so/bloom/mail-list` is live code with no component of its own: the
 mail row's shared pieces. Its helpers, constants and types (`mailStrings`,
@@ -5065,8 +5033,7 @@ with its reason. Nothing else is missing.
   sidebar's, a rail's and the settings' `.selection([id, setId])`, an agent
   chat's, a chart's active tile) and the values inside
   Bloom's data that an app edits (a mail row's `.starred()`, a cart's
-  `.tip()` and `.promo()`, a share sheet's `.search()`, a call's toggles, a
-  map's `.tilted()`).
+  `.tip()` and `.promo()`, a call's toggles, a map's `.tilted()`).
   **Decided:** an event that holds no value stays an event: a one-off
   choice (a suggestion, an emoji, a reaction a second press removes, a
   date picked from a calendar), a press that opens something, a jump the
@@ -5275,8 +5242,8 @@ with its reason. Nothing else is missing.
   and the month calendar; and the action bar's orientation, tone and zero
   counts Mention sets. Wave 7, the families no app imports yet: commerce
   (addresses, payment methods, the price summary, payment status, the cart,
-  menu items); music (the creator studio); the dashboard cards
-  (`ImportantAlertsCard`, `PatientInfoCard`); `RouteStops`, `ShareSheet`. **Decided:** colours that come
+  menu items); the dashboard cards
+  (`ImportantAlertsCard`, `PatientInfoCard`); `RouteStops`. **Decided:** colours that come
   with an item of the data (a reply preview's inside a message bubble's
   data, a swipe row's `paint`,
   an alert's tone) stay

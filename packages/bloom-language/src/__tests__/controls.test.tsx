@@ -15,7 +15,6 @@ import { ReviewCard } from '../controls/listings';
 import { MenuItemOptions } from '../controls/menu-item';
 import { Notification } from '../controls/notification';
 import { RatingBar } from '../controls/rating';
-import { ShareSheet } from '../controls/share-sheet';
 import { Meter } from '../controls/stat-bar';
 import { Tooltip } from '../controls/tooltip';
 import type { Child } from '../node';
@@ -330,17 +329,6 @@ describe('a value inside Bloom’s own data', () => {
     const panel = only(mount(toElement(CartPanel('Forno', []))), 'CartPanel');
     expect(panel.props.tip).toBeUndefined();
     expect(panel.props.promo).toBeUndefined();
-  });
-
-  it('a share sheet’s search is a binding, drawn into Bloom’s search', () => {
-    const setQuery = jest.fn();
-    const submit = jest.fn();
-    const sheet = only(
-      mount(toElement(ShareSheet().search(['an', setQuery], { onSubmit: submit }))),
-      'ShareSheet',
-    );
-    expect(sheet.props.search).toEqual({ onSubmit: submit, value: 'an', onValueChange: setQuery });
-    expect(only(mount(toElement(ShareSheet())), 'ShareSheet').props.search).toBeUndefined();
   });
 
   it('a call screen’s toggles are bindings, each drawing its button into the bar', () => {

@@ -339,151 +339,6 @@ const ADDRESS_MESSAGES: Translations['ADDRESS_MESSAGES'] = {
   addresses: 'Alamat',
 };
 
-const CREATOR_STUDIO_MESSAGES: Translations['CREATOR_STUDIO_MESSAGES'] = {
-  releaseTypes: { single: 'Singel', ep: 'EP', album: 'Album' },
-  releaseStatuses: {
-    draft: 'Draf',
-    'in-review': 'Sedang ditinjau',
-    scheduled: 'Terjadwal',
-    live: 'Tayang',
-    rejected: 'Ditolak',
-    takedown: 'Diturunkan',
-  },
-  creditRoles: {
-    songwriter: 'Penulis lagu',
-    producer: 'Produser',
-    composer: 'Komposer',
-    performer: 'Penampil',
-    lyricist: 'Penulis lirik',
-    'mixing-engineer': 'Teknisi mixing',
-    'mastering-engineer': 'Teknisi mastering',
-  },
-  periods: { '7d': '7 hari', '28d': '28 hari', '12m': '12 bulan', all: 'Sepanjang waktu' },
-  artworkNotSquare: (w, h) => `Sampul harus persegi — gambar ini berukuran ${w}×${h} px.`,
-  artworkTooSmall: (w, h, min) =>
-    `Sampul terlalu kecil (${w}×${h} px). Unggah minimal ${min}×${min} px.`,
-  audience: { title: 'Audiens', period: 'Periode' },
-  breakdown: {
-    locations: 'Lokasi teratas',
-    cities: 'Kota',
-    countries: 'Negara',
-    age: 'Usia',
-    gender: 'Jenis kelamin',
-    sources: 'Sumber dengar',
-    metric: 'Pendengar',
-  },
-  streams: {
-    metrics: 'Metrik grafik',
-    summary: (metric, releases) =>
-      releases
-        ? `${metric} dari waktu ke waktu; rilisan: ${releases}`
-        : `${metric} dari waktu ke waktu`,
-  },
-  topTracks: {
-    title: 'Lagu teratas',
-    rank: '#',
-    rankName: 'Peringkat',
-    track: 'Lagu',
-    streams: 'Putaran',
-    listeners: 'Pendengar',
-    saves: 'Simpanan',
-    trend: 'Tren',
-    trends: { up: 'Naik', down: 'Turun', flat: 'Stabil', new: 'Entri baru' },
-    newBadge: 'Baru',
-    empty: 'Belum ada putaran di periode ini.',
-  },
-  tracks: (n) => plural('id', n, { other: '{n} lagu' }),
-  timeline: {
-    states: {
-      complete: 'selesai',
-      current: 'sedang berjalan',
-      upcoming: 'belum dimulai',
-      error: 'perlu perhatian',
-    },
-    label: 'Progres rilisan',
-  },
-  upload: {
-    queued: 'Dalam antrean',
-    processing: 'Mentranskode…',
-    ready: 'Siap',
-    failed: 'Unggahan gagal',
-    remove: (name) => `Keluarkan ${name}`,
-    progress: (name) => `Mengunggah ${name}`,
-  },
-  artwork: {
-    title: 'Sampul',
-    requirements: '3000×3000 px, JPG atau PNG',
-    replace: 'Ganti',
-    remove: 'Keluarkan sampul',
-    preview: 'Sampul rilisan',
-    upload: 'Unggah sampul',
-  },
-  credits: {
-    title: 'Kredit',
-    role: 'Peran',
-    name: 'Nama',
-    add: 'Tambah kredit',
-    remove: (index, name) =>
-      name ? `Keluarkan kredit ${index + 1}, ${name}` : `Keluarkan kredit ${index + 1}`,
-    empty: 'Cantumkan penulis lagu, produser, dan penampil di lagu ini.',
-    field: (field, n) => `${field}, kredit ${n}`,
-  },
-  artists: {
-    add: 'Tambah',
-    addTo: (label) => `Tambah ke ${label}`,
-    remove: (name) => `Keluarkan ${name}`,
-  },
-  isrc: { hint: 'Format: CC-XXX-YY-NNNNN', invalid: 'Itu bukan ISRC yang valid' },
-  metadata: {
-    title: 'Judul lagu',
-    version: 'Versi',
-    versionPlaceholder: 'Remix, live, akustik…',
-    explicit: 'Lirik eksplisit',
-    explicitDescription: 'Aktifkan jika lagu berisi bahasa kasar atau tema eksplisit.',
-    genre: 'Genre',
-    genrePlaceholder: 'Pilih genre',
-    primaryArtists: 'Artis utama',
-    featuredArtists: 'Artis tamu',
-    artistPlaceholder: 'Tambahkan nama artis',
-    language: 'Bahasa lirik',
-    languagePlaceholder: 'Pilih bahasa',
-    lyrics: 'Lirik',
-    lyricsPlaceholder: 'Tempel lirik, satu baris per baris yang dinyanyikan',
-  },
-  payout: {
-    estimated: 'Perkiraan pendapatan bulan ini',
-    lastPayout: 'Pembayaran terakhir',
-    nextPayout: 'Pembayaran berikutnya',
-    statements: 'Lihat laporan',
-    chart: 'Pendapatan bulanan',
-  },
-  pitch: {
-    title: 'Ajukan ke editor',
-    description: 'Ceritakan rilisan berikutnya kepada tim editorial sebelum dirilis.',
-    release: 'Rilisan',
-    releasePlaceholder: 'Pilih rilisan mendatang',
-    moods: 'Suasana',
-    genres: 'Genre',
-    pitch: 'Pengajuan Anda',
-    pitchPlaceholder:
-      'Apa yang membuat rilisan ini menonjol? Untuk siapa, dan apa kisah di baliknya?',
-    submit: 'Kirim pengajuan',
-    tagLimit: (max) => `Pilih hingga ${max}`,
-    statuses: {
-      submitted: 'Pengajuan terkirim',
-      accepted: 'Dipilih untuk ditinjau',
-      declined: 'Belum terpilih kali ini',
-    },
-    statusDescriptions: {
-      submitted: 'Editor membaca setiap pengajuan. Anda akan mendapat kabar sebelum tanggal rilis.',
-      accepted: 'Rilisan Anda sedang dipertimbangkan untuk playlist editorial.',
-      declined:
-        'Rilisan ini tidak terpilih. Anda bisa mengajukan rilisan berikutnya begitu dijadwalkan.',
-    },
-    edit: 'Edit pengajuan',
-  },
-};
-
 const PROPERTY_INSIGHTS_MESSAGES: Translations['PROPERTY_INSIGHTS_MESSAGES'] = {
   energy: 'Energi',
   pending: 'Tertunda',
@@ -2504,14 +2359,6 @@ const VOICE_MESSAGES: Translations['VOICE_MESSAGES'] = {
   mutedStatus: 'Mikrofon dibisukan',
 };
 
-const SHARE_SHEET_MESSAGES: Translations['SHARE_SHEET_MESSAGES'] = {
-  title: 'Bagikan',
-  people: 'Kirim ke',
-  targets: 'Bagikan ke',
-  sendTo: (name) => `Kirim ke ${name}`,
-  noPeople: 'Tidak ada yang ditemukan',
-};
-
 const WINDOW_MESSAGES: Translations['WINDOW_MESSAGES'] = {
   close: 'Tutup',
   minimize: 'Minimalkan',
@@ -2656,7 +2503,6 @@ const translations: Translations = {
   CHAT_COMPOSER_MESSAGES,
   MAIL_COMPOSE_MESSAGES,
   ADDRESS_MESSAGES,
-  CREATOR_STUDIO_MESSAGES,
   PROPERTY_INSIGHTS_MESSAGES,
   MAP_MARKER_MESSAGES,
   LISTING_ACTIONS_MESSAGES,
@@ -2764,7 +2610,6 @@ const translations: Translations = {
   CHAT_PEOPLE_MESSAGES,
   EMPTY_STATE_MESSAGES,
   VOICE_MESSAGES,
-  SHARE_SHEET_MESSAGES,
   WINDOW_MESSAGES,
   CONNECTION_STATUS_MESSAGES,
   COMPOSITION_BAR_MESSAGES,
