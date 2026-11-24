@@ -11,11 +11,13 @@ export const LIGHT: ThemeColors = {
   backgroundSecondary: 'rgb(245 245 245)',
   border: 'rgb(220 220 220)',
   error: 'rgb(255 0 0)',
+  contrast50: 'rgb(238 238 238)',
 };
 export const DARK: ThemeColors = {
   ...LIGHT,
   text: 'rgb(250 250 250)',
   textSecondary: 'rgb(160 160 160)',
+  contrast50: 'rgb(38 38 38)',
 };
 
 /** Stands in for the provider: the theme a test renders under. */

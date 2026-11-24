@@ -1,16 +1,22 @@
 import { useRef } from 'react';
 
+import { Pressable, usePressHost } from './react-native';
+
+function AnimatedPressable(props: Record<string, unknown>) {
+  return usePressHost('Animated.Pressable', props);
+}
+
 /**
  * Reanimated as host names and plain data: what the renderer hands the CSS
  * engine (animation and transition props) is asserted directly, and a shared
  * value is a box whose mapper runs on every render.
  */
-const names = new Map<unknown, string>([
+const names = new Map<unknown, unknown>([
   ['View', 'Animated.View'],
   ['Text', 'Animated.Text'],
-  ['Pressable', 'Animated.Pressable'],
+  [Pressable, AnimatedPressable],
 ]);
-function createAnimatedComponent(component: unknown): string {
+function createAnimatedComponent(component: unknown): unknown {
   return names.get(component) ?? `Animated(${String(component)})`;
 }
 const Animated = { View: 'Animated.View', Text: 'Animated.Text', createAnimatedComponent };

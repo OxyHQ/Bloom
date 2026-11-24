@@ -2,60 +2,21 @@ import { createElement, type ComponentType, type ReactElement, type ReactNode } 
 import { Pressable } from 'react-native';
 
 import { animatedHost } from '@oxy.so/bloom/motion';
-import { SubtleHover, usePressHighlight } from '@oxy.so/bloom/subtle-hover';
+import { pressHighlight } from '@oxy.so/bloom/subtle-hover';
+import { useThemePaint } from '@oxy.so/bloom/theme';
 
-type Handler = ((event: unknown) => void) | undefined;
-type HostProps = {
-  children?: ReactNode;
-  onPressIn?: Handler;
-  onPressOut?: Handler;
-  [prop: string]: unknown;
-};
+type HostProps = { children?: ReactNode; [prop: string]: unknown };
 
 /**
- * `host` (a `Pressable`) with Bloom's press highlight (`usePressHighlight`):
- * Android's ripple, iOS's wash under the children. A view whose press handler
- * is absent takes no highlight, as it takes no press. The host's own press
- * handlers (a variant's state, a press scale) run after the highlight's.
+ * `host` (a `Pressable`) with Bloom's press highlight (`pressHighlight`), on
+ * the host itself: Android's ripple prop, iOS's wash from the host's own
+ * pressed state. A view whose press handler is absent takes no highlight, as
+ * it takes no press; its children keep their places either way.
  */
 function highlighted(host: ComponentType<Record<string, unknown>>) {
-  return function PressHighlighted({
-    children,
-    onPressIn,
-    onPressOut,
-    ...props
-  }: HostProps): ReactElement {
-    const { hostProps, pressed } = usePressHighlight();
-    const kids = Array.isArray(children) ? children : [children];
-    // The wash's slot is always first, so the children keep their places
-    // (and their state) when a press handler comes or goes.
-    if (props.onPress === undefined && props.onLongPress === undefined)
-      return createElement(host, { ...props, onPressIn, onPressOut }, null, ...kids);
-    const lightIn = hostProps.onPressIn;
-    const lightOut = hostProps.onPressOut;
-    return createElement(
-      host,
-      {
-        ...props,
-        android_ripple: hostProps.android_ripple,
-        onPressIn:
-          lightIn === undefined
-            ? onPressIn
-            : (event: unknown) => {
-                lightIn();
-                onPressIn?.(event);
-              },
-        onPressOut:
-          lightOut === undefined
-            ? onPressOut
-            : (event: unknown) => {
-                lightOut();
-                onPressOut?.(event);
-              },
-      },
-      pressed === undefined ? null : createElement(SubtleHover, { pressed }),
-      ...kids,
-    );
+  return function PressHighlighted({ children, ...props }: HostProps): ReactElement {
+    const lit = props.onPress !== undefined || props.onLongPress !== undefined;
+    return createElement(host, { ...props, ...pressHighlight(useThemePaint(), children, lit) });
   };
 }
 

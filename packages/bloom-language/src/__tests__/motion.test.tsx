@@ -15,7 +15,6 @@ import type { Namespace } from '../motion/namespace';
 import { regular } from '../glass';
 import type { Child } from '../node';
 import { getMotionValue, type MotionValue } from './support/bloom-motion';
-import { pressHighlight } from './support/bloom-components';
 import { useMotionValue } from '../motion/values';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -368,11 +367,15 @@ describe('.pressScale()', () => {
     const [pressable] = all(r, 'Animated.Pressable');
     expect(all(r, 'Pressable')).toHaveLength(0);
     expect(flat(pressable?.props.style).transform).toEqual([{ scale: 1 }]);
-    expect(pressable?.props.android_ripple).toBe(pressHighlight.ripple);
-    act(() => pressable?.props.onPressIn());
-    expect(pressHighlight.lit).toBe(1);
-    act(() => pressable?.props.onPressOut());
-    expect(pressHighlight.lit).toBe(0);
+    const lit = () =>
+      all(r, 'View').filter((view) => flat(view.props.style).backgroundColor === LIGHT.contrast50);
+    expect(lit()).toHaveLength(0);
+    // The press's scale and the highlight answer the same press in and out.
+    act(() => all(r, 'Animated.Pressable')[0]?.props.onPressIn());
+    expect(lit()).toHaveLength(1);
+    expect(all(r, 'Animated.Pressable')[0]?.children[0]).toBe(lit()[0]);
+    act(() => all(r, 'Animated.Pressable')[0]?.props.onPressOut());
+    expect(lit()).toHaveLength(0);
   });
 });
 

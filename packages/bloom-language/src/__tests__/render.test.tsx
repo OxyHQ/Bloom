@@ -9,7 +9,6 @@ import { tokens } from '@oxy.so/bloom/styles';
 import { TYPE_SCALE } from '@oxy.so/bloom/typography';
 import { DARK, LIGHT, PaintContext } from './support/bloom-theme';
 import { opened } from './support/bloom-hooks';
-import { pressHighlight } from './support/bloom-components';
 import {
   Action,
   ActionBar,
@@ -195,36 +194,66 @@ describe('rendering through React Native hosts', () => {
   });
 });
 
-describe("a hover group takes Bloom's press highlight on native", () => {
+describe("a hover group takes the platform's press highlight on native", () => {
+  // The suite is iOS's: a wash under the children while the Pressable is held.
+  // Android's ripple is in android-hosts.test.tsx.
   const first = (r: ReactTestRenderer) =>
     r.root.find((node) => (node.type as unknown) === 'Pressable');
+  const flat = (style: unknown) => Object.assign({}, ...[style].flat(4).filter(Boolean));
+  const washes = (r: ReactTestRenderer) =>
+    r.root.findAll(
+      (node) =>
+        (node.type as unknown) === 'View' &&
+        flat(node.props.style).backgroundColor === LIGHT.contrast50,
+    );
 
-  it("a pressable hover group's host draws the ripple, lights the wash and keeps its own press", () => {
+  it("a pressable hover group's Pressable lights the wash under its children while held, and keeps its own press", () => {
     const handler = jest.fn();
     const r = mount(toElement(VStack(Text('Post')).hoverGroup().onPress(handler)));
-    const press = first(r);
-    expect(press.props.android_ripple).toBe(pressHighlight.ripple);
-    // The wash the press lights, under the row's own children.
-    const wash = r.root.findByType('SubtleHover' as never);
-    expect(wash.props.pressed).toBe(pressHighlight.pressed);
-    expect(press.props.children[0]?.type).toBe('SubtleHover');
-    act(() => press.props.onPressIn());
-    expect(pressHighlight.lit).toBe(1);
-    act(() => press.props.onPressOut());
-    expect(pressHighlight.lit).toBe(0);
-    act(() => press.props.onPress());
+    expect(washes(r)).toHaveLength(0);
+    expect(first(r).props.android_ripple).toBeUndefined();
+    act(() => first(r).props.onPressIn());
+    const [wash] = washes(r);
+    expect(flat(wash?.props.style)).toEqual({
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      pointerEvents: 'none',
+      backgroundColor: LIGHT.contrast50,
+    });
+    // Under the row's own children: the first thing the Pressable draws.
+    expect(first(r).children[0]).toBe(wash);
+    act(() => first(r).props.onPressOut());
+    expect(washes(r)).toHaveLength(0);
+    act(() => first(r).props.onPress());
     expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('the wash is drawn in the tree’s own palette', () => {
+    const r = mount(
+      toElement(
+        VStack(Text('Post'))
+          .hoverGroup()
+          .onPress(() => {}),
+      ),
+      DARK,
+    );
+    act(() => first(r).props.onPressIn());
+    expect(
+      flat(first(r).children[0] && (first(r).children[0] as ReactTestInstance).props.style),
+    ).toMatchObject({ backgroundColor: DARK.contrast50 });
   });
 
   it('a hover group with no press handler takes no highlight', () => {
     const r = mount(toElement(VStack(Text('Post')).hoverGroup().onPress(undefined)));
-    const press = first(r);
-    expect(press.props.android_ripple).toBeUndefined();
-    expect(press.props.onPressIn).toBeUndefined();
-    expect(r.root.findAllByType('SubtleHover' as never)).toHaveLength(0);
+    act(() => first(r).props.onPressIn());
+    expect(washes(r)).toHaveLength(0);
+    expect(first(r).props.android_ripple).toBeUndefined();
   });
 
-  it("the highlight chains with a pressed variant's own press tracking", () => {
+  it("the highlight lights beside a pressed variant's own press tracking", () => {
     const r = mount(
       toElement(
         VStack(Text('Post'))
@@ -233,12 +262,12 @@ describe("a hover group takes Bloom's press highlight on native", () => {
           .when('pressed', (v) => v.background('surface')),
       ),
     );
-    const flat = (style: unknown) => Object.assign({}, ...[style].flat(4).filter(Boolean));
     act(() => first(r).props.onPressIn());
-    expect(pressHighlight.lit).toBe(1);
+    expect(washes(r)).toHaveLength(1);
     expect(flat(first(r).props.style).backgroundColor).toBe(LIGHT.backgroundSecondary);
     act(() => first(r).props.onPressOut());
-    expect(pressHighlight.lit).toBe(0);
+    expect(washes(r)).toHaveLength(0);
+    expect(flat(first(r).props.style).backgroundColor).toBeUndefined();
   });
 
   it("a child keeps its state when the row's press handler comes", () => {
@@ -265,6 +294,8 @@ describe("a hover group takes Bloom's press highlight on native", () => {
 
   it('a press outside a hover group keeps its bare Pressable', () => {
     const plain = mount(toElement(VStack(Text('a')).onPress(() => {})));
+    act(() => first(plain).props.onPressIn?.());
+    expect(washes(plain)).toHaveLength(0);
     expect(first(plain).props.android_ripple).toBeUndefined();
   });
 });
