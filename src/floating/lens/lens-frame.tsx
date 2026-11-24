@@ -1,6 +1,6 @@
 /**
- * A glass control's one material decision, for every Bloom control that can be glass (a Button, a
- * Button.Group, a Surface, a BlurIsland, the tab bar). Where the device has the native lens (Android
+ * The one material decision for every Bloom control the lens can draw (a Button, a Button.Group, a
+ * Surface, a BlurIsland, the tab bar). Where the device has the native lens (Android
  * 33+ with `@oxy.so/bloom-lens`), the control asks for it and it is not inside a lens base or a
  * separate window (a Dialog, a BottomSheet), the lens base draws the material (the fill, tinted,
  * its shadow and light), springs under the finger and runs on the UI thread; the control only draws
@@ -8,7 +8,7 @@
  * below API 33, a Modal's window) the control paints Bloom's own material (`SurfacePaint`).
  *
  *   const frame = useLensFrame(material === 'lens', style);
- *   const control = <View style={frame.style}>{frame.lens ? null : <SurfacePaint … />}…</View>;
+ *   // The control takes `frame.style`, and paints `SurfacePaint` only when `frame.lens` is false.
  *   return withLens(frame, control, { radius });
  *
  * The control gives its paint and its lens the same fill and radius, so the two never diverge. In
