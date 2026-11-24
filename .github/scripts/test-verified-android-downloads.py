@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import tempfile
 import tarfile
+import time
 import sys
 sys.dont_write_bytecode = True
 import unittest
@@ -128,10 +129,17 @@ class VerifiedDownloads(unittest.TestCase):
         self.assertEqual(delays, [2])
         self.assertEqual(output.read_bytes(), b'official')
 
+    def test_exit_zero_with_an_empty_body_is_retried_not_an_integrity_failure(self):
+        run, calls = self.scripted([(0, '200\n', b''), (0, '200\n', b'official')])
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            path, route = module.fetch(artifact(b'official'), self.root,
+                                       lambda url, output: module.download(url, output, sleep=lambda _: None))
+        self.assertEqual((len(calls), route, path.read_bytes()), (2, 'primary', b'official'))
+
     def test_exit_zero_without_a_file_every_time_is_a_transport_failure(self):
         run, calls = self.scripted([(0, '200\n', None)] * module.ATTEMPTS)
         with patch.object(module.subprocess, 'run', side_effect=run):
-            with self.assertRaisesRegex(module.DownloadFailure, 'curl 0 wrote no file, HTTP 200'):
+            with self.assertRaisesRegex(module.DownloadFailure, 'curl 0 wrote no body, HTTP 200'):
                 module.download('https://official.invalid', self.root / 'artifact', sleep=lambda _: None)
         self.assertEqual(len(calls), module.ATTEMPTS)
 
@@ -147,6 +155,17 @@ class VerifiedDownloads(unittest.TestCase):
         self.assertEqual(delays[:2], [7, 4])
         self.assertTrue(45 <= delays[2] <= 50, delays)
         self.assertEqual(delays[3], module.RETRY_AFTER_CAP_SECONDS)
+
+    def test_github_rate_limit_403_is_retried_until_its_reset(self):
+        reset = str(int(time.time()) + 30)
+        run, calls = self.scripted([(22, f'403\n\n0\n{reset}', None), (22, '403\n5\n\n', None),
+                                    (0, '200\n', b'official')])
+        delays = []
+        with patch.object(module.subprocess, 'run', side_effect=run):
+            module.download('https://official.invalid', self.root / 'artifact', sleep=delays.append)
+        self.assertEqual(len(calls), 3)
+        self.assertTrue(28 <= delays[0] <= 30, delays)
+        self.assertEqual(delays[1], 5)
 
     def test_retries_stop_at_the_time_budget(self):
         now = [0.0]

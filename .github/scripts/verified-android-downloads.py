@@ -24,8 +24,10 @@ class DownloadFailure(RuntimeError):
 
 # What a later attempt can cure: the host is busy or rate limiting (408, 425,
 # 429, 5xx gateways) or the connection broke (resolve, connect, timeout, TLS
-# handshake, empty reply, send/receive reset, HTTP/2 stream). A 404, 403 or an
-# untrusted certificate is final for that host and goes to the fallback at once.
+# handshake, empty reply, send/receive reset, HTTP/2 stream). A 403 is the
+# GitHub API's rate limit when it says so (`x-ratelimit-remaining: 0` or a
+# Retry-After; job 138220686182), and is then retried too. A 404, any other 403
+# or an untrusted certificate is final for that host and goes to the fallback.
 TRANSIENT_HTTP = frozenset({'408', '425', '429', '500', '502', '503', '504'})
 TRANSIENT_CURL = frozenset({5, 6, 7, 16, 18, 28, 35, 52, 55, 56, 92})
 ATTEMPTS = 6
@@ -58,8 +60,9 @@ def download(url, destination, sleep=time.sleep, clock=time.monotonic):
     # failure waits 2, 4, 8, 16, 32 s, or the host's Retry-After when it asks
     # for longer (capped at 120 s), inside a 7 minute budget per URL.
     # Each attempt starts from no file, so a partial body never survives, and
-    # success requires the file curl wrote: curl exiting 0 without one
-    # (jobs 138058057372, 138063112723) is a failed attempt, not a download.
+    # success requires a non-empty file: curl exiting 0 with no body written
+    # (always the SDK 31 runtime, jobs 138058057372, 138063112723 and
+    # 138164981120) is a failed attempt, not a download.
     # Integrity is still checked by the caller, on every route.
     # No credentials, signed redirect URLs or response bodies enter the logs.
     deadline = clock() + RETRY_BUDGET_SECONDS
@@ -70,23 +73,27 @@ def download(url, destination, sleep=time.sleep, clock=time.monotonic):
             '--connect-timeout', '15', '--max-time', '90',
             '--proto', '=https', '--proto-redir', '=https',
             '--header', 'Accept: application/octet-stream',
-            '--output', str(destination), '--write-out', '%{http_code}\n%header{retry-after}', url,
+            '--output', str(destination), '--write-out',
+            '%{http_code}\n%header{retry-after}\n%header{x-ratelimit-remaining}\n%header{x-ratelimit-reset}', url,
         ], capture_output=True, text=True)
-        status, _, retry_after = result.stdout.partition('\n')
+        status, retry_after, remaining, reset = (result.stdout.split('\n') + [''] * 4)[:4]
         status = status if status.isdigit() and len(status) == 3 else 'unknown'
-        if result.returncode == 0 and destination.is_file():
+        rate_limited = status in ('429', '503') or (status == '403' and (remaining.strip() == '0' or retry_after.strip()))
+        if result.returncode == 0 and destination.is_file() and destination.stat().st_size:
             return
         if result.returncode == 0:
-            failure = f'curl 0 wrote no file, HTTP {status}'
+            failure = f'curl 0 wrote no body, HTTP {status}'
             transient = True
         else:
             failure = f'curl {result.returncode}, HTTP {status}'
-            transient = status in TRANSIENT_HTTP or result.returncode in TRANSIENT_CURL
+            transient = status in TRANSIENT_HTTP or rate_limited or result.returncode in TRANSIENT_CURL
         destination.unlink(missing_ok=True)
         if not transient or attempt == ATTEMPTS:
             break
         delay = BACKOFF_SECONDS[attempt - 1]
-        asked = retry_after_seconds(retry_after) if status in ('429', '503') else None
+        asked = retry_after_seconds(retry_after) if rate_limited else None
+        if asked is None and rate_limited and reset.strip().isdigit():
+            asked = max(0, int(reset) - int(time.time()))
         if asked is not None:
             delay = max(delay, min(asked, RETRY_AFTER_CAP_SECONDS))
         if clock() + delay > deadline:
@@ -111,7 +118,10 @@ def primary_available(url):
         '--range', '0-0', '--max-filesize', '1', '--output', os.devnull,
         '--write-out', '%{http_code}', url,
     ], capture_output=True, text=True)
-    return result.returncode in (0, 63) and result.stdout in ('200', '206')
+    available = result.returncode in (0, 63) and result.stdout in ('200', '206')
+    if not available:
+        print(f'Canonical probe failed (curl {result.returncode}, HTTP {result.stdout or "unknown"})', flush=True)
+    return available
 
 
 def after_failed_probe(transport, failed_url=None):
