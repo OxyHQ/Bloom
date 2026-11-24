@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { ConnectionDotsBase } from './ConnectionDotsBase';
 import type { ConnectionDotsProps } from './types';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
@@ -68,7 +68,7 @@ const ShimmerDot: React.FC<ShimmerDotProps> = ({ phase, color, size, driver }) =
 /**
  * Native `ConnectionDots` — a consent/linking header rendering
  * `left · (animated ellipsis dots) · right`. The dots run a looping opacity wave
- * in the brand color (`fill-brand` → `theme.colors.primary`). Reduced-motion
+ * in the brand color (`fill-brand` → `tokens.primary`). Reduced-motion
  * (Reanimated's `useReducedMotion`, or the `reducedMotion` prop) renders the
  * dots static at full opacity.
  */
@@ -81,10 +81,10 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
   style,
   reducedMotion,
 }) => {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const systemReduceMotion = usePrefersReducedMotion();
   const reduce = reducedMotion ?? systemReduceMotion;
-  const color = theme.colors.primary;
+  const color = tokens.primary;
 
   const driver = useSharedValue(0);
 

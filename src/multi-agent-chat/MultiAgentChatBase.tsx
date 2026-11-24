@@ -48,8 +48,7 @@ import { OverlayRoot, TOAST_LAYER_Z } from '../overlay';
 import { IS_WEB } from '../styles/platform';
 import { ROUNDED_FULL } from '../styles/rounded-full';
 import { TextFieldInput } from '../text-field';
-import { createTokenStyles } from '../theme/color-tokens';
-import { useTheme } from '../theme/use-theme';
+import { createTokenStyles, useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { stepLineHeight, WEB_TRANSITION_COLORS } from './web-css';
 import { SupportCopy } from './SupportCopy';
@@ -114,7 +113,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
     AgentCreator,
     Dropdown: D,
   } = useChatComponents();
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const tokenStyles = useTokenStyles();
   const directionProps = useDirectionProps();
   const flights = useAvatarFlights();
@@ -628,7 +627,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                   style={{
                     maxWidth: 420,
                     textAlign: 'center',
-                    color: colors.textSecondary,
+                    color: tokens.mutedForeground,
                   }}
                 >
                   {participants.length > 1
@@ -757,7 +756,7 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
           >
             <View pointerEvents="none" style={tokenStyles.notice}>
               <View style={styles.noticeRow}>
-                <RiCheckLine width={16} height={16} fill={colors.textSecondary} />
+                <RiCheckLine width={16} height={16} fill={tokens.mutedForeground} />
                 {/* A confirmation: a polite `status` (RN's Text drops `aria-live`
                     on native; the role is what reaches it). */}
                 <Text role="status" style={tokenStyles.noticeText}>
@@ -865,10 +864,8 @@ export function MultiAgentChatBase(props: MultiAgentChatProps) {
                       borderRadius: 999,
                       borderStyle: 'solid',
                       borderWidth: 1,
-                      borderColor: picked ? colors.textSecondary : 'transparent',
-                      backgroundColor: picked
-                        ? colors.backgroundTertiary
-                        : colors.backgroundSecondary,
+                      borderColor: picked ? tokens.mutedForeground : 'transparent',
+                      backgroundColor: picked ? tokens.popover : tokens.surface,
                       boxShadow: 'none',
                       paddingInline: 8,
                       paddingStart: 8,

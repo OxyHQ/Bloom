@@ -1,5 +1,5 @@
 import { AvatarGroup } from '../avatar-group';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import type { ProjectMember } from './types';
 
 /** A 2px ring of the card's fill around each face. */
@@ -19,7 +19,7 @@ export function MemberAvatars({
   members: Readonly<Record<string, ProjectMember>>;
   size: number;
 }) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const items = ids.flatMap((id) => {
     const member = members[id];
     return member ? [{ id, uri: member.avatar, name: member.name, initials: member.initials }] : [];
@@ -31,7 +31,7 @@ export function MemberAvatars({
       size={size + RING * 2}
       overlap={6}
       ringWidth={RING}
-      ringColor={colors.card}
+      ringColor={tokens.card}
       style={{ margin: -RING }}
     />
   );

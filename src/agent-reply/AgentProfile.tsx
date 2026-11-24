@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { AgentAvatar } from '../agent-avatar';
 import { webDataSet } from '../styles/web-data';
-import { createTokenStyles } from '../theme/color-tokens';
-import { useTheme } from '../theme/use-theme';
+import { createTokenStyles, useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { AgentProfileProps } from './types';
 import { useAgentReplyWebCss } from './web-css';
@@ -60,7 +59,7 @@ export function AgentProfile({
   avatarRef,
   avatarHidden = false,
 }: AgentProfileProps) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const themed = useStyles();
   useAgentReplyWebCss();
   const reduced = usePrefersReducedMotion();
@@ -130,9 +129,9 @@ export function AgentProfile({
           style={[
             styles.ring,
             {
-              backgroundColor: hovered ? colors.backgroundTertiary : colors.backgroundSecondary,
+              backgroundColor: hovered ? tokens.popover : tokens.surface,
               borderWidth: StyleSheet.hairlineWidth,
-              borderColor: colors.border,
+              borderColor: tokens.border,
             },
           ]}
         />

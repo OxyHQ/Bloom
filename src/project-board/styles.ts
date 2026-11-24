@@ -1,7 +1,6 @@
 import type { TextStyle } from 'react-native';
 import { IS_WEB } from '../styles/platform';
-import { createTokenStyles } from '../theme/color-tokens';
-import { useTheme } from '../theme/use-theme';
+import { createTokenStyles, useColorTokens } from '../theme/color-tokens';
 
 /**
  * A type utility's line: its px on native; on the web its ratio to the size
@@ -71,6 +70,6 @@ export const CARD_SHADOW = { offsetX: 0, offsetY: 1, blurRadius: 1, color: '#000
  * which the icon fills with.
  */
 export function useIconFill(): string | undefined {
-  const { colors } = useTheme();
-  return IS_WEB ? colors.primary : undefined;
+  const tokens = useColorTokens();
+  return IS_WEB ? tokens.primary : undefined;
 }

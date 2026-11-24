@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { AGENT_CREATOR_CARD } from './shared';
 
@@ -18,15 +18,13 @@ export interface AgentCreatorSectionProps {
  * as `sections`.
  */
 export function AgentCreatorSection({ title, children }: AgentCreatorSectionProps) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   return (
     <View style={styles.section}>
-      <Text variant="body-2-medium" style={[styles.title, { color: colors.textSecondary }]}>
+      <Text variant="body-2-medium" style={[styles.title, { color: tokens.mutedForeground }]}>
         {title}
       </Text>
-      <View style={[AGENT_CREATOR_CARD, { backgroundColor: colors.backgroundSecondary }]}>
-        {children}
-      </View>
+      <View style={[AGENT_CREATOR_CARD, { backgroundColor: tokens.surface }]}>{children}</View>
     </View>
   );
 }

@@ -14,7 +14,6 @@ import { useMessages } from '../locale/messages';
 import { Chip } from '../chip';
 import { useWindowBreakpoint } from '../hooks/use-width-class';
 import { webDataSet } from '../styles/web-data';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { fontFamilyStyle } from '../typography/Typography';
 import { CreateTicketDialog } from './CreateTicketDialog';
@@ -28,7 +27,7 @@ import { useBoardEngine } from './use-board-engine';
 import { projectBoardMove } from './board-engine';
 import { CARD_CHIP, useChipFills, useChipLabels, useProjectChip } from './chips';
 import { ELLIPSIS, NOWRAP, TYPE, useBoardText, useIconFill } from './styles';
-import { createTokenStyles } from '../theme/color-tokens';
+import { createTokenStyles, useColorTokens } from '../theme/color-tokens';
 import { useProjectBoardWebCss } from './web-css';
 import { useProjectBoardPlatform } from './context';
 import { PROJECT_BOARD_MESSAGES } from './messages';
@@ -274,7 +273,7 @@ function TicketProjectBoard({
   accessibilityLabel,
   testID = 'project-board',
 }: ProjectBoardTemplateProps) {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const text = useBoardText();
   const breakpoint = useWindowBreakpoint();
   const sm = breakpoint !== 'base';
@@ -524,7 +523,7 @@ function TicketProjectBoard({
         renderColumnHeader={(column) => (
           <View style={styles.columnTitle}>
             <Text variant="body-medium">{column.title}</Text>
-            <Text variant="body-medium" style={{ color: colors.textSecondary }}>
+            <Text variant="body-medium" style={{ color: tokens.mutedForeground }}>
               {column.items.length}/{columns.find((source) => source.id === column.id)?.limit}
             </Text>
           </View>
@@ -562,7 +561,7 @@ function TicketProjectBoard({
               style={styles.iconButton}
               {...webDataSet({ bloomBoardIconButton: '' })}
             >
-              <RiAddLine width={20} height={20} fill={colors.icon} />
+              <RiAddLine width={20} height={20} fill={tokens.mutedForeground} />
             </Pressable>
           </View>
         )}

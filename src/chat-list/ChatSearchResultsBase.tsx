@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { EmptyState } from '../empty-state';
 import { useMessages } from '../locale/messages';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { CHAT_LIST_MESSAGES } from './messages';
 import { HighlightedText } from './HighlightedText';
 import { chatMarker, groupSearchResults } from './shared';
@@ -20,7 +20,7 @@ export function createChatSearchResults({ List }: { List: typeof import('../list
     testID,
   }: ChatSearchResultsProps) {
     const { messages } = useMessages(CHAT_LIST_MESSAGES);
-    const theme = useTheme();
+    const tokens = useColorTokens();
     const text = { ...messages.search, ...labels };
     return (
       <List
@@ -68,7 +68,7 @@ export function createChatSearchResults({ List }: { List: typeof import('../list
                       <badge.icon
                         width={14}
                         height={14}
-                        fill={badge.accent ? theme.colors.primary : theme.colors.textSecondary}
+                        fill={badge.accent ? tokens.primary : tokens.mutedForeground}
                         testID={testID ? `${testID}-result-${result.id}-marker` : undefined}
                       />
                     ) : null}
@@ -78,7 +78,7 @@ export function createChatSearchResults({ List }: { List: typeof import('../list
                       text={result.detail}
                       query={query}
                       variant="body-2-regular"
-                      color={theme.colors.textSecondary}
+                      color={tokens.mutedForeground}
                       numberOfLines={1}
                       testID={testID ? `${testID}-result-${result.id}-detail` : undefined}
                     />
