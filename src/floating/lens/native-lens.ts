@@ -83,6 +83,8 @@ export interface Lens {
   }>;
   useInLensBase: () => boolean;
   useLensBaseMenu: (menu: LensMenu | null) => LensHandle | null;
+  /** Marks a screen covered: its bases draw their lens in their place, against `fill`. */
+  LensCover?: ComponentType<{ covered: boolean; fill: string; children?: ReactNode }>;
 }
 
 const MIN_ANDROID_API = 33;
