@@ -49,6 +49,18 @@
  * one `SharedValue` through `useAnimatedStyle` — and this registry stays what it
  * is good at: GEOMETRY. Where things are, not when they move.
  *
+ * ## Taking the edge
+ *
+ * A screen whose own bar takes the place of the app's navigation (a post's reply
+ * prompt with the tabs docked beside it, `Screen replacesBottomBar`) TAKES the
+ * edge while it is in front. The navigation parked there steps aside on the UI
+ * thread (`useBottomEdgeTaken`): it stays mounted and keeps its claim, so
+ * nothing re-renders, no view is removed and the screens it covers keep their
+ * geometry; only the screen that took the edge sits on the window's edge.
+ * Unlike the collapse, this is not motion two surfaces must share frame by
+ * frame: the navigation cuts out and back in, so a shared value written in the
+ * commit that takes or gives the edge is all it needs.
+ *
  * ## Why an external store
  *
  * The claim set is mutable state living outside React. Reading it in a memoized
@@ -68,11 +80,38 @@ import {
   useSyncExternalStore,
   type PropsWithChildren,
 } from 'react';
+import { makeMutable, type SharedValue } from 'react-native-reanimated';
 import { useIsomorphicLayoutEffect } from '../theme/use-isomorphic-layout-effect';
 
 import { createEdgeStore, NO_INSET, NO_SUBSCRIPTION, type EdgeStore } from './edge-store';
 
-const BottomEdgeContext = createContext<EdgeStore | null>(null);
+/** Who has taken the edge from the navigation parked on it (see "Taking the edge"). */
+interface EdgeTakeover {
+  /** 1 while a screen holds the edge, else 0: read on the UI thread. */
+  readonly taken: SharedValue<number>;
+  take: (id: string) => void;
+  give: (id: string) => void;
+}
+
+function createTakeover(): EdgeTakeover {
+  const takers = new Set<string>();
+  const taken = makeMutable(0);
+  return {
+    taken,
+    take(id) {
+      if (takers.has(id)) return;
+      takers.add(id);
+      if (takers.size === 1) taken.value = 1;
+    },
+    give(id) {
+      if (takers.delete(id) && takers.size === 0) taken.value = 0;
+    },
+  };
+}
+
+type BottomEdgeStore = EdgeStore & { takeover: EdgeTakeover };
+
+const BottomEdgeContext = createContext<BottomEdgeStore | null>(null);
 
 /**
  * Wrap the app once — `BloomProvider` already does. Rendering a second one
@@ -90,7 +129,10 @@ export function BottomEdgeProvider({
   consume?: number;
 }>) {
   const parent = useContext(BottomEdgeContext);
-  const [store] = useState(createEdgeStore);
+  const [store] = useState<BottomEdgeStore>(() => ({
+    ...createEdgeStore(),
+    takeover: createTakeover(),
+  }));
   const consumed =
     consume === undefined ? undefined : Math.max(0, Number.isFinite(consume) ? consume : 0);
   const initialConsumed = useRef(consumed ?? 0);
@@ -103,6 +145,8 @@ export function BottomEdgeProvider({
     const listeners = new Set<() => void>();
     return {
       ...store,
+      // A viewport inside the parent's is still under the parent's navigation.
+      takeover: parent?.takeover ?? store.takeover,
       getInset: () => Math.max(store.getInset(), (parent?.getInset() ?? 0) - amount),
       subscribe(listener: () => void) {
         listeners.add(listener);
@@ -194,4 +238,24 @@ export function useMeasuredBottomEdgeClaim(active: boolean): (height: number) =>
     },
     [active, store, id],
   );
+}
+
+/**
+ * Take the bottom edge while `active`: the navigation parked on it steps aside
+ * until it is given back (on release, or when the caller unmounts). Taken in the
+ * layout phase, so the navigation is gone in the frame that shows the taker.
+ */
+export function useTakeBottomEdge(active: boolean): void {
+  const takeover = useContext(BottomEdgeContext)?.takeover;
+  const id = useId();
+  useIsomorphicLayoutEffect(() => {
+    if (!active || !takeover) return;
+    takeover.take(id);
+    return () => takeover.give(id);
+  }, [active, takeover, id]);
+}
+
+/** 1 while a screen has taken the edge, else 0 (`null` outside a provider): for the navigation to step aside. */
+export function useBottomEdgeTaken(): SharedValue<number> | null {
+  return useContext(BottomEdgeContext)?.takeover.taken ?? null;
 }
