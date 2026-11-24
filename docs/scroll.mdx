@@ -56,6 +56,13 @@ The native hook is keyed on the storage key, never on focus, and it **returns**
 `{ onScroll, restorePending }` for the caller to wire up rather than attaching
 itself.
 
+A `Screen` scroller (`useScreenScroll`) hands that `onScroll` an offset only
+once it has moved a point since the last one it sent, and every offset at
+either end of the range, so it no longer crosses to JS on every frame and the
+measured bottom is still saved exactly. It subscribes to the scroll event alone:
+a drag-end or momentum-end subscription would replace the caller's own
+`onScrollEndDrag` / `onMomentumScrollEnd`.
+
 `enabled` is how the caller says *its rows exist yet* — restoring to an offset a
 list cannot reach yet lands at the bottom of a short list. It is not a feature
 flag.

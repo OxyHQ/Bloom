@@ -3,6 +3,7 @@ import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { useCallback, useEffect, useId, useMemo } from 'react';
 import {
   runOnJS,
+  type SharedValue,
   useAnimatedScrollHandler,
   useComposedEventHandler,
   useSharedValue,
@@ -26,6 +27,26 @@ type ScreenScrollState = Pick<
   | 'topInset'
   | 'bottomInset'
 >;
+
+/**
+ * Hand restoration a scroll offset on JS once it has moved a point since the
+ * last one sent, and every offset at either end of the range. Each save re-arms
+ * the store's persistence debounce, so a scroll no longer crosses to JS on
+ * every frame, and the measured bottom (and the top) is still saved exactly.
+ */
+function recordOffset(
+  event: NativeScrollEvent,
+  recordedY: SharedValue<number | null>,
+  record: (event: NativeScrollEvent) => void,
+) {
+  'worklet';
+  const offset = event.contentOffset.y;
+  const last = recordedY.value;
+  const atEnd = offset <= 0 || offset >= event.contentSize.height - event.layoutMeasurement.height;
+  if (last !== null && (offset === last || (!atEnd && Math.abs(offset - last) < 1))) return;
+  recordedY.value = offset;
+  runOnJS(record)(event);
+}
 
 /**
  * Bind an animated ScrollView or virtualized list without moving frame work to JS.
@@ -89,12 +110,14 @@ export function useScreenScroll({
     [restoration?.onScroll],
   );
   const hasRestoration = restoration != null;
+  // The last offset handed to restoration (`recordOffset`).
+  const recordedY = useSharedValue<number | null>(null);
   const ownHandler = useAnimatedScrollHandler(
     {
       onScroll: (event) => {
         if (!active || screen.activeScrollerId.value !== id) return;
         recordScrollMetrics(metrics, event);
-        if (hasRestoration) runOnJS(record)(event);
+        if (hasRestoration) recordOffset(event, recordedY, record);
         const y = Math.min(
           Math.max(0, event.contentOffset.y),
           Math.max(0, event.contentSize.height - event.layoutMeasurement.height),
@@ -110,7 +133,18 @@ export function useScreenScroll({
         }
       },
     },
-    [screen, metrics, active, id, previousY, reducedMotion, hasRestoration, record, restoring],
+    [
+      screen,
+      metrics,
+      active,
+      id,
+      previousY,
+      reducedMotion,
+      hasRestoration,
+      record,
+      restoring,
+      recordedY,
+    ],
   );
   const onScroll = useComposedEventHandler([ownHandler, active ? handler : null]);
   return {
