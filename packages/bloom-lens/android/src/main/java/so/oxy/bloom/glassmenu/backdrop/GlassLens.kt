@@ -32,6 +32,8 @@ internal class GlassLens(val page: GlassBackdrop) {
   private var generation = 0
   private var askedGeneration = -1
   private var still: GlassStill? = null
+  // The band of the page this lens draws while it shows the page (GlassBackdrop.capture).
+  private var capture: RenderNode? = null
 
   // The node the glass draws for [area] (window px): the region's still, or the page. A node whose display list hwui
   // dropped (it left every tree: the window stopped) is recorded again, not drawn empty.
@@ -63,12 +65,14 @@ internal class GlassLens(val page: GlassBackdrop) {
     quietSince = changedAt
     generation += 1
     letStillGo()
-    if (!showsStill && recorded && node.hasDisplayList() && node.left == region.left && node.top == region.top &&
-      node.width == region.width() && node.height == region.height()) return
+    val band = page.capture(this, region)
+    if (!showsStill && recorded && node.hasDisplayList() && band === capture && node.left == region.left &&
+      node.top == region.top && node.width == region.width() && node.height == region.height()) return
+    capture = band
     node.setPosition(region)
     val canvas = node.beginRecording(region.width(), region.height())
     canvas.translate(-region.left.toFloat(), -region.top.toFloat())
-    canvas.drawRenderNode(page.node)
+    canvas.drawRenderNode(band)
     node.endRecording()
     showsStill = false
     recorded = true
@@ -101,9 +105,13 @@ internal class GlassLens(val page: GlassBackdrop) {
     canvas.drawBitmap(bitmap, 0f, 0f, null)
     node.endRecording()
     showsStill = true
+    capture = null
+    page.leave(this)
   }
 
   fun release() {
+    page.leave(this)
+    capture = null
     page.drop(this)
     still?.release()
     still = null
