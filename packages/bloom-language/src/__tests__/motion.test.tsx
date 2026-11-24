@@ -15,6 +15,7 @@ import type { Namespace } from '../motion/namespace';
 import { regular } from '../glass';
 import type { Child } from '../node';
 import { getMotionValue, type MotionValue } from './support/bloom-motion';
+import { pressHighlight } from './support/bloom-components';
 import { useMotionValue } from '../motion/values';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -355,6 +356,23 @@ describe('.pressScale()', () => {
     expect(flat(pressable?.props.style).transform).toEqual([{ scale: 1 }]);
     expect(typeof pressable?.props.onPressIn).toBe('function');
     expect(() => pressable?.props.onPressIn()).not.toThrow();
+  });
+
+  it("a hover group's press scales and lights the highlight on the one animated pressable", () => {
+    const r = mount(
+      VStack(Text('Post'))
+        .hoverGroup()
+        .onPress(() => {})
+        .pressScale(),
+    );
+    const [pressable] = all(r, 'Animated.Pressable');
+    expect(all(r, 'Pressable')).toHaveLength(0);
+    expect(flat(pressable?.props.style).transform).toEqual([{ scale: 1 }]);
+    expect(pressable?.props.android_ripple).toBe(pressHighlight.ripple);
+    act(() => pressable?.props.onPressIn());
+    expect(pressHighlight.lit).toBe(1);
+    act(() => pressable?.props.onPressOut());
+    expect(pressHighlight.lit).toBe(0);
   });
 });
 

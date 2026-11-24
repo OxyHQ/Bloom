@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Platform, StyleSheet } from 'react-native';
+import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 import { useTheme } from '../theme';
 import { IS_WEB_TOUCH_DEVICE } from '../styles/pointer';
@@ -19,9 +20,30 @@ import type { SubtleHoverProps } from './types';
  * The wash color comes from the theme's `contrast50` token so it tracks the
  * active preset and light/dark mode. The web cross-fade is a NativeWind
  * `transition-opacity` class — no manual `willChange` / web-style casts.
+ *
+ * Either way, on native a `pressed` value (`usePressHighlight`, iOS) adds the
+ * row's press wash on top, at the full fill.
  */
-export function SubtleHover({ active, style, native = false }: SubtleHoverProps) {
+export function SubtleHover({ active, pressed, style, native = false }: SubtleHoverProps) {
   const theme = useTheme();
+  const wash = washFor(active, native, style, theme.colors.contrast50, theme.isDark);
+  if (pressed === undefined || Platform.OS === 'web') return wash;
+  return (
+    <>
+      {wash}
+      <PressedWash pressed={pressed} style={style} />
+    </>
+  );
+}
+
+/** The hover or coordinated wash, drawn in place (no component of its own). */
+function washFor(
+  active: boolean | undefined,
+  native: boolean,
+  style: SubtleHoverProps['style'],
+  contrast50: string,
+  isDark: boolean,
+): ReactElement | null {
   const isWeb = Platform.OS === 'web';
 
   // Full literal class strings (never concatenated fragments) so NativeWind's
@@ -33,7 +55,7 @@ export function SubtleHover({ active, style, native = false }: SubtleHoverProps)
     return (
       <StyledView
         className="opacity-0 group-hover:opacity-50 dark:group-hover:opacity-40 transition-opacity duration-150"
-        style={[styles.overlay, { backgroundColor: theme.colors.contrast50 }, style]}
+        style={[styles.overlay, { backgroundColor: contrast50 }, style]}
       />
     );
   }
@@ -46,8 +68,8 @@ export function SubtleHover({ active, style, native = false }: SubtleHoverProps)
       style={[
         styles.overlay,
         {
-          backgroundColor: theme.colors.contrast50,
-          opacity: active ? (theme.isDark ? 0.4 : 0.5) : 0,
+          backgroundColor: contrast50,
+          opacity: active ? (isDark ? 0.4 : 0.5) : 0,
         },
         style,
       ]}
@@ -56,6 +78,20 @@ export function SubtleHover({ active, style, native = false }: SubtleHoverProps)
 }
 
 SubtleHover.displayName = 'SubtleHover';
+
+/** A press's wash: the full fill, its opacity the press highlight's value, on the UI thread. */
+function PressedWash({
+  pressed,
+  style,
+}: Pick<SubtleHoverProps, 'style'> & { pressed: SharedValue<number> }) {
+  const theme = useTheme();
+  const fade = useAnimatedStyle(() => ({ opacity: pressed.value }), [pressed]);
+  return (
+    <Animated.View
+      style={[styles.overlay, { backgroundColor: theme.colors.contrast50 }, fade, style]}
+    />
+  );
+}
 
 const styles = StyleSheet.create({
   overlay: {

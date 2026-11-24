@@ -39,6 +39,30 @@ export const IconCircle = 'IconCircle';
 export const Loading = 'Loading';
 export const PressableScale = 'PressableScale';
 export const SubtleHover = 'SubtleHover';
+/**
+ * Bloom's press highlight, both platforms' halves at once (Bloom picks one per
+ * platform): Android's ripple, and iOS's press signal and the value its wash
+ * reads. `lit` counts the presses held.
+ */
+export const pressHighlight = {
+  lit: 0,
+  ripple: { color: 'wash', borderless: false },
+  pressed: { value: 0 },
+};
+export function usePressHighlight() {
+  return {
+    hostProps: {
+      android_ripple: pressHighlight.ripple,
+      onPressIn: () => {
+        pressHighlight.lit += 1;
+      },
+      onPressOut: () => {
+        pressHighlight.lit -= 1;
+      },
+    },
+    pressed: pressHighlight.pressed,
+  };
+}
 // Bloom's skeleton shapes (`@oxy.so/bloom/skeleton`).
 export const Region = 'SkeletonRegion';
 export const Text = 'SkeletonText';

@@ -1271,7 +1271,9 @@ export interface ViewModifiers<Self> extends ViewNode {
   onHover(enter: (() => void) | undefined, leave: (() => void) | undefined): Self;
   /**
    * Web: the pointer over this view is what `group-hover:` styles inside it
-   * answer (Bloom `SubtleHover`). Native has no hover group; it does nothing.
+   * answer (Bloom `SubtleHover`). Android and iOS: a press on the view lights
+   * it with Bloom's press highlight (`usePressHighlight`), Android's ripple or
+   * iOS's wash; a child that takes its own press, or a scroll, does not.
    */
   hoverGroup(): Self;
   /** A pressable view shrinks slightly under the finger (Bloom `PressableScale`). */

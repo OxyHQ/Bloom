@@ -22,6 +22,7 @@ import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
 import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
 import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
 import { SubtleHover } from '@oxy.so/bloom/subtle-hover';
+import { AnimatedPressHighlighted, PressHighlighted } from './press-highlight';
 import { Button as BloomButton, FLOATING_CONTROL_SIZE } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
@@ -773,7 +774,8 @@ function drawOutermost(
   ...children: ReactNode[]
 ): ReactElement {
   const out = pressHostOut(host, style);
-  const animated = animatedHost(host) as Host | undefined;
+  const twin = host === PressHighlighted ? AnimatedPressHighlighted : animatedHost(host);
+  const animated = twin as Host | undefined;
   // A host with no animated twin (a Bloom component) and a box whose variants
   // answer its state (its `StateHost`'s) move in the box `drawNode` adds.
   if (box === undefined || animated === undefined || STATEFUL in props)
@@ -1547,9 +1549,14 @@ function propPaint(
   ) as Paint;
 }
 
-/** The outermost box's host: pressable when the view takes presses or hovers, a hover group's class host on the web. */
+/**
+ * The outermost box's host: pressable when the view takes presses or hovers, a
+ * hover group's class host on the web, and on Android and iOS a hover group's
+ * press highlights it (`PressHighlighted`).
+ */
 function hostFor(p: Plan): Host {
-  if (p.pressable) return IS_WEB && p.hoverGroup ? HoverGroupPressable : Pressable;
+  if (p.pressable)
+    return p.hoverGroup ? (IS_WEB ? HoverGroupPressable : PressHighlighted) : Pressable;
   return IS_WEB && p.hoverGroup ? HoverGroupView : View;
 }
 
