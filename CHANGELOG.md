@@ -1,10 +1,14 @@
 # Changelog
 
-## Unreleased
+## 23.7.0
 
 ### Breaking
 
 - Removed the commerce families no app imports: `@oxy.so/bloom/checkout-summary`, `@oxy.so/bloom/vendor-card` and `@oxy.so/bloom/order-confirmation`, their root-barrel exports and message catalogs, and their Bloom language nodes (`CheckoutSummaryRow`, `CheckoutSummary`, `CheckoutConfirm`, `VendorCard`, `OrderConfirmation`). `cart-panel`, `menu-item`, `price-breakdown`, `payment-method`, `payment-status` and `address` stay.
+
+### Changed
+
+- Android draws every Bloom icon as ONE native view (`BloomIconV1`): a glyph is rasterised once per size and paint for the whole process and the view draws that shared bitmap on its hardware canvas. react-native-svg mounted three views per icon and rasterised every icon again, in software on the UI thread, each time it drew. The drawing is react-native-svg's, step for step (its path parser, the `xMidYMid meet` viewBox, even-odd fill, stroke and the `gradient` tokens), and the pixels and the icon component API are unchanged. The web keeps inline SVG; iOS, and an Android binary without the view (a JavaScript-only update on an older build), keep react-native-svg. See `docs/icons.mdx`.
 
 ## 23.6.0
 
