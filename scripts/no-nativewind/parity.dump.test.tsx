@@ -1,5 +1,5 @@
 /**
- * Writes every case's committed Android host tree, light and dark, to
+ * Writes every case's committed Android host tree, light, dark and adaptive, to
  * `PARITY_OUT/<family>.json`. Run it on the baseline and on this branch, then
  * `node scripts/no-nativewind/compare.mjs <baseline-dir> <branch-dir>`.
  * `PARITY_FAMILIES=a,b` limits the families.
@@ -60,7 +60,7 @@ function normalize(node: ReactTestRendererJSON | string): HostTree | string {
   return { type: node.type, props, children: (node.children ?? []).map(normalize) };
 }
 
-function tree(element: ReactElement, mode: 'light' | 'dark'): unknown {
+function tree(element: ReactElement, mode: 'light' | 'dark' | 'adaptive'): unknown {
   let renderer!: TestRenderer.ReactTestRenderer;
   act(() => {
     renderer = TestRenderer.create(
@@ -96,7 +96,7 @@ it.each(families)('%s', (family) => {
   const cases: Cases = require(join(CASES_DIR, `${family}.cases.tsx`)).CASES;
   const out: Record<string, unknown> = {};
   for (const [name, render] of Object.entries(cases)) {
-    for (const mode of ['light', 'dark'] as const) {
+    for (const mode of ['light', 'dark', 'adaptive'] as const) {
       try {
         out[`${name} [${mode}]`] = tree(render(), mode);
       } catch (error) {

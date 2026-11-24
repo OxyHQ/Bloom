@@ -29,12 +29,11 @@ import {
   applyIncreasedContrast,
   applyVarsToDocument,
 } from './apply-dark-class';
-import { buildTheme } from './build-theme';
-import { ThemeScopeContext, type ScopeState } from './color-scope/context';
+import { buildPresetPalette } from './build-theme';
+import { type ScopePalette, ThemeScopeContext, type ScopeState } from './color-scope/context';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
-import { buildScopeVars } from './color-scope/style-builder';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { BASE_WEB_CSS, BASE_WEB_CSS_ID } from '../styles/base-web-css';
 import {
@@ -540,32 +539,29 @@ export function BloomThemeProvider({
   // Apply native color scheme, dark class, and CSS vars whenever the resolved
   // mode or preset changes. `useIsomorphicLayoutEffect` runs before paint on
   // both native and web, eliminating the previous render-time side effect.
-  // The single `--x -> value` record + JS theme for the ACTIVE source, computed
-  // ONCE and applied identically to web (document), native (rootVariables +
-  // VariableContext), and the JS `theme` context. The source is a DYNAMIC seed
+  // The ACTIVE source's one palette: the `--x -> value` token record (the web
+  // document's variables, native's `useColorTokens`) and the JS theme
+  // (`useTheme()`), built together so the two hold the same colours in every
+  // mode, the platform's in an adaptive theme included. The source is a DYNAMIC seed
   // (whole-app dynamic theming — `secondaryColor`/`tertiaryColor` pin this seed's
   // accents) when `seed` is set, else the named preset. Both go through the same
   // colour engine, so there is one code path — no seed/preset duplication.
-  const themeVars = useMemo(
+  const palette = useMemo<ScopePalette>(
     () =>
       effectiveSeed
-        ? buildSeedScopeVars({
-            seed: effectiveSeed,
-            mode: resolved,
-            secondarySeed: effectiveSecondary,
-            tertiarySeed: effectiveTertiary,
-          })
-        : buildScopeVars(colorPreset, resolved, explicitAccents),
-    [effectiveSeed, effectiveSecondary, effectiveTertiary, colorPreset, resolved, explicitAccents],
-  );
-  const themeColors = useMemo(
-    () =>
-      effectiveSeed
-        ? buildThemeFromSeed(effectiveSeed, resolved, undefined, undefined, {
-            secondarySeed: effectiveSecondary,
-            tertiarySeed: effectiveTertiary,
-          })
-        : buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
+        ? {
+            theme: buildThemeFromSeed(effectiveSeed, resolved, undefined, undefined, {
+              secondarySeed: effectiveSecondary,
+              tertiarySeed: effectiveTertiary,
+            }),
+            vars: buildSeedScopeVars({
+              seed: effectiveSeed,
+              mode: resolved,
+              secondarySeed: effectiveSecondary,
+              tertiarySeed: effectiveTertiary,
+            }),
+          }
+        : buildPresetPalette(colorPreset, resolved, isAdaptive, explicitAccents),
     [
       effectiveSeed,
       effectiveSecondary,
@@ -576,6 +572,8 @@ export function BloomThemeProvider({
       explicitAccents,
     ],
   );
+  const themeVars = palette.vars;
+  const themeColors = palette.theme;
 
   const scopeState = useMemo<ScopeState>(
     () => ({
@@ -599,10 +597,7 @@ export function BloomThemeProvider({
             }
           : !explicitAccents && !isAdaptive
             ? getPrepaintPalette(nextPreset, nextMode)
-            : {
-                theme: buildTheme(nextPreset, nextMode, isAdaptive, explicitAccents),
-                vars: buildScopeVars(nextPreset, nextMode, explicitAccents),
-              },
+            : buildPresetPalette(nextPreset, nextMode, isAdaptive, explicitAccents),
       resolveMode: (nextMode) =>
         nextMode === resolved
           ? { theme: themeColors, vars: themeVars }
@@ -619,10 +614,7 @@ export function BloomThemeProvider({
                   tertiarySeed: effectiveTertiary,
                 }),
               }
-            : {
-                theme: buildTheme(colorPreset, nextMode, isAdaptive, explicitAccents),
-                vars: buildScopeVars(colorPreset, nextMode, explicitAccents),
-              },
+            : buildPresetPalette(colorPreset, nextMode, isAdaptive, explicitAccents),
     }),
     [
       themeColors,

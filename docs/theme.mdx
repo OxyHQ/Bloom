@@ -164,14 +164,21 @@ Bloom has one reader for the colours a style paints: `useColorTokens()` (or
   colours are `--bloom-paint-*` variables). It stays public, as apps call it,
   and new Bloom code does not.
 
+There is one resolved palette per theme, so the two readers never disagree:
+the provider builds the token record and `useTheme().colors` together
+(`buildPresetPalette`). In `mode="adaptive"` on Android and iOS the platform's
+dynamic colours overlay both, each token taking the colour of the
+`theme.colors` field it feeds (`COLOR_FIELDS` in
+`theme/color-scope/resolve-scope.ts`: `--muted-foreground` is `textSecondary`).
+A field that is not a token's own field can differ from that token there
+(`textTertiary`, `primaryLight`, `primaryDark` and `negative*` hold their
+own platform roles), so a family reading one of them keeps reading `colors` or
+asks for the token it means.
+
 Bloom's components still read `useTheme().colors` for final styles in most
 families; they move to the tokens family by family, each move proved by the
-no-NativeWind parity harness on native and Chrome on the web, with no rendered
-value changed. One gap comes first: on native in `mode="adaptive"` the
-provider's token record is the preset's, while `useTheme().colors` holds the
-platform's dynamic colours (`BloomThemeProvider` builds `themeVars` from the
-preset alone and `themeColors` with `isAdaptive`). Until the record follows the
-adaptive palette, a family moved to the tokens would change colour there.
+no-NativeWind parity harness on native (light, dark and adaptive) and Chrome on
+the web, with no rendered value changed.
 
 ## Mobile web document appearance
 

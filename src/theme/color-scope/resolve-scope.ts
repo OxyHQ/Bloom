@@ -6,8 +6,12 @@ import type { ScopePalette } from './context';
 import { withScopeAliases } from './seed-scope';
 import type { BloomColorScopeTokens } from './types';
 
-/** All JS aliases of an exact canonical override share the same supplied value. */
-const COLOR_FIELDS = {
+/**
+ * The `theme.colors` fields each canonical token feeds. The first is the
+ * token's own field, the one `buildTheme` reads from it (`--muted-foreground`
+ * is `textSecondary`); the rest are aliases an exact override also sets.
+ */
+export const COLOR_FIELDS = {
   background: ['background', 'primaryDark'],
   foreground: ['text'],
   surface: ['backgroundSecondary', 'primaryLight'],
@@ -50,7 +54,30 @@ const COLOR_FIELDS = {
   destructive: ['destructive'],
   'surface-foreground': ['surfaceForeground'],
   accent: ['accent'],
-} satisfies Partial<Record<CanonicalToken, readonly (keyof ThemeColors)[]>>;
+} satisfies Partial<Record<CanonicalToken, readonly [keyof ThemeColors, ...(keyof ThemeColors)[]]>>;
+
+/** A token record without its `--color-*` aliases, rebuilt after its tokens change. */
+function withoutAliases(vars: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(vars).filter(([name]) => !name.startsWith('--color-')));
+}
+
+/**
+ * A token record whose tokens take the colours `colors` holds, each the colour
+ * of the token's own field (`COLOR_FIELDS`), with the aliases rebuilt. The
+ * provider's record in an adaptive theme, so `useColorTokens()` paints the
+ * platform's colours exactly where `useTheme().colors` holds them.
+ */
+export function withFieldColors(
+  vars: Record<string, string>,
+  colors: Partial<ThemeColors>,
+): Record<string, string> {
+  const next = withoutAliases(vars);
+  for (const [name, [field]] of Object.entries(COLOR_FIELDS)) {
+    const value = colors[field];
+    if (value !== undefined) next[`--${name}`] = value;
+  }
+  return withScopeAliases(next);
+}
 
 /** Preserve unspecified roles; rebuild the full CSS alias layer after exact overrides. */
 export function applyScopeTokens(
@@ -75,9 +102,7 @@ export function applyScopeTokens(
     if (name.startsWith('chart-')) changedCharts = true;
   }
   return {
-    vars: withScopeAliases(
-      Object.fromEntries(Object.entries(vars).filter(([name]) => !name.startsWith('--color-'))),
-    ),
+    vars: withScopeAliases(withoutAliases(vars)),
     theme: {
       ...base.theme,
       colors,
