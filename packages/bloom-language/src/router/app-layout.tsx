@@ -17,7 +17,7 @@
  * frame says so: `.shell(() => ({ safeArea: true }))`.
  */
 import { AppShell } from '@oxy.so/bloom/app-shell';
-import { useTabPager } from '@oxy.so/bloom/tab-pager';
+import { useTabPagerActions } from '@oxy.so/bloom/tab-pager';
 import { TabPagerProvider } from '@oxy.so/bloom/tab-pager/expo-router';
 
 import type { Child, IconComponent, Modifier, Node, ShellOptions } from '../node';
@@ -56,7 +56,9 @@ export function AppLayoutHost({ node }: { node: Node }) {
 
 function ShellHost({ node }: { node: Node }) {
   const values = valuesOf(node);
-  const pager = useTabPager();
+  // The actions alone: the shell's whole tree re-rendered on every navigation
+  // when this read the page in front, which only the bar draws.
+  const pager = useTabPagerActions();
   const primary = primaryOf(node);
   const navigator = drawNavigation((node.props as { navigator: Child }).navigator);
   const options = (values.shell as ShellOptions | undefined)?.(navigator);
