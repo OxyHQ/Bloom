@@ -6,7 +6,7 @@ import { memo, useCallback, useContext } from 'react';
 import { View, Pressable, Animated, StyleSheet, type TextStyle } from 'react-native';
 
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useTouchInput } from '../styles/pointer';
 import { DISABLED_OPACITY, space } from '../styles/tokens';
@@ -56,7 +56,7 @@ const AccordionItemComponent: React.FC<AccordionItemProps> = ({
   style,
 }) => {
   const itemContext = useAccordionItem(value, disabled);
-  const theme = useTheme();
+  const tokens = useColorTokens();
 
   return (
     <AccordionItemContext.Provider value={itemContext}>
@@ -64,7 +64,7 @@ const AccordionItemComponent: React.FC<AccordionItemProps> = ({
         style={[
           {
             borderBottomWidth: 1,
-            borderBottomColor: theme.colors.borderLight,
+            borderBottomColor: tokens.input,
           },
           style,
         ]}
@@ -91,7 +91,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   const { size } = useBloomAppearance({}, { size: 'md', tone: 'neutral' });
   const geometry = resolveAccordionGeometry(size);
   const touch = useTouchInput();
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const { toggle } = useContext(AccordionContext);
   const { value, isExpanded, disabled, triggerId, contentId } = useContext(AccordionItemContext);
   const rotateAnim = useAccordionMotion(isExpanded, 'trigger', SUPPORTS_NATIVE_DRIVER);
@@ -161,7 +161,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
           <Text
             style={[
               TRIGGER_TEXT,
-              { fontSize: geometry.fontSize, color: theme.colors.text },
+              { fontSize: geometry.fontSize, color: tokens.foreground },
               callerText,
               textStyle,
             ]}
@@ -173,7 +173,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
         )}
       </View>
       <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-        <ChevronBottomIcon size={geometry.chevronSize} fill={theme.colors.textSecondary} />
+        <ChevronBottomIcon size={geometry.chevronSize} fill={tokens.mutedForeground} />
       </Animated.View>
     </Pressable>
   );

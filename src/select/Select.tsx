@@ -19,7 +19,7 @@ import {
 } from 'react';
 import { FlatList, StyleSheet, Text as RNText, View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
@@ -443,7 +443,7 @@ function SelectContentInner<T>({
   onOpenChange,
   ...contextValues
 }: SelectContentInnerProps<T>) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const density = useMenuDensity();
   const { messages } = useMessages(SELECT_MESSAGES);
   const label = labelProp ?? messages.selectOption;
@@ -473,7 +473,7 @@ function SelectContentInner<T>({
       label={label}
       header={
         <View style={styles.sheetHeader}>
-          <Text variant="title-2-semibold" style={{ color: theme.colors.text }}>
+          <Text variant="title-2-semibold" style={{ color: tokens.foreground }}>
             {label}
           </Text>
         </View>

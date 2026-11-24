@@ -9,7 +9,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import { DISABLED_OPACITY, space } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import type { ChoiceListProps } from './types';
 
 /**
@@ -60,7 +60,7 @@ export function ChoiceList<Value extends string = string>({
   optionStyle,
   testID,
 }: ChoiceListProps<Value>) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const rtl = useIsRtl();
   const direction = useDirectionProps();
   const ringOffset = useRingOffsetStyle();
@@ -92,7 +92,7 @@ export function ChoiceList<Value extends string = string>({
     [orientation],
   );
   const optionLook: WebCssStyle = {
-    '--bloom-choice-list-ring': theme.colors.primary,
+    '--bloom-choice-list-ring': tokens.primary,
     ...ringOffset,
   };
   return (

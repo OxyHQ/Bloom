@@ -10,7 +10,7 @@ import { IS_WEB } from '../styles/platform';
 import { useSurfaceFill } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import type { ExpandableTextProps } from './types';
@@ -64,7 +64,7 @@ function ExpandableTextComponent({
   toggleTestID,
 }: ExpandableTextProps) {
   const common = useCommonMessages();
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const fill = useSurfaceFill();
   const rtl = useIsRtl();
   const inline = toggle === 'inline';
@@ -94,7 +94,7 @@ function ExpandableTextComponent({
   }, []);
   const truncatable = clamps && clampedHeight > 0 && fullHeight > clampedHeight + 1;
   const toggleID = toggleTestID ?? (testID ? `${testID}-toggle` : undefined);
-  const textColor = color ?? theme.colors.text;
+  const textColor = color ?? tokens.foreground;
 
   const inlineMore =
     inline && truncatable && !expanded ? (

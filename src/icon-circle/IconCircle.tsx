@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { borderRadius } from '../styles/tokens';
 import { iconSide } from '../icons/shared';
 import type { IconCircleProps } from './types';
@@ -12,8 +12,8 @@ const IconCircleComponent = function IconCircle({
   style,
   iconStyle,
 }: IconCircleProps) {
-  const { colors } = useTheme();
-  const color = StyleSheet.flatten(iconStyle)?.color ?? colors.primary;
+  const tokens = useColorTokens();
+  const color = StyleSheet.flatten(iconStyle)?.color ?? tokens.primary;
   // Canonical slots receive numeric geometry and a string fill. Keep the
   // existing style passthrough for richer glyphs (including native ColorValue
   // objects, which those glyphs resolve from style rather than a string fill).
@@ -21,7 +21,7 @@ const IconCircleComponent = function IconCircle({
     width: iconSide(size),
     height: iconSide(size),
     fill: typeof color === 'string' ? color : undefined,
-    style: [{ color: colors.primary }, iconStyle],
+    style: [{ color: tokens.primary }, iconStyle],
   };
 
   return (
@@ -33,7 +33,7 @@ const IconCircleComponent = function IconCircle({
           borderRadius: borderRadius.full,
           width: size === 'lg' ? 52 : 64,
           height: size === 'lg' ? 52 : 64,
-          backgroundColor: colors.primarySubtle,
+          backgroundColor: tokens.primarySubtle,
         },
         style,
       ]}

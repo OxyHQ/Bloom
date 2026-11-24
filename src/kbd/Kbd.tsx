@@ -2,7 +2,7 @@ import { useBloomAppearance } from '../appearance';
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text, TYPE_SCALE } from '../typography';
 import { borderRadius } from '../styles/tokens';
 import type { KbdProps } from './types';
@@ -43,7 +43,7 @@ const KbdComponent = function Kbd({
   );
   const size: NonNullable<KbdProps['size']> =
     inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const cfg = SIZE_CONFIG[size];
 
   return (
@@ -59,7 +59,7 @@ const KbdComponent = function Kbd({
           paddingRight: PADDING_HORIZONTAL,
           paddingTop: cfg.paddingVertical,
           paddingBottom: cfg.paddingVertical,
-          backgroundColor: theme.colors.backgroundTertiary,
+          backgroundColor: tokens.popover,
         },
         style,
       ]}
@@ -70,7 +70,7 @@ const KbdComponent = function Kbd({
           {
             ...cfg.type,
             letterSpacing: 0,
-            color: theme.colors.textSecondary,
+            color: tokens.mutedForeground,
             textAlign: 'center',
           },
           textStyle,

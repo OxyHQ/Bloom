@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { ChoiceList } from '../choice-list';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import type { ColorSwatchPickerProps } from './types';
 
 /**
@@ -24,7 +24,7 @@ export function ColorSwatchPicker({
   style,
   testID,
 }: ColorSwatchPickerProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const ring = 2;
   const gap = 3;
   const outer = size + 2 * (ring + gap);
@@ -41,7 +41,7 @@ export function ColorSwatchPicker({
             height: outer,
             borderRadius: outer / 2,
             borderWidth: ring,
-            borderColor: selected ? theme.colors.text : 'transparent',
+            borderColor: selected ? tokens.foreground : 'transparent',
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -53,7 +53,7 @@ export function ColorSwatchPicker({
               borderRadius: size / 2,
               backgroundColor: option.value,
               borderWidth: 1,
-              borderColor: theme.colors.border,
+              borderColor: tokens.border,
             }}
           />
         </View>
