@@ -9,6 +9,7 @@ import {
   type ScrollView,
   StyleSheet,
   TextInput,
+  type TextInputProps,
   View,
   type TextStyle,
 } from 'react-native';
@@ -195,13 +196,15 @@ export function createCommand(Dialog: DialogComponent) {
       onOpenChange(false);
     }, [onOpenChange]);
 
-    // Web keyboard navigation on the search input.
-    const webKeyHandler: Record<string, unknown> =
+    // Web keyboard navigation on the search input. On the input itself:
+    // react-native-web's TextInput stops a keydown's propagation, so a handler
+    // on a wrapper never heard the arrows.
+    const webKeyHandler: Pick<TextInputProps, 'onKeyPress'> =
       Platform.OS === 'web'
         ? {
-            onKeyDown: (e: { key: string; preventDefault: () => void }) => {
+            onKeyPress: (e) => {
               if (selectable.length === 0) return;
-              switch (e.key) {
+              switch (e.nativeEvent.key) {
                 case 'ArrowDown':
                   e.preventDefault();
                   setActiveIndex((i) => (i + 1) % selectable.length);
@@ -221,23 +224,22 @@ export function createCommand(Dialog: DialogComponent) {
           }
         : {};
 
-    // Keep the keyboard-highlighted row inside the scroll viewport (web).
+    // Keep the keyboard-highlighted row inside the scroll viewport (web), in the
+    // commit that highlights it: the row's `aria-selected` is already in the DOM
+    // and reading `offsetTop` lays the list out.
     const listRef = useRef<ComponentRef<typeof ScrollView>>(null);
     useEffect(() => {
-      if (Platform.OS !== 'web') return undefined;
-      const frame = requestAnimationFrame(() => {
-        const node = (
-          listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
-        )?.getScrollableNode?.();
-        const active = node?.querySelector<HTMLElement>('[aria-selected="true"]');
-        if (!node || !active) return;
-        const top = active.offsetTop;
-        const bottom = top + active.offsetHeight;
-        if (top < node.scrollTop) node.scrollTop = top;
-        else if (bottom > node.scrollTop + node.clientHeight)
-          node.scrollTop = bottom - node.clientHeight;
-      });
-      return () => cancelAnimationFrame(frame);
+      if (Platform.OS !== 'web') return;
+      const node = (
+        listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
+      )?.getScrollableNode?.();
+      const active = node?.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!node || !active) return;
+      const top = active.offsetTop;
+      const bottom = top + active.offsetHeight;
+      if (top < node.scrollTop) node.scrollTop = top;
+      else if (bottom > node.scrollTop + node.clientHeight)
+        node.scrollTop = bottom - node.clientHeight;
     }, [clampedActive]);
 
     const palette = useMenuPalette();
@@ -267,7 +269,7 @@ export function createCommand(Dialog: DialogComponent) {
         ]}
         testID={testID}
       >
-        <View {...webKeyHandler}>
+        <View>
           <View style={styles.searchRow}>
             <RiSearchLine width={20} height={20} fill={palette.textPlaceholder} />
             <TextInput
@@ -282,6 +284,7 @@ export function createCommand(Dialog: DialogComponent) {
               autoFocus
               autoCorrect={false}
               autoCapitalize="none"
+              {...webKeyHandler}
               style={[styles.searchInput, SEARCH_WEB_RESET, { color: palette.text }]}
             />
             {query ? (
