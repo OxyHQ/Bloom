@@ -3,7 +3,8 @@ import { render } from '@testing-library/react-native';
 import type { ReactTestRendererJSON, ReactTestRendererNode } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { type PressHighlight, SubtleHover } from '../subtle-hover';
+import { View } from 'react-native';
+import { type PressHighlight, pressHighlight, SubtleHover } from '../subtle-hover';
 
 // Default test Platform.OS is 'ios' (see __mocks__/react-native.ts), so the
 // web-only hover wash is suppressed unless the JS `active` mode opts in via
@@ -175,5 +176,58 @@ describe('usePressHighlight', () => {
     const { hostProps, pressed } = runPressHighlight('web');
     expect(hostProps).toEqual({});
     expect(pressed).toBeUndefined();
+  });
+});
+
+describe('pressHighlight', () => {
+  const { Platform } = require('react-native') as typeof import('react-native');
+  const os = Platform.OS;
+  afterEach(() => {
+    Platform.OS = os;
+  });
+  const colors = { contrast50: '#eeeeee' };
+  const child = <View testID="row-content" />;
+
+  it('Android: the bounded ripple in the contrast fill, one object per palette; the children as they are', () => {
+    Platform.OS = 'android';
+    const lit = pressHighlight(colors, child);
+    expect(lit).toEqual({
+      android_ripple: { color: '#eeeeee', borderless: false },
+      children: child,
+    });
+    expect(pressHighlight(colors, child).android_ripple).toBe(lit.android_ripple);
+    expect(pressHighlight(colors, child, false)).toEqual({ children: child });
+  });
+
+  it('iOS: the children as a function of the press, the wash first while pressed', () => {
+    Platform.OS = 'ios';
+    const { android_ripple, children } = pressHighlight(colors, [child, 'text']);
+    expect(android_ripple).toBeUndefined();
+    if (typeof children !== 'function') throw new Error('not a function of the press');
+    const rest = children({ pressed: false }) as React.ReactElement<{ children: unknown[] }>;
+    expect(rest.props.children).toEqual([null, child, 'text']);
+    const held = children({ pressed: true }) as React.ReactElement<{ children: unknown[] }>;
+    const [wash, ...kids] = held.props.children as React.ReactElement<{ style: unknown }>[];
+    expect(kids).toEqual([child, 'text']);
+    expect(Object.assign({}, ...[wash?.props.style].flat())).toEqual({
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      pointerEvents: 'none',
+      backgroundColor: '#eeeeee',
+    });
+    // A row that takes no press keeps the slot, empty.
+    const unlit = pressHighlight(colors, child, false).children;
+    if (typeof unlit !== 'function') throw new Error('not a function of the press');
+    expect(
+      (unlit({ pressed: true }) as React.ReactElement<{ children: unknown[] }>).props.children,
+    ).toEqual([null, child]);
+  });
+
+  it('web: the children unchanged (the pointer has the hover wash)', () => {
+    Platform.OS = 'web';
+    expect(pressHighlight(colors, child)).toEqual({ children: child });
   });
 });

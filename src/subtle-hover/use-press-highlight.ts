@@ -88,6 +88,10 @@ function useNone(): PressHighlight {
  *
  * A child that takes its own press (a button, a link) holds the touch, so the
  * row does not light; a scroll that takes the touch releases it.
+ *
+ * @deprecated A row pays hooks for it (iOS: a shared value and the wash's
+ * animated style). Use `pressHighlight`, the same highlight on the row's own
+ * `Pressable` with no hook, state or component.
  */
 export const usePressHighlight: () => PressHighlight =
   Platform.OS === 'android' ? useRipple : Platform.OS === 'ios' ? useWash : useNone;
