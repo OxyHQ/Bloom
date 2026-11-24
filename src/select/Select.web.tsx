@@ -562,23 +562,22 @@ export function SelectContent<T>({
   // whole panel jump in height under the pointer.
   //
   // Like react-aria's listbox, opening scrolls the selected option into view, so
-  // a value far down a long list is not hidden below the fold.
+  // a value far down a long list is not hidden below the fold. It runs when the
+  // list's node is there (the panel portals in a render after it opens), in the
+  // commit that shows it; reading `offsetTop` lays the list out.
   useEffect(() => {
-    if (!ctx.isOpen) return undefined;
-    const frame = requestAnimationFrame(() => {
-      const node = (
-        listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
-      )?.getScrollableNode?.();
-      const selected = node?.querySelector<HTMLElement>('[aria-selected="true"]');
-      if (!node || !selected) return;
-      const top = selected.offsetTop;
-      const bottom = top + selected.offsetHeight;
-      if (top < node.scrollTop) node.scrollTop = top;
-      else if (bottom > node.scrollTop + node.clientHeight)
-        node.scrollTop = bottom - node.clientHeight;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [ctx.isOpen]);
+    if (!isOpen || !listNode) return;
+    const node = (
+      listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null }
+    )?.getScrollableNode?.();
+    const selected = node?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!node || !selected) return;
+    const top = selected.offsetTop;
+    const bottom = top + selected.offsetHeight;
+    if (top < node.scrollTop) node.scrollTop = top;
+    else if (bottom > node.scrollTop + node.clientHeight)
+      node.scrollTop = bottom - node.clientHeight;
+  }, [isOpen, listNode]);
 
   // The dropdown is the same anchored surface the four menu families render, so
   // it goes through the same `FloatingPanel`. That deletes this fork's own
