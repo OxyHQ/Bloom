@@ -6,12 +6,13 @@
  * A node is measured as the marginal cost of drawing it inside a container,
  * the language's (`VStack(node)` less `VStack()`) beside the JSX's
  * (`<View>{jsx}</View>` less `<View />`), so the boundary into the language
- * is counted once, by itself: a `toElement` root reads one context (the
- * environment, which carries the animation scope) and holds no hook, as a
- * JSX component that reads the theme does.
+ * is counted once, by itself: a `toElement` root reads the environment (which
+ * carries the animation scope) and the theme, once for the whole tree, and
+ * holds no hook.
  *
- * A JSX side that paints a theme colour reads the theme as an app does
- * (`Themed`: one `useThemePaint()`), so a painted node may read once.
+ * The JSX is a component that reads the theme once, as an app's does
+ * (`Themed`: one `useThemePaint()`), and paints its colours from it by hand,
+ * so a node that paints costs what the host it paints does, no more.
  */
 import { createElement, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
@@ -28,6 +29,7 @@ import type { Child } from '../src/node';
 import * as L from '../src/primitives';
 import { VirtualList as LVirtualList } from '../src/controls/list';
 import { LanguageRoot, toElement } from '../src/render';
+import type { ThemeColors } from '@oxy.so/bloom/theme';
 import { Themed } from './support/cases';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -103,7 +105,8 @@ const onPress = () => {};
 interface Case {
   name: string;
   node: Child;
-  jsx: ReactNode;
+  /** The JSX, painted from the theme its component read (`Themed`). */
+  jsx: ReactNode | ((colors: ThemeColors) => ReactNode);
   /** The container both sides are drawn in (a stack and a View by default). */
   in?: { language: (...children: Child[]) => Child; jsx: (children?: ReactNode) => ReactElement };
 }
@@ -157,14 +160,10 @@ const CASES: Case[] = [
   {
     name: 'a press on a painted background',
     node: L.VStack(L.Text('a')).background('surface').onPress(onPress),
-    jsx: (
-      <Themed>
-        {(c) => (
-          <RN.Pressable style={{ backgroundColor: c.backgroundSecondary }} onPress={onPress}>
-            <Text>a</Text>
-          </RN.Pressable>
-        )}
-      </Themed>
+    jsx: (c) => (
+      <RN.Pressable style={{ backgroundColor: c.backgroundSecondary }} onPress={onPress}>
+        <Text>a</Text>
+      </RN.Pressable>
     ),
   },
   {
@@ -182,25 +181,43 @@ const CASES: Case[] = [
   {
     name: 'Text with a foreground and a themed Text',
     node: L.Text('a').foreground('primary'),
-    jsx: <Themed>{(c) => <Text style={{ color: c.primary }}>a</Text>}</Themed>,
+    jsx: (c) => <Text style={{ color: c.primary }}>a</Text>,
   },
   {
     name: 'Icon with a foreground and a themed Bloom icon',
     node: L.Icon(RiHeart3Line).foreground('primary'),
-    jsx: <Themed>{(c) => <RiHeart3Line size="md" fill={c.primary} />}</Themed>,
+    jsx: (c) => <RiHeart3Line size="md" fill={c.primary} />,
   },
   {
     name: 'a view with .background and a themed View',
     node: L.VStack(L.Text('a')).background('surface'),
-    jsx: (
-      <Themed>
-        {(c) => (
-          <RN.View style={{ backgroundColor: c.backgroundSecondary }}>
-            <Text>a</Text>
-          </RN.View>
-        )}
-      </Themed>
+    jsx: (c) => (
+      <RN.View style={{ backgroundColor: c.backgroundSecondary }}>
+        <Text>a</Text>
+      </RN.View>
     ),
+  },
+  {
+    name: 'several painted views in one tree and their themed JSX',
+    node: L.VStack(
+      L.Text('a').foreground('primary'),
+      L.Icon(RiHeart3Line).foreground('muted'),
+      L.VStack(L.Text('b').foreground('muted')).padding('md').background('surface'),
+    ),
+    jsx: (c) => (
+      <RN.View>
+        <Text style={{ color: c.primary }}>a</Text>
+        <RiHeart3Line size="md" fill={c.textSecondary} />
+        <RN.View style={{ padding: 12, backgroundColor: c.backgroundSecondary }}>
+          <Text style={{ color: c.textSecondary }}>b</Text>
+        </RN.View>
+      </RN.View>
+    ),
+  },
+  {
+    name: 'a painted root nested in a tree and its themed JSX',
+    node: L.Embed(toElement(L.Text('a').foreground('primary').padding('xs'))),
+    jsx: (c) => <Text style={{ padding: 4, color: c.primary }}>a</Text>,
   },
   {
     name: 'a padded view and a View',
@@ -251,23 +268,35 @@ const CASES: Case[] = [
   },
 ];
 
-describe('a language node costs React no more than the JSX it stands for', () => {
+describe('a language node costs React what the JSX it stands for costs', () => {
   beforeAll(() => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('the boundary into the language: one context read, no hook, one fiber', () => {
+  it('the boundary into the language: the environment and the theme read once, no hook, one fiber', () => {
     const root = less(measured(toElement(L.VStack())), measured(<RN.View />));
-    expect(root).toEqual({ fibers: 1, hooks: 0, contexts: 1 });
+    expect(root).toEqual({ fibers: 1, hooks: 0, contexts: 2 });
   });
 
-  it('a list’s row that returns a root (toElement) and a row of JSX, per row', () => {
-    const row = ({ item }: { item: string }) => toElement(L.Text(item).padding('xs'));
-    const jsxRow = ({ item }: { item: string }) => <Text style={{ padding: 4 }}>{item}</Text>;
+  it('a list’s painted row that returns a root (toElement) and a row of themed JSX, per row', () => {
+    const row = ({ item }: { item: string }) =>
+      toElement(L.Text(item).padding('xs').foreground('primary'));
     const language = (items: string[]) =>
       measured(toElement(LVirtualList(items, row).itemKey(String)));
     const jsx = (items: string[]) =>
-      measured(<VirtualList data={items} keyExtractor={String} renderItem={jsxRow} />);
+      measured(
+        <Themed>
+          {(c) => (
+            <VirtualList
+              data={items}
+              keyExtractor={String}
+              renderItem={({ item }) => (
+                <Text style={{ padding: 4, color: c.primary }}>{item}</Text>
+              )}
+            />
+          )}
+        </Themed>,
+      );
     const perRow = {
       language: less(language(['a', 'b']), language(['a'])),
       jsx: less(jsx(['a', 'b']), jsx(['a'])),
@@ -283,9 +312,15 @@ describe('a language node costs React no more than the JSX it stands for', () =>
       measured(toElement(container.language(c.node))),
       measured(toElement(container.language())),
     );
-    const jsx = less(measured(container.jsx(c.jsx)), measured(container.jsx()));
-    expect(language.hooks).toBeLessThanOrEqual(jsx.hooks);
-    expect(language.contexts).toBeLessThanOrEqual(jsx.contexts);
-    expect(language.fibers).toBeLessThanOrEqual(jsx.fibers);
+    const drawn = c.jsx;
+    const jsx = less(
+      measured(
+        <Themed>
+          {(colors) => container.jsx(typeof drawn === 'function' ? drawn(colors) : drawn)}
+        </Themed>,
+      ),
+      measured(<Themed>{() => container.jsx()}</Themed>),
+    );
+    expect(language).toEqual(jsx);
   });
 });

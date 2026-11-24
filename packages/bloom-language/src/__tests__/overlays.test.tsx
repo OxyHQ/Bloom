@@ -69,9 +69,8 @@ describe('presentations', () => {
       actions: [{ label: 'Save' }],
       dismissOnBackdrop: false,
     });
-    expect(
-      JSON.stringify(dialog.children.map((child) => (child as { props: unknown }).props)),
-    ).toContain('Inside');
+    // Its content is a tree of its own, drawn in it.
+    expect(dialog.findAll((node) => node.props.children === 'Inside').length).toBeGreaterThan(0);
     act(() => dialog.props.onClose());
     expect(set).toHaveBeenCalledWith(false);
   });

@@ -761,6 +761,7 @@ function chipRow(d: ControlDraw): ReactElement {
       ringInset: space(d.own('ringInset')?.value),
       keyboardShouldPersistTaps: d.own('keyboardTaps')?.value,
       disabled: d.own('disabled')?.value,
+      ...(fade === undefined ? null : { palette: d.palette }),
     },
     ...d.children(d.node.children),
   );

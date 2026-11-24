@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Changed
+
+- A `VirtualList`'s `stickyHeaderIndices` is `.stickyIndices()`. A row arrow that returns `toElement(chain)` is that chain, so the language draws each row with no boundary of its own.
+
 ## 0.2.0
 
 ### Compatibility

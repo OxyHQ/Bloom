@@ -278,6 +278,8 @@ export const MEDIA_PLAYERS: Record<MediaPlayerKind, ControlRenderer> = {
   fullScreenPlayer: product(BloomFullScreenPlayer, {
     bindings: { liked: ['liked', 'onLikedChange'] },
     slots: ['aboutArtist'],
+    // Its content is drawn under the immersive dark theme.
+    rethemes: true,
     own: transportOf,
   }),
   playbackSpeedMenu: menu(BloomPlaybackSpeedMenu, ['rate', 'onRateChange']),

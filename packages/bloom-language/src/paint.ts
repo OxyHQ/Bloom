@@ -14,6 +14,7 @@ import {
   useTheme,
   useThemePaint,
   withAlpha,
+  type Theme,
   type ThemeColors,
 } from '@oxy.so/bloom/theme';
 
@@ -24,7 +25,7 @@ import type { ColorName } from './tokens';
 import { TIERS, termsOf, type LiveCondition, type LiveTerm, type Tier } from './variants';
 
 /**
- * What a `Painted` leaf fills from the theme: style properties painted from
+ * What a painted node fills from its tree’s palette: style properties painted from
  * colour roles (native; the web paints style roles with CSS variables), and
  * props painted from roles, optionally at an opacity (an icon's `fill`, a
  * glass Surface's `fill`, on every platform).
@@ -190,9 +191,20 @@ export function paintsSurface(paint: Paint): boolean {
   return names;
 }
 
-/** A painted leaf for `paint`: `Conditioned` with live variants, else `Painted`, `OnSurface` when it paints the surface fill. */
-export function paintedLeaf(props: LeafProps & { paint: Paint }): [unknown, LeafProps] {
-  return surfaced(leafOf(props.paint), props, paintsSurface(props.paint));
+/**
+ * What a node that paints draws, in its tree's palette: its host with the
+ * colours resolved (no component of its own, no theme read); a `Conditioned`
+ * leaf when it has live variants (it reads what they hold on); a leaf under
+ * `OnSurface` when it paints the surface fill (which only it reads).
+ */
+export function paintedLeaf(
+  palette: Palette,
+  props: LeafProps & { paint: Paint },
+): [unknown, LeafProps] {
+  const leaf = { ...props, drawnIn: palette } as PaintedProps;
+  if (paintsSurface(props.paint)) return surfaced(leafOf(props.paint), leaf, true);
+  if (props.paint.variants !== undefined) return [leafOf(props.paint), leaf];
+  return paintedHost(leaf, paintProps(palette.paint, props.paint));
 }
 
 /** A prop painted from a role (an icon's `fill`), at its opacity: what an app hands Bloom. */
@@ -291,22 +303,51 @@ export function themeColor(colors: ThemeColors, value: RoleRef | string): string
 }
 
 /**
- * The two palettes a leaf paints from, in one theme read on native: the
- * paint (what a final style takes) and the theme (its RGB colours for colour
- * math, and its scheme). Native has no prepaint, so its paint is the theme's
- * own colours (Bloom's `use-paint-colors.native.ts`); the web's paint may be
- * the prepainted document's CSS variables, a read of its own.
+ * What a language tree paints from, read once where the tree starts (a root,
+ * a `view()` body, a tree of its own under a Bloom component that re-themes
+ * what it holds): the paint (what a final style takes) and the theme (its RGB
+ * colours for colour math, and its scheme). Native has no prepaint, so its
+ * paint is the theme's own colours (Bloom's `use-paint-colors.native.ts`): one
+ * theme read. The web's paint may be the prepainted document's CSS variables.
+ * One object per paint and theme, so a drawn element records the palette it
+ * was drawn with by identity.
  */
-const usePalettes: () => { paint: ThemeColors; theme: ReturnType<typeof useTheme> } = IS_WEB
-  ? () => ({ paint: useThemePaint(), theme: useTheme() })
+export interface Palette {
+  readonly paint: ThemeColors;
+  readonly theme: Theme;
+}
+
+const palettes = new WeakMap<Theme, WeakMap<ThemeColors, Palette>>();
+function paletteOf(paint: ThemeColors, theme: Theme): Palette {
+  let byPaint = palettes.get(theme);
+  if (byPaint === undefined) {
+    byPaint = new WeakMap();
+    palettes.set(theme, byPaint);
+  }
+  let palette = byPaint.get(paint);
+  if (palette === undefined) {
+    palette = Object.freeze({ paint, theme });
+    byPaint.set(paint, palette);
+  }
+  return palette;
+}
+
+/** The palette where a tree starts: the language's one theme read per tree. */
+export const usePalette: () => Palette = IS_WEB
+  ? () => paletteOf(useThemePaint(), useTheme())
   : () => {
       const theme = useTheme();
-      return { paint: theme.colors, theme };
+      return paletteOf(theme.colors, theme);
     };
 
 export interface PaintedProps {
   host: ComponentType<Record<string, unknown>> | string;
   paint: Paint;
+  /**
+   * The palette of the tree the leaf is drawn in (not `palette`, which a
+   * node's host takes as a prop of its own, `NodeHostProps`).
+   */
+  drawnIn: Palette;
   /** The surface fill, handed in by `OnSurface` when the paint names it. */
   surface?: string;
   children?: ReactNode;
@@ -314,25 +355,32 @@ export interface PaintedProps {
 }
 
 /**
- * The one place the language reads the theme: a leaf that draws `host` with
- * the colours `paint` names. The trees above it are theme-free, so a theme
- * switch re-renders these leaves and no view body (the theme reaches them
- * through context, past every memoized view in between).
+ * `host` and its props with the colours `paint` names resolved in `palette`
+ * (the surface fill a leaf was handed included): what a painted node draws.
+ * A moving host's motion style (`Outer`) comes after the painted one.
  */
-export function Painted({ host, paint, surface, ...props }: PaintedProps): ReactElement {
-  const { paint: colors, theme } = usePalettes();
-  const painted = paintProps(withSurface(colors, surface), paint);
-  const lists = listProps(withSurface(theme.colors, surface), paint);
-  // A moving host's motion style (`Outer`) comes after the painted one.
-  if (props.style !== undefined && painted.style !== undefined) {
-    return createElement(host, {
-      ...props,
-      ...painted,
-      ...lists,
-      style: [painted.style, props.style],
-    });
-  }
-  return createElement(host, { ...props, ...painted, ...lists });
+function paintedHost(
+  { host, paint, drawnIn, surface, ...props }: PaintedProps,
+  painted: Record<string, unknown>,
+): [unknown, LeafProps] {
+  const lists = listProps(withSurface(drawnIn.theme.colors, surface), paint);
+  if (props.style !== undefined && painted.style !== undefined)
+    return [host, { ...props, ...painted, ...lists, style: [painted.style, props.style] }];
+  return [host, { ...props, ...painted, ...lists }];
+}
+
+/** `createElement` of a leaf and its props (`paintedLeaf`'s, `paintedHost`'s). */
+export function drawLeaf([host, props]: [unknown, LeafProps]): ReactElement {
+  return createElement(host as ComponentType<LeafProps>, props);
+}
+
+/**
+ * A leaf that paints the surface fill, drawn under `OnSurface`, which hands it
+ * the fill: `host` with the colours `paint` names in the tree's palette.
+ */
+export function Painted(props: PaintedProps): ReactElement {
+  const colors = withSurface(props.drawnIn.paint, props.surface);
+  return drawLeaf(paintedHost(props, paintProps(colors, props.paint)));
 }
 Painted.displayName = 'BloomPaint';
 
@@ -416,29 +464,14 @@ function conditionedProps(
 }
 
 /** The props a varied paint draws under `tier`, the scheme and the state of the view it belongs to. */
-function picked(
-  { host, paint, surface, ...props }: PaintedProps,
-  tier: Tier,
-  state: Interaction,
-): ReactElement {
-  const { paint: palette, theme } = usePalettes();
-  const colors = withSurface(palette, surface);
+function picked(props: PaintedProps, tier: Tier, state: Interaction): ReactElement {
+  const { paint, drawnIn, surface } = props;
   let holding = 0;
   (paint.variants ?? []).forEach((variant, index) => {
-    if (holds(variant.condition, tier, theme.isDark, state)) holding |= 1 << index;
+    if (holds(variant.condition, tier, drawnIn.theme.isDark, state)) holding |= 1 << index;
   });
-  const chosen = conditionedProps(colors, paint, holding);
-  const lists = listProps(withSurface(theme.colors, surface), paint);
-  // A moving host's motion style (`Outer`) comes after the picked one, as in `Painted`.
-  if (props.style !== undefined && chosen.style !== undefined) {
-    return createElement(host, {
-      ...props,
-      ...chosen,
-      ...lists,
-      style: [chosen.style, props.style],
-    });
-  }
-  return createElement(host, { ...props, ...chosen, ...lists });
+  const chosen = conditionedProps(withSurface(drawnIn.paint, surface), paint, holding);
+  return drawLeaf(paintedHost(props, chosen));
 }
 
 /**
@@ -475,8 +508,8 @@ function answersTier(paint: Paint): boolean {
   return answers;
 }
 
-/** The leaf that draws `paint`: a `Painted` one, or a `Conditioned` one when it has live variants. */
-export function leafOf(paint: Paint): (props: PaintedProps) => ReactElement {
+/** The leaf that draws `paint` as a component: a `Painted` one, or a `Conditioned` one when it has live variants. */
+function leafOf(paint: Paint): (props: PaintedProps) => ReactElement {
   if (paint.variants === undefined) return Painted;
   return answersTier(paint) ? Conditioned : StateConditioned;
 }

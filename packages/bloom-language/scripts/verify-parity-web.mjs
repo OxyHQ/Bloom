@@ -8,7 +8,8 @@
  * elements (Bloom's and the language's, walked in step) is compared on its
  * tag, its attributes other than `class`, `style` and `data-testid`, its text,
  * every computed style property (its `::before` and `::after` included: a
- * Surface draws its material there), and its laid-out size, in light and dark.
+ * Surface draws its material there), and its laid-out size, in light, in dark,
+ * and mounted light then switched to dark (what a theme switch repaints).
  *
  * Then each press host of a language cell is held: a view whose variants
  * answer its state (the anchor class `blsg`) and every pressable
@@ -277,6 +278,18 @@ const TABLE = `(() => { const shape = (element) => element.tagName + '(' + [...e
 const FRAME = `(${describeInPage})('parity-frame', true)`;
 
 /** Waits for what a page draws: its first cell, its fonts, then the transitions it starts. */
+/**
+ * A story mounted light, switched to dark the way Storybook's toolbar switches
+ * it (the preview's `updateGlobals`): what a theme switch repaints, compared
+ * as a story mounted dark is.
+ */
+async function switchToDark(page, testid) {
+  await page.evaluate(() =>
+    window.__STORYBOOK_ADDONS_CHANNEL__.emit('updateGlobals', { globals: { theme: 'dark' } }),
+  );
+  await settle(page, testid);
+}
+
 async function settle(page, testid) {
   await page.waitForSelector(`[data-testid="${testid}"]`, { timeout: 60000 });
   await page.evaluate(() => document.fonts.ready);
@@ -345,10 +358,13 @@ try {
     await framePage.setViewport({ width: WIDTH, height: 900 });
   }
   for (const id of ids) {
-    for (const theme of ['light', 'dark']) {
+    // Light, dark, and light switched to dark once mounted (`switched`).
+    for (const pass of ['light', 'dark', 'switched']) {
+      const theme = pass === 'switched' ? 'light' : pass;
       await page.bringToFront();
       await page.goto(`${BASE}/iframe.html?id=${id}&viewMode=story&globals=theme:${theme}`);
       await settle(page, 'language-0');
+      if (pass === 'switched') await switchToDark(page, 'language-0');
       await atRest(page, TABLE);
       const rows = await page.evaluate(rowsInPage);
       const differences = [];
@@ -369,6 +385,7 @@ try {
               `${BASE}/iframe.html?id=language-parity-frame--one-side&viewMode=story&args=${frame};side:${side}&globals=theme:${theme}`,
             );
             await settle(framePage, 'parity-frame');
+            if (pass === 'switched') await switchToDark(framePage, 'parity-frame');
             await atRest(framePage, FRAME);
             // Whether a focus a case takes as it opens (an alert's action) draws
             // its ring depends on the page's last input, which the holds of the
@@ -389,7 +406,7 @@ try {
       for (const { sides, label } of held)
         differences.push(...(await compareHeldStates(sides, label)));
       if (differences.length > 0) failed += 1;
-      console.log(`${differences.length ? 'FAIL' : 'ok  '} ${id} ${theme}: ${rows.length} pairs`);
+      console.log(`${differences.length ? 'FAIL' : 'ok  '} ${id} ${pass}: ${rows.length} pairs`);
       for (const difference of differences.slice(0, 40)) console.log(`     ${difference}`);
       if (differences.length > 40) console.log(`     … ${differences.length - 40} more`);
     }

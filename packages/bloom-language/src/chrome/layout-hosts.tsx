@@ -104,6 +104,7 @@ function motion(value: unknown): MotionSpec | undefined {
 export function ScrollSurfaceHost({
   node,
   render,
+  palette,
   room,
   children,
 }: HostProps & { room?: InsetRoom }) {
@@ -123,11 +124,16 @@ export function ScrollSurfaceHost({
       label: values.label as string | undefined,
     }),
   };
-  const Host = fade === undefined ? ScrollSurface : paintedHost(ScrollSurface, 'fadeColor', fade);
-  return <Host {...props}>{children}</Host>;
+  if (fade === undefined) return <ScrollSurface {...props}>{children}</ScrollSurface>;
+  const Host = paintedHost(ScrollSurface, 'fadeColor', fade);
+  return (
+    <Host {...props} palette={palette}>
+      {children}
+    </Host>
+  );
 }
 
-export function AutoHideBarHost({ node, render, children }: HostProps) {
+export function AutoHideBarHost({ node, render, palette, children }: HostProps) {
   const values = valuesOf(node);
   const summary = values.summary as Child | string;
   const band = values.band as InkToken | undefined;
@@ -149,8 +155,13 @@ export function AutoHideBarHost({ node, render, children }: HostProps) {
       testID: values.testID as string | undefined,
     }),
   };
-  const Host = band === undefined ? AutoHideBar : paintedHost(AutoHideBar, 'background', band);
-  return <Host {...props}>{children}</Host>;
+  if (band === undefined) return <AutoHideBar {...props}>{children}</AutoHideBar>;
+  const Host = paintedHost(AutoHideBar, 'background', band);
+  return (
+    <Host {...props} palette={palette}>
+      {children}
+    </Host>
+  );
 }
 
 export function ResizeHandleHost({ node }: HostProps) {

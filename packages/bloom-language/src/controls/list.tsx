@@ -302,14 +302,15 @@ function listSlots(d: ControlDraw, props: Record<string, unknown>): void {
 
 interface LanguageVirtualListProps {
   readonly row: VirtualListRowFn<unknown>;
-  readonly draw: Pick<ControlDraw, 'render' | 'embed'>;
+  readonly draw: Pick<ControlDraw, 'render' | 'embed' | 'palette'>;
   readonly [prop: string]: unknown;
 }
 
 /**
  * Bloom's `VirtualList` with a `renderItem` that keeps its identity while
- * `row` does, as an app's `useCallback` does: the engine re-renders a row only
- * when its item changes. The latest renderer draws a view, in the list's
+ * `row` and the list's palette do, as an app's `useCallback` does: the engine
+ * re-renders a row only when its item changes, or the theme (its rows paint
+ * from the list's tree). The latest renderer draws a view, in the list's
  * environment; an element (FlashList's own `renderItem`) is the row as it is,
  * a language root (`toElement(chain)`) drawn as part of the list's tree, so a
  * row has no boundary of its own.
@@ -324,7 +325,8 @@ function LanguageVirtualList({ row, draw, ...props }: LanguageVirtualListProps):
         isValidElement(out) ? latest.current.embed(out) : latest.current.render(out)
       ) as ReactElement | null;
     },
-    [row],
+    // The palette renews the rows a theme switch repaints; `latest` hands them the renderer that paints with it.
+    [row, draw.palette],
   );
   return createElement(BloomVirtualList as never, { ...props, renderItem });
 }

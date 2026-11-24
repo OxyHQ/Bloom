@@ -516,15 +516,17 @@ describe('the cost of a view and of a theme switch', () => {
     expect(typeof component.type).toBe('function');
   });
 
-  it('a theme switch repaints the leaves and re-runs no view body', () => {
+  it('a theme switch re-renders each tree once: a view body runs again and repaints', () => {
     const body = jest.fn((props: { title: string }) =>
       VStack(Text(props.title).foreground('muted'), Icon(Glyph)),
     );
     const Row = view(body);
     const tree = toElement(VStack(Row({ title: 'a' })));
     const r = mount(tree, LIGHT);
-    update(r, tree, DARK);
+    update(r, tree, LIGHT);
     expect(body).toHaveBeenCalledTimes(1);
+    update(r, tree, DARK);
+    expect(body).toHaveBeenCalledTimes(2);
     expect(hosts(r, 'Text')[0]?.props.style.color).toBe(DARK.textSecondary);
     expect(hosts(r, 'Glyph')[0]?.props.fill).toBe(DARK.text);
   });

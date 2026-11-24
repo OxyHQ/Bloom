@@ -43,8 +43,8 @@ import { Textarea } from '@oxy.so/bloom/textarea';
 
 import type { Binding } from '../binding';
 import type { ENUMS } from '../generated/spec.generated';
-import { isSurfaceFill, paletteColor, surfaced, withSurface } from '../paint';
-import { useThemePaint } from '@oxy.so/bloom/theme';
+import { isSurfaceFill, type Palette, paletteColor, surfaced, withSurface } from '../paint';
+import type { ThemeColors } from '@oxy.so/bloom/theme';
 import {
   type ButtonView,
   type Child,
@@ -630,27 +630,32 @@ interface RadioOptionOf {
   readonly foreground?: ColorName;
 }
 
+/** A group's options with their swatches' colours painted from a palette, as an app hands Bloom them. */
+function paintedOptions(options: readonly RadioOptionOf[], colors: ThemeColors) {
+  return options.map(({ tint, foreground, ...option }) => ({
+    ...option,
+    color: tint === undefined ? undefined : paletteColor(colors, tint),
+    foreground: foreground === undefined ? undefined : paletteColor(colors, foreground),
+  }));
+}
+
 /**
- * Bloom's `RadioGroup` with its swatches' colours painted from the theme, as an
- * app reads them (`useThemePaint()`): the leaf that reads the theme for a
- * group whose options name colour roles. It draws only the group.
+ * Bloom's `RadioGroup` whose swatches paint the surface fill, drawn under
+ * `OnSurface`, which hands it the fill: its options painted in its tree's palette.
  */
-function PaintedRadioGroup({
+function SurfaceRadioGroup({
   options,
+  palette,
   surface,
   ...props
 }: Record<string, unknown> & {
   options: readonly RadioOptionOf[];
+  palette: Palette;
   surface?: string;
 }): ReactElement {
-  const colors = withSurface(useThemePaint(), surface);
   return createElement(BloomRadioGroup, {
     ...props,
-    options: options.map(({ tint, foreground, ...option }) => ({
-      ...option,
-      color: tint === undefined ? undefined : paletteColor(colors, tint),
-      foreground: foreground === undefined ? undefined : paletteColor(colors, foreground),
-    })),
+    options: paintedOptions(options, withSurface(palette.paint, surface)),
   });
 }
 
@@ -676,23 +681,25 @@ const radioGroup: ControlRenderer = (d) => {
   const onSurface = options.some(
     (option) => isSurfaceFill(option.tint) || isSurfaceFill(option.foreground),
   );
-  const [group, groupProps] = surfaced(
-    painted ? PaintedRadioGroup : BloomRadioGroup,
-    {
-      key: d.key,
-      label: d.label,
-      value,
-      onValueChange: setValue,
-      options,
-      variant: d.own('style')?.value,
-      size: d.own('size')?.value,
-      tone: d.own('tint')?.value,
-      disabled: d.own('disabled')?.value,
-      testID: d.testID,
-    },
-    onSurface,
+  const props = {
+    key: d.key,
+    label: d.label,
+    value,
+    onValueChange: setValue,
+    options,
+    variant: d.own('style')?.value,
+    size: d.own('size')?.value,
+    tone: d.own('tint')?.value,
+    disabled: d.own('disabled')?.value,
+    testID: d.testID,
+  };
+  if (onSurface)
+    return d.component(...surfaced(SurfaceRadioGroup, { ...props, palette: d.palette }, true));
+  // Swatches of the theme's roles are painted from the tree's palette, as an app paints them.
+  return d.component(
+    BloomRadioGroup,
+    painted ? { ...props, options: paintedOptions(options, d.palette.paint) } : props,
   );
-  return d.component(group, groupProps);
 };
 
 const segmented: ControlRenderer = (d) => {

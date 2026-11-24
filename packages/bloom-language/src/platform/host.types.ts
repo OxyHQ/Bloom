@@ -1,3 +1,4 @@
+import type { Palette } from '../paint';
 import type { ReactNode } from 'react';
 
 import type { Binding } from '../binding';
@@ -10,6 +11,8 @@ export interface NodeHostProps {
   render: (child: Child) => ReactNode;
   /** A press modifier's value as a handler, in that environment (a `navigate()` goes through its navigator). */
   press: (value: Press | undefined) => (() => void) | undefined;
+  /** What the node's tree paints from (`usePalette`), for a colour the host paints itself. */
+  palette: Palette;
 }
 
 /** What every platform's menu host takes from a `Menu` node. */

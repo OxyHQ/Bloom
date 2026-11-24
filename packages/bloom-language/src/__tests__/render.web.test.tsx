@@ -80,11 +80,11 @@ describe('on the web, styles are classes from the generated sheet', () => {
     ]);
   });
 
-  it('text reads no theme on the web; an icon’s fill still paints from it', () => {
+  it('text paints with a class on the web; an icon’s fill from the tree’s palette, with no leaf', () => {
     const r = mount(toElement(VStack(Text('a'), Icon(Glyph).foreground('primary'))));
     expect(
       r.root.findAll((i) => (i.type as { displayName?: string }).displayName === 'BloomPaint'),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     expect(r.root.findByType('Glyph' as never).props.fill).toBe(LIGHT.primary);
   });
 

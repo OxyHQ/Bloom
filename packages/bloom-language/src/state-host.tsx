@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
-import { IDLE, type Interaction, InteractionContext, paintedLeaf } from './paint';
+import { IDLE, type Interaction, InteractionContext, type Palette, paintedLeaf } from './paint';
 import type { StyleOut } from './style';
 import type { LiveCondition } from './variants';
 
@@ -32,6 +32,8 @@ interface StateHostProps {
   out: StyleOut;
   /** The states the view's variants answer, when its box is pressable (a plain view has none to track). */
   states: readonly LiveCondition[];
+  /** What the view's tree paints from, for a box whose style paints a role. */
+  palette: Palette;
   children?: ReactNode;
   [prop: string]: unknown;
 }
@@ -47,7 +49,7 @@ function WebStateHost(props: StateHostProps): ReactElement {
   // A Bloom component reads its style as an object: no anchor class, its state
   // read in JS. A language host around one tracks in JS and is the anchor too.
   if (props.out.object) return createElement(TrackedStateHost, props);
-  const { host, out, states: _, style: motion, ...rest } = props;
+  const { host, out, states: _, palette: __, style: motion, ...rest } = props;
   const style = anchored(out.style);
   // A moving box's motion style (`Outer`) comes after its own.
   return createElement(host, {
@@ -70,7 +72,7 @@ function focusVisible(event: unknown): boolean {
   return typeof node?.matches !== 'function' || node.matches(':focus-visible');
 }
 
-function TrackedStateHost({ host, out, states, ...props }: StateHostProps): ReactElement {
+function TrackedStateHost({ host, out, states, palette, ...props }: StateHostProps): ReactElement {
   const [state, setState] = useState<Interaction>(IDLE);
   const set = (key: keyof Interaction, on: boolean) =>
     setState((current) => (current[key] === on ? current : { ...current, [key]: on }));
@@ -104,7 +106,7 @@ function TrackedStateHost({ host, out, states, ...props }: StateHostProps): Reac
   const [leaf, leafProps] =
     out.paint === undefined
       ? [host, { ...props, ...handlers, style: own }]
-      : paintedLeaf({ ...props, ...handlers, style: own, host, paint: out.paint });
+      : paintedLeaf(palette, { ...props, ...handlers, style: own, host, paint: out.paint });
   const box = createElement(leaf as ComponentType<Record<string, unknown>>, leafProps);
   return createElement(InteractionContext.Provider, { value: state }, box);
 }

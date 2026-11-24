@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-language",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Bloom's UI language: views as functions, modifiers chained in order, every value a Bloom token. Renders through Bloom's React Native and web components today.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
