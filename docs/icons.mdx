@@ -138,17 +138,21 @@ always one that was never given a `fill`.
 The component API is the same on every platform; what draws it is not.
 
 - **Web:** inline SVG, as before. A browser draws it for nothing extra.
-- **Android:** ONE native view per icon (`BloomIconV1`, `android/…/icons/BloomIcon.kt`)
-  that draws the glyph's path with `Canvas.drawPath` on the view's hardware canvas.
-  react-native-svg mounted three views per icon (the `SvgView`, a group and the path)
-  and rasterised each glyph in software into a bitmap on the UI thread while the frame
-  was recorded; on a Pixel 8a an opened Mention post created 130 of its 285 native views
-  for 43 icons, and `SvgView.onDraw` was about 30% of the draw phase.
+- **Android:** ONE native view per icon (`BloomIconV1`, `android/…/icons/BloomIcon.kt`).
+  It rasterises a glyph once per size and paint for the whole process and draws that
+  shared bitmap on its hardware canvas. react-native-svg mounted three views per icon
+  (the `SvgView`, a group and the path) and rasterised every icon again, in software on
+  the UI thread, each time it drew; on a Pixel 8a an opened Mention post created 130 of
+  its 285 native views for 43 icons, and `SvgView.onDraw` was about 30% of the draw phase.
+  The raster is react-native-svg's own rather than a hardware `drawPath` because the
+  GPU's anti-aliasing is not the CPU rasteriser's: hardware paths differed at the edge
+  of every glyph, by up to 131 of 255 levels.
 - **iOS, and a binary without the view** (a JavaScript-only update on an older build,
   Expo Go): react-native-svg, as before. The icon looks for the native view once
   (`UIManager.hasViewManagerConfig`) and falls back without it.
 
-The native view draws what react-native-svg drew, step for step: the same path parser
+The native view draws what react-native-svg drew, step for step, and the pixels match
+(every glyph at 16, 20 and 24dp, compared on a Pixel 8a): the same path parser
 (copied from react-native-svg), the same `xMidYMid meet` viewBox transform, the even-odd
 fill rule, the paint flags, the stroke, and the `gradient` tokens. The paint resolves as
 it always did (`fill`, else `style.color`, else the theme's primary; `currentColor` is
