@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Chip } from '../chip';
 import { Calendar } from '../date-picker';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { contractLengthOptions } from './constants';
 import { useMessages } from '../locale/messages';
@@ -41,12 +41,12 @@ function MoveInPickerComponent({
   testID,
 }: MoveInPickerProps) {
   const { messages } = useMessages(HOME_SEARCH_MESSAGES, locale);
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const labels = { ...messages.moveInLabels, ...labelOverrides };
   const contractLengths = contractLengthsProp ?? contractLengthOptions(messages);
 
   const heading = (text: string) => (
-    <Text variant="body-semibold" role="heading" style={{ color: theme.colors.text }}>
+    <Text variant="body-semibold" role="heading" style={{ color: tokens.foreground }}>
       {text}
     </Text>
   );

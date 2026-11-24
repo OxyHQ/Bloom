@@ -157,7 +157,7 @@ describe('FilterSection', () => {
     expect(cs.paddingBottom).toBe('32px');
     expect(cs.borderBottomWidth).toBe('1px');
 
-    expect(cs.borderBottomColor).toBe(normalise(theme.colors.border));
+    expect(cs.borderBottomColor).toBe('var(--border)');
 
     mount(<FilterSection title="Last" divider={false} testID="s" />);
     expect(getComputedStyle(byTestId('s')).borderBottomWidth).toBe('0px');

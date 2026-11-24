@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { ChipRow } from '../chip';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { FilterChip } from './FilterChip';
 import { useMessages } from '../locale/messages';
@@ -39,7 +39,7 @@ function CountFilterComponent({
 }: CountFilterProps) {
   const { messages } = useMessages(STAY_FILTERS_MESSAGES);
   const anyLabel = anyLabelProp ?? messages.any;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : undefined);
   const counts: number[] = [];
   for (let n = min; n <= max; n += 1) counts.push(n);
@@ -47,7 +47,7 @@ function CountFilterComponent({
   return (
     <View testID={testID} style={[{ gap: 16 }, style]}>
       {typeof title === 'string' ? (
-        <Text variant="body-regular" style={{ color: theme.colors.text }}>
+        <Text variant="body-regular" style={{ color: tokens.foreground }}>
           {title}
         </Text>
       ) : (

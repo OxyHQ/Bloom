@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Chip } from '../chip';
 import { RangeFields } from '../stay-filters/RangeFields';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { DEFAULT_BUDGET_PRESETS } from './constants';
 import { useMessages } from '../locale/messages';
@@ -63,7 +63,7 @@ function BudgetPickerComponent({
   const minLabel = minLabelProp ?? messages.minimum;
   const maxLabel = maxLabelProp ?? messages.maximum;
   const presetsLabel = presetsLabelProp ?? messages.budgetPresets;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const items = presets ?? DEFAULT_BUDGET_PRESETS[period];
   const heading = title ?? (period === 'month' ? messages.monthlyBudget : messages.price);
   const sub =
@@ -83,11 +83,11 @@ function BudgetPickerComponent({
   return (
     <View testID={testID} style={[{ gap: 16 }, style]}>
       <View style={{ gap: 2 }}>
-        <Text variant="body-semibold" role="heading" style={{ color: theme.colors.text }}>
+        <Text variant="body-semibold" role="heading" style={{ color: tokens.foreground }}>
           {heading}
         </Text>
         {sub ? (
-          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-2-regular" style={{ color: tokens.mutedForeground }}>
             {sub}
           </Text>
         ) : null}
