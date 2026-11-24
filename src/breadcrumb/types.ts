@@ -2,8 +2,9 @@ import type { BloomSize } from '../appearance/types';
 import type { ReactElement, ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import type { ButtonIconComponent, ButtonProps } from '../button/types';
+import type { ButtonProps } from '../button/types';
 import type { OverlayTriggerProps } from '../floating/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 export interface BreadcrumbProps {
   /** Explicit size, nearest BloomScope, then normal md. */
@@ -48,7 +49,7 @@ export interface BreadcrumbItemProps
   /** The label. */
   children?: ReactNode;
   /** Leading icon component (14/16/16/20px at xs/sm/md/lg), coloured with the item. */
-  icon?: ButtonIconComponent;
+  icon?: BloomIconComponent;
   /**
    * A node before the icon and label, 6px from them — e.g. a 20px `Avatar` for
    * a workspace or member crumb. Not recoloured on hover.

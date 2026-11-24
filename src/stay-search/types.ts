@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { ButtonIconComponent } from '../button/types';
 import type { StepperSize } from '../stepper';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * A segment of {@link StaySearchBarProps}. `split` dates mode shows
@@ -96,7 +96,7 @@ export interface DestinationSuggestion {
   title: string;
   description?: string;
   /** A Remix icon component (`RiMapPinLine`, `RiTimeLine`…). Default `RiMapPinLine`. */
-  icon?: ButtonIconComponent;
+  icon?: BloomIconComponent;
   /**
    * The row is offered but cannot be chosen — "Use my location" while location
    * is off. It dims, answers no press, and the arrow keys step over it.
@@ -205,7 +205,7 @@ export interface StaySearchCompactProps {
   /** The filter button's name. `"Filters"` in English; follows the locale. */
   filterLabel?: string;
   /** The filter glyph. Default `RiEqualizer3Line`. */
-  filterIcon?: ButtonIconComponent;
+  filterIcon?: BloomIconComponent;
   /** Names the trigger. Default `title` + `summary`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

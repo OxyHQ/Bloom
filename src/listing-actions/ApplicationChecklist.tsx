@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { ActionCardShell } from '../booking/ActionCard';
 import { Badge } from '../badge';
-import { Button, type ButtonIconComponent } from '../button';
+import { Button } from '../button';
 import { RiCheckboxBlankCircleLine } from '../icons/remix/RiCheckboxBlankCircleLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { RiCloseCircleFill } from '../icons/remix/RiCloseCircleFill';
@@ -22,8 +22,9 @@ import {
 import { LISTING_ACTIONS_MESSAGES } from './messages';
 import { useActionPalette } from './parts';
 import type { ApplicationChecklistProps, ApplicationItem, ApplicationItemStatus } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
-const STATUS_ICON: Record<ApplicationItemStatus, ButtonIconComponent> = {
+const STATUS_ICON: Record<ApplicationItemStatus, BloomIconComponent> = {
   missing: RiCheckboxBlankCircleLine,
   uploaded: RiTimeLine,
   verified: RiCheckboxCircleFill,

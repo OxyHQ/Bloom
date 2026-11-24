@@ -5,7 +5,6 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Button } from '../button';
 import { PageHeader } from '../page-header';
 import { ScrollArea } from '../layout/ScrollArea';
-import type { ButtonIconComponent } from '../button/types';
 import { Avatar } from '../avatar/Avatar';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiMore2Line } from '../icons/remix/RiMore2Line';
@@ -20,6 +19,7 @@ import { StoryProgressBars } from './StoryProgressBars';
 import { STORY_DURATION_MS, resolveChatPeoplePaint } from './shared';
 import type { StoryViewerProps } from './types';
 import { CHAT_PEOPLE_MESSAGES } from './messages';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * `StoryViewer`: one story, full bleed.
@@ -134,7 +134,7 @@ function StoryViewerComponent({
   const iconButton = (
     key: string,
     label: string,
-    icon: ButtonIconComponent,
+    icon: BloomIconComponent,
     onPress?: () => void,
     pressed?: boolean,
   ) =>

@@ -41,7 +41,7 @@ export interface BadgeProps {
    * colour and hidden from assistive technology — the badge reads as its text.
    * Its testID is `<testID>-icon`.
    */
-  icon?: BadgeIcon;
+  icon?: BloomIconComponent;
   /** If true, renders a dot without content — standalone, a status dot
    * (a solid centre on the tone's tint halo); attached, a plain marker. A dot always paints the
    * tone's fill, whatever the `variant`. */

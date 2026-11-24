@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
-import type { ButtonIconComponent } from '../button/types';
 import { RiCalendarLine as CalendarIcon } from '../icons/remix/RiCalendarLine';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { useTheme } from '../theme/use-theme';
 import { resolveCalendarPalette, type CalendarPalette } from './palette';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The chrome both pickers share (`date-picker/shared.tsx`).
@@ -47,7 +47,7 @@ export function PickerShell({
   children,
 }: {
   /** A glyph after the label (the meeting scheduler's chevron). */
-  trailingIcon?: ButtonIconComponent;
+  trailingIcon?: BloomIconComponent;
   /** Gap between trigger and popup. The pickers use 4, the scheduler 8. */
   sideOffset?: number;
   open: boolean;

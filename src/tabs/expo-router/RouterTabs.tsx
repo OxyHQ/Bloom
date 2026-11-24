@@ -19,7 +19,8 @@ import { useRouter, usePathname, type Href } from '../../panel-routing/expo-rout
 import { useDrag } from '../../motion/gestures';
 import { useMotionValue } from '../../motion/motion-value';
 import { Tabs, TabsTrigger, type TabsDragController } from '../Tabs';
-import type { TabsIconComponent, TabsProps } from '../types';
+import type { TabsProps } from '../types';
+import type { BloomIconComponent } from '../../icons/icon-component';
 
 export interface RouterTabItem {
   /** Stable id for the tab. Used as a React key and a callback argument. */
@@ -31,7 +32,7 @@ export interface RouterTabItem {
   /** Icon rendered before the label. */
   icon?: ReactNode;
   /** Icon component before the label, sized and tinted by the trigger. Wins over `icon`. */
-  leadingIcon?: TabsIconComponent;
+  leadingIcon?: BloomIconComponent;
   /** Optional tally beside the label; `0` or omitted renders nothing. */
   count?: number;
   disabled?: boolean;

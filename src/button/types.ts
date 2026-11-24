@@ -110,7 +110,7 @@ export interface ButtonProps {
    * An icon ELEMENT rendered as-is, or an icon COMPONENT (`icon={RiMore2Line}`),
    * which the button sizes and colours like `leadingIcon`.
    */
-  icon?: React.ReactNode | ButtonIconComponent;
+  icon?: React.ReactNode | BloomIconComponent;
   /** Explicit glyph dimensions; otherwise follows the button size. */
   iconSize?: number;
   iconPosition?: 'left' | 'right';
@@ -190,9 +190,9 @@ export interface ButtonProps {
    * element) rendered before the label. The button sizes and colours it for the
    * current size and state, so a caller cannot pass the wrong size.
    */
-  leadingIcon?: ButtonIconComponent;
+  leadingIcon?: BloomIconComponent;
   /** Same as {@link ButtonProps.leadingIcon}, after the label. Ignored when `iconOnly`. */
-  trailingIcon?: ButtonIconComponent;
+  trailingIcon?: BloomIconComponent;
   /**
    * Draw the leading glyph yourself, handed the button's icon size and the
    * foreground for the CURRENT state — for an app's own icon set, whose props

@@ -5,7 +5,6 @@ import { AppShell, AppShellMenuButton, NotificationBell } from '../../src/app-sh
 import { PageHeader } from '../../src/page-header';
 import { Avatar } from '../../src/avatar';
 import { Breadcrumb, BreadcrumbItem } from '../../src/breadcrumb';
-import type { ButtonIconComponent } from '../../src/button/types';
 
 import {
   RiAsterisk,
@@ -47,6 +46,7 @@ import kiannaVaccaro from './assets/avatars/kianna-vaccaro.webp';
 import liviaSaris from './assets/avatars/livia-saris.webp';
 import mariaLubin from './assets/avatars/maria-lubin.webp';
 import michaelEkstrom from './assets/avatars/michael-ekstrom.webp';
+import type { BloomIconComponent } from '../../src/icons/icon-component';
 
 /**
  * What the dashboard-family templates share and Bloom does not publish as
@@ -314,7 +314,7 @@ export interface DashboardShellProps {
   /** The breadcrumb leaf when it differs from the title ("Home" under "Welcome Maya"). */
   crumb?: string;
   /** The breadcrumb leaf's icon. */
-  crumbIcon: ButtonIconComponent;
+  crumbIcon: BloomIconComponent;
   testID?: string;
   children: React.ReactNode;
 }
@@ -549,7 +549,7 @@ export function PersonAvatar({
 }
 
 /** `size-8 rounded-lg bg-background-tertiary-default`, a 16px `foreground-icon-primary` glyph. */
-export function IconTile({ icon: Icon, label }: { icon: ButtonIconComponent; label: string }) {
+export function IconTile({ icon: Icon, label }: { icon: BloomIconComponent; label: string }) {
   const theme = useTheme();
   return (
     <View
