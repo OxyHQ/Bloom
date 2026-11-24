@@ -41,9 +41,9 @@ const ROOT = join(__dirname, '..', '..');
 const BUILD = require(join(ROOT, 'babel.build.cjs')) as { plugins: [string, object][] };
 const COMPILER = BUILD.plugins.find(([name]) => name === 'babel-plugin-react-compiler');
 
-function build(file: string): string {
+function build(file: string, dir = 'src'): string {
   if (!COMPILER) throw new Error('babel.build.cjs does not run babel-plugin-react-compiler');
-  const path = join(ROOT, 'src', file);
+  const path = join(ROOT, dir, file);
   const result = transformSync(readFileSync(path, 'utf8'), {
     filename: path,
     cwd: ROOT,
@@ -97,6 +97,15 @@ describe('the React Compiler in the build', () => {
   ])('leaves %s %s as written, so it reads %s on every render', (file, name, read) => {
     const body = functionNamed(build(file), name);
     expect(body).toContain(read);
+    expect(body).not.toMatch(MEMO_CACHE);
+  });
+
+  it("leaves bloom-data's useArgs as written, so a list's arguments stay the same while its key does", () => {
+    // Compiled, its `useMemo(() => args, [key])` became `return args`: a new
+    // array every render, so useList and useRecord observed their source again
+    // on every render (Mention's feed asked its service in a loop).
+    const body = functionNamed(build('hooks.tsx', 'packages/bloom-data/src'), 'useArgs');
+    expect(body).toContain('useMemo(() => args, [key])');
     expect(body).not.toMatch(MEMO_CACHE);
   });
 
