@@ -186,6 +186,20 @@ that arbitrate a drag between the pager and a child that also scrolls.
 `react-native-pager-view` is an **optional peer**. Without it the same pages
 switch by tap only, and a dev warning names the package.
 
+On Android, version 9's pager is a Compose `HorizontalPager`, and its pages need
+a patch while they hold lens controls (a floating `PageHeader`'s buttons). Compose
+prefetches the page past the ones it keeps ahead of a scroll and attaches that
+page's host before it lays it out or draws it, so the page is attached and shown
+at the window's origin. The lens draws a control's glass and content in a window
+overlay at the control's place in the window, so the prefetched page's header was
+drawn over the page in front (Mention, Pixel 8a: sliding from Profile back to
+Notifications drew Home's header). Bloom cannot tell that page from a shown one:
+Compose's view holder turns off `clipChildren`, so even its visible rect is not
+empty. The pager has to keep a page it has not placed invisible: Mention's
+`patches/react-native-pager-view@9.0.11.patch` starts each page host invisible
+and shows it when Compose lays it out at a size, which it does only where it
+places it. Apply the same patch until the pager does this upstream.
+
 ## Web
 
 `TabPagerLayout` renders the route in place (`<Slot/>`): the web shell scrolls
