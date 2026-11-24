@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { Stepper } from './Stepper';
 import type { StepperRowProps } from './types';
@@ -22,7 +22,7 @@ function StepperRowComponent({
   stepperStyle,
   ...stepper
 }: StepperRowProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : '');
 
   return (
@@ -37,21 +37,21 @@ function StepperRowComponent({
           borderBottomWidth: divider ? 1 : 0,
           // neutral-700 in dark, not 800: 800 is the floating surface (a popover, a
           // sheet) these rows usually sit on, where an 800 hairline disappears.
-          borderBottomColor: theme.colors.borderLight,
+          borderBottomColor: tokens.input,
         },
         style,
       ]}
     >
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         {typeof title === 'string' ? (
-          <Text variant="headline-medium" style={{ color: theme.colors.text }}>
+          <Text variant="headline-medium" style={{ color: tokens.foreground }}>
             {title}
           </Text>
         ) : (
           title
         )}
         {description == null ? null : typeof description === 'string' ? (
-          <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
             {description}
           </Text>
         ) : (

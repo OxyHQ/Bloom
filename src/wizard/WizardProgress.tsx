@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { Meter } from '../stat-bar';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { WizardProgressProps } from './types';
 
@@ -59,7 +59,7 @@ function WizardProgressComponent({
   style,
   testID,
 }: WizardProgressProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
 
   const total = steps.length;
   const index = Math.min(Math.max(0, current), Math.max(0, total - 1));
@@ -103,7 +103,7 @@ function WizardProgressComponent({
             minHeight: 20,
           }}
         >
-          <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="caption-1-medium" style={{ color: tokens.mutedForeground }}>
             {countLine}
           </Text>
           {action ?? null}
@@ -114,12 +114,12 @@ function WizardProgressComponent({
               variant="title-2-semibold"
               role="heading"
               aria-level={headingLevel}
-              style={{ color: theme.colors.text }}
+              style={{ color: tokens.foreground }}
             >
               {step.title}
             </Text>
             {step.description ? (
-              <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
+              <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
                 {step.description}
               </Text>
             ) : null}

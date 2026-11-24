@@ -6,7 +6,7 @@ import { formatNumber, formatPercent } from '../locale/format-number';
 import { useMessages } from '../locale/messages';
 import { Meter } from '../stat-bar';
 import { IS_WEB } from '../styles/platform';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { RATING_MESSAGES } from './messages';
 import type { RatingSummaryProps } from './types';
@@ -46,8 +46,8 @@ function RatingSummaryComponent({
   testID,
 }: RatingSummaryProps) {
   const { locale, messages } = useMessages(RATING_MESSAGES);
-  const theme = useTheme();
-  const secondary = theme.colors.textSecondary;
+  const tokens = useColorTokens();
+  const secondary = tokens.mutedForeground;
 
   if (average === null) {
     return (
@@ -82,7 +82,7 @@ function RatingSummaryComponent({
         style={{ alignItems: 'center' }}
         testID={testID ? `${testID}-average` : undefined}
       >
-        <Text variant="display-2-bold" style={{ color: theme.colors.text }}>
+        <Text variant="display-2-bold" style={{ color: tokens.foreground }}>
           {value}
         </Text>
         <Text variant="body-2-semibold" style={{ color: secondary }}>

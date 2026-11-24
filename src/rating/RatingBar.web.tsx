@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { Meter } from '../stat-bar/index.web';
 import { resolveNativeWebStyle } from '../styles/resolve-native-web-style';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { TYPE_SCALE } from '../typography/scale';
 import type { RatingBarProps } from './types';
 const regular = TYPE_SCALE['body-regular'];
@@ -31,9 +31,9 @@ export const RatingBar = memo(function RatingBar({
   fillStyle,
 }: RatingBarProps) {
   useInteractiveWebCss('bloom-rating-bar', CSS);
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const vars = {
-    '--bloom-rating-text': theme.colors.text,
+    '--bloom-rating-text': tokens.foreground,
     '--bloom-rating-label-width': `${labelWidth ?? 0}px`,
   } as React.CSSProperties;
   return (

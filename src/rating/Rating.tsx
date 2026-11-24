@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useDirectionProps } from '../hooks/use-is-rtl';
 import { useMessages } from '../locale/messages';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import { RATING_MESSAGES } from './messages';
@@ -158,13 +158,13 @@ function RatingComponent({
   style,
   testID,
 }: RatingProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const { messages } = useMessages(RATING_MESSAGES);
   const newLabel = newLabelProp ?? messages.newRating;
   const directionProps = useDirectionProps();
-  const textColor = color ?? theme.colors.text;
+  const textColor = color ?? tokens.foreground;
   const starPaint = starColor ?? textColor;
-  const countPaint = countColor ?? color ?? theme.colors.textSecondary;
+  const countPaint = countColor ?? color ?? tokens.mutedForeground;
   const config = SIZE_CONFIG[size];
   const glyphSize =
     typeof starSize === 'number' && Number.isFinite(starSize) && starSize > 0
@@ -206,7 +206,7 @@ function RatingComponent({
           rating={clampRating(fillValue ?? parseRatingValue(value))}
           size={glyphSize}
           fill={starPaint}
-          empty={emptyStarColor ?? theme.colors.border}
+          empty={emptyStarColor ?? tokens.border}
           testID={testID ? `${testID}-stars` : undefined}
         />
       ) : variant === 'stars' ? null : (
