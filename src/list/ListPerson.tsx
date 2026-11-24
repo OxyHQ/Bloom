@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { AvatarPresence } from '../chat-indicators/AvatarPresence';
 import { CHAT_PEOPLE_MESSAGES } from '../chat-people/messages';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
@@ -87,11 +87,7 @@ export function ListPerson({
           props.trailing
         ) : onAction ? (
           actionDone ? (
-            <View
-              pointerEvents="none"
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
-              testID={id('action-done')}
-            >
+            <View pointerEvents="none" style={styles.done} testID={id('action-done')}>
               <RiCheckLine size="sm" />
               <Text variant="body-2-medium">{actionDoneLabel}</Text>
             </View>
@@ -112,3 +108,7 @@ export function ListPerson({
     />
   );
 }
+
+const styles = StyleSheet.create({
+  done: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+});

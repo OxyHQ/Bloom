@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
@@ -93,7 +93,7 @@ export function ListMail({
             pointerEvents="none"
             aria-hidden
             importantForAccessibility="no-hide-descendants"
-            style={{ gap: 2, minWidth: 0 }}
+            style={styles.content}
           >
             <Text
               variant={unread ? 'body-semibold' : 'body-regular'}
@@ -144,7 +144,7 @@ export function ListMail({
         props.trailing !== undefined ? (
           props.trailing
         ) : (
-          <View pointerEvents="box-none" style={{ alignItems: 'flex-end', gap: 3 }}>
+          <View pointerEvents="box-none" style={styles.trailing}>
             {time !== undefined ? (
               <View pointerEvents="none" aria-hidden>
                 <Text
@@ -158,10 +158,7 @@ export function ListMail({
                 </Text>
               </View>
             ) : null}
-            <View
-              pointerEvents="box-none"
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
-            >
+            <View pointerEvents="box-none" style={styles.states}>
               {hasAttachment ? (
                 <View aria-hidden pointerEvents="none" testID={id('attachment')}>
                   <RiAttachment2 width={14} height={14} fill={paint.textGraphical} />
@@ -191,3 +188,9 @@ export function ListMail({
     />
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 2, minWidth: 0 },
+  trailing: { alignItems: 'flex-end', gap: 3 },
+  states: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+});
