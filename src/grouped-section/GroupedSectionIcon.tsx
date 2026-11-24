@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Surface } from '../surface/Surface';
 import { useTheme } from '../theme/use-theme';
@@ -17,7 +18,7 @@ export function GroupedSectionIcon({
 }: GroupedSectionIconProps) {
   const theme = useTheme();
   const background = color ?? resolveAccentColors(theme.colors, tone, 'solid').background;
-  const foreground = mixColors(background, '#000000', 0.6);
+  const foreground = useMemo(() => mixColors(background, '#000000', 0.6), [background]);
   return (
     <Surface
       fill={background}
