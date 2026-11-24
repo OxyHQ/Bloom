@@ -101,6 +101,15 @@ describe('a pushed scene', () => {
     expect(entered).toBe(true);
   });
 
+  it('has not entered when the pushing render reads the state from before the push', () => {
+    // The navigator's committed state, as the pushed scene's first render reads it.
+    const { navigation, emit } = sceneNavigation(['tabs']);
+    render(ui(navigation, 'post'));
+    expect(entered).toBe(false);
+    act(() => emit(false));
+    expect(entered).toBe(true);
+  });
+
   it('is there from the start when no push brought it in', () => {
     render(ui(sceneNavigation(['tabs']).navigation, 'tabs'));
     expect(entered).toBe(true);

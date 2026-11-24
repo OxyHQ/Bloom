@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- `useScreenEntered()` is false on a pushed stack scene until its push transition ends, as documented. The pushing render reads the navigator's last committed state, which does not hold the pushed route yet, so the scene counted as one the stack started with and was entered at once: on a Pixel 8a a Mention post mounted its replies and its reply composer a frame after the push instead of after the slide.
+
 ### Breaking
 
 - Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
