@@ -127,7 +127,7 @@
     },
     "packages/bloom-language": {
       "name": "@oxy.so/bloom-language",
-      "version": "1.5.0",
+      "version": "1.5.1",
       "peerDependencies": {
         "@expo/ui": ">=58.0.0",
         "@oxy.so/bloom": ">=23.8.0",

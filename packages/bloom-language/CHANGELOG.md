@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1
+
+### Fixed
+
+- A disabled solid `Button` or `FAB` on glass (`.glass().disabled(true)`) keeps its glass neutral. Its tone tinted the glass whatever its state, so a disabled submit read as live (Mention's composer: a blue Publicar with nothing to post); Bloom's own lens control draws its disabled paint, which is neutral, and now the two agree.
+
 ## 1.5.0
 
 ### Compatibility
@@ -18,10 +24,6 @@
 
 - A hover group's press highlight (`.hoverGroup()` on a view that takes a press) costs the view nothing: it is Bloom's `pressHighlight`, drawn on the `Pressable` the view already is, in its tree's palette, with no component, hook, state or effect of its own. Android: the platform ripple (`android_ripple`), one object per palette. iOS: the `Pressable`'s own pressed state lights the wash under the children, and a press re-renders that `Pressable` alone. 1.3.0 drew it with a component of its own, a shared value and `SubtleHover`'s animated wash: Mention's feed row paid 9 hook slots and one component per row. The cost gate holds a pressable hover group equal to a bare press (fibers, hooks and context reads; Android in the parity suite, iOS in the unit suite). On iOS the wash clears at once on release (1.3.0 faded it over 150 ms).
 - `AppLayout` reads the tab pager's actions alone (`useTabPagerActions()`), so a navigation, a pushed route included, no longer re-renders the whole shell; only the bottom bar draws the page in front. The iOS `TabView` reads its pages the same way.
-
-### Fixed
-
-- A disabled solid `Button` or `FAB` on glass (`.glass().disabled(true)`) keeps its glass neutral. Its tone tinted the glass whatever its state, so a disabled submit read as live (Mention's composer: a blue Publicar with nothing to post); Bloom's own lens control draws its disabled paint, which is neutral, and now the two agree.
 
 ## 1.4.0
 
