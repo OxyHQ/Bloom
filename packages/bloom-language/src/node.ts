@@ -5255,8 +5255,8 @@ export interface ButtonGroupView extends ViewModifiers<ButtonGroupView> {
 export interface FabView extends ViewModifiers<FabView> {
   style(value: BloomAppearance): FabView;
   /**
-   * The silhouette: `circle` (the default), `rounded` (a rounded square) or `squircle` (a rounded square
-   * with Apple's continuous corner). Its glass, the press and a menu's morph take the same shape.
+   * The silhouette: `squircle` (the default, a rounded square with Apple's continuous corner),
+   * `rounded` (a rounded square) or `circle`. Its glass, the press and a menu's morph take the same shape.
    */
   shape(value: FabShape): FabView;
   size(value: BloomSize): FabView;

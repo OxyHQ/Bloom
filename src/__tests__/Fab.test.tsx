@@ -11,6 +11,7 @@ import { BloomScope } from '../appearance';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
+import { translucentTint } from '../surface/shared';
 const Icon = () => <Text>+</Text>;
 function themed(node: React.ReactNode) {
   return render(
@@ -69,8 +70,10 @@ describe('Fab action primitive', () => {
         expect(materials).toHaveLength(1);
         return materials[0]!.props.fill;
       };
+      // On the web the fill tints the frost as a tinted surface does, so the frost shows through it.
+      const tinted = (color: string) => (platform === 'web' ? translucentTint(color) : color);
       const theme = buildTheme('teal', 'light');
-      expect(fill()).toBe(resolveButtonPalette('solid', theme, 'accent').rest.background);
+      expect(fill()).toBe(tinted(resolveButtonPalette('solid', theme, 'accent').rest.background));
       view.rerender(
         <BloomThemeProvider mode="light" colorPreset="teal">
           <BloomScope tone="support">
@@ -78,7 +81,7 @@ describe('Fab action primitive', () => {
           </BloomScope>
         </BloomThemeProvider>,
       );
-      expect(fill()).toBe(resolveButtonPalette('solid', theme, 'support').rest.background);
+      expect(fill()).toBe(tinted(resolveButtonPalette('solid', theme, 'support').rest.background));
       view.rerender(
         <BloomThemeProvider mode="light" colorPreset="teal">
           <BloomScope tone="support">
@@ -87,7 +90,7 @@ describe('Fab action primitive', () => {
         </BloomThemeProvider>,
       );
       const neutral = resolveButtonPalette('solid', theme, 'neutral').rest;
-      expect(fill()).toBe(neutral.background);
+      expect(fill()).toBe(tinted(neutral.background));
     },
   );
 

@@ -13,8 +13,8 @@ export interface FabProps
   > {
   size?: FabSize;
   /**
-   * The silhouette: `circle` (the default), `rounded` (a rounded square) or `squircle` (a rounded
-   * square with Apple's continuous corner). The lens, its press and a menu's morph follow it.
+   * The silhouette: `squircle` (the default, a rounded square with Apple's continuous corner),
+   * `rounded` (a rounded square) or `circle`. The lens, its press and a menu's morph follow it.
    */
   shape?: FabShape;
   icon?: ButtonIconComponent;

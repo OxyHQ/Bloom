@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- A `FAB` is a squircle unless its chain names a `.shape()` (was a circle), as Bloom `Fab`'s default is, on every platform: its glass takes the 28% corner at its diameter. `.shape('circle')` keeps the capsule.
+- The shell's bottom-bar FAB (`AppLayout(...).primaryAction(...)` on Android, OxyOS and the web) is Bloom's own `Fab` on no glass of the language's, the component and the paint the sidebar draws for the same action, so the two are always one colour (the accent): a tinted lens on Android, the surface tint over the frost on the web.
+- An untinted glass under a solid control (a `FAB`, a `glassProminent` button) is tinted glass: on the lens the fill at 0.8 (was 0.96), Bloom's lens controls' strength, so the glass still shows through it; on iOS the system's tinted Liquid Glass, and before iOS 26 the fill at 0.8 over the blur (was opaque).
+
+### Fixed
+
+- A FAB's shaped glass host is cached by the host itself in a `Map`, so a host that is a string (a test's stand-in) no longer throws.
+
 ## 1.1.1
 
 ### Changed

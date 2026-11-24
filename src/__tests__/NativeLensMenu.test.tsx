@@ -46,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from '../dropdown-menu/DropdownMenu';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../select/Select';
+import { LENS_FILL_TINT } from '../floating/lens/lens-tint';
 
 jest.mock('../floating/lens/native-lens', () => {
   const { stubLens } = jest.requireActual('./lens-stub');
@@ -175,7 +176,8 @@ describe('a lens trigger', () => {
       </DropdownMenu>,
     );
     expect(props()?.lens).toBe(true);
-    expect(props()?.triggerConfig).toMatchObject({ tintOpacity: 0.96 });
+    expect(props()?.triggerConfig).toMatchObject({ tintOpacity: LENS_FILL_TINT });
+    expect(LENS_FILL_TINT).toBe(0.8);
   });
 });
 

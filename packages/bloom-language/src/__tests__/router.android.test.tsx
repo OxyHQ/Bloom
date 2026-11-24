@@ -111,6 +111,14 @@ describe('AppLayout on Android', () => {
     // The sidebar's compose row is the same action.
     const shell = only(r, 'AppShell');
     expect(shell.props.primaryAction.accessibilityLabel).toBe('Compose');
+    // And the same paint: the bar's FAB is Bloom's own `Fab` on no glass of the language's, as the
+    // sidebar's (`SidebarPrimaryAction`) is, its tone the default accent, so the two are one colour.
+    const bare = mount(bar.props.action);
+    expect(hosts(bare, 'BloomLensMenu')).toHaveLength(0);
+    expect(hosts(bare, 'Surface')).toHaveLength(0);
+    expect(fab.props.material).toBeUndefined();
+    expect(fab.props.tone).toBeUndefined();
+    expect(fab.props.appearance).toBeUndefined();
   });
 
   it('a route without the bar gives the shell none', () => {

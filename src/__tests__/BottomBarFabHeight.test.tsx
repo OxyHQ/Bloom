@@ -47,7 +47,7 @@ it('on its own, the FAB keeps its size’s diameter', () => {
   expect(heightOf('fab', screen)).toBe(FAB_METRICS.md.diameter);
 });
 
-it('a FAB’s shape is its corner: a circle, or a rounded square or squircle at 28% of its diameter', () => {
+it('a FAB’s shape is its corner: a squircle by default, a rounded square at 28% of its diameter too, or a circle', () => {
   const radius = (shape?: 'circle' | 'rounded' | 'squircle') => {
     const screen = render(
       <BloomThemeProvider mode="light">
@@ -57,7 +57,8 @@ it('a FAB’s shape is its corner: a circle, or a rounded square or squircle at 
     return StyleSheet.flatten(screen.getByTestId('fab').props.style)?.borderRadius;
   };
   const diameter = FAB_METRICS.md.diameter;
-  expect(radius()).toBe(radius('circle'));
+  expect(radius()).toBe(radius('squircle'));
+  expect(radius('circle')).not.toBe(radius('squircle'));
   expect(radius('rounded')).toBe(Math.round(diameter * 0.28));
   expect(radius('squircle')).toBe(Math.round(diameter * 0.28));
 });

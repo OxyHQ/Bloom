@@ -616,6 +616,9 @@ function isAppToken(value: unknown): value is AppToken<'space'> {
   return typeof value === 'object' && value !== null && 'scale' in value;
 }
 
+/** A FAB's silhouette when its chain names none (Bloom `Fab`'s `DEFAULT_FAB_SHAPE`). */
+const FAB_DEFAULT_SHAPE: FabShape = 'squircle';
+
 /** A FAB is on glass: the platform's, unless its chain names another. */
 const FAB_GLASS: Modifier = { kind: 'glass', key: regular.key, value: regular };
 
@@ -806,12 +809,14 @@ function plan(node: Node, env: Env): Plan {
   if (result.own.has('hoverHighlight') && ownValue(result, 'hoverHighlight')?.value === undefined)
     result.hoverGroup = true;
   if ((node.kind === 'button' || node.kind === 'fab') && result.layers.some((l) => l.glass)) {
-    const shape = ownValue(result, 'shape')?.value as FabShape | undefined;
+    // A FAB is a squircle unless its chain names another shape: Bloom `Fab`'s default
+    // (`DEFAULT_FAB_SHAPE`, which the tests hold this to), kept here so an older Bloom draws it too.
+    const shape = (ownValue(result, 'shape')?.value as FabShape | undefined) ?? FAB_DEFAULT_SHAPE;
     result.control = {
       tint: controlTint(node.kind, result),
       reports: glassStates(result.layers),
       fab:
-        node.kind === 'fab' && shape !== undefined && shape !== 'circle'
+        node.kind === 'fab' && shape !== 'circle'
           ? { shape, size: ownValue(result, 'size')?.value as BloomSize | undefined }
           : undefined,
     };
@@ -1684,7 +1689,8 @@ function wrapLayer(
       key: ownKey,
     };
     // Surface's fill is a colour painted from a role: the glass's own (or the
-    // control's), and the one a variant names while it holds.
+    // control's), and the one a variant names while it holds. On the web an
+    // opaque fill (a control's) tints the frost at Surface's own 72%.
     const fill = glass.fillRole ?? p.control?.tint;
     const opacity = glass.fillRole === undefined ? undefined : glass.fillOpacity;
     const paint = variedPaint(
@@ -1858,7 +1864,9 @@ function materialRadius(style: Resolved): { corner: StyleValue | undefined; reso
   return { corner, resolved };
 }
 
-const shapedHosts = new WeakMap<object, ComponentType<Record<string, unknown>>>();
+// Keyed by the host itself, which a test's stand-in can make a string: a Map, never a WeakMap. The
+// hosts are the few the platform draws glass with, so it stays as small.
+const shapedHosts = new Map<unknown, ComponentType<Record<string, unknown>>>();
 
 /**
  * A glass host in a FAB's shape: the corner of its silhouette at the FAB's diameter, which only its
@@ -2638,7 +2646,7 @@ function renderHost(
         appearance: ownValue(p, 'style')?.value,
         tone: ownValue(p, 'tint')?.value,
         size: ownValue(p, 'size')?.value,
-        shape: ownValue(p, 'shape')?.value,
+        shape: ownValue(p, 'shape')?.value ?? FAB_DEFAULT_SHAPE,
         icon,
         label,
         disabled: ownValue(p, 'disabled')?.value,
