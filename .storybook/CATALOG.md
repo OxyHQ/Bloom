@@ -9,7 +9,7 @@ in `preview.tsx`; each CSF file owns its title and stable `meta.id`.
 | Composition | Contracts shared by multiple families | Provider, BloomScope, Field, AppShell, Screen, navigation, scroll restoration, overlays |
 | Components | Reusable UI grouped by purpose | Actions, inputs, feedback, media, chat messages, agent parts, charts |
 | Patterns | Complete workflows grouped by domain | Account settings, chat screens, agent editors, payments, housing, music |
-| Templates | Full application examples from `templates/` | AI Chat, Housing, Workspace |
+| Templates | Full application examples from `templates/` | AI Chat, Housing, HR Management |
 | Language | The Bloom language: the tour, one topic per story, then each node's parity with the Bloom component it draws | Tour, Parity |
 | Labs | Development diagnostics | Avatar runtime review |
 
@@ -22,7 +22,7 @@ category: Markdown is under Data Display, Voice under Media, and the composers
 under Inputs. Agent conversations and editors are patterns. Workspace packages
 use the same taxonomy as the main package.
 
-Keep display names readable: `Rich Text Input`, `Contact Profile Card`, `Payment
+Keep display names readable: `Rich Text Input`, `Selection Card`, `Payment
 Method`. Keep exported component and story names intact. A story's title is its
 catalogue location, not a package export or a suggested replacement API.
 

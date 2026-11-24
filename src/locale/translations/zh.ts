@@ -173,19 +173,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: '确认', ok: '确定' };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: '邮件', name: (s) => `给 ${s} 发送邮件` },
-    phone: { action: '通话', name: (s) => `呼叫 ${s}` },
-    chat: { action: '消息', name: (s) => `给 ${s} 发消息` },
-    meeting: { action: '会议', name: (s) => `与 ${s} 安排会议` },
-    video: { action: '视频', name: (s) => `与 ${s} 开始视频通话` },
-    website: { action: '网站', name: (s) => `打开 ${s} 的网站` },
-  },
-  labelsFor: (name) => `${name} 的标签`,
-  owner: '负责人',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: '草稿：',
@@ -211,16 +198,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: '你的快拍',
   addStory: '添加到你的快拍',
   storyOf: (name) => `${name}的快拍`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: '已置顶',
-  locked: '受保护',
-  attachments: (n) => plural('zh', n, { other: '{n} 个附件' }),
-  select: '选择笔记',
-  checklistDone: '已完成',
-  checklistTodo: '待办',
-  more: (n) => `还有 ${n} 项`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1191,12 +1168,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `转到第 ${page} 页`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: '线索评分',
-  factors: '评分构成',
-  bands: { cold: '冷', warm: '温', hot: '热' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: '驾车', transit: '公共交通', walk: '步行', cycle: '骑行' },
   traffic: { light: '畅通', moderate: '缓行', heavy: '拥堵' },
@@ -1517,10 +1488,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}，已静音`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: '近期入职',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: '草稿：',
   unread: '未读',
@@ -1717,16 +1684,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   yourAnswer: '你的答案',
   votes: (n) => (n === 0 ? '暂无投票' : `${n} 票`),
   sticker: '贴纸',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': '进展顺利', 'at-risk': '有风险', stalled: '停滞' },
-  stalledFor: (duration) => `已停滞 ${duration}`,
-  move: (title) => `移动“${title}”`,
-  stages: '销售管道阶段',
-  stageWithCount: (name, n) => `${name}，${n} 个商机`,
-  empty: '此阶段没有商机',
-  loadMore: '加载更多',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2735,9 +2692,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2786,7 +2741,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2801,7 +2755,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2813,7 +2766,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

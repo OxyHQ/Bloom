@@ -180,19 +180,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: 'Confirma', ok: "D'acord" };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: 'Correu', name: (s) => `Envia un correu a ${s}` },
-    phone: { action: 'Truca', name: (s) => `Truca a ${s}` },
-    chat: { action: 'Missatge', name: (s) => `Envia un missatge a ${s}` },
-    meeting: { action: 'Reunió', name: (s) => `Programa una reunió amb ${s}` },
-    video: { action: 'Vídeo', name: (s) => `Inicia una videotrucada amb ${s}` },
-    website: { action: 'Lloc web', name: (s) => `Obre el lloc web de ${s}` },
-  },
-  labelsFor: (name) => `Etiquetes de ${name}`,
-  owner: 'Responsable',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'Esborrany:',
@@ -218,16 +205,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'La teva història',
   addStory: 'Afegeix a la teva història',
   storyOf: (name) => `Història de ${name}`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'Fixada',
-  locked: 'Protegida',
-  attachments: (n) => plural('ca', n, { one: '{n} fitxer adjunt', other: '{n} fitxers adjunts' }),
-  select: 'Selecciona la nota',
-  checklistDone: 'Fet',
-  checklistTodo: 'Pendent',
-  more: (n) => `${n} més`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1250,12 +1227,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Ves a la pàgina ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'Puntuació del lead',
-  factors: 'De què es compon',
-  bands: { cold: 'Fred', warm: 'Tebi', hot: 'Calent' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Cotxe', transit: 'Transport públic', walk: 'A peu', cycle: 'Bicicleta' },
   traffic: { light: 'Trànsit fluid', moderate: 'Trànsit moderat', heavy: 'Trànsit dens' },
@@ -1598,10 +1569,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, silenciat`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'Incorporacions recents',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Esborrany:',
   unread: 'No llegit',
@@ -1809,17 +1776,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   yourAnswer: 'la teva resposta',
   votes: (n) => (n === 0 ? 'Cap vot' : plural('ca', n, { one: '{n} vot', other: '{n} vots' })),
   sticker: 'Adhesiu',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'Al dia', 'at-risk': 'En risc', stalled: 'Encallat' },
-  stalledFor: (duration) => `Encallat des de fa ${duration}`,
-  move: (title) => `Mou ${title}`,
-  stages: "Etapes de l'embut",
-  stageWithCount: (name, n) =>
-    `${name}, ${plural('ca', n, { one: '{n} oportunitat', other: '{n} oportunitats' })}`,
-  empty: 'No hi ha oportunitats en aquesta etapa',
-  loadMore: "Carrega'n més",
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2863,9 +2819,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2914,7 +2868,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2929,7 +2882,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2941,7 +2893,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

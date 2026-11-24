@@ -229,7 +229,6 @@ import type {
 } from '../controls/card-form';
 import type { CheckoutSheetView } from '../controls/checkout-sheet';
 import type { RouteStopsView } from '../controls/route-stops';
-import type { NoteCardView, NoteCardSkeletonView } from '../controls/note-card';
 import type { ShareSheetView } from '../controls/share-sheet';
 import type {
   ConnectionDotsView,
@@ -249,18 +248,7 @@ import type {
 } from '../controls/payment-method';
 import type { PriceSummaryView, PriceSummaryLineView } from '../controls/price-breakdown';
 import type { PaymentStatusBarView, PaymentStatusBlockView } from '../controls/payment-status';
-import type {
-  ContactProfileCardView,
-  LeadScoreCardView,
-  DealCardView,
-  PipelineColumnView,
-  PipelineBoardView,
-} from '../controls/crm';
-import type {
-  ImportantAlertsCardView,
-  PatientInfoCardView,
-  RecentHiresCardView,
-} from '../controls/dashboard-cards';
+import type { ImportantAlertsCardView, PatientInfoCardView } from '../controls/dashboard-cards';
 import type {
   CartLineView,
   CartPanelView,
@@ -1129,8 +1117,6 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<AgentChatHistoryView>, Of<'agentChatHistory'>>,
       Same<MethodsOf<AgentChatView>, Of<'agentChat'>>,
       Same<MethodsOf<RouteStopsView>, Of<'routeStops'>>,
-      Same<MethodsOf<NoteCardView>, Of<'noteCard'>>,
-      Same<MethodsOf<NoteCardSkeletonView>, Of<'noteCardSkeleton'>>,
       Same<MethodsOf<ShareSheetView>, Of<'shareSheet'>>,
       Same<MethodsOf<ConnectionDotsView>, Of<'connectionDots'>>,
       Same<MethodsOf<OutlineNavView>, Of<'outlineNav'>>,
@@ -1145,14 +1131,8 @@ describe('the spec drives the rules', () => {
       Same<MethodsOf<PriceSummaryLineView>, Of<'priceSummaryLine'>>,
       Same<MethodsOf<PaymentStatusBarView>, Of<'paymentStatusBar'>>,
       Same<MethodsOf<PaymentStatusBlockView>, Of<'paymentStatusBlock'>>,
-      Same<MethodsOf<ContactProfileCardView>, Of<'contactProfileCard'>>,
-      Same<MethodsOf<LeadScoreCardView>, Of<'leadScoreCard'>>,
-      Same<MethodsOf<DealCardView>, Of<'dealCard'>>,
-      Same<MethodsOf<PipelineColumnView>, Of<'pipelineColumn'>>,
-      Same<MethodsOf<PipelineBoardView>, Of<'pipelineBoard'>>,
       Same<MethodsOf<ImportantAlertsCardView>, Of<'importantAlertsCard'>>,
       Same<MethodsOf<PatientInfoCardView>, Of<'patientInfoCard'>>,
-      Same<MethodsOf<RecentHiresCardView>, Of<'recentHiresCard'>>,
       Same<MethodsOf<CartLineView>, Of<'cartLine'>>,
       Same<MethodsOf<CartPanelView>, Of<'cartPanel'>>,
       Same<MethodsOf<CartPromoFieldView>, Of<'cartPromoField'>>,
@@ -1225,14 +1205,6 @@ describe('the spec drives the rules', () => {
       // A scroll view's content view takes exactly the spec's `contentView.modifiers`.
       Same<MethodsOf<ScrollContentView>, (typeof CONTENT_VIEW_MODIFIERS)[number]>,
     ] = [
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
       true,
       true,
       true,

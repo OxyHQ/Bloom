@@ -382,11 +382,6 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
         'the switch row draws its own label ("Dark mode") as both visible text and accessible name, inside the toggle\u2019s own menu.',
     },
 
-    'note-card': {
-      verdict: 'does-not-apply',
-      reason:
-        'the `checkbox` role is on the CARD (bulk selection in a list) and on read-only checklist PREVIEW rows. Neither is a form control: a note card is never inside a `Field`, and the preview rows take no press at all.',
-    },
     'note-editor': {
       verdict: 'does-not-apply',
       reason:

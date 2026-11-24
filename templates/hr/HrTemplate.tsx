@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { BarListCard, ComboChartCard, RadarChartCard, StageBarsCard } from '../../src/chart-cards';
@@ -12,10 +13,8 @@ import {
   type DataTableColumn,
 } from '../../src/data-table';
 import { RiTeamLine } from '../../src/icons/remix';
-import { RecentHiresCard } from '../../src/recent-hires-card';
 import { StatCards } from '../../src/stat-cards';
 import { useTheme } from '../../src/theme/use-theme';
-import { RECENT_HIRES } from '../home-dashboard/demo-data';
 import {
   CellText,
   DashboardShell,
@@ -47,8 +46,8 @@ import {
  * selected, then
  *
  *   KPIs     employees, open roles, time to hire, attrition
- *   row 1    recent hires, hiring pipeline stage bars, team engagement radar
- *            (score) — 1 column, 2 from `md` (the radar spans both), 3 from `xl`
+ *   row 1    hiring pipeline stage bars, team engagement radar (score) — 1
+ *            column, 2 from `md`
  *   row 2    hires vs. attrition combo with tiles, the team breakdown bar list
  *            — 2 columns from `lg`, stretched to one height
  *   table    employees: filters, search, sortable columns, selection, work
@@ -222,7 +221,6 @@ export function HrTemplate() {
     return attritionLine(pink.color, pink.activeColor);
   }, [theme]);
 
-  const hires = <RecentHiresCard count={56} teamLabel="Design team" hires={RECENT_HIRES} />;
   const pipeline = <StageBarsCard title="Hiring pipeline" ranges={PIPELINE_RANGES} />;
   const radar = (
     <RadarChartCard
@@ -244,23 +242,13 @@ export function HrTemplate() {
   return (
     <DashboardShell selected="hr" title="HR Team" crumbIcon={RiTeamLine}>
       <StatCards stats={HR_STATS} />
-      {bp.xl ? (
+      {bp.md ? (
         <View style={{ width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
-          <Track>{hires}</Track>
           <Track>{pipeline}</Track>
           <Track>{radar}</Track>
         </View>
-      ) : bp.md ? (
-        <View style={{ width: '100%', gap: 16 }}>
-          <View style={{ width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
-            <Track>{hires}</Track>
-            <Track>{pipeline}</Track>
-          </View>
-          {radar}
-        </View>
       ) : (
         <View style={{ width: '100%', gap: 16 }}>
-          {hires}
           {pipeline}
           {radar}
         </View>

@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  *
  * The comms families — avatar, call-ui, mail-compose, mail-thread, mail-list,
- * note-editor, note-card — speak the locale (`LocaleProvider`, which
+ * note-editor — speak the locale (`LocaleProvider`, which
  * `BloomProvider locale` mounts), count in the language's own plural forms,
  * and still let a caller's `labels` / `strings` / `*Label` props win.
  *
@@ -34,8 +34,6 @@ import { groupMailByDay } from '../mail-list/shared';
 import { MailThread } from '../mail-thread';
 import { MAIL_THREAD_MESSAGES } from '../mail-thread/messages';
 import type { MailThreadMessage } from '../mail-thread/types';
-import { NoteCard } from '../note-card';
-import { NOTE_CARD_MESSAGES } from '../note-card/messages';
 import { NoteEditorHeader } from '../note-editor';
 import { NOTE_EDITOR_MESSAGES } from '../note-editor/messages';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -303,35 +301,5 @@ describe('note-editor', () => {
     expect(byTestId('h-words').textContent).toBe('5 w');
     expect(byTestId('h-title').getAttribute('placeholder')).toBe('Новая');
     expect(messagesIn(NOTE_EDITOR_MESSAGES, 'ru').header.words(11)).toBe('11 слов');
-  });
-});
-
-describe('note-card', () => {
-  it('composes its name in the locale, and labels still win', () => {
-    mountIn(
-      'pt',
-      <NoteCard
-        title="Porto"
-        pinned
-        meta={{ attachments: 1 }}
-        onPress={() => undefined}
-        testID="n"
-      />,
-    );
-    expect(byTestId('n').getAttribute('aria-label')).toBe('Porto, Fixada, 1 anexo');
-    act(() => root.render(<div />));
-    mountIn(
-      'pt',
-      <NoteCard
-        title="Porto"
-        pinned
-        labels={{ pinned: 'No topo' }}
-        onPress={() => undefined}
-        testID="n"
-      />,
-    );
-    expect(byTestId('n').getAttribute('aria-label')).toBe('Porto, No topo');
-    expect(messagesIn(NOTE_CARD_MESSAGES, 'fr').attachments(0)).toBe('0 pièce jointe');
-    expect(messagesIn(NOTE_CARD_MESSAGES, 'ar').attachments(11)).toBe('11 مرفقًا');
   });
 });

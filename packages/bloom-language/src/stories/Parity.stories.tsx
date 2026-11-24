@@ -178,7 +178,6 @@ export const RouteStopsNotesAndSharing: Story = { args: { family: 'routeNoteShar
 export const GenericComponents: Story = { args: { family: 'generic' } };
 export const AddressesAndPaymentMethods: Story = { args: { family: 'addressPayment' } };
 export const PricesAndPaymentStatus: Story = { args: { family: 'pricePaymentStatus' } };
-export const Crm: Story = { args: { family: 'crm' } };
 export const DashboardCards: Story = { args: { family: 'dashboardCard' } };
 export const CartMenuItemsAndVendors: Story = { args: { family: 'cartMenuVendor' } };
 export const MediaCards: Story = { args: { family: 'mediaCard' } };

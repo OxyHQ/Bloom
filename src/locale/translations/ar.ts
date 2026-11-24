@@ -183,19 +183,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: 'تأكيد', ok: 'حسنًا' };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: 'البريد', name: (s) => `إرسال بريد إلكتروني إلى ${s}` },
-    phone: { action: 'اتصال', name: (s) => `الاتصال بـ ${s}` },
-    chat: { action: 'رسالة', name: (s) => `إرسال رسالة إلى ${s}` },
-    meeting: { action: 'اجتماع', name: (s) => `جدولة اجتماع مع ${s}` },
-    video: { action: 'فيديو', name: (s) => `بدء مكالمة فيديو مع ${s}` },
-    website: { action: 'الموقع', name: (s) => `فتح موقع ${s} الإلكتروني` },
-  },
-  labelsFor: (name) => `تصنيفات ${name}`,
-  owner: 'المسؤول',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'مسودة:',
@@ -222,24 +209,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'قصتك',
   addStory: 'إضافة إلى قصتك',
   storyOf: (name) => `قصة ${name}`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'مثبّتة',
-  locked: 'محمية',
-  attachments: (n) =>
-    plural('ar', n, {
-      zero: 'لا مرفقات',
-      one: 'مرفق واحد',
-      two: 'مرفقان',
-      few: '{n} مرفقات',
-      many: '{n} مرفقًا',
-      other: '{n} مرفق',
-    }),
-  select: 'تحديد الملاحظة',
-  checklistDone: 'مكتمل',
-  checklistTodo: 'غير مكتمل',
-  more: (n) => `${n} أخرى`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1409,12 +1378,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `الانتقال إلى الصفحة ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'تقييم العميل المحتمل',
-  factors: 'مكوّنات التقييم',
-  bands: { cold: 'بارد', warm: 'دافئ', hot: 'ساخن' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'القيادة', transit: 'المواصلات العامة', walk: 'المشي', cycle: 'الدراجة' },
   traffic: { light: 'حركة مرور خفيفة', moderate: 'حركة مرور متوسطة', heavy: 'حركة مرور كثيفة' },
@@ -1814,10 +1777,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}، الميكروفون مكتوم`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'التعيينات الأخيرة',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'مسودة:',
   unread: 'غير مقروءة',
@@ -2057,17 +2016,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
       other: '{n} صوت',
     }),
   sticker: 'ملصق',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'على المسار', 'at-risk': 'معرّضة للخطر', stalled: 'متوقفة' },
-  stalledFor: (duration) => `متوقفة منذ ${duration}`,
-  move: (title) => `نقل ${title}`,
-  stages: 'مراحل خط المبيعات',
-  stageWithCount: (name, n) =>
-    `${name}، ${plural('ar', n, { zero: 'لا صفقات', one: 'صفقة واحدة', two: 'صفقتان', few: '{n} صفقات', many: '{n} صفقة', other: '{n} صفقة' })}`,
-  empty: 'لا توجد صفقات في هذه المرحلة',
-  loadMore: 'تحميل المزيد',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -3211,9 +3159,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -3262,7 +3208,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -3277,7 +3222,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -3289,7 +3233,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

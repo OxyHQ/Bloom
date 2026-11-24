@@ -176,19 +176,6 @@ const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = {
   ok: 'ঠিক আছে',
 };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  channels: {
-    email: { action: 'ইমেল', name: (s) => `${s}-কে ইমেল করুন` },
-    phone: { action: 'কল', name: (s) => `${s}-কে কল করুন` },
-    chat: { action: 'বার্তা', name: (s) => `${s}-কে বার্তা পাঠান` },
-    meeting: { action: 'মিটিং', name: (s) => `${s}-এর সাথে মিটিং নির্ধারণ করুন` },
-    video: { action: 'ভিডিও', name: (s) => `${s}-এর সাথে ভিডিও কল শুরু করুন` },
-    website: { action: 'ওয়েবসাইট', name: (s) => `${s}-এর ওয়েবসাইট খুলুন` },
-  },
-  labelsFor: (name) => `${name}-এর লেবেল`,
-  owner: 'মালিক',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'খসড়া:',
@@ -214,16 +201,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'আপনার স্টোরি',
   addStory: 'আপনার স্টোরিতে যোগ করুন',
   storyOf: (name) => `${name}-এর স্টোরি`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'পিন করা',
-  locked: 'সুরক্ষিত',
-  attachments: (n) => plural('bn', n, { other: '{n}টি সংযুক্তি' }),
-  select: 'নোট নির্বাচন করুন',
-  checklistDone: 'সম্পন্ন',
-  checklistTodo: 'বাকি',
-  more: (n) => `আরও ${n}টি`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1214,12 +1191,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `পৃষ্ঠা ${page}-এ যান`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'লিড স্কোর',
-  factors: 'এটি কী দিয়ে তৈরি',
-  bands: { cold: 'ঠান্ডা', warm: 'উষ্ণ', hot: 'গরম' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'গাড়ি', transit: 'গণপরিবহন', walk: 'হাঁটা', cycle: 'সাইকেল' },
   traffic: { light: 'কম যানজট', moderate: 'মাঝারি যানজট', heavy: 'বেশি যানজট' },
@@ -1545,10 +1516,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, মিউট করা`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'সাম্প্রতিক নিয়োগ',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'খসড়া:',
   unread: 'অপঠিত',
@@ -1750,16 +1717,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
   yourAnswer: 'আপনার উত্তর',
   votes: (n) => (n === 0 ? 'কোনো ভোট নেই' : `${n}টি ভোট`),
   sticker: 'স্টিকার',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'ঠিক পথে', 'at-risk': 'ঝুঁকিতে', stalled: 'আটকে আছে' },
-  stalledFor: (duration) => `${duration} ধরে আটকে আছে`,
-  move: (title) => `${title} সরান`,
-  stages: 'পাইপলাইনের ধাপ',
-  stageWithCount: (name, n) => `${name}, ${n}টি ডিল`,
-  empty: 'এই ধাপে কোনো ডিল নেই',
-  loadMore: 'আরও লোড করুন',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -2776,9 +2733,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -2827,7 +2782,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -2842,7 +2796,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -2854,7 +2807,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

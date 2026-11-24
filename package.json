@@ -1051,20 +1051,6 @@
         "default": "./lib/commonjs/stat-cards/index.js"
       }
     },
-    "./recent-hires-card": {
-      "react-native": {
-        "types": "./lib/typescript/module/recent-hires-card/index.d.ts",
-        "default": "./src/recent-hires-card/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/recent-hires-card/index.d.ts",
-        "default": "./lib/module/recent-hires-card/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/recent-hires-card/index.d.ts",
-        "default": "./lib/commonjs/recent-hires-card/index.js"
-      }
-    },
     "./ai-profile-card": {
       "react-native": {
         "types": "./lib/typescript/module/ai-profile-card/index.d.ts",
@@ -3734,34 +3720,6 @@
         "default": "./lib/commonjs/listing-editor/index.js"
       }
     },
-    "./contact-card": {
-      "react-native": {
-        "types": "./lib/typescript/module/contact-card/index.d.ts",
-        "default": "./src/contact-card/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/contact-card/index.d.ts",
-        "default": "./lib/module/contact-card/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/contact-card/index.d.ts",
-        "default": "./lib/commonjs/contact-card/index.js"
-      }
-    },
-    "./pipeline": {
-      "react-native": {
-        "types": "./lib/typescript/module/pipeline/index.d.ts",
-        "default": "./src/pipeline/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/pipeline/index.d.ts",
-        "default": "./lib/module/pipeline/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/pipeline/index.d.ts",
-        "default": "./lib/commonjs/pipeline/index.js"
-      }
-    },
     "./activity-feed": {
       "react-native": {
         "types": "./lib/typescript/module/activity-feed/index.d.ts",
@@ -3774,34 +3732,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/activity-feed/index.d.ts",
         "default": "./lib/commonjs/activity-feed/index.js"
-      }
-    },
-    "./lead-score": {
-      "react-native": {
-        "types": "./lib/typescript/module/lead-score/index.d.ts",
-        "default": "./src/lead-score/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/lead-score/index.d.ts",
-        "default": "./lib/module/lead-score/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/lead-score/index.d.ts",
-        "default": "./lib/commonjs/lead-score/index.js"
-      }
-    },
-    "./note-card": {
-      "react-native": {
-        "types": "./lib/typescript/module/note-card/index.d.ts",
-        "default": "./src/note-card/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/note-card/index.d.ts",
-        "default": "./lib/module/note-card/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/note-card/index.d.ts",
-        "default": "./lib/commonjs/note-card/index.js"
       }
     },
     "./note-editor": {
@@ -4790,9 +4720,6 @@
       "stat-cards": [
         "./lib/typescript/module/stat-cards/index.d.ts"
       ],
-      "recent-hires-card": [
-        "./lib/typescript/module/recent-hires-card/index.d.ts"
-      ],
       "ai-profile-card": [
         "./lib/typescript/module/ai-profile-card/index.d.ts"
       ],
@@ -5321,20 +5248,8 @@
       "listing-editor": [
         "./lib/typescript/module/listing-editor/index.d.ts"
       ],
-      "contact-card": [
-        "./lib/typescript/module/contact-card/index.d.ts"
-      ],
-      "pipeline": [
-        "./lib/typescript/module/pipeline/index.d.ts"
-      ],
       "activity-feed": [
         "./lib/typescript/module/activity-feed/index.d.ts"
-      ],
-      "lead-score": [
-        "./lib/typescript/module/lead-score/index.d.ts"
-      ],
-      "note-card": [
-        "./lib/typescript/module/note-card/index.d.ts"
       ],
       "note-editor": [
         "./lib/typescript/module/note-editor/index.d.ts"

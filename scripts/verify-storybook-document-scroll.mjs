@@ -12,7 +12,6 @@ if (!stories.length)
     'templates-social--signed-out',
     'templates-social--open-columns',
     'templates-social--tall-context',
-    'templates-workspace--default',
     'templates-home-dashboard--default',
   );
 const browser = await puppeteer.launch({

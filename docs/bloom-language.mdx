@@ -3404,7 +3404,7 @@ is an `Embed`.
 ## Product components
 
 The product families apps share (agents, chat, dashboards, media), and those
-no app imports yet (commerce, music, CRM, the dashboard cards and
+no app imports yet (commerce, music, the dashboard cards and
 a few more), are Bloom's own components drawn as nodes. A node takes its content first and its data as
 an options object, as the Bloom component takes them: a slot is a language
 child, a handler a function, and the data is Bloom's own type, so Bloom's
@@ -4478,58 +4478,30 @@ save and download stay its item's, with the list's handler.
   compared by Jest as it mounts, not in Chrome, where two side by side are
   read at different frames.
 
-### CRM
-
-```ts
-ContactProfileCard(contact.name, { role, company, channels, stats, actions: Button(Text('Open')) }).density('compact').onPress(open)
-LeadScoreCard(lead.score, { factors, trend }).label(`Lead score for ${lead.name}`)
-PipelineBoard(stages, (stage) => PipelineColumn(stage.name, deals(stage), stage)).style('single')
-```
-
-Bloom's CRM families: `ContactProfileCard(name, options?)` (`.density('comfortable'
-| 'compact')`; its `actions` a child; it
-takes `.onPress()` itself), `LeadScoreCard(score, options?)` (named with
-`.label()`, which Bloom requires), `DealCard(title, options?)` (its `actions` a
-child; `.onPress()` its own), `PipelineColumn(name, deals, options?)` (a
-stage's data; its deals the content, its `width` a space token) and
-`PipelineBoard(stages, renderStage, options?)` (`renderStage` returns a
-language view; `.style('auto' | 'board' | 'single')` its layout; `columnWidth`
-and `singleMaxWidth` space tokens; `.stage([id, setId])` the stage the
-`single` layout shows, a binding: Bloom's `stageId` and its `onStageChange`). A cover's and a last touch's tones are
-Bloom's accent tones, kept in the options as data.
-
 ### Dashboard cards
 
 ```ts
 ImportantAlertsCard(alerts, alerts.length, { rangeLabel: 'This week' })
-RecentHiresCard(hires, total, { teamLabel: team.name, onTeamPress: pickTeam, height: 'auto' })
 ```
 
 Bloom's fixed-height dashboard cards: `ImportantAlertsCard(alerts, count,
-options?)`, `PatientInfoCard(name, details, options?)` and
-`RecentHiresCard(hires, count, options?)`. Their data is Bloom's (an alert's
-tone and its `iconBackground` stay in the alert); a `height` is a space token
-(`auto` too, for the recent hires).
+options?)` and `PatientInfoCard(name, details, options?)`. Their data is
+Bloom's (an alert's tone and its `iconBackground` stay in the alert); a
+`height` is a space token.
 
 
 
-### Route stops, note cards and the share sheet
+### Route stops and the share sheet
 
 ```ts
 RouteStops(trip.stops, { onPressStop: edit, onAddStop: add, onRemoveStop: remove }).density('compact')
-NoteCard(note.title, { excerpt: note.preview, tags: note.tags, meta }).style('row').tint('warning').onPress(open)
 ShareSheet({ title: 'Send to', people, onPersonPress: send, targets }).search([query, setQuery], { placeholder: 'Search' }).size('lg')
 ```
 
-Bloom's `route-stops`, `note-card` and `share-sheet`. `RouteStops(stops,
+Bloom's `route-stops` and `share-sheet`. `RouteStops(stops,
 options?)` takes Bloom's stops (a stop's `badge` and `action` are React
 elements, as they are data) and its handlers; `.density('comfortable' |
-'compact')`; `.label()` names the list.
-`NoteCard(title, options?)`: `.style('grid' | 'row')` its arrangement (Bloom's
-`density`), `.tint()` an accent tone (its wash), `.loading()` its skeleton;
-`.onPress()` and `.onLongPress()` are its own, and its selection is
-`.selected([selected, setSelected])` beside Bloom's `selectable`. `NoteCardSkeleton()`
-takes `.style()` and `.lines(n)`. `ShareSheet(options?)`: `.size('sm' | 'md'
+'compact')`; `.label()` names the list. `ShareSheet(options?)`: `.size('sm' | 'md'
 | 'lg')`; `peopleEmpty` is a language child; `.search([text, setText],
 options?)` its search field, a binding drawn into Bloom's `search` (its
 `placeholder` and `onSubmit` the options; without it, no field).
@@ -5231,7 +5203,7 @@ with its reason. Nothing else is missing.
   `.query()`, `.expanded()`, `.sorting()`, `.refreshable()`…), across every
   family, the selections a press reports included (a bottom bar's, a
   sidebar's, a rail's and the settings' `.selection([id, setId])`, an agent
-  chat's, a pipeline's stage, a chart's active tile) and the values inside
+  chat's, a chart's active tile) and the values inside
   Bloom's data that an app edits (a mail row's `.starred()`, a track's
   `.liked()`, an episode's `.saved()` and `.downloaded()`, a cart's `.tip()`
   and `.promo()`, a share sheet's `.search()`, a call's toggles, a player's
@@ -5446,13 +5418,11 @@ with its reason. Nothing else is missing.
   (addresses, payment methods, the price summary, payment status, the cart,
   menu items); music (the
   media cards, lyrics, the media player, the creator studio, the music
-  library, the queue panel, the track list); CRM (`ContactProfileCard`,
-  `LeadScoreCard`, the pipeline); the dashboard cards
-  (`ImportantAlertsCard`, `PatientInfoCard`, `RecentHiresCard`);
-  `RouteStops`, `NoteCard`, `ShareSheet`. **Decided:** colours that come
+  library, the queue panel, the track list); the dashboard cards
+  (`ImportantAlertsCard`, `PatientInfoCard`); `RouteStops`, `ShareSheet`. **Decided:** colours that come
   with an item of the data (a reply preview's inside a message bubble's
   data, a lyrics view's or a player's `artworkColor`, a swipe row's `paint`,
-  an alert's tone, a CRM card's accents) stay
+  an alert's tone) stay
   in that item, as Bloom takes them, since they belong to the item, not to
   the view; content Bloom takes inside its data (a price line's `info`) stays
   data, not language

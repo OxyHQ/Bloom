@@ -185,20 +185,6 @@ const COMMON_MESSAGES: Translations['COMMON_MESSAGES'] = {
 
 const SURFACES_MESSAGES: Translations['SURFACES_MESSAGES'] = { confirm: 'Подтвердить', ok: 'ОК' };
 
-const CONTACT_CARD_MESSAGES: Translations['CONTACT_CARD_MESSAGES'] = {
-  // A name after a colon keeps its nominative case; a verb would demand another.
-  channels: {
-    email: { action: 'Письмо', name: (s) => `Написать письмо: ${s}` },
-    phone: { action: 'Позвонить', name: (s) => `Позвонить: ${s}` },
-    chat: { action: 'Сообщение', name: (s) => `Написать сообщение: ${s}` },
-    meeting: { action: 'Встреча', name: (s) => `Назначить встречу: ${s}` },
-    video: { action: 'Видео', name: (s) => `Начать видеозвонок: ${s}` },
-    website: { action: 'Сайт', name: (s) => `Открыть сайт: ${s}` },
-  },
-  labelsFor: (name) => `Метки: ${name}`,
-  owner: 'Ответственный',
-};
-
 const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   item: {
     draft: 'Черновик:',
@@ -225,22 +211,6 @@ const CHAT_LIST_MESSAGES: Translations['CHAT_LIST_MESSAGES'] = {
   ownStory: 'Ваша история',
   addStory: 'Добавить в историю',
   storyOf: (name) => `История: ${name}`,
-};
-
-const NOTE_CARD_MESSAGES: Translations['NOTE_CARD_MESSAGES'] = {
-  pinned: 'Закреплено',
-  locked: 'Защищено',
-  attachments: (n) =>
-    plural('ru', n, {
-      one: '{n} вложение',
-      few: '{n} вложения',
-      many: '{n} вложений',
-      other: '{n} вложения',
-    }),
-  select: 'Выбрать заметку',
-  checklistDone: 'Выполнено',
-  checklistTodo: 'Не выполнено',
-  more: (n) => `ещё ${n}`,
 };
 
 const DIALOG_MESSAGES: Translations['DIALOG_MESSAGES'] = {
@@ -1398,12 +1368,6 @@ const PAGINATION_MESSAGES: Translations['PAGINATION_MESSAGES'] = {
   goToPage: (page) => `Перейти на страницу ${page}`,
 };
 
-const LEAD_SCORE_MESSAGES: Translations['LEAD_SCORE_MESSAGES'] = {
-  title: 'Оценка лида',
-  factors: 'Из чего складывается',
-  bands: { cold: 'Холодный', warm: 'Тёплый', hot: 'Горячий' },
-};
-
 const DIRECTIONS_MESSAGES: Translations['DIRECTIONS_MESSAGES'] = {
   modes: { drive: 'Авто', transit: 'Транспорт', walk: 'Пешком', cycle: 'Велосипед' },
   traffic: { light: 'Дороги свободны', moderate: 'Умеренные пробки', heavy: 'Сильные пробки' },
@@ -1800,10 +1764,6 @@ const CALL_UI_MESSAGES: Translations['CALL_UI_MESSAGES'] = {
   muted: (name) => `${name}, микрофон выключен`,
 };
 
-const RECENT_HIRES_CARD_MESSAGES: Translations['RECENT_HIRES_CARD_MESSAGES'] = {
-  title: 'Новые сотрудники',
-};
-
 const MAIL_LIST_MESSAGES: Translations['MAIL_LIST_MESSAGES'] = {
   draft: 'Черновик:',
   unread: 'Не прочитано',
@@ -2047,17 +2007,6 @@ const MESSAGE_MEDIA_MESSAGES: Translations['MESSAGE_MEDIA_MESSAGES'] = {
           other: '{n} голоса',
         }),
   sticker: 'Стикер',
-};
-
-const PIPELINE_MESSAGES: Translations['PIPELINE_MESSAGES'] = {
-  health: { 'on-track': 'По плану', 'at-risk': 'Под угрозой', stalled: 'Застряла' },
-  stalledFor: (duration) => `Без движения: ${duration}`,
-  move: (title) => `Переместить «${title}»`,
-  stages: 'Этапы воронки',
-  stageWithCount: (name, n) =>
-    `${name}, ${plural('ru', n, { one: '{n} сделка', few: '{n} сделки', many: '{n} сделок', other: '{n} сделки' })}`,
-  empty: 'На этом этапе нет сделок',
-  loadMore: 'Загрузить ещё',
 };
 
 const STAY_SEARCH_MESSAGES: Translations['STAY_SEARCH_MESSAGES'] = {
@@ -3163,9 +3112,7 @@ const translations: Translations = {
   },
   COMMON_MESSAGES,
   SURFACES_MESSAGES,
-  CONTACT_CARD_MESSAGES,
   CHAT_LIST_MESSAGES,
-  NOTE_CARD_MESSAGES,
   DIALOG_MESSAGES,
   ALERT_DIALOG_MESSAGES,
   SIDEBAR_MESSAGES,
@@ -3214,7 +3161,6 @@ const translations: Translations = {
   MEDIA_HEADER_MESSAGES,
   MENU_ITEM_MESSAGES,
   PAGINATION_MESSAGES,
-  LEAD_SCORE_MESSAGES,
   DIRECTIONS_MESSAGES,
   CART_PANEL_MESSAGES,
   MEDIA_CARD_MESSAGES,
@@ -3229,7 +3175,6 @@ const translations: Translations = {
   STEPPER_MESSAGES,
   PREFERENCES_MESSAGES,
   CALL_UI_MESSAGES,
-  RECENT_HIRES_CARD_MESSAGES,
   MAIL_LIST_MESSAGES,
   IMPORTANT_ALERTS_CARD_MESSAGES,
   STAT_CARDS_MESSAGES,
@@ -3241,7 +3186,6 @@ const translations: Translations = {
   AI_PROFILE_CARD_MESSAGES,
   BREADCRUMB_MESSAGES,
   MESSAGE_MEDIA_MESSAGES,
-  PIPELINE_MESSAGES,
   STAY_SEARCH_MESSAGES,
   AUTH_CARD_MESSAGES,
   TRACK_LIST_MESSAGES,

@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **234 families** in `src/`, **233** published (a subpath, the root barrel, or both). **66** carry a web fork.
+- **229 families** in `src/`, **228** published (a subpath, the root barrel, or both). **66** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the table below says which families have each.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 48 | 28 | 0 | 20 | 0 |
+| Field membership | 47 | 28 | 0 | 19 | 0 |
 | Control presentation | 61 | 60 | 1 | 0 | 0 |
 | Trigger composition | 11 | 8 | 0 | 3 | 0 |
-| Controlled / uncontrolled state | 58 | 55 | 2 | 1 | 0 |
+| Controlled / uncontrolled state | 57 | 54 | 2 | 1 | 0 |
 
 The control-presentation census detects families declaring canonical size props; blank entries do not prove inherited sizing. Fixed-size controls and composite layouts need a separate visual audit. This table does not certify touch-target geometry.
 
@@ -64,7 +64,6 @@ None.
 - `media-controls` (does-not-apply) — a transport SCRUBBER (`adjustable`): it is named by the track it plays and lives in a player, not in a field.
 - `message-media` (does-not-apply) — a voice message’s scrubber — same as `media-controls`.
 - `music-library` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
-- `note-card` (does-not-apply) — the `checkbox` role is on the CARD (bulk selection in a list) and on read-only checklist PREVIEW rows. Neither is a form control: a note card is never inside a `Field`, and the preview rows take no press at all.
 - `note-editor` (does-not-apply) — the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.
 - `project-board` (does-not-apply) — the form roles occur in ProjectBoard's drag exclusion selector: nested checkbox, switch and combobox controls keep their own input gestures. ProjectBoard renders opaque card slots, not those controls.
 - `sidebar` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
@@ -154,7 +153,6 @@ None.
 | `concentric` | `@oxy.so/bloom/concentric` + barrel | universal | `concentric.mdx` | yes | yes |  |  |  |  |
 | `connection-dots` | `@oxy.so/bloom/connection-dots` + barrel | web fork | `connection-dots.mdx` | yes | yes |  |  |  |  |
 | `connection-status` | `@oxy.so/bloom/connection-status` + barrel | web fork | `connection-status.mdx` | yes | yes |  |  |  |  |
-| `contact-card` | `@oxy.so/bloom/contact-card` + barrel | universal | `contact-card.mdx` | yes | yes |  |  |  |  |
 | `content-panel` | `@oxy.so/bloom/content-panel` + barrel | web fork | `content-panel.mdx` | yes | yes |  |  |  |  |
 | `context-menu` | `@oxy.so/bloom/context-menu` + barrel | web fork | `context-menu.mdx` | yes | yes |  |  | reads |  |
 | `conversation-sidebar` | `@oxy.so/bloom/conversation-sidebar` + barrel | web fork | `conversation-sidebar.mdx` | yes | yes |  |  |  | reads |
@@ -197,7 +195,6 @@ None.
 | `kbd` | `@oxy.so/bloom/kbd` + barrel | universal | `kbd.mdx` | yes | yes |  | reads |  |  |
 | `label` | `@oxy.so/bloom/label` + barrel | universal | `label.mdx` | yes | yes |  | reads |  |  |
 | `layout` | `@oxy.so/bloom/layout` + barrel | web fork | `layout.mdx` | yes | yes |  | reads |  |  |
-| `lead-score` | `@oxy.so/bloom/lead-score` + barrel | universal | `lead-score.mdx` | yes | yes |  |  |  |  |
 | `link-preview` | `@oxy.so/bloom/link-preview` | universal | `link-preview.mdx` | yes | yes |  |  |  |  |
 | `list` | `@oxy.so/bloom/list` + barrel | web fork | `list.mdx` | yes | yes |  |  |  |  |
 | `listing-actions` | `@oxy.so/bloom/listing-actions` + barrel | universal | `listing-actions.mdx` | yes | yes | reads |  |  | reads |
@@ -231,7 +228,6 @@ None.
 | `multi-agent-chat` | `@oxy.so/bloom/multi-agent-chat` + barrel | web fork | `multi-agent-chat.mdx` | yes | yes |  |  |  | reads |
 | `music-library` | `@oxy.so/bloom/music-library` + barrel | web fork | `music-library.mdx` | yes | yes | n/a¹ |  |  | reads |
 | `navigation-banner` | `@oxy.so/bloom/navigation-banner` + barrel | universal | `navigation-banner.mdx` | yes | yes |  |  |  |  |
-| `note-card` | `@oxy.so/bloom/note-card` + barrel | universal | `note-card.mdx` | yes | yes | n/a¹ |  |  |  |
 | `note-editor` | `@oxy.so/bloom/note-editor` + barrel | universal | `note-editor.mdx` | yes | yes | n/a¹ | reads |  |  |
 | `notification` | `@oxy.so/bloom/notification` + barrel | universal | `notification.mdx` | yes | yes |  |  |  |  |
 | `notification-center` | `@oxy.so/bloom/notification-center` + barrel | web fork | `notification-center.mdx` | yes | yes |  |  |  | reads |
@@ -248,7 +244,6 @@ None.
 | `payment-method` | `@oxy.so/bloom/payment-method` + barrel | universal | `payment-method.mdx` | yes | yes | reads |  |  |  |
 | `payment-status` | `@oxy.so/bloom/payment-status` + barrel | universal | `payment-status.mdx` | yes | yes |  |  |  |  |
 | `phone-input` | `@oxy.so/bloom/phone-input` | universal | `phone-input.mdx` | yes | yes | reads | delegated |  | reads |
-| `pipeline` | `@oxy.so/bloom/pipeline` + barrel | universal | `pipeline.mdx` | yes | yes |  |  |  | reads |
 | `place-card` | `@oxy.so/bloom/place-card` + barrel | universal | `place-card.mdx` | yes | yes |  | reads |  |  |
 | `place-details` | `@oxy.so/bloom/place-details` + barrel | universal | `place-details.mdx` | yes | yes |  |  |  | reads |
 | `place-list` | `@oxy.so/bloom/place-list` + barrel | universal | `place-list.mdx` | yes | yes |  |  |  |  |
@@ -270,7 +265,6 @@ None.
 | `radio-indicator` | `@oxy.so/bloom/radio-indicator` + barrel | universal | `radio-indicator.mdx` | yes | yes |  |  |  |  |
 | `rail` | `@oxy.so/bloom/rail` + barrel | universal | `rail.mdx` | yes | yes |  |  |  |  |
 | `rating` | `@oxy.so/bloom/rating` + barrel | web fork | `rating.mdx` | yes | yes | reads | reads |  |  |
-| `recent-hires-card` | `@oxy.so/bloom/recent-hires-card` + barrel | universal | `recent-hires-card.mdx` | yes | yes |  |  |  |  |
 | `route-stops` | `@oxy.so/bloom/route-stops` + barrel | universal | `route-stops.mdx` | yes | yes |  |  |  |  |
 | `row-actions` | `@oxy.so/bloom/row-actions` + barrel | universal | `row-actions.mdx` | yes | yes |  |  |  |  |
 | `screen` | `@oxy.so/bloom/screen` + barrel | web fork | `screen.mdx` | yes | yes |  |  |  |  |

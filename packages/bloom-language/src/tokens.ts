@@ -336,8 +336,6 @@ export type ListingHeaderSize = (typeof ENUMS.listingHeaderSize)[number];
 export type ListingPhotoLayout = (typeof ENUMS.listingPhotoLayout)[number];
 export type MapMarkerState = (typeof ENUMS.mapMarkerState)[number];
 export type MapPriceMarkerSize = (typeof ENUMS.mapPriceMarkerSize)[number];
-/** A note card's arrangement (Bloom `NoteCard`'s `density`): a board's `grid` or a list's `row`. */
-export type NoteCardLayout = (typeof ENUMS.noteCardLayout)[number];
 export type ShareSheetSize = (typeof ENUMS.shareSheetSize)[number];
 /** Bloom `OutlineNav`'s forms: every heading, or the compact one that drops the deep levels. */
 export type OutlineNavStyle = (typeof ENUMS.outlineNavStyle)[number];
@@ -377,7 +375,6 @@ export type ChoiceListStyle = (typeof ENUMS.choiceListStyle)[number];
 export type PriceLineTone = (typeof ENUMS.priceLineTone)[number];
 /** A payment status: `surface`, a strip or block of its own; or `plain`, only its content. */
 export type PaymentStatusStyle = (typeof ENUMS.paymentStatusStyle)[number];
-export type PipelineLayout = (typeof ENUMS.pipelineLayout)[number];
 export type LibraryItemStyle = (typeof ENUMS.libraryItemStyle)[number];
 export type QueuePanelStyle = (typeof ENUMS.queuePanelStyle)[number];
 export type SelectionBarPlacement = (typeof ENUMS.selectionBarPlacement)[number];

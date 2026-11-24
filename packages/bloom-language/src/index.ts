@@ -1510,14 +1510,6 @@ export type {
   RouteStopsView,
 } from './controls/route-stops';
 
-// Note card (controls/note-card.tsx)
-export { NoteCard, NoteCardSkeleton } from './controls/note-card';
-export type {
-  NoteCardOptions,
-  NoteCardSkeletonView,
-  NoteCardView,
-} from './controls/note-card';
-
 // Share sheet (controls/share-sheet.tsx)
 export { ShareSheet } from './controls/share-sheet';
 export type {
@@ -1592,36 +1584,13 @@ export type {
   PaymentStatusBlockView,
 } from './controls/payment-status';
 
-// CRM (controls/crm.tsx)
-export {
-  ContactProfileCard,
-  DealCard,
-  LeadScoreCard,
-  PipelineBoard,
-  PipelineColumn,
-} from './controls/crm';
-export type {
-  ContactProfileCardOptions,
-  ContactProfileCardView,
-  DealCardOptions,
-  DealCardView,
-  LeadScoreCardOptions,
-  LeadScoreCardView,
-  PipelineBoardOptions,
-  PipelineBoardView,
-  PipelineColumnOptions,
-  PipelineColumnView,
-} from './controls/crm';
-
 // Dashboard cards (controls/dashboard-cards.tsx)
-export { ImportantAlertsCard, PatientInfoCard, RecentHiresCard } from './controls/dashboard-cards';
+export { ImportantAlertsCard, PatientInfoCard } from './controls/dashboard-cards';
 export type {
   ImportantAlertsCardOptions,
   ImportantAlertsCardView,
   PatientInfoCardOptions,
   PatientInfoCardView,
-  RecentHiresCardOptions,
-  RecentHiresCardView,
 } from './controls/dashboard-cards';
 // Cart (controls/cart-panel.tsx)
 export { CartLine, CartPanel, CartPromoField, CartTipPicker } from './controls/cart-panel';

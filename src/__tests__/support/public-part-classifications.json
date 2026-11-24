@@ -1135,7 +1135,6 @@
       "src/layout/scroll-metrics.tsx#ScrollMetricsProvider",
       "src/layout/scroll-offset.ts#ScrollOffsetProvider",
       "src/layout/top-edge.tsx#TopEdgeProvider",
-      "src/lead-score/LeadScoreCard.tsx#LeadScoreCard",
       "src/link-preview/LinkPreviewCard.tsx#LinkPreviewCard",
       "src/list/List.tsx#List",
       "src/list/ListItem.tsx#ListItem",
@@ -1310,8 +1309,6 @@
       "src/navigation-banner/LaneGuidance.tsx#LaneGuidance",
       "src/navigation-banner/NavigationBanner.tsx#NavigationBanner",
       "src/navigation-banner/SpeedLimitPill.tsx#SpeedLimitPill",
-      "src/note-card/NoteCard.tsx#NoteCard",
-      "src/note-card/NoteCardSkeleton.tsx#NoteCardSkeleton",
       "src/note-editor/NoteEditorHeader.tsx#NoteEditorHeader",
       "src/note-editor/NoteEditorToolbar.tsx#NoteEditorToolbar",
       "src/notification-center/NotificationCenter.tsx#NotificationCenter",
@@ -1345,9 +1342,6 @@
       "src/phone-input/CountryCodeSelect.tsx#CountryCodeSelect",
       "src/phone-input/CountryFlag.tsx#CountryFlag",
       "src/phone-input/PhoneInput.tsx#PhoneInput",
-      "src/pipeline/DealCard.tsx#DealCard",
-      "src/pipeline/PipelineBoard.tsx#PipelineBoard",
-      "src/pipeline/PipelineColumn.tsx#PipelineColumn",
       "src/place-card/PlaceActions.tsx#PlaceActions",
       "src/place-card/PlaceCard.tsx#PlaceCard",
       "src/place-details/PlaceAmenities.tsx#PlaceAmenities",
@@ -1400,7 +1394,6 @@
       "src/rating/RatingBar.tsx#RatingBar",
       "src/rating/RatingInput.tsx#RatingInput",
       "src/rating/RatingSummary.tsx#RatingSummary",
-      "src/recent-hires-card/RecentHiresCard.tsx#RecentHiresCard",
       "src/route-stops/RouteStops.tsx#RouteStops",
       "src/row-actions/RowActionButton.tsx#RowActionButton",
       "src/row-actions/RowActions.tsx#RowActions",
@@ -1787,19 +1780,6 @@
     ],
     "verification": "native renderer and DOM web verify segment role and 44px hit height at default md, nearest xs/lg, and nested lg over xs. The component owns no explicit size prop, portal or submenu; physical-device hit testing remains unverified",
     "parts": ["src/composition-bar/CompositionBar.tsx#CompositionBar"]
-  },
-  "contact-card-controls": {
-    "status": "delegated",
-    "reason": "ContactProfileCard has no Bloom control-size prop. Its channel actions are Buttons with explicit sm size, its chips use explicit md, and its separate density prop controls card layout; the caller-owned actions slot is passed through unchanged and keeps the caller's BloomScope.",
-    "evidence": [
-      "src/contact-card/ContactProfileCard.tsx",
-      "src/contact-card/types.ts",
-      "docs/contact-card.mdx",
-      "src/__tests__/ContactProfileCardPublicPartScope.test.tsx",
-      "src/__tests__/ContactProfileCardPublicPartScope.web.test.tsx"
-    ],
-    "verification": "native renderer and DOM web verify channel Button size remains sm under xs/lg, the declared 6px hitSlop remains present, and caller action sizes follow default md, nearest xs/lg, nested lg over xs, and explicit md over xs. Physical-device hit testing remains unverified",
-    "parts": ["src/contact-card/ContactProfileCard.tsx#ContactProfileCard"]
   },
   "divider-role": {
     "status": "independent-scale",
