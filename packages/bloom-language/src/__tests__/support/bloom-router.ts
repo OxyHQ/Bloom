@@ -47,6 +47,10 @@ export function useTabPager() {
   return pager;
 }
 
+export function useTabPagerActions() {
+  return pager;
+}
+
 export const router = { push: jest.fn(), back: jest.fn() };
 
 export function useRouter() {
