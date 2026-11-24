@@ -1,7 +1,7 @@
 import { createElement, Fragment, type ReactElement, type ReactNode } from 'react';
 import { Platform, type PressableProps, StyleSheet, View } from 'react-native';
 
-import type { ThemeColors } from '../theme';
+import type { ThemeColors } from '../theme/types';
 
 /** What a row's `Pressable` takes for its press highlight: spread it, children included. */
 export interface PressHighlightProps {
