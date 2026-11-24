@@ -11,6 +11,12 @@
  * so opening that menu is one call to the engine; another menu of the same base swaps its rows in
  * and the view opens itself with them (`openWithItems`), as does a menu whose rows are built only
  * by the press that opens it.
+ *
+ * A base on a covered screen (`LensCover`: a stack scene under the one on top, the app under a modal
+ * overlay) draws its lens in its place, against the screen's fill, as a base in a scroll does. The
+ * window overlay draws a resting lens above everything, so a covered screen's controls were drawn
+ * over the screen in front of them (Mention: Home's header over the settings modal opened by a deep
+ * link). In its place the lens is under whatever covers it, as the rest of its screen is.
  */
 import {
   createContext,
@@ -61,6 +67,28 @@ interface BaseHandle {
 export const LensBaseContext = createContext<BaseHandle | null>(null);
 LensBaseContext.displayName = 'BloomLensBase';
 
+/** The fill the bases of a covered screen draw their lens against; `null` on a screen in front. */
+const LensCoverContext = createContext<string | null>(null);
+LensCoverContext.displayName = 'BloomLensCover';
+
+export interface LensCoverProps {
+  /** Something is in front of this screen: a stack scene over it, a modal overlay over the app. */
+  covered: boolean;
+  /** The colour the screen paints: a covered base draws its lens against it, in its place. */
+  fill: string;
+  children?: ReactNode;
+}
+
+/**
+ * Marks a screen covered while something is in front of it. Inside a covered screen a screen is
+ * covered too, whatever it says (the scene on top of a stack in the app under a modal).
+ */
+export function LensCover({ covered, fill, children }: LensCoverProps) {
+  const outer = useContext(LensCoverContext);
+  const value = outer ?? (covered ? fill : null);
+  return <LensCoverContext.Provider value={value}>{children}</LensCoverContext.Provider>;
+}
+
 export interface LensBaseProps {
   /** Draw the base's lens; without it, a menu still grows out of the base's shape. */
   lens?: boolean;
@@ -89,6 +117,9 @@ export function LensBase({
   style,
   children,
 }: LensBaseProps) {
+  // On a covered screen the lens is drawn in its place (see the top of this file).
+  const coverFill = useContext(LensCoverContext);
+  const backdrop = restBackdrop ?? coverFill ?? undefined;
   const native = useRef<IMenuHandle | null>(null);
   const [held, setHeld] = useState<Held | null>(null);
   const [pending, setPending] = useState(false);
@@ -129,7 +160,7 @@ export function LensBase({
         lens={lens}
         cornerRadius={cornerRadius}
         config={trigger}
-        restBackdrop={restBackdrop}
+        restBackdrop={backdrop}
         openOnTap={openOnTap}
         openOnPress={false}
         openWithItems={pending}

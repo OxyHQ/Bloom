@@ -10,9 +10,11 @@ export type { LensRow } from './rows';
 export {
   LensBase,
   LensBaseContext,
+  LensCover,
   useInLensBase,
   useLensBaseMenu,
   type LensBaseProps,
+  type LensCoverProps,
   type LensMenu,
   type LensMenuHandle,
 } from './base';
