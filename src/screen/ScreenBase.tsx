@@ -15,7 +15,7 @@ import { Platform, View, StyleSheet } from 'react-native';
 import { useKeyboardVisible } from '../hooks/use-keyboard-visible';
 import { useBorderBoxSize } from '../hooks/use-border-box-size';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { useBottomEdgeInset, useTakeBottomEdge } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import { useSharedValue } from 'react-native-reanimated';
 import {
@@ -101,6 +101,7 @@ export function createScreen(
     bottomBar,
     underlay,
     bottomBarKeyboardBehavior = 'hide',
+    replacesBottomBar = false,
     primaryAction: declaredPrimaryAction,
     primaryActionVisibility = 'always',
     primaryActionPlacement = 'end',
@@ -265,8 +266,12 @@ export function createScreen(
       Boolean(bottomBar || primaryAction || host.bottomBar);
     // The app's own bottom navigation (an `AppShell` bottom bar) already owns the
     // bottom edge. This screen's bar stacks ON it, never under it, and the content
-    // clears both.
-    const navigationEdge = useBottomEdgeInset();
+    // clears both — unless this screen's bar replaces it: then the screen takes the
+    // edge while it is in front, the app's bar steps aside, and nothing here
+    // stacks on it.
+    const edgeInset = useBottomEdgeInset();
+    useTakeBottomEdge(active && replacesBottomBar);
+    const navigationEdge = replacesBottomBar ? 0 : edgeInset;
     // On native a panel can reach under the app's bottom bar
     // (`reserveBottomBarSpace={false}`). A screen without a bar of its own pads
     // nothing there, so its scroller clears that bar instead.

@@ -32,6 +32,7 @@ interface ScreenChrome {
   footer: Extract<Modifier, { kind: 'footer' }> | undefined;
   sheets: Extract<Modifier, { kind: 'sheet' }>[];
   onReselect: (() => void) | undefined;
+  replacesBottomBar: boolean | undefined;
   /** The root's testID, which names the screen (Bloom Screen's own). */
   testID: string | undefined;
   /** The root without it: the screen's content. */
@@ -46,6 +47,7 @@ function chromeOf(root: Child): ScreenChrome {
     footer: undefined,
     sheets: [],
     onReselect: undefined,
+    replacesBottomBar: undefined,
     testID: undefined,
     content: root,
   };
@@ -65,6 +67,7 @@ function chromeOf(root: Child): ScreenChrome {
     );
   }
   chrome.onReselect = values.onReselect as (() => void) | undefined;
+  chrome.replacesBottomBar = values.replacesBottomBar as boolean | undefined;
   const header = values.header as ScreenHeader | undefined;
   if (header === false) return chrome;
   if (header !== undefined && typeof header !== 'string') {
@@ -104,6 +107,7 @@ export function ScreenHost({ root }: { root: Child }) {
         bottomBar={footer ? toElement(footer.content) : undefined}
         bottomBarPlacement={footer?.options?.placement}
         bottomBarKeyboardBehavior={footer?.options?.keyboard}
+        replacesBottomBar={chrome.replacesBottomBar}
       >
         {toElement(chrome.content)}
       </Screen>

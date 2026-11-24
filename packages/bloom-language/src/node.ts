@@ -201,6 +201,7 @@ export interface ValueModifiers {
   headingLevel: HeadingLevel;
   backLabel: string | undefined;
   onReselect: (() => void) | undefined;
+  replacesBottomBar: boolean;
   bottomBar: boolean;
   shell: ShellOptions;
   tag: string;
@@ -994,6 +995,9 @@ export class Node {
   onReselect(value: (() => void) | undefined): Node {
     return this.set('onReselect', value);
   }
+  replacesBottomBar(value = true): Node {
+    return this.set('replacesBottomBar', value);
+  }
   footer(content: Child, options?: ScreenFooter): Node {
     return this.with({ kind: 'footer', key: 'footer', content, options });
   }
@@ -1314,6 +1318,14 @@ export interface ViewModifiers<Self> extends ViewNode {
   sheet(open: boolean, content: () => Child, options?: SheetOptions): Self;
   /** Pressing the screen's destination while it is in front (after it scrolled back to the top). */
   onReselect(value: (() => void) | undefined): Self;
+  /**
+   * The screen's own bar takes the place of the app's bottom bar (Bloom
+   * `Screen`'s `replacesBottomBar`): a post's reply prompt with the tabs docked
+   * beside it. While the screen is in front the app's bar steps aside in one
+   * cut, on the UI thread, from the screen's first frame (before a footer that
+   * waits for the push to end mounts). `true` by default.
+   */
+  replacesBottomBar(value?: boolean): Self;
   rotation(value: RotationName | MotionValue): Self;
   /**
    * SwiftUI's `.animation(_:value:)`: changes to this view's scale, offset,

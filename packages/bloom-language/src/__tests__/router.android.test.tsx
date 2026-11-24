@@ -202,6 +202,13 @@ describe('screen() on Android', () => {
     expect(s.props.bottomBar).toBeTruthy();
   });
 
+  it('a screen whose bar replaces the app’s says so to Screen, before its footer mounts', () => {
+    const Post = screen(() => Text('post').replacesBottomBar());
+    expect(only(mount(createElement(Post)), 'Screen').props.replacesBottomBar).toBe(true);
+    const plain = only(mount(createElement(screen(() => Text('a')))), 'Screen').props;
+    expect(plain.replacesBottomBar).toBeUndefined();
+  });
+
   it('the root’s testID names the Screen; a screen takes props; the back’s name and the heading level reach PageHeader', () => {
     const back = jest.fn();
     const Post = screen(function post(props: { id: string }) {
