@@ -22,9 +22,12 @@ import { parseSync, transformSync, traverse } from '@babel/core';
  * - a skeleton shape reads the clock once per driver in a `useMemo`, which the
  *   compiler drops for a string result and recomputes on every render.
  *
- * And it moved a lambda inside a component built by a factory to module scope,
- * where the factory's parameter it used did not exist (`SelectItem is not
- * defined` from every SettingsSelect), so function outlining is off.
+ * And it takes the parameters of a function a component is built inside for
+ * module globals: function outlining moved a lambda of a component a factory
+ * built to module scope, where the factory's parameter it used did not exist
+ * (`SelectItem is not defined` from every SettingsSelect). The build keeps
+ * outlining, Expo's default, and the select compositions are components at
+ * module scope that take their parts as props.
  *
  * Each case compiles the real source with the build's config, as bob does.
  */
@@ -101,8 +104,30 @@ describe('the React Compiler in the build', () => {
     expect(functionNamed(build('avatar/Avatar.tsx'), 'AvatarComponent')).toMatch(MEMO_CACHE);
   });
 
-  it.each(['settings-modal/create-settings-select.tsx', 'select/SelectField.tsx'])(
-    'keeps the lambdas of a component a factory builds in that factory (%s)',
+  it('still outlines a lambda out of a component a factory builds (why none is built so)', () => {
+    const factory = [
+      'export function create({ Item }: { Item: (p: { v: string }) => null }) {',
+      '  const Built = function Built({ items }: { items: string[] }) {',
+      '    return <List items={items} render={(v: string) => <Item v={v} />} />;',
+      '  };',
+      '  return Built;',
+      '}',
+      'declare const List: (p: object) => null;',
+    ].join('\n');
+    const code = transformSync(factory, {
+      filename: join(ROOT, 'src', 'factory-fixture.tsx'),
+      cwd: ROOT,
+      babelrc: false,
+      configFile: false,
+      presets: [['@babel/preset-typescript', { isTSX: true, allExtensions: true }]],
+      plugins: [[require.resolve(COMPILER?.[0] ?? ''), COMPILER?.[1]]],
+    })?.code;
+    // The outlined lambda sits at module scope and uses the factory's `Item`.
+    expect(functionNamed(code ?? '', '_temp')).toContain('<Item');
+  });
+
+  it.each(['settings-modal/settings-select-parts.tsx', 'select/SelectField.tsx'])(
+    'memoizes the composition in %s with its parts as inputs, its lambdas in place',
     (file) => {
       const code = build(file);
       expect(code).toMatch(MEMO_CACHE);

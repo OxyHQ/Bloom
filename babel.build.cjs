@@ -6,13 +6,16 @@
 // node_modules, so a component is memoized only if its package shipped it
 // compiled. The options are the ones Expo runs app code with (target 19,
 // `infer`, an error leaves the function as written instead of failing the
-// build), but for function outlining.
+// build), function outlining included.
 // `react/compiler-runtime` is part of React 19, which every consumer runs.
 //
-// Function outlining is off: it moves a lambda that captures nothing of the
-// component to module scope, and it takes a component built inside a factory
-// (`createSettingsSelect(parts)`) for one whose factory's parameters are
-// globals, so the moved lambda threw `SelectItem is not defined`.
+// Outlining moves a lambda that captures nothing of its component to module
+// scope, and the compiler takes the parameters of a function a component is
+// built inside for globals: a lambda in a component a factory built
+// (`createSettingsSelect(parts)`) was moved out of the factory and threw
+// `SelectItem is not defined`. 23.5.0 to 23.7.0 built with outlining off for
+// it. Components are defined at module scope, and verify-react-compiler.mjs
+// fails on an outlined function that uses a name only a function binds.
 //
 // bloom-language does not build with it: its hosts call app bodies that call
 // hooks, and a memoized call skips them (docs/verification.mdx).
@@ -21,10 +24,5 @@
 // lib/ is not what the compiler makes of src/.
 module.exports = {
   presets: ['react-native-builder-bob/babel-preset'],
-  plugins: [
-    [
-      'babel-plugin-react-compiler',
-      { target: '19', panicThreshold: 'none', environment: { enableFunctionOutlining: false } },
-    ],
-  ],
+  plugins: [['babel-plugin-react-compiler', { target: '19', panicThreshold: 'none' }]],
 };
