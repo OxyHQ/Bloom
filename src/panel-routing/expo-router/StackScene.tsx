@@ -50,6 +50,15 @@ export function StackScene({ children, navigation, routeKey }: StackSceneProps) 
   const entered = useSceneEntered(navigation, routeKey);
   return (
     <View
+      // Always its own native parent. Fabric mounts the children of a view that
+      // only paints (a fill, no stacking context) straight into the view above
+      // it, and the accessibility props below make it a stacking context while
+      // the scene is covered: a push then moved the whole covered screen from
+      // the native screen into this view, and Back moved it out again, each a
+      // detach and an attach of every view in it, which draws it all again
+      // (Mention's Home, about a thousand views: some 50 ms of a push's mount
+      // frame on a Pixel 8a). Unflattened, a push only updates these props.
+      collapsable={false}
       style={[styles.scene, { backgroundColor: fill }]}
       importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
       accessibilityElementsHidden={!focused}

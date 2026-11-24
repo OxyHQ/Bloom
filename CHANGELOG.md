@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- A stack scene (`stackSceneLayout`) is always its own native parent. Fabric mounts the children of a view that only paints (its fill, no stacking context) straight into the view above it, and the accessibility props a covered scene takes make it a stacking context: every push moved the whole covered screen from the native screen into the scene, and every Back moved it out again, each a detach and an attach of every view in it, which then recorded all of it again and rebuilt each glass control's shaders. On a Pixel 8a that was about 50 ms of each Mention post push's mount frame (Home, about a thousand views) and about as much of each Back. Covering a scene now only updates its props.
+
 ### Added
 
 - `Screen`'s `replacesBottomBar`: the screen's own bar takes the place of the app's (a post's reply prompt with the tabs docked beside it). While the screen is in front the app's `BottomBar` steps aside in one cut on the UI thread, through its own presence, stays mounted and keeps its edge claim, so nothing re-renders and the screens it covers keep their geometry; the screen's bar and content sit on the window's edge. The Bloom language says it with `.replacesBottomBar()` on a screen's root.
