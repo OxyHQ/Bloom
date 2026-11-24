@@ -30,13 +30,13 @@ import { withAlpha } from '../theme/color-utils';
  *
  * ── THE STOPS ───────────────────────────────────────────────────────────────
  *
- * Four of them describe the fading portion, after any opaque chrome region.
- * They are shaped as an ease-out rather than a straight line. A LINEAR
- * ramp of opacity is perceptually not linear: it holds too much colour through
- * the middle and then falls off visibly in the last fifth, which puts a soft
- * but findable band across the content. Weighting the fall earlier spends the
- * fading portion's height and arrives at zero gently. Header/footer chrome
- * stays opaque before that portion so scrolling text cannot cross its labels.
+ * Four of them describe the fading portion, after any opaque chrome region:
+ * an ease-in-out (smoothstep at its thirds), the full range from opaque to
+ * nothing, leaving and arriving gently. An ease-out that held 86% through the
+ * first 42% of the fade read as a band that stopped at 90% and then stepped to
+ * opaque at the chrome's edge: the content showed at a faint, even 10% under it
+ * before it was hidden. Header/footer chrome stays opaque before that portion
+ * so scrolling text cannot cross its labels.
  *
  * The ramp continues BELOW the header's own box: the fade needs room past the
  * layout, or it finishes at the same place the layout does, which is the line
@@ -89,8 +89,8 @@ export const SCRIM_CHROME_FRACTION = 1 / (1 + SCRIM_TAIL_RATIO);
  */
 export const SCRIM_STOPS = [
   { offset: 0, opacity: 1 },
-  { offset: 0.42, opacity: 0.86 },
-  { offset: 0.72, opacity: 0.38 },
+  { offset: 1 / 3, opacity: 0.74 },
+  { offset: 2 / 3, opacity: 0.26 },
   { offset: 1, opacity: 0 },
 ] as const;
 const LINEAR_STOPS = [

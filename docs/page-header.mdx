@@ -157,7 +157,7 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 `scrimFalloff="linear"` fades uniformly from fully opaque at the top to transparent
 at the bottom, with half opacity at the midpoint. The default `"smooth"` retains
-an opaque chrome region followed by the existing curve in the external tail.
+an opaque chrome region followed by an ease-in-out curve (0.74 and 0.26 at its thirds) in the external tail: the full range, leaving the chrome and arriving at nothing gently, with no plateau or step.
 `tone="onImage"` keeps a full-box fade for photographic overlays, including its
 existing layer opacity. Both extend 0.55× (`SCRIM_TAIL_RATIO`) below the header and leave title/action
 opacity unchanged. `EdgeScrim falloff="linear"` exposes the same option for other
