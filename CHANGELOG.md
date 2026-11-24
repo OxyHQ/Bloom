@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- A stack scene (`stackSceneLayout`) is always its own native parent. Fabric mounts the children of a view that only paints (its fill, no stacking context) straight into the view above it, and the accessibility props a covered scene takes make it a stacking context: every push moved the whole covered screen from the native screen into the scene, and every Back moved it out again, each a detach and an attach of every view in it, which then recorded all of it again and rebuilt each glass control's shaders. On a Pixel 8a that was about 50 ms of each Mention post push's mount frame (Home, about a thousand views) and about as much of each Back. Covering a scene now only updates its props.
+
 ### Changed
 
 - Every control the lens can draw takes the native lens or Bloom's own paint through one decision (`useLensFrame` and `withLens`, `floating/lens/lens-frame.tsx`): `Button`, `Button.Group`, `Surface`, `BlurIsland` and `TabBar` each wrote it. What each draws is unchanged: the lens on Android with `@oxy.so/bloom-lens` (in the page against the surface it sits on, in a floating region or for the tab bar and an island by the window), the paint on the web, iOS, Android without the lens and inside a Dialog or a BottomSheet. A `Surface` and a `Button.Group` off the lens no longer read the surface fill and the floating region they only needed on it.

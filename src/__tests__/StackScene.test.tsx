@@ -32,6 +32,31 @@ it("paints the panel's fill and hides every scene but the top one from screen re
   expect(scene().props.importantForAccessibility).toBe('no-hide-descendants');
 });
 
+it('stays its own native parent whether it is covered or not', () => {
+  // A painted view that is not a stacking context has its children mounted into
+  // the view above it; the covered scene's accessibility props make it one. If
+  // the scene could be flattened, covering it would move the whole screen into
+  // it natively (a detach and an attach of every view), and uncovering it back.
+  const ui = () => (
+    <BloomThemeProvider fonts={false}>
+      <SurfaceLevelProvider level={1} fill="#123456">
+        {stackSceneLayout({ children: <Text>Post</Text> })}
+      </SurfaceLevelProvider>
+    </BloomThemeProvider>
+  );
+  mockFocused = true;
+  const tree = render(ui());
+  const scene = () => {
+    let node = tree.getByText('Post', { includeHiddenElements: true }).parent;
+    while (node && !resolvedStyle(node.props.style).backgroundColor) node = node.parent;
+    return node!;
+  };
+  expect(scene().props.collapsable).toBe(false);
+  mockFocused = false;
+  tree.rerender(ui());
+  expect(scene().props.collapsable).toBe(false);
+});
+
 it('makes the screens of a covered scene inactive', () => {
   let active: boolean | undefined;
   function Probe() {
