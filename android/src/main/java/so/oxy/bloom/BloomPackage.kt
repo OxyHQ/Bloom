@@ -5,10 +5,12 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
+import so.oxy.bloom.icons.BloomIconManager
 
 class BloomPackage : ReactPackage {
   override fun createNativeModules(context: ReactApplicationContext): List<NativeModule> = emptyList()
   override fun createViewManagers(context: ReactApplicationContext): List<ViewManager<*, *>> =
-    PredictiveBackManagers.create() +
+    listOf<ViewManager<*, *>>(BloomIconManager()) +
+      PredictiveBackManagers.create() +
       if (Build.VERSION.SDK_INT >= 31) listOf(ComposerLightManager()) else emptyList()
 }
