@@ -140,6 +140,16 @@ const CASES: Case[] = [
     ),
   },
   {
+    // Android's file, as this suite resolves: the ripple is a prop of the Pressable the view already is.
+    name: 'a hover group’s press (.hoverGroup()) and a Pressable with its ripple',
+    node: L.VStack(L.Text('a')).hoverGroup().onPress(onPress),
+    jsx: (c) => (
+      <RN.Pressable onPress={onPress} android_ripple={{ color: c.contrast50, borderless: false }}>
+        <Text>a</Text>
+      </RN.Pressable>
+    ),
+  },
+  {
     name: '.pressScale() and Bloom’s PressableScale',
     node: L.VStack(L.Text('a')).onPress(onPress).pressScale(),
     jsx: (

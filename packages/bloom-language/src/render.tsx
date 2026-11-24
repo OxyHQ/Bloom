@@ -24,7 +24,7 @@ import { AvatarPresence } from '@oxy.so/bloom/chat-indicators';
 import { IconCircle as BloomIconCircle } from '@oxy.so/bloom/icon-circle';
 import { Loading as BloomLoading } from '@oxy.so/bloom/loading';
 import * as BloomSkeleton from '@oxy.so/bloom/skeleton';
-import { hoverGroupProps, SubtleHover } from '@oxy.so/bloom/subtle-hover';
+import { hoverGroupProps, pressHighlight, SubtleHover } from '@oxy.so/bloom/subtle-hover';
 import { Button as BloomButton, FLOATING_CONTROL_SIZE } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar, EngagementGroup } from '@oxy.so/bloom/engagement-bar';
 import { BloomImage } from '@oxy.so/bloom/image';
@@ -230,7 +230,6 @@ import { carrying, deriveEnv, EnvContext, materialEnv, ROOT_ENV, type Env } from
 import { inheritedModifiers } from './environment';
 import type { TextTraits } from './style';
 import { SafeAreaPadded } from './safe-area';
-import { AnimatedPressHighlighted, PressHighlighted } from './press-highlight';
 import { adoptLanguageSheet, languageSheets } from './web-sheet';
 import {
   MotionWrapper,
@@ -1126,14 +1125,25 @@ interface Outermost {
 function drawOutermost(
   palette: Palette,
   box: Outermost | undefined,
-  host: Host,
+  outermost: Host,
   style: StyleOut,
   props: Record<string, unknown>,
-  ...children: ReactNode[]
+  ...drawn: ReactNode[]
 ): ReactElement {
+  // A hover group's press highlight (Bloom's `pressHighlight`) is drawn on the
+  // Pressable the view already is: Android's ripple prop, iOS's wash from the
+  // Pressable's own pressed state. No component, hook or state of its own.
+  const highlighted = outermost === HIGHLIGHTED;
+  const host = highlighted ? Pressable : outermost;
+  let children = drawn;
+  if (highlighted) {
+    const lit = props.onPress !== undefined || props.onLongPress !== undefined;
+    const light = pressHighlight(palette.paint, drawn, lit);
+    if (light.android_ripple !== undefined) props.android_ripple = light.android_ripple;
+    children = [light.children as ReactNode];
+  }
   const out = pressHostOut(host, style);
-  const twin = host === PressHighlighted ? AnimatedPressHighlighted : animatedHost(host);
-  const animated = twin as Host | undefined;
+  const animated = animatedHost(host) as Host | undefined;
   // A host with no animated twin (a Bloom component) moves in the box `drawNode` adds.
   if (box === undefined || animated === undefined)
     return drawHost(palette, host, out, props, ...children);
@@ -2143,14 +2153,20 @@ function propPaint(
 }
 
 /**
+ * A hover group's `Pressable` on Android and iOS, which `drawOutermost` draws
+ * with Bloom's press highlight (`pressHighlight`).
+ */
+const HIGHLIGHTED: Host = Symbol('a highlighted Pressable');
+
+/**
  * The outermost box's host: pressable when the view takes presses or hovers,
  * React Native's `TouchableOpacity` when its press fades it (`.pressFade()`),
- * and on Android and iOS a hover group's press highlights it (`PressHighlighted`).
+ * and on Android and iOS a hover group's press highlights it (`HIGHLIGHTED`).
  */
 function hostFor(p: Plan): Host {
   if (!p.pressable) return View;
   if (p.own.has('pressFade')) return TouchableOpacity;
-  return !IS_WEB && p.hoverGroup ? PressHighlighted : Pressable;
+  return !IS_WEB && p.hoverGroup ? HIGHLIGHTED : Pressable;
 }
 
 function hostProps(

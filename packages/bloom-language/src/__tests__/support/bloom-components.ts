@@ -41,30 +41,8 @@ export const PressableScale = 'PressableScale';
 export const SubtleHover = 'SubtleHover';
 /** The hover group's marker: a web `data-*` attribute (the stand-in names it). */
 export const hoverGroupProps = { dataSet: { bloomHoverGroup: '' } };
-/**
- * Bloom's press highlight, both platforms' halves at once (Bloom picks one per
- * platform): Android's ripple, and iOS's press signal and the value its wash
- * reads. `lit` counts the presses held.
- */
-export const pressHighlight = {
-  lit: 0,
-  ripple: { color: 'wash', borderless: false },
-  pressed: { value: 0 },
-};
-export function usePressHighlight() {
-  return {
-    hostProps: {
-      android_ripple: pressHighlight.ripple,
-      onPressIn: () => {
-        pressHighlight.lit += 1;
-      },
-      onPressOut: () => {
-        pressHighlight.lit -= 1;
-      },
-    },
-    pressed: pressHighlight.pressed,
-  };
-}
+/** Bloom's press highlight itself, read from its source: what reaches the Pressable is the contract. */
+export { pressHighlight } from '../../../../../src/subtle-hover/press-highlight';
 // Bloom's skeleton shapes (`@oxy.so/bloom/skeleton`).
 export const Region = 'SkeletonRegion';
 export const Text = 'SkeletonText';
