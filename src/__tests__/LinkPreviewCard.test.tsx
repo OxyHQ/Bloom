@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Linking } from 'react-native';
+import { Linking, View } from 'react-native';
 import { Image } from 'expo-image';
 import { render, fireEvent } from '@testing-library/react-native';
 
@@ -14,6 +14,14 @@ function renderWithTheme(ui: React.ReactElement) {
       {ui}
     </BloomThemeProvider>,
   );
+}
+
+/** Every `minHeight` the card's views reserve. */
+function minHeights(tree: ReturnType<typeof renderWithTheme>): number[] {
+  return tree
+    .UNSAFE_queryAllByType(View)
+    .map((node) => resolvedStyle(node.props.style).minHeight)
+    .filter((height): height is number => typeof height === 'number');
 }
 
 describe('LinkPreviewCard', () => {
@@ -126,6 +134,32 @@ describe('LinkPreviewCard', () => {
       />,
     );
     expect(UNSAFE_getByType(Image).props.source).toBe('https://cdn.example.com/og.png');
+  });
+
+  it('draws a pending card at the size it will have once its preview arrives', () => {
+    const contentHeight = (tree: ReturnType<typeof renderWithTheme>) => minHeights(tree)[0];
+    const pending = renderWithTheme(<LinkPreviewCard url="https://example.com/a" pending />);
+    const cover = pending.UNSAFE_getByType(Image);
+    expect(cover.props.source).toBeNull();
+    expect(resolvedStyle(cover.props.style).height).toBe(160);
+    // Site name, two title lines, two description lines, their gaps and the padding.
+    expect(contentHeight(pending)).toBe(12 + 16 + 4 + 44 + 4 + 36 + 12);
+
+    const loaded = renderWithTheme(
+      <LinkPreviewCard
+        url="https://example.com/b"
+        title="example.com/a"
+        image="https://cdn.example.com/og.png"
+      />,
+    );
+    expect(resolvedStyle(loaded.UNSAFE_getByType(Image).props.style).height).toBe(160);
+    expect(contentHeight(loaded)).toBe(contentHeight(pending));
+  });
+
+  it('keeps a card without a cover compact', () => {
+    const tree = renderWithTheme(<LinkPreviewCard url="https://example.com/c" title="Text only" />);
+    expect(tree.UNSAFE_queryByType(Image)).toBeNull();
+    expect(minHeights(tree)).toEqual([]);
   });
 
   it('reserves no cover for an empty rendition list', () => {

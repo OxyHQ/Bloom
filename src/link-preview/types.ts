@@ -54,6 +54,13 @@ export interface LinkPreviewCardProps {
    *   fits a fixed-height row alongside other attachments without overflowing.
    */
   coverFill?: boolean;
+  /**
+   * The preview's metadata is still being fetched. The card is drawn at the
+   * size it will have once it arrives — the cover slot and the reserved text
+   * block, both empty — so the feed around it does not move when it does.
+   * Defaults to `false`.
+   */
+  pending?: boolean;
   /** Press handler. When omitted, the card opens `url` with `openExternal`. */
   onPress?: () => void;
   /** Extra style merged onto the card surface. */

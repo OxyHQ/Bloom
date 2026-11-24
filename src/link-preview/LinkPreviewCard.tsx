@@ -34,6 +34,22 @@ import type { LinkPreviewCardProps, LinkPreviewImageSource } from './types';
 /** Height (px) of the optional cover image at the top of the card. */
 const COVER_IMAGE_HEIGHT = 160;
 
+/**
+ * The text block of an article card (one with a cover, or one whose preview is
+ * still on its way) is never shorter than its full shape: the site name, two
+ * lines of title and two of description, with their gaps and the block's
+ * padding. Its height is then known before the preview loads, and a card whose
+ * title or description runs to one line, or whose preview arrives late, does
+ * not change height and move the list around it.
+ */
+const ARTICLE_TEXT_MIN_HEIGHT =
+  2 * space.md +
+  TYPE_SCALE['caption-1-medium'].lineHeight +
+  space.xs +
+  2 * TYPE_SCALE['headline-semibold'].lineHeight +
+  space.xs +
+  2 * TYPE_SCALE['body-2-regular'].lineHeight;
+
 /** `tracking-wide` is 0.025em, which at the site name's 12px is 0.3px. */
 const SITE_NAME_LETTER_SPACING = fontSize.xs * 0.025;
 
@@ -51,8 +67,8 @@ function hostnameOf(url: string): string | undefined {
 
 /**
  * `image` as `expo-image` takes it, or `undefined` when there is nothing to
- * show. An empty list counts as no image, so the card never reserves a blank
- * cover.
+ * show. An empty list counts as no image, so a card whose preview has arrived
+ * never reserves a blank cover.
  */
 function coverSource(
   image: string | readonly LinkPreviewImageSource[] | undefined,
@@ -85,6 +101,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   siteName,
   author,
   coverFill = false,
+  pending = false,
   onPress,
   style,
 }) => {
@@ -102,6 +119,8 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   }, [url, siteName, title]);
 
   const cover = useMemo(() => coverSource(image), [image]);
+  // The slot is held while the preview is pending: it will most likely bring one.
+  const hasCoverSlot = Boolean(cover) || pending;
   // Stable across re-renders and rendition lists alike: recycled list cells
   // must not flash the previous card's image while the next one loads.
   const coverKey = typeof cover === 'string' ? cover : cover?.[0]?.uri;
@@ -127,9 +146,9 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
       accessibilityRole="link"
       accessibilityLabel={displayTitle}
     >
-      {cover ? (
+      {hasCoverSlot ? (
         <Image
-          source={cover}
+          source={cover ?? null}
           recyclingKey={coverKey}
           contentFit="cover"
           cachePolicy="memory-disk"
@@ -144,7 +163,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
         />
       ) : null}
 
-      <View style={styles.content}>
+      <View style={hasCoverSlot ? [styles.content, styles.articleContent] : styles.content}>
         {displaySiteName ? (
           <Text
             variant="caption-1-medium"
@@ -195,6 +214,9 @@ const styles = StyleSheet.create({
   },
   coverFixed: {
     height: COVER_IMAGE_HEIGHT,
+  },
+  articleContent: {
+    minHeight: ARTICLE_TEXT_MIN_HEIGHT,
   },
   // `p-3` — four-sided, which is what keeps the last line clear of the card's
   // 20px corner radius. Flush against the border, the description read as
