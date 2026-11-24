@@ -22,6 +22,8 @@ import so.oxy.bloom.glassmenu.motion.GlassSpringSpec
 import so.oxy.bloom.glassmenu.records.GlassMenuItemRecord
 import so.oxy.bloom.glassmenu.render.GlassSurfaceState
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -298,6 +300,23 @@ internal class GlassMenuSession(
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
     drawRoot(canvas, backdrop, limits)
     child?.draw(canvas, backdrop, limits)
+  }
+
+  // Where the last draw drew anything, in window px, within [limits]: the glass's shadow rect, which holds the glass
+  // (its material draws nothing outside the shape) and, while it animates, its foreground (the portal draws nothing
+  // outside the shape either). At rest the foreground's whole node; a trigger drawn without glass, or a submenu, is
+  // the whole window.
+  fun drawnBounds(out: Rect, limits: Rect) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || child != null || !anchor.morphs) {
+      out.set(limits)
+      return
+    }
+    val renderer = anchor.renderer(density)
+    val shadow = renderer.shadowBounds
+    out.set(floor(shadow.left).toInt(), floor(shadow.top).toInt(), ceil(shadow.right).toInt(), ceil(shadow.bottom).toInt())
+    if (!animating) out.union(renderer.foregroundBounds)
+    out.inset(-BoundsSlack, -BoundsSlack)
+    if (!out.intersect(limits)) out.setEmpty()
   }
 
   private fun drawRoot(canvas: Canvas, backdrop: GlassBackdrop, limits: Rect) {
@@ -729,6 +748,8 @@ internal class GlassMenuSession(
 
   private companion object {
     const val CornerRadius = 34f
+    // Whole pixels around the drawn bounds: antialiasing, and a shadow rect at fractional pixels.
+    const val BoundsSlack = 2
     const val ParentScaleDrop = .05f
     const val ParentRowsDim = .65f
     const val PlateInset = 8f
