@@ -6,6 +6,10 @@
 
 - `useScreenEntered()` is false on a pushed stack scene until its push transition ends, as documented. The pushing render reads the navigator's last committed state, which does not hold the pushed route yet, so the scene counted as one the stack started with and was entered at once: on a Pixel 8a a Mention post mounted its replies and its reply composer a frame after the push instead of after the slide.
 
+### Added
+
+- `useTabPagerActions()` (`@oxy.so/bloom/tab-pager`): `useTabPager()` without `activePage`, so a component that only moves between pages (a shell's primary action, a header's button, a composer's exit) does not re-render on every navigation. `useTabPager()` changes on each one, a pushed route included: on a Pixel 8a, opening a Mention post re-rendered the whole shell, its sidebar, the tab pager and the Videos page through it before the post's screen could mount.
+
 ### Breaking
 
 - Removed the CRM families no app imports: `@oxy.so/bloom/contact-card`, `@oxy.so/bloom/pipeline`, `@oxy.so/bloom/lead-score`, `@oxy.so/bloom/note-card` and `@oxy.so/bloom/recent-hires-card`, their root-barrel exports and message catalogs, and their Bloom language nodes (`ContactProfileCard`, `LeadScoreCard`, `DealCard`, `PipelineColumn`, `PipelineBoard`, `NoteCard`, `NoteCardSkeleton`, `RecentHiresCard`) with the `.stage()` modifier and the `noteCardLayout` and `pipelineLayout` tokens only they took. `@oxy.so/bloom/mail-list` stays: `List`'s mail row, the mail thread and the mail composer draw with it.
