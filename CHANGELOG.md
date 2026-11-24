@@ -4,6 +4,7 @@
 
 ### Changed
 
+- A closed `reveal` drawer at rest is out of the native view tree: on native it is `display: none`, set on the UI thread from the drawer's open amount, so its sidebar's views (about a hundred in Mention) are not created, laid out or drawn while nothing can see them; its React state stays. The first frame that opens it, by a press or the edge swipe, mounts it again. The web keeps its CSS transition and `inert`.
 - Every control the lens can draw takes the native lens or Bloom's own paint through one decision (`useLensFrame` and `withLens`, `floating/lens/lens-frame.tsx`): `Button`, `Button.Group`, `Surface`, `BlurIsland` and `TabBar` each wrote it. What each draws is unchanged: the lens on Android with `@oxy.so/bloom-lens` (in the page against the surface it sits on, in a floating region or for the tab bar and an island by the window), the paint on the web, iOS, Android without the lens and inside a Dialog or a BottomSheet. A `Surface` and a `Button.Group` off the lens no longer read the surface fill and the floating region they only needed on it.
 
 ## 23.8.0

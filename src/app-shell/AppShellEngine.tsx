@@ -1466,6 +1466,17 @@ export function createAppShellEngine() {
       [revealAmount, dir, revealOffset],
     );
     const veilStyle = useAnimatedStyle(() => ({ opacity: revealAmount.value }), [revealAmount]);
+    // A closed `reveal` drawer, at rest, is out of the native view tree: Fabric
+    // mounts no view under `display: none`, so the sidebar's views are not
+    // created, laid out, drawn or carried by every change to the window while
+    // nothing can see them, and its React state stays. The first frame that
+    // opens it, a press or the edge swipe, mounts it again on the UI thread.
+    // The web keeps its CSS transition and `inert` instead.
+    const drawerLeavesTree = Platform.OS !== 'web';
+    const drawerPresenceStyle = useAnimatedStyle(
+      () => (drawerLeavesTree ? { display: revealAmount.value > 0 ? 'flex' : 'none' } : {}),
+      [drawerLeavesTree, revealAmount],
+    );
 
     const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
     const navSlotStyle = useDockSlotStyle(
@@ -1929,7 +1940,7 @@ export function createAppShellEngine() {
               ]}
             >
               {drawerAvailable && drawerSidebar ? (
-                <View
+                <Animated.View
                   ref={revealDrawerRef}
                   tabIndex={-1}
                   testID={testID ? `${testID}-navigation-drawer` : undefined}
@@ -1942,20 +1953,23 @@ export function createAppShellEngine() {
                   importantForAccessibility={isOpen ? 'auto' : 'no-hide-descendants'}
                   {...(Platform.OS === 'web' && !isOpen ? { inert: true } : {})}
                   pointerEvents={isOpen ? 'auto' : 'none'}
-                  style={{
-                    position: doc ? WEB_POSITION_FIXED : 'absolute',
-                    top: 0,
-                    bottom: 0,
-                    insetInlineStart: 0,
-                    width: revealOffset,
-                    // Full height, so the device's top and bottom edges are its
-                    // own to clear wherever the frame leaves them, exactly as the
-                    // portaled overlay drawer does. Without `safeArea` the pages
-                    // own their edges, and the drawer ran under the status bar.
-                    paddingTop: revealGutter + insets.top - frameTopInset,
-                    paddingBottom: revealGutter + insets.bottom - frameBottomInset,
-                    paddingInlineStart: revealGutter / 2,
-                  }}
+                  style={[
+                    {
+                      position: doc ? WEB_POSITION_FIXED : 'absolute',
+                      top: 0,
+                      bottom: 0,
+                      insetInlineStart: 0,
+                      width: revealOffset,
+                      // Full height, so the device's top and bottom edges are its
+                      // own to clear wherever the frame leaves them, exactly as the
+                      // portaled overlay drawer does. Without `safeArea` the pages
+                      // own their edges, and the drawer ran under the status bar.
+                      paddingTop: revealGutter + insets.top - frameTopInset,
+                      paddingBottom: revealGutter + insets.bottom - frameBottomInset,
+                      paddingInlineStart: revealGutter / 2,
+                    },
+                    drawerPresenceStyle,
+                  ]}
                 >
                   <Animated.View
                     style={[
@@ -1977,7 +1991,7 @@ export function createAppShellEngine() {
                       />
                     )}
                   </Animated.View>
-                </View>
+                </Animated.View>
               ) : null}
               <Animated.View
                 testID={testID ? `${testID}-reveal-page` : undefined}
