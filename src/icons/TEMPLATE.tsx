@@ -1,7 +1,19 @@
 import { forwardRef } from 'react';
-import Svg, { Path } from 'react-native-svg';
+import type Svg from 'react-native-svg';
 
-import { type Props, useCommonSVGProps } from './shared';
+import { type GlyphSpec, useGlyph } from './glyph';
+import type { Props } from './shared';
+
+/**
+ * The icon component of one glyph. What draws it is the platform's: inline SVG
+ * on the web, one native view per icon on native when the app's binary has it
+ * (`glyph.native.tsx`), react-native-svg otherwise.
+ */
+function iconComponent(glyph: GlyphSpec) {
+  return forwardRef<Svg, Props>(function IconImpl(props, ref) {
+    return useGlyph(glyph, props, ref);
+  });
+}
 
 export function createSinglePathSVG({
   path,
@@ -16,56 +28,23 @@ export function createSinglePathSVG({
   strokeLinecap?: 'butt' | 'round' | 'square';
   strokeLinejoin?: 'miter' | 'round' | 'bevel';
 }) {
-  return forwardRef<Svg, Props>(function IconImpl(props, ref) {
-    const { fill, size, style, gradient, ...rest } = useCommonSVGProps(props);
-
-    const hasStroke = strokeWidth > 0;
-
-    return (
-      <Svg
-        fill="none"
-        {...rest}
-        ref={ref}
-        viewBox={viewBox || '0 0 24 24'}
-        width={size}
-        height={size}
-        style={[style]}
-      >
-        {gradient}
-        <Path
-          fill={hasStroke ? 'none' : fill}
-          stroke={hasStroke ? fill : 'none'}
-          strokeWidth={strokeWidth}
-          strokeLinecap={strokeLinecap}
-          strokeLinejoin={strokeLinejoin}
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d={path}
-        />
-      </Svg>
-    );
+  return iconComponent({
+    kind: 'single',
+    paths: [path],
+    viewBox: viewBox || '0 0 24 24',
+    strokeWidth,
+    strokeLinecap,
+    strokeLinejoin,
   });
 }
 
 export function createMultiPathSVG({ paths, viewBox }: { paths: string[]; viewBox?: string }) {
-  return forwardRef<Svg, Props>(function IconImpl(props, ref) {
-    const { fill, size, style, gradient, ...rest } = useCommonSVGProps(props);
-
-    return (
-      <Svg
-        fill="none"
-        {...rest}
-        ref={ref}
-        viewBox={viewBox || '0 0 24 24'}
-        width={size}
-        height={size}
-        style={[style]}
-      >
-        {gradient}
-        {paths.map((path, i) => (
-          <Path key={i} fill={fill} fillRule="evenodd" clipRule="evenodd" d={path} />
-        ))}
-      </Svg>
-    );
+  return iconComponent({
+    kind: 'multi',
+    paths,
+    viewBox: viewBox || '0 0 24 24',
+    strokeWidth: 0,
+    strokeLinecap: 'butt',
+    strokeLinejoin: 'miter',
   });
 }
