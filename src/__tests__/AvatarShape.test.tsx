@@ -15,6 +15,7 @@ import { Image } from 'expo-image';
 import { Image as NativeImage, Platform } from 'react-native';
 import * as expoImageModule from '../image/expo-image-module';
 import { SQUIRCLE_PATH } from '../shapes/squircle-path';
+import { resolvedStyle } from './support/rendered-style';
 
 function renderAvatar(ui: React.ReactElement) {
   return render(
@@ -607,5 +608,59 @@ describe('Avatar transient photo retry', () => {
       webLoader?.mockRestore();
       Platform.OS = previousOS;
     }
+  });
+});
+
+describe('Avatar photo in a recycled row', () => {
+  const imageHost = (tree: ReturnType<typeof renderAvatar>) =>
+    (tree.UNSAFE_getByType('ExpoImage' as never) as unknown as { _fiber: { stateNode: unknown } })
+      ._fiber.stateNode;
+
+  it('keeps its image view for another person and clears the previous picture at once', () => {
+    const wrap = (uri: string) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Avatar uri={uri} name="Ada" />
+      </BloomThemeProvider>
+    );
+    const tree = render(wrap(URI));
+    const host = imageHost(tree);
+    expect(tree.UNSAFE_getByType(Image).props.recyclingKey).toBe(URI);
+    tree.rerender(wrap('https://cloud.oxy.so/other.jpg'));
+    expect(imageHost(tree)).toBe(host);
+    expect(tree.UNSAFE_getByType(Image).props.recyclingKey).toBe('https://cloud.oxy.so/other.jpg');
+    expect(tree.UNSAFE_getByType(Image).props.source).toEqual({
+      uri: 'https://cloud.oxy.so/other.jpg',
+    });
+  });
+
+  it('starts the stages over for new sources without remounting', () => {
+    const wrap = (uri: string) => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Avatar uri={uri} name="Ada" />
+      </BloomThemeProvider>
+    );
+    const tree = render(wrap(URI));
+    fireEvent(tree.UNSAFE_getByType(Image), 'error', { nativeEvent: { error: 'HTTP 404' } });
+    expect(tree.UNSAFE_queryByType(Image)).toBeNull();
+    tree.rerender(wrap('https://cloud.oxy.so/other.jpg'));
+    expect(tree.UNSAFE_getByType(Image).props.source).toEqual({
+      uri: 'https://cloud.oxy.so/other.jpg',
+    });
+  });
+
+  it('fills the photo slot while the picture loads and keeps it in memory', () => {
+    const tree = renderAvatar(<Avatar uri={URI} name="Ada" />);
+    const image = tree.UNSAFE_getByType(Image);
+    expect(resolvedStyle(image.props.style).backgroundColor).toEqual(expect.any(String));
+    expect(image.props.cachePolicy).toBe('memory-disk');
+    expect(image.props.transition).toBeUndefined();
+  });
+
+  it('fills a shaped photo slot under the picture', () => {
+    const tree = renderAvatar(<Avatar uri={URI} name="Ada" shape="squircle" />);
+    const fills = tree
+      .UNSAFE_queryAllByType('Path' as never)
+      .filter((node) => node.props.fill !== undefined && node.props.d === SQUIRCLE_PATH);
+    expect(fills).toHaveLength(1);
   });
 });

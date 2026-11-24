@@ -8,13 +8,11 @@ import type { PressableStateCallbackType, TextStyle } from 'react-native';
 import { imageSourcesKey } from './source-key';
 
 import { useTheme } from '../theme/use-theme';
-import { useMessages } from '../locale/messages';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import { Z_INDEX } from '../styles/z-index';
 import { PRESS_HOST_STYLE } from '../styles/press-host';
 import { useAvatarPlaceholder } from './context';
-import { AVATAR_MESSAGES } from './messages';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing } from './AvatarRing';
 import { CharacterFace } from './CharacterFace';
@@ -145,6 +143,8 @@ export const AVATAR_PHOTO_RETRY_DELAYS_MS = [2_000, 8_000] as const;
 type PhotoStage = 'primary' | 'fallback' | 'placeholder';
 
 interface PhotoState {
+  /** The sources this state is about (`imageSourcesKey`): new sources start the stages over. */
+  key: string;
   stage: PhotoStage;
   /** Requests of the primary photo made before the current one. */
   attempt: number;
@@ -183,7 +183,7 @@ function AvatarPhotoRetry({
         () =>
           setPhoto((current) =>
             current.retry && current.attempt === attempt
-              ? { stage: 'primary', attempt: attempt + 1 }
+              ? { key: current.key, stage: 'primary', attempt: attempt + 1 }
               : current,
           ),
         delay,
@@ -202,25 +202,50 @@ function AvatarPhotoRetry({
   return null;
 }
 
+function initialPhoto(
+  key: string,
+  primarySource: ImageSource | undefined,
+  fallbackSource: ImageSource | undefined,
+): PhotoState {
+  return {
+    key,
+    stage: primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
+    attempt: 0,
+  };
+}
+
 /**
- * Keyed by resolved source values: a new request starts the stages over. A
- * primary that fails transiently shows the next stage at once and is requested
- * again after {@link AVATAR_PHOTO_RETRY_DELAYS_MS}; a 404 is never re-requested.
+ * New resolved source values start the stages over. A primary that fails
+ * transiently shows the next stage at once and is requested again after
+ * {@link AVATAR_PHOTO_RETRY_DELAYS_MS}; a 404 is never re-requested.
+ *
+ * The stages restart in place, not by remounting: a list row that takes another
+ * person keeps its image view and hands it the new picture (`recyclingKey`
+ * clears the old one at once), instead of building a new native view for every
+ * avatar a fling scrolls past. Until the picture arrives the shape shows
+ * `loadingColor`.
  */
 function AvatarImageContent({
   primarySource,
   fallbackSource,
   onImageError,
+  loadingColor,
   ...placeholder
 }: React.ComponentProps<typeof ShapeFallback> & {
   primarySource?: ImageSource;
   fallbackSource?: ImageSource;
   onImageError?: () => void;
+  loadingColor?: string;
 }) {
-  const [photo, setPhoto] = useState<PhotoState>(() => ({
-    stage: primarySource ? 'primary' : fallbackSource ? 'fallback' : 'placeholder',
-    attempt: 0,
-  }));
+  const sourcesKey = imageSourcesKey(primarySource, fallbackSource);
+  const [state, setPhoto] = useState<PhotoState>(() =>
+    initialPhoto(sourcesKey, primarySource, fallbackSource),
+  );
+  let photo = state;
+  if (state.key !== sourcesKey) {
+    photo = initialPhoto(sourcesKey, primarySource, fallbackSource);
+    setPhoto(photo);
+  }
   const { stage, attempt, retry } = photo;
   const uri = primaryUri(primarySource);
   const source =
@@ -241,15 +266,19 @@ function AvatarImageContent({
     shape: placeholder.shape,
     size: placeholder.size,
     alt: placeholder.alt,
+    placeholderColor: loadingColor,
+    recyclingKey: primaryUri(source),
     onError: ({ error }: BloomImageErrorInfo) =>
       setPhoto((current) => {
-        if (current.stage !== stage || current.attempt !== attempt) return current;
+        if (current.key !== sourcesKey || current.stage !== stage || current.attempt !== attempt)
+          return current;
         if (stage !== 'primary') return { ...current, stage: 'placeholder' };
         const kind = classifyImageFailure(error);
         const retriable =
           attempt < AVATAR_PHOTO_RETRY_DELAYS_MS.length &&
           (kind === 'transient' || (kind === 'unknown' && canProbeImageFailure(uri)));
         return {
+          key: sourcesKey,
           stage: fallbackSource ? 'fallback' : 'placeholder',
           attempt,
           ...(retriable ? { retry: kind } : {}),
@@ -260,7 +289,8 @@ function AvatarImageContent({
   return (
     <>
       {stage === 'primary' && onImageError && attempt === 0 ? (
-        <ObservedAvatarImage key={stage} {...image} onImageError={onImageError} />
+        // Its once-per-photo report is per sources, so it alone starts afresh.
+        <ObservedAvatarImage key={sourcesKey} {...image} onImageError={onImageError} />
       ) : (
         <ShapeImage key={`${stage}:${attempt}`} {...image} />
       )}
@@ -314,8 +344,6 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const { messages } = useMessages(AVATAR_MESSAGES);
-  const liveLabel = liveLabelProp ?? messages.live;
   const placeholderConfig = useAvatarPlaceholder();
   const scope = useContext(BloomAppearanceContext);
   const size = resolveAvatarSize(sizeProp ?? scope.size);
@@ -442,10 +470,10 @@ const AvatarComponent: React.FC<AvatarProps> = ({
         />
       ) : (
         <AvatarImageContent
-          key={imageSourcesKey(primarySource, fallbackSource)}
           primarySource={primarySource}
           fallbackSource={fallbackSource}
           onImageError={onImageError}
+          loadingColor={theme.colors.backgroundTertiary}
           {...placeholderProps}
         />
       )}
@@ -468,7 +496,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
       {showLiveBadge && (
         <LiveBadge
           variant={size > 32 ? 'small' : 'tiny'}
-          label={liveLabel}
+          label={liveLabelProp}
           backgroundColor={liveBadgeColor}
           textColor={theme.colors.negativeForeground}
         />

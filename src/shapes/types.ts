@@ -34,6 +34,16 @@ export interface ImageProps {
    * on web).
    */
   onError?: (info: BloomImageErrorInfo) => void;
+  /**
+   * Fills the shape until the picture covers it, so a slot whose image is still
+   * loading reads as a slot, never as a hole in the layout.
+   */
+  placeholderColor?: string;
+  /**
+   * The identity of the picture, for an image a list reuses for another item:
+   * when it changes the previous picture is cleared at once. Pass the URI.
+   */
+  recyclingKey?: string;
 }
 export type GradientDirection = 'diagonal' | 'horizontal' | 'vertical';
 export interface BorderProps {

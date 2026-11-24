@@ -4,6 +4,7 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Avatar } from '../avatar';
 import { AGENT_AVATAR_MESSAGES } from '../agent-avatar/messages';
+import { AVATAR_MESSAGES } from '../avatar/messages';
 
 // Every call passes through; the spy only records which catalogues were read.
 const mockCatalogues: unknown[] = [];
@@ -39,7 +40,23 @@ describe('Avatar without a character', () => {
       </BloomThemeProvider>,
     );
 
-    expect(mockCatalogues.length).toBeGreaterThan(0);
     expect(mockCatalogues).not.toContain(AGENT_AVATAR_MESSAGES);
+  });
+
+  // Only the LIVE pill says "LIVE", so only a live avatar reads that catalogue.
+  it('reads the live label only when it draws the live pill', () => {
+    const tree = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Avatar name="Ada" uri="data:image/png;base64,AAAA" size={40} />
+      </BloomThemeProvider>,
+    );
+    expect(mockCatalogues).not.toContain(AVATAR_MESSAGES);
+    tree.rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Avatar name="Ada" uri="data:image/png;base64,AAAA" size={40} live />
+      </BloomThemeProvider>,
+    );
+    expect(mockCatalogues).toContain(AVATAR_MESSAGES);
+    expect(tree.getByText('LIVE')).toBeTruthy();
   });
 });
