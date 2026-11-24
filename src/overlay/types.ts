@@ -49,6 +49,16 @@ export interface OverlayRootProps {
    * surfaces (menus, popovers, tooltips), toasts and the shell drawers do not.
    */
   modal?: boolean;
+  /**
+   * Keep the app's bottom edge instead of starting a fresh one. A surface
+   * normally sits OVER the app, so whatever the app parks at its bottom edge
+   * (the floating tab bar) is covered and must not offset it. A non-modal layer
+   * that floats beside that bar and anchors to the same edge — the toast stack —
+   * must clear it instead: with its own empty edge it sat on the bar, where
+   * Android's native lens drew over it, and every touch on the bar went to the
+   * toast hidden underneath.
+   */
+  inheritBottomEdge?: boolean;
 }
 
 export interface OverlayInertBoundaryProps {

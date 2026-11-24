@@ -32,7 +32,11 @@ import { OverlayRoot, TOAST_LAYER_Z } from '../overlay';
 import type { ToastHostProps } from './types';
 
 export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
-  const content = <OverlayRoot zIndex={TOAST_LAYER_Z}>{children}</OverlayRoot>;
+  const content = (
+    <OverlayRoot zIndex={TOAST_LAYER_Z} inheritBottomEdge>
+      {children}
+    </OverlayRoot>
+  );
   if (ToasterOverlayWrapper) {
     return <ToasterOverlayWrapper>{content}</ToasterOverlayWrapper>;
   }

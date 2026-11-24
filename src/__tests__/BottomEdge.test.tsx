@@ -3,7 +3,9 @@ import { render } from '@testing-library/react-native';
 
 import { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from '../layout/bottom-edge';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
+import { OverlayRoot } from '../overlay';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { ToastHost } from '../toast/ToastHost.native';
 import { TabBar, TabBarButton } from '../tab-bar';
 import { EXPANDED_HEIGHT } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
@@ -155,6 +157,40 @@ describe('the bottom-edge registry', () => {
         <Claimant height={74} />
         <Claimant height={40} />
         <Probe onValue={(v) => values.push(v)} />
+      </BottomEdgeProvider>,
+    );
+    expect(values[values.length - 1]).toBe(74);
+  });
+});
+
+describe('the bottom edge across an overlay layer', () => {
+  it('starts a fresh edge for a surface drawn over the app', () => {
+    // A dialog or sheet covers the tab bar, so the bar must not lift what it
+    // anchors to the bottom.
+    const values: number[] = [];
+    render(
+      <BottomEdgeProvider>
+        <Claimant height={74} />
+        <OverlayRoot modal>
+          <Probe onValue={(v) => values.push(v)} />
+        </OverlayRoot>
+      </BottomEdgeProvider>,
+    );
+    expect(values[values.length - 1]).toBe(0);
+  });
+
+  it('keeps the bar under the toast stack, which floats beside it', () => {
+    // Shipped bug: the toast layer is an `OverlayRoot`, whose fresh edge read 0,
+    // so a persistent toast ("Reconnecting…") sat on the tab bar. On Android the
+    // native lens drew the bar over it, and every tab press went to the hidden
+    // toast: Mention ignored its tabs until the connection toast went away.
+    const values: number[] = [];
+    render(
+      <BottomEdgeProvider>
+        <Claimant height={74} />
+        <ToastHost>
+          <Probe onValue={(v) => values.push(v)} />
+        </ToastHost>
       </BottomEdgeProvider>,
     );
     expect(values[values.length - 1]).toBe(74);

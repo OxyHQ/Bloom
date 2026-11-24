@@ -126,6 +126,7 @@ export function OverlayRoot({
   zIndex,
   onRequestClose,
   modal = false,
+  inheritBottomEdge = false,
 }: OverlayRootProps) {
   // On the root rather than in each surface: every portaled surface mounts one
   // inside its open guard, so this is the one place that cannot be forgotten.
@@ -137,7 +138,13 @@ export function OverlayRoot({
   // non-empty — the counter would never reset and depths would climb for the
   // rest of the session.
   return zIndex === undefined ? (
-    <StackedOverlayRoot className={className} style={style} testID={testID} modal={modal}>
+    <StackedOverlayRoot
+      className={className}
+      style={style}
+      testID={testID}
+      modal={modal}
+      inheritBottomEdge={inheritBottomEdge}
+    >
       <BloomScope controlDensity="default">{children}</BloomScope>
     </StackedOverlayRoot>
   ) : (
@@ -147,6 +154,7 @@ export function OverlayRoot({
       style={style}
       testID={testID}
       modal={modal}
+      inheritBottomEdge={inheritBottomEdge}
     >
       <BloomScope controlDensity="default">{children}</BloomScope>
     </PinnedOverlayRoot>
@@ -158,45 +166,19 @@ type OverlayRootViewProps = Pick<
   'children' | 'className' | 'style' | 'testID'
 > & {
   modal: boolean;
+  inheritBottomEdge: boolean;
 };
 
-function StackedOverlayRoot({ children, className, style, testID, modal }: OverlayRootViewProps) {
+function StackedOverlayRoot(props: OverlayRootViewProps) {
   const layer = useOverlayLayer();
-  return (
-    <OverlayRootView
-      layer={layer}
-      className={className}
-      style={style}
-      testID={testID}
-      modal={modal}
-    >
-      {children}
-    </OverlayRootView>
-  );
+  return <OverlayRootView {...props} layer={layer} />;
 }
 
-function PinnedOverlayRoot({
-  children,
-  className,
-  style,
-  testID,
-  zIndex,
-  modal,
-}: OverlayRootViewProps & { zIndex: number }) {
+function PinnedOverlayRoot({ zIndex, ...props }: OverlayRootViewProps & { zIndex: number }) {
   // Outside the stack, so descendants must not read stack depths from it
   // either — every slot is the pinned depth.
   const layer = useMemo(() => ({ root: zIndex, backdrop: zIndex, surface: zIndex }), [zIndex]);
-  return (
-    <OverlayRootView
-      layer={layer}
-      className={className}
-      style={style}
-      testID={testID}
-      modal={modal}
-    >
-      {children}
-    </OverlayRootView>
-  );
+  return <OverlayRootView {...props} layer={layer} />;
 }
 
 function OverlayRootView({
@@ -206,6 +188,7 @@ function OverlayRootView({
   testID,
   layer,
   modal,
+  inheritBottomEdge,
 }: OverlayRootViewProps & { layer: OverlayLayer }) {
   // Android cannot confine TalkBack from this side of the outlet — the app's
   // `OverlayInertBoundary` hides the content once it hears a modal is open.
@@ -249,7 +232,9 @@ function OverlayRootView({
             `floating/FloatingPanel`   level 1 — the menu/popover surface
 
         */}
-        <ScreenScope>
+        {/* A fresh bottom edge as well, unless the surface floats beside what
+            the app parks there rather than over it (`inheritBottomEdge`). */}
+        <ScreenScope inheritBottomEdge={inheritBottomEdge}>
           <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
         </ScreenScope>
       </StyledView>
