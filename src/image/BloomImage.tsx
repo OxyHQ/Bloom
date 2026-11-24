@@ -33,6 +33,8 @@ const RESIZE_MODE: Record<BloomImageContentFit, ImageResizeMode> = {
 export function BloomImage({
   contentFit = 'cover',
   transition,
+  cachePolicy = 'memory-disk',
+  recyclingKey,
   onLoad,
   onError,
   ...rest
@@ -44,6 +46,8 @@ export function BloomImage({
         {...rest}
         contentFit={contentFit}
         transition={transition}
+        cachePolicy={cachePolicy}
+        recyclingKey={recyclingKey}
         onLoad={
           onLoad
             ? (event) => onLoad({ width: event.source.width, height: event.source.height })

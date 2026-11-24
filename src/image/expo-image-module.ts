@@ -31,7 +31,7 @@
  */
 import type { ComponentType } from 'react';
 import { Platform, type ImageStyle, type StyleProp, type ViewProps } from 'react-native';
-import type { BloomImageContentFit, BloomImageSource } from './types';
+import type { BloomImageCachePolicy, BloomImageContentFit, BloomImageSource } from './types';
 
 /**
  * Declared locally rather than taken from the ambient `NodeRequire`, which
@@ -53,6 +53,8 @@ export interface ExpoImageLikeProps extends Omit<ViewProps, 'style' | 'children'
   blurRadius?: number;
   alt?: string;
   transition?: number | null;
+  cachePolicy?: BloomImageCachePolicy | null;
+  recyclingKey?: string | null;
   onLoad?: (event: { source: { width: number; height: number } }) => void;
   onError?: (event: { error: string }) => void;
 }

@@ -9,7 +9,15 @@ import { svgA11yProps } from '../styles/svg-a11y';
 import { BloomImage } from '../image';
 
 /** Clips an image on every platform. SVG cannot clip arbitrary React Native views. */
-export function Image({ shape = 'circle', source, size, alt, onError }: ImageProps) {
+export function Image({
+  shape = 'circle',
+  source,
+  size,
+  alt,
+  onError,
+  placeholderColor,
+  recyclingKey,
+}: ImageProps) {
   const clipId = `${useSvgIdPrefix('bloom-shape-image')}clip`;
   assertSize(size);
   assertImageSource(source);
@@ -18,11 +26,17 @@ export function Image({ shape = 'circle', source, size, alt, onError }: ImagePro
     return (
       <BloomImage
         source={source}
+        recyclingKey={recyclingKey}
         accessibilityLabel={alt}
         accessible={alt ? true : undefined}
         onError={onError}
         contentFit="cover"
-        style={{ width: size, height: size, borderRadius: size / 2 }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: placeholderColor,
+        }}
       />
     );
   return (
@@ -31,6 +45,7 @@ export function Image({ shape = 'circle', source, size, alt, onError }: ImagePro
       {onError && (
         <BloomImage
           source={source}
+          recyclingKey={recyclingKey}
           accessible={false}
           aria-hidden
           importantForAccessibility="no-hide-descendants"
@@ -49,6 +64,7 @@ export function Image({ shape = 'circle', source, size, alt, onError }: ImagePro
             <Path d={outline.d} />
           </ClipPath>
         </Defs>
+        {placeholderColor ? <Path d={outline.d} fill={placeholderColor} /> : null}
         <SvgImage
           href={source}
           width={outline.viewBox}
