@@ -27,14 +27,21 @@
  * a `flex: 1` view — the content it wraps already fills the root there — and it
  * is never collapsed, because flattening a layout-only view would drop the
  * accessibility prop the moment it is needed.
+ *
+ * The covered content's lens controls are drawn in their place too, under the
+ * overlay (`LensCover`): the window overlay draws a resting lens above
+ * everything, and drew Mention's Home header over the settings modal.
  */
 import { Platform, StyleSheet, View } from 'react-native';
 
+import { LensCover } from '../floating/lens/lens-cover';
+import { useOptionalSurfaceFill } from '../styles/surface-levels';
 import type { OverlayInertBoundaryProps } from './types';
 import { useModalOverlayActive } from './use-modal-overlay-active';
 
 export function OverlayInertBoundary({ children, style, testID }: OverlayInertBoundaryProps) {
   const active = useModalOverlayActive();
+  const fill = useOptionalSurfaceFill();
 
   if (Platform.OS === 'web') {
     return (
@@ -57,7 +64,9 @@ export function OverlayInertBoundary({ children, style, testID }: OverlayInertBo
       importantForAccessibility={active ? 'no-hide-descendants' : 'auto'}
       accessibilityElementsHidden={active}
     >
-      {children}
+      <LensCover covered={active} fill={fill}>
+        {children}
+      </LensCover>
     </View>
   );
 }

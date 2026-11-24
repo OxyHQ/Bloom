@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { LensCover } from '../../floating/lens/lens-cover';
 import { ScreenActivity } from '../../screen/ScreenActivity';
 import { ScreenEnteredContext } from '../../screen/use-screen-entered';
 import { useSurfaceFill } from '../../styles/surface-levels';
@@ -38,7 +39,9 @@ export interface StackSceneProps {
  * And it makes the screens of a covered scene inactive, as the pager does for
  * its pages: their videos stop, their scroll stops driving the chrome, and their
  * reselect, status bar and floating action yield to the screen on top — without
- * every route passing `active={isFocused}` to its `Screen`.
+ * every route passing `active={isFocused}` to its `Screen`. Its controls' lenses
+ * are drawn in their place, under the scene on top (`LensCover`), not by the
+ * window over it.
  *
  * A pushed scene tells its screens when the push transition has ended
  * (`useScreenEntered`), so what can wait mounts after the slide rather than on
@@ -64,7 +67,9 @@ export function StackScene({ children, navigation, routeKey }: StackSceneProps) 
       accessibilityElementsHidden={!focused}
     >
       <ScreenActivity active={focused}>
-        <ScreenEnteredContext.Provider value={entered}>{children}</ScreenEnteredContext.Provider>
+        <LensCover covered={!focused} fill={fill}>
+          <ScreenEnteredContext.Provider value={entered}>{children}</ScreenEnteredContext.Provider>
+        </LensCover>
       </ScreenActivity>
     </View>
   );
