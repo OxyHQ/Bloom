@@ -1,5 +1,14 @@
 # Changelog
 
+## 23.5.0
+
+`@oxy.so/bloom-data` 0.1.1, `@oxy.so/bloom-text` 0.1.7 and `@oxy.so/bloom-editor` 0.9.1 ship beside it, compiled the same way.
+
+### Changed
+
+- `lib/` ships compiled by the React Compiler (1.0.0, the options Expo gives app code): apps' compiler skips node_modules, so on the web, in Node and anywhere the `import`/`require` targets resolve, Bloom's components now memoize as an app's own do (1,780 functions; the compiler leaves 316 as written, which keep their behaviour). The `react-native` condition still resolves `src/`, so native bundles are unchanged. The output imports `react/compiler-runtime`, part of React 19. `bloom-data`, `bloom-text` and `bloom-editor` ship compiled the same way; the Bloom language does not (its hosts call bodies that call hooks). The build fails when `lib/` stops being compiled (`scripts/verify-react-compiler.mjs`).
+- What reads a value that changes without a re-render stays uncompiled (`'use no memo'`), since the compiler would keep the first read: the `Avatar`'s call to the image resolver (a stable resolver can return a refreshed URL for the same id), `Calendar`'s today, the web `Tooltip`'s viewport size, `useMessages` without a `LocaleProvider`, and a `Skeleton` shape's shimmer delay (read from the clock once per region).
+
 ## 23.3.1
 
 ### Fixed

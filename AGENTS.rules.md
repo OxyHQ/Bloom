@@ -20,6 +20,7 @@ RN + Web. Families: `src/<name>/`, published subpaths/root exports
 - Keep `react-native` conditions split into `types` + `default`. Bare strings make consumers typecheck Bloom .tsx + import react-dom/undeclared optional peers
 - Required postbuild `verify:package`: ship all packed exports; RN has no src fallback. No `prepack`/`prepare`: packs never rebuild (`--ignore-scripts`)
 - Toast is not web-forked: only ToastHost.native.tsx splits; exclude ./toast from `WEB_FORKED_SUBPATHS`
+- React Compiler: apps' compiler skips node_modules, so lib/ JS targets (root, bloom-data/-text/-editor) build with babel.build.cjs (compiler 1.0.0, Expo's options); postbuild verify-react-compiler.mjs fails unless every built file has the memo caches its source compiles to. `react-native` resolves src/: native stays uncompiled. bloom-language NOT compiled: its hosts call hook-calling app bodies (view/layout/screen/menu/actions); memoized calls skipped hooks ("Rendered fewer hooks"). Outlining off (it hoisted a factory-built component's lambda out of the factory: `SelectItem is not defined`). Render-time mutable reads stay until args change: it also drops a useMemo returning a primitive: `'use no memo'` (Avatar resolver, Calendar today(), web Tooltip viewport, providerless useMessages, Skeleton shimmer delay); react-compiler-build.test.ts. docs/verification.mdx
 
 ## Reanimated web layout
 

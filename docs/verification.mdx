@@ -145,6 +145,66 @@ restore the mirror and run the final gate against the published package. Record
 which artifact was measured; never present a source-mirror improvement as a
 published-package result or adjust timing/budget gates to hide the difference.
 
+### What the published package ships compiled
+
+bob builds the JS targets (`lib/module`, `lib/commonjs`) of the root package,
+`bloom-data`, `bloom-text` and `bloom-editor` with `babel.build.cjs`: bob's
+preset with `babel-plugin-react-compiler` 1.0.0 first, the options Expo gives
+app code (`target: '19'`, `infer`, `panicThreshold: 'none'`) with function
+outlining off. Outlining moves a lambda that captures nothing of its component
+to module scope, and inside a component a factory builds
+(`createSettingsSelect(parts)`) it took the factory's parameters for globals:
+the moved lambda threw `SelectItem is not defined`. Each package's
+postbuild runs `scripts/verify-react-compiler.mjs`, which compiles every source
+bob compiles with the plugin and options it loads from that config, and fails
+unless each built file calls the memo cache exactly as often as the compiler
+memoizes functions in its source. It prints what the compiler left as written.
+
+**The `react-native` condition still resolves `src/`**, which an app's Metro
+transforms as a node module, without the React Compiler. A compiled `lib/`
+reaches web bundlers (the `browser` condition), Node and anything that imports
+the `import`/`require` targets, not native.
+
+**`bloom-language` is not compiled.** Its hosts call app code that calls hooks
+during their own render: `view()`'s host calls the body, `layout()` and
+`screen()` call theirs, the menu hosts build `menu()` rows inside
+`readMenuRows`, and `RunChoice` calls an `actions()` body. The compiler
+memoizes those calls (`body(props)` behind `props` and the environment), so a
+state update inside a body re-rendered the host without running the body:
+React fails with "Rendered fewer hooks than expected". The bodies themselves are
+app code, which the app compiles.
+
+The compiler cannot see a read of mutable state during render; it keeps the
+value until the read's arguments change, and it drops a `useMemo` whose result
+is a string or number and recomputes it. Those reads opt out with
+`'use no memo'`: the Avatar's resolver call (`useResolvedAvatarUri`: a stable
+resolver can return a refreshed URL for the same id), `CalendarFrame`
+(`today()`), the web `TooltipBubble` (`window.innerWidth`/`innerHeight`),
+`useMessages` (the loaded languages without a `LocaleProvider`) and the
+skeleton's `useShapeMotion` (its shimmer delay reads the clock once per
+driver; recomputed, a re-rendered shape jumped its shimmer).
+Elsewhere an image resolver's result is kept until the resolver, the id or the
+variant changes, as an app's own compiled component keeps it (and as the chat
+screen's `useMemo` already did): only the Avatar promises a re-read on any
+render, because a photo that failed is retried with what the resolver returns
+then (`AvatarShape.test.tsx`). A resolver whose URLs change for the same id
+should be a new function then.
+`src/__tests__/react-compiler-build.test.ts` compiles each with the build's
+options and fails if one is memoized or a lambda is outlined. The compiler's
+own validations leave as written what reads a ref during render or mutates a
+value it does not own.
+
+Measured 2026-11-24: the suite run with Bloom's source compiled this way
+(babel-jest with the build's compiler options; tests and mocks uncompiled)
+against the same run without the compiler found the outlining failure
+(`SettingsSelect`, `SelectField`), the Avatar's resolver and the skeleton
+delay. After the changes above, the failures only it has are stand-ins that
+need a render the compiler now skips: the Reanimated mock evaluates
+`useAnimatedStyle` on render (SidebarScrollArea, Toaster), a mocked child
+counts its renders (AvatarCharacter), CheckoutSheet's test mutates its props in
+place, and touch-input-subscriptions calls a hook outside a component with a
+mocked React.
+
 ### Avatar browser regression fixtures
 
 Storybook exposes the definitive avatar Gallery, Playground and existing Agent Creator.

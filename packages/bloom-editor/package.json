@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-editor",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Bloom's block editor: a headless, command-based document model and the native-first React components on top of it.",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
@@ -67,6 +67,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "bob build",
+    "postbuild": "node ../../scripts/verify-react-compiler.mjs --control src/react/BlockEditor.tsx",
     "typescript": "tsc --noEmit -p .",
     "test": "jest"
   },
@@ -87,13 +88,15 @@
       [
         "commonjs",
         {
-          "esm": true
+          "esm": true,
+          "configFile": "../../babel.build.cjs"
         }
       ],
       [
         "module",
         {
-          "esm": true
+          "esm": true,
+          "configFile": "../../babel.build.cjs"
         }
       ],
       [

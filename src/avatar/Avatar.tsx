@@ -152,6 +152,33 @@ interface PhotoState {
   retry?: 'transient' | 'unknown';
 }
 
+/**
+ * The source prop as a URL: a string → uri, an object → none (the caller uses
+ * it as it is). A URL passes through directly (`isImageUrl`, the package's one
+ * answer to "URL or id"). Non-URL strings (e.g. Oxy file IDs) are resolved via
+ * the app-provided ImageResolver if available, with the requested `variant`
+ * forwarded so the resolver (the single URL chokepoint) can build the right
+ * rendition. `variant` defaults to `'thumb'` (see the prop default) so a bare-id
+ * avatar never accidentally requests the full-size original; callers wanting
+ * the full image pass an explicit variant.
+ *
+ * Resolved on every render: a stable resolver can read refreshed URL data. That
+ * is why this is a hook the React Compiler leaves as written: it would call the
+ * resolver only when its arguments change.
+ */
+function useResolvedAvatarUri(
+  sourceValue: string | ImageSource | null | undefined,
+  variant: string,
+  uri: string | undefined,
+): string | undefined {
+  'use no memo';
+  const imageResolver = useImageResolver();
+  if (typeof sourceValue === 'string') {
+    return isImageUrl(sourceValue) ? sourceValue : imageResolver?.(sourceValue, variant);
+  }
+  return sourceValue != null ? undefined : uri;
+}
+
 function primaryUri(source: ImageSource | undefined): string | undefined {
   return source && typeof source === 'object' && 'uri' in source ? source.uri : undefined;
 }
@@ -370,27 +397,9 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const resolvedPlaceholderIcon =
     placeholderIcon ?? (fallbackText ? undefined : placeholderConfig?.icon?.(size * 0.6));
 
-  const imageResolver = useImageResolver();
-
-  // Resolve source prop: string → uri, object → ImageSource.
-  // A URL passes through directly (`isImageUrl`, the package's one answer to
-  // "URL or id"). Non-URL strings (e.g. Oxy file IDs) are resolved via the
-  // app-provided ImageResolver if available, with the requested `variant`
-  // forwarded so the resolver (the single URL chokepoint) can build the right
-  // rendition. `variant` defaults to `'thumb'` (see prop default) so a bare-id
-  // avatar never accidentally requests the full-size original; callers wanting
-  // the full image pass an explicit variant.
-  // Resolve on each render: a stable resolver can read refreshed URL data.
   // An explicit `source`/`uri` wins over the account's own image.
   const sourceValue = source ?? (uri ? undefined : account?.avatar);
-  const resolvedUri =
-    typeof sourceValue === 'string'
-      ? isImageUrl(sourceValue)
-        ? sourceValue
-        : imageResolver?.(sourceValue, variant)
-      : sourceValue != null
-        ? undefined
-        : uri;
+  const resolvedUri = useResolvedAvatarUri(sourceValue, variant, uri);
 
   const resolvedImageSource = useMemo(() => {
     if (sourceValue != null && typeof sourceValue !== 'string') return sourceValue;

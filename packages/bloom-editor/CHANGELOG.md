@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+### Changed
+
+- `lib/` ships compiled by the React Compiler (1.0.0, as Bloom builds it): apps' compiler skips node_modules, so on the web and wherever the `import`/`require` targets resolve, its components memoize as an app's own do. The `react-native` condition still resolves `src/`. The output imports `react/compiler-runtime` (React 19).
+
 ## 0.9.0
 
 ### Compatibility
