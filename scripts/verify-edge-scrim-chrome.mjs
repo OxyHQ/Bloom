@@ -1,4 +1,8 @@
-/** Raster gate for real header/footer hosts: opaque chrome, smooth external tail. */
+/**
+ * Raster gate for real header/footer hosts. A footer holds its measured chrome opaque and fades in
+ * the external tail. A floating header holds only what its first gradient stops hold (the status
+ * bar; nothing in a browser) and fades from there, smoothly, to nothing past its foot.
+ */
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -18,11 +22,7 @@ try {
   for (const width of [390, 1280])
     for (const theme of ['light', 'dark']) {
       for (const specimen of [
-        {
-          story: 'templates-project-board--ticket-detail',
-          owner: 'ticket-detail-header',
-          edge: 'top',
-        },
+        { story: 'blocks-page-header--floating', owner: 'header', edge: 'top' },
         { story: 'blocks-page-footer--wrapped-actions', owner: 'message-footer', edge: 'bottom' },
       ]) {
         const page = await browser.newPage();
@@ -35,9 +35,12 @@ try {
           hasTouch: width === 390,
           isMobile: width === 390,
         });
-        await page.goto(`${base}/iframe.html?id=${specimen.story}&globals=theme:${theme}`, {
-          waitUntil: 'domcontentloaded',
-        });
+        await page.goto(
+          `${base}/iframe.html?id=${specimen.story}&viewMode=story&globals=theme:${theme}`,
+          {
+            waitUntil: 'domcontentloaded',
+          },
+        );
         const selector = `[data-testid="${specimen.owner}"]`;
         await page.waitForSelector(selector, { timeout: 60000 });
         await page.evaluate(() => document.fonts.ready);
@@ -51,12 +54,10 @@ try {
                 ['auto', 'scroll'].includes(getComputedStyle(node).overflowY) &&
                 node.scrollHeight > node.clientHeight + 80,
             );
-            if (!candidates.length) return false;
-            candidates[0].scrollTop = Math.min(
-              250,
-              (candidates[0].scrollHeight - candidates[0].clientHeight) / 2,
-            );
-            return candidates[0].scrollTop > 40;
+            // A screen that scrolls the document (the floating header story) has no scroller div.
+            const scroller = candidates[0] ?? document.scrollingElement;
+            scroller.scrollTop = Math.min(250, (scroller.scrollHeight - scroller.clientHeight) / 2);
+            return scroller.scrollTop > 40;
           },
           {},
           selector,
@@ -116,34 +117,42 @@ try {
           values.sort((a, b) => a - b);
           return values[Math.floor(values.length * 0.8)];
         };
+        // The held region is the run of opaque stops from the anchored edge.
+        const held =
+          geometry.gradient.height *
+          Math.max(
+            ...geometry.stops.filter((stop) => stop.opacity === 1).map((stop) => stop.offset),
+          );
+        const fromEdge = (d) =>
+          specimen.edge === 'top' ? geometry.gradient.top + d : geometry.gradient.bottom - d;
         const chrome = [];
-        for (let y = Math.ceil(geometry.owner.top) + 2; y < geometry.owner.bottom - 2; y++)
-          chrome.push(rowDelta(y));
+        for (let d = 2; d < held - 2; d++) chrome.push(rowDelta(fromEdge(d)));
         assert.equal(
-          Math.max(...chrome),
+          Math.max(0, ...chrome),
           0,
-          `${name}: underlying paint must not leak through measured chrome`,
+          `${name}: underlying paint must not leak through the held region`,
         );
         const tail = geometry.gradient.height - geometry.owner.height;
         assert(tail > 10, `${name}: real external tail exists`);
-        const tailDelta = [0.05, 0.3, 0.6, 0.9].map((t) =>
-          rowDelta(
-            specimen.edge === 'top'
-              ? geometry.owner.bottom + tail * t
-              : geometry.owner.top - tail * t,
-          ),
-        );
+        const fade = geometry.gradient.height - held;
+        const tailDelta = [0.05, 0.3, 0.6, 0.9].map((t) => rowDelta(fromEdge(held + fade * t)));
         assert(
           tailDelta[0] < 12 && tailDelta[3] > 150,
-          `${name}: tail starts continuously opaque and ends transparent (${tailDelta})`,
+          `${name}: fade starts continuously opaque and ends transparent (${tailDelta})`,
         );
         for (let i = 1; i < tailDelta.length; i++)
-          assert(
-            tailDelta[i] > tailDelta[i - 1],
-            `${name}: fade progresses smoothly outside chrome`,
-          );
+          assert(tailDelta[i] > tailDelta[i - 1], `${name}: fade progresses smoothly`);
+        // No step: past the islands (the header's last 10px is its inset below them, and the
+        // glass over the diagnostic backing is not the ramp), no row lets through much more
+        // than its neighbour.
+        let step = 0;
+        const from = specimen.edge === 'top' ? geometry.owner.bottom - 10 : geometry.gradient.top;
+        const to = specimen.edge === 'top' ? geometry.gradient.bottom - 1 : geometry.owner.top + 10;
+        for (let y = Math.ceil(from); y < to; y++)
+          step = Math.max(step, Math.abs(rowDelta(y + 1) - rowDelta(y)));
+        assert(step < 24, `${name}: no step in the fade (largest row-to-row change ${step})`);
         assert.deepEqual(errors, []);
-        results.push({ name, geometry, maxChromeLeak: Math.max(...chrome), tailDelta });
+        results.push({ name, geometry, maxChromeLeak: Math.max(0, ...chrome), tailDelta, step });
         await page.close();
         console.log(`PASS ${name}`);
       }

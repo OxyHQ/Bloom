@@ -59,7 +59,11 @@ positions through React Native Web. Wrapped titles, font changes and dynamic
 footers still update their reserved height. Native uses its normal layout events.
 
 On native, auto reserves chrome space but the screen's list or `ScreenScrollView`
-continues owning scrolling. `scroll="content"` keeps
+continues owning scrolling. The scroller that binds `useScreenScroll` takes the header's
+height as the top inset of its own content (`contentInsets.top`), so the content runs under
+the header and the header's scroll edge fades it, as on the web; a list with a refresh
+control passes the same inset as its `progressViewOffset`. A screen whose content binds no
+scroller keeps its content box padded clear of the header. `scroll="content"` keeps
 existing explicit list/inset bindings. `documentScroll` remains an explicit override.
 
 `useScreenViewport()` exposes the existing owner (`kind`, `scrollRef`, `metrics`,

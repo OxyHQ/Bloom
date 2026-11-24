@@ -137,10 +137,14 @@ it('lets the native screen and its sole scroller contribute content size below t
   fireEvent(view.getByTestId('native-screen-bottom'), 'layout', {
     nativeEvent: { layout: { height: 88 } },
   });
+  // The scroller takes the header's inset, so its content runs under the header.
   expect(resolvedStyle(view.getByTestId('native-screen-content').props.style)).toMatchObject({
-    paddingTop: 48,
+    paddingTop: 0,
     paddingBottom: 88,
   });
+  expect(
+    resolvedStyle(view.getByTestId('native-scroll').props.contentContainerStyle),
+  ).toMatchObject({ paddingTop: 48 });
   const draft = view.getByTestId('native-draft');
   view.rerender(draw('fill'));
   expect(panel(view.toJSON()).height).toBe(732);

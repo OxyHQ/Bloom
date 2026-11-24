@@ -22,14 +22,34 @@ export interface Bloom23Change {
   readonly commit: string;
   readonly what: string;
   readonly platform: Platform;
-  /** Where the value sits: a native host's prop, a DOM attribute, or a CSS declaration. */
-  readonly in: 'props' | 'attributes' | 'css';
-  /** The key, or a path into the prop's value (`contentContainerStyle.1.paddingBottom`). */
+  /**
+   * Where the value sits: a native host's prop, a DOM attribute, a CSS declaration, or an
+   * element's children (a gradient's stops), compared by the attributes `key` names.
+   */
+  readonly in: 'props' | 'attributes' | 'css' | 'children';
+  /**
+   * The key, or a path into the prop's value (`contentContainerStyle.1.paddingBottom`); for
+   * `children`, the space-separated attributes each child is read by (`offset stop-opacity`).
+   */
   readonly key: string;
   readonly value: unknown;
   /** The value Bloom 22 drew there, when Bloom 23 changed it rather than added it. */
   readonly was?: unknown;
 }
+
+/** Offset and opacity of each stop of Bloom 23's scroll edge, as the DOM spells them. */
+const SCROLL_EDGE = Array.from({ length: 17 }, (_, i) => {
+  const t = i / 16;
+  return [String(t), String(Math.round((1 - t * t * (3 - 2 * t)) * 1e4) / 1e4)] as const;
+});
+/** Bloom 22's: opaque over 56 of 86.8, then an ease-out. */
+const BLOOM_22_SCROLL_EDGE = [
+  ['0', '1'],
+  ['0.6451612903225806', '1'],
+  ['0.7941935483870968', '0.86'],
+  ['0.9006451612903226', '0.38'],
+  ['1', '0'],
+] as const;
 
 export const BLOOM_23_CHANGES: readonly Bloom23Change[] = [
   {
@@ -75,9 +95,10 @@ export const BLOOM_23_CHANGES: readonly Bloom23Change[] = [
       was,
     }),
   ),
-  // A floating header's scroll edge is its own height and a 12pt fade (was a 0.55x tail of the
-  // whole header): over a 56pt header, a 68pt box, opaque to 56/68; the fade eases in and out
-  // through 0.74 and 0.26 at its thirds (was 0.86 and 0.38 at 0.42 and 0.72).
+  // A floating header's scroll edge is one eased fade from its top (no status bar here) to nothing
+  // 12pt past its foot (was a 0.55x tail of the whole header, opaque over the header): over a 56pt
+  // header, a 68pt box, the fade smoothstep sampled at 16 even steps (was 0.86 and 0.38 at 0.42 and
+  // 0.72 of a tail after 56/86.8 held opaque).
   ...(
     [
       ['native', 'props', 'style.height', 68, 86.8],
@@ -87,20 +108,16 @@ export const BLOOM_23_CHANGES: readonly Bloom23Change[] = [
             'native',
             'props',
             'style.experimental_backgroundImage',
-            `linear-gradient(to bottom, rgba(${rgb}, 1) 0%, rgba(${rgb}, 1) 82.35294117647058%, rgba(${rgb}, 0.74) 88.23529411764706%, rgba(${rgb}, 0.26) 94.11764705882352%, rgba(${rgb}, 0) 100%)`,
-            `linear-gradient(to bottom, rgba(${rgb}, 1) 0%, rgba(${rgb}, 1) 64.51612903225806%, rgba(${rgb}, 0.86) 79.41935483870968%, rgba(${rgb}, 0.38) 90.06451612903226%, rgba(${rgb}, 0) 100%)`,
+            `linear-gradient(to bottom, ${SCROLL_EDGE.map(([offset, opacity]) => `rgba(${rgb}, ${opacity}) ${Number(offset) * 100}%`).join(', ')})`,
+            `linear-gradient(to bottom, ${BLOOM_22_SCROLL_EDGE.map(([offset, opacity]) => `rgba(${rgb}, ${opacity}) ${Number(offset) * 100}%`).join(', ')})`,
           ] as const,
       ),
-      ['web', 'attributes', 'offset', '0.8235294117647058', '0.6451612903225806'],
-      ['web', 'attributes', 'offset', '0.8823529411764706', '0.7941935483870968'],
-      ['web', 'attributes', 'offset', '0.9411764705882353', '0.9006451612903226'],
-      ['web', 'attributes', 'stop-opacity', '0.74', '0.86'],
-      ['web', 'attributes', 'stop-opacity', '0.26', '0.38'],
+      ['web', 'children', 'offset stop-opacity', SCROLL_EDGE, BLOOM_22_SCROLL_EDGE],
     ] as const
   ).map(
     ([platform, where, key, value, was]): Bloom23Change => ({
       commit: '#874',
-      what: "A floating header's scroll edge is the header's own height and a short, full-range fade",
+      what: "A floating header's scroll edge is one eased fade from its top to just past its foot",
       platform,
       in: where,
       key,
@@ -138,6 +155,13 @@ export function withBloom23Changes(
     const node = { ...(b as Tree) };
     const other = a as Tree;
     for (const change of changes) {
+      if (change.in === 'children') {
+        if (sameChildrenBut(node.children, other.children, change)) {
+          node.children = other.children;
+          met.add(label(change));
+        }
+        continue;
+      }
       const theirs = other[change.in] as Tree | undefined;
       const ours = node[change.in] as Tree | undefined;
       if (change.was !== undefined) {
@@ -162,6 +186,29 @@ export function withBloom23Changes(
     return node;
   };
   return visit(before, after);
+}
+
+/**
+ * Whether `before` reads as `change.was` and `after` as `change.value` by the attributes
+ * `change.key` names, one entry per child, and every child agrees on everything else (its tag,
+ * its other attributes, its CSS, its children) with the before tree's first.
+ */
+function sameChildrenBut(before: unknown, after: unknown, change: Bloom23Change): boolean {
+  if (!Array.isArray(before) || !Array.isArray(after) || before.length === 0) return false;
+  const keys = change.key.split(' ');
+  const read = (children: Tree[]) =>
+    JSON.stringify(children.map((child) => keys.map((key) => (child.attributes as Tree)?.[key])));
+  if (read(before) !== JSON.stringify(change.was) || read(after) !== JSON.stringify(change.value))
+    return false;
+  const rest = (child: Tree) =>
+    JSON.stringify({
+      ...child,
+      attributes: Object.fromEntries(
+        Object.entries((child.attributes as Tree) ?? {}).filter(([key]) => !keys.includes(key)),
+      ),
+    });
+  const template = rest(before[0] as Tree);
+  return [...before, ...after].every((child) => rest(child as Tree) === template);
 }
 
 /** The value at `path` inside `value` (objects and arrays), or undefined. */

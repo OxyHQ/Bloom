@@ -893,14 +893,16 @@ function PageHeaderComponent({
     () => ({ opacity: dockProgress?.value ?? 0 }),
     [dockProgress],
   );
-  // The scroll edge: the page colour over the header's own measured box (the
-  // status bar and the row), then a short fade past its foot, as long as the
-  // inset the row keeps below its islands. A ratio of the whole header grew with
-  // the status bar and laid a band over whatever sat under the header (Mention's
-  // Home tabs, Pixel 8a). A photo's ramp, or a linear one, fades across its
-  // whole box instead, so it keeps the longer tail its legibility needs.
+  // The scroll edge, Apple's: the page colour solid over the status bar, then one
+  // eased fade (`SCRIM_STOPS`) across the header's row to nothing, ending the
+  // inset its row keeps below its islands past the header's foot. The islands
+  // carry their own material. A solid band over the whole header with only that
+  // inset to fade in read as a hard cut through the text passing under it
+  // (Mention's Home, Pixel 8a). A photo's ramp, or a linear one, fades across
+  // its whole box instead, so it keeps the longer tail its legibility needs.
   const fullBoxScrim = tone === 'onImage' || scrimFalloff !== 'smooth';
   const scrimHeight = height + (fullBoxScrim ? height * SCRIM_TAIL_RATIO : OUTER_INSET);
+  const scrimHold = fullBoxScrim || scrimHeight <= 0 ? 0 : Math.min(padTop, height) / scrimHeight;
   const chrome = floating ? (
     <Animated.View
       style={[[styles.scrim, { height: scrimHeight }, scrimStyle], pointerEventsStyle('none')]}
@@ -911,7 +913,7 @@ function PageHeaderComponent({
         // falling back to the page. Explicit scrimColor remains an override.
         color={scrimColor ?? (imageScrim ? '#000000' : surfaceFill)}
         falloff={scrimFalloff}
-        opaqueFraction={fullBoxScrim || scrimHeight <= 0 ? 0 : height / scrimHeight}
+        opaqueFraction={scrimHold}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>
