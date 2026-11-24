@@ -65,11 +65,16 @@ export function StackScene({ children, navigation, routeKey }: StackSceneProps) 
  * False from the render that pushes the scene until the stack reports its
  * transition over (`transitionEnd`, from the native screen's appearance);
  * true for a scene the stack started with or that a push did not bring in.
+ *
+ * The pushing render reads the navigator's last committed state, which does
+ * not hold the pushed route yet: a route missing from a stack that has routes
+ * is the one being pushed.
  */
 function useSceneEntered(navigation: SceneNavigation | undefined, routeKey: string | undefined) {
   const [entered, setEntered] = useState(() => {
     if (!navigation || !routeKey) return true;
     const state = navigation.getState();
+    if (!state.routes.some((route) => route.key === routeKey)) return state.routes.length === 0;
     return state.routes.length < 2 || state.routes[state.index]?.key !== routeKey;
   });
   // Subscribed in the commit that mounts the native screen, before it can appear.
