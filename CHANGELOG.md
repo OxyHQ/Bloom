@@ -1,5 +1,11 @@
 # Changelog
 
+## 23.3.1
+
+### Fixed
+
+- A bottom toast clears the floating bottom bar again. The toast layer is an `OverlayRoot`, and its fresh bottom edge read nothing, so the stack sat on the bar; on Android the native lens drew the bar over it, and the hidden toast took every press on the bar (a persistent connection toast kept an app's tabs from opening). `OverlayRoot` takes `inheritBottomEdge`, a surface that keeps the app's bottom edge instead of a fresh one; both toast hosts set it.
+
 ## 23.3.0
 
 ### Added
