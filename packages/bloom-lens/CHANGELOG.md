@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1
+
+### Fixed
+
+- A still lets go of its buffer without waiting for the GPU. On Android 14 and later a still is one hardware buffer drawn with no surface (`HardwareBufferRenderer`); a still drawn through a surface waited on RenderThread for the GPU to go idle when it was let go, 7 to 20 ms as a menu closed.
+
+### Changed
+
+- A frame of an open menu marks only the menu's area: the menu is drawn into a node bounded by what it draws, and a frame of the menu alone records only that node. The page outside the menu is not drawn again, and the glass's blur and material run only where the menu is (they ran over the whole window's damage).
+- A lens that starts to sample a region the page has not changed in for half a second shows a still of it once the region has settled (50 ms): a menu opening over a page that is still samples a still from its first frames, not the page for the whole of its opening.
+
 ## 1.1.0
 
 ### Fixed

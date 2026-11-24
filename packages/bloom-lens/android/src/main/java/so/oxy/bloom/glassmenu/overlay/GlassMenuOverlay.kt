@@ -53,6 +53,13 @@ internal class GlassMenuOverlay private constructor(
   // What the overlay draws (the resting lenses and the open menu), in a node of its own: a frame of the page that moves
   // a trigger or redraws its content records it again from the pre-draw, without invalidating the overlay.
   private var drawing: Any? = null
+  // The open menu, in a node bounded by what it draws this frame (sessionNode, clipped to it), around a node of its
+  // drawing at window coordinates (sessionContent). A frame of the menu alone records only these, without invalidating
+  // the overlay, so the window's damage is the menu's area of this frame and the last, not the whole window: the
+  // page outside it is not drawn again, and the glass's blur and material run only where the menu is.
+  private var sessionNode: Any? = null
+  private var sessionContent: Any? = null
+  private val sessionBounds = Rect()
 
   init {
     setWillNotDraw(false)
@@ -94,8 +101,14 @@ internal class GlassMenuOverlay private constructor(
     viewTreeObserver.removeOnPreDrawListener(this)
     Choreographer.getInstance().removeFrameCallback(this)
     framePending = false
-    if (supportsGlass) (drawing as? RenderNode)?.discardDisplayList()
+    if (supportsGlass) {
+      (drawing as? RenderNode)?.discardDisplayList()
+      (sessionNode as? RenderNode)?.discardDisplayList()
+      (sessionContent as? RenderNode)?.discardDisplayList()
+    }
     drawing = null
+    sessionNode = null
+    sessionContent = null
     super.onDetachedFromWindow()
   }
 
@@ -178,7 +191,44 @@ internal class GlassMenuOverlay private constructor(
       // A trigger that draws its lens in place (restBackdrop) is drawn here only while its menu is open.
       if (anchor !== active?.anchor && anchor.drawsGlass && !anchor.inPlace) drawRestingAnchor(canvas, page, anchor)
     }
-    active?.draw(canvas, page, limits)
+    if (active != null) canvas.drawRenderNode(recordSession(active, page))
+  }
+
+  // The menu's drawing, and the node that bounds it to what it draws this frame (GlassMenuSession.drawnBounds).
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun recordSession(active: GlassMenuSession, page: GlassBackdrop): RenderNode {
+    val content = sessionContent as? RenderNode ?: RenderNode("GlassMenu.session").also { sessionContent = it }
+    content.setPosition(0, 0, width, height)
+    val drawing = content.beginRecording(width, height)
+    try {
+      active.draw(drawing, page, limits)
+    } finally {
+      content.endRecording()
+    }
+    active.drawnBounds(sessionBounds, limits)
+    val node = sessionNode as? RenderNode ?: RenderNode("GlassMenu.sessionBounds").also { sessionNode = it }
+    node.setPosition(sessionBounds)
+    val bounded = node.beginRecording(sessionBounds.width().coerceAtLeast(1), sessionBounds.height().coerceAtLeast(1))
+    bounded.translate(-sessionBounds.left.toFloat(), -sessionBounds.top.toFloat())
+    bounded.drawRenderNode(content)
+    node.endRecording()
+    return node
+  }
+
+  // A frame of the menu alone: its nodes again, and a frame of the window asked for, with nothing in the page or the
+  // overlay marked (the overlay's node draws the menu's node, and only that changed). An overlay already marked, or
+  // not drawn yet, is drawn again as a whole.
+  private fun redrawSession(active: GlassMenuSession) {
+    val page = backdropProvider
+    val window = root.parent
+    if (!supportsGlass || !isHardwareAccelerated || page == null || window == null || drawing == null || isDirty ||
+      width <= 0 || height <= 0) {
+      invalidate()
+      return
+    }
+    limits.set(0, 0, width, height)
+    recordSession(active, page)
+    window.onDescendantInvalidated(root, this)
   }
 
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -282,6 +332,10 @@ internal class GlassMenuOverlay private constructor(
     val active = session ?: return
     active.release()
     session = null
+    if (supportsGlass) {
+      (sessionNode as? RenderNode)?.discardDisplayList()
+      (sessionContent as? RenderNode)?.discardDisplayList()
+    }
     releaseInput()
     if (notify && active.expanded) active.anchor.notifyOpenChange(false)
     active.anchor.onSessionFinished()
@@ -306,21 +360,35 @@ internal class GlassMenuOverlay private constructor(
     val seconds = if (scale == 0f) 10f else min(elapsed, limit) / scale
     lastFrameNanos = frameTimeNanos
     var running = false
+    val active = session
+    // A resting lens the overlay draws moved (its press jelly, its group's springs): the overlay is drawn again whole.
+    var restingMoved = false
     for (anchor in anchors) {
       val wasSettled = anchor.jelly.isSettled
       anchor.jelly.advance(seconds * anchor.config.speed)
       if (!anchor.jelly.isSettled) running = true
       if (!wasSettled || !anchor.jelly.isSettled) anchor.jellyFrame()
+      val groupWasSettled = anchor.group.isSettled
       anchor.group.advance(seconds)
       if (!anchor.group.isSettled) running = true
+      val moved = !wasSettled || !anchor.jelly.isSettled || !groupWasSettled || !anchor.group.isSettled
+      if (moved && anchor !== active?.anchor && drawnHere(anchor)) restingMoved = true
     }
-    val active = session
+    var drawn = false
     if (active != null) {
       val speed = active.anchor.config.speed
       // notify: a predictive back that finished the root still has to report the menu closed to its anchor.
-      if (active.tick(seconds * speed)) finishSession(notify = true) else running = running || active.needsFrame
+      if (active.tick(seconds * speed)) {
+        finishSession(notify = true)
+      } else {
+        running = running || active.needsFrame
+        if (!restingMoved) {
+          redrawSession(active)
+          drawn = true
+        }
+      }
     }
-    invalidate()
+    if (!drawn) invalidate()
     if (running) {
       framePending = true
       Choreographer.getInstance().postFrameCallback(this)
