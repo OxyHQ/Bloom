@@ -14,6 +14,7 @@ import { useTheme, withAlpha, type ThemeColors } from '@oxy.so/bloom/theme';
 
 import { GLASS, GLASS_OPACITY } from '../generated/spec.generated';
 import { paletteColor, withSurface } from '../paint';
+import { CONTROL_FILL_OPACITY } from './lens-glass';
 import type { GlassHostProps, PlatformGlass } from './glass-host.types';
 
 interface GlassEffectModule {
@@ -57,10 +58,16 @@ function loadBlur(): BlurModule | null {
   return blur;
 }
 
-/** The tint, as a colour with its transparency: a variant's fill while it holds, else the glass's own, else the control's fill. */
+/**
+ * The tint, as a colour with its transparency: a variant's fill while it holds, else the glass's
+ * own, else the control's fill. The system tints Liquid Glass with a control's fill as it is
+ * (Apple's `glassProminent`); over the blur the fill is `controlFill` strong (the lens's), so the
+ * blur still shows through it.
+ */
 function tintOf(
   { glass, fallbackTint, fill }: GlassHostProps,
   colors: ThemeColors,
+  controlFill?: number,
 ): string | undefined {
   if (fill !== undefined) {
     const color = paletteColor(colors, fill.role);
@@ -70,7 +77,10 @@ function tintOf(
   if (role === undefined) return undefined;
   const name = glass.tintOpacity ?? (glass.tintColor ? GLASS[glass.material].tintOpacity : null);
   const color = paletteColor(colors, role);
-  return name === null || name === undefined ? color : withAlpha(color, GLASS_OPACITY[name]);
+  if (name !== null && name !== undefined) return withAlpha(color, GLASS_OPACITY[name]);
+  return glass.tintColor === undefined && controlFill !== undefined
+    ? withAlpha(color, controlFill)
+    : color;
 }
 
 /** A capsule when no radius is given: the radius clamps to half the shorter side. */
@@ -97,7 +107,7 @@ LiquidGlass.displayName = 'BloomLiquidGlass';
 function BlurGlass(props: GlassHostProps) {
   const { BlurView } = loadBlur() as BlurModule;
   const theme = useTheme();
-  const tint = tintOf(props, withSurface(theme.colors, props.surface));
+  const tint = tintOf(props, withSurface(theme.colors, props.surface), CONTROL_FILL_OPACITY);
   const shape = { borderRadius: props.radius ?? CAPSULE, overflow: 'hidden' as const };
   return (
     <View style={[props.style, shape]}>

@@ -6,6 +6,11 @@
 
 - Removed `@oxy.so/bloom/teleport`, the vendored copy of react-native-teleport 1.2.0 that nothing imported (its native views were never in Bloom). The media flight keeps the one piece it used, the web move primitive in `media-flight/media-node.web.ts`.
 
+### Changed
+
+- A FAB and a prominent control are a tinted lens, as Apple's `glassProminent` is: on the lens a solid control's fill tints its glass at 0.8 (`LENS_FILL_TINT`, was 0.96), so the lens's frost, light and what moves behind still show through the colour; its menu trigger tints the same. On the web a solid `Button` on the lens takes the surface tint (72%) over its frost. The glyph stays on-primary, and reduced transparency keeps the opaque fill.
+- `Fab`'s default `shape` is `squircle` (was `circle`): a square whose corner is 28% of its diameter, continuous. `shape="circle"` keeps the capsule. `DEFAULT_FAB_SHAPE` (`@oxy.so/bloom/fab`) names it.
+
 ## 23.1.1
 
 The Bloom language 1.1.1 ships beside it (`@oxy.so/bloom-language`): a root nested in a language tree costs no component or context read, and a fixed colour role paints with no theme read on Android and iOS. Bloom itself is unchanged.

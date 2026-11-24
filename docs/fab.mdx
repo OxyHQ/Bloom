@@ -14,14 +14,16 @@ import * as Icons from '@oxy.so/bloom/icons';
 `size` is `xs | sm | md | lg` (40, 48, 50, 64 points; default `md`). The corresponding glyphs are20,24,26,32points. The default50/26 geometry is shared by standalone, sidebar, Screen and BottomBar actions. `iconSize` optionally sets the glyph dimensions independently; for example, `size={50} iconSize={26}`. The collapsed circle keeps its requested diameter and adjusts its padding around the glyph.
 `size` and `tone` inherit from `BloomScope`. `tone` defaults to `accent`: the
 theme's primary, with the on-primary glyph, a tinted action as Apple's
-`glassProminent` is (on the lens the fill tints the glass at 0.96);
+`glassProminent` is: on the lens the fill tints the glass at 0.8, so the glass
+still shows through it, and on the web the fill is the surface tint (72%) over
+the frost;
 `appearance` defaults to `solid` and also accepts `subtle`, `outline`, `plain`.
 Icon props take a component, which receives its size and foreground color.
 Icon-only actions require `accessibilityLabel`; labeled actions use their label.
 
 An explicit tone wins over `BloomScope`, which wins over the `accent` default. A utility such as “Back to top” can use `tone="neutral" appearance="subtle"`. The Color roles prototype demonstrates an action Fab alongside accent navigation and subtle support surfaces.
 
-`shape` is the silhouette: `circle` (the default), `rounded` or `squircle`.
+`shape` is the silhouette: `squircle` (the default, `DEFAULT_FAB_SHAPE`), `rounded` or `circle`.
 The two squares take a corner of 28% of the diameter (Material's 16 on 56, and
 the owner's reference FAB), `rounded` with circular corners and `squircle` with
 Apple's continuous one (iOS `continuous`, CSS `corner-shape: squircle`). The
@@ -32,7 +34,7 @@ any shape. `FAB_SHAPES`, `fabCornerRadius` and `useFabDiameter` give the same
 geometry to a host that draws a FAB's material itself.
 
 ```tsx
-<Fab icon={Icons.RiAddLine} shape="squircle" accessibilityLabel="Create" onPress={create} />
+<Fab icon={Icons.RiAddLine} shape="circle" accessibilityLabel="Create" onPress={create} />
 ```
 
 Use `AppShell.primaryAction` to coordinate a screen action with navigation, or

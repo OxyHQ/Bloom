@@ -386,13 +386,34 @@ const boxed: ParityCase[] = [
  */
 const fabs: ParityCase[] = [
   {
-    name: 'a FAB: a circle on glass tinted with the accent',
+    // A squircle by default, Bloom `Fab`'s own: its glass takes the 28% corner.
+    name: 'a FAB: a squircle on glass tinted with the accent',
     language: () => toElement(L.FAB(L.Icon(RiAddLine)).label('Create').onPress(onPress)),
     bloom: () => (
       <Themed>
         {(c) => (
-          <Surface fill={c.primary}>
+          <Surface fill={c.primary} radius={14} cornerCurve="smooth">
             <Fab icon={RiAddLine} accessibilityLabel="Create" material="shared" onPress={onPress} />
+          </Surface>
+        )}
+      </Themed>
+    ),
+  },
+  {
+    name: 'a circle FAB: its glass is the capsule',
+    language: () =>
+      toElement(L.FAB(L.Icon(RiAddLine)).shape('circle').label('Create').onPress(onPress)),
+    bloom: () => (
+      <Themed>
+        {(c) => (
+          <Surface fill={c.primary}>
+            <Fab
+              icon={RiAddLine}
+              shape="circle"
+              accessibilityLabel="Create"
+              material="shared"
+              onPress={onPress}
+            />
           </Surface>
         )}
       </Themed>

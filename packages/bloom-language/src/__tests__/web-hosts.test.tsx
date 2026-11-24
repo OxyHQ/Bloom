@@ -28,6 +28,7 @@ quietRenderer();
 describe('glass on the web is Bloom’s frosted Surface', () => {
   it('a Button on glass: the Surface draws its fill, tinted with its tone; the button keeps its ink', () => {
     const r = mount(toElement(Button(Icon(Glyph)).shape('circle').glass()));
+    // Opaque: Surface paints it at its 72% over the frost, so the frost shows through it.
     expect(only(r, 'Surface').props.fill).toBe(LIGHT.primary);
     expect(only(r, 'BloomButton').props.material).toBe('shared');
   });
@@ -37,6 +38,13 @@ describe('glass on the web is Bloom’s frosted Surface', () => {
     expect(only(r, 'Surface').props).toMatchObject({ sheen: false });
     // Bloom's withAlpha, as an app writes it: Surface computes its material from it.
     expect(only(r, 'Surface').props.fill).toBe(withAlpha(LIGHT.primary as string, 0.24));
+  });
+
+  it('a FAB with no glass of its own is a squircle on the tinted frost', () => {
+    const r = mount(toElement(FAB(Icon(Glyph))));
+    expect(only(r, 'BloomFab').props.shape).toBe('squircle');
+    expect(only(r, 'Surface').props).toMatchObject({ radius: 14, cornerCurve: 'smooth' });
+    expect(only(r, 'Surface').props.fill).toBe(LIGHT.primary);
   });
 
   it('a paint that is a CSS variable (Bloom’s prepaint) is mixed by the browser', () => {
