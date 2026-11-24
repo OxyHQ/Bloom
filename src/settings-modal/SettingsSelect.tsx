@@ -6,13 +6,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../select';
-import { createSettingsSelect } from './create-settings-select';
+import type { SelectParts } from '../select/SelectField';
+import { COMPACT_TRIGGER, SettingsSelectFromParts } from './settings-select-parts';
+import type { SettingsSelectProps } from './types';
 
-export const SettingsSelect = createSettingsSelect({
+const PARTS: SelectParts = {
   Select,
   SelectTrigger,
   SelectValue,
   SelectIcon,
   SelectContent,
   SelectItem,
-});
+};
+
+/** The compact select a settings row puts on its right, with the native parts and compact field. */
+export function SettingsSelect<T extends string>(props: SettingsSelectProps<T>) {
+  return <SettingsSelectFromParts parts={PARTS} compactTrigger={COMPACT_TRIGGER} {...props} />;
+}

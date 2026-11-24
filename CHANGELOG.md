@@ -13,6 +13,7 @@
 ### Fixed
 
 - `useScreenEntered()` is false on a pushed stack scene until its push transition ends, as documented. The pushing render reads the navigator's last committed state, which does not hold the pushed route yet, so the scene counted as one the stack started with and was entered at once: on a Pixel 8a a Mention post mounted its replies and its reply composer a frame after the push instead of after the slide.
+- `SettingsSelect` and `SelectField` are components at module scope (`SettingsSelectFromParts` and `SelectFieldFromParts` take each platform's `Select` parts as a prop), not components a factory builds. The React Compiler takes the parameters of a function a component is built inside for globals, and with function outlining, the compiler's default, it moved their `renderItem` out of the factory: every `SettingsSelect` threw `SelectItem is not defined`. An app that compiles Bloom's source with Expo's compiler options (Mention's native build) now compiles them correctly. `lib/` is compiled with function outlining on, and `verify-react-compiler.mjs` fails the build on an outlined function that uses a name only a function of its file binds.
 
 ### Added
 

@@ -63,6 +63,7 @@ import type {
   SelectItemContextValue,
   SelectTriggerProps,
   SelectValueProps,
+  SelectFieldProps,
 } from './types';
 import { getNativeLens } from '../floating/lens/native-lens';
 import type { ParsedLensMenu } from '../floating/lens/parse-lens-menu';
@@ -70,7 +71,7 @@ import { LensTrigger, type MenuLens, useLensMenu } from '../floating/lens/use-le
 import { useFieldMembership } from '../field/membership';
 import { useMessages } from '../locale/messages';
 import { SELECT_MESSAGES } from './messages';
-import { createSelectField } from './SelectField';
+import { SelectFieldFromParts, type SelectParts } from './SelectField';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -618,11 +619,16 @@ const styles = StyleSheet.create({
 
 export { useSelectItemContext };
 
-export const SelectField = createSelectField({
+const PARTS: SelectParts = {
   Select,
   SelectTrigger,
   SelectValue,
   SelectIcon,
   SelectContent,
   SelectItem,
-});
+};
+
+/** A labelled `Select` in a `Field`, with this platform's parts. */
+export function SelectField<T extends string = string>(props: SelectFieldProps<T>) {
+  return <SelectFieldFromParts parts={PARTS} {...props} />;
+}
