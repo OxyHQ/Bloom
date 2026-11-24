@@ -1,6 +1,11 @@
 import { act, render } from '@testing-library/react-native';
 import { BottomBar } from '../bottom-bar';
-import { useTabPager, type AppDestination, type TabPagerState } from '../tab-pager';
+import {
+  useTabPager,
+  useTabPagerActions,
+  type AppDestination,
+  type TabPagerState,
+} from '../tab-pager';
 import { TabPagerBottomBar } from '../tab-pager/TabPagerBottomBar';
 import { useTabPagerContext, type TabCommitter } from '../tab-pager/context';
 import {
@@ -185,6 +190,40 @@ it('does not re-render the tabs layout when only the page in front changes', () 
     view.rerender(tree());
   }
   expect(useTabsWithTriggers).toHaveBeenCalledTimes(renders);
+});
+
+const readerRenders = { actions: 0, pager: 0 };
+let lastActions: ReturnType<typeof useTabPagerActions> | undefined;
+function ActionsReader() {
+  lastActions = useTabPagerActions();
+  readerRenders.actions++;
+  return null;
+}
+function PagerReader() {
+  useTabPager();
+  readerRenders.pager++;
+  return null;
+}
+
+it('does not re-render a reader of the actions alone when only the page in front changes', () => {
+  const readers = (
+    <>
+      <ActionsReader />
+      <PagerReader />
+    </>
+  );
+  mockPathname = '/';
+  const tree = () => <TabPagerProvider destinations={DESTINATIONS}>{readers}</TabPagerProvider>;
+  const view = render(tree());
+  const { actions, pager } = readerRenders;
+  for (const pathname of ['/you', '/p/1', '/camera']) {
+    mockPathname = pathname;
+    view.rerender(tree());
+  }
+  expect(readerRenders.actions).toBe(actions);
+  expect(readerRenders.pager).toBe(pager + 3);
+  expect(lastActions).not.toHaveProperty('activePage');
+  expect(lastActions?.pages.map((page) => page.name)).toEqual(PAGES.map((page) => page.name));
 });
 
 it('drops the page being left from the back history', () => {

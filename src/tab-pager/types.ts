@@ -109,6 +109,9 @@ export interface TabPagerState {
   selectDestination: (name: string) => void;
 }
 
+/** What `useTabPagerActions()` returns: `useTabPager()` without the page in front. */
+export type TabPagerActions = Omit<TabPagerState, 'activePage'>;
+
 export type TabPagerBottomBarProps = Omit<
   BottomBarProps,
   'items' | 'value' | 'onValueChange' | 'activeProgress' | 'hideProgress'

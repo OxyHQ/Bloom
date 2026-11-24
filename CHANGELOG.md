@@ -4,6 +4,10 @@
 
 ### Added
 
+- `useTabPagerActions()` (`@oxy.so/bloom/tab-pager`): `useTabPager()` without `activePage`, so a component that only moves between pages (a shell's primary action, a header's button, a composer's exit) does not re-render on every navigation. `useTabPager()` changes on each one, a pushed route included: on a Pixel 8a, opening a Mention post re-rendered the whole shell, its sidebar, the tab pager and the Videos page through it before the post's screen could mount.
+
+### Added
+
 - `BloomImage`, Bloom's raster renderer (expo-image on a device, react-native's `Image` on web), is public: `@oxy.so/bloom/image` and the root barrel export it with its prop types (`BloomImageProps`, `BloomImageSource`, `BloomImageContentFit`, `BloomImageLoadInfo`, `BloomImageErrorInfo`). See `docs/image.mdx`.
 - `adoptStyleSheet(id, css)` is exported from `@oxy.so/bloom/styles`: the CSP-safe way to put CSS on a web page as a constructed stylesheet, the mechanism Bloom's web forks use.
 - `useScreenActionClaimed()` is exported from `@oxy.so/bloom/app-shell/hooks`: whether the screen in front shows a primary action of its own (`Screen primaryAction`). A floating action the app draws for the shell (a bottom bar's FAB) steps aside while it is `true`, as the shell's own does, so a route with its own action never shows two.
