@@ -44,12 +44,16 @@ import type { BadgeProps } from './types';
  * `variant="onMedia"` is the over-a-photograph pill: a light fill with
  * shadow-s, the same in both modes because the photograph is.
  */
-const PLACEMENT_CONFIG = {
-  'top-right': { top: -4, right: -4 },
-  'top-left': { top: -4, left: -4 },
-  'bottom-right': { bottom: -4, right: -4 },
-  'bottom-left': { bottom: -4, left: -4 },
-} as const;
+const PLACEMENT_STYLES = StyleSheet.create({
+  'top-right': { position: 'absolute', zIndex: Z_INDEX.raised, top: -4, right: -4 },
+  'top-left': { position: 'absolute', zIndex: Z_INDEX.raised, top: -4, left: -4 },
+  'bottom-right': { position: 'absolute', zIndex: Z_INDEX.raised, bottom: -4, right: -4 },
+  'bottom-left': { position: 'absolute', zIndex: Z_INDEX.raised, bottom: -4, left: -4 },
+});
+
+const styles = StyleSheet.create({
+  anchor: { position: 'relative', alignSelf: 'flex-start' },
+});
 
 const BadgeComponent: React.FC<BadgeProps> = ({
   content,
@@ -169,17 +173,16 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     [geometry, paint],
   );
 
-  const core =
-    dot && !attached ? (
-      <View
-        style={{
-          width: geometry.core,
-          height: geometry.core,
-          borderRadius: borderRadius.full,
-          backgroundColor: paint.background,
-        }}
-      />
-    ) : null;
+  const coreStyle = useMemo(
+    (): ViewStyle => ({
+      width: geometry.core,
+      height: geometry.core,
+      borderRadius: borderRadius.full,
+      backgroundColor: paint.background,
+    }),
+    [geometry.core, paint.background],
+  );
+  const core = dot && !attached ? <View style={coreStyle} /> : null;
 
   // The icon is a glyph OF the label, so it is hidden: a badge announces its
   // text, never "image, key" beside it.
@@ -232,20 +235,10 @@ const BadgeComponent: React.FC<BadgeProps> = ({
 
   // Positioned badge wrapping children
   return (
-    <View style={{ position: 'relative', alignSelf: 'flex-start' }} testID={testID}>
+    <View style={styles.anchor} testID={testID}>
       {children}
       {!invisible && (
-        <View
-          style={[
-            {
-              position: 'absolute',
-              zIndex: Z_INDEX.raised,
-              ...PLACEMENT_CONFIG[placement],
-            },
-            badgeStyle,
-            style,
-          ]}
-        >
+        <View style={[PLACEMENT_STYLES[placement], badgeStyle, style]}>
           {material}
           {iconNode}
           {label}

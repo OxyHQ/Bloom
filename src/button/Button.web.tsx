@@ -279,6 +279,16 @@ ${surfaceMaterialCss('.bloom-btn--surface', 'var(--bloom-btn-bg)', `background-c
 //  Component
 // ---------------------------------------------------------------------------
 
+/** The spinner layer over a loading button's (still laid out) content. */
+const LOADING_OVERLAY_STYLE: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  pointerEvents: 'none',
+};
+
 const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
   function ButtonWebComponent(props, ref) {
     const {
@@ -686,16 +696,17 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
 
     // Icon components are sized by the button and painted `currentColor`, so they
     // follow the state colours the stylesheet sets without a re-render.
+    const slotStyle = useMemo(
+      (): CSSProperties => ({
+        display: 'inline-flex',
+        flexShrink: 0,
+        width: iconSize,
+        height: iconSize,
+      }),
+      [iconSize],
+    );
     const renderIcon = (Icon: ButtonIconComponent) => (
-      <span
-        aria-hidden="true"
-        style={{
-          display: 'inline-flex',
-          flexShrink: 0,
-          width: iconSize,
-          height: iconSize,
-        }}
-      >
+      <span aria-hidden="true" style={slotStyle}>
         <Icon width={iconSize} height={iconSize} fill="currentColor" />
       </span>
     );
@@ -708,10 +719,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
     // no re-render when hover or press changes them. Native has no cascade and
     // passes the resolved value.
     const renderSlot = (render: typeof renderLeadingIcon, fallback: () => React.ReactNode) => (
-      <span
-        aria-hidden="true"
-        style={{ display: 'inline-flex', flexShrink: 0, width: iconSize, height: iconSize }}
-      >
+      <span aria-hidden="true" style={slotStyle}>
         {resolveIconSlot(render, iconSize, 'currentColor', fallback)}
       </span>
     );
@@ -796,17 +804,7 @@ const ButtonWebComponent = forwardRef<ComponentRef<typeof View>, ButtonProps>(
           )}
         </span>
         {loading ? (
-          <span
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-            }}
-          >
+          <span aria-hidden="true" style={LOADING_OVERLAY_STYLE}>
             {loadingIndicator === undefined ? (
               <SpinnerIcon size={iconSize} color={spinnerColor} />
             ) : (

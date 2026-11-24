@@ -80,20 +80,13 @@ function ShapeFallback({
     includeFontPadding: false,
   };
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
+    <View style={[styles.placeholder, { width: size, height: size }]}>
       <View style={[StyleSheet.absoluteFill, pointerEventsStyles.none]}>
         <ShapeFill shape={shape} size={size} color={fallbackColor} />
       </View>
       {/* Positioned foreground paints after the absolute background on web,
           including caller SVGs whose own default position is static. */}
-      <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={styles.placeholderForeground}>
         {icon ??
           (text ? (
             <Text allowFontScaling={false} numberOfLines={1} style={initialStyle}>
@@ -452,6 +445,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
       ),
     [character, accountKind, accountCharacter, accountColor],
   );
+  const sizeStyle = useMemo(() => ({ width: size, height: size }), [size]);
   const placeholderProps = {
     shape,
     size,
@@ -463,7 +457,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   };
 
   const avatarBox = (
-    <View style={[styles.avatarBox, SIZE_TRANSITION, { width: size, height: size }]}>
+    <View style={[styles.avatarBox, SIZE_TRANSITION, sizeStyle]}>
       {resolvedCharacter ? (
         <CharacterFace
           character={resolvedCharacter}
@@ -514,7 +508,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   );
 
   const content = (
-    <View style={[styles.container, { width: size, height: size }, style]} testID={testID}>
+    <View style={[styles.container, sizeStyle, style]} testID={testID}>
       {avatarBox}
     </View>
   );
@@ -544,6 +538,15 @@ const AvatarComponent: React.FC<AvatarProps> = ({
 const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
+  },
+  placeholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderForeground: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   container: {
     position: 'relative',
