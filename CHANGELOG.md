@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `AgentAvatar` plays its rest loop on a native surface on Android (`AvatarSurface`, `AvatarLoops`): the loop is remembered once and drawn by the view itself, waking once per frame it shows on the vsync it is due, instead of react-native-svg frames from JavaScript. Pixel 8a, Mention's idle Home with the header's Alia avatar, process CPU from 20 s to 30 s after a cold start: about 120% of a core without it, about 45% with it (the owner build, which has it: about 38%). The iOS view (`BloomAvatarSurface.swift`) comes with it and has not been compiled.
+
 ## 23.8.0
 
 The Bloom language 1.5.0 (`@oxy.so/bloom-language`), its compiler 1.3.0 (`@oxy.so/bloom-language-compiler`) and `@oxy.so/bloom-data` 0.1.2 ship beside it.
