@@ -12,6 +12,10 @@
 - On native, a `scroll="auto"` screen's list runs its content under the header: the scroller that binds `useScreenScroll` pads its own content by the header's height (`contentInsets.top`) and the content box drops its top padding. The list ended at the header's foot, so every row was cut there in a hard line and nothing passed under a floating header. A list with a refresh control should pass `contentInsets.top` as its `progressViewOffset`.
 - A floating header's scroll edge is Apple's: the page colour solid over the status bar, then one eased fade (smoothstep, drawn with 16 segments) across the header to nothing 12pt past its foot. It held the whole header opaque and faded only in a 12pt strip below it, which cut text passing under the header sharply at its foot (Pixel 8a). `EdgeScrim`'s smooth ramp is the same 16-segment smoothstep everywhere (a footer keeps its chrome opaque and fades in its tail).
 
+### Changed
+
+- The `react` and `react-dom` peers are `>=19.0.0` (were `>=18.0.0`). `lib/` has been compiled by the React Compiler since 23.5.0 and imports `react/compiler-runtime`, which React 18 does not have, so React 18 already failed at the first import; the range now says so at install. Every Oxy app and SDK is on React 19.
+
 ## 23.7.0
 
 ### Breaking
