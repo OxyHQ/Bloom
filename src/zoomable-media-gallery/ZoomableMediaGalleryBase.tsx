@@ -26,6 +26,7 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useDerivedValue,
   withSpring,
   withTiming,
   runOnJS,
@@ -165,6 +166,20 @@ const UNBLURRED_DIM_OPACITY = 0.92;
  */
 const SCRIM_CHROME = { background: 'rgba(0,0,0,0.55)', foreground: '#fff' } as const;
 
+/**
+ * Calls `onCommit` from the commit that mounts it. Placed INSIDE the portaled
+ * overlay, so it runs once the overlay itself is in the tree — the viewer's
+ * own effects run a commit earlier, before the portal outlet has rendered the
+ * content, and a flight started there would be under way before its first
+ * frame was on screen.
+ */
+function OnCommit({ onCommit }: { onCommit: () => void }) {
+  useLayoutEffect(() => {
+    onCommit();
+  }, [onCommit]);
+  return null;
+}
+
 export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>) {
   function NavArrow({
     direction,
@@ -229,10 +244,14 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
    *   renders through the Bloom `Portal` on BOTH platforms (RN's `Modal` is not
    *   used on native — on the New Architecture / Fabric Android its host views
    *   mount full-screen but never composite, leaving the viewer invisible).
-   * - The OPENING (tapped) item animates from its measured rect to a centered,
-   *   aspect-ratio-preserving fit within {@link FIT_FRACTION} of the screen. Once
-   *   the open animation settles, a horizontal paging `ScrollView` mounts seeded at
-   *   the tapped index so the user can swipe between every item in the post.
+   * - The OPENING (tapped) item flies from its measured rect to a centered,
+   *   aspect-ratio-preserving fit within {@link FIT_FRACTION} of the screen, and
+   *   every dismissal flies it back. The horizontal paging `ScrollView` is
+   *   mounted from the first frame, seeded at the tapped index, and the flight
+   *   transforms it: the media on screen is ONE surface, the active page's, from
+   *   the first frame of the open to the last frame of the close. One shared
+   *   value (`flight`) drives the transform and the backdrop, on the UI thread;
+   *   `hiddenThumbIndex` lets the consumer hide the thumbnail it stands in for.
    * - Gesture disambiguation: the pager owns horizontal swipes; a vertical-only
    *   `Gesture.Pan` (`activeOffsetY` + `failOffsetX`) owns drag-to-dismiss, so the
    *   two never fight.
@@ -245,8 +264,8 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
    * handing the same player to this gallery moves a playing video into fullscreen
    * without re-opening the stream. Exactly ONE view is mounted per opening — the
    * active page's — while every other page and every strip tile renders the still
-   * (`MediaPoster`). The single unavoidable swap is the pre-pager open surface
-   * handing over to the pager's active page once the open animation settles.
+   * (`MediaPoster`). The active page's view lives from the first frame of the
+   * open to the last frame of the close, so the transition swaps nothing.
    *
    * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
    * Without it a video page degrades to its poster, once, with a dev warning.
@@ -266,6 +285,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         indicatorVariant = 'dots',
         videoControls = false,
         labels: labelsProp,
+        hiddenThumbIndex,
       },
       ref,
     ) => {
@@ -307,8 +327,9 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       );
 
       const [isOpen, setIsOpen] = useState(false);
-      // Once true, the swipeable pager is mounted and the single open-surface hidden.
-      const [pagerReady, setPagerReady] = useState(false);
+      // True once the open flight has landed, until a dismissal starts: the
+      // chrome (share, counter, arrows) shows and the pager may page.
+      const [settled, setSettled] = useState(false);
       const [items, setItems] = useState<GalleryMedia[]>([]);
       // The accepted opening's item identities are needed by async probes even
       // before React commits the corresponding state update.
@@ -333,10 +354,22 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
       });
 
-      const scale = useSharedValue(1);
-      const translateX = useSharedValue(0);
-      const translateY = useSharedValue(0);
-      const opacity = useSharedValue(0);
+      // The transition is ONE value: 0 is the media standing on its thumbnail,
+      // 1 is the media fitted on screen. Open springs it to 1, every dismissal
+      // springs it back to 0, and both ends of the media's transform and the
+      // backdrop's fade are read from it — so a close started mid-open, or from
+      // wherever a drag left the media, lands on the thumbnail by construction,
+      // and its one completion callback is the frame the viewer has returned.
+      const flight = useSharedValue(0);
+      // The finger's offset while dragging to dismiss, applied at the fitted
+      // end of the flight. Rest is (0, 0, 1).
+      const dragX = useSharedValue(0);
+      const dragY = useSharedValue(0);
+      const dragScale = useSharedValue(1);
+      // The media itself is opaque: only the backdrop and chrome fade. It fades
+      // only where there is no thumbnail to fly to (or from), and drops to 0 on
+      // the frame the fly-back lands, when the thumbnail takes its place.
+      const mediaOpacity = useSharedValue(1);
 
       // Zoom transform of the active media, kept SEPARATE from the open/close +
       // dismiss-drag transform above (reusing those would collide two meanings).
@@ -353,13 +386,12 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       const originX = useSharedValue(0);
       const originY = useSharedValue(0);
 
+      // Per-drag baseline captured at pan start (transient).
       const startX = useSharedValue(0);
       const startY = useSharedValue(0);
-      // Per-drag baseline captured at pan start (transient).
       const startScale = useSharedValue(1);
-      // Persistent scale of the open-surface at its thumbnail origin (thumbWidth /
-      // fittedWidth). The open animation grows from this to 1; the close animation
-      // shrinks back to it. Never overwritten by the drag gesture.
+      // Scale of the fitted media at its thumbnail (thumbWidth / fittedWidth):
+      // the flight's 0 end.
       const originScale = useSharedValue(1);
 
       const pagerRef = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -376,54 +408,38 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // True from the first dismiss request until the viewer is actually unmounted.
       const dismissingRef = useRef(false);
 
-      // Every deferred step of the open / dismiss choreography, so unmount can cancel
-      // the ones still owing.
-      //
-      // Each one ends in a `setState` on THIS instance, and each is scheduled from a
-      // gesture or an imperative `open()` — never from an effect — so React's own
-      // teardown reaches none of them. A screen left within the ~300 ms of the open
-      // transition therefore leaves a live timer holding the whole subtree, and the
-      // state it eventually writes lands on a tree nobody is rendering. React makes
-      // that a silent no-op rather than an error, which is exactly why it survived:
-      // measured under jest, the gallery's `revealPager` timer outlives the file
-      // that mounted it and fires inside the NEXT test file in the same worker
-      // process, sometimes re-scheduling itself two files further on.
-      const pendingRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
-      const frameRef = useRef<number | null>(null);
+      // Nothing in the transition is a timer: the open starts from the commit
+      // that mounts the overlay and ends in its spring's callback, and the close
+      // ends in its own. An unmount only has to stop that callback from writing
+      // (`unmountedRef`) and give the thumbnail back.
       const unmountedRef = useRef(false);
-      const schedule = useCallback((step: () => void, delay: number) => {
-        // The open transition's own frame callback schedules the step after it, so
-        // this can be reached once the component is already gone — starting a timer
-        // there would put one back after the cleanup has run.
-        if (unmountedRef.current) return;
-        const handle = setTimeout(() => {
-          pendingRef.current.delete(handle);
-          step();
-        }, delay);
-        pendingRef.current.add(handle);
-      }, []);
+      const hiddenThumbRef = useRef(hiddenThumbIndex);
+      hiddenThumbRef.current = hiddenThumbIndex;
       useEffect(() => {
         unmountedRef.current = false;
         return () => {
           unmountedRef.current = true;
           reportOpen(false);
-          for (const handle of pendingRef.current) clearTimeout(handle);
-          pendingRef.current.clear();
-          if (frameRef.current !== null) {
-            cancelAnimationFrame(frameRef.current);
-            frameRef.current = null;
-          }
+          if (hiddenThumbRef.current) hiddenThumbRef.current.value = -1;
         };
       }, [reportOpen]);
 
       // Single writer for the current index: updates state (drives indicator + open
       // image) and the synchronous mirror together, and only when it changes.
-      const setActiveIndexBoth = useCallback((next: number, opening = false) => {
-        const changed = activeIndexRef.current !== next;
-        activeIndexRef.current = next;
-        setActiveIndex((prev) => (prev === next ? prev : next));
-        if (changed || opening) onIndexChangeRef.current?.(next);
-      }, []);
+      // The thumbnail the media stands in for follows the page, so a swipe
+      // gives back the one it left and hides the one it reached.
+      const setActiveIndexBoth = useCallback(
+        (next: number, opening = false) => {
+          const changed = activeIndexRef.current !== next;
+          activeIndexRef.current = next;
+          setActiveIndex((prev) => (prev === next ? prev : next));
+          if (changed && hiddenThumbIndex && !opening && !dismissingRef.current) {
+            hiddenThumbIndex.value = next;
+          }
+          if (changed || opening) onIndexChangeRef.current?.(next);
+        },
+        [hiddenThumbIndex],
+      );
 
       // Snap the active media back to its un-zoomed baseline (no animation) and
       // clear all zoom bookkeeping. Called on every path that changes the active
@@ -475,7 +491,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         [fitBox],
       );
 
-      // Fitted size of the single open-surface for the CURRENT page. On open this is
+      // Fitted size of the media for the CURRENT page. On open this is
       // the opened item's fit;
       // after swiping it tracks the viewed item so the collapse-on-dismiss renders
       // and flies back the media actually on screen.
@@ -538,59 +554,59 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         [isCurrentRatioProbe],
       );
 
-      // Unmount + reset all animation values to their neutral baseline. Shared by
-      // every dismiss path (fly-back and fade-out fallback).
+      // The viewer has returned: unmount and put every value back at rest.
       const finalizeDismiss = useCallback(() => {
+        if (unmountedRef.current) return;
         setIsOpen(false);
         // Keep the dismissal latch until the next open. Throttled web scroll
         // events can arrive after the pager unmounts and must not reset selection.
-        scale.value = 1;
-        translateX.value = 0;
-        translateY.value = 0;
-        opacity.value = 0;
+        flight.value = 0;
+        dragX.value = 0;
+        dragY.value = 0;
+        dragScale.value = 1;
+        resetZoom();
         reportOpen(false);
-      }, [opacity, reportOpen, scale, translateX, translateY]);
+      }, [dragScale, dragX, dragY, flight, reportOpen, resetZoom]);
 
-      // Fly the (possibly dragged) media back toward `target` — the rect of the
-      // thumbnail currently being viewed — shrinking to its footprint. Uses the
-      // EXACT same close spring (native) / timing (web) as the avatar transition.
-      const flyBackTo = useCallback(
-        (target: { x: number; y: number; scale: number }) => {
-          if (Platform.OS === 'web') {
-            const duration = CLOSE_DURATION_WEB;
-            const easing = Easing.in(Easing.cubic);
-            scale.value = withTiming(target.scale, { duration, easing });
-            translateX.value = withTiming(target.x, { duration, easing });
-            translateY.value = withTiming(target.y, { duration, easing });
-            opacity.value = withTiming(0, { duration, easing });
-            schedule(finalizeDismiss, duration + 20);
+      // Fly the media home: back to `target` (the current item's thumbnail,
+      // relative to the screen center), or, with no thumbnail to land on, into
+      // the center while it fades. Both end on the same callback — the frame
+      // the flight reaches 0 hides the media and gives the thumbnail back
+      // together, on the UI thread, so the photo is on screen exactly once.
+      const flyHome = useCallback(
+        (target: { x: number; y: number; scale: number } | null) => {
+          if (unmountedRef.current) return;
+          const web = Platform.OS === 'web';
+          if (target) {
+            originX.value = target.x;
+            originY.value = target.y;
+            originScale.value = target.scale;
           } else {
-            scale.value = withSpring(target.scale, CLOSE_SPRING);
-            translateX.value = withSpring(target.x, CLOSE_SPRING);
-            translateY.value = withSpring(target.y, CLOSE_SPRING);
-            opacity.value = withTiming(0, { duration: OPACITY_DURATION });
-            schedule(finalizeDismiss, CLOSE_DURATION_WEB);
+            originX.value = 0;
+            originY.value = 0;
+            originScale.value = MIN_DRAG_SCALE;
+            mediaOpacity.value = withTiming(0, {
+              duration: web ? CLOSE_DURATION_WEB : OPACITY_DURATION,
+            });
           }
+          const thumb = hiddenThumbIndex;
+          const landed = (finished?: boolean) => {
+            'worklet';
+            if (!finished) return;
+            mediaOpacity.value = 0;
+            if (thumb) thumb.value = -1;
+            runOnJS(finalizeDismiss)();
+          };
+          flight.value = web
+            ? withTiming(
+                0,
+                { duration: CLOSE_DURATION_WEB, easing: Easing.in(Easing.cubic) },
+                landed,
+              )
+            : withSpring(0, CLOSE_SPRING, landed);
         },
-        [finalizeDismiss, opacity, scale, schedule, translateX, translateY],
+        [finalizeDismiss, flight, hiddenThumbIndex, mediaOpacity, originScale, originX, originY],
       );
-
-      // Fallback when the current thumbnail cannot be measured (ref missing /
-      // unmounted / virtualized): a plain center fade-out with a slight scale-down,
-      // then unmount. Keeps the same web timing / native spring feel.
-      const fadeOutCenter = useCallback(() => {
-        if (Platform.OS === 'web') {
-          const duration = CLOSE_DURATION_WEB;
-          const easing = Easing.in(Easing.cubic);
-          scale.value = withTiming(MIN_DRAG_SCALE, { duration, easing });
-          opacity.value = withTiming(0, { duration, easing });
-          schedule(finalizeDismiss, duration + 20);
-        } else {
-          scale.value = withSpring(MIN_DRAG_SCALE, CLOSE_SPRING);
-          opacity.value = withTiming(0, { duration: OPACITY_DURATION });
-          schedule(finalizeDismiss, CLOSE_DURATION_WEB);
-        }
-      }, [finalizeDismiss, opacity, scale, schedule]);
 
       const handleDismiss = useCallback(() => {
         // A press on the image reaches BOTH its tap gesture and the page beneath it
@@ -600,42 +616,106 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
         if (dismissingRef.current) return;
         dismissingRef.current = true;
         pendingShareFocus.current = null;
-        // Collapse the pager back to the single open-surface so the fly-back
-        // animates one item (the current one) rather than the whole scrolled strip.
-        setPagerReady(false);
+        setSettled(false);
+        // A zoomed page unzooms on the way home, in step with the flight.
+        zoomScale.value = withSpring(1, CLOSE_SPRING);
+        zoomTranslateX.value = withSpring(0, CLOSE_SPRING);
+        zoomTranslateY.value = withSpring(0, CLOSE_SPRING);
 
         const index = activeIndexRef.current;
         const current = items[index];
-        // Recompute the fly-back target from the CURRENT item: the live rect of its
-        // thumbnail + the same fitted box (`activeFit`) the open-surface is rendered
-        // at, using the same screen-center math as `open`. Falls back to a center
-        // fade-out when the thumbnail can't be measured.
-        if (measureThumb && current) {
-          const centerX = SCREEN_WIDTH / 2;
-          const centerY = SCREEN_HEIGHT / 2;
-          void measureThumb(index).then((rect) => {
-            if (rect && rect.width > 0 && activeFit.width > 0) {
-              flyBackTo({
-                x: rect.x + rect.width / 2 - centerX,
-                y: rect.y + rect.height / 2 - centerY,
-                scale: rect.width / activeFit.width,
-              });
-            } else {
-              fadeOutCenter();
-            }
-          });
+        // The target is the CURRENT item's thumbnail, measured now: the page may
+        // have changed, and the list under the viewer may have scrolled.
+        if (!measureThumb || !current) {
+          flyHome(null);
           return;
         }
+        const centerX = SCREEN_WIDTH / 2;
+        const centerY = SCREEN_HEIGHT / 2;
+        void measureThumb(index).then((rect) => {
+          flyHome(
+            rect && rect.width > 0 && activeFit.width > 0
+              ? {
+                  x: rect.x + rect.width / 2 - centerX,
+                  y: rect.y + rect.height / 2 - centerY,
+                  scale: rect.width / activeFit.width,
+                }
+              : null,
+          );
+        });
+      }, [
+        activeFit,
+        flyHome,
+        items,
+        measureThumb,
+        SCREEN_HEIGHT,
+        SCREEN_WIDTH,
+        zoomScale,
+        zoomTranslateX,
+        zoomTranslateY,
+      ]);
 
-        fadeOutCenter();
-      }, [activeFit, fadeOutCenter, flyBackTo, items, measureThumb, SCREEN_HEIGHT, SCREEN_WIDTH]);
+      // The open flight: from the thumbnail to the fitted center. The thumbnail
+      // is hidden in the same write, so the photo is on screen exactly once. It
+      // starts when the opened media shows a picture (`onPicture`) if it has a
+      // preview — the thumbnail's own, already decoded URL — and otherwise as
+      // soon as the overlay is committed. Started any earlier, the thumbnail
+      // was hidden and the media had flown a frame or two before its first
+      // pixel was drawn: a hole where the avatar was, then a photo already on
+      // its way.
+      const flightPendingRef = useRef(false);
+      const startOpenFlight = useCallback(() => {
+        if (!flightPendingRef.current) return;
+        flightPendingRef.current = false;
+        const generation = openingGenerationRef.current;
+        const settle = () => {
+          if (
+            unmountedRef.current ||
+            dismissingRef.current ||
+            openingGenerationRef.current !== generation
+          )
+            return;
+          setSettled(true);
+        };
+        const landed = (finished?: boolean) => {
+          'worklet';
+          if (finished) runOnJS(settle)();
+        };
+        if (hiddenThumbIndex) hiddenThumbIndex.value = activeIndexRef.current;
+        if (mediaOpacity.value < 1) {
+          mediaOpacity.value = withTiming(1, {
+            duration: Platform.OS === 'web' ? OPEN_DURATION_WEB : OPACITY_DURATION,
+          });
+        }
+        flight.value =
+          Platform.OS === 'web'
+            ? withTiming(
+                1,
+                { duration: OPEN_DURATION_WEB, easing: Easing.out(Easing.cubic) },
+                landed,
+              )
+            : withSpring(1, OPEN_SPRING, landed);
+      }, [flight, hiddenThumbIndex, mediaOpacity]);
 
-      // Reveal the swipeable pager once the open animation has settled. The index it
-      // lands on is `activeIndexRef` (set synchronously in `open`), seated by the
-      // layout effect below.
-      const revealPager = useCallback(() => {
-        setPagerReady(true);
-      }, []);
+      // The overlay is committed (see `OnCommit`). Seat the pager on the opened
+      // page now that it exists: `contentOffset` alone is not honoured on web
+      // for a pager mounted with the overlay (it stayed on page 0 while the
+      // counter said 2 / 2), and the viewer's own layout effects run before the
+      // portal has rendered the pager.
+      const onOverlayCommit = useCallback(() => {
+        pagerRef.current?.scrollTo({
+          x: activeIndexRef.current * SCREEN_WIDTH,
+          y: 0,
+          animated: false,
+        });
+        const opened = openedItemsRef.current[activeIndexRef.current];
+        const waitsForPicture =
+          opened !== undefined &&
+          opened.kind !== 'video' &&
+          opened.previewUri !== undefined &&
+          opened.previewUri !== opened.uri;
+        if (!waitsForPicture) startOpenFlight();
+      }, [startOpenFlight, SCREEN_WIDTH]);
 
       const open = useCallback(
         (nextItems: GalleryMedia[], index: number, rect?: MeasuredRect) => {
@@ -682,10 +762,9 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
             });
           }
 
-          // The open-surface box is rendered at its FINAL fitted size; the open
-          // animation grows it from the thumbnail's footprint (scale < 1) up to 1,
-          // mirroring the avatar's small→big scale. The initial scale is the ratio
-          // of the thumbnail width to the fitted width.
+          // The media is laid out at its FINAL fitted size and the flight scales it
+          // down onto the thumbnail: its 0 end is the thumbnail's center (as an
+          // offset from the screen's) and width over the fitted width.
           const fitted = fitForRatio(ratio, targetUri);
           const centerX = SCREEN_WIDTH / 2;
           const centerY = SCREEN_HEIGHT / 2;
@@ -693,56 +772,39 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
             originX.value = rect.x + rect.width / 2 - centerX;
             originY.value = rect.y + rect.height / 2 - centerY;
             originScale.value = rect.width / fitted.width;
+            mediaOpacity.value = 1;
           } else {
+            // Nothing to grow out of: the media appears in place and fades in.
             originX.value = 0;
             originY.value = 0;
             originScale.value = 1;
+            mediaOpacity.value = 0;
           }
+          flight.value = 0;
+          dragX.value = 0;
+          dragY.value = 0;
+          dragScale.value = 1;
+          flightPendingRef.current = true;
 
+          setSettled(false);
           setIsOpen(true);
           reportOpen(true);
-          translateX.value = originX.value;
-          translateY.value = originY.value;
-          scale.value = originScale.value;
-          opacity.value = 0;
-
-          if (Platform.OS === 'web') {
-            frameRef.current = requestAnimationFrame(() => {
-              frameRef.current = null;
-              const duration = OPEN_DURATION_WEB;
-              const easing = Easing.out(Easing.cubic);
-              scale.value = withTiming(1, { duration, easing });
-              translateX.value = withTiming(0, { duration, easing });
-              translateY.value = withTiming(0, { duration, easing });
-              opacity.value = withTiming(1, { duration, easing });
-              schedule(revealPager, duration);
-            });
-          } else {
-            schedule(() => {
-              scale.value = withSpring(1, OPEN_SPRING);
-              translateX.value = withSpring(0, OPEN_SPRING);
-              translateY.value = withSpring(0, OPEN_SPRING);
-              opacity.value = withTiming(1, { duration: OPACITY_DURATION });
-              schedule(revealPager, OPEN_DURATION_WEB);
-            }, 0);
-          }
         },
         [
           SCREEN_WIDTH,
           SCREEN_HEIGHT,
+          dragScale,
+          dragX,
+          dragY,
           fitForRatio,
+          flight,
           isCurrentRatioProbe,
-          opacity,
+          mediaOpacity,
           originScale,
           originX,
           originY,
-          revealPager,
           reportOpen,
-          scale,
-          schedule,
           setActiveIndexBoth,
-          translateX,
-          translateY,
         ],
       );
 
@@ -753,6 +815,10 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
 
       React.useImperativeHandle(ref, () => ({ open, close }), [open, close]);
 
+      // Drag to dismiss: the media follows the finger on the UI thread, shrinking
+      // and dimming the backdrop with distance. Short of the threshold it springs
+      // back carrying the finger's speed; past it, the same flight home as any
+      // other dismissal, starting from wherever the finger left it.
       const panGesture = useMemo(
         () =>
           Gesture.Pan()
@@ -764,45 +830,41 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
             .activeOffsetY([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
             .failOffsetX([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
             .onStart(() => {
-              startX.value = translateX.value;
-              startY.value = translateY.value;
-              startScale.value = scale.value;
+              startX.value = dragX.value;
+              startY.value = dragY.value;
+              startScale.value = dragScale.value;
             })
             .onUpdate((event) => {
-              translateX.value = startX.value + event.translationX;
-              translateY.value = startY.value + event.translationY;
+              dragX.value = startX.value + event.translationX;
+              dragY.value = startY.value + event.translationY;
               const dragDistance = Math.sqrt(event.translationX ** 2 + event.translationY ** 2);
-              const maxDrag = SCREEN_HEIGHT * MAX_DRAG_FRACTION;
-              opacity.value = Math.max(0, 1 - dragDistance / maxDrag);
               const scaleReduction = Math.max(
                 MIN_DRAG_SCALE,
                 1 - dragDistance / (SCREEN_HEIGHT * SCALE_DRAG_FRACTION),
               );
-              scale.value = startScale.value * scaleReduction;
+              dragScale.value = startScale.value * scaleReduction;
             })
             .onEnd((event) => {
               const dragDistance = Math.sqrt(event.translationX ** 2 + event.translationY ** 2);
               if (dragDistance > SCREEN_HEIGHT * DISMISS_FRACTION) {
                 runOnJS(handleDismiss)();
               } else {
-                scale.value = withSpring(1, SNAP_BACK_SPRING);
-                translateX.value = withSpring(0, SNAP_BACK_SPRING);
-                translateY.value = withSpring(0, SNAP_BACK_SPRING);
-                opacity.value = withTiming(1, { duration: OPACITY_DURATION });
+                dragScale.value = withSpring(1, SNAP_BACK_SPRING);
+                dragX.value = withSpring(0, { ...SNAP_BACK_SPRING, velocity: event.velocityX });
+                dragY.value = withSpring(0, { ...SNAP_BACK_SPRING, velocity: event.velocityY });
               }
             }),
         [
+          dragScale,
+          dragX,
+          dragY,
           handleDismiss,
           isOpen,
           isZoomed,
           SCREEN_HEIGHT,
-          opacity,
-          scale,
           startScale,
           startX,
           startY,
-          translateX,
-          translateY,
         ],
       );
 
@@ -815,32 +877,35 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // double-tap zoom on web. Native (plugin present) auto-tracks and ignores the
       // extra deps, so listing them is correct on both platforms. Same rule as
       // `bottom-sheet/BottomSheetBase.tsx`. Do NOT strip these.
-      const backdropStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
-
-      // The single open-surface animates from origin → fitted center.
-      const openImageStyle = useAnimatedStyle(
-        () => ({
-          transform: [
-            { translateX: translateX.value },
-            { translateY: translateY.value },
-            { scale: scale.value },
-          ],
-        }),
-        [translateX, translateY, scale],
+      //
+      // The backdrop (and the chrome over it) is the flight, dimmed by how far
+      // the media has been dragged.
+      const backdropProgress = useDerivedValue(() => {
+        const dragDistance = Math.sqrt(dragX.value ** 2 + dragY.value ** 2);
+        const dragDim = Math.max(0, 1 - dragDistance / (SCREEN_HEIGHT * MAX_DRAG_FRACTION));
+        return flight.value * dragDim;
+      }, [dragX, dragY, flight, SCREEN_HEIGHT]);
+      const backdropStyle = useAnimatedStyle(
+        () => ({ opacity: backdropProgress.value }),
+        [backdropProgress],
       );
 
-      // While dragging to dismiss, the whole pager follows the finger + fades.
-      const pagerContainerStyle = useAnimatedStyle(
-        () => ({
-          opacity: opacity.value,
+      // The pager — and so the active page's media, centered in it — rides the
+      // flight: at 0 it stands on the thumbnail, at 1 it is where the finger
+      // has it. ONE surface paints the media from the first frame of the open
+      // to the last frame of the close; nothing is swapped, remounted or
+      // re-decoded on the way, which is what used to flash.
+      const mediaStyle = useAnimatedStyle(() => {
+        const t = flight.value;
+        return {
+          opacity: mediaOpacity.value,
           transform: [
-            { translateX: translateX.value },
-            { translateY: translateY.value },
-            { scale: scale.value },
+            { translateX: originX.value + (dragX.value - originX.value) * t },
+            { translateY: originY.value + (dragY.value - originY.value) * t },
+            { scale: originScale.value + (dragScale.value - originScale.value) * t },
           ],
-        }),
-        [opacity, translateX, translateY, scale],
-      );
+        };
+      }, [dragScale, dragX, dragY, flight, mediaOpacity, originScale, originX, originY]);
 
       // Pinch/double-tap zoom transform, layered on TOP of the active page image's
       // `fit`-based sizing (composed, never replacing it).
@@ -861,7 +926,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // (web, where paging may not fire a reliable momentum-end).
       const updateIndexFromOffset = useCallback(
         (offsetX: number) => {
-          if (dismissingRef.current || !pagerReady) return;
+          if (dismissingRef.current || !settled) return;
           const lastIndex = items.length - 1;
           if (lastIndex < 0) return;
           const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
@@ -890,7 +955,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
           const item = items[next];
           if (item) ensureRatio(next, item);
         },
-        [ensureRatio, items, pagerReady, resetZoom, setActiveIndexBoth, SCREEN_WIDTH],
+        [ensureRatio, items, resetZoom, setActiveIndexBoth, settled, SCREEN_WIDTH],
       );
 
       // Programmatically page to `index` (arrow buttons, keyboard, thumbnail taps).
@@ -898,14 +963,14 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // state-sync — this only triggers the scroll. No-op until the pager is mounted.
       const pageTo = useCallback(
         (index: number) => {
-          if (!pagerReady) return;
+          if (!settled) return;
           const lastIndex = items.length - 1;
           if (lastIndex < 0) return;
           const clamped = Math.min(Math.max(index, 0), lastIndex);
           resetZoom();
           pagerRef.current?.scrollTo({ x: clamped * SCREEN_WIDTH, y: 0, animated: true });
         },
-        [items.length, pagerReady, resetZoom, SCREEN_WIDTH],
+        [items.length, resetZoom, settled, SCREEN_WIDTH],
       );
 
       const onPagerScroll = useCallback(
@@ -956,13 +1021,13 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
       // `SCREEN_WIDTH` makes the two agree by construction, and running it before
       // paint keeps the corrected offset from being visible as a jump.
       useLayoutEffect(() => {
-        if (!pagerReady) return;
+        if (!isOpen) return;
         pagerRef.current?.scrollTo({
           x: activeIndexRef.current * SCREEN_WIDTH,
           y: 0,
           animated: false,
         });
-      }, [pagerReady, SCREEN_WIDTH]);
+      }, [isOpen, SCREEN_WIDTH]);
 
       // Double-tap toggles zoom: reset when already zoomed, else zoom to the tapped
       // point (biased toward it, clamped near the image center). `x`/`y` are local
@@ -1192,7 +1257,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
             <Backdrop
               onPress={handleDismiss}
               accessibilityLabel={labels.close}
-              progress={opacity}
+              progress={backdropProgress}
               blurIntensity={page || !overlayCanBlur() ? 0 : undefined}
               dimColor={pagePalette?.background}
               dimOpacity={page ? 1 : overlayCanBlur() ? undefined : UNBLURRED_DIM_OPACITY}
@@ -1208,128 +1273,104 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
                 ]}
                 pointerEvents="box-none"
               >
-                {!pagerReady && activeItem !== undefined && (
-                  <Pressable onPress={handleDismiss} style={webPointerStyle}>
-                    {/* The animated transform rides the BOX, not the media, so the
-                  image and video arms move identically — and so the box's
-                  radius clips a video the same way it rounds an image. */}
-                    <Animated.View
-                      style={[
-                        styles.mediaBox,
-                        {
-                          width: activeFit.width,
-                          height: activeFit.height,
-                          borderRadius: radiusFor(activeFit),
-                        },
-                        openImageStyle,
-                      ]}
-                    >
-                      <MediaSurface
-                        content={activeItem}
-                        contentFit="contain"
-                        nativeControls={videoControls}
-                        accessibilityLabel={activeItem.alt}
-                        style={StyleSheet.absoluteFill}
-                      />
-                    </Animated.View>
-                  </Pressable>
-                )}
-
-                {pagerReady && (
-                  <Animated.View style={[StyleSheet.absoluteFill, pagerContainerStyle]}>
-                    <ScrollView
-                      ref={pagerRef}
-                      testID="bloom-media-gallery-pager"
-                      horizontal
-                      pagingEnabled
-                      // Frozen while zoomed so a horizontal drag pans the zoomed image
-                      // instead of paging away from it.
-                      scrollEnabled={!isZoomed}
-                      showsHorizontalScrollIndicator={false}
-                      contentOffset={{ x: activeIndexRef.current * SCREEN_WIDTH, y: 0 }}
-                      onMomentumScrollEnd={onPagerScroll}
-                      {...(Platform.OS === 'web' ? { onScroll: onPagerScroll } : {})}
-                      scrollEventThrottle={16}
-                      style={StyleSheet.absoluteFill}
-                    >
-                      {items.map((item, idx) => {
-                        const uri = posterUri(item);
-                        const ratio = itemRatio(item, ratios.pages[idx]);
-                        const fit = fitForRatio(ratio, uri);
-                        // Only the active page is zoomable + gesture-wrapped (double-tap
-                        // / single-tap dismiss / pinch / pan). It is also the ONLY page
-                        // that mounts a real media surface: an off-screen page renders
-                        // the still, because a second `VideoView` on the same player is
-                        // exactly the duplicate surface this package exists to avoid.
-                        // The active media handles its own tap-to-dismiss through the
-                        // gesture, so it isn't wrapped in a Pressable.
-                        if (idx === activeIndex) {
-                          return (
-                            <Pressable
-                              key={mediaKey(item, idx)}
-                              // The page fills the screen ON TOP of the backdrop (the
-                              // pager below it needs pointer events to swipe), so a
-                              // press on the empty area around the media can never
-                              // reach the backdrop — the page dismisses it itself.
-                              // Same outcome as tapping the media, which already
-                              // dismisses through `singleTapDismissGesture`.
-                              onPress={handleDismiss}
-                              accessibilityLabel={labels.close}
-                              style={[
-                                styles.page,
-                                { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
-                                webPointerStyle,
-                              ]}
-                            >
-                              <GestureDetector gesture={activePageGesture}>
-                                <Animated.View
-                                  style={[
-                                    styles.mediaBox,
-                                    {
-                                      width: fit.width,
-                                      height: fit.height,
-                                      borderRadius: radiusFor(fit),
-                                    },
-                                    zoomImageStyle,
-                                  ]}
-                                >
-                                  <MediaSurface
-                                    content={item}
-                                    contentFit="contain"
-                                    nativeControls={videoControls}
-                                    accessibilityLabel={item.alt}
-                                    style={StyleSheet.absoluteFill}
-                                  />
-                                </Animated.View>
-                              </GestureDetector>
-                            </Pressable>
-                          );
-                        }
+                {/* The transform rides the pager, so the active page's BOX moves —
+                  image and video arms identically, the box's radius clipping a
+                  video the way it rounds an image — and the pager clips its
+                  neighbours to the one page the flight is carrying. */}
+                <Animated.View style={[StyleSheet.absoluteFill, mediaStyle]}>
+                  <ScrollView
+                    ref={pagerRef}
+                    testID="bloom-media-gallery-pager"
+                    horizontal
+                    pagingEnabled
+                    // Frozen in flight, and while zoomed so a horizontal drag pans
+                    // the zoomed image instead of paging away from it.
+                    scrollEnabled={settled && !isZoomed}
+                    showsHorizontalScrollIndicator={false}
+                    contentOffset={{ x: activeIndexRef.current * SCREEN_WIDTH, y: 0 }}
+                    onMomentumScrollEnd={onPagerScroll}
+                    {...(Platform.OS === 'web' ? { onScroll: onPagerScroll } : {})}
+                    scrollEventThrottle={16}
+                    style={StyleSheet.absoluteFill}
+                  >
+                    {items.map((item, idx) => {
+                      const uri = posterUri(item);
+                      const ratio = itemRatio(item, ratios.pages[idx]);
+                      const fit = fitForRatio(ratio, uri);
+                      // Only the active page is zoomable + gesture-wrapped (double-tap
+                      // / single-tap dismiss / pinch / pan). It is also the ONLY page
+                      // that mounts a real media surface: an off-screen page renders
+                      // the still, because a second `VideoView` on the same player is
+                      // exactly the duplicate surface this package exists to avoid.
+                      // The active media handles its own tap-to-dismiss through the
+                      // gesture, so it isn't wrapped in a Pressable.
+                      if (idx === activeIndex) {
                         return (
                           <Pressable
                             key={mediaKey(item, idx)}
+                            // The page fills the screen ON TOP of the backdrop (the
+                            // pager below it needs pointer events to swipe), so a
+                            // press on the empty area around the media can never
+                            // reach the backdrop — the page dismisses it itself.
+                            // Same outcome as tapping the media, which already
+                            // dismisses through `singleTapDismissGesture`.
                             onPress={handleDismiss}
                             accessibilityLabel={labels.close}
-                            style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
+                            style={[
+                              styles.page,
+                              { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
+                              webPointerStyle,
+                            ]}
                           >
-                            <MediaPoster
-                              content={item}
-                              contentFit="contain"
-                              accessibilityLabel={item.alt}
-                              style={{
-                                width: fit.width,
-                                height: fit.height,
-                                borderRadius: radiusFor(fit),
-                              }}
-                            />
+                            <GestureDetector gesture={activePageGesture}>
+                              <Animated.View
+                                style={[
+                                  styles.mediaBox,
+                                  {
+                                    width: fit.width,
+                                    height: fit.height,
+                                    borderRadius: radiusFor(fit),
+                                  },
+                                  zoomImageStyle,
+                                ]}
+                              >
+                                <MediaSurface
+                                  content={item}
+                                  contentFit="contain"
+                                  nativeControls={videoControls}
+                                  accessibilityLabel={item.alt}
+                                  onPicture={startOpenFlight}
+                                  style={StyleSheet.absoluteFill}
+                                />
+                              </Animated.View>
+                            </GestureDetector>
                           </Pressable>
                         );
-                      })}
-                    </ScrollView>
-                  </Animated.View>
-                )}
+                      }
+                      return (
+                        <Pressable
+                          key={mediaKey(item, idx)}
+                          onPress={handleDismiss}
+                          accessibilityLabel={labels.close}
+                          style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
+                        >
+                          <MediaPoster
+                            content={item}
+                            contentFit="contain"
+                            accessibilityLabel={item.alt}
+                            style={{
+                              width: fit.width,
+                              height: fit.height,
+                              borderRadius: radiusFor(fit),
+                            }}
+                          />
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </Animated.View>
 
-                {pagerReady && items.length > 1 && (
+                {settled && items.length > 1 && (
                   <Animated.View
                     style={[
                       styles.indicatorWrap,
@@ -1407,7 +1448,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
                   </Animated.View>
                 )}
 
-                {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
+                {Platform.OS === 'web' && settled && items.length > 1 && activeIndex > 0 && (
                   <NavArrow
                     buttonRef={previousButtonRef}
                     pageColors={pageColors}
@@ -1418,7 +1459,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
                 )}
 
                 {Platform.OS === 'web' &&
-                  pagerReady &&
+                  settled &&
                   items.length > 1 &&
                   activeIndex < items.length - 1 && (
                     <NavArrow
@@ -1430,7 +1471,7 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
                     />
                   )}
 
-                {canShare && pagerReady && activeItem && (
+                {canShare && settled && activeItem && (
                   <Button
                     ref={shareButtonRef}
                     onPress={handleShare}
@@ -1500,6 +1541,9 @@ export function createZoomableMediaGallery(Button: MemoRefComponent<ButtonProps>
               </Animated.View>
             )}
           </GestureHandlerRootView>
+          {/* LAST, so its layout effect runs after every ref above it — the
+              pager's included — is attached. */}
+          <OnCommit onCommit={onOverlayCommit} />
         </OverlayRoot>
       );
 

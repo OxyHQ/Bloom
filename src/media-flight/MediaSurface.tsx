@@ -119,6 +119,15 @@ export interface MediaSurfaceProps {
    * missing `_removeListeners` into it makes the leak go away.
    */
   detached?: boolean;
+  /**
+   * Called when the box shows a picture: the image's preview layer or the
+   * image itself (whichever paints first; it may be called again for the
+   * other), or a failed preview, so a caller waiting on it never waits for
+   * ever. A viewer that flies out of an on-screen thumbnail waits for this
+   * before it hides the thumbnail and starts to move, so the photo is never
+   * missing from the screen for a frame.
+   */
+  onPicture?: () => void;
 }
 
 /**
@@ -140,6 +149,7 @@ export const MediaSurface = memo(function MediaSurface({
   pointerEvents,
   flightId,
   detached = false,
+  onPicture,
 }: MediaSurfaceProps) {
   // Captured once — see `surfaceType` above. A consumer changing it later gets
   // the value the view was mounted with, which is the only value expo-video
@@ -210,12 +220,41 @@ export const MediaSurface = memo(function MediaSurface({
   const reportLive = useCallback(() => {
     if (flightId !== undefined) handOffFlight(flightId);
   }, [flightId]);
+  const reportImage = useCallback(() => {
+    onPicture?.();
+    reportLive();
+  }, [onPicture, reportLive]);
 
   const still = content.kind === 'video' ? content.poster : content.uri;
-  const preview = content.kind === 'video' ? undefined : content.previewUri;
+  const previewUri = content.kind === 'video' ? undefined : content.previewUri;
+  // The already-visible thumbnail, as its OWN layer under the full image rather
+  // than expo-image's `placeholder`: a placeholder reports nothing when it
+  // paints, and "the preview is on screen" is the moment a viewer flying out of
+  // that thumbnail can take its place. It stays under the full image, which
+  // fades in over it, and stays the picture if the full image fails.
+  const preview =
+    still !== undefined && previewUri !== undefined && previewUri !== still
+      ? previewUri
+      : undefined;
 
   return (
     <Animated.View style={[styles.box, style]} pointerEvents={pointerEvents}>
+      {preview === undefined ? null : (
+        <Image
+          key={`preview:${preview}`}
+          source={{ uri: preview }}
+          recyclingKey={preview}
+          contentFit={contentFit}
+          style={StyleSheet.absoluteFill}
+          cachePolicy="memory-disk"
+          priority="high"
+          loading="eager"
+          transition={0}
+          onDisplay={onPicture}
+          onError={onPicture}
+          {...webDraggableProps}
+        />
+      )}
       {still === undefined ? null : (
         // Behind the video (and the whole picture on the image arm), so the box
         // is never empty while a first frame decodes and a flight that starts
@@ -226,20 +265,19 @@ export const MediaSurface = memo(function MediaSurface({
         <Image
           key={still}
           source={{ uri: still }}
-          placeholder={preview && preview !== still ? { uri: preview } : undefined}
-          placeholderContentFit={contentFit}
           recyclingKey={still}
           contentFit={contentFit}
           style={StyleSheet.absoluteFill}
           cachePolicy="memory-disk"
           priority="high"
           loading="eager"
-          transition={preview && preview !== still ? 120 : 0}
+          transition={preview === undefined ? 0 : 120}
           accessibilityLabel={accessibilityLabel}
-          // Only the arm that IS the picture reports being live. On the video
-          // arm the poster is scenery: handing off on it would release the
-          // flying surface while the destination still had no video.
-          onDisplay={content.kind === 'video' ? undefined : reportLive}
+          // Both arms report a picture, but only the arm that IS the picture
+          // reports being live. On the video arm the poster is scenery: handing
+          // off on it would release the flying surface while the destination
+          // still had no video.
+          onDisplay={content.kind === 'video' ? onPicture : reportImage}
           {...webDraggableProps}
         />
       )}

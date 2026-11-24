@@ -24,7 +24,9 @@ import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import type { GalleryVideo, ZoomableMediaGalleryProps } from '../zoomable-media-gallery';
 import { hostNodes } from './support/rendered-style';
+import { holdAnimations } from './support/held-animations';
 import { GestureDetector } from 'react-native-gesture-handler';
+import type { SharedValue } from 'react-native-reanimated';
 import type { MockGesture } from '../../__mocks__/react-native-gesture-handler';
 
 jest.mock('react-native', () => ({
@@ -328,14 +330,15 @@ describe('ZoomableMediaGallery', () => {
 
   it('keeps ownership during a cancelled native drag and reports a completed drag dismissal', () => {
     jest.useFakeTimers();
+    const flights = holdAnimations();
     try {
       const onOpenChange = jest.fn();
       const api = renderGallery({ onOpenChange });
       act(() => api.ref.current?.open(IMAGES, 0));
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       const gesture = api.UNSAFE_getAllByType(GestureDetector)[0]!.props.gesture as MockGesture;
       act(() => gesture.__handlers.onEnd?.({ translationX: 0, translationY: 1 } as never));
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       expect(onOpenChange.mock.calls).toEqual([[true]]);
       act(() =>
         gesture.__handlers.onEnd?.({
@@ -344,15 +347,17 @@ describe('ZoomableMediaGallery', () => {
         } as never),
       );
       expect(onOpenChange.mock.calls).toEqual([[true]]);
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
     } finally {
+      flights.restore();
       jest.useRealTimers();
     }
   });
 
   it('reports accepted opening and completed closing once, including repeated presses', () => {
     jest.useFakeTimers();
+    const flights = holdAnimations();
     try {
       const onOpenChange = jest.fn();
       const api = renderGallery({ onOpenChange });
@@ -365,57 +370,61 @@ describe('ZoomableMediaGallery', () => {
       });
       expect(onOpenChange.mock.calls).toEqual([[true]]);
       expect(api.getByText('First')).toBeTruthy();
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       const dismiss = api.UNSAFE_getByType(BackdropComponent).props.onPress;
       act(() => {
         dismiss();
         dismiss();
       });
       expect(onOpenChange.mock.calls).toEqual([[true]]);
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
       expect(hostNodes(api.toJSON()).filter((node) => node.type === 'ExpoImage')).toHaveLength(0);
       api.unmount();
       expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
     } finally {
+      flights.restore();
       jest.useRealTimers();
     }
   });
 
   it('closes from outside as a backdrop press does, and only while open', () => {
     jest.useFakeTimers();
+    const flights = holdAnimations();
     try {
       const onOpenChange = jest.fn();
       const api = renderGallery({ onOpenChange });
       act(() => api.ref.current?.close?.());
       expect(onOpenChange).not.toHaveBeenCalled();
       act(() => api.ref.current?.open(IMAGES, 0));
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       act(() => {
         api.ref.current?.close?.();
         api.ref.current?.close?.();
       });
       expect(onOpenChange.mock.calls).toEqual([[true]]);
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
       expect(hostNodes(api.toJSON()).filter((node) => node.type === 'ExpoImage')).toHaveLength(0);
     } finally {
+      flights.restore();
       jest.useRealTimers();
     }
   });
 
   it('uses the current callback when a deferred close completes, then permits reopening', () => {
     jest.useFakeTimers();
+    const flights = holdAnimations();
     try {
       const first = jest.fn();
       const current = jest.fn();
       const api = renderGallery({ onOpenChange: first });
       act(() => api.ref.current?.open(IMAGES, 0));
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
       api.updateProps({ onOpenChange: current });
       expect(current).not.toHaveBeenCalled();
-      act(() => jest.advanceTimersByTime(1000));
+      act(() => flights.land());
       expect(first.mock.calls).toEqual([[true]]);
       expect(current.mock.calls).toEqual([[false]]);
       act(() => api.ref.current?.open(IMAGES, 1));
@@ -423,6 +432,7 @@ describe('ZoomableMediaGallery', () => {
       api.unmount();
       expect(current.mock.calls).toEqual([[false], [true], [false]]);
     } finally {
+      flights.restore();
       jest.useRealTimers();
     }
   });
@@ -431,21 +441,23 @@ describe('ZoomableMediaGallery', () => {
     'reports false when unmounted while %s without a delayed duplicate',
     (phase) => {
       jest.useFakeTimers();
+      const flights = holdAnimations();
       try {
         const first = jest.fn();
         const current = jest.fn();
         const api = renderGallery({ onOpenChange: first });
         act(() => api.ref.current?.open(IMAGES, 0));
         if (phase === 'closing') {
-          act(() => jest.advanceTimersByTime(1000));
+          act(() => flights.land());
           fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
         }
         api.updateProps({ onOpenChange: current });
         api.unmount();
-        act(() => jest.advanceTimersByTime(2000));
+        act(() => flights.land());
         expect(first.mock.calls).toEqual([[true]]);
         expect(current.mock.calls).toEqual([[false]]);
       } finally {
+        flights.restore();
         jest.useRealTimers();
       }
     },
@@ -557,41 +569,163 @@ describe('ZoomableMediaGallery', () => {
   });
 
   /**
-   * The open transition is a two-step timer chain (`0 ms` to start the springs,
-   * then ~300 ms to reveal the pager), and both steps end in a `setState`. A
-   * gallery unmounted mid-transition — a screen left, a route popped — must take
-   * its pending steps with it.
-   *
-   * React makes the write itself a silent no-op, so the only observable is the
-   * timer. That is also how this escaped: measured before the fix, the reveal
-   * timer OUTLIVED the jest file that mounted it and fired inside the next test
-   * file running in the same worker process, where it re-scheduled itself once
-   * more. Nothing failed, because the callback happens not to throw — but a
-   * stray timer that ever does takes the whole run down as an uncaught
-   * exception, attributed to whichever file was unlucky enough to be running.
-   *
-   * The pre-unmount assertion is the control: without it the test would pass
-   * against a gallery that scheduled nothing at all.
+   * The transition used to be a timer chain (`0 ms` to start the springs, then
+   * ~300 ms to swap the open surface for the pager, and a fixed 280 ms to
+   * unmount on close). Each step guessed when an animation would be done, and a
+   * gallery unmounted mid-transition left its timers holding the subtree — one
+   * once fired inside the NEXT jest file. The open now starts from the commit
+   * that mounts the overlay and both legs end in their animation's callback, so
+   * there is no timer to leak.
    */
-  it('cancels its pending transition timers on unmount', () => {
+  it('schedules no timer for its transition', () => {
     jest.useFakeTimers();
+    const flights = holdAnimations();
     try {
       const { ref, unmount } = renderGallery();
       const baseline = jest.getTimerCount();
-
-      act(() => {
-        ref.current?.open(IMAGES, 0);
-      });
-      // Run the first step, which is what schedules the reveal.
-      act(() => {
-        jest.advanceTimersByTime(1);
-      });
-      expect(jest.getTimerCount()).toBeGreaterThan(baseline);
-
+      act(() => ref.current?.open(IMAGES, 0));
+      expect(flights.held()).toBeGreaterThan(0);
+      expect(jest.getTimerCount()).toBe(baseline);
       unmount();
       expect(jest.getTimerCount()).toBeLessThanOrEqual(baseline);
     } finally {
+      flights.restore();
       jest.useRealTimers();
     }
+  });
+
+  /**
+   * The flash on close was a SWAP: dismissing replaced the pager's page with a
+   * second "open surface", a new image view that showed its placeholder and
+   * cross-faded to the full image while it flew. One view now paints the media
+   * from the first frame of the open to the last frame of the close.
+   */
+  it('paints the media with one image view from open to landing', () => {
+    jest.useFakeTimers();
+    const flights = holdAnimations();
+    try {
+      const api = renderGallery();
+      const image = () => {
+        const nodes = api
+          .UNSAFE_getAllByProps({ accessibilityLabel: 'First' })
+          .filter((node) => String(node.type) === 'ExpoImage');
+        expect(nodes).toHaveLength(1);
+        return nodes[0];
+      };
+      act(() => api.ref.current?.open(IMAGES, 0));
+      const opening = image();
+      act(() => {
+        flights.land();
+        jest.advanceTimersByTime(1000);
+      });
+      expect(image()).toBe(opening);
+      fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      expect(image()).toBe(opening);
+      act(() => flights.land());
+      expect(api.queryAllByText('First')).toHaveLength(0);
+    } finally {
+      flights.restore();
+      jest.useRealTimers();
+    }
+  });
+
+  it('hides the thumbnail it stands in for until the fly-back lands', () => {
+    const flights = holdAnimations();
+    try {
+      const hidden = { value: -1 } as SharedValue<number>;
+      const api = renderGallery({ hiddenThumbIndex: hidden });
+      act(() => api.ref.current?.open(IMAGES, 0));
+      expect(hidden.value).toBe(0);
+      act(() => flights.land());
+      const pager = api.UNSAFE_getAllByType(ScrollView).find((node) => node.props.pagingEnabled);
+      if (!pager) throw new Error('Expected the gallery pager');
+      const width = Dimensions.get('window').width;
+      fireEvent(pager, 'momentumScrollEnd', { nativeEvent: { contentOffset: { x: width, y: 0 } } });
+      expect(hidden.value).toBe(1);
+      fireEvent.press(api.UNSAFE_getByType(BackdropComponent));
+      expect(hidden.value).toBe(1);
+      act(() => flights.land());
+      expect(hidden.value).toBe(-1);
+    } finally {
+      flights.restore();
+    }
+  });
+
+  /**
+   * With a preview (the thumbnail's own, already decoded URL) the open waits
+   * for it to paint before it hides the thumbnail and moves. Started at the
+   * commit instead, the avatar left a hole for a frame or two and the photo
+   * first appeared already on its way (Pixel 8a recording).
+   */
+  it('hides the thumbnail and starts the flight once the preview has painted', () => {
+    const flights = holdAnimations();
+    try {
+      const hidden = { value: -1 } as SharedValue<number>;
+      const api = renderGallery({ hiddenThumbIndex: hidden });
+      act(() =>
+        api.ref.current?.open(
+          [{ uri: 'https://cloud.oxy.so/full.jpg', previewUri: 'https://cloud.oxy.so/thumb.jpg' }],
+          0,
+        ),
+      );
+      expect(hidden.value).toBe(-1);
+      expect(flights.held()).toBe(0);
+      const preview = hostNodes(api.toJSON()).find(
+        (node) =>
+          node.type === 'ExpoImage' &&
+          (node.props.source as { uri?: string } | undefined)?.uri ===
+            'https://cloud.oxy.so/thumb.jpg',
+      );
+      expect(preview).toBeDefined();
+      act(() => (preview?.props.onDisplay as () => void)());
+      expect(hidden.value).toBe(0);
+      expect(flights.held()).toBeGreaterThan(0);
+    } finally {
+      flights.restore();
+    }
+  });
+
+  it('gives the thumbnail back when it unmounts mid-flight', () => {
+    const flights = holdAnimations();
+    try {
+      const hidden = { value: -1 } as SharedValue<number>;
+      const api = renderGallery({ hiddenThumbIndex: hidden });
+      act(() => api.ref.current?.open(IMAGES, 1));
+      expect(hidden.value).toBe(1);
+      api.unmount();
+      expect(hidden.value).toBe(-1);
+    } finally {
+      flights.restore();
+    }
+  });
+});
+
+/**
+ * The pager mounts with the overlay, so it must be seated on the opened page
+ * once it exists. `contentOffset` alone left the web pager on page 0 while the
+ * counter read "2 / 2", and the arrows then paged from the wrong place.
+ */
+it('seats the pager on the opened page once the overlay is committed', () => {
+  const scrollTo = jest.fn();
+  const ref = createRef<ZoomableMediaGalleryHandle>();
+  render(
+    <BloomThemeProvider mode="light" colorPreset="oxy">
+      <PortalProvider>
+        <ZoomableMediaGallery ref={ref} />
+        <PortalOutlet />
+      </PortalProvider>
+    </BloomThemeProvider>,
+    {
+      createNodeMock: (element) =>
+        (element.props as { testID?: string }).testID === 'bloom-media-gallery-pager'
+          ? { scrollTo }
+          : null,
+    },
+  );
+  act(() => ref.current?.open(IMAGES, 1));
+  expect(scrollTo).toHaveBeenCalledWith({
+    x: Dimensions.get('window').width,
+    y: 0,
+    animated: false,
   });
 });
