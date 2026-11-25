@@ -734,6 +734,22 @@ const options: ParityCase[] = [true, false].map((selected) => ({
   ),
 }));
 
+/** A tab that is no Bloom Tabs item: its selection flat on the web too (`aria-selected`), as React Native's prop writes it. */
+const tabs: ParityCase[] = [true, false].map((selected) => ({
+  name: `a tab ${selected ? 'selected' : 'not selected'}`,
+  language: () =>
+    toElement(L.VStack(L.Text('For you')).role('tab').accessibilityState({ selected })),
+  bloom: () => (
+    <RN.View
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+      {...(RN.Platform.OS === 'web' ? { 'aria-selected': selected } : null)}
+    >
+      <Text>For you</Text>
+    </RN.View>
+  ),
+}));
+
 /** What Mention's screens write that the language lacked: auto margins, a gap per axis, a border's line. */
 const appLayout: ParityCase[] = [
   {
@@ -1579,6 +1595,7 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...appLayout,
   ...roles,
   ...options,
+  ...tabs,
   ...tailwind,
   ...distribution,
   ...placement,
