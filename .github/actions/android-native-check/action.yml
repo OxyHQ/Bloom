@@ -44,6 +44,16 @@ runs:
         # The legacy SDK "tools" package was removed from the repository.
         packages: platform-tools
         cmdline-tools-version: '15859902' # 22.0; understands API 37.0 package versions
+    # setup-android installs the tools as cmdline-tools/22.0, but React
+    # Native's Hermes build resolves sdkmanager while it configures, at
+    # cmdline-tools/latest, and fails without it ("Could not find sdkmanager
+    # executable") even when the cached CMake makes it skip the install.
+    # 22.0 is the cmdline-tools-version above; the test fails if they part.
+    - name: The command-line tools at cmdline-tools/latest
+      shell: bash
+      run: |
+        ln -sfn 22.0 "$ANDROID_HOME/cmdline-tools/latest"
+        test -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
     - name: Verify official Android download fallback
       shell: bash
       run: python3 .github/scripts/test-verified-android-downloads.py
