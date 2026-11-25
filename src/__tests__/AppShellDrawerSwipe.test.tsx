@@ -351,35 +351,31 @@ describe('AppShell drawerSwipe: reveal', () => {
     expect(page(screen)).toBe(REVEAL_TRAVEL);
   });
 
-  it('keeps the closed drawer out of the native tree, and mounts it as the swipe starts', () => {
+  it('keeps the closed drawer laid out and hidden, so a swipe changes no layout', () => {
     setWidth(WIDTH);
     const pans = recordPans();
     const screen = render(wrap(<Reveal />));
-    const display = () =>
-      resolvedStyle(
-        screen.getByTestId('shell-navigation-drawer', { includeHiddenElements: true }).props.style,
-      ).display;
-    // At rest and closed: no native view under it (Fabric mounts none under `display: none`).
-    expect(display()).toBe('none');
-    // The first frame of a drag shows it, before anything is decided.
+    const drawer = () =>
+      screen.getByTestId('shell-navigation-drawer', { includeHiddenElements: true });
+    // The rail inside it, which the open amount fades and scales.
+    const railOpacity = () => {
+      const rail = drawer().children[0];
+      return typeof rail === 'object' ? resolvedStyle(rail.props.style).opacity : undefined;
+    };
+    // At rest and closed: laid out (no `display: none` to undo on open), not
+    // drawn (opacity 0) and not hit.
+    expect(resolvedStyle(drawer().props.style).display).toBeUndefined();
+    expect(railOpacity()).toBe(0);
+    expect(drawer().props.pointerEvents).toBe('none');
+    // A drag moves only opacity and transforms.
     hold(live(pans), 40);
     screen.rerender(wrap(<Reveal />));
-    expect(display()).toBe('flex');
-    // Snapped back closed, it leaves the tree again; the sidebar stays mounted in React.
+    expect(resolvedStyle(drawer().props.style).display).toBeUndefined();
+    expect(railOpacity()).toBeGreaterThan(0);
     release(live(pans), 40);
     screen.rerender(wrap(<Reveal />));
-    expect(display()).toBe('none');
+    expect(railOpacity()).toBe(0);
     expect(screen.getByTestId('sidebar-item-home', { includeHiddenElements: true })).toBeTruthy();
-  });
-
-  it('keeps the drawer in the tree while it is open', () => {
-    setWidth(WIDTH);
-    const screen = render(wrap(<Reveal drawerOpen />));
-    expect(
-      resolvedStyle(
-        screen.getByTestId('shell-navigation-drawer', { includeHiddenElements: true }).props.style,
-      ).display,
-    ).toBe('flex');
   });
 
   it('snaps a short pan back to the closed page', () => {
