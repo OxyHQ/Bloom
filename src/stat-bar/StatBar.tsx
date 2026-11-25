@@ -3,7 +3,7 @@ import { SURFACE_SHAPES } from '../design-tokens/shapes';
 import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { clamp } from '../styles/clamp';
 import { Text } from '../typography';
 import { Meter } from './Meter';
@@ -25,14 +25,14 @@ function clampPercent(value: number): number {
  *
  * The bar itself is `Meter`, so the geometry, the default colours and the
  * `progressbar` accessibility are the same ones every other bar in Bloom uses.
- * This family owns only the label row and the footer. Text comes from the theme
- * (`text`/`textSecondary`/`textTertiary`); the fill and the track default to
- * `resolveMeterColors` (the accent over `neutral-200` / dark `neutral-700`) and
- * stay overridable per-prop. Pure `<View>` composition, so it renders
- * identically on web and native.
+ * This family owns only the label row and the footer. Text paints through the
+ * colour tokens (`foreground`/`muted-foreground`/`faint-foreground`); the fill
+ * and the track default to `resolveMeterColors` (the accent over `neutral-200`
+ * / dark `neutral-700`) and stay overridable per-prop. Pure `<View>`
+ * composition, so it renders identically on web and native.
  */
 const StatBarComponent: React.FC<StatBarProps> = (props) => {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const { label, fillColor, trackColor, height = 6, icon, style, testID } = props;
   const radius = height / 2;
 
@@ -43,10 +43,10 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
     return (
       <View style={[styles.wrap, style]} testID={testID}>
         <View style={styles.labelRow}>
-          <Text style={[styles.label, { color: colors.textSecondary }]} numberOfLines={1}>
+          <Text style={[styles.label, { color: tokens.mutedForeground }]} numberOfLines={1}>
             {label}
           </Text>
-          <Text style={[styles.percent, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.percent, { color: tokens.foreground }]} numberOfLines={1}>
             {Math.round(leftPercent)}%
           </Text>
         </View>
@@ -64,10 +64,10 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
         />
 
         <View style={styles.footerRow}>
-          <Text style={[styles.footerValue, { color: colors.textTertiary }]} numberOfLines={1}>
+          <Text style={[styles.footerValue, { color: tokens.faintForeground }]} numberOfLines={1}>
             {leftValue}
           </Text>
-          <Text style={[styles.footerValue, { color: colors.textTertiary }]} numberOfLines={1}>
+          <Text style={[styles.footerValue, { color: tokens.faintForeground }]} numberOfLines={1}>
             {rightValue}
           </Text>
         </View>
@@ -81,7 +81,7 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
   return (
     <View style={[styles.wrap, style]} testID={testID}>
       <View style={styles.labelRow}>
-        <Text style={[styles.label, { color: colors.textSecondary }]} numberOfLines={1}>
+        <Text style={[styles.label, { color: tokens.mutedForeground }]} numberOfLines={1}>
           {label}
         </Text>
         {icon != null && <View style={styles.icon}>{icon}</View>}
@@ -100,10 +100,10 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
 
       {hasFooter && (
         <View style={styles.footerRow}>
-          <Text style={[styles.footerValue, { color: colors.textTertiary }]} numberOfLines={1}>
+          <Text style={[styles.footerValue, { color: tokens.faintForeground }]} numberOfLines={1}>
             {minLabel ?? ''}
           </Text>
-          <Text style={[styles.footerValue, { color: colors.textTertiary }]} numberOfLines={1}>
+          <Text style={[styles.footerValue, { color: tokens.faintForeground }]} numberOfLines={1}>
             {maxLabel ?? ''}
           </Text>
         </View>
