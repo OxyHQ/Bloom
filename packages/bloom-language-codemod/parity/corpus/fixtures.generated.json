@@ -3483,5 +3483,55 @@
   "insets": false,
   "screen": true,
   "appColors": null
+ },
+ {
+  "name": "components/Toolbar.tsx:9",
+  "before": "<Button appearance=\"plain\" tone=\"neutral\" iconOnly accessibilityLabel=\"Link\" onPress={() => {}}>\n      {(color) => <RiLinksLine width={20} height={20} fill={color} />}\n    </Button>",
+  "after": "toElement(LButton(Group(Icon(RiLinksLine))).shape('circle').style('plain').tint('neutral').label('Link').onPress(() => {}))",
+  "bindings": {
+   "Button": {
+    "module": "@oxy.so/bloom/button",
+    "imported": "Button"
+   },
+   "RiLinksLine": {
+    "module": "@oxy.so/bloom/icons/RiLinksLine",
+    "imported": "RiLinksLine"
+   }
+  },
+  "language": [
+   "Group",
+   "Icon",
+   "Button: LButton"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Toolbar.tsx:16",
+  "before": "<Item title=\"Add\" onPress={() => {}} />",
+  "after": "toElement(Row('Add').onPress(() => {}))",
+  "bindings": {
+   "Item": {
+    "module": "@oxy.so/bloom/item",
+    "imported": "Item"
+   }
+  },
+  "language": [
+   "Group",
+   "Icon",
+   "Button: LButton",
+   "toElement",
+   "Row"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
  }
 ]

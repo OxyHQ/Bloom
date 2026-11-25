@@ -1129,8 +1129,14 @@ ButtonGroup(Button(Text('Day')), Button(Text('Week'))).separated().size('sm')
   state).
 - **Views beside the label.** With a `Text` label, a view before it (that is
   no `Icon`) is Bloom's `leading`, one after it its `trailing`, drawn as they
-  are. A glyph drawn in the button's own ink, as Bloom's render-function
-  children draw one, is a plain `Icon` child: Bloom paints it in its ink.
+  are. A plain `Icon` child is the button's glyph (`leadingIcon`): Bloom
+  paints it in its ink. A bare glyph as its content, `Button(Group(Icon(X)))`
+  with no ink of its own (a `.size()` at most), is Bloom's render-function
+  children, `(color) => <X fill={color} />`: drawn in the ink Bloom hands it
+  (its tone's, `.foreground()`'s, under the pointer `.hoverForeground()`'s,
+  disabled its muted one) with no glyph box of its own, as a compose
+  toolbar's controls draw theirs (on the web the `leadingIcon` sits in Bloom's
+  20pt glyph box; the render function's glyph does not).
 - **Inks and spinner.** `.foreground(role)` is the button's ink at rest
   (Bloom's `color`) and `.hoverForeground(role)` under the pointer
   (`hoverColor`), each painted from a colour role. `.loadingIndicator(null)`

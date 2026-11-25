@@ -197,6 +197,59 @@ const content: ParityCase[] = [
   },
 ];
 
+/**
+ * Mention's compose toolbar: a glyph as the button's content in the ink Bloom
+ * hands its render function (`(color) => glyph`), at rest, active, invalid,
+ * busy and disabled, as a circle of Bloom's 20pt glyph.
+ */
+const handed: ParityCase[] = (
+  [
+    ['rest', undefined, false, false],
+    ['active', 'primary', false, false],
+    ['invalid', 'error', false, false],
+    ['busy', undefined, true, false],
+    ['disabled', undefined, false, true],
+  ] as const
+).map(([state, ink, busy, disabled]) => ({
+  name: `a glyph in the ink Bloom hands it (${state})`,
+  language: () =>
+    toElement(
+      L.Button(L.Group(L.Icon(RiHeart3Line)))
+        .style('plain')
+        .tint('neutral')
+        .shape('circle')
+        .iconSize('md')
+        .label('Link')
+        .onPress(onPress)
+        .disabled(disabled)
+        .loading(busy)
+        .loadingIndicator(null)
+        .foreground(ink)
+        .hoverForeground(ink),
+    ),
+  bloom: () => (
+    <Themed>
+      {(c) => (
+        <Button
+          appearance="plain"
+          tone="neutral"
+          iconOnly
+          iconSize={20}
+          accessibilityLabel="Link"
+          onPress={onPress}
+          disabled={disabled}
+          loading={busy}
+          loadingIndicator={null}
+          color={ink === undefined ? undefined : c[ink]}
+          hoverColor={ink === undefined ? undefined : c[ink]}
+        >
+          {(color: string) => <RiHeart3Line width={20} height={20} fill={color} />}
+        </Button>
+      )}
+    </Themed>
+  ),
+}));
+
 const states: ParityCase[] = [
   {
     name: 'loading',
@@ -474,5 +527,6 @@ export const BUTTON_CASES: ParityCase[] = [
   ...sizes,
   ...content,
   ...states,
+  ...handed,
   ...leftovers,
 ];

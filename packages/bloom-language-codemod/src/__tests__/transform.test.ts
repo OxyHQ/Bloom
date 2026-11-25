@@ -25,7 +25,7 @@ export function A({ full, add }) {
   );
 }
 `);
-    expect(flat(code)).toContain(".onPress(full ? undefined : add)");
+    expect(flat(code)).toContain('.onPress(full ? undefined : add)');
     expect(flat(code)).toContain('.tint(');
     expect(flat(code)).toContain(".font('system-mono')");
     expect(flat(code)).toContain(".background('primary/5')");
@@ -84,6 +84,35 @@ export const D = ({ size }) => <View style={{ width: size }} />;
       'caller-style',
       'caller-style',
       'caller-style',
+    ]);
+  });
+  it('maps a Button’s glyph drawn in the ink Bloom hands it', () => {
+    const result = run(`import { Button } from '@oxy.so/bloom/button';
+import { RiLinksLine } from '@oxy.so/bloom/icons/RiLinksLine';
+export const A = ({ go, md }) => (
+  <Button appearance="plain" iconOnly accessibilityLabel="Link" onPress={go}>
+    {(color) => <RiLinksLine width={20} height={20} fill={color} />}
+  </Button>
+);
+export const B = ({ go }) => (
+  <Button iconOnly accessibilityLabel="Link" onPress={go}>
+    {(color) => <RiLinksLine size="lg" fill={color} />}
+  </Button>
+);
+export const C = ({ go }) => (
+  <Button iconOnly accessibilityLabel="Link" onPress={go}>
+    {(color) => <RiLinksLine size="lg" fill={color} style={{ opacity: 0.5 }} />}
+  </Button>
+);
+`);
+    expect(flat(result.code)).toContain(
+      "Button(Group(Icon(RiLinksLine))).shape('circle').style('plain')",
+    );
+    expect(flat(result.code)).toContain("Button(Group(Icon(RiLinksLine).size('lg')))");
+    // A glyph with more than its fill and side stays JSX, the function with it.
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'render-children',
+      'prop:style',
     ]);
   });
   it('converts a View tree and swaps the imports', () => {

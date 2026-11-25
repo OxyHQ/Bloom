@@ -313,6 +313,8 @@ type Ir =
       type: 'button';
       leading: string | null;
       trailing: string | null;
+      /** Bloom's render-function children (`(color) => <X fill={color} />`): a bare glyph as its content, at its rung. */
+      handed?: { readonly icon: string; readonly size: string };
       runs: TextRun[];
       props: PropMod[];
       key: Carried | null;
@@ -1152,17 +1154,24 @@ export function transformSource(source: string, options: TransformOptions): File
     visitJSXAttribute(path) {
       const { name, value } = path.node;
       if (!n.JSXIdentifier.check(name) || !/(^s|S)tyle$/.test(name.name) || !value) return false;
-      recast.visit(attributeExpression(value), {
-        visitIdentifier: (inner) => {
-          const parent = inner.parent?.node;
-          const read =
-            !(n.MemberExpression.check(parent) || n.OptionalMemberExpression.check(parent)) ||
-            parent.object === inner.node;
-          if (read && !n.ObjectProperty.check(parent) && isParameter(path, inner.node.name))
-            callerStyles.add(attributeExpression(value));
-          return false;
-        },
-      });
+      // A parameter read as a whole style: by name, or a property of one (`style?.container`).
+      const read = (node: AnyNode): boolean => {
+        let root = node;
+        while (n.MemberExpression.check(root) || n.OptionalMemberExpression.check(root))
+          root = root.object;
+        return n.Identifier.check(root) && isParameter(path, root.name);
+      };
+      // The style itself, an entry of a style list, a branch of a choice, or a spread into an object.
+      const handsIn = (node: AnyNode): boolean =>
+        read(node) ||
+        (n.ArrayExpression.check(node) && node.elements.some((e: AnyNode) => e && handsIn(e))) ||
+        (n.LogicalExpression.check(node) && handsIn(node.right)) ||
+        (n.ConditionalExpression.check(node) &&
+          (handsIn(node.consequent) || handsIn(node.alternate))) ||
+        (n.ObjectExpression.check(node) &&
+          node.properties.some((p: AnyNode) => n.SpreadElement.check(p) && read(p.argument)));
+      const expression = attributeExpression(value);
+      if (handsIn(expression)) callerStyles.add(expression);
       return false;
     },
   });
@@ -4171,10 +4180,24 @@ export function transformSource(source: string, options: TransformOptions): File
       fail('grow', 'button:grow', 'grow with iconOnly');
     if (shape) props.unshift({ name: 'shape', args: [shape] });
     const runs: TextRun[] = [];
+    let handed: { icon: string; size: string } | undefined;
     for (const child of node.children) {
       if (n.JSXText.check(child)) {
         const text = cleanJsxText(child.value);
         if (text) runs.push({ type: 'string', value: text });
+      } else if (
+        n.JSXExpressionContainer.check(child) &&
+        (n.ArrowFunctionExpression.check(child.expression) ||
+          n.FunctionExpression.check(child.expression))
+      ) {
+        const glyph = handedGlyphOf(child.expression);
+        if (glyph === undefined || handed !== undefined)
+          fail(
+            'children',
+            'render-children',
+            'children as a render function other than `(color) => <Glyph fill={color} />` at one icon rung',
+          );
+        else handed = glyph;
       } else if (
         n.JSXExpressionContainer.check(child) &&
         !n.JSXEmptyExpression.check(child.expression)
@@ -4184,8 +4207,53 @@ export function transformSource(source: string, options: TransformOptions): File
         else runs.push({ type: 'expr', value: { node: child.expression, hole: 'text' } });
       } else fail('child', 'button-child', 'a Button child that is no text');
     }
+    if (handed !== undefined && (leading || trailing || runs.length))
+      fail('children', 'render-children', 'a render function beside a glyph or a label');
     if (reasons.length) return { reasons };
-    return { ir: { type: 'button', leading, trailing, runs, props, key } };
+    return { ir: { type: 'button', leading, trailing, handed, runs, props, key } };
+  }
+
+  /**
+   * Bloom's render-function children of a glyph alone, `(color) => <X fill={color}
+   * size="md" />` (or a `width` and `height` of one rung's points), as its icon
+   * and rung; undefined for any other function.
+   */
+  function handedGlyphOf(fn: AnyNode): { icon: string; size: string } | undefined {
+    const [param, ...more] = fn.params;
+    if (!n.Identifier.check(param) || more.length > 0 || !n.JSXElement.check(fn.body))
+      return undefined;
+    const name = fn.body.openingElement.name;
+    if (!n.JSXIdentifier.check(name) || kindOf(sources.get(name.name)) !== 'icon') return undefined;
+    if (
+      fn.body.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === ''))
+    )
+      return undefined;
+    const given = new Map<string, AnyNode>();
+    for (const attribute of fn.body.openingElement.attributes) {
+      if (!n.JSXAttribute.check(attribute) || !n.JSXIdentifier.check(attribute.name))
+        return undefined;
+      given.set(attribute.name.name as string, attribute.value);
+    }
+    const fill = given.get('fill');
+    if (
+      !fill ||
+      !n.Identifier.check(attributeExpression(fill)) ||
+      attributeExpression(fill).name !== param.name
+    )
+      return undefined;
+    const keys = [...given.keys()]
+      .filter((key) => key !== 'fill')
+      .sort()
+      .join(',');
+    const named = staticString(given.get('size'));
+    const side = staticNumber(given.get('width'));
+    const rung =
+      keys === 'size'
+        ? ICON_SIZES.find(([k]) => k === named)
+        : keys === 'height,width' && staticNumber(given.get('height')) === side
+          ? ICON_SIZES.find(([, v]) => v === side)
+          : undefined;
+    return rung === undefined ? undefined : { icon: name.name, size: rung[0] };
   }
 
   /** A `{…}` child of a stack: a converted branch where its form is safe, else embedded. */
@@ -4361,6 +4429,10 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       case 'button': {
         const parts: string[] = [];
+        if (ir.handed)
+          parts.push(
+            `${lang('Group')}(${lang('Icon')}(${ir.handed.icon})${ir.handed.size === 'md' ? '' : `.size(${quote(ir.handed.size)})`})`,
+          );
         if (ir.leading) parts.push(`${lang('Icon')}(${ir.leading})`);
         if (ir.runs.length)
           parts.push(
