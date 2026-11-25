@@ -909,7 +909,13 @@ function planVariant(
     }
     const mark = `;?${condition ?? ''}${modifier.key}`;
     if (isLayerModifier(modifier)) addVariantToLayers(result.layers, condition, modifier);
-    else if (ENV_KINDS.has(modifier.kind)) result.envVariants.push([condition, modifier]);
+    else if (ENV_KINDS.has(modifier.kind)) {
+      // A trait under a condition that holds as the view renders (a platform, a
+      // disabled view) is the chain's own: React Native's Text and a span write
+      // what their own chain names, and this is named there.
+      if (condition === null) result.env.push(modifier);
+      else result.envVariants.push([condition, modifier]);
+    }
     else if (PLACE_KINDS.has(modifier.kind)) {
       result.place.variants.push([condition, modifier as PlaceModifier]);
       result.place.key += mark;
