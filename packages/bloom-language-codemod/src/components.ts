@@ -781,7 +781,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       subtitle: p('subtitle', 'content'),
       actions: p('toolbar', 'view'),
       leading: p('toolbarLeading', 'view'),
-      onBack: p('onBack', 'handler'),
+      // Bloom's own back (`undefined`) or none (`null`), chosen at render as written.
+      onBack: { ...p('onBack', 'handler'), unset: true },
       backLabel: p('backLabel', 'string'),
       headingLevel: p('headingLevel', 'number'),
       scrim: p('scrollEdge', 'token', tokens('scrollEdge')),

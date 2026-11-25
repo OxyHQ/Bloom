@@ -8,6 +8,14 @@ const run = (source: string) =>
 const flat = (code: string) => code.replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')');
 
 describe('transformSource', () => {
+  it("maps a header's back chosen at render between Bloom's own and none", () => {
+    const { code } = run(`import { PageHeader } from '@oxy.so/bloom/page-header';
+export const A = ({ showBack }) => (
+  <PageHeader title="Profile" onBack={showBack ? undefined : null} presentation="floating" />
+);
+`);
+    expect(flat(code)).toContain('.onBack(showBack ? undefined : null)');
+  });
   it('maps a row press chosen at render, a spinner in an app colour, a platform monospace, a 5% fill', () => {
     const { code } = run(`import { Item } from '@oxy.so/bloom/item';
 import { SpinnerIcon } from '@oxy.so/bloom/loading';

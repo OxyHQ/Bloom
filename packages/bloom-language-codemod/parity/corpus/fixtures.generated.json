@@ -1115,7 +1115,60 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:394",
+  "name": "components/Components.tsx:386",
+  "before": "<PageHeader\n      title={'⟨0⟩'}\n      onBack={() => {}}\n      presentation=\"floating\"\n    />",
+  "after": "toElement(LHeader('⟨0⟩').onBack(() => {}).presentation('floating').inPage())",
+  "bindings": {
+   "PageHeader": {
+    "module": "@oxy.so/bloom/page-header",
+    "imported": "PageHeader"
+   }
+  },
+  "language": [
+   "Toggle",
+   "GroupedSectionItem: LGroupedSectionItem",
+   "SpinnerIcon: LSpinnerIcon",
+   "GroupedSection: LGroupedSection",
+   "SettingsSection: LSettingsSection",
+   "toElement",
+   "SettingsValue",
+   "Card: LCard",
+   "VStack",
+   "TextField: LTextField",
+   "ScrollView",
+   "Text: LText",
+   "Button: LButton",
+   "ChatEmptyState: LChatEmptyState",
+   "Search: LSearch",
+   "Divider: LDivider",
+   "Embed",
+   "Loading: LLoading",
+   "Avatar: LAvatar",
+   "Badge: LBadge",
+   "Row",
+   "Checkbox: LCheckbox",
+   "Field: LField",
+   "TextEditor",
+   "IconCircle: LIconCircle",
+   "Grid",
+   "HStack",
+   "Chip: LChip",
+   "Icon",
+   "Action",
+   "defineTokens",
+   "Slider: LSlider",
+   "Admonition: LAdmonition",
+   "Header: LHeader"
+  ],
+  "classes": [],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
+  "name": "components/Components.tsx:405",
   "before": "<ScreenScrollView\n      refreshControl={\n        <RefreshControl\n          refreshing={true}\n          onRefresh={() => {}}\n          tintColor={parityTheme.colors.primary}\n          colors={[parityTheme.colors.primary]}\n        />\n      }\n      showsVerticalScrollIndicator={false}\n      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }}\n    >\n      {<Hole n=\"0\" />}\n    </ScreenScrollView>",
   "after": "toElement(ScrollView(Embed(<Hole n=\"0\" />)).refreshable({ refreshing: true, onRefresh: () => {} }, 'primary').scrollIndicators('hidden', 'vertical').contentMargins('horizontal', 'lg').contentMargins('bottom', '4xl').spacing('md'))",
   "bindings": {
@@ -1174,7 +1227,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:421",
+  "name": "components/Components.tsx:432",
   "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} variant=\"underline\">\n      {ITEMS.map((item: { id: string; label: string; count?: number }) => (\n        <TabsTrigger key={'k6'} value={'⟨3⟩'} label={'⟨4⟩'} count={2} />\n      ))}\n    </Tabs>",
   "after": "toElement(LTabs(['⟨0⟩', () => {}], ITEMS.map((item: { id: string; label: string; count?: number }) => TabItem('⟨3⟩', '⟨4⟩').count(2))).style('underline'))",
   "bindings": {
@@ -1233,7 +1286,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:431",
+  "name": "components/Components.tsx:442",
   "before": "<Tabs value={'⟨0⟩'} onValueChange={() => {}} fullWidth label={'⟨4⟩'}>\n      <TabsTrigger value=\"posts\" label={'⟨2⟩'} leadingIcon={RiStarLine} />\n      {/* Likes are private. */}\n      <TabsTrigger value=\"likes\" label={'⟨3⟩'} leadingIcon={RiHeart3Line} iconOnly />\n    </Tabs>",
   "after": "toElement(LTabs(['⟨0⟩', () => {}], TabItem('posts', '⟨2⟩').icon(RiStarLine), /* Likes are private. */ TabItem('likes', '⟨3⟩').icon(RiHeart3Line).iconOnly()).fullWidth().label('⟨4⟩'))",
   "bindings": {
@@ -1300,7 +1353,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:449",
+  "name": "components/Components.tsx:460",
   "before": "<View className=\"gap-2\">\n      <SegmentedControl\n        label={'⟨5⟩'}\n        type=\"radio\"\n        size=\"sm\"\n        value={'⟨0⟩'}\n        onChange={() => {}}\n      >\n        <SegmentedControlItem value=\"24h\">\n          <SegmentedControlItemText>{'⟨2⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"7d\" disabled={true}>\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n      <SegmentedControl type=\"tabs\" variant=\"plain\" value={'⟨6⟩'} onValueChange={() => {}}>\n        {ITEMS.map((item) => (\n          <SegmentedControlItem key={'k11'} value={'⟨9⟩'}>\n            <SegmentedControlItemText>{'⟨10⟩'}</SegmentedControlItemText>\n          </SegmentedControlItem>\n        ))}\n      </SegmentedControl>\n    </View>",
   "after": "toElement(VStack(Segmented(['⟨0⟩', () => {}], Option('24h', '⟨2⟩'), Option('7d', '⟨3⟩').disabled(true)).label('⟨5⟩').size('sm'), Segmented(['⟨6⟩', () => {}], ITEMS.map((item) => Option('⟨9⟩', '⟨10⟩'))).tabs().style('plain')).spacing('sm'))",
   "bindings": {
@@ -1371,7 +1424,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:483",
+  "name": "components/Components.tsx:494",
   "before": "<Field label={'⟨0⟩'}>\n      <SegmentedControl type=\"radio\" value={'⟨1⟩'} onValueChange={() => {}}>\n        <SegmentedControlItem value=\"month\">\n          <SegmentedControlItemText>{'⟨3⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n        <SegmentedControlItem value=\"year\">\n          <SegmentedControlItemText>{'⟨4⟩'}</SegmentedControlItemText>\n        </SegmentedControlItem>\n      </SegmentedControl>\n    </Field>",
   "after": "toElement(LField('⟨0⟩', Segmented(['⟨1⟩', () => {}], Option('month', '⟨3⟩'), Option('year', '⟨4⟩'))))",
   "bindings": {
@@ -1440,7 +1493,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:498",
+  "name": "components/Components.tsx:509",
   "before": "<SettingsSelect\n      label={'⟨0⟩'}\n      value={'⟨1⟩'}\n      onChange={() => {}}\n      items={ITEMS}\n    />",
   "after": "toElement(LSettingsSelect('⟨0⟩', ['⟨1⟩', () => {}], ITEMS))",
   "bindings": {
@@ -1498,7 +1551,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:512",
+  "name": "components/Components.tsx:523",
   "before": "<AvatarGroup\n      items={ITEMS}\n      layout=\"conversation\"\n      size={32}\n      max={3}\n      total={2}\n      showInitials\n    />",
   "after": "toElement(LAvatarGroup(ITEMS).layout('conversation').size('md').max(3).total(2).initials())",
   "bindings": {
@@ -1557,7 +1610,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:525",
+  "name": "components/Components.tsx:536",
   "before": "<View className=\"gap-2\">\n      <List\n        items={ITEMS}\n        separator=\"line\"\n        header={<Muted>{'⟨1⟩'}</Muted>}\n        empty={<Muted>{'⟨2⟩'}</Muted>}\n        testID=\"people\"\n      />\n      <List items={ITEMS} loading={true} loadingCount={2} />\n    </View>",
   "after": "toElement(VStack(LList(ITEMS).separator('line').headerContent(LText('⟨1⟩').textStyle('muted')).emptyState(LText('⟨2⟩').textStyle('muted')).testID('people'), LList(ITEMS).loading(true).loadingRows(2)).spacing('sm'))",
   "bindings": {
@@ -1627,7 +1680,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:548",
+  "name": "components/Components.tsx:559",
   "before": "<VirtualList\n      data={ITEMS}\n      keyExtractor={() => {}}\n      renderItem={({ item, index }) => (\n        <Pressable onPress={() => {}} className=\"px-4 py-3\">\n          <Muted numberOfLines={2}>{'⟨1⟩'}</Muted>\n        </Pressable>\n      )}\n      estimatedItemSize={56}\n      onEndReached={() => {}}\n      onEndReachedThreshold={0.5}\n      ListEmptyComponent={<Muted>{'⟨6⟩'}</Muted>}\n    />",
   "after": "toElement(LVirtualList(ITEMS, ({ item, index }) => VStack(LText('⟨1⟩').textStyle('muted').lines(2)).padding('horizontal', 'lg').padding('vertical', 'md').onPress(() => {})).itemKey(() => {}).estimatedItemSize(56).onEndReached(() => {}, 0.5).emptyState(LText('⟨6⟩').textStyle('muted')))",
   "bindings": {
@@ -1699,7 +1752,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:574",
+  "name": "components/Components.tsx:585",
   "before": "<VirtualList\n      data={ITEMS}\n      renderItem={((info) => <Hole n={'1-' + info.index} />)}\n      screen={{}}\n      scrollbar=\"never\"\n      keyboardShouldPersistTaps=\"handled\"\n      keyboardDismissMode=\"on-drag\"\n      overscan={2}\n      removeClippedSubviews\n      maxToRenderPerBatch={10}\n      windowSize={10}\n      initialNumToRender={10}\n      recycleItems\n      maintainVisibleContentPosition={false}\n      drawDistance={400}\n      maxItemsInRecyclePool={24}\n    />",
   "after": "toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).tuning({ overscan: 2, removeClippedSubviews: true, maxToRenderPerBatch: 10, windowSize: 10, initialNumToRender: 10, recycleItems: true, maintainVisibleContentPosition: false, drawDistance: 400, maxItemsInRecyclePool: 24 }).screen().scrollbar('never').keyboardTaps('handled').scrollDismissesKeyboard('immediately'))",
   "bindings": {
@@ -1762,7 +1815,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:607",
+  "name": "components/Components.tsx:618",
   "before": "<VirtualList\n      data={ITEMS}\n      keyExtractor={() => {}}\n      renderItem={((info) => <Hole n={'1-' + info.index} />)}\n      numColumns={3}\n      overrideItemLayout={() => {}}\n      ListHeaderComponent={<Muted>Media</Muted>}\n      ListHeaderComponentStyle={{ flexGrow: 0, flexShrink: 0, alignSelf: 'stretch' }}\n    />",
   "after": "toElement(LVirtualList(ITEMS, ((info) => <Hole n={'1-' + info.index} />)).itemKey(() => {}).columns(3).itemLayout(() => {}).headerContent(LText('Media').textStyle('muted')).headerFitsContent())",
   "bindings": {
@@ -1827,7 +1880,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:626",
+  "name": "components/Components.tsx:637",
   "before": "<VirtualList data={ITEMS} renderItem={({ item }) => <Hole n=\"1\" />} />",
   "after": "toElement(LVirtualList(ITEMS, ({ item }) => Embed(<Hole n=\"1\" />)))",
   "bindings": {
@@ -1888,7 +1941,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:631",
+  "name": "components/Components.tsx:642",
   "before": "<PressableScale\n      onPress={() => {}}\n      accessibilityLabel={'⟨2⟩'}\n      className=\"flex-row items-center gap-3 rounded-xl border border-border bg-surface p-4\"\n    >\n      <Muted>{'⟨0⟩'}</Muted>\n    </PressableScale>",
   "after": "toElement(HStack(LText('⟨0⟩').textStyle('muted')).padding('all', 'lg').background('surface').border('border', 'thin').corner('md').align('center').spacing('md').onPress(() => {}).label('⟨2⟩').pressScale())",
   "bindings": {
@@ -1962,7 +2015,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:649",
+  "name": "components/Components.tsx:660",
   "before": "<ChatSearchField\n      value={'⟨0⟩'}\n      onChangeText={() => {}}\n      onClear={() => {}}\n      placeholder={'⟨2⟩'}\n      accessibilityLabel={'⟨5⟩'}\n      clearLabel={'⟨3⟩'}\n    />",
   "after": "toElement(LChatSearchField(['⟨0⟩', () => {}], { placeholder: '⟨2⟩', clearLabel: '⟨3⟩', onClear: () => {} }).label('⟨5⟩'))",
   "bindings": {
@@ -2024,7 +2077,7 @@
   "appColors": null
  },
  {
-  "name": "components/Components.tsx:663",
+  "name": "components/Components.tsx:674",
   "before": "<View\n      className=\"flex-row p-2\"\n      style={{ flex: 1, backgroundColor: parityTheme.colors.backgroundSecondary }}\n    >\n      <Text style={{ color: parityTheme.colors.textSecondary }}>a</Text>\n      <Text className=\"text-sm\" style={{ flex: 1, color: parityTheme.colors.primary }}>\n        b\n      </Text>\n    </View>",
   "after": "toElement(HStack(LText('a').foreground('muted'), LText('b').font('14').leading('20px').grow().foreground('primary')).padding('all', 'sm').background('surface').grow())",
   "bindings": {

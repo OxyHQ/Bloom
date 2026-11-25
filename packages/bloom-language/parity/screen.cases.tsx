@@ -409,6 +409,13 @@ const pageHeaders: ParityCase[] = [
     language: () => toElement(L.Header('Home').scrollEdge('always').scrimFalloff(falloff)),
     bloom: () => <PageHeader title="Home" scrim="always" scrimFalloff={falloff} />,
   })),
+  // A back chosen at render, as an app writes it: Bloom's own (`undefined`), none
+  // (`null`) or the app's handler.
+  ...([undefined, null, () => {}] as const).map((back, index) => ({
+    name: `a header's back chosen at render: ${['Bloom’s own', 'none', 'a handler'][index]}`,
+    language: () => toElement(L.Header('Home').onBack(back).presentation('floating')),
+    bloom: () => <PageHeader title="Home" onBack={back} presentation="floating" />,
+  })),
   ...ENUMS.titleReveal.map((reveal) => ({
     name: `a header's title reveal ${reveal}`,
     language: () => toElement(L.Header('Home').titleReveal(reveal)),
