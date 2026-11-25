@@ -4020,6 +4020,7 @@ const READS_NOTHING: ReadonlySet<string> = new Set([
   'alignSelf',
   'position',
   'sticky',
+  'cursor',
   'zIndex',
   'hidden',
   'basis',
