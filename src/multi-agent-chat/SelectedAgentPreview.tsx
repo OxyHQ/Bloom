@@ -11,7 +11,7 @@ import { AvatarSnapshotObserver } from '../agent-avatar/context';
 import type { AvatarFlights } from '../avatar-flight';
 import { RiGroupLine } from '../icons/remix/RiGroupLine';
 import { useMessages, formatMessage } from '../locale/messages';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 import { agentCharacter, type Agent } from './data';
 import { MULTI_AGENT_CHAT_MESSAGES } from './messages';
@@ -105,7 +105,7 @@ export function SelectedAgentPreview({
   caption?: boolean;
 }) {
   const { messages } = useMessages(MULTI_AGENT_CHAT_MESSAGES);
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   return (
     <View style={[styles.preview, { paddingBottom: caption ? 20 : 0 }]}>
       <View
@@ -119,7 +119,7 @@ export function SelectedAgentPreview({
       >
         {!agents.length && (
           <View style={styles.empty}>
-            <RiGroupLine size="3xl" fill={colors.textTertiary} />
+            <RiGroupLine size="3xl" fill={tokens.faintForeground} />
           </View>
         )}
         {agents.map((agent, index) => (
@@ -134,7 +134,7 @@ export function SelectedAgentPreview({
         ))}
       </View>
       {caption && (
-        <Text variant="body-regular" style={{ color: colors.textSecondary }}>
+        <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
           {messages.chooseWhoSJoiningTheConversation}
         </Text>
       )}

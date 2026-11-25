@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Text as RNText } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { act, render, renderHook } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import { TaskList } from '../task-list';
@@ -8,6 +8,7 @@ import type { TaskListTask } from '../task-list';
 import { resolveTaskListPalette } from '../task-list/TaskList';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -68,7 +69,14 @@ describe('TaskList', () => {
   it('uses canonical roles in both modes', () => {
     for (const mode of ['light', 'dark'] as const) {
       const theme = buildTheme('teal', mode);
-      expect(resolveTaskListPalette(theme)).toMatchObject({
+      const tokens = renderHook(() => useColorTokens(), {
+        wrapper: ({ children }: { children: React.ReactNode }) => (
+          <BloomThemeProvider mode={mode} colorPreset="teal">
+            {children}
+          </BloomThemeProvider>
+        ),
+      }).result.current;
+      expect(resolveTaskListPalette(tokens)).toMatchObject({
         textSecondary: theme.colors.textSecondary,
         iconTertiary: theme.colors.textTertiary,
         chipSurface: theme.colors.backgroundSecondary,

@@ -22,6 +22,7 @@ import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-w
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { useColorTokens } from '../theme/color-tokens';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -504,7 +505,7 @@ function ThinkingDisclosure({
   testID,
   ...row
 }: AgentThinkingProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const direction = useDirectionProps();
   const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss(TOGGLE_STYLE_ID, TOGGLE_CSS);
@@ -539,7 +540,7 @@ function ThinkingDisclosure({
     gap: 6,
     alignSelf: 'flex-start',
     borderRadius: 6,
-    '--bloom-agent-thinking-ring': theme.colors.primary,
+    '--bloom-agent-thinking-ring': tokens.primary,
     ...ringOffset,
   };
 
@@ -565,7 +566,7 @@ function ThinkingDisclosure({
         <RiArrowDownSLine
           width={16}
           height={16}
-          fill={theme.colors.textTertiary}
+          fill={tokens.faintForeground}
           style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
         />
       </Pressable>

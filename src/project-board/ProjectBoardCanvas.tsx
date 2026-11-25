@@ -133,7 +133,7 @@ export function ProjectBoardCanvas<Item>({
                       column.items.findIndex((entry) => props.getItemId(entry) === itemId)
                       ? 3
                       : 0,
-                  borderTopColor: colors.primary,
+                  borderTopColor: tokens.primary,
                 },
               ]}
             >
@@ -210,7 +210,7 @@ export function ProjectBoardCanvas<Item>({
       {engine.allowReorder &&
         engine.over?.columnId === column.id &&
         engine.over.index >= column.items.length && (
-          <View style={{ height: 3, backgroundColor: colors.primary }} />
+          <View style={{ height: 3, backgroundColor: tokens.primary }} />
         )}
     </>
   );

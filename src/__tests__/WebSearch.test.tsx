@@ -1,11 +1,12 @@
 import type React from 'react';
 import { Linking, Platform } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { act, render, renderHook } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import { resolveButtonRamps } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { WebSearch } from '../web-search';
 import type { WebSearchStep } from '../web-search';
 import { resolveWebSearchPalette } from '../web-search/WebSearch';
@@ -58,7 +59,14 @@ describe('WebSearch', () => {
   it('uses canonical roles in both modes', () => {
     for (const mode of ['light', 'dark'] as const) {
       const theme = buildTheme('teal', mode);
-      expect(resolveWebSearchPalette(theme)).toMatchObject({
+      const tokens = renderHook(() => useColorTokens(), {
+        wrapper: ({ children }: { children: React.ReactNode }) => (
+          <BloomThemeProvider mode={mode} colorPreset="teal">
+            {children}
+          </BloomThemeProvider>
+        ),
+      }).result.current;
+      expect(resolveWebSearchPalette(tokens)).toMatchObject({
         textSecondary: theme.colors.textSecondary,
         textTertiary: theme.colors.textTertiary,
         iconQuaternary: theme.colors.textTertiary,
