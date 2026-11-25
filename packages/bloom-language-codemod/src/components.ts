@@ -95,8 +95,9 @@ export interface PropRule {
    */
   readonly with?: readonly [prop: string, form: Form];
   /**
-   * A token whose modifier takes `undefined` as no value of its own (a Chip's
-   * `.tint()`): a token or none chosen by a plain condition is that choice.
+   * A token or a handler whose modifier takes `undefined` as no value of its own
+   * (a Chip's `.tint()`, a list's `.onEndReached()`): a value or none chosen by a
+   * plain condition is that choice.
    */
   readonly unset?: boolean;
   /** Fixed arguments after the value (`showsVerticalScrollIndicator` to `.scrollIndicators(value, 'vertical')`). */
@@ -412,7 +413,11 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     within: '@oxy.so/bloom/screen#Screen',
     props: {
       keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),
-      onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
+      onEndReached: {
+        ...p('onEndReached', 'handler'),
+        with: ['onEndReachedThreshold', 'number'],
+        unset: true,
+      },
       refreshControl: p('refreshable', 'refresh'),
       showsVerticalScrollIndicator: indicator('vertical'),
       showsHorizontalScrollIndicator: indicator('horizontal'),
@@ -910,7 +915,11 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       contentContainerStyle: p('contentMargins', 'contentStyle'),
       numColumns: p('columns', 'number'),
       overrideItemLayout: p('itemLayout', 'handler'),
-      onEndReached: { ...p('onEndReached', 'handler'), with: ['onEndReachedThreshold', 'number'] },
+      onEndReached: {
+        ...p('onEndReached', 'handler'),
+        with: ['onEndReachedThreshold', 'number'],
+        unset: true,
+      },
       restorationKey: p('restorationKey', 'string'),
       stickyHeaderIndices: p('stickyIndices', 'items'),
       ListHeaderComponent: p('headerContent', 'element'),
@@ -919,7 +928,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       ListEmptyComponent: p('emptyState', 'element'),
       // A query-driven pull to refresh: `.refreshable({ refreshing, onRefresh })`, as written.
       refreshing: { ...p('refreshable', 'boolean'), key: 'refreshing' },
-      onRefresh: { ...p('refreshable', 'handler'), key: 'onRefresh' },
+      onRefresh: { ...p('refreshable', 'handler'), key: 'onRefresh', unset: true },
       screen: { ...p('screen', 'empty'), within: '@oxy.so/bloom/screen#Screen' },
       scrollbar: p('scrollbar', 'token', tokens('scrollbarVisibility')),
       keyboardShouldPersistTaps: p('keyboardTaps', 'token', tokens('keyboardTaps')),

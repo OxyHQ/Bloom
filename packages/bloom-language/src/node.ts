@@ -947,7 +947,7 @@ export interface ValueModifiers {
   estimatedItemSize: number;
   itemLayout: VirtualListItemLayout<never>;
   headerFitsContent: true;
-  stickyIndices: readonly number[];
+  stickyIndices: readonly number[] | undefined;
   restorationKey: string;
   tuning: VirtualListTuning;
   screen: VirtualListScreen;
@@ -1630,7 +1630,8 @@ export type Modifier =
   | {
       readonly kind: 'onEndReached';
       readonly key: string;
-      readonly value: () => void;
+      /** `undefined` while there is nothing more to load: the list calls nothing. */
+      readonly value: (() => void) | undefined;
       /** How many viewports before the end it is called; Bloom's 2 by default. */
       readonly threshold: number | undefined;
     }
@@ -2767,7 +2768,7 @@ export class Node {
   refreshable(value: Refresh, tint?: RefreshTint<ColorToken>): Node {
     return this.with({ kind: 'refreshable', key: 'refreshable', value, tint });
   }
-  onEndReached(value: () => void, threshold?: number): Node {
+  onEndReached(value: (() => void) | undefined, threshold?: number): Node {
     return this.with({ kind: 'onEndReached', key: 'onEndReached', value, threshold });
   }
   scrollIndicators(value: ScrollIndicators, axis?: Axis): Node {
@@ -3752,7 +3753,7 @@ export class Node {
   headerFitsContent(): Node {
     return this.set('headerFitsContent', true);
   }
-  stickyIndices(value: readonly number[]): Node {
+  stickyIndices(value: readonly number[] | undefined): Node {
     return this.set('stickyIndices', value);
   }
   restorationKey(value: string): Node {
@@ -5407,8 +5408,8 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
    * (`{ ios: 'primary' }`: Android's spinner keeps its look); the platform's by default.
    */
   refreshable(value: Refresh, tint?: RefreshTint<ColorToken>): ScrollViewNode;
-  /** Called once each time the end comes within `threshold` viewports (2 by default). */
-  onEndReached(action: () => void, threshold?: number): ScrollViewNode;
+  /** Called once each time the end comes within `threshold` viewports (2 by default); `undefined` calls nothing. */
+  onEndReached(action: (() => void) | undefined, threshold?: number): ScrollViewNode;
   /**
    * The scroll indicators: `hidden`, `visible`, or the platform's (`automatic`,
    * the default), on both axes or on the one `axis` names.

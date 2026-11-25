@@ -200,16 +200,16 @@ export interface VirtualListView<T = unknown> extends ViewModifiers<VirtualListV
    * the grid. FlashList and the web; the `FlatList` fallback gives every item one column.
    */
   itemLayout(value: VirtualListItemLayout<T>): VirtualListView<T>;
-  /** Called near the end, `threshold` viewports from it. */
-  onEndReached(action: () => void, threshold?: number): VirtualListView<T>;
+  /** Called near the end, `threshold` viewports from it; `undefined` (nothing more to load) calls nothing, as `onEndReached={undefined}`. */
+  onEndReached(action: (() => void) | undefined, threshold?: number): VirtualListView<T>;
   /**
    * Pull to refresh: a binding a pull writes `true` (the app writes `false`
    * when done), or `{ refreshing, onRefresh }`, a refreshing value and the
    * action a pull runs (a query's `isRefetching` and `refetch`).
    */
   refreshable(value: Refresh): VirtualListView<T>;
-  /** The indices whose rows stick to the top. */
-  stickyIndices(value: readonly number[]): VirtualListView<T>;
+  /** The indices whose rows stick to the top; `undefined` sticks none, as `stickyHeaderIndices={undefined}`. */
+  stickyIndices(value: readonly number[] | undefined): VirtualListView<T>;
   /** Where its scroll position is kept across visits. */
   restorationKey(value: string): VirtualListView<T>;
   headerContent(value: Child): VirtualListView<T>;

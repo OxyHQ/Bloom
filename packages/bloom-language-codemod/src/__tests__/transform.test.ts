@@ -492,6 +492,41 @@ export const B = () => <ScreenScrollView contentContainerStyle={{ flexGrow: 1, p
     expect(code).toContain(".contentGrows().contentMargins('bottom', '2xl')");
     expect(result.unconverted).toEqual([]);
   });
+  it('reads a list’s end, sticky rows and refresh chosen at render, none included', () => {
+    const result = run(`import { VirtualList } from '@oxy.so/bloom/list';
+import { Text } from '@oxy.so/bloom/typography';
+export const A = ({ items, hasMore, loadMore, tabBar, signedIn, refresh, refetching }) => (
+  <VirtualList
+    data={items}
+    renderItem={({ item }) => <Text>{item}</Text>}
+    onEndReached={hasMore ? loadMore : undefined}
+    stickyHeaderIndices={tabBar ? [0] : undefined}
+    refreshing={refetching}
+    onRefresh={signedIn ? refresh : undefined}
+  />
+);
+`);
+    const code = flat(result.code);
+    expect(code).toContain('.onEndReached(hasMore ? loadMore : undefined)');
+    expect(code).toContain('.stickyIndices(tabBar ? [0] : undefined)');
+    expect(code).toContain(
+      '.refreshable({ refreshing: refetching, onRefresh: signedIn ? refresh : undefined })',
+    );
+    expect(result.unconverted).toEqual([]);
+  });
+  it('leaves a Pressable whose children are a render function of its press state', () => {
+    const result = run(`import { Pressable, View } from 'react-native';
+export const A = () => (
+  <Pressable onPress={go} className="flex-row">
+    {({ pressed }) => <View className={pressed ? 'opacity-50' : undefined} />}
+  </Pressable>
+);
+`);
+    expect(result.code).toContain('<Pressable onPress={go}');
+    expect(result.unconverted.flatMap((u) => u.reasons.map((r) => r.code))).toContain(
+      'render-children',
+    );
+  });
   it('reads a tab’s style and textStyle as its box and label', () => {
     const result = run(`import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
 export const A = ({ tab, setTab }) => (

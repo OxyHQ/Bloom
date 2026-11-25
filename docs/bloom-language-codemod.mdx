@@ -105,7 +105,7 @@ the element JSX with the reason `Node:prop`.
 | `Tabs` with its `TabsTrigger`s | `Tabs([value, set], TabItem(value, label).count(n)…).style(variant)` |
 | `SegmentedControl` with its `SegmentedControlItem`s (each its `SegmentedControlItemText`) | `Segmented([value, set], Option(value, text)…)`, `type="tabs"` its `.tabs()` |
 | `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
-| `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().itemLayout().onEndReached(action, threshold).stickyIndices().headerFitsContent().screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })` |
+| `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().itemLayout().onEndReached(action, threshold).stickyIndices().headerFitsContent().screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })`; an end action, a refresh action or sticky indices chosen by a plain condition with `undefined` for none, as written |
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
 | `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
 

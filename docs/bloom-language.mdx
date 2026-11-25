@@ -2011,7 +2011,7 @@ inside a screen, as Bloom's is.
 | `.contentMargins(edge?, space)`, `.spacing(space)` | `contentContainerStyle`'s padding (a later margin of an edge replaces the earlier) and `gap` |
 | `.contentGrows(on?)` | `contentContainerStyle`'s `flexGrow: 1`: the content container grows to fill the scroll, so content shorter than the viewport (an empty state) centres or sits at its end; `on` a condition (`items.length === 0`) grows it only while it holds. A `ScrollArea`, a `ScrollSurface` and a `VirtualList` take it too |
 | `.refreshable([refreshing, setRefreshing], tint?)`, `.refreshable({ refreshing, onRefresh }, tint?)` | a `RefreshControl`: `refreshing` the binding's value, a pull writing `true` (`onRefresh`); the app writes `false` when it has refreshed. Or a refreshing value and the action a pull runs (a query's `isRefetching` and `refetch`), passed as they are. `tint`, a colour role (or a role at an opacity), is its `tintColor` and `colors={[…]}`, painted from the theme as an app writes `tintColor={theme.colors.primary} colors={[theme.colors.primary]}`; `{ ios, android }` is each platform's own (`{ ios: 'primary' }` is `tintColor` alone: Android's spinner keeps its look) |
-| `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default) |
+| `.onEndReached(action, threshold?)` | `onEndReached`, `onEndReachedThreshold` (2 viewports by default); `action` chosen at render, `undefined` included (`hasMore ? loadMore : undefined`), as the app wrote it: `undefined` calls nothing |
 | `.scrollIndicators('automatic' \| 'visible' \| 'hidden', axis?)` | `showsVerticalScrollIndicator` and `showsHorizontalScrollIndicator`, or only the one `axis` (`'vertical'` or `'horizontal'`) names: `showsVerticalScrollIndicator={false}` alone is `.scrollIndicators('hidden', 'vertical')` |
 | `.scrollDismissesKeyboard('never' \| 'immediately' \| 'interactively')` | `keyboardDismissMode` `none`, `on-drag`, `interactive` |
 | `.safeAreaInset(edge, view, spacing?)`, `.safeAreaBar(edge, view)` | a view pinned at the `top` or `bottom` and the content padded by its height (see below) |
@@ -2719,7 +2719,10 @@ at its edges adds to that padding), `.itemKey()`, `.itemType()` (FlashList's rec
 `.estimatedItemSize(px)`, `.columns()`, `.itemLayout(fn)` (Bloom's `overrideItemLayout`:
 `fn(layout, item, index, columns)` sets `layout.span`, so a full-width row sits in a grid of
 columns), `.onEndReached(action, threshold?)`,
-`.refreshable([refreshing, setRefreshing])` or `.refreshable({ refreshing, onRefresh })`, `.stickyIndices()`,
+`.refreshable([refreshing, setRefreshing])` or `.refreshable({ refreshing, onRefresh })`, `.stickyIndices()`
+(each chosen at render with `undefined` for none, as JSX writes `onEndReached={hasMore ? loadMore : undefined}`,
+`onRefresh={signedIn ? refetch : undefined}` and `stickyHeaderIndices={tabBar ? [0] : undefined}`: no end call, no
+pull to refresh, no sticky row),
 `.restorationKey()`, `.headerContent()`, `.headerFitsContent()` (the header is its content's
 height and the list's width, `ListHeaderComponentStyle`'s `flexGrow: 0, flexShrink: 0,
 alignSelf: 'stretch'`, so the engine never stretches it to the viewport and a sticky row after it

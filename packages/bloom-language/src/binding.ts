@@ -28,7 +28,8 @@ export type Bound<Props, Key extends keyof Props> = Binding<Exclude<Props[Key], 
  */
 export interface RefreshAction {
   readonly refreshing: boolean;
-  readonly onRefresh: () => void;
+  /** `undefined` where the app offers no refresh (signed out): no pull refreshes, as React Native's `onRefresh` left unset. */
+  readonly onRefresh: (() => void) | undefined;
 }
 
 /**
@@ -47,7 +48,7 @@ export type RefreshTint<C extends string = string> = C | { readonly ios?: C; rea
 /** A pull to refresh as React Native's `refreshing` and `onRefresh`. */
 export function refreshing(refresh: Refresh): {
   refreshing: boolean;
-  onRefresh: () => void;
+  onRefresh: (() => void) | undefined;
 } {
   if ('onRefresh' in refresh)
     return { refreshing: refresh.refreshing, onRefresh: refresh.onRefresh };

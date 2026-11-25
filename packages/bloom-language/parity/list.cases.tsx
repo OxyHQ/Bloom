@@ -447,6 +447,27 @@ const virtual: ParityCase[] = [
     ),
   },
   {
+    // Mention's profile and notifications: nothing more to load, no tab bar to stick, no refresh while signed out.
+    name: 'a virtual list whose end, sticky rows and refresh are undefined',
+    language: () =>
+      toElement(
+        L.VirtualList(NAMES, nameRow)
+          .onEndReached(undefined)
+          .stickyIndices(undefined)
+          .refreshable({ refreshing: false, onRefresh: undefined }),
+      ),
+    bloom: () => (
+      <VirtualList
+        data={NAMES}
+        renderItem={({ item }) => <ListItem title={item} />}
+        onEndReached={undefined}
+        stickyHeaderIndices={undefined}
+        refreshing={false}
+        onRefresh={undefined}
+      />
+    ),
+  },
+  {
     // Mention's profile media grid: a full-width row spans the columns, under a header kept to its content.
     name: 'a virtual grid whose full-width row spans its columns, under a header kept to its content',
     language: () =>
