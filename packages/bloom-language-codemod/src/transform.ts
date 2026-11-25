@@ -1121,6 +1121,52 @@ export function transformSource(source: string, options: TransformOptions): File
     },
   });
   /**
+   * The style props a component's caller hands in, as read in a `style` (or
+   * any `*Style`) attribute: a parameter, a name destructured from one, or a
+   * property of either (`style`, `style?.container`, `props.rowStyle`). The
+   * language takes no style object from a caller: the caller chains modifiers
+   * on the view it places, and a part inside takes a `ViewModifier`.
+   */
+  const callerStyles = new Set<AnyNode>();
+  const isParameter = (path: AnyNode, name: string): boolean => {
+    const bindings = scopeOf(path, name)?.getBindings()[name];
+    if (bindings?.length !== 1) return false;
+    for (let at = bindings[0]; at; at = at.parent) {
+      const parent = at.parent?.node;
+      if (
+        parent &&
+        (n.ArrowFunctionExpression.check(parent) ||
+          n.FunctionExpression.check(parent) ||
+          n.FunctionDeclaration.check(parent))
+      )
+        return parent.params.includes(at.node);
+      if (n.VariableDeclarator.check(at.node)) {
+        // `const { style } = props`: a name destructured from a parameter.
+        const init = at.node.init;
+        return n.Identifier.check(init) && isParameter(at, init.name);
+      }
+    }
+    return false;
+  };
+  recast.visit(ast, {
+    visitJSXAttribute(path) {
+      const { name, value } = path.node;
+      if (!n.JSXIdentifier.check(name) || !/(^s|S)tyle$/.test(name.name) || !value) return false;
+      recast.visit(attributeExpression(value), {
+        visitIdentifier: (inner) => {
+          const parent = inner.parent?.node;
+          const read =
+            !(n.MemberExpression.check(parent) || n.OptionalMemberExpression.check(parent)) ||
+            parent.object === inner.node;
+          if (read && !n.ObjectProperty.check(parent) && isParameter(path, inner.node.name))
+            callerStyles.add(attributeExpression(value));
+          return false;
+        },
+      });
+      return false;
+    },
+  });
+  /**
    * Module-level `const NAME = 'text'` (no type annotation, so a colour's type is
    * the literal `defineTokens` takes), by name: a colour the codemod reads in the file.
    */
@@ -2121,7 +2167,13 @@ export function transformSource(source: string, options: TransformOptions): File
           styleClasses.push(...style.classes);
           styleMods.push(...style.mods);
           styleChoice = style.choice;
-        } else fail(style.subject, 'style', style.why);
+        } else if (callerStyles.has(expression))
+          fail(
+            'style',
+            'caller-style',
+            'a style the caller hands in: the caller chains modifiers on the view it places, and a part inside takes a `ViewModifier` (`look?: ViewModifier`, `.modifier(look)`)',
+          );
+        else fail(style.subject, 'style', style.why);
         continue;
       }
       // What takes touches: `none` nothing (SwiftUI's `allowsHitTesting(false)`), `box-none` what is inside only, `box-only` the view only.

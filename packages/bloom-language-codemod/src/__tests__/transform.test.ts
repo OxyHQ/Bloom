@@ -67,6 +67,25 @@ export const A = () => (
     expect(flat(code)).toContain(".textShadow('0 1px 3px rgb(0 0 0 / 0.8)')");
     expect(flat(code)).toContain(".sticky('top')");
   });
+  it('names a style the caller hands in as its own reason', () => {
+    const result = run(`import { View } from 'react-native';
+const styles = { row: { padding: 12 } };
+export const A = ({ style }) => <View style={[styles.row, style]} />;
+export function B(props) {
+  return <View style={props.containerStyle} />;
+}
+export const C = ({ style }) => {
+  const { gutter } = style;
+  return <View style={gutter} />;
+};
+export const D = ({ size }) => <View style={{ width: size }} />;
+`);
+    expect(result.unconverted.map((u) => u.reasons[0]?.code)).toEqual([
+      'caller-style',
+      'caller-style',
+      'caller-style',
+    ]);
+  });
   it('converts a View tree and swaps the imports', () => {
     const result = run(`import { View } from 'react-native';
 import { Text } from '@oxy.so/bloom/typography';

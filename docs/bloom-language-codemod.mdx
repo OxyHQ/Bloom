@@ -514,6 +514,17 @@ variants, one that adds a box layer or a placement a held variant cannot
 change, more than one choice, and `cn()` (its merge is the app's own) stay
 JSX as `dynamic-className`.
 
+A style the component's caller hands in (a parameter, a name destructured
+from one, or a property of either: `style={[styles.row, style]}`,
+`style={props.containerStyle}`, `style?.container`) is its own reason,
+`caller-style`. It is no style the codemod could read later: the language
+takes no style object from a caller (see [Styles computed at
+runtime](bloom-language.mdx#styles-computed-at-runtime)). The caller chains
+modifiers on the view it places, and a part inside takes a recipe (`look?:
+ViewModifier`, chained as `.modifier(look)`), which changes the component's
+props and every caller's, a change the codemod leaves to the app. Geometry a
+parameter gives (`{ width: size }`) is points, not a caller's style.
+
 ## Running it on an app
 
 The app is read, never changed, unless `--write` is given. Installed in the
