@@ -545,6 +545,7 @@ Modifiers:
 - [`.live()`](bloom-language-modifiers.mdx#live) `(value?: boolean)`: Live-streaming: the live ring, and the LIVE pill unless `liveBadge(false)`.
 - [`.liveBadge()`](bloom-language-modifiers.mdx#livebadge) `(value: boolean)`
 - [`.presence()`](bloom-language-modifiers.mdx#presence) `(value: Presence)`: A presence dot on its edge (Bloom `AvatarPresence`), sized from the avatar.
+- [`.cornerRadius()`](bloom-language-modifiers.mdx#cornerradius) `(value: Exclude<CornerName, 'concentric'>)`: The radius of its corners (Bloom's Avatar `style.borderRadius`): a rounded square of an avatar a shape name does not draw (a list's 12pt corners on a 58pt cover). `.corner()` is a box around it instead.
 
 And every universal modifier.
 
@@ -569,6 +570,9 @@ Modifiers:
 - [`.initials()`](bloom-language-modifiers.mdx#initials) `()`: A member without an image shows its tinted initial, not the neutral placeholder.
 - [`.onPressItem()`](bloom-language-modifiers.mdx#onpressitem) `(value: ((item: AvatarGroupItem, index: number) => void) | undefined)`
 - [`.hoverCard()`](bloom-language-modifiers.mdx#hovercard) `(value?: boolean)`: Web: hovering an avatar shows the member's card.
+- [`.ringColor()`](bloom-language-modifiers.mdx#ringcolor) `(value: InkToken)`: The ring each face is cut out of its neighbours by (Bloom's `ringColor`): the colour behind the group, a role or an app colour (`'background'`).
+- [`.itemAction()`](bloom-language-modifiers.mdx#itemaction) `(value: (item: AvatarGroupItem, index: number) => Child)`: Web: a view under the member's name in its hover card (Bloom's `renderItemAction`: a follow button).
+- [`.variant()`](bloom-language-modifiers.mdx#variant) `(value: string)` (here: a value): The rendition the members' images load (Bloom's `variant`: `'thumb'` with none, `'small'`, `'medium'`).
 
 And every universal modifier.
 
@@ -723,7 +727,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -891,6 +895,9 @@ Modifiers:
 - [`.maxHeightRatio()`](bloom-language-modifiers.mdx#maxheightratio) `(value: number)`: Its height ceiling, as a fraction of the window's (`0.9`).
 - [`.onDismissed()`](bloom-language-modifiers.mdx#ondismissed) `(action: () => void)`: Once it has finished closing, its exit animation done (Bloom's `onDismissed`): after its binding turned false and it left the screen, the place to unmount what presented it.
 - [`.presented()`](bloom-language-modifiers.mdx#presented) `(isPresented: Binding<boolean>)`: The dialog as a view of its own, shown while `isPresented` holds; dismissing it sets it false. It ends the chain: what a component that is a dialog returns, its binding handed in by the caller.
+- [`.control()`](bloom-language-modifiers.mdx#control) `(control: DialogControlProps)`: The dialog as a view of its own, opened and closed by Bloom's dialog control (`useDialogControl()`: `control.open()`, `control.close()`), for a dialog another view opens imperatively. It ends the chain, as `.presented()` does.
+- [`.detached()`](bloom-language-modifiers.mdx#detached) `(value?: boolean)`: Floats a bottom dialog above the window's safe area, with rounded corners and gutters beside it (Bloom's `detached`); other placements are as they were.
+- [`.panelFrame()`](bloom-language-modifiers.mdx#panelframe) `(value: FrameSpec)`: The side or bottom panel's own frame (Bloom's `panelStyle`): a bottom dialog kept to a width on a wide window (`{ maxWidth: '540' }`). `.frame()` is the centred card's width and ceiling.
 
 Takes only the modifiers above (no universal modifiers).
 
@@ -1629,6 +1636,7 @@ Modifiers:
 - [`.trigger()`](bloom-language-modifiers.mdx#trigger) `(value: ButtonView)`: The collapsed search's button: a `Button`'s style, tint, size and test id (Search owns its glyph and name).
 - [`.trailing()`](bloom-language-modifiers.mdx#trailing) `(...value: Child[])`: An action at the field's end (a voice search).
 - [`.focused()`](bloom-language-modifiers.mdx#focused) `(value: Binding<boolean>)`: Whether it holds the keyboard's focus: focusing or leaving it writes the binding, and setting the binding focuses or blurs it.
+- [`.editable()`](bloom-language-modifiers.mdx#editable) `(value: boolean)`: `false`: the text is shown but takes no typing (React Native's `editable`), as a search that is full; `.disabled()` is Bloom's disabled look.
 
 And every universal modifier.
 
@@ -1744,6 +1752,7 @@ Modifiers:
 - [`.contentView()`](bloom-language-modifiers.mdx#contentview) `(build: (view: ScrollContentView) => ScrollContentView)`: The content laid out in a view of its own inside the content container, as Bloom's `ScreenScrollView contentView` lays it out: `build` sets that view's layout (`.contentView((v) => v.padding('horizontal', 'lg').spacing('md'))`). The content container then grows to the viewport and pads only the screen's chrome; the content margins and spacing go on the view, after its own.
 - [`.safeAreaInset()`](bloom-language-modifiers.mdx#safeareainset) `(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken)`: SwiftUI's `safeAreaInset`: `view` pinned at the scroll's `edge`, and the content inset by its measured height (and `spacing`), so it scrolls clear of it: a filter bar over a list, a composer under a chat.
 - [`.safeAreaBar()`](bloom-language-modifiers.mdx#safeareabar) `(edge: InsetEdge, view: ViewNode)`: SwiftUI's `safeAreaBar`: a `safeAreaInset` that is a bar, with Bloom's scroll edge scrim under it, so the content fades as it scrolls beneath.
+- [`.stickyIndices()`](bloom-language-modifiers.mdx#stickyindices) `(value: readonly number[] | undefined)`: The children that stay at the top once scrolled to it, by index (React Native's `stickyHeaderIndices`: a profile's tabs); `undefined` keeps none.
 
 And every universal modifier.
 
@@ -2412,7 +2421,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
@@ -3066,7 +3075,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -3081,7 +3090,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [color](bloom-language-tokens.mdx#color), `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
 Modifiers:
@@ -3632,7 +3641,7 @@ Takes only the modifiers above (no universal modifiers).
 
 Token sets:
 
-- `.blend()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.blend()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 
 Modifiers:
 
@@ -3726,7 +3735,7 @@ And every universal modifier.
 
 Token sets:
 
-- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
+- `.size()`: [space](bloom-language-tokens.mdx#space), `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'1'`, `'3'`, `'6'`, `'10'`, `'14'`, `'28'`, `'30'`, `'36'`, `'38'`, `'44'`, `'48'`, `'56'`, `'64'`, `'72'`, `'76'`, `'80'`, `'96'`, `'120'`, `'128'`, `'140'`, `'160'`, `'192'`, `'200'`, `'224'`, `'240'`, `'256'`, `'260'`, `'280'`, `'288'`, `'300'`, `'320'`, `'360'`, `'380'`, `'384'`, `'400'`, `'420'`, `'440'`, `'448'`, `'480'`, `'512'`, `'540'`, `'560'`, `'640'`, `'672'`, `'720'`, `'768'`, `'1200'`
 - `.tint()`: [composerButtonTone](bloom-language-tokens.mdx#composerbuttontone), `'plain'`, `'accent'`
 
 Modifiers:

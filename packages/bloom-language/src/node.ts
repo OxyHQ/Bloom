@@ -169,7 +169,12 @@ import type { AiChatKind } from './controls/ai-chat';
 import type { ComposerPanelKind } from './controls/composer-panel';
 import type { ChartCardKind } from './controls/chart-cards';
 import type { ChatComposerKind } from './controls/chat-composer';
-import type { DialogAction, DialogHeaderConfig, DialogScreenFrame } from '@oxy.so/bloom/dialog';
+import type {
+  DialogAction,
+  DialogControlProps,
+  DialogHeaderConfig,
+  DialogScreenFrame,
+} from '@oxy.so/bloom/dialog';
 import type { SearchToken } from '@oxy.so/bloom/search';
 
 import type { AnyBinding, Binding, Refresh, RefreshTint } from './binding';
@@ -666,7 +671,8 @@ export interface ValueModifiers {
   emptyLabel: string;
   error: string | null | undefined;
   meta: string | undefined;
-  variant: SidebarVariant;
+  /** A sidebar's look (`SidebarVariant`), or the media rendition an avatar group's members load. */
+  variant: SidebarVariant | string;
   surface: SidebarSurface | boolean;
   searchable: boolean;
   themeToggle: boolean;
@@ -759,6 +765,11 @@ export interface ValueModifiers {
   initials: true;
   onPressItem: ((item: AvatarGroupItem, index: number) => void) | undefined;
   hoverCard: boolean;
+  ringColor: InkToken;
+  itemAction: (item: AvatarGroupItem, index: number) => Child;
+  cornerRadius: Exclude<CornerName, 'concentric'>;
+  control: DialogControlProps;
+  panelFrame: FrameSpec;
   pressScale: true;
   /** `.pressFade()`: React Native's TouchableOpacity as the press host, at this opacity while pressed (its own default without one). */
   pressFade: OpacityName | undefined;
@@ -2860,7 +2871,7 @@ export class Node {
   meta(value: string | undefined): Node {
     return this.set('meta', value);
   }
-  variant(value: SidebarVariant): Node {
+  variant(value: SidebarVariant | string): Node {
     return this.set('variant', value);
   }
   surface(value: SidebarSurface | boolean = true): Node {
@@ -3147,6 +3158,21 @@ export class Node {
   }
   hoverCard(value = true): Node {
     return this.set('hoverCard', value);
+  }
+  ringColor(value: InkToken): Node {
+    return this.set('ringColor', value);
+  }
+  itemAction(value: (item: AvatarGroupItem, index: number) => Child): Node {
+    return this.set('itemAction', value);
+  }
+  cornerRadius(value: Exclude<CornerName, 'concentric'>): Node {
+    return this.set('cornerRadius', value);
+  }
+  control(value: DialogControlProps): Node {
+    return this.set('control', value);
+  }
+  panelFrame(value: FrameSpec): Node {
+    return this.set('panelFrame', value);
   }
   pressScale(): Node {
     return this.set('pressScale', true);
@@ -5049,6 +5075,12 @@ export interface AvatarView extends ViewModifiers<AvatarView> {
   liveBadge(value: boolean): AvatarView;
   /** A presence dot on its edge (Bloom `AvatarPresence`), sized from the avatar. */
   presence(value: Presence): AvatarView;
+  /**
+   * The radius of its corners (Bloom's Avatar `style.borderRadius`): a
+   * rounded square of an avatar a shape name does not draw (a list's 12pt
+   * corners on a 58pt cover). `.corner()` is a box around it instead.
+   */
+  cornerRadius(value: Exclude<CornerName, 'concentric'>): AvatarView;
 }
 /** Bloom `AvatarGroup`: a facepile, a row, a cluster or a conversation of avatars. */
 export interface AvatarGroupView extends ViewModifiers<AvatarGroupView> {
@@ -5068,6 +5100,15 @@ export interface AvatarGroupView extends ViewModifiers<AvatarGroupView> {
   onPressItem(value: ((item: AvatarGroupItem, index: number) => void) | undefined): AvatarGroupView;
   /** Web: hovering an avatar shows the member's card. */
   hoverCard(value?: boolean): AvatarGroupView;
+  /**
+   * The ring each face is cut out of its neighbours by (Bloom's `ringColor`):
+   * the colour behind the group, a role or an app colour (`'background'`).
+   */
+  ringColor(value: InkToken): AvatarGroupView;
+  /** Web: a view under the member's name in its hover card (Bloom's `renderItemAction`: a follow button). */
+  itemAction(value: (item: AvatarGroupItem, index: number) => Child): AvatarGroupView;
+  /** The rendition the members' images load (Bloom's `variant`: `'thumb'` with none, `'small'`, `'medium'`). */
+  variant(value: string): AvatarGroupView;
 }
 /** Bloom `Badge`: a count, a dot or a label; attached to a view with `.badge(Badge(…))`. */
 export interface BadgeView extends ViewModifiers<BadgeView> {
@@ -5478,6 +5519,11 @@ export interface ScrollViewNode extends ViewModifiers<ScrollViewNode> {
   contentMargins(edge: Edge, value: SpaceToken): ScrollViewNode;
   /** The gap between the content's children. */
   spacing(value: SpaceToken): ScrollViewNode;
+  /**
+   * The children that stay at the top once scrolled to it, by index (React
+   * Native's `stickyHeaderIndices`: a profile's tabs); `undefined` keeps none.
+   */
+  stickyIndices(value: readonly number[] | undefined): ScrollViewNode;
   /**
    * Pull to refresh: a binding a pull writes `true` (the app writes `false`
    * when done), or `{ refreshing, onRefresh }`, a refreshing value and the

@@ -110,7 +110,7 @@ the element JSX with the reason `Node:prop`.
 | `SettingsSelect`, `AvatarGroup`, `List` | `SettingsSelect(label, [value, onChange], items)`, `AvatarGroup(items)`, `List(items).headerContent().emptyState()` |
 | `VirtualList` | `VirtualList(data, ({ item, index }) => row).itemKey().itemLayout().onEndReached(action, threshold).stickyIndices().headerFitsContent().screen().scrollbar().keyboardTaps().scrollDismissesKeyboard().tuning({ overscan, … })`; an end action, a refresh action or sticky indices chosen by a plain condition with `undefined` for none, as written |
 | `ChatSearchField` | `ChatSearchField([value, onChangeText], { placeholder, clearLabel, onClear, onSubmit, onFocus, onBlur, trailing, autoFocus })` |
-| `Dialog` with `open` and `onClose` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().presented([open, () => onClose()])` |
+| `Dialog` with `open` and `onClose`, or a `control` | `Dialog(...children).title().message().label().buttons().presentAt(base, tiers).header().footer().frame({ width, maxWidth }).padding().sideGutter().maxHeightRatio().dismissOnBackdrop().scrollable().detached().panelFrame({ maxWidth }).presented([open, () => onClose()])`, or `.control(control)` |
 
 A style's padding by the device's inset, `insets.top` where `insets` is a
 `const` holding `useSafeAreaInsets()`, is `.safeAreaPadding(side)` on the same
@@ -284,13 +284,22 @@ binding that sets it false calling `onClose` with no arguments, as Bloom does.
 A name or a member is called with none (`() => onClose()`) and an arrow of no
 parameters is carried as it is; a handler that takes parameters may read one,
 and is a reason (`Dialog:open`), as an `open` without `onClose` is. Bloom's
-imperative `control` (`useDialogControl()`) has no binding and stays JSX
-(`Dialog:control`). Its `placement` is `.presentAt()`: a static token, or an
+imperative `control` (`useDialogControl()`) is `.control(control)`, which
+ends the chain as `.presented()` does; its `onClose` beside it stays a
+reason (`Dialog:onClose`). Its `placement` is `.presentAt()`: a static token, or an
 object of static tokens with its `base` (`{ base: 'bottom', md: 'center' }` is
 `.presentAt('bottom', { md: 'center' })`, drawn as the same object). Its
 `width` and `maxWidth` join one `.frame()` (numeric space tokens, `maxWidth={400}`
 is `'400'`), its `contentPadding` is `.padding()`, and `actions` and `header`
-are data carried as they are. `detached` and `panelStyle` have no modifier.
+are data carried as they are. `detached` is `.detached()`, and a `panelStyle`
+of static frame lengths `.panelFrame()` (`{ maxWidth: 540 }` is
+`.panelFrame({ maxWidth: '540' })`); a panel style of anything else is a
+reason. An `Avatar`'s `style` that is its corner radius alone is
+`.cornerRadius(token)`; an `AvatarGroup`'s `ringColor` (a theme colour as its
+role), `variant` and a one-parameter `renderItemAction` are `.ringColor()`,
+`.variant()` and `.itemAction()`; a `Search`'s `editable` and a
+`ScreenScrollView`'s `stickyHeaderIndices` are `.editable()` and
+`.stickyIndices()`, as written.
 
 `PageHeader` is `Header(title).inPage()`: Bloom's PageHeader on every platform,
 iOS in a native stack included (a `Header` alone is the system bar there).

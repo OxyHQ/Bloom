@@ -252,6 +252,25 @@ fn mentions_host_props_text_shadow_and_inline_insets_are_checked() {
 }
 
 #[test]
+fn bloom_component_props_mention_writes_are_checked() {
+    let names = "Dialog, Avatar, AvatarGroup, Search, ScrollView, Text";
+    let ok = compiled_with(
+        names,
+        "export const x = (c, m, s, f) => ScrollView(Dialog(Text('a')).presentAt('bottom').detached().panelFrame({ maxWidth: '540' }).padding('none').control(c), Avatar(f).size('lg').cornerRadius('md'), AvatarGroup(m).ringColor('background').variant('small').itemAction((item) => Text('Follow')), Search(s).editable(false)).stickyIndices([0]);\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics);
+    let output = compiled_with(names, "export const x = (m) => AvatarGroup(m).ringColor('backdrop');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown color token 'backdrop' for .ringColor()");
+    let output = compiled_with(names, "export const x = (f) => Avatar(f).cornerRadius('concentric');\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown cornerRadius token 'concentric' for .cornerRadius()");
+    let output =
+        compiled_with(names, "export const x = () => Dialog(Text('a')).panelFrame({ maxWidth: '541' });\n");
+    assert_eq!(output.diagnostics[0].message, "Unknown length token '541' for .panelFrame()");
+    let output = compiled_with(names, "export const x = (f) => Text('a').cornerRadius('md');\n");
+    assert_eq!(output.diagnostics[0].message, "Text has no modifier .cornerRadius()");
+}
+
+#[test]
 fn the_small_modifiers_and_numeric_tokens_are_checked() {
     let ok = compiled(
         "export const x = () => VStack(Text('1').monospacedDigit().wordBreak('all')).corner('3xl', 'top').corner('sm', 'bottom-trailing').basis('none').scale('105').allowsHitTesting(false).accessibilityOnly().zIndex('50').shadow('0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)').ring('primary', '3').frame({ width: 'fit' }).listMarker('disc');\n",

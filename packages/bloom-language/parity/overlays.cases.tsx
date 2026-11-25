@@ -1,13 +1,13 @@
 import { AlertDialog } from '@oxy.so/bloom/alert-dialog';
 import { Button } from '@oxy.so/bloom/button';
 import { ConnectionStatusToasts } from '@oxy.so/bloom/connection-status';
-import { Dialog } from '@oxy.so/bloom/dialog';
+import { Dialog, type DialogControlProps, useDialogControl } from '@oxy.so/bloom/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@oxy.so/bloom/popover';
 import { RiInformationLine } from '@oxy.so/bloom/icons';
 import { tokens } from '@oxy.so/bloom/styles';
 import { toast as bloomToast, ToastOutlet } from '@oxy.so/bloom/toast';
 import { Text } from '@oxy.so/bloom/typography';
-import { type ReactElement, useEffect } from 'react';
+import { type ReactElement, type ReactNode, useEffect } from 'react';
 import { View } from 'react-native';
 
 import { ENUMS } from '../src/generated/spec.generated';
@@ -323,6 +323,66 @@ const dialogs: ParityCase[] = [
           <Text>Body</Text>
         </Dialog>
       </>
+    ),
+  },
+];
+
+/** A dialog control (`useDialogControl()`) opened once mounted, as a FAB elsewhere opens it. */
+function Opened({ children }: { children: (control: DialogControlProps) => ReactNode }): ReactNode {
+  const control = useDialogControl();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: opened once, as the case is drawn
+  useEffect(() => control.open(), []);
+  return children(control);
+}
+
+/** Mention's payment sheets and saved-folder picker: a detached bottom panel kept to a width, a dialog a control opens. */
+const dialogProps: ParityCase[] = [
+  {
+    name: 'a detached bottom dialog, its panel kept to a width, no content padding',
+    isolated: true,
+    language: () =>
+      toElement(
+        OPEN.dialog(
+          [true, setOpen],
+          O.Dialog(L.Text('Body'))
+            .presentAt('bottom')
+            .detached()
+            .panelFrame({ maxWidth: '540' })
+            .padding('none'),
+        ),
+      ),
+    bloom: () => (
+      <>
+        <OpenButton />
+        <Dialog
+          open
+          onClose={() => setOpen()}
+          placement="bottom"
+          detached
+          panelStyle={{ maxWidth: 540 }}
+          contentPadding={0}
+        >
+          <Text>Body</Text>
+        </Dialog>
+      </>
+    ),
+  },
+  {
+    name: 'a dialog its control opens (.control())',
+    isolated: true,
+    language: () => (
+      <Opened>
+        {(control) => toElement(O.Dialog(L.Text('Body')).title('Save to folder').control(control))}
+      </Opened>
+    ),
+    bloom: () => (
+      <Opened>
+        {(control) => (
+          <Dialog control={control} title="Save to folder">
+            <Text>Body</Text>
+          </Dialog>
+        )}
+      </Opened>
     ),
   },
 ];
@@ -737,6 +797,7 @@ const presentedDialogs: ParityCase[] = [
 export const OVERLAY_CASES: ParityCase[] = [
   ...alerts,
   ...dialogs,
+  ...dialogProps,
   ...confirmations,
   ...presentedDialogs,
   ...popovers,

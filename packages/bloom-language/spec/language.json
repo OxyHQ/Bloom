@@ -61,6 +61,7 @@
       "448": 448,
       "480": 480,
       "512": 512,
+      "540": 540,
       "560": 560,
       "640": 640,
       "672": 672,
@@ -1475,6 +1476,11 @@
     "loadingIndicator": ["value"],
     "hoverForeground": ["color"],
     "editable": ["value"],
+    "control": ["value"],
+    "panelFrame": ["frame"],
+    "ringColor": ["color"],
+    "itemAction": ["value"],
+    "cornerRadius": ["cornerRadius"],
     "pressOpenTab": ["pressOpenTab"],
     "menuStyle": ["menuStyle"],
     "multiple": ["value?"],
@@ -2224,7 +2230,16 @@
     },
     "avatar": {
       "constructors": ["Avatar"],
-      "modifiers": ["size", "tint", "shape", "verified", "live", "liveBadge", "presence"],
+      "modifiers": [
+        "size",
+        "tint",
+        "shape",
+        "verified",
+        "live",
+        "liveBadge",
+        "presence",
+        "cornerRadius"
+      ],
       "size": "avatarSize",
       "tint": "avatarColor",
       "shape": "shapeName"
@@ -2241,8 +2256,12 @@
         "overflow",
         "initials",
         "onPressItem",
-        "hoverCard"
+        "hoverCard",
+        "ringColor",
+        "itemAction",
+        "variant"
       ],
+      "params": { "variant": ["value"] },
       "size": "avatarSize",
       "shape": "shapeName"
     },
@@ -2411,7 +2430,10 @@
         "sideGutter",
         "maxHeightRatio",
         "onDismissed",
-        "presented"
+        "presented",
+        "control",
+        "detached",
+        "panelFrame"
       ],
       "params": { "padding": ["space"] }
     },
@@ -2851,7 +2873,8 @@
         "maxLength",
         "trigger",
         "trailing",
-        "focused"
+        "focused",
+        "editable"
       ],
       "size": "controlSize"
     },
@@ -2918,7 +2941,8 @@
         "keyboardTaps",
         "contentView",
         "safeAreaInset",
-        "safeAreaBar"
+        "safeAreaBar",
+        "stickyIndices"
       ]
     },
     "bottomSheet": {

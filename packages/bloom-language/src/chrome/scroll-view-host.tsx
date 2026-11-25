@@ -178,6 +178,8 @@ export function ScrollViewHost({
   const dismiss = values.scrollDismissesKeyboard as KeyboardDismiss | undefined;
   if (dismiss) props.keyboardDismissMode = DISMISS_MODE[dismiss];
   if (values.keyboardTaps) props.keyboardShouldPersistTaps = values.keyboardTaps as KeyboardTaps;
+  if (values.stickyIndices !== undefined)
+    props.stickyHeaderIndices = values.stickyIndices as number[];
   let vertical: boolean | undefined;
   let horizontal: boolean | undefined;
   let refresh: Extract<Modifier, { kind: 'refreshable' }> | undefined;

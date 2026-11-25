@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (657). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (662). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -25,7 +25,7 @@ Every node takes these, except the 65 nodes that take only their own ([menuItem]
 - Narrower on: [dialog](bloom-language-nodes.mdx#dialog) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
-- `padding` tokens: 114, listed under [padding](bloom-language-tokens.mdx#padding)
+- `padding` tokens: 116, listed under [padding](bloom-language-tokens.mdx#padding)
 
 ### `safeAreaPadding`
 
@@ -42,7 +42,7 @@ Padded by the device's safe area on those sides (all by default), as SwiftUI's `
 - Signature: `.frame(value: FrameSpec)`
 - Taken by: every node (universal), and [dialog](bloom-language-nodes.mdx#dialog), [popover](bloom-language-nodes.mdx#popover), [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [tabItem](bloom-language-nodes.mdx#tabitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `frame` tokens: 69, listed under [length](bloom-language-tokens.mdx#length)
+- `frame` tokens: 70, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `grow`
 
@@ -101,7 +101,7 @@ A ring outside the box (an outline, which takes no room): a role, `thin` by defa
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `ring` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`, `'none'`
 - `borderWidth` tokens: `'hairline'`, `'thin'`, `'thick'`, `'0.5'`, `'1.5'`, `'2.5'`, `'3'`, `'4'`
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `position`
 
@@ -111,7 +111,7 @@ Pinned to its parent's edges, out of the stack's flow (absolute): each edge give
 - Signature: `.position(value: PositionEdges)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `edges` tokens: 115, listed under [edgeDistance](bloom-language-tokens.mdx#edgedistance)
+- `edges` tokens: 117, listed under [edgeDistance](bloom-language-tokens.mdx#edgedistance)
 
 ### `offset`
 
@@ -121,7 +121,7 @@ Drawn shifted from where it is laid out (`x` right, `y` down); its siblings keep
 - Signature: `.offset(value: OffsetSpec)`
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `offset` tokens: 114, listed under [padding](bloom-language-tokens.mdx#padding)
+- `offset` tokens: 116, listed under [padding](bloom-language-tokens.mdx#padding)
 
 ### `zIndex`
 
@@ -151,7 +151,7 @@ Its length along its parent's axis before free space is shared (`flex-basis`): a
 - Taken by: every node (universal), and [dataColumn](bloom-language-nodes.mdx#datacolumn)
 - Narrower on: [dataColumn](bloom-language-nodes.mdx#datacolumn) ([space](bloom-language-tokens.mdx#space))
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `length` tokens: 69, listed under [length](bloom-language-tokens.mdx#length)
+- `length` tokens: 70, listed under [length](bloom-language-tokens.mdx#length)
 
 ### `flex`
 
@@ -172,7 +172,7 @@ Room outside the box, on every edge or one (`top`, `leading`, `left`…): a marg
 - Taken by: every node (universal)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
-- `margin` tokens: 115, listed under [margin](bloom-language-tokens.mdx#margin)
+- `margin` tokens: 117, listed under [margin](bloom-language-tokens.mdx#margin)
 
 ### `horizontalSpacing`
 
@@ -182,7 +182,7 @@ The gap between children side by side (`columnGap`, Tailwind's `gap-x-*`), over 
 - Signature: `.horizontalSpacing(value: SpaceToken)`
 - Taken by: [stack](bloom-language-nodes.mdx#stack)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `verticalSpacing`
 
@@ -192,7 +192,7 @@ The gap between children one above another, and between wrapped lines (`rowGap`,
 - Signature: `.verticalSpacing(value: SpaceToken)`
 - Taken by: [stack](bloom-language-nodes.mdx#stack)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `borderStyle`
 
@@ -212,7 +212,7 @@ Tailwind's `space-x-*`/`space-y-*` exactly as NativeWind draws them: on the web 
 - Taken by: [stack](bloom-language-nodes.mdx#stack)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
 - `axis` tokens: `'horizontal'`, `'vertical'`
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `scale`
 
@@ -353,7 +353,7 @@ The gap between children.
 - Signature: `.spacing(value: SpaceToken)`
 - Taken by: [stack](bloom-language-nodes.mdx#stack), [avatarGroup](bloom-language-nodes.mdx#avatargroup), [grid](bloom-language-nodes.mdx#grid), [divider](bloom-language-nodes.mdx#divider), [card](bloom-language-nodes.mdx#card), [chipRow](bloom-language-nodes.mdx#chiprow), [cappedChipRow](bloom-language-nodes.mdx#cappedchiprow), [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist), [carousel](bloom-language-nodes.mdx#carousel), [activityHeatmap](bloom-language-nodes.mdx#activityheatmap), [choiceList](bloom-language-nodes.mdx#choicelist), [categoryBar](bloom-language-nodes.mdx#categorybar), [chartCardSurface](bloom-language-nodes.mdx#chartcardsurface), [chatFolderTabs](bloom-language-nodes.mdx#chatfoldertabs), [storiesRow](bloom-language-nodes.mdx#storiesrow), [sharedMediaGrid](bloom-language-nodes.mdx#sharedmediagrid), [shelf](bloom-language-nodes.mdx#shelf), [shelfSkeleton](bloom-language-nodes.mdx#shelfskeleton), [groupCallGrid](bloom-language-nodes.mdx#groupcallgrid)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `align`
 
@@ -729,7 +729,50 @@ Its ink under the pointer, a colour role (Bloom's `hoverColor`); its ink at rest
 
 - Parameters: a value
 - Signature: `.editable(value: boolean)`
-- Taken by: [textField](bloom-language-nodes.mdx#textfield)
+- Taken by: [textField](bloom-language-nodes.mdx#textfield), [search](bloom-language-nodes.mdx#search)
+
+### `control`
+
+The dialog as a view of its own, opened and closed by Bloom's dialog control (`useDialogControl()`: `control.open()`, `control.close()`), for a dialog another view opens imperatively. It ends the chain, as `.presented()` does.
+
+- Parameters: a value
+- Signature: `.control(control: DialogControlProps)`
+- Taken by: [dialog](bloom-language-nodes.mdx#dialog)
+
+### `panelFrame`
+
+The side or bottom panel's own frame (Bloom's `panelStyle`): a bottom dialog kept to a width on a wide window (`{ maxWidth: '540' }`). `.frame()` is the centred card's width and ceiling.
+
+- Parameters: `{ width, height, minWidth, minHeight, maxWidth, maxHeight }`, each [length](bloom-language-tokens.mdx#length)
+- Signature: `.panelFrame(value: FrameSpec)`
+- Taken by: [dialog](bloom-language-nodes.mdx#dialog)
+- `frame` tokens: 70, listed under [length](bloom-language-tokens.mdx#length)
+
+### `ringColor`
+
+The ring each face is cut out of its neighbours by (Bloom's `ringColor`): the colour behind the group, a role or an app colour (`'background'`).
+
+- Parameters: [color](bloom-language-tokens.mdx#color)
+- Signature: `.ringColor(value: InkToken)`
+- Taken by: [avatarGroup](bloom-language-nodes.mdx#avatargroup)
+- `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
+
+### `itemAction`
+
+Web: a view under the member's name in its hover card (Bloom's `renderItemAction`: a follow button).
+
+- Parameters: a value
+- Signature: `.itemAction(value: (item: AvatarGroupItem, index: number) => Child)`
+- Taken by: [avatarGroup](bloom-language-nodes.mdx#avatargroup)
+
+### `cornerRadius`
+
+The radius of its corners (Bloom's Avatar `style.borderRadius`): a rounded square of an avatar a shape name does not draw (a list's 12pt corners on a 58pt cover). `.corner()` is a box around it instead.
+
+- Parameters: [cornerRadius](bloom-language-tokens.mdx#cornerradius)
+- Signature: `.cornerRadius(value: Exclude<CornerName, 'concentric'>)`
+- Taken by: [avatar](bloom-language-nodes.mdx#avatar)
+- `cornerRadius` tokens: `'none'`, `'2xs'`, `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'full'`, `'infinite'`, `'6'`, `'7'`, `'10'`, `'14'`, `'15'`, `'18'`, `'22'`
 
 ### `pressOpenTab`
 
@@ -1314,7 +1357,7 @@ A cell's narrowest width before the grid drops a column (Bloom's default: 320).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.minCellWidth(value: SpaceToken)`
 - Taken by: [grid](bloom-language-nodes.mdx#grid)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `flow`
 
@@ -1906,7 +1949,7 @@ SwiftUI's `safeAreaInset`: `view` pinned at the scroll's `edge`, and the content
 - Signature: `.safeAreaInset(edge: InsetEdge, view: ViewNode, spacing?: SpaceToken)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [list](bloom-language-nodes.mdx#list), [virtualList](bloom-language-nodes.mdx#virtuallist)
 - `insetEdge` tokens: `'top'`, `'bottom'`
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `safeAreaBar`
 
@@ -2250,7 +2293,7 @@ The gap between the view and the popover.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.sideOffset(value: SpaceToken)`
 - Taken by: [popover](bloom-language-nodes.mdx#popover)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `alignOffset`
 
@@ -2259,7 +2302,7 @@ A shift along the side it opens on (negative toward the start).
 - Parameters: [padding](bloom-language-tokens.mdx#padding)
 - Signature: `.alignOffset(value: PaddingToken)`
 - Taken by: [popover](bloom-language-nodes.mdx#popover)
-- `padding` tokens: 114, listed under [padding](bloom-language-tokens.mdx#padding)
+- `padding` tokens: 116, listed under [padding](bloom-language-tokens.mdx#padding)
 
 ### `offlineMessage`
 
@@ -2306,14 +2349,14 @@ The padding at both ends, inside the scroll.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.contentInset(value: SpaceToken)`
 - Taken by: [chipRow](bloom-language-nodes.mdx#chiprow), [carousel](bloom-language-nodes.mdx#carousel), [factStrip](bloom-language-nodes.mdx#factstrip)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `inset`
 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.inset(value: SpaceToken)`
 - Taken by: [groupedSectionDivider](bloom-language-nodes.mdx#groupedsectiondivider), [settingsSection](bloom-language-nodes.mdx#settingssection)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `illustration`
 
@@ -2405,7 +2448,7 @@ The room kept on every side for a chip's focus ring (4 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.ringInset(value: SpaceToken)`
 - Taken by: [chipRow](bloom-language-nodes.mdx#chiprow)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `keyboardTaps`
 
@@ -2439,7 +2482,7 @@ The least room kept beside it on a narrow screen (Bloom's `minSideGutter`).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.sideGutter(value: SpaceToken)`
 - Taken by: [dialog](bloom-language-nodes.mdx#dialog)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `maxHeightRatio`
 
@@ -2515,7 +2558,7 @@ The room the content keeps above the screen's bottom chrome; Bloom's 16 by defau
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.contentClearance(value: SpaceToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `navigationScope`
 
@@ -2534,7 +2577,7 @@ Room around the content, inside the scroll (the content container's padding).
 - Signature: `.contentMargins(value: SpaceToken)` or `.contentMargins(edge: Edge, value: SpaceToken)`
 - Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [scrollArea](bloom-language-nodes.mdx#scrollarea), [scrollSurface](bloom-language-nodes.mdx#scrollsurface), [virtualList](bloom-language-nodes.mdx#virtuallist)
 - `edge` tokens: `'all'`, `'horizontal'`, `'vertical'`, `'top'`, `'bottom'`, `'leading'`, `'trailing'`, `'left'`, `'right'`
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `contentGrows`
 
@@ -2583,11 +2626,11 @@ A drag `immediately` dismisses the keyboard, or drags it away `interactively`; `
 
 ### `detached`
 
-Inset from the screen's edges with every corner rounded; full width with a rounded top by default.
+Floats a bottom dialog above the window's safe area, with rounded corners and gutters beside it (Bloom's `detached`); other placements are as they were.
 
 - Parameters: a value (optional)
 - Signature: `.detached(value?: boolean)`
-- Taken by: [bottomSheet](bloom-language-nodes.mdx#bottomsheet)
+- Taken by: [dialog](bloom-language-nodes.mdx#dialog), [bottomSheet](bloom-language-nodes.mdx#bottomsheet)
 
 ### `dragIndicator`
 
@@ -2683,11 +2726,12 @@ A quiet word at its end (a count, a time).
 
 ### `variant`
 
-`panel` (default) or the narrow `rail`.
+The rendition the members' images load (Bloom's `variant`: `'thumb'` with none, `'small'`, `'medium'`).
 
 - Parameters: [sidebarVariant](bloom-language-tokens.mdx#sidebarvariant)
-- Signature: `.variant(value: SidebarVariant)`
-- Taken by: [sidebar](bloom-language-nodes.mdx#sidebar)
+- Signature: `.variant(value: string)`
+- Taken by: [avatarGroup](bloom-language-nodes.mdx#avatargroup), [sidebar](bloom-language-nodes.mdx#sidebar)
+- Narrower on: [avatarGroup](bloom-language-nodes.mdx#avatargroup) (a value)
 - `sidebarVariant` tokens: `'panel'`, `'rail'`
 
 ### `surface`
@@ -2736,7 +2780,7 @@ Its width; Bloom's 80 by default.
 - Signature: `.width(value: SpaceToken)`
 - Taken by: [rail](bloom-language-nodes.mdx#rail), [panel](bloom-language-nodes.mdx#panel), [settingsSelect](bloom-language-nodes.mdx#settingsselect), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [carouselItem](bloom-language-nodes.mdx#carouselitem), [dataColumn](bloom-language-nodes.mdx#datacolumn)
 - Narrower on: [rail](bloom-language-nodes.mdx#rail) ([space](bloom-language-tokens.mdx#space)), [panel](bloom-language-nodes.mdx#panel) ([space](bloom-language-tokens.mdx#space)), [settingsSelect](bloom-language-nodes.mdx#settingsselect) ([space](bloom-language-tokens.mdx#space)), [carouselItem](bloom-language-nodes.mdx#carouselitem) ([space](bloom-language-tokens.mdx#space))
-- `columnWidth` tokens: 58, listed under [columnWidth](bloom-language-tokens.mdx#columnwidth)
+- `columnWidth` tokens: 59, listed under [columnWidth](bloom-language-tokens.mdx#columnwidth)
 
 ### `pinning`
 
@@ -2852,14 +2896,14 @@ What the panel is: `main`, `collection`, `detail`, `inspector`, `context` or `ca
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.minWidth(value: SpaceToken)`
 - Taken by: [panel](bloom-language-nodes.mdx#panel), [table](bloom-language-nodes.mdx#table), [tableColumn](bloom-language-nodes.mdx#tablecolumn), [tableCell](bloom-language-nodes.mdx#tablecell), [dataTable](bloom-language-nodes.mdx#datatable), [dataColumn](bloom-language-nodes.mdx#datacolumn)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `maxWidth`
 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.maxWidth(value: SpaceToken)`
 - Taken by: [panel](bloom-language-nodes.mdx#panel)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `resizable`
 
@@ -2974,7 +3018,7 @@ The header's height before it measures itself (Bloom `Screen`'s `headerHeight`, 
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.initialHeaderHeight(value: SpaceToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `initialFooterHeight`
 
@@ -2983,7 +3027,7 @@ The footer's height before it measures itself (Bloom `Screen`'s `bottomBarHeight
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.initialFooterHeight(value: SpaceToken)`
 - Taken by: every node (universal), and [group](bloom-language-nodes.mdx#group)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `colorScope`
 
@@ -3052,7 +3096,7 @@ The depth of each end's fade (24 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.fadeHeight(value: SpaceToken)`
 - Taken by: [scrollSurface](bloom-language-nodes.mdx#scrollsurface)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `fadeBottom`
 
@@ -3101,7 +3145,7 @@ The bar's height (41 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.barHeight(value: SpaceToken)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `band`
 
@@ -3155,7 +3199,7 @@ The strip's height (20 by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.collapsedHeight(value: SpaceToken)`
 - Taken by: [autoHideBar](bloom-language-nodes.mdx#autohidebar)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `thickness`
 
@@ -3164,7 +3208,7 @@ The depth of its hit strip, across the separator.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.thickness(value: SpaceToken)`
 - Taken by: [resizeHandle](bloom-language-nodes.mdx#resizehandle), [meter](bloom-language-nodes.mdx#meter), [meterRing](bloom-language-nodes.mdx#meterring), [statBar](bloom-language-nodes.mdx#statbar), [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onResizeStart`
 
@@ -3425,7 +3469,7 @@ The star's edge, apart from the text's size.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.starSize(value: SpaceToken)`
 - Taken by: [rating](bloom-language-nodes.mdx#rating)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `starTint`
 
@@ -3485,7 +3529,7 @@ A fixed label width: the bar takes the free space (a distribution).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.labelWidth(value: SpaceToken)`
 - Taken by: [ratingBar](bloom-language-nodes.mdx#ratingbar)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `reveal`
 
@@ -3638,7 +3682,7 @@ A compact row's own vertical padding.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.compactPadding(value: SpaceToken)`
 - Taken by: [listItem](bloom-language-nodes.mdx#listitem), [mailRow](bloom-language-nodes.mdx#mailrow)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onPrefetch`
 
@@ -3711,7 +3755,7 @@ A scrolling list's viewport height.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.scrollHeight(value: SpaceToken)`
 - Taken by: [list](bloom-language-nodes.mdx#list)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `stickyHeaders`
 
@@ -3789,11 +3833,11 @@ The header is its content's height and the list's width: its container neither g
 
 ### `stickyIndices`
 
-The indices whose rows stick to the top; `undefined` sticks none, as `stickyHeaderIndices={undefined}`.
+The children that stay at the top once scrolled to it, by index (React Native's `stickyHeaderIndices`: a profile's tabs); `undefined` keeps none.
 
 - Parameters: a value
 - Signature: `.stickyIndices(value: readonly number[] | undefined)`
-- Taken by: [virtualList](bloom-language-nodes.mdx#virtuallist)
+- Taken by: [scrollView](bloom-language-nodes.mdx#scrollview), [virtualList](bloom-language-nodes.mdx#virtuallist)
 
 ### `restorationKey`
 
@@ -3871,7 +3915,7 @@ How far overlay arrows sit from the edges.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.arrowsInset(value: SpaceToken)`
 - Taken by: [carousel](bloom-language-nodes.mdx#carousel)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `hidesUnavailableArrows`
 
@@ -3926,7 +3970,7 @@ How far an arrow key moves it (the step by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.thumbSize(value: SpaceToken)`
 - Taken by: [slider](bloom-language-nodes.mdx#slider), [rangeSlider](bloom-language-nodes.mdx#rangeslider)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `fillTint`
 
@@ -4096,7 +4140,7 @@ A cell's edge.
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.cellSize(value: SpaceToken)`
 - Taken by: [activityHeatmap](bloom-language-nodes.mdx#activityheatmap)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onPressDay`
 
@@ -4354,7 +4398,7 @@ The narrowest a fact gets before the strip scrolls (`96` by default).
 - Parameters: [space](bloom-language-tokens.mdx#space)
 - Signature: `.minItemWidth(value: SpaceToken)`
 - Taken by: [factStrip](bloom-language-nodes.mdx#factstrip)
-- `space` tokens: 57, listed under [space](bloom-language-tokens.mdx#space)
+- `space` tokens: 58, listed under [space](bloom-language-tokens.mdx#space)
 
 ### `onRetry`
 

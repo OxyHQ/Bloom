@@ -46,6 +46,16 @@ const scrollViews: ParityCase[] = inScreen([
       </ScreenScrollView>
     ),
   },
+  ...([[0], undefined] as const).map((indices) => ({
+    name: `a scroll view with sticky rows ${indices === undefined ? 'none' : indices.join(',')}`,
+    language: () => toElement(L.ScrollView(L.Text('tabs'), L.Text('b')).stickyIndices(indices)),
+    bloom: () => (
+      <ScreenScrollView stickyHeaderIndices={indices === undefined ? undefined : [...indices]}>
+        <Text>tabs</Text>
+        <Text>b</Text>
+      </ScreenScrollView>
+    ),
+  })),
   {
     name: 'content margins and spacing',
     language: () =>
