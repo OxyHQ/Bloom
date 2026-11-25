@@ -9,7 +9,7 @@ import type { ScreenComponents } from '../screen/types';
 import { SidebarSlot } from './SidebarSlot';
 import { useAppShellSidebarMetrics } from './use-sidebar-metrics';
 import { APP_SHELL_DEFAULTS } from './constants';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { PageHeader } from '../page-header/PageHeader';
 import type { BottomBarProps } from '../bottom-bar/types';
 import type { FabProps } from '../fab/types';
@@ -126,7 +126,7 @@ export function createAppShell(
     const platformWindow = useWindow();
     const appWindow = useWindowCornerTaken() ? null : platformWindow;
     const actionClaimed = useScreenActionClaimed();
-    const { colors } = useTheme();
+    const tokens = useColorTokens();
     const sidebarMetrics = useAppShellSidebarMetrics(sidebar);
     const [userCollapsed, setUserCollapsed] = useState(sidebar?.defaultCollapsed ?? false);
     const navigationPadding = APP_SHELL_DEFAULTS.dashboardGutter;
@@ -206,7 +206,7 @@ export function createAppShell(
         onLayout={onRootLayout}
         testID={testID}
         style={[
-          { flex: 1, minHeight: 0, flexDirection: 'row', backgroundColor: colors.background },
+          { flex: 1, minHeight: 0, flexDirection: 'row', backgroundColor: tokens.background },
           style,
         ]}
       >

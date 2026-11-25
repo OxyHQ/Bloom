@@ -26,6 +26,7 @@ import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { usePlatformKeyboard } from '../platform-surface/context';
 import { Z_INDEX } from '../styles/z-index';
+import { useColorTokens } from '../theme/color-tokens';
 import { useTheme } from '../theme/use-theme';
 import { CenteredCard } from './CenteredCard';
 import { Context } from './context';
@@ -205,7 +206,7 @@ export function SheetShell({
 }
 
 function SheetHandle({ onPress }: { onPress: () => void }) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const common = useCommonMessages();
   return (
     <View style={styles.handleContainer}>
@@ -215,7 +216,7 @@ function SheetHandle({ onPress }: { onPress: () => void }) {
         accessibilityHint={common.tapToClose}
         hitSlop={{ top: 10, bottom: 10, left: 40, right: 40 }}
       >
-        <View style={[styles.handleBar, { backgroundColor: theme.colors.text }]} />
+        <View style={[styles.handleBar, { backgroundColor: tokens.foreground }]} />
       </Pressable>
     </View>
   );

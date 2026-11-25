@@ -75,4 +75,9 @@ export const CASES: Cases = {
       </DetailDialog>
     </Portaled>
   ),
+  'Dialog title and description': () => (
+    <Dialog open onClose={noop} label="Delete" title="Delete" description="It cannot be undone.">
+      <Text>Body</Text>
+    </Dialog>
+  ),
 };
