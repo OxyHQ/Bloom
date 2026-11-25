@@ -197,6 +197,8 @@ export const OPACITY = {
   "85": 0.85,
   "90": 0.9,
   "transparent": 0,
+  "12.5": 0.125,
+  "31.4": 0.314,
   "half": 0.5,
   "opaque": 1
 } as const;
@@ -1804,6 +1806,11 @@ export const ENUMS = {
     "top",
     "bottom"
   ],
+  "avatarMotion": [
+    "auto",
+    "always",
+    "never"
+  ],
   "submitLabel": [
     "done",
     "go",
@@ -3333,6 +3340,9 @@ export const MODIFIERS = {
   ],
   "sticky": [
     "stickyEdge?"
+  ],
+  "motion": [
+    "avatarMotion"
   ],
   "role": [
     "role"
@@ -5783,6 +5793,7 @@ export const NODE_MODIFIERS = {
     "modifier",
     "confirmationDialog",
     "phases",
+    "motion",
     "size",
     "tint",
     "shape",
@@ -5912,6 +5923,7 @@ export const NODE_MODIFIERS = {
     "confirmationDialog",
     "phases",
     "layout",
+    "motion",
     "size",
     "shape",
     "max",

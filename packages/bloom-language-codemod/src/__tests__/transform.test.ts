@@ -62,6 +62,50 @@ export const A = () => <View ${attributes} />;
       expect(result.unconverted.map((u) => u.reasons.map((r) => r.code))).toEqual([['role']]);
     }
   });
+  it("maps an avatar's character motion", () => {
+    const { code } = run(`import { Avatar } from '@oxy.so/bloom/avatar';
+export const A = ({ uri, still }) => <Avatar source={uri} motion={still ? 'never' : 'auto'} />;
+`);
+    expect(flat(code)).toContain(".motion(still ? 'never' : 'auto')");
+  });
+  it("maps a spinner's and a header scrim's app colour", () => {
+    const { code } = run(`import { Loading } from '@oxy.so/bloom/loading';
+import { PageHeader } from '@oxy.so/bloom/page-header';
+import { View } from 'react-native';
+export const A = () => (
+  <View>
+    <PageHeader title="Videos" scrim="always" scrimColor="#000000" />
+    <Loading color="#fff" />
+  </View>
+);
+`);
+    expect(flat(code)).toMatch(/\.scrimColor\(appColors\.color\.\w+\)/);
+    expect(flat(code)).toMatch(
+      /LLoading\(\)\.tint\(appColors\.color\.\w+\)|Loading\(\)\.tint\(appColors\.color\.\w+\)/,
+    );
+  });
+  it('maps a glyph filled currentColor as its colour, a glyph’s margin, and a busy spinner in its place', () => {
+    const { code } = run(`import { Button } from '@oxy.so/bloom/button';
+import { RiGroupLine } from '@oxy.so/bloom/icons/RiGroupLine';
+import { RiMapPinLine } from '@oxy.so/bloom/icons/RiMapPinLine';
+import { Loading } from '@oxy.so/bloom/loading';
+import { View } from 'react-native';
+export const A = ({ busy, locate }) => (
+  <View>
+    <RiGroupLine width={13} height={13} fill="currentColor" color="#536471" />
+    <RiGroupLine size="sm" fill="#536471" style={{ marginLeft: 2 }} />
+    <Button appearance="plain" iconOnly accessibilityLabel="Location" onPress={locate}>
+      {(color) => (busy ? <Loading variant="inline" size="sm" /> : <RiMapPinLine size="md" fill={color} />)}
+    </Button>
+  </View>
+);
+`);
+    expect(flat(code)).toContain("Icon(RiGroupLine).size('13').foreground(");
+    expect(flat(code)).toContain(".margin('left', '2xs')");
+    expect(flat(code)).toContain(
+      "Group(busy ? LLoading().style('inline').size('sm') : Icon(RiMapPinLine))",
+    );
+  });
   it("maps a header's back chosen at render between Bloom's own and none", () => {
     const { code } = run(`import { PageHeader } from '@oxy.so/bloom/page-header';
 export const A = ({ showBack }) => (

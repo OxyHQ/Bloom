@@ -13,6 +13,10 @@ import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
 import { type ParityCase, Themed } from './support/cases';
+import { defineTokens } from '../src/tokens';
+
+/** An app's own white, as Mention writes it (`#fff`). */
+const PIECE = defineTokens({ color: { white: '#fff' } });
 
 const onPress = () => {};
 const { space, borderRadius } = tokens;
@@ -106,6 +110,12 @@ const loading: ParityCase[] = [
     bloom: () => (
       <Loading text="Syncing" tone="success" accessibilityLabel="Syncing mail" testID="sync" />
     ),
+  },
+  {
+    // Mention's capture review: a white spinner over the photo.
+    name: 'Loading in an app colour',
+    language: () => toElement(L.Loading().tint(PIECE.color.white)),
+    bloom: () => <Loading color="#fff" />,
   },
   {
     // Every box modifier is the loader's `style`, as an app writes it.

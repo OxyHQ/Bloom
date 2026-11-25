@@ -315,8 +315,11 @@ type Ir =
       type: 'button';
       leading: string | null;
       trailing: string | null;
-      /** Bloom's render-function children (`(color) => <X fill={color} />`): a bare glyph as its content, at its rung. */
-      handed?: { readonly icon: string; readonly size: string };
+      /**
+       * Bloom's render-function children (`(color) => <X fill={color} />`): a bare glyph as its content, at
+       * its rung; or a view in its place while a plain condition holds (`busy ? <Loading … /> : <X … />`).
+       */
+      handed?: Handed;
       runs: TextRun[];
       props: PropMod[];
       key: Carried | null;
@@ -694,6 +697,26 @@ function hasAttribute(node: AnyNode, name: string): boolean {
       attribute.name.name === name,
   );
 }
+
+/** A button's render-function glyph (`Ir`'s `handed`), and the view drawn in its place while `busy.test` holds. */
+interface Handed {
+  readonly icon: string;
+  readonly size: string;
+  readonly busy?: { readonly test: Carried; readonly view: Ir };
+}
+
+/** React Native's margin keys as the language's edges. */
+const MARGIN_EDGES: Readonly<Record<string, string>> = {
+  margin: 'all',
+  marginTop: 'top',
+  marginBottom: 'bottom',
+  marginLeft: 'left',
+  marginRight: 'right',
+  marginStart: 'leading',
+  marginEnd: 'trailing',
+  marginHorizontal: 'horizontal',
+  marginVertical: 'vertical',
+};
 
 /** Transforms one file's source. */
 export function transformSource(source: string, options: TransformOptions): FileResult {
@@ -2242,7 +2265,14 @@ export function transformSource(source: string, options: TransformOptions): File
         size = value;
         continue;
       }
-      if (kind === 'icon' && (name === 'width' || name === 'height' || name === 'fill')) {
+      if (
+        kind === 'icon' &&
+        (name === 'width' ||
+          name === 'height' ||
+          name === 'fill' ||
+          name === 'color' ||
+          name === 'style')
+      ) {
         iconProps.set(name, value);
         continue;
       }
@@ -2298,7 +2328,24 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       if (node.children.some((c: AnyNode) => !(n.JSXText.check(c) && cleanJsxText(c.value) === '')))
         fail('children', 'icon-children', 'an icon with children');
-      const fill = iconProps.get('fill');
+      // `currentColor` is the glyph's `color` on every platform (react-native-svg's, Bloom's
+      // native glyph's and CSS's): that colour is its fill.
+      const written = iconProps.get('fill');
+      const current =
+        written !== undefined && staticString(written) === 'currentColor'
+          ? iconProps.get('color')
+          : undefined;
+      const fill = current ?? written;
+      // A margin on the Svg itself (`style={{ marginLeft: 2 }}`): the glyph's own, with no view around it.
+      const style = iconProps.get('style');
+      if (style !== undefined) {
+        const margins = iconMargins(attributeExpression(style));
+        if (margins === undefined)
+          fail('style', 'prop:style', 'an icon style other than its margin, by space tokens');
+        else mods.push(...margins);
+      }
+      if (iconProps.has('color') && current === undefined)
+        fail('color', 'prop:color', 'an icon `color` with no `fill="currentColor"` to paint it');
       let color: AppColor | undefined;
       if (fill !== undefined) {
         const ink = iconFill(node, fill);
@@ -4220,7 +4267,7 @@ export function transformSource(source: string, options: TransformOptions): File
       fail('grow', 'button:grow', 'grow with iconOnly');
     if (shape) props.unshift({ name: 'shape', args: [shape] });
     const runs: TextRun[] = [];
-    let handed: { icon: string; size: string } | undefined;
+    let handed: Handed | undefined;
     for (const child of node.children) {
       if (n.JSXText.check(child)) {
         const text = cleanJsxText(child.value);
@@ -4235,7 +4282,7 @@ export function transformSource(source: string, options: TransformOptions): File
           fail(
             'children',
             'render-children',
-            'children as a render function other than `(color) => <Glyph fill={color} />` at one icon rung',
+            'children as a render function other than `(color) => <Glyph fill={color} />` at one icon rung (or a view in its place under a plain condition)',
           );
         else handed = glyph;
       } else if (
@@ -4253,15 +4300,45 @@ export function transformSource(source: string, options: TransformOptions): File
     return { ir: { type: 'button', leading, trailing, handed, runs, props, key } };
   }
 
+  /** A glyph's `style` of margins alone, each a space token (`{ marginLeft: 2 }`), as its margins. */
+  function iconMargins(expression: AnyNode): Mod[] | undefined {
+    if (!n.ObjectExpression.check(expression)) return undefined;
+    const out: Mod[] = [];
+    for (const property of expression.properties) {
+      if (!(n.ObjectProperty.check(property) || n.Property.check(property)) || property.computed)
+        return undefined;
+      const key = n.Identifier.check(property.key) ? (property.key.name as string) : '';
+      const edge = MARGIN_EDGES[key];
+      const token = n.NumericLiteral.check(property.value)
+        ? SPACE[String(property.value.value)]
+        : undefined;
+      if (edge === undefined || token === undefined) return undefined;
+      out.push({ name: 'margin', args: edge === 'all' ? [token] : [edge, token] });
+    }
+    return out.length > 0 ? out : undefined;
+  }
+
   /**
    * Bloom's render-function children of a glyph alone, `(color) => <X fill={color}
    * size="md" />` (or a `width` and `height` of one rung's points), as its icon
    * and rung; undefined for any other function.
    */
-  function handedGlyphOf(fn: AnyNode): { icon: string; size: string } | undefined {
+  function handedGlyphOf(fn: AnyNode): Handed | undefined {
     const [param, ...more] = fn.params;
-    if (!n.Identifier.check(param) || more.length > 0 || !n.JSXElement.check(fn.body))
-      return undefined;
+    if (!n.Identifier.check(param) || more.length > 0) return undefined;
+    // A view in the glyph's place while a plain condition holds (the location control's spinner while it locates).
+    if (
+      n.ConditionalExpression.check(fn.body) &&
+      (isPlainRead(fn.body.test) || isBooleanForm(fn.body.test)) &&
+      n.JSXElement.check(fn.body.consequent)
+    ) {
+      const glyph = handedGlyphOf({ ...fn, body: fn.body.alternate });
+      const view = convert(fn.body.consequent);
+      return glyph === undefined || glyph.busy !== undefined || !('ir' in view)
+        ? undefined
+        : { ...glyph, busy: { test: { node: fn.body.test, hole: 'condition' }, view: view.ir } };
+    }
+    if (!n.JSXElement.check(fn.body)) return undefined;
     const name = fn.body.openingElement.name;
     if (!n.JSXIdentifier.check(name) || kindOf(sources.get(name.name)) !== 'icon') return undefined;
     if (
@@ -4469,10 +4546,13 @@ export function transformSource(source: string, options: TransformOptions): File
       }
       case 'button': {
         const parts: string[] = [];
-        if (ir.handed)
+        if (ir.handed) {
+          const glyph = `${lang('Icon')}(${ir.handed.icon})${ir.handed.size === 'md' ? '' : `.size(${quote(ir.handed.size)})`}`;
+          const { busy } = ir.handed;
           parts.push(
-            `${lang('Group')}(${lang('Icon')}(${ir.handed.icon})${ir.handed.size === 'md' ? '' : `.size(${quote(ir.handed.size)})`})`,
+            `${lang('Group')}(${busy ? `${carry(busy.test)} ? ${print(busy.view, carry)} : ${glyph}` : glyph})`,
           );
+        }
         if (ir.leading) parts.push(`${lang('Icon')}(${ir.leading})`);
         if (ir.runs.length)
           parts.push(
@@ -4632,6 +4712,8 @@ export function transformSource(source: string, options: TransformOptions): File
         return [...ir.children, ...props];
       case 'screen':
         return [ir.content, ...props];
+      case 'button':
+        return ir.handed?.busy ? [ir.handed.busy.view, ...props] : props;
       default:
         return props;
     }
@@ -4678,6 +4760,10 @@ export function transformSource(source: string, options: TransformOptions): File
         for (const run of ir.runs) if ('type' in run && run.type === 'expr') out.push(run.value);
         for (const prop of ir.props) for (const a of prop.args) carriedOfValue(a, out);
         if (ir.key) out.push(ir.key);
+        if (ir.handed?.busy) {
+          out.push(ir.handed.busy.test);
+          carriedOf(ir.handed.busy.view, out);
+        }
         break;
       case 'text':
         for (const run of ir.runs)

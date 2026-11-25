@@ -151,6 +151,33 @@ const placed: ParityCase[] = [
     ),
   },
   {
+    // Mention's video author: the verified badge a hair after the name, the margin on the Svg itself.
+    name: 'a glyph with a margin of its own, on the glyph',
+    language: () =>
+      toElement(
+        L.HStack(
+          L.Text('a'),
+          L.Icon(Heart).size('sm').foreground(row.color.brand).margin('left', '2xs'),
+        ),
+      ),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <Text>a</Text>
+        <Heart size="sm" fill="#1877f2" style={{ marginLeft: 2 }} />
+      </RN.View>
+    ),
+  },
+  {
+    // Mention's profile tabs: a lock glyph above its label.
+    name: 'a themed glyph with a margin of its own',
+    language: () => toElement(L.Icon(Heart).size('sm').foreground('muted').margin('bottom', 'lg')),
+    bloom: () => (
+      <Themed>
+        {(c) => <Heart size="sm" fill={c.textSecondary} style={{ marginBottom: 16 }} />}
+      </Themed>
+    ),
+  },
+  {
     name: 'a named glyph',
     language: () => toElement(L.Icon(Heart).label('Liked').role('image')),
     bloom: () => (

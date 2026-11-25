@@ -178,6 +178,32 @@ const content: ParityCase[] = [
     ),
   },
   {
+    // Mention's compose toolbar: the location control while it locates, its spinner in Bloom's 36pt square.
+    name: 'a circle around one view (a busy spinner) is an icon button',
+    language: () =>
+      toElement(
+        L.Button(L.Group(L.Loading().style('inline').size('sm')))
+          .style('plain')
+          .tint('neutral')
+          .shape('circle')
+          .iconSize('md')
+          .label('Location')
+          .onPress(onPress),
+      ),
+    bloom: () => (
+      <Button
+        appearance="plain"
+        tone="neutral"
+        iconOnly
+        iconSize={20}
+        accessibilityLabel="Location"
+        onPress={onPress}
+      >
+        {() => <Loading variant="inline" size="sm" />}
+      </Button>
+    ),
+  },
+  {
     name: 'a glyph as its content, in a group',
     language: () =>
       toElement(

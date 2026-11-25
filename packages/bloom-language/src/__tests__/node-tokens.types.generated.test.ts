@@ -41,7 +41,7 @@ type S = {
   "color": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill";
   "colorRole": "foreground" | "muted" | "textTertiary" | "primary" | "primaryText" | "onPrimary" | "secondary" | "onSecondary" | "tertiary" | "onTertiary" | "background" | "surface" | "popover" | "border" | "input" | "success" | "successText" | "warning" | "warningText" | "error" | "info" | "mutedFill" | "card" | "destructive" | "white" | "black" | "transparent" | "onSurface" | "accent" | "errorText" | "infoText" | "surfaceFill";
   "borderWidth": "3" | "4" | "hairline" | "thin" | "thick" | "0.5" | "1.5" | "2.5";
-  "opacity": "5" | "10" | "20" | "25" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "85" | "90" | "transparent" | "half" | "opaque";
+  "opacity": "5" | "10" | "20" | "25" | "30" | "40" | "45" | "60" | "70" | "75" | "80" | "85" | "90" | "transparent" | "12.5" | "31.4" | "half" | "opaque";
   "hitSlop": "4" | "5" | "none" | "sm" | "md" | "lg";
   "shrink": "never" | "normal" | "first";
   "flex": "1" | "auto" | "initial" | "none" | "grow";
@@ -142,6 +142,7 @@ type S = {
   "contentType": "off" | "email" | "username" | "password" | "new-password" | "current-password" | "one-time-code" | "name" | "given-name" | "family-name" | "tel" | "postal-code" | "street-address" | "url";
   "textContentType": "none" | "URL" | "addressCity" | "addressCityAndState" | "addressState" | "countryName" | "creditCardNumber" | "creditCardExpiration" | "creditCardExpirationMonth" | "creditCardExpirationYear" | "creditCardSecurityCode" | "creditCardType" | "creditCardName" | "creditCardGivenName" | "creditCardMiddleName" | "creditCardFamilyName" | "emailAddress" | "familyName" | "fullStreetAddress" | "givenName" | "jobTitle" | "location" | "middleName" | "name" | "namePrefix" | "nameSuffix" | "nickname" | "organizationName" | "postalCode" | "sublocality" | "telephoneNumber" | "username" | "password" | "newPassword" | "oneTimeCode" | "birthdate" | "birthdateDay" | "birthdateMonth" | "birthdateYear" | "cellularEID" | "cellularIMEI" | "dateTime" | "flightNumber" | "shipmentTrackingNumber";
   "stickyEdge": "top" | "bottom";
+  "avatarMotion": "auto" | "always" | "never";
   "submitLabel": "done" | "go" | "next" | "search" | "send";
   "textareaResize": "none" | "vertical";
   "labelSize": "xs" | "sm" | "md";
@@ -478,6 +479,7 @@ type iconChecks = [
 
 type avatarChecks = [
   Expect<'avatar: the universal modifiers', Universal<View<'Avatar'>>>,
+  Expect<"avatar.motion(avatarMotion)", Ok<At<View<'Avatar'>['motion'], '0'>, S['avatarMotion']>>,
   Expect<"avatar.size(size: avatarSize)", Ok<At<View<'Avatar'>['size'], '0'>, S['avatarSize']>>,
   Expect<"avatar.size(size: avatarSize) takes AppToken<'avatarSize'>", Takes<At<View<'Avatar'>['size'], '0'>, AppToken<'avatarSize'>>>,
   Expect<"avatar.tint(tint: avatarColor)", Ok<At<View<'Avatar'>['tint'], '0'>, S['avatarColor']>>,
@@ -489,6 +491,7 @@ type avatarChecks = [
 type avatarGroupChecks = [
   Expect<'avatarGroup: the universal modifiers', Universal<View<'AvatarGroup'>>>,
   Expect<"avatarGroup.layout(avatarLayout)", Ok<At<View<'AvatarGroup'>['layout'], '0'>, S['avatarLayout']>>,
+  Expect<"avatarGroup.motion(avatarMotion)", Ok<At<View<'AvatarGroup'>['motion'], '0'>, S['avatarMotion']>>,
   Expect<"avatarGroup.size(size: avatarSize)", Ok<At<View<'AvatarGroup'>['size'], '0'>, S['avatarSize']>>,
   Expect<"avatarGroup.size(size: avatarSize) takes AppToken<'avatarSize'>", Takes<At<View<'AvatarGroup'>['size'], '0'>, AppToken<'avatarSize'>>>,
   Expect<"avatarGroup.shape(shape: shapeName)", Ok<At<View<'AvatarGroup'>['shape'], '0'>, S['shapeName']>>,

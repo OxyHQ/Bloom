@@ -131,6 +131,8 @@ export type CornerSide = (typeof ENUMS.cornerSide)[number];
 export type WordBreak = (typeof ENUMS.wordBreak)[number];
 /** The scroll container's edge a sticky view is held at. */
 export type StickyEdge = (typeof ENUMS.stickyEdge)[number];
+/** Whether an avatar's character moves: Bloom's `AvatarMotion`. */
+export type AvatarMotion = (typeof ENUMS.avatarMotion)[number];
 /** iOS's kind of a text input's content (React Native's `textContentType`), which its autofill offers. */
 export type TextContentType = (typeof ENUMS.textContentType)[number];
 /** The marker a web list draws before each of its rows: `disc` (Tailwind's `list-disc`) or `decimal`. */
@@ -456,6 +458,17 @@ export interface AppToken<S extends AppTokenScale = AppTokenScale> {
   readonly key: string;
 }
 
+/**
+ * An app colour (`defineTokens({ color })`): a token that also gives itself at
+ * an opacity, as a role does (`'primary/20'`), so a data-driven table keeps one
+ * colour per entry: `severity.color[level].opacity('12.5')` is the colour with
+ * an alpha of 32 (a hex's `20`), the same in both schemes.
+ */
+export interface AppColorToken extends AppToken<'color'> {
+  /** The colour at `opacity`: a hex with its alpha in 8 bits (`#6b728020`), an `rgba()` of an `rgb()`. */
+  opacity(value: OpacityName): AppColorToken;
+}
+
 let nextAppToken = 0;
 
 /**
@@ -465,9 +478,72 @@ let nextAppToken = 0;
  */
 type AppTokenTable<T> = {
   readonly [S in keyof T & AppTokenScale]: {
-    readonly [N in keyof T[S]]: S extends 'motion' ? Readonly<T[S][N]> : AppToken<S>;
+    readonly [N in keyof T[S]]: S extends 'motion'
+      ? Readonly<T[S][N]>
+      : S extends 'color'
+        ? AppColorToken
+        : AppToken<S>;
   };
 };
+
+/** Each app colour's own at an opacity, made once (`AppColorToken.opacity`). */
+const atOpacity = new WeakMap<AppToken, Map<string, AppColorToken>>();
+
+/** An app colour token, its `opacity()` beside its value. */
+function appColorToken(name: string, value: AppColorValue, key: string): AppColorToken {
+  const token: AppColorToken = Object.freeze({
+    scale: 'color' as const,
+    name,
+    value,
+    key,
+    opacity(opacity: OpacityName): AppColorToken {
+      let made = atOpacity.get(token);
+      if (made === undefined) {
+        made = new Map();
+        atOpacity.set(token, made);
+      }
+      let derived = made.get(opacity);
+      if (derived === undefined) {
+        derived = appColorToken(
+          `${name}/${opacity}`,
+          colorAtOpacity(value, OPACITY[opacity], name),
+          `${key}/${opacity}`,
+        );
+        made.set(opacity, derived);
+      }
+      return derived;
+    },
+  });
+  return token;
+}
+
+/**
+ * `color` at `opacity` as both platforms paint it: a hex with its alpha in 8
+ * bits (the alpha it had times `opacity`, as `withAlpha` rounds it), an
+ * `rgb()` or `rgba()` as an `rgba()`. A colour name has no channels to scale.
+ */
+function colorAtOpacity(color: AppColorValue, opacity: number, name: string): AppColorValue {
+  const hex = HEX_COLOR.exec(color)?.[1];
+  if (hex !== undefined) {
+    const full = hex.length <= 4 ? [...hex].map((digit) => digit + digit).join('') : hex;
+    const alpha = full.length === 8 ? Number.parseInt(full.slice(6), 16) / 255 : 1;
+    const byte = Math.round(Math.fround(alpha * opacity) * 255)
+      .toString(16)
+      .padStart(2, '0');
+    return `#${full.slice(0, 6)}${byte}` as AppColorValue;
+  }
+  const channels = /^rgba?\(([^)]*)\)$/
+    .exec(color)?.[1]
+    ?.split(',')
+    .map((part) => part.trim());
+  if (channels !== undefined && channels.length >= 3) {
+    const [r, g, b, a = '1'] = channels;
+    return `rgba(${r},${g},${b},${Number((Number(a) * opacity).toFixed(4))})` as AppColorValue;
+  }
+  throw new Error(
+    `[Bloom language] color.${name}.opacity(): a colour name has no channels to scale; declare it as a hex or an rgb(). See ${SEE.tokens}`,
+  );
+}
 
 /**
  * Declares an app's own tokens, for values Bloom's scales lack:
@@ -498,12 +574,15 @@ export function defineTokens<T extends { [S in AppTokenScale]?: Record<string, A
           `[Bloom language] defineTokens: color.${name} is no colour both platforms paint alike (a hex, an rgb() or rgba() of numbers, or a CSS colour name). See ${SEE.tokens}`,
         );
       nextAppToken += 1;
-      named[name] = Object.freeze({
-        scale,
-        name,
-        value: entries[name] as AppTokenValue<AppTokenScale>,
-        key: `@${nextAppToken}`,
-      });
+      named[name] =
+        scale === 'color'
+          ? appColorToken(name, entries[name] as AppColorValue, `@${nextAppToken}`)
+          : Object.freeze({
+              scale,
+              name,
+              value: entries[name] as AppTokenValue<AppTokenScale>,
+              key: `@${nextAppToken}`,
+            });
     }
     out[scale] = Object.freeze(named);
   }

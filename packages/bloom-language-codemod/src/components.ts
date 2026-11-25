@@ -663,6 +663,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       variant: p('style', 'token', tokens('loadingStyle')),
       size: p('size', 'token', tokens('controlSize')),
       tone: p('tint', 'token', tokens('tone')),
+      // An app's own colour (`#fff` over a photo): the tint, as written.
+      color: p('tint', 'ink'),
       ...NAMED,
     },
   },
@@ -696,6 +698,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
     props: {
       size: p('size', 'token', AVATAR_SIZE),
       shape: p('shape', 'token', tokens('shapeName')),
+      motion: p('motion', 'token', tokens('avatarMotion')),
       verified: p('verified', 'flag'),
       live: p('live', 'flag'),
       alt: p('label', 'string'),
@@ -802,6 +805,8 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       accessory: p('accessory', 'view'),
       tone: p('tone', 'token', tokens('headerTone')),
       scrimFalloff: p('scrimFalloff', 'token', tokens('scrimFalloff')),
+      // A theme colour as its role, an app colour (`#000000`) as its own.
+      scrimColor: p('scrimColor', 'ink'),
       titleReveal: p('titleReveal', 'token', tokens('titleReveal')),
       testID: p('testID', 'string'),
     },
@@ -906,6 +911,7 @@ export const COMPONENT_RULES: Readonly<Record<string, ComponentRule>> = {
       layout: p('layout', 'token', tokens('avatarLayout')),
       size: p('size', 'token', AVATAR_SIZE),
       shape: p('shape', 'token', tokens('shapeName')),
+      motion: p('motion', 'token', tokens('avatarMotion')),
       max: p('max', 'number'),
       total: p('total', 'number'),
       spacing: p('spacing', 'token', SPACE),

@@ -11,6 +11,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import { ENUMS } from '../src/generated/spec.generated';
 import * as L from '../src/primitives';
 import { toElement } from '../src/render';
+import { defineTokens } from '../src/tokens';
 import { hold, type ParityCase, Themed } from './support/cases';
 
 const { space, borderRadius } = tokens;
@@ -1141,6 +1142,44 @@ const safeArea: ParityCase[] = [
   },
 ];
 
+/** Mention's labeler severities: one colour each, in an app table. */
+const SEVERITY = defineTokens({
+  color: { low: '#6b7280', medium: '#f59e0b', high: '#f97316', critical: '#ef4444' },
+});
+const SEVERITY_HEX = { low: '#6b7280', medium: '#f59e0b', high: '#f97316', critical: '#ef4444' };
+
+/**
+ * An app colour at an opacity, chosen from data: a fill at its hex's `20` and an
+ * edge at its `50` (an alpha of 32 and of 80), its ink the colour itself.
+ */
+const appColorsAtOpacity: ParityCase[] = (
+  Object.keys(SEVERITY_HEX) as (keyof typeof SEVERITY_HEX)[]
+).map((level) => ({
+  name: `a severity badge from a colour table (${level})`,
+  language: () =>
+    toElement(
+      L.VStack(L.Text(level).foreground(SEVERITY.color[level]))
+        .padding('horizontal', 'sm')
+        .background(SEVERITY.color[level].opacity('12.5'))
+        .border(SEVERITY.color[level].opacity('31.4'), 'thin')
+        .corner('full'),
+    ),
+  bloom: () => (
+    <RN.View
+      style={{
+        paddingStart: 8,
+        paddingEnd: 8,
+        backgroundColor: `${SEVERITY_HEX[level]}20`,
+        borderWidth: 1,
+        borderColor: `${SEVERITY_HEX[level]}50`,
+        borderRadius: 9999,
+      }}
+    >
+      <Text style={{ color: SEVERITY_HEX[level] }}>{level}</Text>
+    </RN.View>
+  ),
+}));
+
 /** `.hitSlop()`: one slop on every side, or each side's (React Native's insets). */
 const hitSlop: ParityCase[] = [
   {
@@ -1402,6 +1441,7 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...points,
   ...hitSlop,
   ...safeArea,
+  ...appColorsAtOpacity,
   ...aspectRatio,
   ...pressFade,
   ...accessibility,

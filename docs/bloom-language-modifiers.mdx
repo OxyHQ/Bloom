@@ -7,7 +7,7 @@ description: Every modifier of the Bloom language: its parameters and their toke
 
 # Bloom language modifiers
 
-Every modifier the language has (665). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
+Every modifier the language has (666). Each lists its parameters as the spec types them (a token set, an object of tokens, or a free value such as a string, a callback or a binding), its TypeScript signature where the package declares it, and which nodes take it. A token set links to its values in [the tokens reference](bloom-language-tokens.mdx). How modifiers combine (order is nesting, the environment, variants) is in [the tour](bloom-language-tour.mdx#modifiers-and-order).
 
 ## Universal modifiers
 
@@ -279,7 +279,7 @@ Rounds the box: a radius rung, `full`, or `concentric` (the radius of the shape 
 - Signature: `.opacity(value: OpacityName)`
 - Taken by: every node (universal), and [groupedSectionItem](bloom-language-nodes.mdx#groupedsectionitem), [errorBoundary](bloom-language-nodes.mdx#errorboundary)
 - Varies under `.when(condition, v => v…)` ([variants](bloom-language-tour.mdx#variants)).
-- `opacity` tokens: `'transparent'`, `'half'`, `'opaque'`, `'5'`, `'10'`, `'20'`, `'25'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'85'`, `'90'`
+- `opacity` tokens: `'transparent'`, `'12.5'`, `'31.4'`, `'half'`, `'opaque'`, `'5'`, `'10'`, `'20'`, `'25'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'85'`, `'90'`
 
 ### `glass`
 
@@ -866,6 +866,15 @@ Web: held at its scroll container's `edge` (the top by default) once scrolled to
 - Taken by: every node (universal)
 - `stickyEdge` tokens: `'top'`, `'bottom'`
 
+### `motion`
+
+Whether its character moves (Bloom's `motion`): `auto` (the default), `always`, `never` (a still portrait); reduced motion always wins.
+
+- Parameters: [avatarMotion](bloom-language-tokens.mdx#avatarmotion)
+- Signature: `.motion(value: AvatarMotion)`
+- Taken by: [avatar](bloom-language-nodes.mdx#avatar), [avatarGroup](bloom-language-nodes.mdx#avatargroup)
+- `avatarMotion` tokens: `'auto'`, `'always'`, `'never'`
+
 ### `role`
 
 - Parameters: [role](bloom-language-tokens.mdx#role)
@@ -1196,10 +1205,10 @@ Pads its top by the safe-area inset (Bloom's default: on native, not on the web)
 
 ### `scrimColor`
 
-The opaque colour its scrim fades from, painted from a role (the page's background by default).
+A colour role (painted from the theme, at an opacity too), or an app's own colour as written.
 
 - Parameters: [color](bloom-language-tokens.mdx#color)
-- Signature: `.scrimColor(value: ColorToken)`
+- Signature: `.scrimColor(value: ColorToken | AppToken<'color'>)`
 - Taken by: [header](bloom-language-nodes.mdx#header)
 - `color` tokens: `'foreground'`, `'muted'`, `'textTertiary'`, `'primary'`, `'primaryText'`, `'onPrimary'`, `'secondary'`, `'onSecondary'`, `'tertiary'`, `'onTertiary'`, `'background'`, `'surface'`, `'popover'`, `'border'`, `'input'`, `'success'`, `'successText'`, `'warning'`, `'warningText'`, `'error'`, `'info'`, `'mutedFill'`, `'card'`, `'destructive'`, `'white'`, `'black'`, `'transparent'`, `'onSurface'`, `'accent'`, `'errorText'`, `'infoText'`, `'surfaceFill'`
 
@@ -1491,7 +1500,7 @@ A pressable view fades while pressed, as React Native's `TouchableOpacity` fades
 - Parameters: [opacity](bloom-language-tokens.mdx#opacity) (optional)
 - Signature: `.pressFade(value?: OpacityName)`
 - Taken by: every node (universal)
-- `opacity` tokens: `'transparent'`, `'half'`, `'opaque'`, `'5'`, `'10'`, `'20'`, `'25'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'85'`, `'90'`
+- `opacity` tokens: `'transparent'`, `'12.5'`, `'31.4'`, `'half'`, `'opaque'`, `'5'`, `'10'`, `'20'`, `'25'`, `'30'`, `'40'`, `'45'`, `'60'`, `'70'`, `'75'`, `'80'`, `'85'`, `'90'`
 
 ### `hoverHighlight`
 
