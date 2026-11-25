@@ -7,7 +7,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { RadioHost } from './RadioHost';
 import type { RadioSize, RadioSwatchProps } from './types';
 import { useRadioGroupItem } from './use-radio-group-item';
@@ -56,7 +56,7 @@ function RadioSwatchComponent<Value extends string = string>({
   style,
   testID,
 }: RadioSwatchProps<Value>) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   // The colour's name is the control's name: nothing is drawn beside it.
   const field = useFieldMembership({
     // The card's own description is its hint, said before the field's.
@@ -90,7 +90,7 @@ function RadioSwatchComponent<Value extends string = string>({
           flexShrink: 0,
           opacity: disabled ? DISABLED_OPACITY : 1,
         } as const)),
-    '--bloom-radio-swatch-ring': theme.colors.primary,
+    '--bloom-radio-swatch-ring': tokens.primary,
     ...ringOffset,
   };
   return (

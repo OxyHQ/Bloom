@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Collapsible } from '../collapsible';
 import { space } from '../styles/tokens';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { Text } from '../typography';
 
 const RULE_WIDTH = 2;
@@ -23,7 +23,7 @@ export function ThinkingReasoning({
   children: ReactNode;
   testID?: string;
 }) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   return (
     <Collapsible open={open} testID={testID}>
       <View
@@ -31,12 +31,12 @@ export function ThinkingReasoning({
           marginStart: space.md,
           paddingStart: space.md,
           paddingVertical: space.xs,
-          borderStartColor: theme.colors.border,
+          borderStartColor: tokens.border,
           borderStartWidth: RULE_WIDTH,
         }}
       >
         {typeof children === 'string' ? (
-          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-2-regular" style={{ color: tokens.mutedForeground }}>
             {children}
           </Text>
         ) : (

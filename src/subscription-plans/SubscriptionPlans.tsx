@@ -13,7 +13,7 @@ import { EdgeScrim } from '../page-header/EdgeScrim';
 import { useSurfaceFill } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { pointerEventsStyles } from '../styles/pointer-events';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { SubscriptionPrice } from './SubscriptionPrice';
 import type { SubscriptionPlansProps } from './types';
 
@@ -35,7 +35,7 @@ export function SubscriptionPlans({
   style,
   testID,
 }: SubscriptionPlansProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const surfaceFill = useSurfaceFill();
   const selected = plans.find((plan) => plan.id === value);
   const actionDisabled =
@@ -67,7 +67,7 @@ export function SubscriptionPlans({
           {selected ? (
             <>
               {' '}
-              <Text variant="display-4-semibold" style={{ color: theme.colors.primary }}>
+              <Text variant="display-4-semibold" style={{ color: tokens.primary }}>
                 {selected.label}
               </Text>
             </>
@@ -89,7 +89,7 @@ export function SubscriptionPlans({
                 style={[
                   typeScale('title-2-regular'),
                   styles.centered,
-                  { color: theme.colors.textSecondary },
+                  { color: tokens.mutedForeground },
                 ]}
               >
                 {selected.price}
@@ -139,7 +139,7 @@ export function SubscriptionPlans({
               <View style={styles.benefitCopy}>
                 <Title variant="headline-semibold">{benefit.title}</Title>
                 {benefit.description ? (
-                  <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
+                  <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
                     {benefit.description}
                   </Text>
                 ) : null}
@@ -165,7 +165,7 @@ export function SubscriptionPlans({
           {terms != null ? (
             <Text
               variant="caption-1-regular"
-              style={[styles.centered, { color: theme.colors.textSecondary }]}
+              style={[styles.centered, { color: tokens.mutedForeground }]}
             >
               {terms}
             </Text>

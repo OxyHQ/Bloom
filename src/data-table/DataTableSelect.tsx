@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '../select';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import type { DataTableSelectOption, DataTableSelectProps } from './types';
 
 /** `size-[18px]` — an option icon. */
@@ -61,7 +61,7 @@ export function DataTableSelect({
   disabled,
   testID,
 }: DataTableSelectProps) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const [value, setValue] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
@@ -82,7 +82,7 @@ export function DataTableSelect({
         >
           <SelectValue
             leading={
-              current ? <OptionMark option={current} color={theme.colors.textSecondary} /> : null
+              current ? <OptionMark option={current} color={tokens.mutedForeground} /> : null
             }
           />
           <SelectIcon />
@@ -94,7 +94,7 @@ export function DataTableSelect({
             <SelectItem
               value={item.value}
               label={item.label}
-              leading={<OptionMark option={item} color={theme.colors.textSecondary} />}
+              leading={<OptionMark option={item} color={tokens.mutedForeground} />}
             >
               <SelectItemText>{item.label}</SelectItemText>
             </SelectItem>

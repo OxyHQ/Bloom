@@ -13,7 +13,7 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { useMessages } from '../locale/messages';
 import { Text } from '../typography';
 import { LISTING_EDITOR_MESSAGES, type ListingEditorMessages } from './messages';
@@ -60,7 +60,7 @@ function ListingPreviewPaneComponent({
   const cardLabel = cardLabelProp ?? messages.card;
   const pageLabel = pageLabelProp ?? messages.page;
   const toggleLabel = toggleLabelProp ?? messages.previewAs;
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const [mode, setMode] = useControllableState<ListingPreviewMode>({
     value: modeProp,
     defaultValue: defaultMode,
@@ -78,17 +78,17 @@ function ListingPreviewPaneComponent({
           paddingLeft: 20,
           paddingRight: 20,
           borderRadius: 20,
-          backgroundColor: theme.colors.backgroundSecondary,
+          backgroundColor: tokens.surface,
         },
         style,
       ]}
     >
       <View style={{ gap: 2 }}>
-        <Text variant="headline-semibold" style={{ color: theme.colors.text }}>
+        <Text variant="headline-semibold" style={{ color: tokens.foreground }}>
           {title}
         </Text>
         {description ? (
-          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-2-regular" style={{ color: tokens.mutedForeground }}>
             {description}
           </Text>
         ) : null}
@@ -134,12 +134,12 @@ function reviewsLabel(messages: ListingEditorMessages, count: number | string): 
 
 function PagePreview({ listing }: { listing: ListingPreviewData }) {
   const { messages } = useMessages(LISTING_EDITOR_MESSAGES);
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const resolver = useImageResolver();
   const cover = listing.photos[0]
     ? resolvePhoto(listing.photos[0], resolver, listing.photoVariant)
     : undefined;
-  const hairline = theme.colors.border;
+  const hairline = tokens.border;
 
   return (
     <View
@@ -149,7 +149,7 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
         borderRadius: 20,
         borderWidth: 1,
         borderColor: hairline,
-        backgroundColor: theme.colors.background,
+        backgroundColor: tokens.background,
         overflow: 'hidden',
       }}
     >
@@ -157,7 +157,7 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
         style={{
           width: '100%',
           aspectRatio: 4 / 3,
-          backgroundColor: theme.colors.backgroundSecondary,
+          backgroundColor: tokens.surface,
         }}
       >
         {cover ? (
@@ -183,12 +183,12 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
           location={listing.location}
         />
         {listing.facts && listing.facts.length > 0 ? (
-          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+          <Text variant="body-2-regular" style={{ color: tokens.mutedForeground }}>
             {listing.facts.map((fact) => fact.accessibilityLabel ?? fact.label).join(' · ')}
           </Text>
         ) : null}
         {listing.description ? (
-          <Text variant="body-regular" numberOfLines={6} style={{ color: theme.colors.text }}>
+          <Text variant="body-regular" numberOfLines={6} style={{ color: tokens.foreground }}>
             {listing.description}
           </Text>
         ) : null}
@@ -207,11 +207,11 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
             paddingRight: 16,
           }}
         >
-          <Text variant="headline-semibold" style={{ color: theme.colors.text }}>
+          <Text variant="headline-semibold" style={{ color: tokens.foreground }}>
             {listing.price ?? listing.total}
           </Text>
           {listing.price && listing.priceUnit ? (
-            <Text variant="body-regular" style={{ color: theme.colors.textSecondary }}>
+            <Text variant="body-regular" style={{ color: tokens.mutedForeground }}>
               {listing.priceUnit}
             </Text>
           ) : null}

@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Text, typeScale } from '../typography';
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { usePrefersReducedMotion } from '../hooks/use-prefers-reduced-motion';
 import { useResolvedBloomLocale } from '../locale/context';
 import { formatCurrency } from '../locale/format-number';
@@ -23,7 +23,7 @@ export function SubscriptionPrice({
   suffix,
   description,
 }: SubscriptionPriceValue) {
-  const theme = useTheme();
+  const tokens = useColorTokens();
   const reduced = usePrefersReducedMotion();
   // The price's own locale, else the app's (`BloomProvider locale`).
   const resolvedLocale = useResolvedBloomLocale(locale);
@@ -61,7 +61,7 @@ export function SubscriptionPrice({
         <Animated.View style={copyStyle}>
           <Text
             variant="body-2-regular"
-            style={[styles.description, { color: theme.colors.textSecondary }]}
+            style={[styles.description, { color: tokens.mutedForeground }]}
           >
             {description}
           </Text>
