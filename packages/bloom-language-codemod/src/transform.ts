@@ -674,7 +674,7 @@ function printArg(arg: Arg, carry: (c: Carried) => string): string {
     ([k, v]) =>
       `${/^[A-Za-z_$][\w$]*$/.test(k) ? k : quote(k)}: ${isPoints(v) ? carry(v) : quote(v)}`,
   );
-  return `{ ${entries.join(', ')} }`;
+  return entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`;
 }
 
 const printMod = (mod: Mod, carry: (c: Carried) => string) =>

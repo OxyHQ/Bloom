@@ -531,7 +531,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `margin(edge?, v)` | space (negatives included), or `auto` (the free space on that side: `.margin('leading', 'auto')` is `ms-auto`), on the view itself: no view around it |
 | `clipped(on?)` | clips what the view draws to its bounds and its corner; `clipped(false)` draws what overflows it, React Native's `overflow: 'visible'` written out (NativeWind's `overflow-visible`), over a clip the view would otherwise have |
 | `align(a)`, `alignSelf(a)` | `start` `center` `end` `stretch` `baseline` (a stack's children; the view's own place) |
-| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, `'100%'`: pinned above its parent with `bottom`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`), an offset's axis points computed at render too (`{ y: nudge }`, React Native's `translateY`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`) |
+| `position({ top, bottom, leading, trailing, left, right, horizontal, vertical })`, `offset({ x, y })` | space, negatives included (see [Layout](#layout)); a position's edge also a percentage of the parent (`'25%'`, `'100%'`: pinned above its parent with `bottom`, the spec's `insetPercent`) and points computed at render (`{ top: insets.top + 8 }`), an offset's axis points computed at render too (`{ y: nudge }`, React Native's `translateY`). `horizontal` is both inline edges at once (React Native's `insetInline`), `vertical` both block edges (`insetBlock`); `.position({})` is a view taken out of the flow where it would sit, pinned by no edge (`position: 'absolute'` alone) |
 | `sticky(edge?)` | the web's `position: sticky` at `top` (the default) or `bottom`: held at its scroll container's edge once scrolled to it. React Native has no sticky position, so native draws the view in place; a list's or a scroll's sticky rows are `.stickyIndices()` |
 | `cursor(c)` | the pointer's shape over the view on the web (CSS's `cursor`): `auto` `default` `pointer` `grab` `grabbing` `text` `move` `not-allowed`; native has none, as NativeWind's `cursor-*` writes nothing there |
 | `zIndex(z)`, `hidden(on?)` | Bloom's `Z_INDEX`: `base` `raised` `floating` `dropdown`, or Tailwind's `'20'` `'30'` `'50'`, or an exact level (`'-1'` `'2'`…`'7'` `'60'` `'1000'`), or `auto` (Tailwind's `z-auto` as NativeWind writes it: `z-index: auto` on the web, nothing on native), or an order computed at render (`count - index`); out of the layout |
@@ -976,7 +976,10 @@ Text('Read the ', Text('terms').link('https://oxy.so/terms'), '.').font('caption
   codemod writes for a React Native `Text`, so the move changes no pixel: a
   face the app's bundler gives React Native's `Text` (`@oxy.so/app-preset`'s
   `baseFont`) reaches `RawText` alike. New screens use `Text`. Inside a `Text`
-  it is a span that inherits its parent's face.
+  it is a span that inherits its parent's face. It takes nothing set above it,
+  so a root or a `view()` body over one reads no environment, and the theme
+  only when a role inks it, as React Native's `Text` in a component that reads
+  the theme to ink it.
 
 - **Digits and breaking.** `.monospacedDigit()` draws digits of one width
   (`tabular-nums`, React Native's `fontVariant`). `.wordBreak('all')` lets a
@@ -4515,10 +4518,25 @@ inside it. It reads the theme when a node paints a theme colour; a fixed
 colour (`white`, `black/60`, natively) and an app's own colour read none. A
 tree of fixed geometry, a glyph in a fixed colour, an embedded element or a
 `view()` (which reads what it takes itself) reads nothing, and a `view()`
-inside it still reads what is set above. What a tree reads is known from its
-nodes, once per node, and read with React's `use`, so a root whose tree comes
-to read more stays the same component and keeps its state; a `view()` body
-reads the same way. Mention's feed video preview (a tap area and a mute button
+inside it still reads what is set above. A RawText takes no trait set above it
+(it writes only what its chain names), so it reads the theme only when a role
+inks it; an `Avatar` or an `AvatarGroup` hands Bloom its props as they are (a
+size, a shape, an avatar colour by name) and reads only what its box paints
+(an AvatarGroup's ring in a role, its item action), so a `view()` that hands
+its props to one costs what the component that renders Bloom's does (Mention's
+`AccountAvatar`). What a tree reads is known from its nodes, once per node
+(the modifiers that read nothing are the spec's `reads.nothing`), and read with
+React's `use`, so a root whose tree comes to read more stays the same component
+and keeps its state; a `view()` body reads the same way. A root whose tree is
+host views alone (stacks and spacers, `reads.hostViews`) and reads nothing has
+nothing for a boundary to provide: it is those views, with no fiber of its own
+(Mention's splash marker, `VStack().frame({ width: 'none', height: 'none' })
+.position({}).allowsHitTesting(false).onLayout(release)`, is the `View` it
+replaced). Such a tree holds no component and no state, so one that comes to
+read something is drawn again under a boundary, as JSX that comes to wrap a
+view in a component is; a root that holds a `view()`, an embedded element, a
+control or a list (whose items leave through a component of their own) keeps
+its boundary whatever it reads. Mention's feed video preview (a tap area and a mute button
 in one root) is its JSX's fibers, hooks and reads, and one read more, the
 environment its presses take. A component whose JSX holds two roots pays them
 twice; converting a region into one root, not each of its pieces into a root
@@ -5043,6 +5061,14 @@ every chain, and the pass changes only what it proves keeps its meaning.
   prefix (`HStack(…).padding('md')` before `.spacing(gap)`). Names resolve
   through scope analysis, so a local that shadows an import is never hoisted.
 - **Adds `"use memo"`** to every function passed to `view()`.
+- **Builds a root as it renders.** A dynamic `toElement(chain)` in JSX becomes
+  `<LanguageRoot build={() => chain} />`, so the handlers and refs the chain
+  takes reach the React Compiler as one JSX prop, never as arguments a call
+  might read during render (which costs the whole component its memoization).
+  A bare `view()` node stays `toElement`, which mounts its component, and so
+  does a chain of host views that reads nothing and takes no handler or ref
+  (the spec's `reads`), which `toElement` draws as those views, with no
+  boundary to build it in.
 - **Checks chains** against the spec: an unknown modifier for the node, a wrong
   argument count, or a literal token outside its set fails the build with the
   source line and a suggestion. Every chain is checked before anything is

@@ -20,6 +20,7 @@ import { createElement, memo, type ReactElement, type ReactNode } from 'react';
 import * as RN from 'react-native';
 import TestRenderer, { act } from 'react-test-renderer';
 import { BloomThemeProvider, useThemePaint } from '@oxy.so/bloom/theme';
+import { Avatar } from '@oxy.so/bloom/avatar';
 import { Button } from '@oxy.so/bloom/button';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { RiHeart3Line, RiVerifiedBadgeFill, RiVolumeMuteLine } from '@oxy.so/bloom/icons';
@@ -393,10 +394,36 @@ describe('a language node costs React what the JSX it stands for costs', () => {
   it('a root reads only what its tree takes, once each, and holds no hook', () => {
     const boundary = (node: Child, jsx: ReactElement) =>
       less(measured(toElement(node)), measured(jsx));
-    // Fixed geometry: the boundary's fiber alone.
+    // Fixed geometry: a host view that reads nothing is that view, with no boundary.
     expect(
       boundary(L.VStack().frame({ width: '120' }), <RN.View style={{ width: 120 }} />),
-    ).toEqual({ fibers: 1, hooks: 0, contexts: 0 });
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
+    // Mention's NativeSplashRelease: a zero-size marker that takes no pointer and reports its layout.
+    const noop = () => {};
+    expect(
+      boundary(
+        L.VStack()
+          .frame({ width: 'none', height: 'none' })
+          .position({})
+          .allowsHitTesting(false)
+          .onLayout(noop),
+        <RN.View
+          pointerEvents="none"
+          style={{ position: 'absolute', width: 0, height: 0 }}
+          onLayout={noop}
+        />,
+      ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
+    // Host views inside host views: still one tree of views.
+    expect(
+      boundary(
+        L.HStack(L.VStack().frame({ width: '120' }), L.Spacer()).padding('md'),
+        <RN.View style={{ flexDirection: 'row', padding: 12 }}>
+          <RN.View style={{ width: 120 }} />
+          <RN.View style={{ flex: 1 }} />
+        </RN.View>,
+      ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
     // A press: the environment, which hands it a `.disabled()` set above.
     expect(boundary(L.VStack().onPress(onPress), <RN.Pressable onPress={onPress} />)).toEqual({
       fibers: 1,
@@ -412,9 +439,20 @@ describe('a language node costs React what the JSX it stands for costs', () => {
     ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
     // A text: the traits set above it and the theme it inks with.
     expect(boundary(L.Text('a'), <Text>a</Text>)).toEqual({ fibers: 1, hooks: 0, contexts: 2 });
+    // A RawText takes nothing set above it: its own chain is all it writes.
+    expect(
+      boundary(L.RawText('a').font('14').lines(1), <RN.Text style={{ fontSize: 14 }}>a</RN.Text>),
+    ).toEqual({ fibers: 1, hooks: 0, contexts: 0 });
+    // Inked with a role, it reads the theme, as a component that reads it to ink a Text does.
+    expect(
+      boundary(
+        L.RawText('a').foreground('muted'),
+        <Themed>{(c) => <RN.Text style={{ color: c.textSecondary }}>a</RN.Text>}</Themed>,
+      ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
   });
 
-  it('the compiler’s root reads what its tree takes, as toElement’s does', () => {
+  it('the compiler’s root (a chain it builds as it renders) reads what its tree takes, as toElement’s does', () => {
     const compiled = (build: () => Child) => createElement(LanguageRoot, { build });
     expect(less(measured(compiled(() => L.VStack())), measured(<RN.View />))).toEqual({
       fibers: 1,
@@ -505,6 +543,31 @@ describe('a language node costs React what the JSX it stands for costs', () => {
       return <RN.View style={{ width: 120, height: 120 }} />;
     });
     expect(measured(toElement(Frame()))).toEqual(measured(<PlainFrame />));
+    // Mention's AccountAvatar: a component that hands Bloom's Avatar its props, and reads nothing itself.
+    const Account = view((props: { source: string; name: string }) =>
+      L.Avatar(props.source, { name: props.name }).size('lg').shape('squircle'),
+    );
+    function AccountAvatar(props: { source: string; name: string }) {
+      return <Avatar source={props.source} name={props.name} size={36} shape="squircle" />;
+    }
+    expect(measured(toElement(Account({ source: 'a', name: 'Ada' })))).toEqual(
+      measured(<AccountAvatar source="a" name="Ada" />),
+    );
+    // A RawText inside a view, inked with a role: the theme once, as the memo component that inks it.
+    const Label = view((props: { text: string }) =>
+      L.RawText(props.text).font('14').foreground('muted').lines(1),
+    );
+    const PlainLabel = memo(function PlainLabel(props: { text: string }) {
+      const c = useThemePaint();
+      return (
+        <RN.Text numberOfLines={1} style={{ fontSize: 14, color: c.textSecondary }}>
+          {props.text}
+        </RN.Text>
+      );
+    });
+    expect(measured(toElement(Label({ text: 'Lane' })))).toEqual(
+      measured(<PlainLabel text="Lane" />),
+    );
   });
 
   it('a list’s painted row that returns a root (toElement) and a row of themed JSX, per row', () => {

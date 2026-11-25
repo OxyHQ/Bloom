@@ -5,6 +5,7 @@
 ### Added
 
 - Maps a transform of translations alone as `.offset()` (a number written out as its space token, one computed at render as points), an `aspectRatio` computed at render, `width: 'auto'` and `w-auto`/`h-auto`/`size-auto` as the frame length `'auto'` (no longer dropped: on a Bloom component it takes back the component's own length), and `zIndex: 1000`/`z-[1000]` as `.zIndex('1000')`.
+- Maps `absolute` with no inset (a class or `position: 'absolute'` in a style) to `.position({})`, a view taken out of the flow where it sits, where it gave up (`absolute-without-edges`); an edge computed at render stays the position on its own.
 
 ## 0.4.0
 

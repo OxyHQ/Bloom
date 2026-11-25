@@ -60,7 +60,37 @@ const distribution: ParityCase[] = [
   },
 ];
 
+const noLayout = () => {};
+
+const MARKER = RN.StyleSheet.create({
+  marker: { position: 'absolute', width: 0, height: 0, pointerEvents: 'none' },
+});
+
 const placement: ParityCase[] = [
+  {
+    // Mention's splash release: a root of host views that reads nothing is its View, no boundary.
+    name: 'a zero-size marker out of the flow, taking no pointer, reporting its layout',
+    language: () =>
+      toElement(
+        L.VStack()
+          .frame({ width: 'none', height: 'none' })
+          .position({})
+          .allowsHitTesting(false)
+          .onLayout(noLayout),
+      ),
+    bloom: () => <RN.View style={MARKER.marker} onLayout={noLayout} />,
+  },
+  {
+    name: 'host views in host views, as one root with no boundary',
+    language: () =>
+      toElement(L.HStack(L.VStack().frame({ width: '120', height: 'xs' }), L.Spacer())),
+    bloom: () => (
+      <RN.View style={{ flexDirection: 'row' }}>
+        <RN.View style={{ width: 120, height: 4 }} />
+        <RN.View style={{ flex: 1 }} />
+      </RN.View>
+    ),
+  },
   {
     name: 'its own alignment, a stacking level',
     language: () => toElement(L.VStack(L.Text('a')).alignSelf('center').zIndex('floating')),

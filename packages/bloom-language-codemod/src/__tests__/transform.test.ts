@@ -1137,6 +1137,27 @@ export function A() {
     expect(result.fixtures[0]?.before).toContain('style={{ backgroundColor: paritySurface }}');
     expect(result.fixtures[0]?.themed).toBe(true);
   });
+  it('takes `absolute` with no edge out of the flow where it sits: a position of no edge', () => {
+    const result = run(`import { StyleSheet, View } from 'react-native';
+export function Marker({ onLayout, top }) {
+  return (
+    <View>
+      <View pointerEvents="none" style={styles.marker} onLayout={onLayout} />
+      <View className="absolute" style={{ top }} />
+    </View>
+  );
+}
+const styles = StyleSheet.create({ marker: { position: 'absolute', width: 0, height: 0 } });
+`);
+    const code = flat(result.code);
+    expect(code).toContain(
+      "VStack().frame({ width: 'none', height: 'none' }).position({}).allowsHitTesting(false).onLayout(onLayout)",
+    );
+    // An edge computed at render is the position: no empty one beside it.
+    expect(code).toContain('VStack().position({ top: top })');
+    expect(code).not.toContain('.position({}).position(');
+    expect(result.unconverted).toEqual([]);
+  });
   it('names a percentage of the parent by its length or edge token', () => {
     const result = run(`import { View } from 'react-native';
 export const A = () => (

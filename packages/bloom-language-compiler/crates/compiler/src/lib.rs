@@ -233,7 +233,10 @@ impl<'a> Compiler<'a, '_> {
     /// Whether `expression` is `toElement(chain)` (and an optional key) whose
     /// chain runs at render: what `lower_to_element` rewrites. A bare view
     /// node is left alone: `toElement` mounts its component directly, with no
-    /// boundary fiber, and a view's props reach React as JSX props already.
+    /// boundary fiber, and a view's props reach React as JSX props already. So
+    /// is a chain of host views that reads nothing and takes no handler or ref
+    /// (`Module::host_views`): `toElement` draws it as those views, with no
+    /// boundary to build it in.
     fn lowers(&self, expression: &Expression<'a>) -> bool {
         let Expression::CallExpression(call) = expression.without_parentheses() else { return false };
         self.depth > 0
@@ -245,6 +248,7 @@ impl<'a> Compiler<'a, '_> {
                 // A bare view (`Row(props)`) mounts its own component, with no boundary to build it in.
                 !matches!(self.module.callee(chain, self.scoping), Some(Binding::ViewConstructor { .. }))
                     && self.module.is_chain(chain, self.scoping)
+                    && !self.module.host_views(chain, self.scoping)
                     && self.module.static_after(chain, self.scoping).is_none()
             })
     }

@@ -2972,6 +2972,61 @@ export const ENVIRONMENT_TAKERS = {
   }
 } as const;
 
+/** The modifiers that place, size or name a view: a tree that only they modify reads nothing where it starts. */
+export const READS_NOTHING: readonly string[] = [
+  "padding",
+  "frame",
+  "aspectRatio",
+  "corner",
+  "cornerCurve",
+  "clipped",
+  "borderStyle",
+  "grow",
+  "shrink",
+  "alignSelf",
+  "position",
+  "sticky",
+  "cursor",
+  "zIndex",
+  "hidden",
+  "basis",
+  "flex",
+  "margin",
+  "allowsHitTesting",
+  "accessibilityOnly",
+  "spacing",
+  "horizontalSpacing",
+  "verticalSpacing",
+  "childSpacing",
+  "align",
+  "justify",
+  "wrap",
+  "axis",
+  "alignment",
+  "size",
+  "label",
+  "hint",
+  "role",
+  "testID",
+  "id",
+  "hitSlop",
+  "accessibilityState",
+  "accessibilityValue",
+  "liveRegion",
+  "accessibilityHidden",
+  "accessibilityElement",
+  "focusable",
+  "collapsable",
+  "ref",
+  "onLayout"
+];
+/** The nodes that are a host view of their own: a root whose tree is these alone and reads nothing is that view. */
+export const HOST_VIEWS: readonly string[] = [
+  "stack",
+  "zstack",
+  "spacer"
+];
+
 /** The object parameters (`frame`, `position`'s edges, `offset`): their keys and the token set of each value. */
 export const OBJECTS = {
   "refresh": {
