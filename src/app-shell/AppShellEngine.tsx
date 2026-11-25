@@ -15,6 +15,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, {
+  executeOnUIRuntimeSync,
   runOnJS,
   useAnimatedStyle,
   useDerivedValue,
@@ -552,12 +553,49 @@ export function createAppShellEngine() {
       defaultValue: false,
       onChange: onDrawerOpenChange,
     });
-    // The drawer always opens the full panel, whatever the in-flow variant.
-    const drawerSidebar = sidebar
-      ? { ...closingOnChoice(sidebar, () => setOpen(false)), variant: 'panel' as const }
-      : undefined;
     const drawerAvailable = hasNav && !wide;
     const isOpen = open && drawerAvailable;
+    // The drawer's open amount: `reveal` always animates it; the `overlay`
+    // drawer only under `drawerSwipe` (see "the drawer's open amount" below).
+    const reveal = useSharedValue(isOpen ? 1 : 0);
+    // A request to open or close a native `reveal` drawer moves it before React
+    // renders anything: the open amount starts toward its end on the UI thread
+    // in this call, and the state (the shell's re-render, the hit-testing and
+    // accessibility that follow it, the menu icon) follows while it moves. The
+    // effect that drives the open amount finds that motion already under way.
+    const revealRequested = useRef<number | null>(null);
+    // Bumped by every request a press moved and every settled swipe, so the
+    // effect re-reads the state asked for, and slides back when a controlled
+    // parent declined it.
+    const [openRequests, setOpenRequests] = useState(0);
+    const requestOpen = useCallback(
+      (next: boolean) => {
+        if (
+          drawerStyle === 'reveal' &&
+          drawerAvailable &&
+          Platform.OS !== 'web' &&
+          !reducedMotion &&
+          next !== isOpen
+        ) {
+          const target = next ? 1 : 0;
+          revealRequested.current = target;
+          // Synchronously, so the motion is under way on the UI thread before
+          // the state's render can start: React may flush that render before
+          // an assignment's own trip to the UI thread (a microtask) leaves.
+          executeOnUIRuntimeSync((to: number) => {
+            'worklet';
+            reveal.value = withTiming(to, { duration: REVEAL_MS, easing: REVEAL_EASE });
+          })(target);
+          setOpenRequests((count) => count + 1);
+        }
+        setOpen(next);
+      },
+      [drawerStyle, drawerAvailable, reducedMotion, isOpen, reveal, setOpen],
+    );
+    // The drawer always opens the full panel, whatever the in-flow variant.
+    const drawerSidebar = sidebar
+      ? { ...closingOnChoice(sidebar, () => requestOpen(false)), variant: 'panel' as const }
+      : undefined;
     // `drawerSwipe` is a native gesture: the web keeps its press-only drawer.
     const swipeEnabled = drawerSwipe && hasNav && Platform.OS !== 'web';
     const swipeOverlay = swipeEnabled && drawerStyle === 'overlay';
@@ -576,7 +614,7 @@ export function createAppShellEngine() {
 
     const revealInteractionOpen = isOpen && drawerStyle === 'reveal';
     const revealDrawerRef = usePanelInteraction(revealInteractionOpen, revealInteractionOpen, () =>
-      setOpen(false),
+      requestOpen(false),
     );
 
     const revealAvailable = drawerStyle === 'reveal' && drawerAvailable;
@@ -588,13 +626,13 @@ export function createAppShellEngine() {
         drawerAvailable,
         drawerDisplay: cssScope && hasNav ? 'var(--bloom-drawer-trigger-display, none)' : undefined,
         drawerOpen: isOpen,
-        openDrawer: () => setOpen(true),
-        closeDrawer: () => setOpen(false),
-        toggleDrawer: () => setOpen(!isOpen),
+        openDrawer: () => requestOpen(true),
+        closeDrawer: () => requestOpen(false),
+        toggleDrawer: () => requestOpen(!isOpen),
         navigationDock: navDock.state,
         topBarDock: topDock.state,
       }),
-      [drawerAvailable, isOpen, setOpen, cssScope, hasNav, navDock.state, topDock.state],
+      [drawerAvailable, isOpen, requestOpen, cssScope, hasNav, navDock.state, topDock.state],
     );
 
     /**
@@ -1316,7 +1354,6 @@ export function createAppShellEngine() {
     // `reveal` always animates it; the `overlay` drawer only under
     // `drawerSwipe`, where a finger drives the same value (below) — without the
     // swipe it mounts open and unmounts closed, exactly as it always has.
-    const reveal = useSharedValue(isOpen ? 1 : 0);
     // The `overlay` drawer's travel is its whole box sliding in from
     // off-screen: the panel, 12 either side, and the device's side insets when
     // the shell owns the safe area.
@@ -1338,11 +1375,12 @@ export function createAppShellEngine() {
       setWasOpen(isOpen);
       if (!isOpen) setOverlayHeld(true);
     }
-    // Bumped by every settled swipe, so the effect below re-reads the state the
-    // swipe asked for — and slides back when a controlled parent declined it.
-    const [swipeSettles, setSwipeSettles] = useState(0);
     useEffect(() => {
       const target = isOpen && (drawerStyle === 'reveal' || swipeOverlay) ? 1 : 0;
+      // A request already moving the drawer there (`requestOpen`) is left to run.
+      const requested = revealRequested.current;
+      revealRequested.current = null;
+      if (requested === target) return;
       // The browser interpolates web frames; native keeps its UI-thread timing.
       if (Platform.OS === 'web' || reducedMotion || (swipeOverlay && reveal.value === target)) {
         reveal.value = target;
@@ -1359,11 +1397,11 @@ export function createAppShellEngine() {
             }
           : undefined,
       );
-    }, [isOpen, drawerStyle, swipeOverlay, reducedMotion, reveal, swipeSettles]);
+    }, [isOpen, drawerStyle, swipeOverlay, reducedMotion, reveal, openRequests]);
     const settleSwipe = useCallback(
       (next: boolean) => {
         if (next !== isOpen) setOpen(next);
-        setSwipeSettles((count) => count + 1);
+        setOpenRequests((count) => count + 1);
       },
       [isOpen, setOpen],
     );
@@ -1466,17 +1504,6 @@ export function createAppShellEngine() {
       [revealAmount, dir, revealOffset],
     );
     const veilStyle = useAnimatedStyle(() => ({ opacity: revealAmount.value }), [revealAmount]);
-    // A closed `reveal` drawer, at rest, is out of the native view tree: Fabric
-    // mounts no view under `display: none`, so the sidebar's views are not
-    // created, laid out, drawn or carried by every change to the window while
-    // nothing can see them, and its React state stays. The first frame that
-    // opens it, a press or the edge swipe, mounts it again on the UI thread.
-    // The web keeps its CSS transition and `inert` instead.
-    const drawerLeavesTree = Platform.OS !== 'web';
-    const drawerPresenceStyle = useAnimatedStyle(
-      () => (drawerLeavesTree ? { display: revealAmount.value > 0 ? 'flex' : 'none' } : {}),
-      [drawerLeavesTree, revealAmount],
-    );
 
     const navHostWidth = navContentWidth + (canvasNavPad ? gutter : 0);
     const navSlotStyle = useDockSlotStyle(
@@ -1804,7 +1831,7 @@ export function createAppShellEngine() {
     };
     const overlayPanel = drawerSidebar ? (
       <View pointerEvents={isOpen ? 'auto' : 'none'} style={{ height: '100%' }}>
-        <SidebarSlot {...drawerSidebar} mobile onClose={() => setOpen(false)} />
+        <SidebarSlot {...drawerSidebar} mobile onClose={() => requestOpen(false)} />
       </View>
     ) : null;
     const overlayFrameProps = {
@@ -1814,7 +1841,7 @@ export function createAppShellEngine() {
     const overlayDrawer = (
       <>
         <Backdrop
-          onPress={() => setOpen(false)}
+          onPress={() => requestOpen(false)}
           disabled={!isOpen}
           progress={swipeOverlay ? reveal : undefined}
           blurIntensity={0}
@@ -1940,38 +1967,41 @@ export function createAppShellEngine() {
               ]}
             >
               {drawerAvailable && drawerSidebar ? (
-                <Animated.View
+                // Laid out while closed, so opening changes no layout: the rail's
+                // opacity is 0 at rest (nothing is drawn), and the open amount
+                // moves only opacity and transforms. The host never flattens, so
+                // its accessibility toggling moves no children.
+                <View
                   ref={revealDrawerRef}
+                  collapsable={false}
                   tabIndex={-1}
                   testID={testID ? `${testID}-navigation-drawer` : undefined}
                   aria-hidden={!isOpen}
                   accessibilityViewIsModal={isOpen}
                   // The page and its veil are hidden from VoiceOver while this is
                   // modal, so its escape gesture is the way out.
-                  onAccessibilityEscape={() => setOpen(false)}
+                  onAccessibilityEscape={() => requestOpen(false)}
                   accessibilityElementsHidden={!isOpen}
                   importantForAccessibility={isOpen ? 'auto' : 'no-hide-descendants'}
                   {...(Platform.OS === 'web' && !isOpen ? { inert: true } : {})}
                   pointerEvents={isOpen ? 'auto' : 'none'}
-                  style={[
-                    {
-                      position: doc ? WEB_POSITION_FIXED : 'absolute',
-                      top: 0,
-                      bottom: 0,
-                      insetInlineStart: 0,
-                      width: revealOffset,
-                      // Full height, so the device's top and bottom edges are its
-                      // own to clear wherever the frame leaves them, exactly as the
-                      // portaled overlay drawer does. Without `safeArea` the pages
-                      // own their edges, and the drawer ran under the status bar.
-                      paddingTop: revealGutter + insets.top - frameTopInset,
-                      paddingBottom: revealGutter + insets.bottom - frameBottomInset,
-                      paddingInlineStart: revealGutter / 2,
-                    },
-                    drawerPresenceStyle,
-                  ]}
+                  style={{
+                    position: doc ? WEB_POSITION_FIXED : 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    insetInlineStart: 0,
+                    width: revealOffset,
+                    // Full height, so the device's top and bottom edges are its
+                    // own to clear wherever the frame leaves them, exactly as the
+                    // portaled overlay drawer does. Without `safeArea` the pages
+                    // own their edges, and the drawer ran under the status bar.
+                    paddingTop: revealGutter + insets.top - frameTopInset,
+                    paddingBottom: revealGutter + insets.bottom - frameBottomInset,
+                    paddingInlineStart: revealGutter / 2,
+                  }}
                 >
                   <Animated.View
+                    collapsable={false}
                     style={[
                       {
                         height: '100%',
@@ -1987,13 +2017,14 @@ export function createAppShellEngine() {
                         {...drawerSidebar}
                         mobile
                         surface="plain"
-                        onClose={() => setOpen(false)}
+                        onClose={() => requestOpen(false)}
                       />
                     )}
                   </Animated.View>
-                </Animated.View>
+                </View>
               ) : null}
               <Animated.View
+                collapsable={false}
                 testID={testID ? `${testID}-reveal-page` : undefined}
                 style={[
                   {
@@ -2013,6 +2044,7 @@ export function createAppShellEngine() {
                 ]}
               >
                 <View
+                  collapsable={false}
                   aria-hidden={isOpen}
                   accessibilityElementsHidden={isOpen}
                   importantForAccessibility={isOpen ? 'no-hide-descendants' : 'auto'}
@@ -2034,6 +2066,7 @@ export function createAppShellEngine() {
                   </View>
                 </View>
                 <Animated.View
+                  collapsable={false}
                   pointerEvents={isOpen ? 'auto' : 'none'}
                   style={[
                     {
@@ -2053,7 +2086,7 @@ export function createAppShellEngine() {
                     focusable={isOpen}
                     tabIndex={isOpen ? 0 : -1}
                     aria-hidden={!isOpen}
-                    onPress={() => setOpen(false)}
+                    onPress={() => requestOpen(false)}
                     testID={testID ? `${testID}-veil` : undefined}
                     style={{
                       flex: 1,
@@ -2065,6 +2098,7 @@ export function createAppShellEngine() {
                 </Animated.View>
               </Animated.View>
               <Animated.View
+                collapsable={false}
                 pointerEvents={isOpen ? 'none' : 'box-none'}
                 testID={testID ? `${testID}-reveal-bars` : undefined}
                 aria-hidden={isOpen}

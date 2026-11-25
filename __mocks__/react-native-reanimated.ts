@@ -114,6 +114,11 @@ const Reanimated = {
     cb?.(true);
     return val;
   },
+  // No UI thread here: the worklet runs where it is called, at once.
+  executeOnUIRuntimeSync:
+    <A extends unknown[], R>(worklet: (...args: A) => R) =>
+    (...args: A) =>
+      worklet(...args),
   withRepeat: (val: number, _count?: number, _reverse?: boolean) => val,
   withDelay: (_delay: number, val: number) => val,
   withSequence: (...vals: number[]) => (vals.length > 0 ? vals[vals.length - 1] : 0),
@@ -263,6 +268,7 @@ export const interpolate = Reanimated.interpolate;
 export const interpolateColor = Reanimated.interpolateColor;
 export const Extrapolation = Reanimated.Extrapolation;
 export const runOnJS = Reanimated.runOnJS;
+export const executeOnUIRuntimeSync = Reanimated.executeOnUIRuntimeSync;
 export const useAnimatedRef = Reanimated.useAnimatedRef;
 export const dispatchCommand = Reanimated.dispatchCommand;
 export const useHandler = Reanimated.useHandler;
