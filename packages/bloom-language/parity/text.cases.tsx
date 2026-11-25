@@ -649,12 +649,19 @@ const raw: ParityCase[] = [
   {
     name: 'RawText, a size on the web only',
     language: () => toElement(L.RawText('Raw').when('web', (v) => v.font('14'))),
-    bloom: () => <RN.Text style={RN.Platform.OS === 'web' ? { fontSize: 14 } : undefined}>Raw</RN.Text>,
+    bloom: () => (
+      <RN.Text style={RN.Platform.OS === 'web' ? { fontSize: 14 } : undefined}>Raw</RN.Text>
+    ),
   },
   {
     name: 'a span with the platform’s monospaced face on native only',
     language: () =>
-      toElement(L.Text('id ', L.Text('spam').when('native', (v) => v.font('system-mono')))),
+      toElement(
+        L.Text(
+          'id ',
+          L.Text('spam').when('native', (v) => v.font('system-mono')),
+        ),
+      ),
     bloom: () => (
       <Text>
         {'id '}

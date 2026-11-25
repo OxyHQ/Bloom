@@ -915,8 +915,7 @@ function planVariant(
       // what their own chain names, and this is named there.
       if (condition === null) result.env.push(modifier);
       else result.envVariants.push([condition, modifier]);
-    }
-    else if (PLACE_KINDS.has(modifier.kind)) {
+    } else if (PLACE_KINDS.has(modifier.kind)) {
       result.place.variants.push([condition, modifier as PlaceModifier]);
       result.place.key += mark;
     } else if (STACK_KINDS.has(modifier.kind)) {
