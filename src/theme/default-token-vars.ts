@@ -23,6 +23,7 @@ export const DEFAULT_TOKEN_VARS: Readonly<Record<`--${CanonicalToken}`, string>>
   '--tertiary-foreground': 'rgb(255 239 237)',
   '--muted': 'rgb(231 193 221)',
   '--muted-foreground': 'rgb(89 60 96)',
+  '--faint-foreground': 'rgb(89 60 96)',
   '--accent': 'rgb(231 193 221)',
   '--accent-foreground': 'rgb(89 60 96)',
   '--destructive': 'rgb(186 26 26)',

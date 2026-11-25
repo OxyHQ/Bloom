@@ -423,7 +423,7 @@
     "$comment": "role: [ThemeColors key (native paint), canonical CSS variable without -- (web)]; a colour the same in every theme (white, black, transparent) gives the colour itself for the web. surfaceFill is the fill of the surface the view sits on (Bloom's useSurfaceFill(): the fill a container published, or its level's): no theme colour or CSS variable holds it, so the leaf that paints a view reads it, on the web too (null).",
     "foreground": ["text", "foreground"],
     "muted": ["textSecondary", "muted-foreground"],
-    "textTertiary": ["textTertiary", "muted-foreground"],
+    "textTertiary": ["textTertiary", "faint-foreground"],
     "primary": ["primary", "primary"],
     "primaryText": ["primarySubtleForeground", "primary-text"],
     "onPrimary": ["primaryForeground", "primary-foreground"],

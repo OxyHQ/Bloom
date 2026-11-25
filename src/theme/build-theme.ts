@@ -81,7 +81,11 @@ function buildColorsFromPreset(
       // asked for against the fill it lands on, which is what
       // `styles/surface-levels.ts` `surfaceTextOn()` returns and what every family
       // that wants a caption grey now calls.
-      textTertiary: g('muted-foreground'),
+      //
+      // It has a token of its own, `--faint-foreground`, which the policy holds at
+      // `--muted-foreground`'s colour: in an adaptive theme the platform answers
+      // it with its own tertiary label, and that token carries it.
+      textTertiary: g('faint-foreground'),
 
       border: g('border'),
       borderLight: g('input'),

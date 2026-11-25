@@ -83,6 +83,15 @@ describe.each(['android', 'ios'] as const)('on %s', (os) => {
     );
   });
 
+  it('adaptive: the tertiary text is the platform’s tertiary label, in both readers', () => {
+    const platform = os === 'android' ? Color.android.dynamic.outline : Color.ios.tertiaryLabel;
+    const { colors, tokens } = readers('adaptive');
+    expect(colors.textTertiary).toBe(platform);
+    expect(tokens.faintForeground).toBe(platform);
+    // Its own role, not the quiet text's.
+    expect(tokens.mutedForeground).not.toBe(platform);
+  });
+
   it('a scope in the root’s mode keeps the platform palette', () => {
     expect(readers('adaptive', 'light')).toEqual(readers('adaptive'));
   });
@@ -109,7 +118,6 @@ describe.each(['android', 'ios'] as const)('on %s', (os) => {
 const OWN_PLATFORM_ROLE = [
   'primaryDark',
   'primaryLight',
-  'textTertiary',
   'negative',
   'negativeForeground',
   'negativeSubtle',
@@ -140,6 +148,20 @@ it('every preset, light and dark: the token record holds each field’s colour',
           theme.colors[field],
         ]);
       }
+    }
+  }
+});
+
+it('every preset, light and dark: the tertiary text is the quiet text', () => {
+  for (const preset of APP_COLOR_NAMES) {
+    for (const mode of ['light', 'dark'] as const) {
+      const { theme, vars } = buildPresetPalette(preset, mode);
+      expect([preset, mode, vars['--faint-foreground']]).toEqual([
+        preset,
+        mode,
+        vars['--muted-foreground'],
+      ]);
+      expect(theme.colors.textTertiary).toBe(theme.colors.textSecondary);
     }
   }
 });

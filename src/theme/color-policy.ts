@@ -603,6 +603,9 @@ export function buildPolicyTokens(
     '--popover-foreground': monochrome ? roles.onSurface : foreground,
     '--sidebar-foreground': monochrome ? roles.onSurface : foreground,
     '--muted-foreground': monochrome ? roles.onSurfaceVariant : mutedForeground,
+    // The tertiary text is the quiet text: a fixed third grey is measured on one
+    // surface and lands on all of them (`build-theme.ts`, `textTertiary`).
+    '--faint-foreground': monochrome ? roles.onSurfaceVariant : mutedForeground,
     '--border': monochrome ? roles.outlineVariant : boundary,
     '--input': monochrome ? roles.outlineVariant : boundary,
     '--sidebar-border': monochrome ? roles.outlineVariant : boundary,
