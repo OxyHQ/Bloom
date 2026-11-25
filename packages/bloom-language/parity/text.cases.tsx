@@ -637,6 +637,41 @@ const raw: ParityCase[] = [
     bloom: () => <RN.Text accessibilityLiveRegion="polite">Raw</RN.Text>,
   },
   {
+    // Mention's labeler slug: the platform's monospaced face natively, the web's inherited face.
+    name: 'RawText, the platform’s monospaced face on native only',
+    language: () => toElement(L.RawText('spam').when('native', (v) => v.font('system-mono'))),
+    bloom: () => (
+      <RN.Text style={RN.Platform.OS === 'web' ? undefined : { fontFamily: 'monospace' }}>
+        spam
+      </RN.Text>
+    ),
+  },
+  {
+    name: 'RawText, a size on the web only',
+    language: () => toElement(L.RawText('Raw').when('web', (v) => v.font('14'))),
+    bloom: () => (
+      <RN.Text style={RN.Platform.OS === 'web' ? { fontSize: 14 } : undefined}>Raw</RN.Text>
+    ),
+  },
+  {
+    name: 'a span with the platform’s monospaced face on native only',
+    language: () =>
+      toElement(
+        L.Text(
+          'id ',
+          L.Text('spam').when('native', (v) => v.font('system-mono')),
+        ),
+      ),
+    bloom: () => (
+      <Text>
+        {'id '}
+        <RN.Text style={RN.Platform.OS === 'web' ? undefined : { fontFamily: 'monospace' }}>
+          spam
+        </RN.Text>
+      </Text>
+    ),
+  },
+  {
     name: 'RawText, bare',
     language: () => toElement(L.RawText('Raw')),
     bloom: () => <RN.Text>Raw</RN.Text>,
