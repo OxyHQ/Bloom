@@ -22,11 +22,8 @@ export interface PointsArg {
 }
 
 export type Arg =
-  | string
-  | number
-  | boolean
-  | PointsArg
-  | Readonly<Record<string, string | PointsArg>>;
+  /** `undefined` written out: an argument the modifier takes as none (a border's colour). */
+  undefined | string | number | boolean | PointsArg | Readonly<Record<string, string | PointsArg>>;
 
 export const isPoints = (arg: unknown): arg is PointsArg =>
   typeof arg === 'object' && arg !== null && (arg as { hole?: unknown }).hole === 'points';

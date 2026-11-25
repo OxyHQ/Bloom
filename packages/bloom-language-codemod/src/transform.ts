@@ -667,6 +667,7 @@ const quote = (text: string) =>
 
 /** An argument as code; points computed at render are their carried value (`carry`). */
 function printArg(arg: Arg, carry: (c: Carried) => string): string {
+  if (arg === undefined) return 'undefined';
   if (typeof arg === 'string') return quote(arg);
   if (typeof arg === 'number' || typeof arg === 'boolean') return String(arg);
   if (isPoints(arg)) return carry(arg);

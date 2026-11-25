@@ -547,7 +547,7 @@ The vocabulary is closed. Every value is a name from the spec, whose every rung
 | `leading(l)` | Bloom line heights (ratios of the size) `tight` 1.15, `close` 1.25, `snug` 1.3, `easy` 1.375, `normal` 1.5, `relaxed` 1.625; or an exact px height (`'14px'` … `'40px'`, and `'96px'`, Tailwind's `text-8xl` line, a 96pt countdown's) |
 | `foreground(c)`, `background(c)` | colour roles: `foreground` `muted` `primary` `surface` `card` `mutedFill` `border` `error` `destructive` `primaryText` `white` `black`…, or a role at an opacity token (`'muted/70'`); `foreground(undefined)` is no ink of its own (SwiftUI's `foregroundColor(nil)`), so `.foreground(invalid ? 'error' : undefined)` inks the view only when it is invalid |
 | `borderStyle(s)` | the border's line: `solid` (the default), `dashed`, `dotted` (React Native's `borderStyle`), in the border's view |
-| `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick`, or an exact width (`'0.5'`, a fixed half point; `'1.5'` `'2.5'` `'3'` `'4'`) |
+| `border(c, width?, edge?)` | colour role (or a role at an opacity); `hairline` (the platform hairline), `thin` or `thick`, or an exact width (`'0.5'`, a fixed half point; `'1.5'` `'2.5'` `'3'` `'4'`). A colour of `undefined` writes the width alone, as a style with a `borderWidth` and no `borderColor`: the line keeps the platform's default colour (black natively, react-native-web's own on the web), so `.border(subscribed ? 'border' : undefined, 'thin')` is Mention's labelers pill; it reads no theme |
 | edges | `padding`, `margin` and `border` take `leading` and `trailing` (the reading direction's sides) and `left` and `right` (physical, the same right to left) |
 | `corner(r, side?)`, `cornerCurve(c)` | radius rungs, numeric radii (`'6'` `'7'` `'10'` `'14'` `'15'` `'18'` `'22'`), `full` (Bloom's `radius-max`, 9999; an app's 999 is `full` too, since both round any box under 1998pt fully), `infinite` (Tailwind's `rounded-full` as NativeWind writes it: 9007199254740000 on native, `calc(infinity * 1px)` on the web; a Bloom component that takes a radius in points gets `full`), `concentric`; the corners it rounds: `all`, `top` `bottom` `leading` `trailing`, or one (`top-leading`…), which follow the reading direction, or `left` `right` and one (`top-left`…), which do not (Tailwind's `rounded-l`, `rounded-tl`…); `round` `smooth` (see [Material](#material)) |
 | `opacity(o)` | `transparent` 0, `half` 0.5, `opaque` 1; or a percent (`'5'` `'10'` `'20'` `'25'` `'30'` `'40'` `'45'` `'60'` `'70'` `'75'` `'80'` `'85'` `'90'`) |
@@ -2543,6 +2543,16 @@ ErrorBoundary(Feed()).title('The feed failed').resetKey(userId)
   `.lines(n)`. The box modifiers (padding, frame, background, corner, margin,
   flex) are the card's `style`, as an app writes them; on the web a role in
   it is its CSS variable, as Bloom's prepainted theme hands it to an app.
+  The card's own box is the one its padding, frame and fill share, in that
+  order: a `.background()` there is Bloom Card's `style.backgroundColor`,
+  which its surface paints from, so `.background('transparent')` draws no
+  surface at all (Mention's composer zeroes a card's fill so:
+  `.padding('lg').frame({ width: 'full', height: 'full' }).background('transparent').grow()`).
+  A background after a `.corner()` or a second padding is a view around the
+  card, as anywhere (see [Order means nesting](#order-means-nesting)), and
+  the card still paints its own surface inside it. Its corner and outline are
+  `.radius()` and `.outline()`: a border width or a corner in its `style` is
+  Bloom's to ignore, so the chain writes neither.
 - **Row.** `.subtitle()`, `.leadingView(...)` and `.trailing(...)` (its slots,
   as views), `.size()`, `.lines(n)` (the title's), `.disabled()`,
   `.destructive()`, `.selected()`, `.active()`, `.highlighted()`,

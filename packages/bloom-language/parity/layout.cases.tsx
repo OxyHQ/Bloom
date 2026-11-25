@@ -1646,6 +1646,46 @@ const hostProps: ParityCase[] = [
   },
 ];
 
+/**
+ * A border whose colour is the platform's: a width with no colour (Mention's
+ * labelers pill, `borderWidth: 1` unsubscribed and `borderColor` the theme's
+ * border once subscribed), black natively and react-native-web's own on the web.
+ */
+const defaultBorder: ParityCase[] = [false, true].map((subscribed) => ({
+  name: `a border width ${subscribed ? 'in a role' : 'in the platform’s default colour'}, chosen at render`,
+  language: () =>
+    toElement(
+      L.VStack(L.Text('Subscribe'))
+        .padding('horizontal', '14')
+        .padding('vertical', '6')
+        .border(subscribed ? 'border' : undefined, 'thin')
+        .corner('xl')
+        .align('center')
+        .justify('center'),
+    ),
+  bloom: () => (
+    <Themed>
+      {(c) => (
+        <RN.View
+          style={{
+            paddingStart: 14,
+            paddingEnd: 14,
+            paddingTop: 6,
+            paddingBottom: 6,
+            borderWidth: 1,
+            ...(subscribed ? { borderColor: c.border } : null),
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text>Subscribe</Text>
+        </RN.View>
+      )}
+    </Themed>
+  ),
+}));
+
 /** Mention's unread fill at 5% and an edge at 25%, and a sticker's 120pt frame. */
 const fives: ParityCase[] = [
   {
@@ -1693,6 +1733,7 @@ export const LAYOUT_CASES: ParityCase[] = [
   ...pressFade,
   ...accessibility,
   ...appLayout,
+  ...defaultBorder,
   ...roles,
   ...options,
   ...tabs,

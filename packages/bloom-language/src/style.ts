@@ -774,7 +774,8 @@ function modifiersStyle(layer: Layer, modifiers: readonly LayerModifier[]): Reso
       case 'border': {
         const prefix = BORDER_EDGE_KEY[modifier.edge];
         style[`${prefix}Width`] = resolveBorderWidth(modifier.width);
-        style[`${prefix}Color`] = ink(modifier.value);
+        // No colour: the platform's default stays (React Native's black, react-native-web's own).
+        if (modifier.value !== undefined) style[`${prefix}Color`] = ink(modifier.value);
         break;
       }
       case 'borderStyle':

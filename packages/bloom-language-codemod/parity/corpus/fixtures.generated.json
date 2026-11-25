@@ -1,5 +1,35 @@
 [
  {
+  "name": "components/Borders.tsx:8",
+  "before": "<View style={{ flexDirection: 'row' }}>\n      <View\n        style={{\n          borderWidth: 1,\n          borderRadius: 20,\n          paddingHorizontal: 12,\n          paddingVertical: 6,\n          alignItems: 'center',\n        }}\n      >\n        <Text>Subscribe</Text>\n      </View>\n      <View className=\"border rounded-full px-3\">\n        <Text>Class</Text>\n      </View>\n      <View style={{ borderBottomWidth: 2 }}>\n        <Text>Rule</Text>\n      </View>\n    </View>",
+  "after": "toElement(HStack(VStack(LText('Subscribe')).padding('horizontal', 'md').padding('vertical', '6').border(undefined, 'thin').corner('xl').align('center'), VStack(LText('Class')).padding('horizontal', 'md').border(undefined, 'thin').corner('infinite'), VStack(LText('Rule')).border(undefined, 'thick', 'bottom')))",
+  "bindings": {
+   "View": {
+    "module": "react-native",
+    "imported": "View"
+   },
+   "Text": {
+    "module": "@oxy.so/bloom/typography",
+    "imported": "Text"
+   }
+  },
+  "language": [
+   "HStack",
+   "VStack",
+   "Text: LText"
+  ],
+  "classes": [
+   "border",
+   "rounded-full",
+   "px-3"
+  ],
+  "within": [],
+  "themed": false,
+  "insets": false,
+  "screen": false,
+  "appColors": null
+ },
+ {
   "name": "components/ComponentProps.tsx:17",
   "before": "<Avatar source={'⟨0⟩'} size={36} style={{ borderRadius: 12 }} />",
   "after": "toElement(LAvatar('⟨0⟩').size('lg').cornerRadius('md'))",

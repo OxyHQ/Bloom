@@ -127,6 +127,22 @@ export function A({ depth, bar }) {
     expect(flat(code)).toContain("bottom: '100%'");
     expect(flat(code)).toContain(".shrink('20')");
   });
+  it('maps a border width with no colour as the platform default colour, and keeps one beside a colour JSX', () => {
+    const { code } = run(`import { View, Text } from 'react-native';
+export function A() {
+  return (
+    <View>
+      <View style={{ borderWidth: 1, borderRadius: 20, paddingVertical: 6 }}><Text>a</Text></View>
+      <View style={{ borderBottomWidth: 2 }}><Text>b</Text></View>
+      <View style={{ borderWidth: 1, borderColor: '#123456' }}><Text>c</Text></View>
+    </View>
+  );
+}
+`);
+    expect(flat(code)).toContain(".border(undefined, 'thin')");
+    expect(flat(code)).toContain(".border(undefined, 'thick', 'bottom')");
+    expect(flat(code)).toContain("<View style={{ borderWidth: 1, borderColor: '#123456' }}>");
+  });
   it("maps a header's back chosen at render between Bloom's own and none", () => {
     const { code } = run(`import { PageHeader } from '@oxy.so/bloom/page-header';
 export const A = ({ showBack }) => (

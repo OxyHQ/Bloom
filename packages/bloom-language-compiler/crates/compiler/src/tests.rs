@@ -565,6 +565,18 @@ fn a_chip_s_tone_is_chosen_at_render() {
 }
 
 #[test]
+fn a_border_width_keeps_the_platform_s_colour() {
+    let ok = compiled(
+        "export const x = (on) => VStack(VStack().border(undefined, 'thin'), VStack().border(on ? 'border' : undefined, 'thick', 'bottom'));\n",
+    );
+    assert!(ok.diagnostics.is_empty(), "{:?}", ok.diagnostics.first().map(|d| &d.message));
+    let width = compiled("export const x = () => VStack().border(undefined, 'wide');\n");
+    assert!(width.diagnostics[0].message.contains("'wide'"), "{}", width.diagnostics[0].message);
+    let alone = compiled("export const x = () => VStack().border();\n");
+    assert!(alone.diagnostics[0].message.contains(".border() takes"), "{}", alone.diagnostics[0].message);
+}
+
+#[test]
 fn a_hit_testing_is_chosen_at_render() {
     let ok =
         compiled("export const x = (split) => VStack().allowsHitTesting(split ? 'children' : undefined);\n");

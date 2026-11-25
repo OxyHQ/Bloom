@@ -22,6 +22,7 @@ import TestRenderer, { act } from 'react-test-renderer';
 import { BloomThemeProvider, useThemePaint } from '@oxy.so/bloom/theme';
 import { Avatar } from '@oxy.so/bloom/avatar';
 import { Button } from '@oxy.so/bloom/button';
+import { Card } from '@oxy.so/bloom/card';
 import { EngagementAction, EngagementBar } from '@oxy.so/bloom/engagement-bar';
 import { RiHeart3Line, RiVerifiedBadgeFill, RiVolumeMuteLine } from '@oxy.so/bloom/icons';
 import { VirtualList } from '@oxy.so/bloom/list';
@@ -31,6 +32,7 @@ import { Text } from '@oxy.so/bloom/typography';
 import type { Child } from '../src/node';
 import * as L from '../src/primitives';
 import { defineTokens } from '../src/tokens';
+import { Card as LCard } from '../src/controls/containers';
 import { VirtualList as LVirtualList } from '../src/controls/list';
 import { LanguageRoot, toElement } from '../src/render';
 import { view } from '../src/view';
@@ -303,6 +305,25 @@ const CASES: Case[] = [
     ),
   },
   {
+    // Mention's composer: a card whose fill its caller zeroes, Bloom Card's own `style.backgroundColor`.
+    name: 'a Card whose own fill is transparent and Bloom’s Card with that style',
+    node: LCard(L.Text('a')).style('outline').background('transparent'),
+    jsx: (
+      <Card appearance="outline" style={{ backgroundColor: 'transparent' }}>
+        <Text>a</Text>
+      </Card>
+    ),
+  },
+  {
+    name: 'a border width in the platform’s default colour and a View',
+    node: L.VStack(L.Text('a')).border(undefined, 'thin'),
+    jsx: (
+      <RN.View style={{ borderWidth: 1 }}>
+        <Text>a</Text>
+      </RN.View>
+    ),
+  },
+  {
     name: 'a white glyph and a glyph filled white',
     node: L.Icon(RiHeart3Line).foreground('white'),
     jsx: <RiHeart3Line size="md" fill="#ffffff" />,
@@ -423,6 +444,10 @@ describe('a language node costs React what the JSX it stands for costs', () => {
           <RN.View style={{ flex: 1 }} />
         </RN.View>,
       ),
+    ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
+    // A border width in the platform's colour paints nothing from the theme: the root is its view.
+    expect(
+      boundary(L.VStack().border(undefined, 'thin'), <RN.View style={{ borderWidth: 1 }} />),
     ).toEqual({ fibers: 0, hooks: 0, contexts: 0 });
     // A press: the environment, which hands it a `.disabled()` set above.
     expect(boundary(L.VStack().onPress(onPress), <RN.Pressable onPress={onPress} />)).toEqual({

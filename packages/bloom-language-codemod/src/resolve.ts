@@ -516,17 +516,20 @@ function finish(
   if (g.impliedLeading && mods.filter((m) => m.name === 'leading').length > 1)
     mods = mods.filter((m) => m !== g.impliedLeading);
 
-  // Border: a width class and a colour class are one modifier.
-  const colors = mods.filter((m) => m.name === 'border');
-  mods = mods.filter((m) => m.name !== 'border');
+  // Border: a width class and a colour class are one modifier. A border a style
+  // wrote whole (its width in the platform's colour, `.border(undefined, width)`) is one already.
+  const colors = mods.filter((m) => m.name === 'border' && m.args.length === 1);
+  mods = mods.filter((m) => m.name !== 'border' || m.args.length > 1);
   if (g.widths.length > 0 || colors.length > 0) {
-    if (colors.length !== 1 || g.widths.length === 0) {
+    // A width with no colour class: the platform's default colour (React Native's black,
+    // react-native-web's own on the web, over the preflight's), `.border(undefined, width)`.
+    if (colors.length === 0) {
+      for (const width of g.widths) mods.push({ name: 'border', args: [undefined, ...width.args] });
+    } else if (colors.length !== 1 || g.widths.length === 0) {
       const what =
-        colors.length === 0
-          ? 'a border width with no colour class (Tailwind paints currentColor)'
-          : g.widths.length === 0
-            ? 'a border colour with no width class (no border is drawn)'
-            : 'two border colours';
+        g.widths.length === 0
+          ? 'a border colour with no width class (no border is drawn)'
+          : 'two border colours';
       fail([...g.widths.map((w) => w.subject), ...colors.map(subject)].join(' '), 'border', what);
     } else {
       const color = colors[0] as Mod;

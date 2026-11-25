@@ -1,3 +1,4 @@
+import * as RN from 'react-native';
 import { Platform, View } from 'react-native';
 import {
   Admonition,
@@ -266,6 +267,120 @@ const cards: ParityCase[] = [
           </Card>
         )}
       </Themed>
+    ),
+  },
+];
+
+/**
+ * A Card in Mention's composer: its caller's style zeroes the card's chrome
+ * (`backgroundColor: 'transparent'`, `borderWidth: 0`, `borderRadius: 0`) and
+ * fills the cell (`flex: 1`, full size, padding 16). Bloom's Card paints its
+ * surface from `style.backgroundColor` when one is set, and keeps its own
+ * corner (`radius`) and outline (`appearance`), so only the fill goes. The
+ * language Card's background in its own box (after its padding and frame,
+ * before any corner) is that style, so its surface is not drawn either; a
+ * border width and a corner the Card owns are not the chain's to write.
+ */
+const COMPOSE_CHROME = {
+  borderRadius: 0,
+  backgroundColor: 'transparent',
+  justifyContent: 'space-between',
+} as const;
+/** An app's `padding: 16` is these four edges, as React Native draws it. */
+const PADDED = { paddingTop: 16, paddingBottom: 16, paddingStart: 16, paddingEnd: 16 } as const;
+const composeCards: ParityCase[] = [
+  {
+    // PostArticlePreview: a title and a body, the card's own 200pt frame filled to the cell.
+    name: 'Card in the composer: an article preview, its fill zeroed by its caller',
+    language: () =>
+      toElement(
+        C.Card(
+          L.RawText('Untitled article').font('18').weight('bold').lines(2),
+          L.RawText('The body').font('14').lines(3),
+        )
+          .style('outline')
+          .radius('lg')
+          .padding('lg')
+          .frame({ width: 'full', height: 'full', minHeight: '140' })
+          .background('transparent')
+          .grow()
+          .justify('between'),
+      ),
+    bloom: () => (
+      <Card
+        radius="radius-16"
+        appearance="outline"
+        style={[
+          { width: 200, minHeight: 140, ...PADDED, justifyContent: 'space-between' },
+          { flex: 1, width: '100%', height: '100%', ...PADDED, ...COMPOSE_CHROME },
+        ]}
+      >
+        <RN.Text numberOfLines={2} ellipsizeMode="tail" style={{ fontSize: 18, fontWeight: '700' }}>
+          Untitled article
+        </RN.Text>
+        <RN.Text numberOfLines={3} ellipsizeMode="tail" style={{ fontSize: 14 }}>
+          The body
+        </RN.Text>
+      </Card>
+    ),
+  },
+  {
+    // PostAttachmentEvent: a date block beside the details, in a row, pressable.
+    name: 'Card in the composer: an event in a row, pressable, its fill zeroed by its caller',
+    language: () =>
+      toElement(
+        C.Card(L.Badge(1), L.Badge(2))
+          .style('outline')
+          .radius('lg')
+          .axis('horizontal')
+          .padding('lg')
+          .frame({ width: 'full', height: 'full', minHeight: '140' })
+          .background('transparent')
+          .grow()
+          .justify('between')
+          .onPress(onPress),
+      ),
+    bloom: () => (
+      <Card
+        radius="radius-16"
+        appearance="outline"
+        onPress={onPress}
+        style={[
+          { width: 200, minHeight: 140, flexDirection: 'row' },
+          { flex: 1, width: '100%', height: '100%', ...PADDED, ...COMPOSE_CHROME },
+        ]}
+      >
+        <Badge content={1} />
+        <Badge content={2} />
+      </Card>
+    ),
+  },
+  {
+    // RoomCard: a padded, named, pressable card.
+    name: 'Card in the composer: a room, named and pressable, its fill zeroed by its caller',
+    language: () =>
+      toElement(
+        C.Card(L.Badge(1))
+          .style('outline')
+          .radius('lg')
+          .padding('lg')
+          .frame({ width: 'full', height: 'full' })
+          .background('transparent')
+          .grow()
+          .justify('between')
+          .onPress(onPress)
+          .label('Town hall, live'),
+      ),
+    bloom: () => (
+      <Card
+        radius="radius-16"
+        appearance="outline"
+        onPress={onPress}
+        accessibilityLabel="Town hall, live"
+        style={[PADDED, { flex: 1, width: '100%', height: '100%', ...PADDED, ...COMPOSE_CHROME }]}
+      >
+        <Badge content={1} />
+      </Card>
     ),
   },
 ];
@@ -1338,6 +1453,7 @@ const more: ParityCase[] = [
 
 export const CONTAINER_CASES: ParityCase[] = [
   ...cards,
+  ...composeCards,
   ...rows,
   ...grouped,
   ...chips,
