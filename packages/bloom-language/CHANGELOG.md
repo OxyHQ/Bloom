@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.6.0
+
+### Compatibility
+
+- Requires `@oxy.so/bloom` 23.9.0 or newer (its `readThemePaint()`); the peer is `>=23.9.0`.
+
+### Added
+
+- React Native props as modifiers, each written on the view's outermost host as the JSX writes it: `.accessibilityElement(on)` (`accessible`), `.focusable(on)` (`tabIndex` 0 / -1), `.collapsable(on)`, `.onLongPress(action, duration)` (`delayLongPress`, with the duration `'500'`), `.sticky(edge?)` (the web's `position: sticky` at 0; native draws in place) and `.position({ horizontal, vertical })` (`insetInline` / `insetBlock`). `Text(...).textShadow(shadow)` takes the tokens `'0 1px 3px rgb(0 0 0 / 0.8)'` and `'0 1px 2px rgb(0 0 0 / 0.8)'`. `TextField(...).textContentType(type)` is iOS's content type.
+- Bloom component props as modifiers. Dialog: `.control(control)` (Bloom's `useDialogControl()`; it ends the chain as `.presented()` does), `.detached()` and `.panelFrame(frame)` (Bloom's `panelStyle`); the space token `'540'`. AvatarGroup: `.ringColor(color)`, `.variant(rendition)` and `.itemAction((item, index) => view)` (Bloom's `renderItemAction`). Avatar: `.cornerRadius(radius)`. Avatar and AvatarGroup: `.motion('auto' | 'always' | 'never')`. Search: `.editable(false)`. ScrollView: `.stickyIndices(indices)`.
+- A list's end action, refresh action and sticky rows chosen at render take `undefined` for none: `VirtualList(...).onEndReached(action | undefined, threshold?)`, `.stickyIndices(indices | undefined)`, `ScrollView(...).onEndReached(action | undefined)` and a `RefreshAction`'s `onRefresh`. `Row(...).onPress(undefined)` is an `Item` with no press, as Bloom draws `onPress={undefined}`.
+- App colours (`defineTokens({ color })`): `SpinnerIcon().tint()`, `Loading().tint()`, `Header().scrimColor()` and a control's painted colour props take one, passed to Bloom as written. An app colour token gives itself at an opacity, as a role does (`severity.color[level].opacity('12.5')` is the hex with its alpha byte; an `rgb()` becomes an `rgba()`).
+- Tokens: the opacities `'5'`, `'25'`, `'12.5'` and `'31.4'` (the last two are the hex alphas `20` and `50`); `.font('system-mono')`, the platform's monospaced face; a pinned edge at `'100%'`; a shrink rank of `'20'`; `.cursor()`, the web's pointer (`auto`, `default`, `pointer`, `grab`, `grabbing`, `text`, `move`, `not-allowed`; native has none).
+- Padding takes points computed at render, the same rule as geometry (`.padding('leading', depth * 12)`); a number written out is still a token. A popover's `.alignOffset()` takes points the same way.
+- `.safeAreaPadding(edge, 'content')` pads by Bloom's `useContentSafeAreaInsets()`, what the frame around the view left of the device's insets; a padding beyond it joins it on the view.
+- The roles `option` and `listbox`, written as the web's `role`. A `Row`'s `.role('option')` is Bloom Item's `role="option"`, and its `.selected()` becomes `aria-selected`.
+- Text inputs (Search, TextField, TextEditor): `.inputMode()`, `.inputRef(ref)` (the `TextInput`'s own ref, which a `.focused()` binding also reads; `.ref()` stays the box's) and `.onSelectionChange(fn)`.
+- A variant under a settled condition (a platform, `disabled`, a boolean) takes what the chain itself takes, except a box layer, a placement, a press, a name or motion: the spec's `variants.held.except`, read by the runtime and the compiler. `when('native', (v) => v.accessibilityHidden())` hides a view from native screen readers only.
+- `Button(Group(Icon(X)))` whose glyph names no ink of its own draws the glyph in the ink Bloom hands it (Bloom's `(color) => <X fill={color} />`), with no glyph box. A circle or pill whose content is one view is Bloom's icon button (`iconOnly`), so `Button(Group(busy ? Loading() : Icon(X)))` keeps its square.
+- A glyph that is only placed (a margin, a flex, a pin) takes its placement as its own style, with no view around it. `currentColor` is the glyph's `color` on every platform.
+
+### Performance
+
+- A root (`toElement`, the compiler's root) and a `view()` body read only what their tree takes from where it is placed: the environment when a node takes a value from above (a press, a text, a glyph with no colour of its own), the theme when a node paints a theme colour. Both read through React's `use`, so a root whose tree comes to read more keeps its state. A tree of fixed geometry reads no context and needs no theme provider.
+
+### Fixed
+
+- A text trait under a condition that holds as the view renders (a platform, a disabled view) is the chain's own: `RawText(x).when('native', (v) => v.font('system-mono'))` wrote no font family on native, because the trait went into the live variants, which React Native's Text and a span do not read.
+
 ## 1.5.1
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom-lens",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Bloom's native lens material for Android: the overlay, refraction and motion that menus, selects and prominent controls use when the app's binary has it.",
   "license": "SEE LICENSE IN LICENSE",
   "files": [

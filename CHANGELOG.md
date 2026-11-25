@@ -1,34 +1,39 @@
 # Changelog
 
-## Unreleased
+## 23.9.0
+
+The Bloom language 1.6.0 (`@oxy.so/bloom-language`), its compiler 1.4.0 (`@oxy.so/bloom-language-compiler`), its codemod 0.4.0 (`@oxy.so/bloom-language-codemod`) and `@oxy.so/bloom-lens` 1.2.0 ship beside it.
 
 ### Added
 
 - The colour token `--faint-foreground` (`faintForeground` from `useColorTokens()` and `createTokenStyles`, `--color-faint-foreground` in `theme.css`, `faint-foreground` in `tokens.json` and `BloomColorScopeTokens`): the tertiary text, `theme.colors.textTertiary`'s own token. Every preset and seed holds it at `--muted-foreground`'s colour, so nothing renders differently; in `mode="adaptive"` on Android and iOS it is the platform's tertiary label (Material You `outline`, iOS `tertiaryLabel`), as `textTertiary` is, where `--muted-foreground` is the secondary one. `textTertiary` had no token, so a component reading it could not move to the tokens. An exact `muted-foreground` in a `BloomColorScope` also sets it unless the scope names `faint-foreground` too, so a scope's tertiary text keeps following its quiet text as before. The Bloom language's `textTertiary` role paints `var(--faint-foreground)` on the web.
+- `readThemePaint()` (`@oxy.so/bloom/theme`): `useTheme()` and `useThemePaint()` in one read through React's `use`, not a hook, so a renderer that draws from a tree it builds reads the theme only when that tree paints from it. The Bloom language's roots and `view()` bodies read it so; the language's next release needs this Bloom.
+
+### Changed
+
+- Many families paint through the colour tokens (`useColorTokens()`) instead of `useTheme().colors`: rating, stepper, wizard, the stay and home search, lists, inputs, agents, chat, markdown, project board, dialog, cover header, app shell, listing editor, subscription plans, notifications, radio, data table, agent thinking, agent log, task list, web search, layout, grouped section, typography (`Text`) and page header. Nothing draws differently. On the web some `fill` attributes are now a `var(--…)` where they were the resolved `rgb()`, and the computed colour is the same.
+- An icon's default fill is the `--primary` token. Outside a `BloomThemeProvider` an icon no longer throws: it fills from Bloom's default palette, as every token reader does.
+- A native `reveal` drawer moves on the press, before React renders: the shell's open, close and toggle (the menu button, the veil, Back, a sidebar choice) start its open amount on the UI thread synchronously (`executeOnUIRuntimeSync`), and the state and its render follow while it moves; a controlled parent that declines slides it back. The closed drawer stays laid out (its rail at opacity 0, drawing nothing), so opening changes no layout, and the reveal's hosts are `collapsable={false}`: the page's wrapper toggled its accessibility props and Fabric moved the whole page (REMOVE and INSERT of every child) on every open and close. Mention on a Pixel 8a, 5 opens and 5 closes: from the tap to the first frame that moves, ~70–110 ms before (after an ~80 ms frame), ~19–27 ms now (the longest frame 10–16 ms); the first visible change in the screen recording from ~200–240 ms to ~35–50 ms, fully open from ~390–430 ms to ~320–370 ms; Back from ~195–230 ms to ~70–105 ms, closed from ~425–520 ms to ~355–405 ms.
+
+### Fixed
+
+- A covered screen's lens controls are drawn in their own place, under whatever covers them. The lens window overlay drew every resting lens above the whole window, so a screen under a modal or a covered stack scene showed its header controls, bottom bar and FAB over what covered it (Mention: Home's header over Settings opened by deep link). Bloom marks a stack scene under the top one (`StackScene`) and the app under a modal overlay (`OverlayInertBoundary`) as covered through `@oxy.so/bloom-lens` 1.2.0's `LensCover`. With an older bloom-lens, or without it, nothing changes.
+- In `mode="adaptive"` on Android and iOS, `useColorTokens()` and `createTokenStyles` paint the platform's dynamic colours (Material You, iOS dynamic), as `useTheme().colors` does: the provider builds the token record and the JS theme from one palette (`buildPresetPalette`), each token taking the colour of the `theme.colors` field it feeds. The record was the preset's, so a component on the tokens kept the preset's colours there while one on `useTheme().colors` followed the platform. Light, dark and the web are unchanged. A `ColorScopeLayer` is handed the same record.
+- In `mode="adaptive"`, a `BloomColorScope` that forces the mode the device is not in (`mode="dark"` on a light phone) paints that mode's preset palette through both readers. It overlaid the platform's colours, which are the device appearance's, so a forced dark scope drew light platform fills from `useTheme().colors`.
+- `tokenAlpha` and `parseRgba` take a platform colour object (`PlatformColor`, an adaptive theme's colour on a device) without throwing, and return it as it is.
 
 ## 23.8.1
 
 The Bloom language 1.5.1 (`@oxy.so/bloom-language`) ships beside it.
 
-### Added
-
-- `readThemePaint()` (`@oxy.so/bloom/theme`): `useTheme()` and `useThemePaint()` in one read through React's `use`, not a hook, so a renderer that draws from a tree it builds reads the theme only when that tree paints from it. The Bloom language's roots and `view()` bodies read it so; the language's next release needs this Bloom.
-
-### Fixed
-
-- A stack scene (`stackSceneLayout`) is always its own native parent. Fabric mounts the children of a view that only paints (its fill, no stacking context) straight into the view above it, and the accessibility props a covered scene takes make it a stacking context: every push moved the whole covered screen from the native screen into the scene, and every Back moved it out again, each a detach and an attach of every view in it, which then recorded all of it again and rebuilt each glass control's shaders. On a Pixel 8a that was about 50 ms of each Mention post push's mount frame (Home, about a thousand views) and about as much of each Back. Covering a scene now only updates its props.
-- In `mode="adaptive"` on Android and iOS, `useColorTokens()` and `createTokenStyles` paint the platform's dynamic colours (Material You, iOS dynamic), as `useTheme().colors` does: the provider builds the token record and the JS theme from one palette (`buildPresetPalette`), each token taking the colour of the `theme.colors` field it feeds. The record was the preset's, so a component on the tokens kept the preset's colours there while one on `useTheme().colors` followed the platform. Light, dark and the web are unchanged. A `ColorScopeLayer` is handed the same record.
-- In `mode="adaptive"`, a `BloomColorScope` that forces the mode the device is not in (`mode="dark"` on a light phone) paints that mode's preset palette through both readers. It overlaid the platform's colours, which are the device appearance's, so a forced dark scope drew light platform fills from `useTheme().colors`.
-- `tokenAlpha` and `parseRgba` take a platform colour object (`PlatformColor`, an adaptive theme's colour on a device) without throwing, and return it as it is.
-
 ### Changed
 
-- A native `reveal` drawer moves on the press, before React renders: the shell's open, close and toggle (the menu button, the veil, Back, a sidebar choice) start its open amount on the UI thread synchronously (`executeOnUIRuntimeSync`), and the state and its render follow while it moves; a controlled parent that declines slides it back. The closed drawer stays laid out (its rail at opacity 0, drawing nothing), so opening changes no layout, and the reveal's hosts are `collapsable={false}`: the page's wrapper toggled its accessibility props and Fabric moved the whole page (REMOVE and INSERT of every child) on every open and close. Mention on a Pixel 8a, 5 opens and 5 closes: from the tap to the first frame that moves, ~70–110 ms before (after an ~80 ms frame), ~19–27 ms now (the longest frame 10–16 ms); the first visible change in the screen recording from ~200–240 ms to ~35–50 ms, fully open from ~390–430 ms to ~320–370 ms; Back from ~195–230 ms to ~70–105 ms, closed from ~425–520 ms to ~355–405 ms.
 - Every control the lens can draw takes the native lens or Bloom's own paint through one decision (`useLensFrame` and `withLens`, `floating/lens/lens-frame.tsx`): `Button`, `Button.Group`, `Surface`, `BlurIsland` and `TabBar` each wrote it. What each draws is unchanged: the lens on Android with `@oxy.so/bloom-lens` (in the page against the surface it sits on, in a floating region or for the tab bar and an island by the window), the paint on the web, iOS, Android without the lens and inside a Dialog or a BottomSheet. A `Surface` and a `Button.Group` off the lens no longer read the surface fill and the floating region they only needed on it.
 - `AgentAvatar` plays its rest loop on a native surface on Android (`AvatarSurface`, `AvatarLoops`): the loop is remembered once and drawn by the view itself, waking once per frame it shows on the vsync it is due, instead of react-native-svg frames from JavaScript. Pixel 8a, Mention's idle Home with the header's Alia avatar, process CPU from 20 s to 30 s after a cold start: about 120% of a core without it, about 45% with it (the owner build, which has it: about 38%). The iOS view (`BloomAvatarSurface.swift`) comes with it and has not been compiled.
 
 ### Fixed
 
+- A stack scene (`stackSceneLayout`) is always its own native parent. Fabric mounts the children of a view that only paints (its fill, no stacking context) straight into the view above it, and the accessibility props a covered scene takes make it a stacking context: every push moved the whole covered screen from the native screen into the scene, and every Back moved it out again, each a detach and an attach of every view in it, which then recorded all of it again and rebuilt each glass control's shaders. On a Pixel 8a that was about 50 ms of each Mention post push's mount frame (Home, about a thousand views) and about as much of each Back. Covering a scene now only updates its props.
 - A centred `PageHeader` title that does not fit centred moves toward the narrower side instead of sliding under the wider side's controls (and, under a glass control, being refracted by its lens). Each centring spacer shrinks only to its own side's width plus the gap, on native and on the web, where the start and end margins follow RTL. (#915)
 
 ## 23.8.0
