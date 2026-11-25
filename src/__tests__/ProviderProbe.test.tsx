@@ -6,11 +6,10 @@
  * unread binding is a hard requirement imposed for nothing.
  *
  * The binding is gone. This file records what that did and did NOT buy, because
- * the obvious conclusion — "the gallery no longer needs a provider" — is wrong:
- * once the open settles, the gallery renders its chrome — three Bloom icons —
- * and every Bloom icon calls `useTheme()` unconditionally through
- * `useCommonSVGProps`. So the requirement survives; it just moved to something
- * that genuinely uses the hook.
+ * the gallery's chrome — three Bloom icons — no longer requires one either: an
+ * icon reads its default fill from the colour tokens (`useCommonSVGProps`),
+ * which outside any provider answer Bloom's default palette instead of
+ * throwing. What still requires the provider is the opt-in page appearance.
  *
  * The open is held in flight here (`holdAnimations`), which is the state this
  * file can speak for: the pager and its media are mounted, the chrome is not.
@@ -99,10 +98,9 @@ describe('what a missing BloomThemeProvider costs', () => {
     expect(nodes.filter((node) => node.type === 'Svg')).toHaveLength(0);
   });
 
-  it('but a Bloom ICON still requires the provider, which the pager renders three of', () => {
-    // Measured directly, since the gallery's own icon path is unreachable here.
-    // `useCommonSVGProps` calls `useTheme()` unconditionally — an explicit
-    // `fill` only decides the colour, it does not skip the hook.
-    expectThrows(<ShareIcon fill="#fff" size="md" />, /BloomThemeProvider/);
+  it('a Bloom icon renders with no provider, on the default palette', () => {
+    // `useCommonSVGProps` reads the colour tokens, which fall back to Bloom's
+    // default palette outside a provider rather than throwing as `useTheme()` did.
+    expect(() => render(<ShareIcon fill="#fff" size="md" />)).not.toThrow();
   });
 });

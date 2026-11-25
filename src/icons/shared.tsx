@@ -3,7 +3,7 @@ import { StyleSheet, type ColorValue, type StyleProp, type ViewStyle } from 'rea
 import type { PathProps, SvgProps } from 'react-native-svg';
 import { Defs, LinearGradient, Stop } from 'react-native-svg';
 
-import { useTheme } from '../theme/use-theme';
+import { useColorTokens } from '../theme/color-tokens';
 import { gradients } from '../styles/tokens';
 
 /**
@@ -53,13 +53,13 @@ export type CommonSVGProps = Omit<Props, 'fill' | 'size' | 'gradient' | 'style'>
 };
 
 export function useCommonSVGProps(props: Props): CommonSVGProps {
-  const { colors } = useTheme();
+  const tokens = useColorTokens();
   const reactId = React.useId();
   const { fill, size, gradient, ...rest } = props;
   const style: IconStyle | null | undefined = StyleSheet.flatten(rest.style);
   // A number is the side itself; a rung name is looked up (a number used as a rung key drew NaN).
   const _size = Number(size !== undefined ? iconSide(size) : rest.width || sizes.md);
-  let _fill: PathProps['fill'] = fill ?? style?.color ?? colors.primary;
+  let _fill: PathProps['fill'] = fill ?? style?.color ?? tokens.primary;
   let gradientDef: React.JSX.Element | null = null;
 
   if (gradient && gradients[gradient]) {
