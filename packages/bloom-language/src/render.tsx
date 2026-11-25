@@ -756,7 +756,14 @@ function plan(node: Node, env: Env): Plan {
     }
     // `disabled` is the view's own, and the environment of everything inside it,
     // except inside a Bloom component that takes it itself (see `handsDownDisabled`).
-    if (modifier.kind === 'disabled' && handsDownDisabled(node.kind)) result.env.push(modifier);
+    // One it inherits is already that environment: handed down again, it would only
+    // derive an equal one (and a provider around a `view()` inside it).
+    if (
+      modifier.kind === 'disabled' &&
+      handsDownDisabled(node.kind) &&
+      !(inherited.length > 0 && inherited.includes(modifier))
+    )
+      result.env.push(modifier);
     switch (modifier.kind) {
       case 'grow':
       case 'shrink':

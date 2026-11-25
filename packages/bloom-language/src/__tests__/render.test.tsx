@@ -708,6 +708,26 @@ describe('the cost of a view and of a theme switch', () => {
     expect(hosts(r, 'Pressable')[0]?.props.disabled).toBe(true);
   });
 
+  it('a root that comes to read the environment keeps the views inside it mounted', () => {
+    const Holder = view(function Holder({ inner }: { inner: ReactElement }) {
+      return Embed(createElement(Wrapper, null, inner));
+    });
+    // No read, then a text that reads it, under an inherited disabled: the counter keeps its count.
+    const tree = (hint: boolean) =>
+      toElement(
+        VStack(
+          Holder({
+            inner: toElement(VStack(Counter({ label: 'kept' }), hint && Text('Required'))),
+          }),
+        ).disabled(false),
+      );
+    const r = mount(tree(false));
+    act(() => press());
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1']);
+    update(r, tree(true));
+    expect(hosts(r, 'Text').map((t) => t.props.children)).toEqual(['kept 1', 'Required']);
+  });
+
   it('a node that keeps its identity renders the same element, so React skips it', () => {
     const r = mount(toElement(StaticParent()));
     act(() => bump());
